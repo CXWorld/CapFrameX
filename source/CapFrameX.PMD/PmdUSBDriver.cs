@@ -4,7 +4,6 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
-using System.Text;
 using CapFrameX.Contracts.PMD;
 
 namespace CapFrameX.PMD
@@ -14,16 +13,19 @@ namespace CapFrameX.PMD
         const char SEPERATOR = '-';
 
         private SerialPortStream _pmd;
-        private StringBuilder _resultsStringBuilder = new StringBuilder();
         private long _sampleTimeStamp = 0;
+        private int _lostPacketsCounter = 0;
 
         private readonly ILogger<PmdUSBDriver> _logger;
         private readonly ISubject<PmdChannel[]> _pmdChannelStream = new Subject<PmdChannel[]>();
         private readonly ISubject<EPmdDriverStatus> _pmdstatusStream = new Subject<EPmdDriverStatus>();
+        private readonly ISubject<int> _lostPacketsCounterStream = new Subject<int>();
 
         public IObservable<PmdChannel[]> PmdChannelStream => _pmdChannelStream.AsObservable();
 
         public IObservable<EPmdDriverStatus> PmdstatusStream => _pmdstatusStream.AsObservable();
+
+        public IObservable<int> LostPacketsCounterStream => _lostPacketsCounterStream.AsObservable();
 
         public PmdUSBDriver(ILogger<PmdUSBDriver> logger)
         {
@@ -62,8 +64,8 @@ namespace CapFrameX.PMD
                 _pmd.Dispose();
             }
 
-            _resultsStringBuilder = new StringBuilder();
             _sampleTimeStamp = 0;
+            _lostPacketsCounter = 0;
             _pmdstatusStream.OnNext(EPmdDriverStatus.Ready);
 
             return true;
@@ -84,52 +86,73 @@ namespace CapFrameX.PMD
                 _pmd.Read(bget, 0, ibtr);
 
                 //Read data
-                //Every 207 Characters I have a new feed
+                //Every 207 characters there is a new feed
                 //CA-AC-F8-1B-00-00-00-00-00-13-BB-00-00-09-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-42-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-
-                _resultsStringBuilder.Append(BitConverter.ToString(bget));
+                var curPmdReading = BitConverter.ToString(bget);
 
-                // process the data when _resultsStringBuilder.Length >= 10 * 134
-                if (_resultsStringBuilder.Length >= 10 * 134)
+                //process data async
+                Task.Run(() =>
                 {
-                    var resultString = _resultsStringBuilder.ToString();
+                    string resultStringStepA = curPmdReading.Replace(SEPERATOR.ToString(), string.Empty);
+                    string resultStringStepB = resultStringStepA.Replace("CAAC", SEPERATOR.ToString());
+                    string[] resultSplit = resultStringStepB.Split(SEPERATOR);
+                    ProcessData(resultSplit);
+                });
 
-                    //process data async
-                    Task.Run(() =>
-                    {
-                        string resultStringStepA = resultString.Replace(SEPERATOR.ToString(), string.Empty);
-                        string resultStringStepB = resultStringStepA.Replace("CAAC", SEPERATOR.ToString());
-                        string[] resultSplit = resultStringStepB.Split(SEPERATOR);
-                        ProcessData(resultSplit);
-                    });
-
-                    _resultsStringBuilder = new StringBuilder();
-                }
             }
             catch { throw; }
         }
 
-        private void ProcessData(string[] results)
+        // max = 65536
+        private int _previousPacketNumber = 0;
+        private int _currentPacketNumber = 0;
+
+        private int ExtractPacketNumber(string data)
+        {
+            string Packet_Numbera = data.Substring(0, 2);
+            string Packet_Numberb = data.Substring(2, 2);
+            int Packet_Numbera1 = HexToInt(Packet_Numbera);
+            int Packet_Numberb1 = HexToInt(Packet_Numberb);
+            int Packet_Number = Packet_Numbera1 * 256 + Packet_Numberb1;
+
+            return (Packet_Number);
+        }
+
+        private void ProcessData(string[] currentReading)
         {
             try
             {
                 //Process each element of results_split if it has 67 bytes
                 //I don't take into account the first 2 bytes because they are the sequence number
-                foreach (var result in results)
+                foreach (var subset in currentReading)
                 {
-                    if (result.Length == 134)
+                    if (subset.Length == 134)
                     {
+                        _previousPacketNumber = _currentPacketNumber;
+                        _currentPacketNumber = ExtractPacketNumber(subset);
+
+                        if (_previousPacketNumber > 0)
+                        {
+                            if (_currentPacketNumber - _previousPacketNumber != 1
+                                && _currentPacketNumber > _previousPacketNumber)
+                            {
+                                _lostPacketsCounter += _currentPacketNumber - _previousPacketNumber - 1;
+                                _lostPacketsCounterStream.OnNext(_lostPacketsCounter);
+                            }
+                        }
+
                         var pmdChannels = new PmdChannel[PmdChannelExtensions.PmdChannelIndexMapping.Length];
 
                         //Channel 1: 3.3V        - 24pin ATX
-                        string voltATX33Va = result.Substring(4, 2);
-                        string voltATX33Vb = result.Substring(6, 2);
+                        string voltATX33Va = subset.Substring(4, 2);
+                        string voltATX33Vb = subset.Substring(6, 2);
                         float voltATX33Va1 = HexToInt(voltATX33Va);
                         float voltATX33Vb1 = HexToInt(voltATX33Vb);
                         float voltATX33V_Final = (voltATX33Va1 * 256 + voltATX33Vb1) / 1000f;
 
-                        string currentATX33Va = result.Substring(8, 2);
-                        string currentATX33Vb = result.Substring(10, 2);
-                        string currentATX33Vc = result.Substring(12, 2);
+                        string currentATX33Va = subset.Substring(8, 2);
+                        string currentATX33Vb = subset.Substring(10, 2);
+                        string currentATX33Vc = subset.Substring(12, 2);
                         float currentATX33Va1 = HexToInt(currentATX33Va);
                         float currentATX33Vb1 = HexToInt(currentATX33Vb);
                         float currentATX33Vc1 = HexToInt(currentATX33Vc);
@@ -166,15 +189,15 @@ namespace CapFrameX.PMD
                         //Only if I have a 24 pin connector installed
                         if (voltATX33V_Final > 1)
                         {
-                            string volt5VSBa = result.Substring(14, 2);
-                            string volt5VSBb = result.Substring(16, 2);
+                            string volt5VSBa = subset.Substring(14, 2);
+                            string volt5VSBb = subset.Substring(16, 2);
                             float volt5VSBa1 = HexToInt(volt5VSBa);
                             float volt5VSBb1 = HexToInt(volt5VSBb);
                             float volt5VSB_Final = (volt5VSBa1 * 256 + volt5VSBb1) / 1000f;
 
-                            string current5VSBa = result.Substring(18, 2);
-                            string current5VSBb = result.Substring(20, 2);
-                            string current5VSBc = result.Substring(22, 2);
+                            string current5VSBa = subset.Substring(18, 2);
+                            string current5VSBb = subset.Substring(20, 2);
+                            string current5VSBc = subset.Substring(22, 2);
                             float current5VSBa1 = HexToInt(current5VSBa);
                             float current5VSBb1 = HexToInt(current5VSBb);
                             float current5VSBc1 = HexToInt(current5VSBc);
@@ -209,15 +232,15 @@ namespace CapFrameX.PMD
                         }
 
                         //Channel 3: 12V         - 24pin ATX & 10pin ATX
-                        string voltATX12Va = result.Substring(24, 2);
-                        string voltATX12Vb = result.Substring(26, 2);
+                        string voltATX12Va = subset.Substring(24, 2);
+                        string voltATX12Vb = subset.Substring(26, 2);
                         float voltATX12Va1 = HexToInt(voltATX12Va);
                         float voltATX12Vb1 = HexToInt(voltATX12Vb);
                         float voltATX12V_Final = (voltATX12Va1 * 256 + voltATX12Vb1) / 1000f;
 
-                        string currentATX12Va = result.Substring(28, 2);
-                        string currentATX12Vb = result.Substring(30, 2);
-                        string currentATX12Vc = result.Substring(32, 2);
+                        string currentATX12Va = subset.Substring(28, 2);
+                        string currentATX12Vb = subset.Substring(30, 2);
+                        string currentATX12Vc = subset.Substring(32, 2);
                         float currentATX12Va1 = HexToInt(currentATX12Va);
                         float currentATX12Vb1 = HexToInt(currentATX12Vb);
                         float currentATX12Vc1 = HexToInt(currentATX12Vc);
@@ -251,15 +274,15 @@ namespace CapFrameX.PMD
                         };
 
                         //Channel 4: 5V          - 24pin ATX
-                        string voltATX5Va = result.Substring(34, 2);
-                        string voltATX5Vb = result.Substring(36, 2);
+                        string voltATX5Va = subset.Substring(34, 2);
+                        string voltATX5Vb = subset.Substring(36, 2);
                         float voltATX5Va1 = HexToInt(voltATX5Va);
                         float voltATX5Vb1 = HexToInt(voltATX5Vb);
                         float voltATX5V_Final = (voltATX5Va1 * 256 + voltATX5Vb1) / 1000f;
 
-                        string currentATX5Va = result.Substring(38, 2);
-                        string currentATX5Vb = result.Substring(40, 2);
-                        string currentATX5Vc = result.Substring(42, 2);
+                        string currentATX5Va = subset.Substring(38, 2);
+                        string currentATX5Vb = subset.Substring(40, 2);
+                        string currentATX5Vc = subset.Substring(42, 2);
                         float currentATX5Va1 = HexToInt(currentATX5Va);
                         float currentATX5Vb1 = HexToInt(currentATX5Vb);
                         float currentATX5Vc1 = HexToInt(currentATX5Vc);
@@ -293,15 +316,15 @@ namespace CapFrameX.PMD
                         };
 
                         //Channel 5: 12V1        - EPS #1
-                        string voltEPS12V1a = result.Substring(44, 2);
-                        string voltEPS12V1b = result.Substring(46, 2);
+                        string voltEPS12V1a = subset.Substring(44, 2);
+                        string voltEPS12V1b = subset.Substring(46, 2);
                         float voltEPS12V1a1 = HexToInt(voltEPS12V1a);
                         float voltEPS12V1b1 = HexToInt(voltEPS12V1b);
                         float voltEPS12V1_Final = (voltEPS12V1a1 * 256 + voltEPS12V1b1) / 1000f;
 
-                        string currentEPS12V1a = result.Substring(48, 2);
-                        string currentEPS12V1b = result.Substring(50, 2);
-                        string currentEPS12V1c = result.Substring(52, 2);
+                        string currentEPS12V1a = subset.Substring(48, 2);
+                        string currentEPS12V1b = subset.Substring(50, 2);
+                        string currentEPS12V1c = subset.Substring(52, 2);
                         float currentEPS12V1a1 = HexToInt(currentEPS12V1a);
                         float currentEPS12V1b1 = HexToInt(currentEPS12V1b);
                         float currentEPS12V1c1 = HexToInt(currentEPS12V1c);
@@ -335,15 +358,15 @@ namespace CapFrameX.PMD
                         };
 
                         //Channel 8: 12V2        - EPS #2
-                        string voltEPS12V2a = result.Substring(74, 2);
-                        string voltEPS12V2b = result.Substring(76, 2);
+                        string voltEPS12V2a = subset.Substring(74, 2);
+                        string voltEPS12V2b = subset.Substring(76, 2);
                         float voltEPS12V2a1 = HexToInt(voltEPS12V2a);
                         float voltEPS12V2b1 = HexToInt(voltEPS12V2b);
                         float voltEPS12V2_Final = (voltEPS12V2a1 * 256 + voltEPS12V2b1) / 1000f;
 
-                        string currentEPS12V2a = result.Substring(78, 2);
-                        string currentEPS12V2b = result.Substring(80, 2);
-                        string currentEPS12V2c = result.Substring(82, 2);
+                        string currentEPS12V2a = subset.Substring(78, 2);
+                        string currentEPS12V2b = subset.Substring(80, 2);
+                        string currentEPS12V2c = subset.Substring(82, 2);
                         float currentEPS12V2a1 = HexToInt(currentEPS12V2a);
                         float currentEPS12V2b1 = HexToInt(currentEPS12V2b);
                         float currentEPS12V2c1 = HexToInt(currentEPS12V2c);
@@ -377,15 +400,15 @@ namespace CapFrameX.PMD
                         };
 
                         //Channel 7: 12V3        - EPS #3
-                        string voltEPS12V3a = result.Substring(64, 2);
-                        string voltEPS12V3b = result.Substring(66, 2);
+                        string voltEPS12V3a = subset.Substring(64, 2);
+                        string voltEPS12V3b = subset.Substring(66, 2);
                         float voltEPS12V3a1 = HexToInt(voltEPS12V3a);
                         float voltEPS12V3b1 = HexToInt(voltEPS12V3b);
                         float voltEPS12V3_Final = (voltEPS12V3a1 * 256 + voltEPS12V3b1) / 1000f;
 
-                        string currentEPS12V3a = result.Substring(68, 2);
-                        string currentEPS12V3b = result.Substring(70, 2);
-                        string currentEPS12V3c = result.Substring(72, 2);
+                        string currentEPS12V3a = subset.Substring(68, 2);
+                        string currentEPS12V3b = subset.Substring(70, 2);
+                        string currentEPS12V3c = subset.Substring(72, 2);
                         float currentEPS12V3a1 = HexToInt(currentEPS12V3a);
                         float currentEPS12V3b1 = HexToInt(currentEPS12V3b);
                         float currentEPS12V3c1 = HexToInt(currentEPS12V3c);
@@ -419,15 +442,15 @@ namespace CapFrameX.PMD
                         };
 
                         //Channel 13: 12V4       - PCIe 6+2 pin #1 & PCIe 12+4 pin #1 
-                        string voltPCIe1a = result.Substring(124, 2);
-                        string voltPCIe1b = result.Substring(126, 2);
+                        string voltPCIe1a = subset.Substring(124, 2);
+                        string voltPCIe1b = subset.Substring(126, 2);
                         float voltPCIe1a1 = HexToInt(voltPCIe1a);
                         float voltPCIe1b1 = HexToInt(voltPCIe1b);
                         float voltPCIe1_Final = (voltPCIe1a1 * 256 + voltPCIe1b1) / 1000f;
 
-                        string currentPCIe1a = result.Substring(128, 2);
-                        string currentPCIe1b = result.Substring(130, 2);
-                        string currentPCIe1c = result.Substring(132, 2);
+                        string currentPCIe1a = subset.Substring(128, 2);
+                        string currentPCIe1b = subset.Substring(130, 2);
+                        string currentPCIe1c = subset.Substring(132, 2);
                         float currentPCIe1a1 = HexToInt(currentPCIe1a);
                         float currentPCIe1b1 = HexToInt(currentPCIe1b);
                         float currentPCIe1c1 = HexToInt(currentPCIe1c);
@@ -461,15 +484,15 @@ namespace CapFrameX.PMD
                         };
 
                         //Channel 10: 12V5       - PCIe 6+2 pin #2 & PCIe 12+4 pin #2 
-                        string voltPCIe2a = result.Substring(94, 2);
-                        string voltPCIe2b = result.Substring(96, 2);
+                        string voltPCIe2a = subset.Substring(94, 2);
+                        string voltPCIe2b = subset.Substring(96, 2);
                         float voltPCIe2a1 = HexToInt(voltPCIe2a);
                         float voltPCIe2b1 = HexToInt(voltPCIe2b);
                         float voltPCIe2_Final = (voltPCIe2a1 * 256 + voltPCIe2b1) / 1000f;
 
-                        string currentPCIe2a = result.Substring(98, 2);
-                        string currentPCIe2b = result.Substring(100, 2);
-                        string currentPCIe2c = result.Substring(102, 2);
+                        string currentPCIe2a = subset.Substring(98, 2);
+                        string currentPCIe2b = subset.Substring(100, 2);
+                        string currentPCIe2c = subset.Substring(102, 2);
                         float currentPCIe2a1 = HexToInt(currentPCIe2a);
                         float currentPCIe2b1 = HexToInt(currentPCIe2b);
                         float currentPCIe2c1 = HexToInt(currentPCIe2c);
@@ -503,15 +526,15 @@ namespace CapFrameX.PMD
                         };
 
                         //Channel 9: 12V6        - PCIe 6+2 pin #3  
-                        string voltPCIe3a = result.Substring(84, 2);
-                        string voltPCIe3b = result.Substring(86, 2);
+                        string voltPCIe3a = subset.Substring(84, 2);
+                        string voltPCIe3b = subset.Substring(86, 2);
                         float voltPCIe3a1 = HexToInt(voltPCIe3a);
                         float voltPCIe3b1 = HexToInt(voltPCIe3b);
                         float voltPCIe3_Final = (voltPCIe3a1 * 256 + voltPCIe3b1) / 1000f;
 
-                        string currentPCIe3a = result.Substring(88, 2);
-                        string currentPCIe3b = result.Substring(90, 2);
-                        string currentPCIe3c = result.Substring(92, 2);
+                        string currentPCIe3a = subset.Substring(88, 2);
+                        string currentPCIe3b = subset.Substring(90, 2);
+                        string currentPCIe3c = subset.Substring(92, 2);
                         float currentPCIe3a1 = HexToInt(currentPCIe3a);
                         float currentPCIe3b1 = HexToInt(currentPCIe3b);
                         float currentPCIe3c1 = HexToInt(currentPCIe3c);
@@ -601,15 +624,15 @@ namespace CapFrameX.PMD
                         };
 
                         //Channel 11: 3.3V OPTI  - PCIe Expansion Board
-                        string voltPCIe_Slot_33a = result.Substring(104, 2);
-                        string voltPCIe_Slot_33b = result.Substring(106, 2);
+                        string voltPCIe_Slot_33a = subset.Substring(104, 2);
+                        string voltPCIe_Slot_33b = subset.Substring(106, 2);
                         float voltPCIe_Slot_33a1 = HexToInt(voltPCIe_Slot_33a);
                         float voltPCIe_Slot_33b2 = HexToInt(voltPCIe_Slot_33b);
                         float voltPCIe_Slot_33_Final = (voltPCIe_Slot_33a1 * 256 + voltPCIe_Slot_33b2) / 1000f;
 
-                        string currentPCIe_Slot_33a = result.Substring(108, 2);
-                        string currentPCIe_Slot_33b = result.Substring(110, 2);
-                        string currentPCIe_Slot_33c = result.Substring(112, 2);
+                        string currentPCIe_Slot_33a = subset.Substring(108, 2);
+                        string currentPCIe_Slot_33b = subset.Substring(110, 2);
+                        string currentPCIe_Slot_33c = subset.Substring(112, 2);
                         float currentPCIe_Slot_33a1 = HexToInt(currentPCIe_Slot_33a);
                         float currentPCIe_Slot_33b1 = HexToInt(currentPCIe_Slot_33b);
                         float currentPCIe_Slot_33c1 = HexToInt(currentPCIe_Slot_33c);
@@ -643,15 +666,15 @@ namespace CapFrameX.PMD
                         };
 
                         //Channel 12: 12V OPTI   - PCIe Expansion Board
-                        string voltPCIe_Slot_12a = result.Substring(114, 2);
-                        string voltPCIe_Slot_12b = result.Substring(116, 2);
+                        string voltPCIe_Slot_12a = subset.Substring(114, 2);
+                        string voltPCIe_Slot_12b = subset.Substring(116, 2);
                         float voltPCIe_Slot_12a1 = HexToInt(voltPCIe_Slot_12a);
                         float voltPCIe_Slot_12b2 = HexToInt(voltPCIe_Slot_12b);
                         float voltPCIe_Slot_12_Final = (voltPCIe_Slot_12a1 * 256 + voltPCIe_Slot_12b2) / 1000f;
 
-                        string currentPCIe_Slot_12a = result.Substring(118, 2);
-                        string currentPCIe_Slot_12b = result.Substring(120, 2);
-                        string currentPCIe_Slot_12c = result.Substring(122, 2);
+                        string currentPCIe_Slot_12a = subset.Substring(118, 2);
+                        string currentPCIe_Slot_12b = subset.Substring(120, 2);
+                        string currentPCIe_Slot_12c = subset.Substring(122, 2);
                         float currentPCIe_Slot_12a1 = HexToInt(currentPCIe_Slot_12a);
                         float currentPCIe_Slot_12b1 = HexToInt(currentPCIe_Slot_12b);
                         float currentPCIe_Slot_12c1 = HexToInt(currentPCIe_Slot_12c);

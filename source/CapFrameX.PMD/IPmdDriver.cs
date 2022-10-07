@@ -9,6 +9,8 @@ namespace CapFrameX.PMD
 
         IObservable<EPmdDriverStatus> PmdstatusStream { get; }
 
+        IObservable<int> LostPacketsCounterStream { get; }
+
         bool Connect(string comPort, bool calibrationMode);
 
         bool Disconnect();

@@ -14,6 +14,8 @@ namespace CapFrameX.PMD
         
         IObservable<int> PmdThroughput { get; }
 
+        IObservable<int> LostPacketsCounterStream { get; }
+
         string PortName { get; set; }
 
         bool StartDriver();

@@ -30,6 +30,8 @@ namespace CapFrameX.PMD
 
         public IObservable<int> PmdThroughput => _pmdThroughput;
 
+        public IObservable<int> LostPacketsCounterStream => _pmdDriver.LostPacketsCounterStream;
+
         public string PortName { get; set; }
 
         public int DownSamplingSize

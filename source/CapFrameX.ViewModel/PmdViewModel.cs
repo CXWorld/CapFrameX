@@ -35,6 +35,7 @@ namespace CapFrameX.ViewModel
         private int _pmdDataWindowSeconds = 10;
         private bool _usePmdService;
         private string _sampleRate = "0 [1/s]";
+        private string _lostPackets = "0";
         private string _selectedChartView = "Frametimes";
         private bool _useUpdateSession = false;
         private ISession _session;
@@ -196,6 +197,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public string LostPackets
+        {
+            get => _lostPackets;
+            set
+            {
+                _lostPackets = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public PmdSampleFilterMode SelectedDownSamlingMode
         {
             get => _pmdService.DownSamplingMode;
@@ -316,6 +327,10 @@ namespace CapFrameX.ViewModel
             _pmdService.PmdstatusStream
                 .SubscribeOnDispatcher()
                 .Subscribe(status => PmdCaptureStatus = status);
+
+            _pmdService.LostPacketsCounterStream
+                .SubscribeOnDispatcher()
+                .Subscribe(lostPackets => LostPackets = LostPackets.ToString());
         }
 
         private void SubscribePmdDataStreamCharts()

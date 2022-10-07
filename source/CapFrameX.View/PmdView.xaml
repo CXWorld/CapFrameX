@@ -258,7 +258,7 @@
                     <Grid Grid.RowSpan="3" Grid.Column="2" Margin="5 0 0 2" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="1*"/>
-                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="50"/>
                         </Grid.RowDefinitions>
                         <StackPanel Grid.Row="0" Orientation="Vertical">
                             <Border Height="45" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch">
@@ -318,6 +318,10 @@
                             </Border>
                         </StackPanel>
                         <StackPanel Grid.Row="1" Orientation="Vertical">
+                            <StackPanel Margin="5 0 0 0" Orientation="Horizontal">
+                                <Label Content="Lost Packets:" FontSize="13"/>
+                                <TextBlock Text="{Binding LostPackets}" Width="60" VerticalAlignment="Center" FontSize="13"/>
+                            </StackPanel>
                             <StackPanel Margin="5 0 0 0" Orientation="Horizontal">
                                 <Label Content="Sample Rate:" FontSize="13"/>
                                 <TextBlock Text="{Binding SampleRate}" Width="60" VerticalAlignment="Center" FontSize="13"/>
