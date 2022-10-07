@@ -410,8 +410,9 @@
                                         <Style TargetType="{x:Type DataGridRow}">
                                             <Setter Property="Height" Value="25" />
                                             <Setter Property="Background" Value="{DynamicResource MaterialDesignBackground}"/>
+                                            <Setter Property="Focusable" Value="False"/>
                                         </Style>
-                                        <Style TargetType="{x:Type DataGridCell}">
+                                        <Style x:Key="CellStyle" TargetType="DataGridCell">
                                             <Setter Property="Padding" Value="5 5 5 0" />
                                             <Setter Property="Background" Value="{DynamicResource MaterialDesignBackground}"/>
                                             <Setter Property="BorderBrush" Value="Transparent"/>
@@ -449,19 +450,23 @@
                                         <DataGridTextColumn Binding="{Binding Name, Mode=OneWay}"                                                           
                                             Header="Sensor"       
                                             MinWidth="175"
-                                            IsReadOnly="True"/>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                                         <DataGridTextColumn Binding="{Binding MinValue, Mode=OneWay}"
                                             Header="Min"
                                             Width="72"
-                                            IsReadOnly="True"/>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                                         <DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
                                             Header="Avg"
                                             Width="72"
-                                            IsReadOnly="True"/>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                                         <DataGridTextColumn Binding="{Binding MaxValue, Mode=OneWay}"
                                             Header="Max"
                                             Width="72"
-                                            IsReadOnly="True"/>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                                     </DataGrid.Columns>
                                 </DataGrid>
                             </TabItem>
@@ -484,7 +489,7 @@
                                             <Setter Property="Height" Value="25" />
                                             <Setter Property="Background" Value="{DynamicResource MaterialDesignBackground}"/>
                                         </Style>
-                                        <Style TargetType="{x:Type DataGridCell}">
+                                        <Style x:Key="CellStyle" TargetType="DataGridCell">
                                             <Setter Property="Padding" Value="5 5 5 0" />
                                             <Setter Property="Background" Value="{DynamicResource MaterialDesignBackground}"/>
                                             <Setter Property="BorderBrush" Value="Transparent"/>
@@ -522,19 +527,23 @@
                                         <DataGridTextColumn Binding="{Binding Name, Mode=OneWay}"                                                           
                                             Header="Sensor"       
                                             MinWidth="175"
-                                            IsReadOnly="True"/>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                                         <DataGridTextColumn Binding="{Binding MinValue, Mode=OneWay}"
                                             Header="Min"
                                             Width="72"
-                                            IsReadOnly="True"/>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                                         <DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
                                             Header="Average"
                                             Width="72"
-                                            IsReadOnly="True"/>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                                         <DataGridTextColumn Binding="{Binding MaxValue, Mode=OneWay}"
                                             Header="Max"
                                             Width="72"
-                                            IsReadOnly="True"/>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                                     </DataGrid.Columns>
                                 </DataGrid>
                             </TabItem>

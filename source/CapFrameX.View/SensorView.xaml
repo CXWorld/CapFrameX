@@ -382,10 +382,9 @@
                                     </MultiTrigger>
                                 </Style.Triggers>
                             </Style>
-                            <Style TargetType="DataGridCell">
-                                <Setter Property="Padding" Value="5" />
-                                <Setter Property="Margin" Value="0 0 0 0"/>
-                                <Setter Property="Background" Value="Transparent"/>
+                            <Style x:Key="CellStyle" TargetType="DataGridCell">
+                                <Setter Property="Padding" Value="5 5 5 0" />
+                                <Setter Property="Background" Value="{DynamicResource MaterialDesignBackground}"/>
                                 <Setter Property="BorderBrush" Value="Transparent"/>
                                 <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
                                 <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
@@ -412,24 +411,27 @@
                             <DataGridTextColumn Binding="{Binding Name, Mode=OneWay}"                                                           
                                             Header="Sensor"                 
                                             MinWidth="180"
-                                            IsReadOnly="True">
-                            </DataGridTextColumn>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                             <DataGridTextColumn Binding="{Binding MinValue, Mode=OneWay}"
                                             Header="Min"
                                             MinWidth="75"
-                                            IsReadOnly="True"/>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                             <DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
                                             Header="Avg"
                                             MinWidth="75"
-                                            IsReadOnly="True"/>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                             <DataGridTextColumn Binding="{Binding MaxValue, Mode=OneWay}"
                                             Header="Max"
                                             MinWidth="75"
-                                            IsReadOnly="True"/>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                         </DataGrid.Columns>
                     </DataGrid>
                     <Button Grid.Row="1" Width="150" Height="45" BorderBrush="Transparent"
-					        Command="{Binding AggregateSensorEntries}" IsEnabled="{Binding AggregateButtonIsEnable}"
+					        Command="{Binding AggregateSensorEntriesCommand}" IsEnabled="{Binding AggregateButtonIsEnable}"
                             ToolTipService.ShowDuration="25000" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}"> 
                         <TextBlock Text="{Binding AggregateButtonText}" TextWrapping="Wrap" TextAlignment="Center"/>
                         <Button.ToolTip>
