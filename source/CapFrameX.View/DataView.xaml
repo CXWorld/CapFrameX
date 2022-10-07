@@ -638,7 +638,22 @@
                                              Foreground="{DynamicResource MaterialDesignBody}">
                         <materialDesign:PopupBox.ToolTip>
                             <ToolTip MaxWidth="275" Placement="Top">
-                                <TextBlock Text="Maximum:                                                &#xA;The single highest value                                                &#xA;                                                &#xA;Average:                                                &#xA;The average of all values                                                &#xA;                                                &#xA;Median:                                                &#xA;The middle of all values sorted from low to high                                                &#xA;                                                &#xA;Minimum:                                                &#xA;The single lowest value                                                &#xA;                                                &#xA;X% percentile:                                                &#xA;X% of all values are lower than this                                                &#xA;                                                &#xA;X% low integral:                                                &#xA;For X% of total benchmark time, values are lower than this                                                &#xA;                                                &#xA;Adaptive STDEV:                                                &#xA;The standard deviation of values compared to the moving average                                                          " 
+                                <TextBlock Text="Maximum:
+                                           &#xA;The single highest value &#xA;
+                                           &#xA;Average:
+                                           &#xA;The average of all values &#xA;
+                                           &#xA;Median:
+                                           &#xA;The middle of all values sorted from low to high &#xA;
+                                           &#xA;Minimum:
+                                           &#xA;The single lowest value &#xA;
+                                           &#xA;X% percentile:
+                                           &#xA;X% of all values are lower than this &#xA;
+                                           &#xA;X% low average:
+                                           &#xA;The average of the lowest X% of all values &#xA;
+                                           &#xA;X% low integral:
+                                           &#xA;For X% of total benchmark time, values are lower than this &#xA;
+                                           &#xA;Adaptive STDEV:
+                                           &#xA;The standard deviation of values compared to the moving average" 
 										   TextWrapping="Wrap"/>
                             </ToolTip>
                         </materialDesign:PopupBox.ToolTip>
