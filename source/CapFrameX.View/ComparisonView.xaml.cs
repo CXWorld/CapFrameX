@@ -44,8 +44,6 @@ namespace CapFrameX.View
 			LShapeY.MaxValue = double.NaN;
 		}
 
-		private void SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e) { }
-
 		private void FirstSecondsTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
 		{
 			var key = e.Key;
