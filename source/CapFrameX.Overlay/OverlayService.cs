@@ -472,7 +472,7 @@ namespace CapFrameX.Overlay
                     formatString = "{0,5:F0}";
                     break;
                 case SensorType.Throughput:
-                    formatString = "{0,5:F0}";
+                    formatString = "{0,5:F1}";
                     break;
                 case SensorType.Frequency:
                     formatString = "{0,5:F0}";
