@@ -107,7 +107,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             var lowFPSSeries = new LineSeries
             {
-                Title = "LowFPS",
+                Title = "Low FPS",
                 StrokeThickness = 3,
                 LegendStrokeThickness = 4,
                 LineStyle = LineStyle.LongDash,

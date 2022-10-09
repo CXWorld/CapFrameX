@@ -317,16 +317,18 @@
                                 <CheckBox Margin="5 0 0 0" FontSize="13" Content="Show Charts" IsChecked="{Binding UpdateCharts}"></CheckBox>
                             </Border>
                         </StackPanel>
-                        <StackPanel Grid.Row="1" Orientation="Vertical">
-                            <StackPanel Margin="5 0 0 0" Orientation="Horizontal">
-                                <Label Content="Lost Packets:" FontSize="13"/>
-                                <TextBlock Text="{Binding LostPackets}" Width="60" VerticalAlignment="Center" FontSize="13"/>
+                        <Border Grid.Row="1" Height="50" Margin="5 -10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch">
+                            <StackPanel Orientation="Vertical">
+                                <StackPanel Margin="5 0 0 0" Orientation="Horizontal">
+                                    <Label Content="Lost Packets:" FontSize="13"/>
+                                    <TextBlock Text="{Binding LostPackets}" Width="60" VerticalAlignment="Center" FontSize="13"/>
+                                </StackPanel>
+                                <StackPanel Margin="5 0 0 0" Orientation="Horizontal">
+                                    <Label Content="Sample Rate:" FontSize="13"/>
+                                    <TextBlock Text="{Binding SampleRate}" Width="60" VerticalAlignment="Center" FontSize="13"/>
+                                </StackPanel>
                             </StackPanel>
-                            <StackPanel Margin="5 0 0 0" Orientation="Horizontal">
-                                <Label Content="Sample Rate:" FontSize="13"/>
-                                <TextBlock Text="{Binding SampleRate}" Width="60" VerticalAlignment="Center" FontSize="13"/>
-                            </StackPanel>
-                        </StackPanel>
+                        </Border>
                     </Grid>
                 </Grid>
             </TabItem>
@@ -477,7 +479,7 @@
 
                                 <TextBlock Grid.Row="5" Grid.Column="0" Margin="0 0 0 20" Text="System : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
                                 <TextBlock Grid.Row="5" Grid.Column="1" Margin="0 0 0 20" Text="{Binding AvgPmdSystemPower}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
-                                
+
                                 <TextBlock Grid.Row="6" Grid.Column="0" Margin="0 0 0 5" Text="FPS : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
                                 <TextBlock Grid.Row="6" Grid.Column="1" Margin="0 0 0 5" Text="{Binding AvgFPS}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
                             </Grid>
@@ -501,7 +503,7 @@
 
                                 <TextBlock Grid.Row="1" Grid.Column="0" Margin="0 0 0 5" Text="GPU : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
                                 <TextBlock Grid.Row="1" Grid.Column="1" Margin="0 0 0 5" Text="{Binding GpuEfficiency}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
-                                
+
                                 <TextBlock Grid.Row="3" Grid.Column="0" Margin="0 0 0 5" Text="CPU : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
                                 <TextBlock Grid.Row="3" Grid.Column="1" Margin="0 0 0 5" Text="{Binding CpuEfficiency}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
 
