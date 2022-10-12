@@ -271,7 +271,7 @@ namespace CapFrameX.Data
                     var session = serializer.Deserialize<Session.Classes.Session>(jsonReader);
                     foreach (var sessionrun in session.Runs)
                     {
-                        if (sessionrun.SensorData != null & sessionrun.SensorData2 == null)
+                        if (sessionrun.SensorData != null && sessionrun.SensorData2 == null)
                         {
                             SessionSensorDataConverter.ConvertToSensorData2(sessionrun);
                         }
