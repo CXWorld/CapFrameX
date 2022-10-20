@@ -283,12 +283,12 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                     Version = NVAPI.GPU_THERMAL_STATUS_VER,
                     Mask = (1u << thermalSensorsMaxBit) - 1
                 };
-
+                
                 if (NVAPI.NvAPI_GPU_ThermalGetStatus != null &&
                     NVAPI.NvAPI_GPU_ThermalGetStatus(handle, ref thermalSensor) == NvStatus.OK)
                 {
                     hotSpotTemperature.Value = thermalSensor.Temperatures[1] / 256f;
-                    memoryJunctionTemperature.Value = thermalSensor.Temperatures[9] / 256f;
+                    memoryJunctionTemperature.Value = thermalSensor.Temperatures[7] / 256f;
                 }
 
                 if (sensorConfig.GetSensorEvaluate(hotSpotTemperature.IdentifierString)
