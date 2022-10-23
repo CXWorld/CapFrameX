@@ -43,11 +43,11 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly Sensor power;
         private readonly Sensor pcieThroughputRx;
         private readonly Sensor pcieThroughputTx;
-        private readonly Control fanControl;
         private readonly Sensor monitorRefreshRate;
         private readonly Sensor powerLimit;
         private readonly Sensor temperatureLimit;
         private readonly Sensor voltageLimit;
+        private readonly Control fanControl;
 
         public NvidiaGPU(int adapterIndex, NvPhysicalGpuHandle handle,
           NvDisplayHandle? displayHandle, ISettings settings, ISensorConfig config, IProcessService processService)
@@ -288,7 +288,9 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                     NVAPI.NvAPI_GPU_ThermalGetStatus(handle, ref thermalSensor) == NvStatus.OK)
                 {
                     hotSpotTemperature.Value = thermalSensor.Temperatures[1] / 256f;
-                    memoryJunctionTemperature.Value = thermalSensor.Temperatures[7] / 256f;
+                    // Ampere - 9, Ada Lovelace - 7
+                    var memJuncTemp = thermalSensor.Temperatures[9] == 0 ? thermalSensor.Temperatures[7] : thermalSensor.Temperatures[9];
+                    memoryJunctionTemperature.Value = memJuncTemp / 256f;
                 }
 
                 if (sensorConfig.GetSensorEvaluate(hotSpotTemperature.IdentifierString)
