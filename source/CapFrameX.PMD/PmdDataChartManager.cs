@@ -128,7 +128,7 @@ namespace CapFrameX.PMD
             _pciExpressModelMaxYValueBuffer.Add((int)Math.Ceiling(1.05 * powerDrawPoints.Max(pnt => pnt.Y) / 20.0) * 20);
             var y_Axis_GPU_W_Max = _pciExpressModelMaxYValueBuffer.Max();
             AxisDefinitions["Y_Axis_GPU_W"].Maximum = y_Axis_GPU_W_Max;
-            AxisDefinitions["Y_Axis_GPU_W"].AbsoluteMaximum = y_Axis_GPU_W_Max;
+            AxisDefinitions["Y_Axis_GPU_W"].AbsoluteMaximum = y_Axis_GPU_W_Max > 0 ? y_Axis_GPU_W_Max : 300;
 
             PciExpressModel.Series.Clear();
             Dispatcher.CurrentDispatcher.Invoke(() =>

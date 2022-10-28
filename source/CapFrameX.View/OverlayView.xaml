@@ -70,7 +70,29 @@
                             <RowDefinition Height="50"></RowDefinition>
                             <RowDefinition Height="60"></RowDefinition>
                         </Grid.RowDefinitions>
-                        <TextBlock Margin="15 0 0 10" HorizontalAlignment="Left" Text="Overlay items" FontSize="18" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
+                        <StackPanel Orientation="Horizontal" Margin="15 0 0 10" HorizontalAlignment="Left">
+                        <TextBlock Margin="0 0 10 0" Text="Overlay items" FontSize="18" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
+                        <materialDesign:PackIcon Width="20" Height="20" Kind="Information" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTipService.ShowDuration="25000" ToolTipService.Placement="Top">
+                            <materialDesign:PackIcon.ToolTip>
+                                    <TextBlock Width="275" Text="Special CX Overlay items:&#xA;
+                                                        &#xA;Capture service status:
+                                                        &#xA;Current state of capture service(process found, multiple processes found, running benchmark...) &#xA;
+                                                        &#xA;Capture timer:
+                                                        &#xA;Remaining time for currently active capture(time set) or current capture time(unlimited)&#xA;
+                                                        &#xA;Run history:
+                                                        &#xA;Displays the data of previous runs and aggregated results(settings on capture page) &#xA;
+                                                        &#xA;Real-time FPS metrics:
+                                                        &#xA;Averaged values for average and percentiles FPS&#xA;
+                                                        &#xA;Stuttering Time:
+                                                        &#xA;Time percentage of frames above the stuttering threshold &#xA;
+                                                        &#xA;Application Latency:
+                                                        &#xA;Averaged approximated input lag &#xA;
+                                                        &#xA;PMD Powers:
+                                                        &#xA;Power values for use with Powernetics v2 tool &#xA;"
+										   TextWrapping="Wrap"/>
+                            </materialDesign:PackIcon.ToolTip>
+                        </materialDesign:PackIcon>
+                        </StackPanel>
                         <StackPanel Grid.Row="0" Margin="0 0 0 10" Orientation="Horizontal" HorizontalAlignment="Right">
 
                             <Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"

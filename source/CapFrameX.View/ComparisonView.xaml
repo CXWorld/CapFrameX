@@ -382,7 +382,7 @@
                         ToolTip="Select metrics to be shown" IsEnabled="{Binding MetricAndLabelOptionsEnabled}">
                 <TextBlock Margin="0 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"> Metrics</TextBlock>
                 <materialDesign:PopupBox Foreground="{DynamicResource MaterialDesignBody}" StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
-                    <materialDesign:Card Width="450" Margin="0 0 0 -10">
+                    <materialDesign:Card Width="Auto" Margin="0 0 0 0">
                         <StackPanel>
                             <Grid Margin="8 8 8 8">
                                 <Grid.RowDefinitions>
@@ -390,6 +390,7 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
@@ -507,6 +508,32 @@
                                         </Style>
                                     </ctrls:CXColorPicker.ButtonStyle>
                                 </ctrls:CXColorPicker>
+                                <StackPanel Margin="10 0 0 0" Orientation="Vertical" Grid.Column="3" Grid.RowSpan="2" VerticalAlignment="Center">
+                                    <TextBlock Margin="0 0 0 5" Text="Metric Info"></TextBlock>
+                                <materialDesign:PackIcon Width="20" Height="20" Kind="Information" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTipService.ShowDuration="25000" ToolTipService.Placement="Top">
+                                        <materialDesign:PackIcon.ToolTip>
+                                            <TextBlock Width="275" Text="Maximum:
+                                                        &#xA;The single highest value &#xA;
+                                                        &#xA;Average:
+                                                        &#xA;The average of all values &#xA;
+                                                        &#xA;Median:
+                                                        &#xA;The middle of all values sorted from low to high &#xA;
+                                                        &#xA;Minimum:
+                                                        &#xA;The single lowest value &#xA;
+                                                        &#xA;X% percentile:
+                                                        &#xA;X% of all values are lower than this &#xA;
+                                                        &#xA;X% low average:
+                                                        &#xA;The average of the lowest X% of all values &#xA;
+                                                        &#xA;X% low integral:
+                                                        &#xA;For X% of total benchmark time, values are lower than this &#xA;
+                                                        &#xA;Adaptive STDEV:
+                                                        &#xA;The standard deviation of values compared to the moving average &#xA;
+                                                        &#xA;CPU/GPU FPS/10W:
+                                                        &#xA;The average framerate per 10W of power draw (multiplied by 10 to generate more comparable bar charts when using it with other FPS metrics)" 
+										   TextWrapping="Wrap"/>
+                                        </materialDesign:PackIcon.ToolTip>
+                                </materialDesign:PackIcon>
+                                </StackPanel>
                             </Grid>
                         </StackPanel>
                     </materialDesign:Card>
