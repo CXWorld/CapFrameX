@@ -149,7 +149,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             // VRAM Frequency
             if (igclTelemetryData.vramCurrentClockFrequencySupported)
             {
-                clockVram.Value = 2f * (float)igclTelemetryData.vramCurrentClockFrequencyValue;
+                clockVram.Value = (float)igclTelemetryData.vramCurrentClockFrequencyValue;
                 ActivateSensor(clockVram);
             }
             else
