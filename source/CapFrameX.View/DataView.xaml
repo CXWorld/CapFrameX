@@ -314,7 +314,10 @@
                                         </materialDesign:PopupBox>
                                         <TextBlock VerticalAlignment="Center" Text="Options" FontSize="14"/>
                                     </StackPanel>
-                                    <Label Margin="10 0 0 20" FontSize="16" VerticalAlignment="Bottom" Content="{Binding AvgPcLatency}" Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource TrueToVisibleConverter}}"/>
+                                    <Border Margin="12 0 0 20" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Bottom" BorderBrush="{DynamicResource MaterialDesignBody}" BorderThickness="1"
+                                            Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource TrueToVisibleConverter}}">
+                                        <Label Margin="2 0 2 0" FontSize="16" Content="{Binding AvgPcLatency}" Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource TrueToVisibleConverter}}"/>
+                                    </Border>
                                 </Grid>
                             </TabItem>
                             <TabItem Width="75">
@@ -759,22 +762,22 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    
+
                                     <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Total CPU load" VerticalAlignment="Center"
                                                Visibility="{Binding IsCpuLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
                                     <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding ShowCpuLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show CPU usage graph" 
                                                   Visibility="{Binding IsCpuLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
-                                    
+
                                     <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Max. CPU thread load" VerticalAlignment="Center"
                                                Visibility="{Binding IsCpuMaxLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
                                     <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowCpuMaxThreadLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show max CPU thread usage graph" 
                                                   Visibility="{Binding IsCpuMaxLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
-                                    
+
                                     <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="GPU load" VerticalAlignment="Center"
                                                Visibility="{Binding IsGpuLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
                                     <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding ShowGpuLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU usage graph" 
                                                   Visibility="{Binding IsGpuLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
-                                    
+
                                     <TextBlock Visibility="{Binding IsGpuPowerLimitAvailable, Converter={StaticResource FalseToCollapsedConverter}}" Margin="5" Grid.Row="3" Grid.Column="0" Text="GPU power limit" VerticalAlignment="Center"/>
                                     <ToggleButton Visibility="{Binding IsGpuPowerLimitAvailable, Converter={StaticResource FalseToCollapsedConverter}}" Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowGpuPowerLimit}" 
                                                   Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU power limit" />
