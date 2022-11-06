@@ -1,5 +1,135 @@
 [
   {
+    "Name": "Minion",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "ONENOTE.EXE",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "sp22-cod",
+    "DisplayName": "Call of Duty: Modern Warfare 2",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "SteelSeriesGGClient",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "GothamKnights-Win64-Shipping",
+    "DisplayName": "Gotham Knights",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "APlagueTaleRequiem_x64",
+    "DisplayName": "A Plague Tale: Requiem",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "tll",
+    "DisplayName": "Uncharted: The Lost Legacy",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Dashboard",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "WindowsTerminal",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "MediathekView",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "temp_2470489F9537935CBFF080C46C16D4C0",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "SaintsRow_DX12",
+    "DisplayName": "Saints Row",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "scanapp",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Psychonauts2-Win64-Shipping",
+    "DisplayName": "Psychonauts 2",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "MQTT Explorer",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Razer Synapse 3",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Spider-Man",
+    "DisplayName": "Marvel's Spider-Man Remastered",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "javaw.exe",
+    "DisplayName": "Minecraft",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Siemens.Simatic.PlcSim.Compact",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Siemens.Automation.Portal",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Stray-Win64-Shipping",
+    "DisplayName": "Stray",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "PowerToys.PowerLauncher",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "PowerToys.PowerRename",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "ArcControl",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "WpfSurface",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Wonderlands",
+    "DisplayName": "Tiny Tina's Wonderlands",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "F1_22",
     "DisplayName": "F1 2022",
     "IsBlacklisted": false
