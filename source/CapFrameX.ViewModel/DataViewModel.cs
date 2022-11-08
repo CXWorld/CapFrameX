@@ -28,12 +28,12 @@ using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using CapFrameX.Sensor.Reporting.Contracts;
 using CapFrameX.Sensor.Reporting;
-using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using CapFrameX.Extensions;
+using CapFrameX.Statistics.NetStandard;
 
 namespace CapFrameX.ViewModel
 {
@@ -73,12 +73,19 @@ namespace CapFrameX.ViewModel
         private bool _messageDialogContentIsOpen;
         private string _messageText;
         private int _barMaxValue = 100;
-        private bool _gpuLoad;
-        private bool _cpuLoad;
-        private bool _cpuMaxThreadLoad;
-        private bool _gpuPowerLimit;
+        private bool _showGpuLoad;
+        private bool _showCpuLoad;
+        private bool _showCpuMaxThreadLoad;
+        private bool _showGpuPowerLimit;
+        private bool _showPcLatency;
         private bool _aggregationSeparators;
         private bool _showStutteringThresholds;
+        private string _avgPcLatency;
+        private bool _isPcLatencyAvailable;
+        private bool _isCpuLoadAvailable;
+        private bool _isCpuMaxLoadAvailable;
+        private bool _isGpuLoadAvailable;
+        private bool _isGpuPowerLimitAvailable;
         private EFilterMode _selectedFilterMode;
         private ELShapeMetrics _lShapeMetric = ELShapeMetrics.Frametimes;
         private string _lShapeYaxisLabel = "Frametimes (ms)" + Environment.NewLine + " ";
@@ -102,8 +109,6 @@ namespace CapFrameX.ViewModel
         public Array LShapeMetrics => Enum.GetValues(typeof(ELShapeMetrics))
                                   .Cast<ELShapeMetrics>()
                                   .ToArray();
-
-        public bool IsGpuPowerLimitAvailable => GetIsPowerLimitAvailable();
 
         public ObservableCollection<ISensorReportItem> SensorReportItems { get; }
             = new ObservableCollection<ISensorReportItem>();
@@ -188,7 +193,7 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
-        
+
         public SeriesCollection VarianceStatisticCollection
         {
             get { return _variancetatisticCollection; }
@@ -401,6 +406,66 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public string AvgPcLatency
+        {
+            get { return _avgPcLatency; }
+            set
+            {
+                _avgPcLatency = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool IsPcLatencyAvailable
+        {
+            get { return _isPcLatencyAvailable; }
+            set
+            {
+                _isPcLatencyAvailable = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool IsCpuLoadAvailable
+        {
+            get { return _isCpuLoadAvailable; }
+            set
+            {
+                _isCpuLoadAvailable = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool IsCpuMaxLoadAvailable
+        {
+            get { return _isCpuMaxLoadAvailable; }
+            set
+            {
+                _isCpuMaxLoadAvailable = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool IsGpuLoadAvailable
+        {
+            get { return _isGpuLoadAvailable; }
+            set
+            {
+                _isGpuLoadAvailable = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool IsGpuPowerLimitAvailable
+        {
+            get { return _isGpuPowerLimitAvailable; }
+            set
+            {
+                _isGpuPowerLimitAvailable = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public int BarChartSeparators
         {
             get
@@ -442,7 +507,9 @@ namespace CapFrameX.ViewModel
         public bool AdditionalGraphsEnabled
         {
             get => _session == null ? false
-                : _session.Runs.Any(r => r.SensorData != null || r.SensorData2 != null);
+                : _session.Runs.Any(r => r.SensorData != null
+                || r.SensorData2 != null
+                || _session.Runs.All(run => !run.CaptureData.PcLatency.IsNullOrEmpty()));
         }
 
         public ICommand CopyStatisticalParameterCommand { get; }
@@ -459,46 +526,61 @@ namespace CapFrameX.ViewModel
 
         public ICommand CutRecordInverseCommand { get; }
 
-        public bool GpuLoad
+        public bool ShowGpuLoad
         {
-            get => _gpuLoad;
+            get => _showGpuLoad;
             set
             {
-                _gpuLoad = value;
+                _showGpuLoad = value;
                 RaisePropertyChanged();
                 _onUpdateChart.OnNext(default);
             }
         }
-        public bool CpuLoad
+
+        public bool ShowCpuLoad
         {
-            get => _cpuLoad;
+            get => _showCpuLoad;
             set
             {
-                _cpuLoad = value;
+                _showCpuLoad = value;
                 RaisePropertyChanged();
                 _onUpdateChart.OnNext(default);
             }
         }
-        public bool CpuMaxThreadLoad
+
+        public bool ShowCpuMaxThreadLoad
         {
-            get => _cpuMaxThreadLoad;
+            get => _showCpuMaxThreadLoad;
             set
             {
-                _cpuMaxThreadLoad = value;
+                _showCpuMaxThreadLoad = value;
                 RaisePropertyChanged();
                 _onUpdateChart.OnNext(default);
             }
         }
-        public bool GpuPowerLimit
+
+        public bool ShowGpuPowerLimit
         {
-            get => _gpuPowerLimit && IsGpuPowerLimitAvailable;
+            get => _showGpuPowerLimit && IsGpuPowerLimitAvailable;
             set
             {
-                _gpuPowerLimit = value;
+                _showGpuPowerLimit = value;
                 RaisePropertyChanged();
                 _onUpdateChart.OnNext(default);
             }
         }
+
+        public bool ShowPcLatency
+        {
+            get => _showPcLatency;
+            set
+            {
+                _showPcLatency = value;
+                RaisePropertyChanged();
+                _onUpdateChart.OnNext(default);
+            }
+        }
+
         public EFilterMode SelectedFilterMode
         {
             get { return _selectedFilterMode; }
@@ -508,13 +590,6 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
                 OnFilterModeChanged();
             }
-        }
-
-
-
-        public bool IsAnyGraphActive()
-        {
-            return GpuLoad || CpuLoad || CpuMaxThreadLoad;
         }
 
         public bool ShowAggregationSeparators
@@ -581,35 +656,35 @@ namespace CapFrameX.ViewModel
 
         private bool GetIsPowerLimitAvailable()
         {
-            if (_localRecordDataServer == null)
+            if (_session == null)
                 return false;
 
-            if (_localRecordDataServer.CurrentSession == null)
+            if (_session.Runs == null
+                || !_session.Runs.Any())
                 return false;
 
-            if (_localRecordDataServer.CurrentSession.Runs == null
-                || !_localRecordDataServer.CurrentSession.Runs.Any())
-                return false;
+            if (_session.Runs
+                .All(run => run.SensorData != null)
+               && _session.Runs
+                .All(run => !run.SensorData.GPUPowerLimit.IsNullOrEmpty()))
+                return true;
 
-            if (_localRecordDataServer.CurrentSession.Runs
-                .Any(run => run.SensorData2 == null))
-                return false;
+            if (_session.Runs
+                .All(run => run.SensorData2 != null)
+               && _session.Runs
+                .All(run => !run.SensorData2.GPUPowerLimit.IsNullOrEmpty()))
+                return true;
 
-            if (_localRecordDataServer.CurrentSession.Runs
-                .Any(run => run.SensorData2.GPUPowerLimit == null 
-                || !run.SensorData2.GPUPowerLimit.Any()))
-                return false;
-
-            return true;
+            return false;
         }
 
         private void Setup()
         {
             _onUpdateChart.Subscribe(_ =>
             {
-                FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold));
+                FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(ShowGpuLoad, ShowCpuLoad, ShowCpuMaxThreadLoad, ShowGpuPowerLimit, ShowPcLatency, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold));
 
-                FrametimeGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold), plotModel =>
+                FrametimeGraphDataContext.BuildPlotmodel(new VisibleGraphs(ShowGpuLoad, ShowCpuLoad, ShowCpuMaxThreadLoad, ShowGpuPowerLimit, ShowPcLatency, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold), plotModel =>
                 {
                     FrametimeGraphDataContext.UpdateAxis(EPlotAxis.YAXISFRAMETIMES, axis =>
                     {
@@ -617,10 +692,6 @@ namespace CapFrameX.ViewModel
                         SetFrametimeChartYAxisSetting(tuple);
                     });
                 });
-
-                // Warum diese Updates der Properties hier?
-                RaisePropertyChanged(nameof(GpuPowerLimit));
-                RaisePropertyChanged(nameof(IsGpuPowerLimitAvailable));
             });
         }
 
@@ -668,8 +739,11 @@ namespace CapFrameX.ViewModel
             var p0dot2_quantile = GeMetricValue(frametimes, EMetric.P0dot2);
             var p1_quantile = GeMetricValue(frametimes, EMetric.P1);
             var p5_quantile = GeMetricValue(frametimes, EMetric.P5);
-            var p1_averageLow = GeMetricValue(frametimes, EMetric.OnePercentLow);
-            var p0dot1_averageLow = GeMetricValue(frametimes, EMetric.ZerodotOnePercentLow);
+            var p1_LowAverage = GeMetricValue(frametimes, EMetric.OnePercentLowAverage);
+            var p0dot1_LowAverage = GeMetricValue(frametimes, EMetric.ZerodotOnePercentLowAverage);
+            var p1_LowIntegral = GeMetricValue(frametimes, EMetric.OnePercentLowIntegral);
+            var p0dot1_LowIntegral = GeMetricValue(frametimes, EMetric.ZerodotOnePercentLowIntegral);
+
             var min = GeMetricValue(frametimes, EMetric.Min);
             var adaptiveStandardDeviation = GeMetricValue(frametimes, EMetric.AdaptiveStd);
             var cpuFpsPerWatt = _frametimeStatisticProvider
@@ -684,7 +758,7 @@ namespace CapFrameX.ViewModel
             StringBuilder builder = new StringBuilder();
 
             // Vice versa!
-            // "Adaptive STDEV" ,"Min","0.1% Low" ,"0.1%","0.2%" ,"1% Low", "1%" ,"5%" ,"Average" ,"95%" ,"99%" ,"Max"
+            // "Adaptive STDEV","Min","0.1% Low Integral","0.1% Low Average" ,"0.1%","0.2%" ,"1% Low Integral","1% Low Average", "1%" ,"5%" ,"Average" ,"95%" ,"99%" ,"Max"
             if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
                 builder.Append("Max" + "\t" + max.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
@@ -699,14 +773,18 @@ namespace CapFrameX.ViewModel
                 builder.Append("P5" + "\t" + p5_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
                 builder.Append("P1" + "\t" + p1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
-                builder.Append("1% Low" + "\t" + p1_averageLow.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+            if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
+                builder.Append("1% Low Average" + "\t" + p1_LowAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+            if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
+                builder.Append("1% Low Integral" + "\t" + p1_LowIntegral.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
                 builder.Append("P0.2" + "\t" + p0dot2_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
                 builder.Append("P0.1" + "\t" + p0dot1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_averageLow))
-                builder.Append("0.1% Low" + "\t" + p0dot1_averageLow.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+            if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_LowAverage))
+                builder.Append("0.1% Low Average" + "\t" + p0dot1_LowAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+            if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
+                builder.Append("0.1% Low Integral" + "\t" + p0dot1_LowIntegral.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordMinStatisticParameter)
                 builder.Append("Min" + "\t" + min.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter)
@@ -825,7 +903,6 @@ namespace CapFrameX.ViewModel
             UpdateSecondaryCharts();
         }
 
-
         private void OnRemoveOutliersChanged()
         {
             if (RecordInfo == null)
@@ -852,7 +929,7 @@ namespace CapFrameX.ViewModel
         private void OnFilterModeChanged()
         {
             _localRecordDataServer.FilterMode = SelectedFilterMode;
-            FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold));
+            FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(ShowGpuLoad, ShowCpuLoad, ShowCpuMaxThreadLoad, ShowGpuPowerLimit, ShowPcLatency, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold));
         }
 
         private async void OnCutRecord(bool inverse)
@@ -907,6 +984,48 @@ namespace CapFrameX.ViewModel
                 CurrentGameName = RemoveOutliers ? $"{RecordInfo.GameName} (outlier-cleaned)"
                     : RecordInfo.GameName;
                 SystemInfos = _recordManager.GetSystemInfos(RecordInfo);
+
+                // Update PC latency
+                IsPcLatencyAvailable = _session.Runs.All(run => !run.CaptureData.PcLatency.IsNullOrEmpty());
+                if (!IsPcLatencyAvailable)
+                {
+                    _showPcLatency = false;
+                    RaisePropertyChanged(nameof(ShowPcLatency));
+                }
+
+                if (IsPcLatencyAvailable)
+                {
+                    AvgPcLatency = $"PC Latency: {Math.Round(_session.Runs.Average(run => run.CaptureData.PcLatency.Average()))}ms";
+                }
+
+                // Check load metrics
+                IsCpuLoadAvailable = _session.Runs.All(run => run.SensorData2 != null && !run.SensorData2.CpuUsage.IsNullOrEmpty());
+                if (!IsCpuLoadAvailable)
+                {
+                    _showCpuLoad = false;
+                    RaisePropertyChanged(nameof(ShowCpuLoad));
+                }
+
+                IsCpuMaxLoadAvailable = _session.Runs.All(run => run.SensorData2 != null && !run.SensorData2.CpuMaxThreadUsage.IsNullOrEmpty());
+                if (!IsCpuMaxLoadAvailable)
+                {
+                    _showCpuMaxThreadLoad = false;
+                    RaisePropertyChanged(nameof(ShowCpuMaxThreadLoad));
+                }
+
+                IsGpuLoadAvailable = _session.Runs.All(run => run.SensorData2 != null && !run.SensorData2.GpuUsage.IsNullOrEmpty());
+                if (!IsGpuLoadAvailable)
+                {
+                    _showGpuLoad = false;
+                    RaisePropertyChanged(nameof(ShowGpuLoad));
+                }
+
+                IsGpuPowerLimitAvailable = GetIsPowerLimitAvailable();
+                if (!IsGpuPowerLimitAvailable)
+                {
+                    _showGpuPowerLimit = false;
+                    RaisePropertyChanged(nameof(ShowGpuPowerLimit));
+                }
 
                 // Do update actions
                 FrametimeGraphDataContext.RecordSession = _session;
@@ -1020,8 +1139,10 @@ namespace CapFrameX.ViewModel
             var p0dot2_quantile = GetMetricValue(frametimes, EMetric.P0dot2);
             var p1_quantile = GetMetricValue(frametimes, EMetric.P1);
             var p5_quantile = GetMetricValue(frametimes, EMetric.P5);
-            var p1_averageLow = GetMetricValue(frametimes, EMetric.OnePercentLow);
-            var p0dot1_averageLow = GetMetricValue(frametimes, EMetric.ZerodotOnePercentLow);
+            var p1_LowAverage = GetMetricValue(frametimes, EMetric.OnePercentLowAverage);
+            var p0dot1_LowAverage = GetMetricValue(frametimes, EMetric.ZerodotOnePercentLowAverage);
+            var p1_LowIntegral = GetMetricValue(frametimes, EMetric.OnePercentLowIntegral);
+            var p0dot1_LowIntegral = GetMetricValue(frametimes, EMetric.ZerodotOnePercentLowIntegral);
             var min = GetMetricValue(frametimes, EMetric.Min);
             var adaptiveStandardDeviation = GetMetricValue(frametimes, EMetric.AdaptiveStd);
             var cpuFpsPerWatt = _frametimeStatisticProvider
@@ -1045,14 +1166,18 @@ namespace CapFrameX.ViewModel
                     values.Add(adaptiveStandardDeviation);
                 if (_appConfiguration.UseSingleRecordMinStatisticParameter)
                     values.Add(min);
-                if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_averageLow))
-                    values.Add(p0dot1_averageLow);
+                if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
+                    values.Add(p0dot1_LowIntegral);
+                if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_LowAverage))
+                    values.Add(p0dot1_LowAverage);
                 if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
                     values.Add(p0dot1_quantile);
                 if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
                     values.Add(p0dot2_quantile);
-                if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
-                    values.Add(p1_averageLow);
+                if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
+                    values.Add(p1_LowIntegral);
+                if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
+                    values.Add(p1_LowAverage);
                 if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
                     values.Add(p1_quantile);
                 if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
@@ -1087,7 +1212,7 @@ namespace CapFrameX.ViewModel
 
                 var parameterLabelList = new List<string>();
 
-                //{ "Adaptive STDEV", "Min", "0.1% Low", "0.1%", "0.2%", "1% Low", "1%", "5%", "Average", "95%", "99%", "Max" }
+                //{ "Adaptive STDEV", "Min", "0.1% Low Integral", "0.1% Low Average", "0.1%", "0.2%", "1% Low Integral", "1% Low Average", "1%", "5%", "Average", "95%", "99%", "Max" }
 
                 if (_appConfiguration.UseSingleRecordGpuFpsPerWattParameter)
                     parameterLabelList.Add("GPU FPS/10W");
@@ -1097,14 +1222,18 @@ namespace CapFrameX.ViewModel
                     parameterLabelList.Add("Adaptive STDEV");
                 if (_appConfiguration.UseSingleRecordMinStatisticParameter)
                     parameterLabelList.Add("Min");
-                if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_averageLow))
-                    parameterLabelList.Add("0.1% Low");
+                if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
+                    parameterLabelList.Add("0.1% Low Integral");
+                if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_LowAverage))
+                    parameterLabelList.Add("0.1% Low Average");
                 if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
                     parameterLabelList.Add("P0.1");
                 if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
                     parameterLabelList.Add("P0.2");
-                if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
-                    parameterLabelList.Add("1% Low");
+                if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
+                    parameterLabelList.Add("1% Low Integral");
+                if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
+                    parameterLabelList.Add("1% Low Average");
                 if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
                     parameterLabelList.Add("P1");
                 if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
@@ -1304,8 +1433,23 @@ namespace CapFrameX.ViewModel
                     {
                         var frametimes = _localRecordDataServer?
                             .GetFrametimePointTimeWindow().Select(pnt => pnt.Y);
+
                         var yMin = frametimes.Min();
                         var yMax = frametimes.Max();
+
+                        if (ShowStutteringThresholds)
+                        {
+                            var frametimeStatisticProvider = new FrametimeStatisticProvider(null);
+                            var movingAverage = frametimeStatisticProvider.GetMovingAverage(frametimes.ToList());
+
+                            yMax = Math.Max(Math.Max(movingAverage.Max() * _appConfiguration.StutteringFactor, yMax), 1000 / _appConfiguration.StutteringThreshold);        
+                        }
+
+                        if (IsPcLatencyAvailable && ShowPcLatency)
+                        {
+                            var maxLatency = _localRecordDataServer.CurrentSession.Runs.Max(run => run.CaptureData.PcLatency.Max());
+                            yMax = Math.Max(yMax, maxLatency);
+                        }
 
                         setting = new Tuple<double, double>(yMin - (yMax - yMin) / 6, yMax + (yMax - yMin) / 6);
                     }

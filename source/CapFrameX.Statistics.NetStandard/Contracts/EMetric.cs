@@ -32,26 +32,32 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
 		[Description("0.1% percentile")]
 		[ShortDescription("P0.1")]
 		P0dot1 = 9,
-		[Description("1% low integral")]
-		[ShortDescription("1% Low")]
-		OnePercentLow = 10,
-		[Description("0.1% low integral")]
-		[ShortDescription("0.1% Low")]
-		ZerodotOnePercentLow = 11,
-		[Description("Minimum")]
+		[Description("1% low average")]
+		[ShortDescription("1% Low Avg")]
+		OnePercentLowAverage = 10,
+		[Description("0.1% low average")]
+		[ShortDescription("0.1% Low Avg")]
+		ZerodotOnePercentLowAverage = 11,
+        [Description("1% low integral")]
+        [ShortDescription("1% Low Int")]
+        OnePercentLowIntegral = 12,
+        [Description("0.1% low integral")]
+        [ShortDescription("0.1% Low Int")]
+        ZerodotOnePercentLowIntegral = 13,
+        [Description("Minimum")]
 		[ShortDescription("Min")]
-		Min = 12,
+		Min = 14,
 		[Description("Adaptive STDEV")]
 		[ShortDescription("Adp STDEV")]
-		AdaptiveStd = 13,
+		AdaptiveStd = 15,
 		[Description("CPU FPS per 10 Watts")]
 		[ShortDescription("CPU FPS/10W")]
-		CpuFpsPerWatt = 14,
+		CpuFpsPerWatt = 16,
         [Description("GPU FPS per 10 Watts")]
         [ShortDescription("GPU FPS/10W")]
-        GpuFpsPerWatt = 15,
+        GpuFpsPerWatt = 17,
         [Description("None")]
 		[ShortDescription("None")]
-		None = 16,
+		None = 18,
 	}
 }

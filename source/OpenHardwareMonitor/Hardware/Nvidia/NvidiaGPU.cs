@@ -43,11 +43,11 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly Sensor power;
         private readonly Sensor pcieThroughputRx;
         private readonly Sensor pcieThroughputTx;
-        private readonly Control fanControl;
         private readonly Sensor monitorRefreshRate;
         private readonly Sensor powerLimit;
         private readonly Sensor temperatureLimit;
         private readonly Sensor voltageLimit;
+        private readonly Control fanControl;
 
         public NvidiaGPU(int adapterIndex, NvPhysicalGpuHandle handle,
           NvDisplayHandle? displayHandle, ISettings settings, ISensorConfig config, IProcessService processService)
@@ -283,12 +283,14 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                     Version = NVAPI.GPU_THERMAL_STATUS_VER,
                     Mask = (1u << thermalSensorsMaxBit) - 1
                 };
-
+                
                 if (NVAPI.NvAPI_GPU_ThermalGetStatus != null &&
                     NVAPI.NvAPI_GPU_ThermalGetStatus(handle, ref thermalSensor) == NvStatus.OK)
                 {
                     hotSpotTemperature.Value = thermalSensor.Temperatures[1] / 256f;
-                    memoryJunctionTemperature.Value = thermalSensor.Temperatures[9] / 256f;
+                    // Ampere - 9, Ada Lovelace - 7
+                    var memJuncTemp = thermalSensor.Temperatures[9] == 0 ? thermalSensor.Temperatures[7] : thermalSensor.Temperatures[9];
+                    memoryJunctionTemperature.Value = memJuncTemp / 256f;
                 }
 
                 if (sensorConfig.GetSensorEvaluate(hotSpotTemperature.IdentifierString)
@@ -605,7 +607,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                       NVML.NvmlPcieUtilCounter.RxBytes, out uint value)
                       == NVML.NvmlReturn.Success)
                     {
-                        pcieThroughputRx.Value = value / 1024f;
+                        pcieThroughputRx.Value = value / (1024f * 1024f);
                         ActivateSensor(pcieThroughputRx);
                     }
                 }
@@ -623,7 +625,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                       NVML.NvmlPcieUtilCounter.TxBytes, out uint value)
                       == NVML.NvmlReturn.Success)
                     {
-                        pcieThroughputTx.Value = value / 1024f;
+                        pcieThroughputTx.Value = value / (1024f * 1024f);
                         ActivateSensor(pcieThroughputTx);
                     }
                 }

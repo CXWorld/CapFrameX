@@ -4,8 +4,8 @@ using System.Windows.Forms;
 
 namespace CapFrameX.Contracts.Configuration
 {
-	public interface IAppConfiguration : IFrametimeStatisticProviderOptions
-    {
+	public interface IAppConfiguration : IFrametimeStatisticProviderOptions, IPmdServiceConfiguration
+	{
 		/// <summary>
 		/// Emits an events when a configuration entry has been changes
 		/// </summary>
@@ -21,8 +21,6 @@ namespace CapFrameX.Contracts.Configuration
                 });
 		*/
 		IObservable<(string key, object value)> OnValueChanged { get; }
-
-
 
 		double StutteringFactor { get; set; }
 
@@ -54,7 +52,11 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool UseSingleRecordP0Dot1LowAverageStatisticParameter { get; set; }
 
-		bool UseSingleRecordMinStatisticParameter { get; set; }
+        bool UseSingleRecordP1LowIntegralStatisticParameter { get; set; }
+
+        bool UseSingleRecordP0Dot1LowIntegralStatisticParameter { get; set; }
+
+        bool UseSingleRecordMinStatisticParameter { get; set; }
 
 		bool UseSingleRecordAdaptiveSTDStatisticParameter { get; set; }
 
@@ -231,6 +233,11 @@ namespace CapFrameX.Contracts.Configuration
 		/// When available, use the simulated TBP value instead of the normal "GPU Total" value for analysis like FPS/W
 		/// </summary>
 		bool UseTBPSim { get; set; }
+
+		string FirstMetricBarColor { get; set; }
+		string SecondMetricBarColor { get; set; }
+		string ThirdMetricBarColor { get; set; }
+
 	}
 
 	public interface IReportDataGridColumnSettings
@@ -269,11 +276,15 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool ReportShowP0Dot1FPS { get; set; }
 
-		bool ReportShowP1LowFPS { get; set; }
+		bool ReportShowP1LowAverageFPS { get; set; }
 
-		bool ReportShowP0Dot1LowFPS { get; set; }
+		bool ReportShowP0Dot1LowAverageFPS { get; set; }
 
-		bool ReportShowMinFPS { get; set; }
+        bool ReportShowP1LowIntegralFPS { get; set; }
+
+        bool ReportShowP0Dot1LowIntegralFPS { get; set; }
+
+        bool ReportShowMinFPS { get; set; }
 
 		bool ReportShowAdaptiveSTD { get; set; }
 

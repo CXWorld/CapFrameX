@@ -83,6 +83,9 @@ namespace CapFrameX
         {
             base.ConfigureContainer();
 
+            // Intialize static classes
+            PmdChannelExtensions.Initialize();
+
             // Vertical components
             Container.ConfigureSerilogILogger(Log.Logger);
             Container.Register<IEventAggregator, EventAggregator>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "EventAggregator");
@@ -132,6 +135,7 @@ namespace CapFrameX
             });
             Container.Register<CaptureManager>(Reuse.Singleton);
             Container.Register<IPmdService, PmdService>(Reuse.Singleton);
+            Container.Register<IPmdDriver, PmdUSBDriver>(Reuse.Singleton);
         }
 
         /// <summary>

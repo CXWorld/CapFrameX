@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -332,11 +333,23 @@ namespace CapFrameX.Configuration
 
         public bool UseSingleRecordP1LowAverageStatisticParameter
         {
-            get => Get<bool>(false);
+            get => Get<bool>(true);
             set => Set(value);
         }
 
         public bool UseSingleRecordP0Dot1LowAverageStatisticParameter
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
+        public bool UseSingleRecordP1LowIntegralStatisticParameter
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool UseSingleRecordP0Dot1LowIntegralStatisticParameter
         {
             get => Get<bool>(false);
             set => Set(value);
@@ -578,6 +591,21 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public string FirstMetricBarColor
+        {
+            get => Get<string>("#2297F3");
+            set => Set(value);
+        }
+        public string SecondMetricBarColor
+        {
+            get => Get<string>("#F17D20");
+            set => Set(value);
+        }
+        public string ThirdMetricBarColor
+        {
+            get => Get<string>("#FFB400");
+            set => Set(value);
+        }
 
         // Sensor Settings
         public bool UseSensorLogging
@@ -653,6 +681,50 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        // PMD Service
+        public bool UseVirtualMode
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public int DownSamplingSize
+        {
+            get => Get<int>(10);
+            set => Set(value);
+        }
+
+        public int PmdChartRefreshPeriod
+        {
+            get => Get<int>(100);
+            set => Set(value);
+        }
+
+        public int PmdMetricRefreshPeriod
+        {
+            get => Get<int>(500);
+            set => Set(value);
+        }
+
+        public string DownSamplingMode
+        {
+            get => Get<string>("Average");
+            set => Set(value);
+        }
+
+        public int ChartDownSamplingSize
+        {
+            get => Get<int>(4);
+            set => Set(value);
+        }
+
+        public bool UsePmdDataLogging
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        // General Management
         T Get<T>(T defaultValue, [CallerMemberName] string key = null)
         {
             if (string.IsNullOrWhiteSpace(key))
@@ -718,8 +790,10 @@ namespace CapFrameX.Configuration
         public bool ReportShowP1FPS { get; set; } = true;
         public bool ReportShowP0Dot2FPS { get; set; } = true;
         public bool ReportShowP0Dot1FPS { get; set; } = true;
-        public bool ReportShowP1LowFPS { get; set; } = true;
-        public bool ReportShowP0Dot1LowFPS { get; set; } = true;
+        public bool ReportShowP1LowAverageFPS { get; set; } = true;
+        public bool ReportShowP0Dot1LowAverageFPS { get; set; } = true;
+        public bool ReportShowP1LowIntegralFPS { get; set; } = true;
+        public bool ReportShowP0Dot1LowIntegralFPS { get; set; } = true;
         public bool ReportShowMinFPS { get; set; } = true;
         public bool ReportShowAdaptiveSTD { get; set; } = true;
         public bool ReportShowCpuFpsPerWatt { get; set; } = true;

@@ -36,49 +36,50 @@
         <materialDesign:ColorZone Mode="PrimaryMid" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*"/>
-                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="7*"/>
+                    <ColumnDefinition Width="2*"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="2">
+                    <Image Width="50" Height="50" Margin="5 0 5 0" Source="/Icons/CapFrameXLogoOnly.png"/>
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="5"
+							 Margin="4"
 							 IsChecked="{Binding CaptureIsChecked}"
 							 Content="CAPTURE" 
                              Visibility="{Binding IsCompatibleWithRunningOS, Converter={StaticResource FalseToCollapsedConverter}}"/>
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="5"
+							 Margin="4"
 							 IsChecked="{Binding SingleRecordIsChecked}"
 							 Content="ANALYSIS" />
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="5"
+							 Margin="4"
 							 IsChecked="{Binding OverlayIsChecked}"
 							 Content="OVERLAY" />
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="5"
+							 Margin="4"
 							 IsChecked="{Binding RecordComparisonIsChecked}"
 							 Content="COMPARISON" />
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="5"
+							 Margin="4"
 							 IsChecked="{Binding AggregationIsChecked}"
 							 Content="AGGREGATION" />
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-                             Margin="5"
+                             Margin="4"
                              IsChecked="{Binding SensorIsChecked}"
                              Content="SENSOR" />
-                    <!--<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="5"
-							 IsChecked="{Binding PmdIsChecked}"
-							 Content="PMD" />-->
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="5"
+							 Margin="4"
+							 IsChecked="{Binding PmdIsChecked}"
+							 Content="PMD" />
+                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+							 Margin="4"
 							 IsChecked="{Binding ReportIsChecked}"
 							 Content="REPORT" />
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="5"
+							 Margin="4"
 							 IsChecked="{Binding SynchronizationIsChecked}"
 							 Content="SYNC" />
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-                             Margin="5"
+                             Margin="4"
                              IsChecked="{Binding CloudIsChecked}"
                              Content="CLOUD" />
 				</StackPanel>
@@ -143,8 +144,11 @@
 		        </TextBlock>
 
                 <materialDesign:PopupBox Grid.Column="1" DataContext="{Binding Path=DataContext, ElementName=ColorbarViewName}"
-                                         materialDesign:Closed="PopupBox_Closed" RequestBringIntoView="PopupBox_RequestBringIntoView" 
+                                         materialDesign:Closed="PopupBox_Closed" RequestBringIntoView="PopupBox_RequestBringIntoView"
                                          Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right">
+                    <materialDesign:PopupBox.ToggleContent>
+                        <materialDesign:PackIcon Kind="Cog" Width="30" Height="30" Foreground="White"/>
+                    </materialDesign:PopupBox.ToggleContent>
                     <DockPanel Width="550">
                         <StackPanel Margin="10" DockPanel.Dock="Top" Orientation="Horizontal">
                             <RadioButton Margin="18 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"

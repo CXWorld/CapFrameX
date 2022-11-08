@@ -23,7 +23,6 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.Axes.Add(AxisDefinitions[EPlotAxis.XAXIS]);
             plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISFPS]);
 
-
             var frametimes = session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
             double average = frametimes.Count * 1000 / frametimes.Sum();
             double yMin, yMax;
@@ -31,8 +30,6 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.Series.Clear();
 
             var rawFpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, EFilterMode.None);
-
-
 
             if (filterMode is EFilterMode.RawPlusAverage)
             {
@@ -49,21 +46,23 @@ namespace CapFrameX.Statistics.PlotBuilder
             {
                 var fpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode);
 
-                if(filterMode == EFilterMode.TimeIntervalAverage)
+                if (filterMode == EFilterMode.TimeIntervalAverage)
                     SetLoadCharts(plotModel, plotSettings, session);
 
                 SetFpsChart(plotModel, fpsPoints, rawFpsPoints, average, filterMode is EFilterMode.None ? 1.5 : 3, Constants.FpsColor, filterMode);
 
-                if(filterMode is EFilterMode.None)
+                if (filterMode is EFilterMode.None)
                     SetLoadCharts(plotModel, plotSettings, session);
 
                 yMin = fpsPoints.Min(pnt => pnt.Y);
                 yMax = fpsPoints.Max(pnt => pnt.Y);
             }
+            
 
             if (plotSettings.ShowThresholds)
             {
-                SetThresholdChart(plotModel, plotSettings, rawFpsPoints);
+                SetThresholdChart(plotModel, plotSettings, rawFpsPoints, out double yMinStuttering);
+                yMin = Math.Min(yMinStuttering, yMin);
             }
 
             UpdateYAxisMinMaxBorders(yMin, yMax, average);
@@ -117,7 +116,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             fpsSeries.Points.AddRange(fpsDataPoints);
             plotModel.Series.Add(fpsSeries);
 
-            var averageDataPoints =  fpsPoints.Select(pnt => new DataPoint(pnt.X, average));
+            var averageDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, average));
 
             var averageSeries = new LineSeries
             {
@@ -144,7 +143,7 @@ namespace CapFrameX.Statistics.PlotBuilder
         {
             // Only used when filter mode = Raw+Average
             var fpsSeries = new LineSeries
-            { 
+            {
                 Title = "Raw FPS",
                 StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
@@ -158,7 +157,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.InvalidatePlot(true);
         }
 
-        private void SetThresholdChart(PlotModel plotModel, IPlotSettings plotSettings, IList<Point> fpspoints)
+        private void SetThresholdChart(PlotModel plotModel, IPlotSettings plotSettings, IList<Point> fpspoints, out double yMin)
         {
             var stuttering = new List<double>();
             var lowFPS = new List<double>();
@@ -197,6 +196,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.Series.Add(stutteringSeries);
             plotModel.Series.Add(lowFPSSeries);
 
+            yMin = Math.Min(stuttering.Min(), plotSettings.LowFPSThreshold);
         }
 
         private void UpdateYAxisMinMaxBorders(double yMin, double yMax, double average)

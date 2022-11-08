@@ -158,6 +158,7 @@ namespace CapFrameX.Data
                             $"{FileRecordInfo.HEADER_MARKER}Comment{FileRecordInfo.INFO_SEPERATOR}{customComment}"
                         };
 
+                        recordInfo.HasInfoHeader = true;
                         File.WriteAllLines(recordInfo.FullPath, headerLines.Concat(lines));
                     }
                 }
@@ -270,7 +271,7 @@ namespace CapFrameX.Data
                     var session = serializer.Deserialize<Session.Classes.Session>(jsonReader);
                     foreach (var sessionrun in session.Runs)
                     {
-                        if (sessionrun.SensorData != null & sessionrun.SensorData2 == null)
+                        if (sessionrun.SensorData != null && sessionrun.SensorData2 == null)
                         {
                             SessionSensorDataConverter.ConvertToSensorData2(sessionrun);
                         }
@@ -282,6 +283,10 @@ namespace CapFrameX.Data
 
         private ISession LoadSessionFromCSV(FileInfo csvFile)
         {
+            // Exception: ignore Nv FrameView summary file
+            if (csvFile.Name == "FrameView_Summary.csv")
+                return null;
+
             using (var reader = new StreamReader(csvFile.FullName))
             {
                 var lines = File.ReadAllLines(csvFile.FullName);
@@ -318,7 +323,6 @@ namespace CapFrameX.Data
                         ApiInfo = recordedFileInfo.ApiInfo
                     }
                 };
-
             }
         }
 
@@ -338,7 +342,7 @@ namespace CapFrameX.Data
         //    $"AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,MsBetweenPresents," +
         //    $"MsBetweenDisplayChange,MsInPresentAPI,MsUntilRenderComplete,MsUntilDisplayed,QPCTime";
 
-        // PresentMon v1.7.1
+        // PresentMon >= v1.7.1
         private static readonly string COLUMN_HEADER =
             $"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags," +
             $"Dropped,TimeInSeconds,msInPresentAPI,msBetweenPresents,AllowsTearing,PresentMode," +
@@ -353,9 +357,17 @@ namespace CapFrameX.Data
                     {
                         case ".csv":
                             var sessionFromCSV = LoadSessionFromCSV(fileInfo);
+
+                            if (sessionFromCSV == null)
+                                return Observable.Empty<IFileRecordInfo>();
+
                             return Observable.Return(FileRecordInfo.Create(fileInfo, sessionFromCSV.Hash));
                         case ".json":
                             var sessionFromJSON = LoadSessionFromJSON(fileInfo);
+
+                            if (sessionFromJSON == null)
+                                return Observable.Empty<IFileRecordInfo>();
+
                             return Observable.Return(FileRecordInfo.Create(fileInfo, sessionFromJSON));
                         default:
                             return Observable.Empty<IFileRecordInfo>();
@@ -402,7 +414,6 @@ namespace CapFrameX.Data
 
         public async Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName, string recordDirectory = null, List<ISessionInfo> HWInfo = null)
         {
-
             var filePath = await GetOutputFilename(processName, recordDirectory);
 
             try
@@ -481,8 +492,21 @@ namespace CapFrameX.Data
                     _systemInfo.SetSystemInfosStatus();
                     _updateSystemInfoEvent.Publish(new ViewMessages.UpdateSystemInfo());
 
-                    if (_systemInfo.ResizableBarHardwareStatus != ESystemInfoTertiaryStatus.Error && _systemInfo.ResizableBarSoftwareStatus != ESystemInfoTertiaryStatus.Error)
-                        resizableBar = (_systemInfo.ResizableBarHardwareStatus == ESystemInfoTertiaryStatus.Enabled && _systemInfo.ResizableBarSoftwareStatus == ESystemInfoTertiaryStatus.Enabled) ? "Enabled" : "Disabled";
+                    if (_systemInfo.ResizableBarHardwareStatus != ESystemInfoTertiaryStatus.Error && (_systemInfo.ResizableBarD3DStatus != ESystemInfoTertiaryStatus.Error || _systemInfo.ResizableBarVulkanStatus != ESystemInfoTertiaryStatus.Error))
+                    {
+                        resizableBar = "Disabled";
+                        if (_systemInfo.ResizableBarHardwareStatus == ESystemInfoTertiaryStatus.Enabled)
+                        {
+                            if (_systemInfo.ResizableBarD3DStatus == ESystemInfoTertiaryStatus.Enabled && _systemInfo.ResizableBarVulkanStatus == ESystemInfoTertiaryStatus.Enabled)
+                            {
+                                resizableBar = "Enabled";
+                            }
+                            else if (_systemInfo.ResizableBarD3DStatus == ESystemInfoTertiaryStatus.Enabled || _systemInfo.ResizableBarVulkanStatus == ESystemInfoTertiaryStatus.Enabled)
+                            {
+                                resizableBar = "Partial";
+                            }
+                        }
+                    }
 
                     if (_systemInfo.GameModeStatus != ESystemInfoTertiaryStatus.Error)
                         winGameMode = _systemInfo.GameModeStatus == ESystemInfoTertiaryStatus.Enabled ? "Enabled" : "Disabled";
@@ -693,6 +717,7 @@ namespace CapFrameX.Data
                 int indexRuntime = -1;
                 int indexAllowsTearing = -1;
                 int indexSyncInterval = -1;
+                int indexPcLatency = -1;
 
                 string headerLine;
                 if (!presentLines.First().StartsWith("Application"))
@@ -758,9 +783,19 @@ namespace CapFrameX.Data
                     {
                         indexSyncInterval = i;
                     }
+                    if (string.Compare(metrics[i], "MsPCLatency") == 0)
+                    {
+                        indexPcLatency = i;
+                    }
                 }
 
                 var captureData = new SessionCaptureData(presentLines.Count());
+
+                // When latency data is available initialize array
+                if (indexPcLatency > 0)
+                {
+                    captureData.PcLatency = new double[presentLines.Count()];
+                }
 
                 var dataLines = presentLines.ToArray();
 
@@ -874,11 +909,22 @@ namespace CapFrameX.Data
                             captureData.SyncInterval[lineNo] = syncInterval;
                         }
                     }
+                    if (indexPcLatency > 0)
+                    {
+                        if (double.TryParse(GetStringFromArray(values, indexPcLatency), NumberStyles.Any, CultureInfo.InvariantCulture, out var pcLatency))
+                        {
+                            captureData.PcLatency[lineNo] = pcLatency;
+                        }
+                    }
                 }
 
                 //Normalize times
                 var startTime = captureData.TimeInSeconds[0];
                 captureData.TimeInSeconds = captureData.TimeInSeconds.Select(time => time - startTime).ToArray();
+
+                // Take over sensor data from CSV file
+                sessionRun.SensorData2 = new SessionSensorData2(initialAdd: true);
+                captureData.TimeInSeconds.ForEach(time => sessionRun.SensorData2["MeasureTime"].Values.AddLast(time));
 
                 sessionRun.CaptureData = captureData;
                 return sessionRun;

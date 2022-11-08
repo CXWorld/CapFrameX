@@ -79,6 +79,44 @@ uint32_t GetAdpaterCount()
 	return adapter_count;
 }
 
+uint32_t GetBusWidth(const uint32_t index)
+{
+	uint32_t busWidth = 0;
+
+	if (NULL != hDevices[index])
+	{
+		uint32_t MemoryHandlerCount = 0;
+		ctl_result_t res = ctlEnumMemoryModules(hDevices[index], &MemoryHandlerCount, nullptr);
+
+		if ((res == CTL_RESULT_SUCCESS) && MemoryHandlerCount != 0)
+		{
+			ctl_mem_handle_t* pMemoryHandle = new ctl_mem_handle_t[MemoryHandlerCount];
+
+			res = ctlEnumMemoryModules(hDevices[index], &MemoryHandlerCount, pMemoryHandle);
+
+			if (res == CTL_RESULT_SUCCESS)
+			{
+				for (uint32_t i = 0; i < MemoryHandlerCount; i++)
+				{
+					ctl_mem_properties_t memoryProperties = { 0 };
+					memoryProperties.Size = sizeof(ctl_mem_properties_t);
+					res = ctlMemoryGetProperties(pMemoryHandle[i], &memoryProperties);
+
+					if (res == CTL_RESULT_SUCCESS)
+					{
+						if (memoryProperties.busWidth > busWidth)
+						{
+							busWidth = memoryProperties.busWidth;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return busWidth;
+}
+
 bool GetDeviceInfo(const uint32_t index, IgclDeviceInfo* deviceInfo)
 {
 	if (NULL != hDevices[index])
@@ -209,23 +247,11 @@ bool GetIgclTelemetryData(const uint32_t index, IgclTelemetryData* telemetryData
 			telemetryData->vramCurrentClockFrequencySupported = pPowerTelemetry.vramCurrentClockFrequency.bSupported;
 			telemetryData->vramCurrentClockFrequencyValue = pPowerTelemetry.vramCurrentClockFrequency.value.datadouble;
 
-			if (pPowerTelemetry.vramReadBandwidthCounter.bSupported)
-			{
-				telemetryData->vramReadBandwidthSupported = true;
-				prevvramReadBandwidthCounter = curvramReadBandwidthCounter;
-				curvramReadBandwidthCounter = pPowerTelemetry.vramReadBandwidthCounter.value.datadouble;
+			telemetryData->vramReadBandwidthSupported = pPowerTelemetry.vramReadBandwidthCounter.bSupported;
+			telemetryData->vramReadBandwidthValue = pPowerTelemetry.vramReadBandwidthCounter.value.datadouble;
 
-				telemetryData->vramReadBandwidthValue = (curvramReadBandwidthCounter - prevvramReadBandwidthCounter)/ deltatimestamp;
-			}
-
-			if (pPowerTelemetry.vramWriteBandwidthCounter.bSupported)
-			{
-				telemetryData->vramWriteBandwidthSupported = true;
-				prevvramWriteBandwidthCounter = curvramWriteBandwidthCounter;
-				curvramWriteBandwidthCounter = pPowerTelemetry.vramWriteBandwidthCounter.value.datadouble;
-
-				telemetryData->vramWriteBandwidthValue = (curvramWriteBandwidthCounter - prevvramWriteBandwidthCounter) / deltatimestamp;
-			}
+			telemetryData->vramWriteBandwidthSupported = pPowerTelemetry.vramWriteBandwidthCounter.bSupported;
+			telemetryData->vramWriteBandwidthValue = pPowerTelemetry.vramWriteBandwidthCounter.value.datadouble;
 
 			telemetryData->vramCurrentTemperatureSupported = pPowerTelemetry.vramCurrentTemperature.bSupported;
 			telemetryData->vramCurrentTemperatureValue = pPowerTelemetry.vramCurrentTemperature.value.datadouble;

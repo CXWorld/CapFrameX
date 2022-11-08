@@ -90,6 +90,14 @@ namespace CapFrameX.Statistics.NetStandard
             return sampleBasedMovingAverageFilter.ProcessSamples(sequence);
         }
 
+        public IList<double> GetTimeBasedMovingAverage(IList<double> sequence, double timeWindow)
+        {
+            var average = sequence.Average();
+            var timeBasedMovingAverageFilter = new TimeBasedMovingAverage(timeWindow);
+
+            return timeBasedMovingAverageFilter.ProcessSamples(sequence);
+        }
+
         public IList<double> GetOutlierAdjustedSequence(IList<double> sequence, ERemoveOutlierMethod method)
         {
             IList<double> adjustedSequence = null;
@@ -132,12 +140,12 @@ namespace CapFrameX.Statistics.NetStandard
         }
 
         /// <summary>
-        /// Equivalent x% low metric definition to MSI Afterburner
+        /// Equivalent x% low integral metric definition to MSI Afterburner
         /// </summary>
         /// <param name="sequence"></param>
         /// <param name="pQuantile"></param>
         /// <returns></returns>
-        public double GetPercentageHighSequence(IList<double> sequence, double pQuantile)
+        public double GetPercentageHighIntegralSequence(IList<double> sequence, double pQuantile)
         {
             if (!sequence.Any())
                 return double.NaN;
@@ -158,6 +166,23 @@ namespace CapFrameX.Statistics.NetStandard
             }
 
             return sequenceSorted[percentLowIndex];
+        }
+
+        /// <summary>
+        /// x% low average metric
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <param name="pQuantile"></param>
+        /// <returns></returns>
+        public double GetPercentageHighAverageSequence(IList<double> sequence, double pQuantile)
+        {
+            if (!sequence.Any())
+                return double.NaN;
+
+            var quantile = GetPQuantileSequence(sequence, pQuantile);
+            var subSequenceLow = sequence.Where(element => element >= quantile);
+
+            return subSequenceLow.Average();
         }
 
         /// <summary>
@@ -200,11 +225,17 @@ namespace CapFrameX.Statistics.NetStandard
                 case EMetric.P0dot1:
                     metricValue = GetPQuantileSequence(fps, 0.001);
                     break;
-                case EMetric.OnePercentLow:
-                    metricValue = 1000 / GetPercentageHighSequence(sequence, 1 - 0.01);
+                case EMetric.OnePercentLowAverage:
+                    metricValue = 1000 / GetPercentageHighAverageSequence(sequence, 1 - 0.01);
                     break;
-                case EMetric.ZerodotOnePercentLow:
-                    metricValue = 1000 / GetPercentageHighSequence(sequence, 1 - 0.001);
+                case EMetric.ZerodotOnePercentLowAverage:
+                    metricValue = 1000 / GetPercentageHighAverageSequence(sequence, 1 - 0.001);
+                    break;
+                case EMetric.OnePercentLowIntegral:
+                    metricValue = 1000 / GetPercentageHighIntegralSequence(sequence, 1 - 0.01);
+                    break;
+                case EMetric.ZerodotOnePercentLowIntegral:
+                    metricValue = 1000 / GetPercentageHighIntegralSequence(sequence, 1 - 0.001);
                     break;
                 case EMetric.Min:
                     metricValue = fps.Min();

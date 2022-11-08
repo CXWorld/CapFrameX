@@ -113,7 +113,7 @@ namespace CapFrameX.ViewModel
             {
                 ReportInfoCollection.Remove(selectedItem);
 
-                if(ReportShowAverageRow)
+                if (ReportShowAverageRow)
                     AddAverageReportInfo(ReportInfoCollection);
             }
         }
@@ -122,7 +122,7 @@ namespace CapFrameX.ViewModel
         {
             if (!ReportInfoCollection.Any())
                 return;
-            
+
             StringBuilder builder = new StringBuilder();
 
             // Header
@@ -142,9 +142,11 @@ namespace CapFrameX.ViewModel
             var displayNameFivePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.FivePercentQuantileFps);
             var displayNameOnePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.OnePercentQuantileFps);
             var displayNameOnePercentLowAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.OnePercentLowAverageFps);
+            var displayNameOnePercentLowIntegralFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.OnePercentLowIntegralFps);
             var displayNameZeroDotTwoPercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotTwoPercentQuantileFps);
             var displayNameZeroDotOnePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotOnePercentQuantileFps);
             var displayNameZeroDotOnePercentLowAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotOnePercentLowAverageFps);
+            var displayNameZeroDotOnePercentLowIntegralFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotOnePercentLowIntegralFps);
             var displayNameMinFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.MinFps);
             var displayNameAdaptiveSTDFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AdaptiveSTDFps);
             var displayNameCpuFpsPerWatt = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CpuFpsPerWatt);
@@ -161,39 +163,41 @@ namespace CapFrameX.ViewModel
             var displayNameGpuTemp = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuTemp);
             var displayNameCustomComment = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CustomComment);
 
-            builder.Append(displayNameGame + 
-                (ShowCreationDate ? "\t" + displayNameDate : "") + 
-                (ShowCreationTime ? "\t" + displayNameTime : "") + 
-                (ShowNumberOfSamples ?  "\t" + displayNameNumberOfSamples : "" )+ 
-                (ShowRecordTime ?  "\t" + displayNameRecordTime : "") + 
-                (ShowCpuName ? "\t" + displayNameCpu : "") + 
-                (ShowGpuName ? "\t" + displayNameGraphicCard : "") + 
-                (ShowRamName ? "\t" + displayNameRam : "") + 
-                (ShowComment ? "\t" + displayNameCustomComment : "") + 
-                (ShowMaxFPS ? "\t" + displayNameMaxFps : "") + 
-                (ShowP99FPS ? "\t" + displayNameNinetyNinePercentQuantileFps : "") + 
-                (ShowP95FS ? "\t" + displayNameNinetyFivePercentQuantileFps : "") + 
-                (ShowAverageFPS ? "\t" + displayNameAverageFps : "") + 
-                (ShowMedianFPS ? "\t" + displayNameMedianFps : "") + 
-                (ShowP5FPS ? "\t" + displayNameFivePercentQuantileFps : "") + 
-                (ShowP1FPS ? "\t" + displayNameOnePercentQuantileFps : "") + 
-                (ShowP1LowFPS ? "\t" + displayNameOnePercentLowAverageFps : "") + 
-                (ShowP0Dot2FPS ? "\t" + displayNameZeroDotTwoPercentQuantileFps : "") + 
-                (ShowP0Dot1FPS ? "\t" + displayNameZeroDotOnePercentQuantileFps : "") + 
-                (ShowP0Dot1LowFPS ? "\t" + displayNameZeroDotOnePercentLowAverageFps : "") + 
-                (ShowMinFPS ? "\t" + displayNameMinFps : "") + 
+            builder.Append(displayNameGame +
+                (ShowCreationDate ? "\t" + displayNameDate : "") +
+                (ShowCreationTime ? "\t" + displayNameTime : "") +
+                (ShowNumberOfSamples ? "\t" + displayNameNumberOfSamples : "") +
+                (ShowRecordTime ? "\t" + displayNameRecordTime : "") +
+                (ShowCpuName ? "\t" + displayNameCpu : "") +
+                (ShowGpuName ? "\t" + displayNameGraphicCard : "") +
+                (ShowRamName ? "\t" + displayNameRam : "") +
+                (ShowComment ? "\t" + displayNameCustomComment : "") +
+                (ShowMaxFPS ? "\t" + displayNameMaxFps : "") +
+                (ShowP99FPS ? "\t" + displayNameNinetyNinePercentQuantileFps : "") +
+                (ShowP95FS ? "\t" + displayNameNinetyFivePercentQuantileFps : "") +
+                (ShowAverageFPS ? "\t" + displayNameAverageFps : "") +
+                (ShowMedianFPS ? "\t" + displayNameMedianFps : "") +
+                (ShowP5FPS ? "\t" + displayNameFivePercentQuantileFps : "") +
+                (ShowP1FPS ? "\t" + displayNameOnePercentQuantileFps : "") +
+                (ShowP1LowAverageFPS ? "\t" + displayNameOnePercentLowAverageFps : "") +
+                (ShowP1LowIntegralFPS ? "\t" + displayNameOnePercentLowIntegralFps : "") +
+                (ShowP0Dot2FPS ? "\t" + displayNameZeroDotTwoPercentQuantileFps : "") +
+                (ShowP0Dot1FPS ? "\t" + displayNameZeroDotOnePercentQuantileFps : "") +
+                (ShowP0Dot1LowAverageFPS ? "\t" + displayNameZeroDotOnePercentLowAverageFps : "") +
+                (ShowP0Dot1LowIntegralFPS ? "\t" + displayNameZeroDotOnePercentLowIntegralFps : "") +
+                (ShowMinFPS ? "\t" + displayNameMinFps : "") +
                 (ShowAdaptiveSTD ? "\t" + displayNameAdaptiveSTDFps : "") +
                 (ShowCpuFpsPerWatt ? "\t" + displayNameCpuFpsPerWatt : "") +
-                (ShowGpuFpsPerWatt ? "\t" + displayNameGpuFpsPerWatt : "") + 
-                (ShowAppLatency ? "\t" + displayNameAppLatency : "") + 
-                (ShowCpuMaxUsage ? "\t" + displayNameCpuUsage : "") + 
-                (ShowCpuPower ? "\t" + displayNameCpuPower : "") + 
-                (ShowCpuMaxClock ? "\t" + displayNameCpuClock : "") + 
-                (ShowCpuTemp ? "\t" + displayNameCpuTemp : "") + 
-                (ShowGpuUsage ? "\t" + displayNameGpuUsage : "") + 
+                (ShowGpuFpsPerWatt ? "\t" + displayNameGpuFpsPerWatt : "") +
+                (ShowAppLatency ? "\t" + displayNameAppLatency : "") +
+                (ShowCpuMaxUsage ? "\t" + displayNameCpuUsage : "") +
+                (ShowCpuPower ? "\t" + displayNameCpuPower : "") +
+                (ShowCpuMaxClock ? "\t" + displayNameCpuClock : "") +
+                (ShowCpuTemp ? "\t" + displayNameCpuTemp : "") +
+                (ShowGpuUsage ? "\t" + displayNameGpuUsage : "") +
                 (ShowGpuPower ? "\t" + displayNameGpuPower : "") +
                 (ShowGpuTBPSim ? "\t" + displayNameGpuTBPSim : "") +
-                (ShowGpuClock ? "\t" + displayNameGpuClock : "") + 
+                (ShowGpuClock ? "\t" + displayNameGpuClock : "") +
                 (ShowGpuTemp ? "\t" + displayNameGpuTemp : "") +
                 Environment.NewLine);
 
@@ -217,10 +221,12 @@ namespace CapFrameX.ViewModel
                     (ShowMedianFPS ? "\t" + reportInfo.MedianFps.ToString(cultureInfo) : "") +
                     (ShowP5FPS ? "\t" + reportInfo.FivePercentQuantileFps.ToString(cultureInfo) : "") +
                     (ShowP1FPS ? "\t" + reportInfo.OnePercentQuantileFps.ToString(cultureInfo) : "") +
-                    (ShowP1LowFPS ? "\t" + reportInfo.OnePercentLowAverageFps.ToString(cultureInfo) : "") +
+                    (ShowP1LowAverageFPS ? "\t" + reportInfo.OnePercentLowAverageFps.ToString(cultureInfo) : "") +
+                    (ShowP1LowIntegralFPS ? "\t" + reportInfo.OnePercentLowIntegralFps.ToString(cultureInfo) : "") +
                     (ShowP0Dot2FPS ? "\t" + reportInfo.ZeroDotTwoPercentQuantileFps.ToString(cultureInfo) : "") +
                     (ShowP0Dot1FPS ? "\t" + reportInfo.ZeroDotOnePercentQuantileFps.ToString(cultureInfo) : "") +
-                    (ShowP0Dot1LowFPS ? "\t" + reportInfo.ZeroDotOnePercentLowAverageFps.ToString(cultureInfo) : "") +
+                    (ShowP0Dot1LowAverageFPS ? "\t" + reportInfo.ZeroDotOnePercentLowAverageFps.ToString(cultureInfo) : "") +
+                    (ShowP0Dot1LowIntegralFPS ? "\t" + reportInfo.ZeroDotOnePercentLowIntegralFps.ToString(cultureInfo) : "") +
                     (ShowMinFPS ? "\t" + reportInfo.MinFps.ToString(cultureInfo) : "") +
                     (ShowAdaptiveSTD ? "\t" + reportInfo.AdaptiveSTDFps.ToString(cultureInfo) : "") +
                     (ShowCpuFpsPerWatt ? "\t" + reportInfo.CpuFpsPerWatt.ToString(cultureInfo) : "") +
@@ -234,7 +240,7 @@ namespace CapFrameX.ViewModel
                     (ShowGpuPower ? "\t" + reportInfo.GpuPower.ToString(cultureInfo) : "") +
                     (ShowGpuTBPSim ? "\t" + reportInfo.GpuTBPSim.ToString(cultureInfo) : "") +
                     (ShowGpuClock ? "\t" + reportInfo.GpuClock.ToString(cultureInfo) : "") +
-                    (ShowGpuTemp ? "\t" + reportInfo.GpuTemp.ToString(cultureInfo) : "") + 
+                    (ShowGpuTemp ? "\t" + reportInfo.GpuTemp.ToString(cultureInfo) : "") +
                     Environment.NewLine);
             }
 
@@ -276,8 +282,10 @@ namespace CapFrameX.ViewModel
             var p0dot2_quantile = GeMetricValue(frameTimes, EMetric.P0dot2);
             var p1_quantile = GeMetricValue(frameTimes, EMetric.P1);
             var p5_quantile = GeMetricValue(frameTimes, EMetric.P5);
-            var p1_averageLow = GeMetricValue(frameTimes, EMetric.OnePercentLow);
-            var p0dot1_averageLow = GeMetricValue(frameTimes, EMetric.ZerodotOnePercentLow);
+            var p1_averageLowAverage = GeMetricValue(frameTimes, EMetric.OnePercentLowAverage);
+            var p0dot1_averageLowAverage = GeMetricValue(frameTimes, EMetric.ZerodotOnePercentLowAverage);
+            var p1_averageLowIntegral = GeMetricValue(frameTimes, EMetric.OnePercentLowIntegral);
+            var p0dot1_averageLowIntegral = GeMetricValue(frameTimes, EMetric.ZerodotOnePercentLowIntegral);
             var min = GeMetricValue(frameTimes, EMetric.Min);
             var adaptiveStandardDeviation = GeMetricValue(frameTimes, EMetric.AdaptiveStd);
             var cpuFpsPerWatt = _frametimeStatisticProvider
@@ -316,10 +324,12 @@ namespace CapFrameX.ViewModel
                 MedianFps = median,
                 FivePercentQuantileFps = p5_quantile,
                 OnePercentQuantileFps = p1_quantile,
-                OnePercentLowAverageFps = p1_averageLow,
+                OnePercentLowAverageFps = p1_averageLowAverage,
+                OnePercentLowIntegralFps = p1_averageLowIntegral,
                 ZeroDotTwoPercentQuantileFps = p0dot2_quantile,
                 ZeroDotOnePercentQuantileFps = p0dot1_quantile,
-                ZeroDotOnePercentLowAverageFps = p0dot1_averageLow,
+                ZeroDotOnePercentLowAverageFps = p0dot1_averageLowAverage,
+                ZeroDotOnePercentLowIntegralFps = p0dot1_averageLowIntegral,
                 MinFps = min,
                 AdaptiveSTDFps = adaptiveStandardDeviation,
                 CpuFpsPerWatt = cpuFpsPerWatt,
@@ -353,9 +363,11 @@ namespace CapFrameX.ViewModel
             {
                 var propertyInfos = typeof(ReportInfo).GetProperties().Where(pi => pi.PropertyType == typeof(double));
 
-                var report = new ReportInfo();
+                var report = new ReportInfo
+                {
+                    Game = "Averaged values"
+                };
 
-                report.Game = "Averaged values";
                 foreach (var propertyInfo in propertyInfos)
                 {
 

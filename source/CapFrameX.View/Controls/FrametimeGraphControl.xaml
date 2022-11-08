@@ -6,8 +6,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
 			 xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
-			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"		
-             xmlns:local="clr-namespace:CapFrameX.View.Controls"
 			 xmlns:controls="clr-namespace:CapFrameX.View.Controls"
              xmlns:oxy="http://oxyplot.org/wpf"
              mc:Ignorable="d" 

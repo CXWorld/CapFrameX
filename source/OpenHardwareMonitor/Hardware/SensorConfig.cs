@@ -151,5 +151,16 @@ namespace OpenHardwareMonitor.Hardware
                 return stringBuilder.ToString();
             }
         }
+
+        public Dictionary<string, bool> GetSensorConfigCopy()
+        {
+            var copy = new Dictionary<string, bool>();
+            foreach (var item in _activeSensorsDict)
+            {
+                copy.Add(item.Key, item.Value);
+            }
+
+            return copy;
+        }
     }
 }

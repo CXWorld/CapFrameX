@@ -11,6 +11,7 @@
 using CapFrameX.Monitoring.Contracts;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OpenHardwareMonitor.Hardware.ATI
 {
@@ -59,8 +60,9 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
                                     if (!found)
                                     {
+                                        var adapterName = adapterInfo[i].AdapterName.Trim();
                                         hardware.Add(new ATIGPU(
-                                          adapterInfo[i].AdapterName.Trim(),
+                                          adapterName,
                                           adapterInfo[i].AdapterIndex,
                                           adapterInfo[i].BusNumber,
                                           adapterInfo[i].DeviceNumber,
@@ -75,6 +77,14 @@ namespace OpenHardwareMonitor.Hardware.ATI
             }
             catch (DllNotFoundException) { }
             catch (EntryPointNotFoundException) { }
+        }
+
+        public void RemoveInternalGpu()
+        {
+            var internalGpu = hardware.FirstOrDefault(gpu => gpu.Name == "AMD Radeon(TM) Graphics");
+
+            if (internalGpu != null)
+                hardware.Remove(internalGpu);
         }
 
         public IHardware[] Hardware

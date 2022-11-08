@@ -38,5 +38,4 @@ namespace CapFrameX.Data
 
 		void SetTimeWindow(double currentTime, double windowLength);
 	}
-	
 }

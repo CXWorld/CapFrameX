@@ -9,8 +9,8 @@
 		xmlns:converter="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 		mc:Ignorable="d"
-		Title="CapFrameX"
-        Height="780" Width="1400" MinHeight="680"  MinWidth="1400" Icon="Icons/CX_Icon.png"
+        Title="CapFrameX"
+        Height="800" Width="1400" MinHeight="800"  MinWidth="1400" Icon="Icons/CX_Icon.png"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{materialDesign:MaterialDesignFont}">
     <Window.Resources>

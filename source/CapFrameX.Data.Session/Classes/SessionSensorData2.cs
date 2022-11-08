@@ -42,7 +42,7 @@ namespace CapFrameX.Data.Session.Classes
         [JsonIgnore]
         public int[] GpuClock { get => Values.FirstOrDefault(c => c.Name.Contains("GPU Core") && c.Type == "Clock")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
         [JsonIgnore]
-        public int[] GpuPower { get => Values.FirstOrDefault(c => (c.Name.Contains("GPU Power") || c.Name.Contains("GPU Total")) && c.Type == "Power")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
+        public int[] GpuPower { get => Values.FirstOrDefault(c => (c.Name.Contains("GPU Power") || c.Name.Contains("GPU Total") || c.Name.Contains("GPU TDP")) && c.Type == "Power")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
         [JsonIgnore]
         public int[] GpuTBPSim { get => Values.FirstOrDefault(c => c.Name.Contains("GPU TBP") && c.Type == "Power")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
         [JsonIgnore]

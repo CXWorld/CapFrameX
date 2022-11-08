@@ -587,14 +587,26 @@ namespace CapFrameX.ViewModel
                 {
                     foreach (var item in _selectedRecordings)
                     {
-                        string destinationFullPath = Path.Combine(destinationfolder, item.FileInfo.Name);
-                        FileSystem.MoveFile(item.FullPath, destinationFullPath);
+                        string sourceFullPath = item.FullPath;
+                        string destinationFullPath = Path.Combine(destinationfolder, Path.GetFileName(sourceFullPath));
+
+                        FileSystem.CopyFile(sourceFullPath, destinationFullPath, true);
+                        if (File.Exists(destinationFullPath))
+                            FileSystem.DeleteFile(sourceFullPath);
+                        else
+                            _logger.LogWarning("Error while moving files.");
                     }
                 }
                 else
                 {
-                    string destinationFullPath = Path.Combine(destinationfolder, SelectedRecordInfo.FileInfo.Name);
-                    FileSystem.MoveFile(SelectedRecordInfo.FullPath, destinationFullPath);
+                    string sourceFullPath = SelectedRecordInfo.FullPath;
+                    string destinationFullPath = Path.Combine(destinationfolder, Path.GetFileName(sourceFullPath));
+
+                    FileSystem.CopyFile(sourceFullPath, destinationFullPath, true);
+                    if (File.Exists(destinationFullPath))
+                        FileSystem.DeleteFile(sourceFullPath);
+                    else
+                        _logger.LogWarning("Error while moving file.");
                 }
 
                 SelectedRecordInfo = null;

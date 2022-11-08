@@ -114,7 +114,9 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 
 		public bool ShowGpuPowerLimit { get; set; }
 
-		public bool ShowAggregationSeparators { get; set; }
+        public bool ShowPcLatency { get; set; }
+
+        public bool ShowAggregationSeparators { get; set; }
 
 		public bool IsAnyPercentageGraphVisible { get; set; }
 

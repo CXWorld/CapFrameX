@@ -171,7 +171,7 @@ namespace CapFrameX.ViewModel
 
         public ICommand CopyRawSensorInfoCommand { get; }
 
-        public ICommand AggregateSensorEntries { get; }
+        public ICommand AggregateSensorEntriesCommand { get; }
 
         public SensorGroupControl SensorSubModelGroupControl { get; }
 
@@ -206,7 +206,7 @@ namespace CapFrameX.ViewModel
             CopySensorInfoCommand = new DelegateCommand(OnCopySensorInfo);
             CopyRawSensorInfoCommand = new DelegateCommand(OnCopyRawSensorInfo);
             ResetToDefaultCommand = new DelegateCommand(OnResetToDefault);
-            AggregateSensorEntries = new DelegateCommand(() =>
+            AggregateSensorEntriesCommand = new DelegateCommand(() =>
             {
                 Task.Run(() =>
                 {
@@ -278,7 +278,8 @@ namespace CapFrameX.ViewModel
             if (RecordInfo == null || !_isActive)
                 return;
 
-            var items = SensorReport.GetFullReportFromSessionSensorData(session.Runs.Select(run => run.SensorData2));
+            var sessionSensorData = session.Runs.Select(run => run.SensorData2);
+            var items = SensorReport.GetFullReportFromSessionSensorData(sessionSensorData);
             foreach (var item in items)
             {
                 SensorReportItems.Add(item);
@@ -369,10 +370,7 @@ namespace CapFrameX.ViewModel
             Clipboard.SetDataObject(builder.ToString(), false);
         }
 
-        public bool IsNavigationTarget(NavigationContext navigationContext)
-        {
-            return true;
-        }
+        public bool IsNavigationTarget(NavigationContext navigationContext) => true;
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {

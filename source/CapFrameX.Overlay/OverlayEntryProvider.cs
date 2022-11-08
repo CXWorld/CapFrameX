@@ -20,6 +20,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace CapFrameX.Overlay
 {
@@ -28,6 +29,13 @@ namespace CapFrameX.Overlay
         private static readonly string OVERLAY_CONFIG_FOLDER
             = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                     @"CapFrameX\Configuration\");
+
+        private static readonly HashSet<string> ONLINE_METRIC_NAMES = new HashSet<string>()
+        {
+            "OnlineAverage", "OnlineP1", "OnlineP0dot2", "OnlineApplicationLatency",
+            "OnlineStutteringPercentage", "PmdGpuPowerCurrent", "PmdCpuPowerCurrent",
+            "PmdSystemPowerCurrent"
+        };
 
         private readonly ISensorService _sensorService;
         private readonly IAppConfiguration _appConfiguration;
@@ -240,52 +248,13 @@ namespace CapFrameX.Overlay
                 _sensorConfig.SetSensorEvaluate(entry.Identifier, entry.ShowOnOverlay);
                 _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
 
-                if (entry.Identifier == "OnlineAverage")
+                if (ONLINE_METRIC_NAMES.Contains(entry.Identifier) || entry.Identifier == "SystemTime"
+                    || entry.Identifier == "BatteryLifePercent" || entry.Identifier == "BatteryLifeRemaining")
                 {
-                    if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("OnlineAverage"))
-                        _overlayEntryCore.RealtimeMetricEntryDict.Add("OnlineAverage", entry);
+                    if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey(entry.Identifier))
+                        _overlayEntryCore.RealtimeMetricEntryDict.Add(entry.Identifier, entry);
                     else
-                        _overlayEntryCore.RealtimeMetricEntryDict["OnlineAverage"] = entry;
-                }
-
-                if (entry.Identifier == "OnlineP1")
-                {
-                    if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("OnlineP1"))
-                        _overlayEntryCore.RealtimeMetricEntryDict.Add("OnlineP1", entry);
-                    else
-                        _overlayEntryCore.RealtimeMetricEntryDict["OnlineP1"] = entry;
-                }
-
-                if (entry.Identifier == "OnlineP0dot2")
-                {
-                    if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("OnlineP0dot2"))
-                        _overlayEntryCore.RealtimeMetricEntryDict.Add("OnlineP0dot2", entry);
-                    else
-                        _overlayEntryCore.RealtimeMetricEntryDict["OnlineP0dot2"] = entry;
-                }
-
-                if (entry.Identifier == "OnlineApplicationLatency")
-                {
-                    if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("OnlineApplicationLatency"))
-                        _overlayEntryCore.RealtimeMetricEntryDict.Add("OnlineApplicationLatency", entry);
-                    else
-                        _overlayEntryCore.RealtimeMetricEntryDict["OnlineApplicationLatency"] = entry;
-                }
-
-                if (entry.Identifier == "OnlineStutteringPercentage")
-                {
-                    if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("OnlineStutteringPercentage"))
-                        _overlayEntryCore.RealtimeMetricEntryDict.Add("OnlineStutteringPercentage", entry);
-                    else
-                        _overlayEntryCore.RealtimeMetricEntryDict["OnlineStutteringPercentage"] = entry;
-                }
-
-                if (entry.Identifier == "SystemTime")
-                {
-                    if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("SystemTime"))
-                        _overlayEntryCore.RealtimeMetricEntryDict.Add("SystemTime", entry);
-                    else
-                        _overlayEntryCore.RealtimeMetricEntryDict["SystemTime"] = entry;
+                        _overlayEntryCore.RealtimeMetricEntryDict[entry.Identifier] = entry;
                 }
             }
 
@@ -317,6 +286,8 @@ namespace CapFrameX.Overlay
             SetHardwareIsNumericState();
             SetAppInfoFormats();
             SetAppInfoIsNumericState();
+            SetBatteryInfoFormats();
+            SetBatteryInfoIsNumericState();
 
             _overlayEntries.ForEach(entry => entry.FormatChanged = true);
         }
@@ -562,6 +533,12 @@ namespace CapFrameX.Overlay
                     case EOverlayEntryType.CX when entry.Identifier == "SystemTime":
                         entry.Value = ShowSystemTimeSeconds ? DateTime.Now.ToString("HH:mm:ss") : DateTime.Now.ToString("HH:mm");
                         break;
+                    case EOverlayEntryType.CX when entry.Identifier == "BatteryLifePercent":
+                        entry.Value = SystemInformation.PowerStatus.BatteryLifePercent * 100d;
+                        break;
+                    case EOverlayEntryType.CX when entry.Identifier == "BatteryLifeRemaining":
+                        entry.Value = SystemInformation.PowerStatus.BatteryLifeRemaining / 60d;
+                        break;
                     default:
                         break;
                 }
@@ -615,6 +592,38 @@ namespace CapFrameX.Overlay
             {
                 stutteringPercentage.Value = Math.Round(_onlineMetricService.GetOnlineStutteringPercentageValue(), 1);
             }
+
+            // PMD metrics
+            _identifierOverlayEntryDict.TryGetValue("PmdGpuPowerCurrent", out IOverlayEntry pmdGpuPowerCurrent);
+            _identifierOverlayEntryDict.TryGetValue("PmdCpuPowerCurrent", out IOverlayEntry pmdcpuPowerCurrent);
+            _identifierOverlayEntryDict.TryGetValue("PmdSystemPowerCurrent", out IOverlayEntry pmdSystemPowerCurrent);
+
+            OnlinePmdMetrics pmdMetrics = null;
+
+            if (pmdGpuPowerCurrent.ShowOnOverlay
+                || pmdcpuPowerCurrent.ShowOnOverlay
+                || pmdSystemPowerCurrent.ShowOnOverlay)
+            {
+                pmdMetrics = _onlineMetricService.GetPmdMetricsPowerCurrent();
+
+                if (pmdMetrics != null)
+                {
+                    if (pmdGpuPowerCurrent != null && pmdGpuPowerCurrent.ShowOnOverlay)
+                    {
+                        pmdGpuPowerCurrent.Value = Math.Round(pmdMetrics.GpuPowerCurrent, 1);
+                    }
+
+                    if (pmdcpuPowerCurrent != null && pmdcpuPowerCurrent.ShowOnOverlay)
+                    {
+                        pmdcpuPowerCurrent.Value = Math.Round(pmdMetrics.CpuPowerCurrent, 1);
+                    }
+
+                    if (pmdSystemPowerCurrent != null && pmdSystemPowerCurrent.ShowOnOverlay)
+                    {
+                        pmdSystemPowerCurrent.Value = Math.Round(pmdMetrics.SystemPowerCurrent, 1);
+                    }
+                }
+            }
         }
 
         private void UpdateAppInfo()
@@ -630,44 +639,14 @@ namespace CapFrameX.Overlay
 
         private void SetOnlineMetricsIsNumericState()
         {
-            // average
-            _identifierOverlayEntryDict.TryGetValue("OnlineAverage", out IOverlayEntry averageEntry);
-
-            if (averageEntry != null)
+            foreach (var metricName in ONLINE_METRIC_NAMES)
             {
-                averageEntry.IsNumeric = true;
-            }
+                _identifierOverlayEntryDict.TryGetValue(metricName, out IOverlayEntry metricEntry);
 
-            // P1
-            _identifierOverlayEntryDict.TryGetValue("OnlineP1", out IOverlayEntry p1Entry);
-
-            if (p1Entry != null)
-            {
-                p1Entry.IsNumeric = true;
-            }
-
-            // P0.2
-            _identifierOverlayEntryDict.TryGetValue("OnlineP0dot2", out IOverlayEntry p1dot2Entry);
-
-            if (p1dot2Entry != null)
-            {
-                p1dot2Entry.IsNumeric = true;
-            }
-
-            // render lag
-            _identifierOverlayEntryDict.TryGetValue("OnlineApplicationLatency", out IOverlayEntry applicationLatency);
-
-            if (applicationLatency != null)
-            {
-                applicationLatency.IsNumeric = true;
-            }
-
-            // stuttering percentage
-            _identifierOverlayEntryDict.TryGetValue("OnlineStutteringPercentage", out IOverlayEntry stutteringPercentage);
-
-            if (stutteringPercentage != null)
-            {
-                stutteringPercentage.IsNumeric = true;
+                if (metricEntry != null)
+                {
+                    metricEntry.IsNumeric = true;
+                }
             }
         }
 
@@ -716,6 +695,23 @@ namespace CapFrameX.Overlay
             {
                 stutteringPercentage.ValueUnitFormat = "%";
                 stutteringPercentage.ValueAlignmentAndDigits = "{0,5:F1}";
+            }
+
+            // PMD
+            var pmdMetrics = new List<string>()
+            {
+                "PmdGpuPowerCurrent", "PmdCpuPowerCurrent", "PmdSystemPowerCurrent"
+            };
+
+            foreach (var pmdMetric in pmdMetrics)
+            {
+                _identifierOverlayEntryDict.TryGetValue(pmdMetric, out IOverlayEntry pmdMetricEntry);
+
+                if (pmdMetricEntry != null)
+                {
+                    pmdMetricEntry.ValueUnitFormat = "W";
+                    pmdMetricEntry.ValueAlignmentAndDigits = "{0,5:F1}";
+                }
             }
         }
 
@@ -777,6 +773,36 @@ namespace CapFrameX.Overlay
                 || x.OverlayEntryType == EOverlayEntryType.RAM))
             {
                 entry.IsNumeric = true;
+            }
+        }
+
+        private void SetBatteryInfoIsNumericState()
+        {
+            foreach (var entry in _overlayEntries.Where(x =>
+                x.Identifier == "BatteryLifePercent" || x.Identifier == "BatteryLifeRemaining"))
+            {
+                entry.IsNumeric = true;
+            }
+        }
+
+        private void SetBatteryInfoFormats()
+        {
+            // BatteryLifePercent
+            _identifierOverlayEntryDict.TryGetValue("BatteryLifePercent", out IOverlayEntry batteryLifePercent);
+
+            if (batteryLifePercent != null)
+            {
+                batteryLifePercent.ValueUnitFormat = "%";
+                batteryLifePercent.ValueAlignmentAndDigits = "{0,5:F0}";
+            }
+
+            // BatteryLifeRemaining
+            _identifierOverlayEntryDict.TryGetValue("BatteryLifeRemaining", out IOverlayEntry batteryLifeRemaining);
+
+            if (batteryLifeRemaining != null)
+            {
+                batteryLifeRemaining.ValueUnitFormat = "min ";
+                batteryLifeRemaining.ValueAlignmentAndDigits = "{0,5:F0}";
             }
         }
 

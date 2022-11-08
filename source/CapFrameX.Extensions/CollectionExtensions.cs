@@ -64,6 +64,48 @@ namespace CapFrameX.Extensions
             }
         }
 
+        public static IEnumerable<T> TakeLast<T>(this IEnumerable<T> source, int count)
+        {
+            if (null == source)
+                throw new ArgumentNullException(nameof(source));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+
+            if (0 == count)
+                yield break;
+
+            if (source is ICollection<T>)
+            {
+                foreach (T item in source.Skip(((ICollection<T>)source).Count - count))
+                    yield return item;
+
+                yield break;
+            }
+
+            if (source is IReadOnlyCollection<T>)
+            {
+                foreach (T item in source.Skip(((IReadOnlyCollection<T>)source).Count - count))
+                    yield return item;
+
+                yield break;
+            }
+
+            // General case, we have to enumerate source
+            Queue<T> result = new Queue<T>();
+
+            foreach (T item in source)
+            {
+                if (result.Count == count)
+                    result.Dequeue();
+
+                result.Enqueue(item);
+            }
+
+            foreach (T item in result)
+                yield return result.Dequeue();
+        }
+
+
         public static bool IsEquivalent<T>(this IEnumerable<T> source, IEnumerable<T> compareValues)
         {
             if (source.Count() != compareValues.Count())

@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.EventAggregation.Messages;
+using CapFrameX.PMD;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
@@ -18,6 +19,7 @@ namespace CapFrameX.PresentMonInterface
     {
         private const double STUTTERING_THRESHOLD = 2d;
         private const int LIST_CAPACITY = 20000;
+        private const int PMD_BUFFER_CAPACITY = 2200;
 
         private readonly object _currentProcessLock = new object();
 
@@ -25,17 +27,20 @@ namespace CapFrameX.PresentMonInterface
         private readonly ICaptureService _captureService;
         private readonly IEventAggregator _eventAggregator;
         private readonly IOverlayEntryCore _overlayEntryCore;
+        private readonly IPmdService _pmdService;
         private readonly ILogger<OnlineMetricService> _logger;
         private readonly IAppConfiguration _appConfiguration;
         private readonly object _lock20SecondsMetric = new object();
         private readonly object _lock5SecondsMetric = new object();
         private readonly object _lockApplicationLatency = new object();
+        private readonly object _lockPmdMetrics = new object();
         private List<double> _frametimes20Seconds = new List<double>(LIST_CAPACITY);
         private List<double> _frametimes5Seconds = new List<double>(LIST_CAPACITY / 4);
         private List<double> _measuretimes20Seconds = new List<double>(LIST_CAPACITY);
         private List<double> _measuretimes5Seconds = new List<double>(LIST_CAPACITY / 4);
         private List<double> _measuretimesApplicationLatency = new List<double>(LIST_CAPACITY / 10);
         private List<double> _applicationLatencyValues = new List<double>(LIST_CAPACITY / 10);
+        private List<PmdChannel[]> _channelDataBuffer = new List<PmdChannel[]>(PMD_BUFFER_CAPACITY);
         private string _currentProcess;
         private int _currentProcessId;
         private double _droppedFrametimes = 0.0;
@@ -48,12 +53,14 @@ namespace CapFrameX.PresentMonInterface
             ICaptureService captureServive,
             IEventAggregator eventAggregator,
             IOverlayEntryCore oerlayEntryCore,
+            IPmdService pmdService,
             ILogger<OnlineMetricService> logger,
             IAppConfiguration appConfiguration)
         {
             _captureService = captureServive;
             _eventAggregator = eventAggregator;
             _overlayEntryCore = oerlayEntryCore;
+            _pmdService = pmdService;
             _logger = logger;
             _appConfiguration = appConfiguration;
 
@@ -109,6 +116,12 @@ namespace CapFrameX.PresentMonInterface
                 })
                 .Where(acc => acc.Count == 2)
                 .Subscribe(UpdateOnlineApplicationLatency);
+
+            _pmdService.PmdChannelStream
+                .ObserveOn(new EventLoopScheduler())
+                .Where(_ => EvaluatePmdMetrics())
+                .Buffer(TimeSpan.FromMilliseconds(50))
+                .Subscribe(metricsData => UpdatePmdMetrics(metricsData));
         }
 
         private bool EvaluateRealtimeMetrics()
@@ -118,7 +131,10 @@ namespace CapFrameX.PresentMonInterface
                 return _overlayEntryCore.RealtimeMetricEntryDict["OnlineAverage"].ShowOnOverlay
                     || _overlayEntryCore.RealtimeMetricEntryDict["OnlineP1"].ShowOnOverlay
                     || _overlayEntryCore.RealtimeMetricEntryDict["OnlineP0dot2"].ShowOnOverlay
-                    || _overlayEntryCore.RealtimeMetricEntryDict["OnlineStutteringPercentage"].ShowOnOverlay;
+                    || _overlayEntryCore.RealtimeMetricEntryDict["OnlineStutteringPercentage"].ShowOnOverlay
+                    || _overlayEntryCore.RealtimeMetricEntryDict["PmdGpuPowerCurrent"].ShowOnOverlay
+                    || _overlayEntryCore.RealtimeMetricEntryDict["PmdCpuPowerCurrent"].ShowOnOverlay
+                    || _overlayEntryCore.RealtimeMetricEntryDict["PmdSystemPowerCurrent"].ShowOnOverlay;
             }
             catch { return false; }
         }
@@ -128,6 +144,17 @@ namespace CapFrameX.PresentMonInterface
             try
             {
                 return _overlayEntryCore.RealtimeMetricEntryDict["OnlineApplicationLatency"].ShowOnOverlay;
+            }
+            catch { return false; }
+        }
+
+        private bool EvaluatePmdMetrics()
+        {
+            try
+            {
+                return _overlayEntryCore.RealtimeMetricEntryDict["PmdGpuPowerCurrent"].ShowOnOverlay
+                    || _overlayEntryCore.RealtimeMetricEntryDict["PmdCpuPowerCurrent"].ShowOnOverlay
+                    || _overlayEntryCore.RealtimeMetricEntryDict["PmdSystemPowerCurrent"].ShowOnOverlay;
             }
             catch { return false; }
         }
@@ -306,6 +333,14 @@ namespace CapFrameX.PresentMonInterface
             catch { ResetApplicationLatency(); }
         }
 
+        private void UpdatePmdMetrics(IList<PmdChannel[]> metricsData)
+        {
+            lock (_lockPmdMetrics)
+            {
+                _channelDataBuffer.AddRange(metricsData);
+            }
+        }
+
         private void ResetMetrics()
         {
             lock (_lock20SecondsMetric)
@@ -354,6 +389,38 @@ namespace CapFrameX.PresentMonInterface
                 return _frametimeStatisticProvider
                     .GetOnlineStutteringTimePercentage(_frametimes5Seconds, _appConfiguration.StutteringFactor);
             }
+        }
+
+        public OnlinePmdMetrics GetPmdMetricsPowerCurrent()
+        {
+            OnlinePmdMetrics pmdMetrics;
+
+            lock (_lockPmdMetrics)
+            {
+                pmdMetrics = new OnlinePmdMetrics()
+                {
+                    GpuPowerCurrent = GetPmdCurrentPowerByIndexGroup(_channelDataBuffer, PmdChannelExtensions.GPUPowerIndexGroup),
+                    CpuPowerCurrent = GetPmdCurrentPowerByIndexGroup(_channelDataBuffer, PmdChannelExtensions.EPSPowerIndexGroup),
+                    SystemPowerCurrent = GetPmdCurrentPowerByIndexGroup(_channelDataBuffer, PmdChannelExtensions.SystemPowerIndexGroup),
+                };
+
+                _channelDataBuffer = new List<PmdChannel[]>(PMD_BUFFER_CAPACITY);
+            }
+
+            return pmdMetrics;
+        }
+
+        private float GetPmdCurrentPowerByIndexGroup(IList<PmdChannel[]> channelData, int[] indexGroup)
+        {
+            double sum = 0;
+
+            foreach (var channel in channelData)
+            {
+                var currentChannlesSumPower = indexGroup.Sum(index => channel[index].Value);
+                sum += currentChannlesSumPower;
+            }
+
+            return (float)(sum / channelData.Count);
         }
     }
 }

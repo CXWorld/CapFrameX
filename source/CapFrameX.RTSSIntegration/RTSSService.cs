@@ -37,23 +37,26 @@ namespace CapFrameX.RTSSIntegration
             {
                 if (_isRTSSInstalled)
                 {
-                    var processes = Process.GetProcessesByName(RTSS_PROCESS_NAME);
-                    if (!processes.Any())
+                    try
                     {
-                        try
+                        var processes = Process.GetProcessesByName(RTSS_PROCESS_NAME);
+                        if (!processes.Any())
                         {
                             Process proc = new Process();
                             proc.StartInfo.FileName = Path.Combine(GetRTSSFullPath());
                             proc.StartInfo.UseShellExecute = false;
                             proc.Start();
                         }
-                        catch (Exception ex) { _logger.LogError(ex, "Error while starting RTSS process"); }
                     }
-                    Refresh();
+                    catch (Exception ex) 
+                    {
+                        _logger.LogError(ex, "Error while starting RTSS process");
+                    }
                 }
+
+                Refresh();
             });
         }
-
 
         public Task CheckRTSSRunning()
         {

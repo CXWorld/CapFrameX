@@ -382,13 +382,16 @@
                         ToolTip="Select metrics to be shown" IsEnabled="{Binding MetricAndLabelOptionsEnabled}">
                 <TextBlock Margin="0 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"> Metrics</TextBlock>
                 <materialDesign:PopupBox Foreground="{DynamicResource MaterialDesignBody}" StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
-                    <materialDesign:Card Width="450" Margin="0 0 0 -10">
+                    <materialDesign:Card Width="Auto" Margin="0 0 0 0">
                         <StackPanel>
                             <Grid Margin="8 8 8 8">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*" />
+                                    <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
@@ -403,6 +406,34 @@
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
+                                <ctrls:CXColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="0" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding FirstMetricBarColor}" 
+													DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
+                                    <ctrls:CXColorPicker.ButtonStyle>
+                                        <Style TargetType="ToggleButton">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="ToggleButton" xmlns:chrome="clr-namespace:Xceed.Wpf.Toolkit.Chromes;assembly=Xceed.Wpf.Toolkit">
+                                                        <Grid SnapsToDevicePixels="True">
+                                                            <Grid>
+                                                                <Border Background="{TemplateBinding Background}"
+																		BorderBrush="{TemplateBinding BorderBrush}"
+																		BorderThickness="1"																						
+																		SnapsToDevicePixels="True">
+                                                                    <ContentPresenter Content="{TemplateBinding Content}"
+																					  ContentTemplate="{TemplateBinding ContentTemplate}"
+																					  ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+																					  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+																					  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                                                                </Border>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ctrls:CXColorPicker.ButtonStyle>
+                                </ctrls:CXColorPicker>
+                                
                                 <ComboBox Grid.Column="1" Width="125" Height="40" VerticalAlignment="Center" Margin="15 5 5 5" materialDesign:HintAssist.Hint="Second metric"
 					                Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
 					                materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:HintAssist.HintOpacity=".8" materialDesign:ComboBoxAssist.ClassicMode="True"
@@ -413,6 +444,34 @@
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
+                                <ctrls:CXColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="1" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding SecondMetricBarColor}" 
+																      DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
+                                    <ctrls:CXColorPicker.ButtonStyle>
+                                        <Style TargetType="ToggleButton">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="ToggleButton" xmlns:chrome="clr-namespace:Xceed.Wpf.Toolkit.Chromes;assembly=Xceed.Wpf.Toolkit">
+                                                        <Grid SnapsToDevicePixels="True">
+                                                            <Grid>
+                                                                <Border Background="{TemplateBinding Background}"
+																		BorderBrush="{TemplateBinding BorderBrush}"
+																		BorderThickness="1"																						
+																		SnapsToDevicePixels="True">
+                                                                    <ContentPresenter Content="{TemplateBinding Content}"
+																					ContentTemplate="{TemplateBinding ContentTemplate}"
+																					ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+																					VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+																					HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                                                                </Border>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ctrls:CXColorPicker.ButtonStyle>
+                                </ctrls:CXColorPicker>
+                                
                                 <ComboBox Grid.Column="2" Width="125" Height="40" VerticalAlignment="Center" Margin="15 5 5 5" materialDesign:HintAssist.Hint="Third metric"
 					                materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="360" materialDesign:HintAssist.HintOpacity=".8" materialDesign:ComboBoxAssist.ClassicMode="True"
 					                ItemsSource="{Binding ThirdMetricItems}" SelectedItem="{Binding SelectedThirdMetric}">
@@ -422,6 +481,59 @@
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
+                                <ctrls:CXColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="2" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding ThirdMetricBarColor}" 
+																      DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
+                                    <ctrls:CXColorPicker.ButtonStyle>
+                                        <Style TargetType="ToggleButton">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="ToggleButton" xmlns:chrome="clr-namespace:Xceed.Wpf.Toolkit.Chromes;assembly=Xceed.Wpf.Toolkit">
+                                                        <Grid SnapsToDevicePixels="True">
+                                                            <Grid>
+                                                                <Border Background="{TemplateBinding Background}"
+																		BorderBrush="{TemplateBinding BorderBrush}"
+																		BorderThickness="1"																						
+																		SnapsToDevicePixels="True">
+                                                                    <ContentPresenter Content="{TemplateBinding Content}"
+																						ContentTemplate="{TemplateBinding ContentTemplate}"
+																						ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+																						VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+																						HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                                                                </Border>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ctrls:CXColorPicker.ButtonStyle>
+                                </ctrls:CXColorPicker>
+                                <StackPanel Margin="10 0 0 0" Orientation="Vertical" Grid.Column="3" Grid.RowSpan="2" VerticalAlignment="Center">
+                                    <TextBlock Margin="0 0 0 5" Text="Metric Info"></TextBlock>
+                                <materialDesign:PackIcon Width="20" Height="20" Kind="Information" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTipService.ShowDuration="25000" ToolTipService.Placement="Top">
+                                        <materialDesign:PackIcon.ToolTip>
+                                            <TextBlock Width="275" Text="Maximum:
+                                                        &#xA;The single highest value &#xA;
+                                                        &#xA;Average:
+                                                        &#xA;The average of all values &#xA;
+                                                        &#xA;Median:
+                                                        &#xA;The middle of all values sorted from low to high &#xA;
+                                                        &#xA;Minimum:
+                                                        &#xA;The single lowest value &#xA;
+                                                        &#xA;X% percentile:
+                                                        &#xA;X% of all values are lower than this &#xA;
+                                                        &#xA;X% low average:
+                                                        &#xA;The average of the lowest X% of all values &#xA;
+                                                        &#xA;X% low integral:
+                                                        &#xA;For X% of total benchmark time, values are lower than this &#xA;
+                                                        &#xA;Adaptive STDEV:
+                                                        &#xA;The standard deviation of values compared to the moving average &#xA;
+                                                        &#xA;CPU/GPU FPS/10W:
+                                                        &#xA;The average framerate per 10W of power draw (multiplied by 10 to generate more comparable bar charts when using it with other FPS metrics)" 
+										   TextWrapping="Wrap"/>
+                                        </materialDesign:PackIcon.ToolTip>
+                                </materialDesign:PackIcon>
+                                </StackPanel>
                             </Grid>
                         </StackPanel>
                     </materialDesign:Card>
@@ -562,7 +674,7 @@
 																   LineHeight="14"
 																   MaxHeight="52"/>
                                                     <ctrls:CXColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="1" Margin="0 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding FrametimeGraphColor}" 
-																      SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" 
+																      DisplayColorAndName="False" 
 																	  Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}">
                                                         <ctrls:CXColorPicker.ButtonStyle>
                                                             <Style TargetType="ToggleButton">

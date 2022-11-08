@@ -176,8 +176,11 @@ namespace CapFrameX.Sensor.Reporting
 
             foreach (var sensor in sensorDict)
             {
+                if (sensor.Value.Count != measureTimes.Length)
+                    continue;
+
                 var filteredValueList = new List<double>();
-                for (int i = 0; i < sensor.Value.Count(); i++)
+                for (int i = 0; i < sensor.Value.Count; i++)
                 {
                     var measureTime = measureTimes[i];
                     if (measureTime >= startTime && measureTime <= endTime)

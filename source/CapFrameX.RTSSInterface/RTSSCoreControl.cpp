@@ -113,7 +113,7 @@ std::vector<float> RTSSCoreControl::GetCurrentFramerate(DWORD processId)
 							// & 1023 enforces upper limit = 1023 = max index
 							DWORD frameTimePos = pEntry->dwStatFrameTimeBufPos;
 							currentFrametime = pEntry->dwStatFrameTimeBuf[(frameTimePos - 1) & 1023] / 1000.0f;
-							currentFramerate = pEntry->dwStatFrameTimeBufFramerate / 10.0f;							
+							currentFramerate = pEntry->dwStatFrameTimeBufFramerate / 10.0f;
 
 							break;
 						}
@@ -522,6 +522,7 @@ void RTSSCoreControl::Refresh()
 		//strOSD += "<A1=4>";
 		////define align variable A[1] as left alignment by 4 symbols (positive is left, negative is right)
 		//strOSD += "<C0=FFA0A0>";
+		strOSD += "<S1=75>"; //Graph Text Size
 		////define color variable C[0] as R=FF,G=A0 and B=A0
 		strOSD += "<C100=AEEA00>"; //CX Green
 		//define color variable C[1] as R=FF,G=00 and B=A0
@@ -582,10 +583,14 @@ void RTSSCoreControl::Refresh()
 				if (OverlayEntries[i].Identifier == "Framerate")
 				{
 					// set graph name
-					if (OverlayEntries[i].GroupName.Find("<APP>") != std::string::npos)
-						strOSD += "<C100><S1>Framerate\n<S><C>";
-					else
-						strOSD += OverlayEntries[i].GroupName + "\n";
+
+					auto indexStart = OverlayEntries[i].GroupName.Find('C') - 1;
+					auto indexEnd = OverlayEntries[i].GroupName.Find('>', indexStart);
+					CString color = OverlayEntries[i].GroupName.Mid(indexStart, indexEnd + 1 - indexStart);
+					CString string;
+					string.Format("%s<S1>Framerate\n<S><C>", color);
+					strOSD += string;
+
 					//embed framerate graph object into the buffer
 					dwObjectSize = EmbedGraph(dwObjectOffset, NULL, 0, 0, -32, -2, 1, 0.0f, 200.0f, dwFlags | RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_FRAMERATE);
 
@@ -601,10 +606,13 @@ void RTSSCoreControl::Refresh()
 				else if (OverlayEntries[i].Identifier == "Frametime")
 				{
 					// set graph name
-					if (OverlayEntries[i].GroupName.Find("<APP>") != std::string::npos)
-						strOSD += "<C100><S1>Frametime\n<S><C>";
-					else
-						strOSD += OverlayEntries[i].GroupName + "\n";
+
+					auto indexStart = OverlayEntries[i].GroupName.Find('C') - 1;
+					auto indexEnd = OverlayEntries[i].GroupName.Find('>', indexStart);
+					CString color = OverlayEntries[i].GroupName.Mid(indexStart, indexEnd + 1 - indexStart);
+					CString string;
+					string.Format("%s<S1>Frametime\n<S><C>", color);
+					strOSD += string;
 
 					//embed frametime graph object into the buffer
 					dwObjectSize = EmbedGraph(dwObjectOffset, NULL, 0, 0, -32, -2, 1, 0.0f, 50000.0f, dwFlags | RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_FRAMETIME);

@@ -18,8 +18,12 @@ namespace CapFrameX.Data.Session.Classes
 		[JsonConverter(typeof(SessionSensorData2TypeConverter))]
 		public ISessionSensorData2 SensorData2 { get; set; }
 		public float[] RTSSFrameTimes { get; set; }
+        public float[] PmdGpuPower { get; set; }
+        public float[] PmdCpuPower { get; set; }
+        public float[] PmdSystemPower { get; set; }
+        public int SampleTime { get; set; }
 
-		[JsonConstructor]
+        [JsonConstructor]
 		public SessionRun(SessionCaptureData captureData, SessionSensorData sensorData)
 		{
 			CaptureData = captureData;

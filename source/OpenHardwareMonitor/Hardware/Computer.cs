@@ -9,10 +9,12 @@
 */
 
 using CapFrameX.Monitoring.Contracts;
+using OpenHardwareMonitor.Hardware.ATI;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Security.Permissions;
 
 namespace OpenHardwareMonitor.Hardware
@@ -105,6 +107,8 @@ namespace OpenHardwareMonitor.Hardware
                 Add(new ATI.ATIGroup(settings, sensorConfig, processService));
                 Add(new Nvidia.NvidiaGroup(settings, sensorConfig, processService));
                 Add(new IntelGPU.IntelGroup(settings, sensorConfig, processService));
+
+                FilterInternalGpus();
             }
 
             if (fanControllerEnabled)
@@ -117,6 +121,25 @@ namespace OpenHardwareMonitor.Hardware
                 Add(new HDD.HarddriveGroup(settings));
 
             open = true;
+
+        }
+
+        private void FilterInternalGpus()
+        {
+            List<IGroup> list = new List<IGroup>();
+            foreach (IGroup group in groups)
+                if (group is ATI.ATIGroup || group is Nvidia.NvidiaGroup || group is IntelGPU.IntelGroup)
+                    list.Add(group);
+
+            if (list.Sum(group => group.Hardware.Length) > 1)
+            {
+                var atiGroup = list.FirstOrDefault(group => group is ATI.ATIGroup);
+
+                if (atiGroup != null)
+                {
+                    (atiGroup as ATI.ATIGroup)?.RemoveInternalGpu();
+                }
+            }
         }
 
         public bool MainboardEnabled
@@ -187,6 +210,8 @@ namespace OpenHardwareMonitor.Hardware
                         Add(new ATI.ATIGroup(settings, sensorConfig, processService));
                         Add(new Nvidia.NvidiaGroup(settings, sensorConfig, processService));
                         Add(new IntelGPU.IntelGroup(settings, sensorConfig, processService));
+
+                        FilterInternalGpus();
                     }
                     else
                     {

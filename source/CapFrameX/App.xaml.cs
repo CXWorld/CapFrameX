@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Extensions;
+using CapFrameX.PMD;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Remote;
 using EmbedIO;
@@ -149,7 +150,10 @@ namespace CapFrameX
             sensorService?.CloseOpenHardwareMonitor();
 
             var rtssService = _bootstrapper.Container.Resolve(typeof(IRTSSService), true) as IRTSSService;
-            rtssService.ClearOSD();
+            rtssService?.ClearOSD();
+
+            var pmdDriver = _bootstrapper.Container.Resolve(typeof(IPmdDriver), true) as IPmdDriver;
+            pmdDriver?.Disconnect();
 
             _webServer?.Dispose();
         }

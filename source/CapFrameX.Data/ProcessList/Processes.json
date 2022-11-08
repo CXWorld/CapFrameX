@@ -1,5 +1,65 @@
 [
   {
+    "Name": "Minion",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "ONENOTE.EXE",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "sp22-cod",
+    "DisplayName": "Call of Duty: Modern Warfare 2",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "SteelSeriesGGClient",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "GothamKnights-Win64-Shipping",
+    "DisplayName": "Gotham Knights",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "APlagueTaleRequiem_x64",
+    "DisplayName": "A Plague Tale: Requiem",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "tll",
+    "DisplayName": "Uncharted: The Lost Legacy",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Dashboard",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "WindowsTerminal",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "MediathekView",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "temp_2470489F9537935CBFF080C46C16D4C0",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "SaintsRow_DX12",
+    "DisplayName": "Saints Row",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "scanapp",
     "DisplayName": null,
     "IsBlacklisted": true

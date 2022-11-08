@@ -305,7 +305,6 @@ namespace CapFrameX.Overlay
 
             if (RunHistoryCount < _numberOfRuns)
             {
-
                 // metric history
                 var currentAnalysis = _statisticProvider.GetMetricAnalysis(frametimes, SecondMetric, ThirdMetric);
                 _metricAnalysis.Add(currentAnalysis);
@@ -473,7 +472,7 @@ namespace CapFrameX.Overlay
                     formatString = "{0,5:F0}";
                     break;
                 case SensorType.Throughput:
-                    formatString = "{0,5:F0}";
+                    formatString = "{0,5:F1}";
                     break;
                 case SensorType.Frequency:
                     formatString = "{0,5:F0}";
@@ -526,7 +525,7 @@ namespace CapFrameX.Overlay
                     formatString = "MB ";
                     break;
                 case SensorType.Throughput:
-                    formatString = "MB/s";
+                    formatString = "GB/s";
                     break;
                 case SensorType.Frequency:
                     formatString = "Hz ";
@@ -690,7 +689,7 @@ namespace CapFrameX.Overlay
                     description = $"{sensor.Name} (MB)";
                     break;
                 case SensorType.Throughput:
-                    description = $"{sensor.Name} (MB/s)";
+                    description = $"{sensor.Name} (GB/s)";
                     break;
                 case SensorType.Frequency:
                     description = $"{sensor.Name} (Hz)";
