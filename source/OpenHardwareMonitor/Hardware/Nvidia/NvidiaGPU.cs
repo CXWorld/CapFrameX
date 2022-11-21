@@ -43,6 +43,9 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 		private readonly Sensor power;
 		private readonly Sensor pcieSlotPower;
 		private readonly Sensor sixteenPinPower;
+		private readonly Sensor eightPin1Power;
+		private readonly Sensor eightPin2Power;
+		private readonly Sensor eightPin3Power;
 		private readonly Sensor pcieThroughputRx;
 		private readonly Sensor pcieThroughputTx;
 		private readonly Sensor monitorRefreshRate;
@@ -116,6 +119,9 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 			power = new Sensor("GPU Power", 0, SensorType.Power, this, settings);
 			pcieSlotPower = new Sensor("PCIe Slot Power", 1, SensorType.Power, this, settings);
 			sixteenPinPower = new Sensor("16-Pin Power", 2, SensorType.Power, this, settings);
+			eightPin1Power = new Sensor("8-Pin #1 Power", 3, SensorType.Power, this, settings);
+			eightPin2Power = new Sensor("8-Pin #2 Power", 4, SensorType.Power, this, settings);
+			eightPin3Power = new Sensor("8-Pin #3 Power", 5, SensorType.Power, this, settings);
 			monitorRefreshRate = new Sensor("Monitor Refresh Rate", 0, SensorType.Frequency, this, settings);
 
 			NvGPUCoolerSettings coolerSettings = GetCoolerSettings();
@@ -535,18 +541,47 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 					power.Value = powerStatus.TotalGpuPowermW * 1E-03f;
 					ActivateSensor(power);
 
-					// very dirty 12VHPWR detection
-					var gpuName = GetName(handle);
-					if (gpuName.Contains("3090 Ti") || gpuName.Contains("4090")
-						|| gpuName.Contains("4080") || gpuName.Contains("4070"))
+					//for (int i = 0; i < powerStatus.Channels.Length; i++)
+					//{
+					//	if (powerStatus.Channels[i].PwrAvgmW > 0)
+					//		Console.WriteLine($"Channel {i}: {powerStatus.Channels[i].PwrAvgmW * 1E-03f}W");
+					//}
+
+					// Channel 4 = PCIe slot
+					if (powerStatus.Channels[4].PwrAvgmW > 0)
 					{
-						// Channel 4 = PCIe slot
 						pcieSlotPower.Value = powerStatus.Channels[4].PwrAvgmW * 1E-03f;
 						ActivateSensor(pcieSlotPower);
+					}
 
-						// Channel 5 = 16-Pin
+					// very dirty 12VHPWR detection
+					if (this.name.Contains("3090 Ti") || this.name.Contains("4090")
+						|| this.name.Contains("4080") || this.name.Contains("4070"))
+					{						
+						// Channel 5 = 16-pin
 						sixteenPinPower.Value = powerStatus.Channels[5].PwrAvgmW * 1E-03f;
 						ActivateSensor(sixteenPinPower);
+					}
+					// Channel 5-7 = 8-pin
+					else
+					{
+						if (powerStatus.Channels[5].PwrAvgmW > 0)
+						{
+							eightPin1Power.Value = powerStatus.Channels[5].PwrAvgmW * 1E-03f;
+							ActivateSensor(eightPin1Power);
+						}
+
+						if (powerStatus.Channels[6].PwrAvgmW > 0)
+						{
+							eightPin2Power.Value = powerStatus.Channels[6].PwrAvgmW * 1E-03f;
+							ActivateSensor(eightPin2Power);
+						}
+
+						if (powerStatus.Channels[7].PwrAvgmW > 0)
+						{
+							eightPin3Power.Value = powerStatus.Channels[7].PwrAvgmW * 1E-03f;
+							ActivateSensor(eightPin3Power);
+						}
 					}
 				}
 			}
