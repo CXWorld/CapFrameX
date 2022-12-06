@@ -10,6 +10,7 @@
 
 using CapFrameX.Monitoring.Contracts;
 using Microsoft.Win32;
+using Serilog;
 using System;
 using System.Globalization;
 
@@ -71,7 +72,10 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 overdriveVersion = -1;
             }
 
-            this.temperatureCore =
+			Log.Logger.Information($"AMD graphics card detected: {name}.");
+			Log.Logger.Information($"ADL Overdrive version: {overdriveVersion}.");
+
+			this.temperatureCore =
               new Sensor("GPU Core", 0, SensorType.Temperature, this, settings);
             this.temperatureMemory =
               new Sensor("GPU Memory", 1, SensorType.Temperature, this, settings);

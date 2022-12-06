@@ -9,6 +9,7 @@
 */
 
 using CapFrameX.Monitoring.Contracts;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,10 +34,13 @@ namespace OpenHardwareMonitor.Hardware.ATI
                     int numberOfAdapters = 0;
                     ADL.ADL_Adapter_NumberOfAdapters_Get(ref numberOfAdapters);
 
-                    if (numberOfAdapters > 0)
+					Log.Information($"ADL_Adapter_NumberOfAdapters_Get: {numberOfAdapters}");
+
+					if (numberOfAdapters > 0)
                     {
                         ADLAdapterInfo[] adapterInfo = new ADLAdapterInfo[numberOfAdapters];
                         if (ADL.ADL_Adapter_AdapterInfo_Get(adapterInfo) == ADL.ADL_OK)
+                        {
                             for (int i = 0; i < numberOfAdapters; i++)
                             {
                                 ADL.ADL_Adapter_Active_Get(adapterInfo[i].AdapterIndex,
@@ -72,6 +76,11 @@ namespace OpenHardwareMonitor.Hardware.ATI
                                     }
                                 }
                             }
+                        }
+                        else
+                        {
+							Log.Error($"ADL_Adapter_AdapterInfo_Get: error");
+						}
                     }
                 }
             }
