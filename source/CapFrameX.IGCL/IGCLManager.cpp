@@ -160,7 +160,7 @@ bool GetDeviceInfo(const uint32_t index, IgclDeviceInfo* deviceInfo)
 		strncpy_s(deviceInfo->DeviceName, StDeviceAdapterProperties.name, CTL_MAX_DEVICE_NAME_LEN);
 
 		std::string name = deviceInfo->DeviceName;
-		if (name.find("M") != std::string::npos)
+		if (name.find("0M") != std::string::npos)
 			isMobileDevice = true;
 
 		deviceInfo->Pci_vendor_id = StDeviceAdapterProperties.pci_vendor_id;
