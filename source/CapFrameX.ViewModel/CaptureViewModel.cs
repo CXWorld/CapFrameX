@@ -353,7 +353,7 @@ namespace CapFrameX.ViewModel
                   .UseRunHistory;
             }
             set
-            {
+            {              
                 _appConfiguration.UseRunHistory = value;
                 _rTSSService.SetShowRunHistory(value);
                 OnUseRunHistoryChanged();
@@ -1000,25 +1000,13 @@ namespace CapFrameX.ViewModel
         {
             var historyEntry = _overlayEntryProvider.GetOverlayEntry("RunHistory");
 
-            if (!UseRunHistory)
-            {
-                UseAggregation = false;
+            // temp. fix for disabled run history checkbox from previous versions
+            if (historyEntry != null)
+                historyEntry.ShowOnOverlayIsEnabled = true;
 
-                // don't show history on overlay
-                if (historyEntry != null)
-                {
-                    historyEntry.ShowOnOverlay = false;
-                    historyEntry.ShowOnOverlayIsEnabled = false;
-                }
-            }
-            else
-            {
-                if (historyEntry != null)
-                {
-                    historyEntry.ShowOnOverlay = true;
-                    historyEntry.ShowOnOverlayIsEnabled = true;
-                }
-            }
+            if (!UseRunHistory)
+                UseAggregation = false;               
+
         }
 
         private void SetGlobalHookEventResetHistoryHotkey()
