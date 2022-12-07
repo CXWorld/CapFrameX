@@ -3,7 +3,6 @@
 #include <crtdbg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string>
 
 double deltatimestamp = 0;
 double prevtimestamp = 0;
@@ -25,7 +24,6 @@ double prevvramWriteBandwidthCounter = 0;
 
 ctl_api_handle_t hAPIHandle;
 ctl_device_adapter_handle_t* hDevices;
-bool isMobileDevice = false;
 
 bool IntializeIgcl()
 {
@@ -159,10 +157,6 @@ bool GetDeviceInfo(const uint32_t index, IgclDeviceInfo* deviceInfo)
 
 		strncpy_s(deviceInfo->DeviceName, StDeviceAdapterProperties.name, CTL_MAX_DEVICE_NAME_LEN);
 
-		std::string name = deviceInfo->DeviceName;
-		if (name.find("0M") != std::string::npos)
-			isMobileDevice = true;
-
 		deviceInfo->Pci_vendor_id = StDeviceAdapterProperties.pci_vendor_id;
 		deviceInfo->Pci_device_id = StDeviceAdapterProperties.pci_device_id;
 		deviceInfo->Rev_id = StDeviceAdapterProperties.rev_id;
@@ -199,7 +193,7 @@ bool GetIgclTelemetryData(const uint32_t index, IgclTelemetryData* telemetryData
 				prevgpuEnergyCounter = curgpuEnergyCounter;
 				curgpuEnergyCounter = pPowerTelemetry.gpuEnergyCounter.value.datadouble;
 
-				telemetryData->gpuEnergyValue = !isMobileDevice ? (curgpuEnergyCounter - prevgpuEnergyCounter) / deltatimestamp : curgpuEnergyCounter;
+				telemetryData->gpuEnergyValue = (curgpuEnergyCounter - prevgpuEnergyCounter) / deltatimestamp;
 			}
 
 			telemetryData->gpuVoltageSupported = pPowerTelemetry.gpuVoltage.bSupported;
