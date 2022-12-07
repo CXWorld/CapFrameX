@@ -9,7 +9,7 @@
 /**
  *
  * @file ctl_api.cpp
- * @version v1-r0
+ * @version v1-r1
  *
  */
 
@@ -149,7 +149,7 @@ ctlInit(
 ctl_result_t CTL_APICALL
 ctlClose(
     ctl_api_handle_t hAPIHandle                     ///< [in][release] Control API implementation handle obtained during init
-                                                    ///< call
+    ///< call
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -223,6 +223,7 @@ ctlSetRuntimePath(
     else if (pArgs->pRuntimePath)
     {
         // this is a case where the caller app is interested in loading a RT directly
+    // IMPORTANT NOTE: Free pArgs and pArgs->pRuntimePath only after ctlInit() call
         pRuntimeArgs = pArgs;
         result = CTL_RESULT_SUCCESS;
     }
@@ -250,7 +251,7 @@ ctl_result_t CTL_APICALL
 ctlWaitForPropertyChange(
     ctl_device_adapter_handle_t hDeviceAdapter,     ///< [in][release] handle to control device adapter
     ctl_wait_property_change_args_t* pArgs          ///< [in] Argument containing information about which property changes to
-                                                    ///< listen for
+    ///< listen for
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -438,15 +439,15 @@ ctlCheckDriverVersion(
 ctl_result_t CTL_APICALL
 ctlEnumerateDevices(
     ctl_api_handle_t hAPIHandle,                    ///< [in][release] Applications should pass the Control API handle returned
-                                                    ///< by the CtlInit function 
+    ///< by the CtlInit function 
     uint32_t* pCount,                               ///< [in,out][release] pointer to the number of device instances. If count
-                                                    ///< is zero, then the api will update the value with the total
-                                                    ///< number of drivers available. If count is non-zero, then the api will
-                                                    ///< only retrieve the number of drivers.
-                                                    ///< If count is larger than the number of drivers available, then the api
-                                                    ///< will update the value with the correct number of drivers available.
+    ///< is zero, then the api will update the value with the total
+    ///< number of drivers available. If count is non-zero, then the api will
+    ///< only retrieve the number of drivers.
+    ///< If count is larger than the number of drivers available, then the api
+    ///< will update the value with the correct number of drivers available.
     ctl_device_adapter_handle_t* phDevices          ///< [in,out][optional][release][range(0, *pCount)] array of driver
-                                                    ///< instance handles
+    ///< instance handles
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -485,13 +486,13 @@ ctl_result_t CTL_APICALL
 ctlEnumerateDisplayOutputs(
     ctl_device_adapter_handle_t hDeviceAdapter,     ///< [in][release] handle to control device adapter
     uint32_t* pCount,                               ///< [in,out][release] pointer to the number of display output instances.
-                                                    ///< If count is zero, then the api will update the value with the total
-                                                    ///< number of outputs available. If count is non-zero, then the api will
-                                                    ///< only retrieve the number of outputs.
-                                                    ///< If count is larger than the number of drivers available, then the api
-                                                    ///< will update the value with the correct number of drivers available.
+    ///< If count is zero, then the api will update the value with the total
+    ///< number of outputs available. If count is non-zero, then the api will
+    ///< only retrieve the number of outputs.
+    ///< If count is larger than the number of drivers available, then the api
+    ///< will update the value with the correct number of drivers available.
     ctl_display_output_handle_t* phDisplayOutputs   ///< [in,out][optional][release][range(0, *pCount)] array of display output
-                                                    ///< instance handles
+    ///< instance handles
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -646,7 +647,7 @@ ctlGetZeDevice(
     ctl_device_adapter_handle_t hDAhandle,          ///< [in][release] Handle to display adapter
     void* pZeDevice,                                ///< [out][release] ze_device handle
     void** hInstance                                ///< [out][release] Module instance which caller can use to get export
-                                                    ///< functions directly
+    ///< functions directly
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -1516,7 +1517,7 @@ ctl_result_t CTL_APICALL
 ctlSoftwarePSR(
     ctl_display_output_handle_t hDisplayOutput,     ///< [in][release] Handle to display output
     ctl_sw_psr_settings_t* pSoftwarePsrSetting      ///< [in,out][release] Get Software PSR caps/state or Set Software PSR
-                                                    ///< state
+    ///< state
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -1593,13 +1594,13 @@ ctlGetIntelArcSyncInfoForMonitor(
 ctl_result_t CTL_APICALL
 ctlEnumerateMuxDevices(
     ctl_api_handle_t hAPIHandle,                    ///< [in][release] Applications should pass the Control API handle returned
-                                                    ///< by the CtlInit function 
+    ///< by the CtlInit function 
     uint32_t* pCount,                               ///< [in,out][release] pointer to the number of MUX device instances. If
-                                                    ///< input count is zero, then the api will update the value with the total
-                                                    ///< number of MUX devices available and return the Count value. If input
-                                                    ///< count is non-zero, then the api will only retrieve the number of MUX Devices.
-                                                    ///< If count is larger than the number of MUX devices available, then the
-                                                    ///< api will update the value with the correct number of MUX devices available.
+    ///< input count is zero, then the api will update the value with the total
+    ///< number of MUX devices available and return the Count value. If input
+    ///< count is non-zero, then the api will only retrieve the number of MUX Devices.
+    ///< If count is larger than the number of MUX devices available, then the
+    ///< api will update the value with the correct number of MUX devices available.
     ctl_mux_output_handle_t* phMuxDevices           ///< [out][range(0, *pCount)] array of MUX device instance handles
 )
 {
@@ -1676,8 +1677,8 @@ ctl_result_t CTL_APICALL
 ctlSwitchMux(
     ctl_mux_output_handle_t hMuxDevice,             ///< [in] MUX device instance handle
     ctl_display_output_handle_t hInactiveDisplayOutput  ///< [out] Input selection for this MUX, which if active will drive the
-                                                    ///< output of this MUX device. This should be one of the display output
-                                                    ///< handles reported under this MUX device's properties.
+    ///< output of this MUX device. This should be one of the display output
+    ///< handles reported under this MUX device's properties.
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -1824,6 +1825,150 @@ ctlEdidManagement(
 
 
 /**
+* @brief Get/Set Custom mode.
+*
+* @details
+*     - To get or set custom mode.
+*     - Add custom source mode operation supports only single mode additon at
+*       a time.
+*     - Remove custom source mode operation supports single or multiple mode
+*       removal at a time.
+*
+* @returns
+*     - CTL_RESULT_SUCCESS
+*     - CTL_RESULT_ERROR_UNINITIALIZED
+*     - CTL_RESULT_ERROR_DEVICE_LOST
+*     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
+*         + `nullptr == hDisplayOutput`
+*     - CTL_RESULT_ERROR_INVALID_NULL_POINTER
+*         + `nullptr == pCustomModeArgs`
+*     - ::CTL_RESULT_ERROR_UNSUPPORTED_VERSION - "Unsupported version"
+*     - ::CTL_RESULT_ERROR_INVALID_OPERATION_TYPE - "Invalid operation type"
+*     - ::CTL_RESULT_ERROR_INVALID_NULL_POINTER - "Invalid null pointer"
+*     - ::CTL_RESULT_ERROR_NULL_OS_DISPLAY_OUTPUT_HANDLE - "Null OS display output handle"
+*     - ::CTL_RESULT_ERROR_NULL_OS_INTERFACE - "Null OS interface"
+*     - ::CTL_RESULT_ERROR_NULL_OS_ADAPATER_HANDLE - "Null OS adapter handle"
+*     - ::CTL_RESULT_ERROR_KMD_CALL - "Kernal mode driver call failure"
+*     - ::CTL_RESULT_ERROR_INVALID_ARGUMENT - "Invalid combination of parameters"
+*     - ::CTL_RESULT_ERROR_CUSTOM_MODE_STANDARD_CUSTOM_MODE_EXISTS - "Standard custom mode exists"
+*     - ::CTL_RESULT_ERROR_CUSTOM_MODE_NON_CUSTOM_MATCHING_MODE_EXISTS - "Non custom matching mode exists"
+*     - ::CTL_RESULT_ERROR_CUSTOM_MODE_INSUFFICIENT_MEMORY - "Custom mode insufficent memory"
+*/
+ctl_result_t CTL_APICALL
+ctlGetSetCustomMode(
+    ctl_display_output_handle_t hDisplayOutput,     ///< [in] Handle to display output
+    ctl_get_set_custom_mode_args_t* pCustomModeArgs ///< [in,out] Custom mode arguments
+)
+{
+    ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
+
+
+    if (NULL != hinstLib)
+    {
+        ctl_pfnGetSetCustomMode_t pfnGetSetCustomMode = (ctl_pfnGetSetCustomMode_t)GetProcAddress(hinstLib, "ctlGetSetCustomMode");
+        if (pfnGetSetCustomMode)
+        {
+            result = pfnGetSetCustomMode(hDisplayOutput, pCustomModeArgs);
+        }
+    }
+
+    return result;
+}
+
+
+/**
+* @brief Get/Set Combined Display
+*
+* @details
+*     - To get or set combined display.
+*
+* @returns
+*     - CTL_RESULT_SUCCESS
+*     - CTL_RESULT_ERROR_UNINITIALIZED
+*     - CTL_RESULT_ERROR_DEVICE_LOST
+*     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
+*         + `nullptr == hDeviceAdapter`
+*     - CTL_RESULT_ERROR_INVALID_NULL_POINTER
+*         + `nullptr == pCombinedDisplayArgs`
+*     - ::CTL_RESULT_ERROR_UNSUPPORTED_VERSION - "Unsupported version"
+*     - ::CTL_RESULT_ERROR_INVALID_OPERATION_TYPE - "Invalid operation type"
+*     - ::CTL_RESULT_ERROR_INSUFFICIENT_PERMISSIONS - "Insufficient permissions"
+*     - ::CTL_RESULT_ERROR_INVALID_NULL_POINTER - "Invalid null pointer"
+*     - ::CTL_RESULT_ERROR_NULL_OS_DISPLAY_OUTPUT_HANDLE - "Null OS display output handle"
+*     - ::CTL_RESULT_ERROR_NULL_OS_INTERFACE - "Null OS interface"
+*     - ::CTL_RESULT_ERROR_NULL_OS_ADAPATER_HANDLE - "Null OS adapter handle"
+*     - ::CTL_RESULT_ERROR_KMD_CALL - "Kernel mode driver call failure"
+*     - ::CTL_RESULT_ERROR_FEATURE_NOT_SUPPORTED - "Combined Display feature is not supported in this platform"
+*/
+ctl_result_t CTL_APICALL
+ctlGetSetCombinedDisplay(
+    ctl_device_adapter_handle_t hDeviceAdapter,     ///< [in][release] Handle to control device adapter
+    ctl_combined_display_args_t* pCombinedDisplayArgs   ///< [in,out] Setup and get combined display arguments
+)
+{
+    ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
+
+
+    if (NULL != hinstLib)
+    {
+        ctl_pfnGetSetCombinedDisplay_t pfnGetSetCombinedDisplay = (ctl_pfnGetSetCombinedDisplay_t)GetProcAddress(hinstLib, "ctlGetSetCombinedDisplay");
+        if (pfnGetSetCombinedDisplay)
+        {
+            result = pfnGetSetCombinedDisplay(hDeviceAdapter, pCombinedDisplayArgs);
+        }
+    }
+
+    return result;
+}
+
+
+/**
+* @brief Get/Set Display Genlock
+*
+* @details
+*     - To get or set Display Genlock.
+*
+* @returns
+*     - CTL_RESULT_SUCCESS
+*     - CTL_RESULT_ERROR_UNINITIALIZED
+*     - CTL_RESULT_ERROR_DEVICE_LOST
+*     - CTL_RESULT_ERROR_INVALID_NULL_POINTER
+*         + `nullptr == hDeviceAdapter`
+*         + `nullptr == pGenlockArgs`
+*         + `nullptr == hFailureDeviceAdapter`
+*     - ::CTL_RESULT_ERROR_UNSUPPORTED_VERSION - "Unsupported version"
+*     - ::CTL_RESULT_ERROR_INVALID_NULL_POINTER - "Invalid null pointer"
+*     - ::CTL_RESULT_ERROR_NULL_OS_DISPLAY_OUTPUT_HANDLE - "Null OS display output handle"
+*     - ::CTL_RESULT_ERROR_NULL_OS_INTERFACE - "Null OS interface"
+*     - ::CTL_RESULT_ERROR_NULL_OS_ADAPATER_HANDLE - "Null OS adapter handle"
+*     - ::CTL_RESULT_ERROR_INVALID_SIZE - "Invalid topology structure size"
+*     - ::CTL_RESULT_ERROR_KMD_CALL - "Kernel mode driver call failure"
+*/
+ctl_result_t CTL_APICALL
+ctlGetSetDisplayGenlock(
+    ctl_device_adapter_handle_t* hDeviceAdapter,    ///< [in][release] Handle to control device adapter
+    ctl_genlock_args_t** pGenlockArgs,              ///< [in,out] Display Genlock operation and information
+    uint8_t AdapterCount,                           ///< [in] Number of device adapters
+    ctl_device_adapter_handle_t* hFailureDeviceAdapter  ///< [out] Handle to address the failure device adapter in an error case
+)
+{
+    ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
+
+
+    if (NULL != hinstLib)
+    {
+        ctl_pfnGetSetDisplayGenlock_t pfnGetSetDisplayGenlock = (ctl_pfnGetSetDisplayGenlock_t)GetProcAddress(hinstLib, "ctlGetSetDisplayGenlock");
+        if (pfnGetSetDisplayGenlock)
+        {
+            result = pfnGetSetDisplayGenlock(hDeviceAdapter, pGenlockArgs, AdapterCount, hFailureDeviceAdapter);
+        }
+    }
+
+    return result;
+}
+
+
+/**
 * @brief Get handle of engine groups
 *
 * @details
@@ -1843,16 +1988,16 @@ ctl_result_t CTL_APICALL
 ctlEnumEngineGroups(
     ctl_device_adapter_handle_t hDAhandle,          ///< [in][release] Handle to adapter
     uint32_t* pCount,                               ///< [in,out] pointer to the number of components of this type.
-                                                    ///< if count is zero, then the driver shall update the value with the
-                                                    ///< total number of components of this type that are available.
-                                                    ///< if count is greater than the number of components of this type that
-                                                    ///< are available, then the driver shall update the value with the correct
-                                                    ///< number of components.
+    ///< if count is zero, then the driver shall update the value with the
+    ///< total number of components of this type that are available.
+    ///< if count is greater than the number of components of this type that
+    ///< are available, then the driver shall update the value with the correct
+    ///< number of components.
     ctl_engine_handle_t* phEngine                   ///< [in,out][optional][range(0, *pCount)] array of handle of components of
-                                                    ///< this type.
-                                                    ///< if count is less than the number of components of this type that are
-                                                    ///< available, then the driver shall only retrieve that number of
-                                                    ///< component handles.
+    ///< this type.
+    ///< if count is less than the number of components of this type that are
+    ///< available, then the driver shall only retrieve that number of
+    ///< component handles.
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -1929,7 +2074,7 @@ ctl_result_t CTL_APICALL
 ctlEngineGetActivity(
     ctl_engine_handle_t hEngine,                    ///< [in] Handle for the component.
     ctl_engine_stats_t* pStats                      ///< [in,out] Will contain a snapshot of the engine group activity
-                                                    ///< counters.
+    ///< counters.
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -1968,16 +2113,16 @@ ctl_result_t CTL_APICALL
 ctlEnumFans(
     ctl_device_adapter_handle_t hDAhandle,          ///< [in][release] Handle to the adapter
     uint32_t* pCount,                               ///< [in,out] pointer to the number of components of this type.
-                                                    ///< if count is zero, then the driver shall update the value with the
-                                                    ///< total number of components of this type that are available.
-                                                    ///< if count is greater than the number of components of this type that
-                                                    ///< are available, then the driver shall update the value with the correct
-                                                    ///< number of components.
+    ///< if count is zero, then the driver shall update the value with the
+    ///< total number of components of this type that are available.
+    ///< if count is greater than the number of components of this type that
+    ///< are available, then the driver shall update the value with the correct
+    ///< number of components.
     ctl_fan_handle_t* phFan                         ///< [in,out][optional][range(0, *pCount)] array of handle of components of
-                                                    ///< this type.
-                                                    ///< if count is less than the number of components of this type that are
-                                                    ///< available, then the driver shall only retrieve that number of
-                                                    ///< component handles.
+    ///< this type.
+    ///< if count is less than the number of components of this type that are
+    ///< available, then the driver shall only retrieve that number of
+    ///< component handles.
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -2224,8 +2369,8 @@ ctlFanGetState(
     ctl_fan_handle_t hFan,                          ///< [in] Handle for the component.
     ctl_fan_speed_units_t units,                    ///< [in] The units in which the fan speed should be returned.
     int32_t* pSpeed                                 ///< [in,out] Will contain the current speed of the fan in the units
-                                                    ///< requested. A value of -1 indicates that the fan speed cannot be
-                                                    ///< measured.
+    ///< requested. A value of -1 indicates that the fan speed cannot be
+    ///< measured.
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -2264,16 +2409,16 @@ ctl_result_t CTL_APICALL
 ctlEnumFrequencyDomains(
     ctl_device_adapter_handle_t hDAhandle,          ///< [in][release] Handle to display adapter
     uint32_t* pCount,                               ///< [in,out] pointer to the number of components of this type.
-                                                    ///< if count is zero, then the driver shall update the value with the
-                                                    ///< total number of components of this type that are available.
-                                                    ///< if count is greater than the number of components of this type that
-                                                    ///< are available, then the driver shall update the value with the correct
-                                                    ///< number of components.
+    ///< if count is zero, then the driver shall update the value with the
+    ///< total number of components of this type that are available.
+    ///< if count is greater than the number of components of this type that
+    ///< are available, then the driver shall update the value with the correct
+    ///< number of components.
     ctl_freq_handle_t* phFrequency                  ///< [in,out][optional][range(0, *pCount)] array of handle of components of
-                                                    ///< this type.
-                                                    ///< if count is less than the number of components of this type that are
-                                                    ///< available, then the driver shall only retrieve that number of
-                                                    ///< component handles.
+    ///< this type.
+    ///< if count is less than the number of components of this type that are
+    ///< available, then the driver shall only retrieve that number of
+    ///< component handles.
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -2353,14 +2498,14 @@ ctl_result_t CTL_APICALL
 ctlFrequencyGetAvailableClocks(
     ctl_freq_handle_t hFrequency,                   ///< [in] Device handle of the device.
     uint32_t* pCount,                               ///< [in,out] pointer to the number of frequencies.
-                                                    ///< if count is zero, then the driver shall update the value with the
-                                                    ///< total number of frequencies that are available.
-                                                    ///< if count is greater than the number of frequencies that are available,
-                                                    ///< then the driver shall update the value with the correct number of frequencies.
+    ///< if count is zero, then the driver shall update the value with the
+    ///< total number of frequencies that are available.
+    ///< if count is greater than the number of frequencies that are available,
+    ///< then the driver shall update the value with the correct number of frequencies.
     double* phFrequency                             ///< [in,out][optional][range(0, *pCount)] array of frequencies in units of
-                                                    ///< MHz and sorted from slowest to fastest.
-                                                    ///< if count is less than the number of frequencies that are available,
-                                                    ///< then the driver shall only retrieve that number of frequencies.
+    ///< MHz and sorted from slowest to fastest.
+    ///< if count is less than the number of frequencies that are available,
+    ///< then the driver shall only retrieve that number of frequencies.
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -2399,7 +2544,7 @@ ctl_result_t CTL_APICALL
 ctlFrequencyGetRange(
     ctl_freq_handle_t hFrequency,                   ///< [in] Handle for the component.
     ctl_freq_range_t* pLimits                       ///< [in,out] The range between which the hardware can operate for the
-                                                    ///< specified domain.
+    ///< specified domain.
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -2440,7 +2585,7 @@ ctl_result_t CTL_APICALL
 ctlFrequencySetRange(
     ctl_freq_handle_t hFrequency,                   ///< [in] Handle for the component.
     const ctl_freq_range_t* pLimits                 ///< [in] The limits between which the hardware can operate for the
-                                                    ///< specified domain.
+    ///< specified domain.
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -2518,7 +2663,7 @@ ctl_result_t CTL_APICALL
 ctlFrequencyGetThrottleTime(
     ctl_freq_handle_t hFrequency,                   ///< [in] Handle for the component.
     ctl_freq_throttle_time_t* pThrottleTime         ///< [in,out] Will contain a snapshot of the throttle time counters for the
-                                                    ///< specified domain.
+    ///< specified domain.
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -2633,16 +2778,16 @@ ctl_result_t CTL_APICALL
 ctlEnumMemoryModules(
     ctl_device_adapter_handle_t hDAhandle,          ///< [in][release] Handle to display adapter
     uint32_t* pCount,                               ///< [in,out] pointer to the number of components of this type.
-                                                    ///< if count is zero, then the driver shall update the value with the
-                                                    ///< total number of components of this type that are available.
-                                                    ///< if count is greater than the number of components of this type that
-                                                    ///< are available, then the driver shall update the value with the correct
-                                                    ///< number of components.
+    ///< if count is zero, then the driver shall update the value with the
+    ///< total number of components of this type that are available.
+    ///< if count is greater than the number of components of this type that
+    ///< are available, then the driver shall update the value with the correct
+    ///< number of components.
     ctl_mem_handle_t* phMemory                      ///< [in,out][optional][range(0, *pCount)] array of handle of components of
-                                                    ///< this type.
-                                                    ///< if count is less than the number of components of this type that are
-                                                    ///< available, then the driver shall only retrieve that number of
-                                                    ///< component handles.
+    ///< this type.
+    ///< if count is less than the number of components of this type that are
+    ///< available, then the driver shall only retrieve that number of
+    ///< component handles.
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -2759,7 +2904,7 @@ ctl_result_t CTL_APICALL
 ctlMemoryGetBandwidth(
     ctl_mem_handle_t hMemory,                       ///< [in] Handle for the component.
     ctl_mem_bandwidth_t* pBandwidth                 ///< [in,out] Will contain the current health, free memory, total memory
-                                                    ///< size.
+    ///< size.
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -3644,16 +3789,16 @@ ctl_result_t CTL_APICALL
 ctlEnumPowerDomains(
     ctl_device_adapter_handle_t hDAhandle,          ///< [in][release] Handle to display adapter
     uint32_t* pCount,                               ///< [in,out] pointer to the number of components of this type.
-                                                    ///< if count is zero, then the driver shall update the value with the
-                                                    ///< total number of components of this type that are available.
-                                                    ///< if count is greater than the number of components of this type that
-                                                    ///< are available, then the driver shall update the value with the correct
-                                                    ///< number of components.
+    ///< if count is zero, then the driver shall update the value with the
+    ///< total number of components of this type that are available.
+    ///< if count is greater than the number of components of this type that
+    ///< are available, then the driver shall update the value with the correct
+    ///< number of components.
     ctl_pwr_handle_t* phPower                       ///< [in,out][optional][range(0, *pCount)] array of handle of components of
-                                                    ///< this type.
-                                                    ///< if count is less than the number of components of this type that are
-                                                    ///< available, then the driver shall only retrieve that number of
-                                                    ///< component handles.
+    ///< this type.
+    ///< if count is less than the number of components of this type that are
+    ///< available, then the driver shall only retrieve that number of
+    ///< component handles.
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -3730,7 +3875,7 @@ ctl_result_t CTL_APICALL
 ctlPowerGetEnergyCounter(
     ctl_pwr_handle_t hPower,                        ///< [in] Handle for the component.
     ctl_power_energy_counter_t* pEnergy             ///< [in,out] Will contain the latest snapshot of the energy counter and
-                                                    ///< timestamp when the last counter value was measured.
+    ///< timestamp when the last counter value was measured.
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -3845,16 +3990,16 @@ ctl_result_t CTL_APICALL
 ctlEnumTemperatureSensors(
     ctl_device_adapter_handle_t hDAhandle,          ///< [in][release] Handle to display adapter
     uint32_t* pCount,                               ///< [in,out] pointer to the number of components of this type.
-                                                    ///< if count is zero, then the driver shall update the value with the
-                                                    ///< total number of components of this type that are available.
-                                                    ///< if count is greater than the number of components of this type that
-                                                    ///< are available, then the driver shall update the value with the correct
-                                                    ///< number of components.
+    ///< if count is zero, then the driver shall update the value with the
+    ///< total number of components of this type that are available.
+    ///< if count is greater than the number of components of this type that
+    ///< are available, then the driver shall update the value with the correct
+    ///< number of components.
     ctl_temp_handle_t* phTemperature                ///< [in,out][optional][range(0, *pCount)] array of handle of components of
-                                                    ///< this type.
-                                                    ///< if count is less than the number of components of this type that are
-                                                    ///< available, then the driver shall only retrieve that number of
-                                                    ///< component handles.
+    ///< this type.
+    ///< if count is less than the number of components of this type that are
+    ///< available, then the driver shall only retrieve that number of
+    ///< component handles.
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
@@ -3931,7 +4076,7 @@ ctl_result_t CTL_APICALL
 ctlTemperatureGetState(
     ctl_temp_handle_t hTemperature,                 ///< [in] Handle for the component.
     double* pTemperature                            ///< [in,out] Will contain the temperature read from the specified sensor
-                                                    ///< in degrees Celsius.
+    ///< in degrees Celsius.
 )
 {
     ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
