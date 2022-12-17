@@ -137,7 +137,7 @@ namespace OpenHardwareMonitor.Hardware
 
                 if (atiGroup != null)
                 {
-                    (atiGroup as ATI.ATIGroup)?.RemoveInternalGpu();
+                    (atiGroup as ATI.ATIGroup)?.RemoveIntegratedGpu();
                 }
             }
         }

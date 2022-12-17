@@ -47,6 +47,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Sensor", "source\CapFrameX.Sensor\CapFrameX.Sensor.csproj", "{B1B0E5F1-942A-476C-BEA4-8B9FFBCA04C6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenHardwareMonitorLib", "source\OpenHardwareMonitor\OpenHardwareMonitorLib.csproj", "{B0397530-545A-471D-BB74-027AE456DF1A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9746F818-C1B9-461D-BD07-D20A103DC751} = {9746F818-C1B9-461D-BD07-D20A103DC751}
+		{CFA42830-B349-4978-B708-5B1BFA9C579B} = {CFA42830-B349-4978-B708-5B1BFA9C579B}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CapFrameX.Webservice.Host", "source\CapFrameX.Webservice.Host\CapFrameX.Webservice.Host.csproj", "{DF415CAC-AE74-4D59-8E35-5F4C2C4192DC}"
 EndProject
@@ -83,6 +87,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Capture.Contracts", "source\CapFrameX.Capture.Contracts\CapFrameX.Capture.Contracts.csproj", "{5742C860-6313-4477-BF11-839C35AE5588}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CapFrameX.IGCL", "source\CapFrameX.IGCL\CapFrameX.IGCL.vcxproj", "{9746F818-C1B9-461D-BD07-D20A103DC751}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CapFrameX.ADLX", "source\CapFrameX.ADLX\CapFrameX.ADLX.vcxproj", "{CFA42830-B349-4978-B708-5B1BFA9C579B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -533,6 +539,18 @@ Global
 		{9746F818-C1B9-461D-BD07-D20A103DC751}.Release|x64.Build.0 = Release|x64
 		{9746F818-C1B9-461D-BD07-D20A103DC751}.Release|x86.ActiveCfg = Release|Win32
 		{9746F818-C1B9-461D-BD07-D20A103DC751}.Release|x86.Build.0 = Release|Win32
+		{CFA42830-B349-4978-B708-5B1BFA9C579B}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{CFA42830-B349-4978-B708-5B1BFA9C579B}.Debug|Any CPU.Build.0 = Debug|x64
+		{CFA42830-B349-4978-B708-5B1BFA9C579B}.Debug|x64.ActiveCfg = Debug|x64
+		{CFA42830-B349-4978-B708-5B1BFA9C579B}.Debug|x64.Build.0 = Debug|x64
+		{CFA42830-B349-4978-B708-5B1BFA9C579B}.Debug|x86.ActiveCfg = Debug|Win32
+		{CFA42830-B349-4978-B708-5B1BFA9C579B}.Debug|x86.Build.0 = Debug|Win32
+		{CFA42830-B349-4978-B708-5B1BFA9C579B}.Release|Any CPU.ActiveCfg = Release|x64
+		{CFA42830-B349-4978-B708-5B1BFA9C579B}.Release|Any CPU.Build.0 = Release|x64
+		{CFA42830-B349-4978-B708-5B1BFA9C579B}.Release|x64.ActiveCfg = Release|x64
+		{CFA42830-B349-4978-B708-5B1BFA9C579B}.Release|x64.Build.0 = Release|x64
+		{CFA42830-B349-4978-B708-5B1BFA9C579B}.Release|x86.ActiveCfg = Release|Win32
+		{CFA42830-B349-4978-B708-5B1BFA9C579B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

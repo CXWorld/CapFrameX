@@ -27,21 +27,25 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
                                 if (deviceInfo.Pci_device_id != 0 &&
                                   deviceInfo.Pci_vendor_id == IGCL.Intel_VENDOR_ID)
                                 {
-                                    var igclTelemetryData = new IgclTelemetryData();
-                                    if (IGCL.GetIgclTelemetryData((uint)index, ref igclTelemetryData))
+                                    // Filter integrated graphics
+                                    if (deviceInfo.DeviceName != "Intel(R) UHD Graphics")
                                     {
-                                        hardware.Add(new IntelGPU(
-                                              deviceInfo.DeviceName,
-                                              index,
-                                              deviceInfo.AdapterID,
-                                              (int)deviceInfo.Pci_device_id,
-                                              (int)IGCL.GetBusWidth((uint)index),
-                                              deviceInfo.DriverVersion,
-                                              settings,
-                                              sensorConfig,
-                                              processService));
+                                        var igclTelemetryData = new IgclTelemetryData();
+                                        if (IGCL.GetIgclTelemetryData((uint)index, ref igclTelemetryData))
+                                        {
+                                            hardware.Add(new IntelGPU(
+                                                  deviceInfo.DeviceName,
+                                                  index,
+                                                  deviceInfo.AdapterID,
+                                                  (int)deviceInfo.Pci_device_id,
+                                                  (int)IGCL.GetBusWidth((uint)index),
+                                                  deviceInfo.DriverVersion,
+                                                  settings,
+                                                  sensorConfig,
+                                                  processService));
 
-                                        Log.Logger.Information($"Intialized Intel GPU device: {deviceInfo.DeviceName}");
+                                            Log.Logger.Information($"Intialized Intel GPU device: {deviceInfo.DeviceName}");
+                                        }
                                     }
                                 }
                             }
