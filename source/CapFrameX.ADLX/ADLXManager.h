@@ -1,5 +1,9 @@
 #pragma once
-#include <cstdint>
+#include "SDK/Include/ADLXDefines.h"
+
+#define MAX_DRIVER_PATH_LEN  200
+#define MAX_GPU_NAME_LEN  100
+#define MAX_VENDOR_ID_LEN  20
 
 typedef struct AdlxTelemetryData
 {
@@ -29,7 +33,7 @@ typedef struct AdlxTelemetryData
 
 	// Fan Speed
 	bool gpuFanSpeedSupported = false;
-	double gpuFanSpeeValue;
+	double gpuFanSpeedValue;
 
 	// VRAM Usage
 	bool gpuVramSupported = false;
@@ -44,6 +48,16 @@ typedef struct AdlxTelemetryData
 	double gpuTotalBoardPowerValue;
 };
 
+typedef struct AdlxDeviceInfo
+{
+	char GpuName[MAX_GPU_NAME_LEN];
+	// Undefinied = 0, Integrated = 1, Discrete = 2
+	uint32_t GpuType;
+	int32_t Id;
+	char VendorId[MAX_VENDOR_ID_LEN];
+	char DriverPath[MAX_DRIVER_PATH_LEN];
+};
+
 #define ADLX_API __declspec(dllimport)
 
 extern "C" ADLX_API bool IntializeAdlx();
@@ -51,3 +65,5 @@ extern "C" ADLX_API bool IntializeAdlx();
 extern "C" ADLX_API adlx_uint GetAtiAdpaterCount();
 
 extern "C" ADLX_API bool GetAdlxTelemetry(const adlx_uint index, AdlxTelemetryData * telemetryData);
+
+extern "C" ADLX_API bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo * adlxDeviceInfo);
