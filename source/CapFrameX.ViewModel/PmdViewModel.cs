@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.PMD;
+using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
@@ -14,9 +15,12 @@ using Prism.Mvvm;
 using Prism.Regions;
 using System;
 using System.Collections.Generic;
+using System.Data.Odbc;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
@@ -40,8 +44,10 @@ namespace CapFrameX.ViewModel
         private bool _useUpdateSession = false;
         private ISession _session;
         private ISession _previousSession;
+        private string _cpuName;
+        private string _gpuName;
 
-        private IDisposable _pmdChannelStreamChartsDisposable;
+		private IDisposable _pmdChannelStreamChartsDisposable;
         private IDisposable _pmdChannelStreamMetricsDisposable;
         private IDisposable _pmdThroughputDisposable;
         private List<PmdChannel[]> _chartaDataBuffer = new List<PmdChannel[]>(1000 * 10);
@@ -61,10 +67,18 @@ namespace CapFrameX.ViewModel
 
         public PmdMetricsManager PmdMetrics => _pmdDataMetricsManager;
 
-        public string CpuName => _systemInfo.GetProcessorName();
-        public string SessionCpuName => _session?.Info.Processor;
+        public string CpuName
+        {
+            get => _cpuName;
+            set { _cpuName = value; RaisePropertyChanged(); }
+		}
+		public string GpuName
+		{
+			get => _gpuName;
+			set { _gpuName = value; RaisePropertyChanged(); }
+		}
 
-        public string GpuName => _systemInfo.GetGraphicCardName();
+		public string SessionCpuName => _session?.Info.Processor;
         public string SessionGpuName => _session?.Info.GPU;
 
         public Array ComPortsItemsSource => _pmdService.GetPortNames();
@@ -308,7 +322,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public PmdViewModel(IPmdService pmdService, IAppConfiguration appConfiguration,
+        public PmdViewModel(IPmdService pmdService, IAppConfiguration appConfiguration, ISensorService sensorService,
             ILogger<PmdViewModel> logger, IEventAggregator eventAggregator, ISystemInfo systemInfo)
         {
             _pmdService = pmdService;
@@ -321,6 +335,17 @@ namespace CapFrameX.ViewModel
 
             _pmdDataChartManager.UseDarkMode = _appConfiguration.UseDarkMode;
             _pmdDataChartManager.UpdateChartsTheme();
+
+            Task.Factory.StartNew(async () =>
+            {
+                await sensorService.SensorServiceCompletionSource.Task;
+
+				Application.Current.Dispatcher.Invoke(() =>
+				{
+					CpuName = _systemInfo.GetProcessorName();
+		            GpuName = _systemInfo.GetGraphicCardName();
+	            });
+			});
 
             SubscribeToAggregatorEvents();
 

@@ -14,6 +14,7 @@ using OpenHardwareMonitor.Hardware.Nvidia;
 using Serilog;
 using System;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
 
 namespace OpenHardwareMonitor.Hardware.ATI
@@ -24,6 +25,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
 		private readonly int busNumber;
 		private readonly int deviceNumber;
 		private readonly AdlGeneration adlGeneration;
+		private readonly string driverpath;
 		private readonly ISensorConfig sensorConfig;
 		private readonly Sensor temperatureCore;
 		private readonly Sensor temperatureMemory;
@@ -68,6 +70,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
 			this.busNumber = busNumber;
 			this.deviceNumber = deviceNumber;
 			this.adlGeneration = adlGeneration;
+			this.driverpath = driverPath;
 			this.sensorConfig = config;
 			this.context = context;
 
@@ -625,12 +628,10 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
 		public override string GetDriverVersion()
 		{
-			int numberOfAdapters = 0;
-			ADL.ADL_Adapter_NumberOfAdapters_Get(ref numberOfAdapters);
-			ADLAdapterInfo[] adapterInfo = new ADLAdapterInfo[numberOfAdapters];
-			if (numberOfAdapters > 0 && ADL.ADL_Adapter_AdapterInfo_Get(adapterInfo) == ADL.ADL_OK)
+			string GetDriverStringFromPath(string path)
 			{
-				var path = adapterInfo[0].DriverPath.Replace("\\Registry\\Machine\\", "");
+				string driverString = null;
+
 				using (RegistryKey key = Registry.LocalMachine.OpenSubKey(path))
 				{
 					if (key != null)
@@ -638,9 +639,28 @@ namespace OpenHardwareMonitor.Hardware.ATI
 						var sv = key.GetValue("RadeonSoftwareVersion");
 						var radeonSoftwareVersion = sv == null ? string.Empty : sv.ToString();
 
-						return $"Adrenalin {radeonSoftwareVersion}";
+						driverString = $"Adrenalin {radeonSoftwareVersion}";
 					}
 				}
+
+				return driverString;
+			}
+
+			if (this.adlGeneration == AdlGeneration.ADL)
+			{
+				int numberOfAdapters = 0;
+				ADL.ADL_Adapter_NumberOfAdapters_Get(ref numberOfAdapters);
+				ADLAdapterInfo[] adapterInfo = new ADLAdapterInfo[numberOfAdapters];
+				if (numberOfAdapters > 0 && ADL.ADL_Adapter_AdapterInfo_Get(adapterInfo) == ADL.ADL_OK)
+				{
+					var path = adapterInfo[0].DriverPath.Replace("\\Registry\\Machine\\", "");
+					return GetDriverStringFromPath(path);
+				}
+			}
+			else
+			{
+				// SYSTEM\CurrentControlSet\Control\Class\
+				return GetDriverStringFromPath(Path.Combine("SYSTEM\\CurrentControlSet\\Control\\Class\\",this.driverpath));
 			}
 
 			return base.GetDriverVersion();
