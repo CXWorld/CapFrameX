@@ -44,7 +44,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
                                                   sensorConfig,
                                                   processService));
 
-                                            Log.Logger.Information($"Intialized Intel GPU device: {deviceInfo.DeviceName}");
+                                            Log.Logger.Information($"Intel graphics card detected:: {deviceInfo.DeviceName}");
                                         }
                                     }
                                 }

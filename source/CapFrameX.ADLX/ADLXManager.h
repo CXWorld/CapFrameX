@@ -62,8 +62,10 @@ typedef struct AdlxDeviceInfo
 
 extern "C" ADLX_API bool IntializeAdlx();
 
+extern "C" ADLX_API void CloseAdlx();
+
 extern "C" ADLX_API adlx_uint GetAtiAdpaterCount();
 
-extern "C" ADLX_API bool GetAdlxTelemetry(const adlx_uint index, AdlxTelemetryData * telemetryData);
+extern "C" ADLX_API bool GetAdlxTelemetry(const adlx_uint index, AdlxTelemetryData * adlxTelemetryData);
 
 extern "C" ADLX_API bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo * adlxDeviceInfo);

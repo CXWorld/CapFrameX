@@ -255,6 +255,14 @@ bool IntializeAdlx()
 
 	return false;
 }
+  
+void CloseAdlx()
+{
+	ADLX_RESULT res = ADLX_FAIL;
+
+	// Destroy ADLX
+	res = g_ADLXHelp.Terminate();
+}
 
 adlx_uint GetAtiAdpaterCount()
 {
@@ -266,7 +274,7 @@ adlx_uint GetAtiAdpaterCount()
 	return size;
 }
 
-bool GetAdlxTelemetry(const adlx_uint index, AdlxTelemetryData* telemetryData)
+bool GetAdlxTelemetry(const adlx_uint index, AdlxTelemetryData* adlxTelemetryData)
 {
 	ADLX_RESULT res = ADLX_FAIL;
 
@@ -286,16 +294,16 @@ bool GetAdlxTelemetry(const adlx_uint index, AdlxTelemetryData* telemetryData)
 		if (ADLX_SUCCEEDED(res1) && ADLX_SUCCEEDED(res2))
 		{
 			GetTimeStamp(gpuMetrics);
-			SetGPUUsage(gpuMetricsSupport, gpuMetrics, telemetryData);
-			SetGPUClockSpeed(gpuMetricsSupport, gpuMetrics, telemetryData);
-			SetGPUVRAMClockSpeed(gpuMetricsSupport, gpuMetrics, telemetryData);
-			SetGPUTemperature(gpuMetricsSupport, gpuMetrics, telemetryData);
-			SetGPUHotspotTemperature(gpuMetricsSupport, gpuMetrics, telemetryData);
-			SetGPUPower(gpuMetricsSupport, gpuMetrics, telemetryData);
-			SetGPUFanSpeed(gpuMetricsSupport, gpuMetrics, telemetryData);
-			SetGPUVRAM(gpuMetricsSupport, gpuMetrics, telemetryData);
-			SetGPUVoltage(gpuMetricsSupport, gpuMetrics, telemetryData);
-			SetGPUTotalBoardPower(gpuMetricsSupport, gpuMetrics, telemetryData);
+			SetGPUUsage(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+			SetGPUClockSpeed(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+			SetGPUVRAMClockSpeed(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+			SetGPUTemperature(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+			SetGPUHotspotTemperature(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+			SetGPUPower(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+			SetGPUFanSpeed(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+			SetGPUVRAM(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+			SetGPUVoltage(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+			SetGPUTotalBoardPower(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
 
 			return true;
 		}
