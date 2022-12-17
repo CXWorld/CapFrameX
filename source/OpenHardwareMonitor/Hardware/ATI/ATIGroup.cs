@@ -25,66 +25,66 @@ namespace OpenHardwareMonitor.Hardware.ATI
         {
             try
             {
-                int adlStatus = ADL.ADL_Main_Control_Create(1);
-                int adl2Status = ADL.ADL2_Main_Control_Create(1, out context);
+                //int adlStatus = ADL.ADL_Main_Control_Create(1);
+                //int adl2Status = ADL.ADL2_Main_Control_Create(1, out context);
 
-                if (adlStatus == ADL.ADL_OK || adl2Status == ADL.ADL_OK)
-                {
-                    int numberOfAdapters = 0;
-                    ADL.ADL_Adapter_NumberOfAdapters_Get(ref numberOfAdapters);
+                //if (adlStatus == ADL.ADL_OK || adl2Status == ADL.ADL_OK)
+                //{
+                //    int numberOfAdapters = 0;
+                //    ADL.ADL_Adapter_NumberOfAdapters_Get(ref numberOfAdapters);
 
-                    if (numberOfAdapters > 0)
-                    {
-                        ADLAdapterInfo[] adapterInfo = new ADLAdapterInfo[numberOfAdapters];
-                        if (ADL.ADL_Adapter_AdapterInfo_Get(adapterInfo) == ADL.ADL_OK)
-                            for (int i = 0; i < numberOfAdapters; i++)
-                            {
-                                ADL.ADL_Adapter_Active_Get(adapterInfo[i].AdapterIndex,
-                                  out int isActive);
-                                ADL.ADL_Adapter_ID_Get(adapterInfo[i].AdapterIndex,
-                                  out int adapterID);
+                //    if (numberOfAdapters > 0)
+                //    {
+                //        ADLAdapterInfo[] adapterInfo = new ADLAdapterInfo[numberOfAdapters];
+                //        if (ADL.ADL_Adapter_AdapterInfo_Get(adapterInfo) == ADL.ADL_OK)
+                //            for (int i = 0; i < numberOfAdapters; i++)
+                //            {
+                //                ADL.ADL_Adapter_Active_Get(adapterInfo[i].AdapterIndex,
+                //                  out int isActive);
+                //                ADL.ADL_Adapter_ID_Get(adapterInfo[i].AdapterIndex,
+                //                  out int adapterID);
 
-                                if (!string.IsNullOrEmpty(adapterInfo[i].UDID) &&
-                                  adapterInfo[i].VendorID == ADL.ATI_VENDOR_ID)
-                                {
-                                    bool found = false;
-                                    foreach (ATIGPU gpu in hardware)
-                                    {
-                                        if (gpu.BusNumber == adapterInfo[i].BusNumber &&
-                                          gpu.DeviceNumber == adapterInfo[i].DeviceNumber)
-                                        {
-                                            found = true;
-                                            break;
-                                        }
-                                    }
+                //                if (!string.IsNullOrEmpty(adapterInfo[i].UDID) &&
+                //                  adapterInfo[i].VendorID == ADL.ATI_VENDOR_ID)
+                //                {
+                //                    bool found = false;
+                //                    foreach (ATIGPU gpu in hardware)
+                //                    {
+                //                        if (gpu.BusNumber == adapterInfo[i].BusNumber &&
+                //                          gpu.DeviceNumber == adapterInfo[i].DeviceNumber)
+                //                        {
+                //                            found = true;
+                //                            break;
+                //                        }
+                //                    }
 
-                                    if (!found)
-                                    {
-                                        var adapterName = adapterInfo[i].AdapterName.Trim();
-                                        hardware.Add(new ATIGPU(
-                                          adapterName,
-                                          adapterInfo[i].AdapterIndex,
-                                          adapterInfo[i].BusNumber,
-                                          adapterInfo[i].DeviceNumber,
-                                          context, settings,
-                                          sensorConfig,
-                                          processService));
-                                    }
-                                }
-                            }
-                    }
-                }
+                //                    if (!found)
+                //                    {
+                //                        var adapterName = adapterInfo[i].AdapterName.Trim();
+                //                        hardware.Add(new ATIGPU(
+                //                          adapterName,
+                //                          adapterInfo[i].AdapterIndex,
+                //                          adapterInfo[i].BusNumber,
+                //                          adapterInfo[i].DeviceNumber,
+                //                          context, settings,
+                //                          sensorConfig,
+                //                          processService));
+                //                    }
+                //                }
+                //            }
+                //    }
+                //}
             }
             catch (DllNotFoundException) { }
             catch (EntryPointNotFoundException) { }
         }
 
-        public void RemoveInternalGpu()
+        public void RemoveIntegratedGpu()
         {
-            var internalGpu = hardware.FirstOrDefault(gpu => gpu.Name == "AMD Radeon(TM) Graphics");
+            var integratedGpu = hardware.FirstOrDefault(gpu => gpu.Name == "AMD Radeon(TM) Graphics");
 
-            if (internalGpu != null)
-                hardware.Remove(internalGpu);
+            if (integratedGpu != null)
+                hardware.Remove(integratedGpu);
         }
 
         public IHardware[] Hardware
