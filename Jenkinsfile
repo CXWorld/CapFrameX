@@ -31,6 +31,12 @@ pipeline {
 								bat "msbuild source\\CapFrameX.IGCL\\CapFrameX.IGCL.vcxproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
 							}
 						}
+			    
+			    			stage('Build ADLX') {
+							steps {
+								bat "msbuild source\\CapFrameX.IGCL\\CapFrameX.ADLX.vcxproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
+							}
+						}
 
                         stage('Build Installer') {
                             steps {
