@@ -231,9 +231,9 @@ bool IntializeAdlx()
 			res = g_ADLXHelp.GetSystemServices()->GetGPUs(&gpus);
 			if (ADLX_SUCCEEDED(res))
 			{
-				IADLXGPUPtr oneGPU;
+				IADLXGPUPtr gpu;
 				// Use the first GPU in the list
-				res = gpus->At(gpus->Begin(), &oneGPU);
+				res = gpus->At(gpus->Begin(), &gpu);
 				if (ADLX_SUCCEEDED(res))
 				{
 					return true;
@@ -282,13 +282,13 @@ bool GetAdlxTelemetry(const adlx_uint index, AdlxTelemetryData* adlxTelemetryDat
 	IADLXGPUMetricsSupportPtr gpuMetricsSupport;
 	IADLXGPUMetricsPtr gpuMetrics;
 
-	IADLXGPUPtr oneGPU;
-	res = gpus->At(index, &oneGPU);
+	IADLXGPUPtr gpu;
+	res = gpus->At(index, &gpu);
 
 	if (ADLX_SUCCEEDED(res))
 	{
-		ADLX_RESULT res1 = perfMonitoringService->GetSupportedGPUMetrics(oneGPU, &gpuMetricsSupport);
-		ADLX_RESULT res2 = perfMonitoringService->GetCurrentGPUMetrics(oneGPU, &gpuMetrics);
+		ADLX_RESULT res1 = perfMonitoringService->GetSupportedGPUMetrics(gpu, &gpuMetricsSupport);
+		ADLX_RESULT res2 = perfMonitoringService->GetCurrentGPUMetrics(gpu, &gpuMetrics);
 
 		// Display timestamp and GPU metrics
 		if (ADLX_SUCCEEDED(res1) && ADLX_SUCCEEDED(res2))

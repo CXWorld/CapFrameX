@@ -339,6 +339,7 @@ namespace CapFrameX.ViewModel
             Task.Factory.StartNew(async () =>
             {
                 await sensorService.SensorServiceCompletionSource.Task;
+                await Task.Delay(500);
 
 				Application.Current.Dispatcher.Invoke(() =>
 				{
