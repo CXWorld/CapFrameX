@@ -596,7 +596,11 @@ void RTSSCoreControl::Refresh()
 
 					if (dwObjectSize)
 					{
-						strObj.Format("<C200><OBJ=%08X><A0><S1><FR><A> FPS<S><C>\n", dwObjectOffset);
+						auto indexStart = OverlayEntries[i].Value.Find('C') - 1;
+						auto indexEnd = OverlayEntries[i].Value.Find('>', indexStart);
+						CString color = OverlayEntries[i].Value.Mid(indexStart, indexEnd + 1 - indexStart);
+
+						strObj.Format("%s<OBJ=%08X><A0><S1><FR><A> FPS<S><C>\n", color, dwObjectOffset);
 						//print embedded object
 						strOSD += strObj;
 						//modify object offset
@@ -619,7 +623,11 @@ void RTSSCoreControl::Refresh()
 
 					if (dwObjectSize)
 					{
-						strObj.Format("<C200><OBJ=%08X><A0><S1><FT><A> ms<S><C>\n", dwObjectOffset);
+						auto indexStart = OverlayEntries[i].Value.Find('C') - 1;
+						auto indexEnd = OverlayEntries[i].Value.Find('>', indexStart);
+						CString color = OverlayEntries[i].Value.Mid(indexStart, indexEnd + 1 - indexStart);
+
+						strObj.Format("%s<OBJ=%08X><A0><S1><FT><A> ms<S><C>\n", color, dwObjectOffset);
 						//print embedded object
 						strOSD += strObj;
 						//modify object offset
