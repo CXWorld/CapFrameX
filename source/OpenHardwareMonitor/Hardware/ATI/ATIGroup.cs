@@ -33,10 +33,14 @@ namespace OpenHardwareMonitor.Hardware.ATI
 			try
 			{
 				if (!TryUseAdlx(settings, sensorConfig, processService))
+				{
+					Log.Information("Failed to load ADLX, use ADL fallback instead.");
 					UseAdlFallback(settings, sensorConfig, processService);
+				}
 			}
 			catch (DllNotFoundException ex) { Log.Error(ex, "AMD GPU lib DLL error."); }
 			catch (EntryPointNotFoundException ex) { Log.Error(ex, "AMD GPU lib entry point error."); }
+			catch (Exception ex) { Log.Error(ex, "Error while initializing ATI group."); }
 		}
 
 		private bool TryUseAdlx(ISettings settings, ISensorConfig sensorConfig, IProcessService processService)

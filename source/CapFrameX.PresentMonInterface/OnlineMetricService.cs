@@ -104,7 +104,7 @@ namespace CapFrameX.PresentMonInterface
                 .FrameDataStream
                 .Skip(1)
                 .ObserveOn(new EventLoopScheduler())
-                .Where(line => EvaluateRealtimeInputLag())
+                .Where(line => EvaluateRealtimeApplicationLatency())
                 .Scan(new List<string[]>(), (acc, current) =>
                 {
                     if (acc.Count > 1)
@@ -139,7 +139,7 @@ namespace CapFrameX.PresentMonInterface
             catch { return false; }
         }
 
-        private bool EvaluateRealtimeInputLag()
+        private bool EvaluateRealtimeApplicationLatency()
         {
             try
             {
@@ -290,19 +290,22 @@ namespace CapFrameX.PresentMonInterface
                 return;
             }
 
-            // it makes no sense to calculate fps metrics with
-            // frame times above the stuttering threshold
-            // filtering high frame times caused by focus lost for example
-            if (frameTime > STUTTERING_THRESHOLD * 1E03) return;
+			// it makes no sense to calculate fps metrics with
+			// frame times above the stuttering threshold
+			// filtering high frame times caused by focus lost for example
+			if (frameTime > STUTTERING_THRESHOLD * 1E03) return;
 
             try
             {
                 var frameTime_a = Convert.ToDouble(lineSplits[1][PresentMonCaptureService.MsBetweenPresents_INDEX], CultureInfo.InvariantCulture);
                 var untilDisplayedTimes_a = Convert.ToDouble(lineSplits[1][PresentMonCaptureService.UntilDisplayedTimes_INDEX], CultureInfo.InvariantCulture);
                 var inPresentAPITimes_b = Convert.ToDouble(lineSplits[0][PresentMonCaptureService.MsInPresentAPI_INDEX], CultureInfo.InvariantCulture);
-                var appMissed_a = Convert.ToInt32(lineSplits[1][PresentMonCaptureService.Dropped_INDEX], CultureInfo.InvariantCulture) == 1;
+				var untilRenderComplete_a = Convert.ToDouble(lineSplits[1][PresentMonCaptureService.MsUntilRenderComplete_INDEX], CultureInfo.InvariantCulture);
+				var appMissed_a = Convert.ToInt32(lineSplits[1][PresentMonCaptureService.Dropped_INDEX], CultureInfo.InvariantCulture) == 1;
 
-                lock (_lockApplicationLatency)
+				//  PCLatency = msBetweenPresents + msUntilRenderComplete – prev(msInPresentAPI) ??
+
+				lock (_lockApplicationLatency)
                 {
                     _measuretimesApplicationLatency.Add(startTime);
 
@@ -313,6 +316,9 @@ namespace CapFrameX.PresentMonInterface
                         _applicationLatencyValues.Add(0.5 * frameTime_a + untilDisplayedTimes_a + 0.5 * (_prevDisplayedFrameInputLagTime + _droppedFrametimes));
                         _droppedFrametimes = 0.0;
                         _prevDisplayedFrameInputLagTime = frameTime_a - inPresentAPITimes_b;
+
+                        // _applicationLatencyValues.Add(2 * frameTime_a + untilRenderComplete_a + inPresentAPITimes_b);
+
                     }
 
                     if (startTime - _measuretimesApplicationLatency.First() > _maxOnlineApplicationLatencyIntervalLength)

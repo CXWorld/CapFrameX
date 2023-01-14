@@ -20,8 +20,9 @@ namespace CapFrameX.PresentMonInterface
         public const int Dropped_INDEX = 6;
         public const int TimeInSeconds_INDEX = 7;
         public const int MsInPresentAPI_INDEX = 8;
-        public const int MsBetweenPresents_INDEX = 9;
-        public const int UntilDisplayedTimes_INDEX = 13;
+		public const int MsBetweenPresents_INDEX = 9;
+		public const int MsUntilRenderComplete_INDEX = 12;
+		public const int UntilDisplayedTimes_INDEX = 13;
         public const int QPCTime_INDEX = 17;
         public const int VALID_LINE_LENGTH = 18;
 
