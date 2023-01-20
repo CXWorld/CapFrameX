@@ -36,7 +36,7 @@
         <materialDesign:ColorZone Mode="PrimaryMid" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="7*"/>
+                    <ColumnDefinition Width="8*"/>
                     <ColumnDefinition Width="2*"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="2">
@@ -84,7 +84,7 @@
                              Content="CLOUD" />
 				</StackPanel>
 
-                <materialDesign:PopupBox Grid.Column="1" Margin="0 0 260 0" DataContext="{Binding Path=DataContext, ElementName=ColorbarViewName}"
+                <materialDesign:PopupBox Grid.Column="1" Margin="0 0 235 0" DataContext="{Binding Path=DataContext, ElementName=ColorbarViewName}"
                                          RequestBringIntoView="PopupBox_RequestBringIntoView" StaysOpen="False" 
                                          PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right" x:Name="ScreenshotPopupBox">
                     <materialDesign:PopupBox.ToggleContent>
@@ -116,7 +116,7 @@
                 </materialDesign:PopupBox>
 
                 <Button Grid.Column="1" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
-                            Margin="0 0 210 0"
+                            Margin="0 0 190 0"
 						    ToolTip="Login"
                             HorizontalAlignment="Right"
 						    materialDesign:RippleAssist.Feedback="#DD000000"
@@ -127,7 +127,7 @@
 				</Button>
                 
 				<Button Grid.Column="1" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
-                            Margin="0 0 210 0"
+                            Margin="0 0 190 0"
 						    ToolTip="Logout"
                             HorizontalAlignment="Right"
 						    materialDesign:RippleAssist.Feedback="#DD000000"
@@ -137,7 +137,7 @@
                     <materialDesign:PackIcon Kind="Logout" Foreground="DarkRed"/>
 				</Button>
 
-				<TextBlock Grid.Column="1" Margin="0 0 70 2" HorizontalAlignment="Right" VerticalAlignment="Center">           
+				<TextBlock Grid.Column="1" Margin="0 0 60 2" HorizontalAlignment="Right" VerticalAlignment="Center">           
 			        <Hyperlink NavigateUri="https://capframex.com/" RequestNavigate="Hyperlink_RequestNavigate" TextDecorations="None">
 				        <TextBlock FontSize="16" Text="CapFrameX.com" Foreground="White"/>
 			        </Hyperlink>	

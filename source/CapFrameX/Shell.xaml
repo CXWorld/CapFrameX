@@ -10,7 +10,7 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 		mc:Ignorable="d"
         Title="CapFrameX"
-        Height="800" Width="1400" MinHeight="800"  MinWidth="1400" Icon="Icons/CX_Icon.png"
+        Height="800" Width="1400" MinHeight="740"  MinWidth="1360" Icon="Icons/CX_Icon.png"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{materialDesign:MaterialDesignFont}">
     <Window.Resources>
