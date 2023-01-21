@@ -279,7 +279,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
                     }
                     else
                     {
-                        powerTotalValue = powerTotal.Value.Value;
+                        powerTotalValue = powerTotal.Value.GetValueOrDefault();
                     }
 
                     // Linear fitting function (model)
