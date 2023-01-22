@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Monitoring.Contracts;
+using System;
 using System.Globalization;
 using System.Text;
 
@@ -17,7 +18,8 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
         private readonly Sensor temperatureMemory;
 
         private readonly Sensor powerTdp;
-        private readonly Sensor powerVram;
+		private readonly Sensor powerTotalBoardSimulated;
+		private readonly Sensor powerVram;
 
         private readonly Sensor clockCore;
         private readonly Sensor clockVram;
@@ -53,8 +55,9 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
 
             this.powerTdp = new Sensor("GPU TDP", 0, SensorType.Power, this, settings);
             this.powerVram = new Sensor("GPU VRAM", 1, SensorType.Power, this, settings);
+			this.powerTotalBoardSimulated = new Sensor("GPU TBP Sim", 2, SensorType.Power, this, settings);
 
-            this.clockCore = new Sensor("GPU Core", 0, SensorType.Clock, this, settings);
+			this.clockCore = new Sensor("GPU Core", 0, SensorType.Clock, this, settings);
             this.clockVram = new Sensor("GPU Memory", 1, SensorType.Clock, this, settings);
 
             this.voltageCore = new Sensor("GPU Core", 0, SensorType.Voltage, this, settings);
@@ -118,7 +121,15 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             {
                 powerTdp.Value = (float)igclTelemetryData.gpuEnergyValue;
                 ActivateSensor(powerTdp);
-            }
+
+                // "Simulated" total board power based on quadratic approximation
+                if (powerTdp.Value.HasValue)
+                {
+                    double QuadraticApprox(double x) => 0.2566922 + 0.987125303 * x + 0.001090790394 * x * x;
+                    powerTotalBoardSimulated.Value = (float)Math.Round(QuadraticApprox(powerTdp.Value.Value), 1);
+                    ActivateSensor(powerTotalBoardSimulated);
+                }
+			}
             else
             {
                 powerTdp.Value = null;
