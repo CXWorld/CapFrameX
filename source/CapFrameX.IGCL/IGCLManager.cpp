@@ -3,6 +3,7 @@
 #include <crtdbg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdexcept>
 
 double deltatimestamp = 0;
 double prevtimestamp = 0;

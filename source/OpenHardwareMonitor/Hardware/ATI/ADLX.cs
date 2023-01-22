@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 
 namespace OpenHardwareMonitor.Hardware.ATI
 {
@@ -80,18 +81,23 @@ namespace OpenHardwareMonitor.Hardware.ATI
 			CloseAdlx();
 		}
 
+		[HandleProcessCorruptedStateExceptions]
 		[DllImport("CapFrameX.ADLX.dll")]
 		public static extern bool IntializeAdlx();
 
+		[HandleProcessCorruptedStateExceptions]
 		[DllImport("CapFrameX.ADLX.dll")]
 		public static extern void CloseAdlx();
 
+		[HandleProcessCorruptedStateExceptions]
 		[DllImport("CapFrameX.ADLX.dll")]
 		public static extern uint GetAtiAdpaterCount();
 
+		[HandleProcessCorruptedStateExceptions]
 		[DllImport("CapFrameX.ADLX.dll")]
 		public static extern bool GetAdlxDeviceInfo(uint index, ref AdlxDeviceInfo adlxDeviceInfo);
 
+		[HandleProcessCorruptedStateExceptions]
 		[DllImport("CapFrameX.ADLX.dll")]
 		public static extern bool GetAdlxTelemetry(uint index, ref AdlxTelemetryData adlxTelemetryData);
 	}

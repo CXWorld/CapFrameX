@@ -40,7 +40,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
 			}
 			catch (DllNotFoundException ex) { Log.Error(ex, "AMD GPU lib DLL error."); }
 			catch (EntryPointNotFoundException ex) { Log.Error(ex, "AMD GPU lib entry point error."); }
-			catch (Exception ex) { Log.Error(ex, "Error while initializing ATI group."); }
+			catch (AccessViolationException ex) { Log.Logger.Error(ex, $"Access violation exception while accessing ADLX."); }
 		}
 
 		private bool TryUseAdlx(ISettings settings, ISensorConfig sensorConfig, IProcessService processService)
@@ -92,6 +92,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
 			}
 			catch (DllNotFoundException) { throw; }
 			catch (EntryPointNotFoundException) { throw; }
+			catch (AccessViolationException) { throw; }
 			catch { return false; }
 		}
 
@@ -197,6 +198,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
 				if (ADLX.IsInitialized)
 					ADLX.CloseAMDGpuLib();
 			}
+			catch (AccessViolationException ex) { Log.Logger.Error(ex, $"Access violation exception while closing ADLX."); }
 			catch (Exception ex) { Log.Error(ex, "Error while closing ADL/ADLX"); }
 		}
 	}

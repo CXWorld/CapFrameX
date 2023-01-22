@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 
 namespace OpenHardwareMonitor.Hardware.IntelGPU
 {
@@ -94,22 +95,28 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             CloseIgcl();
         }
 
-        [DllImport("CapFrameX.IGCL.dll")]
+		[HandleProcessCorruptedStateExceptions]
+		[DllImport("CapFrameX.IGCL.dll")]
         public static extern bool IntializeIgcl();
 
-        [DllImport("CapFrameX.IGCL.dll")]
+		[HandleProcessCorruptedStateExceptions]
+		[DllImport("CapFrameX.IGCL.dll")]
         public static extern void CloseIgcl();
 
-        [DllImport("CapFrameX.IGCL.dll")]
+		[HandleProcessCorruptedStateExceptions]
+		[DllImport("CapFrameX.IGCL.dll")]
         public static extern uint GetAdpaterCount();
 
-        [DllImport("CapFrameX.IGCL.dll")]
+		[HandleProcessCorruptedStateExceptions]
+		[DllImport("CapFrameX.IGCL.dll")]
         public static extern uint GetBusWidth(uint index);
 
-        [DllImport("CapFrameX.IGCL.dll")]
+		[HandleProcessCorruptedStateExceptions]
+		[DllImport("CapFrameX.IGCL.dll")]
         public static extern bool GetDeviceInfo(uint index, ref IgclDeviceInfo igclDeviceInfo);
 
-        [DllImport("CapFrameX.IGCL.dll")]
+		[HandleProcessCorruptedStateExceptions]
+		[DllImport("CapFrameX.IGCL.dll")]
         public static extern bool GetIgclTelemetryData(uint index, ref IgclTelemetryData igclTelemetryData);
     }
 }

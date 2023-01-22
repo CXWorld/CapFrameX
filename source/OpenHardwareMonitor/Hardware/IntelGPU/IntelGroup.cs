@@ -54,7 +54,8 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
                 }
             }
             catch (DllNotFoundException ex) { Log.Logger.Error(ex, $"Error while loading CapFrameX.IGCL.dll."); }
-            catch (Exception ex) { Log.Logger.Error(ex, $"Error while getting Intel GPU device info."); }
+			catch (AccessViolationException ex) { Log.Logger.Error(ex, $"Access violation exception while accessing Intel GPU lib."); }
+			catch (Exception ex) { Log.Logger.Error(ex, $"Error while getting Intel GPU device info."); }
         }
 
         public IHardware[] Hardware => hardware.ToArray();
@@ -68,8 +69,13 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
 
             if (IGCL.IsInitialized)
             {
-                IGCL.CloseIntelGpuLib();
-            }
+                try
+                {
+                    IGCL.CloseIntelGpuLib();
+                }
+				catch (AccessViolationException ex) { Log.Logger.Error(ex, $"Access violation exception while closing Intel GPU lib."); }
+				catch (Exception ex) { Log.Logger.Error(ex, $"Error while closing Intel GPU lib."); }
+			}
         }
     }
 }
