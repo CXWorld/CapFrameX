@@ -244,7 +244,7 @@
                                             <CheckBox IsChecked="{Binding UseTBPSim, Mode=TwoWay}" ToolTipService.ShowDuration="25000">
                                                 <CheckBox.ToolTip>
                                                     <ToolTip MaxWidth="400">
-                                                        <TextBlock TextWrapping="Wrap" Text="If sensor data of a record contains &quot;TBP Sim&quot; values (RDNA GPUs only), use these for analysis like FPS/W instead of &quot;GPU Total&quot;
+                                                        <TextBlock TextWrapping="Wrap" Text="If sensor data of a record contains &quot;TBP Sim&quot; values (RDNA + Intel Arc GPUs only), use these for analysis like FPS/W instead of &quot;GPU Total&quot;
                                                                    &#10;For changes to take effect the analysis and comparison pages have to be reloaded and already inserted records on report page need to be added again"></TextBlock>
                                                     </ToolTip>
                                                     </CheckBox.ToolTip>
