@@ -38,8 +38,8 @@ namespace OpenHardwareMonitor.Hardware.ATI
 					UseAdlFallback(settings, sensorConfig, processService);
 				}
 			}
-			catch (DllNotFoundException ex) { Log.Error(ex, "AMD GPU lib DLL error."); }
-			catch (EntryPointNotFoundException ex) { Log.Error(ex, "AMD GPU lib entry point error."); }
+			catch (DllNotFoundException ex) { Log.Logger.Error(ex, "AMD GPU lib DLL error."); }
+			catch (EntryPointNotFoundException ex) { Log.Logger.Error(ex, "AMD GPU lib entry point error."); }
 			catch (AccessViolationException ex) { Log.Logger.Error(ex, $"Access violation exception while accessing ADLX."); }
 		}
 
@@ -153,7 +153,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
 					}
 					else
 					{
-						Log.Error($"ADL_Adapter_AdapterInfo_Get: error");
+						Log.Logger.Error($"ADL_Adapter_AdapterInfo_Get: error");
 					}
 				}
 			}
@@ -199,7 +199,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
 					ADLX.CloseAMDGpuLib();
 			}
 			catch (AccessViolationException ex) { Log.Logger.Error(ex, $"Access violation exception while closing ADLX."); }
-			catch (Exception ex) { Log.Error(ex, "Error while closing ADL/ADLX"); }
+			catch (Exception ex) { Log.Logger.Error(ex, "Error while closing ADL/ADLX"); }
 		}
 	}
 }
