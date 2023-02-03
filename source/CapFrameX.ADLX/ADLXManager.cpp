@@ -217,6 +217,7 @@ void SetGPUVoltage(IADLXGPUMetricsSupportPtr gpuMetricsSupport, IADLXGPUMetricsP
 bool IntializeAdlx()
 {
 	ADLX_RESULT res = ADLX_FAIL;
+	bool check = false;
 
 	// Initialize ADLX
 	res = g_ADLXHelp.Initialize();
@@ -236,24 +237,17 @@ bool IntializeAdlx()
 				res = gpus->At(gpus->Begin(), &gpu);
 				if (ADLX_SUCCEEDED(res))
 				{
-					return true;
+					check = true;
 				}
-				else
-					return false;
 			}
-			else
-				return false;
 		}
-		else
-			return false;
 	}
-	else
-		return false;
 
 	// Destroy ADLX
-	res = g_ADLXHelp.Terminate();
+	if (!check)
+		res = g_ADLXHelp.Terminate();
 
-	return false;
+	return check;
 }
 
 void CloseAdlx()
@@ -277,6 +271,7 @@ adlx_uint GetAtiAdpaterCount()
 bool GetAdlxTelemetry(const adlx_uint index, AdlxTelemetryData* adlxTelemetryData)
 {
 	ADLX_RESULT res = ADLX_FAIL;
+	bool check = false;
 
 	// Get GPU metrics support
 	IADLXGPUMetricsSupportPtr gpuMetricsSupport;
@@ -305,17 +300,18 @@ bool GetAdlxTelemetry(const adlx_uint index, AdlxTelemetryData* adlxTelemetryDat
 			SetGPUVoltage(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
 			SetGPUTotalBoardPower(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
 
-			return true;
+			check = true;
 		}
 	}
 
-	return false;
+	return check;
 }
 
 bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
 {
 	ADLX_RESULT res = ADLX_FAIL;
 	ADLX_RESULT ret;
+	bool check = false;
 
 	IADLXGPUPtr gpu;
 	res = gpus->At(index, &gpu);
@@ -343,8 +339,8 @@ bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
 		ret = gpu->UniqueId(&id);
 		adlxDeviceInfo->Id = id;
 
-		return true;
+		check = true;
 	}
 
-	return false;
+	return check;
 }

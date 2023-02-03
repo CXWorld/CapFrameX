@@ -88,10 +88,10 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 			hotSpotTemperature = new Sensor("GPU Hot Spot", (int)thermalSettings.Count + 1, SensorType.Temperature, this, settings);
 			memoryJunctionTemperature = new Sensor("GPU Memory Junction", (int)thermalSettings.Count + 2, SensorType.Temperature, this, settings);
 
-			clocks = new Sensor[3];
+			clocks = new Sensor[2];
 			clocks[0] = new Sensor("GPU Core", 0, SensorType.Clock, this, settings);
 			clocks[1] = new Sensor("GPU Memory", 1, SensorType.Clock, this, settings);
-			clocks[2] = new Sensor("GPU Shader", 2, SensorType.Clock, this, settings);
+			// clocks[2] = new Sensor("GPU Shader", 2, SensorType.Clock, this, settings);
 
 			for (int i = 0; i < clocks.Length; i++)
 				ActivateSensor(clocks[i]);
@@ -354,12 +354,12 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 					if (values[30] != 0)
 					{
 						clocks[0].Value = 0.0005f * values[30];
-						clocks[2].Value = 0.001f * values[30];
+						// clocks[2].Value = 0.001f * values[30];
 					}
 					else
 					{
 						clocks[0].Value = 0.001f * values[0];
-						clocks[2].Value = 0.001f * values[14];
+						// clocks[2].Value = 0.001f * values[14];
 					}
 				}
 			}
