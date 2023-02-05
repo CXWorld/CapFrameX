@@ -1,5 +1,115 @@
 [
   {
+    "Name": "ReShade_Setup_4.9.1",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "UnrealEditor",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Warhammer3",
+    "DisplayName": "Total War: Warhammer III (DX11)",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "FORSPOKEN",
+    "DisplayName": "Forspoken",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "StreamDeck",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "AssistenteCertificadoDigital",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "ThermalConsole",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "MedalEncoder",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "u4",
+    "DisplayName": "Uncharted 4: A Thief's End",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "tbs_browser",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Content Manager",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "ReadyFor",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Netmarble Launcher",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Fleet",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Arduino IDE",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "DSX",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "jetbrains-toolbox",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "cod",
+    "DisplayName": "Call of Duty: Modern Warfare 2",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "TheCallistoProtocol-Win64-Shipping",
+    "DisplayName": "The Callisto Protocol",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "PhotosApp",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "BrightMemoryInfinite-Win64-Shipping",
+    "DisplayName": "Bright Memory: Infinite",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "MilesMorales",
+    "DisplayName": "Marvel's Spider-Man: Miles Morales",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "Minion",
     "DisplayName": null,
     "IsBlacklisted": true
