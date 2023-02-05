@@ -81,7 +81,7 @@ namespace CapFrameX.View
             SetSortSettings(_viewModel.AppConfiguration);
 
             Observable.FromEventPattern(Expander, "MouseLeave")
-                .Where(_ => !trvStructure.ContextMenu.IsOpen)
+                .Where(_ => !TrvStructure.ContextMenu.IsOpen)
                 .Where(_ => Expander.IsExpanded)
                 .Where(isOpen => !CreateFolderDialogIsOpen)
                 .Where(_ => !FixedExpanderPosition)
@@ -95,7 +95,7 @@ namespace CapFrameX.View
         private void BuildTreeView()
         {
             var root = CreateTreeViewRoot();
-            CreateTreeViewRecursive(trvStructure.Items[0] as TreeViewItem);
+            CreateTreeViewRecursive(TrvStructure.Items[0] as TreeViewItem);
             JumpToObservedDirectoryItem(root, out var directoryFound);
 
             if ((ExtractFullPath(CaptureRootDirectory) == ObservedDirectory))
@@ -116,10 +116,10 @@ namespace CapFrameX.View
 
         private TreeViewItem CreateTreeViewRoot()
         {
-            trvStructure.Items.Clear();
+            TrvStructure.Items.Clear();
             var mainfoldername = new DirectoryInfo(ExtractFullPath(CaptureRootDirectory));
             var rootNode = CreateTreeItem(mainfoldername, mainfoldername.Name);
-            trvStructure.Items.Add(rootNode);
+            TrvStructure.Items.Add(rootNode);
             rootNode.IsExpanded = true;
             return rootNode;
         }
@@ -454,11 +454,9 @@ namespace CapFrameX.View
             RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "RAM").DisplayIndex = indices[6];
         }
 
-
-
         // TreeView Drag & Drop from record list
 
-        private async void trvStructure_DragOver(object sender, DragEventArgs e)
+        private async void TrvStructure_DragOver(object sender, DragEventArgs e)
         {
             var item = e.Source as TreeViewItem;
 
@@ -469,7 +467,7 @@ namespace CapFrameX.View
                 item.IsSelected = true;
 
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
-                if (trvStructure.SelectedItem == item)
+                if (TrvStructure.SelectedItem == item)
                     item.IsExpanded = true;
             }
             else
@@ -479,15 +477,14 @@ namespace CapFrameX.View
             }
         }
 
-        private void trvStructure_MouseEnter(object sender, MouseEventArgs e)
+        private void TrvStructure_MouseEnter(object sender, MouseEventArgs e)
         {
             // return to default state when canceling D&D
             IsDragDropActive = false;
             ObservedTreeViewItem.IsSelected = true;
         }
 
-
-        private void trvStructure_Drop(object sender, DragEventArgs e)
+        private void TrvStructure_Drop(object sender, DragEventArgs e)
         {
             var item = e.Source as TreeViewItem;
             var path = GetFullPath(item);
@@ -501,8 +498,6 @@ namespace CapFrameX.View
             //ObservedTreeViewItem = item;
             //_viewModel.RecordObserver.ObserveDirectory((item.Tag as DirectoryInfo).FullName);
         }
-
-
 
         public string GetFullPath(TreeViewItem node)
         {
@@ -527,7 +522,5 @@ namespace CapFrameX.View
 
             return null;
         }
-
-
-    }
+	}
 }

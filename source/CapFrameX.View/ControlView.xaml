@@ -80,12 +80,12 @@
                         <materialDesign:PackIcon Kind="Cached" Width="15" Height="15"/>
                     </Button>
                     <ScrollViewer Margin="0 20 0 0" Width="300" Grid.Row="2" Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverterExpander}}" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel" >
-                        <TreeView Name="trvStructure" Padding="5" TreeViewItem.Selected="TreeViewItem_Selected" PreviewMouseRightButtonDown="TreeView_PreviewMouseRightButtonDown"
+                        <TreeView Name="TrvStructure" Padding="5" TreeViewItem.Selected="TreeViewItem_Selected" PreviewMouseRightButtonDown="TreeView_PreviewMouseRightButtonDown"
                                   Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="13"  
                                   AllowDrop="True" 
-                                  DragOver="trvStructure_DragOver" 
-                                  MouseEnter="trvStructure_MouseEnter"
-                                  Drop="trvStructure_Drop">
+                                  DragOver="TrvStructure_DragOver" 
+                                  MouseEnter="TrvStructure_MouseEnter"
+                                  Drop="TrvStructure_Drop">
                             <TreeView.ContextMenu>
                                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                     <MenuItem Header="Open folder" Command="{Binding OpenObservedFolderCommand}"/>
@@ -174,24 +174,24 @@
 
                     <!--Datagrid-->
                     <controls:MultiSelectionDataGrid Grid.Row="1" x:Name="RecordDataGrid" Height="Auto"
-                                                 Margin="0 10 5 0" Sorting="RecordDataGrid_Sorting" SelectionMode="Extended" SelectedIndex="{Binding RecordDataGridSelectedIndex}"
-					                             Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="11"
-					                             ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}"
-                                                 SelectedItemsList="{Binding SelectedRecordInfos, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                 SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
-                                                 PreviewLostKeyboardFocus="RecordDataGrid_PreviewLostKeyboardFocus"
-												 PreviewKeyDown="RecordDataGrid_PreviewKeyDown"
-                                                 BeginningEdit="RecordDataGrid_BeginningEdit"
-                                                 ColumnDisplayIndexChanged="RecordDataGrid_ColumnDisplayIndexChanged"
-					                             materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
-					                             ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
-					                             dragdrop:DragDrop.IsDragSource="True"
-					                             dragdrop:DragDrop.IsDropTarget="False"
-					                             dragdrop:DragDrop.UseDefaultDragAdorner="True"
-					                             dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
-					                             dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
-                                                 Style="{StaticResource MaterialDesignDataGrid}"
-                                                 Background="{DynamicResource MaterialDesignBackground}">
+                            Margin="0 10 5 0" Sorting="RecordDataGrid_Sorting" SelectionMode="Extended" SelectedIndex="{Binding RecordDataGridSelectedIndex}"
+					        Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="11"
+					        ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}"
+                            SelectedItemsList="{Binding SelectedRecordInfos, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
+                            PreviewLostKeyboardFocus="RecordDataGrid_PreviewLostKeyboardFocus"
+							PreviewKeyDown="RecordDataGrid_PreviewKeyDown"
+                            BeginningEdit="RecordDataGrid_BeginningEdit"
+                            ColumnDisplayIndexChanged="RecordDataGrid_ColumnDisplayIndexChanged"
+					        materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+					        ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+					        dragdrop:DragDrop.IsDragSource="True"
+					        dragdrop:DragDrop.IsDropTarget="False"
+					        dragdrop:DragDrop.UseDefaultDragAdorner="True"
+					        dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+					        dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
+                            Style="{StaticResource MaterialDesignDataGrid}"
+                            Background="{DynamicResource MaterialDesignBackground}">
                         <DataGrid.Resources>
                             <Style TargetType="{x:Type DataGridRow}">
                                 <EventSetter Event="MouseDoubleClick" Handler="DataGridRow_MouseDoubleClick"/>

@@ -598,15 +598,12 @@ namespace CapFrameX.Overlay
             _identifierOverlayEntryDict.TryGetValue("PmdCpuPowerCurrent", out IOverlayEntry pmdcpuPowerCurrent);
             _identifierOverlayEntryDict.TryGetValue("PmdSystemPowerCurrent", out IOverlayEntry pmdSystemPowerCurrent);
 
-            OnlinePmdMetrics pmdMetrics = null;
-
-            if (pmdGpuPowerCurrent.ShowOnOverlay
-                || pmdcpuPowerCurrent.ShowOnOverlay
-                || pmdSystemPowerCurrent.ShowOnOverlay)
+			if ((pmdGpuPowerCurrent != null && pmdGpuPowerCurrent.ShowOnOverlay)
+				|| (pmdcpuPowerCurrent != null && pmdcpuPowerCurrent.ShowOnOverlay)
+				|| (pmdSystemPowerCurrent != null && pmdSystemPowerCurrent.ShowOnOverlay))
             {
-                pmdMetrics = _onlineMetricService.GetPmdMetricsPowerCurrent();
-
-                if (pmdMetrics != null)
+				OnlinePmdMetrics pmdMetrics = _onlineMetricService.GetPmdMetricsPowerCurrent();
+				if (pmdMetrics != null)
                 {
                     if (pmdGpuPowerCurrent != null && pmdGpuPowerCurrent.ShowOnOverlay)
                     {
