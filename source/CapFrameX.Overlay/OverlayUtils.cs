@@ -346,6 +346,19 @@ namespace CapFrameX.Overlay
                         ShowGraph = false,
                         ShowGraphIsEnabled = false,
                         Color = string.Empty
+                    },
+                    new OverlayEntryWrapper("Ping")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Network Ping",
+                        GroupName = "Ping",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
                     }
             };
         }

@@ -27,6 +27,7 @@ using Newtonsoft.Json;
 using CapFrameX.Webservice.Data.DTO;
 using CapFrameX.Remote;
 using CapFrameX.Contracts.Overlay;
+using System.Net.NetworkInformation;
 
 namespace CapFrameX.ViewModel
 {
@@ -454,6 +455,19 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public string PingURL
+        {
+            get { return _appConfiguration.PingURL; }
+            set
+            {
+                if (CheckURL(value))
+                    _appConfiguration.PingURL = value;
+                else
+                    _appConfiguration.PingURL = "google.com";
+                RaisePropertyChanged();
+            }
+        }
+
         public string AppNotification { get; private set; }
 
         public string HelpText => File.ReadAllText(@"HelpTexts\ChartControls.rtf");
@@ -780,6 +794,17 @@ namespace CapFrameX.ViewModel
             {
                 ShowNotification = false;
             }
+        }
+
+        private bool CheckURL(string url)
+        {
+            Ping pingSender = new Ping();
+            try 
+            { 
+                PingReply reply = pingSender.Send(url);
+                return true;
+            }
+            catch { return false; };
         }
     }
 }

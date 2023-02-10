@@ -238,7 +238,8 @@ namespace CapFrameX.Contracts.Configuration
 		string SecondMetricBarColor { get; set; }
 		string ThirdMetricBarColor { get; set; }
 
-	}
+        string PingURL { get; set; }
+    }
 
 	public interface IReportDataGridColumnSettings
     {

@@ -146,6 +146,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public string PingURL
+        {
+            get => Get<string>("google.com");
+            set => Set(value);
+        }
+
         // Record List Settings
 
         public bool FixedExpanderPosition
