@@ -300,7 +300,7 @@
                                                  PreviewKeyDown="StutteringFactor_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" ToolTipService.ShowDuration="25000">
                                                     <TextBox.ToolTip>
                                                         <ToolTip Width="300">
-                                                            <TextBlock Text="Factor for the stuttering time.&#xA;Every frametime that is higher than the average frametime x factor is added to the stuttering time."
+                                                            <TextBlock Text="Factor for the stuttering time.&#xA;Every frametime that is higher than the corresponding moving average frametime x factor is added to the stuttering time."
 										            TextWrapping="Wrap"/>
                                                         </ToolTip>
                                                     </TextBox.ToolTip>
