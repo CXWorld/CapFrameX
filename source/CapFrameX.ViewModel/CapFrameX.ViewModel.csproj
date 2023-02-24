@@ -262,6 +262,10 @@
       <Project>{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}</Project>
       <Name>CapFrameX.Extensions</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Hardware.Controller\CapFrameX.Hardware.Controller.csproj">
+      <Project>{62E9AEEB-B322-48D0-B69B-FE64E62C461B}</Project>
+      <Name>CapFrameX.Hardware.Controller</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Hotkey\CapFrameX.Hotkey.csproj">
       <Project>{B033A95B-C385-4A33-8992-2872DF979ECD}</Project>
       <Name>CapFrameX.Hotkey</Name>

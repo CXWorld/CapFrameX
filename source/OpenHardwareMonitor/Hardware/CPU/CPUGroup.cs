@@ -18,12 +18,12 @@ using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.CPU
 {
-    internal class CPUGroup : IGroup
+	public class CPUGroup : IGroup
     {
         private readonly List<GenericCPU> hardware = new List<GenericCPU>();
         private readonly CPUID[][][] threads;
 
-        private static CPUID[][] GetProcessorThreads()
+        public static CPUID[][] GetProcessorThreads()
         {
             List<CPUID> threads = new List<CPUID>();
             for (int i = 0; i < ThreadAffinity.ProcessorGroupCount; i++)
@@ -65,7 +65,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             return processorThreads;
         }
 
-        private static CPUID[][] GroupThreadsByCore(IEnumerable<CPUID> threads)
+        public static CPUID[][] GroupThreadsByCore(IEnumerable<CPUID> threads)
         {
             SortedDictionary<uint, List<CPUID>> cores =
               new SortedDictionary<uint, List<CPUID>>();

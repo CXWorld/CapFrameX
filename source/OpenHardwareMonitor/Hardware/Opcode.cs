@@ -14,7 +14,7 @@ using System.Reflection;
 
 namespace OpenHardwareMonitor.Hardware
 {
-    internal static class Opcode
+    public static class Opcode
     {
 
         private static IntPtr codeBuffer;

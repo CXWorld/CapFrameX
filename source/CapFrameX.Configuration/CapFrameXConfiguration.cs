@@ -455,15 +455,27 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
-        public int OSDRefreshPeriod
+		public string ThreadAffinityHotkey
+		{
+			get => Get<string>("Control+A");
+			set => Set(value);
+		}
+
+		public int OSDRefreshPeriod
         {
             get => Get<int>(1000);
             set => Set(value);
         }
 
-        public bool AutoDisableOverlay
-        {
-            get => Get<bool>(true);
+		public bool AutoDisableOverlay
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+
+		public bool UseThreadAffinity
+		{
+            get => Get<bool>(false);
             set => Set(value);
         }
 

@@ -13,7 +13,7 @@ using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.CPU
 {
-    internal class CPUID
+    public class CPUID
     {
         private readonly int group;
         private readonly int thread;
@@ -41,10 +41,11 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly uint coreId;
         private readonly uint threadId;
 
+#pragma warning disable CS3003 // Type is not CLS-compliant
         public const uint CPUID_0 = 0;
         public const uint CPUID_EXT = 0x80000000;
-
-        private static void AppendRegister(StringBuilder b, uint value)
+#pragma warning restore CS3003 // Type is not CLS-compliant
+		private static void AppendRegister(StringBuilder b, uint value)
         {
             b.Append((char)((value) & 0xff));
             b.Append((char)((value >> 8) & 0xff));
@@ -281,67 +282,31 @@ namespace OpenHardwareMonitor.Hardware.CPU
             get { return thread; }
         }
 
-        public GroupAffinity Affinity
-        {
-            get
-            {
-                return affinity;
-            }
-        }
+        public GroupAffinity Affinity => affinity;
 
         public Vendor Vendor
         {
             get { return vendor; }
         }
 
-        public uint Family
-        {
-            get { return family; }
-        }
+        public uint Family => family;
 
-        public uint Model
-        {
-            get { return model; }
-        }
+        public uint Model => model;
 
-        public uint Stepping
-        {
-            get { return stepping; }
-        }
+        public uint Stepping => stepping;
 
-        public uint PkgType
-        {
-            get { return pkgType; }
-        }
+        public uint PkgType => pkgType;
 
-        public uint ApicId
-        {
-            get { return apicId; }
-        }
+        public uint ApicId => apicId;
 
-        public uint ProcessorId
-        {
-            get { return processorId; }
-        }
+        public uint ProcessorId => processorId;
 
-        public uint CoreId
-        {
-            get { return coreId; }
-        }
+        public uint CoreId => coreId;
 
-        public uint ThreadId
-        {
-            get { return threadId; }
-        }
+        public uint ThreadId => threadId;
 
-        public uint[,] Data
-        {
-            get { return cpuidData; }
-        }
+        public uint[,] Data => cpuidData;
 
-        public uint[,] ExtData
-        {
-            get { return cpuidExtData; }
-        }
+        public uint[,] ExtData => cpuidExtData;
     }
 }

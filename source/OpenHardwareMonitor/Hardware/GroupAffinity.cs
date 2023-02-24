@@ -18,9 +18,8 @@ namespace OpenHardwareMonitor.Hardware
     /// <summary>
     /// This structure describes a group-specific affinity.
     /// </summary>
-    internal struct GroupAffinity
+    public struct GroupAffinity
     {
-
         public static GroupAffinity Undefined =
           new GroupAffinity(ushort.MaxValue, 0);
 

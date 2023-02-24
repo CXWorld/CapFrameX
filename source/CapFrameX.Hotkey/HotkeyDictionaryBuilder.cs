@@ -31,8 +31,9 @@ namespace CapFrameX.Hotkey
             AddToList(appConfiguration.OverlayHotKey, HotkeyAction.Overlay, actionList);
             AddToList(appConfiguration.OverlayConfigHotKey, HotkeyAction.OverlayConfig, actionList);
             AddToList(appConfiguration.ResetHistoryHotkey, HotkeyAction.ResetHistory, actionList);
+			AddToList(appConfiguration.ThreadAffinityHotkey, HotkeyAction.ThreadAffinity, actionList);
 
-            foreach (var item in actionList)
+			foreach (var item in actionList)
             {
                 RemoveInvalidCombinations(item.combination, item.actionDictionary, actionList.Where(x => x.key == item.key).Where(x => x.actionDictionary != item.actionDictionary).Select(x => x.combination));
             }
@@ -141,6 +142,7 @@ namespace CapFrameX.Hotkey
         ResetHistory,
         Capture,
         Overlay,
-        OverlayConfig
+        OverlayConfig,
+        ThreadAffinity
     }
 }

@@ -70,6 +70,10 @@ namespace CapFrameX.Contracts.Configuration
 
 		string OverlayConfigHotKey { get; set; }
 
+		string ThreadAffinityHotkey { get; set; }
+
+		bool UseThreadAffinity { get; set; }
+
 		bool AutoDisableOverlay { get; set; }
 
 		bool OSDCustomPosition { get; set; }

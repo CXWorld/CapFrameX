@@ -37,6 +37,7 @@ using System.Threading.Tasks;
 using CapFrameX.Monitoring.Contracts;
 using CapFrameX.Capture.Contracts;
 using CapFrameX.PMD;
+using CapFrameX.Hardware.Controller;
 
 namespace CapFrameX
 {
@@ -136,7 +137,8 @@ namespace CapFrameX
             Container.Register<CaptureManager>(Reuse.Singleton);
             Container.Register<IPmdService, PmdService>(Reuse.Singleton);
             Container.Register<IPmdDriver, PmdUSBDriver>(Reuse.Singleton);
-        }
+			Container.Register<IThreadAffinityController, ThreadAffinityController>(Reuse.Singleton);
+		}
 
         /// <summary>
         /// https://www.c-sharpcorner.com/forums/using-ioc-with-wpf-prism-in-mvvm

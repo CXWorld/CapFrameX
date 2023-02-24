@@ -14,7 +14,7 @@ using System.Runtime.InteropServices;
 namespace OpenHardwareMonitor.Hardware
 {
 
-    internal static class ThreadAffinity
+    public static class ThreadAffinity
     {
 
         static ThreadAffinity()

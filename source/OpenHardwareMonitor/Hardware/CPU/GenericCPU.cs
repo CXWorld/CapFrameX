@@ -30,7 +30,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
 		protected readonly int processorIndex;
 		protected readonly int coreCount;
-		private readonly bool isInvariantTimeStampCounter;
 		private readonly double estimatedTimeStampCounterFrequency;
 		private readonly double estimatedTimeStampCounterFrequencyError;
 
@@ -47,8 +46,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 		{
 			// Alder Lake (Intel 7/10nm): 0x97, 0x9A
 			// Raptor Lake (Intel 7/10nm): 0xB7
-			// Raptor Lake (Alder Lake rebrand) (Intel 7/10nm): 0xBF
-			// Zen 5 (3nm)?
+			// Raptor Lake (Alder Lake Refresh) (Intel 7/10nm): 0xBF
 			return vendor == Vendor.Intel && family == 0x06
 					&& (model == 0x97 || model == 0x9A || model == 0xB7 || model == 0xBF);
 		}
@@ -145,13 +143,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
 				HasTimeStampCounter = true;
 			else
 				HasTimeStampCounter = false;
-
-			// check if processor supports an invariant TSC 
-			if (cpuid[0][0].ExtData.GetLength(0) > 7
-				&& (cpuid[0][0].ExtData[7, 3] & 0x100) != 0)
-				isInvariantTimeStampCounter = true;
-			else
-				isInvariantTimeStampCounter = false;
 
 			if (coreCount > 1 || threadCountMap.Values.Max() > 1)
 				totalLoad = new Sensor("CPU Total", 0, SensorType.Load, this, settings);
