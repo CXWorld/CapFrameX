@@ -18,7 +18,7 @@ using System.Text;
 
 namespace OpenHardwareMonitor.Hardware
 {
-    internal static class Ring0
+    public static class Ring0
     {
         private static KernelDriver driver;
         private static string fileName;

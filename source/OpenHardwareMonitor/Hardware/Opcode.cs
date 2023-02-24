@@ -16,7 +16,6 @@ namespace OpenHardwareMonitor.Hardware
 {
     public static class Opcode
     {
-
         private static IntPtr codeBuffer;
         private static ulong size;
 

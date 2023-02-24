@@ -186,7 +186,7 @@ namespace CapFrameX.Sensor
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error when starting OpenHardwareMonitor");
+                    _logger.LogError(ex, "Error while starting OpenHardwareMonitor");
                 }
             });
         }

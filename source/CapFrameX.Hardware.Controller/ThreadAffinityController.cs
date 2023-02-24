@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Sensor;
 using Microsoft.Extensions.Logging;
 using OpenHardwareMonitor.Hardware;
 using OpenHardwareMonitor.Hardware.CPU;
@@ -6,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CapFrameX.Hardware.Controller
 {
@@ -19,6 +21,7 @@ namespace CapFrameX.Hardware.Controller
 	{
 		Default,
 		PCores,
+		ECores,
 		CCD0,
 		CCD1
 	}
@@ -27,17 +30,19 @@ namespace CapFrameX.Hardware.Controller
 	{
 		private const uint CPUID_CORE_MASK_STATUS = 0x1A;
 
-		private readonly CPUID[] _threads;
-		private readonly CPUID[][] _coreThreads;
-		private readonly Vendor _vendor;
-		private readonly uint _family;
-		private readonly uint _model;
+		private CPUID[] _threads;
+		private CPUID[][] _coreThreads;
+		private Vendor _vendor;
+		private uint _family;
+		private uint _model;
 		private readonly IAppConfiguration _appConfiguration;
+		private readonly ILogger<ThreadAffinityController> _logger;
 		private readonly Dictionary<int, HybridCore> _hybridCoreDict = new Dictionary<int, HybridCore>();
 		private readonly Dictionary<AffinityState, AffinityState> _intelAffinityStateTransitions = new Dictionary<AffinityState, AffinityState>()
 		{
 			{ AffinityState.Default, AffinityState.PCores },
-			{ AffinityState.PCores, AffinityState.Default }
+			{ AffinityState.PCores, AffinityState.ECores },
+			{ AffinityState.ECores, AffinityState.Default }
 		};
 		private readonly Dictionary<AffinityState, AffinityState> _amdAffinityStateTransitions = new Dictionary<AffinityState, AffinityState>()
 		{
@@ -53,100 +58,121 @@ namespace CapFrameX.Hardware.Controller
 		public AffinityState CpuAffinityState => _currentAffinityState;
 
 		public ThreadAffinityController(IAppConfiguration appConfiguration,
-			ILogger<ThreadAffinityController> logger)
+			ILogger<ThreadAffinityController> logger, ISensorService sensorService)
 		{
 			_appConfiguration = appConfiguration;
+			_logger = logger;
 
-			CPUID[][] processorThreads = CPUGroup.GetProcessorThreads();
-
-			_threads = processorThreads.First();
-			_vendor = _threads[0].Vendor;
-
-			if (_threads.Length > 0)
+			Task.Factory.StartNew(async () =>
 			{
-				_coreThreads = CPUGroup.GroupThreadsByCore(_threads);
-				_model = _coreThreads[0][0].Model;
-				_family = _coreThreads[0][0].Family;
-
-				switch (_threads[0].Vendor)
+				try
 				{
-					case Vendor.Intel:
-						// Intel (Hybrid)
-						{
-							if (IsHybridDesign())
-							{
-								for (int i = 0; i < _coreThreads.Length; i++)
-								{
-									var previousAffinity = ThreadAffinity.Set(_coreThreads[i][0].Affinity);
-									if (Opcode.Cpuid(CPUID_CORE_MASK_STATUS, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
-									{
-										switch (eax >> 24)
-										{
-											case 0x20: _hybridCoreDict.Add(i, HybridCore.Efficiency); break;
-											case 0x40: _hybridCoreDict.Add(i, HybridCore.Performance); break;
-											default: break;
-										}
-									}
+					await sensorService.SensorServiceCompletionSource.Task;
+					await Task.Delay(500);
 
-									ThreadAffinity.Set(previousAffinity);
-								}
+					CPUID[][] processorThreads = CPUGroup.GetProcessorThreads();
+					_threads = processorThreads.First();
+					_vendor = _threads[0].Vendor;
 
-								_isSupportedCPU = true;
-							}
-						}
-						break;
-					case Vendor.AMD:
-						switch (_threads[0].Family)
+					if (_threads.Length > 0)
+					{
+						_coreThreads = CPUGroup.GroupThreadsByCore(_threads);
+						_model = _coreThreads[0][0].Model;
+						_family = _coreThreads[0][0].Family;
+
+						switch (_threads[0].Vendor)
 						{
-							case 0x17:
-							case 0x19:
-							case 0x60:
-							case 0x61:
-							case 0x70:
-								// Ryzen (2 CCDs)
+							case Vendor.Intel:
+								// Intel (Hybrid)
 								{
-									if (_coreThreads[0][0].Name.Contains("900") || _coreThreads[0][0].Name.Contains("950"))
+									if (IsHybridDesign())
 									{
-										if (_coreThreads.Length > 8)
+										for (int i = 0; i < _threads.Length; i++)
 										{
-											_isSupportedCPU = true;
+											var previousAffinity = ThreadAffinity.Set(_threads[i].Affinity);
+											if (Opcode.Cpuid(CPUID_CORE_MASK_STATUS, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
+											{
+												switch (eax >> 24)
+												{
+													case 0x20: _hybridCoreDict.Add(i, HybridCore.Efficiency); break;
+													case 0x40: _hybridCoreDict.Add(i, HybridCore.Performance); break;
+													default: break;
+												}
+											}
+
+											ThreadAffinity.Set(previousAffinity);
 										}
+
+										_isSupportedCPU = true;
 									}
 								}
 								break;
+							case Vendor.AMD:
+								switch (_threads[0].Family)
+								{
+									case 0x17:
+									case 0x19:
+									case 0x60:
+									case 0x61:
+									case 0x70:
+										// Ryzen (2 CCDs)
+										{
+											if (_coreThreads[0][0].Name.Contains("900") || _coreThreads[0][0].Name.Contains("950"))
+											{
+												if (_coreThreads.Length > 8)
+												{
+													_isSupportedCPU = true;
+												}
+											}
+										}
+										break;
+								}
+								break;
+							default:
+								break;
 						}
-						break;
-					default:
-						break;
+					}
+
+					_logger.LogDebug("{componentName} Ready", this.GetType().Name);
 				}
-			}
+				catch (Exception ex)
+				{
+					_logger.LogError(ex, "Error wile initializing Thread Affinity Controller");
+				}
+			});
 		}
 
 		public void ToggleAffinity(int processId)
 		{
-			if (!_appConfiguration.UseThreadAffinity || !_isSupportedCPU ||
-				(!_hybridCoreDict.Any(item => item.Value == HybridCore.Efficiency) && _vendor == Vendor.Intel))
+			if (!_appConfiguration.UseThreadAffinity || !_isSupportedCPU)
 				return;
 
-			var process = Process.GetProcessById(processId);
-
-			if (process != null)
+			try
 			{
-				if (_currentAffinityState == AffinityState.Default)
-				{
-					_defaultProcessAffinity = process.ProcessorAffinity;
-				}
+				var process = Process.GetProcessById(processId);
 
-				if (_vendor == Vendor.AMD)
+				if (process != null)
 				{
-					_currentAffinityState = _amdAffinityStateTransitions[_currentAffinityState];
-				}
-				else if (_vendor == Vendor.Intel)
-				{
-					_currentAffinityState = _intelAffinityStateTransitions[_currentAffinityState];
-				}
+					if (_currentAffinityState == AffinityState.Default)
+					{
+						_defaultProcessAffinity = process.ProcessorAffinity;
+					}
 
-				SetThreadAffinity(process);
+					if (_vendor == Vendor.AMD)
+					{
+						_currentAffinityState = _amdAffinityStateTransitions[_currentAffinityState];
+					}
+					else if (_vendor == Vendor.Intel)
+					{
+						_currentAffinityState = _intelAffinityStateTransitions[_currentAffinityState];
+					}
+
+					SetThreadAffinity(process);
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error wile setting thread affinity");
 			}
 		}
 
@@ -183,11 +209,23 @@ namespace CapFrameX.Hardware.Controller
 			}
 			else if (_vendor == Vendor.Intel)
 			{
+				int efficiencyCoreCount = _hybridCoreDict.Count(item => item.Value == HybridCore.Efficiency);
+				int performanceCoreCount = _hybridCoreDict.Count(item => item.Value == HybridCore.Performance);
+
 				if (_currentAffinityState == AffinityState.PCores)
 				{
 					affinity = GetBitMaskCpuIndex(0);
 
-					for (int i = 1; i < _threads.Length - _hybridCoreDict.Count(item => item.Value == HybridCore.Efficiency); i++)
+					for (int i = 1; i < _threads.Length - efficiencyCoreCount; i++)
+					{
+						affinity |= GetBitMaskCpuIndex(i);
+					}
+				}
+				else if (_currentAffinityState == AffinityState.ECores && efficiencyCoreCount > 0)
+				{
+					affinity = GetBitMaskCpuIndex(performanceCoreCount);
+
+					for (int i = performanceCoreCount + 1; i < _threads.Length; i++)
 					{
 						affinity |= GetBitMaskCpuIndex(i);
 					}
