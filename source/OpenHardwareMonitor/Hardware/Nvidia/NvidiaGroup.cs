@@ -8,10 +8,12 @@
 	
 */
 
+using CapFrameX.Extensions;
 using CapFrameX.Monitoring.Contracts;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OpenHardwareMonitor.Hardware.Nvidia
 {
@@ -86,6 +88,17 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 				hardware.Add(new NvidiaGPU(i, handles[i], displayHandle, settings, sensorConfig, processService));
 			}
 
+		}
+
+		public void RemoveDefaultAdapter()
+		{
+			if (!hardware.IsNullOrEmpty())
+			{
+				var defaultAdapter = hardware.FirstOrDefault(gpu => gpu.Name.Contains("Microsoft"));
+
+				if (defaultAdapter != null)
+					hardware.Remove(defaultAdapter);
+			}
 		}
 
 		public IHardware[] Hardware

@@ -1,7 +1,9 @@
-﻿using CapFrameX.Monitoring.Contracts;
+﻿using CapFrameX.Extensions;
+using CapFrameX.Monitoring.Contracts;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OpenHardwareMonitor.Hardware.IntelGPU
 {
@@ -58,7 +60,18 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
 			catch (Exception ex) { Log.Logger.Error(ex, $"Error while getting Intel GPU device info."); }
         }
 
-        public IHardware[] Hardware => hardware.ToArray();
+		public void RemoveDefaultAdapter()
+		{
+			if (!hardware.IsNullOrEmpty())
+			{
+				var defaultAdapter = hardware.FirstOrDefault(gpu => gpu.Name.Contains("Microsoft"));
+
+				if (defaultAdapter != null)
+					hardware.Remove(defaultAdapter);
+			}
+		}
+
+		public IHardware[] Hardware => hardware.ToArray();
 
         public string GetReport() => string.Empty;
 

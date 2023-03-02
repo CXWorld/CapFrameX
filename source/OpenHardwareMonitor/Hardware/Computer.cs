@@ -131,15 +131,23 @@ namespace OpenHardwareMonitor.Hardware
                 if (group is ATI.ATIGroup || group is Nvidia.NvidiaGroup || group is IntelGPU.IntelGroup)
                     list.Add(group);
 
-            if (list.Sum(group => group.Hardware.Length) > 1)
+            // Remove MS default adapter
+            foreach (IGroup group in groups)
+            {
+                (group as ATI.ATIGroup)?.RemoveDefaultAdapter();
+				(group as Nvidia.NvidiaGroup)?.RemoveDefaultAdapter();
+				(group as IntelGPU.IntelGroup)?.RemoveDefaultAdapter();
+			}
+
+			if (list.Sum(group => group.Hardware.Length) > 1)
             {
                 var atiGroup = list.FirstOrDefault(group => group is ATI.ATIGroup);
 
                 if (atiGroup != null)
                 {
                     (atiGroup as ATI.ATIGroup)?.RemoveIntegratedGpu();
-                }
-            }
+				}
+			}
         }
 
         public bool MainboardEnabled

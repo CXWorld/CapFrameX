@@ -8,6 +8,7 @@
 	
 */
 
+using CapFrameX.Extensions;
 using CapFrameX.Monitoring.Contracts;
 using Serilog;
 using System;
@@ -165,6 +166,17 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
 			if (internalGpu != null)
 				hardware.Remove(internalGpu);
+		}
+
+		public void RemoveDefaultAdapter()
+		{
+			if (!hardware.IsNullOrEmpty())
+			{
+				var defaultAdapter = hardware.FirstOrDefault(gpu => gpu.Name.Contains("Microsoft"));
+
+				if (defaultAdapter != null)
+					hardware.Remove(defaultAdapter);
+			}
 		}
 
 		public IHardware[] Hardware
