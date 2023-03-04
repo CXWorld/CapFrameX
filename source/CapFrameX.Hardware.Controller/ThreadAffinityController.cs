@@ -35,6 +35,8 @@ namespace CapFrameX.Hardware.Controller
 		private Vendor _vendor;
 		private uint _family;
 		private uint _model;
+		private int _currentProcessId;
+
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ILogger<ThreadAffinityController> _logger;
 		private readonly Dictionary<int, HybridCore> _hybridCoreDict = new Dictionary<int, HybridCore>();
@@ -153,6 +155,15 @@ namespace CapFrameX.Hardware.Controller
 
 				if (process != null)
 				{
+					// reset when process changed
+					if(_currentProcessId != 0 && _currentProcessId!= processId)
+					{
+						_currentAffinityState = AffinityState.Default;
+					}
+
+					// update process ID
+					_currentProcessId = processId;
+
 					if (_currentAffinityState == AffinityState.Default)
 					{
 						_defaultProcessAffinity = process.ProcessorAffinity;
@@ -169,9 +180,14 @@ namespace CapFrameX.Hardware.Controller
 
 					SetThreadAffinity(process);
 				}
+				else
+				{
+					_currentAffinityState = AffinityState.Default;
+				}
 			}
 			catch (Exception ex)
 			{
+				_currentAffinityState = AffinityState.Default;
 				_logger.LogError(ex, "Error wile setting thread affinity");
 			}
 		}
