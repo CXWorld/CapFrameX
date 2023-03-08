@@ -615,7 +615,7 @@ namespace CapFrameX.ViewModel
 
 			HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.ThreadAffinity, () =>
 			{
-				Task.Run(async () => _threadAffinityController.ToggleAffinity(await _rTSSService.ProcessIdStream.Take(1)));
+				Task.Run(() => _threadAffinityController.ToggleAffinity());
 			});
 		}
 

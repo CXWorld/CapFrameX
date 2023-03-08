@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using Microsoft.Extensions.Logging;
 using OpenHardwareMonitor.Hardware;
@@ -7,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Hardware.Controller
@@ -60,10 +63,24 @@ namespace CapFrameX.Hardware.Controller
 		public AffinityState CpuAffinityState => _currentAffinityState;
 
 		public ThreadAffinityController(IAppConfiguration appConfiguration,
-			ILogger<ThreadAffinityController> logger, ISensorService sensorService)
+										IRTSSService rTSSService,
+										ILogger<ThreadAffinityController> logger, 
+										ISensorService sensorService)
 		{
 			_appConfiguration = appConfiguration;
 			_logger = logger;
+
+			rTSSService.ProcessIdStream.Subscribe(id =>
+			{
+				// reset when process changed
+				if (id == 0 || _currentProcessId != id)
+				{
+					_currentAffinityState = AffinityState.Default;
+				}
+
+				// update process ID
+				_currentProcessId = id;
+			});
 
 			Task.Factory.StartNew(async () =>
 			{
@@ -144,26 +161,17 @@ namespace CapFrameX.Hardware.Controller
 			});
 		}
 
-		public void ToggleAffinity(int processId)
+		public void ToggleAffinity()
 		{
 			if (!_appConfiguration.UseThreadAffinity || !_isSupportedCPU)
 				return;
 
 			try
 			{
-				var process = Process.GetProcessById(processId);
+				var process = Process.GetProcessById(_currentProcessId);
 
 				if (process != null)
 				{
-					// reset when process changed
-					if(_currentProcessId != 0 && _currentProcessId!= processId)
-					{
-						_currentAffinityState = AffinityState.Default;
-					}
-
-					// update process ID
-					_currentProcessId = processId;
-
 					if (_currentAffinityState == AffinityState.Default)
 					{
 						_defaultProcessAffinity = process.ProcessorAffinity;

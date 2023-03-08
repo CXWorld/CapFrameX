@@ -359,8 +359,21 @@ namespace CapFrameX.Overlay
                         ShowGraph = false,
                         ShowGraphIsEnabled = false,
                         Color = string.Empty
-                    }
-            };
+                    },
+					new OverlayEntryWrapper("ThreadAffinityState")
+					{
+						OverlayEntryType = EOverlayEntryType.CX,
+						ShowOnOverlay = false,
+						ShowOnOverlayIsEnabled = true,
+						Description = "Thread Affinity State",
+						GroupName = "Thread Affinity",
+						Value = "Default",
+						ValueFormat = default,
+						ShowGraph = false,
+						ShowGraphIsEnabled = false,
+						Color = string.Empty
+					}
+			};
         }
     }
 }

@@ -5,6 +5,7 @@ using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
+using CapFrameX.Hardware.Controller;
 using CapFrameX.Monitoring.Contracts;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics.NetStandard.Contracts;
@@ -14,6 +15,7 @@ using Prism.Events;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -23,6 +25,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
+using static System.Windows.Forms.AxHost;
 
 namespace CapFrameX.Overlay
 {
@@ -36,7 +39,7 @@ namespace CapFrameX.Overlay
         {
             "OnlineAverage", "OnlineP1", "OnlineP0dot2", "OnlineApplicationLatency",
             "OnlineStutteringPercentage", "PmdGpuPowerCurrent", "PmdCpuPowerCurrent",
-            "PmdSystemPowerCurrent", "Ping"
+            "PmdSystemPowerCurrent"
         };
 
         private readonly ISensorService _sensorService;
@@ -47,7 +50,9 @@ namespace CapFrameX.Overlay
         private readonly IRTSSService _rTSSService;
         private readonly ISensorConfig _sensorConfig;
         private readonly IOverlayEntryCore _overlayEntryCore;
-        private readonly ILogger<OverlayEntryProvider> _logger;
+        private readonly IThreadAffinityController _threadAffinityController;
+
+		private readonly ILogger<OverlayEntryProvider> _logger;
         private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict
              = new ConcurrentDictionary<string, IOverlayEntry>();
         private readonly TaskCompletionSource<bool> _taskCompletionSource
@@ -70,7 +75,8 @@ namespace CapFrameX.Overlay
             IRTSSService rTSSService,
             ISensorConfig sensorConfig,
             IOverlayEntryCore overlayEntryCore,
-            ILogger<OverlayEntryProvider> logger)
+			IThreadAffinityController threadAffinityController,
+			ILogger<OverlayEntryProvider> logger)
         {
             _sensorService = sensorService;
             _appConfiguration = appConfiguration;
@@ -80,7 +86,8 @@ namespace CapFrameX.Overlay
             _rTSSService = rTSSService;
             _sensorConfig = sensorConfig;
             _overlayEntryCore = overlayEntryCore;
-            _logger = logger;
+			_threadAffinityController = threadAffinityController;
+			_logger = logger;
 
             _ = Task.Run(async () => await LoadOrSetDefault())
                 .ContinueWith(task => _taskCompletionSource.SetResult(true));
@@ -105,6 +112,8 @@ namespace CapFrameX.Overlay
             await UpdateSensorData();
             UpdateOnlineMetrics();
             UpdateAppInfo();
+            UpdateThreadAffinityState();
+            UpdateNetworkPing();
 
             if (updateFormats)
             {
@@ -113,7 +122,7 @@ namespace CapFrameX.Overlay
             return _overlayEntries.ToArray();
         }
 
-        public IOverlayEntry GetOverlayEntry(string identifier)
+		public IOverlayEntry GetOverlayEntry(string identifier)
         {
             _identifierOverlayEntryDict.TryGetValue(identifier, out IOverlayEntry entry);
             return entry;
@@ -252,7 +261,8 @@ namespace CapFrameX.Overlay
                 _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
 
                 if (ONLINE_METRIC_NAMES.Contains(entry.Identifier) || entry.Identifier == "SystemTime"
-                    || entry.Identifier == "BatteryLifePercent" || entry.Identifier == "BatteryLifeRemaining")
+                    || entry.Identifier == "BatteryLifePercent" || entry.Identifier == "BatteryLifeRemaining"
+					|| entry.Identifier == "Ping" || entry.Identifier == "ThreadAffinityState")
                 {
                     if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey(entry.Identifier))
                         _overlayEntryCore.RealtimeMetricEntryDict.Add(entry.Identifier, entry);
@@ -291,8 +301,9 @@ namespace CapFrameX.Overlay
             SetAppInfoIsNumericState();
             SetBatteryInfoFormats();
             SetBatteryInfoIsNumericState();
+            SetNetworkPingIsNumericState();
 
-            _overlayEntries.ForEach(entry => entry.FormatChanged = true);
+			_overlayEntries.ForEach(entry => entry.FormatChanged = true);
         }
 
         private async Task<BlockingCollection<IOverlayEntry>> GetInitializedOverlayEntryDictionary()
@@ -596,18 +607,8 @@ namespace CapFrameX.Overlay
                 stutteringPercentage.Value = Math.Round(_onlineMetricService.GetOnlineStutteringPercentageValue(), 1);
             }
 
-            // ping
-            _identifierOverlayEntryDict.TryGetValue("Ping", out IOverlayEntry ping);
-
-            if (ping != null && ping.ShowOnOverlay)
-            {
-                ping.Value = Math.Round(_ping, 0);
-                Ping_Click();
-
-            }
-
-            // PMD metrics
-            _identifierOverlayEntryDict.TryGetValue("PmdGpuPowerCurrent", out IOverlayEntry pmdGpuPowerCurrent);
+			// PMD metrics
+			_identifierOverlayEntryDict.TryGetValue("PmdGpuPowerCurrent", out IOverlayEntry pmdGpuPowerCurrent);
             _identifierOverlayEntryDict.TryGetValue("PmdCpuPowerCurrent", out IOverlayEntry pmdcpuPowerCurrent);
             _identifierOverlayEntryDict.TryGetValue("PmdSystemPowerCurrent", out IOverlayEntry pmdSystemPowerCurrent);
 
@@ -647,7 +648,30 @@ namespace CapFrameX.Overlay
             }
         }
 
-        private void SetOnlineMetricsIsNumericState()
+		private void UpdateThreadAffinityState()
+		{
+			_identifierOverlayEntryDict.TryGetValue("ThreadAffinityState", out IOverlayEntry threadAffinityState);
+
+			if (threadAffinityState != null && threadAffinityState.ShowOnOverlay)
+			{
+                var threadAffinityStateText = _threadAffinityController.CpuAffinityState == AffinityState.ECores ? "E-cores" :
+                    _threadAffinityController.CpuAffinityState == AffinityState.PCores ? "P-cores" : _threadAffinityController.CpuAffinityState.ToString();
+				threadAffinityState.Value = threadAffinityStateText;
+			}
+		}
+
+		private void UpdateNetworkPing()
+		{
+			_identifierOverlayEntryDict.TryGetValue("Ping", out IOverlayEntry ping);
+
+			if (ping != null && ping.ShowOnOverlay)
+			{
+				ping.Value = Math.Round(_ping, 0);
+				SetPing();
+			}
+		}
+
+		private void SetOnlineMetricsIsNumericState()
         {
             foreach (var metricName in ONLINE_METRIC_NAMES)
             {
@@ -804,7 +828,17 @@ namespace CapFrameX.Overlay
             }
         }
 
-        private void SetBatteryInfoFormats()
+        private void SetNetworkPingIsNumericState()
+        {
+			foreach (var entry in _overlayEntries.Where(x =>
+			   x.Identifier == "Ping"))
+			{
+				entry.IsNumeric = true;
+			}
+		}
+
+
+		private void SetBatteryInfoFormats()
         {
             // BatteryLifePercent
             _identifierOverlayEntryDict.TryGetValue("BatteryLifePercent", out IOverlayEntry batteryLifePercent);
@@ -1033,7 +1067,7 @@ namespace CapFrameX.Overlay
                 });
         }
 
-        private async void Ping_Click()
+        private async void SetPing()
         {
             Ping pingSender = new Ping();
             try 
