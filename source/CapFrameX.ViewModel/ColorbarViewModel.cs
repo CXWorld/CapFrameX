@@ -455,7 +455,17 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public string PingURL
+		public bool UseAdlFallback
+		{
+			get { return _appConfiguration.UseAdlFallback; }
+			set
+			{
+				_appConfiguration.UseAdlFallback = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string PingURL
         {
             get { return _appConfiguration.PingURL; }
             set

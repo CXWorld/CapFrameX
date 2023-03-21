@@ -238,8 +238,12 @@ namespace CapFrameX.Contracts.Configuration
 		/// </summary>
 		bool UseTBPSim { get; set; }
 
+		bool UseAdlFallback { get; set; }
+
 		string FirstMetricBarColor { get; set; }
+
 		string SecondMetricBarColor { get; set; }
+
 		string ThirdMetricBarColor { get; set; }
 
         string PingURL { get; set; }

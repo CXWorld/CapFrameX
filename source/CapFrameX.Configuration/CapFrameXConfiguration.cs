@@ -146,7 +146,14 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
-        public string PingURL
+        public bool UseAdlFallback
+		{
+			get => Get<bool>(false);
+			set => Set(value);
+		}
+
+
+		public string PingURL
         {
             get => Get<string>("google.com");
             set => Set(value);

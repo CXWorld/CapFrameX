@@ -175,7 +175,7 @@ namespace CapFrameX.Sensor
             {
                 try
                 {
-                    _computer = new Computer(_sensorConfig, _rTSSService);
+                    _computer = new Computer(_sensorConfig, _rTSSService, _appConfiguration);
                     _computer.Open();
                     _computer.CPUEnabled = true;
                     _computer.GPUEnabled = true;         

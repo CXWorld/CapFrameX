@@ -29,11 +29,11 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
 		private IntPtr context = IntPtr.Zero;
 
-		public ATIGroup(ISettings settings, ISensorConfig sensorConfig, IProcessService processService)
+		public ATIGroup(ISettings settings, ISensorConfig sensorConfig, IProcessService processService, bool useAdlFallback)
 		{
 			try
 			{
-				if (!TryUseAdlx(settings, sensorConfig, processService))
+				if (useAdlFallback || !TryUseAdlx(settings, sensorConfig, processService))
 				{
 					Log.Information("Failed to load ADLX, use ADL fallback instead.");
 					UseAdlFallback(settings, sensorConfig, processService);
@@ -51,11 +51,11 @@ namespace OpenHardwareMonitor.Hardware.ATI
 				bool check = false;
 				if (ADLX.IntializeAMDGpuLib())
 				{
-					int numberOfAdapters = (int)ADLX.GetAtiAdpaterCount();
+					var adapterCount = ADLX.GetAtiAdpaterCount();
 
-					if (numberOfAdapters > 0)
+					if (adapterCount > 0)
 					{
-						for (int index = 0; index < numberOfAdapters; index++)
+						for (int index = 0; index < adapterCount; index++)
 						{
 							var deviceInfo = new AdlxDeviceInfo();
 							if (ADLX.GetAdlxDeviceInfo((uint)index, ref deviceInfo))

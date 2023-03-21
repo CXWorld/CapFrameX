@@ -8,6 +8,7 @@
 	
 */
 
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Monitoring.Contracts;
 using OpenHardwareMonitor.Hardware.ATI;
 using System;
@@ -25,8 +26,9 @@ namespace OpenHardwareMonitor.Hardware
         private readonly ISettings settings;
         private readonly ISensorConfig sensorConfig;
         private readonly IProcessService processService;
+		private readonly IAppConfiguration appConfiguration;
 
-        private SMBIOS smbios;
+		private SMBIOS smbios;
 
         private bool open;
 
@@ -38,13 +40,15 @@ namespace OpenHardwareMonitor.Hardware
         private bool hddEnabled;
 
 #pragma warning disable CS3001 // Argumenttyp ist nicht CLS-kompatibel
-        public Computer(ISensorConfig config, IProcessService processService)
+        public Computer(ISensorConfig config, IProcessService processService, IAppConfiguration appConfiguration)
 #pragma warning restore CS3001 // Argumenttyp ist nicht CLS-kompatibel
         {
             this.settings = new Settings();
             sensorConfig = config;
             this.processService = processService;
-        }
+            this.appConfiguration = appConfiguration;
+
+		}
 
         private void Add(IGroup group)
         {
@@ -104,7 +108,7 @@ namespace OpenHardwareMonitor.Hardware
 
             if (gpuEnabled)
             {
-                Add(new ATI.ATIGroup(settings, sensorConfig, processService));
+                Add(new ATI.ATIGroup(settings, sensorConfig, processService, this.appConfiguration.UseAdlFallback));
                 Add(new Nvidia.NvidiaGroup(settings, sensorConfig, processService));
                 Add(new IntelGPU.IntelGroup(settings, sensorConfig, processService));
 
@@ -215,7 +219,7 @@ namespace OpenHardwareMonitor.Hardware
                 {
                     if (value)
                     {
-                        Add(new ATI.ATIGroup(settings, sensorConfig, processService));
+                        Add(new ATI.ATIGroup(settings, sensorConfig, processService, appConfiguration.UseAdlFallback));
                         Add(new Nvidia.NvidiaGroup(settings, sensorConfig, processService));
                         Add(new IntelGPU.IntelGroup(settings, sensorConfig, processService));
 
