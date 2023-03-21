@@ -10,7 +10,7 @@ namespace CapFrameX.Test.Sensor
         [TestMethod]
         public void InitializeHardware_AnyDectedHardware()
         {
-            var computer = new Computer(null, null);
+            var computer = new Computer(null, null, null);
             computer.HardwareAdded += new HardwareEventHandler(h => { });
             computer.HardwareRemoved += new HardwareEventHandler(h => { });
 
