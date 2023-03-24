@@ -248,6 +248,15 @@ bool GetIgclTelemetryData(const uint32_t index, IgclTelemetryData* telemetryData
 			telemetryData->vramCurrentClockFrequencySupported = pPowerTelemetry.vramCurrentClockFrequency.bSupported;
 			telemetryData->vramCurrentClockFrequencyValue = pPowerTelemetry.vramCurrentClockFrequency.value.datadouble;
 
+			//if (pPowerTelemetry.vramReadBandwidthCounter.bSupported)
+			//{
+			//	telemetryData->vramReadBandwidthSupported = true;
+			//	prevvramReadBandwidthCounter = curvramReadBandwidthCounter;
+			//	curvramReadBandwidthCounter = pPowerTelemetry.vramReadBandwidthCounter.value.datadouble;
+
+			//	telemetryData->vramReadBandwidthValue = 100 * (curvramReadBandwidthCounter - prevvramReadBandwidthCounter) / deltatimestamp;
+			//}
+
 			telemetryData->vramReadBandwidthSupported = pPowerTelemetry.vramReadBandwidthCounter.bSupported;
 			telemetryData->vramReadBandwidthValue = pPowerTelemetry.vramReadBandwidthCounter.value.datadouble;
 

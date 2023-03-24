@@ -84,7 +84,9 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
         public int DeviceNumber => deviceNumber;
         public int BusNumber => busNumber;
 
-        public override void Update()
+		double QuadraticApprox(double x) => 0.2566922 + 0.987125303 * x + 0.001090790394 * x * x;
+
+		public override void Update()
         {
             // get telemetry data from IGCL
             var igclTelemetryData = new IgclTelemetryData();
@@ -125,7 +127,6 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
                 // "Simulated" total board power based on quadratic approximation
                 if (powerTdp.Value.HasValue)
                 {
-                    double QuadraticApprox(double x) => 0.2566922 + 0.987125303 * x + 0.001090790394 * x * x;
                     powerTotalBoardSimulated.Value = (float)Math.Round(QuadraticApprox(powerTdp.Value.Value), 1);
                     ActivateSensor(powerTotalBoardSimulated);
                 }
