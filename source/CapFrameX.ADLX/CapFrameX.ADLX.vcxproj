@@ -170,13 +170,6 @@
     <ClInclude Include="SDK\Include\IDisplayGamut.h" />
     <ClInclude Include="SDK\Include\IDisplays.h" />
     <ClInclude Include="SDK\Include\IDisplaySettings.h" />
-    <ClInclude Include="SDK\Include\IGPUAutoTuning.h" />
-    <ClInclude Include="SDK\Include\IGPUManualFanTuning.h" />
-    <ClInclude Include="SDK\Include\IGPUManualGFXTuning.h" />
-    <ClInclude Include="SDK\Include\IGPUManualPowerTuning.h" />
-    <ClInclude Include="SDK\Include\IGPUManualVRAMTuning.h" />
-    <ClInclude Include="SDK\Include\IGPUPresetTuning.h" />
-    <ClInclude Include="SDK\Include\IGPUTuning.h" />
     <ClInclude Include="SDK\Include\II2C.h" />
     <ClInclude Include="SDK\Include\ILog.h" />
     <ClInclude Include="SDK\Include\IPerformanceMonitoring.h" />

@@ -69,27 +69,6 @@
     <ClInclude Include="SDK\Include\IDisplaySettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SDK\Include\IGPUAutoTuning.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SDK\Include\IGPUManualFanTuning.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SDK\Include\IGPUManualGFXTuning.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SDK\Include\IGPUManualPowerTuning.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SDK\Include\IGPUManualVRAMTuning.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SDK\Include\IGPUPresetTuning.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SDK\Include\IGPUTuning.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SDK\Include\II2C.h">
       <Filter>Header Files</Filter>
     </ClInclude>
