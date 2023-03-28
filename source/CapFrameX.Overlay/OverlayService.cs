@@ -37,6 +37,7 @@ namespace CapFrameX.Overlay
         private IDisposable _disposableCaptureTimer;
         private IDisposable _disposableDelayCountdown;
         private IDisposable _disposableCountdown;
+        private IDisposable _overlayActiveStreamDisposable;
 
         private IList<string> _runHistory = new List<string>();
         private IList<ISessionRun> _captureDataHistory = new List<ISessionRun>();
@@ -45,9 +46,9 @@ namespace CapFrameX.Overlay
         private int _numberOfRuns;
         private IList<IMetricAnalysis> _metricAnalysis = new List<IMetricAnalysis>();
         private ISubject<IOverlayEntry[]> _onDictionaryUpdated = new Subject<IOverlayEntry[]>();
+		private bool _isServiceAlive = true;
 
-        public bool IsOverlayActive => _appConfiguration.IsOverlayActive;
-
+		public bool IsOverlayActive => _appConfiguration.IsOverlayActive;
 
         public ISubject<bool> IsOverlayActiveStream { get; }
 
@@ -109,8 +110,8 @@ namespace CapFrameX.Overlay
             Task.Run(async () => await InitializeOverlayEntryDict())
                 .ContinueWith(t =>
                {
-                   IsOverlayActiveStream
-                       .AsObservable()
+                   _overlayActiveStreamDisposable = IsOverlayActiveStream
+                       .Where(_ => _isServiceAlive)
                        .Select(isActive =>
                        {
                            if (isActive)
@@ -146,6 +147,7 @@ namespace CapFrameX.Overlay
                 {
                     _sensorService.SensorSnapshotStream
                        .Sample(_sensorService.OsdUpdateStream.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
+                       .Where(_ => _isServiceAlive)
                        .Where((_, idx) => idx == 0 || IsOverlayActive)
                        .Subscribe(sensorData =>
                        {
@@ -251,7 +253,6 @@ namespace CapFrameX.Overlay
                 }
             }
         }
-
 
         public void ResetHistory()
         {
@@ -384,6 +385,12 @@ namespace CapFrameX.Overlay
                     }
                 }
             }
+        }
+
+        public void ShutdownOverlayService()
+		{
+            _isServiceAlive = false;
+            _overlayActiveStreamDisposable?.Dispose();
         }
 
         private async Task InitializeOverlayEntryDict()

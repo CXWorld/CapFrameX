@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.RTSS;
+﻿using CapFrameX.Contracts.Overlay;
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Extensions;
 using CapFrameX.PMD;
@@ -147,7 +148,10 @@ namespace CapFrameX
             PresentMonCaptureService.TryKillPresentMon();
 
             var sensorService = _bootstrapper.Container.Resolve(typeof(ISensorService), true) as ISensorService;
-            sensorService?.CloseOpenHardwareMonitor();
+            sensorService?.ShutdownSensorService();
+
+            var overlayService = _bootstrapper.Container.Resolve(typeof(IOverlayService), true) as IOverlayService;
+            overlayService?.ShutdownOverlayService();
 
             var rtssService = _bootstrapper.Container.Resolve(typeof(IRTSSService), true) as IRTSSService;
             rtssService?.ClearOSD();

@@ -243,7 +243,7 @@ bool IntializeAdlx()
 		}
 	}
 
-	// Destroy ADLX
+	// Terminate ADLX
 	if (!check)
 		res = g_ADLXHelp.Terminate();
 

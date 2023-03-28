@@ -17,7 +17,7 @@ namespace CapFrameX.Contracts.Sensor
         void StartSensorLogging();
         void StopSensorLogging();
         ISessionSensorData2 GetSensorSessionData();
-        void CloseOpenHardwareMonitor();
+        void ShutdownSensorService();
         string GetGpuDriverVersion();
         string GetCpuName();
         string GetGpuName();
