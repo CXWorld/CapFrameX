@@ -36,6 +36,8 @@ namespace CapFrameX.Contracts.Overlay
 
 		void AddRunToHistory(ISessionRun captureData, string process, string recordDirectory);
 
+		void ShutdownOverlayService();
+
 		IOverlayEntry GetSensorOverlayEntry(string identifier);
 		IOverlayEntry[] CurrentOverlayEntries { get; }
 		Action<IOverlayEntry[]> OSDUpdateNotifier { get; set; }

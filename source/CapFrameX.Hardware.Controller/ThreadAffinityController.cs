@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Hardware.Controller

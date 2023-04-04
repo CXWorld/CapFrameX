@@ -24,10 +24,12 @@ namespace CapFrameX.Sensor
         private readonly IRTSSService _rTSSService;
         private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<SensorService> _logger;
+        private readonly IDisposable _logDisposable;
 
         private IComputer _computer;
         private SessionSensorDataLive _sessionSensorDataLive;
         private bool _isLoggingActive = false;
+        private bool _isServiceAlive = true;
 
         private ISubject<TimeSpan> _sensorUpdateSubject;
         private ISubject<TimeSpan> _osdUpdateSubject;
@@ -49,7 +51,7 @@ namespace CapFrameX.Sensor
 
         public IObservable<(DateTime, Dictionary<ISensorEntry, float>)> SensorSnapshotStream { get; private set; }
 
-        public IObservable<TimeSpan> OsdUpdateStream => _osdUpdateSubject.AsObservable();
+		public IObservable<TimeSpan> OsdUpdateStream => _osdUpdateSubject.AsObservable();
 
         public Subject<bool> IsLoggingActiveStream { get; }
 
@@ -91,13 +93,15 @@ namespace CapFrameX.Sensor
             SensorSnapshotStream = _sensorUpdateSubject
                .Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan)))
                .Switch()
+               .Where(_ => _isServiceAlive)
                .Where((_, idx) => idx == 0 || IsOverlayActive || (_isLoggingActive && UseSensorLogging) || IsSensorWebsocketActive())
                .SelectMany(_ => GetTimeStampedSensorValues())
                .Replay(0)
                .RefCount();
 
-            SensorSnapshotStream
+           _logDisposable = SensorSnapshotStream
                 .Sample(_loggingUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
+                .Where(_ => _isServiceAlive)
                 .Where(_ => _isLoggingActive && UseSensorLogging)
                 .SubscribeOn(Scheduler.Default)
                 .Subscribe(sensorData => LogCurrentValues(sensorData.Item2, sensorData.Item1));
@@ -318,8 +322,11 @@ namespace CapFrameX.Sensor
             return sensors;
         }
 
-        public void CloseOpenHardwareMonitor()
+        public void ShutdownSensorService()
         {
+            _isServiceAlive = false;
+            _logDisposable?.Dispose();
+
             lock (_lockComputer)
             {
                 _computer?.Close();

@@ -17,11 +17,11 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             {
                 if (IGCL.IntializeIntelGpuLib())
                 {
-                    int numberOfAdapters = (int)IGCL.GetAdpaterCount();
+                    int apdapterCount = (int)IGCL.GetAdpaterCount();
 
-                    if (numberOfAdapters > 0)
+                    if (apdapterCount > 0)
                     {
-                        for (int index = 0; index < numberOfAdapters; index++)
+                        for (int index = 0; index < apdapterCount; index++)
                         {
                             var deviceInfo = new IgclDeviceInfo();
                             if (IGCL.GetDeviceInfo((uint)index, ref deviceInfo))
@@ -30,7 +30,8 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
                                   deviceInfo.Pci_vendor_id == IGCL.Intel_VENDOR_ID)
                                 {
                                     // Filter integrated graphics
-                                    if (deviceInfo.DeviceName != "Intel(R) UHD Graphics")
+                                    if (!deviceInfo.DeviceName.Contains("UHD Graphics")
+                                        && !deviceInfo.DeviceName.Contains("Xe Graphics"))
                                     {
                                         var igclTelemetryData = new IgclTelemetryData();
                                         if (IGCL.GetIgclTelemetryData((uint)index, ref igclTelemetryData))

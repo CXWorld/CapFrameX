@@ -14,6 +14,7 @@ using System.Text;
 using System.Linq;
 using System.Diagnostics;
 using CapFrameX.Monitoring.Contracts;
+using Serilog;
 
 namespace OpenHardwareMonitor.Hardware.Nvidia
 {
@@ -65,7 +66,10 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 			this.sensorConfig = config;
 			this.stopwatch = new Stopwatch();
 
+			Log.Information($"Nv graphics card detected: {name}");
+
 			NvGPUThermalSettings thermalSettings = GetThermalSettings();
+			Log.Information($"NvAPI GetThermalSettings sensor count: {thermalSettings.Count}");
 			temperatures = new Sensor[thermalSettings.Count];
 			for (int i = 0; i < temperatures.Length; i++)
 			{
@@ -73,12 +77,30 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 				string name;
 				switch (sensor.Target)
 				{
-					case NvThermalTarget.BOARD: name = "GPU Board"; break;
-					case NvThermalTarget.GPU: name = "GPU Core"; break;
-					case NvThermalTarget.MEMORY: name = "GPU Memory"; break;
-					case NvThermalTarget.POWER_SUPPLY: name = "GPU Power Supply"; break;
-					case NvThermalTarget.UNKNOWN: name = "GPU Unknown"; break;
-					default: name = "GPU"; break;
+					case NvThermalTarget.BOARD: 
+						name = "GPU Board";
+						Log.Information($"NvAPI NvThermalTarget: {sensor.Target}");
+						break;
+					case NvThermalTarget.GPU: 
+						name = "GPU Core";
+						Log.Information($"NvAPI NvThermalTarget: {sensor.Target}");
+						break;
+					case NvThermalTarget.MEMORY:
+						name = "GPU Memory";
+						Log.Information($"NvAPI NvThermalTarget: {sensor.Target}");
+						break;
+					case NvThermalTarget.POWER_SUPPLY:
+						name = "GPU Power Supply";
+						Log.Information($"NvAPI NvThermalTarget: {sensor.Target}");
+						break;
+					case NvThermalTarget.UNKNOWN:
+						name = "GPU Unknown";
+						Log.Information($"NvAPI NvThermalTarget: {sensor.Target}");
+						break;
+					default:
+						name = "GPU";
+						Log.Information($"NvAPI NvThermalTarget: default");
+						break;
 				}
 				temperatures[i] = new Sensor(name, i, SensorType.Temperature, this,
 				  new ParameterDescription[0], settings);
