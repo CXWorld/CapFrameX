@@ -76,16 +76,16 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>B7EB4CE818D66ACD9CD8E2317FD38CD5F26789CE</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>D5AD35FA1660347E3B6FC92BD4BF2C70BE0890AB</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>CapFrameX_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>capframex.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>false</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>false</SignManifests>
+    <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -115,6 +115,12 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Icons\cx_icon_BUC.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>capframex.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -199,6 +205,7 @@
     <Content Include="HelpTexts\ChartControls.rtf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="capframex.pfx" />
     <None Include="Files\bf0822e8-2e55-4b99-82ee-939d8ac2384e.bat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -154,7 +154,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <WindowsMetadataLinkDelaySign>true</WindowsMetadataLinkDelaySign>
+      <WindowsMetadataLinkDelaySign>false</WindowsMetadataLinkDelaySign>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /d "$(ProjectDir)$(IntDir)CapFrameX.IGCL.dll" "$(SolutionDir)\source\CapFrameX\bin\$(IntDir)"</Command>

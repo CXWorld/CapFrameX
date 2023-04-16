@@ -75,6 +75,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(ProjectDir)$(Platform)\$(Configuration)\</OutDir>
+    <WindowsMetadataLinkKeyFile>
+    </WindowsMetadataLinkKeyFile>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -147,7 +149,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <WindowsMetadataLinkDelaySign>true</WindowsMetadataLinkDelaySign>
+      <WindowsMetadataLinkDelaySign>false</WindowsMetadataLinkDelaySign>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /d "$(ProjectDir)$(IntDir)CapFrameX.ADLX.dll" "$(SolutionDir)\source\CapFrameX\bin\$(IntDir)"</Command>
