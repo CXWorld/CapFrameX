@@ -145,21 +145,64 @@ namespace CapFrameX
             if (!_isSingleInstance)
                 return;
 
-            PresentMonCaptureService.TryKillPresentMon();
+            try
+            {
+                PresentMonCaptureService.TryKillPresentMon();
+			}
+			catch (Exception ex)
+			{
+				Log.Logger.Error(ex, "Error while shutting down PresentMon.");
+			}
 
-            var sensorService = _bootstrapper.Container.Resolve(typeof(ISensorService), true) as ISensorService;
-            sensorService?.ShutdownSensorService();
+			try
+			{
+				var sensorService = _bootstrapper.Container.Resolve(typeof(ISensorService), true) as ISensorService;
+				sensorService?.ShutdownSensorService();
+			}
+			catch (Exception ex)
+			{
+				Log.Logger.Error(ex, "Error while shutting down the sensor service.");
+			}
 
-            var overlayService = _bootstrapper.Container.Resolve(typeof(IOverlayService), true) as IOverlayService;
-            overlayService?.ShutdownOverlayService();
+			try
+			{
+				var overlayService = _bootstrapper.Container.Resolve(typeof(IOverlayService), true) as IOverlayService;
+				overlayService?.ShutdownOverlayService();
+			}
+			catch (Exception ex)
+			{
+				Log.Logger.Error(ex, "Error while shutting down the overlay service.");
+			}
 
-            var rtssService = _bootstrapper.Container.Resolve(typeof(IRTSSService), true) as IRTSSService;
-            rtssService?.ClearOSD();
+			try
+			{
+				var rtssService = _bootstrapper.Container.Resolve(typeof(IRTSSService), true) as IRTSSService;
+				rtssService?.ClearOSD();
+			}
+			catch (Exception ex)
+			{
+				Log.Logger.Error(ex, "Error while shutting down the RTSS service.");
+			}
 
-            var pmdDriver = _bootstrapper.Container.Resolve(typeof(IPmdDriver), true) as IPmdDriver;
-            pmdDriver?.Disconnect();
+			try
+			{
+				var pmdDriver = _bootstrapper.Container.Resolve(typeof(IPmdDriver), true) as IPmdDriver;
+				pmdDriver?.Disconnect();
+			}
+			catch (Exception ex)
+			{
+				Log.Logger.Error(ex, "Error while shutting down the PMD driver.");
+			}
 
-            _webServer?.Dispose();
+			try
+			{
+				_webServer?.Dispose();
+			}
+			catch (Exception ex)
+			{
+				Log.Logger.Error(ex, "Error while shutting down the web server.");
+			}
+            
         }
 
         private void ApplicationStartup(object sender, StartupEventArgs e)
