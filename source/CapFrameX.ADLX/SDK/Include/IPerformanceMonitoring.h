@@ -521,6 +521,56 @@ namespace adlx
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetGPUTotalBoardPowerRange (adlx_int* minValue, adlx_int* maxValue) = 0;
+        /**
+        *@page DOX_IADLXGPUMetricsSupport_GetGPUIntakeTemperatureRange GetGPUIntakeTemperatureRange
+        *@ENG_START_DOX @brief Gets the minimum and maximum GPU intake temperature on a GPU. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    GetGPUIntakeTemperatureRange (adlx_int* minValue, adlx_int* maxValue)
+        *@codeEnd
+        *
+        *@params
+        * @paramrow{1.,[out],minValue,adlx_int*,@ENG_START_DOX The pointer to a variable where the minimum GPU intake temperature (in °C) is returned. @ENG_END_DOX}
+        * @paramrow{2.,[out],maxValue,adlx_int*,@ENG_START_DOX The pointer to a variable where the maximum GPU intake temperature (in °C) is returned. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the GPU intake temperature range is successfully returned, __ADLX_OK__ is returned.<br>
+        * If the GPU intake temperature range is not successfully returned, an error code is returned.<br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
+        *
+        *@detaileddesc
+        *@ENG_START_DOX @details The minimum and maximum GPU intake temperature are read only. @ENG_END_DOX
+        *
+        *
+        *@requirements
+        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *
+        */
+        virtual ADLX_RESULT ADLX_STD_CALL GetGPUIntakeTemperatureRange (adlx_int* minValue, adlx_int* maxValue) = 0;
+        /**
+        *@page DOX_IADLXGPUMetricsSupport_IsSupportedGPUIntakeTemperature IsSupportedGPUIntakeTemperature
+        *@ENG_START_DOX @brief Checks if the GPU intake temperature metric reporting is supported on a GPU. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    IsSupportedGPUIntakeTemperature (adlx_bool* supported)
+        *@codeEnd
+        *
+        *@params
+        *@paramrow{1.,[out],supported,adlx_bool*,@ENG_START_DOX The pointer to a variable where the state of GPU intake temperature metric reporting is returned. The variable is __true__ if the GPU intake temperature metric reporting is supported\. The variable is __false__ if the GPU intake temperature metric reporting is not supported. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX If the state of GPU intake temperature metric reporting is successfully returned, __ADLX_OK__ is returned. <br>
+        *If the state of GPU intake temperature metric reporting is not successfully returned, an error code is returned. <br>
+        *Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *
+        *
+        *@requirements
+        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *
+        */
+        virtual ADLX_RESULT ADLX_STD_CALL IsSupportedGPUIntakeTemperature (adlx_bool* supported) = 0;
     };
     //----------------------------------------------------------------------------------------------
     typedef IADLXInterfacePtr_T<IADLXGPUMetricsSupport> IADLXGPUMetricsSupportPtr;
@@ -533,32 +583,35 @@ typedef struct IADLXGPUMetricsSupport IADLXGPUMetricsSupport;
 typedef struct IADLXGPUMetricsSupportVtbl
 {
     //IADLXInterface
-    adlx_long (ADLX_STD_CALL *Acquire)(IADLXGPUMetricsSupport* pThis);
-    adlx_long (ADLX_STD_CALL *Release)(IADLXGPUMetricsSupport* pThis);
-    ADLX_RESULT (ADLX_STD_CALL *QueryInterface)(IADLXGPUMetricsSupport* pThis, const wchar_t* interfaceId, void** ppInterface);
+    adlx_long (ADLX_STD_CALL* Acquire)(IADLXGPUMetricsSupport* pThis);
+    adlx_long (ADLX_STD_CALL* Release)(IADLXGPUMetricsSupport* pThis);
+    ADLX_RESULT (ADLX_STD_CALL* QueryInterface)(IADLXGPUMetricsSupport* pThis, const wchar_t* interfaceId, void** ppInterface);
 
     //IADLXGPUMetricsSupport
-    ADLX_RESULT (ADLX_STD_CALL *IsSupportedGPUUsage)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
-    ADLX_RESULT (ADLX_STD_CALL *IsSupportedGPUClockSpeed)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
-    ADLX_RESULT (ADLX_STD_CALL *IsSupportedGPUVRAMClockSpeed)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
-    ADLX_RESULT (ADLX_STD_CALL *IsSupportedGPUTemperature)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
-    ADLX_RESULT (ADLX_STD_CALL *IsSupportedGPUHotspotTemperature)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
-    ADLX_RESULT (ADLX_STD_CALL *IsSupportedGPUPower)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
-    ADLX_RESULT (ADLX_STD_CALL *IsSupportedGPUTotalBoardPower)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
-    ADLX_RESULT (ADLX_STD_CALL *IsSupportedGPUFanSpeed)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
-    ADLX_RESULT (ADLX_STD_CALL *IsSupportedGPUVRAM)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
-    ADLX_RESULT (ADLX_STD_CALL *IsSupportedGPUVoltage)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
-    ADLX_RESULT (ADLX_STD_CALL *GetGPUUsageRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
-    ADLX_RESULT (ADLX_STD_CALL *GetGPUClockSpeedRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
-    ADLX_RESULT (ADLX_STD_CALL *GetGPUVRAMClockSpeedRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
-    ADLX_RESULT (ADLX_STD_CALL *GetGPUTemperatureRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
-    ADLX_RESULT (ADLX_STD_CALL *GetGPUHotspotTemperatureRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
-    ADLX_RESULT (ADLX_STD_CALL *GetGPUPowerRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
-    ADLX_RESULT (ADLX_STD_CALL *GetGPUFanSpeedRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
-    ADLX_RESULT (ADLX_STD_CALL *GetGPUVRAMRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
-    ADLX_RESULT (ADLX_STD_CALL *GetGPUVoltageRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
-    ADLX_RESULT (ADLX_STD_CALL *GetGPUTotalBoardPowerRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
-}IADLXGPUMetricsSupportVtbl;
+    ADLX_RESULT (ADLX_STD_CALL* IsSupportedGPUUsage)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
+    ADLX_RESULT (ADLX_STD_CALL* IsSupportedGPUClockSpeed)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
+    ADLX_RESULT (ADLX_STD_CALL* IsSupportedGPUVRAMClockSpeed)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
+    ADLX_RESULT (ADLX_STD_CALL* IsSupportedGPUTemperature)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
+    ADLX_RESULT (ADLX_STD_CALL* IsSupportedGPUHotspotTemperature)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
+    ADLX_RESULT (ADLX_STD_CALL* IsSupportedGPUPower)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
+    ADLX_RESULT (ADLX_STD_CALL* IsSupportedGPUTotalBoardPower)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
+    ADLX_RESULT (ADLX_STD_CALL* IsSupportedGPUFanSpeed)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
+    ADLX_RESULT (ADLX_STD_CALL* IsSupportedGPUVRAM)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
+    ADLX_RESULT (ADLX_STD_CALL* IsSupportedGPUVoltage)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
+
+    ADLX_RESULT (ADLX_STD_CALL* GetGPUUsageRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
+    ADLX_RESULT (ADLX_STD_CALL* GetGPUClockSpeedRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
+    ADLX_RESULT (ADLX_STD_CALL* GetGPUVRAMClockSpeedRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
+    ADLX_RESULT (ADLX_STD_CALL* GetGPUTemperatureRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
+    ADLX_RESULT (ADLX_STD_CALL* GetGPUHotspotTemperatureRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
+    ADLX_RESULT (ADLX_STD_CALL* GetGPUPowerRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
+    ADLX_RESULT (ADLX_STD_CALL* GetGPUFanSpeedRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
+    ADLX_RESULT (ADLX_STD_CALL* GetGPUVRAMRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
+    ADLX_RESULT (ADLX_STD_CALL* GetGPUVoltageRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
+    ADLX_RESULT (ADLX_STD_CALL* GetGPUTotalBoardPowerRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
+    ADLX_RESULT (ADLX_STD_CALL* GetGPUIntakeTemperatureRange)(IADLXGPUMetricsSupport* pThis, adlx_int* minValue, adlx_int* maxValue);
+    ADLX_RESULT (ADLX_STD_CALL* IsSupportedGPUIntakeTemperature)(IADLXGPUMetricsSupport* pThis, adlx_bool* supported);
+} IADLXGPUMetricsSupportVtbl;
 
 struct IADLXGPUMetricsSupport { const IADLXGPUMetricsSupportVtbl *pVtbl; };
 #endif //__cplusplus
@@ -872,10 +925,9 @@ namespace adlx
         *@ENG_START_DOX  If the GPU temperature is successfully returned, __ADLX_OK__ is returned. <br>
         * If the GPU temperature is not successfully returned, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
-        *
         *@addinfo
-		*  @ENG_START_DOX Related method: @ref DOX_IADLXGPUMetrics_GPUHotspotTemperature @ENG_END_DOX
-		*
+        * @ENG_START_DOX Related method: @ref DOX_IADLXGPUMetrics_GPUHotspotTemperature, @ref DOX_IADLXGPUMetrics_GPUIntakeTemperature. @ENG_END_DOX
+        *
         *@requirements
         *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
         *
@@ -902,8 +954,8 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *@addinfo
-		*  @ENG_START_DOX Related method: @ref DOX_IADLXGPUMetrics_GPUTemperature @ENG_END_DOX
-		*
+        *  @ENG_START_DOX Related method: @ref DOX_IADLXGPUMetrics_GPUIntakeTemperature, @ref DOX_IADLXGPUMetrics_GPUTemperature. @ENG_END_DOX
+        *
         *@requirements
         *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
         *
@@ -1026,6 +1078,34 @@ namespace adlx
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GPUVoltage (adlx_int* data) = 0;
+        /**
+        *@page DOX_IADLXGPUMetrics_GPUIntakeTemperature GPUIntakeTemperature
+        *@ENG_START_DOX
+        *@brief Gets the GPU intake temperature of a GPU metric sample.
+        *@details GPUIntakeTemperature reports the fan intake temperature.
+        *@ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    GPUIntakeTemperature (adlx_double* data)
+        *@codeEnd
+        *
+        *@params
+        *@paramrow{1.,[out] ,data,adlx_double* ,@ENG_START_DOX The pointer to a variable where the GPU intake temperature (in °C) is returned. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the GPU intake temperature is successfully returned, __ADLX_OK__ is returned. <br>
+        * If the GPU Intake temperature is not successfully returned, an error code is returned. <br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *@addinfo
+        * @ENG_START_DOX Related method: @ref DOX_IADLXGPUMetrics_GPUHotspotTemperature, @ref DOX_IADLXGPUMetrics_GPUTemperature. @ENG_END_DOX
+        *
+        *
+        *@requirements
+        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *
+        */
+        virtual ADLX_RESULT ADLX_STD_CALL GPUIntakeTemperature (adlx_double* data) = 0;
     };
     //----------------------------------------------------------------------------------------------
     typedef IADLXInterfacePtr_T<IADLXGPUMetrics> IADLXGPUMetricsPtr;
@@ -1038,23 +1118,24 @@ typedef struct IADLXGPUMetrics IADLXGPUMetrics;
 typedef struct IADLXGPUMetricsVtbl
 {
     //IADLXInterface
-    adlx_long (ADLX_STD_CALL *Acquire)(IADLXGPUMetrics* pThis);
-    adlx_long (ADLX_STD_CALL *Release)(IADLXGPUMetrics* pThis);
-    ADLX_RESULT (ADLX_STD_CALL *QueryInterface)(IADLXGPUMetrics* pThis, const wchar_t* interfaceId, void** ppInterface);
+    adlx_long (ADLX_STD_CALL* Acquire)(IADLXGPUMetrics* pThis);
+    adlx_long (ADLX_STD_CALL* Release)(IADLXGPUMetrics* pThis);
+    ADLX_RESULT (ADLX_STD_CALL* QueryInterface)(IADLXGPUMetrics* pThis, const wchar_t* interfaceId, void** ppInterface);
 
     //IADLXGPUMetrics
-    ADLX_RESULT (ADLX_STD_CALL *TimeStamp)(IADLXGPUMetrics* pThis, adlx_int64* ms);
-    ADLX_RESULT (ADLX_STD_CALL *GPUUsage)(IADLXGPUMetrics* pThis, adlx_double* data);
-    ADLX_RESULT (ADLX_STD_CALL *GPUClockSpeed)(IADLXGPUMetrics* pThis, adlx_int* data);
-    ADLX_RESULT (ADLX_STD_CALL *GPUVRAMClockSpeed)(IADLXGPUMetrics* pThis, adlx_int* data);
-    ADLX_RESULT (ADLX_STD_CALL *GPUTemperature)(IADLXGPUMetrics* pThis, adlx_double* data);
-    ADLX_RESULT (ADLX_STD_CALL *GPUHotspotTemperature)(IADLXGPUMetrics* pThis, adlx_double* data);
-    ADLX_RESULT (ADLX_STD_CALL *GPUPower)(IADLXGPUMetrics* pThis, adlx_double* data);
-    ADLX_RESULT (ADLX_STD_CALL *GPUTotalBoardPower)(IADLXGPUMetrics* pThis, adlx_double* data);
-    ADLX_RESULT (ADLX_STD_CALL *GPUFanSpeed)(IADLXGPUMetrics* pThis, adlx_int* data);
-    ADLX_RESULT (ADLX_STD_CALL *GPUVRAM)(IADLXGPUMetrics* pThis, adlx_int* data);
-    ADLX_RESULT (ADLX_STD_CALL *GPUVoltage)(IADLXGPUMetrics* pThis, adlx_int* data);
-}IADLXGPUMetricsVtbl;
+    ADLX_RESULT (ADLX_STD_CALL* TimeStamp)(IADLXGPUMetrics* pThis, adlx_int64* ms);
+    ADLX_RESULT (ADLX_STD_CALL* GPUUsage)(IADLXGPUMetrics* pThis, adlx_double* data);
+    ADLX_RESULT (ADLX_STD_CALL* GPUClockSpeed)(IADLXGPUMetrics* pThis, adlx_int* data);
+    ADLX_RESULT (ADLX_STD_CALL* GPUVRAMClockSpeed)(IADLXGPUMetrics* pThis, adlx_int* data);
+    ADLX_RESULT (ADLX_STD_CALL* GPUTemperature)(IADLXGPUMetrics* pThis, adlx_double* data);
+    ADLX_RESULT (ADLX_STD_CALL* GPUHotspotTemperature)(IADLXGPUMetrics* pThis, adlx_double* data);
+    ADLX_RESULT (ADLX_STD_CALL* GPUPower)(IADLXGPUMetrics* pThis, adlx_double* data);
+    ADLX_RESULT (ADLX_STD_CALL* GPUTotalBoardPower)(IADLXGPUMetrics* pThis, adlx_double* data);
+    ADLX_RESULT (ADLX_STD_CALL* GPUFanSpeed)(IADLXGPUMetrics* pThis, adlx_int* data);
+    ADLX_RESULT (ADLX_STD_CALL* GPUVRAM)(IADLXGPUMetrics* pThis, adlx_int* data);
+    ADLX_RESULT (ADLX_STD_CALL* GPUVoltage)(IADLXGPUMetrics* pThis, adlx_int* data);
+    ADLX_RESULT (ADLX_STD_CALL* GPUIntakeTemperature)(IADLXGPUMetrics* pThis, adlx_double* data);
+} IADLXGPUMetricsVtbl;
 
 struct IADLXGPUMetrics { const IADLXGPUMetricsVtbl *pVtbl; };
 #endif //__cplusplus
