@@ -57,9 +57,10 @@ double GetAveragePcl(const unsigned long long pid)
 {
 	double avgPCl= 0;
 
-	FvMetricType Metrics[] = {
-		   eAvgFPS,
-		   eAvgSWPCLatency
+	FvMetricType Metrics[] = 
+	{
+		eAvgFPS,
+		eAvgSWPCLatency
 	};
 
 	constexpr unsigned int NumMetrics = sizeof(Metrics) / sizeof(Metrics[0]);
