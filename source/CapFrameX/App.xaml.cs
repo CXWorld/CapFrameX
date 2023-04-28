@@ -58,9 +58,13 @@ namespace CapFrameX
                 _bootstrapper = new Bootstrapper();
                 _bootstrapper.Run(true);
 
-				// Intialize FrameView session
-				bool check = IntializeFrameViewSession();
-				if (!check) Log.Logger.Error("Error while intializing FrameView session.");
+                // Intialize FrameView session
+                try
+                {
+                    bool check = IntializeFrameViewSession();
+                    if (!check) Log.Logger.Error("Error while intializing FrameView session.");
+                }
+				catch (Exception ex) { Log.Logger.Error(ex, $"Error while accessing CapFrameX.FrameView.dll."); }
 
 				Task.Run(async () => {
                     try
@@ -217,11 +221,14 @@ namespace CapFrameX
 				Log.Logger.Error(ex, "Error while shutting down the web server.");
 			}
 
-			// Close FrameView session
-			bool check = CloseFrameViewSession();
-
-            if(!check) Log.Logger.Error("Error while closing FrameView session.");
-		}
+            // Close FrameView session
+            try
+            {
+                bool check = CloseFrameViewSession();
+                if (!check) Log.Logger.Error("Error while closing FrameView session.");
+            }
+            catch (Exception ex) { Log.Logger.Error(ex, $"Error while accessing CapFrameX.FrameView.dll."); }
+}
 
         private void ApplicationStartup(object sender, StartupEventArgs e)
         {
