@@ -15,23 +15,26 @@ using Prism.Events;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Reactive.Linq;
+using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Forms;
-using static System.Windows.Forms.AxHost;
 
 namespace CapFrameX.Overlay
 {
     public class OverlayEntryProvider : IOverlayEntryProvider
     {
-        private static readonly string OVERLAY_CONFIG_FOLDER
+		[HandleProcessCorruptedStateExceptions]
+		[DllImport("CapFrameX.FrameView.dll")]
+		public static extern double GetAveragePcl(int pid);
+
+		private static readonly string OVERLAY_CONFIG_FOLDER
             = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                     @"CapFrameX\Configuration\");
 
@@ -61,8 +64,10 @@ namespace CapFrameX.Overlay
             = new ConcurrentDictionary<string, int>();
         private readonly ConcurrentDictionary<int, int> _sizeIndexDictionary
             = new ConcurrentDictionary<int, int>();
+
         private BlockingCollection<IOverlayEntry> _overlayEntries;
         private double _ping = double.NaN;
+        private int _currentProcessId;
 
         public bool HasHardwareChanged { get; set; }
         public bool ShowSystemTimeSeconds { get; set; }
@@ -100,7 +105,13 @@ namespace CapFrameX.Overlay
             .Select(x => x.value)
             .Subscribe(value => ShowSystemTimeSeconds = (bool)value);
 
-            _logger.LogDebug("{componentName} Ready", this.GetType().Name);
+			rTSSService.ProcessIdStream.Subscribe(id =>
+			{
+				// update process ID
+				_currentProcessId = id;
+			});
+
+			_logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
             // Add <S0=50>
             _sizeIndexDictionary.TryAdd(50, 0);
@@ -114,6 +125,7 @@ namespace CapFrameX.Overlay
             UpdateAppInfo();
             UpdateThreadAffinityState();
             UpdateNetworkPing();
+            UpdatePCLatency();
 
             if (updateFormats)
             {
@@ -262,7 +274,7 @@ namespace CapFrameX.Overlay
 
                 if (ONLINE_METRIC_NAMES.Contains(entry.Identifier) || entry.Identifier == "SystemTime"
                     || entry.Identifier == "BatteryLifePercent" || entry.Identifier == "BatteryLifeRemaining"
-					|| entry.Identifier == "Ping" || entry.Identifier == "ThreadAffinityState")
+					|| entry.Identifier == "Ping" || entry.Identifier == "ThreadAffinityState" || entry.Identifier == "PCLatency")
                 {
                     if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey(entry.Identifier))
                         _overlayEntryCore.RealtimeMetricEntryDict.Add(entry.Identifier, entry);
@@ -302,6 +314,8 @@ namespace CapFrameX.Overlay
             SetBatteryInfoFormats();
             SetBatteryInfoIsNumericState();
             SetNetworkPingIsNumericState();
+			SetPCLatencyIsNumericState();
+			SetPCLatencyFormats();
 
 			_overlayEntries.ForEach(entry => entry.FormatChanged = true);
         }
@@ -671,6 +685,16 @@ namespace CapFrameX.Overlay
 			}
 		}
 
+        private void UpdatePCLatency()
+        {
+			_identifierOverlayEntryDict.TryGetValue("PCLatency", out IOverlayEntry pcLatency);
+
+			if (pcLatency != null && pcLatency.ShowOnOverlay)
+			{
+				pcLatency.Value = GetAveragePcl(_currentProcessId);
+			}
+		}
+
 		private void SetOnlineMetricsIsNumericState()
         {
             foreach (var metricName in ONLINE_METRIC_NAMES)
@@ -740,8 +764,8 @@ namespace CapFrameX.Overlay
                 ping.ValueAlignmentAndDigits = "{0,5:F0}";
             }
 
-            // PMD
-            var pmdMetrics = new List<string>()
+			// PMD
+			var pmdMetrics = new List<string>()
             {
                 "PmdGpuPowerCurrent", "PmdCpuPowerCurrent", "PmdSystemPowerCurrent"
             };
@@ -834,6 +858,27 @@ namespace CapFrameX.Overlay
 			   x.Identifier == "Ping"))
 			{
 				entry.IsNumeric = true;
+			}
+		}
+
+        private void SetPCLatencyIsNumericState()
+        {
+			foreach (var entry in _overlayEntries.Where(x =>
+			   x.Identifier == "PCLatency"))
+			{
+				entry.IsNumeric = true;
+			}
+		}
+
+        private void SetPCLatencyFormats()
+        {
+			// PC latency
+			_identifierOverlayEntryDict.TryGetValue("PCLatency", out IOverlayEntry pcLatency);
+
+			if (pcLatency != null)
+			{
+				pcLatency.ValueUnitFormat = "ms";
+				pcLatency.ValueAlignmentAndDigits = "{0,5:F1}";
 			}
 		}
 

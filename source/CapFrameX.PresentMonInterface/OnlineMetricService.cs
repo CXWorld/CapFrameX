@@ -12,12 +12,14 @@ using System.Globalization;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 
 namespace CapFrameX.PresentMonInterface
 {
     public class OnlineMetricService : IOnlineMetricService
     {
-        private const double STUTTERING_THRESHOLD = 2d;
+		private const double STUTTERING_THRESHOLD = 2d;
         private const int LIST_CAPACITY = 20000;
         private const int PMD_BUFFER_CAPACITY = 2200;
 

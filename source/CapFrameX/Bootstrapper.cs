@@ -38,12 +38,14 @@ using CapFrameX.Monitoring.Contracts;
 using CapFrameX.Capture.Contracts;
 using CapFrameX.PMD;
 using CapFrameX.Hardware.Controller;
+using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 
 namespace CapFrameX
 {
     public class Bootstrapper : DryIocBootstrapper
     {
-        protected override DependencyObject CreateShell()
+		protected override DependencyObject CreateShell()
         {
             var shell = Container.Resolve<Shell>();
             Container.UseInstance<IShell>(shell);
@@ -87,8 +89,8 @@ namespace CapFrameX
             // Intialize static classes
             PmdChannelExtensions.Initialize();
 
-            // Vertical components
-            Container.ConfigureSerilogILogger(Log.Logger);
+			// Vertical components
+			Container.ConfigureSerilogILogger(Log.Logger);
             Container.Register<IEventAggregator, EventAggregator>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "EventAggregator");
             Container.Register<ISettingsStorage, JsonSettingsStorage>(Reuse.Singleton);
             Container.Register<IAppConfiguration, CapFrameXConfiguration>(Reuse.Singleton);

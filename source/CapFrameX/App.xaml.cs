@@ -15,6 +15,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Web;
@@ -27,7 +29,15 @@ namespace CapFrameX
     /// </summary>
     public partial class App : Application
     {
-        private Bootstrapper _bootstrapper;
+		[HandleProcessCorruptedStateExceptions]
+		[DllImport("CapFrameX.FrameView.dll")]
+		public static extern bool IntializeFrameViewSession();
+
+		[HandleProcessCorruptedStateExceptions]
+		[DllImport("CapFrameX.FrameView.dll")]
+		public static extern bool CloseFrameViewSession();
+
+		private Bootstrapper _bootstrapper;
         private WebServer _webServer;
         private bool _isSingleInstance = true;
 
@@ -48,7 +58,11 @@ namespace CapFrameX
                 _bootstrapper = new Bootstrapper();
                 _bootstrapper.Run(true);
 
-                Task.Run(async () => {
+				// Intialize FrameView session
+				bool check = IntializeFrameViewSession();
+				if (!check) Log.Logger.Error("Error while intializing FrameView session.");
+
+				Task.Run(async () => {
                     try
                     {
                         _webServer = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://*", false);
@@ -202,8 +216,12 @@ namespace CapFrameX
 			{
 				Log.Logger.Error(ex, "Error while shutting down the web server.");
 			}
-            
-        }
+
+			// Close FrameView session
+			bool check = CloseFrameViewSession();
+
+            if(!check) Log.Logger.Error("Error while closing FrameView session.");
+		}
 
         private void ApplicationStartup(object sender, StartupEventArgs e)
         {
