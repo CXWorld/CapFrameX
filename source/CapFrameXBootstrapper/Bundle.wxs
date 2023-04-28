@@ -125,6 +125,12 @@
         <!--https://stackoverflow.com/questions/24068798/how-to-access-the-folder-where-the-exe-is-running-wix-bootstrapper-->
         <MsiProperty Name="INSTALLLOCATION" Value="[OriginalSourceFolder]" />
       </MsiPackage>
+
+			<!--Nvidia FrameView SDK package-->
+			<ExePackage Id='FrameView'
+					 Compressed='yes'
+					 SourceFile='../../installers/FVSDKSetup.exe'/>
+			
 		</Chain>
 	</Bundle>
 
