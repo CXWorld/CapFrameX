@@ -145,7 +145,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(FvSDKDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(FvSDKDir);%(AdditionalIncludeDirectories);C:\Program Files\NVIDIA Corporation\FrameViewSDK\SDK\Public_Release</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -154,7 +154,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>FvSDK_x64.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(FvSDKDir)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(FvSDKDir); C:\Program Files\NVIDIA Corporation\FrameViewSDK\SDK\Public_Release</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /d "$(ProjectDir)$(IntDir)CapFrameX.FrameView.dll" "$(SolutionDir)\source\CapFrameX\bin\$(IntDir)"</Command>
