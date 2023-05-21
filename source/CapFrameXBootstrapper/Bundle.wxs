@@ -127,9 +127,9 @@
       </MsiPackage>
 
 			<!--Nvidia FrameView SDK package-->
-			<ExePackage Id='FrameView'
+			<!--<ExePackage Id='FrameView'
 					 Compressed='yes'
-					 SourceFile='../../installers/FVSDKSetup.exe'/>
+					 SourceFile='../../installers/FVSDKSetup.exe'/>-->
 			
 		</Chain>
 	</Bundle>

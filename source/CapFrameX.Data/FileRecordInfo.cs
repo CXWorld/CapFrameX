@@ -10,382 +10,446 @@ using System.Runtime.CompilerServices;
 
 namespace CapFrameX.Data
 {
-    public class FileRecordInfo : IFileRecordInfo
-    {
-        public static string HEADER_MARKER = "//";
-        public static readonly char INFO_SEPERATOR = '=';
+	public class FileRecordInfo : IFileRecordInfo
+	{
+		public static string HEADER_MARKER = "//";
+		public static readonly char INFO_SEPERATOR = '=';
 
-        private string[] _lines;
+		private string[] _lines;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+		public event PropertyChangedEventHandler PropertyChanged;
 
-        public void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+		public void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
 
-        public string CreationTimestamp => $@"{CreationDate}" + Environment.NewLine + $@"{CreationTime}";
+		public string CreationTimestamp => $@"{CreationDate}" + Environment.NewLine + $@"{CreationTime}";
 
-        public string GameName { get; set; }
-        public string ProcessName { get; set; }
-        public string CreationDate { get; private set; }
-        public string CreationTime { get; private set; }
-        public double RecordTime { get; private set; }
-        public string FullPath { get; private set; }
-        public FileInfo FileInfo { get; private set; }
-        public string CombinedInfo { get; private set; }
-        public string MotherboardName { get; private set; }
-        public string OsVersion { get; private set; }
-        public string ProcessorName { get; set; }
-        public string SystemRamInfo { get; set; }
-        public string BaseDriverVersion { get; private set; }
-        public string DriverPackage { get; private set; }
-        public string NumberGPUs { get; private set; }
-        public string GraphicCardName { get; set; }
-        public string GPUCoreClock { get; private set; }
-        public string GPUMemoryClock { get; private set; }
-        public string GPUMemory { get; private set; }
-        public string GPUDriverVersion { get; private set; }
-        public string Comment { get; set; }
-        public string IsAggregated { get; private set; }
-        public bool IsValid { get; private set; }
-        public bool HasInfoHeader { get; set; }
-        public string Id { get; private set; }
-        public string Hash { get; private set; }
-        public string ApiInfo { get; private set; }
-        public string ResizableBar { get; private set; }
-        public string WinGameMode { get; private set; }
-        public string HAGS { get; private set; }
-        public string PresentationMode { get; private set; }
-        public string Resolution { get; private set; }
+		public string GameName { get; set; }
+		public string ProcessName { get; set; }
+		public string CreationDate { get; private set; }
+		public string CreationTime { get; private set; }
+		public double RecordTime { get; private set; }
+		public string FullPath { get; private set; }
+		public FileInfo FileInfo { get; private set; }
+		public string CombinedInfo { get; private set; }
+		public string MotherboardName { get; private set; }
+		public string OsVersion { get; private set; }
+		public string ProcessorName { get; set; }
+		public string SystemRamInfo { get; set; }
+		public string BaseDriverVersion { get; private set; }
+		public string DriverPackage { get; private set; }
+		public string NumberGPUs { get; private set; }
+		public string GraphicCardName { get; set; }
+		public string GPUCoreClock { get; private set; }
+		public string GPUMemoryClock { get; private set; }
+		public string GPUMemory { get; private set; }
+		public string GPUDriverVersion { get; private set; }
+		public string Comment { get; set; }
+		public string IsAggregated { get; private set; }
+		public bool IsValid { get; private set; }
+		public bool HasInfoHeader { get; set; }
+		public string Id { get; private set; }
+		public string Hash { get; private set; }
+		public string ApiInfo { get; private set; }
+		public string ResizableBar { get; private set; }
+		public string WinGameMode { get; private set; }
+		public string HAGS { get; private set; }
+		public string PresentationMode { get; private set; }
+		public string Resolution { get; private set; }
 
-        private FileRecordInfo(FileInfo fileInfo, ISession session)
-        {
-            var creationDateTime = session.Info.CreationDate.ToLocalTime();
-            FileInfo = fileInfo;
-            FullPath = fileInfo.FullName;
-            Id = session.Info.Id.ToString();
-            CreationDate = creationDateTime.ToString("yyyy-MM-dd");
-            CreationTime = creationDateTime.ToString("HH:mm:ss");
-            ProcessName = session.Info.ProcessName;
-            ProcessorName = session.Info.Processor;
-            GraphicCardName = session.Info.GPU;
-            SystemRamInfo = session.Info.SystemRam;
-            MotherboardName = session.Info.Motherboard;
-            OsVersion = session.Info.OS;
-            GPUMemoryClock = session.Info.GpuMemoryClock;
-            GPUCoreClock = session.Info.GpuCoreClock;
-            DriverPackage = session.Info.DriverPackage;
-            BaseDriverVersion = session.Info.BaseDriverVersion;
-            GPUDriverVersion = session.Info.GPUDriverVersion;
-            Comment = session.Info.Comment;
-            ProcessName = session.Info.ProcessName;
-            IsAggregated = Convert.ToString(session.Runs.Count() > 1);
-            IsValid = true;
-            Hash = session.Hash;
-            ApiInfo = session.Info.ApiInfo;
-            ResizableBar = session.Info.ResizableBar;
-            WinGameMode = session.Info.WinGameMode;
-            HAGS = session.Info.HAGS;
-            PresentationMode = session.Info.PresentationMode;
-            Resolution = session.Info.ResolutionInfo;
-        }
+		private FileRecordInfo(FileInfo fileInfo, ISession session)
+		{
+			var creationDateTime = session.Info.CreationDate.ToLocalTime();
+			FileInfo = fileInfo;
+			FullPath = fileInfo.FullName;
+			Id = session.Info.Id.ToString();
+			CreationDate = creationDateTime.ToString("yyyy-MM-dd");
+			CreationTime = creationDateTime.ToString("HH:mm:ss");
+			ProcessName = session.Info.ProcessName;
+			ProcessorName = session.Info.Processor;
+			GraphicCardName = session.Info.GPU;
+			SystemRamInfo = session.Info.SystemRam;
+			MotherboardName = session.Info.Motherboard;
+			OsVersion = session.Info.OS;
+			GPUMemoryClock = session.Info.GpuMemoryClock;
+			GPUCoreClock = session.Info.GpuCoreClock;
+			DriverPackage = session.Info.DriverPackage;
+			BaseDriverVersion = session.Info.BaseDriverVersion;
+			GPUDriverVersion = session.Info.GPUDriverVersion;
+			Comment = session.Info.Comment;
+			ProcessName = session.Info.ProcessName;
+			IsAggregated = Convert.ToString(session.Runs.Count() > 1);
+			IsValid = true;
+			Hash = session.Hash;
+			ApiInfo = session.Info.ApiInfo;
+			ResizableBar = session.Info.ResizableBar;
+			WinGameMode = session.Info.WinGameMode;
+			HAGS = session.Info.HAGS;
+			PresentationMode = session.Info.PresentationMode;
+			Resolution = session.Info.ResolutionInfo;
+		}
 
-        private FileRecordInfo(FileInfo fileInfo, string hash)
-        {
-            if (fileInfo != null && File.Exists(fileInfo.FullName))
-            {
-                FileInfo = fileInfo;
-                FullPath = fileInfo.FullName;
-                Hash = hash;
-                _lines = File.ReadAllLines(fileInfo.FullName);
+		private FileRecordInfo(FileInfo fileInfo, string hash)
+		{
+			if (fileInfo != null && File.Exists(fileInfo.FullName))
+			{
+				FileInfo = fileInfo;
+				FullPath = fileInfo.FullName;
+				Hash = hash;
+				_lines = File.ReadAllLines(fileInfo.FullName);
 
-                if (_lines != null && _lines.Any())
-                {
-                    Dictionary<string, string> infoKeyValueDictionary = new Dictionary<string, string>();
+				if (_lines != null && _lines.Any())
+				{
+					Dictionary<string, string> infoKeyValueDictionary = new Dictionary<string, string>();
 
-                    HasInfoHeader = GetHasInfoHeader(_lines[0]);
-                    IsValid = GetIsValid(_lines);
+					if (!IsMangoHudFile(_lines[0]))
+					{
+						HasInfoHeader = StandardHasInfoHeader(_lines[0]);
+						IsValid = StandardIsValid(_lines);
 
-                    if (IsValid)
-                    {
-                        if (HasInfoHeader)
-                        {
-                            FillPropertyDictionary(infoKeyValueDictionary);
-                        }
-                        else
-                        {
-                            // OCAT column headers
-                            // Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags,
-                            // AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,
-                            // MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsUntilRenderComplete,
-                            // MsUntilDisplayed,Motherboard,OS,Processor,System RAM,Base Driver Version,
-                            // Driver Package,GPU #,GPU,GPU Core Clock (MHz),GPU Memory Clock (MHz),GPU Memory (MB)
+						if (IsValid)
+						{
+							if (HasInfoHeader)
+							{
+								FillPropertyDictionary(infoKeyValueDictionary);
+							}
+							else
+							{
+								// OCAT column headers
+								// Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags,
+								// AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,
+								// MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsUntilRenderComplete,
+								// MsUntilDisplayed,Motherboard,OS,Processor,System RAM,Base Driver Version,
+								// Driver Package,GPU #,GPU,GPU Core Clock (MHz),GPU Memory Clock (MHz),GPU Memory (MB)
 
-                            var columnHeader = _lines[0].Split(',');
+								var columnHeader = _lines[0].Split(',');
 
-                            var infosCharList = new List<char>();
-                            var line = _lines[1];
+								var infosCharList = new List<char>();
+								var line = _lines[1];
 
-                            int isInner = -1;
-                            for (int i = 0; i < line.Length; i++)
-                            {
-                                if (line[i] == '"')
-                                    isInner *= -1;
+								int isInner = -1;
+								for (int i = 0; i < line.Length; i++)
+								{
+									if (line[i] == '"')
+										isInner *= -1;
 
-                                if (!(line[i] == ',' && isInner == 1))
-                                    infosCharList.Add(line[i]);
+									if (!(line[i] == ',' && isInner == 1))
+										infosCharList.Add(line[i]);
 
-                            }
-                            var infos = new string(infosCharList.ToArray()).Split(',');
+								}
+								var infos = new string(infosCharList.ToArray()).Split(',');
 
-                            var lastDataSet = _lines.Last().Split(',');
+								var lastDataSet = _lines.Last().Split(',');
 
-                            infoKeyValueDictionary.Add("Id", FullPath);
-                            infoKeyValueDictionary.Add("GameName", infos[0]);
-                            infoKeyValueDictionary.Add("ProcessName", infos[0]);
-                            infoKeyValueDictionary.Add("CreationDate", fileInfo.LastWriteTime.ToString("yyyy-MM-dd"));
-                            infoKeyValueDictionary.Add("CreationTime", fileInfo.LastWriteTime.ToString("HH:mm:ss"));
+								infoKeyValueDictionary.Add("Id", FullPath);
+								infoKeyValueDictionary.Add("GameName", infos[0]);
+								infoKeyValueDictionary.Add("ProcessName", infos[0]);
+								infoKeyValueDictionary.Add("CreationDate", fileInfo.LastWriteTime.ToString("yyyy-MM-dd"));
+								infoKeyValueDictionary.Add("CreationTime", fileInfo.LastWriteTime.ToString("HH:mm:ss"));
 
-                            int timeInSecondsIndex = Array.IndexOf(columnHeader, "TimeInSeconds");
-                            int motherboardNameIndex = Array.IndexOf(columnHeader, "Motherboard");
-                            int osVersionIndex = Array.IndexOf(columnHeader, "OS");
-                            int processorNameIndex = Array.IndexOf(columnHeader, "Processor");
-                            if (processorNameIndex < 0)
-                                processorNameIndex = Array.IndexOf(columnHeader, "CPU");
-                            int systemRamInfoIndex = Array.IndexOf(columnHeader, "System RAM");
-                            int baseDriverVersionIndex = Array.IndexOf(columnHeader, "Base Driver Version");
-                            int driverPackageNameIndex = Array.IndexOf(columnHeader, "Driver Package");
-                            int graphicCardNameIndex = Array.IndexOf(columnHeader, "GPU");
-                            int numberGPUsIndex = Array.IndexOf(columnHeader, "GPU #");
-                            int gPUCoreClockIndex = Array.IndexOf(columnHeader, "GPU Core Clock (MHz)");
-                            int gPUMemoryClockIndex = Array.IndexOf(columnHeader, "GPU Memory Clock (MHz)");
-                            int gPUMemoryIndex = Array.IndexOf(columnHeader, "GPU Memory (MB)");
-                            int commentIndex = Array.IndexOf(columnHeader, "Comment");
+								int timeInSecondsIndex = Array.IndexOf(columnHeader, "TimeInSeconds");
+								int motherboardNameIndex = Array.IndexOf(columnHeader, "Motherboard");
+								int osVersionIndex = Array.IndexOf(columnHeader, "OS");
+								int processorNameIndex = Array.IndexOf(columnHeader, "Processor");
+								if (processorNameIndex < 0)
+									processorNameIndex = Array.IndexOf(columnHeader, "CPU");
+								int systemRamInfoIndex = Array.IndexOf(columnHeader, "System RAM");
+								int baseDriverVersionIndex = Array.IndexOf(columnHeader, "Base Driver Version");
+								int driverPackageNameIndex = Array.IndexOf(columnHeader, "Driver Package");
+								int graphicCardNameIndex = Array.IndexOf(columnHeader, "GPU");
+								int numberGPUsIndex = Array.IndexOf(columnHeader, "GPU #");
+								int gPUCoreClockIndex = Array.IndexOf(columnHeader, "GPU Core Clock (MHz)");
+								int gPUMemoryClockIndex = Array.IndexOf(columnHeader, "GPU Memory Clock (MHz)");
+								int gPUMemoryIndex = Array.IndexOf(columnHeader, "GPU Memory (MB)");
+								int commentIndex = Array.IndexOf(columnHeader, "Comment");
 
-                            if (timeInSecondsIndex > -1 && timeInSecondsIndex < lastDataSet.Length)
-                                infoKeyValueDictionary.Add("RecordTime", lastDataSet[timeInSecondsIndex]);
-                            if (motherboardNameIndex > -1 && motherboardNameIndex < infos.Length)
-                                infoKeyValueDictionary.Add("Motherboard", infos[motherboardNameIndex].Replace("\"", ""));
-                            if (osVersionIndex > -1 && osVersionIndex < infos.Length)
-                                infoKeyValueDictionary.Add("OS", infos[osVersionIndex].Replace("\"", ""));
-                            if (processorNameIndex > -1 && processorNameIndex < infos.Length)
-                                infoKeyValueDictionary.Add("Processor", infos[processorNameIndex].Replace("\"", ""));
-                            if (systemRamInfoIndex > -1 && systemRamInfoIndex < infos.Length)
-                                infoKeyValueDictionary.Add("System RAM", infos[systemRamInfoIndex].Replace("\"", ""));
-                            if (baseDriverVersionIndex > -1 && baseDriverVersionIndex < infos.Length)
-                                infoKeyValueDictionary.Add("BaseDriverVersion", infos[baseDriverVersionIndex].Replace("\"", ""));
-                            if (driverPackageNameIndex > -1 && driverPackageNameIndex < infos.Length)
-                                infoKeyValueDictionary.Add("Base Driver Version", infos[driverPackageNameIndex].Replace("\"", ""));
-                            if (graphicCardNameIndex > -1 && graphicCardNameIndex < infos.Length)
-                                infoKeyValueDictionary.Add("GPU", infos[graphicCardNameIndex].Replace("\"", ""));
-                            if (numberGPUsIndex > -1 && numberGPUsIndex < infos.Length)
-                                infoKeyValueDictionary.Add("GPU #", infos[numberGPUsIndex].Replace("\"", ""));
-                            if (gPUCoreClockIndex > -1 && gPUCoreClockIndex < infos.Length)
-                                infoKeyValueDictionary.Add("GPU Core Clock (MHz)", infos[gPUCoreClockIndex].Replace("\"", ""));
-                            if (gPUMemoryClockIndex > -1 && gPUMemoryClockIndex < infos.Length)
-                                infoKeyValueDictionary.Add("GPU Memory Clock (MHz)", infos[gPUMemoryClockIndex].Replace("\"", ""));
-                            if (gPUMemoryIndex > -1 && gPUMemoryIndex < infos.Length)
-                                infoKeyValueDictionary.Add("GPU Memory (MB)", infos[gPUMemoryIndex].Replace("\"", ""));
-                            if (commentIndex > -1 && commentIndex < infos.Length)
-                                infoKeyValueDictionary.Add("Comment", infos[commentIndex].Replace("\"", ""));
-                        }
+								if (timeInSecondsIndex > -1 && timeInSecondsIndex < lastDataSet.Length)
+									infoKeyValueDictionary.Add("RecordTime", lastDataSet[timeInSecondsIndex]);
+								if (motherboardNameIndex > -1 && motherboardNameIndex < infos.Length)
+									infoKeyValueDictionary.Add("Motherboard", infos[motherboardNameIndex].Replace("\"", ""));
+								if (osVersionIndex > -1 && osVersionIndex < infos.Length)
+									infoKeyValueDictionary.Add("OS", infos[osVersionIndex].Replace("\"", ""));
+								if (processorNameIndex > -1 && processorNameIndex < infos.Length)
+									infoKeyValueDictionary.Add("Processor", infos[processorNameIndex].Replace("\"", ""));
+								if (systemRamInfoIndex > -1 && systemRamInfoIndex < infos.Length)
+									infoKeyValueDictionary.Add("System RAM", infos[systemRamInfoIndex].Replace("\"", ""));
+								if (baseDriverVersionIndex > -1 && baseDriverVersionIndex < infos.Length)
+									infoKeyValueDictionary.Add("BaseDriverVersion", infos[baseDriverVersionIndex].Replace("\"", ""));
+								if (driverPackageNameIndex > -1 && driverPackageNameIndex < infos.Length)
+									infoKeyValueDictionary.Add("Base Driver Version", infos[driverPackageNameIndex].Replace("\"", ""));
+								if (graphicCardNameIndex > -1 && graphicCardNameIndex < infos.Length)
+									infoKeyValueDictionary.Add("GPU", infos[graphicCardNameIndex].Replace("\"", ""));
+								if (numberGPUsIndex > -1 && numberGPUsIndex < infos.Length)
+									infoKeyValueDictionary.Add("GPU #", infos[numberGPUsIndex].Replace("\"", ""));
+								if (gPUCoreClockIndex > -1 && gPUCoreClockIndex < infos.Length)
+									infoKeyValueDictionary.Add("GPU Core Clock (MHz)", infos[gPUCoreClockIndex].Replace("\"", ""));
+								if (gPUMemoryClockIndex > -1 && gPUMemoryClockIndex < infos.Length)
+									infoKeyValueDictionary.Add("GPU Memory Clock (MHz)", infos[gPUMemoryClockIndex].Replace("\"", ""));
+								if (gPUMemoryIndex > -1 && gPUMemoryIndex < infos.Length)
+									infoKeyValueDictionary.Add("GPU Memory (MB)", infos[gPUMemoryIndex].Replace("\"", ""));
+								if (commentIndex > -1 && commentIndex < infos.Length)
+									infoKeyValueDictionary.Add("Comment", infos[commentIndex].Replace("\"", ""));
+							}
 
-                        SetInfoProperties(infoKeyValueDictionary);
+							SetInfoProperties(infoKeyValueDictionary);
 
-                        // set search string info
-                        CombinedInfo = $"{GameName} {ProcessName} {Comment}";
+							// set search string info
+							CombinedInfo = $"{GameName} {ProcessName} {Comment}";
 
-                        // Free record data
-                        _lines = null;
-                    }
-                    else
-                    {
-                        if (HasInfoHeader)
-                        {
-                            FillPropertyDictionary(infoKeyValueDictionary);
-                            SetInfoProperties(infoKeyValueDictionary);
+							// Free record data
+							_lines = null;
+						}
+						else
+						{
+							if (HasInfoHeader)
+							{
+								FillPropertyDictionary(infoKeyValueDictionary);
+								SetInfoProperties(infoKeyValueDictionary);
 
-                            // set search string info
-                            CombinedInfo = $"{GameName} {ProcessName} {Comment}";
+								// set search string info
+								CombinedInfo = $"{GameName} {ProcessName} {Comment}";
 
-                            // Free record data
-                            _lines = null;
-                        }
-                    }
-                }
-                else
-                {
-                    IsValid = false;
-                }
-            }
-            else
-            {
-                IsValid = false;
-            }
-        }
+								// Free record data
+								_lines = null;
+							}
+						}
+					}
+					else
+					{
+						HasInfoHeader = false;
+						IsValid = MangoHudIsValid(_lines);
 
-        private void FillPropertyDictionary(Dictionary<string, string> infoKeyValueDictionary)
-        {
-            int headerCount = 0;
-            while (_lines[headerCount].Contains(HEADER_MARKER))
-            {
-                var currentLine = _lines[headerCount];
-                var currentLineWithoutMarker = currentLine.Replace(HEADER_MARKER, "");
-                var infoKeyValue = currentLineWithoutMarker.Split(INFO_SEPERATOR);
-                infoKeyValueDictionary.Add(infoKeyValue[0], infoKeyValue[1]);
-                headerCount++;
-            }
-        }
+						if (IsValid)
+						{
+							infoKeyValueDictionary.Add("Id", FullPath);
+							infoKeyValueDictionary.Add("GameName", "Game Name");
+							infoKeyValueDictionary.Add("ProcessName", "Process Name");
+							infoKeyValueDictionary.Add("CreationDate", fileInfo.LastWriteTime.ToString("yyyy-MM-dd"));
+							infoKeyValueDictionary.Add("CreationTime", fileInfo.LastWriteTime.ToString("HH:mm:ss"));
 
-        private void SetInfoProperties(Dictionary<string, string> infoKeyValueDictionary)
-        {
-            if (infoKeyValueDictionary.Any())
-            {
-                if (infoKeyValueDictionary.Keys.Contains("Id"))
-                    Id = infoKeyValueDictionary["Id"];
-                else
-                    Id = FullPath;
+							var columnHeader = _lines[0].Split(',');
 
-                if (infoKeyValueDictionary.Keys.Contains("GameName"))
-                    GameName = infoKeyValueDictionary["GameName"];
+							int osVersionIndex = Array.IndexOf(columnHeader, "os");
+							int cpuNameIndex = Array.IndexOf(columnHeader, "cpu");
+							int graphicCardNameIndex = Array.IndexOf(columnHeader, "gpu");
+							int systemRamInfoIndex = Array.IndexOf(columnHeader, "ram");
+							int baseDriverVersionIndex = Array.IndexOf(columnHeader, "driver");
 
-                if (infoKeyValueDictionary.Keys.Contains("ProcessName"))
-                    ProcessName = infoKeyValueDictionary["ProcessName"];
+							var infos = _lines[1].Split(',');
 
-                if (infoKeyValueDictionary.Keys.Contains("CreationDate"))
-                    CreationDate = infoKeyValueDictionary["CreationDate"];
+							if (osVersionIndex > -1 && osVersionIndex < infos.Length)
+								infoKeyValueDictionary.Add("OS", infos[osVersionIndex]);
+							if (cpuNameIndex > -1 && cpuNameIndex < infos.Length)
+								infoKeyValueDictionary.Add("Processor", infos[cpuNameIndex]);
+							if (graphicCardNameIndex > -1 && graphicCardNameIndex < infos.Length)
+								infoKeyValueDictionary.Add("GPU", infos[graphicCardNameIndex]);
+							if (systemRamInfoIndex > -1 && systemRamInfoIndex < infos.Length)
+								infoKeyValueDictionary.Add("System RAM", $"{Math.Round(Convert.ToDouble(infos[systemRamInfoIndex]) / 1048576, 1).ToString(CultureInfo.InvariantCulture)}GB");
+							if (baseDriverVersionIndex > -1 && baseDriverVersionIndex < infos.Length)
+								infoKeyValueDictionary.Add("Base Driver Version", infos[baseDriverVersionIndex]);
 
-                if (infoKeyValueDictionary.Keys.Contains("CreationTime"))
-                    CreationTime = infoKeyValueDictionary["CreationTime"];
 
-                if (infoKeyValueDictionary.Keys.Contains("RecordTime"))
-                    RecordTime = Convert.ToDouble(infoKeyValueDictionary["RecordTime"], CultureInfo.InvariantCulture);
+							SetInfoProperties(infoKeyValueDictionary);
 
-                if (infoKeyValueDictionary.Keys.Contains("Motherboard"))
-                    MotherboardName = infoKeyValueDictionary["Motherboard"];
+							// set search string info
+							CombinedInfo = $"{GameName} {ProcessName} {Comment}";
 
-                if (infoKeyValueDictionary.Keys.Contains("OS"))
-                    OsVersion = infoKeyValueDictionary["OS"];
+							// Free record data
+							_lines = null;
+						}
+					}
+				}
+				else
+				{
+					IsValid = false;
+				}
+			}
+			else
+			{
+				IsValid = false;
+			}
+		}
 
-                if (infoKeyValueDictionary.Keys.Contains("Processor"))
-                    ProcessorName = infoKeyValueDictionary["Processor"];
+		private void FillPropertyDictionary(Dictionary<string, string> infoKeyValueDictionary)
+		{
+			int headerCount = 0;
+			while (_lines[headerCount].Contains(HEADER_MARKER))
+			{
+				var currentLine = _lines[headerCount];
+				var currentLineWithoutMarker = currentLine.Replace(HEADER_MARKER, "");
+				var infoKeyValue = currentLineWithoutMarker.Split(INFO_SEPERATOR);
+				infoKeyValueDictionary.Add(infoKeyValue[0], infoKeyValue[1]);
+				headerCount++;
+			}
+		}
 
-                if (infoKeyValueDictionary.Keys.Contains("System RAM"))
-                    SystemRamInfo = infoKeyValueDictionary["System RAM"];
+		private void SetInfoProperties(Dictionary<string, string> infoKeyValueDictionary)
+		{
+			if (infoKeyValueDictionary.Any())
+			{
+				if (infoKeyValueDictionary.Keys.Contains("Id"))
+					Id = infoKeyValueDictionary["Id"];
+				else
+					Id = FullPath;
 
-                if (infoKeyValueDictionary.Keys.Contains("Base Driver Version"))
-                    BaseDriverVersion = infoKeyValueDictionary["Base Driver Version"];
+				if (infoKeyValueDictionary.Keys.Contains("GameName"))
+					GameName = infoKeyValueDictionary["GameName"];
 
-                if (infoKeyValueDictionary.Keys.Contains("Driver Package"))
-                    DriverPackage = infoKeyValueDictionary["Driver Package"];
+				if (infoKeyValueDictionary.Keys.Contains("ProcessName"))
+					ProcessName = infoKeyValueDictionary["ProcessName"];
 
-                if (infoKeyValueDictionary.Keys.Contains("GPU #"))
-                    NumberGPUs = infoKeyValueDictionary["GPU #"];
+				if (infoKeyValueDictionary.Keys.Contains("CreationDate"))
+					CreationDate = infoKeyValueDictionary["CreationDate"];
 
-                if (infoKeyValueDictionary.Keys.Contains("GPU"))
-                    GraphicCardName = infoKeyValueDictionary["GPU"];
+				if (infoKeyValueDictionary.Keys.Contains("CreationTime"))
+					CreationTime = infoKeyValueDictionary["CreationTime"];
 
-                if (infoKeyValueDictionary.Keys.Contains("GPU Core Clock (MHz)"))
-                    GPUCoreClock = infoKeyValueDictionary["GPU Core Clock (MHz)"];
+				if (infoKeyValueDictionary.Keys.Contains("RecordTime"))
+					RecordTime = Convert.ToDouble(infoKeyValueDictionary["RecordTime"], CultureInfo.InvariantCulture);
 
-                if (infoKeyValueDictionary.Keys.Contains("GPU Memory Clock (MHz)"))
-                    GPUMemoryClock = infoKeyValueDictionary["GPU Memory Clock (MHz)"];
+				if (infoKeyValueDictionary.Keys.Contains("Motherboard"))
+					MotherboardName = infoKeyValueDictionary["Motherboard"];
 
-                if (infoKeyValueDictionary.Keys.Contains("GPU Memory (MB)"))
-                    GPUMemory = infoKeyValueDictionary["GPU Memory (MB)"];
+				if (infoKeyValueDictionary.Keys.Contains("OS"))
+					OsVersion = infoKeyValueDictionary["OS"];
 
-                if (infoKeyValueDictionary.Keys.Contains("Comment"))
-                    Comment = infoKeyValueDictionary["Comment"];
+				if (infoKeyValueDictionary.Keys.Contains("Processor"))
+					ProcessorName = infoKeyValueDictionary["Processor"];
 
-                if (infoKeyValueDictionary.Keys.Contains("IsAggregated"))
-                    IsAggregated = infoKeyValueDictionary["IsAggregated"];
-                else
-                    IsAggregated = "false";
-            }
-        }
+				if (infoKeyValueDictionary.Keys.Contains("System RAM"))
+					SystemRamInfo = infoKeyValueDictionary["System RAM"];
 
-        public static IFileRecordInfo Create(FileInfo fileInfo, string hash)
-        {
-            FileRecordInfo recordInfo = null;
+				if (infoKeyValueDictionary.Keys.Contains("Base Driver Version"))
+					BaseDriverVersion = infoKeyValueDictionary["Base Driver Version"];
 
-            try
-            {
-                recordInfo = new FileRecordInfo(fileInfo, hash);
-            }
-            catch (ArgumentException)
-            {
-                // Log
-            }
-            catch (Exception)
-            {
-                // Log
-            }
+				if (infoKeyValueDictionary.Keys.Contains("Driver Package"))
+					DriverPackage = infoKeyValueDictionary["Driver Package"];
 
-            return recordInfo;
-        }
+				if (infoKeyValueDictionary.Keys.Contains("GPU #"))
+					NumberGPUs = infoKeyValueDictionary["GPU #"];
 
-        public static IFileRecordInfo Create(FileInfo fileInfo, ISession session)
-        {
-            FileRecordInfo recordInfo = null;
+				if (infoKeyValueDictionary.Keys.Contains("GPU"))
+					GraphicCardName = infoKeyValueDictionary["GPU"];
 
-            try
-            {
-                recordInfo = new FileRecordInfo(fileInfo, session);
-            }
-            catch (ArgumentException)
-            {
-                // Log
-            }
-            catch (Exception)
-            {
-                // Log
-            }
+				if (infoKeyValueDictionary.Keys.Contains("GPU Core Clock (MHz)"))
+					GPUCoreClock = infoKeyValueDictionary["GPU Core Clock (MHz)"];
 
-            return recordInfo;
-        }
+				if (infoKeyValueDictionary.Keys.Contains("GPU Memory Clock (MHz)"))
+					GPUMemoryClock = infoKeyValueDictionary["GPU Memory Clock (MHz)"];
 
-        private bool GetIsValid(string[] _lines)
-        {
-            bool isValid = false;
+				if (infoKeyValueDictionary.Keys.Contains("GPU Memory (MB)"))
+					GPUMemory = infoKeyValueDictionary["GPU Memory (MB)"];
 
-            // first check file length
-            if (HasInfoHeader)
-            {
-                if (_lines.Length > 40)
-                    isValid = true;
-            }
-            else
-            {
-                if (_lines.Length > 20)
-                    isValid = true;
-            }
+				if (infoKeyValueDictionary.Keys.Contains("Comment"))
+					Comment = infoKeyValueDictionary["Comment"];
 
-            if (isValid)
-            {
-                // check column header
-                int headerCount = 0;
-                if (HasInfoHeader)
-                    while (_lines[headerCount].Contains(HEADER_MARKER)) headerCount++;
+				if (infoKeyValueDictionary.Keys.Contains("IsAggregated"))
+					IsAggregated = infoKeyValueDictionary["IsAggregated"];
+				else
+					IsAggregated = "false";
+			}
+		}
 
-                var columnHeaderLine = _lines[headerCount];
+		public static IFileRecordInfo Create(FileInfo fileInfo, string hash)
+		{
+			FileRecordInfo recordInfo = null;
 
-                isValid = columnHeaderLine.IndexOf("Application", StringComparison.OrdinalIgnoreCase) >=0 &&
-                    columnHeaderLine.IndexOf("Dropped", StringComparison.OrdinalIgnoreCase) >= 0 &&
-                    columnHeaderLine.IndexOf("TimeInSeconds", StringComparison.OrdinalIgnoreCase) >= 0 &&
-                    columnHeaderLine.IndexOf("MsBetweenPresents", StringComparison.OrdinalIgnoreCase) >= 0 &&
-                    columnHeaderLine.IndexOf("MsBetweenDisplayChange", StringComparison.OrdinalIgnoreCase) >= 0;
-            }
+			try
+			{
+				recordInfo = new FileRecordInfo(fileInfo, hash);
+			}
+			catch (ArgumentException)
+			{
+				// Log
+			}
+			catch (Exception)
+			{
+				// Log
+			}
 
-            return isValid;
-        }
+			return recordInfo;
+		}
 
-        private bool GetHasInfoHeader(string firstLine)
-        {
-            if (firstLine == null)
-                return false;
+		public static IFileRecordInfo Create(FileInfo fileInfo, ISession session)
+		{
+			FileRecordInfo recordInfo = null;
 
-            return firstLine.Contains(HEADER_MARKER);
-        }
-    }
+			try
+			{
+				recordInfo = new FileRecordInfo(fileInfo, session);
+			}
+			catch (ArgumentException)
+			{
+				// Log
+			}
+			catch (Exception)
+			{
+				// Log
+			}
+
+			return recordInfo;
+		}
+
+		public static bool IsMangoHudFile(string line)
+		{
+			return line.Contains("kernel") && line.Contains("cpuscheduler");
+		}
+
+		private bool StandardIsValid(string[] lines)
+		{
+			bool isValid = false;
+
+			// first check file length
+			if (HasInfoHeader)
+			{
+				if (lines.Length > 40)
+					isValid = true;
+			}
+			else
+			{
+				if (lines.Length > 20)
+					isValid = true;
+			}
+
+			if (isValid)
+			{
+				// check column header
+				int headerCount = 0;
+				if (HasInfoHeader)
+					while (lines[headerCount].Contains(HEADER_MARKER)) headerCount++;
+
+				var columnHeaderLine = lines[headerCount];
+
+				isValid = columnHeaderLine.IndexOf("Application", StringComparison.OrdinalIgnoreCase) >= 0 &&
+					columnHeaderLine.IndexOf("Dropped", StringComparison.OrdinalIgnoreCase) >= 0 &&
+					columnHeaderLine.IndexOf("TimeInSeconds", StringComparison.OrdinalIgnoreCase) >= 0 &&
+					columnHeaderLine.IndexOf("MsBetweenPresents", StringComparison.OrdinalIgnoreCase) >= 0 &&
+					columnHeaderLine.IndexOf("MsBetweenDisplayChange", StringComparison.OrdinalIgnoreCase) >= 0;
+			}
+
+			return isValid;
+		}
+
+		private bool MangoHudIsValid(string[] lines)
+		{
+			bool isValid = false;
+
+			if (lines.Length > 20)
+				isValid = true;
+
+			// Add further checks later
+
+			return isValid;
+		}
+
+		private bool StandardHasInfoHeader(string firstLine)
+		{
+			if (firstLine == null)
+				return false;
+
+			return firstLine.Contains(HEADER_MARKER);
+		}
+	}
 }

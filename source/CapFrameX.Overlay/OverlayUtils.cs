@@ -373,19 +373,19 @@ namespace CapFrameX.Overlay
 						ShowGraphIsEnabled = false,
 						Color = string.Empty
 					},
-					new OverlayEntryWrapper("PCLatency")
-					{
-						OverlayEntryType = EOverlayEntryType.CX,
-						ShowOnOverlay = false,
-						ShowOnOverlayIsEnabled = true,
-						Description = "FrameView PC Latency",
-						GroupName = "PC Latency",
-						Value = "0",
-						ValueFormat = default,
-						ShowGraph = false,
-						ShowGraphIsEnabled = false,
-						Color = string.Empty
-					}
+					//new OverlayEntryWrapper("PCLatency")
+					//{
+					//	OverlayEntryType = EOverlayEntryType.CX,
+					//	ShowOnOverlay = false,
+					//	ShowOnOverlayIsEnabled = true,
+					//	Description = "FrameView PC Latency",
+					//	GroupName = "PC Latency",
+					//	Value = "0",
+					//	ValueFormat = default,
+					//	ShowGraph = false,
+					//	ShowGraphIsEnabled = false,
+					//	Color = string.Empty
+					//}
 			};
         }
     }
