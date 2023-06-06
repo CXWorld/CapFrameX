@@ -71,7 +71,7 @@
 							<RowDefinition Height="60"></RowDefinition>
 						</Grid.RowDefinitions>
 						<StackPanel Orientation="Horizontal" Margin="15 0 0 10" HorizontalAlignment="Left">
-							<TextBlock Margin="0 0 10 0" Text="Overlay items" FontSize="18" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
+							<TextBlock Margin="0 0 10 0" Text="Overlay Items" FontSize="18" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
 							<materialDesign:PackIcon Width="20" Height="20" Kind="Information" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTipService.ShowDuration="25000" ToolTipService.Placement="Top">
 								<materialDesign:PackIcon.ToolTip>
 									<TextBlock Width="275" Text="Special CX Overlay items:&#xA;
@@ -96,8 +96,8 @@
 						<StackPanel Grid.Row="0" Margin="0 0 0 10" Orientation="Horizontal" HorizontalAlignment="Right">
 
 							<Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                            ToolTip="Save selection to other configs" Click="CopyButton_Click" 
-                            materialDesign:RippleAssist.Feedback="#DD000000">
+									ToolTip="Save selection to other configs" Click="CopyButton_Click" 
+									materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="ContentCopy" Height="22" Width="22"/>
 							</Button>
 							<Popup x:Name="CopyButtonPopup" Placement="Mouse" StaysOpen="False" >
@@ -280,7 +280,7 @@
                                             Header="Description"
                                             IsReadOnly="True"/>
 								<DataGridTextColumn Binding="{Binding GroupName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                            Header="Group name"
+                                            Header="Group Name"
                                             IsReadOnly="False"/>
 								<DataGridCheckBoxColumn Binding="{Binding ShowGraph, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                             Header="Graph">
@@ -310,7 +310,7 @@
 						<StackPanel Grid.Row="2" Orientation="Vertical">
 							<Border Margin="10 5 10 0" BorderThickness="0.4" BorderBrush="{DynamicResource MaterialDesignBody}">
 								<StackPanel Margin="5 5 0 5" Orientation="Horizontal">
-									<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Group control:</TextBlock>
+									<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Group Control:</TextBlock>
 									<materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" Foreground="{DynamicResource MaterialDesignBody}">
 										<materialDesign:PopupBox.ToolTip>
 											<ToolTip MaxWidth="275" Placement="Top">
@@ -349,105 +349,105 @@
 														<ColumnDefinition Width="1*"/>
 														<ColumnDefinition Width="1*"/>
 													</Grid.ColumnDefinitions>
-													<TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Capture items" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Capture Items" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="0" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckCaptureItems}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="Check capture items" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Check Capture Items" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 													<Button Margin="5" Grid.Row="0" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckCaptureItems}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="Uncheck capture items" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Uncheck Capture Items" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 
-													<TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="System infos" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="System Infos" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="1" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckSystemInfo}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="Check system info" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Check System Info" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 													<Button Margin="5" Grid.Row="1" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckSystemInfo}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="Uncheck system info" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Uncheck System Info" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 
-													<TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="Real-time metrics" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="Real-time Metrics" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="2" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckOnlineMetrics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="Check real-time metrics" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Check real-time Metrics" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 													<Button Margin="5" Grid.Row="2" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckOnlineMetrics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="Uncheck real-time metrics" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Uncheck real-time Metrics" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 
-													<TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="GPU basics" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="GPU Basics" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="3" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckGpuBasics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="Check GPU basics" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Check GPU Basics" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 													<Button Margin="5" Grid.Row="3" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckGpuBasics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="Uncheck GPU basics" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Uncheck GPU Basics" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 
-													<TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="CPU Core loads" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="CPU Core Loads" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="4" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckCpuLoads}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="Check CPU loads" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Check CPU Loads" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 													<Button Margin="5" Grid.Row="4" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckCpuLoads}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="Uncheck CPU loads" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Uncheck CPU Loads" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 
-													<TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="CPU Core clocks" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="CPU Core Clocks" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="5" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckCpuClocks}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="Check CPU clocks" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Check CPU Clocks" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 													<Button Margin="5" Grid.Row="5" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckCpuClocks}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="Uncheck CPU clocks" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Uncheck CPU Clocks" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 
-													<TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="CPU Core powers" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="CPU Core Powers" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="6" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckCpuPowers}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="Check CPU clocks" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Check CPU Clocks" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 													<Button Margin="5" Grid.Row="6" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckCpuPowers}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="Uncheck CPU clocks" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Uncheck CPU Clocks" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 
-													<TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="CPU Core temps" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="CPU Core Temps" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="7" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckCpuTemps}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="Check CPU Core temps" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Check CPU Core Temps" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 													<Button Margin="5" Grid.Row="7" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckCpuTemps}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="Uncheck CPU Core temps" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Uncheck CPU Core Temps" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 
 													<!--CPU voltages-->
-													<TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="CPU Core voltages" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="CPU Core Voltages" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="8" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckCpuVoltages}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="Check CPU Core voltages" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Check CPU Core Voltages" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 													<Button Margin="5" Grid.Row="8" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckCpuVoltages}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="Uncheck CPU Core voltages" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Uncheck CPU Core Voltages" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 
-													<TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="RAM items" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="RAM Items" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="9" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckRamItems}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="Check RAM items" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Check RAM Items" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 
 													<Button Margin="5" Grid.Row="9" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckRamItems}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="Uncheck RAM items" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="Uncheck RAM Items" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 												</Grid>
@@ -477,7 +477,7 @@
 										</Button.ToolTip>
 									</Button>
 									<StackPanel Margin="20 0 0 0" Orientation="Horizontal">
-										<TextBlock Text="OSD options" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
+										<TextBlock Text="OSD Options" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
 										<materialDesign:PopupBox StaysOpen="True" Foreground="{DynamicResource MaterialDesignBody}">
 											<materialDesign:Card  Margin="0 0 0 -10">
 												<StackPanel>
@@ -553,7 +553,7 @@
 						</StackPanel>
 						<!--Global overlay toggle-->
 						<StackPanel Grid.Row="3" Margin="20 0 0 0" DockPanel.Dock="Bottom" Orientation="Horizontal">
-							<TextBox Margin="0 0 0 0" materialDesign:HintAssist.Hint="Toggle Overlay hotkey" Width="140" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+							<TextBox Margin="0 0 0 0" materialDesign:HintAssist.Hint="Toggle Overlay Hotkey" Width="140" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 					         IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown" materialDesign:HintAssist.HintOpacity=".8"
 					         ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" Foreground="{DynamicResource MaterialDesignBody}">
 								<Binding Path="OverlayHotkey"
@@ -566,7 +566,7 @@
 									</Binding.ValidationRules>
 								</Binding>
 							</TextBox>
-							<TextBox Margin="25 0 0 0" materialDesign:HintAssist.Hint="Toggle Config hotkey" Width="132" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+							<TextBox Margin="25 0 0 0" materialDesign:HintAssist.Hint="Toggle Config Hotkey" Width="132" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 					        IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ConfigHotkeyTextBox_PreviewKeyDown" materialDesign:HintAssist.HintOpacity=".8"
 					        ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" Foreground="{DynamicResource MaterialDesignBody}">
 								<Binding Path="OverlayConfigHotkey"
@@ -574,14 +574,13 @@
 						    Mode="OneWay"
 						    TargetNullValue="&lt; not set &gt;">
 									<Binding.ValidationRules>
-										<validation:HotkeyValidationRule
-                            ValidatesOnTargetUpdated="True" />
+										<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True" />
 									</Binding.ValidationRules>
 								</Binding>
 							</TextBox>
 							<ComboBox Margin="25 5 0 0" 
 					        materialDesign:ComboBoxAssist.ClassicMode="True"
-					        materialDesign:HintAssist.Hint="Refresh period (ms)" materialDesign:HintAssist.HintOpacity=".8"
+					        materialDesign:HintAssist.Hint="Refresh Period (ms)" materialDesign:HintAssist.HintOpacity=".8"
 					        materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110" Height="40"
 					        MouseLeave="OSDRefreshPeriodComboBox_MouseLeave" FontSize="14"
                             Foreground="{DynamicResource MaterialDesignBody}"
@@ -627,7 +626,7 @@
 								<ColumnDefinition Width="40"/>
 								<ColumnDefinition Width="1*"/>
 							</Grid.ColumnDefinitions>
-							<TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Colors and limits" FontSize="16"/>
+							<TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Colors and Limits" FontSize="16"/>
 							<Button Grid.Row="0" Grid.Column="2" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
                                         ToolTip="Reset to defaults" Command="{Binding ResetColorAndLimitDefaultsCommand}"
                                         materialDesign:RippleAssist.Feedback="#DD000000">
@@ -780,7 +779,7 @@
 								<ColumnDefinition Width="40"/>
 								<ColumnDefinition Width="20"/>
 							</Grid.ColumnDefinitions>
-							<TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Format options" FontSize="16"/>
+							<TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Format Options" FontSize="16"/>
 							<TextBlock Grid.Row="1" Grid.Column="0"  VerticalAlignment="Center" Text="Group name font size"></TextBlock>
 							<TextBox Grid.Row="1" Grid.Column="1" Width="25" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" 
                                          ToolTip="Positive percentage = superscript&#10;Negative percentage = subscript"
@@ -894,7 +893,7 @@
 							<RowDefinition Height="20"></RowDefinition>
 							<RowDefinition Height="1*"></RowDefinition>
 						</Grid.RowDefinitions>
-						<TextBlock Grid.Row="0" Margin="5" HorizontalAlignment="Center" Text="Apply to multiple entries" Width="180" 
+						<TextBlock Grid.Row="0" Margin="5" HorizontalAlignment="Center" Text="Apply to multiple Entries" Width="180" 
                                        TextWrapping="Wrap" TextAlignment="Center" FontSize="16">
 						</TextBlock>
 						<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
@@ -908,7 +907,7 @@
 								<TextBlock>Format</TextBlock>
 							</CheckBox>
 						</StackPanel>
-						<TextBlock Grid.Row="2"  Text="Group name" TextAlignment="Left" Margin="10 5 0 0">
+						<TextBlock Grid.Row="2"  Text="Group Name" TextAlignment="Left" Margin="10 5 0 0">
 						</TextBlock>
 						<StackPanel Grid.Row="3" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
 							<Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
@@ -918,7 +917,7 @@
 							</Button>
 							<TextBlock Margin="0 7 0 0" Text="{Binding SelectedOverlayItemGroupName}" Width="140" TextAlignment="Left" TextWrapping="Wrap" FontWeight="Bold"/>
 						</StackPanel>
-						<TextBlock Grid.Row="4" TextAlignment="Left" Text="Sensor type" Margin="10 5 0 0">
+						<TextBlock Grid.Row="4" TextAlignment="Left" Text="Sensor Type" Margin="10 5 0 0">
 						</TextBlock>
 						<StackPanel Grid.Row="5" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
 							<Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
@@ -931,33 +930,38 @@
 					</Grid>
 				</Border>
 				<Grid Grid.Row="3" Grid.ColumnSpan="2">
-					<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-						<StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-							<TextBlock Text="Toggle Thread Affinity"/>
-							<ToggleButton Margin="0 8 0 0" IsChecked="{Binding UseThreadAffinity}" Style="{StaticResource MaterialDesignSwitchToggleButton}" 
+					<Border Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
+						<Grid>
+							<TextBlock Margin="0 10 0 0" HorizontalAlignment="Center" Text="Hardware Controller" FontSize="16"/>
+							<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+							<StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+								<TextBlock Text="Thread Affinity Controller"/>
+								<ToggleButton Margin="0 8 0 0" IsChecked="{Binding UseThreadAffinity}" Style="{StaticResource MaterialDesignSwitchToggleButton}" 
 								  ToolTipService.ShowDuration="25000">
-								<ToggleButton.ToolTip>
-									<ToolTip MaxWidth="250">
-										<TextBlock Text="Sets the thread affinity for Intel hybrid architectures and Ryzen CPUs with 2 CCDs."                               
+									<ToggleButton.ToolTip>
+										<ToolTip MaxWidth="250">
+											<TextBlock Text="Sets the thread affinity for Intel hybrid architectures and Ryzen CPUs with 2 CCDs."                               
 										   TextWrapping="Wrap"/>
-									</ToolTip>
-								</ToggleButton.ToolTip>
-							</ToggleButton>
-						</StackPanel>
-						<TextBox Margin="30 0 0 0" materialDesign:HintAssist.Hint="Toggle Thread Affinity" Width="145" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+										</ToolTip>
+									</ToggleButton.ToolTip>
+								</ToggleButton>
+							</StackPanel>
+							<TextBox Margin="30 0 0 0" materialDesign:HintAssist.Hint="Thread Affinity Hotkey" Width="145" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 					         IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ThreadAffinityHotkeyTextBox_PreviewKeyDown" materialDesign:HintAssist.HintOpacity=".8"
 					         ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" Foreground="{DynamicResource MaterialDesignBody}">
-							<Binding Path="ThreadAffinityHotkey"
+								<Binding Path="ThreadAffinityHotkey"
 						    ElementName="OverlayViewControl"
 						    Mode="OneWay"
 						    TargetNullValue="&lt; not set &gt;">
-								<Binding.ValidationRules>
-									<validation:HotkeyValidationRule
+									<Binding.ValidationRules>
+										<validation:HotkeyValidationRule
 										ValidatesOnTargetUpdated="True" />
-								</Binding.ValidationRules>
-							</Binding>
-						</TextBox>
-					</StackPanel>
+									</Binding.ValidationRules>
+								</Binding>
+							</TextBox>
+						</StackPanel>
+						</Grid>
+					</Border>
 				</Grid>
 			</Grid>
 		</Border>
