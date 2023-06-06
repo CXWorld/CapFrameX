@@ -468,11 +468,23 @@ namespace CapFrameX.Configuration
 			set => Set(value);
 		}
 
+        public string ResetMetricsHotkey
+		{
+			get => Get<string>("Control+M");
+			set => Set(value);
+		}
+
 		public int OSDRefreshPeriod
         {
             get => Get<int>(1000);
             set => Set(value);
         }
+
+        public int MetricInterval
+		{
+			get => Get<int>(20);
+			set => Set(value);
+		}
 
 		public bool AutoDisableOverlay
 		{

@@ -143,6 +143,7 @@ namespace CapFrameX.Hotkey
         Capture,
         Overlay,
         OverlayConfig,
-        ThreadAffinity
-    }
+        ThreadAffinity,
+		ResetMetrics
+	}
 }

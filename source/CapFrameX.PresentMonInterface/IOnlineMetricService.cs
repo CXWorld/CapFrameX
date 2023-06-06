@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Statistics.NetStandard.Contracts;
+using System;
 
 namespace CapFrameX.PresentMonInterface
 {
@@ -11,5 +12,9 @@ namespace CapFrameX.PresentMonInterface
         double GetOnlineStutteringPercentageValue();
 
         OnlinePmdMetrics GetPmdMetricsPowerCurrent();
-    }
+
+        void ResetRealtimeMetrics();
+
+		void SetMetricInterval(TimeSpan timeSpan);
+	}
 }

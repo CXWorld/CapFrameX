@@ -430,5 +430,12 @@ namespace CapFrameX.PresentMonInterface
 
             return (float)(sum / channelData.Count);
         }
-    }
+
+        public void ResetRealtimeMetrics() => ResetMetrics();
+
+        public void SetMetricInterval(TimeSpan timeSpan)
+        {
+            throw new NotImplementedException();
+        }
+	}
 }

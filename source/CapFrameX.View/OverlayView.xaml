@@ -68,7 +68,7 @@
 							<RowDefinition Height="45"></RowDefinition>
 							<RowDefinition Height="1*"></RowDefinition>
 							<RowDefinition Height="50"></RowDefinition>
-							<RowDefinition Height="60"></RowDefinition>
+							<RowDefinition Height="120"></RowDefinition>
 						</Grid.RowDefinitions>
 						<StackPanel Orientation="Horizontal" Margin="15 0 0 10" HorizontalAlignment="Left">
 							<TextBlock Margin="0 0 10 0" Text="Overlay Items" FontSize="18" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
@@ -552,47 +552,65 @@
 							</Border>
 						</StackPanel>
 						<!--Global overlay toggle-->
-						<StackPanel Grid.Row="3" Margin="20 0 0 0" DockPanel.Dock="Bottom" Orientation="Horizontal">
-							<TextBox Margin="0 0 0 0" materialDesign:HintAssist.Hint="Toggle Overlay Hotkey" Width="140" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
-					         IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown" materialDesign:HintAssist.HintOpacity=".8"
-					         ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" Foreground="{DynamicResource MaterialDesignBody}">
-								<Binding Path="OverlayHotkey"
-						    ElementName="OverlayViewControl"
-						    Mode="OneWay"
-						    TargetNullValue="&lt; not set &gt;">
-									<Binding.ValidationRules>
-										<validation:HotkeyValidationRule
-                            ValidatesOnTargetUpdated="True" />
-									</Binding.ValidationRules>
-								</Binding>
-							</TextBox>
-							<TextBox Margin="25 0 0 0" materialDesign:HintAssist.Hint="Toggle Config Hotkey" Width="132" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
-					        IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ConfigHotkeyTextBox_PreviewKeyDown" materialDesign:HintAssist.HintOpacity=".8"
-					        ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" Foreground="{DynamicResource MaterialDesignBody}">
-								<Binding Path="OverlayConfigHotkey"
-						    ElementName="OverlayViewControl"
-						    Mode="OneWay"
-						    TargetNullValue="&lt; not set &gt;">
-									<Binding.ValidationRules>
-										<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True" />
-									</Binding.ValidationRules>
-								</Binding>
-							</TextBox>
-							<ComboBox Margin="25 5 0 0" 
-					        materialDesign:ComboBoxAssist.ClassicMode="True"
-					        materialDesign:HintAssist.Hint="Refresh Period (ms)" materialDesign:HintAssist.HintOpacity=".8"
-					        materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110" Height="40"
-					        MouseLeave="OSDRefreshPeriodComboBox_MouseLeave" FontSize="14"
-                            Foreground="{DynamicResource MaterialDesignBody}"
-					        ItemsSource="{Binding Path=RefreshPeriodItemsSource}">
-								<ComboBox.Text>
-									<Binding Path="OSDRefreshPeriod"
-							     Mode="TwoWay"
-							     UpdateSourceTrigger="PropertyChanged">
+						<Grid Grid.Row="3" Margin="20 0 0 0" DockPanel.Dock="Bottom">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="*"/>
+								<RowDefinition Height="*"/>
+							</Grid.RowDefinitions>
+							<StackPanel Grid.Row="0" Orientation="Horizontal">
+								<TextBox Margin="0 0 0 0" materialDesign:HintAssist.Hint="Toggle Overlay Hotkey" Width="140" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+										 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown" materialDesign:HintAssist.HintOpacity=".8"
+										 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" Foreground="{DynamicResource MaterialDesignBody}">
+									<Binding Path="OverlayHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
+										<Binding.ValidationRules>
+											<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True" />
+										</Binding.ValidationRules>
 									</Binding>
-								</ComboBox.Text>
-							</ComboBox>
-						</StackPanel>
+								</TextBox>
+								<TextBox Margin="25 0 0 0" materialDesign:HintAssist.Hint="Toggle Config Hotkey" Width="132" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+								IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ConfigHotkeyTextBox_PreviewKeyDown" materialDesign:HintAssist.HintOpacity=".8"
+								ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" Foreground="{DynamicResource MaterialDesignBody}">
+									<Binding Path="OverlayConfigHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
+										<Binding.ValidationRules>
+											<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True" />
+										</Binding.ValidationRules>
+									</Binding>
+								</TextBox>
+								<ComboBox Margin="25 5 0 0" 
+											materialDesign:ComboBoxAssist.ClassicMode="True"
+											materialDesign:HintAssist.Hint="Refresh Period (ms)" materialDesign:HintAssist.HintOpacity=".8"
+											materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110" Height="40"
+											MouseLeave="OSDRefreshPeriodComboBox_MouseLeave" FontSize="14"
+											Foreground="{DynamicResource MaterialDesignBody}"
+											ItemsSource="{Binding Path=RefreshPeriodItemsSource}">
+									<ComboBox.Text>
+										<Binding Path="OSDRefreshPeriod" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
+									</ComboBox.Text>
+								</ComboBox>
+							</StackPanel>
+							<StackPanel Grid.Row="1" Orientation="Horizontal">
+								<TextBox Margin="0 0 0 0" materialDesign:HintAssist.Hint="Reset Metrics Hotkey" Width="132" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+										IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ResetMetricsHotkeyTextBox_PreviewKeyDown" materialDesign:HintAssist.HintOpacity=".8"
+										ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" Foreground="{DynamicResource MaterialDesignBody}">
+									<Binding Path="ResetMetricsHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
+										<Binding.ValidationRules>
+											<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True" />
+										</Binding.ValidationRules>
+									</Binding>
+								</TextBox>
+								<ComboBox Margin="25 5 0 0" 
+											materialDesign:ComboBoxAssist.ClassicMode="True"
+											materialDesign:HintAssist.Hint="Metric Interval (ms)" materialDesign:HintAssist.HintOpacity=".8"
+											materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110" Height="40"
+											MouseLeave="MetricIntervalComboBox_MouseLeave" FontSize="14"
+											Foreground="{DynamicResource MaterialDesignBody}"
+											ItemsSource="{Binding Path=MetricIntervalItemsSource}">
+									<ComboBox.Text>
+										<Binding Path="MetricInterval" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
+									</ComboBox.Text>
+								</ComboBox>
+							</StackPanel>
+						</Grid>
 					</Grid>
 				</DockPanel>
 			</materialDesign:DialogHost>

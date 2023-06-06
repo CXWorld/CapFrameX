@@ -72,6 +72,8 @@ namespace CapFrameX.Contracts.Configuration
 
 		string ThreadAffinityHotkey { get; set; }
 
+		string ResetMetricsHotkey { get; set; }
+
 		bool UseThreadAffinity { get; set; }
 
 		bool AutoDisableOverlay { get; set; }
@@ -141,7 +143,10 @@ namespace CapFrameX.Contracts.Configuration
 		int SelectedHistoryRuns { get; set; }
 
 		int OSDRefreshPeriod { get; set; }
-		
+
+		int MetricInterval { get; set; }
+
+
 		string CloudDownloadDirectory { get; set; }
 		
 		bool SaveAggregationOnly { get; set; }

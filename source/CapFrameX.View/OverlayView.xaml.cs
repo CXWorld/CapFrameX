@@ -23,16 +23,21 @@ namespace CapFrameX.View
 	public partial class OverlayView : UserControl
 	{
 		public static readonly DependencyProperty OverlayHotkeyProperty =
-		DependencyProperty.Register(nameof(OverlayHotkey), typeof(CXHotkey), typeof(OverlayView),
-		 new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+			DependencyProperty.Register(nameof(OverlayHotkey), typeof(CXHotkey), typeof(OverlayView),
+			new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
 		public static readonly DependencyProperty OverlayConfigHotkeyProperty =
-		DependencyProperty.Register(nameof(OverlayConfigHotkey), typeof(CXHotkey), typeof(OverlayView),
-		new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+			DependencyProperty.Register(nameof(OverlayConfigHotkey), typeof(CXHotkey), typeof(OverlayView),
+			new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
 		public static readonly DependencyProperty ThreadAffinityConfigHotkeyProperty =
-	    DependencyProperty.Register(nameof(ThreadAffinityHotkey), typeof(CXHotkey), typeof(OverlayView),
-	    new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+			DependencyProperty.Register(nameof(ThreadAffinityHotkey), typeof(CXHotkey), typeof(OverlayView),
+			new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+		public static readonly DependencyProperty ResetMetricsHotkeyProperty =
+			DependencyProperty.Register(nameof(ResetMetricsHotkey), typeof(CXHotkey), typeof(OverlayView),
+			new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
 
 		public CXHotkey OverlayHotkey
 		{
@@ -52,6 +57,11 @@ namespace CapFrameX.View
 			set => SetValue(ThreadAffinityConfigHotkeyProperty, value);
 		}
 
+		public CXHotkey ResetMetricsHotkey
+		{
+			get => (CXHotkey)GetValue(ResetMetricsHotkeyProperty);
+			set => SetValue(ResetMetricsHotkeyProperty, value);
+		}
 
 		public OverlayView()
 		{
@@ -86,6 +96,16 @@ namespace CapFrameX.View
 				ThreadAffinityHotkey = CXHotkey.Create(keyStrings, Key.A, ModifierKeys.Control);
 			}
 			catch { ThreadAffinityHotkey = new CXHotkey(Key.A, ModifierKeys.Control); }
+
+			// Reset metrics hotkey
+			try
+			{
+				var resetMetricsHotkeyString = (DataContext as OverlayViewModel).AppConfiguration.ResetMetricsHotkey;
+				var keyStrings = resetMetricsHotkeyString.Split('+');
+
+				ResetMetricsHotkey = CXHotkey.Create(keyStrings, Key.M, ModifierKeys.Control);
+			}
+			catch { ResetMetricsHotkey = new CXHotkey(Key.M, ModifierKeys.Control); }
 		}
 
 		private void OverlayHotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -187,7 +207,45 @@ namespace CapFrameX.View
 			Keyboard.ClearFocus();
 		}
 
+		private void ResetMetricsHotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			e.Handled = true;
+
+			var modifiers = Keyboard.Modifiers;
+			var key = e.Key;
+
+			if (key == Key.System)
+			{
+				key = e.SystemKey;
+			}
+
+			if (modifiers == ModifierKeys.None && key.IsEither(Key.Delete, Key.Back, Key.Escape))
+			{
+				ResetMetricsHotkey = null;
+				return;
+			}
+
+			if (key.IsEither(
+				Key.LeftCtrl, Key.RightCtrl, Key.LeftAlt, Key.RightAlt,
+				Key.LeftShift, Key.RightShift, Key.LWin, Key.RWin,
+				Key.Clear, Key.OemClear, Key.Apps))
+			{
+				return;
+			}
+
+			ResetMetricsHotkey = new CXHotkey(key, modifiers);
+			var dataContext = DataContext as OverlayViewModel;
+			dataContext.ResetMetricsHotkeyString = ResetMetricsHotkey.ToString();
+
+			Keyboard.ClearFocus();
+		}
+
 		private void OSDRefreshPeriodComboBox_MouseLeave(object sender, MouseEventArgs e)
+		{
+			Keyboard.ClearFocus();
+		}
+
+		private void MetricIntervalComboBox_MouseLeave(object sender, MouseEventArgs e)
 		{
 			Keyboard.ClearFocus();
 		}

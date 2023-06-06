@@ -9,6 +9,7 @@ using CapFrameX.Hardware.Controller;
 using CapFrameX.Hotkey;
 using CapFrameX.MVVM.Dialogs;
 using CapFrameX.Overlay;
+using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.ViewModel.SubModels;
 using GongSolutions.Wpf.DragDrop;
@@ -38,6 +39,7 @@ namespace CapFrameX.ViewModel
 		private readonly ISensorService _sensorService;
 		private readonly IRTSSService _rTSSService;
 		private readonly IThreadAffinityController _threadAffinityController;
+		private readonly IOnlineMetricService _onlineMetricService;
 		private int _selectedOverlayEntryIndex = -1;
 		private IOverlayEntry _selectedOverlayEntry;
 		private IOverlayEntryFormatChange _checkboxes = new OverlayEntryFormatChange();
@@ -181,18 +183,38 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public int OSDRefreshPeriod
+		public string ResetMetricsHotkeyString
 		{
-			get
-			{
-				return _appConfiguration
-				  .OSDRefreshPeriod;
-			}
+			get { return _appConfiguration.ResetMetricsHotkey; }
 			set
 			{
-				_appConfiguration
-				   .OSDRefreshPeriod = value;
+				if (!CXHotkey.IsValidHotkey(value))
+					return;
+
+				_appConfiguration.ResetMetricsHotkey = value;
+				SetGlobalHookEventResetMetricsHotkey();
+				RaisePropertyChanged();
+			}
+		}
+
+		public int OSDRefreshPeriod
+		{
+			get => _appConfiguration.OSDRefreshPeriod;
+			set
+			{
+				_appConfiguration.OSDRefreshPeriod = value;
 				_sensorService.SetOSDInterval(TimeSpan.FromMilliseconds(value));
+				RaisePropertyChanged();
+			}
+		}
+
+		public int MetricInterval
+		{
+			get => _appConfiguration.MetricInterval;
+			set
+			{
+				_appConfiguration.MetricInterval = value;
+				_onlineMetricService.SetMetricInterval(TimeSpan.FromMilliseconds(value));
 				RaisePropertyChanged();
 			}
 		}
@@ -426,6 +448,8 @@ namespace CapFrameX.ViewModel
 
 		public Array RefreshPeriodItemsSource => new[] { 500, 1000, 1500, 2000 };
 
+		public Array MetricIntervalItemsSource => new[] { 5, 10, 20, 30, 60, 120, 240, 300 };
+
 		public ObservableCollection<IOverlayEntry> OverlayEntries { get; private set; }
 			= new ObservableCollection<IOverlayEntry>();
 
@@ -435,7 +459,7 @@ namespace CapFrameX.ViewModel
 
 		public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider,
 			IAppConfiguration appConfiguration, IEventAggregator eventAggregator, ISensorService sensorService, IRTSSService rTSSService,
-			IThreadAffinityController threadAffinityController)
+			IThreadAffinityController threadAffinityController, IOnlineMetricService onlineMetricService)
 		{
 			_overlayService = overlayService;
 			_overlayEntryProvider = overlayEntryProvider;
@@ -445,6 +469,7 @@ namespace CapFrameX.ViewModel
 			_rTSSService = rTSSService;
 			_eventAggregator = eventAggregator;
 			_threadAffinityController = threadAffinityController;
+			_onlineMetricService = onlineMetricService;
 			_overlayConfigChangedEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.OverlayConfigChanged>>();
 
 			// define submodels
@@ -619,6 +644,16 @@ namespace CapFrameX.ViewModel
 			});
 		}
 
+		private void SetGlobalHookEventResetMetricsHotkey()
+		{
+			if (!CXHotkey.IsValidHotkey(ResetMetricsHotkeyString))
+				return;
+
+			HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.ResetMetrics, () =>
+			{
+				Task.Run(() => _onlineMetricService.ResetRealtimeMetrics());
+			});
+		}
 
 		private string GetNextConfig()
 		{
