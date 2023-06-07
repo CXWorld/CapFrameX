@@ -214,7 +214,7 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_appConfiguration.MetricInterval = value;
-				_onlineMetricService.SetMetricInterval(TimeSpan.FromMilliseconds(value));
+				_onlineMetricService.SetMetricInterval();
 				RaisePropertyChanged();
 			}
 		}

@@ -32,7 +32,7 @@
     <Grid Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="10*"></ColumnDefinition>
-            <ColumnDefinition Width="4*"></ColumnDefinition>
+            <ColumnDefinition Width="2*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <StackPanel HorizontalAlignment="Left" Grid.Column="0" Margin="10 0 0 0" Orientation="Horizontal">
             <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Capture Service:</TextBlock>
@@ -51,7 +51,11 @@
             <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsLoggedIn, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= Logged in|Not logged in}" 
                        FontWeight="Bold" Foreground="{Binding IsLoggedIn, Converter={StaticResource ModeColorConverter}}"></TextBlock>
 
-            <GridSplitter Margin="15 5 0 5" IsEnabled="False" Width="2" Visibility="{Binding IsResizableBarAnyStatusValid, Converter={StaticResource FalseToCollapsedConverter}}"/>
+			<TextBlock Margin="20 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >FrameView Status:</TextBlock>
+			<TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsFrameViewAvailable, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= Available|Not available}" 
+                       FontWeight="Bold" Foreground="{Binding IsFrameViewAvailable, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+
+			<GridSplitter Margin="15 5 0 5" IsEnabled="False" Width="2" Visibility="{Binding IsResizableBarAnyStatusValid, Converter={StaticResource FalseToCollapsedConverter}}"/>
 
             <Button Margin="10 2 -5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
 							VerticalAlignment="Center" HorizontalAlignment="Left"

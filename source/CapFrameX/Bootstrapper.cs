@@ -38,8 +38,6 @@ using CapFrameX.Monitoring.Contracts;
 using CapFrameX.Capture.Contracts;
 using CapFrameX.PMD;
 using CapFrameX.Hardware.Controller;
-using System.Runtime.ExceptionServices;
-using System.Runtime.InteropServices;
 
 namespace CapFrameX
 {

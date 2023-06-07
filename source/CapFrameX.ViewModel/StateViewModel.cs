@@ -35,6 +35,7 @@ namespace CapFrameX.ViewModel
         private bool _isCaptureModeActive;
         private bool _isOverlayActive;
         private string _updateHyperlinkText;
+        private bool _isFrameViewAvailable;
 
         private bool IsBeta => GetBetaState();
 
@@ -87,6 +88,16 @@ namespace CapFrameX.ViewModel
                 _updateHyperlinkText = value;
                 RaisePropertyChanged();
             }
+        }
+
+        public bool IsFrameViewAvailable 
+        { 
+            get => _isFrameViewAvailable;
+			set
+            {
+				_isFrameViewAvailable = value;
+				RaisePropertyChanged();
+			}
         }
 
         public string VersionString

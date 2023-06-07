@@ -12,8 +12,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Runtime.ExceptionServices;
-using System.Runtime.InteropServices;
 
 namespace CapFrameX.PresentMonInterface
 {
@@ -32,13 +30,13 @@ namespace CapFrameX.PresentMonInterface
         private readonly IPmdService _pmdService;
         private readonly ILogger<OnlineMetricService> _logger;
         private readonly IAppConfiguration _appConfiguration;
-        private readonly object _lock20SecondsMetric = new object();
+        private readonly object _lockRealtimeMetric = new object();
         private readonly object _lock5SecondsMetric = new object();
         private readonly object _lockApplicationLatency = new object();
         private readonly object _lockPmdMetrics = new object();
-        private List<double> _frametimes20Seconds = new List<double>(LIST_CAPACITY);
+        private List<double> _frametimesRealtimeSeconds = new List<double>(LIST_CAPACITY);
         private List<double> _frametimes5Seconds = new List<double>(LIST_CAPACITY / 4);
-        private List<double> _measuretimes20Seconds = new List<double>(LIST_CAPACITY);
+        private List<double> _measuretimesRealtimeSeconds = new List<double>(LIST_CAPACITY);
         private List<double> _measuretimes5Seconds = new List<double>(LIST_CAPACITY / 4);
         private List<double> _measuretimesApplicationLatency = new List<double>(LIST_CAPACITY / 10);
         private List<double> _applicationLatencyValues = new List<double>(LIST_CAPACITY / 10);
@@ -47,7 +45,6 @@ namespace CapFrameX.PresentMonInterface
         private int _currentProcessId;
         private double _droppedFrametimes = 0.0;
         private double _prevDisplayedFrameInputLagTime = double.NaN;
-        private readonly double _maxOnlineMetricIntervalLength = 20d;
         private readonly double _maxOnlineStutteringIntervalLength = 5d;
         private readonly double _maxOnlineApplicationLatencyIntervalLength = 2d;
 
@@ -208,23 +205,23 @@ namespace CapFrameX.PresentMonInterface
 
             try
             {
-                lock (_lock20SecondsMetric)
+                lock (_lockRealtimeMetric)
                 {
-                    // 20 sceconds window
-                    _measuretimes20Seconds.Add(startTime);
-                    _frametimes20Seconds.Add(frameTime);
+                    // n sceconds window
+                    _measuretimesRealtimeSeconds.Add(startTime);
+                    _frametimesRealtimeSeconds.Add(frameTime);
 
-                    if (startTime - _measuretimes20Seconds.First() > _maxOnlineMetricIntervalLength)
+                    if (startTime - _measuretimesRealtimeSeconds.First() > _appConfiguration.MetricInterval)
                     {
                         int position = 0;
-                        while (position < _measuretimes20Seconds.Count &&
-                            startTime - _measuretimes20Seconds[position] > _maxOnlineMetricIntervalLength)
+                        while (position < _measuretimesRealtimeSeconds.Count &&
+                            startTime - _measuretimesRealtimeSeconds[position] > _appConfiguration.MetricInterval)
                             position++;
 
                         if (position > 0)
                         {
-                            _frametimes20Seconds.RemoveRange(0, position);
-                            _measuretimes20Seconds.RemoveRange(0, position);
+                            _frametimesRealtimeSeconds.RemoveRange(0, position);
+                            _measuretimesRealtimeSeconds.RemoveRange(0, position);
                         }
                     }
                 }
@@ -351,12 +348,14 @@ namespace CapFrameX.PresentMonInterface
 
         private void ResetMetrics()
         {
-            lock (_lock20SecondsMetric)
-            {
-                _frametimes20Seconds = new List<double>(LIST_CAPACITY);
-                _measuretimes20Seconds = new List<double>(LIST_CAPACITY);
-            }
-        }
+			lock (_lockRealtimeMetric)
+			{
+				int capacity = (int)(LIST_CAPACITY * _appConfiguration.MetricInterval / 20d);
+
+				_frametimesRealtimeSeconds = new List<double>(capacity);
+				_measuretimesRealtimeSeconds = new List<double>(capacity);
+			}
+		}
 
         private void ResetApplicationLatency()
         {
@@ -369,10 +368,10 @@ namespace CapFrameX.PresentMonInterface
 
         public double GetOnlineFpsMetricValue(EMetric metric)
         {
-            lock (_lock20SecondsMetric)
+            lock (_lockRealtimeMetric)
             {
                 return _frametimeStatisticProvider
-                    .GetFpsMetricValue(_frametimes20Seconds, metric);
+                    .GetFpsMetricValue(_frametimesRealtimeSeconds, metric);
             }
         }
 
@@ -433,9 +432,6 @@ namespace CapFrameX.PresentMonInterface
 
         public void ResetRealtimeMetrics() => ResetMetrics();
 
-        public void SetMetricInterval(TimeSpan timeSpan)
-        {
-            throw new NotImplementedException();
-        }
+        public void SetMetricInterval() => ResetMetrics();
 	}
 }

@@ -470,7 +470,7 @@ namespace CapFrameX.Configuration
 
         public string ResetMetricsHotkey
 		{
-			get => Get<string>("Control+M");
+			get => Get<string>("Alt+M");
 			set => Set(value);
 		}
 

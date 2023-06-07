@@ -15,6 +15,6 @@ namespace CapFrameX.PresentMonInterface
 
         void ResetRealtimeMetrics();
 
-		void SetMetricInterval(TimeSpan timeSpan);
+		void SetMetricInterval();
 	}
 }

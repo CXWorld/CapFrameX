@@ -24,7 +24,6 @@ namespace CapFrameX.Hotkey
                 registeredEvent.Dispose();
             }
 
-
             var actionList = new List<(string key, string combination, Dictionary<string, Action> actionDictionary)>();
 
             AddToList(appConfiguration.CaptureHotKey, HotkeyAction.Capture, actionList);
@@ -32,6 +31,7 @@ namespace CapFrameX.Hotkey
             AddToList(appConfiguration.OverlayConfigHotKey, HotkeyAction.OverlayConfig, actionList);
             AddToList(appConfiguration.ResetHistoryHotkey, HotkeyAction.ResetHistory, actionList);
 			AddToList(appConfiguration.ThreadAffinityHotkey, HotkeyAction.ThreadAffinity, actionList);
+			AddToList(appConfiguration.ResetMetricsHotkey, HotkeyAction.ResetMetrics, actionList);
 
 			foreach (var item in actionList)
             {
