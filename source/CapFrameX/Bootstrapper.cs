@@ -138,6 +138,7 @@ namespace CapFrameX
             Container.Register<IPmdService, PmdService>(Reuse.Singleton);
             Container.Register<IPmdDriver, PmdUSBDriver>(Reuse.Singleton);
 			Container.Register<IThreadAffinityController, ThreadAffinityController>(Reuse.Singleton);
+			Container.Register<IFrameViewService, FrameViewService>(Reuse.Singleton);
 		}
 
         /// <summary>

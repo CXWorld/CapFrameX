@@ -52,8 +52,8 @@
                        FontWeight="Bold" Foreground="{Binding IsLoggedIn, Converter={StaticResource ModeColorConverter}}"></TextBlock>
 
 			<TextBlock Margin="20 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >FrameView Status:</TextBlock>
-			<TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsFrameViewAvailable, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= Available|Not available}" 
-                       FontWeight="Bold" Foreground="{Binding IsFrameViewAvailable, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+			<TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding Path=IsFrameViewAvailable, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= Available|Not available}" 
+                       FontWeight="Bold" Foreground="{Binding Path=IsFrameViewAvailable, Converter={StaticResource ModeColorConverter}}"></TextBlock>
 
 			<GridSplitter Margin="15 5 0 5" IsEnabled="False" Width="2" Visibility="{Binding IsResizableBarAnyStatusValid, Converter={StaticResource FalseToCollapsedConverter}}"/>
 

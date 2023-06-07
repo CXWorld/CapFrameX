@@ -1,11 +1,14 @@
-﻿using CapFrameX.Contracts.Overlay;
+﻿using CapFrameX.Contracts.MVVM;
+using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Extensions;
 using CapFrameX.PMD;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Remote;
+using CapFrameX.Sensor;
 using CapFrameX.ViewModel;
+using DryIoc;
 using EmbedIO;
 using Newtonsoft.Json;
 using Serilog;
@@ -30,14 +33,6 @@ namespace CapFrameX
 	/// </summary>
 	public partial class App : Application
 	{
-		[HandleProcessCorruptedStateExceptions]
-		[DllImport("CapFrameX.FrameView.dll")]
-		public static extern bool IntializeFrameViewSession();
-
-		[HandleProcessCorruptedStateExceptions]
-		[DllImport("CapFrameX.FrameView.dll")]
-		public static extern bool CloseFrameViewSession();
-
 		private Bootstrapper _bootstrapper;
 		private WebServer _webServer;
 		private bool _isSingleInstance = true;
@@ -58,25 +53,6 @@ namespace CapFrameX
 				base.OnStartup(e);
 				_bootstrapper = new Bootstrapper();
 				_bootstrapper.Run(true);
-
-				// Intialize FrameView session
-				var context = TaskScheduler.FromCurrentSynchronizationContext();
-				bool isFrameViewAvailable = false;
-
-				Task.Run(() =>
-				{
-					try
-					{
-						isFrameViewAvailable = IntializeFrameViewSession();
-						if (!isFrameViewAvailable) Log.Logger.Error("Error while intializing FrameView session.");
-					}
-					catch (Exception ex) { Log.Logger.Error(ex, $"Error while accessing CapFrameX.FrameView.dll."); }
-				}).ContinueWith(_ =>
-				{
-					var viewModel = _bootstrapper.Container.Resolve(typeof(StateViewModel), true) as StateViewModel;
-					if (viewModel != null) { viewModel.IsFrameViewAvailable = isFrameViewAvailable; }
-
-				}, context);
 
 				Task.Run(async () =>
 				{
@@ -186,7 +162,7 @@ namespace CapFrameX
 
 			try
 			{
-				var sensorService = _bootstrapper.Container.Resolve(typeof(ISensorService), true) as ISensorService;
+				var sensorService = _bootstrapper.Container.Resolve<ISensorService>();
 				sensorService?.ShutdownSensorService();
 			}
 			catch (Exception ex)
@@ -196,7 +172,7 @@ namespace CapFrameX
 
 			try
 			{
-				var overlayService = _bootstrapper.Container.Resolve(typeof(IOverlayService), true) as IOverlayService;
+				var overlayService = _bootstrapper.Container.Resolve<IOverlayService>();
 				overlayService?.ShutdownOverlayService();
 			}
 			catch (Exception ex)
@@ -206,7 +182,7 @@ namespace CapFrameX
 
 			try
 			{
-				var rtssService = _bootstrapper.Container.Resolve(typeof(IRTSSService), true) as IRTSSService;
+				var rtssService = _bootstrapper.Container.Resolve<IRTSSService>();
 				rtssService?.ClearOSD();
 			}
 			catch (Exception ex)
@@ -216,7 +192,7 @@ namespace CapFrameX
 
 			try
 			{
-				var pmdDriver = _bootstrapper.Container.Resolve(typeof(IPmdDriver), true) as IPmdDriver;
+				var pmdDriver = _bootstrapper.Container.Resolve<IPmdDriver>();
 				pmdDriver?.Disconnect();
 			}
 			catch (Exception ex)
@@ -234,12 +210,8 @@ namespace CapFrameX
 			}
 
 			// Close FrameView session
-			try
-			{
-				bool check = CloseFrameViewSession();
-				if (!check) Log.Logger.Error("Error while closing FrameView session.");
-			}
-			catch (Exception ex) { Log.Logger.Error(ex, $"Error while accessing CapFrameX.FrameView.dll."); }
+			var frameViewService = _bootstrapper.Container.Resolve<IFrameViewService>();
+			frameViewService?.CloseFrameViewService();
 		}
 
 		private void ApplicationStartup(object sender, StartupEventArgs e)

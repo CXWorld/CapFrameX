@@ -21,8 +21,8 @@ namespace CapFrameX.ViewModel
         public double ResizableBarD3DSize => Math.Round(_systemInfo.PciBarSizeD3D / 1024.0 / 1024);
 
         public double ResizableBarHardwareSize => Math.Round(_systemInfo.PciBarSizeHardware / 1024.0 / 1024);
-        public double ResizableBarVulkanSize => Math.Round(_systemInfo.PciBarSizeVulkan / 1024.0 / 1024);
 
+        public double ResizableBarVulkanSize => Math.Round(_systemInfo.PciBarSizeVulkan / 1024.0 / 1024);
 
         public bool IsResizableBarEnabled => (IsResizableBarD3DEnabled || IsResizableBarVulkanEnabled) && IsResizableBarHardwareEnabled;
 
@@ -58,12 +58,11 @@ namespace CapFrameX.ViewModel
 
         public bool IsWindowsAnyStatusValid => IsGameModeStatusValid || IsHAGSStatusValid;
 
-
-        public void UpdateSystemInfoStatus()
+		public void UpdateSystemInfoStatus()
         {
             RaisePropertyChanged(nameof(IsResizableBarEnabled));
             RaisePropertyChanged(nameof(IsGameModeEnabled));
             RaisePropertyChanged(nameof(IsHAGSEnabled));
-        }
+		}
     }
 }
