@@ -20,8 +20,6 @@ using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Reactive.Linq;
-using System.Runtime.ExceptionServices;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -30,10 +28,6 @@ namespace CapFrameX.Overlay
 {
 	public class OverlayEntryProvider : IOverlayEntryProvider
 	{
-		[HandleProcessCorruptedStateExceptions]
-		[DllImport("CapFrameX.FrameView.dll")]
-		public static extern double GetAveragePcl(int pid);
-
 		private static readonly string OVERLAY_CONFIG_FOLDER
 			= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
 					@"CapFrameX\Configuration\");
@@ -54,6 +48,7 @@ namespace CapFrameX.Overlay
 		private readonly ISensorConfig _sensorConfig;
 		private readonly IOverlayEntryCore _overlayEntryCore;
 		private readonly IThreadAffinityController _threadAffinityController;
+		private readonly IFrameViewService _frameViewService;
 
 		private readonly ILogger<OverlayEntryProvider> _logger;
 		private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict
@@ -81,6 +76,7 @@ namespace CapFrameX.Overlay
 			ISensorConfig sensorConfig,
 			IOverlayEntryCore overlayEntryCore,
 			IThreadAffinityController threadAffinityController,
+			IFrameViewService frameViewService,
 			ILogger<OverlayEntryProvider> logger)
 		{
 			_sensorService = sensorService;
@@ -92,6 +88,7 @@ namespace CapFrameX.Overlay
 			_sensorConfig = sensorConfig;
 			_overlayEntryCore = overlayEntryCore;
 			_threadAffinityController = threadAffinityController;
+			_frameViewService = frameViewService;
 			_logger = logger;
 
 			_ = Task.Run(async () => await LoadOrSetDefault())
@@ -691,14 +688,7 @@ namespace CapFrameX.Overlay
 
 			if (pcLatency != null && pcLatency.ShowOnOverlay)
 			{
-				double pcl = 0;
-				try
-				{
-					pcl = GetAveragePcl(_currentProcessId);
-				}
-				catch (Exception ex) { _logger.LogError(ex, $"Error while accessing CapFrameX.FrameView.dll."); }
-
-				pcLatency.Value = pcl;
+				pcLatency.Value = _frameViewService.GetAveragePcLatency(_currentProcessId);
 			}
 		}
 

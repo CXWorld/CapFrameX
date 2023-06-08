@@ -9,5 +9,7 @@ namespace CapFrameX.Contracts.Sensor
 		Task IntializeFrameViewService();
 
 		void CloseFrameViewService();
+
+		double GetAveragePcLatency(int pid);
 	}
 }

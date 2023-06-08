@@ -11,6 +11,10 @@ namespace CapFrameX.Sensor
 	{
 		[HandleProcessCorruptedStateExceptions]
 		[DllImport("CapFrameX.FrameView.dll")]
+		public static extern double GetAveragePcl(int pid);
+
+		[HandleProcessCorruptedStateExceptions]
+		[DllImport("CapFrameX.FrameView.dll")]
 		private static extern bool IntializeFrameViewSession();
 
 		[HandleProcessCorruptedStateExceptions]
@@ -48,6 +52,18 @@ namespace CapFrameX.Sensor
 				if (!check) _logger.LogError("Error while closing FrameView session.");
 			}
 			catch (Exception ex) { _logger.LogError(ex, $"Error while accessing CapFrameX.FrameView.dll."); }
+		}
+
+		public double GetAveragePcLatency(int pid)
+		{
+			double pcl = 0;
+			try
+			{
+				pcl = GetAveragePcl(pid);
+			}
+			catch (Exception ex) { _logger.LogError(ex, $"Error while accessing CapFrameX.FrameView.dll."); }
+
+			return pcl;
 		}
 	}
 }
