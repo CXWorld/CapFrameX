@@ -2,7 +2,7 @@
 {
     public struct PmdSample
     {
-        public long PerformanceCounter;
-        public float Value;
+        public double Time;
+        public double Value;
     }
 }

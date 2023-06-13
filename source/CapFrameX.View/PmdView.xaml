@@ -372,7 +372,8 @@
 								<controls:PlotViewCustomZoom.ContextMenu>
 									<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
 										<MenuItem Header="Copy GPU power values (f)" Command="{Binding CopyGpuPowerValuesCommand}"/>
-										<MenuItem Header="Copy GPU power points (t, f(t))" Command="{Binding CopyGpuPowerPointsCommand}"/>
+										<MenuItem Header="Copy GPU power points (t, p(t))" Command="{Binding CopyGpuPowerPointsCommand}"/>
+										<MenuItem Header="Copy GPU power/frame times (t, f(t), p(t))" Command="{Binding CopyGpuPowerFrameTimesCommand}"/>
 									</ContextMenu>
 								</controls:PlotViewCustomZoom.ContextMenu>
 							</controls:PlotViewCustomZoom>
@@ -402,7 +403,8 @@
 							<controls:PlotViewCustomZoom.ContextMenu>
 								<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
 									<MenuItem Header="Copy CPU power values (f)" Command="{Binding CopyCpuPowerValuesCommand}"/>
-									<MenuItem Header="Copy CPU power points (t, f(t))" Command="{Binding CopyCpuPowerPointsCommand}"/>
+									<MenuItem Header="Copy CPU power points (t, p(t))" Command="{Binding CopyCpuPowerPointsCommand}"/>
+									<MenuItem Header="Copy CPU power/frame times (t, f(t), p(t))" Command="{Binding CopyCpuPowerFrameTimesCommand}"/>
 								</ContextMenu>
 							</controls:PlotViewCustomZoom.ContextMenu>
 						</controls:PlotViewCustomZoom>

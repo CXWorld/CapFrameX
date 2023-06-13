@@ -7,6 +7,7 @@ using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.PMD;
 using CapFrameX.Statistics.NetStandard;
+using MathNet.Numerics.Integration;
 using Microsoft.Extensions.Logging;
 using OxyPlot;
 using Prism.Commands;
@@ -107,6 +108,10 @@ namespace CapFrameX.ViewModel
 		public ICommand CopyCpuPowerValuesCommand { get; }
 
 		public ICommand CopyCpuPowerPointsCommand { get; }
+
+		public ICommand CopyCpuPowerFrameTimesCommand { get; }
+
+		public ICommand CopyGpuPowerFrameTimesCommand { get; }
 
 
 		public string AvgPmdGPUPower { get; set; } = "NaN W";
@@ -346,6 +351,8 @@ namespace CapFrameX.ViewModel
 			CopyGpuPowerPointsCommand = new DelegateCommand(OnCopyGpuPowerPoints);
 			CopyCpuPowerValuesCommand = new DelegateCommand(OnCopyCpuPowerValues);
 			CopyCpuPowerPointsCommand = new DelegateCommand(OnCopyCpuPowerPoints);
+			CopyCpuPowerFrameTimesCommand = new DelegateCommand(CopyCpuPowerFrameTimes);
+			CopyGpuPowerFrameTimesCommand = new DelegateCommand(CopyGpuPowerFrameTimes);
 
 			_pmdDataChartManager.UseDarkMode = _appConfiguration.UseDarkMode;
 			_pmdDataChartManager.UpdateChartsTheme();
@@ -443,6 +450,77 @@ namespace CapFrameX.ViewModel
 			foreach (var powerValue in pmdGpuPowerPoints)
 			{
 				builder.Append(Math.Round(powerValue.Y, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+			}
+
+			Clipboard.SetDataObject(builder.ToString(), false);
+		}
+
+
+		private void CopyGpuPowerFrameTimes()
+		{
+			if (_session == null) return;
+
+			var pmdGpuPowerPoints = _session.GetPmdPowerPoints("GPU");
+
+			if (pmdGpuPowerPoints.IsNullOrEmpty()) return;
+
+			var frameTimePoints = _session.GetFrametimePoints();
+
+			if (frameTimePoints.IsNullOrEmpty()) return;
+
+			var pmdSamples = pmdGpuPowerPoints
+				.Select(point => new PmdSample() { Time = point.X, Value = point.Y })
+				.ToArray();
+
+			var frameTimeSamples = frameTimePoints
+				.Select(point => new PmdSample() { Time = point.X, Value = point.Y })
+				.ToArray();
+
+			var mappedSamples = PmdDataProcessing.GetMappedPmdData(frameTimeSamples, pmdSamples);
+			StringBuilder builder = new StringBuilder();
+
+			string RoundAndToString(double value) => Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
+
+			for (int i = 0; i < mappedSamples.Length; i++)
+			{
+				builder.Append(RoundAndToString(frameTimeSamples[i].Time) + "\t" +
+					RoundAndToString(frameTimeSamples[i].Value) + "\t" +
+					RoundAndToString(mappedSamples[i].Value) + Environment.NewLine);
+			}
+
+			Clipboard.SetDataObject(builder.ToString(), false);
+		}
+
+		private void CopyCpuPowerFrameTimes()
+		{
+			if (_session == null) return;
+
+			var pmdCpuPowerPoints = _session.GetPmdPowerPoints("CPU");
+
+			if (pmdCpuPowerPoints.IsNullOrEmpty()) return;
+
+			var frameTimePoints = _session.GetFrametimePoints();
+
+			if (frameTimePoints.IsNullOrEmpty()) return;
+
+			var pmdSamples = pmdCpuPowerPoints
+				.Select(point => new PmdSample() { Time = point.X, Value = point.Y })
+				.ToArray();
+
+			var frameTimeSamples = frameTimePoints
+				.Select(point => new PmdSample() { Time = point.X, Value = point.Y })
+				.ToArray();
+
+			var mappedSamples = PmdDataProcessing.GetMappedPmdData(frameTimeSamples, pmdSamples);
+			StringBuilder builder = new StringBuilder();
+
+			string RoundAndToString(double value) => Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
+
+			for (int i = 0; i < mappedSamples.Length; i++)
+			{
+				builder.Append(RoundAndToString(frameTimeSamples[i].Time) + "\t" +
+					RoundAndToString(frameTimeSamples[i].Value) + "\t" +
+					RoundAndToString(mappedSamples[i].Value) + Environment.NewLine);
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
