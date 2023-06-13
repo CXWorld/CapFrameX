@@ -604,7 +604,7 @@
                                             </ContextMenu>
                                         </lvc:CartesianChart.ContextMenu>
                                         <lvc:CartesianChart.AxisX>
-                                            <lvc:Axis ShowLabels="True" BarUnit="1" Foreground="{DynamicResource MaterialDesignBody}"
+                                            <lvc:Axis ShowLabels="True" Unit="1" Foreground="{DynamicResource MaterialDesignBody}"
                                                   Labels="{Binding FPSThresholdLabels}" LabelFormatter="{Binding XAxisFormatter}">
                                                 <lvc:Axis.Separator>
                                                     <lvc:Separator Step="1" IsEnabled="False"/>

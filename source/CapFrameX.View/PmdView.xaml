@@ -120,19 +120,19 @@
                                 <TextBlock Text="{Binding GpuName, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
                                            FontWeight="Bold" FontSize="18"/>
                             </Grid>
-                            <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="PciExpressPlotViewMetrics" 
+							<controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="PciExpressPlotViewMetrics" 
                                          Model="{Binding PciExpressModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 0"
 										 MouseDoubleClick="ResetPciExpressChartMetrics_MouseDoubleClick">
-                                <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
-                                    <ControlTemplate>
-                                        <oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
-                                            <oxy:TrackerControl.Content>
-                                                <TextBlock Text="{Binding}" Margin="5" />
-                                            </oxy:TrackerControl.Content>
-                                        </oxy:TrackerControl>
-                                    </ControlTemplate>
-                                </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
-                            </controls:PlotViewCustomZoom>
+								<controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+									<ControlTemplate>
+										<oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
+											<oxy:TrackerControl.Content>
+												<TextBlock Text="{Binding}" Margin="5" />
+											</oxy:TrackerControl.Content>
+										</oxy:TrackerControl>
+									</ControlTemplate>
+								</controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+							</controls:PlotViewCustomZoom>
                         </Grid>
                     </Grid>
                     <ScrollViewer Grid.Row="1" Grid.Column="0" Margin="5 5 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
@@ -206,16 +206,16 @@
                             <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="EPS12VPlotViewMetrics" 
                                          Model="{Binding EPS12VModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 5"
 										 MouseDoubleClick="ResetEPS12VChartMetrics_MouseDoubleClick">
-                                <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
-                                    <ControlTemplate>
-                                        <oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
-                                            <oxy:TrackerControl.Content>
-                                                <TextBlock Text="{Binding}" Margin="5" />
-                                            </oxy:TrackerControl.Content>
-                                        </oxy:TrackerControl>
-                                    </ControlTemplate>
-                                </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
-                            </controls:PlotViewCustomZoom>
+								<controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+									<ControlTemplate>
+										<oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
+											<oxy:TrackerControl.Content>
+												<TextBlock Text="{Binding}" Margin="5" />
+											</oxy:TrackerControl.Content>
+										</oxy:TrackerControl>
+									</ControlTemplate>
+								</controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+							</controls:PlotViewCustomZoom>
                         </Grid>
                     </Grid>
                     <Button Grid.Row="2" Margin="0 0 0 2" Width="190" Height="40" Command="{Binding ResetPmdMetricsCommand}"
@@ -369,7 +369,13 @@
                                         </oxy:TrackerControl>
                                     </ControlTemplate>
                                 </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
-                            </controls:PlotViewCustomZoom>
+								<controls:PlotViewCustomZoom.ContextMenu>
+									<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+										<MenuItem Header="Copy GPU power values (f)" Command="{Binding CopyGpuPowerValuesCommand}"/>
+										<MenuItem Header="Copy GPU power points (t, f(t))" Command="{Binding CopyGpuPowerPointsCommand}"/>
+									</ContextMenu>
+								</controls:PlotViewCustomZoom.ContextMenu>
+							</controls:PlotViewCustomZoom>
                         </Grid>
                     </Grid>
                     <Grid Grid.Row="1" Grid.Column="0">
@@ -393,7 +399,13 @@
                                     </oxy:TrackerControl>
                                 </ControlTemplate>
                             </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
-                        </controls:PlotViewCustomZoom>
+							<controls:PlotViewCustomZoom.ContextMenu>
+								<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+									<MenuItem Header="Copy CPU power values (f)" Command="{Binding CopyCpuPowerValuesCommand}"/>
+									<MenuItem Header="Copy CPU power points (t, f(t))" Command="{Binding CopyCpuPowerPointsCommand}"/>
+								</ContextMenu>
+							</controls:PlotViewCustomZoom.ContextMenu>
+						</controls:PlotViewCustomZoom>
                     </Grid>
                     <Grid Grid.Row="2" Grid.Column="0" Visibility="{Binding DrawPerformanceChart, Converter={StaticResource TrueToVisibleConverter}}">
                         <Grid.RowDefinitions>
