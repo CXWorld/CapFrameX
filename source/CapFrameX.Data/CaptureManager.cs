@@ -458,7 +458,7 @@ namespace CapFrameX.Data
 				{
 					sessionRun.SampleTime = _pmdService.DownSamplingSize;
 
-					int count = (int)(finalCaptureTime / (1E03 * sessionRun.SampleTime));
+					int count = (int)(finalCaptureTime / (1E-03 * sessionRun.SampleTime));
 
 					if (_pmdDataGpuPower.Any())
 						sessionRun.PmdGpuPower = _pmdDataGpuPower.Take(count).ToArray();
