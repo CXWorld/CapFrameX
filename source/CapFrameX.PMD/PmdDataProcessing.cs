@@ -36,8 +36,7 @@
                     // Local loop mapping samples
                     for (int k = startLocalIndex; k < mappingSamples.Length - 1; k++)
                     {
-                        if (startTime > mappingSamples[k].Time &&
-                            endTime <= mappingSamples[k + 1].Time)
+                        if (startTime > mappingSamples[k].Time && endTime <= mappingSamples[k + 1].Time)
                         {
                             mappedSamples[i + 1] = new PmdSample() 
                             {
@@ -54,13 +53,24 @@
                         }
                         else if (mappingSamples[k].Time >= endTime)
                         {
-							// Error: aggregate/0
-							mappedSamples[i + 1] = new PmdSample() 
-                            { 
-                                Time = endTime, 
-                                Value = aggregate / mapCount
-                            };
-                            startLocalIndex = k;
+                            if (mapCount > 0)
+                            {
+                                mappedSamples[i + 1] = new PmdSample()
+                                {
+                                    Time = endTime,
+                                    Value = aggregate / mapCount
+                                };
+                                startLocalIndex = k;
+                            }
+                            else
+                            {
+								mappedSamples[i + 1] = new PmdSample()
+								{
+									Time = endTime,
+									Value = (mappingSamples[k].Value + mappingSamples[k - 1].Value) / 2
+								};
+								startLocalIndex = k;
+							}
 
                             break;
                         }
