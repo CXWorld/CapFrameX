@@ -393,8 +393,8 @@ namespace CapFrameX.ViewModel
 
 			for (int i = 0; i < pmdCpuPowerPoints.Count; i++)
 			{
-				builder.Append(Math.Round(pmdCpuPowerPoints[i].X, 2).ToString(CultureInfo.InvariantCulture) + "\t" +
-					Math.Round(pmdCpuPowerPoints[i].Y, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+				builder.Append(RoundAndToString(pmdCpuPowerPoints[i].X, 3) + "\t" +
+					RoundAndToString(pmdCpuPowerPoints[i].Y, 2) + Environment.NewLine);
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
@@ -414,7 +414,7 @@ namespace CapFrameX.ViewModel
 
 			foreach (var powerValue in pmdCpuPowerPoints)
 			{
-				builder.Append(Math.Round(powerValue.Y, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+				builder.Append(RoundAndToString(powerValue.Y, 2) + Environment.NewLine);
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
@@ -433,8 +433,8 @@ namespace CapFrameX.ViewModel
 
 			for (int i = 0; i < pmdGpuPowerPoints.Count; i++)
 			{
-				builder.Append(Math.Round(pmdGpuPowerPoints[i].X, 2).ToString(CultureInfo.InvariantCulture) + "\t" +
-					Math.Round(pmdGpuPowerPoints[i].Y, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+				builder.Append(RoundAndToString(pmdGpuPowerPoints[i].X, 3) + "\t" +
+					RoundAndToString(pmdGpuPowerPoints[i].Y, 2) + Environment.NewLine);
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
@@ -453,7 +453,7 @@ namespace CapFrameX.ViewModel
 
 			foreach (var powerValue in pmdGpuPowerPoints)
 			{
-				builder.Append(Math.Round(powerValue.Y, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+				builder.Append(RoundAndToString(powerValue.Y, 2) + Environment.NewLine);
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
@@ -484,13 +484,11 @@ namespace CapFrameX.ViewModel
 			StringBuilder builder = new StringBuilder();
 			builder.Append("Time [s]" + "\t" + "Frametime [ms]" + "\t" + "GPU Power [W]" + Environment.NewLine);
 
-			string RoundAndToString(double value) => Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
-
 			for (int i = 0; i < mappedSamples.Length; i++)
 			{
-				builder.Append(RoundAndToString(frameTimeSamples[i].Time) + "\t" +
-					RoundAndToString(frameTimeSamples[i].Value) + "\t" +
-					RoundAndToString(mappedSamples[i].Value) + Environment.NewLine);
+				builder.Append(RoundAndToString(frameTimeSamples[i].Time, 3) + "\t" +
+					RoundAndToString(frameTimeSamples[i].Value, 2) + "\t" +
+					RoundAndToString(mappedSamples[i].Value, 2) + Environment.NewLine);
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
@@ -520,17 +518,18 @@ namespace CapFrameX.ViewModel
 			StringBuilder builder = new StringBuilder();
 			builder.Append("Time [s]" + "\t" + "Frametime [ms]" + "\t" + "CPU Power [W]" + Environment.NewLine);
 
-			string RoundAndToString(double value) => Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
-
 			for (int i = 0; i < mappedSamples.Length; i++)
 			{
-				builder.Append(RoundAndToString(frameTimeSamples[i].Time) + "\t" +
-					RoundAndToString(frameTimeSamples[i].Value) + "\t" +
-					RoundAndToString(mappedSamples[i].Value) + Environment.NewLine);
+				builder.Append(RoundAndToString(frameTimeSamples[i].Time, 3) + "\t" +
+					RoundAndToString(frameTimeSamples[i].Value, 2) + "\t" +
+					RoundAndToString(mappedSamples[i].Value, 2) + Environment.NewLine);
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
 		}
+
+		private string RoundAndToString(double value, int digits) 
+			=> Math.Round(value, digits).ToString(CultureInfo.InvariantCulture);
 
 		private void SubscribePmdDataStreamCharts()
 		{
