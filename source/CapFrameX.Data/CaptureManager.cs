@@ -348,6 +348,8 @@ namespace CapFrameX.Data
 
 			await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
 			IsCapturing = false;
+
+			// Stop Present logging
 			_disposableCaptureStream?.Dispose();
 
 			// Stop PMD logging
