@@ -389,6 +389,7 @@ namespace CapFrameX.ViewModel
 			if (pmdCpuPowerPoints.IsNullOrEmpty()) return;
 
 			StringBuilder builder = new StringBuilder();
+			builder.Append("Time [s]" + "\t" + "CPU Power [W]" + Environment.NewLine);
 
 			for (int i = 0; i < pmdCpuPowerPoints.Count; i++)
 			{
@@ -409,6 +410,7 @@ namespace CapFrameX.ViewModel
 			if (pmdCpuPowerPoints.IsNullOrEmpty()) return;
 
 			StringBuilder builder = new StringBuilder();
+			builder.Append("CPU Power [W]" + Environment.NewLine);
 
 			foreach (var powerValue in pmdCpuPowerPoints)
 			{
@@ -427,6 +429,7 @@ namespace CapFrameX.ViewModel
 			if (pmdGpuPowerPoints.IsNullOrEmpty()) return;
 
 			StringBuilder builder = new StringBuilder();
+			builder.Append("Time [s]" + "\t" + "GPU Power [W]" + Environment.NewLine);
 
 			for (int i = 0; i < pmdGpuPowerPoints.Count; i++)
 			{
@@ -446,6 +449,7 @@ namespace CapFrameX.ViewModel
 			if (pmdGpuPowerPoints.IsNullOrEmpty()) return;
 
 			StringBuilder builder = new StringBuilder();
+			builder.Append("GPU Power [W]" + Environment.NewLine);
 
 			foreach (var powerValue in pmdGpuPowerPoints)
 			{
@@ -478,6 +482,7 @@ namespace CapFrameX.ViewModel
 
 			var mappedSamples = PmdDataProcessing.GetMappedPmdData(frameTimeSamples, pmdSamples);
 			StringBuilder builder = new StringBuilder();
+			builder.Append("Time [s]" + "\t" + "Frametime [ms]" + "\t" + "GPU Power [W]" + Environment.NewLine);
 
 			string RoundAndToString(double value) => Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
 
@@ -513,6 +518,7 @@ namespace CapFrameX.ViewModel
 
 			var mappedSamples = PmdDataProcessing.GetMappedPmdData(frameTimeSamples, pmdSamples);
 			StringBuilder builder = new StringBuilder();
+			builder.Append("Time [s]" + "\t" + "Frametime [ms]" + "\t" + "CPU Power [W]" + Environment.NewLine);
 
 			string RoundAndToString(double value) => Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
 
