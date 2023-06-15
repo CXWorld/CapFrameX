@@ -545,8 +545,8 @@ namespace CapFrameX.ViewModel
 			SetGlobalHookEventOverlayHotkey();
 			SetGlobalHookEventOverlayConfigHotkey();
 			SetGlobalHookEventThreadAffinityHotkey();
-
-			InitializeOSDCustomPosition();
+            SetGlobalHookEventResetMetricsHotkey();
+            InitializeOSDCustomPosition();
 		}
 
 		private void SetSaveButtonIsEnableAction()
