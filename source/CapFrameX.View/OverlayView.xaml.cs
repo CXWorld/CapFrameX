@@ -103,9 +103,9 @@ namespace CapFrameX.View
 				var resetMetricsHotkeyString = (DataContext as OverlayViewModel).AppConfiguration.ResetMetricsHotkey;
 				var keyStrings = resetMetricsHotkeyString.Split('+');
 
-				ResetMetricsHotkey = CXHotkey.Create(keyStrings, Key.M, ModifierKeys.Control);
+				ResetMetricsHotkey = CXHotkey.Create(keyStrings, Key.M, ModifierKeys.Alt);
 			}
-			catch { ResetMetricsHotkey = new CXHotkey(Key.M, ModifierKeys.Control); }
+			catch { ResetMetricsHotkey = new CXHotkey(Key.M, ModifierKeys.Alt); }
 		}
 
 		private void OverlayHotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)

@@ -602,7 +602,7 @@
 								<ComboBox Margin="25 5 0 0" 
 											materialDesign:ComboBoxAssist.ClassicMode="True"
 											materialDesign:HintAssist.Hint="Metric Interval (s)" materialDesign:HintAssist.HintOpacity=".8"
-											materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110" Height="40"
+											materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="135" Height="40"
 											MouseLeave="MetricIntervalComboBox_MouseLeave" FontSize="14"
                                             ToolTip="Real-time metrics calculation time frame in s"
 											Foreground="{DynamicResource MaterialDesignBody}"
