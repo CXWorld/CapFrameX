@@ -228,13 +228,19 @@ namespace CapFrameX.Statistics.NetStandard
                 case EMetric.OnePercentLowAverage:
                     metricValue = 1000 / GetPercentageHighAverageSequence(sequence, 1 - 0.01);
                     break;
-                case EMetric.ZerodotOnePercentLowAverage:
+				case EMetric.ZerodotTwoPercentLowAverage:
+					metricValue = 1000 / GetPercentageHighAverageSequence(sequence, 1 - 0.002);
+					break;
+				case EMetric.ZerodotOnePercentLowAverage:
                     metricValue = 1000 / GetPercentageHighAverageSequence(sequence, 1 - 0.001);
                     break;
                 case EMetric.OnePercentLowIntegral:
                     metricValue = 1000 / GetPercentageHighIntegralSequence(sequence, 1 - 0.01);
                     break;
-                case EMetric.ZerodotOnePercentLowIntegral:
+				case EMetric.ZerodotTwoPercentLowIntegral:
+					metricValue = 1000 / GetPercentageHighIntegralSequence(sequence, 1 - 0.002);
+					break;
+				case EMetric.ZerodotOnePercentLowIntegral:
                     metricValue = 1000 / GetPercentageHighIntegralSequence(sequence, 1 - 0.001);
                     break;
                 case EMetric.Min:
