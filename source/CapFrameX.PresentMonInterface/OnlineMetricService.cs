@@ -130,7 +130,9 @@ namespace CapFrameX.PresentMonInterface
                 return _overlayEntryCore.RealtimeMetricEntryDict["OnlineAverage"].ShowOnOverlay
                     || _overlayEntryCore.RealtimeMetricEntryDict["OnlineP1"].ShowOnOverlay
                     || _overlayEntryCore.RealtimeMetricEntryDict["OnlineP0dot2"].ShowOnOverlay
-                    || _overlayEntryCore.RealtimeMetricEntryDict["OnlineStutteringPercentage"].ShowOnOverlay
+					|| _overlayEntryCore.RealtimeMetricEntryDict["Online1PercentLow"].ShowOnOverlay
+					|| _overlayEntryCore.RealtimeMetricEntryDict["Online0dot2PercentLow"].ShowOnOverlay
+					|| _overlayEntryCore.RealtimeMetricEntryDict["OnlineStutteringPercentage"].ShowOnOverlay
                     || _overlayEntryCore.RealtimeMetricEntryDict["PmdGpuPowerCurrent"].ShowOnOverlay
                     || _overlayEntryCore.RealtimeMetricEntryDict["PmdCpuPowerCurrent"].ShowOnOverlay
                     || _overlayEntryCore.RealtimeMetricEntryDict["PmdSystemPowerCurrent"].ShowOnOverlay;

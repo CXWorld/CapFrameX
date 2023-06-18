@@ -34,8 +34,8 @@ namespace CapFrameX.Overlay
 
 		private static readonly HashSet<string> ONLINE_METRIC_NAMES = new HashSet<string>()
 		{
-			"OnlineAverage", "OnlineP1", "OnlineP0dot2", "OnlineApplicationLatency",
-			"OnlineStutteringPercentage", "PmdGpuPowerCurrent", "PmdCpuPowerCurrent",
+			"OnlineAverage", "OnlineP1", "OnlineP0dot2", "Online1PercentLow", "Online0dot2PercentLow",
+			"OnlineApplicationLatency", "OnlineStutteringPercentage", "PmdGpuPowerCurrent", "PmdCpuPowerCurrent",
 			"PmdSystemPowerCurrent"
 		};
 
@@ -602,6 +602,22 @@ namespace CapFrameX.Overlay
 				p1dot2Entry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.P0dot2));
 			}
 
+			// 1% Low
+			_identifierOverlayEntryDict.TryGetValue("Online1PercentLow", out IOverlayEntry onePercentLowEntry);
+
+			if (onePercentLowEntry != null && onePercentLowEntry.ShowOnOverlay)
+			{
+				onePercentLowEntry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.OnePercentLowAverage));
+			}
+
+			// 0.2% Low
+			_identifierOverlayEntryDict.TryGetValue("Online0dot2PercentLow", out IOverlayEntry zeroDotTwoPercentLowEntry);
+
+			if (zeroDotTwoPercentLowEntry != null && zeroDotTwoPercentLowEntry.ShowOnOverlay)
+			{
+				zeroDotTwoPercentLowEntry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.ZerodotOnePercentLowAverage));
+			}
+
 			// application latency
 			_identifierOverlayEntryDict.TryGetValue("OnlineApplicationLatency", out IOverlayEntry renderApplicationLatency);
 
@@ -732,6 +748,24 @@ namespace CapFrameX.Overlay
 			{
 				p1dot2Entry.ValueUnitFormat = "FPS";
 				p1dot2Entry.ValueAlignmentAndDigits = "{0,5:F0}";
+			}
+
+			// 1% Low
+			_identifierOverlayEntryDict.TryGetValue("Online1PercentLow", out IOverlayEntry onePercentLowEntry);
+
+			if (onePercentLowEntry != null)
+			{
+				onePercentLowEntry.ValueUnitFormat = "FPS";
+				onePercentLowEntry.ValueAlignmentAndDigits = "{0,5:F0}";
+			}
+
+			// 0.2% Low
+			_identifierOverlayEntryDict.TryGetValue("Online0dot2PercentLow", out IOverlayEntry zeroDotTwoPercentLowEntry);
+
+			if (zeroDotTwoPercentLowEntry != null)
+			{
+				zeroDotTwoPercentLowEntry.ValueUnitFormat = "FPS";
+				zeroDotTwoPercentLowEntry.ValueAlignmentAndDigits = "{0,5:F0}";
 			}
 
 			// render lag

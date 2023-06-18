@@ -251,6 +251,36 @@ namespace CapFrameX.Overlay
                         Color = string.Empty
                     },
 
+                    // 1% Low
+                    new OverlayEntryWrapper("Online1PercentLow")
+					{
+						OverlayEntryType = EOverlayEntryType.OnlineMetric,
+						ShowOnOverlay = false,
+						ShowOnOverlayIsEnabled = true,
+						Description = "Real-time 1% Low FPS",
+						GroupName = "1% Low",
+						Value = "0",
+						ValueFormat = default,
+						ShowGraph = false,
+						ShowGraphIsEnabled = false,
+						Color = string.Empty
+					},
+
+                    // 0.2% Low
+                    new OverlayEntryWrapper("Online0dot2PercentLow")
+					{
+						OverlayEntryType = EOverlayEntryType.OnlineMetric,
+						ShowOnOverlay = false,
+						ShowOnOverlayIsEnabled = true,
+						Description = "Real-time 0.2% Low FPS",
+						GroupName = "0.2% Low",
+						Value = "0",
+						ValueFormat = default,
+						ShowGraph = false,
+						ShowGraphIsEnabled = false,
+						Color = string.Empty
+					},
+
                     // Render lag
                     new OverlayEntryWrapper("OnlineApplicationLatency")
                     {
