@@ -361,7 +361,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 					double vcc;
 					uint svi0PlaneXVddCor;
 
-					if (model is 0x61) // Readout not working for Ryzen 7000.
+					if (model is 0x61)
 						smuSvi0Tfn |= 0x01 | 0x02;
 
 					// Core (0x01)
@@ -532,10 +532,28 @@ namespace OpenHardwareMonitor.Hardware.CPU
 					}
 				}
 
-				// Voltage
-				const double vidStep = 0.00625;
-				double vcc = 1.550 - vidStep * curCpuVid;
-				voltageSensor.Value = (float)vcc;
+				// Voltage		
+				voltageSensor.Value = GetVcc(curCpuVid);
+			}
+
+			private float GetVcc(int cpuVid)
+			{
+				const float vidStep = 0.00625f;
+				float vcc;
+
+				// Zen 4
+				// Raphael: 0x61
+				// Phoenix: 0x4A
+				if (cpu.model == 0x61 || cpu.model == 0x4A)
+				{
+					vcc = vidStep * cpuVid;
+				}
+				else
+				{
+					vcc = 1.550f - vidStep * cpuVid;
+				}
+
+				return vcc;
 			}
 		}
 	}
