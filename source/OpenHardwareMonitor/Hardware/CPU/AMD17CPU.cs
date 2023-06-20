@@ -541,13 +541,20 @@ namespace OpenHardwareMonitor.Hardware.CPU
 				const float vidStep = 0.00625f;
 				float vcc;
 
-				// Zen 4
+				// Family 19h
 				// Raphael: 0x61
-				// Phoenix: 0x4A
-				if (cpu.family == 0x19 && (cpu.model == 0x61 || cpu.model == 0x74))
+				// Phoenix: 0x74
+    				// Rembrandt: 0x40
+				if (cpu.family == 0x19 && (cpu.model == 0x61 || cpu.model == 0x74 || cpu.model == 0x40))
 				{
 					vcc = vidStep * cpuVid;
 				}
+    				// Family 17h
+				// VanGogh: 0x90
+    				else if(cpu.family == 0x17 && cpu.model == 0x90)
+				{
+    					vcc = vidStep * cpuVid;
+ 				}
 				else
 				{
 					vcc = 1.550f - vidStep * cpuVid;
