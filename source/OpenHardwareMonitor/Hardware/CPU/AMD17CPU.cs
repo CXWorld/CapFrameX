@@ -544,7 +544,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 				// Zen 4
 				// Raphael: 0x61
 				// Phoenix: 0x4A
-				if (cpu.family == 0x19 && (cpu.model == 0x61 || cpu.model == 0x4A))
+				if (cpu.family == 0x19 && (cpu.model == 0x61 || cpu.model == 0x74))
 				{
 					vcc = vidStep * cpuVid;
 				}
