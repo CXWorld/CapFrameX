@@ -546,6 +546,7 @@ namespace CapFrameX.ViewModel
 			SetGlobalHookEventOverlayConfigHotkey();
 			SetGlobalHookEventThreadAffinityHotkey();
             SetGlobalHookEventResetMetricsHotkey();
+
             InitializeOSDCustomPosition();
 		}
 

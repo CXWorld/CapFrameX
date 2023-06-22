@@ -681,8 +681,10 @@ namespace CapFrameX.Overlay
 
 			if (threadAffinityState != null && threadAffinityState.ShowOnOverlay)
 			{
-				var threadAffinityStateText = _threadAffinityController.CpuAffinityState == AffinityState.ECores ? "E-cores" :
-					_threadAffinityController.CpuAffinityState == AffinityState.PCores ? "P-cores" : _threadAffinityController.CpuAffinityState.ToString();
+				var threadAffinityStateText = _threadAffinityController.CpuAffinityState == AffinityState.ECores ? "E-Cores"
+					: _threadAffinityController.CpuAffinityState == AffinityState.PCores ? "P-Cores"
+					: _threadAffinityController.CpuAffinityState.ToString();
+
 				threadAffinityState.Value = threadAffinityStateText;
 			}
 		}
