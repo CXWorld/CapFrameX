@@ -2,7 +2,6 @@
 #include <vector>
 #include <algorithm>
 #include <map>
-
 #include "Helper.h"
 #include "FvSDK.h"
 #include "FrameViewManager.h"
