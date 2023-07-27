@@ -18,7 +18,8 @@ namespace CapFrameX.Sensor.Reporting
             ["Data"] = 2,
             ["Factor"] = 2,
             ["Voltage"] = 3,
-            ["Time"] = 3
+            ["Time"] = 3,
+            ["Throughput"] = 1
         };
 
         public static IEnumerable<ISensorReportItem> GetReportFromSessionSensorData(IEnumerable<ISessionSensorData> sessionsSensorData, double startTime = 0, double endTime = double.PositiveInfinity)
@@ -219,7 +220,7 @@ namespace CapFrameX.Sensor.Reporting
                     case "SmallData":
                         return "(MB)";
                     case "Throughput":
-                        return "(MB/s)";
+                        return "(GB/s)";
                     case "Time":
                         return "(s)";
                     case "LoadLimit":
