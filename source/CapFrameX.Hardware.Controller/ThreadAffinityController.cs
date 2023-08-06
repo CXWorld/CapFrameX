@@ -42,18 +42,20 @@ namespace CapFrameX.Hardware.Controller
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ILogger<ThreadAffinityController> _logger;
 		private readonly Dictionary<int, HybridCore> _hybridCoreDict = new Dictionary<int, HybridCore>();
-		private readonly Dictionary<AffinityState, AffinityState> _intelAffinityStateTransitions = new Dictionary<AffinityState, AffinityState>()
-		{
-			{ AffinityState.Default, AffinityState.PCores },
-			{ AffinityState.PCores, AffinityState.ECores },
-			{ AffinityState.ECores, AffinityState.Default }
-		};
-		private readonly Dictionary<AffinityState, AffinityState> _amdAffinityStateTransitions = new Dictionary<AffinityState, AffinityState>()
-		{
-			{ AffinityState.Default, AffinityState.CCD0},
-			{ AffinityState.CCD0, AffinityState.CCD1},
-			{ AffinityState.CCD1, AffinityState.Default}
-		};
+		private readonly Dictionary<AffinityState, AffinityState> _intelAffinityStateTransitions = 
+			new Dictionary<AffinityState, AffinityState>()
+			{
+				{ AffinityState.Default, AffinityState.PCores },
+				{ AffinityState.PCores, AffinityState.ECores },
+				{ AffinityState.ECores, AffinityState.Default }
+			};
+		private readonly Dictionary<AffinityState, AffinityState> _amdAffinityStateTransitions = 
+			new Dictionary<AffinityState, AffinityState>()
+			{
+				{ AffinityState.Default, AffinityState.CCD0},
+				{ AffinityState.CCD0, AffinityState.CCD1},
+				{ AffinityState.CCD1, AffinityState.Default}
+			};
 
 		private bool _isSupportedCPU = false;
 		private AffinityState _currentAffinityState = AffinityState.Default;
