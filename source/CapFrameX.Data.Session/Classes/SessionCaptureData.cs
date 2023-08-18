@@ -18,6 +18,7 @@ namespace CapFrameX.Data.Session.Classes
 		public int[] SyncInterval { get; set; }
 		public bool[] Dropped { get; set; }
         public double[] PcLatency { get; set; }
+		public double[] GpuActive { get; set; }
 
         public SessionCaptureData(int numberOfCapturePoints) {
 			TimeInSeconds = new double[numberOfCapturePoints];
@@ -31,6 +32,8 @@ namespace CapFrameX.Data.Session.Classes
 			AllowsTearing = new int[numberOfCapturePoints];
 			SyncInterval = new int[numberOfCapturePoints];
 			Dropped = new bool[numberOfCapturePoints];
+            PcLatency = new double[numberOfCapturePoints];
+            GpuActive = new double[numberOfCapturePoints];
         }
 
 		public IEnumerable<CaptureDataEntry> LineWise()
@@ -50,7 +53,8 @@ namespace CapFrameX.Data.Session.Classes
 					AllowsTearing = AllowsTearing[i],
 					SyncInterval = SyncInterval[i],
 					Dropped = Dropped[i],
-					PcLatency = PcLatency != null ? PcLatency[i] : double.NaN
+					PcLatency = PcLatency != null ? PcLatency[i] : double.NaN,
+                    GpuActive = GpuActive[i]
                 };
 			}
 		}
@@ -70,5 +74,6 @@ namespace CapFrameX.Data.Session.Classes
 		public int SyncInterval { get; set; }
 		public bool Dropped { get; set; }
         public double PcLatency { get; set; }
+		public double GpuActive { get; set;}
     }
 }
