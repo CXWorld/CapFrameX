@@ -674,7 +674,7 @@ namespace CapFrameX.Data
 			return Convert.ToInt64(lineSplit[PresentMonCaptureService.QPCTime_INDEX], CultureInfo.InvariantCulture);
 		}
 
-		private double GetTimeFromDataLine(string line)
+        private double GetTimeFromDataLine(string line)
 		{
 			var lineSplit = line.Split(',');
 			var length = Convert.ToDouble(lineSplit[PresentMonCaptureService.TimeInSeconds_INDEX], CultureInfo.InvariantCulture);
