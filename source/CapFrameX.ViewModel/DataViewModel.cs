@@ -31,7 +31,6 @@ using CapFrameX.Sensor.Reporting;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics;
 using CapFrameX.Extensions;
 using CapFrameX.Statistics.NetStandard;
 

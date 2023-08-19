@@ -21,13 +21,10 @@ using Prism.Mvvm;
 using Prism.Regions;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Subjects;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
@@ -39,7 +36,6 @@ using Point = CapFrameX.Statistics.NetStandard.Point;
 using IDropTarget = GongSolutions.Wpf.DragDrop.IDropTarget;
 using DragDropEffects = System.Windows.DragDropEffects;
 using OxyPlot.Legends;
-using CapFrameX.Data.Session.Classes;
 
 namespace CapFrameX.ViewModel
 {
@@ -195,6 +191,7 @@ namespace CapFrameX.ViewModel
 				OnComparisonContextChanged();
 			}
 		}
+
 		public EComparisonContext SelectedSecondComparisonContext
 		{
 			get { return _selectedSecondComparisonContext; }
@@ -367,6 +364,7 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+
 		public double MaxRecordingTime
 		{
 			get { return _maxRecordingTime; }
@@ -377,6 +375,7 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged(nameof(MinRangeSliderRange));
 			}
 		}
+
 		public double MinRangeSliderRange
 		{
 			get { return MaxRecordingTime * 0.05; }
@@ -686,6 +685,7 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+
 		public Color SecondMetricBarColor
 		{
 			get { return (Color)ColorConverter.ConvertFromString(_appConfiguration.SecondMetricBarColor); }
@@ -696,6 +696,7 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+
 		public Color ThirdMetricBarColor
 		{
 			get { return (Color)ColorConverter.ConvertFromString(_appConfiguration.ThirdMetricBarColor); }
@@ -711,10 +712,12 @@ namespace CapFrameX.ViewModel
 		{
 			get { return SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false; }
 		}
+
 		public bool IsLineChartTabActive
 		{
 			get { return SelectedChartItem?.Header.ToString().Contains("Line") ?? false; }
 		}
+
 		public bool IsVarianceChartTabActive
 		{
 			get { return SelectedChartItem?.Header.ToString().Contains("Variances") ?? false; }
@@ -730,18 +733,14 @@ namespace CapFrameX.ViewModel
 
 		public ICommand SaveFPSPlotAsPNG { get; }
 
-
 		public ComparisonCollection ComparisonRecords { get; private set; }
 			= new ComparisonCollection();
 
 		public double BarChartMaxRowHeight { get; private set; } = 25;
 
-
 		public Array SortMetricItemsSource => new[] { "First", "Second", "Third" };
 
 		public Array LegendFontSizeItemsSource => new[] { 1, 1.5, 2 };
-
-
 
 		public ComparisonViewModel(IStatisticProvider frametimeStatisticProvider,
 			IFrametimeAnalyzer frametimeAnalyzer,
@@ -778,7 +777,6 @@ namespace CapFrameX.ViewModel
 			SubscribeToUpdateRecordInfos();
 			SubscribeToThemeChanged();
 		}
-
 
 		private void InitializePlotModels()
 		{
@@ -1282,7 +1280,6 @@ namespace CapFrameX.ViewModel
 			ComparisonFpsModel.InvalidatePlot(true);
 		}
 
-
 		private void UpdateRangeSliderParameter()
 		{
 			if (ComparisonRecords == null || !ComparisonRecords.Any())
@@ -1496,7 +1493,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-
 		private void UpdateVarianceChartHeight()
 			=> VarianceChartHeight =
 			50 + (ComparisonRecords.Count * 75);
@@ -1554,7 +1550,6 @@ namespace CapFrameX.ViewModel
 			if (!VarianceStatisticCollection.Any())
 				return;
 
-
 			double minValue = 0;
 
 			if (VarianceAutoScaling)
@@ -1579,11 +1574,6 @@ namespace CapFrameX.ViewModel
 
 			VarianceBarMinValue = minValue;
 		}
-
-
-
-
-
 
 		private void SetColumnChart()
 		{
@@ -1610,7 +1600,6 @@ namespace CapFrameX.ViewModel
 				AddToVarianceCharts(ComparisonRecords[i]);
 			}
 		}
-
 
 		private void SetFrametimeChart()
 		{
@@ -1878,9 +1867,6 @@ namespace CapFrameX.ViewModel
 			return Color.FromArgb(highlightColor.A, highlightColor.R, highlightColor.G, highlightColor.B);
 		}
 
-
-
-
 		private void SubscribeToSelectRecord()
 		{
 			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.SelectSession>>()
@@ -1922,7 +1908,6 @@ namespace CapFrameX.ViewModel
 								  UpdateCharts();
 							  });
 		}
-
 
 		protected void OnSavePlotAsImage(string plotType, string fileFormat)
 		{

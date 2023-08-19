@@ -281,6 +281,51 @@ namespace CapFrameX.Overlay
 						Color = string.Empty
 					},
 
+                    // GPU Active Average
+                    new OverlayEntryWrapper("OnlineGpuActiveAverage")
+					{
+						OverlayEntryType = EOverlayEntryType.OnlineMetric,
+						ShowOnOverlay = false,
+						ShowOnOverlayIsEnabled = true,
+						Description = "GPU Active Average FPS",
+						GroupName = "GPUBusy Avg",
+						Value = "0",
+						ValueFormat = default,
+						ShowGraph = false,
+						ShowGraphIsEnabled = false,
+						Color = string.Empty
+					},
+
+                    // GPU Active P1
+                    new OverlayEntryWrapper("OnlineGpuActiveP1")
+					{
+						OverlayEntryType = EOverlayEntryType.OnlineMetric,
+						ShowOnOverlay = false,
+						ShowOnOverlayIsEnabled = true,
+						Description = "GPU Active P1 FPS",
+						GroupName = "GPUBusy P1%",
+						Value = "0",
+						ValueFormat = default,
+						ShowGraph = false,
+						ShowGraphIsEnabled = false,
+						Color = string.Empty
+					},
+
+                    // GPU Active 1% Low
+                    new OverlayEntryWrapper("OnlineGpuActive1PercentLow")
+					{
+						OverlayEntryType = EOverlayEntryType.OnlineMetric,
+						ShowOnOverlay = false,
+						ShowOnOverlayIsEnabled = true,
+						Description = "GPU Active 1% Low FPS",
+						GroupName = "GPUBusy 1% Low",
+						Value = "0",
+						ValueFormat = default,
+						ShowGraph = false,
+						ShowGraphIsEnabled = false,
+						Color = string.Empty
+					},
+
                     // Render lag
                     new OverlayEntryWrapper("OnlineApplicationLatency")
                     {

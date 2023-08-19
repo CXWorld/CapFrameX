@@ -7,7 +7,9 @@ namespace CapFrameX.PresentMonInterface
     {
         double GetOnlineFpsMetricValue(EMetric metric);
 
-        double GetOnlineApplicationLatencyValue();
+        double GetOnlineGpuActiveFpsMetricValue(EMetric metric);
+
+		double GetOnlineApplicationLatencyValue();
 
         double GetOnlineStutteringPercentageValue();
 
