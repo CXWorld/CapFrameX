@@ -56,15 +56,13 @@ namespace CapFrameX.ViewModel
             double startTime = FirstSeconds;
             double lastFrameStart = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
             double endTime = LastSeconds > lastFrameStart ? lastFrameStart : lastFrameStart + LastSeconds;
-            var frametimeTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
 
-            var gpuActiveTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, true);
+            var frametimeTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
+            var gpuActiveTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetGpuActiveTimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
 
             double GeMetricValue(IList<double> sequence, EMetric metric) =>
                     _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
             var variances = _frametimeStatisticProvider.GetFrametimeVariancePercentages(wrappedComparisonRecordInfo.WrappedRecordInfo.Session);
-
-
 
             if (SelectedFirstMetric == EMetric.CpuFpsPerWatt)
             {

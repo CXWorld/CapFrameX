@@ -49,7 +49,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 
 
                 if (plotSettings.ShowGpuActiveCharts)
-                    gpuActiveFpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode, true);
+                    gpuActiveFpsPoints = session.GetGpuActiveFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode);
 
                 if (filterMode == EFilterMode.TimeIntervalAverage)
                 SetLoadCharts(plotModel, plotSettings, session);

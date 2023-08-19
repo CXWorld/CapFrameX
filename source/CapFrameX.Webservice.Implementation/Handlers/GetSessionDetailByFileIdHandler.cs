@@ -125,5 +125,7 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 		public double StutteringFactor { get; set; }
 
 		public double LowFPSThreshold { get; set; }
+
+		public bool ShowGpuActiveCharts { get; set; }
 	}
 }

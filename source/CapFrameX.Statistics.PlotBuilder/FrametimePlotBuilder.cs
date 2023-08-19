@@ -29,7 +29,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             IList<Point> gpuActiveFrametimePoints  = new List<Point>();
 
             if (plotSettings.ShowGpuActiveCharts)
-                gpuActiveFrametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, true);
+                gpuActiveFrametimePoints = session.GetGpuActiveTimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
 
             var frametimes = session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
 
