@@ -65,7 +65,6 @@ namespace CapFrameX.Statistics.NetStandard
 		public static IList<Point> GetGpuActiveTimePointsTimeWindow(this ISession session, double startTime, double endTime,
 			IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
-			IList<Point> gpuActiveTimesPointsWindow = new List<Point>();
 			var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
 			var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
 

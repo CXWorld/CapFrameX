@@ -707,11 +707,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-
-
-		public TooltipData LShapeTolTipData { get; set; }
-
-
 		public bool IsBarChartTabActive
 		{
 			get { return SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false; }

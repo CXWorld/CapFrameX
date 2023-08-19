@@ -1,7 +1,6 @@
 ﻿using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
-using System;
 using System.Collections.Generic;
 
 namespace CapFrameX.Data
@@ -19,14 +18,6 @@ namespace CapFrameX.Data
 		ERemoveOutlierMethod RemoveOutlierMethod { get; set; }
 
 		EFilterMode FilterMode { get; set; }
-
-		IObservable<IList<double>> FrametimeDataStream { get; }
-
-		IObservable<IList<Point>> FrametimePointDataStream { get; }
-
-		IObservable<IList<double>> FpsDataStream { get; }
-
-		IObservable<IList<Point>> FpsPointDataStream { get; }
 
 		IList<double> GetFrametimeTimeWindow();
 
