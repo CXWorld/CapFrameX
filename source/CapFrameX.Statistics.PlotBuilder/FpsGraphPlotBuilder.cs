@@ -71,9 +71,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                     yMin = fpsPoints.Min(pnt => pnt.Y);
                     yMax = fpsPoints.Max(pnt => pnt.Y);
                 }
-
             }
-
 
             if (plotSettings.ShowThresholds)
             {
