@@ -28,14 +28,20 @@ namespace CapFrameX.Data
 		public double NinetyFivePercentQuantileFps { get; set; }
 		[DisplayName("Average FPS")]
 		public double AverageFps { get; set; }
-		[DisplayName("Median FPS")]
+        [DisplayName("GPU Active Average FPS")]
+        public double GpuActiveAverageFps { get; set; }
+        [DisplayName("Median FPS")]
 		public double MedianFps { get; set; }
 		[DisplayName("P5 FPS")]
 		public double FivePercentQuantileFps { get; set; }
 		[DisplayName("P1 FPS")]
 		public double OnePercentQuantileFps { get; set; }
-		[DisplayName("1% low average FPS")]
+        [DisplayName("GPU Active P1 FPS")]
+        public double GpuActiveOnePercentQuantileFps { get; set; }
+        [DisplayName("1% low average FPS")]
         public double OnePercentLowAverageFps { get; set; }
+        [DisplayName("GPU Active 1% low average FPS")]
+        public double GpuActiveOnePercentLowAverageFps { get; set; }
         [DisplayName("1% low integral FPS")]
         public double OnePercentLowIntegralFps { get; set; }
         [DisplayName("P0.2 FPS")]
