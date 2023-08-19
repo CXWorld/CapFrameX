@@ -757,6 +757,7 @@
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -781,11 +782,16 @@
                                     <TextBlock Visibility="{Binding IsGpuPowerLimitAvailable, Converter={StaticResource FalseToCollapsedConverter}}" Margin="5" Grid.Row="3" Grid.Column="0" Text="GPU power limit" VerticalAlignment="Center"/>
                                     <ToggleButton Visibility="{Binding IsGpuPowerLimitAvailable, Converter={StaticResource FalseToCollapsedConverter}}" Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowGpuPowerLimit}" 
                                                   Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU power limit" />
-
+                                    
                                     <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="PC Latency" VerticalAlignment="Center"
                                                Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
                                     <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding ShowPcLatency}" Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource FalseToCollapsedConverter}}"
                                                   Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show PC latency graph" />
+                                    
+                                    <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="GPU Active" VerticalAlignment="Center"
+                                               Visibility="{Binding IsGpuActiveChartAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
+                                    <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding ShowGpuActiveChart}" Visibility="{Binding IsGpuActiveChartAvailable, Converter={StaticResource FalseToCollapsedConverter}}"
+                                                  Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU Active FPS/frame time graphs" />
                                 </Grid>
                             </StackPanel>
                         </materialDesign:Card>

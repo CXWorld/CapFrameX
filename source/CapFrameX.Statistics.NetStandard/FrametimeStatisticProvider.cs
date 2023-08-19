@@ -208,6 +208,7 @@ namespace CapFrameX.Statistics.NetStandard
                     metricValue = GetPQuantileSequence(fps, 0.95);
                     break;
                 case EMetric.Average:
+                case EMetric.GpuActiveAverage:
                     metricValue = sequence.Count * 1000 / sequence.Sum();
                     break;
                 case EMetric.Median:
@@ -217,6 +218,7 @@ namespace CapFrameX.Statistics.NetStandard
                     metricValue = GetPQuantileSequence(fps, 0.05);
                     break;
                 case EMetric.P1:
+                case EMetric.GpuActiveP1:
                     metricValue = GetPQuantileSequence(fps, 0.01);
                     break;
                 case EMetric.P0dot2:
@@ -226,6 +228,7 @@ namespace CapFrameX.Statistics.NetStandard
                     metricValue = GetPQuantileSequence(fps, 0.001);
                     break;
                 case EMetric.OnePercentLowAverage:
+                case EMetric.GpuActiveOnePercentLowAverage:
                     metricValue = 1000 / GetPercentageHighAverageSequence(sequence, 1 - 0.01);
                     break;
 				case EMetric.ZerodotTwoPercentLowAverage:

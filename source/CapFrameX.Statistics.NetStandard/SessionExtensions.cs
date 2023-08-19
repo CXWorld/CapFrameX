@@ -11,12 +11,15 @@ namespace CapFrameX.Statistics.NetStandard
     public static class SessionExtensions
     {
         public static IList<double> GetFrametimeTimeWindow(this ISession session, double startTime, double endTime,
-            IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
+            IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None, bool gpuActiveTime = false)
         {
             IList<double> frametimesTimeWindow = new List<double>();
             var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
             var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
-            var frametimes = frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray(), eRemoveOutlierMethod);
+
+
+            var frametimes = gpuActiveTime ? frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.GpuActive).ToArray(), eRemoveOutlierMethod) :
+                                            frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray(), eRemoveOutlierMethod);
 
             if (frametimes.Any() && frameStartTimes.Any())
             {
@@ -32,12 +35,15 @@ namespace CapFrameX.Statistics.NetStandard
         }
 
         public static IList<Point> GetFrametimePointsTimeWindow(this ISession session, double startTime, double endTime,
-            IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
+            IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None, bool gpuActiveTime = false)
         {
             IList<Point> frametimesPointsWindow = new List<Point>();
             var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
 
-            var frametimes = frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray(), eRemoveOutlierMethod);
+            var frametimes = gpuActiveTime ? frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.GpuActive).ToArray(), eRemoveOutlierMethod) :
+                                           frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray(), eRemoveOutlierMethod);
+
+
             var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
             if (frametimes.Any() && frameStartTimes.Any())
             {
@@ -402,17 +408,18 @@ namespace CapFrameX.Statistics.NetStandard
 
         public static IList<Point> GetFpsPointsTimeWindow(this ISession session, double startTime, double endTime,
             IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None,
-            EFilterMode filterMode = EFilterMode.None)
+            EFilterMode filterMode = EFilterMode.None, bool gpuActive = false)
         {
             IList<Point> fpsPoints = null;
-            var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime, options, eRemoveOutlierMethod);
+            var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime, options, eRemoveOutlierMethod, gpuActive);
             var intervalFrametimePoints = session.GetFrametimePointsTimeWindow(0, endTime, options, eRemoveOutlierMethod);
+            var gpuIntervalFrametimePoints = session.GetFrametimePointsTimeWindow(0, endTime, options, eRemoveOutlierMethod, gpuActive);
             switch (filterMode)
             {
                 case EFilterMode.TimeIntervalAverage:
                     var timeIntervalAverageFilter = new IntervalTimeAverageFilter(options.IntervalAverageWindowTime);
                     var timeIntervalAveragePoints = timeIntervalAverageFilter
-                        .ProcessSamples(intervalFrametimePoints.Select(pnt => pnt.Y).ToList(), startTime * 1000, endTime * 1000, session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last() * 1000);
+                        .ProcessSamples(intervalFrametimePoints.Select(pnt => pnt.Y).ToList(), gpuIntervalFrametimePoints.Select(pnt => pnt.Y).ToList(), startTime * 1000, endTime * 1000, session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last() * 1000, gpuActive);
                     fpsPoints = timeIntervalAveragePoints.Select(pnt => new Point(pnt.X / 1000, 1000 / pnt.Y)).ToList();
                     break;
                 default:

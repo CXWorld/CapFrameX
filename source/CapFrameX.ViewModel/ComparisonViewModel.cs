@@ -104,6 +104,7 @@ namespace CapFrameX.ViewModel
         private string _selectedChartView = "Frametimes";
         private EFilterMode _selectedFilterMode;
         private string _lShapeYaxisLabel = "Frametimes (ms)" + Environment.NewLine + " ";
+        private bool _showGpuActiveLineCharts;
 
         public Array FirstMetricItems => Enum.GetValues(typeof(EMetric))
                                              .Cast<EMetric>().Where(metric => metric != EMetric.None)
@@ -592,7 +593,10 @@ namespace CapFrameX.ViewModel
             set
             {
                 _selectedChartView = value;
-                ComparisonLShapeYAxisLabel = value == "Frametimes" ? "Frametimes" + Environment.NewLine + " " : "FPS" + Environment.NewLine + " ";
+                if (value == "Frametimes" || value == "GPU Frametimes")
+                    ComparisonLShapeYAxisLabel = "Frametimes" + Environment.NewLine + " ";
+                else
+                    ComparisonLShapeYAxisLabel = "FPS" + Environment.NewLine + " ";
                 RaisePropertyChanged();
                 UpdateCharts();
             }
@@ -660,6 +664,17 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool ShowGpuActiveLineCharts
+        {
+            get { return _showGpuActiveLineCharts; }
+            set
+            {
+                _showGpuActiveLineCharts = value;
+                RaisePropertyChanged();
+                UpdateCharts();
+            }
+        }
+
         public Color FirstMetricBarColor
         {
             get { return (Color)ColorConverter.ConvertFromString(_appConfiguration.FirstMetricBarColor); }
@@ -690,6 +705,8 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
+
+
 
         public TooltipData LShapeTolTipData { get; set; }
 
@@ -1100,6 +1117,9 @@ namespace CapFrameX.ViewModel
                 var frametimeTimeWindow = currentWrappedComparisonInfo.WrappedRecordInfo.Session
                     .GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
 
+                var gpuBusyTimeWindow = currentWrappedComparisonInfo.WrappedRecordInfo.Session
+                    .GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, true);
+
                 for (int j = 0; j < ComparisonRowChartSeriesCollection.Count; j++)
                 {
                     var metric = GetMetricByIndex(j);
@@ -1119,7 +1139,14 @@ namespace CapFrameX.ViewModel
                                  SensorReport.GetAverageSensorValues(currentWrappedComparisonInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower,
                                  startTime, endTime, _appConfiguration.UseTBPSim));
                     }
+                    else if (metric == EMetric.GpuActiveAverage || metric == EMetric.GpuActiveP1 || metric == EMetric.GpuActiveOnePercentLowAverage)
+
+                    {
+                        metricValue = GetMetricValue(gpuBusyTimeWindow, metric);
+
+                    }
                     else
+
                     {
                         metricValue = GetMetricValue(frametimeTimeWindow, metric);
 
@@ -1316,7 +1343,7 @@ namespace CapFrameX.ViewModel
 
             xMin = sessionParallelQuery.Min(session =>
             {
-                var window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration);
+                var window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, ShowGpuActiveLineCharts);
                 if (window.Any())
                     return window.First().X;
                 else
@@ -1325,7 +1352,7 @@ namespace CapFrameX.ViewModel
 
             xMax = sessionParallelQuery.Max(session =>
             {
-                var window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration);
+                var window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, ShowGpuActiveLineCharts);
                 if (window.Any())
                     return window.Last().X;
                 else
@@ -1334,7 +1361,7 @@ namespace CapFrameX.ViewModel
 
             yMin = sessionParallelQuery.Min(session =>
             {
-                var window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration);
+                var window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, ShowGpuActiveLineCharts);
                 if (window.Any())
                     return window.Min(pnt => pnt.Y);
                 else
@@ -1343,7 +1370,7 @@ namespace CapFrameX.ViewModel
 
             yMax = sessionParallelQuery.Max(session =>
             {
-                var window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration);
+                var window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, ShowGpuActiveLineCharts);
                 if (window.Any())
                     return window.Max(pnt => pnt.Y);
                 else
@@ -1384,7 +1411,7 @@ namespace CapFrameX.ViewModel
 
             xMin = sessionParallelQuery.Min(session =>
             {
-                var window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration);
+                var window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, ShowGpuActiveLineCharts);
                 if (window.Any())
                     return window.First().X;
                 else
@@ -1393,7 +1420,7 @@ namespace CapFrameX.ViewModel
 
             xMax = sessionParallelQuery.Max(session =>
             {
-                var window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration);
+                var window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, ShowGpuActiveLineCharts);
                 if (window.Any())
                     return window.Last().X;
                 else
@@ -1402,7 +1429,7 @@ namespace CapFrameX.ViewModel
 
             yMin = sessionParallelQuery.Min(session =>
             {
-                var window = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode);
+                var window = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode, ShowGpuActiveLineCharts);
                 if (window.Any())
                     return window.Min(pnt => pnt.Y);
                 else
@@ -1411,7 +1438,7 @@ namespace CapFrameX.ViewModel
 
             yMax = sessionParallelQuery.Max(session =>
             {
-                var window = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode);
+                var window = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode, ShowGpuActiveLineCharts);
                 if (window.Any())
                     return window.Max(pnt => pnt.Y);
                 else
@@ -1598,7 +1625,7 @@ namespace CapFrameX.ViewModel
             double startTime = FirstSeconds;
             double endTime = LastSeconds;
             var session = wrappedComparisonInfo.WrappedRecordInfo.Session;
-            var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration)
+            var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, ShowGpuActiveLineCharts)
                                          .Select(pnt => new Point(pnt.X, pnt.Y));
 
             var chartTitle = string.Empty;
@@ -1626,7 +1653,7 @@ namespace CapFrameX.ViewModel
             double endTime = LastSeconds;
             var session = wrappedComparisonInfo.WrappedRecordInfo.Session;
 
-            var fpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode);
+            var fpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode, ShowGpuActiveLineCharts);
 
             var chartTitle = string.Empty;
 
@@ -1653,7 +1680,7 @@ namespace CapFrameX.ViewModel
             var LShapeMetric = SelectedChartView == "Frametimes" ? ELShapeMetrics.Frametimes : ELShapeMetrics.FPS;
             double startTime = FirstSeconds;
             double endTime = LastSeconds;
-            var frametimeTimeWindow = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
+            var frametimeTimeWindow = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, ShowGpuActiveLineCharts);
             var fpsTimeWindow = frametimeTimeWindow?.Select(ft => 1000 / ft).ToList();
             string unit = LShapeMetric == ELShapeMetrics.Frametimes ? "ms" : "fps";
 

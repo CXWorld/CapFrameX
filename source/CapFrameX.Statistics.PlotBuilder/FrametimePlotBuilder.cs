@@ -26,9 +26,14 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISFRAMETIMES]);
 
             var frametimepoints = session.GetFrametimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
+            IList<Point> gpuActiveFrametimePoints  = new List<Point>();
+
+            if (plotSettings.ShowGpuActiveCharts)
+                gpuActiveFrametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, true);
+
             var frametimes = session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
 
-            SetFrametimeChart(plotModel, frametimepoints, plotSettings);
+            SetFrametimeChart(plotModel, frametimepoints, gpuActiveFrametimePoints, plotSettings);
 
             if (plotSettings.IsAnyPercentageGraphVisible && session.HasValidSensorData())
             {
@@ -57,13 +62,14 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.InvalidatePlot(true);
         }
 
-        private void SetFrametimeChart(PlotModel plotModel, IList<Point> frametimePoints, IPlotSettings plotSettings)
+        private void SetFrametimeChart(PlotModel plotModel, IList<Point> frametimePoints, IList<Point> gpuActiveFrametimePoints, IPlotSettings plotSettings)
         {
             if (frametimePoints == null || !frametimePoints.Any())
                 return;
 
             int count = frametimePoints.Count;
             var frametimeDataPoints = frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
+            var gpuActiveFrametimeDataPoints = gpuActiveFrametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
             var movingAverage = _frametimesStatisticProvider.GetMovingAverage(frametimePoints.Select(pnt => pnt.Y).ToList());
 
             var stuttering = new List<double>();
@@ -83,6 +89,15 @@ namespace CapFrameX.Statistics.PlotBuilder
                 StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
                 Color = Constants.FrametimeColor,
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
+            };
+
+            var gpuActiveFrametimeSeries = new LineSeries
+            {
+                Title = "GPU Active Frametimes",
+                StrokeThickness = 1.5,
+                LegendStrokeThickness = 4,
+                Color = Constants.GpuActiveFrametimeColor,
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
@@ -118,6 +133,9 @@ namespace CapFrameX.Statistics.PlotBuilder
             frametimeSeries.Points.AddRange(frametimeDataPoints);
             movingAverageSeries.Points.AddRange(movingAverage.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
 
+            if (plotSettings.ShowGpuActiveCharts)
+                gpuActiveFrametimeSeries.Points.AddRange(gpuActiveFrametimeDataPoints);
+
             UpdateAxis(EPlotAxis.XAXIS, (axis) =>
             {
                 axis.Minimum = frametimePoints.First().X;
@@ -126,6 +144,9 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             plotModel.Series.Add(frametimeSeries);
             plotModel.Series.Add(movingAverageSeries);
+
+            if (plotSettings.ShowGpuActiveCharts)
+                plotModel.Series.Add(gpuActiveFrametimeSeries);
 
             if (plotSettings.ShowThresholds)
             { 

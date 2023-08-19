@@ -86,6 +86,8 @@ namespace CapFrameX.ViewModel
         private bool _isCpuMaxLoadAvailable;
         private bool _isGpuLoadAvailable;
         private bool _isGpuPowerLimitAvailable;
+        private bool _isGpuActiveChartAvailable;
+        private bool _showGpuActiveChart;
         private EFilterMode _selectedFilterMode;
         private ELShapeMetrics _lShapeMetric = ELShapeMetrics.Frametimes;
         private string _lShapeYaxisLabel = "Frametimes (ms)" + Environment.NewLine + " ";
@@ -466,6 +468,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool IsGpuActiveChartAvailable
+        {
+            get { return _isGpuActiveChartAvailable; }
+            set
+            {
+                _isGpuActiveChartAvailable = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public int BarChartSeparators
         {
             get
@@ -581,6 +593,17 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool ShowGpuActiveChart
+        {
+            get => _showGpuActiveChart;
+            set
+            {
+                _showGpuActiveChart = value;
+                RaisePropertyChanged();
+                _onUpdateChart.OnNext(default);
+            }
+        }
+
         public EFilterMode SelectedFilterMode
         {
             get { return _selectedFilterMode; }
@@ -678,13 +701,31 @@ namespace CapFrameX.ViewModel
             return false;
         }
 
+        private bool GetIsGpuActiveChartAvailable()
+        {
+            if (_session == null)
+                return false;
+
+            if (_session.Runs == null
+                || !_session.Runs.Any())
+                return false;
+
+            if (_session.Runs
+                .All(run => run.CaptureData != null)
+                && _session.Runs
+                .All(run => !run.CaptureData.GpuActive.IsNullOrEmpty()))
+                return true;
+
+            return false;
+        }
+
         private void Setup()
         {
             _onUpdateChart.Subscribe(_ =>
             {
-                FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(ShowGpuLoad, ShowCpuLoad, ShowCpuMaxThreadLoad, ShowGpuPowerLimit, ShowPcLatency, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold));
+                FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(ShowGpuLoad, ShowCpuLoad, ShowCpuMaxThreadLoad, ShowGpuPowerLimit, ShowPcLatency, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold, ShowGpuActiveChart));
 
-                FrametimeGraphDataContext.BuildPlotmodel(new VisibleGraphs(ShowGpuLoad, ShowCpuLoad, ShowCpuMaxThreadLoad, ShowGpuPowerLimit, ShowPcLatency, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold), plotModel =>
+                FrametimeGraphDataContext.BuildPlotmodel(new VisibleGraphs(ShowGpuLoad, ShowCpuLoad, ShowCpuMaxThreadLoad, ShowGpuPowerLimit, ShowPcLatency, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold, ShowGpuActiveChart), plotModel =>
                 {
                     FrametimeGraphDataContext.UpdateAxis(EPlotAxis.YAXISFRAMETIMES, axis =>
                     {
@@ -929,7 +970,7 @@ namespace CapFrameX.ViewModel
         private void OnFilterModeChanged()
         {
             _localRecordDataServer.FilterMode = SelectedFilterMode;
-            FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(ShowGpuLoad, ShowCpuLoad, ShowCpuMaxThreadLoad, ShowGpuPowerLimit, ShowPcLatency, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold));
+            FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(ShowGpuLoad, ShowCpuLoad, ShowCpuMaxThreadLoad, ShowGpuPowerLimit, ShowPcLatency, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold, ShowGpuActiveChart));
         }
 
         private async void OnCutRecord(bool inverse)
@@ -1026,6 +1067,15 @@ namespace CapFrameX.ViewModel
                     _showGpuPowerLimit = false;
                     RaisePropertyChanged(nameof(ShowGpuPowerLimit));
                 }
+
+                //Check GPU Active metric
+                IsGpuActiveChartAvailable = GetIsGpuActiveChartAvailable();
+                if (!IsGpuActiveChartAvailable)
+                {
+                    _showGpuActiveChart = false;
+                    RaisePropertyChanged(nameof(ShowGpuPowerLimit));
+                }
+
 
                 // Do update actions
                 FrametimeGraphDataContext.RecordSession = _session;

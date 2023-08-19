@@ -581,15 +581,23 @@
                 <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Legend:</TextBlock>
                 <ToggleButton Name="ContextLegendActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 								  ToolTip="Show selected labels as chart legend" IsChecked="{Binding IsContextLegendActive}"/>
+                <ComboBox Margin="10 0 0 0" Width="40" Height="40"
+                      materialDesign:HintAssist.Hint="Size" materialDesign:HintAssist.HintOpacity=".8" materialDesign:HintAssist.IsFloating="True" materialDesign:ComboBoxAssist.ClassicMode="True"
+                      ItemsSource="{Binding LegendFontSizeItemsSource}" SelectedItem="{Binding LegendFontSizeFactor}" Foreground="{DynamicResource MaterialDesignBody}" >
+                </ComboBox>
             </StackPanel>
 
-            <ComboBox Grid.Column="5" Margin="10 0 0 0" Width="80" Height="40"
-                      Visibility="{Binding IsLineChartTabActive, Converter={StaticResource TrueToVisibleConverter}}" 
-                      materialDesign:HintAssist.Hint="Legend size" materialDesign:HintAssist.HintOpacity=".8" materialDesign:HintAssist.IsFloating="True" materialDesign:ComboBoxAssist.ClassicMode="True"
-                      ItemsSource="{Binding LegendFontSizeItemsSource}" SelectedItem="{Binding LegendFontSizeFactor}" Foreground="{DynamicResource MaterialDesignBody}" >
-            </ComboBox>
-
             
+            
+            <StackPanel Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20 0 10 0" Orientation="Horizontal"
+						Visibility="{Binding IsLineChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
+                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">GPU Active values:</TextBlock>
+                <ToggleButton Name="GPUActiveMetricsToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+								  ToolTip="Show GPU Active values instead of standard values" IsChecked="{Binding ShowGpuActiveLineCharts}"/>
+            </StackPanel>
+            
+
+
             <StackPanel Grid.Column="5" Margin="10 0 0 0" VerticalAlignment="Center" Orientation="Horizontal"
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
                 <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Relative Mode:</TextBlock>

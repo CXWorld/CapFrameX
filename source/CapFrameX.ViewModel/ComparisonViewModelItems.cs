@@ -57,9 +57,14 @@ namespace CapFrameX.ViewModel
             double lastFrameStart = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
             double endTime = LastSeconds > lastFrameStart ? lastFrameStart : lastFrameStart + LastSeconds;
             var frametimeTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
+
+            var gpuActiveTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, true);
+
             double GeMetricValue(IList<double> sequence, EMetric metric) =>
                     _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
             var variances = _frametimeStatisticProvider.GetFrametimeVariancePercentages(wrappedComparisonRecordInfo.WrappedRecordInfo.Session);
+
+
 
             if (SelectedFirstMetric == EMetric.CpuFpsPerWatt)
             {
@@ -74,6 +79,11 @@ namespace CapFrameX.ViewModel
                     _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
                          SensorReport.GetAverageSensorValues(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower,
                          startTime, endTime, _appConfiguration.UseTBPSim));
+            }
+            else if (SelectedFirstMetric == EMetric.GpuActiveAverage || SelectedFirstMetric == EMetric.GpuActiveP1 || SelectedFirstMetric == EMetric.GpuActiveOnePercentLowAverage)
+            {
+                wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric
+                = GeMetricValue(gpuActiveTimeWindow, SelectedFirstMetric);
             }
             else
             {
@@ -95,6 +105,11 @@ namespace CapFrameX.ViewModel
                          SensorReport.GetAverageSensorValues(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower,
                          startTime, endTime, _appConfiguration.UseTBPSim));
             }
+            else if (SelectedSecondMetric == EMetric.GpuActiveAverage || SelectedSecondMetric == EMetric.GpuActiveP1 || SelectedSecondMetric == EMetric.GpuActiveOnePercentLowAverage)
+            {
+                wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric
+                = GeMetricValue(gpuActiveTimeWindow, SelectedSecondMetric);
+            }
             else
             {
                 wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric
@@ -114,6 +129,11 @@ namespace CapFrameX.ViewModel
                   _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
                        SensorReport.GetAverageSensorValues(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower,
                        startTime, endTime, _appConfiguration.UseTBPSim));
+            }
+            else if (SelectedThirdMetric == EMetric.GpuActiveAverage || SelectedThirdMetric == EMetric.GpuActiveP1 || SelectedThirdMetric == EMetric.GpuActiveOnePercentLowAverage)
+            {
+                wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric
+                = GeMetricValue(gpuActiveTimeWindow, SelectedThirdMetric);
             }
             else
             {

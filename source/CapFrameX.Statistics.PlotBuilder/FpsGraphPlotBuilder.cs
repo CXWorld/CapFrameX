@@ -30,6 +30,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.Series.Clear();
 
             var rawFpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, EFilterMode.None);
+            IList<Point> gpuActiveFpsPoints = new List<Point>();
 
             if (filterMode is EFilterMode.RawPlusAverage)
             {
@@ -37,7 +38,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 
                 SetRawFPS(plotModel, rawFpsPoints);
                 SetLoadCharts(plotModel, plotSettings, session);
-                SetFpsChart(plotModel, avgFpsPoints, rawFpsPoints, average, 3, OxyColor.FromRgb(241, 125, 32), filterMode);
+                SetFpsChart(plotModel, avgFpsPoints, rawFpsPoints, gpuActiveFpsPoints,  average, 3, OxyColor.FromRgb(241, 125, 32), filterMode, plotSettings);
 
                 yMin = rawFpsPoints.Min(pnt => pnt.Y);
                 yMax = rawFpsPoints.Max(pnt => pnt.Y);
@@ -45,19 +46,34 @@ namespace CapFrameX.Statistics.PlotBuilder
             else
             {
                 var fpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode);
+                
+
+                if (plotSettings.ShowGpuActiveCharts)
+                    gpuActiveFpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode, true);
 
                 if (filterMode == EFilterMode.TimeIntervalAverage)
-                    SetLoadCharts(plotModel, plotSettings, session);
+                SetLoadCharts(plotModel, plotSettings, session);
 
-                SetFpsChart(plotModel, fpsPoints, rawFpsPoints, average, filterMode is EFilterMode.None ? 1.5 : 3, Constants.FpsColor, filterMode);
+                SetFpsChart(plotModel, fpsPoints, rawFpsPoints, gpuActiveFpsPoints, average, filterMode is EFilterMode.None ? 1.5 : 3, Constants.FpsColor, filterMode, plotSettings);
+
 
                 if (filterMode is EFilterMode.None)
                     SetLoadCharts(plotModel, plotSettings, session);
 
-                yMin = fpsPoints.Min(pnt => pnt.Y);
-                yMax = fpsPoints.Max(pnt => pnt.Y);
+
+                if (plotSettings.ShowGpuActiveCharts)
+                {
+                    yMin = Math.Min(fpsPoints.Min(pnt => pnt.Y), gpuActiveFpsPoints.Min(pnt => pnt.Y));
+                    yMax = Math.Max(fpsPoints.Max(pnt => pnt.Y), gpuActiveFpsPoints.Max(pnt => pnt.Y));
+                }
+                else
+                {
+                    yMin = fpsPoints.Min(pnt => pnt.Y);
+                    yMax = fpsPoints.Max(pnt => pnt.Y);
+                }
+
             }
-            
+
 
             if (plotSettings.ShowThresholds)
             {
@@ -93,13 +109,14 @@ namespace CapFrameX.Statistics.PlotBuilder
             }
         }
 
-        private void SetFpsChart(PlotModel plotModel, IList<Point> fpsPoints, IList<Point> rawfpsPoints, double average, double stroke, OxyColor color, EFilterMode filtermode)
+        private void SetFpsChart(PlotModel plotModel, IList<Point> fpsPoints, IList<Point> rawfpsPoints, IList<Point> gpuActiveFpsPoints, double average, double stroke, OxyColor color, EFilterMode filtermode, IPlotSettings plotSettings)
         {
             if (fpsPoints == null || !fpsPoints.Any())
                 return;
 
             int count = fpsPoints.Count;
             var fpsDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
+            var gpuActiveFpsDataPoints = gpuActiveFpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
 
             // Filter mode = Raw+Average -> filtered average FPS
             // Filter mode = None -> Raw inverted frametimes
@@ -113,8 +130,27 @@ namespace CapFrameX.Statistics.PlotBuilder
                 InterpolationAlgorithm = filtermode == EFilterMode.None ? null : InterpolationAlgorithms.CanonicalSpline
             };
 
+            var gpuActiveFpsSeries = new LineSeries
+            {
+                Title = "Gpu Active FPS",
+                StrokeThickness = stroke,
+                LegendStrokeThickness = 4,
+                Color = Constants.GpuActiveFpsColor,
+                EdgeRenderingMode = filtermode == EFilterMode.None ? EdgeRenderingMode.PreferSpeed : EdgeRenderingMode.PreferGeometricAccuracy,
+                InterpolationAlgorithm = filtermode == EFilterMode.None ? null : InterpolationAlgorithms.CanonicalSpline
+            };
+
+
             fpsSeries.Points.AddRange(fpsDataPoints);
             plotModel.Series.Add(fpsSeries);
+
+
+            if (plotSettings.ShowGpuActiveCharts)
+            {
+                gpuActiveFpsSeries.Points.AddRange(gpuActiveFpsDataPoints);
+                plotModel.Series.Add(gpuActiveFpsSeries);
+            }
+
 
             var averageDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, average));
 

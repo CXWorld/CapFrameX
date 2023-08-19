@@ -8,9 +8,13 @@ namespace CapFrameX.Statistics.PlotBuilder
 
 		public readonly static OxyColor FrametimeColor = OxyColor.FromRgb(156, 210, 0);
 
-		public readonly static OxyColor FpsAverageColor = OxyColor.FromArgb(100, 50, 190, 50);
+        public readonly static OxyColor GpuActiveFrametimeColor = OxyColor.FromRgb(50, 255, 50);
 
-		public readonly static OxyColor FpsColor = OxyColor.FromRgb(156, 210, 0);
+        public readonly static OxyColor FpsAverageColor = OxyColor.FromArgb(100, 50, 190, 50);
+
+        public readonly static OxyColor FpsColor = OxyColor.FromRgb(156, 210, 0);
+
+        public readonly static OxyColor GpuActiveFpsColor = OxyColor.FromRgb(50, 255, 50);
 
         public readonly static OxyColor PmdColor = OxyColor.FromRgb(34, 151, 243);
 
