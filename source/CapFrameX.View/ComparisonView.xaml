@@ -591,9 +591,9 @@
             
             <StackPanel Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20 0 10 0" Orientation="Horizontal"
 						Visibility="{Binding IsLineChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
-                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">GPU Active values:</TextBlock>
+                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">GPU-Busy values:</TextBlock>
                 <ToggleButton Name="GPUActiveMetricsToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
-								  ToolTip="Show GPU Active values instead of standard values" IsChecked="{Binding ShowGpuActiveLineCharts}"/>
+								  ToolTip="Show GPU-Busy frametimes/fps instead of regular values" IsChecked="{Binding ShowGpuActiveLineCharts}"/>
             </StackPanel>
             
 

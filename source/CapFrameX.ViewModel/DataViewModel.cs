@@ -740,7 +740,7 @@ namespace CapFrameX.ViewModel
 
         private void OnAcceptParameterSettings()
         {
-            Task.Factory.StartNew(() => SetStaticChart(GetFrametimesSubset()));
+            Task.Factory.StartNew(() => SetStaticChart(GetFrametimesSubset(), GetGpuActiveTimesSubset()));
         }
 
         private void OnSliderRangeChanged()
@@ -766,8 +766,9 @@ namespace CapFrameX.ViewModel
         {
             if (_session == null)
                 return;
-
+            var gpuActiveTimes = GetGpuActiveTimesSubset();
             var frametimes = GetFrametimesSubset();
+
             double GeMetricValue(IList<double> sequence, EMetric metric) =>
                 Math.Round(_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric), 2);
 
@@ -776,11 +777,14 @@ namespace CapFrameX.ViewModel
             var p95_quantile = GeMetricValue(frametimes, EMetric.P95);
             var median = GeMetricValue(frametimes, EMetric.Median);
             var average = GeMetricValue(frametimes, EMetric.Average);
+            var gpuActiveAverage = GeMetricValue(gpuActiveTimes, EMetric.GpuActiveAverage);
             var p0dot1_quantile = GeMetricValue(frametimes, EMetric.P0dot1);
             var p0dot2_quantile = GeMetricValue(frametimes, EMetric.P0dot2);
             var p1_quantile = GeMetricValue(frametimes, EMetric.P1);
+            var gpuActiveP1_quantile = GeMetricValue(gpuActiveTimes, EMetric.GpuActiveP1);
             var p5_quantile = GeMetricValue(frametimes, EMetric.P5);
             var p1_LowAverage = GeMetricValue(frametimes, EMetric.OnePercentLowAverage);
+            var GpuActiveP1_LowAverage = GeMetricValue(gpuActiveTimes, EMetric.GpuActiveOnePercentLowAverage);
             var p0dot1_LowAverage = GeMetricValue(frametimes, EMetric.ZerodotOnePercentLowAverage);
             var p1_LowIntegral = GeMetricValue(frametimes, EMetric.OnePercentLowIntegral);
             var p0dot1_LowIntegral = GeMetricValue(frametimes, EMetric.ZerodotOnePercentLowIntegral);
@@ -810,12 +814,18 @@ namespace CapFrameX.ViewModel
                 builder.Append("Median" + "\t" + median.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
                 builder.Append("Average" + "\t" + average.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+            if (_appConfiguration.UseSingleRecordGpuActiveAverageStatisticParameter)
+                builder.Append("GPU-Busy Average" + "\t" + gpuActiveAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
                 builder.Append("P5" + "\t" + p5_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
                 builder.Append("P1" + "\t" + p1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+            if (_appConfiguration.UseSingleRecordGpuActiveP1QuantileStatisticParameter)
+                builder.Append("GPU-Busy P1" + "\t" + gpuActiveP1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
                 builder.Append("1% Low Average" + "\t" + p1_LowAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+            if (_appConfiguration.UseSingleRecordGpuActiveP1LowAverageStatisticParameter && !double.IsNaN(GpuActiveP1_LowAverage))
+                builder.Append("Gpu-Busy 1% Low Average" + "\t" + GpuActiveP1_LowAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
                 builder.Append("1% Low Integral" + "\t" + p1_LowIntegral.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
@@ -1027,7 +1037,7 @@ namespace CapFrameX.ViewModel
                 SystemInfos = _recordManager.GetSystemInfos(RecordInfo);
 
                 // Update PC latency
-                IsPcLatencyAvailable = _session.Runs.All(run => !run.CaptureData.PcLatency.IsNullOrEmpty());
+                IsPcLatencyAvailable = _session.Runs.All(run => !run.CaptureData.PcLatency.IsNullOrEmpty()) && _session.Runs.All(run => run.CaptureData.PcLatency.Average() > 0);
                 if (!IsPcLatencyAvailable)
                 {
                     _showPcLatency = false;
@@ -1073,7 +1083,7 @@ namespace CapFrameX.ViewModel
                 if (!IsGpuActiveChartAvailable)
                 {
                     _showGpuActiveChart = false;
-                    RaisePropertyChanged(nameof(ShowGpuPowerLimit));
+                    RaisePropertyChanged(nameof(ShowGpuActiveChart));
                 }
 
 
@@ -1106,12 +1116,13 @@ namespace CapFrameX.ViewModel
                 return;
 
             var subset = GetFrametimesSubset();
+            var gpuActiveSubset = GetGpuActiveTimesSubset();
 
             if (subset != null)
             {
                 _onUpdateChart.OnNext(default);
 
-                Task.Factory.StartNew(() => SetStaticChart(subset));
+                Task.Factory.StartNew(() => SetStaticChart(subset, gpuActiveSubset));
                 Task.Factory.StartNew(() => SetStutteringChart(subset));
                 Task.Factory.StartNew(() => SetVarianceChart());
                 Task.Factory.StartNew(() => SetFpsThresholdChart(subset));
@@ -1137,10 +1148,10 @@ namespace CapFrameX.ViewModel
                 return;
 
             var subset = GetFrametimesSubset();
-
+            var gpuActiveSubset = GetGpuActiveTimesSubset();
             if (subset != null)
             {
-                Task.Factory.StartNew(() => SetStaticChart(subset));
+                Task.Factory.StartNew(() => SetStaticChart(subset, gpuActiveSubset));
                 Task.Factory.StartNew(() => SetStutteringChart(subset));
                 Task.Factory.StartNew(() => SetVarianceChart());
                 Task.Factory.StartNew(() => SetFpsThresholdChart(subset));
@@ -1175,7 +1186,10 @@ namespace CapFrameX.ViewModel
 		private IList<double> GetGpuActiveTimesSubset()
 			=> _localRecordDataServer?.GetGpuActiveTimeTimeWindow();
 
-		private void SetStaticChart(IList<double> frametimes)
+        private IList<double> GetGpuActiveFPSSubset()
+            => _localRecordDataServer?.GetGpuActiveFpsTimeWindow();
+
+        private void SetStaticChart(IList<double> frametimes, IList<double> gpuActiveTimes)
         {
             if (frametimes == null || !frametimes.Any())
                 return;
@@ -1188,11 +1202,14 @@ namespace CapFrameX.ViewModel
             var p95_quantile = GetMetricValue(frametimes, EMetric.P95);
             var median = GetMetricValue(frametimes, EMetric.Median);
             var average = GetMetricValue(frametimes, EMetric.Average);
+            var gpuActiveAverage = !gpuActiveTimes.IsNullOrEmpty() ? GetMetricValue(gpuActiveTimes, EMetric.GpuActiveAverage) : double.NaN;
             var p0dot1_quantile = GetMetricValue(frametimes, EMetric.P0dot1);
             var p0dot2_quantile = GetMetricValue(frametimes, EMetric.P0dot2);
             var p1_quantile = GetMetricValue(frametimes, EMetric.P1);
+            var gpuActiveP1_quantile = !gpuActiveTimes.IsNullOrEmpty() ? GetMetricValue(gpuActiveTimes, EMetric.GpuActiveP1) : double.NaN;
             var p5_quantile = GetMetricValue(frametimes, EMetric.P5);
             var p1_LowAverage = GetMetricValue(frametimes, EMetric.OnePercentLowAverage);
+            var gpuActiveP1_LowAverage = !gpuActiveTimes.IsNullOrEmpty() ? GetMetricValue(gpuActiveTimes, EMetric.GpuActiveOnePercentLowAverage): double.NaN;
             var p0dot1_LowAverage = GetMetricValue(frametimes, EMetric.ZerodotOnePercentLowAverage);
             var p1_LowIntegral = GetMetricValue(frametimes, EMetric.OnePercentLowIntegral);
             var p0dot1_LowIntegral = GetMetricValue(frametimes, EMetric.ZerodotOnePercentLowIntegral);
@@ -1229,12 +1246,18 @@ namespace CapFrameX.ViewModel
                     values.Add(p0dot2_quantile);
                 if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
                     values.Add(p1_LowIntegral);
+                if (_appConfiguration.UseSingleRecordGpuActiveP1LowAverageStatisticParameter && !double.IsNaN(gpuActiveP1_LowAverage))
+                    values.Add(gpuActiveP1_LowAverage);
                 if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
                     values.Add(p1_LowAverage);
+                if (_appConfiguration.UseSingleRecordGpuActiveP1QuantileStatisticParameter && !double.IsNaN(gpuActiveP1_quantile))
+                    values.Add(gpuActiveP1_quantile);
                 if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
                     values.Add(p1_quantile);
                 if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
                     values.Add(p5_quantile);
+                if (_appConfiguration.UseSingleRecordGpuActiveAverageStatisticParameter && !double.IsNaN(gpuActiveAverage))
+                    values.Add(gpuActiveAverage);
                 if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
                     values.Add(average);
                 if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
@@ -1285,12 +1308,18 @@ namespace CapFrameX.ViewModel
                     parameterLabelList.Add("P0.2");
                 if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
                     parameterLabelList.Add("1% Low Integral");
+                if (_appConfiguration.UseSingleRecordGpuActiveP1LowAverageStatisticParameter && !double.IsNaN(gpuActiveP1_LowAverage))
+                    parameterLabelList.Add("Gpu-Busy 1% Low Avg.");
                 if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
                     parameterLabelList.Add("1% Low Average");
+                if (_appConfiguration.UseSingleRecordGpuActiveP1QuantileStatisticParameter && !double.IsNaN(gpuActiveP1_quantile))
+                    parameterLabelList.Add("GPU-Busy P1");
                 if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
                     parameterLabelList.Add("P1");
                 if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
                     parameterLabelList.Add("P5");
+                if (_appConfiguration.UseSingleRecordGpuActiveAverageStatisticParameter && !double.IsNaN(gpuActiveAverage))
+                    parameterLabelList.Add("GPU-Busy Average");
                 if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
                     parameterLabelList.Add("Average");
                 if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
@@ -1490,6 +1519,18 @@ namespace CapFrameX.ViewModel
                         var yMin = frametimes.Min();
                         var yMax = frametimes.Max();
 
+
+                        if (GetIsGpuActiveChartAvailable() && ShowGpuActiveChart)
+                        {
+                            var gpuActiveTimes = _localRecordDataServer?
+                            .GetGpuActiveTimePointTimeWindow().Select(pnt => pnt.Y);
+
+                            yMin = Math.Min(frametimes.Min(), gpuActiveTimes.Min());
+                            yMax = Math.Max(frametimes.Max(), gpuActiveTimes.Max());
+                        }
+
+
+
                         if (ShowStutteringThresholds)
                         {
                             var frametimeStatisticProvider = new FrametimeStatisticProvider(null);
@@ -1516,7 +1557,24 @@ namespace CapFrameX.ViewModel
                             .Median(_localRecordDataServer?
                             .GetFrametimePointTimeWindow().Select(pnt => pnt.Y));
 
-                        setting = new Tuple<double, double>(median - 4 * iqr, median + 6 * iqr);
+                        double gpuActiveIqr = double.MinValue;
+                        double gpuActiveMedian = double.MinValue;
+
+                        if (GetIsGpuActiveChartAvailable() && ShowGpuActiveChart)
+                        {
+                            gpuActiveIqr = MathNet.Numerics.Statistics.Statistics
+                                .InterquartileRange(_localRecordDataServer?
+                                .GetGpuActiveTimePointTimeWindow().Select(pnt => pnt.Y));
+                            gpuActiveMedian = MathNet.Numerics.Statistics.Statistics
+                                .Median(_localRecordDataServer?
+                                .GetGpuActiveTimePointTimeWindow().Select(pnt => pnt.Y));
+
+                        }
+
+                        double maxMedian = Math.Max(median, gpuActiveMedian);
+                        double maxIqr = Math.Max(iqr, gpuActiveIqr);
+
+                        setting = new Tuple<double, double>(maxMedian - 4 * maxIqr, maxMedian + 6 * maxIqr);
                     }
                     break;
                 case EChartYAxisSetting.Zero_Ten:

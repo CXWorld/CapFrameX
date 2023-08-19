@@ -38,19 +38,25 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool UseSingleRecordAverageStatisticParameter { get; set; }
 
-		bool UseSingleRecordMedianStatisticParameter { get; set; }
+        bool UseSingleRecordGpuActiveAverageStatisticParameter { get; set; }
+
+        bool UseSingleRecordMedianStatisticParameter { get; set; }
 
 		bool UseSingleRecordP5QuantileStatisticParameter { get; set; }
 
 		bool UseSingleRecordP1QuantileStatisticParameter { get; set; }
 
-		bool UseSingleRecordP0Dot1QuantileStatisticParameter { get; set; }
+        bool UseSingleRecordGpuActiveP1QuantileStatisticParameter { get; set; }
+
+        bool UseSingleRecordP0Dot1QuantileStatisticParameter { get; set; }
 
 		bool UseSingleRecordP0Dot2QuantileStatisticParameter { get; set; }
 
 		bool UseSingleRecordP1LowAverageStatisticParameter { get; set; }
 
-		bool UseSingleRecordP0Dot1LowAverageStatisticParameter { get; set; }
+        bool UseSingleRecordGpuActiveP1LowAverageStatisticParameter { get; set; }
+
+        bool UseSingleRecordP0Dot1LowAverageStatisticParameter { get; set; }
 
         bool UseSingleRecordP1LowIntegralStatisticParameter { get; set; }
 
@@ -282,17 +288,23 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool ReportShowAverageFPS { get; set; }
 
-		bool ReportShowP5FPS { get; set; }
+        bool ReportShowGpuActiveAverageFPS { get; set; }
+
+        bool ReportShowP5FPS { get; set; }
 
 		bool ReportShowP1FPS { get; set; }
 
-		bool ReportShowP0Dot2FPS { get; set; }
+        bool ReportShowGpuActiveP1FPS { get; set; }
+
+        bool ReportShowP0Dot2FPS { get; set; }
 
 		bool ReportShowP0Dot1FPS { get; set; }
 
 		bool ReportShowP1LowAverageFPS { get; set; }
 
-		bool ReportShowP0Dot1LowAverageFPS { get; set; }
+        bool ReportShowGpuActiveP1LowAverageFPS { get; set; }
+
+        bool ReportShowP0Dot1LowAverageFPS { get; set; }
 
         bool ReportShowP1LowIntegralFPS { get; set; }
 

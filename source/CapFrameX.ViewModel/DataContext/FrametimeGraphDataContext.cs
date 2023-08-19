@@ -21,9 +21,28 @@ namespace CapFrameX.ViewModel.DataContext
 {
     public class FrametimeGraphDataContext : GraphDataContextBase
     {
+
+        private bool _showGpuActiveCommands;
+
+        public bool ShowGpuActiveCommands
+        {
+            get { return _showGpuActiveCommands; }
+            set
+            {
+                _showGpuActiveCommands = value;
+                RaisePropertyChanged();
+            }
+
+        }
+
+
         public ICommand CopyFrametimeValuesCommand { get; }
 
         public ICommand CopyFrametimePointsCommand { get; }
+
+        public ICommand CopyGpuActiveTimeValuesCommand { get; }
+
+        public ICommand CopyGpuActiveTimePointsCommand { get; }
 
         public ICommand SavePlotAsSVG { get; }
 
@@ -41,6 +60,10 @@ namespace CapFrameX.ViewModel.DataContext
         {
             CopyFrametimeValuesCommand = new DelegateCommand(OnCopyFrametimeValues);
             CopyFrametimePointsCommand = new DelegateCommand(OnCopyFrametimePoints);
+
+            CopyGpuActiveTimeValuesCommand = new DelegateCommand(OnCopyGpuActiveTimeValues);
+            CopyGpuActiveTimePointsCommand = new DelegateCommand(OnCopyGpuActiveTimePoints);
+
             SavePlotAsSVG = new DelegateCommand(() => OnSavePlotAsImage("frametimes", "svg"));
             SavePlotAsPNG = new DelegateCommand(() => OnSavePlotAsImage("frametimes", "png"));
             _frametimePlotBuilder = new FrametimePlotBuilder(appConfiguration, frametimesStatisticProvider);
@@ -65,6 +88,8 @@ namespace CapFrameX.ViewModel.DataContext
 
                 PlotModel = plotModel;
             });
+
+            ShowGpuActiveCommands = plotSettings.ShowGpuActiveCharts;
         }
 
         public void Reset()
@@ -100,6 +125,22 @@ namespace CapFrameX.ViewModel.DataContext
             Clipboard.SetDataObject(builder.ToString(), false);
         }
 
+        private void OnCopyGpuActiveTimeValues()
+        {
+            if (RecordSession == null)
+                return;
+
+            var gpuActiveTimes = RecordDataServer.GetGpuActiveTimeTimeWindow();
+            StringBuilder builder = new StringBuilder();
+
+            foreach (var gpuActiveTime in gpuActiveTimes)
+            {
+                builder.Append(Math.Round(gpuActiveTime, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+            }
+
+            Clipboard.SetDataObject(builder.ToString(), false);
+        }
+
         private void OnCopyFrametimePoints()
         {
             if (RecordSession == null)
@@ -112,6 +153,22 @@ namespace CapFrameX.ViewModel.DataContext
             {
                 builder.Append(Math.Round(frametimePoints[i].X, 2).ToString(CultureInfo.InvariantCulture) + "\t" +
                     Math.Round(frametimePoints[i].Y, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+            }
+
+            Clipboard.SetDataObject(builder.ToString(), false);
+        }
+        private void OnCopyGpuActiveTimePoints()
+        {
+            if (RecordSession == null)
+                return;
+
+            var gpuActiveTimePoints = RecordDataServer.GetGpuActiveTimePointTimeWindow();
+            StringBuilder builder = new StringBuilder();
+
+            for (int i = 0; i < gpuActiveTimePoints.Count; i++)
+            {
+                builder.Append(Math.Round(gpuActiveTimePoints[i].X, 2).ToString(CultureInfo.InvariantCulture) + "\t" +
+                    Math.Round(gpuActiveTimePoints[i].Y, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);

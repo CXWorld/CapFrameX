@@ -7,13 +7,16 @@
 		private bool _useP95QuantileStatisticParameter;
 		private bool _useMedianStatisticParameter;
 		private bool _useAverageStatisticParameter;
-		private bool _useP5QuantileStatisticParameter;
+		private bool _useGpuActiveAverageStatisticParameter;
+        private bool _useP5QuantileStatisticParameter;
 		private bool _useP1QuantileStatisticParameter;
+		private bool _useGpuActiveP1QuantileStatisticParameter;
         private bool _useP0Dot2QuantileStatisticParameter;
         private bool _useP0Dot1QuantileStatisticParameter;
 		private bool _useP1LowAverageStatisticParameter;
-		private bool _useP0Dot1LowAverageStatisticParameter;
-
+		private bool _useGpuActiveP1LowAverageStatisticParameter;
+		private bool _useP0Dot1LowAverageStatisticParameter;     
+		
         private bool _useP1LowIntegralStatisticParameter;
         private bool _useP0Dot1LowIntegralStatisticParameter;
 
@@ -29,12 +32,15 @@
 			UseP95QuantileStatisticParameter = _appConfiguration.UseSingleRecordP95QuantileStatisticParameter;
 			UseMedianStatisticParameter = _appConfiguration.UseSingleRecordMedianStatisticParameter;
 			UseAverageStatisticParameter = _appConfiguration.UseSingleRecordAverageStatisticParameter;
-			UseP5QuantileStatisticParameter = _appConfiguration.UseSingleRecordP5QuantileStatisticParameter;
+			UseGpuActiveAverageStatisticParameter = _appConfiguration.UseSingleRecordGpuActiveAverageStatisticParameter;
+            UseP5QuantileStatisticParameter = _appConfiguration.UseSingleRecordP5QuantileStatisticParameter;
 			UseP1QuantileStatisticParameter = _appConfiguration.UseSingleRecordP1QuantileStatisticParameter;
+            UseGpuActiveP1QuantileStatisticParameter = _appConfiguration.UseSingleRecordGpuActiveP1QuantileStatisticParameter;
             UseP0Dot2QuantileStatisticParameter = _appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter;
             UseP0Dot1QuantileStatisticParameter = _appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter;
 			UseP1LowAverageStatisticParameter = _appConfiguration.UseSingleRecordP1LowAverageStatisticParameter;
-			UseP0Dot1LowAverageStatisticParameter = _appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter;
+            UseGpuActiveP1LowAverageStatisticParameter = _appConfiguration.UseSingleRecordGpuActiveP1LowAverageStatisticParameter;
+            UseP0Dot1LowAverageStatisticParameter = _appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter;
 
             UseP1LowIntegralStatisticParameter = _appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter;
             UseP0Dot1LowIntegralStatisticParameter = _appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter;
@@ -104,7 +110,19 @@
 			}
 		}
 
-		public bool UseP5QuantileStatisticParameter
+        public bool UseGpuActiveAverageStatisticParameter
+        {
+            get { return _useGpuActiveAverageStatisticParameter; }
+            set
+            {
+                _useGpuActiveAverageStatisticParameter = value;
+                _appConfiguration.UseSingleRecordGpuActiveAverageStatisticParameter = value;
+                OnAcceptParameterSettings();
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool UseP5QuantileStatisticParameter
 		{
 			get { return _useP5QuantileStatisticParameter; }
 			set
@@ -127,6 +145,18 @@
 				RaisePropertyChanged();
 			}
 		}
+
+        public bool UseGpuActiveP1QuantileStatisticParameter
+        {
+            get { return _useGpuActiveP1QuantileStatisticParameter; }
+            set
+            {
+                _useGpuActiveP1QuantileStatisticParameter = value;
+                _appConfiguration.UseSingleRecordGpuActiveP1QuantileStatisticParameter = value;
+                OnAcceptParameterSettings();
+                RaisePropertyChanged();
+            }
+        }
 
         public bool UseP0Dot2QuantileStatisticParameter
         {
@@ -164,7 +194,19 @@
 			}
 		}
 
-		public bool UseP0Dot1LowAverageStatisticParameter
+        public bool UseGpuActiveP1LowAverageStatisticParameter
+        {
+            get { return _useGpuActiveP1LowAverageStatisticParameter; }
+            set
+            {
+                _useGpuActiveP1LowAverageStatisticParameter = value;
+                _appConfiguration.UseSingleRecordGpuActiveP1LowAverageStatisticParameter = value;
+                OnAcceptParameterSettings();
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool UseP0Dot1LowAverageStatisticParameter
 		{
 			get { return _useP0Dot1LowAverageStatisticParameter; }
 			set

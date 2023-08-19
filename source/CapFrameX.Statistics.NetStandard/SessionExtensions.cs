@@ -487,7 +487,7 @@ namespace CapFrameX.Statistics.NetStandard
 					fpsPoints = timeIntervalAveragePoints.Select(pnt => new Point(pnt.X / 1000, 1000 / pnt.Y)).ToList();
 					break;
 				default:
-					fpsPoints = frametimePoints.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
+					fpsPoints = intervalGpuActiveTimePoints.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
 					break;
 			}
 

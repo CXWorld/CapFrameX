@@ -138,10 +138,13 @@ namespace CapFrameX.ViewModel
             var displayNameNinetyNinePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.NinetyNinePercentQuantileFps);
             var displayNameNinetyFivePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.NinetyFivePercentQuantileFps);
             var displayNameAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AverageFps);
+            var displayNameGpuActiveAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuActiveAverageFps);
             var displayNameMedianFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.MedianFps);
             var displayNameFivePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.FivePercentQuantileFps);
             var displayNameOnePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.OnePercentQuantileFps);
+            var displayNameGpuActiveOnePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuActiveOnePercentQuantileFps);
             var displayNameOnePercentLowAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.OnePercentLowAverageFps);
+            var displayNameGpuActiveOnePercentLowAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuActiveOnePercentLowAverageFps);
             var displayNameOnePercentLowIntegralFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.OnePercentLowIntegralFps);
             var displayNameZeroDotTwoPercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotTwoPercentQuantileFps);
             var displayNameZeroDotOnePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotOnePercentQuantileFps);
@@ -176,10 +179,13 @@ namespace CapFrameX.ViewModel
                 (ShowP99FPS ? "\t" + displayNameNinetyNinePercentQuantileFps : "") +
                 (ShowP95FS ? "\t" + displayNameNinetyFivePercentQuantileFps : "") +
                 (ShowAverageFPS ? "\t" + displayNameAverageFps : "") +
+                (ShowGpuActiveAverageFPS ? "\t" + displayNameGpuActiveAverageFps : "") +
                 (ShowMedianFPS ? "\t" + displayNameMedianFps : "") +
                 (ShowP5FPS ? "\t" + displayNameFivePercentQuantileFps : "") +
                 (ShowP1FPS ? "\t" + displayNameOnePercentQuantileFps : "") +
+                (ShowGpuActiveP1FPS ? "\t" + displayNameGpuActiveOnePercentQuantileFps : "") +
                 (ShowP1LowAverageFPS ? "\t" + displayNameOnePercentLowAverageFps : "") +
+                (ShowGpuActiveP1LowAverageFPS ? "\t" + displayNameGpuActiveOnePercentLowAverageFps : "") +
                 (ShowP1LowIntegralFPS ? "\t" + displayNameOnePercentLowIntegralFps : "") +
                 (ShowP0Dot2FPS ? "\t" + displayNameZeroDotTwoPercentQuantileFps : "") +
                 (ShowP0Dot1FPS ? "\t" + displayNameZeroDotOnePercentQuantileFps : "") +
@@ -218,10 +224,13 @@ namespace CapFrameX.ViewModel
                     (ShowP99FPS ? "\t" + reportInfo.NinetyNinePercentQuantileFps.ToString(cultureInfo) : "") +
                     (ShowP95FS ? "\t" + reportInfo.NinetyFivePercentQuantileFps.ToString(cultureInfo) : "") +
                     (ShowAverageFPS ? "\t" + reportInfo.AverageFps.ToString(cultureInfo) : "") +
+                    (ShowGpuActiveAverageFPS ? "\t" + reportInfo.GpuActiveAverageFps.ToString(cultureInfo) : "") +
                     (ShowMedianFPS ? "\t" + reportInfo.MedianFps.ToString(cultureInfo) : "") +
                     (ShowP5FPS ? "\t" + reportInfo.FivePercentQuantileFps.ToString(cultureInfo) : "") +
                     (ShowP1FPS ? "\t" + reportInfo.OnePercentQuantileFps.ToString(cultureInfo) : "") +
+                    (ShowGpuActiveP1FPS ? "\t" + reportInfo.GpuActiveOnePercentQuantileFps.ToString(cultureInfo) : "") +
                     (ShowP1LowAverageFPS ? "\t" + reportInfo.OnePercentLowAverageFps.ToString(cultureInfo) : "") +
+                    (ShowGpuActiveP1LowAverageFPS ? "\t" + reportInfo.GpuActiveOnePercentLowAverageFps.ToString(cultureInfo) : "") +
                     (ShowP1LowIntegralFPS ? "\t" + reportInfo.OnePercentLowIntegralFps.ToString(cultureInfo) : "") +
                     (ShowP0Dot2FPS ? "\t" + reportInfo.ZeroDotTwoPercentQuantileFps.ToString(cultureInfo) : "") +
                     (ShowP0Dot1FPS ? "\t" + reportInfo.ZeroDotOnePercentQuantileFps.ToString(cultureInfo) : "") +

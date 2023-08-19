@@ -160,6 +160,18 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool ShowGpuActiveAverageFPS
+        {
+            get { return _settings.ReportShowGpuActiveAverageFPS; }
+            set
+            {
+                _settings.ReportShowGpuActiveAverageFPS = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
+
+                RaisePropertyChanged();
+            }
+        }
+
         public bool ShowP5FPS
         {
             get { return _settings.ReportShowP5FPS; }
@@ -178,6 +190,18 @@ namespace CapFrameX.ViewModel
             set
             {
                 _settings.ReportShowP1FPS = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
+
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowGpuActiveP1FPS
+        {
+            get { return _settings.ReportShowGpuActiveP1FPS; }
+            set
+            {
+                _settings.ReportShowGpuActiveP1FPS = value;
                 _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
@@ -214,6 +238,18 @@ namespace CapFrameX.ViewModel
             set
             {
                 _settings.ReportShowP1LowAverageFPS = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
+
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowGpuActiveP1LowAverageFPS
+        {
+            get { return _settings.ReportShowGpuActiveP1LowAverageFPS; }
+            set
+            {
+                _settings.ReportShowGpuActiveP1LowAverageFPS = value;
                 _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();

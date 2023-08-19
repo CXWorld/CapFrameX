@@ -101,17 +101,37 @@ namespace CapFrameX.Data
 			return CurrentSession.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration, RemoveOutlierMethod);
 		}
 
-		public IList<double> GetFpsTimeWindow()
+        public IList<Point> GetGpuActiveTimePointTimeWindow()
+        {
+            if (CurrentSession == null)
+                return null;
+
+            double startTime = CurrentTime;
+            double endTime = startTime + WindowLength;
+            return CurrentSession.GetGpuActiveTimePointsTimeWindow(startTime, endTime, _appConfiguration, RemoveOutlierMethod);
+        }
+
+        public IList<double> GetFpsTimeWindow()
 		{
 			return GetFrametimeTimeWindow()?.Select(ft => 1000 / ft).ToList();
 		}
 
-		public IList<Point> GetFpsPointTimeWindow()
+        public IList<double> GetGpuActiveFpsTimeWindow()
+        {
+            return GetGpuActiveTimeTimeWindow()?.Select(ft => 1000 / ft).ToList();
+        }
+
+        public IList<Point> GetFpsPointTimeWindow()
 		{
 			return GetFrametimePointTimeWindow()?.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
 		}
 
-		private void DoUpdateWindowTrigger()
+        public IList<Point> GetGpuActiveFpsPointTimeWindow()
+        {
+            return GetGpuActiveTimePointTimeWindow()?.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
+        }
+
+        private void DoUpdateWindowTrigger()
 		{
 			if (!IsActive)
 				return;

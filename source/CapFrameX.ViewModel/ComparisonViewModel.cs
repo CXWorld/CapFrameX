@@ -1691,10 +1691,10 @@ namespace CapFrameX.ViewModel
 			IEnumerable<Point> fpsPoints = null;
 
 			if (ShowGpuActiveLineCharts)
-				fpsPoints = session.GetGpuActiveFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None)
+				fpsPoints = session.GetGpuActiveFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode)
 				   .Select(pnt => new Point(pnt.X, pnt.Y));
 			else
-				fpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None)
+				fpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode)
 				   .Select(pnt => new Point(pnt.X, pnt.Y));
 
 			var chartTitle = string.Empty;

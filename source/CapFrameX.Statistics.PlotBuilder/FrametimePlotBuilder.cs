@@ -94,7 +94,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             var gpuActiveFrametimeSeries = new LineSeries
             {
-                Title = "GPU Active Frametimes",
+                Title = "GPU-Busy Frametimes",
                 StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
                 Color = Constants.GpuActiveFrametimeColor,

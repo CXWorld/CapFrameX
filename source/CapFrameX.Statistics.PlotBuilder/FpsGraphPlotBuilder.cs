@@ -132,7 +132,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             var gpuActiveFpsSeries = new LineSeries
             {
-                Title = "Gpu Active FPS",
+                Title = "GPU-Busy FPS",
                 StrokeThickness = stroke,
                 LegendStrokeThickness = 4,
                 Color = Constants.GpuActiveFpsColor,

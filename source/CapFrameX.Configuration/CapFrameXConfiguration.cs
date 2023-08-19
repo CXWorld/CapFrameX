@@ -314,6 +314,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool UseSingleRecordGpuActiveAverageStatisticParameter
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
         public bool UseSingleRecordMedianStatisticParameter
         {
             get => Get<bool>(false);
@@ -332,6 +338,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool UseSingleRecordGpuActiveP1QuantileStatisticParameter
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
         public bool UseSingleRecordP0Dot1QuantileStatisticParameter
         {
             get => Get<bool>(true);
@@ -347,6 +359,12 @@ namespace CapFrameX.Configuration
         public bool UseSingleRecordP1LowAverageStatisticParameter
         {
             get => Get<bool>(true);
+            set => Set(value);
+        }
+
+        public bool UseSingleRecordGpuActiveP1LowAverageStatisticParameter
+        {
+            get => Get<bool>(false);
             set => Set(value);
         }
 
@@ -823,11 +841,14 @@ namespace CapFrameX.Configuration
         public bool ReportShowP95FS { get; set; } = true;
         public bool ReportShowMedianFPS { get; set; } = true;
         public bool ReportShowAverageFPS { get; set; } = true;
+        public bool ReportShowGpuActiveAverageFPS { get; set; } = false;
         public bool ReportShowP5FPS { get; set; } = true;
         public bool ReportShowP1FPS { get; set; } = true;
+        public bool ReportShowGpuActiveP1FPS { get; set; } = false;
         public bool ReportShowP0Dot2FPS { get; set; } = true;
         public bool ReportShowP0Dot1FPS { get; set; } = true;
         public bool ReportShowP1LowAverageFPS { get; set; } = true;
+        public bool ReportShowGpuActiveP1LowAverageFPS { get; set; } = false;
         public bool ReportShowP0Dot1LowAverageFPS { get; set; } = true;
         public bool ReportShowP1LowIntegralFPS { get; set; } = true;
         public bool ReportShowP0Dot1LowIntegralFPS { get; set; } = true;
