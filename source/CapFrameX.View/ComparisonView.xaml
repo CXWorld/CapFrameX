@@ -593,7 +593,7 @@
 						Visibility="{Binding IsLineChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
                 <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">GPU-Busy values:</TextBlock>
                 <ToggleButton Name="GPUActiveMetricsToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
-								  ToolTip="Show GPU-Busy frametimes/fps instead of regular values" IsChecked="{Binding ShowGpuActiveLineCharts}"/>
+								  ToolTip="Show GPU-Busy times/fps instead of the regular frametimes/fps" IsChecked="{Binding ShowGpuActiveLineCharts}"/>
             </StackPanel>
             
 

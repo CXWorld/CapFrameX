@@ -279,7 +279,7 @@ namespace CapFrameX.ViewModel
             double GeMetricValue(IList<double> sequence, EMetric metric) =>
                     _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
             var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
-            var gpuActiveframeTimes = session.Runs.SelectMany(r => r.CaptureData.GpuActive).ToList();
+            var GpuActiveTimes = session.Runs.SelectMany(r => r.CaptureData.GpuActive).ToList();
             var recordTime = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
             var inputLagTimes = session.CalculateInputLagTimes(EInputLagType.Expected).Where(t => !double.IsNaN(t));
 
@@ -287,15 +287,15 @@ namespace CapFrameX.ViewModel
             var p99_quantile = GeMetricValue(frameTimes, EMetric.P99);
             var p95_quantile = GeMetricValue(frameTimes, EMetric.P95);
             var average = GeMetricValue(frameTimes, EMetric.Average);
-            var GpuActiveAverage = GeMetricValue(gpuActiveframeTimes, EMetric.GpuActiveAverage);
+            var GpuActiveAverage = GeMetricValue(GpuActiveTimes, EMetric.GpuActiveAverage);
             var median = GeMetricValue(frameTimes, EMetric.Median);
             var p0dot1_quantile = GeMetricValue(frameTimes, EMetric.P0dot1);
             var p0dot2_quantile = GeMetricValue(frameTimes, EMetric.P0dot2);
             var p1_quantile = GeMetricValue(frameTimes, EMetric.P1);
-            var gpuActiveP1_quantile = GeMetricValue(gpuActiveframeTimes, EMetric.GpuActiveP1);
+            var gpuActiveP1_quantile = GeMetricValue(GpuActiveTimes, EMetric.GpuActiveP1);
             var p5_quantile = GeMetricValue(frameTimes, EMetric.P5);
             var p1_averageLowAverage = GeMetricValue(frameTimes, EMetric.OnePercentLowAverage);
-            var GpuActiveP1_averageLowAverage = GeMetricValue(gpuActiveframeTimes, EMetric.GpuActiveOnePercentLowAverage);
+            var GpuActiveP1_averageLowAverage = GeMetricValue(GpuActiveTimes, EMetric.GpuActiveOnePercentLowAverage);
             var p0dot1_averageLowAverage = GeMetricValue(frameTimes, EMetric.ZerodotOnePercentLowAverage);
             var p1_averageLowIntegral = GeMetricValue(frameTimes, EMetric.OnePercentLowIntegral);
             var p0dot1_averageLowIntegral = GeMetricValue(frameTimes, EMetric.ZerodotOnePercentLowIntegral);
