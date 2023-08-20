@@ -27,7 +27,7 @@ namespace CapFrameX.Statistics.NetStandard
             double timeAcc = 0;
             for (int i = 0; i < length; i++)
             {
-                intervalSumX += sequence[i].X;
+                intervalSumX = sequence[i].X - timeAcc;
                 intervalSumY += sequence[i].Y;
                 intervalCount++;
 
