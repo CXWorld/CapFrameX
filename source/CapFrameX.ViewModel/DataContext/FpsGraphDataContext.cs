@@ -8,7 +8,6 @@ using System.Windows.Input;
 using System.Globalization;
 using CapFrameX.Data;
 using System.Windows.Threading;
-using CapFrameX.Statistics.NetStandard;
 using System.Windows.Forms;
 using CapFrameX.Statistics.PlotBuilder;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
@@ -20,16 +19,16 @@ namespace CapFrameX.ViewModel.DataContext
 {
     public class FpsGraphDataContext : GraphDataContextBase
     {
-        private bool _showGpuActiveCharts;
+        private bool _showGpuActiveCommands;
 
         public PlotModel FpsModel => PlotModel;
 
-        public bool ShowGpuActiveCharts
+        public bool ShowGpuActiveCommands
         {
-            get { return _showGpuActiveCharts; }
+            get { return _showGpuActiveCommands; }
             set
             {
-                _showGpuActiveCharts = value;
+                _showGpuActiveCommands = value;
                 RaisePropertyChanged();
             }
         }
@@ -84,7 +83,7 @@ namespace CapFrameX.ViewModel.DataContext
                 PlotModel = plotModel;
             });
 
-            ShowGpuActiveCharts = plotSettings.ShowGpuActiveCharts;
+            ShowGpuActiveCommands = plotSettings.ShowGpuActiveCharts;
         }
 
         public void Reset()
