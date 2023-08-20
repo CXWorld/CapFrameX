@@ -20,22 +20,19 @@ namespace CapFrameX.ViewModel.DataContext
 {
     public class FpsGraphDataContext : GraphDataContextBase
     {
-
-        private bool _showGpuActiveCommands;
+        private bool _showGpuActiveCharts;
 
         public PlotModel FpsModel => PlotModel;
 
-        public bool ShowGpuActiveCommands
+        public bool ShowGpuActiveCharts
         {
-            get { return _showGpuActiveCommands; }
+            get { return _showGpuActiveCharts; }
             set
             {
-                _showGpuActiveCommands = value;
+                _showGpuActiveCharts = value;
                 RaisePropertyChanged();
             }
-
         }
-
 
         public ICommand CopyFpsValuesCommand { get; }
         public ICommand CopyFpsPointsCommand { get; }
@@ -87,7 +84,7 @@ namespace CapFrameX.ViewModel.DataContext
                 PlotModel = plotModel;
             });
 
-            ShowGpuActiveCommands = plotSettings.ShowGpuActiveCharts;
+            ShowGpuActiveCharts = plotSettings.ShowGpuActiveCharts;
         }
 
         public void Reset()

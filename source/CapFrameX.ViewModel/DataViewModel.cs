@@ -87,7 +87,7 @@ namespace CapFrameX.ViewModel
         private bool _isGpuPowerLimitAvailable;
         private bool _isGpuActiveChartAvailable;
         private bool _showGpuActiveChart;
-        private EFilterMode _selectedFilterMode;
+        private EFilterMode _selectedFilterMode = EFilterMode.None;
         private ELShapeMetrics _lShapeMetric = ELShapeMetrics.Frametimes;
         private string _lShapeYaxisLabel = "Frametimes (ms)" + Environment.NewLine + " ";
 

@@ -435,17 +435,18 @@ namespace CapFrameX.Statistics.NetStandard
             EFilterMode filterMode = EFilterMode.None)
         {
             IList<Point> fpsPoints = null;
-            var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime, options, eRemoveOutlierMethod);
-            var intervalFrametimePoints = session.GetFrametimePointsTimeWindow(0, endTime, options, eRemoveOutlierMethod);
+
             switch (filterMode)
             {
                 case EFilterMode.TimeIntervalAverage:
+                    var intervalFrametimePoints = session.GetFrametimePointsTimeWindow(0, endTime, options, eRemoveOutlierMethod);
                     var timeIntervalAverageFilter = new IntervalTimeAverageFilter(options.IntervalAverageWindowTime);
                     var timeIntervalAveragePoints = timeIntervalAverageFilter
-                        .ProcessSamples(intervalFrametimePoints.Select(pnt => pnt.Y).ToList(), intervalFrametimePoints.Select(pnt => pnt.Y).ToList(), startTime * 1000, endTime * 1000, session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last() * 1000);
-                    fpsPoints = timeIntervalAveragePoints.Select(pnt => new Point(pnt.X / 1000, 1000 / pnt.Y)).ToList();
+                        .ProcessSamples(intervalFrametimePoints, startTime, endTime, session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last());
+                    fpsPoints = timeIntervalAveragePoints.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
                     break;
                 default:
+                    var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime, options, eRemoveOutlierMethod);
                     fpsPoints = frametimePoints.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
                     break;
             }
@@ -458,19 +459,19 @@ namespace CapFrameX.Statistics.NetStandard
 			EFilterMode filterMode = EFilterMode.None)
 		{
 			IList<Point> fpsPoints = null;
-			var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime, options, eRemoveOutlierMethod);
-			var intervalFrametimePoints = session.GetFrametimePointsTimeWindow(0, endTime, options, eRemoveOutlierMethod);
-			var intervalGpuActiveTimePoints = session.GetGpuActiveTimePointsTimeWindow(0, endTime, options, eRemoveOutlierMethod);
+
 			switch (filterMode)
 			{
 				case EFilterMode.TimeIntervalAverage:
-					var timeIntervalAverageFilter = new IntervalTimeAverageFilter(options.IntervalAverageWindowTime);
+                    var intervalGpuActiveTimePoints = session.GetGpuActiveTimePointsTimeWindow(0, endTime, options, eRemoveOutlierMethod);
+                    var timeIntervalAverageFilter = new IntervalTimeAverageFilter(options.IntervalAverageWindowTime);
 					var timeIntervalAveragePoints = timeIntervalAverageFilter
-						.ProcessSamples(intervalFrametimePoints.Select(pnt => pnt.Y).ToList(), intervalGpuActiveTimePoints.Select(pnt => pnt.Y).ToList(), startTime * 1000, endTime * 1000, session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last() * 1000, true);
-					fpsPoints = timeIntervalAveragePoints.Select(pnt => new Point(pnt.X / 1000, 1000 / pnt.Y)).ToList();
+						.ProcessSamples(intervalGpuActiveTimePoints, startTime, endTime, session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last());
+					fpsPoints = timeIntervalAveragePoints.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
 					break;
 				default:
-					fpsPoints = intervalGpuActiveTimePoints.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
+                    var gpuActiveTimePoints = session.GetGpuActiveTimePointsTimeWindow(startTime, endTime, options, eRemoveOutlierMethod);
+                    fpsPoints = gpuActiveTimePoints.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
 					break;
 			}
 

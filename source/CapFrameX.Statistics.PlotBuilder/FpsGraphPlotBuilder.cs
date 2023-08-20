@@ -36,9 +36,12 @@ namespace CapFrameX.Statistics.PlotBuilder
             {
                 var avgFpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, EFilterMode.TimeIntervalAverage);
 
+                if (plotSettings.ShowGpuActiveCharts)
+                    gpuActiveFpsPoints = session.GetGpuActiveFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode);
+
                 SetRawFPS(plotModel, rawFpsPoints);
                 SetLoadCharts(plotModel, plotSettings, session);
-                SetFpsChart(plotModel, avgFpsPoints, rawFpsPoints, gpuActiveFpsPoints,  average, 3, OxyColor.FromRgb(241, 125, 32), filterMode, plotSettings);
+                SetFpsChart(plotModel, avgFpsPoints, rawFpsPoints, gpuActiveFpsPoints, average, 3, OxyColor.FromRgb(241, 125, 32), filterMode, plotSettings);
 
                 yMin = rawFpsPoints.Min(pnt => pnt.Y);
                 yMax = rawFpsPoints.Max(pnt => pnt.Y);
@@ -46,13 +49,12 @@ namespace CapFrameX.Statistics.PlotBuilder
             else
             {
                 var fpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode);
-                
 
                 if (plotSettings.ShowGpuActiveCharts)
                     gpuActiveFpsPoints = session.GetGpuActiveFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode);
 
                 if (filterMode == EFilterMode.TimeIntervalAverage)
-                SetLoadCharts(plotModel, plotSettings, session);
+                    SetLoadCharts(plotModel, plotSettings, session);
 
                 SetFpsChart(plotModel, fpsPoints, rawFpsPoints, gpuActiveFpsPoints, average, filterMode is EFilterMode.None ? 1.5 : 3, Constants.FpsColor, filterMode, plotSettings);
 
@@ -148,7 +150,6 @@ namespace CapFrameX.Statistics.PlotBuilder
                 gpuActiveFpsSeries.Points.AddRange(gpuActiveFpsDataPoints);
                 plotModel.Series.Add(gpuActiveFpsSeries);
             }
-
 
             var averageDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, average));
 
