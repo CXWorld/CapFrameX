@@ -200,7 +200,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 Title = "GPU load",
                 StrokeThickness = 2.5,
                 LegendStrokeThickness = 4,
-                Color = OxyColor.FromArgb(175, 32, 141, 228),
+                Color = OxyColor.FromArgb(175, 156, 210, 0),
                 YAxisKey = EPlotAxis.YAXISPERCENTAGE.GetDescription()
             };
 
