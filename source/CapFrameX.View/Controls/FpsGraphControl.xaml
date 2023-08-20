@@ -43,8 +43,8 @@
 					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
 						<MenuItem Header="Copy fps values (f)" Command="{Binding CopyFpsValuesCommand}"/>
                         <MenuItem Header="Copy fps points (t, f(t))" Command="{Binding CopyFpsPointsCommand}"/>
-                        <MenuItem Header="Copy GPU-Busy fps values (f)" Command="{Binding CopyGpuActiveFpsValuesCommand}" Visibility="{Binding ShowGpuActiveCommands, Converter={StaticResource FalseToCollapsedConverter}}"/>
-                        <MenuItem Header="Copy GPU-Busy fps points (t, f(t))" Command="{Binding CopyGpuActiveFpsPointsCommand}" Visibility="{Binding ShowGpuActiveCommands, Converter={StaticResource FalseToCollapsedConverter}}" />
+                        <MenuItem Header="Copy fps + GPU-Busy fps values (f)" Command="{Binding CopyGpuActiveFpsValuesCommand}" Visibility="{Binding ShowGpuActiveCommands, Converter={StaticResource FalseToCollapsedConverter}}"/>
+                        <MenuItem Header="Copy fps + GPU-Busy fps points (t, f(t))" Command="{Binding CopyGpuActiveFpsPointsCommand}" Visibility="{Binding ShowGpuActiveCommands, Converter={StaticResource FalseToCollapsedConverter}}" />
                         <MenuItem Header="Save plot as SVG" Command="{Binding SavePlotAsSVG }"/>
                         <MenuItem Header="Save plot as PNG" Command="{Binding SavePlotAsPNG }"/>
 					</ContextMenu>

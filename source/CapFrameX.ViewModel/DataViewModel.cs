@@ -87,6 +87,7 @@ namespace CapFrameX.ViewModel
         private bool _isGpuPowerLimitAvailable;
         private bool _isGpuActiveChartAvailable;
         private bool _showGpuActiveChart;
+        private bool _useFrametimeStatisticParameters;
         private EFilterMode _selectedFilterMode = EFilterMode.None;
         private ELShapeMetrics _lShapeMetric = ELShapeMetrics.Frametimes;
         private string _lShapeYaxisLabel = "Frametimes (ms)" + Environment.NewLine + " ";
@@ -484,7 +485,13 @@ namespace CapFrameX.ViewModel
                 int steps;
                 double maxValueFracture = _barMaxValue / 3;
 
-                if (maxValueFracture <= 25)
+                if (maxValueFracture <= 10)
+                    steps = 3;
+                else if (maxValueFracture <= 15)
+                    steps = 5;
+                else if (maxValueFracture <= 20)
+                    steps = 10;
+                else if (maxValueFracture <= 25)
                     steps = 15;
                 else if (maxValueFracture <= 50)
                     steps = 25;
@@ -633,6 +640,17 @@ namespace CapFrameX.ViewModel
                 _showStutteringThresholds = value;
                 RaisePropertyChanged();
                 _onUpdateChart.OnNext(default);
+            }
+        }
+
+        public bool UseFrametimeStatisticParameters
+        {
+            get { return _useFrametimeStatisticParameters; }
+            set
+            {
+                _useFrametimeStatisticParameters = value;
+                RaisePropertyChanged();
+                UpdateMainCharts();
             }
         }
 
@@ -1182,8 +1200,8 @@ namespace CapFrameX.ViewModel
         private IList<double> GetFPSSubset()
             => _localRecordDataServer?.GetFpsTimeWindow();
 
-		private IList<double> GetGpuActiveTimesSubset()
-			=> _localRecordDataServer?.GetGpuActiveTimeTimeWindow();
+        private IList<double> GetGpuActiveTimesSubset()
+            => _localRecordDataServer?.GetGpuActiveTimeTimeWindow();
 
         private IList<double> GetGpuActiveFPSSubset()
             => _localRecordDataServer?.GetGpuActiveFpsTimeWindow();
@@ -1193,80 +1211,178 @@ namespace CapFrameX.ViewModel
             if (frametimes == null || !frametimes.Any())
                 return;
 
+            double GetFrametimeMetricValue(IList<double> sequence, EMetric metric) =>
+                _frametimeStatisticProvider.GetFrametimeMetricValue(sequence, metric);
+
             double GetMetricValue(IList<double> sequence, EMetric metric) =>
                 _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
 
-            var max = GetMetricValue(frametimes, EMetric.Max);
-            var p99_quantile = GetMetricValue(frametimes, EMetric.P99);
-            var p95_quantile = GetMetricValue(frametimes, EMetric.P95);
-            var median = GetMetricValue(frametimes, EMetric.Median);
-            var average = GetMetricValue(frametimes, EMetric.Average);
-            var gpuActiveAverage = !gpuActiveTimes.IsNullOrEmpty() ? GetMetricValue(gpuActiveTimes, EMetric.GpuActiveAverage) : double.NaN;
-            var p0dot1_quantile = GetMetricValue(frametimes, EMetric.P0dot1);
-            var p0dot2_quantile = GetMetricValue(frametimes, EMetric.P0dot2);
-            var p1_quantile = GetMetricValue(frametimes, EMetric.P1);
-            var gpuActiveP1_quantile = !gpuActiveTimes.IsNullOrEmpty() ? GetMetricValue(gpuActiveTimes, EMetric.GpuActiveP1) : double.NaN;
-            var p5_quantile = GetMetricValue(frametimes, EMetric.P5);
-            var p1_LowAverage = GetMetricValue(frametimes, EMetric.OnePercentLowAverage);
-            var gpuActiveP1_LowAverage = !gpuActiveTimes.IsNullOrEmpty() ? GetMetricValue(gpuActiveTimes, EMetric.GpuActiveOnePercentLowAverage): double.NaN;
-            var p0dot1_LowAverage = GetMetricValue(frametimes, EMetric.ZerodotOnePercentLowAverage);
-            var p1_LowIntegral = GetMetricValue(frametimes, EMetric.OnePercentLowIntegral);
-            var p0dot1_LowIntegral = GetMetricValue(frametimes, EMetric.ZerodotOnePercentLowIntegral);
-            var min = GetMetricValue(frametimes, EMetric.Min);
-            var adaptiveStandardDeviation = GetMetricValue(frametimes, EMetric.AdaptiveStd);
-            var cpuFpsPerWatt = _frametimeStatisticProvider
-                .GetPhysicalMetricValue(frametimes, EMetric.CpuFpsPerWatt,
-                SensorReport.GetAverageSensorValues(_session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuPower,
-                _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
-            var gpuFpsPerWatt = _frametimeStatisticProvider
-            .GetPhysicalMetricValue(frametimes, EMetric.GpuFpsPerWatt,
-            SensorReport.GetAverageSensorValues(_session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower,
-            _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength, _appConfiguration.UseTBPSim));
+            var max = double.NaN;
+            var p99_quantile = double.NaN;
+            var p95_quantile = double.NaN;
+            var median = double.NaN;
+            var average = double.NaN;
+            var gpuActiveAverage = double.NaN;
+            var p0dot1_quantile = double.NaN;
+            var p0dot2_quantile = double.NaN;
+            var p1_quantile = double.NaN;
+            var gpuActiveP1_quantile = double.NaN;
+            var p5_quantile = double.NaN;
+            var p1_LowAverage = double.NaN;
+            var gpuActiveP1_LowAverage = double.NaN;
+            var p0dot1_LowAverage = double.NaN;
+            var p1_LowIntegral = double.NaN;
+            var p0dot1_LowIntegral = double.NaN;
+            var min = double.NaN;
+            var adaptiveStandardDeviation = double.NaN;
+            var cpuFpsPerWatt = double.NaN;
+            var gpuFpsPerWatt = double.NaN;
+
+            if (_useFrametimeStatisticParameters)
+            {
+                max = GetFrametimeMetricValue(frametimes, EMetric.Max);
+                p99_quantile = GetFrametimeMetricValue(frametimes, EMetric.P99);
+                p95_quantile = GetFrametimeMetricValue(frametimes, EMetric.P95);
+                median = GetFrametimeMetricValue(frametimes, EMetric.Median);
+                average = GetFrametimeMetricValue(frametimes, EMetric.Average);
+                gpuActiveAverage = !gpuActiveTimes.IsNullOrEmpty() ? GetFrametimeMetricValue(gpuActiveTimes, EMetric.GpuActiveAverage) : double.NaN;
+                p0dot1_quantile = GetFrametimeMetricValue(frametimes, EMetric.P0dot1);
+                p0dot2_quantile = GetFrametimeMetricValue(frametimes, EMetric.P0dot2);
+                p1_quantile = GetFrametimeMetricValue(frametimes, EMetric.P1);
+                gpuActiveP1_quantile = !gpuActiveTimes.IsNullOrEmpty() ? GetFrametimeMetricValue(gpuActiveTimes, EMetric.GpuActiveP1) : double.NaN;
+                p5_quantile = GetFrametimeMetricValue(frametimes, EMetric.P5);
+                p1_LowAverage = GetFrametimeMetricValue(frametimes, EMetric.OnePercentLowAverage);
+                gpuActiveP1_LowAverage = !gpuActiveTimes.IsNullOrEmpty() ? GetFrametimeMetricValue(gpuActiveTimes, EMetric.GpuActiveOnePercentLowAverage) : double.NaN;
+                p0dot1_LowAverage = GetFrametimeMetricValue(frametimes, EMetric.ZerodotOnePercentLowAverage);
+                p1_LowIntegral = GetFrametimeMetricValue(frametimes, EMetric.OnePercentLowIntegral);
+                p0dot1_LowIntegral = GetFrametimeMetricValue(frametimes, EMetric.ZerodotOnePercentLowIntegral);
+                min = GetFrametimeMetricValue(frametimes, EMetric.Min);
+                adaptiveStandardDeviation = GetFrametimeMetricValue(frametimes, EMetric.AdaptiveStd);
+            }
+            else
+            {
+                max = GetMetricValue(frametimes, EMetric.Max);
+                p99_quantile = GetMetricValue(frametimes, EMetric.P99);
+                p95_quantile = GetMetricValue(frametimes, EMetric.P95);
+                median = GetMetricValue(frametimes, EMetric.Median);
+                average = GetMetricValue(frametimes, EMetric.Average);
+                gpuActiveAverage = !gpuActiveTimes.IsNullOrEmpty() ? GetMetricValue(gpuActiveTimes, EMetric.GpuActiveAverage) : double.NaN;
+                p0dot1_quantile = GetMetricValue(frametimes, EMetric.P0dot1);
+                p0dot2_quantile = GetMetricValue(frametimes, EMetric.P0dot2);
+                p1_quantile = GetMetricValue(frametimes, EMetric.P1);
+                gpuActiveP1_quantile = !gpuActiveTimes.IsNullOrEmpty() ? GetMetricValue(gpuActiveTimes, EMetric.GpuActiveP1) : double.NaN;
+                p5_quantile = GetMetricValue(frametimes, EMetric.P5);
+                p1_LowAverage = GetMetricValue(frametimes, EMetric.OnePercentLowAverage);
+                gpuActiveP1_LowAverage = !gpuActiveTimes.IsNullOrEmpty() ? GetMetricValue(gpuActiveTimes, EMetric.GpuActiveOnePercentLowAverage) : double.NaN;
+                p0dot1_LowAverage = GetMetricValue(frametimes, EMetric.ZerodotOnePercentLowAverage);
+                p1_LowIntegral = GetMetricValue(frametimes, EMetric.OnePercentLowIntegral);
+                p0dot1_LowIntegral = GetMetricValue(frametimes, EMetric.ZerodotOnePercentLowIntegral);
+                min = GetMetricValue(frametimes, EMetric.Min);
+                adaptiveStandardDeviation = GetMetricValue(frametimes, EMetric.AdaptiveStd);
+                cpuFpsPerWatt = _frametimeStatisticProvider
+                    .GetPhysicalMetricValue(frametimes, EMetric.CpuFpsPerWatt,
+                    SensorReport.GetAverageSensorValues(_session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuPower,
+                    _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
+                gpuFpsPerWatt = _frametimeStatisticProvider
+                .GetPhysicalMetricValue(frametimes, EMetric.GpuFpsPerWatt,
+                SensorReport.GetAverageSensorValues(_session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower,
+                _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength, _appConfiguration.UseTBPSim));
+            }
+
+
+
 
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
-                IChartValues values = new ChartValues<double>();
+            IChartValues values = new ChartValues<double>();
+            if (UseFrametimeStatisticParameters)
+            {
+                    if (_appConfiguration.UseSingleRecordGpuFpsPerWattParameter && !double.IsNaN(gpuFpsPerWatt))
+                        values.Add(gpuFpsPerWatt);
+                    if (_appConfiguration.UseSingleRecordCpuFpsPerWattParameter && !double.IsNaN(cpuFpsPerWatt))
+                        values.Add(cpuFpsPerWatt);
+                    if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
+                        values.Add(adaptiveStandardDeviation);
+                    if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
+                        values.Add(max);
+                    if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
+                        values.Add(p0dot1_LowIntegral);
+                    if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_LowAverage))
+                        values.Add(p0dot1_LowAverage);
+                    if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
+                        values.Add(p0dot1_quantile);
+                    if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
+                        values.Add(p0dot2_quantile);
+                    if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
+                        values.Add(p1_LowIntegral);
+                    if (_appConfiguration.UseSingleRecordGpuActiveP1LowAverageStatisticParameter && !double.IsNaN(gpuActiveP1_LowAverage))
+                        values.Add(gpuActiveP1_LowAverage);
+                    if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
+                        values.Add(p1_LowAverage);
+                    if (_appConfiguration.UseSingleRecordGpuActiveP1QuantileStatisticParameter && !double.IsNaN(gpuActiveP1_quantile))
+                        values.Add(gpuActiveP1_quantile);
+                    if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
+                        values.Add(p1_quantile);
+                    if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
+                        values.Add(p5_quantile);
+                    if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
+                        values.Add(median);
+                    if (_appConfiguration.UseSingleRecordGpuActiveAverageStatisticParameter && !double.IsNaN(gpuActiveAverage))
+                        values.Add(gpuActiveAverage);
+                    if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
+                        values.Add(average);
+                    if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
+                        values.Add(p95_quantile);
+                    if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
+                        values.Add(p99_quantile);
+                    if (_appConfiguration.UseSingleRecordMinStatisticParameter)
+                        values.Add(min);
+                }
 
-                if (_appConfiguration.UseSingleRecordGpuFpsPerWattParameter)
-                    values.Add(gpuFpsPerWatt);
-                if (_appConfiguration.UseSingleRecordCpuFpsPerWattParameter)
-                    values.Add(cpuFpsPerWatt);
-                if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
-                    values.Add(adaptiveStandardDeviation);
-                if (_appConfiguration.UseSingleRecordMinStatisticParameter)
-                    values.Add(min);
-                if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
-                    values.Add(p0dot1_LowIntegral);
-                if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_LowAverage))
-                    values.Add(p0dot1_LowAverage);
-                if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
-                    values.Add(p0dot1_quantile);
-                if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
-                    values.Add(p0dot2_quantile);
-                if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
-                    values.Add(p1_LowIntegral);
-                if (_appConfiguration.UseSingleRecordGpuActiveP1LowAverageStatisticParameter && !double.IsNaN(gpuActiveP1_LowAverage))
-                    values.Add(gpuActiveP1_LowAverage);
-                if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
-                    values.Add(p1_LowAverage);
-                if (_appConfiguration.UseSingleRecordGpuActiveP1QuantileStatisticParameter && !double.IsNaN(gpuActiveP1_quantile))
-                    values.Add(gpuActiveP1_quantile);
-                if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
-                    values.Add(p1_quantile);
-                if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
-                    values.Add(p5_quantile);
-                if (_appConfiguration.UseSingleRecordGpuActiveAverageStatisticParameter && !double.IsNaN(gpuActiveAverage))
-                    values.Add(gpuActiveAverage);
-                if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
-                    values.Add(average);
-                if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
-                    values.Add(median);
-                if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
-                    values.Add(p95_quantile);
-                if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
-                    values.Add(p99_quantile);
-                if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
-                    values.Add(max);
+                else
+                {
+                    if (_appConfiguration.UseSingleRecordGpuFpsPerWattParameter && !double.IsNaN(gpuFpsPerWatt))
+                        values.Add(gpuFpsPerWatt);
+                    if (_appConfiguration.UseSingleRecordCpuFpsPerWattParameter && !double.IsNaN(cpuFpsPerWatt))
+                        values.Add(cpuFpsPerWatt);
+                    if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
+                        values.Add(adaptiveStandardDeviation);
+                    if (_appConfiguration.UseSingleRecordMinStatisticParameter)
+                        values.Add(min);
+                    if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
+                        values.Add(p0dot1_LowIntegral);
+                    if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_LowAverage))
+                        values.Add(p0dot1_LowAverage);
+                    if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
+                        values.Add(p0dot1_quantile);
+                    if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
+                        values.Add(p0dot2_quantile);
+                    if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
+                        values.Add(p1_LowIntegral);
+                    if (_appConfiguration.UseSingleRecordGpuActiveP1LowAverageStatisticParameter && !double.IsNaN(gpuActiveP1_LowAverage))
+                        values.Add(gpuActiveP1_LowAverage);
+                    if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
+                        values.Add(p1_LowAverage);
+                    if (_appConfiguration.UseSingleRecordGpuActiveP1QuantileStatisticParameter && !double.IsNaN(gpuActiveP1_quantile))
+                        values.Add(gpuActiveP1_quantile);
+                    if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
+                        values.Add(p1_quantile);
+                    if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
+                        values.Add(p5_quantile);
+                    if (_appConfiguration.UseSingleRecordGpuActiveAverageStatisticParameter && !double.IsNaN(gpuActiveAverage))
+                        values.Add(gpuActiveAverage);
+                    if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
+                        values.Add(average);
+                    if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
+                        values.Add(median);
+                    if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
+                        values.Add(p95_quantile);
+                    if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
+                        values.Add(p99_quantile);
+                    if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
+                        values.Add(max);
+                }
+
 
                 StatisticCollection = new SeriesCollection
                 {
@@ -1288,47 +1404,92 @@ namespace CapFrameX.ViewModel
                 var parameterLabelList = new List<string>();
 
                 //{ "Adaptive STDEV", "Min", "0.1% Low Integral", "0.1% Low Average", "0.1%", "0.2%", "1% Low Integral", "1% Low Average", "1%", "5%", "Average", "95%", "99%", "Max" }
-
-                if (_appConfiguration.UseSingleRecordGpuFpsPerWattParameter)
-                    parameterLabelList.Add("GPU FPS/10W");
-                if (_appConfiguration.UseSingleRecordCpuFpsPerWattParameter)
-                    parameterLabelList.Add("CPU FPS/10W");
-                if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
-                    parameterLabelList.Add("Adaptive STDEV");
-                if (_appConfiguration.UseSingleRecordMinStatisticParameter)
-                    parameterLabelList.Add("Min");
-                if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
-                    parameterLabelList.Add("0.1% Low Integral");
-                if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_LowAverage))
-                    parameterLabelList.Add("0.1% Low Average");
-                if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
-                    parameterLabelList.Add("P0.1");
-                if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
-                    parameterLabelList.Add("P0.2");
-                if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
-                    parameterLabelList.Add("1% Low Integral");
-                if (_appConfiguration.UseSingleRecordGpuActiveP1LowAverageStatisticParameter && !double.IsNaN(gpuActiveP1_LowAverage))
-                    parameterLabelList.Add("Gpu-Busy 1% Low Avg.");
-                if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
-                    parameterLabelList.Add("1% Low Average");
-                if (_appConfiguration.UseSingleRecordGpuActiveP1QuantileStatisticParameter && !double.IsNaN(gpuActiveP1_quantile))
-                    parameterLabelList.Add("GPU-Busy P1");
-                if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
-                    parameterLabelList.Add("P1");
-                if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
-                    parameterLabelList.Add("P5");
-                if (_appConfiguration.UseSingleRecordGpuActiveAverageStatisticParameter && !double.IsNaN(gpuActiveAverage))
-                    parameterLabelList.Add("GPU-Busy Average");
-                if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
-                    parameterLabelList.Add("Average");
-                if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
-                    parameterLabelList.Add("Median");
-                if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
-                    parameterLabelList.Add("P95");
-                if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
-                    parameterLabelList.Add("P99");
-                if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
-                    parameterLabelList.Add("Max");
+                if (UseFrametimeStatisticParameters)
+                {
+                    if (_appConfiguration.UseSingleRecordGpuFpsPerWattParameter && !double.IsNaN(gpuFpsPerWatt))
+                        parameterLabelList.Add("GPU FPS/10W");
+                    if (_appConfiguration.UseSingleRecordCpuFpsPerWattParameter && !double.IsNaN(cpuFpsPerWatt))
+                        parameterLabelList.Add("CPU FPS/10W");
+                    if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
+                        parameterLabelList.Add("Adaptive STDEV");
+                    if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
+                        parameterLabelList.Add("Max");
+                    if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
+                        parameterLabelList.Add("0.1% High Integral");
+                    if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_LowAverage))
+                        parameterLabelList.Add("0.1% High Average");
+                    if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
+                        parameterLabelList.Add("P99.9");
+                    if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
+                        parameterLabelList.Add("P99.8");
+                    if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
+                        parameterLabelList.Add("1% High Integral");
+                    if (_appConfiguration.UseSingleRecordGpuActiveP1LowAverageStatisticParameter && !double.IsNaN(gpuActiveP1_LowAverage))
+                        parameterLabelList.Add("Gpu-Busy 1% High Avg.");
+                    if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
+                        parameterLabelList.Add("1% High Average");
+                    if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
+                        parameterLabelList.Add("P99");
+                    if (_appConfiguration.UseSingleRecordGpuActiveP1QuantileStatisticParameter && !double.IsNaN(gpuActiveP1_quantile))
+                        parameterLabelList.Add("GPU-Busy P99");
+                    if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
+                        parameterLabelList.Add("P95");
+                    if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
+                        parameterLabelList.Add("Median");
+                    if (_appConfiguration.UseSingleRecordGpuActiveAverageStatisticParameter && !double.IsNaN(gpuActiveAverage))
+                        parameterLabelList.Add("GPU-Busy Average");
+                    if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
+                        parameterLabelList.Add("Average");
+                    if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
+                        parameterLabelList.Add("P5");
+                    if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
+                        parameterLabelList.Add("P1");
+                    if (_appConfiguration.UseSingleRecordMinStatisticParameter)
+                        parameterLabelList.Add("Min");
+                }
+                else
+                {
+                    if (_appConfiguration.UseSingleRecordGpuFpsPerWattParameter)
+                        parameterLabelList.Add("GPU FPS/10W");
+                    if (_appConfiguration.UseSingleRecordCpuFpsPerWattParameter)
+                        parameterLabelList.Add("CPU FPS/10W");
+                    if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
+                        parameterLabelList.Add("Adaptive STDEV");
+                    if (_appConfiguration.UseSingleRecordMinStatisticParameter)
+                        parameterLabelList.Add("Min");
+                    if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
+                        parameterLabelList.Add("0.1% Low Integral");
+                    if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_LowAverage))
+                        parameterLabelList.Add("0.1% Low Average");
+                    if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
+                        parameterLabelList.Add("P0.1");
+                    if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
+                        parameterLabelList.Add("P0.2");
+                    if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
+                        parameterLabelList.Add("1% Low Integral");
+                    if (_appConfiguration.UseSingleRecordGpuActiveP1LowAverageStatisticParameter && !double.IsNaN(gpuActiveP1_LowAverage))
+                        parameterLabelList.Add("Gpu-Busy 1% Low Avg.");
+                    if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
+                        parameterLabelList.Add("1% Low Average");
+                    if (_appConfiguration.UseSingleRecordGpuActiveP1QuantileStatisticParameter && !double.IsNaN(gpuActiveP1_quantile))
+                        parameterLabelList.Add("GPU-Busy P1");
+                    if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
+                        parameterLabelList.Add("P1");
+                    if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
+                        parameterLabelList.Add("P5");
+                    if (_appConfiguration.UseSingleRecordGpuActiveAverageStatisticParameter && !double.IsNaN(gpuActiveAverage))
+                        parameterLabelList.Add("GPU-Busy Average");
+                    if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
+                        parameterLabelList.Add("Average");
+                    if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
+                        parameterLabelList.Add("Median");
+                    if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
+                        parameterLabelList.Add("P95");
+                    if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
+                        parameterLabelList.Add("P99");
+                    if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
+                        parameterLabelList.Add("Max");
+                }
 
                 ParameterLabels = parameterLabelList.ToArray();
             }));
@@ -1535,7 +1696,7 @@ namespace CapFrameX.ViewModel
                             var frametimeStatisticProvider = new FrametimeStatisticProvider(null);
                             var movingAverage = frametimeStatisticProvider.GetMovingAverage(frametimes.ToList());
 
-                            yMax = Math.Max(Math.Max(movingAverage.Max() * _appConfiguration.StutteringFactor, yMax), 1000 / _appConfiguration.StutteringThreshold);        
+                            yMax = Math.Max(Math.Max(movingAverage.Max() * _appConfiguration.StutteringFactor, yMax), 1000 / _appConfiguration.StutteringThreshold);
                         }
 
                         if (IsPcLatencyAvailable && ShowPcLatency)

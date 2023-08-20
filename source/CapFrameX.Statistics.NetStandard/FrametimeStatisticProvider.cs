@@ -260,6 +260,76 @@ namespace CapFrameX.Statistics.NetStandard
             return Math.Round(metricValue, _options.FpsValuesRoundingDigits);
         }
 
+        public double GetFrametimeMetricValue(IList<double> sequence, EMetric metric)
+        {
+
+            // Percentile metrics reversed EMetric.P99 for FPS turns into P1 for frametimes
+
+            double metricValue;
+            switch (metric)
+            {   
+                case EMetric.Max:
+                    metricValue = sequence.Max();
+                    break;
+                case EMetric.P99:
+                    metricValue = GetPQuantileSequence(sequence, 0.01);
+                    break;
+                case EMetric.P95:
+                    metricValue = GetPQuantileSequence(sequence, 0.05);
+                    break;
+                case EMetric.Average:
+                case EMetric.GpuActiveAverage:
+                    metricValue = sequence.Sum() / sequence.Count;
+                    break;
+                case EMetric.Median:
+                    metricValue = GetPQuantileSequence(sequence, 0.5);
+                    break;
+                case EMetric.P5:
+                    metricValue = GetPQuantileSequence(sequence, 0.95);
+                    break;
+                case EMetric.P1:
+                case EMetric.GpuActiveP1:
+                    metricValue = GetPQuantileSequence(sequence, 0.99);
+                    break;
+                case EMetric.P0dot2:
+                    metricValue = GetPQuantileSequence(sequence, 0.998);
+                    break;
+                case EMetric.P0dot1:
+                    metricValue = GetPQuantileSequence(sequence, 0.999);
+                    break;
+                case EMetric.OnePercentLowAverage:
+                case EMetric.GpuActiveOnePercentLowAverage:
+                    metricValue = GetPercentageHighAverageSequence(sequence, 1 - 0.01);
+                    break;
+                case EMetric.ZerodotTwoPercentLowAverage:
+                    metricValue = GetPercentageHighAverageSequence(sequence, 1 - 0.002);
+                    break;
+                case EMetric.ZerodotOnePercentLowAverage:
+                    metricValue =  GetPercentageHighAverageSequence(sequence, 1 - 0.001);
+                    break;
+                case EMetric.OnePercentLowIntegral:
+                    metricValue = GetPercentageHighIntegralSequence(sequence, 1 - 0.01);
+                    break;
+                case EMetric.ZerodotTwoPercentLowIntegral:
+                    metricValue = GetPercentageHighIntegralSequence(sequence, 1 - 0.002);
+                    break;
+                case EMetric.ZerodotOnePercentLowIntegral:
+                    metricValue = GetPercentageHighIntegralSequence(sequence, 1 - 0.001);
+                    break;
+                case EMetric.Min:
+                    metricValue = sequence.Min();
+                    break;
+                case EMetric.AdaptiveStd:
+                    metricValue = GetAdaptiveStandardDeviation(sequence, _options.IntervalAverageWindowTime);
+                    break;
+                default:
+                    metricValue = double.NaN;
+                    break;
+            }
+
+            return Math.Round(metricValue, _options.FpsValuesRoundingDigits);
+        }
+
         public double GetPhysicalMetricValue(IList<double> sequence, EMetric metric, double coefficient)
         {
             double metricValue;

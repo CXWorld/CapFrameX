@@ -123,12 +123,14 @@ namespace CapFrameX.ViewModel.DataContext
             if (RecordSession == null)
                 return;
 
-            var fps = RecordDataServer.GetGpuActiveFpsTimeWindow();
+            var fps = RecordDataServer.GetFpsTimeWindow();
+            var gpuActiveFps = RecordDataServer.GetGpuActiveFpsTimeWindow();
             StringBuilder builder = new StringBuilder();
 
-            foreach (var framerate in fps)
+            for (int i = 0; i < fps.Count; i++)
             {
-                builder.Append(Math.Round(framerate, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                builder.Append(Math.Round(fps[i], 2).ToString(CultureInfo.InvariantCulture) + "\t" +
+                    Math.Round(gpuActiveFps[i], 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);
@@ -156,13 +158,15 @@ namespace CapFrameX.ViewModel.DataContext
             if (RecordSession == null)
                 return;
 
-            var fpsPoints = RecordDataServer.GetGpuActiveFpsPointTimeWindow();
+            var fpsPoints = RecordDataServer.GetFpsPointTimeWindow();
+            var gpuActiveFpsPoints = RecordDataServer.GetGpuActiveFpsPointTimeWindow();
             StringBuilder builder = new StringBuilder();
 
             for (int i = 0; i < fpsPoints.Count; i++)
             {
                 builder.Append(Math.Round(fpsPoints[i].X, 2).ToString(CultureInfo.InvariantCulture) + "\t" +
-                    Math.Round(fpsPoints[i].Y, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                    Math.Round(fpsPoints[i].Y, 2).ToString(CultureInfo.InvariantCulture) + "\t"+
+                    Math.Round(gpuActiveFpsPoints[i].Y, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);
