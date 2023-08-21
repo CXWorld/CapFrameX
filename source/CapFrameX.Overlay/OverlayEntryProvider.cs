@@ -35,7 +35,7 @@ namespace CapFrameX.Overlay
 		private static readonly HashSet<string> ONLINE_METRIC_NAMES = new HashSet<string>()
 		{
 			"OnlineAverage", "OnlineP1", "OnlineP0dot2", "Online1PercentLow", "Online0dot2PercentLow",
-			"OnlineGpuActiveAverage", "OnlineGpuActiveP1", "OnlineGpuActive1PercentLow",
+            "OnlineGpuActiveTimeAverage", "OnlineFrameTimeAverage", "OnlineGpuActiveTimePercentageDeviation",
 			"OnlineApplicationLatency", "OnlineStutteringPercentage", "PmdGpuPowerCurrent", "PmdCpuPowerCurrent",
 			"PmdSystemPowerCurrent"
 		};
@@ -619,28 +619,28 @@ namespace CapFrameX.Overlay
 				zeroDotTwoPercentLowEntry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.ZerodotTwoPercentLowAverage));
 			}
 
-			// GPU Active Average
-			_identifierOverlayEntryDict.TryGetValue("OnlineGpuActiveAverage", out IOverlayEntry gpuActiveAverage);
+            // GPU Active Time Average
+            _identifierOverlayEntryDict.TryGetValue("OnlineGpuActiveTimeAverage", out IOverlayEntry gpuActiveTimeAverage);
 
-			if (gpuActiveAverage != null && gpuActiveAverage.ShowOnOverlay)
+			if (gpuActiveTimeAverage != null && gpuActiveTimeAverage.ShowOnOverlay)
 			{
-				gpuActiveAverage.Value = Math.Round(_onlineMetricService.GetOnlineGpuActiveFpsMetricValue(EMetric.GpuActiveAverage));
+                gpuActiveTimeAverage.Value = Math.Round(_onlineMetricService.GetOnlineGpuActiveTimeMetricValue(EMetric.GpuActiveAverage), 1);
 			}
 
-			// GPU Active P1
-			_identifierOverlayEntryDict.TryGetValue("OnlineGpuActiveP1", out IOverlayEntry gpuActiveP1);
+            // Frame Time Average
+            _identifierOverlayEntryDict.TryGetValue("OnlineFrameTimeAverage", out IOverlayEntry frameTimeAverage);
 
-			if (gpuActiveP1 != null && gpuActiveP1.ShowOnOverlay)
+			if (frameTimeAverage != null && frameTimeAverage.ShowOnOverlay)
 			{
-				gpuActiveP1.Value = Math.Round(_onlineMetricService.GetOnlineGpuActiveFpsMetricValue(EMetric.GpuActiveP1));
+                frameTimeAverage.Value = Math.Round(_onlineMetricService.GetOnlineFrameTimeMetricValue(EMetric.Average), 1);
 			}
 
-			// GPU Active 1% Low
-			_identifierOverlayEntryDict.TryGetValue("OnlineGpuActive1PercentLow", out IOverlayEntry gpuActive1PercentLow);
+            // GPU Active Time Deviation
+            _identifierOverlayEntryDict.TryGetValue("OnlineGpuActiveTimePercentageDeviation", out IOverlayEntry gpuActiveTimeDeviation);
 
-			if (gpuActive1PercentLow != null && gpuActive1PercentLow.ShowOnOverlay)
+			if (gpuActiveTimeDeviation != null && gpuActiveTimeDeviation.ShowOnOverlay)
 			{
-				gpuActive1PercentLow.Value = Math.Round(_onlineMetricService.GetOnlineGpuActiveFpsMetricValue(EMetric.GpuActiveOnePercentLowAverage));
+                gpuActiveTimeDeviation.Value = Math.Round(_onlineMetricService.GetOnlineGpuActiveTimeDeviationMetricValue(), 1);
 			}
 
 			// application latency
@@ -795,31 +795,31 @@ namespace CapFrameX.Overlay
 				zeroDotTwoPercentLowEntry.ValueAlignmentAndDigits = "{0,5:F0}";
 			}
 
-			// GPU Active Average
-			_identifierOverlayEntryDict.TryGetValue("OnlineGpuActiveAverage", out IOverlayEntry gpuActiveAverage);
+			// GPU Active Time Average
+			_identifierOverlayEntryDict.TryGetValue("OnlineGpuActiveTimeAverage", out IOverlayEntry gpuActiveTimeAverage);
 
-			if (gpuActiveAverage != null)
+			if (gpuActiveTimeAverage != null)
 			{
-				gpuActiveAverage.ValueUnitFormat = "FPS";
-				gpuActiveAverage.ValueAlignmentAndDigits = "{0,5:F0}";
+                gpuActiveTimeAverage.ValueUnitFormat = "ms";
+                gpuActiveTimeAverage.ValueAlignmentAndDigits = "{0,5:F1}";
 			}
 
-			// GPU Active P1
-			_identifierOverlayEntryDict.TryGetValue("OnlineGpuActiveP1", out IOverlayEntry gpuActiveP1);
+			// Frame Time Average
+			_identifierOverlayEntryDict.TryGetValue("OnlineFrameTimeAverage", out IOverlayEntry frameTimeAverage);
 
-			if (gpuActiveP1 != null)
+			if (frameTimeAverage != null)
 			{
-				gpuActiveP1.ValueUnitFormat = "FPS";
-				gpuActiveP1.ValueAlignmentAndDigits = "{0,5:F0}";
+                frameTimeAverage.ValueUnitFormat = "ms";
+                frameTimeAverage.ValueAlignmentAndDigits = "{0,5:F1}";
 			}
 
-			// GPU Active 1% Low
-			_identifierOverlayEntryDict.TryGetValue("OnlineGpuActive1PercentLow", out IOverlayEntry gpuActive1PercentLow);
+			// GPU Active Time Deviation
+			_identifierOverlayEntryDict.TryGetValue("OnlineGpuActiveTimePercentageDeviation", out IOverlayEntry gpuActiveTimeDeviation);
 
-			if (gpuActive1PercentLow != null)
+			if (gpuActiveTimeDeviation != null)
 			{
-				gpuActive1PercentLow.ValueUnitFormat = "FPS";
-				gpuActive1PercentLow.ValueAlignmentAndDigits = "{0,5:F0}";
+                gpuActiveTimeDeviation.ValueUnitFormat = "%";
+                gpuActiveTimeDeviation.ValueAlignmentAndDigits = "{0,5:F1}";
 			}
 
 			// render lag

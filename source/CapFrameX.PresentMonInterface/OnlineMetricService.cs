@@ -12,6 +12,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Windows.Media;
 
 namespace CapFrameX.PresentMonInterface
 {
@@ -134,9 +135,9 @@ namespace CapFrameX.PresentMonInterface
 					|| _overlayEntryCore.RealtimeMetricEntryDict["Online1PercentLow"].ShowOnOverlay
 					|| _overlayEntryCore.RealtimeMetricEntryDict["Online0dot2PercentLow"].ShowOnOverlay
 					|| _overlayEntryCore.RealtimeMetricEntryDict["OnlineStutteringPercentage"].ShowOnOverlay
-                    || _overlayEntryCore.RealtimeMetricEntryDict["OnlineGpuActiveAverage"].ShowOnOverlay
-                    || _overlayEntryCore.RealtimeMetricEntryDict["OnlineGpuActiveP1"].ShowOnOverlay
-                    || _overlayEntryCore.RealtimeMetricEntryDict["OnlineGpuActive1PercentLow"].ShowOnOverlay;
+                    || _overlayEntryCore.RealtimeMetricEntryDict["OnlineGpuActiveTimeAverage"].ShowOnOverlay
+                    || _overlayEntryCore.RealtimeMetricEntryDict["OnlineFrameTimeAverage"].ShowOnOverlay
+                    || _overlayEntryCore.RealtimeMetricEntryDict["OnlineGpuActiveTimePercentageDeviation"].ShowOnOverlay;
             }
             catch { return false; }
         }
@@ -387,16 +388,38 @@ namespace CapFrameX.PresentMonInterface
             }
         }
 
-		public double GetOnlineGpuActiveFpsMetricValue(EMetric metric)
+        public double GetOnlineFrameTimeMetricValue(EMetric metric)
+        {
+            lock (_lockRealtimeMetric)
+            {
+                return _frametimeStatisticProvider
+                    .GetFrametimeMetricValue(_frametimesRealtimeSeconds, metric);
+            }
+        }
+
+        public double GetOnlineGpuActiveTimeMetricValue(EMetric metric)
 		{
 			lock (_lockRealtimeMetric)
 			{
 				return _frametimeStatisticProvider
-					.GetFpsMetricValue(_gpuActiveTimesRealtimeSeconds, metric);
+					.GetFrametimeMetricValue(_gpuActiveTimesRealtimeSeconds, metric);
 			}
 		}
 
-		public double GetOnlineApplicationLatencyValue()
+        public double GetOnlineGpuActiveTimeDeviationMetricValue()
+        {
+            lock (_lockRealtimeMetric)
+            {
+                var frameTimeAverage = _frametimeStatisticProvider
+                    .GetFrametimeMetricValue(_frametimesRealtimeSeconds, EMetric.Average);
+                var gpuActiveTimeAverage = _frametimeStatisticProvider
+                    .GetFrametimeMetricValue(_gpuActiveTimesRealtimeSeconds, EMetric.GpuActiveAverage);
+
+                return Math.Round(Math.Abs(frameTimeAverage - gpuActiveTimeAverage)/ gpuActiveTimeAverage * 100);
+            }
+        }
+
+        public double GetOnlineApplicationLatencyValue()
         {
             lock (_lockApplicationLatency)
             {

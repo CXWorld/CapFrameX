@@ -281,13 +281,13 @@ namespace CapFrameX.Overlay
 						Color = string.Empty
 					},
 
-                    // GPU Active Average
-                    new OverlayEntryWrapper("OnlineGpuActiveAverage")
+                    // GPU Active Time Average
+                    new OverlayEntryWrapper("OnlineGpuActiveTimeAverage")
 					{
 						OverlayEntryType = EOverlayEntryType.OnlineMetric,
 						ShowOnOverlay = false,
 						ShowOnOverlayIsEnabled = true,
-						Description = "GPU Active Average FPS",
+						Description = "GPU Active Time Average (ms)",
 						GroupName = "GPUBusy Avg",
 						Value = "0",
 						ValueFormat = default,
@@ -296,14 +296,14 @@ namespace CapFrameX.Overlay
 						Color = string.Empty
 					},
 
-                    // GPU Active P1
-                    new OverlayEntryWrapper("OnlineGpuActiveP1")
+                    // Frame Time Average
+                    new OverlayEntryWrapper("OnlineFrameTimeAverage")
 					{
 						OverlayEntryType = EOverlayEntryType.OnlineMetric,
 						ShowOnOverlay = false,
 						ShowOnOverlayIsEnabled = true,
-						Description = "GPU Active P1 FPS",
-						GroupName = "GPUBusy P1%",
+						Description = "Frame Time Average (ms)",
+						GroupName = "Frametime Avg",
 						Value = "0",
 						ValueFormat = default,
 						ShowGraph = false,
@@ -311,14 +311,14 @@ namespace CapFrameX.Overlay
 						Color = string.Empty
 					},
 
-                    // GPU Active 1% Low
-                    new OverlayEntryWrapper("OnlineGpuActive1PercentLow")
+                    // GPU Active Time Deviation
+                    new OverlayEntryWrapper("OnlineGpuActiveTimePercentageDeviation")
 					{
 						OverlayEntryType = EOverlayEntryType.OnlineMetric,
 						ShowOnOverlay = false,
 						ShowOnOverlayIsEnabled = true,
-						Description = "GPU Active 1% Low FPS",
-						GroupName = "GPUBusy 1% Low",
+						Description = "GPU Active Time Deviation (%)",
+						GroupName = "GPUBusy Deviation",
 						Value = "0",
 						ValueFormat = default,
 						ShowGraph = false,
