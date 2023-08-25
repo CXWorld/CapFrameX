@@ -36,12 +36,8 @@ namespace CapFrameX.Data
 		public double FivePercentQuantileFps { get; set; }
 		[DisplayName("P1 FPS")]
 		public double OnePercentQuantileFps { get; set; }
-        [DisplayName("GPU Active P1 FPS")]
-        public double GpuActiveOnePercentQuantileFps { get; set; }
         [DisplayName("1% low average FPS")]
         public double OnePercentLowAverageFps { get; set; }
-        [DisplayName("GPU Active 1% low average FPS")]
-        public double GpuActiveOnePercentLowAverageFps { get; set; }
         [DisplayName("1% low integral FPS")]
         public double OnePercentLowIntegralFps { get; set; }
         [DisplayName("P0.2 FPS")]
@@ -62,7 +58,9 @@ namespace CapFrameX.Data
         public double GpuFpsPerWatt { get; set; }
 		[DisplayName("App latency (ms)")]
 		public double AppLatency { get; set; }
-		[DisplayName("CPU Max Thread Usage (%)")]
+        [DisplayName("GPU-Busy Time Dev. (%)")]
+        public double GpuActiveTimeDeviation { get; set; }       
+        [DisplayName("CPU Max Thread Usage (%)")]
 		public double CpuMaxUsage { get; set; }
 		[DisplayName("CPU Power (W)")]
 		public double CpuPower { get; set; }

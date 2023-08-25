@@ -115,6 +115,11 @@
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
                                     </Grid>
+                                    <StackPanel Margin="0 10 60 0" Orientation="Horizontal" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="{Binding ShowGpuActiveChart, Converter={StaticResource TrueToVisibleConverter}}">
+                                        <TextBlock Text="GPU-Busy Deviation: " FontSize="16"></TextBlock>
+                                        <TextBlock Text="{Binding GpuActiveDeviationPercentage}" FontSize="16"></TextBlock>
+                                        <TextBlock Text="%" FontSize="16"></TextBlock>
+                                    </StackPanel>
                                     <controls:FrametimeGraphControl DataContext="{Binding FrametimeGraphDataContext}" Background="{DynamicResource MaterialDesignBackground}"/>
                                 </Grid>
                             </TabItem>

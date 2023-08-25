@@ -654,6 +654,12 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public double GpuActiveDeviationPercentage
+        {
+            get { return ShowGpuActiveChart ? _localRecordDataServer.GetGpuActiveDeviationPercentage() : 0; }
+
+        }
+
         public DataViewModel(IStatisticProvider frametimeStatisticProvider,
                              IFrametimeAnalyzer frametimeAnalyzer,
                              IEventAggregator eventAggregator,
@@ -750,6 +756,7 @@ namespace CapFrameX.ViewModel
                         SetFrametimeChartYAxisSetting(tuple);
                     });
                 });
+                RaisePropertyChanged(nameof(GpuActiveDeviationPercentage));
             });
         }
 

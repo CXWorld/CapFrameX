@@ -320,7 +320,9 @@ namespace CapFrameX.Contracts.Configuration
 
         bool ReportShowAppLatency { get; set; }
 
-		bool ReportShowCpuMaxUsage { get; set; }
+        bool ReportShowGpuActiveTimeDeviation { get; set; }
+
+        bool ReportShowCpuMaxUsage { get; set; }
 
 		bool ReportShowCpuPower { get; set; }
 

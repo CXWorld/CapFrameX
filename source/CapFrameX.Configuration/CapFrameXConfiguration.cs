@@ -857,6 +857,7 @@ namespace CapFrameX.Configuration
         public bool ReportShowCpuFpsPerWatt { get; set; } = true;
         public bool ReportShowGpuFpsPerWatt { get; set; } = true;
         public bool ReportShowAppLatency { get; set; } = false;
+        public bool ReportShowGpuActiveTimeDeviation { get; set; } = false;
         public bool ReportShowCpuMaxUsage { get; set; } = false;
         public bool ReportShowCpuPower { get; set; } = false;
         public bool ReportShowCpuMaxClock { get; set; } = false;

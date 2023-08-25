@@ -503,5 +503,14 @@ namespace CapFrameX.Statistics.NetStandard
                     return "Unknown";
             }
         }
+
+        public static double GetGpuActiveDeviationPercentage(this ISession session, double startTime, double endTime,
+            IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
+        {
+            var frametimes = GetFrametimeTimeWindow(session, startTime, endTime, options);
+            var gpuActiveTimes = GetGpuActiveTimeTimeWindow(session, startTime, endTime, options);
+
+            return gpuActiveTimes.Any() ? -100 + (Math.Round(gpuActiveTimes.Average() / frametimes.Average(), 2) * 100) : 0;
+        }
     }
 }
