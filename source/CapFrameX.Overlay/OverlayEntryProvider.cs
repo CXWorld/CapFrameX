@@ -640,7 +640,7 @@ namespace CapFrameX.Overlay
 
 			if (gpuActiveTimeDeviation != null && gpuActiveTimeDeviation.ShowOnOverlay)
 			{
-                gpuActiveTimeDeviation.Value = Math.Round(_onlineMetricService.GetOnlineGpuActiveTimeDeviationMetricValue(), 1);
+                gpuActiveTimeDeviation.Value = Math.Round(_onlineMetricService.GetOnlineGpuActiveTimeDeviationMetricValue());
 			}
 
 			// application latency
@@ -819,7 +819,7 @@ namespace CapFrameX.Overlay
 			if (gpuActiveTimeDeviation != null)
 			{
                 gpuActiveTimeDeviation.ValueUnitFormat = "%";
-                gpuActiveTimeDeviation.ValueAlignmentAndDigits = "{0,5:F1}";
+                gpuActiveTimeDeviation.ValueAlignmentAndDigits = "{0,5:F0}";
 			}
 
 			// render lag

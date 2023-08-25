@@ -119,7 +119,7 @@
                     
                     <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Loading records..." FontSize="16" Panel.ZIndex="1" Visibility="{Binding DirectoryLoading, Converter={StaticResource TrueToVisibleConverter}}"
                            Foreground="{DynamicResource MaterialDesignBody}"/>
-                    <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Directory doesn't contain any valid records..." TextWrapping="Wrap" Width="200" TextAlignment="Center" FontSize="16" Panel.ZIndex="1"
+                    <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Directory doesn't contain any valid records. Start a game and then press the capture key to create records..." TextWrapping="Wrap" Width="200" TextAlignment="Center" FontSize="16" Panel.ZIndex="1"
                                Visibility="{Binding DirectoryIsEmpty, Converter={StaticResource TrueToVisibleConverter}}"
                            Foreground="{DynamicResource MaterialDesignBody}"/>
 

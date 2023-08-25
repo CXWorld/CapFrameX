@@ -118,7 +118,7 @@
 										<StackPanel Orientation="Vertical" Width="190">
 											<StackPanel Orientation="Horizontal">
 												<TextBlock VerticalAlignment="Center" FontSize="18" Foreground="{DynamicResource MaterialDesignBody}">Running processes</TextBlock>
-												<Button Margin="10 0 0 0" Padding="0" Width="25" Height="25" BorderThickness="0" ToolTip="Reset and rescan processes"
+												<Button Margin="5 0 0 0" Padding="0" Width="30" Height="30" BorderThickness="0" ToolTip="Reset and rescan processes"
                                                         Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
                                                         materialDesign:RippleAssist.Feedback="#DD000000"
 													    Command="{Binding ResetPresentMonCommand}" 
