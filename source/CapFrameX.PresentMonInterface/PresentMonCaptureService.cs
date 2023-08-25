@@ -23,11 +23,11 @@ namespace CapFrameX.PresentMonInterface
 		public const int MsBetweenPresents_INDEX = 9;
 		public const int MsUntilRenderComplete_INDEX = 12;
 		public const int UntilDisplayedTimes_INDEX = 13;
-        // PresentMon version >1.8
-        public const int GpuActive_INDEX = 16;
+        // PresentMon version >=1.9
+        public const int GpuActive_INDEX = 18;
         public const int QPCTime_INDEX = 19;
-        // PresentMon version >1.8
-        public const int VALID_LINE_LENGTH = 73;
+        // PresentMon version >=1.9
+        public const int VALID_LINE_LENGTH = 20;
 
         private readonly ISubject<string[]> _outputDataStream;
         private readonly object _listLock = new object();

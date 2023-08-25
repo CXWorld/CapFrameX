@@ -38,6 +38,8 @@ namespace CapFrameX.PresentMonInterface
                 arguments += " ";
 				arguments += "-qpc_time";
                 arguments += " ";
+                arguments += "-track_gpu";
+                arguments += " ";
                 arguments += OutputFilename;
 
                 if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
@@ -68,6 +70,8 @@ namespace CapFrameX.PresentMonInterface
 					arguments += "-output_stdout";
 					arguments += " ";
 					arguments += "-qpc_time";
+                    arguments += " ";
+                    arguments += "-track_gpu";
 
                     if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
                     {
@@ -106,6 +110,8 @@ namespace CapFrameX.PresentMonInterface
                     arguments += OutputFilename;
 					arguments += " ";
 					arguments += "-qpc_time";
+                    arguments += " ";
+                    arguments += "-track_gpu";
 
                     if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
                     {

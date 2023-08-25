@@ -372,21 +372,11 @@ namespace CapFrameX.Data
         //    $"Dropped,TimeInSeconds,msInPresentAPI,msBetweenPresents,AllowsTearing,PresentMode," +
         //    $"msUntilRenderComplete,msUntilDisplayed,msBetweenDisplayChange,WasBatched,DwmNotified,QPCTime";
 
-        // PresentMon > v1.8
+        // PresentMon >= v1.9
         private static readonly string COLUMN_HEADER =
-            $"Application, ProcessID, SwapChainAddress, Runtime, SyncInterval, PresentFlags, " +
-            $"Dropped, TimeInSeconds, msInPresentAPI, msBetweenPresents, AllowsTearing, PresentMode," +
-            $" msUntilRenderComplete, msUntilDisplayed, msBetweenDisplayChange, msUntilRenderStart, " +
-            $"msGPUActive, msGPUVideoActive, msSinceInput, QPCtime, GPUPower[W], GPUSustainedPowerLimit[W], " +
-            $"GPUVoltage[V], GPUFrequency[MHz], GPUTemperature[C], GPUUtilization[%], GPURenderComputeUtilization[%], " +
-            $"GPUMediaUtilization[%], VRAMPower[W], VRAMVoltage[V], VRAMFrequency[Mhz], VRAMEffectiveFrequency[GBps], " +
-            $"VRAMTemperature[C], GPUMemTotalSize[B], GPUMemUsed[B], GPUMemMaxBandwidth[GBps], GPUMemReadBandwidth[Bps]," +
-            $" GPUMemWriteBandwidth[Bps], GPUFanSpeed0[RPM], GPUFanSpeed1[RPM], GPUFanSpeed2[RPM], GPUFanSpeed3[RPM], " +
-            $"GPUFanSpeed4[RPM], PSUType0, PSUType1, PSUType2, PSUType3, PSUType4, PSUPower0[W], PSUPower1[W], " +
-            $"PSUPower2[W], PSUPower3[W], PSUPower4[W], PSUVoltage0[V], PSUVoltage1[V], PSUVoltage2[V], PSUVoltage3[V], " +
-            $"PSUVoltage4[V], GPUPowerLimited, GPUTemperatureLimited, GPUCurrentLimited, GPUVoltageLimited, GPUUtilizationLimited, " +
-            $"VRAMPowerLimited, VRAMTemperatureLimited, VRAMCurrentLimited, VRAMVoltageLimited, VRAMUtilizationLimited, " +
-            $"CPUUtilization[%], CPUFrequency[MHz], CPUPower[W], CPUPowerLimit[W], CPUTemperature[C]";
+            $"Application, ProcessID, SwapChainAddress, Runtime, SyncInterval, PresentFlags, Dropped, " +
+            $"TimeInSeconds, msInPresentAPI, msBetweenPresents, AllowsTearing, PresentMode, msUntilRenderComplete," +
+            $" msUntilDisplayed, msBetweenDisplayChange, WasBatched, DwmNotified, msUntilRenderStart, msGPUActive, QPCTime";
 
         public async Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo)
         {
