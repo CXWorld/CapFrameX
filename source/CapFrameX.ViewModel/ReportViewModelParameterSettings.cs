@@ -350,6 +350,18 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool ShowGpuActiveTimeDeviation
+        {
+            get { return _settings.ReportShowGpuActiveTimeDeviation; }
+            set
+            {
+                _settings.ReportShowGpuActiveTimeDeviation = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
+
+                RaisePropertyChanged();
+            }
+        }
+
         public bool ShowCpuMaxUsage
         {
             get { return _settings.ReportShowCpuMaxUsage; }

@@ -106,6 +106,16 @@ namespace CapFrameX.Data
             return GetGpuActiveTimePointTimeWindow()?.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
         }
 
+		public double GetGpuActiveDeviationPercentage()
+		{
+            if (CurrentSession == null)
+                return 0.0;
+
+            double startTime = CurrentTime;
+            double endTime = startTime + WindowLength;
+            return CurrentSession.GetGpuActiveDeviationPercentage(startTime, endTime, _appConfiguration, RemoveOutlierMethod);
+		}
+
 		public void SetTimeWindow(double currentTime, double windowLength)
 		{
 			CurrentTime = currentTime;
