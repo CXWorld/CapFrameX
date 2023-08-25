@@ -374,9 +374,9 @@ namespace CapFrameX.Data
 
         // PresentMon >= v1.9
         private static readonly string COLUMN_HEADER =
-            $"Application, ProcessID, SwapChainAddress, Runtime, SyncInterval, PresentFlags, Dropped, " +
-            $"TimeInSeconds, msInPresentAPI, msBetweenPresents, AllowsTearing, PresentMode, msUntilRenderComplete," +
-            $" msUntilDisplayed, msBetweenDisplayChange, WasBatched, DwmNotified, msUntilRenderStart, msGPUActive, QPCTime";
+            $"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags,Dropped," +
+            $"TimeInSeconds,msInPresentAPI,msBetweenPresents,AllowsTearing,PresentMode,msUntilRenderComplete," +
+            $"msUntilDisplayed,msBetweenDisplayChange,WasBatched,DwmNotified,msUntilRenderStart,msGPUActive,QPCTime";
 
         public async Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo)
         {
@@ -729,7 +729,7 @@ namespace CapFrameX.Data
         {
             var filename = CaptureServiceConfiguration.GetCaptureFilename(processName);
             var directory = recordDirectory is null ? await _recordObserver.ObservingDirectoryStream.Take(1) : new DirectoryInfo(recordDirectory);
-            return Path.Combine(directory.FullName, filename);
+            return System.IO.Path.Combine(directory.FullName, filename);
         }
 
         public ISessionRun ConvertPresentDataLinesToSessionRun(IEnumerable<string> presentLines)
@@ -769,7 +769,7 @@ namespace CapFrameX.Data
                     PresentMonRuntime = "unknown"
                 };
 
-                var metrics = headerLine.Split(',');
+                var metrics = Array.ConvertAll(headerLine.Split(','), p => p.Trim());
                 for (int i = 0; i < metrics.Count(); i++)
                 {
                     if (string.Compare(metrics[i], "AppRenderStart") == 0 || string.Compare(metrics[i], "TimeInSeconds") == 0)
@@ -777,13 +777,13 @@ namespace CapFrameX.Data
                         indexFrameStart = i;
                     }
                     if (string.Compare(metrics[i], "MsBetweenAppPresents", true) == 0
-                        || string.Compare(metrics[i], "MsBetweenPresents", true) == 0
+                        || string.Compare(metrics[i], "msBetweenPresents", true) == 0
                         // MangoHud frame times column
                         || string.Compare(metrics[i], "frametime", true) == 0)
                     {
                         indexFrameTimes = i;
                     }
-                    if (string.Compare(metrics[i], "MsUntilDisplayed", true) == 0)
+                    if (string.Compare(metrics[i], "msUntilDisplayed", true) == 0)
                     {
                         indexUntilDisplayedTimes = i;
                     }
@@ -791,11 +791,11 @@ namespace CapFrameX.Data
                     {
                         indexAppMissed = i;
                     }
-                    if (string.Compare(metrics[i], "MsInPresentAPI", true) == 0)
+                    if (string.Compare(metrics[i], "msInPresentAPI", true) == 0)
                     {
                         indexMsInPresentAPI = i;
                     }
-                    if (string.Compare(metrics[i], "MsBetweenDisplayChange", true) == 0)
+                    if (string.Compare(metrics[i], "msBetweenDisplayChange", true) == 0)
                     {
                         indexDisplayTimes = i;
                     }

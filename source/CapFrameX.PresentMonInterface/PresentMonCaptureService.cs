@@ -86,7 +86,7 @@ namespace CapFrameX.PresentMonInterface
                         var lineSplit = e.Data.Split(',');
                         if (lineSplit.Length == VALID_LINE_LENGTH)
                         {
-                            if (lineSplit[ApplicationName_INDEX] != "<error>")
+                            if (lineSplit[ApplicationName_INDEX] != "<error>" && !lineSplit[ApplicationName_INDEX].Contains(@"\"))
                             {
                                 _outputDataStream.OnNext(lineSplit);
                             }
