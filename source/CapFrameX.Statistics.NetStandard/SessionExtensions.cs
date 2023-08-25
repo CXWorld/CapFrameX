@@ -510,7 +510,7 @@ namespace CapFrameX.Statistics.NetStandard
             var frametimes = GetFrametimeTimeWindow(session, startTime, endTime, options);
             var gpuActiveTimes = GetGpuActiveTimeTimeWindow(session, startTime, endTime, options);
 
-            return gpuActiveTimes.Any() ? -100 + (Math.Round(gpuActiveTimes.Average() / frametimes.Average()) * 100) : 0;
+            return gpuActiveTimes.Any() ? -100 + (Math.Round(gpuActiveTimes.Average() / frametimes.Average(), 2) * 100) : 0;
         }
     }
 }
