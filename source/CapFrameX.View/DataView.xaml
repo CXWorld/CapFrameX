@@ -237,7 +237,7 @@
                     <Grid Grid.Column="0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="1*"/>
-                            <RowDefinition Height="15"/>
+                            <RowDefinition Height="20"/>
                         </Grid.RowDefinitions>
                             <lvc:CartesianChart Grid.Row="0" Margin="15 10 10 5" Series="{Binding StatisticCollection}" LegendLocation="None"
 									Tag="{Binding DataContext, ElementName=DataViewUserControl}" DataTooltip="{x:Null}" Foreground="{DynamicResource MaterialDesignBody}">
@@ -264,7 +264,7 @@
                         </lvc:CartesianChart>
                         <StackPanel Grid.Row="1" Orientation="Horizontal" Panel.ZIndex="1" VerticalAlignment="Bottom" HorizontalAlignment="Center">
                             <TextBlock Foreground="{DynamicResource MaterialDesignBody}" Text="FPS" />
-                            <ToggleButton x:Name="FrametimeStatisticToggleButton" VerticalAlignment="Center" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                            <ToggleButton x:Name="FrametimeStatisticToggleButton" VerticalAlignment="Center" Margin="5 0 5 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 									  IsChecked="{Binding UseFrametimeStatisticParameters}"/>
                             <TextBlock Foreground="{DynamicResource MaterialDesignBody}" Text="ms"/>
                         </StackPanel>

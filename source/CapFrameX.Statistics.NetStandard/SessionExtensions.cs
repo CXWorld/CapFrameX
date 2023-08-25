@@ -507,10 +507,10 @@ namespace CapFrameX.Statistics.NetStandard
         public static double GetGpuActiveDeviationPercentage(this ISession session, double startTime, double endTime,
             IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
         {
-            var frametimes = GetFrametimeTimeWindow(session, startTime, endTime, options);
-            var gpuActiveTimes = GetGpuActiveTimeTimeWindow(session, startTime, endTime, options);
+            var frametimesAverage = GetFrametimeTimeWindow(session, startTime, endTime, options).Average();
+            var gpuActiveTimesAverage = GetGpuActiveTimeTimeWindow(session, startTime, endTime, options).Average();
 
-            return gpuActiveTimes.Any() ? -100 + (Math.Round(gpuActiveTimes.Average() / frametimes.Average(), 2) * 100) : 0;
+            return Math.Round((gpuActiveTimesAverage - frametimesAverage) / frametimesAverage  * 100);
         }
     }
 }
