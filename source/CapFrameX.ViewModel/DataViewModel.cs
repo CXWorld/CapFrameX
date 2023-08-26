@@ -1310,7 +1310,7 @@ namespace CapFrameX.ViewModel
                         values.Add(cpuFpsPerWatt);
                     if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
                         values.Add(adaptiveStandardDeviation);
-                    if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
+                    if (_appConfiguration.UseSingleRecordMinStatisticParameter)
                         values.Add(max);
                     if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
                         values.Add(p0dot1_LowIntegral);
@@ -1342,8 +1342,9 @@ namespace CapFrameX.ViewModel
                         values.Add(p95_quantile);
                     if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
                         values.Add(p99_quantile);
-                    if (_appConfiguration.UseSingleRecordMinStatisticParameter)
+                    if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
                         values.Add(min);
+
                 }
 
                 else
@@ -1419,7 +1420,7 @@ namespace CapFrameX.ViewModel
                         parameterLabelList.Add("CPU FPS/10W");
                     if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
                         parameterLabelList.Add("Adaptive STDEV");
-                    if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
+                    if (_appConfiguration.UseSingleRecordMinStatisticParameter)
                         parameterLabelList.Add("Max");
                     if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
                         parameterLabelList.Add("0.1% High Integral");
@@ -1451,7 +1452,7 @@ namespace CapFrameX.ViewModel
                         parameterLabelList.Add("P5");
                     if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
                         parameterLabelList.Add("P1");
-                    if (_appConfiguration.UseSingleRecordMinStatisticParameter)
+                    if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
                         parameterLabelList.Add("Min");
                 }
                 else

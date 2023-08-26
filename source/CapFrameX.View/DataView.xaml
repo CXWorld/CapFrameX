@@ -809,7 +809,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Minimum" VerticalAlignment="Center"/>
-                                <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding UseMinStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding UseMaxStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="0.1% high integral" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding UseP0Dot1LowIntegralStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="1% high integral" VerticalAlignment="Center"/>
@@ -841,7 +841,7 @@
                                 <TextBlock Margin="5" Grid.Row="5" Grid.Column="3" Text="1% percentile" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="5" Grid.Column="4" IsChecked="{Binding UseP99QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="6" Grid.Column="3" Text="Maximum" VerticalAlignment="Center"/>
-                                <ToggleButton Margin="5" Grid.Row="6" Grid.Column="4" IsChecked="{Binding UseMaxStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <ToggleButton Margin="5" Grid.Row="6" Grid.Column="4" IsChecked="{Binding UseMinStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="7" Grid.Column="3" Text="Adaptive STDEV" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="7" Grid.Column="4" IsChecked="{Binding UseAdaptiveSTDStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="8" Grid.Column="3" Text="CPU FPS/10W" VerticalAlignment="Center"/>
