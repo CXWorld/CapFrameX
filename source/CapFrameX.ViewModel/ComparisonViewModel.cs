@@ -104,15 +104,15 @@ namespace CapFrameX.ViewModel
 		private bool _showGpuActiveLineCharts;
 
 		public Array FirstMetricItems => Enum.GetValues(typeof(EMetric))
-											 .Cast<EMetric>().Where(metric => metric != EMetric.None)
+											 .Cast<EMetric>().Where(metric => metric != EMetric.None && metric != EMetric.GpuActiveAverage && metric != EMetric.GpuActiveOnePercentLowAverage && metric != EMetric.GpuActiveP1)
 											 .ToArray();
 
 		public Array SecondMetricItems => Enum.GetValues(typeof(EMetric))
-											  .Cast<EMetric>()
-											  .ToArray();
+											  .Cast<EMetric>().Where(metric => metric != EMetric.GpuActiveAverage && metric != EMetric.GpuActiveOnePercentLowAverage && metric != EMetric.GpuActiveP1)
+                                              .ToArray();
 		public Array ThirdMetricItems => Enum.GetValues(typeof(EMetric))
-											 .Cast<EMetric>()
-											 .ToArray();
+											 .Cast<EMetric>().Where(metric => metric != EMetric.GpuActiveAverage && metric != EMetric.GpuActiveOnePercentLowAverage && metric != EMetric.GpuActiveP1)
+                                             .ToArray();
 
 		public Array ComparisonContextItems => Enum.GetValues(typeof(EComparisonContext))
 												   .Cast<EComparisonContext>()

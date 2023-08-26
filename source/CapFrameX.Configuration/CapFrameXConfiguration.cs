@@ -841,7 +841,7 @@ namespace CapFrameX.Configuration
         public bool ReportShowP95FS { get; set; } = true;
         public bool ReportShowMedianFPS { get; set; } = true;
         public bool ReportShowAverageFPS { get; set; } = true;
-        public bool ReportShowGpuActiveAverageFPS { get; set; } = false;
+        public bool ReportShowGpuActiveTimeAverage { get; set; } = false;
         public bool ReportShowP5FPS { get; set; } = true;
         public bool ReportShowP1FPS { get; set; } = true;
         public bool ReportShowGpuActiveP1FPS { get; set; } = false;

@@ -28,8 +28,8 @@ namespace CapFrameX.Data
 		public double NinetyFivePercentQuantileFps { get; set; }
 		[DisplayName("Average FPS")]
 		public double AverageFps { get; set; }
-        [DisplayName("GPU Active Average FPS")]
-        public double GpuActiveAverageFps { get; set; }
+        [DisplayName("GPU Active Time Avg.")]
+        public double GpuActiveTimeAverage { get; set; }
         [DisplayName("Median FPS")]
 		public double MedianFps { get; set; }
 		[DisplayName("P5 FPS")]
@@ -80,5 +80,5 @@ namespace CapFrameX.Data
 		public double GpuTemp { get; set; }
 		[DisplayName("Comment")]
 		public string CustomComment { get; set; }
-	}
+    }
 }

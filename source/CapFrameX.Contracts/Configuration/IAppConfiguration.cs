@@ -288,21 +288,17 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool ReportShowAverageFPS { get; set; }
 
-        bool ReportShowGpuActiveAverageFPS { get; set; }
+        bool ReportShowGpuActiveTimeAverage { get; set; }
 
         bool ReportShowP5FPS { get; set; }
 
 		bool ReportShowP1FPS { get; set; }
-
-        bool ReportShowGpuActiveP1FPS { get; set; }
 
         bool ReportShowP0Dot2FPS { get; set; }
 
 		bool ReportShowP0Dot1FPS { get; set; }
 
 		bool ReportShowP1LowAverageFPS { get; set; }
-
-        bool ReportShowGpuActiveP1LowAverageFPS { get; set; }
 
         bool ReportShowP0Dot1LowAverageFPS { get; set; }
 

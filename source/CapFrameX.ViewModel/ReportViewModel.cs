@@ -138,8 +138,7 @@ namespace CapFrameX.ViewModel
             var displayNameMaxFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.MaxFps);
             var displayNameNinetyNinePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.NinetyNinePercentQuantileFps);
             var displayNameNinetyFivePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.NinetyFivePercentQuantileFps);
-            var displayNameAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AverageFps);
-            var displayNameGpuActiveAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuActiveAverageFps);
+            var displayNameAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AverageFps);       
             var displayNameMedianFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.MedianFps);
             var displayNameFivePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.FivePercentQuantileFps);
             var displayNameOnePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.OnePercentQuantileFps);
@@ -154,6 +153,7 @@ namespace CapFrameX.ViewModel
             var displayNameCpuFpsPerWatt = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CpuFpsPerWatt);
             var displayNameGpuFpsPerWatt = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuFpsPerWatt);
             var displayNameAppLatency = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AppLatency);
+            var displayNameGpuActiveTimeAverage = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuActiveTimeAverage);
             var displayNameGpuActiveTimeDeviation = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuActiveTimeDeviation);
             var displayNameCpuUsage = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CpuMaxUsage);
             var displayNameCpuPower = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CpuPower);
@@ -178,8 +178,7 @@ namespace CapFrameX.ViewModel
                 (ShowMaxFPS ? "\t" + displayNameMaxFps : "") +
                 (ShowP99FPS ? "\t" + displayNameNinetyNinePercentQuantileFps : "") +
                 (ShowP95FS ? "\t" + displayNameNinetyFivePercentQuantileFps : "") +
-                (ShowAverageFPS ? "\t" + displayNameAverageFps : "") +
-                (ShowGpuActiveAverageFPS ? "\t" + displayNameGpuActiveAverageFps : "") +
+                (ShowAverageFPS ? "\t" + displayNameAverageFps : "") +                
                 (ShowMedianFPS ? "\t" + displayNameMedianFps : "") +
                 (ShowP5FPS ? "\t" + displayNameFivePercentQuantileFps : "") +
                 (ShowP1FPS ? "\t" + displayNameOnePercentQuantileFps : "") +
@@ -194,6 +193,7 @@ namespace CapFrameX.ViewModel
                 (ShowCpuFpsPerWatt ? "\t" + displayNameCpuFpsPerWatt : "") +
                 (ShowGpuFpsPerWatt ? "\t" + displayNameGpuFpsPerWatt : "") +
                 (ShowAppLatency ? "\t" + displayNameAppLatency : "") +
+                (ShowGpuActiveTimeAverage ? "\t" + displayNameGpuActiveTimeAverage : "") +
                 (ShowGpuActiveTimeDeviation ? "\t" + displayNameGpuActiveTimeDeviation : "") +
                 (ShowCpuMaxUsage ? "\t" + displayNameCpuUsage : "") +
                 (ShowCpuPower ? "\t" + displayNameCpuPower : "") +
@@ -223,7 +223,6 @@ namespace CapFrameX.ViewModel
                     (ShowP99FPS ? "\t" + reportInfo.NinetyNinePercentQuantileFps.ToString(cultureInfo) : "") +
                     (ShowP95FS ? "\t" + reportInfo.NinetyFivePercentQuantileFps.ToString(cultureInfo) : "") +
                     (ShowAverageFPS ? "\t" + reportInfo.AverageFps.ToString(cultureInfo) : "") +
-                    (ShowGpuActiveAverageFPS ? "\t" + reportInfo.GpuActiveAverageFps.ToString(cultureInfo) : "") +
                     (ShowMedianFPS ? "\t" + reportInfo.MedianFps.ToString(cultureInfo) : "") +
                     (ShowP5FPS ? "\t" + reportInfo.FivePercentQuantileFps.ToString(cultureInfo) : "") +
                     (ShowP1FPS ? "\t" + reportInfo.OnePercentQuantileFps.ToString(cultureInfo) : "") +
@@ -238,6 +237,7 @@ namespace CapFrameX.ViewModel
                     (ShowCpuFpsPerWatt ? "\t" + reportInfo.CpuFpsPerWatt.ToString(cultureInfo) : "") +
                     (ShowGpuFpsPerWatt ? "\t" + reportInfo.GpuFpsPerWatt.ToString(cultureInfo) : "") +
                     (ShowAppLatency ? "\t" + reportInfo.AppLatency.ToString(cultureInfo) : "") +
+                    (ShowGpuActiveTimeAverage ? "\t" + reportInfo.GpuActiveTimeAverage.ToString(cultureInfo) : "") +
                     (ShowGpuActiveTimeDeviation ? "\t" + reportInfo.GpuActiveTimeDeviation.ToString(cultureInfo) : "") +
                     (ShowCpuMaxUsage ? "\t" + reportInfo.CpuMaxUsage.ToString(cultureInfo) : "") +
                     (ShowCpuPower ? "\t" + reportInfo.CpuPower.ToString(cultureInfo) : "") +
@@ -285,7 +285,7 @@ namespace CapFrameX.ViewModel
             var p99_quantile = GeMetricValue(frameTimes, EMetric.P99);
             var p95_quantile = GeMetricValue(frameTimes, EMetric.P95);
             var average = GeMetricValue(frameTimes, EMetric.Average);
-            var GpuActiveAverage = GeMetricValue(GpuActiveTimes, EMetric.GpuActiveAverage);
+            var GpuActiveTimeAverage = Math.Round(1000 / GeMetricValue(GpuActiveTimes, EMetric.GpuActiveAverage), 1);
             var median = GeMetricValue(frameTimes, EMetric.Median);
             var p0dot1_quantile = GeMetricValue(frameTimes, EMetric.P0dot1);
             var p0dot2_quantile = GeMetricValue(frameTimes, EMetric.P0dot2);
@@ -330,8 +330,7 @@ namespace CapFrameX.ViewModel
                 MaxFps = max,
                 NinetyNinePercentQuantileFps = p99_quantile,
                 NinetyFivePercentQuantileFps = p95_quantile,
-                AverageFps = average,
-                GpuActiveAverageFps = GpuActiveAverage,
+                AverageFps = average,                
                 MedianFps = median,
                 FivePercentQuantileFps = p5_quantile,
                 OnePercentQuantileFps = p1_quantile,
@@ -355,6 +354,7 @@ namespace CapFrameX.ViewModel
                 GpuClock = gpuClock,
                 GpuTemp = gpuTemp,
                 AppLatency = appLatency,
+                GpuActiveTimeAverage = GpuActiveTimeAverage,
                 GpuActiveTimeDeviation = gpuActiveTimeDeviation,
                 CustomComment = recordInfo.Comment
             };
