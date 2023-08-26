@@ -88,7 +88,7 @@ namespace CapFrameX.PresentMonInterface
                         {
                             if (lineSplit[ApplicationName_INDEX] != "<error>")
                             {
-                                // Seperate path from exe name
+                                // separating path from exe name
                                 if (lineSplit[ApplicationName_INDEX].Contains(@"\"))
                                 {
                                     var appName  = Path.GetFileName(lineSplit[ApplicationName_INDEX]);
