@@ -793,82 +793,169 @@ namespace CapFrameX.ViewModel
             var gpuActiveTimes = GetGpuActiveTimesSubset();
             var frametimes = GetFrametimesSubset();
 
-            double GeMetricValue(IList<double> sequence, EMetric metric) =>
+            double GetFrametimeMetricValue(IList<double> sequence, EMetric metric) =>
+              Math.Round(_frametimeStatisticProvider.GetFrametimeMetricValue(sequence, metric), 2);
+
+            double GetMetricValue(IList<double> sequence, EMetric metric) =>
                 Math.Round(_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric), 2);
 
-            var max = GeMetricValue(frametimes, EMetric.Max);
-            var p99_quantile = GeMetricValue(frametimes, EMetric.P99);
-            var p95_quantile = GeMetricValue(frametimes, EMetric.P95);
-            var median = GeMetricValue(frametimes, EMetric.Median);
-            var average = GeMetricValue(frametimes, EMetric.Average);
-            var gpuActiveAverage = GeMetricValue(gpuActiveTimes, EMetric.GpuActiveAverage);
-            var p0dot1_quantile = GeMetricValue(frametimes, EMetric.P0dot1);
-            var p0dot2_quantile = GeMetricValue(frametimes, EMetric.P0dot2);
-            var p1_quantile = GeMetricValue(frametimes, EMetric.P1);
-            var gpuActiveP1_quantile = GeMetricValue(gpuActiveTimes, EMetric.GpuActiveP1);
-            var p5_quantile = GeMetricValue(frametimes, EMetric.P5);
-            var p1_LowAverage = GeMetricValue(frametimes, EMetric.OnePercentLowAverage);
-            var GpuActiveP1_LowAverage = GeMetricValue(gpuActiveTimes, EMetric.GpuActiveOnePercentLowAverage);
-            var p0dot1_LowAverage = GeMetricValue(frametimes, EMetric.ZerodotOnePercentLowAverage);
-            var p1_LowIntegral = GeMetricValue(frametimes, EMetric.OnePercentLowIntegral);
-            var p0dot1_LowIntegral = GeMetricValue(frametimes, EMetric.ZerodotOnePercentLowIntegral);
+            var max = double.NaN;
+            var p99_quantile = double.NaN;
+            var p95_quantile = double.NaN;
+            var median = double.NaN;
+            var average = double.NaN;
+            var gpuActiveAverage = double.NaN;
+            var p0dot1_quantile = double.NaN;
+            var p0dot2_quantile = double.NaN;
+            var p1_quantile = double.NaN;
+            var gpuActiveP1_quantile = double.NaN;
+            var p5_quantile = double.NaN;
+            var p1_LowAverage = double.NaN;
+            var gpuActiveP1_LowAverage = double.NaN;
+            var p0dot1_LowAverage = double.NaN;
+            var p1_LowIntegral = double.NaN;
+            var p0dot1_LowIntegral = double.NaN;
+            var min = double.NaN;
+            var adaptiveStandardDeviation = double.NaN;
+            var cpuFpsPerWatt = double.NaN;
+            var gpuFpsPerWatt = double.NaN;
 
-            var min = GeMetricValue(frametimes, EMetric.Min);
-            var adaptiveStandardDeviation = GeMetricValue(frametimes, EMetric.AdaptiveStd);
-            var cpuFpsPerWatt = _frametimeStatisticProvider
-                 .GetPhysicalMetricValue(frametimes, EMetric.CpuFpsPerWatt,
-                 SensorReport.GetAverageSensorValues(_session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuPower,
-                 _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
-            var gpuFpsPerWatt = _frametimeStatisticProvider
-            .GetPhysicalMetricValue(frametimes, EMetric.GpuFpsPerWatt,
-            SensorReport.GetAverageSensorValues(_session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower,
-            _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength, _appConfiguration.UseTBPSim));
-
-            StringBuilder builder = new StringBuilder();
+            if(UseFrametimeStatisticParameters)
+            {
+                max = GetFrametimeMetricValue(frametimes, EMetric.Max);
+                p99_quantile = GetFrametimeMetricValue(frametimes, EMetric.P99);
+                p95_quantile = GetFrametimeMetricValue(frametimes, EMetric.P95);
+                median = GetFrametimeMetricValue(frametimes, EMetric.Median);
+                average = GetFrametimeMetricValue(frametimes, EMetric.Average);
+                gpuActiveAverage = GetFrametimeMetricValue(gpuActiveTimes, EMetric.GpuActiveAverage);
+                p0dot1_quantile = GetFrametimeMetricValue(frametimes, EMetric.P0dot1);
+                p0dot2_quantile = GetFrametimeMetricValue(frametimes, EMetric.P0dot2);
+                p1_quantile = GetFrametimeMetricValue(frametimes, EMetric.P1);
+                gpuActiveP1_quantile = GetFrametimeMetricValue(gpuActiveTimes, EMetric.GpuActiveP1);
+                p5_quantile = GetFrametimeMetricValue(frametimes, EMetric.P5);
+                p1_LowAverage = GetFrametimeMetricValue(frametimes, EMetric.OnePercentLowAverage);
+                gpuActiveP1_LowAverage = GetFrametimeMetricValue(gpuActiveTimes, EMetric.GpuActiveOnePercentLowAverage);
+                p0dot1_LowAverage = GetFrametimeMetricValue(frametimes, EMetric.ZerodotOnePercentLowAverage);
+                p1_LowIntegral = GetFrametimeMetricValue(frametimes, EMetric.OnePercentLowIntegral);
+                p0dot1_LowIntegral = GetFrametimeMetricValue(frametimes, EMetric.ZerodotOnePercentLowIntegral);
+                min = GetFrametimeMetricValue(frametimes, EMetric.Min);
+                adaptiveStandardDeviation = GetFrametimeMetricValue(frametimes, EMetric.AdaptiveStd);
+            }
+            else
+            {
+                max = GetMetricValue(frametimes, EMetric.Max);
+                p99_quantile = GetMetricValue(frametimes, EMetric.P99);
+                p95_quantile = GetMetricValue(frametimes, EMetric.P95);
+                median = GetMetricValue(frametimes, EMetric.Median);
+                average = GetMetricValue(frametimes, EMetric.Average);
+                gpuActiveAverage = GetMetricValue(gpuActiveTimes, EMetric.GpuActiveAverage);
+                p0dot1_quantile = GetMetricValue(frametimes, EMetric.P0dot1);
+                p0dot2_quantile = GetMetricValue(frametimes, EMetric.P0dot2);
+                p1_quantile = GetMetricValue(frametimes, EMetric.P1);
+                gpuActiveP1_quantile = GetMetricValue(gpuActiveTimes, EMetric.GpuActiveP1);
+                p5_quantile = GetMetricValue(frametimes, EMetric.P5);
+                p1_LowAverage = GetMetricValue(frametimes, EMetric.OnePercentLowAverage);
+                gpuActiveP1_LowAverage = GetMetricValue(gpuActiveTimes, EMetric.GpuActiveOnePercentLowAverage);
+                p0dot1_LowAverage = GetMetricValue(frametimes, EMetric.ZerodotOnePercentLowAverage);
+                p1_LowIntegral = GetMetricValue(frametimes, EMetric.OnePercentLowIntegral);
+                p0dot1_LowIntegral = GetMetricValue(frametimes, EMetric.ZerodotOnePercentLowIntegral);
+                min = GetMetricValue(frametimes, EMetric.Min);
+                adaptiveStandardDeviation = GetMetricValue(frametimes, EMetric.AdaptiveStd);
+                cpuFpsPerWatt = _frametimeStatisticProvider
+                     .GetPhysicalMetricValue(frametimes, EMetric.CpuFpsPerWatt,
+                     SensorReport.GetAverageSensorValues(_session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuPower,
+                     _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
+                gpuFpsPerWatt = _frametimeStatisticProvider
+                .GetPhysicalMetricValue(frametimes, EMetric.GpuFpsPerWatt,
+                SensorReport.GetAverageSensorValues(_session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower,
+                _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength, _appConfiguration.UseTBPSim));
+            }
 
             // Vice versa!
             // "Adaptive STDEV","Min","0.1% Low Integral","0.1% Low Average" ,"0.1%","0.2%" ,"1% Low Integral","1% Low Average", "1%" ,"5%" ,"Average" ,"95%" ,"99%" ,"Max"
-            if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
-                builder.Append("Max" + "\t" + max.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
-                builder.Append("P99" + "\t" + p99_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
-                builder.Append("P95" + "\t" + p95_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
-                builder.Append("Median" + "\t" + median.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
-                builder.Append("Average" + "\t" + average.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordGpuActiveAverageStatisticParameter)
-                builder.Append("GPU-Busy Average" + "\t" + gpuActiveAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
-                builder.Append("P5" + "\t" + p5_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
-                builder.Append("P1" + "\t" + p1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordGpuActiveP1QuantileStatisticParameter)
-                builder.Append("GPU-Busy P1" + "\t" + gpuActiveP1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
-                builder.Append("1% Low Average" + "\t" + p1_LowAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordGpuActiveP1LowAverageStatisticParameter && !double.IsNaN(GpuActiveP1_LowAverage))
-                builder.Append("Gpu-Busy 1% Low Average" + "\t" + GpuActiveP1_LowAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
-                builder.Append("1% Low Integral" + "\t" + p1_LowIntegral.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
-                builder.Append("P0.2" + "\t" + p0dot2_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
-                builder.Append("P0.1" + "\t" + p0dot1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_LowAverage))
-                builder.Append("0.1% Low Average" + "\t" + p0dot1_LowAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
-                builder.Append("0.1% Low Integral" + "\t" + p0dot1_LowIntegral.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordMinStatisticParameter)
-                builder.Append("Min" + "\t" + min.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter)
-                builder.Append("Adaptive STDEV" + "\t" + adaptiveStandardDeviation.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordCpuFpsPerWattParameter)
-                builder.Append("CPU FPS/10W" + "\t" + cpuFpsPerWatt.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordGpuFpsPerWattParameter)
-                builder.Append("GPU FPS/10W" + "\t" + gpuFpsPerWatt.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-
+            StringBuilder builder = new StringBuilder();
+            if (UseFrametimeStatisticParameters)
+            {
+                if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
+                    builder.Append("Min" + "\t" + min.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
+                    builder.Append("P1" + "\t" + p99_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
+                    builder.Append("P5" + "\t" + p95_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
+                    builder.Append("Median" + "\t" + median.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
+                    builder.Append("Average" + "\t" + average.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordGpuActiveAverageStatisticParameter && !double.IsNaN(gpuActiveAverage))
+                    builder.Append("GPU-Busy Average" + "\t" + gpuActiveAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
+                    builder.Append("P95" + "\t" + p5_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
+                    builder.Append("P99" + "\t" + p1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordGpuActiveP1QuantileStatisticParameter && !double.IsNaN(gpuActiveP1_quantile))
+                    builder.Append("GPU-Busy P99" + "\t" + gpuActiveP1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
+                    builder.Append("1% High Average" + "\t" + p1_LowAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordGpuActiveP1LowAverageStatisticParameter && !double.IsNaN(gpuActiveP1_LowAverage))
+                    builder.Append("Gpu-Busy 1% High Average" + "\t" + gpuActiveP1_LowAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
+                    builder.Append("1% High Integral" + "\t" + p1_LowIntegral.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
+                    builder.Append("P99.8" + "\t" + p0dot2_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
+                    builder.Append("P99.9" + "\t" + p0dot1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_LowAverage))
+                    builder.Append("0.1% High Average" + "\t" + p0dot1_LowAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
+                    builder.Append("0.1% High Integral" + "\t" + p0dot1_LowIntegral.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordMinStatisticParameter)
+                    builder.Append("Max" + "\t" + max.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter)
+                    builder.Append("Adaptive STDEV" + "\t" + adaptiveStandardDeviation.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+            }
+            else
+            {
+                if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
+                    builder.Append("Max" + "\t" + max.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
+                    builder.Append("P99" + "\t" + p99_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
+                    builder.Append("P95" + "\t" + p95_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
+                    builder.Append("Median" + "\t" + median.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
+                    builder.Append("Average" + "\t" + average.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordGpuActiveAverageStatisticParameter && !double.IsNaN(gpuActiveAverage))
+                    builder.Append("GPU-Busy Average" + "\t" + gpuActiveAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
+                    builder.Append("P5" + "\t" + p5_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
+                    builder.Append("P1" + "\t" + p1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordGpuActiveP1QuantileStatisticParameter && !double.IsNaN(gpuActiveP1_quantile))
+                    builder.Append("GPU-Busy P1" + "\t" + gpuActiveP1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
+                    builder.Append("1% Low Average" + "\t" + p1_LowAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordGpuActiveP1LowAverageStatisticParameter && !double.IsNaN(gpuActiveP1_LowAverage))
+                    builder.Append("Gpu-Busy 1% Low Average" + "\t" + gpuActiveP1_LowAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
+                    builder.Append("1% Low Integral" + "\t" + p1_LowIntegral.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
+                    builder.Append("P0.2" + "\t" + p0dot2_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
+                    builder.Append("P0.1" + "\t" + p0dot1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_LowAverage))
+                    builder.Append("0.1% Low Average" + "\t" + p0dot1_LowAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
+                    builder.Append("0.1% Low Integral" + "\t" + p0dot1_LowIntegral.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordMinStatisticParameter)
+                    builder.Append("Min" + "\t" + min.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter)
+                    builder.Append("Adaptive STDEV" + "\t" + adaptiveStandardDeviation.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordCpuFpsPerWattParameter)
+                    builder.Append("CPU FPS/10W" + "\t" + cpuFpsPerWatt.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordGpuFpsPerWattParameter)
+                    builder.Append("GPU FPS/10W" + "\t" + gpuFpsPerWatt.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+            }
             Clipboard.SetDataObject(builder.ToString(), false);
         }
 
