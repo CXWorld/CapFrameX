@@ -20,9 +20,9 @@ namespace CapFrameX.PresentMonInterface
         public const int Dropped_INDEX = 6;
         public const int TimeInSeconds_INDEX = 7;
         public const int MsInPresentAPI_INDEX = 8;
-		public const int MsBetweenPresents_INDEX = 9;
-		public const int MsUntilRenderComplete_INDEX = 12;
-		public const int UntilDisplayedTimes_INDEX = 13;
+        public const int MsBetweenPresents_INDEX = 9;
+        public const int MsUntilRenderComplete_INDEX = 12;
+        public const int UntilDisplayedTimes_INDEX = 13;
         // PresentMon version >=1.9
         public const int GpuActive_INDEX = 18;
         public const int QPCTime_INDEX = 19;
@@ -86,8 +86,15 @@ namespace CapFrameX.PresentMonInterface
                         var lineSplit = e.Data.Split(',');
                         if (lineSplit.Length == VALID_LINE_LENGTH)
                         {
-                            if (lineSplit[ApplicationName_INDEX] != "<error>" && !lineSplit[ApplicationName_INDEX].Contains(@"\"))
+                            if (lineSplit[ApplicationName_INDEX] != "<error>")
                             {
+                                // Seperate path from exe name
+                                if (lineSplit[ApplicationName_INDEX].Contains(@"\"))
+                                {
+                                    var appName  = Path.GetFileName(lineSplit[ApplicationName_INDEX]);
+                                    lineSplit[ApplicationName_INDEX] = appName;
+                                }
+
                                 _outputDataStream.OnNext(lineSplit);
                             }
                         }
