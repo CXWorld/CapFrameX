@@ -558,8 +558,8 @@
                 <Component Id="cmpA4F6ACC1ED64F9C0B54E2615B754768A" Guid="*" Win64="yes">
                     <File Id="fil383D9183A0F92A32CC71C97E5FAED05B" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\license.txt" />
                 </Component>
-                <Component Id="cmp521CD0903867E7BACA15B834669CF393" Guid="*" Win64="yes">
-                    <File Id="filF0B1E3CD502D17A38B8C0B73C59B5919" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\PresentMon-1.8.0-x64.exe" />
+                <Component Id="cmp36EE1851D846B371FFBB2C8CA4156AC7" Guid="*" Win64="yes">
+                    <File Id="filF211DC9044EE8C4183F467FBD782B7B6" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\PresentMon-1.9.0-x64.exe" />
                 </Component>
             </Directory>
             <Directory Id="dir7FED47FDBD11E3D1CBA94060517400E8" Name="ProcessList">
@@ -802,7 +802,7 @@
             <ComponentRef Id="cmpA2349B128022FD9468B4B0472DF8814A" />
             <ComponentRef Id="cmp3A774BB34CD3664183116E92839E312E" />
             <ComponentRef Id="cmpA4F6ACC1ED64F9C0B54E2615B754768A" />
-            <ComponentRef Id="cmp521CD0903867E7BACA15B834669CF393" />
+            <ComponentRef Id="cmp36EE1851D846B371FFBB2C8CA4156AC7" />
             <ComponentRef Id="cmpA6A9ED7D0D14A0EB3F1B6598611EC6CB" />
             <ComponentRef Id="cmpC873D207335D245293F8991C675338F3" />
             <ComponentRef Id="cmp614D68FE53DA984A3D71375B620FF70E" />
