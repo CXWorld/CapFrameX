@@ -671,6 +671,8 @@
                                            &#xA;The average of the lowest X% of all values &#xA;
                                            &#xA;X% low integral:
                                            &#xA;For X% of total benchmark time, values are lower than this &#xA;
+                                           &#xA;GPU-Busy:
+                                           &#xA;The time the GPU worked on a frame &#xA; 
                                            &#xA;Adaptive STDEV:
                                            &#xA;The standard deviation of values compared to the moving average" 
 										   TextWrapping="Wrap"/>
@@ -715,7 +717,7 @@
                                 <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding UseP95QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" />
                                 <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="Average" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding UseAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="GPU-Busy Average" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="GPU-Busy Average(only ms)" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding UseGpuActiveAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="Median" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding UseMedianStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
@@ -723,7 +725,7 @@
                                 <ToggleButton Margin="5" Grid.Row="6" Grid.Column="1" IsChecked="{Binding UseP5QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="1% percentile" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="7" Grid.Column="1" IsChecked="{Binding UseP1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                <TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="GPU-Busy 1% percentile" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="GPU-Busy 99% percentile(only ms)" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="8" Grid.Column="1" IsChecked="{Binding UseGpuActiveP1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="0.2% percentile" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="9" Grid.Column="1" IsChecked="{Binding UseP0Dot2QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
@@ -731,7 +733,7 @@
                                 <ToggleButton Margin="5" Grid.Row="0" Grid.Column="5" IsChecked="{Binding UseP0Dot1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="1" Grid.Column="3" Text="1% low average" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="1" Grid.Column="4" IsChecked="{Binding UseP1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="3" Text="GPU-Busy 1% low average" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="3" Text="GPU-Busy 1% high average(only ms)" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="2" Grid.Column="4" IsChecked="{Binding UseGpuActiveP1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="0.1% low average" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="3" Grid.Column="4" IsChecked="{Binding UseP0Dot1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
@@ -772,6 +774,8 @@
                                            &#xA;The average of the highest X% of all values &#xA;
                                            &#xA;X% low integral:
                                            &#xA;For X% of total benchmark time, values are higher than this &#xA;
+                                           &#xA;GPU-Busy:
+                                           &#xA;The time the GPU worked on a frame &#xA;
                                            &#xA;Adaptive STDEV:
                                            &#xA;The standard deviation of values compared to the moving average" 
 										   TextWrapping="Wrap"/>
@@ -818,7 +822,7 @@
                                 <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding UseP0Dot1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="1% high average" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding UseP1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="GPU-Busy 1% high avg." VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="GPU-Busy 1% high avg.(only ms)" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding UseGpuActiveP1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="99.9% percentile" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="6" Grid.Column="1" IsChecked="{Binding UseP0Dot1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
@@ -826,13 +830,13 @@
                                 <ToggleButton Margin="5" Grid.Row="7" Grid.Column="1" IsChecked="{Binding UseP0Dot2QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="99% percentile" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="8" Grid.Column="1" IsChecked="{Binding UseP1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                <TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="GPU-Busy 99% percentile" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="GPU-Busy 99% percentile(only ms)" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="9" Grid.Column="1" IsChecked="{Binding UseGpuActiveP1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="0" Grid.Column="3" Text="95% percentile" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="0" Grid.Column="5" IsChecked="{Binding UseP5QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="1" Grid.Column="3" Text="Average" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="1" Grid.Column="4" IsChecked="{Binding UseAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="3" Text="GPU-Busy average" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="3" Text="GPU-Busy average(only ms)" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="2" Grid.Column="4" IsChecked="{Binding UseGpuActiveAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="Median" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="3" Grid.Column="4" IsChecked="{Binding UseMedianStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
@@ -912,10 +916,10 @@
                                     <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding ShowPcLatency}" Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource FalseToCollapsedConverter}}"
                                                   Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show PC latency graph" />
                                     
-                                    <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="GPU-Busy" VerticalAlignment="Center"
+                                    <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="GPU-Busy times" VerticalAlignment="Center"
                                                Visibility="{Binding IsGpuActiveChartAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
                                     <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding ShowGpuActiveChart}" Visibility="{Binding IsGpuActiveChartAvailable, Converter={StaticResource FalseToCollapsedConverter}}"
-                                                  Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU-Busy FPS/frame time graphs" />
+                                                  Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU-Busy time in frametime graphs" />
                                 </Grid>
                             </StackPanel>
                         </materialDesign:Card>

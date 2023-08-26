@@ -36,8 +36,8 @@ namespace CapFrameX.Statistics.PlotBuilder
             {
                 var avgFpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, EFilterMode.TimeIntervalAverage);
 
-                if (plotSettings.ShowGpuActiveCharts)
-                    gpuActiveFpsPoints = session.GetGpuActiveFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode);
+                //if (plotSettings.ShowGpuActiveCharts)
+                //    gpuActiveFpsPoints = session.GetGpuActiveFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode);
 
                 SetRawFPS(plotModel, rawFpsPoints);
                 SetLoadCharts(plotModel, plotSettings, session);
@@ -50,8 +50,8 @@ namespace CapFrameX.Statistics.PlotBuilder
             {
                 var fpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode);
 
-                if (plotSettings.ShowGpuActiveCharts)
-                    gpuActiveFpsPoints = session.GetGpuActiveFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode);
+                //if (plotSettings.ShowGpuActiveCharts)
+                //    gpuActiveFpsPoints = session.GetGpuActiveFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode);
 
                 if (filterMode == EFilterMode.TimeIntervalAverage)
                     SetLoadCharts(plotModel, plotSettings, session);
@@ -62,17 +62,19 @@ namespace CapFrameX.Statistics.PlotBuilder
                 if (filterMode is EFilterMode.None)
                     SetLoadCharts(plotModel, plotSettings, session);
 
+                yMin = fpsPoints.Min(pnt => pnt.Y);
+                yMax = fpsPoints.Max(pnt => pnt.Y);
 
-                if (plotSettings.ShowGpuActiveCharts)
-                {
-                    yMin = Math.Min(fpsPoints.Min(pnt => pnt.Y), gpuActiveFpsPoints.Min(pnt => pnt.Y));
-                    yMax = Math.Max(fpsPoints.Max(pnt => pnt.Y), gpuActiveFpsPoints.Max(pnt => pnt.Y));
-                }
-                else
-                {
-                    yMin = fpsPoints.Min(pnt => pnt.Y);
-                    yMax = fpsPoints.Max(pnt => pnt.Y);
-                }
+                //if (plotSettings.ShowGpuActiveCharts)
+                //{
+                //    yMin = Math.Min(fpsPoints.Min(pnt => pnt.Y), gpuActiveFpsPoints.Min(pnt => pnt.Y));
+                //    yMax = Math.Max(fpsPoints.Max(pnt => pnt.Y), gpuActiveFpsPoints.Max(pnt => pnt.Y));
+                //}
+                //else
+                //{
+                //    yMin = fpsPoints.Min(pnt => pnt.Y);
+                //    yMax = fpsPoints.Max(pnt => pnt.Y);
+                //}
             }
 
             if (plotSettings.ShowThresholds)
@@ -130,26 +132,26 @@ namespace CapFrameX.Statistics.PlotBuilder
                 InterpolationAlgorithm = filtermode == EFilterMode.None ? null : InterpolationAlgorithms.CanonicalSpline
             };
 
-            var gpuActiveFpsSeries = new LineSeries
-            {
-                Title = "GPU-Busy FPS",
-                StrokeThickness = stroke,
-                LegendStrokeThickness = 4,
-                Color = Constants.GpuActiveFpsColor,
-                EdgeRenderingMode = filtermode == EFilterMode.None ? EdgeRenderingMode.PreferSpeed : EdgeRenderingMode.PreferGeometricAccuracy,
-                InterpolationAlgorithm = filtermode == EFilterMode.None ? null : InterpolationAlgorithms.CanonicalSpline
-            };
+            //var gpuActiveFpsSeries = new LineSeries
+            //{
+            //    Title = "GPU-Busy FPS",
+            //    StrokeThickness = stroke,
+            //    LegendStrokeThickness = 4,
+            //    Color = Constants.GpuActiveFpsColor,
+            //    EdgeRenderingMode = filtermode == EFilterMode.None ? EdgeRenderingMode.PreferSpeed : EdgeRenderingMode.PreferGeometricAccuracy,
+            //    InterpolationAlgorithm = filtermode == EFilterMode.None ? null : InterpolationAlgorithms.CanonicalSpline
+            //};
 
 
             fpsSeries.Points.AddRange(fpsDataPoints);
             plotModel.Series.Add(fpsSeries);
 
 
-            if (plotSettings.ShowGpuActiveCharts)
-            {
-                gpuActiveFpsSeries.Points.AddRange(gpuActiveFpsDataPoints);
-                plotModel.Series.Add(gpuActiveFpsSeries);
-            }
+            //if (plotSettings.ShowGpuActiveCharts)
+            //{
+            //    gpuActiveFpsSeries.Points.AddRange(gpuActiveFpsDataPoints);
+            //    plotModel.Series.Add(gpuActiveFpsSeries);
+            //}
 
             var averageDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, average));
 

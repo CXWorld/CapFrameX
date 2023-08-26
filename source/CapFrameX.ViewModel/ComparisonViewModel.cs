@@ -1439,9 +1439,9 @@ namespace CapFrameX.ViewModel
 			{
 				IList<Point> window = null;
 
-				if (ShowGpuActiveLineCharts)
-					window = session.GetGpuActiveFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode);
-				else
+				//if (ShowGpuActiveLineCharts)
+				//	window = session.GetGpuActiveFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode);
+				//else
 					window = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode);
 
 				if (window.Any())
@@ -1454,9 +1454,9 @@ namespace CapFrameX.ViewModel
 			{
 				IList<Point> window = null;
 
-				if (ShowGpuActiveLineCharts)
-					window = session.GetGpuActiveFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode);
-				else
+				//if (ShowGpuActiveLineCharts)
+				//	window = session.GetGpuActiveFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode);
+				//else
 					window = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode);
 
 				if (window.Any())
@@ -1674,10 +1674,10 @@ namespace CapFrameX.ViewModel
 
 			IEnumerable<Point> fpsPoints = null;
 
-			if (ShowGpuActiveLineCharts)
-				fpsPoints = session.GetGpuActiveFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode)
-				   .Select(pnt => new Point(pnt.X, pnt.Y));
-			else
+			//if (ShowGpuActiveLineCharts)
+			//	fpsPoints = session.GetGpuActiveFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode)
+			//	   .Select(pnt => new Point(pnt.X, pnt.Y));
+			//else
 				fpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode)
 				   .Select(pnt => new Point(pnt.X, pnt.Y));
 
@@ -1703,13 +1703,13 @@ namespace CapFrameX.ViewModel
 
 		private void AddToLShapeChart(ComparisonRecordInfoWrapper wrappedComparisonInfo)
 		{
-			var LShapeMetric = SelectedChartView == "Frametimes" ? ELShapeMetrics.Frametimes : ELShapeMetrics.FPS;
+			var LShapeMetric = SelectedChartView == "FPS" ? ELShapeMetrics.FPS : ELShapeMetrics.Frametimes;
 			double startTime = FirstSeconds;
 			double endTime = LastSeconds;
 
 			IList<double> frametimeTimeWindow = null;
 
-			if (ShowGpuActiveLineCharts)
+			if (ShowGpuActiveLineCharts && LShapeMetric == ELShapeMetrics.Frametimes)
 				frametimeTimeWindow = wrappedComparisonInfo.WrappedRecordInfo.Session.GetGpuActiveTimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
 			else
 				frametimeTimeWindow = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
