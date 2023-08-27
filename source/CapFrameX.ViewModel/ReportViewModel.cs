@@ -315,7 +315,7 @@ namespace CapFrameX.ViewModel
             var gpuClock = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuClock, 0, double.PositiveInfinity);
             var gpuTemp = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuTemp, 0, double.PositiveInfinity);
             var appLatency = inputLagTimes.Any() ? Math.Round(inputLagTimes.Average(), 1) : 0;
-            var gpuActiveTimeDeviation = GpuActiveTimes.Any() ? (Math.Round((GpuActiveTimes.Average() - frameTimes.Average()) / frameTimes.Average() * 100, 1)) : double.NaN;
+            var gpuActiveTimeDeviation = GpuActiveTimes.Any() ? (Math.Round(Math.Abs(GpuActiveTimes.Average() - frameTimes.Average()) / frameTimes.Average() * 100, 1)) : double.NaN;
 
             var reportInfo = new ReportInfo()
             {
