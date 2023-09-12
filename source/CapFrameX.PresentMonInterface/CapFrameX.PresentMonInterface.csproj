@@ -135,7 +135,7 @@
     <Content Include="PresentMon\license.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="PresentMon\PresentMon-1.9.1-x64.exe">
+    <Content Include="PresentMon\PresentMon-1.9.2-x64.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Sounds\Voice\CaptureStopped.mp3">
