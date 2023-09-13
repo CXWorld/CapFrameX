@@ -40,7 +40,11 @@ namespace CapFrameX.ViewModel
 					return GetLabelLines($"{record.FileRecordInfo.CreationDate} { record.FileRecordInfo.CreationTime}");
 				case EComparisonContext.Custom:
 					return GetLabelLines(record.FileRecordInfo.Comment);
-				default:
+                case EComparisonContext.GPUDriver:
+                    return GetLabelLines(record.FileRecordInfo.GPUDriverVersion);
+                case EComparisonContext.API:
+                    return GetLabelLines(record.FileRecordInfo.ApiInfo);
+                default:
 					return Array.Empty<string>();
 			}
 		}
