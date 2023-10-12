@@ -13,5 +13,6 @@ namespace CapFrameX.Remote.JsonPayload
         public string ProcessName { get; set; }
         public string CaptureFileMode { get; set; } = Enum.GetName(typeof(ECaptureFileMode), ECaptureFileMode.Json);
         public string RecordDirectory { get; set; }
+        public string Comment { get; set; }
     }
 }

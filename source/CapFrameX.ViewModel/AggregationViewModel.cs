@@ -413,7 +413,7 @@ namespace CapFrameX.ViewModel
                     runs.AddRange(otherSession.Runs);
                 }
 
-                _recordManager.SaveSessionRunsToFile(runs, process, null, HWInfo);
+                _recordManager.SaveSessionRunsToFile(runs, process, string.Empty, null, HWInfo);
             });
         }
 

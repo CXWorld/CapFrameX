@@ -486,7 +486,7 @@ namespace CapFrameX.Data
 					await _recordManager.SavePresentmonRawToFile(normalizedAdjustedCaptureData, _currentCaptureOptions.ProcessInfo.Item1, _currentCaptureOptions.RecordDirectory);
 				}
 
-				bool checkSave = await _recordManager.SaveSessionRunsToFile(new ISessionRun[] { sessionRun }, _currentCaptureOptions.ProcessInfo.Item1, _currentCaptureOptions.RecordDirectory, null);
+				bool checkSave = await _recordManager.SaveSessionRunsToFile(new ISessionRun[] { sessionRun }, _currentCaptureOptions.ProcessInfo.Item1, _currentCaptureOptions.Comment, _currentCaptureOptions.RecordDirectory, null);
 
 				if (!checkSave)
 					_logEntryManager.AddLogEntry("Error while saving capture data.", ELogMessageType.Error, false);
@@ -739,5 +739,6 @@ namespace CapFrameX.Data
 		public string CaptureFileMode;
 		public string RecordDirectory;
 		public bool Remote;
+		public string Comment;
 	}
 }

@@ -442,7 +442,7 @@ namespace CapFrameX.Data
             }
         }
 
-        public async Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName, string recordDirectory = null, List<ISessionInfo> HWInfo = null)
+        public async Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName, string comment, string recordDirectory = null, List<ISessionInfo> HWInfo = null)
         {
             var filePath = await GetOutputFilename(processName, recordDirectory);
 
@@ -576,7 +576,8 @@ namespace CapFrameX.Data
                         ResizableBar = resizableBar,
                         WinGameMode = winGameMode,
                         HAGS = hAGS,
-                        PresentationMode = runs.GetPresentationMode()
+                        PresentationMode = runs.GetPresentationMode(),
+                        Comment = comment,
                         //ResolutionInfo = resolutionInfo
                     }
                 };

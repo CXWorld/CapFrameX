@@ -35,7 +35,8 @@ namespace CapFrameX.Remote
                     CaptureFileMode = parameters.CaptureFileMode,
                     ProcessInfo = (parameters.ProcessName, processes.FirstOrDefault().Id),
                     RecordDirectory = parameters.RecordDirectory,
-                    Remote = true
+                    Remote = true,
+                    Comment = parameters.Comment,
                 });
 
                 return new

@@ -341,7 +341,7 @@ namespace CapFrameX.Overlay
                             Task.Run(async () =>
                             {
                                 await Task.Delay(1000);
-                                bool checkSave = await _recordManager.SaveSessionRunsToFile(_captureDataHistory, process, recordDirectory, null);
+                                bool checkSave = await _recordManager.SaveSessionRunsToFile(_captureDataHistory, process, string.Empty, recordDirectory, null);
 
                                 if (!checkSave)
                                     _logEntryManager.AddLogEntry("Error while saving aggregated file.", ELogMessageType.Error, false);
