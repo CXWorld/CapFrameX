@@ -29,7 +29,7 @@ namespace CapFrameX.Overlay
 	public class OverlayEntryProvider : IOverlayEntryProvider
 	{
 		private static readonly string OVERLAY_CONFIG_FOLDER
-			= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+			= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
 					@"CapFrameX\Configuration\");
 
 		private static readonly HashSet<string> ONLINE_METRIC_NAMES = new HashSet<string>()

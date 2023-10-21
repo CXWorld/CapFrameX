@@ -151,13 +151,8 @@ namespace CapFrameX.Data
             }
         }
 
-        private bool CheckRelevantFiles(string path)
-        {
-            if (path.EndsWith(".json") || path.EndsWith(".csv"))
-                return true;
-            else
-                return false;
-        }
+        private bool CheckRelevantFiles(string path) 
+            => path.EndsWith(".json") || path.EndsWith(".csv");
 
         private string GetInitialObservedDirectory(string observedDirectory)
         {

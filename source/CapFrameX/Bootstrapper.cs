@@ -109,7 +109,7 @@ namespace CapFrameX
             Container.Register<IOnlineMetricService, OnlineMetricService>(Reuse.Singleton);
             Container.Register<ISensorService, SensorService>(Reuse.Singleton);
             var sensorConfigFolder = Path.Combine(Environment
-                .GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Configuration\");
+                .GetFolderPath(Environment.SpecialFolder.ApplicationData), @"CapFrameX\Configuration\");
             Container.RegisterInstance<ISensorConfig>(new SensorConfig(sensorConfigFolder), Reuse.Singleton);
             Container.Register<ISensorEntryProvider, SensorEntryProvider>(Reuse.Singleton);
             Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
@@ -125,7 +125,7 @@ namespace CapFrameX
             var loggerProcessList = loggerFactory.CreateLogger<ProcessList>();
             Container.RegisterInstance(ProcessList.Create(
                 filename: "Processes.json",
-                foldername: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Configuration"),
+                foldername: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"CapFrameX\Configuration"),
                 appConfiguration: Container.Resolve<IAppConfiguration>(),
                 logger: loggerProcessList));
             Container.Register<SoundManager>(Reuse.Singleton);

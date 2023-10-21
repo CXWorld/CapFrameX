@@ -77,7 +77,7 @@ namespace CapFrameX.CustomInstallerActions
                 var configSourcePath = Path.Combine(session["INSTALLLOCATION"], "Configuration");
                 if (Directory.Exists(configSourcePath))
                 {
-                    var configDestinationPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                    var configDestinationPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                         @"CapFrameX\Configuration\");
 
                     if (!Directory.Exists(configDestinationPath))

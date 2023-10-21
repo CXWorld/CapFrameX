@@ -15,7 +15,7 @@ namespace CapFrameX.Configuration
     {
         private readonly object _iOLock = new object();
         private readonly string _jsonFilePath
-            = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 "CapFrameX", "Configuration", "AppSettings.json");
         private readonly ILogger<JsonSettingsStorage> _logger;
         private readonly Subject<int> _saveFileSubject = new Subject<int>();
