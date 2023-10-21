@@ -116,41 +116,48 @@ namespace OpenHardwareMonitor.Hardware
                     .DistinctUntilChanged()
                     .Subscribe(id =>
                     {
-                        lock (_performanceCounterLock)
+                        try
                         {
-                            if (id == 0)
+                            lock (_performanceCounterLock)
                             {
-                                dedicatedVramUsageProcessPerformCounter = null;
-                                sharedVramUsageProcessPerformCounter = null;
-                            }
-                            else
-                            {
-                                string idString = $"pid_{id}_luid";
-
-                                var instances = category.GetInstanceNames();
-                                if (instances != null && instances.Any())
+                                if (id == 0)
                                 {
-                                    var pids = instances.Where(instance => instance.Contains(idString));
+                                    dedicatedVramUsageProcessPerformCounter = null;
+                                    sharedVramUsageProcessPerformCounter = null;
+                                }
+                                else
+                                {
+                                    string idString = $"pid_{id}_luid";
 
-                                    if (pids != null && pids.Any())
+                                    var instances = category.GetInstanceNames();
+                                    if (instances != null && instances.Any())
                                     {
-                                        var pid = GetMaximumPid(pids);
-                                        dedicatedVramUsageProcessPerformCounter = new PerformanceCounter("GPU Process Memory", "Dedicated Usage", pid);
-                                        sharedVramUsageProcessPerformCounter = new PerformanceCounter("GPU Process Memory", "Shared Usage", pid);
+                                        var pids = instances.Where(instance => instance.Contains(idString));
+
+                                        if (pids != null && pids.Any())
+                                        {
+                                            var pid = GetMaximumPid(pids);
+                                            dedicatedVramUsageProcessPerformCounter = new PerformanceCounter("GPU Process Memory", "Dedicated Usage", pid);
+                                            sharedVramUsageProcessPerformCounter = new PerformanceCounter("GPU Process Memory", "Shared Usage", pid);
+                                        }
+                                        else
+                                        {
+                                            dedicatedVramUsageProcessPerformCounter = null;
+                                            sharedVramUsageProcessPerformCounter = null;
+                                        }
                                     }
                                     else
                                     {
                                         dedicatedVramUsageProcessPerformCounter = null;
                                         sharedVramUsageProcessPerformCounter = null;
+                                        Log.Logger.Error("Error while creating GPU process memory performance counter. No instances found.");
                                     }
                                 }
-                                else
-                                {
-                                    dedicatedVramUsageProcessPerformCounter = null;
-                                    sharedVramUsageProcessPerformCounter = null;
-                                    Log.Logger.Error("Error while creating GPU process memory performance counter. No instances found.");
-                                }
                             }
+                        }
+                        catch
+                        {
+                            Log.Logger.Error("Error while subscribing to process ID changed. GPU Process Memory PerformanceCounter.");
                         }
 
                         lock (_displayLock)

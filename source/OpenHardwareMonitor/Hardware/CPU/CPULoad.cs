@@ -4,6 +4,7 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using CapFrameX.Extensions;
 using System;
 using System.Runtime.InteropServices;
 
@@ -96,60 +97,69 @@ namespace OpenHardwareMonitor.Hardware.CPU
             if (this.idleTimes == null)
                 return;
 
-            if (!GetTimes(out long[] newIdleTimes, out long[] newTotalTimes))
-                return;
-
-            if (newIdleTimes == null || newTotalTimes == null)
-                return;
-
-            for (int i = 0; i < Math.Min(newTotalTimes.Length, totalTimes.Length); i++)
-                if (newTotalTimes[i] - this.totalTimes[i] < 100000)
+            try
+            {
+                if (!GetTimes(out long[] newIdleTimes, out long[] newTotalTimes))
                     return;
 
-            float total = 0;
-            this.maxLoad = 0;
-            int count = 0;
-            for (int i = 0; i < cpuid.Length; i++)
-            {
-                for (int j = 0; j < cpuid[i].Length; j++)
+                if (newIdleTimes.IsNullOrEmpty() || newTotalTimes.IsNullOrEmpty())
+                    return;
+
+                for (int i = 0; i < Math.Min(newTotalTimes.Length, totalTimes.Length); i++)
+                    if (newTotalTimes[i] - this.totalTimes[i] < 100000)
+                        return;
+
+                float total = 0;
+                this.maxLoad = 0;
+                int count = 0;
+                for (int i = 0; i < cpuid.Length; i++)
                 {
-                    float value = 0;
-                    long index = cpuid[i][j].Thread;
-                    if (index < newIdleTimes.Length && index < totalTimes.Length)
+                    for (int j = 0; j < cpuid[i].Length; j++)
                     {
-                        float idle = 0f;
-                        if (index < newIdleTimes.Length && index < newTotalTimes.Length)
+                        float value = 0;
+                        long index = cpuid[i][j].Thread;
+                        if (index < newIdleTimes.Length && index < totalTimes.Length)
                         {
-                            idle = (float)(newIdleTimes[index] - this.idleTimes[index]) /
-                            (float)(newTotalTimes[index] - this.totalTimes[index]);
+                            float idle = 0f;
+                            if (index < newIdleTimes.Length && index < newTotalTimes.Length)
+                            {
+                                idle = (float)(newIdleTimes[index] - this.idleTimes[index]) /
+                                (float)(newTotalTimes[index] - this.totalTimes[index]);
+                            }
+
+                            value = idle;
+                            total += idle;
+                            count++;
                         }
+                        value = 1.0f - value;
+                        value = value < 0 ? 0 : value;
+                        threadLoads[index] = value * 100;
 
-                        value = idle;
-                        total += idle;
-                        count++;
+                        if (threadLoads[index] > this.maxLoad)
+                            this.maxLoad = threadLoads[index];
                     }
-                    value = 1.0f - value;
-                    value = value < 0 ? 0 : value;
-                    threadLoads[index] = value * 100;
-
-                    if (threadLoads[index] > this.maxLoad)
-                        this.maxLoad = threadLoads[index];
                 }
-            }
 
-            if (count > 0)
-            {
-                total = 1.0f - total / count;
-                total = total < 0 ? 0 : total;
-            }
-            else
-            {
-                total = 0;
-            }
+                if (count > 0)
+                {
+                    total = 1.0f - total / count;
+                    total = total < 0 ? 0 : total;
+                }
+                else
+                {
+                    total = 0;
+                }
 
-            this.totalLoad = total * 100;
-            this.totalTimes = newTotalTimes;
-            this.idleTimes = newIdleTimes;
+                this.totalLoad = total * 100;
+                this.totalTimes = newTotalTimes;
+                this.idleTimes = newIdleTimes;
+            }
+            catch
+            {
+                this.totalLoad = 0f;
+                this.totalTimes = new long[Environment.ProcessorCount]; ;
+                this.idleTimes = new long[Environment.ProcessorCount]; ;
+            }
         }
     }
 }

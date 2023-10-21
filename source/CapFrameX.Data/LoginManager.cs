@@ -21,444 +21,455 @@ using System.Threading.Tasks;
 
 namespace CapFrameX.Data
 {
-	public class LoginManager
-	{
-		private const string OAUTHTOKEN_FILENAME = "OAuthToken.dat";
-		private readonly ILogger<LoginManager> _logger;
-		private readonly PubSubEvent<AppMessages.LoginState> _loginStateEvent;
+    public class LoginManager
+    {
+        private const string OAUTHTOKEN_FILENAME = "OAuthToken.dat";
+        private readonly ILogger<LoginManager> _logger;
+        private readonly PubSubEvent<AppMessages.LoginState> _loginStateEvent;
 
-		public OAuthState State { get; } = new OAuthState();
-		private OAuthRequest Request { get; set; } = OAuthRequest.BuildLoopbackRequest();
+        public OAuthState State { get; } = new OAuthState();
+        private OAuthRequest Request { get; set; } = OAuthRequest.BuildLoopbackRequest();
 
-		public LoginManager(ILogger<LoginManager> logger, IEventAggregator eventAggregator)
-		{
-			Stopwatch stopwatch = new Stopwatch();
-			stopwatch.Start();
+        public LoginManager(ILogger<LoginManager> logger, IEventAggregator eventAggregator)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
 
-			_logger = logger;
-			_loginStateEvent = eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>();
-			Initialize();
+            _logger = logger;
+            _loginStateEvent = eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>();
+            Initialize();
 
-			stopwatch.Stop();
-			_logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
-		}
+            stopwatch.Stop();
+            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
+        }
 
-		public void Initialize()
-		{
-			var fileInfo = new FileInfo(OAUTHTOKEN_FILENAME);
-			if (fileInfo.Exists)
-			{
-				try
-				{
-					var decrypted = ProtectedData.Unprotect(File.ReadAllBytes(fileInfo.FullName), null, DataProtectionScope.CurrentUser);
-					ApplyToken(OAuthToken.FromJson(Encoding.UTF8.GetString(decrypted)));
-				} catch(Exception e)
-				{
-					_logger.LogError(e, "Error reading OAuthToken from File");
-				}
-			}
-			Task.Run(() => RefreshTokenIfNeeded());
-		}
+        public void Initialize()
+        {
+            var fileInfo = new FileInfo(OAUTHTOKEN_FILENAME);
+            if (fileInfo.Exists)
+            {
+                try
+                {
+                    var decrypted = ProtectedData.Unprotect(File.ReadAllBytes(fileInfo.FullName), null, DataProtectionScope.CurrentUser);
+                    ApplyToken(OAuthToken.FromJson(Encoding.UTF8.GetString(decrypted)));
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Error reading OAuthToken from File");
+                }
+            }
+            Task.Run(() => RefreshTokenIfNeeded());
+        }
 
-		public async Task Logout()
-		{
-			await Task.Run(() => ApplyToken(null));
-		}
+        public async Task Logout()
+        {
+            await Task.Run(() => ApplyToken(null));
+        }
 
-		public async Task HandleRedirect(Func<string, Task> navigateAction)
-		{
-			Request = OAuthRequest.BuildLoopbackRequest();
-			State.Token = null;
-			using (var listener = new HttpListener())
-			{
-				listener.Prefixes.Add(Request.RedirectUri);
-				listener.Start();
+        public async Task HandleRedirect(Func<string, Task> navigateAction)
+        {
+            try
+            {
+                Request = OAuthRequest.BuildLoopbackRequest();
+                State.Token = null;
+                using (var listener = new HttpListener())
+                {
+                    listener.Prefixes.Add(Request.RedirectUri);
+                    listener.Start();
 
-				await navigateAction(Request.AuthorizationRequestUri);
+                    await navigateAction(Request.AuthorizationRequestUri);
 
-				var context = await listener.GetContextAsync();
+                    var context = await listener.GetContextAsync();
 
-				string html = string.Format($@"
-<html>
-	<body>
-		<div><h1>Ok. You can now close this Window.</h1></div>
-		<div>Otherwise, click <a href=""{ConfigurationManager.AppSettings["ManageProfilePageUrl"]}"">Here</a> to manage your account.</div>
-	</body>
-</html>"
-);
-				var buffer = Encoding.UTF8.GetBytes(html);
-				context.Response.ContentLength64 = buffer.Length;
-				using (var stream = context.Response.OutputStream)
-				{
-					await stream.WriteAsync(buffer, 0, buffer.Length);
-				}
+                    string html = string.Format($@"
+                    <html>
+	                    <body>
+		                    <div><h1>Ok. You can now close this Window.</h1></div>
+		                    <div>Otherwise, click <a href=""{ConfigurationManager.AppSettings["ManageProfilePageUrl"]}"">Here</a> to manage your account.</div>
+	                    </body>
+                    </html>"
+                        );
+                    var buffer = Encoding.UTF8.GetBytes(html);
+                    context.Response.ContentLength64 = buffer.Length;
+                    using (var stream = context.Response.OutputStream)
+                    {
+                        await stream.WriteAsync(buffer, 0, buffer.Length);
+                    }
 
-				string error = context.Request.QueryString["error"];
-				if (error != null)
-					return;
+                    string error = context.Request.QueryString["error"];
+                    if (error != null)
+                        return;
 
-				string state = context.Request.QueryString["state"];
-				if (state != Request.State)
-					return;
+                    string state = context.Request.QueryString["state"];
+                    if (state != Request.State)
+                        return;
 
-				string code = context.Request.QueryString["code"];
-				_logger.LogInformation("Login successfull");
-				ApplyToken(await Request.ExchangeCodeForAccessToken(code));
-				_logger.LogDebug("Token information: {@token}", State.Token);
-			}
-		}
+                    string code = context.Request.QueryString["code"];
+                    _logger.LogInformation("Login successfull");
+                    ApplyToken(await Request.ExchangeCodeForAccessToken(code));
+                    _logger.LogDebug("Token information: {@token}", State.Token);
+                }
+            }
+            catch (Exception ex) 
+            {
+                _logger.LogError(ex, "Error while handling redirect.");
+            }
+        }
 
-		public async Task RefreshTokenIfNeeded()
-		{
-			if(State.Token != null && State.IsNotSigned)
-			{
-				await RefreshToken();
-			}
-		}
+        public async Task RefreshTokenIfNeeded()
+        {
+            if (State.Token != null && State.IsNotSigned)
+            {
+                await RefreshToken();
+            }
+        }
 
-		public void EnableTokenRefresh(CancellationToken cancellationToken)
-		{
-			Observable.Timer(State.Token.ExpirationDate.AddSeconds(-30))
-				.SelectMany(_ => Observable.Concat(Observable.Return(1L), Observable.Interval(TimeSpan.FromSeconds(State.Token.ExpiresIn - 30)))
-									.SelectMany(index =>
-									{
-										_logger.LogInformation("Refreshing Accesstoken");
-										return Request.Refresh(State.Token);
-									})
-							)
-				.TakeWhile(_ => State.Token != null && !cancellationToken.IsCancellationRequested)
-				.Subscribe(token =>
-				{
-					ApplyToken(token);
-				});
-		}
+        public void EnableTokenRefresh(CancellationToken cancellationToken)
+        {
+            Observable.Timer(State.Token.ExpirationDate.AddSeconds(-30))
+                .SelectMany(_ => Observable.Concat(Observable.Return(1L), Observable.Interval(TimeSpan.FromSeconds(State.Token.ExpiresIn - 30)))
+                                    .SelectMany(index =>
+                                    {
+                                        _logger.LogInformation("Refreshing Accesstoken");
+                                        return Request.Refresh(State.Token);
+                                    })
+                            )
+                .TakeWhile(_ => State.Token != null && !cancellationToken.IsCancellationRequested)
+                .Subscribe(token =>
+                {
+                    ApplyToken(token);
+                });
+        }
 
-		private void ApplyToken(OAuthToken token)
-		{
-			if (token != null && token.Equals(State.Token)) {
-				return;
-			};
-			State.Token = token;
-			var fileInfo = new FileInfo(OAUTHTOKEN_FILENAME);
-			try
-			{
-				if (State.Token is null)
-				{
-					_loginStateEvent.Publish(new AppMessages.LoginState(false));
-					File.Delete(fileInfo.FullName);
-				}
-				else
-				{
-					_loginStateEvent.Publish(new AppMessages.LoginState(true));
-					var encrypted = ProtectedData.Protect(Encoding.UTF8.GetBytes(token.ToJson()), null, DataProtectionScope.CurrentUser);
-					File.WriteAllBytes(fileInfo.FullName, encrypted);
-				}
-			} catch(Exception e)
-			{
-				_logger.LogError(e, "Error saving OAuthToken to File");
-			}
-		}
+        private void ApplyToken(OAuthToken token)
+        {
+            if (token != null && token.Equals(State.Token))
+            {
+                return;
+            };
+            State.Token = token;
+            var fileInfo = new FileInfo(OAUTHTOKEN_FILENAME);
+            try
+            {
+                if (State.Token is null)
+                {
+                    _loginStateEvent.Publish(new AppMessages.LoginState(false));
+                    File.Delete(fileInfo.FullName);
+                }
+                else
+                {
+                    _loginStateEvent.Publish(new AppMessages.LoginState(true));
+                    var encrypted = ProtectedData.Protect(Encoding.UTF8.GetBytes(token.ToJson()), null, DataProtectionScope.CurrentUser);
+                    File.WriteAllBytes(fileInfo.FullName, encrypted);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error saving OAuthToken to File");
+            }
+        }
 
-		private async Task RefreshToken()
-		{
-			ApplyToken(await Request.Refresh(State.Token));
-		}
-	}
+        private async Task RefreshToken()
+        {
+            ApplyToken(await Request.Refresh(State.Token));
+        }
+    }
 
-	public class OAuthState : INotifyPropertyChanged
-	{
-		public event PropertyChangedEventHandler PropertyChanged;
+    public class OAuthState : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler PropertyChanged;
 
-		private OAuthToken _token;
-		public OAuthToken Token
-		{
-			get => _token;
-			set
-			{
-				if (_token == value)
-					return;
+        private OAuthToken _token;
+        public OAuthToken Token
+        {
+            get => _token;
+            set
+            {
+                if (_token == value)
+                    return;
 
-				_token = value;
-				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Token)));
-				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSigned)));
-				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsNotSigned)));
-			}
-		}
+                _token = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Token)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSigned)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsNotSigned)));
+            }
+        }
 
-		public bool IsSigned => Token != null && Token.ExpirationDate > DateTime.Now;
-		public bool IsNotSigned => !IsSigned;
-	}
+        public bool IsSigned => Token != null && Token.ExpirationDate > DateTime.Now;
+        public bool IsNotSigned => !IsSigned;
+    }
 
 #pragma warning disable CS0659 // Typ überschreibt Object.Equals(object o), überschreibt jedoch nicht Object.GetHashCode()
     public class OAuthToken
 #pragma warning restore CS0659 // Typ überschreibt Object.Equals(object o), überschreibt jedoch nicht Object.GetHashCode()
     {
-		[JsonProperty("access_token")]
-		public string AccessToken { get; set; }
+        [JsonProperty("access_token")]
+        public string AccessToken { get; set; }
 
-		[JsonProperty("token_type")]
-		public string TokenType { get; set; }
+        [JsonProperty("token_type")]
+        public string TokenType { get; set; }
 
-		[JsonProperty("expires_in")]
-		public int ExpiresIn { get; set; }
+        [JsonProperty("expires_in")]
+        public int ExpiresIn { get; set; }
 
-		[JsonProperty("refresh_token")]
-		public string RefreshToken { get; set; }
+        [JsonProperty("refresh_token")]
+        public string RefreshToken { get; set; }
 
-		public string Name { get; set; }
+        public string Name { get; set; }
 
-		public string Email { get; set; }
+        public string Email { get; set; }
 
-		public string Picture { get; set; }
+        public string Picture { get; set; }
 
-		public string Locale { get; set; }
+        public string Locale { get; set; }
 
-		public string FamilyName { get; set; }
+        public string FamilyName { get; set; }
 
-		public string GivenName { get; set; }
+        public string GivenName { get; set; }
 
-		public string Id { get; set; }
+        public string Id { get; set; }
 
-		public string Profile { get; set; }
+        public string Profile { get; set; }
 
-		public string[] Scopes { get; set; }
+        public string[] Scopes { get; set; }
 
-		public DateTime ExpirationDate { get; set; }
+        public DateTime ExpirationDate { get; set; }
 
-		public override bool Equals(object obj)
-		{
-			return obj != null && obj.GetType() == GetType() && (obj as OAuthToken).AccessToken == this.AccessToken;
-		}
+        public override bool Equals(object obj)
+        {
+            return obj != null && obj.GetType() == GetType() && (obj as OAuthToken).AccessToken == this.AccessToken;
+        }
 
-		public string ToJson()
-		{
-			return JsonConvert.SerializeObject(this, new JsonSerializerSettings()
-			{
-				DateFormatString = "yyyy-MM-dd'T'HH:mm:ss.fffK"
-			});
-		}
+        public string ToJson()
+        {
+            return JsonConvert.SerializeObject(this, new JsonSerializerSettings()
+            {
+                DateFormatString = "yyyy-MM-dd'T'HH:mm:ss.fffK"
+            });
+        }
 
-		public static OAuthToken FromJson(string json)
-		{
-			return JsonConvert.DeserializeObject<OAuthToken>(json, new JsonSerializerSettings()
-			{
-				DateFormatString = "yyyy-MM-dd'T'HH:mm:ss.fffK"
-			});
-		}
-	}
+        public static OAuthToken FromJson(string json)
+        {
+            return JsonConvert.DeserializeObject<OAuthToken>(json, new JsonSerializerSettings()
+            {
+                DateFormatString = "yyyy-MM-dd'T'HH:mm:ss.fffK"
+            });
+        }
+    }
 
-	public sealed class OAuthRequest
-	{
-		private static readonly string _clientId = ConfigurationManager.AppSettings["OAuthClientId"];
-		private static readonly string _clientSecret = ConfigurationManager.AppSettings["OAuthClientSecret"];
+    public sealed class OAuthRequest
+    {
+        private static readonly string _clientId = ConfigurationManager.AppSettings["OAuthClientId"];
+        private static readonly string _clientSecret = ConfigurationManager.AppSettings["OAuthClientSecret"];
 
-		private static readonly string _authorizationEndpoint = ConfigurationManager.AppSettings["OAuthAuthorizationEndpoint"];
-		private static readonly string _tokenEndpoint = ConfigurationManager.AppSettings["OAuthTokenEndpoint"];
-		private static readonly string _userInfoEndpoint = ConfigurationManager.AppSettings["OAuthUserinfoEndpoint"];
+        private static readonly string _authorizationEndpoint = ConfigurationManager.AppSettings["OAuthAuthorizationEndpoint"];
+        private static readonly string _tokenEndpoint = ConfigurationManager.AppSettings["OAuthTokenEndpoint"];
+        private static readonly string _userInfoEndpoint = ConfigurationManager.AppSettings["OAuthUserinfoEndpoint"];
 
-		private OAuthRequest()
-		{
-		}
+        private OAuthRequest()
+        {
+        }
 
-		public string AuthorizationRequestUri { get; private set; }
-		public string State { get; private set; }
-		public string RedirectUri { get; private set; }
-		public string CodeVerifier { get; private set; }
-		public string[] Scopes { get; private set; }
+        public string AuthorizationRequestUri { get; private set; }
+        public string State { get; private set; }
+        public string RedirectUri { get; private set; }
+        public string CodeVerifier { get; private set; }
+        public string[] Scopes { get; private set; }
 
-		public static OAuthRequest BuildLoopbackRequest()
-		{
-			var scopes = new string[] { "profile", "offline_access" };
-			var request = new OAuthRequest
-			{
-				CodeVerifier = RandomDataBase64Url(32),
-				Scopes = scopes
-			};
+        public static OAuthRequest BuildLoopbackRequest()
+        {
+            var scopes = new string[] { "profile", "offline_access" };
+            var request = new OAuthRequest
+            {
+                CodeVerifier = RandomDataBase64Url(32),
+                Scopes = scopes
+            };
 
-			string codeChallenge = Base64UrlEncodeNoPadding(Sha256(request.CodeVerifier));
-			const string codeChallengeMethod = "S256";
+            string codeChallenge = Base64UrlEncodeNoPadding(Sha256(request.CodeVerifier));
+            const string codeChallengeMethod = "S256";
 
-			string scope = BuildScopes(scopes);
+            string scope = BuildScopes(scopes);
 
-			request.RedirectUri = string.Format("http://{0}:{1}/", IPAddress.Loopback, GetRandomUnusedPort());
-			request.State = RandomDataBase64Url(32);
-			request.AuthorizationRequestUri = string.Format("{0}?response_type=code&scope=openid%20profile{6}&redirect_uri={1}&client_id={2}&state={3}&code_challenge={4}&code_challenge_method={5}",
-				_authorizationEndpoint,
-				Uri.EscapeDataString(request.RedirectUri),
-				_clientId,
-				request.State,
-				codeChallenge,
-				codeChallengeMethod,
-				scope);
+            request.RedirectUri = string.Format("http://{0}:{1}/", IPAddress.Loopback, GetRandomUnusedPort());
+            request.State = RandomDataBase64Url(32);
+            request.AuthorizationRequestUri = string.Format("{0}?response_type=code&scope=openid%20profile{6}&redirect_uri={1}&client_id={2}&state={3}&code_challenge={4}&code_challenge_method={5}",
+                _authorizationEndpoint,
+                Uri.EscapeDataString(request.RedirectUri),
+                _clientId,
+                request.State,
+                codeChallenge,
+                codeChallengeMethod,
+                scope);
 
-			return request;
-		}
+            return request;
+        }
 
-		public Task<OAuthToken> ExchangeCodeForAccessToken(string code)
-		{
-			if (code == null)
-				throw new ArgumentNullException(nameof(code));
+        public Task<OAuthToken> ExchangeCodeForAccessToken(string code)
+        {
+            if (code == null)
+                throw new ArgumentNullException(nameof(code));
 
-			string tokenRequestBody = string.Format("code={0}&redirect_uri={1}&client_id={2}&code_verifier={3}&client_secret={4}&scope=&grant_type=authorization_code",
-				code,
-				Uri.EscapeDataString(RedirectUri),
-				_clientId,
-				CodeVerifier,
-				_clientSecret
-				);
+            string tokenRequestBody = string.Format("code={0}&redirect_uri={1}&client_id={2}&code_verifier={3}&client_secret={4}&scope=&grant_type=authorization_code",
+                code,
+                Uri.EscapeDataString(RedirectUri),
+                _clientId,
+                CodeVerifier,
+                _clientSecret
+                );
 
-			return TokenRequest(tokenRequestBody, Scopes);
-		}
+            return TokenRequest(tokenRequestBody, Scopes);
+        }
 
-		public Task<OAuthToken> Refresh(OAuthToken oldToken)
-		{
-			if (oldToken == null)
-				throw new ArgumentNullException(nameof(oldToken));
-			try
-			{
-				string tokenRequestBody = string.Format("refresh_token={0}&client_id={1}&client_secret={2}&grant_type=refresh_token",
-					oldToken.RefreshToken,
-					_clientId,
-					_clientSecret
-					);
+        public Task<OAuthToken> Refresh(OAuthToken oldToken)
+        {
+            if (oldToken == null)
+                throw new ArgumentNullException(nameof(oldToken));
+            try
+            {
+                string tokenRequestBody = string.Format("refresh_token={0}&client_id={1}&client_secret={2}&grant_type=refresh_token",
+                    oldToken.RefreshToken,
+                    _clientId,
+                    _clientSecret
+                    );
 
-				return TokenRequest(tokenRequestBody, oldToken.Scopes);
-			} catch(Exception)
-			{
-				return null;
-			}
-		}
+                return TokenRequest(tokenRequestBody, oldToken.Scopes);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
 
-		private static int GetRandomUnusedPort()
-		{
-			var listener = new TcpListener(IPAddress.Loopback, 0);
-			listener.Start();
-			var port = ((IPEndPoint)listener.LocalEndpoint).Port;
-			listener.Stop();
-			return port;
-		}
+        private static int GetRandomUnusedPort()
+        {
+            var listener = new TcpListener(IPAddress.Loopback, 0);
+            listener.Start();
+            var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+            listener.Stop();
+            return port;
+        }
 
-		private static string RandomDataBase64Url(int length)
-		{
-			using (var rng = new RNGCryptoServiceProvider())
-			{
-				var bytes = new byte[length];
-				rng.GetBytes(bytes);
-				return Base64UrlEncodeNoPadding(bytes);
-			}
-		}
+        private static string RandomDataBase64Url(int length)
+        {
+            using (var rng = new RNGCryptoServiceProvider())
+            {
+                var bytes = new byte[length];
+                rng.GetBytes(bytes);
+                return Base64UrlEncodeNoPadding(bytes);
+            }
+        }
 
-		private static byte[] Sha256(string text)
-		{
-			using (var sha256 = new SHA256Managed())
-			{
-				return sha256.ComputeHash(Encoding.ASCII.GetBytes(text));
-			}
-		}
+        private static byte[] Sha256(string text)
+        {
+            using (var sha256 = new SHA256Managed())
+            {
+                return sha256.ComputeHash(Encoding.ASCII.GetBytes(text));
+            }
+        }
 
-		private static string Base64UrlEncodeNoPadding(byte[] buffer)
-		{
-			string b64 = Convert.ToBase64String(buffer);
-			// converts base64 to base64url.
-			b64 = b64.Replace('+', '-');
-			b64 = b64.Replace('/', '_');
-			// strips padding.
-			b64 = b64.Replace("=", "");
-			return b64;
-		}
+        private static string Base64UrlEncodeNoPadding(byte[] buffer)
+        {
+            string b64 = Convert.ToBase64String(buffer);
+            // converts base64 to base64url.
+            b64 = b64.Replace('+', '-');
+            b64 = b64.Replace('/', '_');
+            // strips padding.
+            b64 = b64.Replace("=", "");
+            return b64;
+        }
 
-		private static async Task<OAuthToken> TokenRequest(string tokenRequestBody, string[] scopes)
-		{
-			var request = (HttpWebRequest)WebRequest.Create(_tokenEndpoint);
-			request.Method = "POST";
-			request.ContentType = "application/x-www-form-urlencoded";
-			byte[] bytes = Encoding.ASCII.GetBytes(tokenRequestBody);
-			using (var requestStream = request.GetRequestStream())
-			{
-				requestStream.Write(bytes, 0, bytes.Length);
-			}
+        private static async Task<OAuthToken> TokenRequest(string tokenRequestBody, string[] scopes)
+        {
+            var request = (HttpWebRequest)WebRequest.Create(_tokenEndpoint);
+            request.Method = "POST";
+            request.ContentType = "application/x-www-form-urlencoded";
+            byte[] bytes = Encoding.ASCII.GetBytes(tokenRequestBody);
+            using (var requestStream = request.GetRequestStream())
+            {
+                requestStream.Write(bytes, 0, bytes.Length);
+            }
 
-			var response = await request.GetResponseAsync();
-			using (var responseStream = response.GetResponseStream())
-			{
-				using (StreamReader sr = new StreamReader(responseStream))
-				{
-					var token = JsonConvert.DeserializeObject<OAuthToken>(sr.ReadToEnd());
-					token.ExpirationDate = DateTime.Now + new TimeSpan(0, 0, token.ExpiresIn);
-					var user = GetUserInfo(token.AccessToken);
-					token.Name = user.Name;
-					token.Picture = user.Picture;
-					token.Email = user.Email;
-					token.Locale = user.Locale;
-					token.FamilyName = user.FamilyName;
-					token.GivenName = user.GivenName;
-					token.Id = user.Id;
-					token.Profile = user.Profile;
-					token.Scopes = scopes;
-					return token;
-				}
-			}
-		}
+            var response = await request.GetResponseAsync();
+            using (var responseStream = response.GetResponseStream())
+            {
+                using (StreamReader sr = new StreamReader(responseStream))
+                {
+                    var token = JsonConvert.DeserializeObject<OAuthToken>(sr.ReadToEnd());
+                    token.ExpirationDate = DateTime.Now + new TimeSpan(0, 0, token.ExpiresIn);
+                    var user = GetUserInfo(token.AccessToken);
+                    token.Name = user.Name;
+                    token.Picture = user.Picture;
+                    token.Email = user.Email;
+                    token.Locale = user.Locale;
+                    token.FamilyName = user.FamilyName;
+                    token.GivenName = user.GivenName;
+                    token.Id = user.Id;
+                    token.Profile = user.Profile;
+                    token.Scopes = scopes;
+                    return token;
+                }
+            }
+        }
 
-		private static UserInfo GetUserInfo(string accessToken)
-		{
-			var request = (HttpWebRequest)WebRequest.Create(_userInfoEndpoint);
-			request.Method = "GET";
-			request.Headers.Add(string.Format("Authorization: Bearer {0}", accessToken));
-			var response = request.GetResponse();
-			using (var responseStream = response.GetResponseStream())
-			{
-				using (var reader = new StreamReader(responseStream))
-				{
-					return JsonConvert.DeserializeObject<UserInfo>(reader.ReadToEnd());
-				}
-			}
-		}
+        private static UserInfo GetUserInfo(string accessToken)
+        {
+            var request = (HttpWebRequest)WebRequest.Create(_userInfoEndpoint);
+            request.Method = "GET";
+            request.Headers.Add(string.Format("Authorization: Bearer {0}", accessToken));
+            var response = request.GetResponse();
+            using (var responseStream = response.GetResponseStream())
+            {
+                using (var reader = new StreamReader(responseStream))
+                {
+                    return JsonConvert.DeserializeObject<UserInfo>(reader.ReadToEnd());
+                }
+            }
+        }
 
-		private static string BuildScopes(string[] scopes)
-		{
-			string scope = null;
-			if (scopes != null)
-			{
-				foreach (var sc in scopes)
-				{
-					scope += "%20" + Uri.EscapeDataString(sc);
-				}
-			}
-			return scope;
-		}
+        private static string BuildScopes(string[] scopes)
+        {
+            string scope = null;
+            if (scopes != null)
+            {
+                foreach (var sc in scopes)
+                {
+                    scope += "%20" + Uri.EscapeDataString(sc);
+                }
+            }
+            return scope;
+        }
 
-		private class UserInfo
-		{
-			[JsonProperty("name")]
-			public string Name { get; set; }
+        private class UserInfo
+        {
+            [JsonProperty("name")]
+            public string Name { get; set; }
 
-			[JsonProperty("kind")]
-			public string Kind { get; set; }
+            [JsonProperty("kind")]
+            public string Kind { get; set; }
 
-			[JsonProperty("email")]
-			public string Email { get; set; }
+            [JsonProperty("email")]
+            public string Email { get; set; }
 
-			[JsonProperty("picture")]
-			public string Picture { get; set; }
+            [JsonProperty("picture")]
+            public string Picture { get; set; }
 
-			[JsonProperty("locale")]
-			public string Locale { get; set; }
+            [JsonProperty("locale")]
+            public string Locale { get; set; }
 
-			[JsonProperty("family_name")]
-			public string FamilyName { get; set; }
+            [JsonProperty("family_name")]
+            public string FamilyName { get; set; }
 
-			[JsonProperty("given_name")]
-			public string GivenName { get; set; }
+            [JsonProperty("given_name")]
+            public string GivenName { get; set; }
 
-			[JsonProperty("sub")]
-			public string Id { get; set; }
+            [JsonProperty("sub")]
+            public string Id { get; set; }
 
-			[JsonProperty("profile")]
-			public string Profile { get; set; }
+            [JsonProperty("profile")]
+            public string Profile { get; set; }
 
-			[JsonProperty("gender")]
-			public string Gender { get; set; }
-		}
-	}
+            [JsonProperty("gender")]
+            public string Gender { get; set; }
+        }
+    }
 }

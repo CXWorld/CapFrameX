@@ -129,11 +129,12 @@ namespace CapFrameX
                 appConfiguration: Container.Resolve<IAppConfiguration>(),
                 logger: loggerProcessList));
             Container.Register<SoundManager>(Reuse.Singleton);
-            Container.Resolve<IEventAggregator>().GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>().Subscribe(async _ =>
-            {
-                var loginManager = Container.Resolve<LoginManager>();
-                await loginManager.HandleRedirect(url => Task.FromResult(Process.Start(url)));
-            });
+            Container.Resolve<IEventAggregator>().GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>()
+                .Subscribe(async _ =>
+                {
+                    var loginManager = Container.Resolve<LoginManager>();
+                    await loginManager.HandleRedirect(url => Task.FromResult(Process.Start(url)));
+                });
             Container.Register<CaptureManager>(Reuse.Singleton);
             Container.Register<IPmdService, PmdService>(Reuse.Singleton);
             Container.Register<IPmdDriver, PmdUSBDriver>(Reuse.Singleton);

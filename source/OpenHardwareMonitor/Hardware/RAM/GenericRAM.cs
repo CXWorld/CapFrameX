@@ -47,41 +47,48 @@ namespace OpenHardwareMonitor.Hardware.RAM
                     .DistinctUntilChanged()
                     .Subscribe(id =>
                     {
-                        lock (_performanceCounterLock)
+                        try
                         {
-                            try
+                            lock (_performanceCounterLock)
                             {
-                                if (id == 0)
+                                try
+                                {
+                                    if (id == 0)
+                                    {
+                                        ramUsageGamePerformanceCounter = null;
+                                        ramAndCacheUsageGamePerformanceCounter = null;
+                                        return;
+                                    }
+
+                                    var process = Process.GetProcessById(id);
+                                    if (process != null)
+                                    {
+                                        var validInstanceName = GetValidInstanceName(process);
+                                        Log.Logger.Information("Valid instance name for memory performance counter: {instanceName}", validInstanceName);
+
+                                        // Working Set - Private
+                                        ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", validInstanceName, true);
+                                        // Working Set (private + resources)
+                                        ramAndCacheUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", validInstanceName, true);
+                                    }
+                                    else
+                                    {
+                                        Log.Logger.Error("Failed to get process by Id={Id}.", id);
+                                        ramUsageGamePerformanceCounter = null;
+                                        ramAndCacheUsageGamePerformanceCounter = null;
+                                    }
+                                }
+                                catch
                                 {
                                     ramUsageGamePerformanceCounter = null;
                                     ramAndCacheUsageGamePerformanceCounter = null;
-                                    return;
-                                }
-
-                                var process = Process.GetProcessById(id);
-                                if (process != null)
-                                {
-                                    var validInstanceName = GetValidInstanceName(process);
-                                    Log.Logger.Information("Valid instance name for memory performance counter: {instanceName}", validInstanceName);
-
-                                    // Working Set - Private
-                                    ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", validInstanceName, true);
-                                    // Working Set (private + resources)
-                                    ramAndCacheUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", validInstanceName, true);
-                                }
-                                else
-                                {
-                                    Log.Logger.Error("Failed to get process by Id={Id}.", id);
-                                    ramUsageGamePerformanceCounter = null;
-                                    ramAndCacheUsageGamePerformanceCounter = null;
+                                    Log.Logger.Error("Failed to create performance counter Working Set or Working Set - Private");
                                 }
                             }
-                            catch
-                            {
-                                ramUsageGamePerformanceCounter = null;
-                                ramAndCacheUsageGamePerformanceCounter = null;
-                                Log.Logger.Error("Failed to create performance counter Working Set or Working Set - Private");
-                            }
+                        }
+                        catch
+                        {
+                            Log.Logger.Error("Error while subscribing to process ID changed. Working Set PerformanceCounter.");
                         }
                     });
                 }
