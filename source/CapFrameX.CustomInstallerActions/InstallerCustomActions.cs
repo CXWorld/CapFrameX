@@ -34,8 +34,14 @@ namespace CapFrameX.CustomInstallerActions
                 var appdataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
                 var configFolder = Path.Combine(appdataFolder, APPNAME);
 
-                Directory.Delete(configFolder, true);
-
+                // Only remove UI config files
+                if (Directory.Exists(configFolder))
+                {
+                    foreach (var file in Directory.GetFiles(configFolder, "*.json"))
+                    {
+                        File.Delete(file);
+                    }
+                }
             }
             catch { session.Log("Error while removing AppData config files!"); }
 
