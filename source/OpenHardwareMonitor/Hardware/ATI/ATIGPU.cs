@@ -10,16 +10,15 @@
 
 using CapFrameX.Monitoring.Contracts;
 using Microsoft.Win32;
-using OpenHardwareMonitor.Hardware.Nvidia;
 using Serilog;
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Reflection;
 
 namespace OpenHardwareMonitor.Hardware.ATI
 {
-	internal sealed class ATIGPU : GPUBase
+    internal sealed class ATIGPU : GPUBase
 	{
 		private readonly int adapterIndex;
 		private readonly int busNumber;
@@ -62,7 +61,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
 		public ATIGPU(string name, int adapterIndex, int busNumber,
 		  int deviceNumber, IntPtr context, AdlGeneration adlGeneration, string driverPath,
-			ISettings settings, ISensorConfig config, IProcessService processService)
+			ISettings settings, ISensorConfig sensorConfig, IProcessService processService)
 		  : base(name, new Identifier("atigpu",
 			adapterIndex.ToString(CultureInfo.InvariantCulture)), settings, processService)
 		{
@@ -71,7 +70,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
 			this.deviceNumber = deviceNumber;
 			this.adlGeneration = adlGeneration;
 			this.driverpath = driverPath;
-			this.sensorConfig = config;
+			this.sensorConfig = sensorConfig;
 			this.context = context;
 
 			Log.Logger.Information($"AMD graphics card detected: {name}");
@@ -265,7 +264,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
 		private void UpdateAdlX()
 		{
 			var adlxTelemetryData = new AdlxTelemetryData();
-			if (ADLX.GetAdlxTelemetry((uint)this.adapterIndex, ref adlxTelemetryData))
+			if (ADLX.GetAdlxTelemetry((uint)this.adapterIndex, (uint)this.sensorConfig.SensorLoggingRefreshPeriod, ref adlxTelemetryData))
 			{
 				// GPU Usage
 				if (adlxTelemetryData.gpuUsageSupported)
@@ -357,7 +356,6 @@ namespace OpenHardwareMonitor.Hardware.ATI
 				else
 					powerTotalBoard.Value = null;
 			}
-
 		}
 
 		private void UpdateAdl()

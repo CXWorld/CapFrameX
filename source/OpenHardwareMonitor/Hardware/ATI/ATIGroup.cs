@@ -66,7 +66,8 @@ namespace OpenHardwareMonitor.Hardware.ATI
 									if (deviceInfo.GpuType == 2)
 									{
 										var adlxTelemetryData = new AdlxTelemetryData();
-										if (ADLX.GetAdlxTelemetry((uint)index, ref adlxTelemetryData))
+										// Initial 1 second history length
+										if (ADLX.GetAdlxTelemetry((uint)index, 1000u, ref adlxTelemetryData))
 										{
 											hardware.Add(new ATIGPU(
 												  deviceInfo.GpuName,

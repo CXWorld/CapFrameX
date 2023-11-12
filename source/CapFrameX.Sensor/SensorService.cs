@@ -22,7 +22,7 @@ namespace CapFrameX.Sensor
         private readonly object _lockComputer = new object();
         private readonly ISensorConfig _sensorConfig;
         private readonly IRTSSService _rTSSService;
-        private readonly IAppConfiguration _appConfiguration;
+        private readonly IAppConfiguration _appConfig;
         private readonly ILogger<SensorService> _logger;
         private readonly IDisposable _logDisposable;
 
@@ -55,29 +55,26 @@ namespace CapFrameX.Sensor
 
         public Subject<bool> IsLoggingActiveStream { get; }
 
-        public bool UseSensorLogging => _appConfiguration.UseSensorLogging;
+        public bool UseSensorLogging => _appConfig.UseSensorLogging;
 
-        public bool IsOverlayActive => _appConfiguration.IsOverlayActive;
+        public bool IsOverlayActive => _appConfig.IsOverlayActive;
 
         public Func<bool> IsSensorWebsocketActive { get; set; } = () => false;
 
         public TaskCompletionSource<bool> SensorServiceCompletionSource { get; }
            = new TaskCompletionSource<bool>();
 
-        public SensorService(IAppConfiguration appConfiguration,
+        public SensorService(IAppConfiguration appConfig,
                              ISensorConfig sensorConfig,
                              IRTSSService rTSSService,
                              ILogger<SensorService> logger)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            _appConfiguration = appConfiguration;
+            _appConfig = appConfig;
             _sensorConfig = sensorConfig;
             _rTSSService = rTSSService;
             _logger = logger;
-            _currentOSDTimespan = TimeSpan.FromMilliseconds(_appConfiguration.OSDRefreshPeriod);
-            _currentLoggingTimespan = TimeSpan.FromMilliseconds(_appConfiguration.SensorLoggingRefreshPeriod);
+            _currentOSDTimespan = TimeSpan.FromMilliseconds(_appConfig.OSDRefreshPeriod);
+            _currentLoggingTimespan = TimeSpan.FromMilliseconds(_appConfig.SensorLoggingRefreshPeriod);
             _loggingUpdateSubject = new BehaviorSubject<TimeSpan>(_currentLoggingTimespan);
             _osdUpdateSubject = new BehaviorSubject<TimeSpan>(_currentOSDTimespan);
             _sensorUpdateSubject = new BehaviorSubject<TimeSpan>(CurrentSensorTimespan);
@@ -107,9 +104,6 @@ namespace CapFrameX.Sensor
                 .Subscribe(sensorData => LogCurrentValues(sensorData.Item2, sensorData.Item1));
 
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
-
-            stopwatch.Stop();
-            _logger.LogInformation(GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03), 1);
         }
 
         public void SetLoggingInterval(TimeSpan timeSpan)
@@ -179,7 +173,7 @@ namespace CapFrameX.Sensor
             {
                 try
                 {
-                    _computer = new Computer(_sensorConfig, _rTSSService, _appConfiguration);
+                    _computer = new Computer(_sensorConfig, _rTSSService, _appConfig);
                     _computer.Open();
                     _computer.CPUEnabled = true;
                     _computer.GPUEnabled = true;         
@@ -197,6 +191,7 @@ namespace CapFrameX.Sensor
 
         private void UpdateSensorInterval()
         {
+            _sensorConfig.SensorLoggingRefreshPeriod = _appConfig.SensorLoggingRefreshPeriod;
             _sensorUpdateSubject.OnNext(CurrentSensorTimespan);
         }
 

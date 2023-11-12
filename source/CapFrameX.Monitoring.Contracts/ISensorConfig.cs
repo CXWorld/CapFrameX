@@ -17,6 +17,8 @@ namespace CapFrameX.Monitoring.Contracts
 
         bool WsActiveSensorsEnabled { get; set; }
 
+        int SensorLoggingRefreshPeriod { get; set; }
+
         bool GetSensorIsActive(string identifier);
 
         void SetSensorIsActive(string identifier, bool isActive);

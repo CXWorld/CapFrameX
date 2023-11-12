@@ -32,7 +32,10 @@ namespace OpenHardwareMonitor.Hardware
             => _activeSensorsDict == null ? 0 : _activeSensorsDict.Count;
 
         public bool WsSensorsEnabled { get; set; }
+
         public bool WsActiveSensorsEnabled { get; set; }
+
+        public int SensorLoggingRefreshPeriod { get; set; }
 
         public SensorConfig(string sensorConfigFolder)
         {

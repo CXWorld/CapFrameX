@@ -99,6 +99,6 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
 		[HandleProcessCorruptedStateExceptions]
 		[DllImport("CapFrameX.ADLX.dll")]
-		public static extern bool GetAdlxTelemetry(uint index, ref AdlxTelemetryData adlxTelemetryData);
+		public static extern bool GetAdlxTelemetry(uint index, uint historyLength, ref AdlxTelemetryData adlxTelemetryData);
 	}
 }
