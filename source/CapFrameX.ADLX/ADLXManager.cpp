@@ -13,8 +13,8 @@ using namespace adlx;
 // Use global variables to ensure validity of the interface.
 static ADLXHelper g_ADLXHelp;
 
-IADLXPerformanceMonitoringServicesPtr perfMonitoringService;
-IADLXGPUListPtr gpus;
+IADLXPerformanceMonitoringServicesPtr _perfMonitoringService;
+IADLXGPUListPtr _gpus;
 
 void GetTimeStamp(IADLXGPUMetricsPtr gpuMetrics)
 {
@@ -225,81 +225,68 @@ bool IntializeAdlx()
 	if (ADLX_SUCCEEDED(res))
 	{
 		// Get Performance Monitoring services
-		ADLX_RESULT res = g_ADLXHelp.GetSystemServices()->GetPerformanceMonitoringServices(&perfMonitoringService);
+		res = g_ADLXHelp.GetSystemServices()->GetPerformanceMonitoringServices(&_perfMonitoringService);
 		if (ADLX_SUCCEEDED(res))
 		{
 			// Get GPU list
-			res = g_ADLXHelp.GetSystemServices()->GetGPUs(&gpus);
+			res = g_ADLXHelp.GetSystemServices()->GetGPUs(&_gpus);
 			if (ADLX_SUCCEEDED(res))
 			{
 				IADLXGPUPtr gpu;
 				// Use the first GPU in the list
-				res = gpus->At(gpus->Begin(), &gpu);
+				res = _gpus->At(_gpus->Begin(), &gpu);
 				if (ADLX_SUCCEEDED(res))
 				{
-					res = perfMonitoringService->ClearPerformanceMetricsHistory();
+					res = _perfMonitoringService->ClearPerformanceMetricsHistory();
+
 					if (ADLX_SUCCEEDED(res))
 					{
-						res = perfMonitoringService->StartPerformanceMetricsTracking();
-
-						if (ADLX_SUCCEEDED(res))
-						{
-							check = true;
-						}
+						res = _perfMonitoringService->StartPerformanceMetricsTracking();
+						check = true;
 					}
 				}
 			}
 		}
 	}
 
-	// Terminate ADLX
 	if (!check)
-		res = g_ADLXHelp.Terminate();
+	{
+		g_ADLXHelp.Terminate();
+	}
 
 	return check;
 }
 
 void CloseAdlx()
 {
-	ADLX_RESULT res = ADLX_FAIL;
-
-	// Stop tracking metrics
-	res = perfMonitoringService->StopPerformanceMetricsTracking();
-	// Terminate ADLX
-	res = g_ADLXHelp.Terminate();
+	_perfMonitoringService->StopPerformanceMetricsTracking();
+	g_ADLXHelp.Terminate();
 }
 
 adlx_uint GetAtiAdpaterCount()
 {
-	if (gpus == nullptr)
+	if (_gpus == nullptr)
 		return 0u;
 
 	adlx_uint size = 0;
-	size = gpus->Size();
+	size = _gpus->Size();
 	return size;
 }
 
 bool GetAdlxTelemetry(const adlx_uint index, const adlx_uint historyLength, AdlxTelemetryData* adlxTelemetryData)
 {
-	ADLX_RESULT res = ADLX_FAIL;
 	bool check = false;
 
-	// Get GPU metrics support
-	IADLXGPUMetricsSupportPtr gpuMetricsSupport;
-
 	IADLXGPUPtr gpu;
-	res = gpus->At(index, &gpu);
+	ADLX_RESULT resGetGPU = _gpus->At(index, &gpu);
 
-	if (ADLX_SUCCEEDED(res))
+	if (ADLX_SUCCEEDED(resGetGPU))
 	{
 		IADLXGPUMetricsListPtr gpuMetricsList;
-		ADLX_RESULT res1 = perfMonitoringService->GetSupportedGPUMetrics(gpu, &gpuMetricsSupport);
-		ADLX_RESULT res2 = perfMonitoringService->GetGPUMetricsHistory(gpu, historyLength, 0, &gpuMetricsList);
+		ADLX_RESULT resGetHistory = _perfMonitoringService->GetGPUMetricsHistory(gpu, historyLength, 0, &gpuMetricsList);
 
-		if (ADLX_SUCCEEDED(res1) && ADLX_SUCCEEDED(res2))
+		if (ADLX_SUCCEEDED(resGetHistory))
 		{
-			IADLXGPUMetricsPtr gpuMetrics;
-
 			// Take last element
 			// 
 			// Tests with sample code showed that gpuMetricsList
@@ -309,27 +296,34 @@ bool GetAdlxTelemetry(const adlx_uint index, const adlx_uint historyLength, Adlx
 
 			if (pos >= 0)
 			{
-				ADLX_RESULT gpuMetricsRes = gpuMetricsList->At(pos, &gpuMetrics);
+				IADLXGPUMetricsSupportPtr gpuMetricsSupport;
+				ADLX_RESULT resGetSupportedMetrics = _perfMonitoringService->GetSupportedGPUMetrics(gpu, &gpuMetricsSupport);
 
-				if (ADLX_SUCCEEDED(gpuMetricsRes))
+				if (ADLX_SUCCEEDED(resGetSupportedMetrics))
 				{
-					GetTimeStamp(gpuMetrics);
-					SetGPUUsage(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
-					SetGPUClockSpeed(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
-					SetGPUVRAMClockSpeed(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
-					SetGPUTemperature(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
-					SetGPUHotspotTemperature(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
-					SetGPUPower(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
-					SetGPUFanSpeed(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
-					SetGPUVRAM(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
-					SetGPUVoltage(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
-					SetGPUTotalBoardPower(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+					IADLXGPUMetricsPtr gpuMetrics;
+					ADLX_RESULT resGpuMetrics = gpuMetricsList->At(pos, &gpuMetrics);
 
-					check = true;
+					if (ADLX_SUCCEEDED(resGpuMetrics))
+					{
+						GetTimeStamp(gpuMetrics);
+						SetGPUUsage(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+						SetGPUClockSpeed(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+						SetGPUVRAMClockSpeed(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+						SetGPUTemperature(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+						SetGPUHotspotTemperature(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+						SetGPUPower(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+						SetGPUFanSpeed(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+						SetGPUVRAM(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+						SetGPUVoltage(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+						SetGPUTotalBoardPower(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+
+						check = true;
+					}
 				}
 			}
 		}
-	}
+	};
 
 	return check;
 }
@@ -341,7 +335,7 @@ bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
 	bool check = false;
 
 	IADLXGPUPtr gpu;
-	res = gpus->At(index, &gpu);
+	res = _gpus->At(index, &gpu);
 
 	if (ADLX_SUCCEEDED(res))
 	{

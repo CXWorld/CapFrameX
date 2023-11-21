@@ -8,7 +8,6 @@ using OpenHardwareMonitor.Hardware;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
@@ -79,6 +78,8 @@ namespace CapFrameX.Sensor
             _osdUpdateSubject = new BehaviorSubject<TimeSpan>(_currentOSDTimespan);
             _sensorUpdateSubject = new BehaviorSubject<TimeSpan>(CurrentSensorTimespan);
             IsLoggingActiveStream = new Subject<bool>();
+
+            _sensorConfig.SensorLoggingRefreshPeriod = _appConfig.SensorLoggingRefreshPeriod;
 
             Observable.FromAsync(() => StartOpenHardwareMonitor())
                .Delay(TimeSpan.FromMilliseconds(500))
