@@ -42,16 +42,17 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
 		private const uint CPUID_CORE_MASK_STATUS = 0x1A;
 
-		private bool IsHybridDesign()
-		{
-			// Alder Lake (Intel 7/10nm): 0x97, 0x9A
-			// Raptor Lake (Intel 7/10nm): 0xB7
-			// Raptor Lake (Alder Lake Refresh) (Intel 7/10nm): 0xBF
-			return vendor == Vendor.Intel && family == 0x06
-					&& (model == 0x97 || model == 0x9A || model == 0xB7 || model == 0xBF);
-		}
+        private bool IsHybridDesign()
+        {
+            // Alder Lake (Intel 7/10nm): 0x97, 0x9A
+            // Raptor Lake (Intel 7/10nm): 0xB7
+            // Zen 5 (3nm)?
+            // Meteor Lake (Intel 4/7nm: 0xAA
+            return vendor == Vendor.Intel && family == 0x06
+                && (model == 0x97 || model == 0x9A || model == 0xB7 || model == 0xAA);
+        }
 
-		protected string CoreString(int i)
+        protected string CoreString(int i)
 		{
 			if (coreCount == 1)
 			{
@@ -73,12 +74,13 @@ namespace OpenHardwareMonitor.Hardware.CPU
 				{
 					switch (eax >> 24)
 					{
-						case 0x20: corelabel = " E"; break;
+						case 0x20000002: corelabel = " LP-E"; break;
+                        case 0x20: corelabel = " E"; break;
 						case 0x40: corelabel = " P"; break;
 						default: break;
 					}
 				}
-
+				 
 				ThreadAffinity.Set(previousAffinity);
 			}
 

@@ -43,7 +43,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
             RocketLake,
             AlderLake,
             RaptorLake,
-            SapphireRapids
+            SapphireRapids,
+            MeteorLake
         }
 
         private readonly Sensor[] coreTemperatures;
@@ -270,6 +271,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
                                 microarchitecture = Microarchitecture.SapphireRapids;
                                 tjMax = GetTjMaxFromMSR();
                                 break;
+                            case 0xAA: // Meteor Lake (Intel 4/7nm)
+                                microarchitecture = Microarchitecture.MeteorLake;
+                                tjMax = GetTjMaxFromMSR();
+                                break;
                             default:
                                 microarchitecture = Microarchitecture.Unknown;
                                 tjMax = Floats(100);
@@ -337,6 +342,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 case Microarchitecture.AlderLake:
                 case Microarchitecture.RaptorLake:
                 case Microarchitecture.SapphireRapids:
+                case Microarchitecture.MeteorLake:
                     {
                         if (Ring0.Rdmsr(MSR_PLATFORM_INFO, out uint eax, out _))
                         {
@@ -423,7 +429,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 microarchitecture == Microarchitecture.RocketLake ||
                 microarchitecture == Microarchitecture.AlderLake ||
                 microarchitecture == Microarchitecture.RaptorLake ||
-                microarchitecture == Microarchitecture.SapphireRapids)
+                microarchitecture == Microarchitecture.SapphireRapids ||
+                microarchitecture == Microarchitecture.MeteorLake)
             {
                 powerSensors = new Sensor[energyStatusMSRs.Length];
                 lastEnergyTime = new DateTime[energyStatusMSRs.Length];
@@ -601,6 +608,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                                 case Microarchitecture.AlderLake:
                                 case Microarchitecture.RaptorLake:
                                 case Microarchitecture.SapphireRapids:
+                                case Microarchitecture.MeteorLake:
                                     {
                                         uint multiplier = (eax >> 8) & 0xff;
                                         coreClocks[i].Value = (float)(multiplier * newBusClock);
