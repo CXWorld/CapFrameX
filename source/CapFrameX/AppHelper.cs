@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Windows;
 
 namespace CapFrameX
 {
@@ -77,7 +78,7 @@ namespace CapFrameX
             WINDOWPLACEMENT wp = new WINDOWPLACEMENT();
             wp.length = Marshal.SizeOf(wp);
 
-            for (var attempt = 0; attempt < 20; ++attempt)
+            for (var attempt = 0; attempt < 10; ++attempt)
             {
                 process?.Refresh();
                 if (process?.MainWindowHandle != IntPtr.Zero)
@@ -87,6 +88,12 @@ namespace CapFrameX
 
                 Thread.Sleep(100);
                 process = Process.GetProcessById(process.Id);
+            }
+
+            if (process?.MainWindowHandle == IntPtr.Zero)
+            {
+                MessageBox.Show("There is already an instance running...");
+                return;
             }
 
             GetWindowPlacement(process.MainWindowHandle, ref wp);
