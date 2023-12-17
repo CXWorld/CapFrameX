@@ -86,6 +86,7 @@ namespace CapFrameX
                 }
 
                 Thread.Sleep(100);
+                process = Process.GetProcessById(process.Id);
             }
 
             GetWindowPlacement(process.MainWindowHandle, ref wp);

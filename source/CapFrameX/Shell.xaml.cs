@@ -39,7 +39,7 @@ namespace CapFrameX
 
             if (source != null)
             {
-                source.AddHook(new HwndSourceHook(HandleMessages));
+                //source.AddHook(new HwndSourceHook(HandleMessages));
                 source.CompositionTarget.RenderMode = RenderMode.SoftwareOnly;
             }
 
