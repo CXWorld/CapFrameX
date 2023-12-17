@@ -2,6 +2,7 @@
 using CapFrameX.MVVM;
 using CapFrameX.View.UITracker;
 using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
@@ -13,7 +14,7 @@ namespace CapFrameX
     /// </summary>
     public partial class Shell : Window, IShell
     {
-        public System.Windows.Controls.ContentControl GlobalScreenshotArea => ScreenshotArea;
+        public ContentControl GlobalScreenshotArea => ScreenshotArea;
 
         public bool IsGpuAccelerationActive { get; set; }
 

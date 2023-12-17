@@ -14,9 +14,9 @@ using System;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Security.Principal;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Windows;
@@ -31,14 +31,26 @@ namespace CapFrameX
         private Bootstrapper _bootstrapper;
         private WebServer _webServer;
         private bool _isSingleInstance = true;
+        private Mutex _mutex;
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            Process currentProcess = Process.GetCurrentProcess();
-            if (Process.GetProcesses().Any(p => p.ProcessName == currentProcess.ProcessName && p.Id != currentProcess.Id))
+            const string appName = "CapFrameX";
+            _mutex = new Mutex(true, appName, out bool createdNew);
+            if (!createdNew)
             {
+                Process current = Process.GetCurrentProcess();
+
+                foreach (Process process in Process.GetProcessesByName(current.ProcessName))
+                {
+                    if (process.Id != current.Id)
+                    {
+                        AppHelper.ShowWindowInCorrectState(process);
+                        break;
+                    }
+                }
+
                 _isSingleInstance = false;
-                MessageBox.Show("Already an instance running...");
                 Current.Shutdown();
             }
             else
@@ -141,8 +153,13 @@ namespace CapFrameX
             Current.Shutdown();
         }
 
-        private void CapFrameXExit(object sender, ExitEventArgs e)
+        private void ApplicationExit(object sender, ExitEventArgs e)
         {
+            if (_mutex != null)
+            {
+                _mutex.Dispose();
+            }
+
             if (!_isSingleInstance)
                 return;
 

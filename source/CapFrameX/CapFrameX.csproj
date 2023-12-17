@@ -150,6 +150,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AppHelper.cs" />
     <Compile Include="IconHelper.cs" />
     <Compile Include="InMemorySink.cs" />
     <Compile Include="RegionManagerWrapper.cs" />
