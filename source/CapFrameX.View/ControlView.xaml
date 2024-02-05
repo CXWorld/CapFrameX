@@ -19,6 +19,7 @@
         <ResourceDictionary>
             <CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
             <mvvm:AddValueConverter x:Key="AddValueConverterExpander" Offset="-70"/>
+            <mvvm:AddValueConverter x:Key="AddValueConverterSaveButton" Offset="-20"/>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
             <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
@@ -471,8 +472,8 @@
                     <TextBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Comment" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 						 Margin="5 0 5 0" FontSize="14" Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}"
                          KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
-                    <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="0 0 0 0" Width="80" HorizontalAlignment="Center"
-                    Style="{DynamicResource MaterialDesignFlatButton}" Command="{Binding AcceptEditingDialogCommand}" FontSize="16">
+                    <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="0 0 0 0" Width="{Binding ElementName=ControlViewControl, Path=ActualWidth, Converter={StaticResource AddValueConverterSaveButton}}" MaxWidth="330"
+                    Style="{DynamicResource MaterialDesignFlatButton}" Command="{Binding AcceptEditingDialogCommand}" FontSize="16" HorizontalAlignment="Left">
                         SAVE
                     </Button>
                 </Grid>

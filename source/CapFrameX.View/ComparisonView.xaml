@@ -52,8 +52,8 @@
             <RowDefinition Height="60"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*" MinWidth="695"></ColumnDefinition>
-            <ColumnDefinition Width="285"></ColumnDefinition>
+            <ColumnDefinition Width="1*" MinWidth="685"></ColumnDefinition>
+            <ColumnDefinition Width="270"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <materialDesign:DialogHost Margin="5 10 0 5"
 								   IsOpen="{Binding MessageDialogContentIsOpen}"

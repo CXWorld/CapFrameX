@@ -36,53 +36,86 @@
         <materialDesign:ColorZone Mode="PrimaryMid" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="8*"/>
+                    <ColumnDefinition Width="7*"/>
                     <ColumnDefinition Width="2*"/>
                 </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="2">
-                    <Image Width="50" Height="50" Margin="5 0 5 0" Source="/Icons/CapFrameXLogoOnly.png"/>
+                <Grid Grid.Column="0" HorizontalAlignment="Left">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="85"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1.4*"/>
+                        <ColumnDefinition Width="1.4*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                <Image Grid.Column="0" Width="50" Height="50" Margin="5 0 5 0" Source="/Icons/CapFrameXLogoOnly.png"/>
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="4"
+							 Grid.Column="1"
+                                 Width="200"
+                                 HorizontalAlignment="Center"
 							 IsChecked="{Binding CaptureIsChecked}"
 							 Content="CAPTURE" 
                              Visibility="{Binding IsCompatibleWithRunningOS, Converter={StaticResource FalseToCollapsedConverter}}"/>
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="4"
+							 Grid.Column="2"
+                                 Width="200"
+                                 HorizontalAlignment="Center"
 							 IsChecked="{Binding SingleRecordIsChecked}"
 							 Content="ANALYSIS" />
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="4"
+							 Grid.Column="3"
+                                 Width="200"
+                                 HorizontalAlignment="Center"
 							 IsChecked="{Binding OverlayIsChecked}"
 							 Content="OVERLAY" />
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="4"
+							 Grid.Column="4"
+                                 Width="200"
+                                 HorizontalAlignment="Center"
 							 IsChecked="{Binding RecordComparisonIsChecked}"
 							 Content="COMPARISON" />
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="4"
+							 Grid.Column="5"
+                                 Width="200"
+                                 HorizontalAlignment="Center"
 							 IsChecked="{Binding AggregationIsChecked}"
 							 Content="AGGREGATION" />
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-                             Margin="4"
+                             Grid.Column="6"
+                                 Width="200"
+                                 HorizontalAlignment="Center"
                              IsChecked="{Binding SensorIsChecked}"
                              Content="SENSOR" />
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="4"
+							 Grid.Column="7"
+                                 Width="200"
+                                 HorizontalAlignment="Center"
 							 IsChecked="{Binding PmdIsChecked}"
 							 Content="PMD" />
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="4"
+							 Grid.Column="8"
+                                 Width="200"
+                                 HorizontalAlignment="Center"
 							 IsChecked="{Binding ReportIsChecked}"
 							 Content="REPORT" />
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="4"
+							 Grid.Column="9"
+                                 Width="200"
+                                 HorizontalAlignment="Center"
 							 IsChecked="{Binding SynchronizationIsChecked}"
 							 Content="SYNC" />
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-                             Margin="4"
+                             Grid.Column="10"
+                                 Width="200"
+                                 HorizontalAlignment="Center"
                              IsChecked="{Binding CloudIsChecked}"
                              Content="CLOUD" />
-				</StackPanel>
+				</Grid>
 
                 <materialDesign:PopupBox Grid.Column="1" Margin="0 0 235 0" DataContext="{Binding Path=DataContext, ElementName=ColorbarViewName}"
                                          RequestBringIntoView="PopupBox_RequestBringIntoView" StaysOpen="False" 
