@@ -117,7 +117,7 @@
                              Content="CLOUD" />
 				</Grid>
 
-                <materialDesign:PopupBox Grid.Column="1" Margin="0 0 235 0" DataContext="{Binding Path=DataContext, ElementName=ColorbarViewName}"
+                <materialDesign:PopupBox Grid.Column="1" Margin="0 0 225 0" DataContext="{Binding Path=DataContext, ElementName=ColorbarViewName}"
                                          RequestBringIntoView="PopupBox_RequestBringIntoView" StaysOpen="False" 
                                          PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right" x:Name="ScreenshotPopupBox">
                     <materialDesign:PopupBox.ToggleContent>
@@ -149,7 +149,7 @@
                 </materialDesign:PopupBox>
 
                 <Button Grid.Column="1" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
-                            Margin="0 0 190 0"
+                            Margin="0 0 187 0"
 						    ToolTip="Login"
                             HorizontalAlignment="Right"
 						    materialDesign:RippleAssist.Feedback="#DD000000"
