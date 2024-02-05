@@ -1,5 +1,520 @@
 [
   {
+    "Name": "Signal",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "UWPHook",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Display Driver Uninstaller",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Cookie Clicker",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "VaM_Updater",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "cp2TreasuresOfMontezuma3",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "VaM",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "APT2_WinStore.x64.Submission",
+    "DisplayName": "A Plague Tale: Requiem",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "AimLab_tb",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "ModOrganizer",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "TabTip",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "1Password",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "afop",
+    "DisplayName": "Avatar: Frontiers of Pandora",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "LOTF2-Win64-Shipping",
+    "DisplayName": "Lords of the Fallen",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "RoboCop-Win64-Shipping",
+    "DisplayName": "RoboCop Rogue City",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "ImmortalsOfAveum-Win64-Shipping",
+    "DisplayName": "Immortals of Aveum",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "sp23-cod",
+    "DisplayName": "Call of Duty: Modern Warfare III",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Postman",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "ms-teams",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "ASC-Win64-Shipping",
+    "DisplayName": "Jusant",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Ghostrunner2-Win64-Shipping",
+    "DisplayName": "Ghostrunner 2",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "AcCoreConsole",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Cities2",
+    "DisplayName": "Cities Skylines 2",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "AlanWake2",
+    "DisplayName": "Alan Wake 2",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "x360ce",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "AdCefWebBrowser_dpiAware",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "mpc-hc64",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "UltiMaker-Cura",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Talos2-Win64-Shipping",
+    "DisplayName": "The Talos Principle 2",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "RobloxPlayerBeta",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "TIDAL",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "ACMirage",
+    "DisplayName": "Assassin's Creed Mirage",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "forza_gaming.desktop.x64_release_final",
+    "DisplayName": "Forza Motorsport",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Razer Central",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "virtualdj",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "cs2",
+    "DisplayName": "Counter-Strike 2",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Aurora",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Nanoleaf Desktop",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Amazon Music",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Amazon Games UI",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Microsoft.Media.Player",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "LariLauncher",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "RdClient.Windows",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "FFXII_TZA",
+    "DisplayName": "Final Fantasy XII The Zodiac Age",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "RaceHub™",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "RacelabApps",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Twinkle Tray",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "bg3",
+    "DisplayName": "Baldur's Gate 3",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "bg3_dx11",
+    "DisplayName": "Baldur's Gate 3",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "trophi.ai",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "PresentMon",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "nearby_share",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "HearthstoneDeckTracker",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "ShadowGambit_TCC",
+    "DisplayName": "Shadow Gambit",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "RiftApart",
+    "DisplayName": "Ratchet & Clank: Rift Apart",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Resolve",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Remnant2-Win64-Shipping",
+    "DisplayName": "Remnant 2",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "PotPlayerMini64",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "JA3",
+    "DisplayName": "Jagged Alliance 3",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Electorrent",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "SonsOfTheForest",
+    "DisplayName": "Sons of The Forest",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "NotEnoughAV1Encodes",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "F1_23",
+    "DisplayName": "F1 23",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Duplicate Cleaner 5",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "iRacingUI",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "brave",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "LayersOfFear-Win64-Shipping",
+    "DisplayName": "Layers of Fear",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "VRChat",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Koalageddon",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Transformice",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "AMDRSSrcExt",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "JediSurvivor",
+    "DisplayName": "Star Wars Jedi: Survivor",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "FanControl",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "rpi-imager",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "EpicOnlineServicesUIHelper",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "QuickBoost",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "wfreerdp",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "DesktopOverlayHost",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "logioptionsplus_agent",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "DeadIsland-Win64-Shipping",
+    "DisplayName": "Dead Island 2",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "3DMarkTimeSpy",
+    "DisplayName": "3DMarkTimeSpy Extreme",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "VarjoBase",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "CPUDoc",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "tlou-i",
+    "DisplayName": "The Last of Us Part I",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "SR-ClientRadio",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "vrmonitor",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "AusweisApp2",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "vrwebhelper",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "re4",
+    "DisplayName": "Resident Evil 4",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "WaveLink",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "SignalRgb",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "ProjectN-Win64-Shipping",
+    "DisplayName": "Ni no Kuni: Cross Worlds",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "re4demo",
+    "DisplayName": "Resident Evil 4 Chainsaw Demo",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Indirect",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "AtomicHeart-Win64-Shipping",
+    "DisplayName": "Atomic Heart",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "MicrosoftSecurityApp",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Bitwarden",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Discovery",
+    "DisplayName": "The Finals",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "GothamKnights",
+    "DisplayName": "Gotham Knights",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "RelicCoH3",
+    "DisplayName": "Company of Heroes 3",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "CitySample",
+    "DisplayName": "UE City Sample",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "HogwartsLegacy",
+    "DisplayName": "Hogwarts Legacy",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "TomTom MyDrive Connect",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "ReShade_Setup_4.9.1",
     "DisplayName": null,
     "IsBlacklisted": true
@@ -2001,11 +2516,6 @@
   },
   {
     "Name": "ApplicationFrameHost",
-    "DisplayName": null,
-    "IsBlacklisted": true
-  },
-  {
-    "Name": "3DMark",
     "DisplayName": null,
     "IsBlacklisted": true
   },

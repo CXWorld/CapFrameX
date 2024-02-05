@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Interop;
 
 namespace CapFrameX
@@ -24,6 +25,7 @@ namespace CapFrameX
 
             // Start tracking the Window instance.
             WindowStatServices.Tracker.Track(this);
+            this.StateChanged += Resize;
 
             // Start tracking column width
             var columnAWidthTracker = new ColumnWidthTracker(this);
@@ -46,20 +48,27 @@ namespace CapFrameX
             base.OnSourceInitialized(e);
             IconHelper.RemoveIcon(this);
         }
-
-        private IntPtr HandleMessages(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        private void Resize(object sender, EventArgs e)
         {
-            // 0x0112 == WM_SYSCOMMAND, 'Window' command message.
-            // 0xF020 == SC_MINIMIZE, command to minimize the window.
-            if (msg == 0x0112 && ((int)wParam & 0xFFF0) == 0xF020)
+            if (WindowState == WindowState.Minimized)
             {
-                // Cancel the minimize.
-                handled = true;
                 Hide();
             }
-
-            return IntPtr.Zero;
         }
+
+        //private IntPtr HandleMessages(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        //{
+        //    // 0x0112 == WM_SYSCOMMAND, 'Window' command message.
+        //    // 0xF020 == SC_MINIMIZE, command to minimize the window.
+        //    if (msg == 0x0112 && ((int)wParam & 0xFFF0) == 0xF020)
+        //    {
+        //        // Cancel the minimize.
+        //        handled = true;
+        //        Hide();
+        //    }
+
+        //    return IntPtr.Zero;
+        //}
 
         private void SystemTray_TrayLeftMouseDownClick(object sender, RoutedEventArgs e)
         {
