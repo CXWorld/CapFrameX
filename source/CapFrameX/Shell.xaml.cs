@@ -19,6 +19,8 @@ namespace CapFrameX
 
         public bool IsGpuAccelerationActive { get; set; }
 
+        private GridLength ColumnAWidthSaved { get; set; }
+
         public Shell()
         {
             InitializeComponent();
@@ -94,6 +96,19 @@ namespace CapFrameX
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        private void GridSplitter_PreviewMouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (LeftColumn.ActualWidth > 8)
+            {
+                ColumnAWidthSaved = LeftColumn.Width;
+                LeftColumn.Width = new GridLength(50, GridUnitType.Pixel);
+            }
+            else
+            {
+                LeftColumn.Width = ColumnAWidthSaved;
+            }
         }
     }
 }
