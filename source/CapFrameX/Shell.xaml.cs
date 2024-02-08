@@ -103,7 +103,7 @@ namespace CapFrameX
             if (LeftColumn.ActualWidth > 8)
             {
                 ColumnAWidthSaved = LeftColumn.Width;
-                LeftColumn.Width = new GridLength(50, GridUnitType.Pixel);
+                LeftColumn.Width = new GridLength(8, GridUnitType.Pixel);
             }
             else
             {
