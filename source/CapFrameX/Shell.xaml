@@ -63,10 +63,10 @@
                 <RowDefinition Height="1*"></RowDefinition>
                 <RowDefinition Height="30"></RowDefinition>
             </Grid.RowDefinitions>
-            <GridSplitter Grid.Column="1" Grid.Row="1" Width="5" HorizontalAlignment="Stretch" />
-			<ContentControl Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" prism:RegionManager.RegionName="ColorbarRegion" />
-			<ContentControl Grid.Column="0" Grid.Row="1" prism:RegionManager.RegionName="ControlRegion" />
-			<ContentControl x:Name="ScreenshotArea" Grid.Column="2" Grid.Row="1" prism:RegionManager.RegionName="DataRegion" />
+            <GridSplitter Grid.Column="1" Grid.Row="1" Width="5" HorizontalAlignment="Stretch" PreviewMouseDoubleClick="GridSplitter_PreviewMouseDoubleClick" />
+            <ContentControl Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" prism:RegionManager.RegionName="ColorbarRegion" />
+            <ContentControl Grid.Column="0" Grid.Row="1" prism:RegionManager.RegionName="ControlRegion" />
+            <ContentControl x:Name="ScreenshotArea" Grid.Column="2" Grid.Row="1" prism:RegionManager.RegionName="DataRegion" />
 			<ContentControl Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2" prism:RegionManager.RegionName="StateRegion" />
 		</Grid>
 	</Grid>
