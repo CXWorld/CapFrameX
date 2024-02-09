@@ -47,7 +47,6 @@ namespace CapFrameX
                     {
                         try
                         {
-                            throw new Exception();
                             AppHelper.ShowWindowInCorrectState(process);
                         }
                         catch(Exception ex)
