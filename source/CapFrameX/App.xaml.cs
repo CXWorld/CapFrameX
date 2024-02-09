@@ -45,7 +45,16 @@ namespace CapFrameX
                 {
                     if (process.Id != current.Id)
                     {
-                        AppHelper.ShowWindowInCorrectState(process);
+                        try
+                        {
+                            throw new Exception();
+                            AppHelper.ShowWindowInCorrectState(process);
+                        }
+                        catch(Exception ex)
+                        {
+                            InitializeLogger();
+                            Log.Logger.Fatal(ex, "Exception in ShowWindowInCorrectState");
+                        }
                         break;
                     }
                 }
