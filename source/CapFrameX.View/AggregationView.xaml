@@ -16,6 +16,7 @@
 	<UserControl.Resources>
         <ResourceDictionary>
             <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
+            <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 		</ResourceDictionary>
 	</UserControl.Resources>
@@ -107,7 +108,19 @@
                 <materialDesign:PackIcon Kind="PlaylistRemove" Height="24" Width="24" />
             </Button>
             <Button Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Width="150" Height="45" BorderBrush="Transparent"
-					Command="{Binding AggregateIncludeCommand}" IsEnabled="{Binding EnableIncludeButton}"
+					Command="{Binding AggregateIncludeCommand}" IsEnabled="{Binding EnableAggregationButton}" Visibility="{Binding ShowIncludeExcludeButtons, Converter={StaticResource FalseToVisibleConverter}}"
+                    ToolTipService.ShowDuration="25000" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
+                <TextBlock Text="Aggregate" TextWrapping="Wrap" TextAlignment="Center"/>
+                <Button.ToolTip>
+                    <ToolTip MaxWidth="200">
+                        <TextBlock
+                             Text="Aggregate all entries" 
+                             TextWrapping="Wrap"/>
+                    </ToolTip>
+                </Button.ToolTip>
+            </Button>
+            <Button Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Width="150" Height="45" BorderBrush="Transparent"
+					Command="{Binding AggregateIncludeCommand}" Visibility="{Binding ShowIncludeExcludeButtons, Converter={StaticResource TrueToVisibleConverter}}"
                     ToolTipService.ShowDuration="25000" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
                 <TextBlock Text="Aggregate&#10;including outliers" TextWrapping="Wrap" TextAlignment="Center"/>
                 <Button.ToolTip>
@@ -119,7 +132,7 @@
                 </Button.ToolTip>
             </Button>
             <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" Width="150" Height="45" BorderBrush="Transparent"
-					Command="{Binding AggregateExcludeCommand}" IsEnabled="{Binding EnableExcludeButton}"
+					Command="{Binding AggregateExcludeCommand}" Visibility="{Binding ShowIncludeExcludeButtons, Converter={StaticResource TrueToVisibleConverter}}"
                     ToolTipService.ShowDuration="25000" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
                 <TextBlock Text="Aggregate excluding outliers" TextWrapping="Wrap"  TextAlignment="Center"/>
                 <Button.ToolTip>

@@ -36,8 +36,8 @@ namespace CapFrameX.ViewModel
         private int _selectedAggregationEntryIndex = -1;
         private bool _showHelpText = true;
         private bool _enableClearButton = false;
-        private bool _enableIncludeButton = false;
-        private bool _enableExcludeButton = false;
+        private bool _showIncludeExcludeButtons = false;
+        private bool _enableAggregationButton = false;
         private List<IFileRecordInfo> _fileRecordInfoList = new List<IFileRecordInfo>();
         private bool _showResultString;
         private string _aggregationResultString = string.Empty;
@@ -155,23 +155,23 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
-        public bool EnableIncludeButton
+        public bool ShowIncludeExcludeButtons
         {
             get
-            { return _enableIncludeButton; }
+            { return _showIncludeExcludeButtons; }
             set
             {
-                _enableIncludeButton = value;
+                _showIncludeExcludeButtons = value;
                 RaisePropertyChanged();
             }
         }
-        public bool EnableExcludeButton
+        public bool EnableAggregationButton
         {
             get
-            { return _enableExcludeButton; }
+            { return _enableAggregationButton; }
             set
             {
-                _enableExcludeButton = value;
+                _enableAggregationButton = value;
                 RaisePropertyChanged();
             }
         }
@@ -226,8 +226,7 @@ namespace CapFrameX.ViewModel
         {
             ShowHelpText = !AggregationEntries.Any();
             EnableClearButton = AggregationEntries.Any();
-            EnableIncludeButton = AggregationEntries.Count >= 2;
-            EnableExcludeButton = AggregationEntries.Count >= 2;
+
 
             // Outlier analysis
             if (AggregationEntries.Count >= 2 && !_supressCollectionChanged)
@@ -238,8 +237,20 @@ namespace CapFrameX.ViewModel
 
                 OutlierFlagStream.OnNext(outlierFlags);
 
-                EnableExcludeButton = outlierFlags.Any(x => x == false);
+                bool includesOutliers = outlierFlags.Any(x => x);
+                bool includesOnlyOutliers = outlierFlags.All(x => x);
+
+                ShowIncludeExcludeButtons = includesOutliers && !includesOnlyOutliers;
+
+                EnableAggregationButton = !ShowIncludeExcludeButtons;
+
             }
+            else
+            {
+                EnableAggregationButton = false;
+                ShowIncludeExcludeButtons = false;
+            }
+            
 
         }
 
