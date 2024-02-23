@@ -142,8 +142,8 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 
         internal enum NvmlPcieUtilCounter
         {
-            TxBytes = 0,
-            RxBytes = 1
+            TxMebibytes = 0,
+            RxMebibytes = 1
         }
 
         internal enum NvmlReturn

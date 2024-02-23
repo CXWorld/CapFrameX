@@ -681,7 +681,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 if (sensorConfig.GetSensorEvaluate(pcieThroughputRx.IdentifierString))
                 {
                     if (NVML.NvmlDeviceGetPcieThroughput(device.Value,
-                      NVML.NvmlPcieUtilCounter.RxBytes, out uint value)
+                      NVML.NvmlPcieUtilCounter.RxMebibytes, out uint value)
                       == NVML.NvmlReturn.Success)
                     {
                         pcieThroughputRx.Value = value / 1024f;
@@ -699,7 +699,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 if (sensorConfig.GetSensorEvaluate(pcieThroughputTx.IdentifierString))
                 {
                     if (NVML.NvmlDeviceGetPcieThroughput(device.Value,
-                      NVML.NvmlPcieUtilCounter.TxBytes, out uint value)
+                      NVML.NvmlPcieUtilCounter.TxMebibytes, out uint value)
                       == NVML.NvmlReturn.Success)
                     {
                         pcieThroughputTx.Value = value / 1024f;
