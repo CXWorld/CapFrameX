@@ -50,6 +50,8 @@ namespace CapFrameX.PresentMonInterface
         private readonly double _maxOnlineStutteringIntervalLength = 5d;
         private readonly double _maxOnlineApplicationLatencyIntervalLength = 2d;
 
+        private int MetricInterval => _appConfiguration.MetricInterval == 0 ? 20 : _appConfiguration.MetricInterval;
+
         public OnlineMetricService(IStatisticProvider frametimeStatisticProvider,
             ICaptureService captureServive,
             IEventAggregator eventAggregator,
@@ -69,6 +71,7 @@ namespace CapFrameX.PresentMonInterface
 
             SubscribeToUpdateSession();
             ConnectOnlineMetricDataStream();
+            ResetMetrics();
         }
 
         private void SubscribeToUpdateSession()
@@ -222,11 +225,11 @@ namespace CapFrameX.PresentMonInterface
 					_gpuActiveTimesRealtimeSeconds.Add(gpuActiveTime);
 					_measuretimesRealtimeSeconds.Add(startTime);
 
-					if (startTime - _measuretimesRealtimeSeconds.First() > _appConfiguration.MetricInterval)
+					if (startTime - _measuretimesRealtimeSeconds.First() > MetricInterval)
                     {
                         int position = 0;
                         while (position < _measuretimesRealtimeSeconds.Count &&
-                            startTime - _measuretimesRealtimeSeconds[position] > _appConfiguration.MetricInterval)
+                            startTime - _measuretimesRealtimeSeconds[position] > MetricInterval)
                             position++;
 
                         if (position > 0)
@@ -362,7 +365,7 @@ namespace CapFrameX.PresentMonInterface
         {
 			lock (_lockRealtimeMetric)
 			{
-				int capacity = (int)(LIST_CAPACITY * _appConfiguration.MetricInterval / 20d);
+				int capacity = (int)(LIST_CAPACITY * MetricInterval / 20d);
 
 				_frametimesRealtimeSeconds = new List<double>(capacity);
 				_measuretimesRealtimeSeconds = new List<double>(capacity);
