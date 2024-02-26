@@ -243,6 +243,7 @@ Potential conflicts with the Nuget packages can be solved via Package Manger Con
 * WiX V3.11.1
 * WiX Toolset Visual Studio 2019 Extension
 * WiX Toolset and VS Extension: http://wixtoolset.org/releases/
+* FrameView SDK (can be found in: `installers/FVSDKSetup.exe`)
 
 # Build settings
 * Solution Platform x64
