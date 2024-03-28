@@ -358,7 +358,7 @@
                                          FontWeight="Bold" FontSize="18"/>
                             </Grid>
                             <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="PciExpressPlotViewAnalysis" 
-                                         Model="{Binding GpuAnalysisModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 0"
+                                         Model="{Binding GpuAnalysisModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 4 0 0"
 										 MouseDoubleClick="ResetPciExpressChartAnalysis_MouseDoubleClick">
                                 <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                                     <ControlTemplate>
@@ -384,12 +384,12 @@
                             <RowDefinition Height="35"/>
                             <RowDefinition Height="1*"/>
                         </Grid.RowDefinitions>
-                        <Grid Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                        <Grid Margin="0 4 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                             <TextBlock Text="{Binding SessionCpuName, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
                                        FontWeight="Bold" FontSize="18"/>
                         </Grid>
                         <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="EPS12VPlotViewAnalysis" 
-                                                     Model="{Binding CpuAnalysisModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 2"
+                                                     Model="{Binding CpuAnalysisModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 4 0 2"
 										             MouseDoubleClick="ResetEPS12VChartAnalysis_MouseDoubleClick">
                             <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                                 <ControlTemplate>
@@ -413,13 +413,14 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="35"/>
                             <RowDefinition Height="1*"/>
-                        </Grid.RowDefinitions>
-                        <Grid Margin="0 3 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+							<RowDefinition Height="50"/>
+						</Grid.RowDefinitions>
+                        <Grid Margin="0 2 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                             <TextBlock Text="Performance" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
                                        FontWeight="Bold" FontSize="18"/>
                         </Grid>
                         <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="FrametimeAnalysis"
-                                                     Model="{Binding FrametimeModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 2"
+                                                     Model="{Binding FrametimeModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 4 0 2"
 										             MouseDoubleClick="ResetFrametimeChart_MouseDoubleClick">
                             <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                                 <ControlTemplate>
@@ -431,18 +432,20 @@
                                 </ControlTemplate>
                             </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                         </controls:PlotViewCustomZoom>
-                        <ComboBox Grid.Row="1" Margin="10 0 0 10" HorizontalAlignment="Left" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Values"
+						<Grid Grid.Row="2" Margin="0 2 0 2" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+							<ComboBox Margin="10 0 0 5" HorizontalAlignment="Left" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Values"
 					                    materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="80" Height="40">
-                            <ComboBoxItem IsSelected="True">Frametimes</ComboBoxItem>
-                            <ComboBoxItem>FPS</ComboBoxItem>
-                            <ComboBox.Text>
-                                <Binding Path="SelectedChartView"
+								<ComboBoxItem IsSelected="True">Frametimes</ComboBoxItem>
+								<ComboBoxItem>FPS</ComboBoxItem>
+								<ComboBox.Text>
+									<Binding Path="SelectedChartView"
 						                    Mode="TwoWay"
 						                    UpdateSourceTrigger="PropertyChanged">
-                                </Binding>
-                            </ComboBox.Text>
-                        </ComboBox>
-                    </Grid>
+									</Binding>
+								</ComboBox.Text>
+							</ComboBox>
+						</Grid>
+					</Grid>
                     <Grid Grid.RowSpan="3" Grid.Column="1" Margin="5 0 0 2" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="180"/>
