@@ -491,7 +491,7 @@
 														</Grid.RowDefinitions>
 														<Grid.ColumnDefinitions>
 															<ColumnDefinition Width="130"/>
-															<ColumnDefinition Width="65"/>
+															<ColumnDefinition Width="85"/>
 														</Grid.ColumnDefinitions>
 
 														<TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="CX overlay toggle" VerticalAlignment="Center"/>
