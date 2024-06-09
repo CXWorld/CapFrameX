@@ -555,35 +555,9 @@ namespace CapFrameX.Overlay
 						break;
 					case EOverlayEntryType.CX when entry.Identifier == "Framerate":
 						entry.Value = currentFramerate.Item1;
-						if (currentFramerate.Item1 == 0)
-						{
-							if(entry.ShowGraph)
-							{
-                                _showFramerateGraphSave = true;
-                                entry.ShowGraph = false;
-                            }
-                        } 
-						else if (_showFramerateGraphSave)
-                        {
-                            entry.ShowGraph = true;
-                            _showFramerateGraphSave = false;
-                        }
                         break;
 					case EOverlayEntryType.CX when entry.Identifier == "Frametime":
 						entry.Value = currentFramerate.Item2;
-						if (currentFramerate.Item2 == 0)
-						{
-							if (entry.ShowGraph)
-							{
-								_showFrametimeGraphSave = true;
-								entry.ShowGraph = false;
-							}
-						}
-						else if (_showFrametimeGraphSave)
-						{
-                            entry.ShowGraph = true;
-							_showFrametimeGraphSave = false;
-                        } 
                         break;
 					case EOverlayEntryType.CX when entry.Identifier == "SystemTime":
 						entry.Value = ShowSystemTimeSeconds ? DateTime.Now.ToString("HH:mm:ss") : DateTime.Now.ToString("HH:mm");
