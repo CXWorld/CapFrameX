@@ -868,12 +868,12 @@ namespace CapFrameX.ViewModel
 
         private void UpdateProcessToCapture()
         {
-            string currentProcess;
-            // explicit hook, only one process
+            string currentProcess = null;
+            // explicit hook
             if (!string.IsNullOrWhiteSpace(SelectedProcessToCapture))
                 currentProcess = SelectedProcessToCapture;
             // auto hook with filtered process list
-            else
+            else if (ProcessesToCapture.Count == 1)
             {
                 currentProcess = ProcessesToCapture.FirstOrDefault();
             }

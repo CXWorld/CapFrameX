@@ -65,7 +65,10 @@ namespace CapFrameX.Overlay
 		private double _ping = double.NaN;
 		private int _currentProcessId;
 
-		public bool HasHardwareChanged { get; set; }
+        private bool _showFramerateGraphSave;
+        private bool _showFrametimeGraphSave;
+
+        public bool HasHardwareChanged { get; set; }
 		public bool ShowSystemTimeSeconds { get; set; }
 
 		public OverlayEntryProvider(ISensorService sensorService,
@@ -552,10 +555,36 @@ namespace CapFrameX.Overlay
 						break;
 					case EOverlayEntryType.CX when entry.Identifier == "Framerate":
 						entry.Value = currentFramerate.Item1;
-						break;
+						if (currentFramerate.Item1 == 0)
+						{
+							if(entry.ShowGraph)
+							{
+                                _showFramerateGraphSave = true;
+                                entry.ShowGraph = false;
+                            }
+                        } 
+						else if (_showFramerateGraphSave)
+                        {
+                            entry.ShowGraph = true;
+                            _showFramerateGraphSave = false;
+                        }
+                        break;
 					case EOverlayEntryType.CX when entry.Identifier == "Frametime":
 						entry.Value = currentFramerate.Item2;
-						break;
+						if (currentFramerate.Item2 == 0)
+						{
+							if (entry.ShowGraph)
+							{
+								_showFrametimeGraphSave = true;
+								entry.ShowGraph = false;
+							}
+						}
+						else if (_showFrametimeGraphSave)
+						{
+                            entry.ShowGraph = true;
+							_showFrametimeGraphSave = false;
+                        } 
+                        break;
 					case EOverlayEntryType.CX when entry.Identifier == "SystemTime":
 						entry.Value = ShowSystemTimeSeconds ? DateTime.Now.ToString("HH:mm:ss") : DateTime.Now.ToString("HH:mm");
 						break;
