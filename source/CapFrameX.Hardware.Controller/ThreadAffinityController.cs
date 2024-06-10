@@ -135,6 +135,7 @@ namespace CapFrameX.Hardware.Controller
 									case 0x60:
 									case 0x61:
 									case 0x70:
+									case 0x44:
 										// Ryzen (2 CCDs)
 										{
 											if (_coreThreads[0][0].Name.Contains("900") || _coreThreads[0][0].Name.Contains("950"))
