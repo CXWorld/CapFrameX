@@ -239,10 +239,13 @@ Potential conflicts with the Nuget packages can be solved via Package Manger Con
 * Microsoft Visual C++ Redistributable Package
 
 # Build requirements
-* MS Visual Studio 2019 only (Community Edition)
+**Note: WiX is optional if you want installer**
+
+* MS Visual Studio 2022
 * WiX V3.11.1
 * WiX Toolset Visual Studio 2019 Extension
 * WiX Toolset and VS Extension: http://wixtoolset.org/releases/
+* C++ MFC build tools
 * FrameView SDK (can be found in: `installers/FVSDKSetup.exe`)
 
 # Build settings
