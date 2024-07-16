@@ -1650,6 +1650,11 @@
     "IsBlacklisted": true
   },
   {
+    "Name": "Vesktop",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "EpicWebHelper",
     "DisplayName": null,
     "IsBlacklisted": true
@@ -1808,6 +1813,11 @@
     "Name": "pCARS3",
     "DisplayName": "Project Cars 3",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "VSCodium",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "vs_installershell",
@@ -3148,6 +3158,11 @@
     "Name": "GRW",
     "DisplayName": "Ghost Recon Wildlands",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "GitHubDesktop",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "farcry3",
