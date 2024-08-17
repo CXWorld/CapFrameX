@@ -1,1 +1,0 @@
-cmd /k "lodctr /r & winmgmt /resyncperf"

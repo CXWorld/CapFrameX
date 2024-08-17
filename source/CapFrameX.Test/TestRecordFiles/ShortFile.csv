@@ -1,6 +1,0 @@
-Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,Dropped,TimeInSeconds,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsUntilRenderComplete,MsUntilDisplayed
-FarCryNewDawn.exe,9208,0x00000259DAE0BCF0,DXGI,0,0,0,Composed: Copy with GPU GDI,0,10.907744,16.811,16.728,1.334,4.919,14.347
-FarCryNewDawn.exe,9208,0x00000259DAE0BCF0,DXGI,0,0,0,Composed: Copy with GPU GDI,0,10.924241,16.497,16.646,0.815,4.208,14.496
-FarCryNewDawn.exe,9208,0x00000259DAE0BCF0,DXGI,0,0,0,Composed: Copy with GPU GDI,0,10.940913,16.672,16.700,1.040,3.461,14.524
-FarCryNewDawn.exe,9208,0x00000259DAE0BCF0,DXGI,0,0,0,Composed: Copy with GPU GDI,0,10.957525,16.612,16.697,1.018,4.414,14.608
-FarCryNewDawn.exe,9208,0x00000259DAE0BCF0,DXGI,0,0,0,Composed: Copy with GPU GDI,0,10.974329,16.803,16.677,1.318,4.622,14.482
