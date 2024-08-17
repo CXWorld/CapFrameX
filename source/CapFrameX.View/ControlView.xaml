@@ -1,0 +1,483 @@
+﻿<UserControl x:Class="CapFrameX.View.ControlView"
+             Name="ControlViewControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+			 xmlns:prism="http://prismlibrary.com/"
+			 xmlns:dragdrop="urn:gong-wpf-dragdrop"
+             xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
+             xmlns:controls="clr-namespace:CapFrameX.View.Controls"	
+			 xmlns:wpf="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
+			 xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Background="{DynamicResource MaterialDesignBackground}"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
+            <mvvm:AddValueConverter x:Key="AddValueConverterExpander" Offset="-70"/>
+            <mvvm:AddValueConverter x:Key="AddValueConverterSaveButton" Offset="-20"/>
+            <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
+            <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
+            <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+            <ColumnDefinition Width="1*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <FrameworkElement x:Name="ColumnHeaders" Visibility="Collapsed"/>
+        <!--Record folder management expander-->
+        <Expander Name="Expander" Margin="0 0 0 0" MaxWidth="365" Grid.RowSpan="2" Grid.Column="0" Panel.ZIndex="1" ExpandDirection="Right" HorizontalAlignment="Left"
+                  Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" wpf:ExpanderAssist.VerticalHeaderPadding="5">
+            <Expander.Header>
+                <TextBlock Text="Observed directory" RenderTransformOrigin=".5,.5" FontSize="14" HorizontalAlignment="Center">
+                    <TextBlock.LayoutTransform>
+                        <RotateTransform Angle="90"/>
+                    </TextBlock.LayoutTransform>
+                </TextBlock>
+            </Expander.Header>
+            <materialDesign:DialogHost Margin="0 0 5 0"
+							IsOpen="{Binding CreateFolderDialogIsOpen}"
+							DialogContent="{Binding CreateFolderDialogContent}"
+							CloseOnClickAway="False">
+                <Grid Name="ExpanderGrid" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="10" ></RowDefinition>
+                        <RowDefinition Height="Auto" ></RowDefinition>
+                        <RowDefinition Height="Auto" ></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <ToggleButton Panel.ZIndex="2" Grid.Row="0" HorizontalAlignment="Right" Padding="0" Margin="0 0 5 -25" IsChecked="{Binding FixedExpanderPosition, Mode=TwoWay}" 
+                        Style="{StaticResource MaterialDesignActionToggleButton}" Height="20" Width="20" ToolTip="Lock expander position" Background="#6ec6ff">
+                        <materialDesign:PackIcon Kind="PinOff" RenderTransformOrigin=".5,.5">
+                            <materialDesign:PackIcon.RenderTransform>
+                                <RotateTransform Angle="90"/>
+                            </materialDesign:PackIcon.RenderTransform>
+                        </materialDesign:PackIcon>
+                        <materialDesign:ToggleButtonAssist.OnContent>
+                            <materialDesign:PackIcon Kind="Pin" RenderTransformOrigin=".5,.5">
+                                <materialDesign:PackIcon.RenderTransform>
+                                    <RotateTransform Angle="0"/>
+                                </materialDesign:PackIcon.RenderTransform>
+                                </materialDesign:PackIcon>
+                        </materialDesign:ToggleButtonAssist.OnContent>
+                    </ToggleButton>
+                    <TextBox Grid.Row="1" Margin="10 0 10 0" Width="250" IsReadOnly="True" HorizontalAlignment="Right" materialDesign:HintAssist.Hint="Root capture folder" materialDesign:HintAssist.IsFloating="True"
+                             Text="{Binding DataContext.RootDirectory, ElementName=ControlViewControl, Mode=OneWay}" TextWrapping="NoWrap" PreviewMouseDown="RootFolder_PreviewMouseDown" materialDesign:HintAssist.HintOpacity=".8"
+                             ToolTip="{Binding DataContext.RootDirectory, ElementName=ControlViewControl, Mode=OneWay}"/>
+                    <Button Grid.Row="1" Margin="5 0 0 5" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
+							VerticalAlignment="Bottom" HorizontalAlignment="Left"
+							Width="20" Height="20"
+							ToolTip="Reload root folder"
+							Command="{Binding ReloadRootFolderCommand}">
+                        <materialDesign:PackIcon Kind="Cached" Width="15" Height="15"/>
+                    </Button>
+                    <ScrollViewer Margin="0 20 0 0" Width="300" Grid.Row="2" Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverterExpander}}" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel" >
+                        <TreeView Name="TrvStructure" Padding="5" TreeViewItem.Selected="TreeViewItem_Selected" PreviewMouseRightButtonDown="TreeView_PreviewMouseRightButtonDown"
+                                  Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="13"  
+                                  AllowDrop="True" 
+                                  DragOver="TrvStructure_DragOver" 
+                                  MouseEnter="TrvStructure_MouseEnter"
+                                  Drop="TrvStructure_Drop">
+                            <TreeView.ContextMenu>
+                                <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                    <MenuItem Header="Open folder" Command="{Binding OpenObservedFolderCommand}"/>
+                                    <MenuItem Header="Delete folder" Command="{Binding DeleteFolderCommand}"/>
+                                    <MenuItem Header="Create new subfolder" Command="{Binding OpenCreateSubFolderDialogCommand}"/>
+                                </ContextMenu>
+                            </TreeView.ContextMenu>
+                        </TreeView>
+                    </ScrollViewer>
+                </Grid>
+            </materialDesign:DialogHost>
+        </Expander>
+        <!--Record list-->
+        <Grid Grid.Row="0" Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Border Grid.Column="0" Grid.Row="0" Visibility="{Binding HasValidSource, Converter={StaticResource FalseToVisibleConverter}}" Margin="0 0 50 0" BorderThickness="1" Panel.ZIndex="2">
+                <!--Style="{StaticResource MaterialDesignHeadlineTextBlock}"-->
+                <TextBlock Text="Observed directory missing.&#10;Open expander and select a folder." TextAlignment="Center"
+                       TextWrapping="Wrap" Width="220" Margin="60 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="{DynamicResource MaterialDesignBody}"/>
+            </Border>
+            <DockPanel Margin="5 0 0 0"  VerticalAlignment="Stretch" >
+                <Grid Grid.Row="0" Visibility="{Binding HasValidSource, Converter={StaticResource FalseToCollapsedConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="35"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    
+                    <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Loading records..." FontSize="16" Panel.ZIndex="1" Visibility="{Binding DirectoryLoading, Converter={StaticResource TrueToVisibleConverter}}"
+                           Foreground="{DynamicResource MaterialDesignBody}"/>
+                    <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Directory doesn't contain any valid records. Start a game and then press the capture key to create records..." TextWrapping="Wrap" Width="200" TextAlignment="Center" FontSize="16" Panel.ZIndex="1"
+                               Visibility="{Binding DirectoryIsEmpty, Converter={StaticResource TrueToVisibleConverter}}"
+                           Foreground="{DynamicResource MaterialDesignBody}"/>
+
+                    <!--Column options & search bar-->
+                    <TextBox Grid.Row="0" Margin="40 10 5 0" Foreground="{DynamicResource MaterialDesignBody}" Name="RecordSearchBox" materialDesign:HintAssist.Hint="{Binding SearchBarText}" materialDesign:HintAssist.HintOpacity=".8"/>
+                    <materialDesign:PopupBox Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0 10 0 0" Panel.ZIndex="1" StaysOpen="True" ToolTipService.ShowDuration="25000"
+                                             Foreground="{DynamicResource MaterialDesignBody}">
+                        <materialDesign:PopupBox.ToolTip>
+                            <ToolTip Placement="Top">
+                                <TextBlock Text="Column options"/>
+                            </ToolTip>
+                        </materialDesign:PopupBox.ToolTip>
+                        <materialDesign:Card Width="Auto" Margin="0 0 0 -10">
+                            <Grid Margin="8 8 8 8">
+                                <Grid.Resources>
+                                    <Style TargetType="{x:Type CheckBox}"
+											BasedOn="{StaticResource MaterialDesignCheckBox}">
+                                        <Setter Property="Margin" Value="8,8,10,8" />
+                                    </Style>
+                                    <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource MaterialDesignTextBox}">
+                                        <Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
+                                        <Setter Property="Margin" Value="8,8,8,8" />
+                                    </Style>
+                                </Grid.Resources>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Date / Time" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding ShowCreationDate}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Comment" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowComment}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="Aggregated" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding ShowIsAggregated}" Style="{StaticResource MaterialDesignSwitchToggleButton}" />
+                                <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="CPU" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowCpuName}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="GPU" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding ShowGpuName}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="RAM" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding ShowRamName}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            </Grid>
+                        </materialDesign:Card>
+                    </materialDesign:PopupBox>
+
+                    <!--Datagrid-->
+                    <controls:MultiSelectionDataGrid Grid.Row="1" x:Name="RecordDataGrid" Height="Auto"
+                            Margin="0 10 5 0" Sorting="RecordDataGrid_Sorting" SelectionMode="Extended" SelectedIndex="{Binding RecordDataGridSelectedIndex}"
+					        Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="11"
+					        ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}"
+                            SelectedItemsList="{Binding SelectedRecordInfos, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
+                            PreviewLostKeyboardFocus="RecordDataGrid_PreviewLostKeyboardFocus"
+							PreviewKeyDown="RecordDataGrid_PreviewKeyDown"
+                            BeginningEdit="RecordDataGrid_BeginningEdit"
+                            ColumnDisplayIndexChanged="RecordDataGrid_ColumnDisplayIndexChanged"
+					        materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+					        ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+					        dragdrop:DragDrop.IsDragSource="True"
+					        dragdrop:DragDrop.IsDropTarget="False"
+					        dragdrop:DragDrop.UseDefaultDragAdorner="True"
+					        dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+					        dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
+                            Style="{StaticResource MaterialDesignDataGrid}"
+                            Background="{DynamicResource MaterialDesignBackground}">
+                        <DataGrid.Resources>
+                            <Style TargetType="{x:Type DataGridRow}">
+                                <EventSetter Event="MouseDoubleClick" Handler="DataGridRow_MouseDoubleClick"/>
+                                <Setter Property="DataGrid.Height" Value="40" />
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="SnapsToDevicePixels" Value="true"/>
+                                <Setter Property="Validation.ErrorTemplate" Value="{x:Null}"/>
+                                <Setter Property="ValidationErrorTemplate">
+                                    <Setter.Value>
+                                        <ControlTemplate>
+                                            <TextBlock Foreground="#d50000" Margin="2,0,0,0" Text="!" VerticalAlignment="Center"/>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type DataGridRow}">
+                                            <Border x:Name="DGR_Border"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                Background="{TemplateBinding Background}"                                                                  
+                                                SnapsToDevicePixels="True">
+                                                <SelectiveScrollingGrid>
+                                                    <SelectiveScrollingGrid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </SelectiveScrollingGrid.ColumnDefinitions>
+                                                    <SelectiveScrollingGrid.RowDefinitions>
+                                                        <RowDefinition Height="*"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </SelectiveScrollingGrid.RowDefinitions>
+                                                    <DataGridCellsPresenter Grid.Column="1"
+                                                                        ItemsPanel="{TemplateBinding ItemsPanel}"
+                                                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                                    <DataGridDetailsPresenter Grid.Column="1"
+                                                                        Grid.Row="1"
+                                                                        SelectiveScrollingGrid.SelectiveScrollingOrientation="{Binding AreRowDetailsFrozen, ConverterParameter={x:Static SelectiveScrollingOrientation.Vertical}, Converter={x:Static DataGrid.RowDetailsScrollingConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
+                                                                        Visibility="{TemplateBinding DetailsVisibility}" />
+                                                    <DataGridRowHeader Grid.Column="0"
+                                                                    Grid.Row="0"
+                                                                    Grid.RowSpan="2"
+                                                                    SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
+                                                                    Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Row}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" />
+                                                </SelectiveScrollingGrid>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}" />
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource MaterialDesignDataGridRowHoverBackground}" />
+                                    </Trigger>
+                                    <Trigger Property="IsNewItem" Value="True">
+                                        <Setter Property="Margin" Value="{Binding NewItemMargin, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                                    </Trigger>
+                                    <MultiTrigger>
+                                        <MultiTrigger.Conditions>
+                                            <Condition Property="IsSelected" Value="True"/>
+                                            <Condition Property="IsMouseOver" Value="True" />
+                                        </MultiTrigger.Conditions>
+                                        <MultiTrigger.Setters>
+                                            <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}" />
+                                        </MultiTrigger.Setters>
+                                    </MultiTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.Resources>
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="SelectionChanged">
+                                <i:InvokeCommandAction Command="{Binding SelectedRecordingsCommand}" 
+                               CommandParameter="{Binding ElementName=RecordDataGrid, Path=SelectedItems}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                        <DataGrid.InputBindings>
+                            <KeyBinding Key="Delete" Command="{Binding Path=DeleteRecordCommand}" />
+                        </DataGrid.InputBindings>
+                        <DataGrid.ContextMenu>
+                            <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                <MenuItem Header="Delete recording file(s)" Command="{Binding DeleteRecordFileCommand}"/>
+                                <MenuItem Header="Move recording file(s)" Command="{Binding MoveRecordFileCommand}"/>
+                                <MenuItem Header="Copy/paste recording file(s)" Command="{Binding DuplicateRecordFileCommand}"/>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
+                        <DataGrid.ColumnHeaderStyle>
+                            <Style TargetType="{x:Type DataGridColumnHeader}">
+                                <Setter Property="BorderThickness" Value="0, 0, 1, 0"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignDivider}" />
+                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                <Setter Property="TextBlock.FontSize" Value="12" />
+                                <Setter Property="TextBlock.FontWeight" Value="Medium" />
+                                <Setter Property="Padding" Value="8, 5, 0, 0"/>
+                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignColumnHeader}" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
+                                            <ControlTemplate.Resources>
+                                                <Storyboard x:Key="GoToVisible">
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SortDirectionIndicator" Storyboard.TargetProperty="Width">
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="0" />
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="12" />
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                                <Storyboard x:Key="GoToHidden">
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SortDirectionIndicator" Storyboard.TargetProperty="Width">
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="12" />
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0" />
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </ControlTemplate.Resources>
+                                            <Grid>
+                                                <Border Margin="0 5 0 5" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                                    <Grid Background="Transparent">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <wpf:ListSortDirectionIndicator Grid.Column="0" Width="0" Height="14" 
+                                                                x:Name="SortDirectionIndicator"
+                                                                ListSortDirection="{TemplateBinding SortDirection}"/>
+                                                        <ContentPresenter Height="20" Grid.Column="1" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                  Margin="{TemplateBinding Padding}"/>
+                                                    </Grid>
+                                                </Border>
+                                                <Thumb x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignGridColumnHeaderGripper}"/>
+                                                <Thumb x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignGridColumnHeaderGripper}"/>
+                                            </Grid>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                                                </Trigger>
+                                                <Trigger Property="SortDirection" Value="Ascending">
+                                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                                                </Trigger>
+                                                <Trigger Property="SortDirection" Value="Descending">
+                                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                                                </Trigger>
+                                                <Trigger SourceName="SortDirectionIndicator" Property="IsNeutral" Value="False">
+                                                    <Trigger.EnterActions>
+                                                        <BeginStoryboard Storyboard="{StaticResource GoToVisible}" Name="GoToVisible" />
+                                                    </Trigger.EnterActions>
+                                                    <Trigger.ExitActions>
+                                                        <RemoveStoryboard BeginStoryboardName="GoToVisible" />
+                                                        <BeginStoryboard Storyboard="{StaticResource GoToHidden}" />
+                                                    </Trigger.ExitActions>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGrid.ColumnHeaderStyle>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
+                                        Width="Auto"
+                                        Header="Game"
+                                        FontSize="13"
+                                        IsReadOnly="True">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Binding="{Binding CreationTimestamp, Mode=OneWay}"
+                                        Width="Auto"
+                                        MinWidth="95"
+                                        Header="Date / Time"
+                                        IsReadOnly="True"
+                                        Visibility="{Binding DataContext.ShowCreationDate, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.TextAlignment" Value="Center" />
+                                        <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Binding="{Binding Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+										Width="100"
+                                        Header="Comment"
+                                        IsReadOnly="False"
+                                        Visibility="{Binding DataContext.ShowComment, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridCheckBoxColumn Binding="{Binding IsAggregated, Mode=OneWay}"
+                                        Width="Auto"
+                                        Header="Aggregated"
+                                        IsReadOnly="True" 
+                                        MinWidth="40"
+                                        Visibility="{Binding DataContext.ShowIsAggregated, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
+                                <DataGridCheckBoxColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="CheckBox.IsEnabled" Value="False" />
+                                        <Setter Property="CheckBox.VerticalAlignment" Value="Center" />
+                                        <Setter Property="CheckBox.HorizontalAlignment" Value="Center" />
+                                        <Setter Property="CheckBox.IsHitTestVisible" Value="False"/>
+                                    </Style>
+                                </DataGridCheckBoxColumn.ElementStyle>
+                            </DataGridCheckBoxColumn>
+                            <DataGridTextColumn Binding="{Binding ProcessorName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+										Width="Auto"
+                                        Header="CPU"
+                                        IsReadOnly="False"
+                                        Visibility="{Binding DataContext.ShowCpuName, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Binding="{Binding GraphicCardName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+										Width="Auto"
+                                        Header="GPU"
+                                        IsReadOnly="False"
+                                        Visibility="{Binding DataContext.ShowGpuName, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
+                                    </Style> 
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Binding="{Binding SystemRamInfo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+										Width="Auto"
+                                        Header="RAM"
+                                        IsReadOnly="False"
+                                        Visibility="{Binding DataContext.ShowRamName, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </controls:MultiSelectionDataGrid>
+                </Grid>
+            </DockPanel>
+            <Expander BorderBrush="{DynamicResource MaterialDesignBackground}" BorderThickness="5" Name="RecordInfoExpander" Margin="0 0 0 0" Grid.Row="1" Grid.Column="1" VerticalAlignment="Bottom" Panel.ZIndex="1" ExpandDirection="Down"
+                      IsExpanded="False" wpf:ExpanderAssist.HorizontalHeaderPadding="5" Expanded="RecordInfoExpander_Change" Collapsed="RecordInfoExpander_Change"
+                  Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                <Expander.Header>
+                    <TextBlock Text="Record Info" RenderTransformOrigin=".5,.5" FontSize="16" HorizontalAlignment="Center" Margin="35 0 0 0"></TextBlock>
+                </Expander.Header>
+                <Grid Grid.Row="1" Grid.Column="1" Margin="0 5 5 0" HorizontalAlignment="Left">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="45"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="340"/>
+                    </Grid.ColumnDefinitions>
+                    <!--CPU-->
+                    <TextBox Grid.Row="0" Grid.Column="0" wpf:HintAssist.Hint="Custom CPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+						 Margin="5 -5 5 0" FontSize="14" Text="{Binding CustomCpuDescription, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch"
+                         KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
+                    <!--GPU-->
+                    <TextBox Grid.Row="1" Grid.Column="0" wpf:HintAssist.Hint="Custom GPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+						 Margin="5 0 5 0" FontSize="14" Text="{Binding CustomGpuDescription, UpdateSourceTrigger=PropertyChanged}"
+                         KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
+                    <!--RAM-->
+                    <TextBox Grid.Row="2" Grid.Column="0" wpf:HintAssist.Hint="Custom RAM description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+						 Margin="5 0 5 0" FontSize="14" Text="{Binding CustomRamDescription, UpdateSourceTrigger=PropertyChanged}"
+                         KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
+
+                    <TextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Game" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+						 Margin="5 0 5 0" FontSize="14" Text="{Binding CustomGameName, UpdateSourceTrigger=PropertyChanged}"
+                         KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
+                    <TextBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Comment" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+						 Margin="5 0 5 0" FontSize="14" Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}"
+                         KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
+                    <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="0 0 0 0" Width="{Binding ElementName=ControlViewControl, Path=ActualWidth, Converter={StaticResource AddValueConverterSaveButton}}" MaxWidth="330"
+                    Style="{DynamicResource MaterialDesignFlatButton}" Command="{Binding AcceptEditingDialogCommand}" FontSize="16" HorizontalAlignment="Left">
+                        SAVE
+                    </Button>
+                </Grid>
+            </Expander>
+        </Grid>
+    </Grid>
+</UserControl>

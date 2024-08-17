@@ -1,0 +1,185 @@
+﻿<UserControl x:Class="CapFrameX.View.AggregationView"
+			 x:Name="AggregationViewControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:prism="http://prismlibrary.com/"
+			 xmlns:dragdrop="urn:gong-wpf-dragdrop"
+			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
+			 xmlns:proxy="clr-namespace:CapFrameX.MVVM;assembly=CapFrameX.MVVM"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Background="{DynamicResource MaterialDesignBackground}"
+			 prism:ViewModelLocator.AutoWireViewModel="True">
+	<UserControl.Resources>
+        <ResourceDictionary>
+            <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
+            <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
+			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+		</ResourceDictionary>
+	</UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="150"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="700"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+        <!--DataGrid-->
+        <TextBlock Grid.Row="0" Grid.Column="1" Margin="0 25 0 0" HorizontalAlignment="Center" Text="Aggregation table" FontSize="16"
+                   Foreground="{DynamicResource MaterialDesignBody}"/>
+		<TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Width="450" x:Name="DragAndDropInfoTextTextBlock"
+                   TextAlignment="Center" TextWrapping="Wrap" FontSize="17" Visibility="{Binding ShowHelpText, Converter={StaticResource TrueToVisibleConverter}}"  Grid.ZIndex="1"                     
+                   Text="Drop items here or double click them in the record list to aggregate them manually.&#10;&#10;For automatic aggregation during benchmarks use the settings on the capture page."
+                   Foreground="{DynamicResource MaterialDesignBody}"
+				   dragdrop:DragDrop.IsDragSource="False"
+				   dragdrop:DragDrop.IsDropTarget="True"
+				   dragdrop:DragDrop.DropHandler="{Binding}"
+				   dragdrop:DragDrop.UseDefaultDragAdorner="True"
+				   dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+				   dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"/>
+        <DataGrid Grid.Row="1" Grid.Column="1" x:Name="AggregationItemDataGrid" Height="275" Width="700" FontSize="11"
+				  MouseLeave="AggregationItemDataGrid_MouseLeave" SelectionMode="Single" VirtualizingStackPanel.VirtualizationMode="Standard"
+				  SelectedIndex="{Binding SelectedAggregationEntryIndex}" ItemsSource="{Binding AggregationEntries}"
+				  CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" PreviewKeyDown="AggregationItemDataGrid_PreviewKeyDown"
+				  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+				  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+				  dragdrop:DragDrop.IsDragSource="False"
+				  dragdrop:DragDrop.IsDropTarget="True"
+				  dragdrop:DragDrop.DropHandler="{Binding}"
+				  dragdrop:DragDrop.UseDefaultDragAdorner="True"
+				  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+				  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
+                  Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"
+                  Style="{StaticResource MaterialDesignDataGrid}">
+            <DataGrid.Resources>
+                <proxy:BindingProxy x:Key="proxy" Data="{Binding}" />
+            </DataGrid.Resources>
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
+                                            Header="Game"
+                                            IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding CreationDate, Mode=OneWay}"
+                                            Header="Date"
+                                            IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding CreationTime, Mode=OneWay}"
+                                            Header="Time"
+                                            IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
+                                            Header="Average"
+                                            IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding SecondMetricValue, Mode=TwoWay}"
+                                            Header="{Binding Path=Data.SelectedSecondMetric, Source={StaticResource proxy}, Converter={StaticResource EnumDescriptionConverter}}"
+                                            IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding ThirdMetricValue, Mode=TwoWay}"
+                                            Header="{Binding Path=Data.SelectedThirdMetric, Source={StaticResource proxy}, Converter={StaticResource EnumDescriptionConverter}}"
+                                            IsReadOnly="True"/>
+            </DataGrid.Columns>
+        </DataGrid>
+		
+		<!--Result Line-->
+        <TextBox Grid.Row="2" Grid.Column="1" Margin="0 5 0 5" Padding="0 0 0 -2" Visibility="{Binding ShowResultString, Converter={StaticResource TrueToVisibleConverter}}" IsReadOnly="True" BorderThickness="0"
+				 VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="16" Text="{Binding AggregationResultString}" Foreground="{DynamicResource MaterialDesignBody}"/>
+
+        <!--Settings-->
+        <Grid Grid.Row="3" Grid.Column="1" Margin="0 5 0 0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Row="0" Grid.Column="4" VerticalAlignment="Top" HorizontalAlignment="Right" Width="40" Height="40"
+					Command="{Binding ClearTableCommand}" IsEnabled="{Binding EnableClearButton}" BorderBrush="Transparent"
+                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}"
+                    ToolTip="Remove all entries">
+                <materialDesign:PackIcon Kind="PlaylistRemove" Height="24" Width="24" />
+            </Button>
+            <Button Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Width="150" Height="45" BorderBrush="Transparent"
+					Command="{Binding AggregateIncludeCommand}" IsEnabled="{Binding EnableAggregationButton}" Visibility="{Binding ShowIncludeExcludeButtons, Converter={StaticResource FalseToVisibleConverter}}"
+                    ToolTipService.ShowDuration="25000" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
+                <TextBlock Text="Aggregate" TextWrapping="Wrap" TextAlignment="Center"/>
+                <Button.ToolTip>
+                    <ToolTip MaxWidth="200">
+                        <TextBlock
+                             Text="Aggregate all entries" 
+                             TextWrapping="Wrap"/>
+                    </ToolTip>
+                </Button.ToolTip>
+            </Button>
+            <Button Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Width="150" Height="45" BorderBrush="Transparent"
+					Command="{Binding AggregateIncludeCommand}" Visibility="{Binding ShowIncludeExcludeButtons, Converter={StaticResource TrueToVisibleConverter}}"
+                    ToolTipService.ShowDuration="25000" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
+                <TextBlock Text="Aggregate&#10;including outliers" TextWrapping="Wrap" TextAlignment="Center"/>
+                <Button.ToolTip>
+                    <ToolTip MaxWidth="200">
+                        <TextBlock
+                             Text="Use all entries for aggregation regardless of outliers" 
+                             TextWrapping="Wrap"/>
+                    </ToolTip>
+                </Button.ToolTip>
+            </Button>
+            <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" Width="150" Height="45" BorderBrush="Transparent"
+					Command="{Binding AggregateExcludeCommand}" Visibility="{Binding ShowIncludeExcludeButtons, Converter={StaticResource TrueToVisibleConverter}}"
+                    ToolTipService.ShowDuration="25000" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
+                <TextBlock Text="Aggregate excluding outliers" TextWrapping="Wrap"  TextAlignment="Center"/>
+                <Button.ToolTip>
+                    <ToolTip MaxWidth="200">
+                        <TextBlock
+                             Text="Only use entires that are not outlies for aggregation" 
+                             TextWrapping="Wrap"/>
+                    </ToolTip>
+                </Button.ToolTip>
+            </Button>
+            <ComboBox Grid.Row="1" Grid.Column="0" Width="120" Height="40" materialDesign:HintAssist.Hint="Second metric" materialDesign:HintAssist.HintOpacity=".8"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
+					  ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondMetric}"
+                      ToolTip="Second metric shown in aggregation table" Foreground="{DynamicResource MaterialDesignBody}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <ComboBox Grid.Row="1" Grid.Column="1" Width="120" Height="40" materialDesign:HintAssist.Hint="Third metric" materialDesign:HintAssist.HintOpacity=".8"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
+					  ItemsSource="{Binding ThirdMetricItems}" SelectedItem="{Binding SelectedThirdMetric}"
+                      ToolTip="Third metric shown in aggregation table" Foreground="{DynamicResource MaterialDesignBody}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <ComboBox Grid.Row="1" Grid.Column="3" Width="120" Height="40" materialDesign:HintAssist.Hint="Outlier metric" materialDesign:HintAssist.HintOpacity=".8"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
+					  ItemsSource="{Binding RelatedMetricItemsSource}" SelectedItem="{Binding SelectedRelatedMetric}"
+                      ToolTip="Metric used to determine outliers" Foreground="{DynamicResource MaterialDesignBody}">
+            </ComboBox>
+            <ComboBox Grid.Row="1" Grid.Column="4" Width="120" Height="40" materialDesign:HintAssist.Hint="Outlier percentage" materialDesign:HintAssist.HintOpacity=".8"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
+					  ItemsSource="{Binding OutlierPercentageItemsSource}" SelectedItem="{Binding SelectedOutlierPercentage}"
+                      ToolTipService.ShowDuration="25000" Foreground="{DynamicResource MaterialDesignBody}">
+                <ComboBox.ToolTip>
+                    <ToolTip MaxWidth="350">
+                        <TextBlock
+                             Text="The percentage the FPS of an entry can differ from the median of all entries before being counted as an outlier" 
+                             TextWrapping="Wrap"/>
+                    </ToolTip>
+                </ComboBox.ToolTip>
+            </ComboBox>
+        </Grid>
+    </Grid>
+</UserControl>
