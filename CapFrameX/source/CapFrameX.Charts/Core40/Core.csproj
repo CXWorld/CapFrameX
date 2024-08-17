@@ -1,0 +1,267 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{F261C3D7-6194-4625-9516-044081B06028}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>LiveCharts</RootNamespace>
+    <AssemblyName>LiveCharts</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\LiveCharts.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>x64</PlatformTarget>
+    <NoWarn>612,618</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\LiveCharts.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
+    <NoWarn>612,618</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <NoWarn>612,618</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <NoWarn>612,618</NoWarn>
+    <WarningLevel>2</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DocumentationFile>bin\Debug\LiveCharts.xml</DocumentationFile>
+    <NoWarn>612,618</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DocumentationFile>bin\Release\LiveCharts.xml</DocumentationFile>
+    <Optimize>true</Optimize>
+    <NoWarn>612,618</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.IO, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.IO.4.3.0\lib\net462\System.IO.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http, Version=4.1.1.3, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Net.Http.4.3.4\lib\net46\System.Net.Http.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Runtime, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Runtime.4.3.0\lib\net462\System.Runtime.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Algorithms, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Security.Cryptography.Algorithms.4.3.0\lib\net463\System.Security.Cryptography.Algorithms.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Encoding, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Security.Cryptography.Encoding.4.3.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AxisCore.cs" />
+    <Compile Include="AxisOrientation.cs" />
+    <Compile Include="AxisPosition.cs" />
+    <Compile Include="AxisSectionCore.cs" />
+    <Compile Include="AxisWindow.cs" />
+    <Compile Include="AxisWindows.cs" />
+    <Compile Include="BarLabelPosition.cs" />
+    <Compile Include="ChartFunctions.cs" />
+    <Compile Include="Charting.cs" />
+    <Compile Include="ChartPoint.cs" />
+    <Compile Include="Charts\CartesianChartCore.cs" />
+    <Compile Include="Charts\ChartCore.cs" />
+    <Compile Include="Charts\PieChartCore.cs" />
+    <Compile Include="ChartUpdater.cs" />
+    <Compile Include="ChartValues.cs" />
+    <Compile Include="Configurations\CartesianMapper.cs" />
+    <Compile Include="Configurations\FinancialMapper.cs" />
+    <Compile Include="Configurations\GanttMapper.cs" />
+    <Compile Include="Configurations\IPointEvaluator.cs" />
+    <Compile Include="Configurations\Mappers.cs" />
+    <Compile Include="Configurations\PieMapper.cs" />
+    <Compile Include="Configurations\PolarMapper.cs" />
+    <Compile Include="Configurations\WeightedMapper.cs" />
+    <Compile Include="DataLabelViewModel.cs" />
+    <Compile Include="DateAxisCore.cs" />
+    <Compile Include="DateAxisWindow.cs" />
+    <Compile Include="Definitions\Charts\IAxisWindow.cs" />
+    <Compile Include="Definitions\Charts\IWindowAxisView.cs" />
+    <Compile Include="Definitions\Series\IGroupedStackedSeriesView.cs" />
+    <Compile Include="Delegates.cs" />
+    <Compile Include="WindowAxisCore.cs" />
+    <Compile Include="DateAxisWindows.cs" />
+    <Compile Include="DateSeparatorElementCore.cs" />
+    <Compile Include="Defaults\AxisLimits.cs" />
+    <Compile Include="Defaults\DateTimePoint.cs" />
+    <Compile Include="Defaults\GanttPoint.cs" />
+    <Compile Include="Defaults\HeatPoint.cs" />
+    <Compile Include="Defaults\ObservablePoint.cs" />
+    <Compile Include="Defaults\ObservableValue.cs" />
+    <Compile Include="Defaults\OHLCPoint.cs" />
+    <Compile Include="Defaults\PolarPoint.cs" />
+    <Compile Include="Defaults\ScatterPoint.cs" />
+    <Compile Include="Definitions\Charts\IAxisSectionView.cs" />
+    <Compile Include="Definitions\Charts\IAxisView.cs" />
+    <Compile Include="Definitions\Charts\ICartesianChart.cs" />
+    <Compile Include="Definitions\Charts\ICartesianVisualElement.cs" />
+    <Compile Include="Definitions\Charts\IChartView.cs" />
+    <Compile Include="Definitions\Charts\IDateAxisView.cs" />
+    <Compile Include="Definitions\Charts\ILogarithmicAxisView.cs" />
+    <Compile Include="Definitions\Charts\IPieChart.cs" />
+    <Compile Include="Definitions\Charts\ISeparatorElementView.cs" />
+    <Compile Include="Definitions\Charts\ISeparatorView.cs" />
+    <Compile Include="Definitions\Points\IBezierPointView.cs" />
+    <Compile Include="Definitions\Points\IChartPointView.cs" />
+    <Compile Include="Definitions\Points\IHeatPointView.cs" />
+    <Compile Include="Definitions\Points\IOhlcPointView.cs" />
+    <Compile Include="Definitions\Points\IPieSlicePointView.cs" />
+    <Compile Include="Definitions\Points\IRectanglePointView.cs" />
+    <Compile Include="Definitions\Points\IScatterPointView.cs" />
+    <Compile Include="Definitions\Points\IStepPointView.cs" />
+    <Compile Include="Definitions\Series\ICartesianSeries.cs" />
+    <Compile Include="Definitions\Series\IColumnSeriesView.cs" />
+    <Compile Include="Definitions\Series\IFinancialSeriesView.cs" />
+    <Compile Include="Definitions\Series\IHeatSeriesView.cs" />
+    <Compile Include="Definitions\Series\ILineSeriesView.cs" />
+    <Compile Include="Definitions\Series\IPieSeries.cs" />
+    <Compile Include="Definitions\Series\IPieSeriesView.cs" />
+    <Compile Include="Definitions\Series\IAreaPoint.cs" />
+    <Compile Include="Definitions\Series\IRowSeriesView.cs" />
+    <Compile Include="Definitions\Series\IScatterSeriesView.cs" />
+    <Compile Include="Definitions\Series\ISeriesView.cs" />
+    <Compile Include="Definitions\Series\IStackedAreaSeriesView.cs" />
+    <Compile Include="Definitions\Series\IStackedColumnSeriesView.cs" />
+    <Compile Include="Definitions\Series\IStackedRowSeriesView.cs" />
+    <Compile Include="Definitions\Series\IStackModelableSeriesView.cs" />
+    <Compile Include="Definitions\Series\IVerticalStackedAreaSeriesView.cs" />
+    <Compile Include="Dtos\BezierData.cs" />
+    <Compile Include="Dtos\CoreColor.cs" />
+    <Compile Include="Dtos\CoreGradientStop.cs" />
+    <Compile Include="Dtos\CoreLimit.cs" />
+    <Compile Include="Dtos\CoreMargin.cs" />
+    <Compile Include="Dtos\CorePoint.cs" />
+    <Compile Include="Dtos\CoreRectangle.cs" />
+    <Compile Include="Dtos\CoreSize.cs" />
+    <Compile Include="Dtos\LabelEvaluation.cs" />
+    <Compile Include="Dtos\StackedSum.cs" />
+    <Compile Include="Dtos\TooltipDataViewModel.cs" />
+    <Compile Include="Events\Delegates.cs" />
+    <Compile Include="Events\PreviewRangeChangedEventArgs.cs" />
+    <Compile Include="Events\RangeChangedEventArgs.cs" />
+    <Compile Include="Helpers\Extentions.cs" />
+    <Compile Include="Helpers\LiveChartsException.cs" />
+    <Compile Include="Helpers\NoisyCollection.cs" />
+    <Compile Include="PeriodUnits.cs" />
+    <Compile Include="IChartValues.cs" />
+    <Compile Include="IObservableChartPoint.cs" />
+    <Compile Include="LegendLocation.cs" />
+    <Compile Include="LogarithmicAxisCore.cs" />
+    <Compile Include="Maps\MapData.cs" />
+    <Compile Include="PanningOptions.cs" />
+    <Compile Include="PieLabelPosition.cs" />
+    <Compile Include="PointTracker.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScrollMode.cs" />
+    <Compile Include="SeparationState.cs" />
+    <Compile Include="SeparatorConfigurationCore.cs" />
+    <Compile Include="SeparatorElementCore.cs" />
+    <Compile Include="Seriesalgorithm.cs" />
+    <Compile Include="SeriesAlgorithms\CandleAlgorithm.cs" />
+    <Compile Include="SeriesAlgorithms\ColumnAlgorithm.cs" />
+    <Compile Include="SeriesAlgorithms\HeatAlgorithm.cs" />
+    <Compile Include="SeriesAlgorithms\LineAlgorithm.cs" />
+    <Compile Include="SeriesAlgorithms\OhlcAlgorithm.cs" />
+    <Compile Include="SeriesAlgorithms\PieAlgorithm.cs" />
+    <Compile Include="SeriesAlgorithms\RowAlgorithm.cs" />
+    <Compile Include="SeriesAlgorithms\ScatterAlgorithm.cs" />
+    <Compile Include="SeriesAlgorithms\StackedAreaAlgorithm.cs" />
+    <Compile Include="SeriesAlgorithms\StackedColumnAlgorithm.cs" />
+    <Compile Include="SeriesAlgorithms\StackedRowAlgorithm.cs" />
+    <Compile Include="SeriesAlgorithms\StepLineAlgorithm.cs" />
+    <Compile Include="SeriesAlgorithms\VerticalLineAlgorithm.cs" />
+    <Compile Include="SeriesAlgorithms\VerticalStackedAreaAlgorithm.cs" />
+    <Compile Include="SeriesCollection.cs" />
+    <Compile Include="SeriesOrientation.cs" />
+    <Compile Include="StackMode.cs" />
+    <Compile Include="TooltipSelectionMode.cs" />
+    <Compile Include="UpdaterState.cs" />
+    <Compile Include="VisualElementsCollection.cs" />
+    <Compile Include="ZoomingOptions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

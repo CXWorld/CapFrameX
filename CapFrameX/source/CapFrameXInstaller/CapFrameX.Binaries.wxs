@@ -1,0 +1,817 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Component Id="cmpFD65F52CD5EC0B46A750F8EEFC3D4422" Guid="*" Win64="yes">
+                <File Id="fil1F7E777B326B02F60B86F747002F8605" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\AutoMapper.dll" />
+            </Component>
+            <Component Id="cmpC3AF7AADF6F5CAE6D6AF39549FC82D11" Guid="*" Win64="yes">
+                <File Id="fil72C5DF852EC31B67E9163666B72DC7E9" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\AutoMapper.pdb" />
+            </Component>
+            <Component Id="cmp010346265BD055915F2AF759DD155A33" Guid="*" Win64="yes">
+                <File Id="filC36055874C8412817A8A62A3DD63255D" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.ADLX.dll" />
+            </Component>
+            <Component Id="cmp38FB2D846FB5A26B8F01D5155B71ADB5" Guid="*" Win64="yes">
+                <File Id="fil55A807ADC7391DA20338EF97DF3F4767" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.ApiInterface.dll" />
+            </Component>
+            
+            <Component Id="cmp8E6F0A41518F04985A00044A881AFAA3" Guid="*" Win64="yes">
+                <File Id="filC61BB4011FA8A5D074FAB20E2DABFDEE" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.ApiInterface.pdb" />
+            </Component>
+            <Component Id="cmpFCC1F35455D5814F6F5D83CFB2CBB5EA" Guid="*" Win64="yes">
+                <File Id="filBF5E6522ABF9B07B4C721A3F08328663" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Capture.Contracts.dll" />
+            </Component>
+            
+            <Component Id="cmp367B18F442C629D69A743133694E4034" Guid="*" Win64="yes">
+                <File Id="fil6E3A974E04E9C60370B37DB0E6CC632C" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Capture.Contracts.pdb" />
+            </Component>
+            <Component Id="cmp8ACAADD5757BD9E933B8004451F42808" Guid="*" Win64="yes">
+                <File Id="fil1D123DA33C13D338799627CD54B199E4" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Configuration.dll" />
+            </Component>
+            
+            <Component Id="cmpCE5F8A81B8827D84BBA827B235B47111" Guid="*" Win64="yes">
+                <File Id="fil29CFBD10CFA03DCDF8575E4FDE0E8174" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Configuration.pdb" />
+            </Component>
+            <Component Id="cmpA4C1EAD31D80CA7A469C61E5F7BF0BE7" Guid="*" Win64="yes">
+                <File Id="filC5232FFF55D7F9A2D288A591C3B2723E" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Contracts.dll" />
+            </Component>
+            
+            <Component Id="cmp829349182F4E01B742F1469B2F87C349" Guid="*" Win64="yes">
+                <File Id="fil474CE805D5D9DC6A595C441785019BD7" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Contracts.pdb" />
+            </Component>
+            <Component Id="cmpBB82F84010B18BD471718A8F5192D809" Guid="*" Win64="yes">
+                <File Id="filF1AAE3D99497A2F202666A8EBE6BD1BE" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Data.dll" />
+            </Component>
+            
+            <Component Id="cmp1E647D9F8ECD25DE8456AFEFC9762EE2" Guid="*" Win64="yes">
+                <File Id="fil8CE2EF8CF9DF7C299CB286FF7006DE00" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Data.pdb" />
+            </Component>
+            <Component Id="cmpD1A5312A1B779CA613F64117D3873237" Guid="*" Win64="yes">
+                <File Id="filEB5035C3BC5C3408D555A5EADE39865F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Data.Session.dll" />
+            </Component>
+            <Component Id="cmpCDC3D9376CF1A1EB5905BD4C4CF063DE" Guid="*" Win64="yes">
+                <File Id="fil3C8CC94DCFA26E8335F85F6F008A283C" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Data.Session.pdb" />
+            </Component>
+            <Component Id="cmp7C9CAFF9FE2A171191AA280A316C5B90" Guid="*" Win64="yes">
+                <File Id="filE854C05B7FCBEF9D80C9CD3447FD3B5E" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.EventAggregation.dll" />
+            </Component>
+            
+            <Component Id="cmpF059BAC6B00657CE369D498012322954" Guid="*" Win64="yes">
+                <File Id="fil2F27B59821EEA3253D3972EAB753F556" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.EventAggregation.pdb" />
+            </Component>
+            <Component Id="cmp82AD45B10466B02AA709E58F5BE28DFA" Guid="*" Win64="yes">
+                <File Id="fil728C156E08C89BB8D6F48ADCA3FDB05E" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.exe" />
+            </Component>
+            <Component Id="cmp2E59BC59B11729E95EB8C057C580BD11" Guid="*" Win64="yes">
+                <File Id="fil4AD54877443A07448E8AA586A7801495" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.exe.config" />
+            </Component>
+            <Component Id="cmp197CCAFDD9C330A4C91CAF35F0619382" Guid="*" Win64="yes">
+                <File Id="fil3C5B48255A95C26C6661A866ABBA9A94" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Extensions.dll" />
+            </Component>
+            
+            <Component Id="cmp946F72DFC650C4E5A49C51A838713428" Guid="*" Win64="yes">
+                <File Id="fil8D5A202B59370A078AE09810437627E4" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Extensions.NetStandard.dll" />
+            </Component>
+            <Component Id="cmp4974650E9CE6F14031D0ABC8811B7A46" Guid="*" Win64="yes">
+                <File Id="fil96684E99AEF12A1E673F71F5AE99B36E" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Extensions.NetStandard.pdb" />
+            </Component>
+            <Component Id="cmpF3D48399A0F13574BBC5D2D15C71B25C" Guid="*" Win64="yes">
+                <File Id="fil804C4BD6BD64859B2C6C4826C2EDE7CC" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Extensions.pdb" />
+            </Component>
+            <Component Id="cmpA01C1600580663366D283317EABC8071" Guid="*" Win64="yes">
+                <File Id="fil599405ABC4A4573D0CF567861CD61A67" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.FrameView.dll" />
+            </Component>
+            <Component Id="cmpB6667BCA4B65EF30DBEC87C6744D2AE9" Guid="*" Win64="yes">
+                <File Id="filE95B34771D9FD2DF85704CB98AD42F0B" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Hardware.Controller.dll" />
+            </Component>
+            
+            <Component Id="cmp6BEF906CB6FADDBDBA3AAF1A06E55843" Guid="*" Win64="yes">
+                <File Id="fil79534DD61D64FDF9D59AEC1B39995125" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Hardware.Controller.pdb" />
+            </Component>
+            <Component Id="cmpC53D77F304B4523D70934DE3AA929A1B" Guid="*" Win64="yes">
+                <File Id="fil8AC734A3084D24BF22E7B1C315F35D80" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Hotkey.dll" />
+            </Component>
+            
+            <Component Id="cmp6C8034C8386700B60102EFDA32EE9A7C" Guid="*" Win64="yes">
+                <File Id="fil77F82B04FB68B8A390A85D4423410FA1" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Hotkey.pdb" />
+            </Component>
+            <Component Id="cmp58A6D9654BB2BC6D1688D3E3B41884A9" Guid="*" Win64="yes">
+                <File Id="fil722BF3ED7108CA65E0196ECD23702B49" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Hwinfo.dll" />
+            </Component>
+            <Component Id="cmp46ECDD0C7AD9D4FBBE09ADEECDCCFDB7" Guid="*" Win64="yes">
+                <File Id="fil85C3B6DBB9E77A4332828A454895E1E1" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.IGCL.dll" />
+            </Component>
+            <Component Id="cmp085F019DCFA91EA3CC69ED65224795C3" Guid="*" Win64="yes">
+                <File Id="fil956FF70D2C501EA324FFEF51A7CF20B8" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Monitoring.Contracts.dll" />
+            </Component>
+            
+            <Component Id="cmp0E8115A356A83702410D2B0E3834086E" Guid="*" Win64="yes">
+                <File Id="fil34536046683FA008D4FD00468C194AD8" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Monitoring.Contracts.pdb" />
+            </Component>
+            <Component Id="cmp6AE09C2CACB08476BEF8E2E045F01AF5" Guid="*" Win64="yes">
+                <File Id="fil970CA0EB49AC8565BFF0E023FC623052" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.MVVM.dll" />
+            </Component>
+            
+            <Component Id="cmpBF6C07EC81E07D571B517012C96B6F95" Guid="*" Win64="yes">
+                <File Id="fil1FEEA8C508096E8CABD369038800AB55" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.MVVM.pdb" />
+            </Component>
+            <Component Id="cmp4A1120ACC7AB1F1C62A70428177CC16C" Guid="*" Win64="yes">
+                <File Id="filA94E134DD2F414A189752458876EE960" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Overlay.dll" />
+            </Component>
+            
+            <Component Id="cmp7AD1D5C5600756C1FEF250A34500A8B1" Guid="*" Win64="yes">
+                <File Id="filA37B94B62EA7F4E23ECCFDB730795BB5" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Overlay.pdb" />
+            </Component>
+            <Component Id="cmpD6952B19607ADA3C10FB639F21E3B84B" Guid="*" Win64="yes">
+                <File Id="filE5A830341BEE36630CD73D17C7D87C23" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.pdb" />
+            </Component>
+            <Component Id="cmp82F7A2CA79FB4945DE735525DEA43440" Guid="*" Win64="yes">
+                <File Id="fil61F1AF4F965762967E4DC7203AE4BC52" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.PMD.dll" />
+            </Component>
+            
+            <Component Id="cmp14B77B6AF67D6C1BCC87252B412622A0" Guid="*" Win64="yes">
+                <File Id="fil59146B7CD38A713A22C17DCC307CFF1F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.PMD.pdb" />
+            </Component>
+            <Component Id="cmpDAC9A06508E623C2AE90DDABDC991D5D" Guid="*" Win64="yes">
+                <File Id="fil2C243491DA37F20C87730E667020244F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.PresentMonInterface.dll" />
+            </Component>
+            
+            <Component Id="cmpC5B851C2B64D27369CA432F2572B188D" Guid="*" Win64="yes">
+                <File Id="filF313A99FC58639D9D946E4799C4ED2B3" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.PresentMonInterface.pdb" />
+            </Component>
+            <Component Id="cmp7C05CDDFB82D6239D07041A7E6EB0982" Guid="*" Win64="yes">
+                <File Id="fil7AFFB42308C76B9846F5719763FD423F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.RTSSIntegration.dll" />
+            </Component>
+            
+            <Component Id="cmpC975C67003B9C2814766B136E8C4FC52" Guid="*" Win64="yes">
+                <File Id="fil2A0787C05003272A91BB3065F904B85C" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.RTSSIntegration.pdb" />
+            </Component>
+            <Component Id="cmp458D149F66896C1582130F4DAD13BA4A" Guid="*" Win64="yes">
+                <File Id="filDCAA7F5E2641CD0410CFA60223C12402" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.RTSSInterface.dll" />
+            </Component>
+            <Component Id="cmpFAADD84CDCFEE6BE5EFFC794B81E0AF0" Guid="*" Win64="yes">
+                <File Id="filCA23A77C17B80095E3B46C6A1CC58C29" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.RTSSInterface.pdb" />
+            </Component>
+            <Component Id="cmp7F114E6DD3365A0AC42A526666770850" Guid="*" Win64="yes">
+                <File Id="fil0FAC2DABBB2BB748786B533A5A014661" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Sensor.dll" />
+            </Component>
+            
+            <Component Id="cmpB184919061A1CBB7B72F23D57EC1483D" Guid="*" Win64="yes">
+                <File Id="fil71E2DB45568184EC1A0348F412B4DBBE" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Sensor.pdb" />
+            </Component>
+            <Component Id="cmp0895AE10E5B3ECDA81D5DD888E741F15" Guid="*" Win64="yes">
+                <File Id="filB564A04F334751CB9A1730CE3C9409C0" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Sensor.Reporting.dll" />
+            </Component>
+            <Component Id="cmpCEE07CF2C179F250C81FE40D5FC8B25B" Guid="*" Win64="yes">
+                <File Id="filF55E6A9827115A5634E116E79F45E250" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Sensor.Reporting.pdb" />
+            </Component>
+            <Component Id="cmp4A14411E5B2D1C7D899B9637CD60A7CD" Guid="*" Win64="yes">
+                <File Id="fil16D7996D0A7821C067EFB1CE112D3697" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Statistics.NetStandard.dll" />
+            </Component>
+            <Component Id="cmp85D186EDF7F89DDB5E56AD8740E47A05" Guid="*" Win64="yes">
+                <File Id="fil26A340C13C718F2BC28B4987DD7FABF7" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Statistics.NetStandard.pdb" />
+            </Component>
+            <Component Id="cmpA370ED5AA85C29D5BFCB28B64725C072" Guid="*" Win64="yes">
+                <File Id="fil6B7F05642808F2CC0AC761685715D27B" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Statistics.PlotBuilder.dll" />
+            </Component>
+            <Component Id="cmpEB7F9240E4E285CF98AF15FFE7C29B86" Guid="*" Win64="yes">
+                <File Id="filE3142588FFAD791B370752E5C5C2423A" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Statistics.PlotBuilder.pdb" />
+            </Component>
+            <Component Id="cmp121D3C3CDE810BD7FE0A2B46DCAFA63E" Guid="*" Win64="yes">
+                <File Id="fil8574361112192D6BB805FFE572589060" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.SystemInfo.NetStandard.dll" />
+            </Component>
+            <Component Id="cmp5721D79609E10BF30F119B560AC992DA" Guid="*" Win64="yes">
+                <File Id="filCAEA678FBCD8105EF0F9635429AFA5A3" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.SystemInfo.NetStandard.pdb" />
+            </Component>
+            <Component Id="cmpF4AA3050A716E6F54BB951C2FD2122DC" Guid="*" Win64="yes">
+                <File Id="fil5F66D1BA3F0735980723B32E1A79E0B1" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Updater.dll" />
+            </Component>
+            
+            <Component Id="cmpC2BF4EDA100FB9224264FDE81B19197B" Guid="*" Win64="yes">
+                <File Id="fil7829DDDA24B0EC5E76963A6728142001" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Updater.pdb" />
+            </Component>
+            <Component Id="cmp18FAC930D57ECB5DA84BC4EF8F1FF236" Guid="*" Win64="yes">
+                <File Id="fil5A22FA3F9BADD87BBA07D3CFC2BB585C" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.View.dll" />
+            </Component>
+            
+            <Component Id="cmp9E78940DE3E6DEF1FA8B22CFDB6CB974" Guid="*" Win64="yes">
+                <File Id="fil26152FE28C2CE2FEC39BF8E443DB0E6B" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.View.pdb" />
+            </Component>
+            <Component Id="cmpFEE96F5622FF620341562487C27BDBFE" Guid="*" Win64="yes">
+                <File Id="fil066CBEBC4329275FC279128989451D13" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.ViewModel.dll" />
+            </Component>
+            
+            <Component Id="cmp7208E56B684EFF6D86BA4E30F31A526F" Guid="*" Win64="yes">
+                <File Id="filD545A8CA427CB7E8F80D016D85327001" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.ViewModel.pdb" />
+            </Component>
+            <Component Id="cmp65E830F64B198A56C158E8F21A46E482" Guid="*" Win64="yes">
+                <File Id="filAB5F22C7C1A800EC57702D287A275AB9" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Webservice.Data.dll" />
+            </Component>
+            <Component Id="cmp9DD1286D83CFBB521DC0A94C03E27037" Guid="*" Win64="yes">
+                <File Id="fil3324512EC1877353CA1C697DA87398AA" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Webservice.Data.pdb" />
+            </Component>
+            <Component Id="cmp9110E4565D76564E9BC2F34625854902" Guid="*" Win64="yes">
+                <File Id="filAC751AB8116CEF372F8CFDA54B395D08" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\ControlzEx.dll" />
+            </Component>
+            <Component Id="cmp4DE861D215883636FECF0D07B8D443D7" Guid="*" Win64="yes">
+                <File Id="fil3206B90EA5541C5442934CA10AD49FF3" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\ControlzEx.pdb" />
+            </Component>
+            <Component Id="cmp471A60C7DB0BF5428D9A6BE2EF6D9976" Guid="*" Win64="yes">
+                <File Id="fil797E40D765838013F75C84F3A45F3E4D" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Cyotek.Drawing.BitmapFont.dll" />
+            </Component>
+            <Component Id="cmp10D4FE83FFFEED879BCB90B5B3143ED1" Guid="*" Win64="yes">
+                <File Id="filD7E2F7A68CC73E3EF644425DC8FBC80D" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Cyotek.Drawing.BitmapFont.pdb" />
+            </Component>
+            <Component Id="cmpB54AA7145F7DD7C9F4F5BCED9FE3DD87" Guid="*" Win64="yes">
+                <File Id="fil8FE76221CE9B2192BFCA7754455FE6D0" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\DryIoc.CommonServiceLocator.dll" />
+            </Component>
+            <Component Id="cmp3A3DCB2CB767F63098FA411AE7BB90A7" Guid="*" Win64="yes">
+                <File Id="filC88A84AAA7679BB1CC51240EFA2EB406" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\DryIoc.dll" />
+            </Component>
+            <Component Id="cmp9FA13AD80A88A2237F460D513A2F1968" Guid="*" Win64="yes">
+                <File Id="filA4C1E22C089DF7BCB008768D9AC16DEF" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\EmbedIO.dll" />
+            </Component>
+            <Component Id="cmp461E1E7FBE4E607F33327C277F03BE7A" Guid="*" Win64="yes">
+                <File Id="fil452E4A22939EC280C632FEA277D3B3A2" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\FluentValidation.dll" />
+            </Component>
+            <Component Id="cmpFDA802159822E5F335299869D8F57A96" Guid="*" Win64="yes">
+                <File Id="fil4D5F85087EDF31C493CBC20A757D0BEE" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Gma.System.MouseKeyHook.dll" />
+            </Component>
+            <Component Id="cmp781EEA928029B571EC5B4E7090BD7946" Guid="*" Win64="yes">
+                <File Id="fil093D81EF2D0F558E4AF6DBB696C8B611" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\GongSolutions.Wpf.DragDrop.dll" />
+            </Component>
+            <Component Id="cmp247A5C6B2FC2255D2495669F4BBC5B13" Guid="*" Win64="yes">
+                <File Id="fil5337173B3C652BB7E832CBB74A945243" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\GongSolutions.Wpf.DragDrop.pdb" />
+            </Component>
+            <Component Id="cmp2F5EED07769D01188B6E1DDA2EC5B3FB" Guid="*" Win64="yes">
+                <File Id="filB15AFBDD7410AD56772D69B1FD1048A0" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Hardcodet.NotifyIcon.Wpf.dll" />
+            </Component>
+            <Component Id="cmp12963553D08F263C4D654B75222572D0" Guid="*" Win64="yes">
+                <File Id="fil8368C9650D7ED77FEA2F26A8C9F1A8D6" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Jot.dll" />
+            </Component>
+            <Component Id="cmpE6F3483C369D2CFABDCB2AA8B75E6959" Guid="*" Win64="yes">
+                <File Id="fil2FD040EEC008499F18B1397AF5810979" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\LICENSE" />
+            </Component>
+            <Component Id="cmp60805430DA62A620ADC712537D30F06A" Guid="*" Win64="yes">
+                <File Id="filDB1D736833CDA4D30509594A7B6D0162" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\LiveCharts.dll" />
+            </Component>
+            <Component Id="cmpB1EC42AB2EFCC8248CA692650E5CBA2C" Guid="*" Win64="yes">
+                <File Id="filA587EF9EF76619C5A940052CC4292D0D" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\LiveCharts.pdb" />
+            </Component>
+            <Component Id="cmpB80EB57EF2904D1A74E508B15C150404" Guid="*" Win64="yes">
+                <File Id="filCBE997A6CD849E4DF004F21120DE6B94" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\LiveCharts.Wpf.dll" />
+            </Component>
+            
+            <Component Id="cmpD640FE63E82A6DF755F8660DDA0B7863" Guid="*" Win64="yes">
+                <File Id="filDA886BFA46B5C7075B3E38B7D4B3A798" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\LiveCharts.Wpf.pdb" />
+            </Component>
+            <Component Id="cmp223D4754378C01052DA8253A843FD297" Guid="*" Win64="yes">
+                <File Id="filBC562C5B3D9848A2114F0AF7275FF1E6" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MahApps.Metro.dll" />
+            </Component>
+            <Component Id="cmp31541C871E68AFBC70137561BF857C7B" Guid="*" Win64="yes">
+                <File Id="fil109901354A5E9C0DB4A287ECF7B10D9E" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MahApps.Metro.pdb" />
+            </Component>
+            <Component Id="cmpF79A41B26948F126556619AD15586E53" Guid="*" Win64="yes">
+                <File Id="filD65CB2C411B671E247C0C842FF9ED3FA" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MaterialDesignColors.dll" />
+            </Component>
+            <Component Id="cmpBA69CF71075E6968218400B9F29844B5" Guid="*" Win64="yes">
+                <File Id="fil5172DC83FB1D00BEBE5AC6D108D92FC9" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MaterialDesignColors.pdb" />
+            </Component>
+            <Component Id="cmpBDFFFC10BC54483342036800228711F3" Guid="*" Win64="yes">
+                <File Id="fil100896E49F4BD890D9C73FF2C805FF08" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MaterialDesignThemes.MahApps.dll" />
+            </Component>
+            <Component Id="cmp6491512287958DE136511A9501FC3EF8" Guid="*" Win64="yes">
+                <File Id="fil404F35427B3DFB3FBDE25E87F64FBBC3" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MaterialDesignThemes.MahApps.pdb" />
+            </Component>
+            <Component Id="cmp6D59DB1C8695088F09FD7F0B07ECD487" Guid="*" Win64="yes">
+                <File Id="fil13620EBEA6F6420A02C733F8682CD641" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MaterialDesignThemes.Wpf.dll" />
+            </Component>
+            <Component Id="cmpFA79922E3C67570896B863651A61DA4C" Guid="*" Win64="yes">
+                <File Id="filB20099EC5073B1438BB86D3B5C19B317" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MaterialDesignThemes.Wpf.pdb" />
+            </Component>
+            <Component Id="cmp508010C135AF223EB87100427362C0F7" Guid="*" Win64="yes">
+                <File Id="fil61C3AF32B1895314286CFDCFB37C0679" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MathNet.Filtering.dll" />
+            </Component>
+            <Component Id="cmp3ED5A0A4D782A8BF371C8403342D615B" Guid="*" Win64="yes">
+                <File Id="fil7074B34CCDD7ABC6B6FDB40762FB4CF9" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MathNet.Numerics.dll" />
+            </Component>
+            <Component Id="cmp257EA8281FB771B78FAEDC2CD80B4A5F" Guid="*" Win64="yes">
+                <File Id="filE0C20EAC9C3438F2434A2A5C4BB16C88" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MediatR.dll" />
+            </Component>
+            <Component Id="cmpB785B661067DB1CA34160E239CB75395" Guid="*" Win64="yes">
+                <File Id="filB8FC2B616B6AB94D52B70B5BCCA8544A" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.AspNetCore.Http.Abstractions.dll" />
+            </Component>
+            <Component Id="cmp5AA201CA9529E78168BA0DB83D052443" Guid="*" Win64="yes">
+                <File Id="filB1617F0F36FC063B8EF312503F17B36B" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.AspNetCore.Http.dll" />
+            </Component>
+            <Component Id="cmp03A336BE1F43229AE0BC3ED221CB70B1" Guid="*" Win64="yes">
+                <File Id="fil04F5F94C828D6EB6372C221FC95F059A" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.AspNetCore.Http.Features.dll" />
+            </Component>
+            <Component Id="cmp1CF42E9A734FD29AFCDB87758302FC1E" Guid="*" Win64="yes">
+                <File Id="fil98BF0CEE0E03C81EBDF3987E4F2B9F8F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.AspNetCore.WebUtilities.dll" />
+            </Component>
+            <Component Id="cmp20E5A82EE1F53BB560782568696E50EF" Guid="*" Win64="yes">
+                <File Id="fil2E537F5E44EFF72FBE1AF325D6F073A2" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.Bcl.AsyncInterfaces.dll" />
+            </Component>
+            <Component Id="cmpE5877A64EB1EC28CBEB5738C9AC0FDA5" Guid="*" Win64="yes">
+                <File Id="fil51E95113F53942FE2D0E2C542284533D" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.Bcl.HashCode.dll" />
+            </Component>
+            <Component Id="cmp8829932782E2062A8292EB806216CC80" Guid="*" Win64="yes">
+                <File Id="fil7E65EF656EF556143E801F8F85E3AC17" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.DotNet.PlatformAbstractions.dll" />
+            </Component>
+            <Component Id="cmp75E1D360F7F3BEA782095608B95EAF01" Guid="*" Win64="yes">
+                <File Id="filB2EC777A0DF3BC93E22F83FF2D6AA439" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.Extensions.Caching.Abstractions.dll" />
+            </Component>
+            <Component Id="cmp47B9C1CDB4B766E8C1572505E98E4035" Guid="*" Win64="yes">
+                <File Id="fil64C18EEB612BDE1E8703C04B205ED0F6" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.Extensions.Caching.Memory.dll" />
+            </Component>
+            <Component Id="cmp198468A4AE980CD6955CB6EB86083726" Guid="*" Win64="yes">
+                <File Id="fil02E4E4D119BFC4831CEA5A71F1288443" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
+            </Component>
+            <Component Id="cmp493E9BC44885B6BC5C57BDB1302C40D9" Guid="*" Win64="yes">
+                <File Id="filA40291A4FBD4719B6995DEB783A39A65" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.Extensions.DependencyInjection.dll" />
+            </Component>
+            <Component Id="cmp828BABCAA179DFEF8C123894E628FE4B" Guid="*" Win64="yes">
+                <File Id="filF6E569B7A4467871DC459846AD8CAB0C" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.Extensions.DependencyModel.dll" />
+            </Component>
+            <Component Id="cmp8C674FD6A69988A60A77A4CEE0F53781" Guid="*" Win64="yes">
+                <File Id="fil72342637E9F74EE945317D4603CEBA2F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.Extensions.Logging.Abstractions.dll" />
+            </Component>
+            <Component Id="cmp835034F744990576E31C2DBC7C9293BF" Guid="*" Win64="yes">
+                <File Id="fil71DD299EE7649E964200A4127797D1C0" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.Extensions.Logging.dll" />
+            </Component>
+            <Component Id="cmp33F6A38332D557045329F60C77B93E9F" Guid="*" Win64="yes">
+                <File Id="fil3B8F8A8FF12321276B16B774E878E793" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.Extensions.ObjectPool.dll" />
+            </Component>
+            <Component Id="cmp3279C150AE8DF554FD7EEE2085672A2B" Guid="*" Win64="yes">
+                <File Id="filA8D1F5D61FD7BC25099F707CBF5B1F24" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.Extensions.Options.dll" />
+            </Component>
+            <Component Id="cmp946145B53A7DCDFA822B0EFD2314FAB6" Guid="*" Win64="yes">
+                <File Id="fil773F29942324AAB2A7E1977E1AC63609" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.Extensions.Primitives.dll" />
+            </Component>
+            <Component Id="cmp3F0D5A3DBF3BB5DEF4929A0ED0AD2EBA" Guid="*" Win64="yes">
+                <File Id="filE17F1B3C88F6E971DB1D8FC6CC115C63" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.Net.Http.Headers.dll" />
+            </Component>
+            <Component Id="cmpF2F1C15A47B64F045101B1AE5B4D6054" Guid="*" Win64="yes">
+                <File Id="filC342596B66E98254BB6E1CFFE50AE4AA" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.Practices.ServiceLocation.dll" />
+            </Component>
+            <Component Id="cmpC46009BA6A5B5F8DF9BEFCAD39146906" Guid="*" Win64="yes">
+                <File Id="fil4E1754043F4A85422FD5FE1F7991ABCC" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.Practices.ServiceLocation.pdb" />
+            </Component>
+            <Component Id="cmp3E4F3E4686A9B425B5812E5171CCDEEF" Guid="*" Win64="yes">
+                <File Id="fil24DC60A8CFEFE326A0444D71C66806C1" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.Win32.Registry.dll" />
+            </Component>
+            <Component Id="cmp43984E66F2A9DD89F93CF7035D8989A0" Guid="*" Win64="yes">
+                <File Id="filD88CABA6D1DF77999CB7D426C4B617A4" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.Win32.TaskScheduler.dll" />
+            </Component>
+            
+            <Component Id="cmpBB1767D7C200C536ABB2D361F40F9D92" Guid="*" Win64="yes">
+                <File Id="fil4E0F4321F336BF83461A34116F3E30B7" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.WindowsAPICodePack.dll" />
+            </Component>
+            <Component Id="cmp702FCD8F941D530EED089ED86491F3AF" Guid="*" Win64="yes">
+                <File Id="filAAF0A287D1C4C9A238DFF053ADA2B1C8" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.WindowsAPICodePack.Shell.dll" />
+            </Component>
+            <Component Id="cmp8AC833CFB7DC6722697152FE46DA157A" Guid="*" Win64="yes">
+                <File Id="filD3CAD095889A5DE7EAAE25C73BC9910A" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.Xaml.Behaviors.dll" />
+            </Component>
+            <Component Id="cmpC391F13134AAE84A2F7D6ED96816E8DC" Guid="*" Win64="yes">
+                <File Id="filF3DB15E0DC8DFF86397D5835711101EC" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.Xaml.Behaviors.pdb" />
+            </Component>
+            <Component Id="cmpA5FE1A505BBA8478300711BD67EBDE34" Guid="*" Win64="yes">
+                <File Id="fil769D814ECD0A1DD4513E66F25069B805" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Mixaill.HwInfo.Common.dll" />
+            </Component>
+            <Component Id="cmpB1E57660305E5D4903E538B73B35E2B3" Guid="*" Win64="yes">
+                <File Id="fil7628F898BD46CB66668ED53FA0B2ED0D" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Mixaill.HwInfo.D3D.dll" />
+            </Component>
+            <Component Id="cmpEDC0B008F4934A0A30DF3F837C2D494E" Guid="*" Win64="yes">
+                <File Id="filFFC4710870DC274215AA09B7C4FEBC90" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Mixaill.HwInfo.SetupApi.dll" />
+            </Component>
+            <Component Id="cmp084ACE6ADF4440B978ECA3EFB528FCCE" Guid="*" Win64="yes">
+                <File Id="fil03210B9F34FFC4A671A370AA26738ED5" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Mixaill.HwInfo.Vulkan.dll" />
+            </Component>
+            <Component Id="cmpBC4FC00A26E7D32479D42D3411317FC5" Guid="*" Win64="yes">
+                <File Id="fil90A8AAD9FC612906D405476D61CEA3F4" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Newtonsoft.Json.dll" />
+            </Component>
+            <Component Id="cmp36162545506C564646EFF7AED20D4D87" Guid="*" Win64="yes">
+                <File Id="filA005E04D6C984A8EF36F9653B3FA4555" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\OpenHardwareMonitorLib.dll" />
+            </Component>
+            
+            <Component Id="cmp9867DD01B906E145D73B1AA12191B24D" Guid="*" Win64="yes">
+                <File Id="filF3C7E1DBD3AD0BE68A0C0D000EC5A7D6" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\OxyPlot.dll" />
+            </Component>
+            <Component Id="cmp8F4FC608131CDC6A82B59CBB8B203778" Guid="*" Win64="yes">
+                <File Id="filE9CE96E94505AA7F35F51DF61E20A061" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\OxyPlot.Wpf.dll" />
+            </Component>
+            <Component Id="cmp71D47CA7014DC1CFAF214C0EFDFEE866" Guid="*" Win64="yes">
+                <File Id="fil4E1620EB26E850D94B1F41BC420D5171" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\OxyPlot.Wpf.Shared.dll" />
+            </Component>
+            
+            
+            <Component Id="cmp567EF3D2C174A94284A1D444E56868FD" Guid="*" Win64="yes">
+                <File Id="filBD99B367731B0832FC2AF66E837737D5" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\ParallelExtensionsExtras.dll" />
+            </Component>
+            <Component Id="cmp59564654D02343646998A8D6A6F0C25F" Guid="*" Win64="yes">
+                <File Id="fil86F2842A309A2CABD479166F2B4E0588" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Prism.dll" />
+            </Component>
+            <Component Id="cmp1D8C6ABF55C2B2B4242EE9F241074EAC" Guid="*" Win64="yes">
+                <File Id="fil4D3E845D168B89C1E51082CEE83971C8" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Prism.DryIoc.Wpf.dll" />
+            </Component>
+            <Component Id="cmpA9A2AB3353E22A8DA16EAAEE63473B2F" Guid="*" Win64="yes">
+                <File Id="fil88EDC55735A4B2968B2469EF3EB5D6E7" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Prism.Wpf.dll" />
+            </Component>
+            <Component Id="cmp9CB00B4C0F13DCE7E766423C27121485" Guid="*" Win64="yes">
+                <File Id="filE0A28EB0F634D1DA6030E99CC41A1E23" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\RJCP.SerialPortStream.dll" />
+            </Component>
+            <Component Id="cmpF318EA8E5B5EB7D6CB2BEE591C17796C" Guid="*" Win64="yes">
+                <File Id="fil5EE9E7FCD47C4AC4A5E829A9A51C9D89" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\RJCP.SerialPortStream.pdb" />
+            </Component>
+            
+            <Component Id="cmp74A2C73F11C177073B0A672936A0D5EB" Guid="*" Win64="yes">
+                <File Id="fil1CF141D24266A4E5F331DDFE02166A27" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Serilog.dll" />
+            </Component>
+            <Component Id="cmpA9CD02E2996345805AE749B403FD0E7A" Guid="*" Win64="yes">
+                <File Id="fil56CB5FAFD9298B97D060AE19F2DB1B10" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Serilog.Extensions.Logging.dll" />
+            </Component>
+            <Component Id="cmpC08CEB1C24E4A6DA79EE83CFD8BDCD60" Guid="*" Win64="yes">
+                <File Id="filD89F64F083730E2B8CC0DEE7002EF506" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Serilog.Formatting.Compact.dll" />
+            </Component>
+            <Component Id="cmp49818C715FF04B8E95F7B53BDDD323EF" Guid="*" Win64="yes">
+                <File Id="fil1A12B15365165DDBE60433B150808BEE" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Serilog.Sinks.File.dll" />
+            </Component>
+            <Component Id="cmp1D3155C1D992D771CD1EE590B2BD51A5" Guid="*" Win64="yes">
+                <File Id="filB9A642D66D6A4CCA55F79EC84FE87BF1" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Serilog.Sinks.File.pdb" />
+            </Component>
+            <Component Id="cmp1C6F6E58C51DCC0498E3584BA6509C70" Guid="*" Win64="yes">
+                <File Id="fil571AC7CBE5B0D1A561EA56BA5DB666E4" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Silk.NET.Core.dll" />
+            </Component>
+            <Component Id="cmpD747263C0CC74F6E3F3049EEC4E5480C" Guid="*" Win64="yes">
+                <File Id="filE7B8D9680FF96B43BC8D9F0CF2BA18D8" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Silk.NET.Direct3D12.dll" />
+            </Component>
+            <Component Id="cmp609B1CFE4195028805411B060B83208B" Guid="*" Win64="yes">
+                <File Id="fil5DBFA85B6DCAC897AF7105803C266999" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Silk.NET.DXGI.dll" />
+            </Component>
+            <Component Id="cmp28E1FF85CFD84830768D3E9A5E5EE156" Guid="*" Win64="yes">
+                <File Id="fil05B549932D7A2893B081C215D48DE2B0" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Silk.NET.Maths.dll" />
+            </Component>
+            <Component Id="cmp417BB047C679FC9F84F4083A063225E5" Guid="*" Win64="yes">
+                <File Id="fil568F630BA0560FCAD3197AF49E5E9371" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Silk.NET.Vulkan.dll" />
+            </Component>
+            <Component Id="cmp29B124E05CCAD23A5A2E64AF36D0DB99" Guid="*" Win64="yes">
+                <File Id="fil3CFF4B652691B77DCC205953AB10F1DE" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Squidex.ClientLibrary.dll" />
+            </Component>
+            <Component Id="cmp525502E9B65457F91935CD39242E7D55" Guid="*" Win64="yes">
+                <File Id="filCBC19D51E0653A2E0BC3C1BD787789A7" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Swan.Lite.dll" />
+            </Component>
+            <Component Id="cmpA748C45814948C0E47F0962CF5A9E2C5" Guid="*" Win64="yes">
+                <File Id="filAF63FF48A59E0E5E7F49BFD1CBBB0CC3" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.Buffers.dll" />
+            </Component>
+            <Component Id="cmp86FA15ED6758AB64222C7B872722AE2A" Guid="*" Win64="yes">
+                <File Id="fil4462620259C842921061439D47904D07" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.ComponentModel.Annotations.dll" />
+            </Component>
+            <Component Id="cmpE722E076AB8486E4A4F24B01268787A2" Guid="*" Win64="yes">
+                <File Id="fil92FE767CE7126933F4E9DEEEBAAE9354" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.Diagnostics.DiagnosticSource.dll" />
+            </Component>
+            <Component Id="cmp28698F3E40E97D0D04ED87AE917B13C7" Guid="*" Win64="yes">
+                <File Id="fil07DA91370126729501EE3756F11EC693" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.Diagnostics.PerformanceCounter.dll" />
+            </Component>
+            <Component Id="cmpF88B96E5973E0D28B511DC6371DB06E0" Guid="*" Win64="yes">
+                <File Id="filA72770FDC08B6447ABAA326398A3C786" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.IO.Pipelines.dll" />
+            </Component>
+            <Component Id="cmp642ED5B0D0BD1F16347D1310992C55A0" Guid="*" Win64="yes">
+                <File Id="filFA1D7EC932018D1CCB80F9F43D328009" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.Memory.dll" />
+            </Component>
+            <Component Id="cmp89AE5ECEB789ECF60BE6CC568D60B2F9" Guid="*" Win64="yes">
+                <File Id="fil07CC506FCE6F39AF87379627460A5FFB" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.Numerics.Vectors.dll" />
+            </Component>
+            <Component Id="cmp8E100A18327D40D73A207E32DC2A5DF7" Guid="*" Win64="yes">
+                <File Id="fil3EB43006AD1D6A442A5059D2602A1B16" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.Reactive.dll" />
+            </Component>
+            <Component Id="cmpAFCF21A15F6EDA45A32D147050609285" Guid="*" Win64="yes">
+                <File Id="filAE286E96EA00902BC284AEBF3030D6E4" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.Runtime.CompilerServices.Unsafe.dll" />
+            </Component>
+            <Component Id="cmpA79A142FCEA412B1ABBD7BE954692F65" Guid="*" Win64="yes">
+                <File Id="fil0B3269E73A503751E3461F1BA6DEB094" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.Security.AccessControl.dll" />
+            </Component>
+            <Component Id="cmp98A131703008D3AC809721FE16EEAFF8" Guid="*" Win64="yes">
+                <File Id="fil50D3CD433FCD76F25C71E81C31B6DD3A" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.Security.Principal.Windows.dll" />
+            </Component>
+            <Component Id="cmpB8A7E5BEDFB4B8D0CC7AF759CF02E85C" Guid="*" Win64="yes">
+                <File Id="filA40308264694C0D9CFCDD77B25AB3F6A" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.Text.Encodings.Web.dll" />
+            </Component>
+            <Component Id="cmpA5817A2BB296EF3C39CAFA8A07CD6B59" Guid="*" Win64="yes">
+                <File Id="fil1FBF587862F484BB82A1D65565F935B6" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.Text.Json.dll" />
+            </Component>
+            <Component Id="cmpB3AE432D48BF3A5AB43C6DAF12AB454A" Guid="*" Win64="yes">
+                <File Id="filF7CF33617C2B93F6EEF50C0DEB533B07" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.Threading.Tasks.Extensions.dll" />
+            </Component>
+            <Component Id="cmp3A99A623A71A716A198559E0C9D59400" Guid="*" Win64="yes">
+                <File Id="filE6242AE03AF2509440ADF395C76688A4" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.ValueTuple.dll" />
+            </Component>
+            <Component Id="cmp017BFB3832A5B110A2B3A350E13F2A5C" Guid="*" Win64="yes">
+                <File Id="fil17E34524E8398461D615894C92558FE9" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.Windows.Interactivity.dll" />
+            </Component>
+            <Component Id="cmp0ACFEC8BA7F4B219E9A7245FD06F097F" Guid="*" Win64="yes">
+                <File Id="fil7C35570FE42BD7BA589723E5A6452040" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Ultz.Bcl.Half.dll" />
+            </Component>
+            <Component Id="cmpC85BD7478E073743A39F17DF06865203" Guid="*" Win64="yes">
+                <File Id="fil3DAD59899DDA1B0FCEDF95F84CB3C475" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Xceed.Wpf.Toolkit.dll" />
+            </Component>
+            <Directory Id="dir242DC17B8DFC53C13CAF172FC08B730A" Name="de">
+                <Component Id="cmp55E09061A1DF30E9878313719FAE6664" Guid="*" Win64="yes">
+                    <File Id="fil1424015000F4C871286F581C5375B980" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\de\MahApps.Metro.resources.dll" />
+                </Component>
+                <Component Id="cmp899508076A55BF753F74CB0DFA5743E3" Guid="*" Win64="yes">
+                    <File Id="filD54B0D32E6618AD0E9082F3C7288DF3B" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\de\Microsoft.Win32.TaskScheduler.resources.dll" />
+                </Component>
+            </Directory>
+            <Directory Id="dir9AE38F4F5CB5E565E774521E138F44FD" Name="es">
+                <Component Id="cmp5A7026E0896D194B82895F7742EE8E12" Guid="*" Win64="yes">
+                    <File Id="filD9A4BF39D17EB61C5211DDC46DB00008" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\es\Microsoft.Win32.TaskScheduler.resources.dll" />
+                </Component>
+            </Directory>
+            <Directory Id="dir69A81B71B3436B3F1BF22FB24CE6929D" Name="Files">
+                <Component Id="cmp5BA55150B20FDB5D6A2679B4DDE154F0" Guid="*" Win64="yes">
+                    <File Id="fil596E1F10777F520C99F1485337D49EFE" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Files\bf0822e8-2e55-4b99-82ee-939d8ac2384e.bat" />
+                </Component>
+            </Directory>
+            <Directory Id="dirB55DFDA91FEE7CCCBC65CA7493B75748" Name="fr">
+                <Component Id="cmpB448414C7B3963A581067103B898A290" Guid="*" Win64="yes">
+                    <File Id="filA5C066B28245C75C64533E4E70637BFD" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\fr\Microsoft.Win32.TaskScheduler.resources.dll" />
+                </Component>
+            </Directory>
+            <Directory Id="dirED1C7BF395F6825C5E6AA296F629EF5A" Name="HelpTexts">
+                <Component Id="cmpEEF8583F33AC9DCDC349C22B5162CEF5" Guid="*" Win64="yes">
+                    <File Id="filE1F227BC37167083E8389BD7591F66D3" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\HelpTexts\ChartControls.rtf" />
+                </Component>
+            </Directory>
+            <Directory Id="dir45DE18DD71F3E8DD6BE4A0E2B48778C8" Name="it">
+                <Component Id="cmpA2349B128022FD9468B4B0472DF8814A" Guid="*" Win64="yes">
+                    <File Id="filA9D742E425F8D28208EA368E72789A62" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\it\Microsoft.Win32.TaskScheduler.resources.dll" />
+                </Component>
+            </Directory>
+            <Directory Id="dirB6C57608593BDEA87B90E388CF59E0E8" Name="pl">
+                <Component Id="cmp3A774BB34CD3664183116E92839E312E" Guid="*" Win64="yes">
+                    <File Id="filD9A2B76568404A4B8808FEB413DBCC95" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\pl\Microsoft.Win32.TaskScheduler.resources.dll" />
+                </Component>
+            </Directory>
+            <Directory Id="dir853772609C50C17748AF70C12E8A0818" Name="PresentMon">
+                <Component Id="cmpA4F6ACC1ED64F9C0B54E2615B754768A" Guid="*" Win64="yes">
+                    <File Id="fil383D9183A0F92A32CC71C97E5FAED05B" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\license.txt" />
+                </Component>
+                <Component Id="cmp36EE1851D846B371FFBB2C8CA4156AC7" Guid="*" Win64="yes">
+                    <File Id="filF211DC9044EE8C4183F467FBD782B7B6" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\PresentMon-1.9.0-x64.exe" />
+                </Component>
+            </Directory>
+            <Directory Id="dir7FED47FDBD11E3D1CBA94060517400E8" Name="ProcessList">
+                <Component Id="cmpA6A9ED7D0D14A0EB3F1B6598611EC6CB" Guid="*" Win64="yes">
+                    <File Id="fil8F1140EE2A5793A1829F5F1D793662D9" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\ProcessList\Processes.json" />
+                </Component>
+            </Directory>
+            <Directory Id="dirE9205C68F964857267FD3312DBFF9A91" Name="ru">
+                <Component Id="cmpC873D207335D245293F8991C675338F3" Guid="*" Win64="yes">
+                    <File Id="fil964FE21AB56A95D400514F68DB5347E8" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\ru\Microsoft.Win32.TaskScheduler.resources.dll" />
+                </Component>
+            </Directory>
+            <Directory Id="dir1450B10CD9213F91984D1913F3B466A5" Name="Sounds">
+                <Directory Id="dir63FE4520DB8A77385792872C2D485865" Name="Simple">
+                    <Component Id="cmp614D68FE53DA984A3D71375B620FF70E" Guid="*" Win64="yes">
+                        <File Id="filE2275B8617074DBC5897EEA95CA293BB" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\Simple\CaptureStarted.mp3" />
+                    </Component>
+                    <Component Id="cmpA044E6163633978606D91D3CED29FCBF" Guid="*" Win64="yes">
+                        <File Id="fil9EB0C482A6D2B02B0C822E8A998EC8E7" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\Simple\CaptureStopped.mp3" />
+                    </Component>
+                </Directory>
+                <Directory Id="dir11E6F1110AE0164582C31C75A4AEF5D6" Name="Voice">
+                    <Component Id="cmpCFB1EAE6489484870C9B4CB672B1494D" Guid="*" Win64="yes">
+                        <File Id="fil1741DD2E38D6BEFC51664B29B43A18E2" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\Voice\CaptureStarted.mp3" />
+                    </Component>
+                    <Component Id="cmpCB9D5CA7463DAF6300BBC9DE8E3CC81D" Guid="*" Win64="yes">
+                        <File Id="fil6A6B11074039F8D339C0B3828FE587E6" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\Voice\CaptureStopped.mp3" />
+                    </Component>
+                    <Component Id="cmp27E6F79BFDC24D392F37F3C531E3B73E" Guid="*" Win64="yes">
+                        <File Id="filBD4C51BF25EFE6DE164CA773E4219D22" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\Voice\MoreThanOneProcess.mp3" />
+                    </Component>
+                    <Component Id="cmp7C4098BF66F05EC6BE7C6AD21C4B08C0" Guid="*" Win64="yes">
+                        <File Id="filEE458BD8B9F790A82833481479B8221F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\Voice\NoProcess.mp3" />
+                    </Component>
+                </Directory>
+            </Directory>
+            <Directory Id="dir8C5E37FA87D1897FFB78337F53EB198C" Name="zh-CN">
+                <Component Id="cmpFA6D9FD1AAA2046A7577475784CE8BCC" Guid="*" Win64="yes">
+                    <File Id="fil9AE873A7FEB47AAC64F449F1E25BB97F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\zh-CN\Microsoft.Win32.TaskScheduler.resources.dll" />
+                </Component>
+            </Directory>
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <ComponentGroup Id="CapFrameXBinaries">
+            <ComponentRef Id="cmpFD65F52CD5EC0B46A750F8EEFC3D4422" />
+            <ComponentRef Id="cmpC3AF7AADF6F5CAE6D6AF39549FC82D11" />
+            <ComponentRef Id="cmp010346265BD055915F2AF759DD155A33" />
+            <ComponentRef Id="cmp38FB2D846FB5A26B8F01D5155B71ADB5" />
+            
+            <ComponentRef Id="cmp8E6F0A41518F04985A00044A881AFAA3" />
+            <ComponentRef Id="cmpFCC1F35455D5814F6F5D83CFB2CBB5EA" />
+            
+            <ComponentRef Id="cmp367B18F442C629D69A743133694E4034" />
+            <ComponentRef Id="cmp8ACAADD5757BD9E933B8004451F42808" />
+            
+            <ComponentRef Id="cmpCE5F8A81B8827D84BBA827B235B47111" />
+            <ComponentRef Id="cmpA4C1EAD31D80CA7A469C61E5F7BF0BE7" />
+            
+            <ComponentRef Id="cmp829349182F4E01B742F1469B2F87C349" />
+            <ComponentRef Id="cmpBB82F84010B18BD471718A8F5192D809" />
+            
+            <ComponentRef Id="cmp1E647D9F8ECD25DE8456AFEFC9762EE2" />
+            <ComponentRef Id="cmpD1A5312A1B779CA613F64117D3873237" />
+            <ComponentRef Id="cmpCDC3D9376CF1A1EB5905BD4C4CF063DE" />
+            <ComponentRef Id="cmp7C9CAFF9FE2A171191AA280A316C5B90" />
+            
+            <ComponentRef Id="cmpF059BAC6B00657CE369D498012322954" />
+            <ComponentRef Id="cmp82AD45B10466B02AA709E58F5BE28DFA" />
+            <ComponentRef Id="cmp2E59BC59B11729E95EB8C057C580BD11" />
+            <ComponentRef Id="cmp197CCAFDD9C330A4C91CAF35F0619382" />
+            
+            <ComponentRef Id="cmp946F72DFC650C4E5A49C51A838713428" />
+            <ComponentRef Id="cmp4974650E9CE6F14031D0ABC8811B7A46" />
+            <ComponentRef Id="cmpF3D48399A0F13574BBC5D2D15C71B25C" />
+            <ComponentRef Id="cmpA01C1600580663366D283317EABC8071" />
+            <ComponentRef Id="cmpB6667BCA4B65EF30DBEC87C6744D2AE9" />
+            
+            <ComponentRef Id="cmp6BEF906CB6FADDBDBA3AAF1A06E55843" />
+            <ComponentRef Id="cmpC53D77F304B4523D70934DE3AA929A1B" />
+            
+            <ComponentRef Id="cmp6C8034C8386700B60102EFDA32EE9A7C" />
+            <ComponentRef Id="cmp58A6D9654BB2BC6D1688D3E3B41884A9" />
+            <ComponentRef Id="cmp46ECDD0C7AD9D4FBBE09ADEECDCCFDB7" />
+            <ComponentRef Id="cmp085F019DCFA91EA3CC69ED65224795C3" />
+            
+            <ComponentRef Id="cmp0E8115A356A83702410D2B0E3834086E" />
+            <ComponentRef Id="cmp6AE09C2CACB08476BEF8E2E045F01AF5" />
+            
+            <ComponentRef Id="cmpBF6C07EC81E07D571B517012C96B6F95" />
+            <ComponentRef Id="cmp4A1120ACC7AB1F1C62A70428177CC16C" />
+            
+            <ComponentRef Id="cmp7AD1D5C5600756C1FEF250A34500A8B1" />
+            <ComponentRef Id="cmpD6952B19607ADA3C10FB639F21E3B84B" />
+            <ComponentRef Id="cmp82F7A2CA79FB4945DE735525DEA43440" />
+            
+            <ComponentRef Id="cmp14B77B6AF67D6C1BCC87252B412622A0" />
+            <ComponentRef Id="cmpDAC9A06508E623C2AE90DDABDC991D5D" />
+            
+            <ComponentRef Id="cmpC5B851C2B64D27369CA432F2572B188D" />
+            <ComponentRef Id="cmp7C05CDDFB82D6239D07041A7E6EB0982" />
+            
+            <ComponentRef Id="cmpC975C67003B9C2814766B136E8C4FC52" />
+            <ComponentRef Id="cmp458D149F66896C1582130F4DAD13BA4A" />
+            <ComponentRef Id="cmpFAADD84CDCFEE6BE5EFFC794B81E0AF0" />
+            <ComponentRef Id="cmp7F114E6DD3365A0AC42A526666770850" />
+            
+            <ComponentRef Id="cmpB184919061A1CBB7B72F23D57EC1483D" />
+            <ComponentRef Id="cmp0895AE10E5B3ECDA81D5DD888E741F15" />
+            <ComponentRef Id="cmpCEE07CF2C179F250C81FE40D5FC8B25B" />
+            <ComponentRef Id="cmp4A14411E5B2D1C7D899B9637CD60A7CD" />
+            <ComponentRef Id="cmp85D186EDF7F89DDB5E56AD8740E47A05" />
+            <ComponentRef Id="cmpA370ED5AA85C29D5BFCB28B64725C072" />
+            <ComponentRef Id="cmpEB7F9240E4E285CF98AF15FFE7C29B86" />
+            <ComponentRef Id="cmp121D3C3CDE810BD7FE0A2B46DCAFA63E" />
+            <ComponentRef Id="cmp5721D79609E10BF30F119B560AC992DA" />
+            <ComponentRef Id="cmpF4AA3050A716E6F54BB951C2FD2122DC" />
+            
+            <ComponentRef Id="cmpC2BF4EDA100FB9224264FDE81B19197B" />
+            <ComponentRef Id="cmp18FAC930D57ECB5DA84BC4EF8F1FF236" />
+            
+            <ComponentRef Id="cmp9E78940DE3E6DEF1FA8B22CFDB6CB974" />
+            <ComponentRef Id="cmpFEE96F5622FF620341562487C27BDBFE" />
+            
+            <ComponentRef Id="cmp7208E56B684EFF6D86BA4E30F31A526F" />
+            <ComponentRef Id="cmp65E830F64B198A56C158E8F21A46E482" />
+            <ComponentRef Id="cmp9DD1286D83CFBB521DC0A94C03E27037" />
+            <ComponentRef Id="cmp9110E4565D76564E9BC2F34625854902" />
+            <ComponentRef Id="cmp4DE861D215883636FECF0D07B8D443D7" />
+            <ComponentRef Id="cmp471A60C7DB0BF5428D9A6BE2EF6D9976" />
+            <ComponentRef Id="cmp10D4FE83FFFEED879BCB90B5B3143ED1" />
+            <ComponentRef Id="cmpB54AA7145F7DD7C9F4F5BCED9FE3DD87" />
+            <ComponentRef Id="cmp3A3DCB2CB767F63098FA411AE7BB90A7" />
+            <ComponentRef Id="cmp9FA13AD80A88A2237F460D513A2F1968" />
+            <ComponentRef Id="cmp461E1E7FBE4E607F33327C277F03BE7A" />
+            <ComponentRef Id="cmpFDA802159822E5F335299869D8F57A96" />
+            <ComponentRef Id="cmp781EEA928029B571EC5B4E7090BD7946" />
+            <ComponentRef Id="cmp247A5C6B2FC2255D2495669F4BBC5B13" />
+            <ComponentRef Id="cmp2F5EED07769D01188B6E1DDA2EC5B3FB" />
+            <ComponentRef Id="cmp12963553D08F263C4D654B75222572D0" />
+            <ComponentRef Id="cmpE6F3483C369D2CFABDCB2AA8B75E6959" />
+            <ComponentRef Id="cmp60805430DA62A620ADC712537D30F06A" />
+            <ComponentRef Id="cmpB1EC42AB2EFCC8248CA692650E5CBA2C" />
+            <ComponentRef Id="cmpB80EB57EF2904D1A74E508B15C150404" />
+            
+            <ComponentRef Id="cmpD640FE63E82A6DF755F8660DDA0B7863" />
+            <ComponentRef Id="cmp223D4754378C01052DA8253A843FD297" />
+            <ComponentRef Id="cmp31541C871E68AFBC70137561BF857C7B" />
+            <ComponentRef Id="cmpF79A41B26948F126556619AD15586E53" />
+            <ComponentRef Id="cmpBA69CF71075E6968218400B9F29844B5" />
+            <ComponentRef Id="cmpBDFFFC10BC54483342036800228711F3" />
+            <ComponentRef Id="cmp6491512287958DE136511A9501FC3EF8" />
+            <ComponentRef Id="cmp6D59DB1C8695088F09FD7F0B07ECD487" />
+            <ComponentRef Id="cmpFA79922E3C67570896B863651A61DA4C" />
+            <ComponentRef Id="cmp508010C135AF223EB87100427362C0F7" />
+            <ComponentRef Id="cmp3ED5A0A4D782A8BF371C8403342D615B" />
+            <ComponentRef Id="cmp257EA8281FB771B78FAEDC2CD80B4A5F" />
+            <ComponentRef Id="cmpB785B661067DB1CA34160E239CB75395" />
+            <ComponentRef Id="cmp5AA201CA9529E78168BA0DB83D052443" />
+            <ComponentRef Id="cmp03A336BE1F43229AE0BC3ED221CB70B1" />
+            <ComponentRef Id="cmp1CF42E9A734FD29AFCDB87758302FC1E" />
+            <ComponentRef Id="cmp20E5A82EE1F53BB560782568696E50EF" />
+            <ComponentRef Id="cmpE5877A64EB1EC28CBEB5738C9AC0FDA5" />
+            <ComponentRef Id="cmp8829932782E2062A8292EB806216CC80" />
+            <ComponentRef Id="cmp75E1D360F7F3BEA782095608B95EAF01" />
+            <ComponentRef Id="cmp47B9C1CDB4B766E8C1572505E98E4035" />
+            <ComponentRef Id="cmp198468A4AE980CD6955CB6EB86083726" />
+            <ComponentRef Id="cmp493E9BC44885B6BC5C57BDB1302C40D9" />
+            <ComponentRef Id="cmp828BABCAA179DFEF8C123894E628FE4B" />
+            <ComponentRef Id="cmp8C674FD6A69988A60A77A4CEE0F53781" />
+            <ComponentRef Id="cmp835034F744990576E31C2DBC7C9293BF" />
+            <ComponentRef Id="cmp33F6A38332D557045329F60C77B93E9F" />
+            <ComponentRef Id="cmp3279C150AE8DF554FD7EEE2085672A2B" />
+            <ComponentRef Id="cmp946145B53A7DCDFA822B0EFD2314FAB6" />
+            <ComponentRef Id="cmp3F0D5A3DBF3BB5DEF4929A0ED0AD2EBA" />
+            <ComponentRef Id="cmpF2F1C15A47B64F045101B1AE5B4D6054" />
+            <ComponentRef Id="cmpC46009BA6A5B5F8DF9BEFCAD39146906" />
+            <ComponentRef Id="cmp3E4F3E4686A9B425B5812E5171CCDEEF" />
+            <ComponentRef Id="cmp43984E66F2A9DD89F93CF7035D8989A0" />
+            
+            <ComponentRef Id="cmpBB1767D7C200C536ABB2D361F40F9D92" />
+            <ComponentRef Id="cmp702FCD8F941D530EED089ED86491F3AF" />
+            <ComponentRef Id="cmp8AC833CFB7DC6722697152FE46DA157A" />
+            <ComponentRef Id="cmpC391F13134AAE84A2F7D6ED96816E8DC" />
+            <ComponentRef Id="cmpA5FE1A505BBA8478300711BD67EBDE34" />
+            <ComponentRef Id="cmpB1E57660305E5D4903E538B73B35E2B3" />
+            <ComponentRef Id="cmpEDC0B008F4934A0A30DF3F837C2D494E" />
+            <ComponentRef Id="cmp084ACE6ADF4440B978ECA3EFB528FCCE" />
+            <ComponentRef Id="cmpBC4FC00A26E7D32479D42D3411317FC5" />
+            <ComponentRef Id="cmp36162545506C564646EFF7AED20D4D87" />
+            
+            <ComponentRef Id="cmp9867DD01B906E145D73B1AA12191B24D" />
+            <ComponentRef Id="cmp8F4FC608131CDC6A82B59CBB8B203778" />
+            <ComponentRef Id="cmp71D47CA7014DC1CFAF214C0EFDFEE866" />
+            
+            
+            <ComponentRef Id="cmp567EF3D2C174A94284A1D444E56868FD" />
+            <ComponentRef Id="cmp59564654D02343646998A8D6A6F0C25F" />
+            <ComponentRef Id="cmp1D8C6ABF55C2B2B4242EE9F241074EAC" />
+            <ComponentRef Id="cmpA9A2AB3353E22A8DA16EAAEE63473B2F" />
+            <ComponentRef Id="cmp9CB00B4C0F13DCE7E766423C27121485" />
+            <ComponentRef Id="cmpF318EA8E5B5EB7D6CB2BEE591C17796C" />
+            
+            <ComponentRef Id="cmp74A2C73F11C177073B0A672936A0D5EB" />
+            <ComponentRef Id="cmpA9CD02E2996345805AE749B403FD0E7A" />
+            <ComponentRef Id="cmpC08CEB1C24E4A6DA79EE83CFD8BDCD60" />
+            <ComponentRef Id="cmp49818C715FF04B8E95F7B53BDDD323EF" />
+            <ComponentRef Id="cmp1D3155C1D992D771CD1EE590B2BD51A5" />
+            <ComponentRef Id="cmp1C6F6E58C51DCC0498E3584BA6509C70" />
+            <ComponentRef Id="cmpD747263C0CC74F6E3F3049EEC4E5480C" />
+            <ComponentRef Id="cmp609B1CFE4195028805411B060B83208B" />
+            <ComponentRef Id="cmp28E1FF85CFD84830768D3E9A5E5EE156" />
+            <ComponentRef Id="cmp417BB047C679FC9F84F4083A063225E5" />
+            <ComponentRef Id="cmp29B124E05CCAD23A5A2E64AF36D0DB99" />
+            <ComponentRef Id="cmp525502E9B65457F91935CD39242E7D55" />
+            <ComponentRef Id="cmpA748C45814948C0E47F0962CF5A9E2C5" />
+            <ComponentRef Id="cmp86FA15ED6758AB64222C7B872722AE2A" />
+            <ComponentRef Id="cmpE722E076AB8486E4A4F24B01268787A2" />
+            <ComponentRef Id="cmp28698F3E40E97D0D04ED87AE917B13C7" />
+            <ComponentRef Id="cmpF88B96E5973E0D28B511DC6371DB06E0" />
+            <ComponentRef Id="cmp642ED5B0D0BD1F16347D1310992C55A0" />
+            <ComponentRef Id="cmp89AE5ECEB789ECF60BE6CC568D60B2F9" />
+            <ComponentRef Id="cmp8E100A18327D40D73A207E32DC2A5DF7" />
+            <ComponentRef Id="cmpAFCF21A15F6EDA45A32D147050609285" />
+            <ComponentRef Id="cmpA79A142FCEA412B1ABBD7BE954692F65" />
+            <ComponentRef Id="cmp98A131703008D3AC809721FE16EEAFF8" />
+            <ComponentRef Id="cmpB8A7E5BEDFB4B8D0CC7AF759CF02E85C" />
+            <ComponentRef Id="cmpA5817A2BB296EF3C39CAFA8A07CD6B59" />
+            <ComponentRef Id="cmpB3AE432D48BF3A5AB43C6DAF12AB454A" />
+            <ComponentRef Id="cmp3A99A623A71A716A198559E0C9D59400" />
+            <ComponentRef Id="cmp017BFB3832A5B110A2B3A350E13F2A5C" />
+            <ComponentRef Id="cmp0ACFEC8BA7F4B219E9A7245FD06F097F" />
+            <ComponentRef Id="cmpC85BD7478E073743A39F17DF06865203" />
+            <ComponentRef Id="cmp55E09061A1DF30E9878313719FAE6664" />
+            <ComponentRef Id="cmp899508076A55BF753F74CB0DFA5743E3" />
+            <ComponentRef Id="cmp5A7026E0896D194B82895F7742EE8E12" />
+            <ComponentRef Id="cmp5BA55150B20FDB5D6A2679B4DDE154F0" />
+            <ComponentRef Id="cmpB448414C7B3963A581067103B898A290" />
+            <ComponentRef Id="cmpEEF8583F33AC9DCDC349C22B5162CEF5" />
+            <ComponentRef Id="cmpA2349B128022FD9468B4B0472DF8814A" />
+            <ComponentRef Id="cmp3A774BB34CD3664183116E92839E312E" />
+            <ComponentRef Id="cmpA4F6ACC1ED64F9C0B54E2615B754768A" />
+            <ComponentRef Id="cmp36EE1851D846B371FFBB2C8CA4156AC7" />
+            <ComponentRef Id="cmpA6A9ED7D0D14A0EB3F1B6598611EC6CB" />
+            <ComponentRef Id="cmpC873D207335D245293F8991C675338F3" />
+            <ComponentRef Id="cmp614D68FE53DA984A3D71375B620FF70E" />
+            <ComponentRef Id="cmpA044E6163633978606D91D3CED29FCBF" />
+            <ComponentRef Id="cmpCFB1EAE6489484870C9B4CB672B1494D" />
+            <ComponentRef Id="cmpCB9D5CA7463DAF6300BBC9DE8E3CC81D" />
+            <ComponentRef Id="cmp27E6F79BFDC24D392F37F3C531E3B73E" />
+            <ComponentRef Id="cmp7C4098BF66F05EC6BE7C6AD21C4B08C0" />
+            <ComponentRef Id="cmpFA6D9FD1AAA2046A7577475784CE8BCC" />
+        </ComponentGroup>
+    </Fragment>
+</Wix>

@@ -1,0 +1,54 @@
+﻿<UserControl x:Class="CapFrameX.View.Controls.FrametimeGraphControl"
+			 x:Name="FrametimeGraphControlName"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+			 xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
+			 xmlns:controls="clr-namespace:CapFrameX.View.Controls"
+             xmlns:oxy="http://oxyplot.org/wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+	<UserControl.Resources>
+        <ResourceDictionary>
+            <mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
+			<mvvm:NegateBoolConverter x:Key="NegateBoolConverter"/>
+			<mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" TrueValue="Collapsed" FalseValue="Visible"/>
+			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+			<Style x:Key="CleanSeparator" TargetType="lvc:Separator">
+				<Setter Property="IsEnabled" Value="False"></Setter>
+			</Style>
+		</ResourceDictionary>
+	</UserControl.Resources>
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="1*"></RowDefinition>
+		</Grid.RowDefinitions>
+		<Grid Grid.Row="0">
+            <controls:PlotViewCustomZoom Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="FrametimePlotView" 
+                                         Model="{Binding FrametimeModel}" Tag="{Binding ElementName=FrametimeGraphControlName, Path=DataContext}"
+										 MouseDoubleClick="ResetChart_MouseDoubleClick">
+                <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+                    <ControlTemplate>
+                        <oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
+                            <oxy:TrackerControl.Content>
+                                <TextBlock Text="{Binding}" Margin="5" />
+                            </oxy:TrackerControl.Content>
+                        </oxy:TrackerControl>
+                    </ControlTemplate>
+                </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+                <controls:PlotViewCustomZoom.ContextMenu>
+                    <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                        <MenuItem Header="Copy frametime values (f)" Command="{Binding CopyFrametimeValuesCommand}"/>
+                        <MenuItem Header="Copy frametime points (t, f(t))" Command="{Binding CopyFrametimePointsCommand}"/>
+                        <MenuItem Header="Copy frametime + GPU-Busy frametime values (f)" Command="{Binding CopyGpuActiveTimeValuesCommand}" Visibility="{Binding ShowGpuActiveCommands, Converter={StaticResource FalseToCollapsedConverter}}"/>
+                        <MenuItem Header="Copy frametime + GPU-Busy frametime points (t, f(t))" Command="{Binding CopyGpuActiveTimePointsCommand}" Visibility="{Binding ShowGpuActiveCommands, Converter={StaticResource FalseToCollapsedConverter}}"/>
+                        <MenuItem Header="Save plot as SVG" Command="{Binding SavePlotAsSVG }"/>
+                        <MenuItem Header="Save plot as PNG" Command="{Binding SavePlotAsPNG }"/>
+                    </ContextMenu>
+                </controls:PlotViewCustomZoom.ContextMenu>
+            </controls:PlotViewCustomZoom>
+		</Grid>
+	</Grid>
+</UserControl>

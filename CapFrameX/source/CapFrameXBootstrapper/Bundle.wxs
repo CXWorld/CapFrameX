@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+		 xmlns:bal="http://schemas.microsoft.com/wix/BalExtension"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+	<?define VersionNumber="!(bind.packageVersion.CapFrameXPackage)" ?>
+  <?define NetFx472MinRelease = 461808 ?>
+  <?define NetFx472WebLink = http://go.microsoft.com/fwlink/?LinkId=863262 ?>
+  <?define NetFx472RedistLink = http://go.microsoft.com/fwlink/?LinkId=863265 ?>
+  <?define NetFx472EulaLink = http://referencesource.microsoft.com/license.html ?>
+  <Bundle Name="CapFrameX Capture and Analysis Tool"
+					Version="$(var.VersionNumber)"
+			    Manufacturer="DevTechProfile"
+					UpgradeCode="D124F3FF-D15F-4B43-BD0D-CD631DD931DA"
+          IconSourceFile="../CapFrameX/Icons/cx_icon_BUC.ico">
+		<BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLargeLicense">
+			<bal:WixStandardBootstrapperApplication
+						LicenseFile="license.rtf"
+						ShowVersion="yes"
+            LogoFile="../CapFrameX/Icons/CX_Icon.png"
+            ThemeFile="theme.xml"/>
+		</BootstrapperApplicationRef>
+    
+		<Variable Name="InstallFolder" Type="string" Value="[ProgramFilesFolder]CapFrameX" />
+    <Variable Name="OriginalSourceFolder" Type="string" Value="[WixBundleOriginalSourceFolder]" />
+
+    <!-- v6.0 Service Pack 2 -->
+    <bal:Condition Message="This application requires Service Pack 2 for Windows Vista / Server 2008.">
+      <![CDATA[NOT (VersionNT = v6.0 AND ServicePackLevel < 2)]]>
+    </bal:Condition>
+
+    <!-- v6.1 Service Pack 1 -->
+    <bal:Condition Message="This application requires Service Pack 1 for Windows 7 / Server 2008 R2.">
+      <![CDATA[NOT (VersionNT = v6.1 AND ServicePackLevel < 1)]]>
+    </bal:Condition>
+
+    <!-- v6.3 KB2919355 -->
+    <util:FileSearch
+      Id="HAL.DLL"
+      Path="[WindowsFolder]System32\hal.dll"
+      Result="version"
+      Variable="NT603HALVER"
+      Condition="VersionNT = v6.3" />
+    <bal:Condition Message="This application requires S14 Update (KB2919355) for Windows 8.1 / Server 2012 R2.">
+      <![CDATA[NOT (VersionNT = v6.3 AND NT603HALVER < v6.3.9600.17031)]]>
+    </bal:Condition>
+
+    <!-- Visual C++ 2015-2019 Redistributable (x64) minimum runtime msi package version -->
+    <util:ProductSearch
+      Id="VCRedist2015x64"
+      Result="version"
+      Variable="VCRedist2015x64"
+      UpgradeCode="36F68A90-239C-34DF-B58C-64B30153CE35"
+      Condition="VersionNT64" />
+
+    <!-- Visual C++ 2015-2019 Redistributable (x86) minimum runtime msi package version -->
+    <util:ProductSearch
+      Id="VCRedist2015x86"
+      Result="version"
+      Variable="VCRedist2015x86"
+      UpgradeCode="65E5BD06-6392-3027-8C26-853107D3CF1A"
+      Condition="VersionNT" />
+
+    <!-- Visual C++ 2015-2019 Redistributable minimum runtime msi package version -->
+    <Variable Name="VCRedist2015" Type="version" Value="14.28.29914.0" />
+
+    <Chain>
+      <!-- Visual C++ 2015-2019 Redistributable (x64) - 14.28.29914 -->
+      <ExePackage
+        Id="vc_redist.x64.exe"
+        Name="vc_redist.x64.14.28.29914.0.exe"
+        DisplayName="Microsoft Visual C++ 2015-2019 Redistributable (x64) - 14.28.29914"
+        Cache="no"
+        Compressed="no"
+        PerMachine="yes"
+        Permanent="yes"
+        Protocol="burn"
+        InstallCondition="VersionNT64"
+        DetectCondition="VCRedist2015x64 >= VCRedist2015"
+        DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/85d47aa9-69ae-4162-8300-e6b7e4bf3cf3/52B196BBE9016488C735E7B41805B651261FFA5D7AA86EB6A1D0095BE83687B2/VC_redist.x64.exe"
+        InstallCommand="/install /quiet /norestart"
+        RepairCommand="/repair /quiet /norestart"
+        UninstallCommand="/uninstall /quiet /norestart" >
+        <RemotePayload
+          ProductName="Microsoft Visual C++ 2015-2019 Redistributable (x64) - 14.28.29914"
+          Description="Microsoft Visual C++ 2015-2019 Redistributable (x64) - 14.28.29914"
+          Version="14.28.29914.0"
+          CertificatePublicKey="F49F9B33E25E33CCA0BFB15A62B7C29FFAB3880B"
+          CertificateThumbprint="ABDCA79AF9DD48A0EA702AD45260B3C03093FB4B"
+          Hash="A4EFAD335D3CCFA19963F53398E87BE5C8BEBC45"
+          Size="14882064" />
+      </ExePackage>
+
+      <!-- Visual C++ 2015-2019 Redistributable (x86) - 14.28.29914 -->
+      <ExePackage
+        Id="vc_redist.x86.exe"
+        Name="vc_redist.x86.14.28.29914.0.exe"
+        DisplayName="Microsoft Visual C++ 2015-2019 Redistributable (x86) - 14.28.29914"
+        Cache="no"
+        Compressed="no"
+        PerMachine="yes"
+        Permanent="yes"
+        Protocol="burn"
+        InstallCondition="VersionNT"
+        DetectCondition="VCRedist2015x86 >= VCRedist2015"
+        DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/85d47aa9-69ae-4162-8300-e6b7e4bf3cf3/14563755AC24A874241935EF2C22C5FCE973ACB001F99E524145113B2DC638C1/VC_redist.x86.exe"
+        InstallCommand="/install /quiet /norestart"
+        RepairCommand="/repair /quiet /norestart"
+        UninstallCommand="/uninstall /quiet /norestart" >
+        <RemotePayload
+          ProductName="Microsoft Visual C++ 2015-2019 Redistributable (x86) - 14.28.29914"
+          Description="Microsoft Visual C++ 2015-2019 Redistributable (x86) - 14.28.29914"
+          Version="14.28.29914.0"
+          CertificatePublicKey="F49F9B33E25E33CCA0BFB15A62B7C29FFAB3880B"
+          CertificateThumbprint="ABDCA79AF9DD48A0EA702AD45260B3C03093FB4B"
+          Hash="D848A57ADB68456B91BD8BA5108C116DE8DA8F25"
+          Size="14327344" />
+      </ExePackage>
+
+      <!--Install .Net Framework 4.7.2-->
+      <PackageGroupRef Id="NetFx472Redist"/>
+
+      <!--CapFrameX Msi package-->
+			<MsiPackage Id="CapFrameXPackage" SourceFile="$(var.CapFrameXInstaller.TargetPath)" DisplayInternalUI="no" Compressed="yes" Vital="yes">
+				<MsiProperty Name="INSTALLFOLDER" Value="[InstallFolder]" />
+        <!--https://stackoverflow.com/questions/24068798/how-to-access-the-folder-where-the-exe-is-running-wix-bootstrapper-->
+        <MsiProperty Name="INSTALLLOCATION" Value="[OriginalSourceFolder]" />
+      </MsiPackage>
+
+			<!--Nvidia FrameView SDK package-->
+			<!--<ExePackage Id='FrameView' Compressed='yes' SourceFile='../../installers/FVSDKSetup.exe'/>-->
+			
+		</Chain>
+	</Bundle>
+
+  <Fragment>
+    <PropertyRef Id="WIXNETFX4RELEASEINSTALLED" />
+    <Property Id="WIX_IS_NETFRAMEWORK_472_OR_LATER_INSTALLED" Secure="yes" />
+    <SetProperty Id="WIX_IS_NETFRAMEWORK_472_OR_LATER_INSTALLED" Value="1" After="AppSearch">
+      WIXNETFX4RELEASEINSTALLED >= "#$(var.NetFx472MinRelease)"
+    </SetProperty>
+  </Fragment>
+
+  <Fragment>
+    <util:RegistrySearchRef Id="NETFRAMEWORK45"/>
+
+    <WixVariable Id="WixMbaPrereqPackageId" Value="NetFx472Web" />
+    <WixVariable Id="WixMbaPrereqLicenseUrl" Value="$(var.NetFx472EulaLink)" Overridable="yes" />
+    <WixVariable Id="NetFx472WebDetectCondition" Value="NETFRAMEWORK45 &gt;= $(var.NetFx472MinRelease)" Overridable="yes" />
+    <WixVariable Id="NetFx472WebInstallCondition" Value="" Overridable="yes" />
+    <WixVariable Id="NetFx472WebPackageDirectory" Value="redist\" Overridable="yes" />
+
+    <PackageGroup Id="NetFx472Web">
+      <ExePackage
+          InstallCommand="/q /norestart /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx472FullLog].html&quot;"
+          RepairCommand="/q /norestart /repair /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx472FullLog].html&quot;"
+          UninstallCommand="/uninstall /q /norestart /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx472FullLog].html&quot;"
+          PerMachine="yes"
+          DetectCondition="!(wix.NetFx472WebDetectCondition)"
+          InstallCondition="!(wix.NetFx472WebInstallCondition)"
+          Id="NetFx472Web"
+          Vital="yes"
+          Permanent="yes"
+          Protocol="netfx4"
+          DownloadUrl="$(var.NetFx472WebLink)"
+          LogPathVariable="NetFx472FullLog"
+          Compressed="no"
+          Name="!(wix.NetFx472WebPackageDirectory)NDP472-KB4054531-Web.exe">
+        <RemotePayload
+          CertificatePublicKey="C090C1A2CAFA9B967D9C87C7FE02F7C01FBDE4F2"
+          CertificateThumbprint="5EAD300DC7E4D637948ECB0ED829A072BD152E17"
+          Description="Microsoft .NET Framework 4.7.2 Setup"
+          Hash="507ECDADC23A27C2283BA130A2AA51650E6BC05B"
+          ProductName="Microsoft .NET Framework 4.7.2"
+          Size="1447320"
+          Version="4.7.3062.0" />
+      </ExePackage>
+    </PackageGroup>
+  </Fragment>
+
+  <Fragment>
+    <util:RegistrySearchRef Id="NETFRAMEWORK45"/>
+
+    <WixVariable Id="WixMbaPrereqPackageId" Value="NetFx472Redist" />
+    <WixVariable Id="WixMbaPrereqLicenseUrl" Value="$(var.NetFx472EulaLink)" Overridable="yes" />
+    <WixVariable Id="NetFx472RedistDetectCondition" Value="NETFRAMEWORK45 &gt;= $(var.NetFx472MinRelease)" Overridable="yes" />
+    <WixVariable Id="NetFx472RedistInstallCondition" Value="" Overridable="yes" />
+    <WixVariable Id="NetFx472RedistPackageDirectory" Value="redist\" Overridable="yes" />
+
+    <PackageGroup Id="NetFx472Redist">
+      <ExePackage
+          InstallCommand="/q /norestart /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx472FullLog].html&quot;"
+          RepairCommand="/q /norestart /repair /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx472FullLog].html&quot;"
+          UninstallCommand="/uninstall /q /norestart /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx472FullLog].html&quot;"
+          PerMachine="yes"
+          DetectCondition="!(wix.NetFx472RedistDetectCondition)"
+          InstallCondition="!(wix.NetFx472RedistInstallCondition)"
+          Id="NetFx472Redist"
+          Vital="yes"
+          Permanent="yes"
+          Protocol="netfx4"
+          DownloadUrl="$(var.NetFx472RedistLink)"
+          LogPathVariable="NetFx472FullLog"
+          Compressed="no"
+          Name="!(wix.NetFx472RedistPackageDirectory)NDP472-KB4054530-x86-x64-AllOS-ENU.exe">
+        <RemotePayload
+          CertificatePublicKey="C090C1A2CAFA9B967D9C87C7FE02F7C01FBDE4F2"
+          CertificateThumbprint="5EAD300DC7E4D637948ECB0ED829A072BD152E17"
+          Description="Microsoft .NET Framework 4.7.2 Setup"
+          Hash="D3A416DC5FC75758D41B4C0158ACA69270D2A904"
+          ProductName="Microsoft .NET Framework 4.7.2"
+          Size="71607232"
+          Version="4.7.3062.0" />
+      </ExePackage>
+    </PackageGroup>
+  </Fragment>
+</Wix>
