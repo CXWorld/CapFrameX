@@ -12,7 +12,6 @@ using CapFrameX.Monitoring.Contracts;
 using Microsoft.Win32;
 using Serilog;
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 
