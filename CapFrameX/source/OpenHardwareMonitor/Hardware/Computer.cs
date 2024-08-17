@@ -26,9 +26,9 @@ namespace OpenHardwareMonitor.Hardware
         private readonly ISettings settings;
         private readonly ISensorConfig sensorConfig;
         private readonly IProcessService processService;
-		private readonly IAppConfiguration appConfiguration;
+        private readonly IAppConfiguration appConfiguration;
 
-		private SMBIOS smbios;
+        private SMBIOS smbios;
 
         private bool open;
 
@@ -48,7 +48,7 @@ namespace OpenHardwareMonitor.Hardware
             this.processService = processService;
             this.appConfiguration = appConfiguration;
 
-		}
+        }
 
         private void Add(IGroup group)
         {
@@ -139,19 +139,19 @@ namespace OpenHardwareMonitor.Hardware
             foreach (IGroup group in groups)
             {
                 (group as ATI.ATIGroup)?.RemoveDefaultAdapter();
-				(group as Nvidia.NvidiaGroup)?.RemoveDefaultAdapter();
-				(group as IntelGPU.IntelGroup)?.RemoveDefaultAdapter();
-			}
+                (group as Nvidia.NvidiaGroup)?.RemoveDefaultAdapter();
+                (group as IntelGPU.IntelGroup)?.RemoveDefaultAdapter();
+            }
 
-			if (list.Sum(group => group.Hardware.Length) > 1)
+            if (list.Sum(group => group.Hardware.Length) > 1)
             {
                 var atiGroup = list.FirstOrDefault(group => group is ATI.ATIGroup);
 
                 if (atiGroup != null)
                 {
                     (atiGroup as ATI.ATIGroup)?.RemoveIntegratedGpu();
-				}
-			}
+                }
+            }
         }
 
         public bool MainboardEnabled
