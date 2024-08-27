@@ -10,7 +10,10 @@
 
 using Serilog;
 using System;
+using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace OpenHardwareMonitor.Hardware.ATI
@@ -359,9 +362,37 @@ namespace OpenHardwareMonitor.Hardware.ATI
               out ADL2_Adapter_VRAMUsage_Get);
         }
 
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern IntPtr GetModuleHandle(string lpModuleName);
+
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern uint GetModuleFileName(IntPtr hModule, StringBuilder lpFilename, int nSize);
+
         static ADL()
         {
-            CreateDelegates("atiadlxx");
+            try
+            {
+                string dllName = "atiadlxx.dll";
+                IntPtr hModule = GetModuleHandle(dllName);
+
+                if (hModule != IntPtr.Zero)
+                {
+                    StringBuilder path = new StringBuilder(1024);
+                    GetModuleFileName(hModule, path, path.Capacity);
+
+                    Log.Logger.Information($"ADL DLL Location: {path.ToString()}");
+
+                    CreateDelegates("atiadlxx");
+                }
+                else
+                {
+                    Log.Logger.Information("ADL DLL is not loaded.");
+                }
+            }
+            catch (Exception ex) 
+            {
+                Log.Logger.Error(ex, $"DLL '{dllName}' not found or cannot be loaded.");
+            }
         }
 
         private ADL() { }
