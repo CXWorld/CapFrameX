@@ -43,6 +43,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
             catch (DllNotFoundException ex) { Log.Logger.Error(ex, "AMD GPU lib DLL error."); }
             catch (EntryPointNotFoundException ex) { Log.Logger.Error(ex, "AMD GPU lib entry point error."); }
             catch (AccessViolationException ex) { Log.Logger.Error(ex, $"Access violation exception while accessing ADLX."); }
+            catch (Exception ex) { Log.Logger.Error(ex, $"Unexpected exception while accessing ADLX."); }
         }
 
         private bool TryUseAdlx(ISettings settings, ISensorConfig sensorConfig, IProcessService processService)
@@ -115,64 +116,71 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
         private void UseAdlFallback(ISettings settings, ISensorConfig sensorConfig, IProcessService processService)
         {
-            int adlStatus = ADL.ADL_Main_Control_Create(1);
-            int adl2Status = ADL.ADL2_Main_Control_Create(1, out context);
-
-            if (adlStatus == ADL.ADL_OK || adl2Status == ADL.ADL_OK)
+            try
             {
-                int numberOfAdapters = 0;
-                ADL.ADL_Adapter_NumberOfAdapters_Get(ref numberOfAdapters);
+                int adlStatus = ADL.ADL_Main_Control_Create(1);
+                int adl2Status = ADL.ADL2_Main_Control_Create(1, out context);
 
-                Log.Information($"ADL_Adapter_NumberOfAdapters_Get: {numberOfAdapters}");
-
-                if (numberOfAdapters > 0)
+                if (adlStatus == ADL.ADL_OK || adl2Status == ADL.ADL_OK)
                 {
-                    ADLAdapterInfo[] adapterInfo = new ADLAdapterInfo[numberOfAdapters];
-                    if (ADL.ADL_Adapter_AdapterInfo_Get(adapterInfo) == ADL.ADL_OK)
+                    int numberOfAdapters = 0;
+                    ADL.ADL_Adapter_NumberOfAdapters_Get(ref numberOfAdapters);
+
+                    Log.Information($"ADL_Adapter_NumberOfAdapters_Get: {numberOfAdapters}");
+
+                    if (numberOfAdapters > 0)
                     {
-                        for (int i = 0; i < numberOfAdapters; i++)
+                        ADLAdapterInfo[] adapterInfo = new ADLAdapterInfo[numberOfAdapters];
+                        if (ADL.ADL_Adapter_AdapterInfo_Get(adapterInfo) == ADL.ADL_OK)
                         {
-                            ADL.ADL_Adapter_Active_Get(adapterInfo[i].AdapterIndex,
-                              out int isActive);
-                            ADL.ADL_Adapter_ID_Get(adapterInfo[i].AdapterIndex, out _);
-
-                            if (!string.IsNullOrEmpty(adapterInfo[i].UDID) &&
-                              adapterInfo[i].VendorID == ADL.ATI_VENDOR_ID)
+                            for (int i = 0; i < numberOfAdapters; i++)
                             {
-                                bool found = false;
-                                foreach (ATIGPU gpu in hardware)
-                                {
-                                    if (gpu.BusNumber == adapterInfo[i].BusNumber &&
-                                      gpu.DeviceNumber == adapterInfo[i].DeviceNumber)
-                                    {
-                                        found = true;
-                                        break;
-                                    }
-                                }
+                                ADL.ADL_Adapter_Active_Get(adapterInfo[i].AdapterIndex,
+                                  out int isActive);
+                                ADL.ADL_Adapter_ID_Get(adapterInfo[i].AdapterIndex, out _);
 
-                                if (!found)
+                                if (!string.IsNullOrEmpty(adapterInfo[i].UDID) &&
+                                  adapterInfo[i].VendorID == ADL.ATI_VENDOR_ID)
                                 {
-                                    var adapterName = adapterInfo[i].AdapterName.Trim();
-                                    hardware.Add(new ATIGPU(
-                                      adapterName,
-                                      adapterInfo[i].AdapterIndex,
-                                      adapterInfo[i].BusNumber,
-                                      adapterInfo[i].DeviceNumber,
-                                      context,
-                                      AdlGeneration.ADL,
-                                      string.Empty,
-                                      settings,
-                                      sensorConfig,
-                                      processService));
+                                    bool found = false;
+                                    foreach (ATIGPU gpu in hardware)
+                                    {
+                                        if (gpu.BusNumber == adapterInfo[i].BusNumber &&
+                                          gpu.DeviceNumber == adapterInfo[i].DeviceNumber)
+                                        {
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (!found)
+                                    {
+                                        var adapterName = adapterInfo[i].AdapterName.Trim();
+                                        hardware.Add(new ATIGPU(
+                                          adapterName,
+                                          adapterInfo[i].AdapterIndex,
+                                          adapterInfo[i].BusNumber,
+                                          adapterInfo[i].DeviceNumber,
+                                          context,
+                                          AdlGeneration.ADL,
+                                          string.Empty,
+                                          settings,
+                                          sensorConfig,
+                                          processService));
+                                    }
                                 }
                             }
                         }
-                    }
-                    else
-                    {
-                        Log.Logger.Error($"ADL_Adapter_AdapterInfo_Get: error");
+                        else
+                        {
+                            Log.Logger.Error($"ADL_Adapter_AdapterInfo_Get: error");
+                        }
                     }
                 }
+            }
+            catch
+            {
+                throw;
             }
         }
 

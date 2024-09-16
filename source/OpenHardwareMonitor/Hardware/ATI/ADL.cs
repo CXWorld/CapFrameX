@@ -8,8 +8,12 @@
 	
 */
 
+using Serilog;
 using System;
+using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace OpenHardwareMonitor.Hardware.ATI
@@ -276,11 +280,36 @@ namespace OpenHardwareMonitor.Hardware.ATI
         private static void GetDelegate<T>(string entryPoint, out T newDelegate)
           where T : class
         {
-            DllImportAttribute attribute = new DllImportAttribute(dllName);
-            attribute.CallingConvention = CallingConvention.Cdecl;
-            attribute.PreserveSig = true;
-            attribute.EntryPoint = entryPoint;
-            PInvokeDelegateFactory.CreateDelegate(attribute, out newDelegate);
+            newDelegate = null;
+
+            try
+            {
+                DllImportAttribute attribute = new DllImportAttribute(dllName)
+                {
+                    CallingConvention = CallingConvention.Cdecl,
+                    PreserveSig = true,
+                    EntryPoint = entryPoint
+                };
+
+                PInvokeDelegateFactory.CreateDelegate(attribute, out newDelegate);
+
+                if (newDelegate == null)
+                {
+                    throw new InvalidOperationException($"Failed to create delegate for entry point '{entryPoint}' in DLL '{dllName}'.");
+                }
+            }
+            catch (DllNotFoundException)
+            {
+                Log.Logger.Information($"DLL '{dllName}' not found or cannot be loaded.");
+            }
+            catch (EntryPointNotFoundException)
+            {
+                Log.Logger.Information($"Entry point '{entryPoint}' not found in DLL '{dllName}'.");
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Information($"Error loading delegate from DLL '{dllName}': {ex.Message}");
+            }
         }
 
         private static void CreateDelegates(string name)
@@ -333,9 +362,37 @@ namespace OpenHardwareMonitor.Hardware.ATI
               out ADL2_Adapter_VRAMUsage_Get);
         }
 
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern IntPtr GetModuleHandle(string lpModuleName);
+
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern uint GetModuleFileName(IntPtr hModule, StringBuilder lpFilename, int nSize);
+
         static ADL()
         {
-            CreateDelegates("atiadlxx");
+            try
+            {
+                string dllName = "atiadlxx.dll";
+                IntPtr hModule = GetModuleHandle(dllName);
+
+                if (hModule != IntPtr.Zero)
+                {
+                    StringBuilder path = new StringBuilder(1024);
+                    GetModuleFileName(hModule, path, path.Capacity);
+
+                    Log.Logger.Information($"ADL DLL Location: {path.ToString()}");
+
+                    CreateDelegates("atiadlxx");
+                }
+                else
+                {
+                    Log.Logger.Information("ADL DLL is not loaded.");
+                }
+            }
+            catch (Exception ex) 
+            {
+                Log.Logger.Error(ex, $"DLL '{dllName}' not found or cannot be loaded.");
+            }
         }
 
         private ADL() { }

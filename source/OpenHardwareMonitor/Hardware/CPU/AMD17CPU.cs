@@ -335,8 +335,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
                         case 0x71: // Zen 2
                         case 0x40: // Rembrandt
                         case 0x21: // Zen 3
-                        case 0x61: // Zen 4 + Raphael
+                        case 0x61: // Zen 4 Raphael
                         case 0x75: // Phoenix
+                        case 0x44: // Zen 5 Granite Ridge
                             {
                                 sviPlane0Offset = F17H_M01H_SVI + 0x10;
                                 sviPlane1Offset = F17H_M01H_SVI + 0xC;
@@ -367,7 +368,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     double vcc;
                     uint svi0PlaneXVddCor;
 
-                    if (model is 0x61)
+                    if (model is 0x61 || model is 0x44)
                         smuSvi0Tfn |= 0x01 | 0x02;
 
                     // Core (0x01)
@@ -551,7 +552,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 // Raphael: 0x61
                 // Phoenix: 0x75
                 // Rembrandt: 0x40
-                if (cpu.family == 0x19 && (cpu.model == 0x61 || cpu.model == 0x75 || cpu.model == 0x40))
+                // Granite Ridge: 0x44
+                if (cpu.family == 0x19 && (cpu.model == 0x61 || cpu.model == 0x75
+                    || cpu.model == 0x40 || cpu.model == 0x44))
                 {
                     vcc = vidStep * cpuVid;
                 }
