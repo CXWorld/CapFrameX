@@ -267,6 +267,10 @@
                 <TextBlock Margin="20 0 10 0" Text="Show average row" Foreground="{DynamicResource MaterialDesignBody}"></TextBlock>
                 <ToggleButton IsChecked="{Binding ReportShowAverageRow}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Shows an additional row containing the averaged FPS metrics of all inserted records."/>
             </StackPanel>
+            <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="0 5 0 0" Orientation="Horizontal">
+                <TextBlock Margin="20 0 10 0" Text="Use PMD values" Foreground="{DynamicResource MaterialDesignBody}"></TextBlock>
+                <ToggleButton IsChecked="{Binding ReportUsePMDValues}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="If available, use PMD values instead of the sensor readings for CPU/GPU power and efficiency."/>
+            </StackPanel>
             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0 5 0 0" Orientation="Horizontal">
                 <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Metrics settings:</TextBlock>
                 <materialDesign:PopupBox StaysOpen="True" ToolTip="Select metrics to be shown" Foreground="{DynamicResource MaterialDesignBody}">

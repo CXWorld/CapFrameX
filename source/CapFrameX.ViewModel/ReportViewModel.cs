@@ -67,6 +67,19 @@ namespace CapFrameX.ViewModel
             }
         }
 
+
+        public bool ReportUsePMDValues
+        {
+            get { return _appConfiguration.ReportUsePMDValues; }
+            set
+            {
+                _appConfiguration.ReportUsePMDValues = value;
+                ReportInfoCollection.Clear();
+
+                RaisePropertyChanged();
+            }
+        }
+
         public ObservableCollection<ReportInfo> ReportInfoCollection { get; }
             = new ObservableCollection<ReportInfo>();
 
@@ -274,6 +287,17 @@ namespace CapFrameX.ViewModel
         {
             var session = _recordManager.LoadData(recordInfo.FullPath);
 
+            double cpuPmdAverage = double.NaN;
+            double gpuPmdAverage = double.NaN;
+
+            var cpuPmdPowers = session.Runs.Where(r => !r.PmdCpuPower.IsNullOrEmpty());
+            if (cpuPmdPowers != null && cpuPmdPowers.Any())
+                cpuPmdAverage = Math.Round(cpuPmdPowers.SelectMany(x => x.PmdCpuPower).Average(), 0);
+
+            var gpuPmdPowers = session.Runs.Where(r => !r.PmdGpuPower.IsNullOrEmpty());
+            if (gpuPmdPowers != null && gpuPmdPowers.Any())
+                gpuPmdAverage = Math.Round(gpuPmdPowers.SelectMany(x => x.PmdGpuPower).Average(), 0);
+
             double GeMetricValue(IList<double> sequence, EMetric metric) =>
                     _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
             var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
@@ -297,20 +321,22 @@ namespace CapFrameX.ViewModel
             var p0dot1_averageLowIntegral = GeMetricValue(frameTimes, EMetric.ZerodotOnePercentLowIntegral);
             var min = GeMetricValue(frameTimes, EMetric.Min);
             var adaptiveStandardDeviation = GeMetricValue(frameTimes, EMetric.AdaptiveStd);
-            var cpuFpsPerWatt = _frametimeStatisticProvider
-                .GetPhysicalMetricValue(frameTimes, EMetric.CpuFpsPerWatt,
+            var cpuFpsPerWatt = ReportUsePMDValues ? _frametimeStatisticProvider
+                .GetPhysicalMetricValue(frameTimes, EMetric.CpuFpsPerWatt, cpuPmdAverage) :
+                _frametimeStatisticProvider.GetPhysicalMetricValue(frameTimes, EMetric.CpuFpsPerWatt,
                 SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuPower,
                 0, double.PositiveInfinity));
-            var gpuFpsPerWatt = _frametimeStatisticProvider
-                .GetPhysicalMetricValue(frameTimes, EMetric.GpuFpsPerWatt,
+            var gpuFpsPerWatt = ReportUsePMDValues ? _frametimeStatisticProvider
+                .GetPhysicalMetricValue(frameTimes, EMetric.GpuFpsPerWatt, gpuPmdAverage) :
+                _frametimeStatisticProvider.GetPhysicalMetricValue(frameTimes, EMetric.GpuFpsPerWatt,
                 SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower,
                 0, double.PositiveInfinity, _appConfiguration.UseTBPSim));
             var cpuUsage = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuMaxThreadUsage, 0, double.PositiveInfinity);
-            var cpuPower = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuPower, 0, double.PositiveInfinity);
+            var cpuPower = ReportUsePMDValues ? cpuPmdAverage : SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuPower, 0, double.PositiveInfinity);
             var cpuClock = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuMaxClock, 0, double.PositiveInfinity);
             var cpuTemp = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuTemp, 0, double.PositiveInfinity);
             var gpuUsage = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuUsage, 0, double.PositiveInfinity);
-            var gpuPower = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower, 0, double.PositiveInfinity);
+            var gpuPower = ReportUsePMDValues ? gpuPmdAverage : SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower, 0, double.PositiveInfinity);
             var gpuTBPSim = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuTBPSim, 0, double.PositiveInfinity);
             var gpuClock = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuClock, 0, double.PositiveInfinity);
             var gpuTemp = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuTemp, 0, double.PositiveInfinity);

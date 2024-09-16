@@ -689,6 +689,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool ReportUsePMDValues
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
         public IReportDataGridColumnSettings ReportDataGridColumnSettings
         {
             get => Get<ReportDataGridColumnSettings>(new ReportDataGridColumnSettings());
