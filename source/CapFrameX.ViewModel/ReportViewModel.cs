@@ -292,11 +292,11 @@ namespace CapFrameX.ViewModel
 
             var cpuPmdPowers = session.Runs.Where(r => !r.PmdCpuPower.IsNullOrEmpty());
             if (cpuPmdPowers != null && cpuPmdPowers.Any())
-                cpuPmdAverage = Math.Round(cpuPmdPowers.SelectMany(x => x.PmdCpuPower).Average(), 0);
+                cpuPmdAverage = Math.Round(cpuPmdPowers.SelectMany(x => x.PmdCpuPower).Average(), 1);
 
             var gpuPmdPowers = session.Runs.Where(r => !r.PmdGpuPower.IsNullOrEmpty());
             if (gpuPmdPowers != null && gpuPmdPowers.Any())
-                gpuPmdAverage = Math.Round(gpuPmdPowers.SelectMany(x => x.PmdGpuPower).Average(), 0);
+                gpuPmdAverage = Math.Round(gpuPmdPowers.SelectMany(x => x.PmdGpuPower).Average(), 1);
 
             double GeMetricValue(IList<double> sequence, EMetric metric) =>
                     _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
