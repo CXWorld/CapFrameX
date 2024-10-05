@@ -1,4 +1,8 @@
-﻿using System;
+﻿using CapFrameX.Capture.Contracts;
+using CapFrameX.Extensions;
+using Microsoft.Extensions.Logging;
+using Serilog;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -6,10 +10,6 @@ using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using CapFrameX.Capture.Contracts;
-using CapFrameX.Extensions;
-using Microsoft.Extensions.Logging;
-using Serilog;
 
 namespace CapFrameX.PresentMonInterface
 {
@@ -17,17 +17,12 @@ namespace CapFrameX.PresentMonInterface
     {
         public const int ApplicationName_INDEX = 0;
         public const int ProcessID_INDEX = 1;
-        public const int Dropped_INDEX = 6;
-        public const int TimeInSeconds_INDEX = 7;
-        public const int MsInPresentAPI_INDEX = 8;
+        public const int TimeInSeconds_INDEX = 8;
         public const int MsBetweenPresents_INDEX = 9;
-        public const int MsUntilRenderComplete_INDEX = 12;
-        public const int UntilDisplayedTimes_INDEX = 13;
         // PresentMon version >=1.9
-        public const int GpuActive_INDEX = 18;
-        public const int QPCTime_INDEX = 19;
-        // PresentMon version >=1.9
-        public const int VALID_LINE_LENGTH = 20;
+        public const int GpuActive_INDEX = 14;
+        // PresentMon version >=2.2
+        public const int VALID_LINE_LENGTH = 19;
 
         private readonly ISubject<string[]> _outputDataStream;
         private readonly object _listLock = new object();
@@ -72,7 +67,7 @@ namespace CapFrameX.PresentMonInterface
                         UseShellExecute = startinfo.UseShellExecute,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
-                        RedirectStandardInput = true, // is it a MUST??
+                        RedirectStandardInput = true, // is it necessary?
                         CreateNoWindow = startinfo.CreateNoWindow,
                         Verb = "runas",
                     },
@@ -88,7 +83,6 @@ namespace CapFrameX.PresentMonInterface
                         {
                             if (lineSplit[ApplicationName_INDEX] != "<error>")
                             {
-                                lineSplit[ApplicationName_INDEX] = lineSplit[ApplicationName_INDEX];
                                 _outputDataStream.OnNext(lineSplit);
                             }
                         }
@@ -143,7 +137,7 @@ namespace CapFrameX.PresentMonInterface
                     StartInfo = new ProcessStartInfo
                     {
                         FileName = Path.Combine("PresentMon", $"{CaptureServiceConfiguration.PresentMonAppName}.exe"),
-                        Arguments = "-terminate_existing",
+                        Arguments = "--terminate_existing_session",
                         UseShellExecute = false,
                         CreateNoWindow = true,
                         Verb = "runas",
@@ -236,6 +230,7 @@ namespace CapFrameX.PresentMonInterface
 
                 _presentMonProcesses = new HashSet<(string, int)>(updatedList);
             }
+
             _isUpdating = false;
         }
     }

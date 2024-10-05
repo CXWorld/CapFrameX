@@ -1,33 +1,31 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.MVVM;
 using CapFrameX.Data;
+using CapFrameX.EventAggregation.Messages;
+using CapFrameX.Extensions;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.PresentMonInterface;
+using CapFrameX.Remote;
+using CapFrameX.Webservice.Data.DTO;
+using Microsoft.Extensions.Logging;
+using Microsoft.Win32;
+using Microsoft.Win32.TaskScheduler;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using Newtonsoft.Json;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using System;
-using Task = System.Threading.Tasks.Task;
-using Microsoft.Win32.TaskScheduler;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Windows.Input;
-using CapFrameX.Contracts.MVVM;
-using Microsoft.Extensions.Logging;
-using CapFrameX.Contracts.Data;
-using CapFrameX.EventAggregation.Messages;
-using Microsoft.Win32;
 using System.Net.Http;
-using System.Configuration;
-using CapFrameX.Extensions;
-using Newtonsoft.Json;
-using CapFrameX.Webservice.Data.DTO;
-using CapFrameX.Remote;
-using CapFrameX.Contracts.Overlay;
 using System.Net.NetworkInformation;
+using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
 {
@@ -51,7 +49,6 @@ namespace CapFrameX.ViewModel
         private bool _reportIsChecked;
         private bool _sensorIsChecked;
         private bool _pmdIsChecked;
-        private bool _synchronizationIsChecked;
         private bool _cloudIsChecked;
         private bool _aggregatioIsChecked;
         private bool _hasCustomInfo;
@@ -175,18 +172,6 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool SynchronizationIsChecked
-        {
-            get { return _synchronizationIsChecked; }
-            set
-            {
-                _synchronizationIsChecked = value;
-                RaisePropertyChanged();
-
-                if (value)
-                    OnSynchronizationIsCheckedChanged();
-            }
-        }
         public bool CloudIsChecked
         {
             get { return _cloudIsChecked; }

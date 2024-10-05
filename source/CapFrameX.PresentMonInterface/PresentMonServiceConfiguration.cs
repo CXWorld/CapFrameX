@@ -4,18 +4,14 @@ using System.Collections.Generic;
 
 namespace CapFrameX.PresentMonInterface
 {
+    /// <summary>
+    /// Documentation: https://github.com/GameTechDev/PresentMon/blob/main/README-ConsoleApplication.md
+    /// </summary>
     public class PresentMonServiceConfiguration
     {
         public string ProcessName { get; set; }
 
         public bool RedirectOutputStream { get; set; }
-
-        /// <summary>
-        /// verbose or simple
-        /// </summary>
-        public string OutputLevelofDetail { get; set; } = "track_debug";
-
-        public bool CaptureAllProcesses { get; set; } = false;
 
         public string OutputFilename { get; set; }
 
@@ -24,101 +20,51 @@ namespace CapFrameX.PresentMonInterface
         public string ConfigParameterToArguments()
         {
             var arguments = string.Empty;
-            if (CaptureAllProcesses)
+            if (RedirectOutputStream)
             {
-                arguments += "-restart_as_admin";
+                arguments += "--restart_as_admin";
                 arguments += " ";
-                arguments += "-stop_existing_session";
+                arguments += "--stop_existing_session";
                 arguments += " ";
-                arguments += "-captureall";
+                arguments += "--output_stdout";
                 arguments += " ";
-                arguments += "-multi_csv";
+                arguments += "--no_track_input";
                 arguments += " ";
-                arguments += "-output_file";
-                arguments += " ";
-				arguments += "-qpc_time";
-                arguments += " ";
-                arguments += "-track_gpu";
-                arguments += " ";
-                arguments += OutputFilename;
-
-                if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
-                {
-                    arguments += " ";
-                    arguments += "-" + OutputLevelofDetail;
-                }
+                arguments += "--qpc_time_ms";
 
                 if (ExcludeProcesses != null && ExcludeProcesses.Any())
                 {
-                    arguments += " ";
                     foreach (var process in ExcludeProcesses.Where(proc => !proc.Contains(" ")))
                     {
-                        arguments += "-exclude";
                         arguments += " ";
-                        arguments += process;
+                        arguments += "--exclude";
+                        arguments += " ";
+                        arguments += process + ".exe";
                     }
                 }
             }
             else
             {
-                if (RedirectOutputStream)
+                if (string.IsNullOrWhiteSpace(ProcessName))
                 {
-                    arguments += "-restart_as_admin";
-                    arguments += " ";
-                    arguments += "-stop_existing_session";
-					arguments += " ";
-					arguments += "-output_stdout";
-					arguments += " ";
-					arguments += "-qpc_time";
-                    arguments += " ";
-                    arguments += "-track_gpu";
-
-                    if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
-                    {
-                        arguments += " ";
-                        arguments += "-" + OutputLevelofDetail;
-                    }
-
-					if (ExcludeProcesses != null && ExcludeProcesses.Any())
-					{
-						foreach (var process in ExcludeProcesses.Where(proc => !proc.Contains(" ")))
-						{
-							arguments += " ";
-							arguments += "-exclude";
-							arguments += " ";
-							arguments += process + ".exe";
-						}
-					}
-				}
-                else
-                {
-					if (string.IsNullOrWhiteSpace(ProcessName))
-					{
-						throw new ArgumentException("Process name must be set!");
-					}
-
-                    arguments += "-restart_as_admin";
-                    arguments += " ";
-                    arguments += "-stop_existing_session";
-                    arguments += " ";
-                    arguments += "-process_name";
-                    arguments += " ";
-                    arguments += ProcessName;
-                    arguments += " ";
-                    arguments += "-output_file";
-                    arguments += " ";
-                    arguments += OutputFilename;
-					arguments += " ";
-					arguments += "-qpc_time";
-                    arguments += " ";
-                    arguments += "-track_gpu";
-
-                    if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
-                    {
-                        arguments += " ";
-                        arguments += "-" + OutputLevelofDetail;
-                    }
+                    throw new ArgumentException("Process name must be set!");
                 }
+
+                arguments += "--restart_as_admin";
+                arguments += " ";
+                arguments += "--stop_existing_session";
+                arguments += " ";
+                arguments += "--process_name";
+                arguments += " ";
+                arguments += ProcessName;
+                arguments += " ";
+                arguments += "--output_file";
+                arguments += " ";
+                arguments += OutputFilename;
+                arguments += " ";
+                arguments += "--no_track_input";
+                arguments += " ";
+                arguments += "--qpc_time_ms";
             }
 
             return arguments;

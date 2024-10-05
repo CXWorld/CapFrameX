@@ -190,11 +190,14 @@ namespace CapFrameX.Data
                 if (_value <= 0) Monitor.PulseAll(_locker);
             }
         }
+
         public void Wait()
         {
             lock (_locker)
+            {
                 while (_value > 0)
                     Monitor.Wait(_locker);
+            }
         }
     }
 }

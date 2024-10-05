@@ -12,7 +12,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Windows.Media;
 
 namespace CapFrameX.PresentMonInterface
 {
@@ -33,22 +32,18 @@ namespace CapFrameX.PresentMonInterface
         private readonly IAppConfiguration _appConfiguration;
         private readonly object _lockRealtimeMetric = new object();
         private readonly object _lock5SecondsMetric = new object();
-        private readonly object _lockApplicationLatency = new object();
         private readonly object _lockPmdMetrics = new object();
         private List<double> _frametimesRealtimeSeconds = new List<double>(LIST_CAPACITY);
 		private List<double> _gpuActiveTimesRealtimeSeconds = new List<double>(LIST_CAPACITY);
 		private List<double> _frametimes5Seconds = new List<double>(LIST_CAPACITY / 4);
         private List<double> _measuretimesRealtimeSeconds = new List<double>(LIST_CAPACITY);
         private List<double> _measuretimes5Seconds = new List<double>(LIST_CAPACITY / 4);
-        private List<double> _measuretimesApplicationLatency = new List<double>(LIST_CAPACITY / 10);
-        private List<double> _applicationLatencyValues = new List<double>(LIST_CAPACITY / 10);
         private List<PmdChannel[]> _channelDataBuffer = new List<PmdChannel[]>(PMD_BUFFER_CAPACITY);
         private string _currentProcess;
         private int _currentProcessId;
         private double _droppedFrametimes = 0.0;
         private double _prevDisplayedFrameInputLagTime = double.NaN;
         private readonly double _maxOnlineStutteringIntervalLength = 5d;
-        private readonly double _maxOnlineApplicationLatencyIntervalLength = 2d;
 
         private int MetricInterval => _appConfiguration.MetricInterval == 0 ? 20 : _appConfiguration.MetricInterval;
 
@@ -86,7 +81,6 @@ namespace CapFrameX.PresentMonInterface
                         || _currentProcess != msg.Process)
                         {
                             ResetMetrics();
-                            ResetApplicationLatency();
                         }
 
                         _currentProcess = msg.Process;
@@ -103,23 +97,6 @@ namespace CapFrameX.PresentMonInterface
                 .ObserveOn(new EventLoopScheduler())
                 .Where(x => EvaluateRealtimeMetrics())
                 .Subscribe(UpdateOnlineMetrics);
-
-            _captureService
-                .FrameDataStream
-                .Skip(1)
-                .ObserveOn(new EventLoopScheduler())
-                .Where(line => EvaluateRealtimeApplicationLatency())
-                .Scan(new List<string[]>(), (acc, current) =>
-                {
-                    if (acc.Count > 1)
-                    {
-                        acc.RemoveAt(0);
-                    }
-                    acc.Add(current);
-                    return acc;
-                })
-                .Where(acc => acc.Count == 2)
-                .Subscribe(UpdateOnlineApplicationLatency);
 
             _pmdService.PmdChannelStream
                 .ObserveOn(new EventLoopScheduler())
@@ -141,15 +118,6 @@ namespace CapFrameX.PresentMonInterface
                     || _overlayEntryCore.RealtimeMetricEntryDict["OnlineGpuActiveTimeAverage"].ShowOnOverlay
                     || _overlayEntryCore.RealtimeMetricEntryDict["OnlineFrameTimeAverage"].ShowOnOverlay
                     || _overlayEntryCore.RealtimeMetricEntryDict["OnlineGpuActiveTimePercentageDeviation"].ShowOnOverlay;
-            }
-            catch { return false; }
-        }
-
-        private bool EvaluateRealtimeApplicationLatency()
-        {
-            try
-            {
-                return _overlayEntryCore.RealtimeMetricEntryDict["OnlineApplicationLatency"].ShowOnOverlay;
             }
             catch { return false; }
         }
@@ -197,6 +165,9 @@ namespace CapFrameX.PresentMonInterface
                 ResetMetrics();
                 return;
             }
+
+            // Convert start time to seconds
+            startTime *= 1E-03;
 
             if (!double.TryParse(lineSplit[PresentMonCaptureService.MsBetweenPresents_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double frameTime))
             {
@@ -265,94 +236,6 @@ namespace CapFrameX.PresentMonInterface
             catch { ResetMetrics(); }
         }
 
-        private void UpdateOnlineApplicationLatency(List<string[]> lineSplits)
-        {
-            string process;
-            try
-            {
-                process = lineSplits[1][PresentMonCaptureService.ApplicationName_INDEX].Replace(".exe", "");
-            }
-            catch { return; }
-
-            lock (_currentProcessLock)
-            {
-                if (process != _currentProcess)
-                    return;
-            }
-
-            if (!int.TryParse(lineSplits[1][PresentMonCaptureService.ProcessID_INDEX], out int processId))
-            {
-                ResetApplicationLatency();
-                return;
-            }
-
-            lock (_currentProcessLock)
-            {
-                if (_currentProcessId != processId)
-                    return;
-            }
-
-            if (!double.TryParse(lineSplits[1][PresentMonCaptureService.TimeInSeconds_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double startTime))
-            {
-                ResetApplicationLatency();
-                return;
-            }
-
-            if (!double.TryParse(lineSplits[1][PresentMonCaptureService.MsBetweenPresents_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double frameTime))
-            {
-                ResetApplicationLatency();
-                return;
-            }
-
-			// it makes no sense to calculate fps metrics with
-			// frame times above the stuttering threshold
-			// filtering high frame times caused by focus lost for example
-			if (frameTime > STUTTERING_THRESHOLD * 1E03) return;
-
-            try
-            {
-                var frameTime_a = Convert.ToDouble(lineSplits[1][PresentMonCaptureService.MsBetweenPresents_INDEX], CultureInfo.InvariantCulture);
-                var untilDisplayedTimes_a = Convert.ToDouble(lineSplits[1][PresentMonCaptureService.UntilDisplayedTimes_INDEX], CultureInfo.InvariantCulture);
-                var inPresentAPITimes_b = Convert.ToDouble(lineSplits[0][PresentMonCaptureService.MsInPresentAPI_INDEX], CultureInfo.InvariantCulture);
-				var untilRenderComplete_a = Convert.ToDouble(lineSplits[1][PresentMonCaptureService.MsUntilRenderComplete_INDEX], CultureInfo.InvariantCulture);
-				var appMissed_a = Convert.ToInt32(lineSplits[1][PresentMonCaptureService.Dropped_INDEX], CultureInfo.InvariantCulture) == 1;
-
-				//  PCLatency = msBetweenPresents + msUntilRenderComplete – prev(msInPresentAPI) ??
-
-				lock (_lockApplicationLatency)
-                {
-                    _measuretimesApplicationLatency.Add(startTime);
-
-                    if (appMissed_a)
-                        _droppedFrametimes += frameTime_a;
-                    else
-                    {
-                        _applicationLatencyValues.Add(0.5 * frameTime_a + untilDisplayedTimes_a + 0.5 * (_prevDisplayedFrameInputLagTime + _droppedFrametimes));
-                        _droppedFrametimes = 0.0;
-                        _prevDisplayedFrameInputLagTime = frameTime_a - inPresentAPITimes_b;
-
-                        // _applicationLatencyValues.Add(2 * frameTime_a + untilRenderComplete_a + inPresentAPITimes_b);
-
-                    }
-
-                    if (startTime - _measuretimesApplicationLatency.First() > _maxOnlineApplicationLatencyIntervalLength)
-                    {
-                        int position = 0;
-                        while (position < _measuretimesApplicationLatency.Count &&
-                            startTime - _measuretimesApplicationLatency[position] > _maxOnlineApplicationLatencyIntervalLength)
-                            position++;
-
-                        if (position > 0)
-                        {
-                            _applicationLatencyValues.RemoveRange(0, position);
-                            _measuretimesApplicationLatency.RemoveRange(0, position);
-                        }
-                    }
-                }
-            }
-            catch { ResetApplicationLatency(); }
-        }
-
         private void UpdatePmdMetrics(IList<PmdChannel[]> metricsData)
         {
             lock (_lockPmdMetrics)
@@ -372,15 +255,6 @@ namespace CapFrameX.PresentMonInterface
 				_gpuActiveTimesRealtimeSeconds = new List<double>(capacity);
 			}
 		}
-
-        private void ResetApplicationLatency()
-        {
-            lock (_lockApplicationLatency)
-            {
-                _applicationLatencyValues = new List<double>(LIST_CAPACITY / 10);
-                _measuretimesApplicationLatency = new List<double>(LIST_CAPACITY / 10);
-            }
-        }
 
         public double GetOnlineFpsMetricValue(EMetric metric)
         {
@@ -419,17 +293,6 @@ namespace CapFrameX.PresentMonInterface
                     .GetFrametimeMetricValue(_gpuActiveTimesRealtimeSeconds, EMetric.GpuActiveAverage);
 
                 return Math.Round(Math.Abs((gpuActiveTimeAverage - frameTimeAverage)/ frameTimeAverage * 100));
-            }
-        }
-
-        public double GetOnlineApplicationLatencyValue()
-        {
-            lock (_lockApplicationLatency)
-            {
-                if (!_applicationLatencyValues.Any())
-                    return 0;
-
-                return _applicationLatencyValues.Average();
             }
         }
 

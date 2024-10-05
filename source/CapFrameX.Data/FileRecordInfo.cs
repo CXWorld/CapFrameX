@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 
 namespace CapFrameX.Data
 {
-	public class FileRecordInfo : IFileRecordInfo
+    public class FileRecordInfo : IFileRecordInfo
 	{
 		public static string HEADER_MARKER = "//";
 		public static readonly char INFO_SEPERATOR = '=';

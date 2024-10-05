@@ -13,8 +13,6 @@ namespace CapFrameX.PresentMonInterface
 
         double GetOnlineGpuActiveTimeDeviationMetricValue();
 
-        double GetOnlineApplicationLatencyValue();
-
         double GetOnlineStutteringPercentageValue();
 
         OnlinePmdMetrics GetPmdMetricsPowerCurrent();

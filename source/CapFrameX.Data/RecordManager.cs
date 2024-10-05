@@ -373,10 +373,16 @@ namespace CapFrameX.Data
         //    $"msUntilRenderComplete,msUntilDisplayed,msBetweenDisplayChange,WasBatched,DwmNotified,QPCTime";
 
         // PresentMon >= v1.9
+        //private static readonly string COLUMN_HEADER =
+        //    $"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags,Dropped," +
+        //    $"TimeInSeconds,msInPresentAPI,msBetweenPresents,AllowsTearing,PresentMode,msUntilRenderComplete," +
+        //    $"msUntilDisplayed,msBetweenDisplayChange,WasBatched,DwmNotified,msUntilRenderStart,msGPUActive,QPCTime";
+
+        // PresentMon >= v2.2
         private static readonly string COLUMN_HEADER =
-            $"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags,Dropped," +
-            $"TimeInSeconds,msInPresentAPI,msBetweenPresents,AllowsTearing,PresentMode,msUntilRenderComplete," +
-            $"msUntilDisplayed,msBetweenDisplayChange,WasBatched,DwmNotified,msUntilRenderStart,msGPUActive,QPCTime";
+            $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing," +
+            $"PresentMode,CPUStartQPCTime,FrameTime,CPUBusy,CPUWait,GPULatency,GPUTime,GPUBusy,GPUWait,DisplayLatency," +
+            $"DisplayedTime,AnimationError";
 
         public async Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo)
         {
@@ -750,6 +756,7 @@ namespace CapFrameX.Data
                 int indexSyncInterval = -1;
                 int indexPcLatency = -1;
                 int indexmsGPUActive = -1;
+                int indexCPUStartQPCTime = -1;
 
                 string headerLine;
                 string firstLine = presentLines.First();
@@ -770,6 +777,10 @@ namespace CapFrameX.Data
                     PresentMonRuntime = "unknown"
                 };
 
+                // $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing," +
+                // $"PresentMode,CPUStartQPCTime,FrameTime,CPUBusy,CPUWait,GPULatency,GPUTime,GPUBusy,GPUWait,DisplayLatency," +
+                // $"DisplayedTime,AnimationError";
+
                 var metrics = Array.ConvertAll(headerLine.Split(','), p => p.Trim());
                 for (int i = 0; i < metrics.Count(); i++)
                 {
@@ -780,11 +791,13 @@ namespace CapFrameX.Data
                     if (string.Compare(metrics[i], "MsBetweenAppPresents", true) == 0
                         || string.Compare(metrics[i], "msBetweenPresents", true) == 0
                         // MangoHud frame times column
-                        || string.Compare(metrics[i], "frametime", true) == 0)
+                        || string.Compare(metrics[i], "frametime", true) == 0
+                        // PresentMon >= v2.2
+                        || string.Compare(metrics[i], "FrameTime", true) == 0)
                     {
                         indexFrameTimes = i;
                     }
-                    if (string.Compare(metrics[i], "msUntilDisplayed", true) == 0)
+                    if (string.Compare(metrics[i], "msUntilDisplayed", true) == 0 || string.Compare(metrics[i], "DisplayLatency", true) == 0)
                     {
                         indexUntilDisplayedTimes = i;
                     }
@@ -792,11 +805,11 @@ namespace CapFrameX.Data
                     {
                         indexAppMissed = i;
                     }
-                    if (string.Compare(metrics[i], "msInPresentAPI", true) == 0)
+                    if (string.Compare(metrics[i], "msInPresentAPI", true) == 0 || string.Compare(metrics[i], "PresentRuntime", true) == 0)
                     {
                         indexMsInPresentAPI = i;
                     }
-                    if (string.Compare(metrics[i], "msBetweenDisplayChange", true) == 0)
+                    if (string.Compare(metrics[i], "msBetweenDisplayChange", true) == 0 || string.Compare(metrics[i], "DisplayedTime", true) == 0)
                     {
                         indexDisplayTimes = i;
                     }
@@ -824,9 +837,13 @@ namespace CapFrameX.Data
                     {
                         indexPcLatency = i;
                     }
-                    if (string.Compare(metrics[i], "msGPUActive") == 0)
+                    if (string.Compare(metrics[i], "msGPUActive") == 0 || string.Compare(metrics[i], "GPUBusy") == 0)
                     {
                         indexmsGPUActive = i;
+                    }
+                    if (string.Compare(metrics[i], "CPUStartQPCTime") == 0)
+                    {
+                        indexCPUStartQPCTime = i;
                     }
                 }
 
@@ -881,6 +898,14 @@ namespace CapFrameX.Data
                         if (double.TryParse(GetStringFromArray(values, indexFrameStart), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart))
                         {
                             captureData.TimeInSeconds[lineNo] = frameStart;
+                        }
+                    }
+
+                    if (indexCPUStartQPCTime > -1)
+                    {
+                        if (double.TryParse(GetStringFromArray(values, indexCPUStartQPCTime), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart))
+                        {
+                            captureData.TimeInSeconds[lineNo] = frameStart * 1E-03;
                         }
                     }
 

@@ -239,7 +239,7 @@
       <Name>WpfView</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj">
-      <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
+      <Project>{4c3b8b5c-54d7-46a1-91a1-32bf82fd42cd}</Project>
       <Name>CapFrameX.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Data.Session\CapFrameX.Data.Session.csproj">

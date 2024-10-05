@@ -1,10 +1,13 @@
-﻿using CapFrameX.Contracts.Logging;
+﻿using CapFrameX.Capture.Contracts;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Logging;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Contracts;
+using CapFrameX.Monitoring.Contracts;
+using CapFrameX.PMD;
 using CapFrameX.PresentMonInterface;
 using Microsoft.Extensions.Logging;
 using System;
@@ -19,13 +22,10 @@ using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using CapFrameX.Monitoring.Contracts;
-using CapFrameX.Capture.Contracts;
-using CapFrameX.PMD;
 
 namespace CapFrameX.Data
 {
-	public enum ECaptureStatus
+    public enum ECaptureStatus
 	{
 		Started,
 		StartedDelay,
@@ -70,7 +70,7 @@ namespace CapFrameX.Data
 		private IDisposable _rTSSFrameTimesIntervalStream;
 		private List<string[]> _captureData = new List<string[]>();
 		private bool _fillArchive;
-		private long _qpcTimeStart;
+		private double _qpcTimeStart;
 		private string _captureTimeString = "0";
 		private long _timestampStartCapture;
 		private CaptureOptions _currentCaptureOptions;
@@ -107,7 +107,11 @@ namespace CapFrameX.Data
 		[DllImport("Kernel32.dll")]
 		private static extern bool QueryPerformanceCounter(out long lpPerformanceCount);
 
-		public CaptureManager(ICaptureService presentMonCaptureService,
+
+        [DllImport("Kernel32.dll")]
+        private static extern bool QueryPerformanceFrequency(out long lpFrequency);
+
+        public CaptureManager(ICaptureService presentMonCaptureService,
 			ISensorService sensorService,
 			IOverlayService overlayService,
 			SoundManager soundManager,
@@ -148,8 +152,9 @@ namespace CapFrameX.Data
 			if (options.RecordDirectory != null && !Directory.Exists(options.RecordDirectory))
 				throw new Exception($"RecordDirectory {options.RecordDirectory} does not exist");
 
-			_ = QueryPerformanceCounter(out long startCounter);
-			_qpcTimeStart = startCounter;
+            QueryPerformanceCounter(out long startCounter);
+            QueryPerformanceFrequency(out long lpFrequency);
+            _qpcTimeStart = (double)startCounter / lpFrequency;
 
 			var atomicTime = AtomicTime.Now.TimeOfDay;
 
@@ -236,7 +241,7 @@ namespace CapFrameX.Data
 						double captureDataFirstTime = 0;
 						try
 						{
-							captureDataFirstTime = GetStartTimeFromDataLine(_captureData.First());
+							captureDataFirstTime = GetCpuStartQpcFromDataLine(_captureData.First());
 						}
 						catch { return; }
 
@@ -246,7 +251,7 @@ namespace CapFrameX.Data
 							{
 								try
 								{
-									captureDataArchiveLastTime = GetStartTimeFromDataLine(_captureDataArchive.Last());
+									captureDataArchiveLastTime = GetCpuStartQpcFromDataLine(_captureDataArchive.Last());
 								}
 								catch { return; }
 							}
@@ -301,8 +306,6 @@ namespace CapFrameX.Data
 			_logEntryManager.AddLogEntry($"Atomic time(UTC) on capture start request: {atomicTime}" + Environment.NewLine
 				+ $"Performance counter on capture start request: {startCounter}" + Environment.NewLine
 				+ $"Time between capture start request and execution in ms: {delayStopwatch.ElapsedMilliseconds}", ELogMessageType.AdvancedInfo, false);
-
-			await Task.FromResult(0);
 		}
 
 		public async Task StopCapture()
@@ -511,7 +514,7 @@ namespace CapFrameX.Data
 				return Enumerable.Empty<string[]>().ToList();
 			}
 
-			var startTimeWithOffset = GetStartTimeFromDataLine(_captureData.First());
+			var startTimeWithOffset = GetCpuStartQpcFromDataLine(_captureData.First());
 			var stopwatchTime = (_timestampStopCapture - _timestampStartCapture) / 1000d;
 
 			if (string.IsNullOrWhiteSpace(_captureTimeString))
@@ -556,6 +559,7 @@ namespace CapFrameX.Data
 				var currentProcess = GetProcessNameFromDataLine(line);
 				return currentProcess == _currentCaptureOptions.ProcessInfo.Item1 && uniqueProcessIdDict[currentProcess].Count() == 1;
 			}).ToList();
+
 			var filteredCaptureData = _captureData.Where(line =>
 			{
 				var currentProcess = GetProcessNameFromDataLine(line);
@@ -570,11 +574,11 @@ namespace CapFrameX.Data
 			}
 
 			// Distinct archive and live stream
-			var lastArchiveTime = GetStartTimeFromDataLine(filteredArchive.Last());
+			var lastArchiveTime = GetCpuStartQpcFromDataLine(filteredArchive.Last());
 			int distinctIndex = 0;
 			for (int i = 0; i < filteredCaptureData.Count; i++)
 			{
-				if (GetStartTimeFromDataLine(filteredCaptureData[i]) <= lastArchiveTime)
+				if (GetCpuStartQpcFromDataLine(filteredCaptureData[i]) <= lastArchiveTime)
 					distinctIndex++;
 				else
 					break;
@@ -582,15 +586,15 @@ namespace CapFrameX.Data
 
 			if (distinctIndex == 0)
 			{
-				_logger.LogWarning("Something went wrong getting union capture data. We cant use the data from archive(First CaptureDataTime was {firstCaptureTime}, last ArchiveTime was {lastArchiveTime})", GetStartTimeFromDataLine(filteredCaptureData.First()), lastArchiveTime);
+				_logger.LogWarning("Something went wrong getting union capture data. We cant use the data from archive(First CaptureDataTime was {firstCaptureTime}, last ArchiveTime was {lastArchiveTime})", GetCpuStartQpcFromDataLine(filteredCaptureData.First()), lastArchiveTime);
 				_logEntryManager.AddLogEntry("Comparison with archive data is invalid.", ELogMessageType.Error, false);
 
 				return Enumerable.Empty<string[]>().ToList();
 			}
 
 			var unionCaptureData = filteredArchive.Concat(filteredCaptureData.Skip(distinctIndex)).ToList();
-			var unionCaptureDataStartTime = GetStartTimeFromDataLine(unionCaptureData.First());
-			var unionCaptureDataEndTime = GetStartTimeFromDataLine(unionCaptureData.Last());
+			var unionCaptureDataStartTime = GetCpuStartQpcFromDataLine(unionCaptureData.First());
+			var unionCaptureDataEndTime = GetCpuStartQpcFromDataLine(unionCaptureData.Last());
 
 			var captureInterval = new List<string[]>();
 
@@ -599,16 +603,16 @@ namespace CapFrameX.Data
 			// find first dataline that fits start of valid interval
 			for (int i = 0; i < unionCaptureData.Count - 1; i++)
 			{
-				var currentQpcTime = GetQpcTimeFromDataLine(unionCaptureData[i + 1]);
+				var currentQpcTime = GetCpuStartQpcFromDataLine(unionCaptureData[i + 1]);
 
 				if (currentQpcTime >= _qpcTimeStart)
 				{
-					startTime = GetStartTimeFromDataLine(unionCaptureData[i]);
+					startTime = GetCpuStartQpcFromDataLine(unionCaptureData[i]);
 					break;
 				}
 			}
 
-			if (startTime == 0)
+            if (startTime == 0)
 			{
 				_logEntryManager.AddLogEntry($"Start time is invalid. Error while evaluating QPCTime start.", ELogMessageType.Error, false);
 				return Enumerable.Empty<string[]>().ToList();
@@ -622,10 +626,9 @@ namespace CapFrameX.Data
 			{
 				for (int i = 0; i < unionCaptureData.Count; i++)
 				{
-					var currentqpcTime = GetQpcTimeFromDataLine(unionCaptureData[i]);
-					var currentTime = GetStartTimeFromDataLine(unionCaptureData[i]);
+					var currentQpcTime = GetCpuStartQpcFromDataLine(unionCaptureData[i]);
 
-					if (currentqpcTime >= _qpcTimeStart && currentTime - startTime <= stopwatchTime)
+					if (currentQpcTime >= _qpcTimeStart && currentQpcTime - startTime <= stopwatchTime)
 						captureInterval.Add(unionCaptureData[i]);
 				}
 
@@ -641,7 +644,7 @@ namespace CapFrameX.Data
 
 				for (int i = 0; i < unionCaptureData.Count; i++)
 				{
-					var currentStartTime = GetStartTimeFromDataLine(unionCaptureData[i]);
+					var currentStartTime = GetCpuStartQpcFromDataLine(unionCaptureData[i]);
 
 					var currentRecordTime = Math.Round(currentStartTime - startTime, 3);
 					var maxRecordTime = Math.Round(definedTime + normalizeTimeOffset, 3);
@@ -651,7 +654,7 @@ namespace CapFrameX.Data
 						captureInterval.Add(unionCaptureData[i]);
 
 						if (captureInterval.Count == 2)
-							normalizeTimeOffset = GetStartTimeFromDataLine(captureInterval[1]) - startTime;
+							normalizeTimeOffset = GetCpuStartQpcFromDataLine(captureInterval[1]) - startTime;
 					}
 				}
 			}
@@ -669,9 +672,14 @@ namespace CapFrameX.Data
 			return lineSplit[PresentMonCaptureService.ProcessID_INDEX];
 		}
 
-		private long GetQpcTimeFromDataLine(string[] lineSplit)
+		/// <summary>
+		///  Return the start time of the frame in seconds
+		/// </summary>
+		/// <param name="lineSplit"></param>
+		/// <returns></returns>
+		private double GetCpuStartQpcFromDataLine(string[] lineSplit)
 		{
-			return Convert.ToInt64(lineSplit[PresentMonCaptureService.QPCTime_INDEX], CultureInfo.InvariantCulture);
+			return 1E-03 * Convert.ToDouble(lineSplit[PresentMonCaptureService.TimeInSeconds_INDEX], CultureInfo.InvariantCulture);
 		}
 
         private double GetTimeFromDataLine(string line)
@@ -686,7 +694,7 @@ namespace CapFrameX.Data
 			string[] firstLineSplit = recordLines.First();
 			var lines = new List<string>();
 			//start time
-			var timeStart = GetStartTimeFromDataLine(firstLineSplit);
+			var timeStart = GetCpuStartQpcFromDataLine(firstLineSplit);
 
 			// normalize time
 			var currentLineSplit = firstLineSplit;
@@ -696,7 +704,7 @@ namespace CapFrameX.Data
 
 			foreach (var lineSplit in recordLines.Skip(1))
 			{
-				double currentStartTime = GetStartTimeFromDataLine(lineSplit);
+				double currentStartTime = GetCpuStartQpcFromDataLine(lineSplit);
 
 				// normalize time
 				double normalizedTime = currentStartTime - timeStart;
@@ -707,11 +715,6 @@ namespace CapFrameX.Data
 				lines.Add(string.Join(",", currentLineSplit));
 			}
 			return lines;
-		}
-
-		private double GetStartTimeFromDataLine(string[] lineSplit)
-		{
-			return Convert.ToDouble(lineSplit[PresentMonCaptureService.TimeInSeconds_INDEX], CultureInfo.InvariantCulture);
 		}
 
 		private IDisposable GetRTSSFrameTimesIntervalHeartBeat(int processId)

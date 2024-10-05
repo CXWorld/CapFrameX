@@ -36,8 +36,7 @@ namespace CapFrameX.Overlay
 		{
 			"OnlineAverage", "OnlineP1", "OnlineP0dot2", "Online1PercentLow", "Online0dot2PercentLow",
             "OnlineGpuActiveTimeAverage", "OnlineFrameTimeAverage", "OnlineGpuActiveTimePercentageDeviation",
-			"OnlineApplicationLatency", "OnlineStutteringPercentage", "PmdGpuPowerCurrent", "PmdCpuPowerCurrent",
-			"PmdSystemPowerCurrent"
+			"OnlineStutteringPercentage", "PmdGpuPowerCurrent", "PmdCpuPowerCurrent", "PmdSystemPowerCurrent"
 		};
 
 		private readonly ISensorService _sensorService;
@@ -646,14 +645,6 @@ namespace CapFrameX.Overlay
                 gpuActiveTimeDeviation.Value = Math.Round(_onlineMetricService.GetOnlineGpuActiveTimeDeviationMetricValue());
 			}
 
-			// application latency
-			_identifierOverlayEntryDict.TryGetValue("OnlineApplicationLatency", out IOverlayEntry renderApplicationLatency);
-
-			if (renderApplicationLatency != null && renderApplicationLatency.ShowOnOverlay)
-			{
-				renderApplicationLatency.Value = Math.Round(_onlineMetricService.GetOnlineApplicationLatencyValue(), 1);
-			}
-
 			// stuttering percentage (time)
 			_identifierOverlayEntryDict.TryGetValue("OnlineStutteringPercentage", out IOverlayEntry stutteringPercentage);
 
@@ -823,15 +814,6 @@ namespace CapFrameX.Overlay
 			{
                 gpuActiveTimeDeviation.ValueUnitFormat = "%";
                 gpuActiveTimeDeviation.ValueAlignmentAndDigits = "{0,5:F0}";
-			}
-
-			// render lag
-			_identifierOverlayEntryDict.TryGetValue("OnlineApplicationLatency", out IOverlayEntry applicationLatency);
-
-			if (applicationLatency != null)
-			{
-				applicationLatency.ValueUnitFormat = "ms";
-				applicationLatency.ValueAlignmentAndDigits = "{0,5:F1}";
 			}
 
 			// stuttering percentage
