@@ -4,6 +4,7 @@
 #include "SDK/ADLXHelper/Windows/Cpp/ADLXHelper.h"
 #include "SDK/Include/IPerformanceMonitoring.h"
 #include "ADLXManager.h"
+#include <exception>
 
 // Use ADLX namespace
 using namespace adlx;
@@ -219,39 +220,53 @@ bool IntializeAdlx()
 	ADLX_RESULT res = ADLX_FAIL;
 	bool check = false;
 
-	// Initialize ADLX
-	res = g_ADLXHelp.Initialize();
-
-	if (ADLX_SUCCEEDED(res))
+	try
 	{
-		// Get Performance Monitoring services
-		res = g_ADLXHelp.GetSystemServices()->GetPerformanceMonitoringServices(&_perfMonitoringService);
+		// Initialize ADLX
+		res = g_ADLXHelp.Initialize();
+
 		if (ADLX_SUCCEEDED(res))
 		{
-			// Get GPU list
-			res = g_ADLXHelp.GetSystemServices()->GetGPUs(&_gpus);
+			// Get Performance Monitoring services
+			res = g_ADLXHelp.GetSystemServices()->GetPerformanceMonitoringServices(&_perfMonitoringService);
 			if (ADLX_SUCCEEDED(res))
 			{
-				IADLXGPUPtr gpu;
-				// Use the first GPU in the list
-				res = _gpus->At(_gpus->Begin(), &gpu);
+				// Get GPU list
+				res = g_ADLXHelp.GetSystemServices()->GetGPUs(&_gpus);
 				if (ADLX_SUCCEEDED(res))
 				{
-					res = _perfMonitoringService->ClearPerformanceMetricsHistory();
-
+					IADLXGPUPtr gpu;
+					// Use the first GPU in the list
+					res = _gpus->At(_gpus->Begin(), &gpu);
 					if (ADLX_SUCCEEDED(res))
 					{
-						res = _perfMonitoringService->StartPerformanceMetricsTracking();
-						check = true;
+						res = _perfMonitoringService->ClearPerformanceMetricsHistory();
+
+						if (ADLX_SUCCEEDED(res))
+						{
+							res = _perfMonitoringService->StartPerformanceMetricsTracking();
+							check = true;
+						}
 					}
 				}
 			}
 		}
-	}
 
-	if (!check)
+		if (!check)
+		{
+			g_ADLXHelp.Terminate();
+		}
+	}
+	catch (const std::exception& e)
 	{
-		g_ADLXHelp.Terminate();
+		g_ADLXHelp.Terminate();  // Clean up resources
+		return false; // Return false on any exception
+	}
+	catch (...)
+	{
+		// Catch any other types of exceptions
+		g_ADLXHelp.Terminate();  // Clean up resources
+		return false; // Return false on any unknown exception
 	}
 
 	return check;
@@ -277,53 +292,64 @@ bool GetAdlxTelemetry(const adlx_uint index, const adlx_uint historyLength, Adlx
 {
 	bool check = false;
 
-	IADLXGPUPtr gpu;
-	ADLX_RESULT resGetGPU = _gpus->At(index, &gpu);
-
-	if (ADLX_SUCCEEDED(resGetGPU))
+	try
 	{
-		IADLXGPUMetricsListPtr gpuMetricsList;
-		ADLX_RESULT resGetHistory = _perfMonitoringService->GetGPUMetricsHistory(gpu, historyLength, 0, &gpuMetricsList);
+		IADLXGPUPtr gpu;
+		ADLX_RESULT resGetGPU = _gpus->At(index, &gpu);
 
-		if (ADLX_SUCCEEDED(resGetHistory))
+		if (ADLX_SUCCEEDED(resGetGPU))
 		{
-			// Take last element
-			// 
-			// Tests with sample code showed that gpuMetricsList
-			// only has 1 element, when history interval length
-			// <= 1000ms. No need to calculate an average.  
-			adlx_uint pos = gpuMetricsList->Size() - 1;
+			IADLXGPUMetricsListPtr gpuMetricsList;
+			ADLX_RESULT resGetHistory = _perfMonitoringService->GetGPUMetricsHistory(gpu, historyLength, 0, &gpuMetricsList);
 
-			if (pos >= 0)
+			if (ADLX_SUCCEEDED(resGetHistory))
 			{
-				IADLXGPUMetricsSupportPtr gpuMetricsSupport;
-				ADLX_RESULT resGetSupportedMetrics = _perfMonitoringService->GetSupportedGPUMetrics(gpu, &gpuMetricsSupport);
+				// Take last element
+				// 
+				// Tests with sample code showed that gpuMetricsList
+				// only has 1 element, when history interval length
+				// <= 1000ms. No need to calculate an average.  
+				adlx_uint pos = gpuMetricsList->Size() - 1;
 
-				if (ADLX_SUCCEEDED(resGetSupportedMetrics))
+				if (pos >= 0)
 				{
-					IADLXGPUMetricsPtr gpuMetrics;
-					ADLX_RESULT resGpuMetrics = gpuMetricsList->At(pos, &gpuMetrics);
+					IADLXGPUMetricsSupportPtr gpuMetricsSupport;
+					ADLX_RESULT resGetSupportedMetrics = _perfMonitoringService->GetSupportedGPUMetrics(gpu, &gpuMetricsSupport);
 
-					if (ADLX_SUCCEEDED(resGpuMetrics))
+					if (ADLX_SUCCEEDED(resGetSupportedMetrics))
 					{
-						GetTimeStamp(gpuMetrics);
-						SetGPUUsage(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
-						SetGPUClockSpeed(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
-						SetGPUVRAMClockSpeed(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
-						SetGPUTemperature(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
-						SetGPUHotspotTemperature(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
-						SetGPUPower(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
-						SetGPUFanSpeed(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
-						SetGPUVRAM(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
-						SetGPUVoltage(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
-						SetGPUTotalBoardPower(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+						IADLXGPUMetricsPtr gpuMetrics;
+						ADLX_RESULT resGpuMetrics = gpuMetricsList->At(pos, &gpuMetrics);
 
-						check = true;
+						if (ADLX_SUCCEEDED(resGpuMetrics))
+						{
+							GetTimeStamp(gpuMetrics);
+							SetGPUUsage(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+							SetGPUClockSpeed(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+							SetGPUVRAMClockSpeed(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+							SetGPUTemperature(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+							SetGPUHotspotTemperature(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+							SetGPUPower(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+							SetGPUFanSpeed(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+							SetGPUVRAM(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+							SetGPUVoltage(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+							SetGPUTotalBoardPower(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+
+							check = true;
+						}
 					}
 				}
 			}
-		}
-	};
+		};
+	}
+	catch (const std::exception& e)
+	{
+		return false; // Return false on any exception
+	}
+	catch (...)
+	{
+		return false; // Return false on any unknown exception
+	}
 
 	return check;
 }
@@ -334,33 +360,44 @@ bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
 	ADLX_RESULT ret;
 	bool check = false;
 
-	IADLXGPUPtr gpu;
-	res = _gpus->At(index, &gpu);
-
-	if (ADLX_SUCCEEDED(res))
+	try
 	{
-		const char* vendorId = nullptr;
-		ret = gpu->VendorId(&vendorId);
-		strcpy_s(adlxDeviceInfo->VendorId, vendorId);
+		IADLXGPUPtr gpu;
+		res = _gpus->At(index, &gpu);
 
-		ADLX_GPU_TYPE gpuType = GPUTYPE_UNDEFINED;
-		ret = gpu->Type(&gpuType);
-		adlxDeviceInfo->GpuType = gpuType == GPUTYPE_UNDEFINED ? 0
-			: gpuType == GPUTYPE_INTEGRATED ? 1 : 2;
+		if (ADLX_SUCCEEDED(res))
+		{
+			const char* vendorId = nullptr;
+			ret = gpu->VendorId(&vendorId);
+			strcpy_s(adlxDeviceInfo->VendorId, vendorId);
 
-		const char* gpuName = nullptr;
-		ret = gpu->Name(&gpuName);
-		strcpy_s(adlxDeviceInfo->GpuName, gpuName);
+			ADLX_GPU_TYPE gpuType = GPUTYPE_UNDEFINED;
+			ret = gpu->Type(&gpuType);
+			adlxDeviceInfo->GpuType = gpuType == GPUTYPE_UNDEFINED ? 0
+				: gpuType == GPUTYPE_INTEGRATED ? 1 : 2;
 
-		const char* driverPath = nullptr;
-		ret = gpu->DriverPath(&driverPath);
-		strcpy_s(adlxDeviceInfo->DriverPath, driverPath);
+			const char* gpuName = nullptr;
+			ret = gpu->Name(&gpuName);
+			strcpy_s(adlxDeviceInfo->GpuName, gpuName);
 
-		adlx_int id;
-		ret = gpu->UniqueId(&id);
-		adlxDeviceInfo->Id = id;
+			const char* driverPath = nullptr;
+			ret = gpu->DriverPath(&driverPath);
+			strcpy_s(adlxDeviceInfo->DriverPath, driverPath);
 
-		check = true;
+			adlx_int id;
+			ret = gpu->UniqueId(&id);
+			adlxDeviceInfo->Id = id;
+
+			check = true;
+		}
+	}
+	catch (const std::exception& e)
+	{
+		return false; // Return false on any exception
+	}
+	catch (...)
+	{
+		return false; // Return false on any unknown exception
 	}
 
 	return check;
