@@ -279,6 +279,7 @@ namespace CapFrameX.Statistics.NetStandard
                     break;
                 case EMetric.Average:
                 case EMetric.GpuActiveAverage:
+                case EMetric.CpuActiveAverage:
                     metricValue = sequence.Sum() / sequence.Count;
                     break;
                 case EMetric.Median:

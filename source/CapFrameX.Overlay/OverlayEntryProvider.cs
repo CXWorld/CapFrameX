@@ -26,7 +26,7 @@ using System.Windows.Forms;
 
 namespace CapFrameX.Overlay
 {
-	public class OverlayEntryProvider : IOverlayEntryProvider
+    public class OverlayEntryProvider : IOverlayEntryProvider
 	{
 		private static readonly string OVERLAY_CONFIG_FOLDER
 			= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -35,8 +35,9 @@ namespace CapFrameX.Overlay
 		private static readonly HashSet<string> ONLINE_METRIC_NAMES = new HashSet<string>()
 		{
 			"OnlineAverage", "OnlineP1", "OnlineP0dot2", "Online1PercentLow", "Online0dot2PercentLow",
-            "OnlineGpuActiveTimeAverage", "OnlineFrameTimeAverage", "OnlineGpuActiveTimePercentageDeviation",
-			"OnlineStutteringPercentage", "PmdGpuPowerCurrent", "PmdCpuPowerCurrent", "PmdSystemPowerCurrent"
+            "OnlineGpuActiveTimeAverage", "OnlineGpuActiveTimeAverage", "OnlineFrameTimeAverage", 
+			"OnlineGpuActiveTimePercentageDeviation", "OnlineStutteringPercentage", "PmdGpuPowerCurrent",
+			"PmdCpuPowerCurrent", "PmdSystemPowerCurrent"
 		};
 
 		private readonly ISensorService _sensorService;
@@ -629,6 +630,14 @@ namespace CapFrameX.Overlay
                 gpuActiveTimeAverage.Value = Math.Round(_onlineMetricService.GetOnlineGpuActiveTimeMetricValue(EMetric.GpuActiveAverage), 1);
 			}
 
+            // CPU Active Time Average
+            _identifierOverlayEntryDict.TryGetValue("OnlineCpuActiveTimeAverage", out IOverlayEntry cpuActiveTimeAverage);
+
+            if (cpuActiveTimeAverage != null && cpuActiveTimeAverage.ShowOnOverlay)
+            {
+                cpuActiveTimeAverage.Value = Math.Round(_onlineMetricService.GetOnlineCpuActiveTimeMetricValue(EMetric.CpuActiveAverage), 1);
+            }
+
             // Frame Time Average
             _identifierOverlayEntryDict.TryGetValue("OnlineFrameTimeAverage", out IOverlayEntry frameTimeAverage);
 
@@ -798,8 +807,17 @@ namespace CapFrameX.Overlay
                 gpuActiveTimeAverage.ValueAlignmentAndDigits = "{0,5:F1}";
 			}
 
-			// Frame Time Average
-			_identifierOverlayEntryDict.TryGetValue("OnlineFrameTimeAverage", out IOverlayEntry frameTimeAverage);
+            // CPU Active Time Average
+            _identifierOverlayEntryDict.TryGetValue("OnlineCpuActiveTimeAverage", out IOverlayEntry cpuActiveTimeAverage);
+
+            if (cpuActiveTimeAverage != null)
+            {
+                cpuActiveTimeAverage.ValueUnitFormat = "ms";
+                cpuActiveTimeAverage.ValueAlignmentAndDigits = "{0,5:F1}";
+            }
+
+            // Frame Time Average
+            _identifierOverlayEntryDict.TryGetValue("OnlineFrameTimeAverage", out IOverlayEntry frameTimeAverage);
 
 			if (frameTimeAverage != null)
 			{

@@ -9,6 +9,8 @@ namespace CapFrameX.PresentMonInterface
 
         double GetOnlineGpuActiveTimeMetricValue(EMetric metric);
 
+        double GetOnlineCpuActiveTimeMetricValue(EMetric metric);
+
         double GetOnlineFrameTimeMetricValue(EMetric metric);
 
         double GetOnlineGpuActiveTimeDeviationMetricValue();

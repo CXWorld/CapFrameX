@@ -296,6 +296,21 @@ namespace CapFrameX.Overlay
 						Color = string.Empty
 					},
 
+                    // CPU Active Time Average
+                    new OverlayEntryWrapper("OnlineCpuActiveTimeAverage")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "CPU Active Time Average (ms)",
+                        GroupName = "CPUBusy Avg",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
+                    },
+
                     // Frame Time Average
                     new OverlayEntryWrapper("OnlineFrameTimeAverage")
 					{

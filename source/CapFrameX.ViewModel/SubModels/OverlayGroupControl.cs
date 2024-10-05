@@ -97,6 +97,7 @@ namespace CapFrameX.ViewModel.SubModels
 					   || item.Identifier == "Online1PercentLow"
 					   || item.Identifier == "Online0dot2PercentLow"
 					   || item.Identifier == "OnlineGpuActiveTimeAverage"
+                       || item.Identifier == "OnlineCpuActiveTimeAverage"
                        || item.Identifier == "OnlineFrameTimeAverage"
                        || item.Identifier == "OnlineGpuActiveTimePercentageDeviation"
                        || item.Identifier == "OnlineStutteringPercentage"

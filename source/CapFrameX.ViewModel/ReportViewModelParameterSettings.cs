@@ -1,6 +1,4 @@
 ﻿using CapFrameX.Contracts.Configuration;
-using System;
-using System.Collections.Generic;
 
 namespace CapFrameX.ViewModel
 {

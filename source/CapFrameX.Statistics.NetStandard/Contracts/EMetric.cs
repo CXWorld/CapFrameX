@@ -71,8 +71,11 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
         [Description("GPU FPS per 10 Watts")]
         [ShortDescription("GPU FPS/10W")]
         GpuFpsPerWatt = 22,
+        [Description("CPU Active Average")]
+        [ShortDescription("CPU Avg")]
+        CpuActiveAverage = 23,
         [Description("None")]
 		[ShortDescription("None")]
-		None = 23,
+		None = 24,
 	}
 }
