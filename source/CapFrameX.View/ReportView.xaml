@@ -368,12 +368,12 @@
                             <ToggleButton Margin="5" Grid.Row="5" Grid.Column="7" IsChecked="{Binding ShowCpuFpsPerWatt}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                             <TextBlock Margin="5" Grid.Row="6" Grid.Column="6" Text="GPU FPS/10W" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="6" Grid.Column="7" IsChecked="{Binding ShowGpuFpsPerWatt}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                            <TextBlock Margin="5" Grid.Row="7" Grid.Column="6" Text="App latency (ms)" VerticalAlignment="Center"/>
-                            <ToggleButton Margin="5" Grid.Row="7" Grid.Column="7" IsChecked="{Binding ShowAppLatency}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                            <TextBlock Margin="5" Grid.Row="8" Grid.Column="6" Text="GPU-Busy Time Avg.(ms)" VerticalAlignment="Center"/>
-                            <ToggleButton Margin="5" Grid.Row="8" Grid.Column="7" IsChecked="{Binding ShowGpuActiveTimeAverage}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                            <TextBlock Margin="5" Grid.Row="9" Grid.Column="6" Text="GPU-Busy time dev.(%)" VerticalAlignment="Center"/>
-                            <ToggleButton Margin="5" Grid.Row="9" Grid.Column="7" IsChecked="{Binding ShowGpuActiveTimeDeviation}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <!--<TextBlock Margin="5" Grid.Row="7" Grid.Column="6" Text="App latency (ms)" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="7" Grid.Column="7" IsChecked="{Binding ShowAppLatency}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>-->
+                            <TextBlock Margin="5" Grid.Row="7" Grid.Column="6" Text="GPU-Busy Time Avg.(ms)" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="7" Grid.Column="7" IsChecked="{Binding ShowGpuActiveTimeAverage}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="8" Grid.Column="6" Text="GPU-Busy time dev.(%)" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="8" Grid.Column="7" IsChecked="{Binding ShowGpuActiveTimeDeviation}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                             <TextBlock Margin="5" Grid.Row="0" Grid.Column="9" Text="CPU max thread (%)" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="0" Grid.Column="10" IsChecked="{Binding ShowCpuMaxUsage}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                             <TextBlock Margin="5" Grid.Row="1" Grid.Column="9" Text="CPU power (W)" VerticalAlignment="Center"/>

@@ -318,7 +318,7 @@ namespace CapFrameX.ViewModel
 
         public bool ShowAppLatency
         {
-            get { return _settings.ReportShowAppLatency; }
+            get { /*return _settings.ReportShowAppLatency;*/ return false; }
             set
             {
                 _settings.ReportShowAppLatency = value;
