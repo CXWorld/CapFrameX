@@ -64,9 +64,9 @@ namespace CapFrameX.Hardware.Controller
 		public AffinityState CpuAffinityState => _currentAffinityState;
 
 		public ThreadAffinityController(IAppConfiguration appConfiguration,
-										IRTSSService rTSSService,
-										ILogger<ThreadAffinityController> logger, 
-										ISensorService sensorService)
+			IRTSSService rTSSService,
+			ILogger<ThreadAffinityController> logger, 
+			ISensorService sensorService)
 		{
 			_appConfiguration = appConfiguration;
 			_logger = logger;
@@ -105,7 +105,7 @@ namespace CapFrameX.Hardware.Controller
 							case Vendor.Intel:
 								// Intel (Hybrid)
 								{
-									if (IsHybridDesign())
+									if (CpuArchitecture.IsHybridDesign(_coreThreads[0][0]))
 									{
 										for (int i = 0; i < _threads.Length; i++)
 										{
@@ -259,16 +259,7 @@ namespace CapFrameX.Hardware.Controller
 			}
 
 			process.ProcessorAffinity = (IntPtr)affinity;
-		}
-
-		private bool IsHybridDesign()
-		{
-			// Alder Lake (Intel 7/10nm): 0x97, 0x9A
-			// Raptor Lake (Intel 7/10nm): 0xB7
-			// Raptor Lake (Alder Lake Refresh) (Intel 7/10nm): 0xBF
-			return _vendor == Vendor.Intel && _family == 0x06
-					&& (_model == 0x97 || _model == 0x9A || _model == 0xB7 || _model == 0xBF);
-		}
+		}		
 
 		private long GetBitMaskCpuIndex(int i)
 		{

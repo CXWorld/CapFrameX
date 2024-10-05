@@ -8,6 +8,7 @@
 	
 */
 
+using OpenHardwareMonitor.Hardware.Mainboard;
 using Serilog;
 using System.Collections.Generic;
 using System.Globalization;
@@ -42,34 +43,22 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
 		private const uint CPUID_CORE_MASK_STATUS = 0x1A;
 
-        private bool IsHybridDesign()
+        protected string CoreString(int i)
         {
-            // Alder Lake (Intel 7/10nm): 0x97, 0x9A
-            // Raptor Lake (Intel 7/10nm): 0xB7
-            // Zen 5 (3nm)?
-            // Meteor Lake (Intel 4/7nm: 0xAA
-            return vendor == Vendor.Intel && family == 0x06
-                && (model == 0x97 || model == 0x9A || model == 0xB7 || model == 0xAA);
+            if (coreCount == 1)
+            {
+                return $"CPU Core{GetCoreLabel(i)}";
+            }
+            return $"CPU Core #{i + 1}{GetCoreLabel(i)}";
         }
 
-        protected string CoreString(int i)
-		{
-			if (coreCount == 1)
-			{
-				return $"CPU Core{GetCoreLabel(i)}";
-			}
-
-			return $"CPU Core #{i + 1}{GetCoreLabel(i)}";
-		}
-
-		// https://github.com/InstLatx64/InstLatX64_Demo/commit/e149a972655aff9c41f3eac66ad51fcfac1262b5
-		protected string GetCoreLabel(int i)
-		{
-			string corelabel = string.Empty;
-
-			if (IsHybridDesign())
-			{
-				var previousAffinity = ThreadAffinity.Set(cpuid[i][0].Affinity);
+        // https://github.com/InstLatx64/InstLatX64_Demo/commit/e149a972655aff9c41f3eac66ad51fcfac1262b5
+        protected string GetCoreLabel(int i)
+        {
+            string corelabel = string.Empty;
+            if (CpuArchitecture.IsHybridDesign(cpuid[i][0]))
+            {
+                var previousAffinity = ThreadAffinity.Set(cpuid[i][0].Affinity);
 				if (Opcode.Cpuid(CPUID_CORE_MASK_STATUS, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
 				{
 					switch (eax >> 24)

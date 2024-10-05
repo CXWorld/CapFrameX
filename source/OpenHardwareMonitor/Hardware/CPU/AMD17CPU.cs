@@ -483,6 +483,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 this.cpu.ActivateSensor(voltageSensor);
             }
 
+            // Doesn't work for Zen 5?!
             private double? GetMultiplier()
             {
                 if (Ring0.Rdmsr(MSR_FAMILY_17H_P_STATE, out uint eax, out _))
