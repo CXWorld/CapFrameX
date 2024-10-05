@@ -1,10 +1,9 @@
 ﻿using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
-using System.Windows.Forms;
 
 namespace CapFrameX.Contracts.Configuration
 {
-	public interface IAppConfiguration : IFrametimeStatisticProviderOptions, IPmdServiceConfiguration
+    public interface IAppConfiguration : IFrametimeStatisticProviderOptions, IPmdServiceConfiguration
 	{
 		/// <summary>
 		/// Emits an events when a configuration entry has been changes

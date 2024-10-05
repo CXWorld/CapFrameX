@@ -282,7 +282,7 @@
       <Name>CapFrameX.Extensions</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Monitoring.Contracts\CapFrameX.Monitoring.Contracts.csproj">
-      <Project>{2F0D1227-BE4F-4501-B3A2-66A753ED742C}</Project>
+      <Project>{2f0d1227-be4f-4501-b3a2-66a753ed742c}</Project>
       <Name>CapFrameX.Monitoring.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
