@@ -31,7 +31,8 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
                                 {
                                     // Filter integrated graphics
                                     if (!deviceInfo.DeviceName.Contains("UHD Graphics")
-                                        && !deviceInfo.DeviceName.Contains("Xe Graphics"))
+                                        && !deviceInfo.DeviceName.Contains("Xe Graphics")
+                                        && !deviceInfo.DeviceName.Contains("Intel(R) Graphics"))
                                     {
                                         var igclTelemetryData = new IgclTelemetryData();
                                         if (IGCL.GetIgclTelemetryData((uint)index, ref igclTelemetryData))
