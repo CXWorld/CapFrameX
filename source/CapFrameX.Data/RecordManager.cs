@@ -757,6 +757,14 @@ namespace CapFrameX.Data
                 int indexPcLatency = -1;
                 int indexmsGPUActive = -1;
                 int indexCPUStartQPCTime = -1;
+                int indexCPUBusy = -1;
+                int indexCPUWait = -1;
+                int indexGPULatency = -1;
+                int indexGPUTime = -1;
+                int indexGPUWait = -1;
+                int indexDisplayLatency = -1;
+                int indexDisplayedTime = -1;
+                int indexAnimationError = -1;
 
                 string headerLine;
                 string firstLine = presentLines.First();
@@ -844,6 +852,38 @@ namespace CapFrameX.Data
                     if (string.Compare(metrics[i], "CPUStartQPCTime") == 0)
                     {
                         indexCPUStartQPCTime = i;
+                    }
+                    if (string.Compare(metrics[i], "CPUBusy") == 0)
+                    {
+                        indexCPUBusy = i;
+                    }
+                    if (string.Compare(metrics[i], "CPUWait") == 0)
+                    {
+                        indexCPUWait = i;
+                    }
+                    if (string.Compare(metrics[i], "GPULatency") == 0)
+                    {
+                        indexGPULatency = i;
+                    }
+                    if (string.Compare(metrics[i], "GPUTime") == 0)
+                    {
+                        indexGPUTime = i;
+                    }
+                    if (string.Compare(metrics[i], "GPUWait") == 0)
+                    {
+                        indexGPUWait = i;
+                    }
+                    if (string.Compare(metrics[i], "DisplayLatency") == 0)
+                    {
+                        indexDisplayLatency = i;
+                    }
+                    if (string.Compare(metrics[i], "DisplayedTime") == 0)
+                    {
+                        indexDisplayedTime = i;
+                    }
+                    if (string.Compare(metrics[i], "AnimationError") == 0)
+                    {
+                        indexAnimationError = i;
                     }
                 }
 
@@ -995,6 +1035,62 @@ namespace CapFrameX.Data
                         if (double.TryParse(GetStringFromArray(values, indexmsGPUActive), NumberStyles.Any, CultureInfo.InvariantCulture, out var gpuActive))
                         {
                             captureData.GpuActive[lineNo] = gpuActive;
+                        }
+                    }
+                    if (indexCPUBusy > -1)
+                    {
+                        if (double.TryParse(GetStringFromArray(values, indexCPUBusy), NumberStyles.Any, CultureInfo.InvariantCulture, out var gpuActive))
+                        {
+                            captureData.CPUBusy[lineNo] = gpuActive;
+                        }
+                    }
+                    if (indexCPUWait > -1)
+                    {
+                        if (double.TryParse(GetStringFromArray(values, indexCPUWait), NumberStyles.Any, CultureInfo.InvariantCulture, out var gpuActive))
+                        {
+                            captureData.CPUWait[lineNo] = gpuActive;
+                        }
+                    }
+                    if (indexGPULatency > -1)
+                    {
+                        if (double.TryParse(GetStringFromArray(values, indexGPULatency), NumberStyles.Any, CultureInfo.InvariantCulture, out var gpuActive))
+                        {
+                            captureData.GPULatency[lineNo] = gpuActive;
+                        }
+                    }
+                    if (indexGPUTime > -1)
+                    {
+                        if (double.TryParse(GetStringFromArray(values, indexGPUTime), NumberStyles.Any, CultureInfo.InvariantCulture, out var gpuActive))
+                        {
+                            captureData.GPUTime[lineNo] = gpuActive;
+                        }
+                    }
+                    if (indexGPUWait > -1)
+                    {
+                        if (double.TryParse(GetStringFromArray(values, indexGPUWait), NumberStyles.Any, CultureInfo.InvariantCulture, out var gpuActive))
+                        {
+                            captureData.GPUWait[lineNo] = gpuActive;
+                        }
+                    }
+                    if (indexDisplayLatency > -1)
+                    {
+                        if (double.TryParse(GetStringFromArray(values, indexDisplayLatency), NumberStyles.Any, CultureInfo.InvariantCulture, out var gpuActive))
+                        {
+                            captureData.DisplayLatency[lineNo] = gpuActive;
+                        }
+                    }
+                    if (indexDisplayedTime > -1)
+                    {
+                        if (double.TryParse(GetStringFromArray(values, indexDisplayedTime), NumberStyles.Any, CultureInfo.InvariantCulture, out var gpuActive))
+                        {
+                            captureData.DisplayedTime[lineNo] = gpuActive;
+                        }
+                    }
+                    if (indexAnimationError > -1)
+                    {
+                        if (double.TryParse(GetStringFromArray(values, indexAnimationError), NumberStyles.Any, CultureInfo.InvariantCulture, out var gpuActive))
+                        {
+                            captureData.AnimationError[lineNo] = gpuActive;
                         }
                     }
                 }
