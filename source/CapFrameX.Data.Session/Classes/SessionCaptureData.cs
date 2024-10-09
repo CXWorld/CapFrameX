@@ -17,10 +17,18 @@ namespace CapFrameX.Data.Session.Classes
 		public int[] AllowsTearing { get; set; }
 		public int[] SyncInterval { get; set; }
 		public bool[] Dropped { get; set; }
-        public double[] PcLatency { get; set; }
+		public double[] PcLatency { get; set; }
 		public double[] GpuActive { get; set; }
+		public double[] CPUBusy { get; set; }
+		public double[] CPUWait { get; set; }
+		public double[] GPULatency { get; set; }
+		public double[] GPUTime { get; set; }
+		public double[] GPUWait { get; set; }
+		public double[] DisplayLatency { get; set; }
+		public double[] DisplayedTime { get; set; }
+		public double[] AnimationError { get; set; }
 
-        public SessionCaptureData(int numberOfCapturePoints) {
+		public SessionCaptureData(int numberOfCapturePoints) {
 			TimeInSeconds = new double[numberOfCapturePoints];
 			MsBetweenPresents = new double[numberOfCapturePoints];
 			MsInPresentAPI = new double[numberOfCapturePoints];
@@ -32,9 +40,17 @@ namespace CapFrameX.Data.Session.Classes
 			AllowsTearing = new int[numberOfCapturePoints];
 			SyncInterval = new int[numberOfCapturePoints];
 			Dropped = new bool[numberOfCapturePoints];
-            PcLatency = new double[numberOfCapturePoints];
-            GpuActive = new double[numberOfCapturePoints];
-        }
+			PcLatency = new double[numberOfCapturePoints];
+			GpuActive = new double[numberOfCapturePoints];
+			CPUBusy = new double[numberOfCapturePoints];
+			CPUWait = new double[numberOfCapturePoints];
+			GPULatency = new double[numberOfCapturePoints];
+			GPUTime = new double[numberOfCapturePoints];
+			GPUWait = new double[numberOfCapturePoints];
+			DisplayLatency = new double[numberOfCapturePoints];
+			DisplayedTime = new double[numberOfCapturePoints];
+			AnimationError = new double[numberOfCapturePoints];
+		}
 
 		public IEnumerable<CaptureDataEntry> LineWise()
 		{
@@ -54,8 +70,16 @@ namespace CapFrameX.Data.Session.Classes
 					SyncInterval = SyncInterval[i],
 					Dropped = Dropped[i],
 					PcLatency = PcLatency != null ? PcLatency[i] : double.NaN,
-                    GpuActive = GpuActive[i]
-                };
+					GpuActive = GpuActive[i],
+					CPUBusy = CPUBusy[i],
+					CPUWait = CPUWait[i],
+					GPULatency = GPULatency[i],
+					GPUTime = GPUTime[i],
+					GPUWait = GPUWait[i],
+					DisplayLatency = DisplayLatency[i],
+					DisplayedTime = DisplayedTime[i],
+					AnimationError = AnimationError[i],
+				};
 			}
 		}
 	}
@@ -73,7 +97,15 @@ namespace CapFrameX.Data.Session.Classes
 		public int AllowsTearing { get; set; }
 		public int SyncInterval { get; set; }
 		public bool Dropped { get; set; }
-        public double PcLatency { get; set; }
-		public double GpuActive { get; set;}
-    }
+		public double PcLatency { get; set; }
+		public double GpuActive { get; set; }
+		public double CPUBusy { get; set; }
+		public double CPUWait { get; set; }
+		public double GPULatency { get; set; }
+		public double GPUTime { get; set; }
+		public double GPUWait { get; set; }
+		public double DisplayLatency { get; set; }
+		public double DisplayedTime { get; set; }
+		public double AnimationError { get; set; }
+	}
 }
