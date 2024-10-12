@@ -488,9 +488,12 @@ namespace OpenHardwareMonitor.Hardware.CPU
             {
                 if (Ring0.Rdmsr(MSR_FAMILY_17H_P_STATE, out uint eax, out _))
                 {
-                    uint cpuDfsId = (eax >> 8) & 0x3f;
-                    uint cpuFid = eax & 0xff;
-                    return 2.0 * cpuFid / cpuDfsId;
+                    //uint cpuDfsId = (eax >> 8) & 0x3f;
+                    //uint cpuFid = eax & 0xff;
+                    //return 2.0 * cpuFid / cpuDfsId;
+
+                    // Test Zen 5 
+                    return eax & 0xfff;
                 }
                 else
                 {
