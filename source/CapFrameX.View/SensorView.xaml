@@ -56,8 +56,8 @@
                     </Grid.RowDefinitions>
                     <DataGrid Grid.Row="0" x:Name="SensorItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" FontSize="12"
 					         SelectedIndex="{Binding SelectedSensorEntryIndex}" SelectedItem="{Binding SelectedSensorEntry}" ItemsSource="{Binding SensorEntries}"
-					         CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" IsEnabled="{Binding Path=UseSensorLogging}"
-					         materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+					         CanUserSortColumns="True" CanUserAddRows="False" CanUserDeleteRows="False" AutoGenerateColumns="False" IsEnabled="{Binding Path=UseSensorLogging}"
+					         materialDesign:DataGridAssist.CellPadding="15 5 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="15 5 0 10" IsSynchronizedWithCurrentItem="False"
 					         ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
                              Style="{StaticResource MaterialDesignDataGrid}"
                              Background="{DynamicResource MaterialDesignBackground}">
@@ -132,10 +132,10 @@
                         </DataGrid.Resources>
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding Name, Mode=TwoWay}"
-                                                Header="Sensor" IsReadOnly="True" MinWidth="175"/>
+                                                Header="Sensor" IsReadOnly="True" MinWidth="185"/>
                             <DataGridTextColumn Binding="{Binding SensorType, Mode=TwoWay}"
                                                 Header="Type" IsReadOnly="True" MinWidth="100"/>
-                            <DataGridCheckBoxColumn Binding="{Binding UseForLogging, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Header="Use for logging">
+                            <DataGridCheckBoxColumn Binding="{Binding UseForLogging, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Header="Use for logging" Width="100">
                                 <DataGridCheckBoxColumn.CellStyle>
                                     <Style TargetType="DataGridCell">
                                         <!--<Setter Property="IsEnabled" Value="{Binding Path=UseSensorLogging, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />-->
