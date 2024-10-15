@@ -265,6 +265,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                                 break;
                             case 0xB7: // Raptor Lake (Raptor Lake Refresh) (Intel 7/10nm)
                             case 0xBF: // Raptor Lake (Alder Lake Refresh) (Intel 7/10nm)
+                            case 0xBA: // Raptor Lake-H (Intel 7/10nm)
                                 microarchitecture = Microarchitecture.RaptorLake;
                                 tjMax = GetTjMaxFromMSR();
                                 break;
