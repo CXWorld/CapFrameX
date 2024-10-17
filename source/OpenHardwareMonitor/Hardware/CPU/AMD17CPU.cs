@@ -490,7 +490,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     if (cpu.model == 0x44)
                     {
                         // Test Zen 5, needs scaling
-                        return eax & 0xfff;
+                        return (eax & 0xfff) / 3.0565;
                     }
 
                     uint cpuDfsId = (eax >> 8) & 0x3f;
