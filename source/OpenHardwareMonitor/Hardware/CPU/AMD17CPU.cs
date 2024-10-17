@@ -229,6 +229,13 @@ namespace OpenHardwareMonitor.Hardware.CPU
             uint cpuFid = 0;
             if (Ring0.Rdmsr(MSR_P_STATE_0, out uint eax, out _))
             {
+                if (model == 0x44)
+                {
+                    // Zen 5 new approach without divisor
+                    // CoreCOF = Core::X86::Msr::PStateDef[CpuFid[11:0]]*5MHz
+                    return (eax & 0xfff) * 5.0 / 100.0;
+                }
+
                 cpuDfsId = (eax >> 8) & 0x3f;
                 cpuFid = eax & 0xff;
             }
@@ -456,6 +463,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
             public Sensor ClockSensor => clockSensor;
 
+            public AMD17CPU CPU => cpu;
+
             public Core(int index, CPUID[] threads, AMD17CPU cpu, ISettings settings)
             {
                 this.cpu = cpu;
@@ -489,8 +498,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 {
                     if (cpu.model == 0x44)
                     {
-                        // Test Zen 5, needs scaling
-                        return (eax & 0xfff) / 3.0565;
+                        // Zen 5 new approach without divisor
+                        // CoreCOF = Core::X86::Msr::PStateDef[CpuFid[11:0]]*5MHz
+                        return (eax & 0xfff) * 5.0 / 100.0;
                     }
 
                     uint cpuDfsId = (eax >> 8) & 0x3f;
