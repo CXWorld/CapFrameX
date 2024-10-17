@@ -494,6 +494,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
             private double? GetMultiplier()
             {
+                // MSR ID = 0xc0010293
                 if (Ring0.Rdmsr(MSR_FAMILY_17H_P_STATE, out uint eax, out _))
                 {
                     if (cpu.model == 0x44)
