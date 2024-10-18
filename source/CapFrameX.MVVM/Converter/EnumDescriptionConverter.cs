@@ -29,8 +29,10 @@ namespace CapFrameX.MVVM.Converter
 		{
 			try
 			{
-				Enum myEnum = (Enum)value;
-				string description = GetEnumDescription(myEnum);
+                if (!(value is Enum myEnum))
+                    return string.Empty;
+
+                string description = GetEnumDescription(myEnum);
 				return description;
 			}
 			catch { return string.Empty; }
