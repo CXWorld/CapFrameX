@@ -17,6 +17,8 @@ using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -173,6 +175,8 @@ namespace CapFrameX.ViewModel
 
         public ICommand AggregateSensorEntriesCommand { get; }
 
+        public ICommand OpenConfigFolderCommand { get; }
+
         public SensorGroupControl SensorSubModelGroupControl { get; }
 
         public SensorViewModel(IAppConfiguration appConfiguration,
@@ -206,6 +210,7 @@ namespace CapFrameX.ViewModel
             CopySensorInfoCommand = new DelegateCommand(OnCopySensorInfo);
             CopyRawSensorInfoCommand = new DelegateCommand(OnCopyRawSensorInfo);
             ResetToDefaultCommand = new DelegateCommand(OnResetToDefault);
+            OpenConfigFolderCommand = new DelegateCommand(OnOpenConfigFolder);
             AggregateSensorEntriesCommand = new DelegateCommand(() =>
             {
                 Task.Run(() =>
@@ -368,6 +373,15 @@ namespace CapFrameX.ViewModel
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);
+        }
+
+        private void OnOpenConfigFolder()
+        {
+            try
+            {
+                Process.Start(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CapFrameX", "Configuration"));
+            }
+            catch { }
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext) => true;

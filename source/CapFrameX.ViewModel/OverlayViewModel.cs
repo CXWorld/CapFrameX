@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -422,6 +423,8 @@ namespace CapFrameX.ViewModel
 
 		public ICommand ResyncPerfmonCommand { get; }
 
+		public ICommand OpenConfigFolderCommand { get; }
+
 		public bool IsRTSSInstalled
 			=> _rTSSService.IsRTSSInstalled();
 
@@ -539,7 +542,10 @@ namespace CapFrameX.ViewModel
 			ResyncPerfmonCommand = new DelegateCommand(
 				() => OnResyncPerfmon());
 
-			UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
+			OpenConfigFolderCommand = new DelegateCommand(OnOpenConfigFolder);
+
+
+            UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
 				"RivaTuner Statistics Server (RTSS)";
 
 			SetGlobalHookEventOverlayHotkey();
@@ -682,7 +688,16 @@ namespace CapFrameX.ViewModel
 			_rTSSService.SetOverlayPosition(_appConfiguration.OSDPositionX, _appConfiguration.OSDPositionY);
 		}
 
-		public void UpdateGroupNameEnable()
+        private void OnOpenConfigFolder()
+        {
+            try
+            {
+                Process.Start(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CapFrameX", "Configuration"));
+            }
+            catch { }
+        }
+
+        public void UpdateGroupNameEnable()
 		{
 			RaisePropertyChanged(nameof(SelectedOverlayItemGroupName));
 			DetermineMultipleGroupEntries(_selectedOverlayEntry);
@@ -708,7 +723,7 @@ namespace CapFrameX.ViewModel
 		}
 
 
-		public bool IsNavigationTarget(NavigationContext navigationContext)
+        public bool IsNavigationTarget(NavigationContext navigationContext)
 		{
 			return true;
 		}

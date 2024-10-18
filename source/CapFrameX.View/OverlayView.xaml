@@ -95,7 +95,12 @@
 						</StackPanel>
 						<StackPanel Grid.Row="0" Margin="0 0 0 10" Orientation="Horizontal" HorizontalAlignment="Right">
 
-							<Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                            <Button Width="28" Height="28" Margin="7 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                            ToolTip="Open configuration folder" Command="{Binding OpenConfigFolderCommand}"
+                            materialDesign:RippleAssist.Feedback="#DD000000">
+                                <materialDesign:PackIcon Kind="Folder" Height="22" Width="22" />
+                            </Button>
+                            <Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
 									ToolTip="Save selection to other configs" Click="CopyButton_Click" 
 									materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="ContentCopy" Height="22" Width="22"/>

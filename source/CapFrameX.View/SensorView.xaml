@@ -195,6 +195,11 @@
                                 materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="Restore" Height="22" Width="22" />
                                 </Button>
+                                <Button Width="28" Height="28" Margin="0 10 60 0" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                    ToolTip="Open configuration folder" Command="{Binding OpenConfigFolderCommand}"
+                                    materialDesign:RippleAssist.Feedback="#DD000000">
+                                    <materialDesign:PackIcon Kind="Folder" Height="22" Width="22" />
+                                </Button>
                                 <Button Width="28" Height="28" Margin="0 10 20 0" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
                                     ToolTip="Save selected sensors for logging" Command="{Binding SaveConfigCommand}" IsEnabled="{Binding SaveButtonIsEnable}"
                                     materialDesign:RippleAssist.Feedback="#DD000000">
