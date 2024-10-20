@@ -10,7 +10,6 @@
 
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Monitoring.Contracts;
-using OpenHardwareMonitor.Hardware.ATI;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

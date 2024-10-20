@@ -315,7 +315,13 @@ namespace OpenHardwareMonitor.Hardware.ATI
 				{
 					powerTotal.Value = (float)adlxTelemetryData.gpuPowerValue;
 					ActivateSensor(powerTotal);
-				}
+
+                    // Linear fitting function (model)
+                    // TBP = 5W + 1.15 * ASIC Power
+					var powerTotalValue = (float)adlxTelemetryData.gpuPowerValue;
+                    powerTotalBoardSimulated.Value = (float)Math.Round(5f + 1.15f * powerTotalValue, 0);
+                    ActivateSensor(powerTotalBoardSimulated);
+                }
 				else
 					powerTotal.Value = null;
 
@@ -342,7 +348,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
 				{
 					coreVoltage.Value = (float)(adlxTelemetryData.gpuVoltageValue * 1E-03);
 					ActivateSensor(coreVoltage);
-				}
+                }
 				else
 					coreVoltage.Value = null;
 
