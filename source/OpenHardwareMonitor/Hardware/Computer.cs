@@ -108,7 +108,7 @@ namespace OpenHardwareMonitor.Hardware
 
             if (gpuEnabled)
             {
-                Add(new ATI.ATIGroup(settings, sensorConfig, processService, this.appConfiguration.UseAdlFallback));
+                Add(new ATI.ATIGroup(settings, sensorConfig, processService));
                 Add(new Nvidia.NvidiaGroup(settings, sensorConfig, processService));
                 Add(new IntelGPU.IntelGroup(settings, sensorConfig, processService));
 
@@ -219,7 +219,7 @@ namespace OpenHardwareMonitor.Hardware
                 {
                     if (value)
                     {
-                        Add(new ATI.ATIGroup(settings, sensorConfig, processService, appConfiguration.UseAdlFallback));
+                        Add(new ATI.ATIGroup(settings, sensorConfig, processService));
                         Add(new Nvidia.NvidiaGroup(settings, sensorConfig, processService));
                         Add(new IntelGPU.IntelGroup(settings, sensorConfig, processService));
 

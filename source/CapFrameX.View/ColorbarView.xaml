@@ -268,27 +268,16 @@
                                             </materialDesign:PopupBox>
                                         </StackPanel>
 
-                                        <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="10 0 0 0">
-                                            <CheckBox IsChecked="{Binding UseTBPSim, Mode=TwoWay}" ToolTipService.ShowDuration="25000">
-                                                <CheckBox.ToolTip>
-                                                    <ToolTip MaxWidth="400">
-                                                        <TextBlock TextWrapping="Wrap" Text="If sensor data of a record contains &quot;TBP Sim&quot; values (RDNA + Intel Arc GPUs only), use these for analysis like FPS/W instead of &quot;GPU Total&quot;
-                                                                   &#10;For changes to take effect the analysis and comparison pages have to be reloaded and already inserted records on report page need to be added again"></TextBlock>
-                                                    </ToolTip>
-                                                    </CheckBox.ToolTip>
-                                            </CheckBox>
-                                            <TextBlock Text="Use &quot;TBP Sim&quot; values for analysis if available" VerticalAlignment="Center"></TextBlock>
-                                        </StackPanel>
-
-										<StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="10 0 0 0">
-											<CheckBox IsChecked="{Binding UseAdlFallback, Mode=TwoWay}" ToolTipService.ShowDuration="25000">
+										<StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="10 0 0 0">
+											<CheckBox IsChecked="{Binding UseTBPSim, Mode=TwoWay}" ToolTipService.ShowDuration="25000">
 												<CheckBox.ToolTip>
 													<ToolTip MaxWidth="400">
-														<TextBlock TextWrapping="Wrap" Text="Use legacy ADL library fallback if available. This overwrites ADLX as default library."></TextBlock>
+														<TextBlock TextWrapping="Wrap" Text="If sensor data of a record contains &quot;TBP Sim&quot; values (RDNA + Intel Arc GPUs only), use these for analysis like FPS/W instead of &quot;GPU Total&quot;
+                                                                   &#10;For changes to take effect the analysis and comparison pages have to be reloaded and already inserted records on report page need to be added again"></TextBlock>
 													</ToolTip>
 												</CheckBox.ToolTip>
 											</CheckBox>
-											<TextBlock Text="Use ADL fallback if available" VerticalAlignment="Center"></TextBlock>
+											<TextBlock Text="Use &quot;TBP Sim&quot; values for analysis if available" VerticalAlignment="Center"></TextBlock>
 										</StackPanel>
 
 										<StackPanel Grid.Row="3" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 5 0 5">

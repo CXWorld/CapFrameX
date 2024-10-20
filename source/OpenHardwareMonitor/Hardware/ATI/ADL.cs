@@ -389,7 +389,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
                     Log.Logger.Information("ADL DLL is not loaded.");
                 }
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 Log.Logger.Error(ex, $"DLL '{dllName}' not found or cannot be loaded.");
             }
@@ -424,6 +424,9 @@ namespace OpenHardwareMonitor.Hardware.ATI
         {
             try
             {
+                if (_ADL2_Main_Control_Create == null)
+                    CreateDelegates("atiadlxy");
+
                 var result = _ADL2_Main_Control_Create(Main_Memory_Alloc,
                   enumConnectedAdapters, out context);
                 if (result != ADL.ADL_OK)
