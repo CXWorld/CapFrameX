@@ -11,6 +11,8 @@
     <PackageReference Include="Mixaill.HwInfo.SetupApi" Version="0.4.2" />
     <PackageReference Include="Mixaill.HwInfo.Vulkan" Version="0.4.2" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="6.0.1" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
   </ItemGroup>
 
   <ItemGroup>

@@ -228,7 +228,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     coreMaskWith = NextLog2(maxCoreIdPerPackage);
                     break;
                 case Vendor.AMD:
-                    if (this.family == 0x17 || this.family == 0x19)
+                    if (this.family == 0x17 || this.family == 0x19 || this.family == 0x1A)
                     {
                         coreMaskWith = (cpuidExtData[8, 2] >> 12) & 0xF;
                         threadMaskWith =
@@ -259,35 +259,17 @@ namespace OpenHardwareMonitor.Hardware.CPU
               - (coreId << (int)(threadMaskWith));
         }
 
-        public string Name
-        {
-            get { return name; }
-        }
+        public string Name => name;
 
-        public string BrandString
-        {
-            get { return cpuBrandString; }
-        }
+        public string BrandString => cpuBrandString;
 
-        public int Group
-        {
-            get
-            {
-                return group;
-            }
-        }
+        public int Group => group;
 
-        public int Thread
-        {
-            get { return thread; }
-        }
+        public int Thread => thread;
 
         public GroupAffinity Affinity => affinity;
 
-        public Vendor Vendor
-        {
-            get { return vendor; }
-        }
+        public Vendor Vendor => vendor;
 
         public uint Family => family;
 
