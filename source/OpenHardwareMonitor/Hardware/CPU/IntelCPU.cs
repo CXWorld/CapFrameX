@@ -45,6 +45,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             RaptorLake,
             SapphireRapids,
             MeteorLake,
+            LunarLake,
             ArrowLake
         }
 
@@ -277,6 +278,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
                                 microarchitecture = Microarchitecture.MeteorLake;
                                 tjMax = GetTjMaxFromMSR();
                                 break;
+                            case 0xBD: // Lunar Lake (TSMC 3nm)
+                                microarchitecture = Microarchitecture.LunarLake;
+                                tjMax = GetTjMaxFromMSR();
+                                break;
                             case 0xC6: // Arrow Lake (TSMC 3nm)
                                 microarchitecture = Microarchitecture.ArrowLake;
                                 tjMax = GetTjMaxFromMSR();
@@ -349,6 +354,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 case Microarchitecture.RaptorLake:
                 case Microarchitecture.SapphireRapids:
                 case Microarchitecture.MeteorLake:
+                case Microarchitecture.LunarLake:
                 case Microarchitecture.ArrowLake:
                     {
                         if (Ring0.Rdmsr(MSR_PLATFORM_INFO, out uint eax, out _))
@@ -438,6 +444,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 microarchitecture == Microarchitecture.RaptorLake ||
                 microarchitecture == Microarchitecture.SapphireRapids ||
                 microarchitecture == Microarchitecture.MeteorLake ||
+                microarchitecture == Microarchitecture.LunarLake ||
                 microarchitecture == Microarchitecture.ArrowLake)
             {
                 powerSensors = new Sensor[energyStatusMSRs.Length];
@@ -617,6 +624,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                                 case Microarchitecture.RaptorLake:
                                 case Microarchitecture.SapphireRapids:
                                 case Microarchitecture.MeteorLake:
+                                case Microarchitecture.LunarLake:
                                 case Microarchitecture.ArrowLake:
                                     {
                                         uint multiplier = (eax >> 8) & 0xff;

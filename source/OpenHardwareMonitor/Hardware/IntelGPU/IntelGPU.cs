@@ -1,7 +1,6 @@
 ﻿using CapFrameX.Monitoring.Contracts;
 using System;
 using System.Globalization;
-using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.IntelGPU
 {
