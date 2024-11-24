@@ -179,7 +179,7 @@
       <Name>CapFrameX.PMD</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
-      <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>
+      <Project>{7d35c9c8-6e9a-4abb-9042-930be5e26dc6}</Project>
       <Name>CapFrameX.Statistics.NetStandard</Name>
     </ProjectReference>
   </ItemGroup>

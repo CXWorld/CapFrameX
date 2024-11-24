@@ -34,7 +34,7 @@ namespace CapFrameX.Overlay
 
 		private static readonly HashSet<string> ONLINE_METRIC_NAMES = new HashSet<string>()
 		{
-			"OnlineAverage", "OnlineP1", "OnlineP0dot2", "Online1PercentLow", "Online0dot2PercentLow",
+			"OnlineAverage", "OnlineP1","OnlineP0dot1", "OnlineP0dot2", "Online1PercentLow", "Online0dot1PercentLow", "Online0dot2PercentLow",
             "OnlineGpuActiveTimeAverage", "OnlineGpuActiveTimeAverage", "OnlineFrameTimeAverage", 
 			"OnlineGpuActiveTimePercentageDeviation", "OnlineStutteringPercentage", "PmdGpuPowerCurrent",
 			"PmdCpuPowerCurrent", "PmdSystemPowerCurrent"
@@ -598,8 +598,16 @@ namespace CapFrameX.Overlay
 				p1Entry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.P1));
 			}
 
-			// P0.2
-			_identifierOverlayEntryDict.TryGetValue("OnlineP0dot2", out IOverlayEntry p1dot2Entry);
+            // P0.1
+            _identifierOverlayEntryDict.TryGetValue("OnlineP0dot1", out IOverlayEntry p1dot1Entry);
+
+            if (p1dot1Entry != null && p1dot1Entry.ShowOnOverlay)
+            {
+                p1dot1Entry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.P0dot1));
+            }
+
+            // P0.2
+            _identifierOverlayEntryDict.TryGetValue("OnlineP0dot2", out IOverlayEntry p1dot2Entry);
 
 			if (p1dot2Entry != null && p1dot2Entry.ShowOnOverlay)
 			{
@@ -614,8 +622,16 @@ namespace CapFrameX.Overlay
 				onePercentLowEntry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.OnePercentLowAverage));
 			}
 
-			// 0.2% Low
-			_identifierOverlayEntryDict.TryGetValue("Online0dot2PercentLow", out IOverlayEntry zeroDotTwoPercentLowEntry);
+            // 0.1% Low
+            _identifierOverlayEntryDict.TryGetValue("Online0dot1PercentLow", out IOverlayEntry zeroDotOnePercentLowEntry);
+
+            if (zeroDotOnePercentLowEntry != null && zeroDotOnePercentLowEntry.ShowOnOverlay)
+            {
+                zeroDotOnePercentLowEntry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.ZerodotOnePercentLowAverage));
+            }
+
+            // 0.2% Low
+            _identifierOverlayEntryDict.TryGetValue("Online0dot2PercentLow", out IOverlayEntry zeroDotTwoPercentLowEntry);
 
 			if (zeroDotTwoPercentLowEntry != null && zeroDotTwoPercentLowEntry.ShowOnOverlay)
 			{
@@ -771,8 +787,17 @@ namespace CapFrameX.Overlay
 				p1Entry.ValueAlignmentAndDigits = "{0,5:F0}";
 			}
 
-			// P0.2
-			_identifierOverlayEntryDict.TryGetValue("OnlineP0dot2", out IOverlayEntry p1dot2Entry);
+            // P0.1
+            _identifierOverlayEntryDict.TryGetValue("OnlineP0dot1", out IOverlayEntry p1dot1Entry);
+
+            if (p1dot1Entry != null)
+            {
+                p1dot1Entry.ValueUnitFormat = "FPS";
+                p1dot1Entry.ValueAlignmentAndDigits = "{0,5:F0}";
+            }
+
+            // P0.2
+            _identifierOverlayEntryDict.TryGetValue("OnlineP0dot2", out IOverlayEntry p1dot2Entry);
 
 			if (p1dot2Entry != null)
 			{
@@ -789,8 +814,17 @@ namespace CapFrameX.Overlay
 				onePercentLowEntry.ValueAlignmentAndDigits = "{0,5:F0}";
 			}
 
-			// 0.2% Low
-			_identifierOverlayEntryDict.TryGetValue("Online0dot2PercentLow", out IOverlayEntry zeroDotTwoPercentLowEntry);
+            // 0.1% Low
+            _identifierOverlayEntryDict.TryGetValue("Online0dot1PercentLow", out IOverlayEntry zeroDotOnePercentLowEntry);
+
+            if (zeroDotOnePercentLowEntry != null)
+            {
+                zeroDotOnePercentLowEntry.ValueUnitFormat = "FPS";
+                zeroDotOnePercentLowEntry.ValueAlignmentAndDigits = "{0,5:F0}";
+            }
+
+            // 0.2% Low
+            _identifierOverlayEntryDict.TryGetValue("Online0dot2PercentLow", out IOverlayEntry zeroDotTwoPercentLowEntry);
 
 			if (zeroDotTwoPercentLowEntry != null)
 			{

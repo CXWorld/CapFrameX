@@ -236,6 +236,21 @@ namespace CapFrameX.Overlay
                         Color = string.Empty
                     },
 
+                    // P0.1
+                    new OverlayEntryWrapper("OnlineP0dot1")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Real-time P0.1 FPS",
+                        GroupName = "P0.1%",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
+                    },
+
                     // P0.2
                     new OverlayEntryWrapper("OnlineP0dot2")
                     {
@@ -265,6 +280,21 @@ namespace CapFrameX.Overlay
 						ShowGraphIsEnabled = false,
 						Color = string.Empty
 					},
+
+                     // 0.1% Low
+                    new OverlayEntryWrapper("Online0dot1PercentLow")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Real-time 0.1% Low FPS",
+                        GroupName = "0.1% Low",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
+                    },
 
                     // 0.2% Low
                     new OverlayEntryWrapper("Online0dot2PercentLow")

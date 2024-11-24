@@ -93,9 +93,11 @@ namespace CapFrameX.ViewModel.SubModels
             foreach (var entry in _overlayViewModel.OverlayEntries
                    .Where(item => item.Identifier == "OnlineAverage"
                        || item.Identifier == "OnlineP1"
+                       || item.Identifier == "OnlineP0dot1"
                        || item.Identifier == "OnlineP0dot2"
 					   || item.Identifier == "Online1PercentLow"
-					   || item.Identifier == "Online0dot2PercentLow"
+                       || item.Identifier == "Online0dot1PercentLow"
+                       || item.Identifier == "Online0dot2PercentLow"
 					   || item.Identifier == "OnlineGpuActiveTimeAverage"
                        || item.Identifier == "OnlineCpuActiveTimeAverage"
                        || item.Identifier == "OnlineFrameTimeAverage"
