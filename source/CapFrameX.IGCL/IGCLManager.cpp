@@ -10,6 +10,8 @@ double prevtimestamp = 0;
 double curtimestamp = 0;
 double prevgpuEnergyCounter = 0;
 double curgpuEnergyCounter = 0;
+double prevtotalCardEnergyCounter = 0;
+double curtotalCardEnergyCounter = 0;
 double curglobalActivityCounter = 0;
 double prevglobalActivityCounter = 0;
 double currenderComputeActivityCounter = 0;
@@ -195,6 +197,15 @@ bool GetIgclTelemetryData(const uint32_t index, IgclTelemetryData* telemetryData
 				curgpuEnergyCounter = pPowerTelemetry.gpuEnergyCounter.value.datadouble;
 
 				telemetryData->gpuEnergyValue = (curgpuEnergyCounter - prevgpuEnergyCounter) / deltatimestamp;
+			}
+
+			if (pPowerTelemetry.totalCardEnergyCounter.bSupported)
+			{
+				telemetryData->totalCardEnergySupported = true;
+				prevtotalCardEnergyCounter = curtotalCardEnergyCounter;
+				curtotalCardEnergyCounter = pPowerTelemetry.totalCardEnergyCounter.value.datadouble;
+
+				telemetryData->totalCardEnergyValue = (curtotalCardEnergyCounter - prevtotalCardEnergyCounter) / deltatimestamp;
 			}
 
 			telemetryData->gpuVoltageSupported = pPowerTelemetry.gpuVoltage.bSupported;

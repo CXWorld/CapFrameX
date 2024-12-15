@@ -10,6 +10,10 @@ typedef struct IgclTelemetryData
 	bool gpuEnergySupported = false;
 	double gpuEnergyValue;
 
+	// GPU TBP
+	bool totalCardEnergySupported = false;
+	double totalCardEnergyValue;
+
 	// GPU Voltage
 	bool gpuVoltageSupported = false;
 	double gpuVoltagValue;

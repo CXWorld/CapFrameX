@@ -17,7 +17,8 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
         private readonly Sensor temperatureMemory;
 
         private readonly Sensor powerTdp;
-		private readonly Sensor powerTotalBoardSimulated;
+        private readonly Sensor powerTbp;
+        private readonly Sensor powerTotalBoardSimulated;
 		private readonly Sensor powerVram;
 
         private readonly Sensor clockCore;
@@ -53,8 +54,9 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             this.temperatureMemory = new Sensor("GPU Memory", 1, SensorType.Temperature, this, settings);
 
             this.powerTdp = new Sensor("GPU TDP", 0, SensorType.Power, this, settings);
-            this.powerVram = new Sensor("GPU VRAM", 1, SensorType.Power, this, settings);
-			this.powerTotalBoardSimulated = new Sensor("GPU TBP Sim", 2, SensorType.Power, this, settings);
+            this.powerTbp = new Sensor("GPU TBP", 1, SensorType.Power, this, settings);
+            this.powerVram = new Sensor("GPU VRAM", 2, SensorType.Power, this, settings);
+            this.powerTotalBoardSimulated = new Sensor("GPU TBP Sim", 3, SensorType.Power, this, settings);
 
 			this.clockCore = new Sensor("GPU Core", 0, SensorType.Clock, this, settings);
             this.clockVram = new Sensor("GPU Memory", 1, SensorType.Clock, this, settings);
@@ -117,22 +119,36 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
                 temperatureMemory.Value = null;
             }
 
-            // GPU Core Temperature
+            // GPU Core Power
             if (igclTelemetryData.gpuEnergySupported)
             {
                 powerTdp.Value = (float)igclTelemetryData.gpuEnergyValue;
                 ActivateSensor(powerTdp);
 
-                // "Simulated" total board power based on quadratic approximation
-                if (powerTdp.Value.HasValue)
+                if (!igclTelemetryData.totalCardEnergySupported)
                 {
-                    powerTotalBoardSimulated.Value = (float)Math.Round(QuadraticApprox(powerTdp.Value.Value), 1);
-                    ActivateSensor(powerTotalBoardSimulated);
+                    // "Simulated" total board power based on quadratic approximation
+                    if (powerTdp.Value.HasValue)
+                    {
+                        powerTotalBoardSimulated.Value = (float)Math.Round(QuadraticApprox(powerTdp.Value.Value), 1);
+                        ActivateSensor(powerTotalBoardSimulated);
+                    }
                 }
 			}
             else
             {
                 powerTdp.Value = null;
+            }
+
+            // GPU Total Board Power
+            if(igclTelemetryData.totalCardEnergySupported)
+            {
+                powerTbp.Value = (float)igclTelemetryData.totalCardEnergyValue;
+                ActivateSensor(powerTbp);
+            }
+            else
+            {
+                powerTbp.Value = null;
             }
 
             // VRAM Temperature

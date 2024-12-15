@@ -23,6 +23,10 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
         public bool gpuEnergySupported;
         public double gpuEnergyValue;
 
+        // GPU TBP
+        public bool totalCardEnergySupported;
+        public double totalCardEnergyValue;
+
         // GPU Voltage
         public bool gpuVoltageSupported;
         public double gpuVoltagValue;
