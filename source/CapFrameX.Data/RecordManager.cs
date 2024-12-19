@@ -59,14 +59,14 @@ namespace CapFrameX.Data
         static extern bool GetWindowRect(IntPtr hWnd, ref WindowRect Rect);
 
         public RecordManager(ILogger<RecordManager> logger,
-                             IAppConfiguration appConfiguration,
-                             IRecordDirectoryObserver recordObserver,
-                             IAppVersionProvider appVersionProvider,
-                             ISensorService sensorService,
-                             ISystemInfo systemInfo,
-                             ProcessList processList,
-                             IRTSSService rTSSService,
-                             IEventAggregator eventAggregator)
+            IAppConfiguration appConfiguration,
+            IRecordDirectoryObserver recordObserver,
+            IAppVersionProvider appVersionProvider,
+            ISensorService sensorService,
+            ISystemInfo systemInfo,
+            ProcessList processList,
+            IRTSSService rTSSService,
+            IEventAggregator eventAggregator)
         {
             _logger = logger;
             _appConfiguration = appConfiguration;
@@ -360,30 +360,6 @@ namespace CapFrameX.Data
             return string.Empty;
         }
 
-        // PresentMon < v1.7.0
-        //private static readonly string COLUMN_HEADER =
-        //    $"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags," +
-        //    $"AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,MsBetweenPresents," +
-        //    $"MsBetweenDisplayChange,MsInPresentAPI,MsUntilRenderComplete,MsUntilDisplayed,QPCTime";
-
-        // PresentMon >= v1.7.1
-        //private static readonly string COLUMN_HEADER =
-        //    $"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags," +
-        //    $"Dropped,TimeInSeconds,msInPresentAPI,msBetweenPresents,AllowsTearing,PresentMode," +
-        //    $"msUntilRenderComplete,msUntilDisplayed,msBetweenDisplayChange,WasBatched,DwmNotified,QPCTime";
-
-        // PresentMon >= v1.9
-        //private static readonly string COLUMN_HEADER =
-        //    $"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags,Dropped," +
-        //    $"TimeInSeconds,msInPresentAPI,msBetweenPresents,AllowsTearing,PresentMode,msUntilRenderComplete," +
-        //    $"msUntilDisplayed,msBetweenDisplayChange,WasBatched,DwmNotified,msUntilRenderStart,msGPUActive,QPCTime";
-
-        // PresentMon >= v2.2
-        private static readonly string COLUMN_HEADER =
-            $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing," +
-            $"PresentMode,CPUStartQPCTime,FrameTime,CPUBusy,CPUWait,GPULatency,GPUTime,GPUBusy,GPUWait,DisplayLatency," +
-            $"DisplayedTime,AnimationError";
-
         public async Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo)
         {
             return await Observable.Timer(_fileAccessIntervalTimespan)
@@ -439,7 +415,7 @@ namespace CapFrameX.Data
             try
             {
                 var filePath = await GetOutputFilename(process, recordDirectory);
-                lines = new string[] { IGNOREFLAGMARKER, COLUMN_HEADER }.Concat(lines);
+                lines = new string[] { IGNOREFLAGMARKER, PresentMonCaptureService.COLUMN_HEADER }.Concat(lines);
                 File.WriteAllLines(filePath + ".csv", lines);
             }
             catch (Exception ex)
@@ -768,7 +744,7 @@ namespace CapFrameX.Data
                 }
                 else
                 {
-                    headerLine = COLUMN_HEADER;
+                    headerLine = PresentMonCaptureService.COLUMN_HEADER;
                 }
 
                 var sessionRun = new SessionRun()

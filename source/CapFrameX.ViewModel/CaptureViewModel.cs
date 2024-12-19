@@ -658,7 +658,9 @@ namespace CapFrameX.ViewModel
                     {
                         await _captureManager.StartCapture(new CaptureOptions()
                         {
-                            CaptureTime = double.TryParse(_captureTimeString, out _) ? Convert.ToDouble(_captureTimeString, CultureInfo.InvariantCulture) : _appConfiguration.CaptureTime,
+                            CaptureTime = double.TryParse(_captureTimeString, out _) 
+                                ? Convert.ToDouble(_captureTimeString, CultureInfo.InvariantCulture) 
+                                : _appConfiguration.CaptureTime,
                             CaptureDelay = _appConfiguration.CaptureDelay,
                             CaptureFileMode = AppConfiguration.CaptureFileMode,
                             ProcessInfo = processInfo,

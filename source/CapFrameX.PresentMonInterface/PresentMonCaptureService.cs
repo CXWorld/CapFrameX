@@ -17,12 +17,42 @@ namespace CapFrameX.PresentMonInterface
     {
         public const int ApplicationName_INDEX = 0;
         public const int ProcessID_INDEX = 1;
-        public const int TimeInSeconds_INDEX = 8;
-        public const int MsBetweenPresents_INDEX = 9;
+        public const int TimeInSeconds_INDEX = 9;
+        public const int MsBetweenPresents_INDEX = 10;
         // PresentMon version >=2.2
-        public const int CpuBusy_INDEX = 10;
-        public const int GpuBusy_INDEX = 14;
-        public const int VALID_LINE_LENGTH = 19;
+        public const int CpuBusy_INDEX = 11;
+        public const int GpuBusy_INDEX = 15;
+        public const int VALID_LINE_LENGTH = 21;
+
+        // PresentMon < v1.7.0
+        //public static readonly string COLUMN_HEADER =
+        //    $"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags," +
+        //    $"AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,MsBetweenPresents," +
+        //    $"MsBetweenDisplayChange,MsInPresentAPI,MsUntilRenderComplete,MsUntilDisplayed,QPCTime";
+
+        // PresentMon >= v1.7.1
+        //public static readonly string COLUMN_HEADER =
+        //    $"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags," +
+        //    $"Dropped,TimeInSeconds,msInPresentAPI,msBetweenPresents,AllowsTearing,PresentMode," +
+        //    $"msUntilRenderComplete,msUntilDisplayed,msBetweenDisplayChange,WasBatched,DwmNotified,QPCTime";
+
+        // PresentMon >= v1.9
+        //public static readonly string COLUMN_HEADER =
+        //    $"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags,Dropped," +
+        //    $"TimeInSeconds,msInPresentAPI,msBetweenPresents,AllowsTearing,PresentMode,msUntilRenderComplete," +
+        //    $"msUntilDisplayed,msBetweenDisplayChange,WasBatched,DwmNotified,msUntilRenderStart,msGPUActive,QPCTime";
+
+        // PresentMon >= v2.2
+        //public static readonly string COLUMN_HEADER =
+        //    $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing," +
+        //    $"PresentMode,CPUStartQPCTime,FrameTime,CPUBusy,CPUWait,GPULatency,GPUTime,GPUBusy,GPUWait,DisplayLatency," +
+        //    $"DisplayedTime,AnimationError";
+
+        // PresentMon >= v2.3
+        public static readonly string COLUMN_HEADER =
+            $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
+            $"FrameType,CPUStartQPCTime,FrameTime,CPUBusy,CPUWait,GPULatency,GPUTime,GPUBusy,GPUWait,DisplayLatency,DisplayedTime," +
+            $"AnimationError,AnimationTime";       
 
         private readonly ISubject<string[]> _outputDataStream;
         private readonly object _listLock = new object();
@@ -81,6 +111,11 @@ namespace CapFrameX.PresentMonInterface
                         var lineSplit = e.Data.Split(',');
                         if (lineSplit.Length == VALID_LINE_LENGTH)
                         {
+                            if (lineSplit[8] != "Application")
+                            {
+                                var test = 1;
+                            }
+
                             if (lineSplit[ApplicationName_INDEX] != "<error>")
                             {
                                 _outputDataStream.OnNext(lineSplit);

@@ -9,6 +9,8 @@ namespace CapFrameX.PresentMonInterface
     /// </summary>
     public class PresentMonServiceConfiguration
     {
+        private const string PARAMETER_SEPARATOR = " ";
+
         public string ProcessName { get; set; }
 
         public bool RedirectOutputStream { get; set; }
@@ -23,22 +25,24 @@ namespace CapFrameX.PresentMonInterface
             if (RedirectOutputStream)
             {
                 arguments += "--restart_as_admin";
-                arguments += " ";
+                arguments += PARAMETER_SEPARATOR;
                 arguments += "--stop_existing_session";
-                arguments += " ";
+                arguments += PARAMETER_SEPARATOR;
                 arguments += "--output_stdout";
-                arguments += " ";
+                arguments += PARAMETER_SEPARATOR;
                 arguments += "--no_track_input";
-                arguments += " ";
+                arguments += PARAMETER_SEPARATOR;
                 arguments += "--qpc_time_ms";
+                arguments += PARAMETER_SEPARATOR;
+                arguments += "--track_frame_type";
 
                 if (ExcludeProcesses != null && ExcludeProcesses.Any())
                 {
                     foreach (var process in ExcludeProcesses.Where(proc => !proc.Contains(" ")))
                     {
-                        arguments += " ";
+                        arguments += PARAMETER_SEPARATOR;
                         arguments += "--exclude";
-                        arguments += " ";
+                        arguments += PARAMETER_SEPARATOR;
                         arguments += process + ".exe";
                     }
                 }
@@ -51,20 +55,22 @@ namespace CapFrameX.PresentMonInterface
                 }
 
                 arguments += "--restart_as_admin";
-                arguments += " ";
+                arguments += PARAMETER_SEPARATOR;
                 arguments += "--stop_existing_session";
-                arguments += " ";
+                arguments += PARAMETER_SEPARATOR;
                 arguments += "--process_name";
-                arguments += " ";
+                arguments += PARAMETER_SEPARATOR;
                 arguments += ProcessName;
-                arguments += " ";
+                arguments += PARAMETER_SEPARATOR;
                 arguments += "--output_file";
-                arguments += " ";
+                arguments += PARAMETER_SEPARATOR;
                 arguments += OutputFilename;
-                arguments += " ";
+                arguments += PARAMETER_SEPARATOR;
                 arguments += "--no_track_input";
-                arguments += " ";
+                arguments += PARAMETER_SEPARATOR;
                 arguments += "--qpc_time_ms";
+                arguments += PARAMETER_SEPARATOR;
+                arguments += "--track_frame_type";
             }
 
             return arguments;
