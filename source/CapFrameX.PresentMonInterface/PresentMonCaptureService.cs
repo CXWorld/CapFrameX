@@ -111,11 +111,6 @@ namespace CapFrameX.PresentMonInterface
                         var lineSplit = e.Data.Split(',');
                         if (lineSplit.Length == VALID_LINE_LENGTH)
                         {
-                            if (lineSplit[8] != "Application")
-                            {
-                                var test = 1;
-                            }
-
                             if (lineSplit[ApplicationName_INDEX] != "<error>")
                             {
                                 _outputDataStream.OnNext(lineSplit);
