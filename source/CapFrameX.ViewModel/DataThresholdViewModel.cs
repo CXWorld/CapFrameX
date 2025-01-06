@@ -154,18 +154,18 @@ namespace CapFrameX.ViewModel
                 }).ToArray();
         }
 
-        private void SetFpsThresholdChart(IList<double> frametimes)
+        private void SetFpsThresholdChart(IList<double> samples)
         {
-            if (frametimes == null || !frametimes.Any())
+            if (samples == null || !samples.Any())
                 return;
 
-            var thresholdCounts = _frametimeStatisticProvider.GetFpsThresholdCounts(frametimes, ThresholdToggleButtonIsChecked);
+            var thresholdCounts = _frametimeStatisticProvider.GetFpsThresholdCounts(samples, ThresholdToggleButtonIsChecked);
             var thresholdCountValues = new ChartValues<double>();
-            thresholdCountValues.AddRange(thresholdCounts.Select(val => (double)val / frametimes.Count));
+            thresholdCountValues.AddRange(thresholdCounts.Select(val => (double)val / samples.Count));
 
-            var thresholdTimes = _frametimeStatisticProvider.GetFpsThresholdTimes(frametimes, ThresholdToggleButtonIsChecked);
+            var thresholdTimes = _frametimeStatisticProvider.GetFpsThresholdTimes(samples, ThresholdToggleButtonIsChecked);
             var thresholdTimesValues = new ChartValues<double>();
-            thresholdTimesValues.AddRange(thresholdTimes.Select(val => val / frametimes.Sum()));
+            thresholdTimesValues.AddRange(thresholdTimes.Select(val => val / samples.Sum()));
 
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
@@ -179,7 +179,7 @@ namespace CapFrameX.ViewModel
                             Values = thresholdCountValues,
                             Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
                             DataLabels = true,
-                            LabelPoint = p => ThresholdShowAbsoluteValues ? (frametimes.Count* p.Y).ToString() :
+                            LabelPoint = p => ThresholdShowAbsoluteValues ? (samples.Count* p.Y).ToString() :
                                 (100 * p.Y).ToString("N1", CultureInfo.InvariantCulture) + "%",
                             MaxColumnWidth = 40
                         }
@@ -195,7 +195,7 @@ namespace CapFrameX.ViewModel
                             Values = thresholdTimesValues,
                             Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
                             DataLabels = true,
-                            LabelPoint = p => ThresholdShowAbsoluteValues ? ((frametimes.Sum()* p.Y) * 1E-03).ToString("N1", CultureInfo.InvariantCulture) + "s" :
+                            LabelPoint = p => ThresholdShowAbsoluteValues ? ((samples.Sum()* p.Y) * 1E-03).ToString("N1", CultureInfo.InvariantCulture) + "s" :
                                 (100 * p.Y).ToString("N1", CultureInfo.InvariantCulture) + "%",
                             MaxColumnWidth = 40
                         }
@@ -215,7 +215,7 @@ namespace CapFrameX.ViewModel
                             Values = thresholdCountValues,
                             Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
                             DataLabels = true,
-                            LabelPoint = p => ThresholdShowAbsoluteValues ? (frametimes.Count* p.Y).ToString() :
+                            LabelPoint = p => ThresholdShowAbsoluteValues ? (samples.Count* p.Y).ToString() :
                                 (100 * p.Y).ToString("N1", CultureInfo.InvariantCulture) + "%",
                             MaxColumnWidth = 40
                         }
@@ -231,7 +231,7 @@ namespace CapFrameX.ViewModel
                             Values = thresholdTimesValues,
                             Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
                             DataLabels = true,
-                            LabelPoint = p => ThresholdShowAbsoluteValues ? ((frametimes.Sum()* p.Y) * 1E-03).ToString("N1", CultureInfo.InvariantCulture) + "s" :
+                            LabelPoint = p => ThresholdShowAbsoluteValues ? ((samples.Sum()* p.Y) * 1E-03).ToString("N1", CultureInfo.InvariantCulture) + "s" :
                                 (100 * p.Y).ToString("N1", CultureInfo.InvariantCulture) + "%",
                             MaxColumnWidth = 40
                         }

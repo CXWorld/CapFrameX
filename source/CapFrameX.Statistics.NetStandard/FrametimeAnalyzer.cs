@@ -10,10 +10,10 @@ namespace CapFrameX.Statistics.NetStandard
 		private static readonly double[] _lShapeFPSQuantiles
 			= new[] { 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 };
 
-		public double[] GetLShapeQuantiles(ELShapeMetrics LShapeMetric)
+		public double[] GetLShapeQuantiles(ELShapeMetrics lShapeMetric)
 		{
 
-			return LShapeMetric == ELShapeMetrics.Frametimes ? _lShapeFrametimeQuantiles : _lShapeFPSQuantiles;
+			return lShapeMetric == ELShapeMetrics.Frametimes ? _lShapeFrametimeQuantiles : _lShapeFPSQuantiles;
 		}
 	}
 }

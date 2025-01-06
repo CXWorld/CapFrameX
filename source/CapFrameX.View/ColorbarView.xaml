@@ -280,6 +280,18 @@
 											<TextBlock Text="Use &quot;TBP Sim&quot; values for analysis if available" VerticalAlignment="Center"></TextBlock>
 										</StackPanel>
 
+										<StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="10 0 0 0">
+											<CheckBox IsChecked="{Binding UseDisplayChangeMetrics, Mode=TwoWay}" ToolTipService.ShowDuration="25000">
+												<CheckBox.ToolTip>
+													<ToolTip MaxWidth="400">
+														<TextBlock TextWrapping="Wrap" Text="Use &quot;MsBetweenDisplayChange&quot; to calculate performance metrics. This option provides more consistent metrics when using Frame Generation.
+																   &#10;MsBetweenDisplayChange is closer to the user experience."></TextBlock>
+													</ToolTip>
+												</CheckBox.ToolTip>
+											</CheckBox>
+											<TextBlock Text="Use &quot;MsBetweenDisplayChange&quot; metrics" VerticalAlignment="Center"></TextBlock>
+										</StackPanel>
+
 										<StackPanel Grid.Row="3" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 5 0 5">
                                             <TextBox Width="350" IsReadOnly="True" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
                                             <Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.SelectScreenshotFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select screenshot folder">

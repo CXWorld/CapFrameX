@@ -146,6 +146,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool UseDisplayChangeMetrics
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
         public bool UseAdlFallback
 		{
 			get => Get<bool>(false);

@@ -21,6 +21,8 @@ namespace CapFrameX.Data
 
 		IList<double> GetFrametimeTimeWindow();
 
+		IList<double> GetDisplayChangeTimeWindow();
+
 		IList<double> GetGpuActiveTimeTimeWindow();
 
 		IList<Point> GetFrametimePointTimeWindow();

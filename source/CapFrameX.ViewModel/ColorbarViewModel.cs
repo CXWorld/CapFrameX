@@ -440,7 +440,17 @@ namespace CapFrameX.ViewModel
             }
         }
 
-		public string PingURL
+        public bool UseDisplayChangeMetrics
+        {
+            get { return _appConfiguration.UseDisplayChangeMetrics; }
+            set
+            {
+                _appConfiguration.UseDisplayChangeMetrics = value;
+                RaisePropertyChanged();
+            }
+        }        
+
+        public string PingURL
         {
             get { return _appConfiguration.PingURL; }
             set
@@ -460,11 +470,11 @@ namespace CapFrameX.ViewModel
         public bool IsCompatibleWithRunningOS => CaptureServiceInfo.IsCompatibleWithRunningOS;
 
         public Array HardwareInfoSourceItems => Enum.GetValues(typeof(EHardwareInfoSource))
-                                           .Cast<EHardwareInfoSource>()
-                                           .ToArray();
+            .Cast<EHardwareInfoSource>()
+            .ToArray();
         public Array CaptureFileModeItems => Enum.GetValues(typeof(ECaptureFileMode))
-                                   .Cast<ECaptureFileMode>()
-                                   .ToArray();
+            .Cast<ECaptureFileMode>()
+            .ToArray();
 
         public Array AverageTimeWindows => new int[] { 250, 500, 1000 };
 
@@ -485,12 +495,12 @@ namespace CapFrameX.ViewModel
         public bool IsLoggedIn { get; private set; }
 
         public ColorbarViewModel(IRegionManager regionManager,
-                                 IEventAggregator eventAggregator,
-                                 IAppConfiguration appConfiguration,
-                                 ILogger<ColorbarViewModel> logger,
-                                 IShell shell,
-                                 ISystemInfo systemInfo,
-                                 LoginManager loginManager)
+            IEventAggregator eventAggregator,
+            IAppConfiguration appConfiguration,
+            ILogger<ColorbarViewModel> logger,
+            IShell shell,
+            ISystemInfo systemInfo,
+            LoginManager loginManager)
         {
             _regionManager = regionManager;
             _eventAggregator = eventAggregator;

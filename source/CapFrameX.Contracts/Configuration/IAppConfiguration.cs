@@ -250,7 +250,9 @@ namespace CapFrameX.Contracts.Configuration
 		/// </summary>
 		bool UseTBPSim { get; set; }
 
-		bool UseAdlFallback { get; set; }
+		bool UseDisplayChangeMetrics { get; set; }
+
+        bool UseAdlFallback { get; set; }
 
 		string FirstMetricBarColor { get; set; }
 
