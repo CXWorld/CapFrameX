@@ -148,7 +148,7 @@ namespace CapFrameX.Configuration
 
         public bool UseDisplayChangeMetrics
         {
-            get => Get<bool>(true);
+            get => Get<bool>(false);
             set => Set(value);
         }
 
