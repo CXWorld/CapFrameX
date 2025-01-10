@@ -243,7 +243,7 @@
 									Tag="{Binding DataContext, ElementName=DataViewUserControl}" DataTooltip="{x:Null}" Foreground="{DynamicResource MaterialDesignBody}">
                             <lvc:CartesianChart.ContextMenu>
                                 <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                    <MenuItem Header="Copy statistical parameter" Command="{Binding CopyStatisticalParameterCommand}"/>
+                                    <MenuItem Header="Copy metrics" Command="{Binding CopyStatisticalParameterCommand}"/>
                                 </ContextMenu>
                             </lvc:CartesianChart.ContextMenu>
                             <lvc:CartesianChart.AxisX>

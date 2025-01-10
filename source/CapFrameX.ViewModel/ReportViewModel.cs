@@ -1,30 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Input;
-using CapFrameX.Contracts.Configuration;
+﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
-using CapFrameX.Data;
+using CapFrameX.Sensor.Reporting;
+using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Statistics.NetStandard.Contracts;
 using GongSolutions.Wpf.DragDrop;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using CapFrameX.Statistics.NetStandard.Contracts;
-using CapFrameX.Sensor.Reporting;
-using Microsoft.Extensions.Logging;
-using System.Diagnostics;
-using System.Windows.Controls;
 using System.ComponentModel;
-using CapFrameX.Statistics.NetStandard;
-using Microsoft.VisualBasic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
 {
@@ -67,7 +65,6 @@ namespace CapFrameX.ViewModel
             }
         }
 
-
         public bool ReportUsePMDValues
         {
             get { return _appConfiguration.ReportUsePMDValues; }
@@ -88,14 +85,11 @@ namespace CapFrameX.ViewModel
         public ICommand RemoveAllReportEntriesCommand { get; }
 
         public ReportViewModel(IStatisticProvider frametimeStatisticProvider,
-                              IEventAggregator eventAggregator,
-                              IAppConfiguration appConfiguration,
-                              RecordManager recordManager,
-                              ILogger<ReportViewModel> logger)
+            IEventAggregator eventAggregator,
+            IAppConfiguration appConfiguration,
+            RecordManager recordManager,
+            ILogger<ReportViewModel> logger)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
             _frametimeStatisticProvider = frametimeStatisticProvider;
             _eventAggregator = eventAggregator;
             _appConfiguration = appConfiguration;
@@ -112,12 +106,7 @@ namespace CapFrameX.ViewModel
 
             InitializeReportParameters();
             SubscribeToSelectRecord();
-
-            stopwatch.Stop();
-            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time",
-                Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
         }
-
 
         public void RemoveReportEntry(ReportInfo selectedItem)
         {
@@ -137,7 +126,7 @@ namespace CapFrameX.ViewModel
             if (!ReportInfoCollection.Any())
                 return;
 
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
 
             // Header
             var displayNameGame = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.Game);
@@ -299,28 +288,32 @@ namespace CapFrameX.ViewModel
                 gpuPmdAverage = Math.Round(gpuPmdPowers.SelectMany(x => x.PmdGpuPower).Average(), 1);
 
             double GeMetricValue(IList<double> sequence, EMetric metric) =>
-                    _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
+                _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
             var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
+            var displayTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToList();
+            var samples = _appConfiguration.UseDisplayChangeMetrics ? displayTimes : frameTimes;
+
             var GpuActiveTimes = session.Runs.SelectMany(r => r.CaptureData.GpuActive).ToList();
             var recordTime = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
             var inputLagTimes = session.CalculateInputLagTimes(EInputLagType.Expected).Where(t => !double.IsNaN(t));
 
-            var max = GeMetricValue(frameTimes, EMetric.Max);
-            var p99_quantile = GeMetricValue(frameTimes, EMetric.P99);
-            var p95_quantile = GeMetricValue(frameTimes, EMetric.P95);
+            var max = GeMetricValue(samples, EMetric.Max);
+            var p99_quantile = GeMetricValue(samples, EMetric.P99);
+            var p95_quantile = GeMetricValue(samples, EMetric.P95);
             var average = GeMetricValue(frameTimes, EMetric.Average);
             var GpuActiveTimeAverage = Math.Round(1000 / GeMetricValue(GpuActiveTimes, EMetric.GpuActiveAverage), 1);
-            var median = GeMetricValue(frameTimes, EMetric.Median);
-            var p0dot1_quantile = GeMetricValue(frameTimes, EMetric.P0dot1);
-            var p0dot2_quantile = GeMetricValue(frameTimes, EMetric.P0dot2);
-            var p1_quantile = GeMetricValue(frameTimes, EMetric.P1);
-            var p5_quantile = GeMetricValue(frameTimes, EMetric.P5);
-            var p1_averageLowAverage = GeMetricValue(frameTimes, EMetric.OnePercentLowAverage);
-            var p0dot1_averageLowAverage = GeMetricValue(frameTimes, EMetric.ZerodotOnePercentLowAverage);
-            var p1_averageLowIntegral = GeMetricValue(frameTimes, EMetric.OnePercentLowIntegral);
-            var p0dot1_averageLowIntegral = GeMetricValue(frameTimes, EMetric.ZerodotOnePercentLowIntegral);
-            var min = GeMetricValue(frameTimes, EMetric.Min);
-            var adaptiveStandardDeviation = GeMetricValue(frameTimes, EMetric.AdaptiveStd);
+            var median = GeMetricValue(samples, EMetric.Median);
+            var p0dot1_quantile = GeMetricValue(samples, EMetric.P0dot1);
+            var p0dot2_quantile = GeMetricValue(samples, EMetric.P0dot2);
+            var p1_quantile = GeMetricValue(samples, EMetric.P1);
+            var p5_quantile = GeMetricValue(samples, EMetric.P5);
+            var p1_averageLowAverage = GeMetricValue(samples, EMetric.OnePercentLowAverage);
+            var p0dot1_averageLowAverage = GeMetricValue(samples, EMetric.ZerodotOnePercentLowAverage);
+            var p1_averageLowIntegral = GeMetricValue(samples, EMetric.OnePercentLowIntegral);
+            var p0dot1_averageLowIntegral = GeMetricValue(samples, EMetric.ZerodotOnePercentLowIntegral);
+            var min = GeMetricValue(samples, EMetric.Min);
+            var adaptiveStandardDeviation = GeMetricValue(samples, EMetric.AdaptiveStd);
+
             var cpuFpsPerWatt = ReportUsePMDValues ? _frametimeStatisticProvider
                 .GetPhysicalMetricValue(frameTimes, EMetric.CpuFpsPerWatt, cpuPmdAverage) :
                 _frametimeStatisticProvider.GetPhysicalMetricValue(frameTimes, EMetric.CpuFpsPerWatt,
@@ -331,6 +324,7 @@ namespace CapFrameX.ViewModel
                 _frametimeStatisticProvider.GetPhysicalMetricValue(frameTimes, EMetric.GpuFpsPerWatt,
                 SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower,
                 0, double.PositiveInfinity, _appConfiguration.UseTBPSim));
+
             var cpuUsage = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuMaxThreadUsage, 0, double.PositiveInfinity);
             var cpuPower = ReportUsePMDValues ? cpuPmdAverage : SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuPower, 0, double.PositiveInfinity);
             var cpuClock = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuMaxClock, 0, double.PositiveInfinity);

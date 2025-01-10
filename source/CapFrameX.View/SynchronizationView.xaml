@@ -121,7 +121,7 @@
 									Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" DataTooltip="{x:Null}" >
                                 <lvc:CartesianChart.ContextMenu>
                                     <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                        <MenuItem Header="Copy statistical parameter" Command="{Binding CopyInputLagStatisticalParameterCommand}"/>
+										<MenuItem Header="Copy metrics" Command="{Binding CopyInputLagStatisticalParameterCommand}"/>
                                     </ContextMenu>
                                 </lvc:CartesianChart.ContextMenu>
                                 <lvc:CartesianChart.AxisX>

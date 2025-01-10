@@ -1,5 +1,4 @@
-﻿using CapFrameX.Statistics;
-using CapFrameX.Statistics.NetStandard;
+﻿using CapFrameX.Statistics.NetStandard;
 using LiveCharts;
 using LiveCharts.Wpf;
 using Prism.Commands;

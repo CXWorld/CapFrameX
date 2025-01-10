@@ -22,6 +22,7 @@ namespace CapFrameX.PresentMonInterface
         // PresentMon version >=2.2
         public const int CpuBusy_INDEX = 11;
         public const int GpuBusy_INDEX = 15;
+        public const int MsBetweenDisplayed_INDEX = 18;
         public const int VALID_LINE_LENGTH = 21;
 
         // PresentMon < v1.7.0
