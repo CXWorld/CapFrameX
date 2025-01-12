@@ -152,19 +152,11 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 foreach (ATIGPU gpu in hardware)
                     gpu.Close();
 
-                if (context != IntPtr.Zero)
-                {
-                    ADL.ADL2_Main_Control_Destroy(context);
-                    context = IntPtr.Zero;
-                }
-
-                ADL.ADL_Main_Control_Destroy();
-
                 if (ADLX.IsInitialized)
                     ADLX.CloseAMDGpuLib();
             }
             catch (AccessViolationException ex) { Log.Logger.Error(ex, $"Access violation exception while closing ADLX."); }
-            catch (Exception ex) { Log.Logger.Error(ex, "Error while closing ADL/ADLX"); }
+            catch (Exception ex) { Log.Logger.Error(ex, "Error while closing ADLX"); }
         }
     }
 }

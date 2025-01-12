@@ -1,9 +1,7 @@
 ﻿using CapFrameX.Contracts.Data;
-using CapFrameX.Data;
 using CapFrameX.Sensor.Reporting;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -58,6 +56,7 @@ namespace CapFrameX.ViewModel
             double endTime = LastSeconds > lastFrameStart ? lastFrameStart : lastFrameStart + LastSeconds;
 
             var frametimeTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
+            var displayChangeTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetDisplayChangeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
             var gpuActiveTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetGpuActiveTimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
 
             double GeMetricValue(IList<double> sequence, EMetric metric) =>
@@ -80,13 +79,25 @@ namespace CapFrameX.ViewModel
             }
             else if (SelectedFirstMetric == EMetric.GpuActiveAverage || SelectedFirstMetric == EMetric.GpuActiveP1 || SelectedFirstMetric == EMetric.GpuActiveOnePercentLowAverage)
             {
-                wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric
-                = GeMetricValue(gpuActiveTimeWindow, SelectedFirstMetric);
+                wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric =
+                    GeMetricValue(gpuActiveTimeWindow, SelectedFirstMetric);
             }
             else
             {
-                wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric
-                = GeMetricValue(frametimeTimeWindow, SelectedFirstMetric);
+                // Always use frame times when comes average fps
+                if (SelectedFirstMetric == EMetric.Average)
+                {
+                    wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric =
+                        GeMetricValue(frametimeTimeWindow, SelectedFirstMetric);
+                }
+                else
+                {
+                    var samples = _appConfiguration.UseDisplayChangeMetrics
+                        ? displayChangeTimeWindow : frametimeTimeWindow;
+
+                    wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric =
+                        GeMetricValue(samples, SelectedFirstMetric);
+                }
             }
 
             if (SelectedSecondMetric == EMetric.CpuFpsPerWatt)
@@ -110,8 +121,20 @@ namespace CapFrameX.ViewModel
             }
             else
             {
-                wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric
-                    = GeMetricValue(frametimeTimeWindow, SelectedSecondMetric);
+                // Always use frame times when comes average fps
+                if (SelectedSecondMetric == EMetric.Average)
+                {
+                    wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric =
+                        GeMetricValue(frametimeTimeWindow, SelectedSecondMetric);
+                }
+                else
+                {
+                    var samples = _appConfiguration.UseDisplayChangeMetrics
+                        ? displayChangeTimeWindow : frametimeTimeWindow;
+
+                    wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric =
+                        GeMetricValue(samples, SelectedSecondMetric);
+                }
             }
 
             if (SelectedThirdMetric == EMetric.CpuFpsPerWatt)
@@ -130,13 +153,25 @@ namespace CapFrameX.ViewModel
             }
             else if (SelectedThirdMetric == EMetric.GpuActiveAverage || SelectedThirdMetric == EMetric.GpuActiveP1 || SelectedThirdMetric == EMetric.GpuActiveOnePercentLowAverage)
             {
-                wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric
-                = GeMetricValue(gpuActiveTimeWindow, SelectedThirdMetric);
+                wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric = 
+                    GeMetricValue(gpuActiveTimeWindow, SelectedThirdMetric);
             }
             else
             {
-                wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric
-                    = GeMetricValue(frametimeTimeWindow, SelectedThirdMetric);
+                // Always use frame times when comes average fps
+                if (SelectedThirdMetric == EMetric.Average)
+                {
+                    wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric =
+                        GeMetricValue(frametimeTimeWindow, SelectedThirdMetric);
+                }
+                else
+                {
+                    var samples = _appConfiguration.UseDisplayChangeMetrics
+                        ? displayChangeTimeWindow : frametimeTimeWindow;
+
+                    wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric =
+                        GeMetricValue(samples, SelectedThirdMetric);
+                }
             }
 
             wrappedComparisonRecordInfo.WrappedRecordInfo.SortingVariances
@@ -171,14 +206,14 @@ namespace CapFrameX.ViewModel
                 else
                 {
                     orderedList = IsSortModeAscending ? list.OrderBy(x => x.WrappedRecordInfo.Game).ThenBy(x =>
-                            SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
-                            SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
-                            x.WrappedRecordInfo.ThirdMetric).ToList()
-                            :
-                            list.OrderBy(x => x.WrappedRecordInfo.Game).ThenByDescending(x =>
-                            SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
-                            SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
-                            x.WrappedRecordInfo.ThirdMetric).ToList();
+                        SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
+                        SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
+                        x.WrappedRecordInfo.ThirdMetric).ToList()
+                        :
+                        list.OrderBy(x => x.WrappedRecordInfo.Game).ThenByDescending(x =>
+                        SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
+                        SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
+                        x.WrappedRecordInfo.ThirdMetric).ToList();
                 }
             }
             else
@@ -281,12 +316,12 @@ namespace CapFrameX.ViewModel
                 if (IsVarianceChartTabActive)
                 {
                     comparisonRecordList = IsSortModeAscending ? ComparisonRecords.ToList()
-                            .Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game)
-                            .ThenBy(x => x.WrappedRecordInfo.SortingVariances)
-                            :
-                            ComparisonRecords.ToList()
-                            .Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game)
-                            .ThenByDescending(x => x.WrappedRecordInfo.SortingVariances);
+                        .Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game)
+                        .ThenBy(x => x.WrappedRecordInfo.SortingVariances)
+                        :
+                        ComparisonRecords.ToList()
+                        .Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game)
+                        .ThenByDescending(x => x.WrappedRecordInfo.SortingVariances);
                 }
                 else
                 {
@@ -307,10 +342,10 @@ namespace CapFrameX.ViewModel
                 if (IsVarianceChartTabActive)
                 {
                     comparisonRecordList = IsSortModeAscending ? ComparisonRecords.ToList()
-                            .Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.SortingVariances)
-                            :
-                            ComparisonRecords.ToList()
-                            .Select(info => info.Clone()).OrderByDescending(x => x.WrappedRecordInfo.SortingVariances);
+                        .Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.SortingVariances)
+                        :
+                        ComparisonRecords.ToList()
+                        .Select(info => info.Clone()).OrderByDescending(x => x.WrappedRecordInfo.SortingVariances);
                 }
                 else
                 {

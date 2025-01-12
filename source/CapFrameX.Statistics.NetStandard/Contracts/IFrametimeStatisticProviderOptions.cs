@@ -5,5 +5,5 @@
 		int MovingAverageWindowSize { get; set; }
 		int IntervalAverageWindowTime { get; set; }
 		int FpsValuesRoundingDigits { get; set; }
-	}
+    }
 }
