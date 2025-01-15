@@ -1158,7 +1158,7 @@ namespace CapFrameX.ViewModel
                 SystemInfos = _recordManager.GetSystemInfos(RecordInfo);
 
                 // Update PC latency
-                IsPcLatencyAvailable = _session.Runs.All(run => !run.CaptureData.PcLatency.IsNullOrEmpty()) && _session.Runs.All(run => run.CaptureData.PcLatency.Average() > 0);
+                IsPcLatencyAvailable = _session.Runs.All(run => !run.CaptureData.PcLatency.IsNullOrEmpty()) && _session.Runs.All(run => run.CaptureData.PcLatency.Where(x => !double.IsNaN(x)).Average() > 0);
                 if (!IsPcLatencyAvailable)
                 {
                     _showPcLatency = false;
@@ -1167,7 +1167,7 @@ namespace CapFrameX.ViewModel
 
                 if (IsPcLatencyAvailable)
                 {
-                    AvgPcLatency = $"PC Latency: {Math.Round(_session.Runs.Average(run => run.CaptureData.PcLatency.Average()))}ms";
+                    AvgPcLatency = $"PC Latency: {Math.Round(_session.Runs.Average(run => run.CaptureData.PcLatency.Where(x => !double.IsNaN(x)).Average()))}ms";
                 }
 
                 // Check load metrics

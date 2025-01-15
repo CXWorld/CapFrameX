@@ -965,6 +965,10 @@ namespace CapFrameX.Data
                         {
                             captureData.PcLatency[lineNo] = pcLatency;
                         }
+                        else
+                        {
+                            captureData.PcLatency[lineNo] = double.NaN;
+                        }
                     }
                     if (indexmsGPUActive > -1)
                     {

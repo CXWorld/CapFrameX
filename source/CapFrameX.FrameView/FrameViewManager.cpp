@@ -64,10 +64,10 @@ namespace FrameView
 			eAvgSWPCLatency
 		};
 
-		constexpr unsigned int NumMetrics = sizeof(Metrics) / sizeof(Metrics[0]);
+		constexpr unsigned int numMetrics = sizeof(Metrics) / sizeof(Metrics[0]);
 		FvMetricParams params = {};
 		params.metrics = &Metrics[0];
-		params.numMetrics = NumMetrics;
+		params.numMetrics = numMetrics;
 
 		auto enableMetricsStatus = FvSDK_EnableMetrics2(session, params);
 		if (enableMetricsStatus == FV_SUCCESS)
@@ -75,11 +75,11 @@ namespace FrameView
 			auto sampleStatus = FvSDK_SampleData(session, FVSDK_SAMPLEDATA_DONOTWAIT);
 			if (sampleStatus != FV_NO_DATA)
 			{
-				Samples samples[NumMetrics] = {};
+				Samples samples[numMetrics] = {};
 				samples[0].type = eAvgFPS;
 				samples[1].type = eAvgSWPCLatency;
 
-				auto readStatus = FvSDK_ReadData(session, &samples[0], NumMetrics);
+				auto readStatus = FvSDK_ReadData(session, &samples[0], numMetrics);
 
 				if (readStatus == FV_SUCCESS || readStatus == FV_MORE_DATA)
 				{
@@ -94,7 +94,7 @@ namespace FrameView
 					samples[1].mData = AvgSWPCLatencySamples.data();
 
 					// Call 2: This time samples[i].mData is not NULL, so ReadData will fill the given buffer with the data it has. 
-					readStatus = FvSDK_ReadData(session, &samples[0], NumMetrics);
+					readStatus = FvSDK_ReadData(session, &samples[0], numMetrics);
 
 					if (readStatus == FV_SUCCESS)
 					{
