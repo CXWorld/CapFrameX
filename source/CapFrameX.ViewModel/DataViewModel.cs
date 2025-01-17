@@ -1158,7 +1158,23 @@ namespace CapFrameX.ViewModel
                 SystemInfos = _recordManager.GetSystemInfos(RecordInfo);
 
                 // Update PC latency
-                IsPcLatencyAvailable = _session.Runs.All(run => !run.CaptureData.PcLatency.IsNullOrEmpty()) && _session.Runs.All(run => run.CaptureData.PcLatency.Where(x => !double.IsNaN(x)).Average() > 0);
+                IsPcLatencyAvailable = _session.Runs.All(run => !run.CaptureData.PcLatency.IsNullOrEmpty()) && _session.Runs.All(run => 
+                {
+                    var filteredValues = run.CaptureData.PcLatency.Where(x => !double.IsNaN(x));
+
+                    if (!filteredValues.Any())
+                    {
+                        return false;
+                    }
+
+                    if (filteredValues.Average() <= 0)
+                    {
+                        return false;
+                    }
+
+                    return true;
+                });
+
                 if (!IsPcLatencyAvailable)
                 {
                     _showPcLatency = false;
