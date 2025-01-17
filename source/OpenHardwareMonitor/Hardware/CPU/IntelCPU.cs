@@ -283,6 +283,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                                 tjMax = GetTjMaxFromMSR();
                                 break;
                             case 0xC6: // Arrow Lake (TSMC 3nm)
+                            case 0xC5: // Arrow Lake-H (TSMC 3nm)
                                 microarchitecture = Microarchitecture.ArrowLake;
                                 tjMax = GetTjMaxFromMSR();
                                 break;
