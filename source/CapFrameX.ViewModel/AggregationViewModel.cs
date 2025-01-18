@@ -6,8 +6,6 @@ using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.Extensions.NetStandard;
-using CapFrameX.Statistics;
-using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using GongSolutions.Wpf.DragDrop;
 using Prism.Commands;
@@ -181,14 +179,14 @@ namespace CapFrameX.ViewModel
         public Array OutlierPercentageItemsSource => Enumerable.Range(1, 9).ToArray();
 
         public Array SecondMetricItems => Enum.GetValues(typeof(EMetric))
-                                      .Cast<EMetric>()
-                                      .Where(metric => metric != EMetric.Average)
-                                      .ToArray();
+            .Cast<EMetric>()
+            .Where(metric => metric != EMetric.Average)
+            .ToArray();
 
         public Array ThirdMetricItems => Enum.GetValues(typeof(EMetric))
-                                             .Cast<EMetric>()
-                                             .Where(metric => metric != EMetric.Average)
-                                             .ToArray();
+            .Cast<EMetric>()
+            .Where(metric => metric != EMetric.Average)
+            .ToArray();
 
         public ISubject<bool[]> OutlierFlagStream = new Subject<bool[]>();
 
@@ -250,20 +248,20 @@ namespace CapFrameX.ViewModel
                 EnableAggregationButton = false;
                 ShowIncludeExcludeButtons = false;
             }
-            
+
 
         }
 
         private void SubscribeToUpdateSession()
         {
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.SelectSession>>()
-                            .Subscribe(msg =>
-                            {
-                                if (_useUpdateSession)
-                                {
-                                    AddAggregationEntry(msg.RecordInfo, msg.CurrentSession);
-                                }
-                            });
+                .Subscribe(msg =>
+                {
+                    if (_useUpdateSession)
+                    {
+                        AddAggregationEntry(msg.RecordInfo, msg.CurrentSession);
+                    }
+                });
         }
 
         private void AddAggregationEntry(IFileRecordInfo recordInfo, ISession session)
@@ -280,10 +278,11 @@ namespace CapFrameX.ViewModel
 
             session = session ?? _recordManager.LoadData(recordInfo.FullPath);
             var frametimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
+            var displaytimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToList();
 
             var metricAnalysis = _statisticProvider
-                .GetMetricAnalysis(frametimes, SelectedSecondMetric.ConvertToString(),
-                    SelectedThirdMetric.ConvertToString());
+                .GetMetricAnalysis(frametimes, displaytimes, _appConfiguration.UseDisplayChangeMetrics,
+                    SelectedSecondMetric.ConvertToString(), SelectedThirdMetric.ConvertToString());
 
             AggregationEntries.Add(new AggregationEntry()
             {
@@ -310,10 +309,11 @@ namespace CapFrameX.ViewModel
             {
                 var localSession = _recordManager.LoadData(recordInfo.FullPath);
                 var frametimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
+                var displaytimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToList();
 
                 var metricAnalysis = _statisticProvider
-                    .GetMetricAnalysis(frametimes, SelectedSecondMetric.ConvertToString(),
-                        SelectedThirdMetric.ConvertToString());
+                    .GetMetricAnalysis(frametimes, displaytimes, _appConfiguration.UseDisplayChangeMetrics,
+                        SelectedSecondMetric.ConvertToString(), SelectedThirdMetric.ConvertToString());
 
                 AggregationEntries.Add(new AggregationEntry()
                 {
@@ -343,18 +343,23 @@ namespace CapFrameX.ViewModel
             try
             {
                 var concatedFrametimesInclude = new List<double>();
+                var concatedDisplaytimesInclude = new List<double>();
 
                 foreach (var recordInfo in _fileRecordInfoList)
                 {
                     var localSession = _recordManager.LoadData(recordInfo.FullPath);
                     var frametimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
+                    var displaytimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToList();
+
                     concatedFrametimesInclude.AddRange(frametimes);
+                    concatedDisplaytimesInclude.AddRange(displaytimes);
                 }
 
                 var resultString = _statisticProvider
-                    .GetMetricAnalysis(concatedFrametimesInclude,
-                    _appConfiguration.SecondMetricAggregation,
-                    _appConfiguration.ThirdMetricAggregation).ResultString;
+                    .GetMetricAnalysis(concatedFrametimesInclude, concatedDisplaytimesInclude,
+                        _appConfiguration.UseDisplayChangeMetrics,
+                        _appConfiguration.SecondMetricAggregation,
+                        _appConfiguration.ThirdMetricAggregation).ResultString;
 
                 AggregationResultString = $"Result: {resultString}";
                 ShowResultString = true;
@@ -378,18 +383,23 @@ namespace CapFrameX.ViewModel
                         _appConfiguration.RelatedMetricAggregation, _appConfiguration.OutlierPercentageAggregation);
 
                 var concatedFrametimesExclude = new List<double>();
+                var concatedDisplaytimesExclude = new List<double>();
 
                 foreach (var recordInfo in _fileRecordInfoList.Where((x, i) => !outlierFlags[i]))
                 {
                     var localSession = _recordManager.LoadData(recordInfo.FullPath);
                     var frametimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
+                    var displaytimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToList();
+
                     concatedFrametimesExclude.AddRange(frametimes);
+                    concatedDisplaytimesExclude.AddRange(displaytimes);
                 }
 
                 var resultString = _statisticProvider
-                    .GetMetricAnalysis(concatedFrametimesExclude,
-                    _appConfiguration.SecondMetricAggregation,
-                    _appConfiguration.ThirdMetricAggregation).ResultString;
+                    .GetMetricAnalysis(concatedFrametimesExclude, concatedDisplaytimesExclude,
+                        _appConfiguration.UseDisplayChangeMetrics,
+                        _appConfiguration.SecondMetricAggregation,
+                        _appConfiguration.ThirdMetricAggregation).ResultString;
 
                 AggregationResultString = $"Result: {resultString}";
                 ShowResultString = true;

@@ -61,9 +61,9 @@ namespace CapFrameX.Statistics.NetStandard
             for (int i = 0; i < average.Count; i++)
             {
                 if (sequence[i] > stutteringFactor * average[i])
-                stutteringTime += sequence[i];
+                    stutteringTime += sequence[i];
             }
-          
+
             return 100 * stutteringTime / sequence.Sum();
         }
 
@@ -231,19 +231,19 @@ namespace CapFrameX.Statistics.NetStandard
                 case EMetric.GpuActiveOnePercentLowAverage:
                     metricValue = 1000 / GetPercentageHighAverageSequence(sequence, 1 - 0.01);
                     break;
-				case EMetric.ZerodotTwoPercentLowAverage:
-					metricValue = 1000 / GetPercentageHighAverageSequence(sequence, 1 - 0.002);
-					break;
-				case EMetric.ZerodotOnePercentLowAverage:
+                case EMetric.ZerodotTwoPercentLowAverage:
+                    metricValue = 1000 / GetPercentageHighAverageSequence(sequence, 1 - 0.002);
+                    break;
+                case EMetric.ZerodotOnePercentLowAverage:
                     metricValue = 1000 / GetPercentageHighAverageSequence(sequence, 1 - 0.001);
                     break;
                 case EMetric.OnePercentLowIntegral:
                     metricValue = 1000 / GetPercentageHighIntegralSequence(sequence, 1 - 0.01);
                     break;
-				case EMetric.ZerodotTwoPercentLowIntegral:
-					metricValue = 1000 / GetPercentageHighIntegralSequence(sequence, 1 - 0.002);
-					break;
-				case EMetric.ZerodotOnePercentLowIntegral:
+                case EMetric.ZerodotTwoPercentLowIntegral:
+                    metricValue = 1000 / GetPercentageHighIntegralSequence(sequence, 1 - 0.002);
+                    break;
+                case EMetric.ZerodotOnePercentLowIntegral:
                     metricValue = 1000 / GetPercentageHighIntegralSequence(sequence, 1 - 0.001);
                     break;
                 case EMetric.Min:
@@ -267,7 +267,7 @@ namespace CapFrameX.Statistics.NetStandard
 
             double metricValue;
             switch (metric)
-            {   
+            {
                 case EMetric.Max:
                     metricValue = sequence.Max();
                     break;
@@ -306,7 +306,7 @@ namespace CapFrameX.Statistics.NetStandard
                     metricValue = GetPercentageHighAverageSequence(sequence, 1 - 0.002);
                     break;
                 case EMetric.ZerodotOnePercentLowAverage:
-                    metricValue =  GetPercentageHighAverageSequence(sequence, 1 - 0.001);
+                    metricValue = GetPercentageHighAverageSequence(sequence, 1 - 0.001);
                     break;
                 case EMetric.OnePercentLowIntegral:
                     metricValue = GetPercentageHighIntegralSequence(sequence, 1 - 0.01);
@@ -461,11 +461,25 @@ namespace CapFrameX.Statistics.NetStandard
             return output;
         }
 
-        public IMetricAnalysis GetMetricAnalysis(IList<double> frametimes, string secondMetric, string thirdMetric)
+        public IMetricAnalysis GetMetricAnalysis(IList<double> frametimes, IList<double> displaytimes,
+            bool useDisplayChangeMetrics, string secondMetric, string thirdMetric)
         {
             var average = GetFpsMetricValue(frametimes, EMetric.Average);
-            var secondMetricValue = GetFpsMetricValue(frametimes, secondMetric.ConvertToEnum<EMetric>());
-            var thrirdMetricValue = GetFpsMetricValue(frametimes, thirdMetric.ConvertToEnum<EMetric>());
+
+            double secondMetricValue;
+            double thrirdMetricValue;
+
+            if (useDisplayChangeMetrics)
+            {
+                secondMetricValue = GetFpsMetricValue(frametimes, secondMetric.ConvertToEnum<EMetric>());
+                thrirdMetricValue = GetFpsMetricValue(frametimes, thirdMetric.ConvertToEnum<EMetric>());
+            }
+            else
+            {
+                secondMetricValue = GetFpsMetricValue(displaytimes, secondMetric.ConvertToEnum<EMetric>());
+                thrirdMetricValue = GetFpsMetricValue(displaytimes, thirdMetric.ConvertToEnum<EMetric>());
+            }
+
             string numberFormat = string.Format("F{0}", _options.FpsValuesRoundingDigits);
             var cultureInfo = CultureInfo.InvariantCulture;
 

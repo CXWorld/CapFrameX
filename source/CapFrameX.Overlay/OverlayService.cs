@@ -42,6 +42,7 @@ namespace CapFrameX.Overlay
         private IList<string> _runHistory = new List<string>();
         private IList<ISessionRun> _captureDataHistory = new List<ISessionRun>();
         private IList<IList<double>> _frametimeHistory = new List<IList<double>>();
+        private IList<IList<double>> _displaytimeHistory = new List<IList<double>>();
         private bool[] _runHistoryOutlierFlags;
         private int _numberOfRuns;
         private IList<IMetricAnalysis> _metricAnalysis = new List<IMetricAnalysis>();
@@ -260,6 +261,7 @@ namespace CapFrameX.Overlay
             _runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
             _captureDataHistory.Clear();
             _frametimeHistory.Clear();
+            _displaytimeHistory.Clear();
             _metricAnalysis.Clear();
             _rTSSService.SetRunHistory(_runHistory.ToArray());
             _rTSSService.SetRunHistoryAggregation(string.Empty);
@@ -269,6 +271,7 @@ namespace CapFrameX.Overlay
         public void AddRunToHistory(ISessionRun sessionRun, string process, string recordDirectory)
         {
             var frametimes = sessionRun.CaptureData.MsBetweenPresents;
+            var displaytimes = sessionRun.CaptureData.MsBetweenDisplayChange;
 
             if (RunHistoryCount == _numberOfRuns)
             {
@@ -285,11 +288,13 @@ namespace CapFrameX.Overlay
 
                     var validCaptureData = _captureDataHistory.Where((run, i) => _runHistoryOutlierFlags[i] == false);
                     var validFrametimes = _frametimeHistory.Where((run, i) => _runHistoryOutlierFlags[i] == false);
+                    var validDisplaytimes = _displaytimeHistory.Where((run, i) => _runHistoryOutlierFlags[i] == false);
                     var validMetricAnalysis = _metricAnalysis.Where((run, i) => _runHistoryOutlierFlags[i] == false);
 
                     _runHistory = historyDefault.ToList();
                     _captureDataHistory = validCaptureData.ToList();
                     _frametimeHistory = validFrametimes.ToList();
+                    _displaytimeHistory = validDisplaytimes.ToList();
                     _metricAnalysis = validMetricAnalysis.ToList();
 
                     // local reset
@@ -307,7 +312,9 @@ namespace CapFrameX.Overlay
             if (RunHistoryCount < _numberOfRuns)
             {
                 // metric history
-                var currentAnalysis = _statisticProvider.GetMetricAnalysis(frametimes, SecondMetric, ThirdMetric);
+                var currentAnalysis = _statisticProvider.GetMetricAnalysis(frametimes, displaytimes,
+                    _appConfiguration.UseDisplayChangeMetrics, SecondMetric, ThirdMetric);
+
                 _metricAnalysis.Add(currentAnalysis);
                 _runHistory[RunHistoryCount] = currentAnalysis.ResultString;
                 _rTSSService.SetRunHistory(_runHistory.ToArray());
@@ -318,6 +325,9 @@ namespace CapFrameX.Overlay
                 // frametime history
                 _frametimeHistory.Add(frametimes);
 
+                // displaytime history
+                _displaytimeHistory.Add(displaytimes);
+
                 if (_appConfiguration.UseAggregation)
                 {
                     _logEntryManager.AddLogEntry($"Aggregation active. Adding captured data to history ({RunHistoryCount} of {_numberOfRuns})", ELogMessageType.BasicInfo, false);
@@ -326,8 +336,8 @@ namespace CapFrameX.Overlay
                     {
                         _runHistoryOutlierFlags = _statisticProvider
                             .GetOutlierAnalysis(_metricAnalysis,
-                                                _appConfiguration.RelatedMetricOverlay,
-                                                _appConfiguration.OutlierPercentageOverlay);
+                                _appConfiguration.RelatedMetricOverlay,
+                                _appConfiguration.OutlierPercentageOverlay);
                         _rTSSService.SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
 
                         if ((_runHistoryOutlierFlags.All(x => x == false)
@@ -335,7 +345,6 @@ namespace CapFrameX.Overlay
                             || _appConfiguration.OutlierHandling == EOutlierHandling.Ignore.ConvertToString())
                         {
                             _rTSSService.SetRunHistoryAggregation(GetAggregation());
-
 
                             // write aggregated file
                             Task.Run(async () =>
@@ -350,7 +359,9 @@ namespace CapFrameX.Overlay
                             });
                         }
                         else
+                        {
                             _logEntryManager.AddLogEntry($"Aggregation outliers detected ({_runHistoryOutlierFlags.Where(x => x == true).Count()}). Additional runs required.", ELogMessageType.BasicInfo, false);
+                        }
                     }
                 }
             }
@@ -763,15 +774,20 @@ namespace CapFrameX.Overlay
         private string GetAggregation()
         {
             var concatedFrametimes = new List<double>(_frametimeHistory.Sum(set => set.Count));
+            var concatedDisplaytimes = new List<double>(_displaytimeHistory.Sum(set => set.Count));
 
             foreach (var frametimeSet in _frametimeHistory)
             {
                 concatedFrametimes.AddRange(frametimeSet);
             }
 
-            return _statisticProvider
-                .GetMetricAnalysis(concatedFrametimes, SecondMetric, ThirdMetric)
-                .ResultString;
+            foreach (var displaytimeSet in _displaytimeHistory)
+            {
+                concatedDisplaytimes.AddRange(displaytimeSet);
+            }
+
+            return _statisticProvider.GetMetricAnalysis(concatedFrametimes, concatedDisplaytimes, 
+                _appConfiguration.UseDisplayChangeMetrics, SecondMetric, ThirdMetric).ResultString;
         }
     }
 }

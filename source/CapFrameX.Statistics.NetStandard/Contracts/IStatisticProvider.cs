@@ -31,7 +31,7 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
 
         IList<double>[] GetDiscreteDistribution(IList<double> sequence);
 
-        IMetricAnalysis GetMetricAnalysis(IList<double> frametimes, string secondMetric, string thirdMetric);
+        IMetricAnalysis GetMetricAnalysis(IList<double> frametimes, IList<double> displaytimes, bool useDisplayChangeMetrics, string secondMetric, string thirdMetric);
 
         bool[] GetOutlierAnalysis(IList<IMetricAnalysis> metricAnalysisSet, string relatedMetric, int outlierPercentage);
 
