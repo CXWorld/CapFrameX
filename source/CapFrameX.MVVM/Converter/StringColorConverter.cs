@@ -21,7 +21,7 @@ namespace CapFrameX.MVVM.Converter
                 return "000000";
 
             var color = (Color?)value;
-            return color.Value.R.ToString("X2") + color.Value.G.ToString("X2") + color.Value.B.ToString("X2");
+            return color.Value.A.ToString("X2") + color.Value.R.ToString("X2") + color.Value.G.ToString("X2") + color.Value.B.ToString("X2");
         }
     }
 }
