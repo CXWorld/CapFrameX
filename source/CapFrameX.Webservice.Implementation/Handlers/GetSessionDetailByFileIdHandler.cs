@@ -127,5 +127,8 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 		public double LowFPSThreshold { get; set; }
 
 		public bool ShowGpuActiveCharts { get; set; }
-	}
+
+		public bool ShowDisplayTimes { get; set; }
+
+    }
 }

@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace CapFrameX.ViewModel.DataContext
 {
-	public class GraphDataContextBase : BindableBase
+    public class GraphDataContextBase : BindableBase
 	{
 		public const int SCALE_RESOLUTION = 200;
 
@@ -25,9 +25,9 @@ namespace CapFrameX.ViewModel.DataContext
 		protected IRecordDataServer RecordDataServer { get; }
 
 		public GraphDataContextBase(IAppConfiguration appConfiguration, 
-									IRecordDataServer recordDataServer, 
-									IStatisticProvider frametimesStatisticProvider,
-									IEventAggregator eventAggregator)
+			IRecordDataServer recordDataServer, 
+			IStatisticProvider frametimesStatisticProvider,
+			IEventAggregator eventAggregator)
 		{
 			AppConfiguration = appConfiguration;
 			RecordDataServer = recordDataServer;
@@ -68,11 +68,11 @@ namespace CapFrameX.ViewModel.DataContext
 		private void SubscribeToAggregatorEvents()
 		{
 			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
-							.Subscribe(msg =>
-							{
-								PlotModel.TextColor = AppConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black;
-								PlotModel.InvalidatePlot(false);
-							});
+				.Subscribe(msg =>
+				{
+					PlotModel.TextColor = AppConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black;
+					PlotModel.InvalidatePlot(false);
+				});
 		}
 	}
 
@@ -88,12 +88,13 @@ namespace CapFrameX.ViewModel.DataContext
         public double StutteringFactor { get; private set; }
 		public double LowFPSThreshold { get; private set; }
         public bool ShowGpuActiveCharts { get; private set; }
+		public bool ShowDisplayTimes { get; private set; }
 
 
         public bool IsAnyPercentageGraphVisible => ShowGpuLoad || ShowCpuLoad || ShowCpuMaxThreadLoad || ShowGpuPowerLimit;
 
 		public VisibleGraphs(bool gpuLoad, bool cpuLoad, bool cpuMaxThreadLoad, bool gpuPowerLimit, bool pcLatency, 
-			bool aggregationSeparators, bool showThresholds, double stutteringFactor, double lowFPSThreshold, bool gpuActiveCharts)
+			bool aggregationSeparators, bool showThresholds, double stutteringFactor, double lowFPSThreshold, bool gpuActiveCharts, bool showDisplayTimes)
 		{
 			ShowGpuLoad = gpuLoad;
 			ShowCpuLoad = cpuLoad;
@@ -105,7 +106,7 @@ namespace CapFrameX.ViewModel.DataContext
 			StutteringFactor = stutteringFactor;
 			LowFPSThreshold = lowFPSThreshold;
             ShowGpuActiveCharts = gpuActiveCharts;
-
+            ShowDisplayTimes = showDisplayTimes;
         }
 	}
 }

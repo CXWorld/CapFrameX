@@ -13,5 +13,6 @@
 		double StutteringFactor { get;}
 		double LowFPSThreshold { get; }
 		bool ShowGpuActiveCharts { get; }
-	}
+        bool ShowDisplayTimes { get; }
+    }
 }

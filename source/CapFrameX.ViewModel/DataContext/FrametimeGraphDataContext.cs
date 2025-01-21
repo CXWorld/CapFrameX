@@ -1,7 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Data;
 using CapFrameX.Extensions.NetStandard;
-using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
@@ -11,7 +10,6 @@ using Prism.Commands;
 using Prism.Events;
 using System;
 using System.Globalization;
-using System.IO;
 using System.Text;
 using System.Windows.Forms;
 using System.Windows.Input;
@@ -21,7 +19,6 @@ namespace CapFrameX.ViewModel.DataContext
 {
     public class FrametimeGraphDataContext : GraphDataContextBase
     {
-
         private bool _showGpuActiveCommands;
 
         public bool ShowGpuActiveCommands
@@ -34,7 +31,6 @@ namespace CapFrameX.ViewModel.DataContext
             }
 
         }
-
 
         public ICommand CopyFrametimeValuesCommand { get; }
 
@@ -53,9 +49,9 @@ namespace CapFrameX.ViewModel.DataContext
         private readonly FrametimePlotBuilder _frametimePlotBuilder;
 
         public FrametimeGraphDataContext(IRecordDataServer recordDataServer, 
-                                         IAppConfiguration appConfiguration, 
-                                         IStatisticProvider frametimesStatisticProvider, 
-                                         IEventAggregator eventAggregator) :
+            IAppConfiguration appConfiguration, 
+            IStatisticProvider frametimesStatisticProvider, 
+            IEventAggregator eventAggregator) :
             base(appConfiguration, recordDataServer, frametimesStatisticProvider, eventAggregator)
         {
             CopyFrametimeValuesCommand = new DelegateCommand(OnCopyFrametimeValues);
@@ -66,6 +62,7 @@ namespace CapFrameX.ViewModel.DataContext
 
             SavePlotAsSVG = new DelegateCommand(() => OnSavePlotAsImage("frametimes", "svg"));
             SavePlotAsPNG = new DelegateCommand(() => OnSavePlotAsImage("frametimes", "png"));
+
             _frametimePlotBuilder = new FrametimePlotBuilder(appConfiguration, frametimesStatisticProvider);
         }
 
@@ -159,6 +156,7 @@ namespace CapFrameX.ViewModel.DataContext
 
             Clipboard.SetDataObject(builder.ToString(), false);
         }
+
         private void OnCopyGpuActiveTimePoints()
         {
             if (RecordSession == null)

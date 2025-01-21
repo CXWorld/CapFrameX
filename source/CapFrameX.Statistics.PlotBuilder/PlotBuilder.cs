@@ -193,6 +193,21 @@ namespace CapFrameX.Statistics.PlotBuilder
             });
         }
 
+        protected void SetDisplayTimeChart(PlotModel plotModel, IList<Point> points)
+        {
+            var series = new LineSeries
+            {
+                Title = "Display Times",
+                StrokeThickness = 2.5,
+                LegendStrokeThickness = 4,
+                Color = OxyColor.FromArgb(255, 34, 243, 151),
+                YAxisKey = EPlotAxis.YAXISFRAMETIMES.GetDescription()
+            };
+
+            series.Points.AddRange(points.Select(p => new DataPoint(p.X, p.Y)));
+            plotModel.Series.Add(series);
+        }
+
         protected void SetGPULoadChart(PlotModel plotModel, IList<Point> points)
         {
             var series = new LineSeries
@@ -207,6 +222,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             series.Points.AddRange(points.Select(p => new DataPoint(p.X, p.Y)));
             plotModel.Series.Add(series);
         }
+
         protected void SetCPULoadChart(PlotModel plotModel, IList<Point> points)
         {
             var series = new LineSeries
@@ -221,6 +237,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             series.Points.AddRange(points.Select(p => new DataPoint(p.X, p.Y)));
             plotModel.Series.Add(series);
         }
+
         protected void SetCPUMaxThreadLoadChart(PlotModel plotModel, IList<Point> points)
         {
             var series = new LineSeries

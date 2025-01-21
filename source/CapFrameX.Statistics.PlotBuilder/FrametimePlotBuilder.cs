@@ -17,6 +17,7 @@ namespace CapFrameX.Statistics.PlotBuilder
         {
             var plotModel = PlotModel;
             Reset();
+
             if (session == null)
             {
                 return;
@@ -26,14 +27,19 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISFRAMETIMES]);
 
             var frametimepoints = session.GetFrametimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
+            var displaytimespoints = session.GetDisplayChangeTimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
+
             IList<Point> GpuActiveTimePoints  = new List<Point>();
 
             if (plotSettings.ShowGpuActiveCharts)
                 GpuActiveTimePoints = session.GetGpuActiveTimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
 
-            var frametimes = session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
+            var frametimes = session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);;
 
             SetFrametimeChart(plotModel, frametimepoints, GpuActiveTimePoints, plotSettings);
+
+            if (plotSettings.ShowDisplayTimes)
+                SetDisplayTimeChart(plotModel, displaytimespoints);
 
             if (plotSettings.IsAnyPercentageGraphVisible && session.HasValidSensorData())
             {
