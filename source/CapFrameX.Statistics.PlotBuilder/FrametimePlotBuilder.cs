@@ -38,9 +38,6 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             SetFrametimeChart(plotModel, frametimepoints, GpuActiveTimePoints, plotSettings);
 
-            if (plotSettings.ShowDisplayTimes)
-                SetDisplayTimeChart(plotModel, displaytimespoints);
-
             if (plotSettings.IsAnyPercentageGraphVisible && session.HasValidSensorData())
             {
                 plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISPERCENTAGE]);
@@ -55,9 +52,17 @@ namespace CapFrameX.Statistics.PlotBuilder
                     SetGpuPowerLimitChart(plotModel, session.GetGpuPowerLimitPointTimeWindow());
             }
 
+            // Draw display times graph
+            if (plotSettings.ShowDisplayTimes)
+            {
+                SetDisplayTimeChart(plotModel, displaytimespoints);
+            }
+
             // Draw PC latency graph
             if (plotSettings.ShowPcLatency)
+            {
                 SetPcLatencyChart(plotModel, session.GetPcLatencyPointTimeWindow());
+            }
 
             var stutteringValue = frametimes.Average() * plotSettings.StutteringFactor;
             var lowFPSValue = 1000 / plotSettings.LowFPSThreshold;
@@ -91,7 +96,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             var frametimeSeries = new LineSeries
             {
-                Title = "Frametimes",
+                Title = "Frame Times",
                 StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
                 Color = Constants.FrametimeColor,
@@ -100,7 +105,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             var GpuActiveTimeSeries = new LineSeries
             {
-                Title = "GPU-Busy times",
+                Title = "GPU-Busy Times",
                 StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
                 Color = Constants.GpuActiveTimeColor,
@@ -109,7 +114,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             var movingAverageSeries = new LineSeries
             {
-                Title = "Moving average",
+                Title = "Moving Average",
                 StrokeThickness = 3,
                 LegendStrokeThickness = 4,
                 Color = Constants.FrametimeMovingAverageColor,
