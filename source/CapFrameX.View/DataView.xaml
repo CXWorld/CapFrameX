@@ -95,14 +95,14 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <materialDesign:DialogHost Margin="5 0 5 0"
-									IsOpen="{Binding MessageDialogContentIsOpen}"
-									DialogContent="{Binding MessageDialogContent}"
-									CloseOnClickAway="True">
-                        <TabControl x:Name="GraphTab" Grid.Row="0" SelectedItem="{Binding SelectedChartItem}" FocusVisualStyle="{x:Null}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
-                            <TabItem>
+					    IsOpen="{Binding MessageDialogContentIsOpen}"
+					    DialogContent="{Binding MessageDialogContent}"
+					    CloseOnClickAway="True">
+						<TabControl x:Name="GraphTab" Grid.Row="0" SelectedItem="{Binding SelectedChartItem}" FocusVisualStyle="{x:Null}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+							<TabItem Width="80">
                                 <TabItem.Header>
-                                    <Label FontSize="12">Frametimes</Label>
-                                </TabItem.Header>
+									<Label FontSize="12">Frame Times</Label>
+								</TabItem.Header>
                                 <Grid>
                                     <Grid Margin="0 0 0 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                                         <ComboBox Width="85" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10 0 0 10" materialDesign:HintAssist.Hint="Y-Axis scale"
@@ -144,7 +144,7 @@
                             </TabItem>
                             <TabItem>
                                 <TabItem.Header>
-                                    <Label FontSize="12">L-shape</Label>
+                                    <Label FontSize="12">L-Shape</Label>
                                 </TabItem.Header>
                                 <Grid>
                                     <Grid Margin="-15 0 0 1" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
