@@ -210,16 +210,22 @@ namespace CapFrameX.PresentMonInterface
                         string processName = string.Empty;
                         int processId = 0;
 
-                        try
+                        if (lineSplit.Length > Math.Max(ApplicationName_INDEX, ProcessID_INDEX))
                         {
                             processName = lineSplit[ApplicationName_INDEX].Replace(".exe", "");
-                            processId = Convert.ToInt32(lineSplit[ProcessID_INDEX]);
+
+                            if (!int.TryParse(lineSplit[ProcessID_INDEX], out processId))
+                            {
+                                _logger.LogError("Failed to parse process ID from line split. {lineSplit}", string.Join(",", lineSplit));
+                                return;
+                            }
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            _logger.LogError(ex, "Error while extracting process name and ID from line split. {lineSplit}", string.Join(",", lineSplit));
+                            _logger.LogError("Invalid line split array length. {lineSplit}", string.Join(",", lineSplit));
                             return;
                         }
+
 
                         lock (_listLock)
                         {

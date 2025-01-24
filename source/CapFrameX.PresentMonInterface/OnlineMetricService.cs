@@ -17,7 +17,7 @@ namespace CapFrameX.PresentMonInterface
 {
     public class OnlineMetricService : IOnlineMetricService
     {
-		private const double STUTTERING_THRESHOLD = 2d;
+        private const double STUTTERING_THRESHOLD = 2d;
         private const int LIST_CAPACITY = 20000;
         private const int PMD_BUFFER_CAPACITY = 2200;
 
@@ -114,10 +114,10 @@ namespace CapFrameX.PresentMonInterface
                     || _overlayEntryCore.RealtimeMetricEntryDict["OnlineP1"].ShowOnOverlay
                     || _overlayEntryCore.RealtimeMetricEntryDict["OnlineP0dot1"].ShowOnOverlay
                     || _overlayEntryCore.RealtimeMetricEntryDict["OnlineP0dot2"].ShowOnOverlay
-					|| _overlayEntryCore.RealtimeMetricEntryDict["Online1PercentLow"].ShowOnOverlay
+                    || _overlayEntryCore.RealtimeMetricEntryDict["Online1PercentLow"].ShowOnOverlay
                     || _overlayEntryCore.RealtimeMetricEntryDict["Online0dot1PercentLow"].ShowOnOverlay
                     || _overlayEntryCore.RealtimeMetricEntryDict["Online0dot2PercentLow"].ShowOnOverlay
-					|| _overlayEntryCore.RealtimeMetricEntryDict["OnlineStutteringPercentage"].ShowOnOverlay
+                    || _overlayEntryCore.RealtimeMetricEntryDict["OnlineStutteringPercentage"].ShowOnOverlay
                     || _overlayEntryCore.RealtimeMetricEntryDict["OnlineGpuActiveTimeAverage"].ShowOnOverlay
                     || _overlayEntryCore.RealtimeMetricEntryDict["OnlineCpuActiveTimeAverage"].ShowOnOverlay
                     || _overlayEntryCore.RealtimeMetricEntryDict["OnlineFrameTimeAverage"].ShowOnOverlay
@@ -173,23 +173,28 @@ namespace CapFrameX.PresentMonInterface
             // Convert start time to seconds
             startTime *= 1E-03;
 
+
             if (!double.TryParse(lineSplit[PresentMonCaptureService.MsBetweenPresents_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double frameTime))
             {
                 ResetMetrics();
                 return;
             }
 
-            if (!double.TryParse(lineSplit[PresentMonCaptureService.MsBetweenDisplayed_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double displayedTime))
+            double displayedTime = 0;
+            if (_appConfiguration.UseDisplayChangeMetrics)
+            {
+                if (!double.TryParse(lineSplit[PresentMonCaptureService.MsBetweenDisplayed_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out displayedTime))
+                {
+                    ResetMetrics();
+                    return;
+                }
+            }
+
+            if (!double.TryParse(lineSplit[PresentMonCaptureService.GpuBusy_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double gpuActiveTime))
             {
                 ResetMetrics();
                 return;
             }
-
-            if (!double.TryParse(lineSplit[PresentMonCaptureService.GpuBusy_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double gpuActiveTime))
-			{
-				ResetMetrics();
-				return;
-			}
 
             if (!double.TryParse(lineSplit[PresentMonCaptureService.CpuBusy_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double cpuActiveTime))
             {
@@ -210,11 +215,11 @@ namespace CapFrameX.PresentMonInterface
                     // n sceconds window
                     _frametimesRealtimeSeconds.Add(frameTime);
                     _displayedtimesRealtimeSeconds.Add(displayedTime);
-					_gpuActiveTimesRealtimeSeconds.Add(gpuActiveTime);
+                    _gpuActiveTimesRealtimeSeconds.Add(gpuActiveTime);
                     _cpuActiveTimesRealtimeSeconds.Add(cpuActiveTime);
                     _measuretimesRealtimeSeconds.Add(startTime);
 
-					if (startTime - _measuretimesRealtimeSeconds.First() > MetricInterval)
+                    if (startTime - _measuretimesRealtimeSeconds.First() > MetricInterval)
                     {
                         int position = 0;
                         while (position < _measuretimesRealtimeSeconds.Count &&
@@ -228,7 +233,7 @@ namespace CapFrameX.PresentMonInterface
                             _gpuActiveTimesRealtimeSeconds.RemoveRange(0, position);
                             _cpuActiveTimesRealtimeSeconds.RemoveRange(0, position);
                             _measuretimesRealtimeSeconds.RemoveRange(0, position);
-						}
+                        }
                     }
                 }
 
@@ -268,24 +273,24 @@ namespace CapFrameX.PresentMonInterface
 
         private void ResetMetrics()
         {
-			lock (_lockRealtimeMetric)
-			{
-				int capacity = (int)(LIST_CAPACITY * MetricInterval / 20d);
+            lock (_lockRealtimeMetric)
+            {
+                int capacity = (int)(LIST_CAPACITY * MetricInterval / 20d);
 
-				_frametimesRealtimeSeconds = new List<double>(capacity);
+                _frametimesRealtimeSeconds = new List<double>(capacity);
                 _displayedtimesRealtimeSeconds = new List<double>(capacity);
                 _measuretimesRealtimeSeconds = new List<double>(capacity);
-				_gpuActiveTimesRealtimeSeconds = new List<double>(capacity);
+                _gpuActiveTimesRealtimeSeconds = new List<double>(capacity);
                 _cpuActiveTimesRealtimeSeconds = new List<double>(capacity);
 
             }
-		}
+        }
 
         public double GetOnlineFpsMetricValue(EMetric metric)
         {
             lock (_lockRealtimeMetric)
             {
-                var samples = _appConfiguration.UseDisplayChangeMetrics 
+                var samples = _appConfiguration.UseDisplayChangeMetrics
                     ? _displayedtimesRealtimeSeconds : _frametimesRealtimeSeconds;
 
                 return _frametimeStatisticProvider
@@ -303,13 +308,13 @@ namespace CapFrameX.PresentMonInterface
         }
 
         public double GetOnlineGpuActiveTimeMetricValue(EMetric metric)
-		{
-			lock (_lockRealtimeMetric)
-			{
-				return _frametimeStatisticProvider
-					.GetFrametimeMetricValue(_gpuActiveTimesRealtimeSeconds, metric);
-			}
-		}
+        {
+            lock (_lockRealtimeMetric)
+            {
+                return _frametimeStatisticProvider
+                    .GetFrametimeMetricValue(_gpuActiveTimesRealtimeSeconds, metric);
+            }
+        }
 
         public double GetOnlineCpuActiveTimeMetricValue(EMetric metric)
         {
@@ -329,7 +334,7 @@ namespace CapFrameX.PresentMonInterface
                 var gpuActiveTimeAverage = _frametimeStatisticProvider
                     .GetFrametimeMetricValue(_gpuActiveTimesRealtimeSeconds, EMetric.GpuActiveAverage);
 
-                return Math.Round(Math.Abs((gpuActiveTimeAverage - frameTimeAverage)/ frameTimeAverage * 100));
+                return Math.Round(Math.Abs((gpuActiveTimeAverage - frameTimeAverage) / frameTimeAverage * 100));
             }
         }
 
@@ -385,5 +390,5 @@ namespace CapFrameX.PresentMonInterface
         public void ResetRealtimeMetrics() => ResetMetrics();
 
         public void SetMetricInterval() => ResetMetrics();
-	}
+    }
 }
