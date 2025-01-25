@@ -469,7 +469,7 @@ namespace CapFrameX.Statistics.NetStandard
             double secondMetricValue;
             double thrirdMetricValue;
 
-            if (useDisplayChangeMetrics)
+            if (!useDisplayChangeMetrics)
             {
                 secondMetricValue = GetFpsMetricValue(frametimes, secondMetric.ConvertToEnum<EMetric>());
                 thrirdMetricValue = GetFpsMetricValue(frametimes, thirdMetric.ConvertToEnum<EMetric>());

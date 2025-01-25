@@ -321,7 +321,6 @@ namespace CapFrameX.Data
             if (!IsCapturing)
                 throw new Exception("No capture running.");
 
-
             _logEntryManager.AddLogEntry("Capture finished", ELogMessageType.BasicInfo, false);
 
             LockCaptureService = true;
@@ -566,7 +565,6 @@ namespace CapFrameX.Data
                 return currentProcess == _currentCaptureOptions.ProcessInfo.Item1 && uniqueProcessIdDict[currentProcess].Count() == 1;
             }).ToList();
 
-
             if (!filteredArchive.Any())
             {
                 _logEntryManager.AddLogEntry($"Empty archive. Unable to process capture data", ELogMessageType.Error, false);
@@ -594,7 +592,7 @@ namespace CapFrameX.Data
 
             var unionCaptureData = filteredArchive.Concat(filteredCaptureData.Skip(distinctIndex)).ToList();
             var unionCaptureDataStartTime = GetCpuStartQpcFromDataLine(unionCaptureData.First());
-            var unionCaptureDataEndTime = GetCpuStartQpcFromDataLine(unionCaptureData.Last());
+            var unionCaptureDataEndTime = GetCpuStartQpcFromDataLine(unionCaptureData.Last());       
 
             var captureInterval = new List<string[]>();
 
@@ -620,7 +618,6 @@ namespace CapFrameX.Data
 
             _logEntryManager.AddLogEntry($"Length captured data + archive ({filteredArchive.Count} frames) in sec: " + $"{Math.Round(unionCaptureDataEndTime - unionCaptureDataStartTime, 2).ToString(CultureInfo.InvariantCulture)}" + Environment.NewLine
                 + $"Length captured data QPCTime start to end with buffer in sec: " + $"{Math.Round(unionCaptureDataEndTime - startTime, 2).ToString(CultureInfo.InvariantCulture)}", ELogMessageType.AdvancedInfo, false);
-
 
             if (!autoTermination)
             {

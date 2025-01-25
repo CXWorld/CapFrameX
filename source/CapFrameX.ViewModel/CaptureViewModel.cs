@@ -411,21 +411,21 @@ namespace CapFrameX.ViewModel
         }
 
         public Array SecondMetricItems => Enum.GetValues(typeof(EMetric))
-                                      .Cast<EMetric>()
-                                      .Where(metric => metric != EMetric.Average && metric != EMetric.None)
-                                      .ToArray();
+            .Cast<EMetric>()
+            .Where(metric => metric != EMetric.Average && metric != EMetric.None)
+            .ToArray();
         public Array ThirdMetricItems => Enum.GetValues(typeof(EMetric))
-                                             .Cast<EMetric>()
-                                             .Where(metric => metric != EMetric.Average)
-                                             .ToArray();
+            .Cast<EMetric>()
+            .Where(metric => metric != EMetric.Average)
+            .ToArray();
 
         public Array NumberOfRunsItemsSource => Enumerable.Range(1, 20).ToArray();
 
         public Array OutlierPercentageItemsSource => Enumerable.Range(1, 9).ToArray();
 
         public Array OutlierHandlingItems => Enum.GetValues(typeof(EOutlierHandling))
-                                                 .Cast<EOutlierHandling>()
-                                                 .ToArray();
+            .Cast<EOutlierHandling>()
+            .ToArray();
 
         public Array RelatedMetricItemsSource => new[] { "Average", "Second", "Third" };
 
@@ -462,20 +462,20 @@ namespace CapFrameX.ViewModel
         public Array LoggingPeriodItemsSource => new[] { 250, 500 };
 
         public CaptureViewModel(IAppConfiguration appConfiguration,
-                                IEventAggregator eventAggregator,
-                                IRecordManager recordManager,
-                                IOverlayService overlayService,
-                                IOverlayEntryProvider overlayEntryProvider,
-                                ISensorService sensorService,
-                                IOnlineMetricService onlineMetricService,
-                                IStatisticProvider statisticProvider,
-                                ILogger<CaptureViewModel> logger,
-                                ProcessList processList,
-                                SoundManager soundManager,
-                                CaptureManager captureManager,
-                                ISensorConfig sensorConfig,
-                                IRTSSService rTSSService,
-                                ILogEntryManager logEntryManager)
+            IEventAggregator eventAggregator,
+            IRecordManager recordManager,
+            IOverlayService overlayService,
+            IOverlayEntryProvider overlayEntryProvider,
+            ISensorService sensorService,
+            IOnlineMetricService onlineMetricService,
+            IStatisticProvider statisticProvider,
+            ILogger<CaptureViewModel> logger,
+            ProcessList processList,
+            SoundManager soundManager,
+            CaptureManager captureManager,
+            ISensorConfig sensorConfig,
+            IRTSSService rTSSService,
+            ILogEntryManager logEntryManager)
         {
             _appConfiguration = appConfiguration;
             _eventAggregator = eventAggregator;
