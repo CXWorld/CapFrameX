@@ -76,7 +76,7 @@ namespace CapFrameX.ViewModel
         private bool _hasComparisonItems;
         private TabItem _selectedChartItem;
         private bool _isSortModeAscending = false;
-        private string _selectedSortMetric = "First";
+        private string _selectedSortMetric = "First Metric";
         private Func<double, string> _comparisonColumnChartFormatter;
         private bool _colorPickerVisibility;
         private EMetric _selectedFirstMetric = EMetric.Average;
@@ -740,7 +740,8 @@ namespace CapFrameX.ViewModel
 
         public double BarChartMaxRowHeight { get; private set; } = 25;
 
-        public Array SortMetricItemsSource => new[] { "First", "Second", "Third" };
+        public Array SortMetricItemsSource 
+            => new[] { "First Metric", "Second Metric", "Third Metric", "Comment Label", "CPU Label", "GPU Label" };
 
         public Array LegendFontSizeItemsSource => new[] { 1, 1.5, 2 };
 

@@ -2,8 +2,10 @@
 using CapFrameX.Sensor.Reporting;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace CapFrameX.ViewModel
 {
@@ -153,7 +155,7 @@ namespace CapFrameX.ViewModel
             }
             else if (SelectedThirdMetric == EMetric.GpuActiveAverage || SelectedThirdMetric == EMetric.GpuActiveP1 || SelectedThirdMetric == EMetric.GpuActiveOnePercentLowAverage)
             {
-                wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric = 
+                wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric =
                     GeMetricValue(gpuActiveTimeWindow, SelectedThirdMetric);
             }
             else
@@ -310,7 +312,6 @@ namespace CapFrameX.ViewModel
 
             IEnumerable<ComparisonRecordInfoWrapper> comparisonRecordList = null;
 
-
             if (UseComparisonGrouping)
             {
                 if (IsVarianceChartTabActive)
@@ -325,40 +326,106 @@ namespace CapFrameX.ViewModel
                 }
                 else
                 {
-                    comparisonRecordList = IsSortModeAscending ? ComparisonRecords.ToList()
-                        .Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game).ThenBy(x =>
-                        SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
-                        SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
-                        x.WrappedRecordInfo.ThirdMetric)
-                        :
-                        ComparisonRecords.ToList().Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game).ThenByDescending(x =>
-                        SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
-                        SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
-                        x.WrappedRecordInfo.ThirdMetric);
+                    if (IsSortModeAscending)
+                    {
+                        if (SelectedSortMetric.Contains("Metric"))
+                        {
+                            // Case for numeric metrics
+                            comparisonRecordList = ComparisonRecords.ToList()
+                                .Select(info => info.Clone())
+                                .OrderBy(x => x.WrappedRecordInfo.Game)
+                                .ThenBy(x =>
+                                    SelectedSortMetric == "First Metric" ? x.WrappedRecordInfo.FirstMetric :
+                                    SelectedSortMetric == "Second Metric" ? x.WrappedRecordInfo.SecondMetric :
+                                    x.WrappedRecordInfo.ThirdMetric); // Default for metric case
+                        }
+                        else if (SelectedSortMetric.Contains("Label"))
+                        {
+                            // Case for string labels with alphanumeric sorting
+                            comparisonRecordList = ComparisonRecords.ToList()
+                                .Select(info => info.Clone())
+                                .OrderBy(x => x.WrappedRecordInfo.Game)
+                                .ThenBy(x =>
+                                    SelectedSortMetric == "Comment Label" ? x.WrappedRecordInfo.FileRecordInfo.Comment :
+                                    SelectedSortMetric == "CPU Label" ? x.WrappedRecordInfo.FileRecordInfo.ProcessorName :
+                                    x.WrappedRecordInfo.FileRecordInfo.GraphicCardName, AlphanumericComparer.Instance); // Use custom comparer
+                        }
+                    }
+                    else
+                    {
+                        if (SelectedSortMetric.Contains("Metric"))
+                        {
+                            // Case for numeric metrics
+                            comparisonRecordList = ComparisonRecords.ToList()
+                                .Select(info => info.Clone())
+                                .OrderBy(x => x.WrappedRecordInfo.Game)
+                                .ThenByDescending(x =>
+                                    SelectedSortMetric == "First Metric" ? x.WrappedRecordInfo.FirstMetric :
+                                    SelectedSortMetric == "Second Metric" ? x.WrappedRecordInfo.SecondMetric :
+                                    x.WrappedRecordInfo.ThirdMetric); // Default for metric case
+                        }
+                        else if (SelectedSortMetric.Contains("Label"))
+                        {
+                            // Case for string labels with alphanumeric sorting
+                            comparisonRecordList = ComparisonRecords.ToList()
+                                .Select(info => info.Clone())
+                                .OrderBy(x => x.WrappedRecordInfo.Game)
+                                .ThenByDescending(x =>
+                                    SelectedSortMetric == "Comment Label" ? x.WrappedRecordInfo.FileRecordInfo.Comment :
+                                    SelectedSortMetric == "CPU Label" ? x.WrappedRecordInfo.FileRecordInfo.ProcessorName :
+                                    x.WrappedRecordInfo.FileRecordInfo.GraphicCardName, AlphanumericComparer.Instance); // Use custom comparer
+                        }
+                    }
+
                 }
             }
             else
             {
-                if (IsVarianceChartTabActive)
+                if (IsSortModeAscending)
                 {
-                    comparisonRecordList = IsSortModeAscending ? ComparisonRecords.ToList()
-                        .Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.SortingVariances)
-                        :
-                        ComparisonRecords.ToList()
-                        .Select(info => info.Clone()).OrderByDescending(x => x.WrappedRecordInfo.SortingVariances);
+                    if (SelectedSortMetric.Contains("Metric"))
+                    {
+                        // Case for numeric metrics
+                        comparisonRecordList = ComparisonRecords.ToList()
+                            .Select(info => info.Clone())
+                            .OrderBy(x =>
+                                SelectedSortMetric == "First Metric" ? x.WrappedRecordInfo.FirstMetric :
+                                SelectedSortMetric == "Second Metric" ? x.WrappedRecordInfo.SecondMetric :
+                                x.WrappedRecordInfo.ThirdMetric); // Default for metric case
+                    }
+                    else if (SelectedSortMetric.Contains("Label"))
+                    {
+                        // Case for string labels with alphanumeric sorting
+                        comparisonRecordList = ComparisonRecords.ToList()
+                            .Select(info => info.Clone())
+                            .OrderBy(x =>
+                                SelectedSortMetric == "Comment Label" ? x.WrappedRecordInfo.FileRecordInfo.Comment :
+                                SelectedSortMetric == "CPU Label" ? x.WrappedRecordInfo.FileRecordInfo.ProcessorName :
+                                x.WrappedRecordInfo.FileRecordInfo.GraphicCardName, AlphanumericComparer.Instance); // Use custom comparer
+                    }
                 }
                 else
                 {
-                    comparisonRecordList = IsSortModeAscending ? ComparisonRecords.ToList()
-                        .Select(info => info.Clone()).OrderBy(x =>
-                        SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
-                        SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
-                        x.WrappedRecordInfo.ThirdMetric)
-                        :
-                        ComparisonRecords.ToList().Select(info => info.Clone()).OrderByDescending(x =>
-                        SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
-                        SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
-                        x.WrappedRecordInfo.ThirdMetric);
+                    if (SelectedSortMetric.Contains("Metric"))
+                    {
+                        // Case for numeric metrics
+                        comparisonRecordList = ComparisonRecords.ToList()
+                            .Select(info => info.Clone())
+                            .OrderByDescending(x =>
+                                SelectedSortMetric == "First Metric" ? x.WrappedRecordInfo.FirstMetric :
+                                SelectedSortMetric == "Second Metric" ? x.WrappedRecordInfo.SecondMetric :
+                                x.WrappedRecordInfo.ThirdMetric); // Default for metric case
+                    }
+                    else if (SelectedSortMetric.Contains("Label"))
+                    {
+                        // Case for string labels with alphanumeric sorting
+                        comparisonRecordList = ComparisonRecords.ToList()
+                            .Select(info => info.Clone())
+                            .OrderByDescending(x =>
+                                SelectedSortMetric == "Comment Label" ? x.WrappedRecordInfo.FileRecordInfo.Comment :
+                                SelectedSortMetric == "CPU Label" ? x.WrappedRecordInfo.FileRecordInfo.ProcessorName :
+                                x.WrappedRecordInfo.FileRecordInfo.GraphicCardName, AlphanumericComparer.Instance); // Use custom comparer
+                    }
                 }
             }
 
