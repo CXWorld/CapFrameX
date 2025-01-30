@@ -11,6 +11,7 @@ using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using OpenHardwareMonitor.Hardware;
 using Prism.Events;
 using System;
 using System.Collections.Concurrent;
@@ -243,7 +244,46 @@ namespace CapFrameX.Overlay
 			}
 		}
 
-		public void ResetColorAndLimits(IOverlayEntry selectedEntry)
+        public void SetFormatForAllGroups(IOverlayEntry selectedEntry, IOverlayEntryFormatChange checkboxes)
+        {
+            foreach (var entry in _overlayEntries)
+            {
+                if (checkboxes.Colors)
+                {
+                    entry.GroupColor = selectedEntry.GroupColor;
+                }
+                if (checkboxes.Format)
+                {
+                    entry.GroupFontSize = selectedEntry.GroupFontSize;
+                }
+                entry.FormatChanged = true;
+            }
+        }
+
+        public void SetFormatForAllValues(IOverlayEntry selectedEntry, IOverlayEntryFormatChange checkboxes)
+        {
+            foreach (var entry in _overlayEntries)
+            {
+                if (checkboxes.Colors)
+                {
+                    entry.Color = selectedEntry.Color;
+                    entry.UpperLimitColor = selectedEntry.UpperLimitColor;
+                    entry.LowerLimitColor = selectedEntry.LowerLimitColor;
+                }
+                if (checkboxes.Limits)
+                {
+                    entry.UpperLimitValue = selectedEntry.UpperLimitValue;
+                    entry.LowerLimitValue = selectedEntry.LowerLimitValue;
+                }
+                if (checkboxes.Format)
+                {
+                    entry.ValueFontSize = selectedEntry.ValueFontSize;
+                }
+                entry.FormatChanged = true;
+            }
+        }
+
+        public void ResetColorAndLimits(IOverlayEntry selectedEntry)
 		{
 			selectedEntry.UpperLimitValue = string.Empty;
 			selectedEntry.LowerLimitValue = string.Empty;
@@ -1256,5 +1296,5 @@ namespace CapFrameX.Overlay
 				_ping = double.NaN;
 			};
 		}
-	}
+    }
 }

@@ -419,7 +419,11 @@ namespace CapFrameX.ViewModel
 
 		public ICommand SetFormatForSensorTypeCommand { get; }
 
-		public ICommand SetToMinOsdCommand { get; }
+        public ICommand SetFormatForAllGroupsCommand { get; }
+
+        public ICommand SetFormatForAllValuesCommand { get; }
+
+        public ICommand SetToMinOsdCommand { get; }
 
 		public ICommand ResyncPerfmonCommand { get; }
 
@@ -536,7 +540,13 @@ namespace CapFrameX.ViewModel
 			ResetColorAndLimitDefaultsCommand = new DelegateCommand(
 				() => _overlayEntryProvider.ResetColorAndLimits(SelectedOverlayEntry));
 
-			SetToMinOsdCommand = new DelegateCommand(
+            SetFormatForAllGroupsCommand = new DelegateCommand(
+               () => _overlayEntryProvider.SetFormatForAllGroups(SelectedOverlayEntry, Checkboxes));
+
+            SetFormatForAllValuesCommand = new DelegateCommand(
+               () => _overlayEntryProvider.SetFormatForAllValues(SelectedOverlayEntry, Checkboxes));
+
+            SetToMinOsdCommand = new DelegateCommand(
 				() => OnSetMinOsd());
 
 			ResyncPerfmonCommand = new DelegateCommand(

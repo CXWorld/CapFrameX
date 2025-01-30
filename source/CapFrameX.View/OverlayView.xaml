@@ -627,7 +627,7 @@
 				<Grid.RowDefinitions>
 					<RowDefinition Height="30"></RowDefinition>
 					<RowDefinition Height="200"></RowDefinition>
-					<RowDefinition Height="215"></RowDefinition>
+					<RowDefinition Height="320"></RowDefinition>
 					<RowDefinition Height="1*"></RowDefinition>
 				</Grid.RowDefinitions>
 				<Grid.ColumnDefinitions>
@@ -908,7 +908,7 @@
 					</DataGrid>
 				</Border>
 				<Border Grid.Row="2" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
-					<Grid IsEnabled="{Binding OverlayItemsOptionsEnabled}">
+					<Grid>
 						<Grid.RowDefinitions>
 							<RowDefinition Height="30"></RowDefinition>
 							<RowDefinition Height="40"></RowDefinition>
@@ -916,10 +916,12 @@
 							<RowDefinition Height="1*"></RowDefinition>
 							<RowDefinition Height="20"></RowDefinition>
 							<RowDefinition Height="1*"></RowDefinition>
+							<RowDefinition Height="20"></RowDefinition>
+							<RowDefinition Height="1*"></RowDefinition>
+							<RowDefinition Height="1*"></RowDefinition>
 						</Grid.RowDefinitions>
 						<TextBlock Grid.Row="0" Margin="5" HorizontalAlignment="Center" Text="Apply to multiple Entries" Width="180" 
-                                       TextWrapping="Wrap" TextAlignment="Center" FontSize="16">
-						</TextBlock>
+							TextWrapping="Wrap" TextAlignment="Center" FontSize="16"/>
 						<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
 							<CheckBox IsChecked="{Binding Checkboxes.Colors}" Margin="5">
 								<TextBlock>Colors</TextBlock>
@@ -931,25 +933,43 @@
 								<TextBlock>Format</TextBlock>
 							</CheckBox>
 						</StackPanel>
-						<TextBlock Grid.Row="2"  Text="Group Name" TextAlignment="Left" Margin="10 5 0 0">
-						</TextBlock>
+						<TextBlock Grid.Row="2"  Text="Group Name" TextAlignment="Left" Margin="10 5 0 0"/>
 						<StackPanel Grid.Row="3" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
 							<Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                                        IsEnabled="{Binding SetGroupButtonEnabled}" Command="{Binding SetFormatForGroupNameCommand}" ToolTip="Set selected variables for all entries with this group name"
-                                        materialDesign:RippleAssist.Feedback="#DD000000">
+								IsEnabled="{Binding SetGroupButtonEnabled}" Command="{Binding SetFormatForGroupNameCommand}" ToolTip="Set selected options for all entries with this group name"
+								materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
 							</Button>
 							<TextBlock Margin="0 7 0 0" Text="{Binding SelectedOverlayItemGroupName}" Width="140" TextAlignment="Left" TextWrapping="Wrap" FontWeight="Bold"/>
 						</StackPanel>
-						<TextBlock Grid.Row="4" TextAlignment="Left" Text="Sensor Type" Margin="10 5 0 0">
-						</TextBlock>
+						<TextBlock Grid.Row="4" TextAlignment="Left" Text="Sensor Type" Margin="10 5 0 0"/>
 						<StackPanel Grid.Row="5" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
 							<Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                                        IsEnabled="{Binding SetSensorTypeButtonEnabled}" Command="{Binding SetFormatForSensorTypeCommand}" ToolTip="Set selected variables for all entries with this sensor type"
-                                        materialDesign:RippleAssist.Feedback="#DD000000">
+								IsEnabled="{Binding SetSensorTypeButtonEnabled}" Command="{Binding SetFormatForSensorTypeCommand}" ToolTip="Set selected options for all entries with this sensor type"
+								materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
 							</Button>
 							<TextBlock Margin="0 7 0 0" Text="{Binding SelectedOverlayItemSensorType}" Width="140" TextAlignment="Left" TextWrapping="Wrap" FontWeight="Bold"/>
+						</StackPanel>
+						
+						<!--Manage all entries-->
+						<TextBlock Grid.Row="6" Text="All Entries" TextAlignment="Left" Margin="10 5 0 0"/>
+
+						<StackPanel Grid.Row="7" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
+							<Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+								Command="{Binding SetFormatForAllGroupsCommand}" ToolTip="Set selected options for all entries groups">
+								<materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
+							</Button>
+							<TextBlock Margin="0 7 0 0" Text="Groups" Width="140" TextAlignment="Left" TextWrapping="Wrap" FontWeight="Bold"/>
+						</StackPanel>
+
+						<StackPanel Grid.Row="8" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
+							<Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+								Command="{Binding SetFormatForAllValuesCommand}" ToolTip="Set selected options for all entries values"
+                                materialDesign:RippleAssist.Feedback="#DD000000">
+								<materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
+							</Button>
+							<TextBlock Margin="0 7 0 0" Text="Values" Width="140" TextAlignment="Left" TextWrapping="Wrap" FontWeight="Bold"/>
 						</StackPanel>
 					</Grid>
 				</Border>
@@ -971,12 +991,12 @@
 									</ToggleButton>
 								</StackPanel>
 								<TextBox Margin="30 0 0 0" materialDesign:HintAssist.Hint="Thread Affinity Hotkey" Width="145" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
-					         IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ThreadAffinityHotkeyTextBox_PreviewKeyDown" materialDesign:HintAssist.HintOpacity=".8"
-					         ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" Foreground="{DynamicResource MaterialDesignBody}">
+									 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ThreadAffinityHotkeyTextBox_PreviewKeyDown" materialDesign:HintAssist.HintOpacity=".8"
+									 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" Foreground="{DynamicResource MaterialDesignBody}">
 									<Binding Path="ThreadAffinityHotkey"
-						    ElementName="OverlayViewControl"
-						    Mode="OneWay"
-						    TargetNullValue="&lt; not set &gt;">
+										ElementName="OverlayViewControl"
+										Mode="OneWay"
+										TargetNullValue="&lt; not set &gt;">
 										<Binding.ValidationRules>
 											<validation:HotkeyValidationRule
 										ValidatesOnTargetUpdated="True" />

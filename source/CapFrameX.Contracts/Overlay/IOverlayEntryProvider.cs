@@ -17,12 +17,16 @@ namespace CapFrameX.Contracts.Overlay
 
 		void SetFormatForSensorType(string sensorType, IOverlayEntry selectedEntry, IOverlayEntryFormatChange checkboxes);
 
-		Task SaveOverlayEntriesToJson(int targetConfig);
+        void SetFormatForAllGroups(IOverlayEntry selectedEntry, IOverlayEntryFormatChange checkboxes);
+
+        void SetFormatForAllValues(IOverlayEntry selectedEntry, IOverlayEntryFormatChange checkboxes);
+
+        Task SaveOverlayEntriesToJson(int targetConfig);
 
 	    Task SwitchConfigurationTo(int index);
 
 		Task<IOverlayEntry[]> GetOverlayEntries(bool updateFormats = true);
 
 		Task<IEnumerable<IOverlayEntry>> GetDefaultOverlayEntries();
-	}
+    }
 }
