@@ -68,6 +68,7 @@ namespace CapFrameX.Data
 			CreationDate = creationDateTime.ToString("yyyy-MM-dd");
 			CreationTime = creationDateTime.ToString("HH:mm:ss");
 			ProcessName = session.Info.ProcessName;
+			GameName = session.Info.GameName;
 			ProcessorName = session.Info.Processor;
 			GraphicCardName = session.Info.GPU;
 			SystemRamInfo = session.Info.SystemRam;

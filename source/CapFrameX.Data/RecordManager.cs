@@ -26,6 +26,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace CapFrameX.Data
 {
@@ -405,7 +406,17 @@ namespace CapFrameX.Data
                 {
                     if (fileRecordInfo is IFileRecordInfo)
                     {
-                        fileRecordInfo.GameName = GetGamenameForProcess(fileRecordInfo.ProcessName);
+                        if (fileRecordInfo.ProcessName == fileRecordInfo.GameName)
+                        {
+                            fileRecordInfo.GameName = GetGameNameFromProcessList(fileRecordInfo.ProcessName);
+                        }
+                        else
+                        {
+                            if (fileRecordInfo.GameName.IsNullOrEmpty())
+                            {
+                                fileRecordInfo.GameName = GetGameNameFromProcessList(fileRecordInfo.ProcessName);
+                            }
+                        }
                     }
                 });
         }
@@ -545,7 +556,7 @@ namespace CapFrameX.Data
                     {
                         Id = Guid.NewGuid(),
                         ProcessName = processName.Contains(".exe") ? processName : $"{processName}.exe",
-                        GameName = GetGamenameForProcess(processName),
+                        GameName = GetGameNameFromFileDescription(processName),
                         CreationDate = DateTime.UtcNow,
                         Motherboard = mbInfo,
                         OS = osInfo,
@@ -698,14 +709,44 @@ namespace CapFrameX.Data
             }
         }
 
-        private string GetGamenameForProcess(string processName)
+        private string GetGameNameFromProcessList(string processName)
         {
             if (string.IsNullOrWhiteSpace(processName))
             {
-                return string.Empty;
+                return "Unknown";
             }
 
-            return _processList.FindProcessByName(processName)?.DisplayName ?? processName.Replace(".exe", string.Empty);
+            var processNameExtStripped = processName.StripExeExtension();
+            return _processList.FindProcessByName(processName)?.DisplayName ?? processNameExtStripped;
+        }
+
+        private string GetGameNameFromFileDescription(string processName)
+        {
+            if (string.IsNullOrWhiteSpace(processName))
+            {
+                return "Unknown";
+            }
+
+            var processNameStripped = processName.StripExeExtension();
+            Process[] processes = Process.GetProcessesByName(processNameStripped);
+
+            if (processes.Length > 0)
+            {
+                string mainWindoTitle = processes.First().MainWindowTitle.TrimEnd();
+                string fileDescription = processes.First().MainModule.FileVersionInfo.FileDescription.TrimEnd();
+
+                // prefer file description
+                if (!fileDescription.IsNullOrEmpty())
+                {
+                    return fileDescription;
+                }
+                else if (!mainWindoTitle.IsNullOrEmpty())
+                {
+                    return mainWindoTitle;
+                }
+            }
+
+            return GetGameNameFromProcessList(processName);
         }
 
         private async Task<string> GetOutputFilename(string processName, string recordDirectory)

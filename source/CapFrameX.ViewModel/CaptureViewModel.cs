@@ -30,6 +30,8 @@ using OxyPlot.Legends;
 using CapFrameX.Overlay;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Monitoring.Contracts;
+using System.Diagnostics;
+using CapFrameX.Extensions;
 
 namespace CapFrameX.ViewModel
 {
@@ -64,6 +66,7 @@ namespace CapFrameX.ViewModel
         private string _currentGameNameToCapture = string.Empty;
         private string _currentProcessToCapture = string.Empty;
         private bool _isLoggerOutputEmpty = true;
+        private Dictionary<string, string> _gameFileDescriptionCache = new Dictionary<string, string>();
 
         private PubSubEvent<ViewMessages.CurrentProcessToCapture> _updateCurrentProcess;
 
@@ -908,19 +911,58 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        private void GetGameNameFromProcessList(string process)
+        private void GetGameNameFromProcessList(string processName)
         {
-            if (process == _currentProcessToCapture)
+            if (processName == _currentProcessToCapture)
                 return;
 
             string gameName = string.Empty;
-            if (!string.IsNullOrWhiteSpace(process))
-                gameName = _processList.FindProcessByName(process)?.DisplayName;
+            if (!string.IsNullOrWhiteSpace(processName))
+                gameName = GetGameNameFromFileDescription(processName);
 
             if (!string.IsNullOrWhiteSpace(gameName))
                 _currentGameNameToCapture = gameName;
             else
-                _currentGameNameToCapture = process;
+                _currentGameNameToCapture = processName;
+        }
+
+        private string GetGameNameFromFileDescription(string processName)
+        {
+            if (string.IsNullOrWhiteSpace(processName))
+            {
+                return "Unknown";
+            }
+
+            var processNameStripped = processName.StripExeExtension();
+
+            if (_gameFileDescriptionCache.ContainsKey(processName))
+            {
+                return _gameFileDescriptionCache[processName];
+            }
+            else
+            {
+                Process[] processes = Process.GetProcessesByName(processNameStripped);
+
+                if (processes.Length > 0)
+                {
+                    string mainWindoTitle = processes.First().MainWindowTitle.TrimEnd();
+                    string fileDescription = processes.First().MainModule.FileVersionInfo.FileDescription.TrimEnd();
+
+                    // prefer file description
+                    if (!fileDescription.IsNullOrEmpty())
+                    {
+                        _gameFileDescriptionCache.Add(processName, fileDescription);
+                        return fileDescription;
+                    }
+                    else if(!mainWindoTitle.IsNullOrEmpty())
+                    {
+                        _gameFileDescriptionCache.Add(processName, mainWindoTitle);
+                        return mainWindoTitle;
+                    }
+                }
+            }
+
+            return _processList.FindProcessByName(processName)?.DisplayName ?? processNameStripped;
         }
 
         private void UpdateCaptureStateInfo()

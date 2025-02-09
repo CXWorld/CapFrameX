@@ -217,9 +217,9 @@ namespace CapFrameX.Data
         }
     }
 
-    internal static class StringExtensions
+    public static class StringExtensions
     {
-        internal static string StripExeExtension(this string processName)
+        public static string StripExeExtension(this string processName)
         {
             return processName.Replace(".exe", string.Empty);
         }
