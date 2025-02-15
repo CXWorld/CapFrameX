@@ -96,7 +96,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 		}
 
 		public GenericCPU(int processorIndex, CPUID[][] cpuid, ISettings settings)
-				: base(cpuid[0][0].Name, CreateIdentifier(cpuid[0][0].Vendor, processorIndex), settings)
+			: base(cpuid[0][0].Name, CreateIdentifier(cpuid[0][0].Vendor, processorIndex), settings)
 		{
 			this.cpuid = cpuid;
 

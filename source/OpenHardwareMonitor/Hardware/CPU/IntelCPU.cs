@@ -81,7 +81,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly DateTime[] lastEnergyTime;
         private readonly uint[] lastEnergyConsumed;
 
-
         private float[] Floats(float f)
         {
             float[] result = new float[coreCount];

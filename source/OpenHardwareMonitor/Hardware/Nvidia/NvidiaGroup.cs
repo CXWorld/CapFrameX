@@ -11,13 +11,12 @@
 using CapFrameX.Extensions;
 using CapFrameX.Monitoring.Contracts;
 using Serilog;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace OpenHardwareMonitor.Hardware.Nvidia
 {
-	internal class NvidiaGroup : IGroup
+    internal class NvidiaGroup : IGroup
 	{
 		private readonly List<Hardware> hardware = new List<Hardware>();
 

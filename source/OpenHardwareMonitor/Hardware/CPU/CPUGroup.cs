@@ -105,7 +105,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
 			{
 				Log.Logger.Information("CPUID vendor info: {vendor}.", processorThreads[0][0].Vendor.ToString());
 				Log.Logger.Information("CPUID family code: {family}.", processorThreads[0][0].Family.ToString());
-			}
+                Log.Logger.Information("CPUID model code: {family}.", processorThreads[0][0].Model.ToString());
+            }
 
 			int index = 0;
 			foreach (CPUID[] threads in processorThreads)
