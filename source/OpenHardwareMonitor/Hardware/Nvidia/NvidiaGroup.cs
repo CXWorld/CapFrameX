@@ -33,14 +33,16 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 			int count;
 			if (NVAPI.NvAPI_EnumPhysicalGPUs == null)
 			{
-				return;
+                Log.Error("NvAPI Enum physical GPUs is null.");
+                return;
 			}
 			else
 			{
 				NvStatus status = NVAPI.NvAPI_EnumPhysicalGPUs(handles, out count);
 				if (status != NvStatus.OK)
 				{
-					return;
+                    Log.Error("NvAPI status invalid.");
+                    return;
 				}
 			}
 
