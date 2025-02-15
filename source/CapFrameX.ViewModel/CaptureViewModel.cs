@@ -356,7 +356,7 @@ namespace CapFrameX.ViewModel
                   .UseRunHistory;
             }
             set
-            {              
+            {
                 _appConfiguration.UseRunHistory = value;
                 _rTSSService.SetShowRunHistory(value);
                 OnUseRunHistoryChanged();
@@ -621,7 +621,7 @@ namespace CapFrameX.ViewModel
             if (!CXHotkey.IsValidHotkey(CaptureHotkeyString))
                 return;
 
-            HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.Capture, 
+            HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.Capture,
                 () =>
                 {
                     if (!_hotkeyLocked)
@@ -661,8 +661,8 @@ namespace CapFrameX.ViewModel
                     {
                         await _captureManager.StartCapture(new CaptureOptions()
                         {
-                            CaptureTime = double.TryParse(_captureTimeString, out _) 
-                                ? Convert.ToDouble(_captureTimeString, CultureInfo.InvariantCulture) 
+                            CaptureTime = double.TryParse(_captureTimeString, out _)
+                                ? Convert.ToDouble(_captureTimeString, CultureInfo.InvariantCulture)
                                 : _appConfiguration.CaptureTime,
                             CaptureDelay = _appConfiguration.CaptureDelay,
                             CaptureFileMode = AppConfiguration.CaptureFileMode,
@@ -945,19 +945,26 @@ namespace CapFrameX.ViewModel
 
                 if (processes.Length > 0)
                 {
-                    string mainWindoTitle = processes.First().MainWindowTitle.TrimEnd();
-                    string fileDescription = processes.First().MainModule.FileVersionInfo.FileDescription.TrimEnd();
+                    try
+                    {
+                        string mainWindoTitle = processes.First().MainWindowTitle.TrimEnd();
+                        string fileDescription = processes.First().MainModule.FileVersionInfo.FileDescription.TrimEnd();
 
-                    // prefer file description
-                    if (!fileDescription.IsNullOrEmpty())
-                    {
-                        _gameFileDescriptionCache.Add(processName, fileDescription);
-                        return fileDescription;
+                        // prefer file description
+                        if (!fileDescription.IsNullOrEmpty())
+                        {
+                            _gameFileDescriptionCache.Add(processName, fileDescription);
+                            return fileDescription;
+                        }
+                        else if (!mainWindoTitle.IsNullOrEmpty())
+                        {
+                            _gameFileDescriptionCache.Add(processName, mainWindoTitle);
+                            return mainWindoTitle;
+                        }
                     }
-                    else if(!mainWindoTitle.IsNullOrEmpty())
+                    catch (Exception ex)
                     {
-                        _gameFileDescriptionCache.Add(processName, mainWindoTitle);
-                        return mainWindoTitle;
+                        _logger.LogError(ex, "Error getting game name from process info");
                     }
                 }
             }
@@ -1049,7 +1056,7 @@ namespace CapFrameX.ViewModel
                 historyEntry.ShowOnOverlayIsEnabled = true;
 
             if (!UseRunHistory)
-                UseAggregation = false;               
+                UseAggregation = false;
 
         }
 
