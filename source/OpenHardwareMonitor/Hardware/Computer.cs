@@ -150,7 +150,14 @@ namespace OpenHardwareMonitor.Hardware
                 {
                     (atiGroup as ATI.ATIGroup)?.RemoveIntegratedGpu();
 				}
-			}
+
+                var intelGroup = list.FirstOrDefault(group => group is IntelGPU.IntelGroup);
+
+                if (intelGroup != null)
+                {
+                    (intelGroup as IntelGPU.IntelGroup)?.RemoveIntegratedGpu();
+                }
+            }
         }
 
         public bool MainboardEnabled

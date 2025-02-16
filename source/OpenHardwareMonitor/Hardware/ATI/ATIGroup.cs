@@ -36,7 +36,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
             {
                 if (!TryUseAdlx(settings, sensorConfig, processService))
                 {
-                    Log.Information("Failed to load ADLX, use ADL fallback instead.");
+                    Log.Information("Failed to load ADLX.");
                 }
             }
             catch (DllNotFoundException ex) { Log.Logger.Error(ex, "AMD GPU lib DLL error."); }
