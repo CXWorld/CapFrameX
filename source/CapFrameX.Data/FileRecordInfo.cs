@@ -247,7 +247,7 @@ namespace CapFrameX.Data
 							if (graphicCardNameIndex > -1 && graphicCardNameIndex < infos.Length)
 								infoKeyValueDictionary.Add("GPU", infos[graphicCardNameIndex]);
 							if (systemRamInfoIndex > -1 && systemRamInfoIndex < infos.Length)
-								infoKeyValueDictionary.Add("System RAM", $"{Math.Round(Convert.ToDouble(infos[systemRamInfoIndex]) / 1048576, 1).ToString(CultureInfo.InvariantCulture)}GB");
+								infoKeyValueDictionary.Add("System RAM", $"{Math.Round(Convert.ToDouble(infos[systemRamInfoIndex]) / 1048576, 1, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture)}GB");
 							if (baseDriverVersionIndex > -1 && baseDriverVersionIndex < infos.Length)
 								infoKeyValueDictionary.Add("Base Driver Version", infos[baseDriverVersionIndex]);
 

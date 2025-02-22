@@ -192,7 +192,7 @@ namespace CapFrameX.ViewModel
 
         public double SliderSoundLevel
         {
-            get => Math.Round(_soundManager.Volume * 100, 0);
+            get => Math.Round(_soundManager.Volume * 100, 0, MidpointRounding.AwayFromZero);
             set
             {
                 _soundManager.Volume = value / 100;

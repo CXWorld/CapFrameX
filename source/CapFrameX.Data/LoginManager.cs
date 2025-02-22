@@ -40,7 +40,7 @@ namespace CapFrameX.Data
             Initialize();
 
             stopwatch.Stop();
-            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
+            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1, MidpointRounding.AwayFromZero));
         }
 
         public void Initialize()

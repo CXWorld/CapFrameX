@@ -332,7 +332,7 @@ namespace CapFrameX.Statistics.NetStandard
 
             bool IsInRange(double value)
             {
-                int hz = (int)Math.Round(value, 0);
+                int hz = (int)Math.Round(value, 0, MidpointRounding.AwayFromZero);
 
                 if (hz >= syncRangeLower && hz <= syncRangeUpper)
                     return true;
@@ -558,7 +558,7 @@ namespace CapFrameX.Statistics.NetStandard
             var frametimesAverage = GetFrametimeTimeWindow(session, startTime, endTime, options).Average();
             var gpuActiveTimesAverage = GetGpuActiveTimeTimeWindow(session, startTime, endTime, options).Average();
 
-            return Math.Round(Math.Abs((gpuActiveTimesAverage - frametimesAverage) / frametimesAverage  * 100));
+            return Math.Round(Math.Abs((gpuActiveTimesAverage - frametimesAverage) / frametimesAverage  * 100), MidpointRounding.AwayFromZero);
         }
     }
 }

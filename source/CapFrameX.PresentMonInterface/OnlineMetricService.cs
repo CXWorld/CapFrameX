@@ -334,7 +334,7 @@ namespace CapFrameX.PresentMonInterface
                 var gpuActiveTimeAverage = _frametimeStatisticProvider
                     .GetFrametimeMetricValue(_gpuActiveTimesRealtimeSeconds, EMetric.GpuActiveAverage);
 
-                return Math.Round(Math.Abs((gpuActiveTimeAverage - frameTimeAverage) / frameTimeAverage * 100));
+                return Math.Round(Math.Abs((gpuActiveTimeAverage - frameTimeAverage) / frameTimeAverage * 100), MidpointRounding.AwayFromZero);
             }
         }
 

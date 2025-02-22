@@ -616,8 +616,8 @@ namespace CapFrameX.Data
                 return Enumerable.Empty<string[]>().ToList();
             }
 
-            _logEntryManager.AddLogEntry($"Length captured data + archive ({filteredArchive.Count} frames) in sec: " + $"{Math.Round(unionCaptureDataEndTime - unionCaptureDataStartTime, 2).ToString(CultureInfo.InvariantCulture)}" + Environment.NewLine
-                + $"Length captured data QPCTime start to end with buffer in sec: " + $"{Math.Round(unionCaptureDataEndTime - startTime, 2).ToString(CultureInfo.InvariantCulture)}", ELogMessageType.AdvancedInfo, false);
+            _logEntryManager.AddLogEntry($"Length captured data + archive ({filteredArchive.Count} frames) in sec: " + $"{Math.Round(unionCaptureDataEndTime - unionCaptureDataStartTime, 2, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture)}" + Environment.NewLine
+                + $"Length captured data QPCTime start to end with buffer in sec: " + $"{Math.Round(unionCaptureDataEndTime - startTime, 2, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture)}", ELogMessageType.AdvancedInfo, false);
 
             if (!autoTermination)
             {
@@ -643,8 +643,8 @@ namespace CapFrameX.Data
                 {
                     var currentStartTime = GetCpuStartQpcFromDataLine(unionCaptureData[i]);
 
-                    var currentRecordTime = Math.Round(currentStartTime - startTime, 3);
-                    var maxRecordTime = Math.Round(definedTime + normalizeTimeOffset, 3);
+                    var currentRecordTime = Math.Round(currentStartTime - startTime, 3, MidpointRounding.AwayFromZero);
+                    var maxRecordTime = Math.Round(definedTime + normalizeTimeOffset, 3, MidpointRounding.AwayFromZero);
 
                     if (currentStartTime >= startTime && currentRecordTime <= maxRecordTime)
                     {
@@ -683,7 +683,7 @@ namespace CapFrameX.Data
         {
             var lineSplit = line.Split(',');
             var length = Convert.ToDouble(lineSplit[PresentMonCaptureService.TimeInSeconds_INDEX], CultureInfo.InvariantCulture);
-            return Math.Round(length, 2);
+            return Math.Round(length, 2, MidpointRounding.AwayFromZero);
         }
 
         private IEnumerable<string> NormalizeTimes(IEnumerable<string[]> recordLines)

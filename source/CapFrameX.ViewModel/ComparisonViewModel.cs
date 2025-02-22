@@ -389,7 +389,7 @@ namespace CapFrameX.ViewModel
                 _firstSeconds = value;
                 RaisePropertyChanged();
                 UpdateCharts();
-                RemainingRecordingTime = "(" + Math.Round(LastSeconds - _firstSeconds, 2)
+                RemainingRecordingTime = "(" + Math.Round(LastSeconds - _firstSeconds, 2, MidpointRounding.AwayFromZero)
                     .ToString("0.00", CultureInfo.InvariantCulture) + " s)";
             }
         }
@@ -402,7 +402,7 @@ namespace CapFrameX.ViewModel
                 _lastSeconds = value;
                 RaisePropertyChanged();
                 UpdateCharts();
-                RemainingRecordingTime = "(" + Math.Round(_lastSeconds - FirstSeconds, 2)
+                RemainingRecordingTime = "(" + Math.Round(_lastSeconds - FirstSeconds, 2, MidpointRounding.AwayFromZero)
                     .ToString("0.00", CultureInfo.InvariantCulture) + " s)";
             }
         }
@@ -1323,7 +1323,7 @@ namespace CapFrameX.ViewModel
             _doUpdateCharts = true;
 
             RemainingRecordingTime = ComparisonRecords.Any() ?
-                "(" + Math.Round(MaxRecordingTime, 2).ToString("0.00", CultureInfo.InvariantCulture) + " s)" : "(0.00 s)"; ;
+                "(" + Math.Round(MaxRecordingTime, 2, MidpointRounding.AwayFromZero).ToString("0.00", CultureInfo.InvariantCulture) + " s)" : "(0.00 s)"; ;
         }
 
         private void UpdateAxesMinMaxFrametimeChart()
@@ -1858,7 +1858,7 @@ namespace CapFrameX.ViewModel
             {
                 var newLine = Environment.NewLine;
                 infoText += $"{fileRecordInfo.CreationDate} {fileRecordInfo.CreationTime}" + newLine +
-                    $"{frameTimes.Count()} frames in {Math.Round(recordTime, 2).ToString(CultureInfo.InvariantCulture)}s";
+                    $"{frameTimes.Count()} frames in {Math.Round(recordTime, 2, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture)}s";
             }
 
             return new ComparisonRecordInfo

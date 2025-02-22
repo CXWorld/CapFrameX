@@ -309,7 +309,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                     StrokeThickness = 2,
                     Color = OxyColors.Gray,
                     Type = LineAnnotationType.Vertical,
-                    Text = sceneNumber < sessionTimes.Count ? $"Scene {sceneNumber}" + Environment.NewLine + $"({Math.Round(time, 2)}s)" : string.Empty,
+                    Text = sceneNumber < sessionTimes.Count ? $"Scene {sceneNumber}" + Environment.NewLine + $"({Math.Round(time, 2, MidpointRounding.AwayFromZero)}s)" : string.Empty,
                     FontWeight = FontWeights.Bold,
                     FontSize = 14,
                     TextColor = OxyColor.FromRgb(150, 150, 150),

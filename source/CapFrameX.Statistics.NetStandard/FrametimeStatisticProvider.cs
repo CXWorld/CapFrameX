@@ -257,7 +257,7 @@ namespace CapFrameX.Statistics.NetStandard
                     break;
             }
 
-            return Math.Round(metricValue, _options.FpsValuesRoundingDigits);
+            return Math.Round(metricValue, _options.FpsValuesRoundingDigits, MidpointRounding.AwayFromZero);
         }
 
         public double GetFrametimeMetricValue(IList<double> sequence, EMetric metric)
@@ -328,7 +328,7 @@ namespace CapFrameX.Statistics.NetStandard
                     break;
             }
 
-            return Math.Round(metricValue, _options.FpsValuesRoundingDigits);
+            return Math.Round(metricValue, _options.FpsValuesRoundingDigits, MidpointRounding.AwayFromZero);
         }
 
         public double GetPhysicalMetricValue(IList<double> sequence, EMetric metric, double coefficient)
@@ -353,7 +353,7 @@ namespace CapFrameX.Statistics.NetStandard
                     break;
             }
 
-            return Math.Round(metricValue, 2);
+            return Math.Round(metricValue, 2, MidpointRounding.AwayFromZero);
         }
 
         public IList<double>[] GetDiscreteDistribution(IList<double> sequence)
@@ -617,11 +617,11 @@ namespace CapFrameX.Statistics.NetStandard
             // Add percentage of variance bins to List
             IList<double> variancePercentages = new List<double>
             {
-                Math.Round(threshold2Count / varianceCount, 4),
-                Math.Round(threshold4Count / varianceCount, 4),
-                Math.Round(threshold8Count / varianceCount, 4),
-                Math.Round(threshold12Count / varianceCount, 4),
-                Math.Round(thresholdOver12Count / varianceCount, 4)
+                Math.Round(threshold2Count / varianceCount, 4, MidpointRounding.AwayFromZero),
+                Math.Round(threshold4Count / varianceCount, 4, MidpointRounding.AwayFromZero),
+                Math.Round(threshold8Count / varianceCount, 4, MidpointRounding.AwayFromZero),
+                Math.Round(threshold12Count / varianceCount, 4, MidpointRounding.AwayFromZero),
+                Math.Round(thresholdOver12Count / varianceCount, 4, MidpointRounding.AwayFromZero)
             };
 
             return variancePercentages;

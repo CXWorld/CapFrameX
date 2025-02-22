@@ -1191,7 +1191,8 @@ namespace CapFrameX.ViewModel
 
                 if (IsPcLatencyAvailable)
                 {
-                    AvgPcLatency = $"PC Latency: {Math.Round(_session.Runs.Average(run => run.CaptureData.PcLatency.Where(x => !double.IsNaN(x)).Average()))}ms";
+                    var pcLatency = _session.Runs.Average(run => run.CaptureData.PcLatency.Where(x => !double.IsNaN(x)).Average());
+                    AvgPcLatency = $"PC Latency: {Math.Round(pcLatency, 1, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture)}ms";
                 }
 
                 // Check load metrics

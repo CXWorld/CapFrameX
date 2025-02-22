@@ -112,7 +112,7 @@ namespace CapFrameX.ViewModel.DataContext
 
             foreach (var framerate in fps)
             {
-                builder.Append(Math.Round(framerate, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                builder.Append(Math.Round(framerate, 2, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);
@@ -129,8 +129,8 @@ namespace CapFrameX.ViewModel.DataContext
 
             for (int i = 0; i < fps.Count; i++)
             {
-                builder.Append(Math.Round(fps[i], 2).ToString(CultureInfo.InvariantCulture) + "\t" +
-                    Math.Round(gpuActiveFps[i], 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                builder.Append(Math.Round(fps[i], 2, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture) + "\t" +
+                    Math.Round(gpuActiveFps[i], 2, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);

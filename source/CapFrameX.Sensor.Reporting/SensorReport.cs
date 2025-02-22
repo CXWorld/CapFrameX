@@ -37,46 +37,46 @@ namespace CapFrameX.Sensor.Reporting
                     switch (item)
                     {
                         case EReportSensorName.CpuUsage when HasValues(sessionsSensorData, session => session.CpuUsage, out var values):
-                            AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+                            AddSensorEntry(item, Math.Round(values.Average(), MidpointRounding.AwayFromZero), values.Min(), values.Max());
                             break;
                         case EReportSensorName.CpuMaxThreadUsage when HasValues(sessionsSensorData, session => session.CpuMaxThreadUsage, out var values):
-                            AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+                            AddSensorEntry(item, Math.Round(values.Average(), MidpointRounding.AwayFromZero), values.Min(), values.Max());
                             break;
                         case EReportSensorName.CpuPower when HasValues(sessionsSensorData, session => session.CpuPower, out var values):
-                            AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+                            AddSensorEntry(item, Math.Round(values.Average(), MidpointRounding.AwayFromZero), values.Min(), values.Max());
                             break;
                         case EReportSensorName.CpuTemp when HasValues(sessionsSensorData, session => session.CpuTemp, out var values):
-                            AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+                            AddSensorEntry(item, Math.Round(values.Average(), MidpointRounding.AwayFromZero), values.Min(), values.Max());
                             break;
                         case EReportSensorName.CpuMaxClock when HasValues(sessionsSensorData, session => session.CpuMaxClock, out var values):
-                            AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+                            AddSensorEntry(item, Math.Round(values.Average(), MidpointRounding.AwayFromZero), values.Min(), values.Max());
                             break;
                         case EReportSensorName.GpuUsage when HasValues(sessionsSensorData, session => session.GpuUsage, out var values):
-                            AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+                            AddSensorEntry(item, Math.Round(values.Average(), MidpointRounding.AwayFromZero), values.Min(), values.Max());
                             break;
                         case EReportSensorName.GpuLoadLimit when HasValues(sessionsSensorData, session => session.GpuUsage, out var values):
                             AddSensorEntry(item, GetPercentageInGpuLoadLimit(values), GetPercentageInGpuLoadLimit(values), GetPercentageInGpuLoadLimit(values));
                             break;
                         case EReportSensorName.GpuClock when HasValues(sessionsSensorData, session => session.GpuClock, out var values):
-                            AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+                            AddSensorEntry(item, Math.Round(values.Average(), MidpointRounding.AwayFromZero), values.Min(), values.Max());
                             break;
                         case EReportSensorName.GpuPower when HasValues(sessionsSensorData, session => session.GpuPower, out var values):
-                            AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+                            AddSensorEntry(item, Math.Round(values.Average(), MidpointRounding.AwayFromZero), values.Min(), values.Max());
                             break;
                         case EReportSensorName.GpuTBPSim when HasValues(sessionsSensorData, session => session.GpuTBPSim, out var values):
-                            AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+                            AddSensorEntry(item, Math.Round(values.Average(), MidpointRounding.AwayFromZero), values.Min(), values.Max());
                             break;
                         case EReportSensorName.GpuTemp when HasValues(sessionsSensorData, session => session.GpuTemp, out var values):
-                            AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+                            AddSensorEntry(item, Math.Round(values.Average(), MidpointRounding.AwayFromZero), values.Min(), values.Max());
                             break;
                         case EReportSensorName.VRamUsage when HasValues(sessionsSensorData, session => session.VRamUsage, out var values):
-                            AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+                            AddSensorEntry(item, Math.Round(values.Average(), MidpointRounding.AwayFromZero), values.Min(), values.Max());
                             break;
                         case EReportSensorName.VRamUsageGB when HasValues(sessionsSensorData, session => session.VRamUsageGB, out var values):
-                            AddSensorEntry(item, Math.Round(values.Average(), 2), Math.Round(values.Min(), 2), Math.Round(values.Max(), 2));
+                            AddSensorEntry(item, Math.Round(values.Average(), 2, MidpointRounding.AwayFromZero), Math.Round(values.Min(), 2), Math.Round(values.Max(), 2, MidpointRounding.AwayFromZero));
                             break;
                         case EReportSensorName.RamUsage when HasValues(sessionsSensorData, session => session.RamUsage, out var values):
-                            AddSensorEntry(item, Math.Round(values.Average(), 2), Math.Round(values.Min(), 2), Math.Round(values.Max(), 2));
+                            AddSensorEntry(item, Math.Round(values.Average(), 2, MidpointRounding.AwayFromZero), Math.Round(values.Min(), 2), Math.Round(values.Max(), 2, MidpointRounding.AwayFromZero));
                             break;
                     }
                 }
@@ -145,9 +145,9 @@ namespace CapFrameX.Sensor.Reporting
                     sensorReportItems.Add(new SensorReportItem
                     {
                         Name = sensor.DisplayName,
-                        MinValue = Math.Round(sensor.Values.Min(), roundingDigits),
-                        AverageValue = Math.Round(sensor.Values.Average(), roundingDigits),
-                        MaxValue = Math.Round(sensor.Values.Max(), roundingDigits),
+                        MinValue = Math.Round(sensor.Values.Min(), roundingDigits, MidpointRounding.AwayFromZero),
+                        AverageValue = Math.Round(sensor.Values.Average(), roundingDigits, MidpointRounding.AwayFromZero),
+                        MaxValue = Math.Round(sensor.Values.Max(), roundingDigits, MidpointRounding.AwayFromZero),
                         RoundingDigits = roundingDigits
                     });
                 }
@@ -283,7 +283,7 @@ namespace CapFrameX.Sensor.Reporting
         public static double GetPercentageInGpuLoadLimit(IEnumerable<int> values)
         {
             double limitvalues = values.Count(val => val >= 97);
-            double percentage = Math.Round((limitvalues / values.Count()) * 100);
+            double percentage = Math.Round((limitvalues / values.Count()) * 100, MidpointRounding.AwayFromZero);
 
             return percentage;
         }

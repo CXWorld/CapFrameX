@@ -627,7 +627,7 @@ namespace CapFrameX.Overlay
 
 			if (averageEntry != null && averageEntry.ShowOnOverlay)
 			{
-				averageEntry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.Average));
+				averageEntry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.Average), MidpointRounding.AwayFromZero);
 			}
 
 			// P1
@@ -635,7 +635,7 @@ namespace CapFrameX.Overlay
 
 			if (p1Entry != null && p1Entry.ShowOnOverlay)
 			{
-				p1Entry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.P1));
+				p1Entry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.P1), MidpointRounding.AwayFromZero);
 			}
 
             // P0.1
@@ -643,7 +643,7 @@ namespace CapFrameX.Overlay
 
             if (p1dot1Entry != null && p1dot1Entry.ShowOnOverlay)
             {
-                p1dot1Entry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.P0dot1));
+                p1dot1Entry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.P0dot1), MidpointRounding.AwayFromZero);
             }
 
             // P0.2
@@ -651,7 +651,7 @@ namespace CapFrameX.Overlay
 
 			if (p1dot2Entry != null && p1dot2Entry.ShowOnOverlay)
 			{
-				p1dot2Entry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.P0dot2));
+				p1dot2Entry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.P0dot2), MidpointRounding.AwayFromZero);
 			}
 
 			// 1% Low
@@ -659,7 +659,7 @@ namespace CapFrameX.Overlay
 
 			if (onePercentLowEntry != null && onePercentLowEntry.ShowOnOverlay)
 			{
-				onePercentLowEntry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.OnePercentLowAverage));
+				onePercentLowEntry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.OnePercentLowAverage), MidpointRounding.AwayFromZero);
 			}
 
             // 0.1% Low
@@ -667,7 +667,7 @@ namespace CapFrameX.Overlay
 
             if (zeroDotOnePercentLowEntry != null && zeroDotOnePercentLowEntry.ShowOnOverlay)
             {
-                zeroDotOnePercentLowEntry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.ZerodotOnePercentLowAverage));
+                zeroDotOnePercentLowEntry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.ZerodotOnePercentLowAverage), MidpointRounding.AwayFromZero);
             }
 
             // 0.2% Low
@@ -675,7 +675,7 @@ namespace CapFrameX.Overlay
 
 			if (zeroDotTwoPercentLowEntry != null && zeroDotTwoPercentLowEntry.ShowOnOverlay)
 			{
-				zeroDotTwoPercentLowEntry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.ZerodotTwoPercentLowAverage));
+				zeroDotTwoPercentLowEntry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.ZerodotTwoPercentLowAverage), MidpointRounding.AwayFromZero);
 			}
 
             // GPU Active Time Average
@@ -683,7 +683,7 @@ namespace CapFrameX.Overlay
 
 			if (gpuActiveTimeAverage != null && gpuActiveTimeAverage.ShowOnOverlay)
 			{
-                gpuActiveTimeAverage.Value = Math.Round(_onlineMetricService.GetOnlineGpuActiveTimeMetricValue(EMetric.GpuActiveAverage), 1);
+                gpuActiveTimeAverage.Value = Math.Round(_onlineMetricService.GetOnlineGpuActiveTimeMetricValue(EMetric.GpuActiveAverage), 1, MidpointRounding.AwayFromZero);
 			}
 
             // CPU Active Time Average
@@ -691,7 +691,7 @@ namespace CapFrameX.Overlay
 
             if (cpuActiveTimeAverage != null && cpuActiveTimeAverage.ShowOnOverlay)
             {
-                cpuActiveTimeAverage.Value = Math.Round(_onlineMetricService.GetOnlineCpuActiveTimeMetricValue(EMetric.CpuActiveAverage), 1);
+                cpuActiveTimeAverage.Value = Math.Round(_onlineMetricService.GetOnlineCpuActiveTimeMetricValue(EMetric.CpuActiveAverage), 1, MidpointRounding.AwayFromZero);
             }
 
             // Frame Time Average
@@ -699,7 +699,7 @@ namespace CapFrameX.Overlay
 
 			if (frameTimeAverage != null && frameTimeAverage.ShowOnOverlay)
 			{
-                frameTimeAverage.Value = Math.Round(_onlineMetricService.GetOnlineFrameTimeMetricValue(EMetric.Average), 1);
+                frameTimeAverage.Value = Math.Round(_onlineMetricService.GetOnlineFrameTimeMetricValue(EMetric.Average), 1, MidpointRounding.AwayFromZero);
 			}
 
             // GPU Active Time Deviation
@@ -707,7 +707,7 @@ namespace CapFrameX.Overlay
 
 			if (gpuActiveTimeDeviation != null && gpuActiveTimeDeviation.ShowOnOverlay)
 			{
-                gpuActiveTimeDeviation.Value = Math.Round(_onlineMetricService.GetOnlineGpuActiveTimeDeviationMetricValue());
+                gpuActiveTimeDeviation.Value = Math.Round(_onlineMetricService.GetOnlineGpuActiveTimeDeviationMetricValue(), MidpointRounding.AwayFromZero);
 			}
 
 			// stuttering percentage (time)
@@ -715,7 +715,7 @@ namespace CapFrameX.Overlay
 
 			if (stutteringPercentage != null && stutteringPercentage.ShowOnOverlay)
 			{
-				stutteringPercentage.Value = Math.Round(_onlineMetricService.GetOnlineStutteringPercentageValue(), 1);
+				stutteringPercentage.Value = Math.Round(_onlineMetricService.GetOnlineStutteringPercentageValue(), 1, MidpointRounding.AwayFromZero);
 			}
 
 			// PMD metrics
@@ -732,17 +732,17 @@ namespace CapFrameX.Overlay
 				{
 					if (pmdGpuPowerCurrent != null && pmdGpuPowerCurrent.ShowOnOverlay)
 					{
-						pmdGpuPowerCurrent.Value = Math.Round(pmdMetrics.GpuPowerCurrent, 1);
+						pmdGpuPowerCurrent.Value = Math.Round(pmdMetrics.GpuPowerCurrent, 1, MidpointRounding.AwayFromZero);
 					}
 
 					if (pmdcpuPowerCurrent != null && pmdcpuPowerCurrent.ShowOnOverlay)
 					{
-						pmdcpuPowerCurrent.Value = Math.Round(pmdMetrics.CpuPowerCurrent, 1);
+						pmdcpuPowerCurrent.Value = Math.Round(pmdMetrics.CpuPowerCurrent, 1, MidpointRounding.AwayFromZero);
 					}
 
 					if (pmdSystemPowerCurrent != null && pmdSystemPowerCurrent.ShowOnOverlay)
 					{
-						pmdSystemPowerCurrent.Value = Math.Round(pmdMetrics.SystemPowerCurrent, 1);
+						pmdSystemPowerCurrent.Value = Math.Round(pmdMetrics.SystemPowerCurrent, 1, MidpointRounding.AwayFromZero);
 					}
 				}
 			}
@@ -779,7 +779,7 @@ namespace CapFrameX.Overlay
 
 			if (ping != null && ping.ShowOnOverlay)
 			{
-				ping.Value = Math.Round(_ping, 0);
+				ping.Value = Math.Round(_ping, 0, MidpointRounding.AwayFromZero);
 				SetPing();
 			}
 		}

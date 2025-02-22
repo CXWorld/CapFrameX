@@ -167,7 +167,7 @@ namespace CapFrameX.Overlay
             _rTSSService.SetIsCaptureTimerActive(false);
 
             stopwatch.Stop();
-            _logger.LogInformation(GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
+            _logger.LogInformation(GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1, MidpointRounding.AwayFromZero));
         }
 
         public void StartCountdown(double seconds)
