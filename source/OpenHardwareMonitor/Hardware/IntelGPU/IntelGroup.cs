@@ -62,7 +62,15 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
 			catch (Exception ex) { Log.Logger.Error(ex, $"Error while getting Intel GPU device info."); }
         }
 
-		public void RemoveDefaultAdapter()
+        public void RemoveIntegratedGpu()
+        {
+            var internalGpu = hardware.FirstOrDefault(gpu => gpu.Name == "Intel(R) Arc(TM) Graphics");
+
+            if (internalGpu != null)
+                hardware.Remove(internalGpu);
+        }
+
+        public void RemoveDefaultAdapter()
 		{
 			if (!hardware.IsNullOrEmpty())
 			{

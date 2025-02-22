@@ -5,6 +5,7 @@
 // All Rights Reserved.
 
 using CapFrameX.Extensions;
+using Serilog;
 using System;
 using System.Runtime.InteropServices;
 
@@ -60,8 +61,33 @@ namespace OpenHardwareMonitor.Hardware.CPU
         public CPULoad(CPUID[][] cpuid)
         {
             this.cpuid = cpuid;
-            this.threadLoads = new float[cpuid.Length * cpuid[0].Length];
+
+            int threadCount = 0;
+            for (int i = 0; i < cpuid.Length; i++)
+            {
+                threadCount += cpuid[i].Length;
+            }
+
+            this.threadLoads = new float[threadCount];
             this.totalLoad = 0;
+
+            Log.Information($"CPULoad detected thread count: {threadCount}");
+
+            // check thread indices
+            for (int i = 0; i < cpuid.Length; i++)
+            {
+                for (int j = 0; j < cpuid[i].Length; j++)
+                {
+                    long index = cpuid[i][j].Thread;
+
+                    if (index >= threadLoads.Length)
+                    {
+                        Log.Error($"CPULoad thread index issue: {index}");
+                        break;
+                    }
+                }
+            }
+
             try
             {
                 GetTimes(out idleTimes, out totalTimes);
@@ -89,7 +115,13 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         public float GetThreadLoad(int thread)
         {
-            return threadLoads[thread];
+            float threadLoad = 0f;
+            if (thread < threadLoads.Length)
+            {
+                threadLoad = threadLoads[thread];
+            }
+
+            return threadLoad;
         }
 
         public void Update()
@@ -133,10 +165,14 @@ namespace OpenHardwareMonitor.Hardware.CPU
                         }
                         value = 1.0f - value;
                         value = value < 0 ? 0 : value;
-                        threadLoads[index] = value * 100;
 
-                        if (threadLoads[index] > this.maxLoad)
-                            this.maxLoad = threadLoads[index];
+                        if (index < threadLoads.Length)
+                        {
+                            threadLoads[index] = value * 100;
+
+                            if (threadLoads[index] > this.maxLoad)
+                                this.maxLoad = threadLoads[index];
+                        }
                     }
                 }
 

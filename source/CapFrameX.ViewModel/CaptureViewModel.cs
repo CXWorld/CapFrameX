@@ -947,8 +947,8 @@ namespace CapFrameX.ViewModel
                 {
                     try
                     {
-                        string mainWindoTitle = processes.First().MainWindowTitle.TrimEnd();
-                        string fileDescription = processes.First().MainModule.FileVersionInfo.FileDescription.TrimEnd();
+                        string mainWindoTitle = processes.First()?.MainWindowTitle?.TrimEnd();
+                        string fileDescription = processes.First()?.MainModule?.FileVersionInfo?.FileDescription?.TrimEnd();
 
                         // prefer file description
                         if (!fileDescription.IsNullOrEmpty())
