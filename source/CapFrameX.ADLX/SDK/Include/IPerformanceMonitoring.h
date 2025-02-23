@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -39,8 +39,7 @@ namespace adlx
         *Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedGPUUsage (adlx_bool* supported) = 0;
@@ -62,8 +61,7 @@ namespace adlx
         *Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedGPUClockSpeed (adlx_bool* supported) = 0;
@@ -85,8 +83,7 @@ namespace adlx
         *Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedGPUVRAMClockSpeed (adlx_bool* supported) = 0;
@@ -108,8 +105,7 @@ namespace adlx
         *Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedGPUTemperature (adlx_bool* supported) = 0;
@@ -131,8 +127,7 @@ namespace adlx
         *Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedGPUHotspotTemperature (adlx_bool* supported) = 0;
@@ -154,8 +149,7 @@ namespace adlx
         *Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedGPUPower (adlx_bool* supported) = 0;
@@ -177,8 +171,7 @@ namespace adlx
         *Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedGPUTotalBoardPower(adlx_bool* supported) = 0;
@@ -200,8 +193,7 @@ namespace adlx
         *Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedGPUFanSpeed (adlx_bool* supported) = 0;
@@ -223,8 +215,7 @@ namespace adlx
         *Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedGPUVRAM (adlx_bool* supported) = 0;
@@ -246,11 +237,11 @@ namespace adlx
         *Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedGPUVoltage (adlx_bool* supported) = 0;
+
         /**
         *@page DOX_IADLXGPUMetricsSupport_GetGPUUsageRange GetGPUUsageRange
         *@ENG_START_DOX @brief Gets the minimum and maximum GPU usage on a GPU. @ENG_END_DOX
@@ -273,8 +264,7 @@ namespace adlx
         *@ENG_START_DOX @details The minimum and maximum GPU usage are read only. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetGPUUsageRange (adlx_int* minValue, adlx_int* maxValue) = 0;
@@ -300,8 +290,7 @@ namespace adlx
         *@ENG_START_DOX @details The minimum and maximum GPU clock speed are read only. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetGPUClockSpeedRange (adlx_int* minValue, adlx_int* maxValue) = 0;
@@ -327,8 +316,7 @@ namespace adlx
         *@ENG_START_DOX @details The minimum and maximum VRAM clock speed are read only. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetGPUVRAMClockSpeedRange (adlx_int* minValue, adlx_int* maxValue) = 0;
@@ -354,8 +342,7 @@ namespace adlx
         *@ENG_START_DOX @details The minimum and maximum GPU temperature are read only. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetGPUTemperatureRange (adlx_int* minValue, adlx_int* maxValue) = 0;
@@ -381,8 +368,7 @@ namespace adlx
         *@ENG_START_DOX @details The minimum and maximum GPU hotspot temperature are read only. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetGPUHotspotTemperatureRange (adlx_int* minValue, adlx_int* maxValue) = 0;
@@ -408,8 +394,7 @@ namespace adlx
         *@ENG_START_DOX @details The minimum and maximum GPU power consumption are read only. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetGPUPowerRange (adlx_int* minValue, adlx_int* maxValue) = 0;
@@ -435,8 +420,7 @@ namespace adlx
         *@ENG_START_DOX @details The minimum and maximum GPU fan speed are read only. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetGPUFanSpeedRange (adlx_int* minValue, adlx_int* maxValue) = 0;
@@ -462,8 +446,7 @@ namespace adlx
         *@ENG_START_DOX @details The minimum and maximum GPU memory are read only. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetGPUVRAMRange (adlx_int* minValue, adlx_int* maxValue) = 0;
@@ -489,8 +472,7 @@ namespace adlx
         *@ENG_START_DOX @details The minimum and maximum GPU voltage are read only. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetGPUVoltageRange (adlx_int* minValue, adlx_int* maxValue) = 0;
@@ -516,8 +498,7 @@ namespace adlx
         *@ENG_START_DOX @details The minimum and maximum GPU total board power consumption are read only. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetGPUTotalBoardPowerRange (adlx_int* minValue, adlx_int* maxValue) = 0;
@@ -543,8 +524,7 @@ namespace adlx
         *@ENG_START_DOX @details The minimum and maximum GPU intake temperature are read only. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetGPUIntakeTemperatureRange (adlx_int* minValue, adlx_int* maxValue) = 0;
@@ -566,8 +546,7 @@ namespace adlx
         *Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedGPUIntakeTemperature (adlx_bool* supported) = 0;
@@ -644,8 +623,7 @@ namespace adlx
         *Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXSystemMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedCPUUsage (adlx_bool* supported) = 0;
@@ -667,8 +645,7 @@ namespace adlx
         *Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXSystemMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedSystemRAM (adlx_bool* supported) = 0;
@@ -690,8 +667,7 @@ namespace adlx
         *Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXSystemMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedSmartShift (adlx_bool* supported) = 0;
@@ -717,8 +693,7 @@ namespace adlx
         *@ENG_START_DOX @details The minimum and maximum CPU usage are read only. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXSystemMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetCPUUsageRange (adlx_int* minValue, adlx_int* maxValue) = 0;
@@ -744,8 +719,7 @@ namespace adlx
         *@ENG_START_DOX @details The minimum and maximum system RAM are read only. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXSystemMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetSystemRAMRange (adlx_int* minValue, adlx_int* maxValue) = 0;
@@ -771,8 +745,7 @@ namespace adlx
         *@ENG_START_DOX @details The minimum and maximum SmartShift value are read only. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXSystemMetricsSupport_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetSmartShiftRange (adlx_int* minValue, adlx_int* maxValue) = 0;
@@ -833,8 +806,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details The timestamp is the duration (in ms) from the system epoch time to the time when the metric sample was acquired. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL TimeStamp (adlx_int64* ms) = 0;
@@ -856,8 +828,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GPUUsage (adlx_double* data) = 0;
@@ -879,8 +850,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GPUClockSpeed (adlx_int* data) = 0;
@@ -902,15 +872,15 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GPUVRAMClockSpeed (adlx_int* data) = 0;
         /**
         *@page DOX_IADLXGPUMetrics_GPUTemperature GPUTemperature
-        *@ENG_START_DOX @brief Gets the GPU temperature of a GPU metric sample.
-        *@details GPUTemperature reports the average temperature measured at the edge of the die of the GPU. This is sometimes referred to as ‘Edge Temperature’. 
+        *@ENG_START_DOX
+        *@brief Gets the GPU temperature of a GPU metric sample.
+		*@details GPUTemperature reports the average temperature measured at the edge of the die of the GPU. This is sometimes referred to as ‘Edge Temperature’.
 		*@ENG_END_DOX
 		*
         *@syntax
@@ -928,8 +898,8 @@ namespace adlx
         *@addinfo
         * @ENG_START_DOX Related method: @ref DOX_IADLXGPUMetrics_GPUHotspotTemperature, @ref DOX_IADLXGPUMetrics_GPUIntakeTemperature. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *
+        *@copydoc IADLXGPUMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GPUTemperature (adlx_double* data) = 0;
@@ -940,7 +910,7 @@ namespace adlx
 		*@details GPUHotspotTemperature reports the highest temperature measured on the die of the GPU from a collection of junction temperature sensors on the die. This is sometimes referred to as ‘Junction Temperature’.
 		*@ENG_END_DOX
 		*
-        *@syntax
+		*@syntax
         *@codeStart
         * @ref ADLX_RESULT    GPUHotspotTemperature (adlx_double* data)
         *@codeEnd
@@ -954,18 +924,20 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *@addinfo
-        *  @ENG_START_DOX Related method: @ref DOX_IADLXGPUMetrics_GPUIntakeTemperature, @ref DOX_IADLXGPUMetrics_GPUTemperature. @ENG_END_DOX
+        * @ENG_START_DOX Related method: @ref DOX_IADLXGPUMetrics_GPUIntakeTemperature, @ref DOX_IADLXGPUMetrics_GPUTemperature. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *
+        *@copydoc IADLXGPUMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GPUHotspotTemperature (adlx_double* data) = 0;
         /**
         *@page DOX_IADLXGPUMetrics_GPUPower GPUPower
-        *@ENG_START_DOX @brief Gets the GPU power consumption of a GPU metric sample. @ENG_END_DOX
-        *
-        *@syntax
+        *@ENG_START_DOX
+        *@brief Gets the GPU power consumption of a GPU metric sample.
+		*@ENG_END_DOX
+		*
+		*@syntax
         *@codeStart
         * @ref ADLX_RESULT    GPUPower (adlx_double* data)
         *@codeEnd
@@ -979,8 +951,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+		*@copydoc IADLXGPUMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GPUPower (adlx_double* data) = 0;
@@ -1004,8 +975,7 @@ namespace adlx
         *@addinfo
         * @ENG_START_DOX The method returns power of all components on the board including VRAM. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GPUTotalBoardPower(adlx_double* data) = 0;
@@ -1027,8 +997,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GPUFanSpeed (adlx_int* data) = 0;
@@ -1050,8 +1019,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GPUVRAM (adlx_int* data) = 0;
@@ -1073,8 +1041,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GPUVoltage (adlx_int* data) = 0;
@@ -1101,8 +1068,7 @@ namespace adlx
         * @ENG_START_DOX Related method: @ref DOX_IADLXGPUMetrics_GPUHotspotTemperature, @ref DOX_IADLXGPUMetrics_GPUTemperature. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GPUIntakeTemperature (adlx_double* data) = 0;
@@ -1184,8 +1150,7 @@ namespace adlx
         * In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        * @copydoc IADLXGPUMetricsList_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL At (const adlx_uint location, IADLXGPUMetrics** ppItem) = 0;
@@ -1208,8 +1173,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUMetricsList_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL Add_Back (IADLXGPUMetrics* pItem) = 0;
@@ -1278,8 +1242,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details The timestamp is the duration (in ms) from the system epoch time to the time when the metric sample was acquired. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXSystemMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL TimeStamp (adlx_int64* ms) = 0;
@@ -1301,8 +1264,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXSystemMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL CPUUsage (adlx_double* data) = 0;
@@ -1324,8 +1286,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXSystemMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL SystemRAM (adlx_int* data) = 0;
@@ -1355,8 +1316,7 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX  AMD SmartShift helps boost notebook performance by dynamically shifting the power between the CPU and the GPU depending on the workload. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXSystemMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL SmartShift (adlx_int* data) = 0;
@@ -1430,8 +1390,7 @@ namespace adlx
         * In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        * @copydoc IADLXSystemMetricsList_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL At (const adlx_uint location, IADLXSystemMetrics** ppItem) = 0;
@@ -1454,8 +1413,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXSystemMetricsList_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL Add_Back (IADLXSystemMetrics* pItem) = 0;
@@ -1524,8 +1482,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details The timestamp is the duration (in ms) from the system epoch time to the time when the metric sample was acquired. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXFPS_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL TimeStamp (adlx_int64* ms) = 0;
@@ -1547,8 +1504,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXFPS_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL FPS (adlx_int* data) = 0;
@@ -1620,8 +1576,7 @@ namespace adlx
         * In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        * @copydoc IADLXFPSList_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL At (const adlx_uint location, IADLXFPS** ppItem) = 0;
@@ -1644,8 +1599,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXFPSList_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL Add_Back (IADLXFPS* pItem) = 0;
@@ -1715,8 +1669,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details The timestamp is the duration (in ms) from the system epoch time to the time when the metric sample was acquired. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXAllMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL TimeStamp (adlx_int64* ms) = 0;
@@ -1743,8 +1696,7 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX  In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXAllMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetSystemMetrics (IADLXSystemMetrics** ppSystemMetrics) = 0;
@@ -1771,8 +1723,7 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX  In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXAllMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetFPS (IADLXFPS** ppFPS) = 0;
@@ -1800,8 +1751,7 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX  In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXAllMetrics_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetGPUMetrics (IADLXGPU* pGPU, IADLXGPUMetrics** ppGPUMetrics) = 0;
@@ -1875,8 +1825,7 @@ namespace adlx
         * In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        * @copydoc IADLXAllMetricsList_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL At (const adlx_uint location, IADLXAllMetrics** ppItem) = 0;
@@ -1901,8 +1850,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXAllMetricsList_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL Add_Back (IADLXAllMetrics* pItem) = 0;
@@ -1972,8 +1920,7 @@ namespace adlx
         *@ENG_START_DOX @details The maximum sampling interval, minimum sampling interval, and step sampling interval are read only. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetSamplingIntervalRange (ADLX_IntRange* range) = 0;
@@ -1996,11 +1943,10 @@ namespace adlx
         *
         *@detaileddesc
         *@ENG_START_DOX @details The sampling interval is the time gap between two samples.
-        * Obtain the sampling interval range with @ref DOX_IADLXPerformanceMonitoringServices_GetSamplingIntervalRange. The default sampling interval is 100 ms.
+        * Obtain the sampling interval range with @ref DOX_IADLXPerformanceMonitoringServices_GetSamplingIntervalRange. The default sampling interval is 1000 ms.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL SetSamplingInterval (adlx_int askedIntervalMs) = 0;
@@ -2026,8 +1972,7 @@ namespace adlx
         * Obtain the sampling interval range with @ref DOX_IADLXPerformanceMonitoringServices_GetSamplingIntervalRange. The default sampling interval is 1000 ms.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetSamplingInterval (adlx_int* intervalMs) = 0;
@@ -2052,8 +1997,7 @@ namespace adlx
         *@ENG_START_DOX @details The maximum buffer size, minimum buffer size, and step buffer size are read only. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetMaxPerformanceMetricsHistorySizeRange (ADLX_IntRange* range) = 0;
@@ -2079,8 +2023,7 @@ namespace adlx
         * The default buffer duration is 100 s. If the monitoring continues longer than the buffer duration, the old performance samples are discarded to give buffer space to the latest samples.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL SetMaxPerformanceMetricsHistorySize (adlx_int sizeSec) = 0;
@@ -2106,8 +2049,7 @@ namespace adlx
         * The default buffer duration is 100 s. If the monitoring continues longer than the buffer duration, the old performance samples are discarded to give buffer space to the latest samples.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetMaxPerformanceMetricsHistorySize (adlx_int* sizeSec) = 0;
@@ -2129,8 +2071,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL ClearPerformanceMetricsHistory () = 0;
@@ -2155,8 +2096,7 @@ namespace adlx
         *@ENG_START_DOX @details The buffer duration ranges between 50 s and 100 s. The default size is 100 s.
         * If the monitoring continues longer than the buffer duration, the old performance samples are discarded to give buffer space to the new samples. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetCurrentPerformanceMetricsHistorySize (adlx_int* sizeSec) = 0;
@@ -2183,8 +2123,7 @@ namespace adlx
         * If the monitoring continues longer than the buffer duration, the old performance samples are discarded to give buffer space to the new samples.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL StartPerformanceMetricsTracking () = 0;
@@ -2211,8 +2150,7 @@ namespace adlx
         * If the monitoring continues longer than the buffer duration, the old performance samples are discarded to give buffer space to the new samples.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL StopPerformanceMetricsTracking () = 0;
@@ -2237,7 +2175,7 @@ namespace adlx
         *
         *@detaileddesc
         *@ENG_START_DOX @details Use the __startMs__ and __stopMs__ to specify the time intervals for fetching the history.
-        * - To get the reference counted list of all the performance metric samples from the performance monitoring buffer, specify both the __startMs__ and __stopMs__ as zero.<br>
+        * - To get the reference counted list of the latest performance metric samples from the performance monitoring buffer, specify both the __startMs__ and __stopMs__ as zero.<br>
         * - To get the reference counted list of the performance metric samples from A ms ago to the present time, specify __startMs__ as A ms and __stopMs__ as zero. <br>
         * - To get the reference counted list of the performance metric samples from A ms ago to B ms ago, specify __startMs__ as A ms and __stopMs__ as B ms. <br>
         *
@@ -2247,8 +2185,7 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetAllMetricsHistory (adlx_int startMs, adlx_int stopMs, IADLXAllMetricsList** ppMetricsList) = 0;
@@ -2274,7 +2211,7 @@ namespace adlx
         *
         *@detaileddesc
         *@ENG_START_DOX @details Use the __startMs__ and __stopMs__ to specify the time intervals for fetching the history.
-        * - To get the reference counted list of all the performance metric samples from the performance monitoring buffer, specify both the __startMs__ and __stopMs__ as zero.<br>
+        * - To get the reference counted list of the latest performance metric samples from the performance monitoring buffer, specify both the __startMs__ and __stopMs__ as zero.<br>
         * - To get the reference counted list of the performance metric samples from A ms ago to the present time, specify __startMs__ as A ms and __stopMs__ as zero. <br>
         * - To get the reference counted list of the performance metric samples from A ms ago to B ms ago, specify __startMs__ as A ms and __stopMs__ as B ms. <br>
         *
@@ -2284,15 +2221,7 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
-        *
-        *
-        *@addinfo
-        *@ENG_START_DOX In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
-        *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetGPUMetricsHistory (IADLXGPU* pGPU, adlx_int startMs, adlx_int stopMs, IADLXGPUMetricsList** ppMetricsList) = 0;
@@ -2317,7 +2246,7 @@ namespace adlx
         *
         *@detaileddesc
         *@ENG_START_DOX @details Use the __startMs__ and __stopMs__ to specify the time intervals for fetching the history.
-        * - To get the reference counted list of all the performance metric samples from the performance monitoring buffer, specify both the __startMs__ and __stopMs__ as zero.<br>
+        * - To get the reference counted list of the latest performance metric samples from the performance monitoring buffer, specify both the __startMs__ and __stopMs__ as zero.<br>
         * - To get the reference counted list of the performance metric samples from A ms ago to the present time, specify __startMs__ as A ms and __stopMs__ as zero. <br>
         * - To get the reference counted list of the performance metric samples from A ms ago to B ms ago, specify __startMs__ as A ms and __stopMs__ as B ms. <br>
         *
@@ -2327,15 +2256,7 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
-        *
-        *
-        *@addinfo
-        *@ENG_START_DOX In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
-        *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetSystemMetricsHistory (adlx_int startMs, adlx_int stopMs, IADLXSystemMetricsList** ppMetricsList) = 0;
@@ -2360,7 +2281,7 @@ namespace adlx
         *
         *@detaileddesc
         *@ENG_START_DOX @details Use the __startMs__ and __stopMs__ to specify the time intervals for fetching the history.
-        * - To get the reference counted list of all the performance metric samples from the performance monitoring buffer, specify both the __startMs__ and __stopMs__ as zero.<br>
+        * - To get the reference counted list of the latest performance metric samples from the performance monitoring buffer, specify both the __startMs__ and __stopMs__ as zero.<br>
         * - To get the reference counted list of the performance metric samples from A ms ago to the present time, specify __startMs__ as A ms and __stopMs__ as zero. <br>
         * - To get the reference counted list of the performance metric samples from A ms ago to B ms ago, specify __startMs__ as A ms and __stopMs__ as B ms. <br>
         *
@@ -2372,15 +2293,7 @@ namespace adlx
         * __Note:__ The FPS metric is only available while a 3D graphics application or game runs in exclusive full screen mode.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
-        *
-        *
-        *@addinfo
-        *@ENG_START_DOX In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
-        *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetFPSHistory (adlx_int startMs, adlx_int stopMs, IADLXFPSList** ppMetricsList) = 0;
@@ -2403,13 +2316,13 @@ namespace adlx
         *
         *@detaileddesc
         *@ENG_START_DOX @details The returned interface must be discarded with @ref DOX_IADLXInterface_Release when it is no longer needed.
+        * It takes some time and is suitable for a single acquisition. For continuous collection, it is recommended to use @ref DOX_IADLXPerformanceMonitoringServices_GetAllMetricsHistory.
         * @ENG_END_DOX
         *
         *@addinfo
         *@ENG_START_DOX In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetCurrentAllMetrics (IADLXAllMetrics** ppMetrics) = 0;
@@ -2433,13 +2346,13 @@ namespace adlx
         *
         *@detaileddesc
         *@ENG_START_DOX @details The returned interface must be discarded with @ref DOX_IADLXInterface_Release when it is no longer needed.
+        * It takes some time and is suitable for a single acquisition. For continuous collection, it is recommended to use @ref DOX_IADLXPerformanceMonitoringServices_GetGPUMetricsHistory.
         * @ENG_END_DOX
         *
         *@addinfo
         *@ENG_START_DOX In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetCurrentGPUMetrics (IADLXGPU* pGPU, IADLXGPUMetrics** ppMetrics) = 0;
@@ -2462,13 +2375,13 @@ namespace adlx
         *
         *@detaileddesc
         *@ENG_START_DOX @details The returned interface must be discarded with @ref DOX_IADLXInterface_Release when it is no longer needed.
+        * It takes some time and is suitable for a single acquisition. For continuous collection, it is recommended to use @ref DOX_IADLXPerformanceMonitoringServices_GetSystemMetricsHistory.
         * @ENG_END_DOX
         *
         *@addinfo
         *@ENG_START_DOX In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetCurrentSystemMetrics (IADLXSystemMetrics** ppMetrics) = 0;
@@ -2491,6 +2404,7 @@ namespace adlx
         *
         *@detaileddesc
         *@ENG_START_DOX @details The returned interface must be discarded with @ref DOX_IADLXInterface_Release when it is no longer needed.
+        * It takes some time and is suitable for a single acquisition. For continuous collection, it is recommended to use @ref DOX_IADLXPerformanceMonitoringServices_GetFPSHistory.
         * @ENG_END_DOX
         *
         *@addinfo
@@ -2499,8 +2413,7 @@ namespace adlx
         * __Note:__ The FPS metric is only available while a 3D graphics application or game runs in exclusive full screen mode.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetCurrentFPS (IADLXFPS** ppMetrics) = 0;
@@ -2529,8 +2442,7 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetSupportedGPUMetrics (IADLXGPU* pGPU, IADLXGPUMetricsSupport** ppMetricsSupported) = 0;
@@ -2558,8 +2470,7 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IPerformanceMonitoring.h", @ADLX_First_Ver}
+        *@copydoc IADLXPerformanceMonitoringServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetSupportedSystemMetrics (IADLXSystemMetricsSupport** ppMetricsSupported) = 0;

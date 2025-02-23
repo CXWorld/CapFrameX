@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -290,7 +290,9 @@ typedef enum
     ADLX_ORPHAN_OBJECTS,            /**< @ENG_START_DOX This result indicates that ADLX was terminated with outstanding ADLX objects. Any interface obtained from ADLX points to invalid memory and calls in their methods will result in unexpected behavior. @ENG_END_DOX */
     ADLX_NOT_SUPPORTED,             /**< @ENG_START_DOX This result indicates that the asked feature is not supported. @ENG_END_DOX */
     ADLX_PENDING_OPERATION,         /**< @ENG_START_DOX This result indicates a failure due to an operation currently in progress. @ENG_END_DOX */
-    ADLX_GPU_INACTIVE               /**< @ENG_START_DOX This result indicates that the GPU is inactive. @ENG_END_DOX */
+    ADLX_GPU_INACTIVE,              /**< @ENG_START_DOX This result indicates that the GPU is inactive. @ENG_END_DOX */
+    ADLX_GPU_IN_USE,                /**< @ENG_START_DOX This result indicates that the GPU is in used by applications. @ENG_END_DOX */
+    ADLX_TIMEOUT_OPERATION          /**< @ENG_START_DOX This result indicates that the operation is timeout. @ENG_END_DOX */
 } ADLX_RESULT;
 
 /**
@@ -316,6 +318,11 @@ typedef enum
 #define ADLX_FAILED(x) (ADLX_OK != (x)  && ADLX_ALREADY_ENABLED != (x) && ADLX_ALREADY_INITIALIZED != (x))
 
 #pragma endregion ADLX_RESULT
+
+#if defined (__cplusplus)
+namespace adlx
+{
+#endif
 
 #pragma region ADLX_HG_TYPE
 /**
@@ -352,6 +359,51 @@ typedef enum
     ASIC_EMBEDDED,                  /**< @ENG_START_DOX The ASIC family type is Embedded. @ENG_END_DOX */
 } ADLX_ASIC_FAMILY_TYPE;
 #pragma endregion ADLX_ASIC_FAMILY_TYPE
+
+#pragma region ADLX_PCI_BUS_TYPE
+/**
+ * @enum ADLX_PCI_BUS_TYPE
+ * @ingroup enumerations
+ * @ENG_START_DOX
+ * @brief Indicates the PCI bus type.
+ * @ENG_END_DOX
+ */
+typedef enum
+{
+    UNDEFINED = 0,              /**< @ENG_START_DOX The PCI bus type is not defined. @ENG_END_DOX */
+    PCI,                        /**< @ENG_START_DOX The PCI bus type is PCI bus. @ENG_END_DOX */
+    AGP,                        /**< @ENG_START_DOX The PCI bus type is AGP bus. @ENG_END_DOX */
+    PCIE,                       /**< @ENG_START_DOX The PCI bus type is PCI Express bus. @ENG_END_DOX */
+    PCIE_2_0,                   /**< @ENG_START_DOX The PCI bus type is PCI Express 2nd generation bus. @ENG_END_DOX */
+    PCIE_3_0,                   /**< @ENG_START_DOX The PCI bus type is PCI Express 3rd generation bus. @ENG_END_DOX */
+    PCIE_4_0                    /**< @ENG_START_DOX The PCI bus type is PCI Express 4th generation bus. @ENG_END_DOX */
+} ADLX_PCI_BUS_TYPE;
+#pragma endregion ADLX_PCI_BUS_TYPE
+
+#pragma region ADLX_DP_LINK_RATE
+/**
+ * @enum ADLX_DP_LINK_RATE
+ * @ingroup enumerations
+ * @ENG_START_DOX
+ * @brief Indicates the DP link rate.
+ * @ENG_END_DOX
+ */
+typedef enum
+{
+    DP_LINK_RATE_UNKNOWN = 0,    /**< @ENG_START_DOX The DP link rate is unknown. @ENG_END_DOX */
+    DP_LINK_RATE_RBR,            /**< @ENG_START_DOX The DP link rate is 1.62 Gbps/Lane. @ENG_END_DOX */
+    DP_LINK_RATE_2_16GBPS,       /**< @ENG_START_DOX The DP link rate is 2.16 Gbps/Lane. @ENG_END_DOX */
+    DP_LINK_RATE_2_43GBPS,       /**< @ENG_START_DOX The DP link rate is 2.43 Gbps/Lane. @ENG_END_DOX */
+    DP_LINK_RATE_HBR,            /**< @ENG_START_DOX The DP link rate is 2.70 Gbps/Lane. @ENG_END_DOX */
+    DP_LINK_RATE_4_32GBPS,       /**< @ENG_START_DOX The DP link rate is 4.32 Gbps/Lane. @ENG_END_DOX */
+    DP_LINK_RATE_HBR2,           /**< @ENG_START_DOX The DP link rate is 5.40 Gbps/Lane. @ENG_END_DOX */
+    DP_LINK_RATE_HBR3,           /**< @ENG_START_DOX The DP link rate is 8.10 Gbps/Lane. @ENG_END_DOX */
+    DP_LINK_RATE_UHBR10,         /**< @ENG_START_DOX The DP link rate is 10 Gbps/Lane. @ENG_END_DOX */
+    DP_LINK_RATE_UHBR13D5,       /**< @ENG_START_DOX The DP link rate is 13.5 Gbps/Lane. @ENG_END_DOX */
+    DP_LINK_RATE_UHBR20          /**< @ENG_START_DOX The DP link rate is 20 Gbps/Lane. @ENG_END_DOX */
+} ADLX_DP_LINK_RATE;
+
+#pragma endregion ADLX_DP_LINK_RATE
 
 #pragma region ADLX_GPU_TYPE
 /**
@@ -568,8 +620,8 @@ typedef enum
  */
 typedef enum {
     DESKTOP_SINGLE = 0,     /**< @ENG_START_DOX Single display desktop: one display showing the entire desktop @ENG_END_DOX */
-    DESKTOP_DUPLCATE = 1,   /**< @ENG_START_DOX Duplicate desktop: two or mode displays each show the entire desktop @ENG_END_DOX */
-    DESKTOP_EYEFINITY = 2,  /**< @ENG_START_DOX AMD Eyefinity desktop: two or mode displays each show a portion of the desktop @ENG_END_DOX */
+    DESKTOP_DUPLCATE = 1,   /**< @ENG_START_DOX Duplicate desktop: two or more displays each show the entire desktop @ENG_END_DOX */
+    DESKTOP_EYEFINITY = 2,  /**< @ENG_START_DOX AMD Eyefinity desktop: two or more displays each show a portion of the desktop @ENG_END_DOX */
 } ADLX_DESKTOP_TYPE;
 #pragma endregion ADLX_DESKTOP_TYPE
 
@@ -806,7 +858,7 @@ typedef enum
  *  @enum ADLX_MEMORYTIMING_DESCRIPTION
  *  @ingroup enumerations
  *  @ENG_START_DOX
- *  @brief Indicates the priority of the log entry.
+ *  @brief Indicates the memory timing description.
  *  @ENG_END_DOX
  */
 typedef enum
@@ -886,8 +938,72 @@ typedef enum
 } ADLX_3DLUT_COLORSPACE;
 #pragma endregion ADLX_3DLUT_COLORSPACE
 
-#pragma endregion ADLX data types
+#pragma region ADLX_SSM_BIAS_MODE
+/** @enum ADLX_SSM_BIAS_MODE
+ *  @ingroup enumerations
+ * @ENG_START_DOX
+ *  @brief AMD SmartShift Max bias mode.
+ * @ENG_END_DOX
+ */
+typedef enum
+{
+    SSM_BIAS_AUTO = 0,       /**< @ENG_START_DOX The bias control type is auto. @ENG_END_DOX */
+    SSM_BIAS_MANUAL          /**< @ENG_START_DOX The bias control type is manual. @ENG_END_DOX */
+}ADLX_SSM_BIAS_MODE;
+#pragma endregion ADLX_SSM_BIAS_MODE
 
+#pragma region ADLX_ANTILAG_STATE
+/**
+ * @enum ADLX_ANTILAG_STATE
+ * @ingroup enumerations
+ * @ENG_START_DOX
+ * @brief Indicates the state of Anti Lag.
+ * @ENG_END_DOX
+ */
+typedef enum
+{
+    ANTILAG = 0,                        /**< @ENG_START_DOX The Antilag level is AntiLag. @ENG_END_DOX */
+    ANTILAGNEXT,                        /**< @ENG_START_DOX The Antilag level is AntiLag Next. @ENG_END_DOX */
+} ADLX_ANTILAG_STATE;
+#pragma endregion ADLX_ANTILAG_STATE
+
+#pragma region ADLX_MGPU_MODE
+/**
+ * @enum ADLX_MGPU_MODE
+ * @ingroup enumerations
+ * @ENG_START_DOX
+ * @brief Indicates the AMD MGPU mode.
+ * @ENG_END_DOX
+ */
+typedef enum
+{
+    MGPU_NONE = 0,                     /**< @ENG_START_DOX The GPU is not part of an AMD MGPU configuration. @ENG_END_DOX */
+    MGPU_PRIMARY,                      /**< @ENG_START_DOX The GPU is the primary GPU in an AMD MGPU configuration. @ENG_END_DOX */
+    MGPU_SECONDARY,                    /**< @ENG_START_DOX The GPU is the secondary GPU in an AMD MGPU configuration. @ENG_END_DOX */
+} ADLX_MGPU_MODE;
+#pragma endregion ADLX_MGPU_MODE
+
+#pragma region ADLX_APP_GPU_DEPENDENCY
+/**
+ * @enum ADLX_APP_GPU_DEPENDENCY
+ * @ingroup enumerations
+ * @ENG_START_DOX
+ * @brief Indicates the type of dependence of an application on the GPU on which it runs.
+ * @ENG_END_DOX
+ */
+typedef enum
+{
+    APP_GPU_UNKNOWN = 0,        /**< @ENG_START_DOX It is unknown if the application is bound to the GPU on which it runs. The application might behave unexpectedly if the GPU is powered off or disabled. @ENG_END_DOX */
+    APP_GPU_BOUND,              /**< @ENG_START_DOX The application is bound to the GPU on which it runs and will behave unexpectedly if the GPU is powered off or disabled. @ENG_END_DOX */
+    APP_GPU_NOT_BOUND,          /**< @ENG_START_DOX The application is not bound to this GPU on which it runs and will continue to run properly if the GPU is powered off or disabled. @ENG_END_DOX */
+} ADLX_APP_GPU_DEPENDENCY;
+
+#pragma endregion ADLX_APP_GPU_DEPENDENCY
+
+#pragma endregion ADLX data types
+#if defined (__cplusplus)
+} //namespace adlx
+#endif
 //-------------------------------------------------------------------------------------------------
 //definitions for IADLXInterface
 #pragma region ADLX_DECLARE_IID
@@ -1210,6 +1326,7 @@ namespace adlx
     }; //IADLXInterfacePtr_T
 
     typedef IADLXInterfacePtr_T<IADLXInterface> IADLXInterfacePtr;
+
 }   // namespace adlx
 #endif //__cplusplus
 #pragma endregion IADLXInterfacePtr

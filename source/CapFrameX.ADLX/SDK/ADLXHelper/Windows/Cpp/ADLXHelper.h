@@ -1,5 +1,5 @@
-// 
-// Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+//
+// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -27,7 +27,10 @@ public:
     * N/A
     *
     * @retvalues
+    * @ENG_START_DOX
     * An ADLXHelper object.
+    * @ENG_END_DOX
+    *
     * @requirements
     * @DetailsTable{#include "ADLXHelper/Windows/Cpp/ADLXHelper.h", @ADLX_First_Ver}
     */
@@ -53,6 +56,7 @@ public:
     * @ENG_START_DOX
     * @details This method calls @ref page_cppHelpTerminate.
     * @ENG_END_DOX
+    *
     * @requirements
     * @DetailsTable{#include "ADLXHelper/Windows/Cpp/ADLXHelper.h", @ADLX_First_Ver}
     */
@@ -75,10 +79,12 @@ public:
     * @paramrow{2.,[in],adlMainMemoryFree,@ref ADLX_ADL_Main_Memory_Free,@ENG_START_DOX The callback handler of the memory deallocation. @ENG_END_DOX}
     *
     * @retvalues
+    * @ENG_START_DOX
     * If __InitializeWithCallerAdl__ is successfully executed, __ADLX_OK__ is returned.<br>
     * If __InitializeWithCallerAdl__ is not successfully executed, an error code is returned.<br>
     * If ADLX was previously successfully initialized with any of the Initialize versions, __ADLX_ALREADY_INITIALIZED__ is returned.<br>
     * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
+    * @ENG_END_DOX
     *
     * @detaileddesc
     * @ENG_START_DOX
@@ -108,15 +114,19 @@ public:
     * N/A
     *
     * @retvalues
+    * @ENG_START_DOX
     * If __Initialize__ is successfully executed, __ADLX_OK__ is returned.<br>
     * If __Initialize__ is not successfully executed, an error code is returned.<br>
     * If ADLX was previously successfully initialized with any of the initialization functions, __ADLX_ALREADY_INITIALIZED__ is returned.<br>
     * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
+    * @ENG_END_DOX
     *
     * @detaileddesc
+    * @ENG_START_DOX
     * @details
     * This method is used when an application does not use the ADL library and initializes ADLX with default parameters.<br>
     * For more information for initializing ADLX with default parameters, refer to @ref @adlx_gpu_support "ADLX GPU Support".<br>
+    * @ENG_END_DOX
     *
     * @requirements
     * @DetailsTable{#include "ADLXHelper/Windows/Cpp/ADLXHelper.h", @ADLX_First_Ver}
@@ -137,15 +147,19 @@ public:
     * N/A
     *
     * @retvalues
+    * @ENG_START_DOX
     * If __InitializeWithIncompatibleDriver__ is successfully executed, __ADLX_OK__ is returned.<br>
     * If __InitializeWithIncompatibleDriver__ is not successfully executed, an error code is returned.<br>
     * If ADLX was previously successfully initialized with any of the Initialize versions, __ADLX_ALREADY_INITIALIZED__ is returned.<br>
     * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
+    * @ENG_END_DOX
     *
     * @detaileddesc
+    * @ENG_START_DOX
     * @details
     * This method is used when an application does not use the ADL library and initializes ADLX to consider AMD GPUs using legacy AMD graphics driver.<br>
     * For more information for initializing ADLX with a legacy driver, refer to @ref @adlx_gpu_support "ADLX GPU Support".<br>
+    * @ENG_END_DOX
     *
     * @requirements
     * @DetailsTable{#include "ADLXHelper/Windows/Cpp/ADLXHelper.h", @ADLX_First_Ver}
@@ -170,14 +184,18 @@ public:
     * N/A
     *
     * @retvalues
+    * @ENG_START_DOX
     * If __Terminate__ is successfully executed, __ADLX_OK__ is returned.<br>
     * If __Terminate__ is not successfully executed, an error code is returned.<br>
     * Refer to @ref ADLX_RESULT for success codes and error codes.
+    * @ENG_END_DOX
     *
     * @detaileddesc
+    * @ENG_START_DOX
     * @details
     * Any interface obtained from ADLX that is not released becomes invalid.<br>
     * Any attempt of calling ADLX interface after termination could result in errors such as exceptions or crashes.<br>
+    * @ENG_END_DOX
     *
     * @requirements
     *
@@ -201,7 +219,9 @@ public:
     * N/A
     *
     * @retvalues
+    * @ENG_START_DOX
     * The full version of ADLX.
+    * @ENG_END_DOX
     *
     * @requirements
     * @DetailsTable{#include "ADLXHelper/Windows/Cpp/ADLXHelper.h", @ADLX_First_Ver}
@@ -222,12 +242,14 @@ public:
     * N/A
     *
     * @retvalues
+    * @ENG_START_DOX
     * The version of ADLX.
+    * @ENG_END_DOX
     *
     * @requirements
     * @DetailsTable{#include "ADLXHelper/Windows/Cpp/ADLXHelper.h", @ADLX_First_Ver}
     */
-    const char* QueryVersion();
+    const char* QueryVersion ();
 
     /**
     * @page page_cppHelpGetSystemServices GetSystemServices
@@ -243,8 +265,10 @@ public:
     * N/A
     *
     * @retvalues
+    * @ENG_START_DOX
     * If ADLX was successfully initialized before this method call, the @ref DOX_IADLXSystem interface is returned.<br>
     * If ADLX was not successfully initialized, __nullptr__ is returned.
+    * @ENG_END_DOX
     *
     * @requirements
     * @DetailsTable{#include "ADLXHelper/Windows/Cpp/ADLXHelper.h", @ADLX_First_Ver}
@@ -265,15 +289,19 @@ public:
     * N/A
     *
     * @retvalues
+    * @ENG_START_DOX
     * If ADLX was successfully initialized with ADL, a valid pointer of the @ref DOX_IADLMapping interface is returned.<br>
     * If ADLX was initialized under any of the following circumstances, __nullptr__ is returned.<br>
     * - ADLX initialization was with other initialization methods.<br>
     * - ADLX initialization was failed.<br>
     * - ADLX initialization was not called.<br>
+    * @ENG_END_DOX
     *
     * @detaileddesc
+    * @ENG_START_DOX
     * @details
     * __GetAdlMapping__ is used to convert data between ADL and ADLX in applications where ADLX was initialized with @ref page_cppHelpInitializeWithCallerAdl.
+    * @ENG_END_DOX
     *
     * @requirements
     * @DetailsTable{#include "ADLXHelper/Windows/Cpp/ADLXHelper.h", @ADLX_First_Ver}

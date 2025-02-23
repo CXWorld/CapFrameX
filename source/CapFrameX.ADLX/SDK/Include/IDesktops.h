@@ -1,5 +1,5 @@
 // 
-// Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -43,8 +43,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details The desktop orientation indicates the rotation angle of the desktop.<br> @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+        *@copydoc IADLXDesktop_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL Orientation (ADLX_ORIENTATION* orientation) = 0;
@@ -70,8 +69,7 @@ namespace adlx
         *@ENG_START_DOX @details The desktop size represents the pixel resolution of the desktop.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+        *@copydoc IADLXDesktop_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL Size (adlx_int* width, adlx_int* height) = 0;
@@ -95,8 +93,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details The desktop top left position is measured in screen coordinates.<br> @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+        *@copydoc IADLXDesktop_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL TopLeft (ADLX_Point* locationTopLeft) = 0;
@@ -120,8 +117,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details The desktop type indicates if the desktop is single, duplicate or AMD Eyefinity.<br> @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+        *@copydoc IADLXDesktop_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL Type (ADLX_DESKTOP_TYPE* desktopType) = 0;
@@ -149,8 +145,7 @@ namespace adlx
         * A duplicate desktop is associated with two or more displays.<br>
         * An AMD Eyefinity desktop is associated with two or more displays.<br> @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+        *@copydoc IADLXDesktop_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetNumberOfDisplays (adlx_uint* numDisplays) = 0;
@@ -177,8 +172,7 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX  In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+        *@copydoc IADLXDesktop_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetDisplays (IADLXDisplayList** ppDisplays) = 0;
@@ -241,8 +235,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details The grid location of an AMD Eyefinity desktop is identified by a row and a column from zero to the respective value returned from this method minus one. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+        *@copydoc IADLXEyefinityDesktop_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GridSize (adlx_uint* rows, adlx_uint* cols) = 0;
@@ -271,8 +264,7 @@ namespace adlx
          *@addinfo
          *@ENG_START_DOX  In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
          *
-         *@requirements
-         *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+         *@copydoc IADLXEyefinityDesktop_REQ_TABLE
          *
          */
         virtual ADLX_RESULT ADLX_STD_CALL GetDisplay (adlx_uint row, adlx_uint col, IADLXDisplay** ppDisplay) = 0;
@@ -298,8 +290,7 @@ namespace adlx
          *@detaileddesc
          *@ENG_START_DOX @details The display orientation indicates the rotation angle of the display area on an AMD Eyefinity desktop. @ENG_END_DOX
          *
-         *@requirements
-         *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+         *@copydoc IADLXEyefinityDesktop_REQ_TABLE
          *
          */
         virtual ADLX_RESULT ADLX_STD_CALL DisplayOrientation (adlx_uint row, adlx_uint col, ADLX_ORIENTATION* displayOrientation) = 0;
@@ -327,8 +318,7 @@ namespace adlx
          *@ENG_START_DOX @details The display size represents the pixel resolution of the dispay area in an AMD Eyefinity desktop.
 		 * @ENG_END_DOX
          *
-         *@requirements
-         *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+         *@copydoc IADLXEyefinityDesktop_REQ_TABLE
          *
          */
         virtual ADLX_RESULT ADLX_STD_CALL DisplaySize (adlx_uint row, adlx_uint col, adlx_int* displayWidth, adlx_int* displayHeight) = 0;
@@ -355,8 +345,7 @@ namespace adlx
          *@ENG_START_DOX @details The top left position is relative to the desktop's top left position.
          * @ENG_END_DOX
          *
-         *@requirements
-         *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+         *@copydoc IADLXEyefinityDesktop_REQ_TABLE
          *
          */
         virtual ADLX_RESULT ADLX_STD_CALL DisplayTopLeft (adlx_uint row, adlx_uint col, ADLX_Point* displayLocationTopLeft) = 0;
@@ -431,8 +420,7 @@ namespace adlx
         * In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+        * @copydoc IADLXDesktopList_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL At (const adlx_uint location, IADLXDesktop** ppItem) = 0;
@@ -456,8 +444,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+        *@copydoc IADLXDesktopList_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL Add_Back (IADLXDesktop* pItem) = 0;
@@ -527,8 +514,7 @@ namespace adlx
         * The method should return quickly to not block the execution path in ADLX. If the method requires a long processing of the event notification, the application must hold onto a reference to the new desktop list with @ref DOX_IADLXInterface_Acquire and make it available on an asynchronous thread and return immediately. When the asynchronous thread is done processing it must discard the new desktop list with @ref DOX_IADLXInterface_Release.<br> @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+        *@copydoc IADLXDesktopListChangedListener_REQ_TABLE
         *
         */
         virtual adlx_bool ADLX_STD_CALL OnDesktopListChanged (IADLXDesktopList* pNewDesktop) = 0;
@@ -580,8 +566,7 @@ namespace adlx
         * The event listener instance must exist until the application unregisters the event listener with @ref DOX_IADLXDesktopChangedHandling_RemoveDesktopListEventListener.<br> @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+        *@copydoc IADLXDesktopChangedHandling_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL AddDesktopListEventListener (IADLXDesktopListChangedListener* pDesktopListChangedListener) = 0;
@@ -607,8 +592,7 @@ namespace adlx
         *@ENG_START_DOX  After the event listener is successfully unregistered, ADLX will no longer call @ref DOX_IADLXDesktopListChangedListener_OnDesktopListChanged method of the listener when the desktop list changes. The application can discard the event listener instance. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+        *@copydoc IADLXDesktopChangedHandling_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL RemoveDesktopListEventListener (IADLXDesktopListChangedListener* pDesktopListChangedListener) = 0;
@@ -649,7 +633,7 @@ namespace adlx
         ADLX_DECLARE_IID (L"IADLXSimpleEyefinity")
         /**
         *@page DOX_IADLXSimpleEyefinity_IsSupported IsSupported
-        *@ENG_START_DOX @brief Checks if an AMD AMD Eyefinity desktop can be created with all the enabled displays. @ENG_END_DOX
+        *@ENG_START_DOX @brief Checks if an AMD Eyefinity desktop can be created with all the enabled displays. @ENG_END_DOX
         *
         *@syntax
         *@codeStart
@@ -666,20 +650,19 @@ namespace adlx
         *
         *@detaileddesc
         *@ENG_START_DOX @details
-        * AMD AMD Eyefinity desktops can be created with ADLX using all the enabled displays connected to the AMD GPUs, except LCD panel displays. For more information about AMD GPUs, refer to @ref @adlx_gpu_support "ADLX GPU Support". Use @ref DOX_IADLXDisplay_DisplayType to check if a display is an LCD panel.<br>
+        * AMD Eyefinity desktops can be created with ADLX using all the enabled displays connected to the AMD GPUs, except LCD panel displays. For more information about AMD GPUs, refer to @ref @adlx_gpu_support "ADLX GPU Support". Use @ref DOX_IADLXDisplay_DisplayType to check if a display is an LCD panel.<br>
         * All the desktops must be single desktops. Use @ref DOX_IADLXDesktop_Type to check if a desktop is a single desktop.<br>
         * All the enabled displays must be connected to the same GPU.<br>
-        * The AMD AMD Eyefinity desktop configuration must be supported by the AMD driver. Driver support varies depending on the GPU.<br>
+        * The AMD Eyefinity desktop configuration must be supported by the AMD driver. Driver support varies depending on the GPU.<br>
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+        *@copydoc IADLXSimpleEyefinity_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupported (adlx_bool* supported) = 0;
         /**
         *@page DOX_IADLXSimpleEyefinity_Create Create
-        *@ENG_START_DOX @brief Creates an AMD AMD Eyefinity desktop with all the enabled displays. @ENG_END_DOX
+        *@ENG_START_DOX @brief Creates an AMD Eyefinity desktop with all the enabled displays. @ENG_END_DOX
         *
         *@syntax
         *@codeStart
@@ -696,15 +679,14 @@ namespace adlx
         *
         *@detaileddesc
         *@ENG_START_DOX @details
-		* Use @ref DOX_IADLXSimpleEyefinity_IsSupported to check if an AMD AMD Eyefinity desktop can be created.<br>
+		* Use @ref DOX_IADLXSimpleEyefinity_IsSupported to check if an AMD Eyefinity desktop can be created.<br>
 		* Creating an AMD Eyefinity desktop can take a couple of seconds to complete. The method will block the execution thread until the operation is finished.<br>
         * The returned interface must be discarded with @ref DOX_IADLXInterface_Release when it is no longer needed. Discarding the interface does not destroy the AMD Eyefinity desktop.<br> @ENG_END_DOX
         *
         *@addinfo
         *@ENG_START_DOX In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+        *@copydoc IADLXSimpleEyefinity_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL Create (IADLXEyefinityDesktop** ppEyefinityDesktop) = 0;
@@ -725,8 +707,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details Destroying all AMD Eyefinity desktops can take a couple of seconds to complete. The method will block the execution thread until the operation is finished. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+        *@copydoc IADLXSimpleEyefinity_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL DestroyAll () = 0;
@@ -750,8 +731,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details Destroying an AMD Eyefinity desktop can take a couple of seconds to complete. The method will block the execution thread until the operation is finished. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+        *@copydoc IADLXSimpleEyefinity_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL Destroy (IADLXEyefinityDesktop* pDesktop) = 0;
@@ -815,8 +795,7 @@ namespace adlx
         * @details For more information about the AMD GPUs, refer to @ref @adlx_gpu_support "ADLX GPU Support".
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+        * @copydoc IADLXDesktopServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetNumberOfDesktops (adlx_uint* numDesktops) = 0;
@@ -852,8 +831,7 @@ namespace adlx
         * In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+        * @copydoc IADLXDesktopServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetDesktops (IADLXDesktopList** ppDesktops) = 0;
@@ -882,8 +860,7 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX  In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+        * @copydoc IADLXDesktopServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetDesktopChangedHandling (IADLXDesktopChangedHandling** ppDesktopChangedHandling) = 0;
@@ -910,8 +887,7 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX  In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
          *
-         *@requirements
-         *@DetailsTable{#include "IDesktops.h", @ADLX_First_Ver}
+         *@copydoc IADLXDesktopServices_REQ_TABLE
          *
          */
         virtual ADLX_RESULT ADLX_STD_CALL GetSimpleEyefinity (IADLXSimpleEyefinity** ppSimpleEyefinity) = 0;

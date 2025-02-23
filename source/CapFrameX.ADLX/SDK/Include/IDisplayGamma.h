@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -39,8 +39,7 @@ namespace adlx
         * If the state of re-gamma ramp is not successfully returned, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsCurrentReGammaRamp (adlx_bool* isReGammaRamp) = 0;
@@ -62,8 +61,7 @@ namespace adlx
         * If the state of de-gamma ramp is not successfully returned, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsCurrentDeGammaRamp (adlx_bool* isDeGammaRamp) = 0;
@@ -85,8 +83,7 @@ namespace adlx
         * If the state of re-gamma coefficient is not successfully returned, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsCurrentRegammaCoefficient (adlx_bool* isRegammaCoeff) = 0;
@@ -108,8 +105,7 @@ namespace adlx
         * If the gamma ramp LUT is not successfully returned, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetGammaRamp (ADLX_GammaRamp* lut) = 0;
@@ -134,8 +130,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetGammaCoefficient (ADLX_RegammaCoeff* coeff) = 0;
@@ -157,8 +152,7 @@ namespace adlx
         * If the state of sRGB re-gamma is not successfully returned, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedReGammaSRGB (adlx_bool* isSupportedRegammaSRGB) = 0;
@@ -180,8 +174,7 @@ namespace adlx
         * If the state of BT709 re-gamma is not successfully returned, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedReGammaBT709 (adlx_bool* isSupportedReGammaBT709) = 0;
@@ -203,8 +196,7 @@ namespace adlx
         * If the state of PQ re-gamma is not successfully returned, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedReGammaPQ (adlx_bool* isSupportedReGammaPQ) = 0;
@@ -226,8 +218,7 @@ namespace adlx
         * If the state of PQ2084 re-gamma curve is not successfully returned, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedReGammaPQ2084Interim (adlx_bool* isSupportedReGammaPQ2084Interim) = 0;
@@ -249,8 +240,7 @@ namespace adlx
         * If the state of 3.6 re-gamma is not successfully returned, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedReGamma36 (adlx_bool* isSupportedReGamma36) = 0;
@@ -272,8 +262,7 @@ namespace adlx
         * If the state of sRGB re-gamma is not successfully returned, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsCurrentReGammaSRGB (adlx_bool* isCurrentReGammaSRGB) = 0;
@@ -295,8 +284,7 @@ namespace adlx
         * If the state of BT709 re-gamma is not successfully returned, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsCurrentReGammaBT709 (adlx_bool* isCurrentReGammaBT709) = 0;
@@ -318,8 +306,7 @@ namespace adlx
         * If the state of PQ re-gamma is not successfully returned, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsCurrentReGammaPQ (adlx_bool* isCurrentReGammaPQ) = 0;
@@ -341,8 +328,7 @@ namespace adlx
         * If the state of PQ2084 re-gamma curve is not successfully returned, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsCurrentReGammaPQ2084Interim (adlx_bool* isCurrentReGammaPQ2084Interim) = 0;
@@ -364,8 +350,7 @@ namespace adlx
         * If the state of 3.6 re-gamma is not successfully returned, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsCurrentReGamma36 (adlx_bool* isCurrentReGamma36) = 0;
@@ -386,8 +371,7 @@ namespace adlx
         *@ENG_START_DOX  If the sRGB re-gamma is successfully set, __ADLX_OK__ is returned. <br>
         * If the sRGB re-gamma is not successfully set, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL SetReGammaSRGB () = 0;
@@ -408,8 +392,7 @@ namespace adlx
         *@ENG_START_DOX  If the BT709 re-gamma is successfully set, __ADLX_OK__ is returned. <br>
         * If the BT709 re-gamma is not successfully set, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL SetReGammaBT709 () = 0;
@@ -430,8 +413,7 @@ namespace adlx
         *@ENG_START_DOX  If the PQ re-gamma is successfully set, __ADLX_OK__ is returned. <br>
         * If the PQ re-gamma is not successfully set, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL SetReGammaPQ () = 0;
@@ -453,8 +435,7 @@ namespace adlx
         * If the PQ2084 re-gamma curve is not successfully set, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL SetReGammaPQ2084Interim () = 0;
@@ -475,8 +456,7 @@ namespace adlx
         *@ENG_START_DOX  If the 3.6 re-gamma is successfully set, __ADLX_OK__ is returned. <br>
         * If the 3.6 re-gamma is not successfully set, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL SetReGamma36 () = 0;
@@ -509,8 +489,7 @@ namespace adlx
         * CoefficientA3  | 55     | 99       | 0         | 0         | 0     |
         * Gamma          | 2400   | 2200     | 2200      | 2400      | 2600  |
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL SetReGammaCoefficient (ADLX_RegammaCoeff coeff) = 0;
@@ -544,8 +523,7 @@ namespace adlx
         * [255] 65533,         56634,        0
         *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL SetDeGammaRamp (const char* path) = 0;
@@ -567,8 +545,7 @@ namespace adlx
         * If the de-gamma is not successfully set, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL SetDeGammaRamp (ADLX_GammaRamp gammaRamp) = 0;
@@ -602,8 +579,7 @@ namespace adlx
         * [255] 65533,         56634,        0
         *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL SetReGammaRamp (const char* path) = 0;
@@ -625,8 +601,7 @@ namespace adlx
         * If the re-gamma is not successfully set, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL SetReGammaRamp (ADLX_GammaRamp gammaRamp) = 0;
@@ -648,8 +623,7 @@ namespace adlx
         * If the gamma ramp is not successfully reset, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamma.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamma_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL ResetGammaRamp () = 0;

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -45,8 +45,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        * @copydoc IADLXManualTuningState_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetFrequency (adlx_int* value) = 0;
@@ -68,8 +67,7 @@ namespace adlx
         * If the frequency is not successfully set, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXManualTuningState_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL SetFrequency (adlx_int value) = 0;
@@ -95,8 +93,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        * @copydoc IADLXManualTuningState_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetVoltage (adlx_int* value) = 0;
@@ -118,8 +115,7 @@ namespace adlx
         * If the voltage is not successfully set, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXManualTuningState_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL SetVoltage (adlx_int value) = 0;
@@ -180,8 +176,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        * @copydoc IADLXMemoryTimingDescription_REQ_TABLE
         *
         */
         virtual ADLX_RESULT  ADLX_STD_CALL GetDescription (ADLX_MEMORYTIMING_DESCRIPTION* description) = 0;
@@ -252,8 +247,7 @@ namespace adlx
         * In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        * @copydoc IADLXManualTuningStateList_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL At (const adlx_uint location, IADLXManualTuningState** ppItem) = 0;
@@ -277,8 +271,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXManualTuningStateList_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL Add_Back (IADLXManualTuningState* pItem) = 0;
@@ -362,8 +355,7 @@ namespace adlx
         * In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        * @copydoc IADLXMemoryTimingDescriptionList_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL At (const adlx_uint location, IADLXMemoryTimingDescription** ppItem) = 0;
@@ -387,8 +379,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXMemoryTimingDescriptionList_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL Add_Back (IADLXMemoryTimingDescription* pItem) = 0;
@@ -463,8 +454,7 @@ namespace adlx
         * __Note:__ @ref DOX_IADLXGPUTuningChangedEvent_GetGPU returns the reference counted GPU interface used by all the methods in this interface to check if there are any changes in GPU tuning.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningChangedEvent_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetGPU (IADLXGPU** ppGPU) = 0;
@@ -490,8 +480,7 @@ namespace adlx
         * __Note:__ To obtain the GPU, use @ref DOX_IADLXGPUTuningChangedEvent_GetGPU.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsAutomaticTuningChanged () = 0;
@@ -517,8 +506,7 @@ namespace adlx
         * __Note:__ To obtain the GPU, use @ref DOX_IADLXGPUTuningChangedEvent_GetGPU.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsPresetTuningChanged () = 0;
@@ -544,8 +532,7 @@ namespace adlx
         * __Note:__ To obtain the GPU, use @ref DOX_IADLXGPUTuningChangedEvent_GetGPU.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsManualGPUCLKTuningChanged () = 0;
@@ -571,8 +558,7 @@ namespace adlx
         * __Note:__ To obtain the GPU, use @ref DOX_IADLXGPUTuningChangedEvent_GetGPU.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsManualVRAMTuningChanged () = 0;
@@ -598,8 +584,7 @@ namespace adlx
         * __Note:__ To obtain the GPU, use @ref DOX_IADLXGPUTuningChangedEvent_GetGPU.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsManualFanTuningChanged () = 0;
@@ -625,8 +610,7 @@ namespace adlx
         * __Note:__ To obtain the GPU, use @ref DOX_IADLXGPUTuningChangedEvent_GetGPU.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsManualPowerTuningChanged () = 0;
@@ -693,8 +677,7 @@ namespace adlx
         *@ENG_START_DOX  Once the application registers to the notifications with @ref DOX_IADLXGPUTuningChangedHandling_AddGPUTuningEventListener, ADLX will call this method until the application unregisters from the notifications with @ref DOX_IADLXGPUTuningChangedHandling_RemoveGPUTuningEventListener.
         * The method should return quickly to not block the execution path in ADLX. If the method requires a long processing of the event notification, the application must hold onto a reference to the GPU tuning change event with @ref DOX_IADLXInterface_Acquire and make it available on an asynchronous thread and return immediately. When the asynchronous thread is done processing it must discard the GPU tuning change event with @ref DOX_IADLXInterface_Release. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningChangedListener_REQ_TABLE
         *
         */
         virtual adlx_bool ADLX_STD_CALL OnGPUTuningChanged (IADLXGPUTuningChangedEvent* pGPUTuningChangedEvent) = 0;
@@ -747,8 +730,7 @@ namespace adlx
         *@ENG_START_DOX  After the event listener is successfully registered, ADLX will call @ref DOX_IADLXGPUTuningChangedListener_OnGPUTuningChanged method of the listener when GPU tuning changes.<br>
         * The event listener instance must exist until the application unregisters the event listener with @ref DOX_IADLXGPUTuningChangedHandling_RemoveGPUTuningEventListener.<br> @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningChangedHandling_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL AddGPUTuningEventListener (IADLXGPUTuningChangedListener* pGPUTuningChangedListener) = 0;
@@ -774,8 +756,7 @@ namespace adlx
         *@ENG_START_DOX  After the event listener is successfully unregistered, ADLX will no longer call @ref DOX_IADLXGPUTuningChangedListener_OnGPUTuningChanged method of the listener when GPU tuning changes.
         * The application can discard the event listener instance. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningChangedHandling_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL RemoveGPUTuningEventListener (IADLXGPUTuningChangedListener* pGPUTuningChangedListener) = 0;
@@ -845,8 +826,7 @@ namespace adlx
         * In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        * @copydoc IADLXGPUTuningServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetGPUTuningChangedHandling (IADLXGPUTuningChangedHandling** ppGPUTuningChangedHandling) = 0;
@@ -869,8 +849,7 @@ namespace adlx
         * If the state of the GPU tuning is not successfully returned, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL IsAtFactory (IADLXGPU* pGPU, adlx_bool* isFactory) = 0;
@@ -895,8 +874,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details The method resets settings of Auto Tuning, Manual GPU Tuning, Manual Fan Tuning, Manual VRAM Tuning and Manual Power Tuning. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL ResetToFactory (IADLXGPU* pGPU) = 0;
@@ -919,8 +897,7 @@ namespace adlx
         * If the state of automatic tuning is not successfully returned, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL IsSupportedAutoTuning (IADLXGPU* pGPU, adlx_bool* supported) = 0;
@@ -943,8 +920,7 @@ namespace adlx
         * If the state of preset tuning is not successfully returned, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL IsSupportedPresetTuning (IADLXGPU* pGPU, adlx_bool* supported) = 0;
@@ -967,8 +943,7 @@ namespace adlx
         * If the state of manual graphic tuning is not successfully returned, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL IsSupportedManualGFXTuning (IADLXGPU* pGPU, adlx_bool* supported) = 0;
@@ -991,8 +966,7 @@ namespace adlx
         * If the state of manual VRAM tuning is not successfully returned, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL IsSupportedManualVRAMTuning (IADLXGPU* pGPU, adlx_bool* supported) = 0;
@@ -1015,8 +989,7 @@ namespace adlx
         * If the state of manual fan tuning is not successfully returned, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL IsSupportedManualFanTuning (IADLXGPU* pGPU, adlx_bool* supported) = 0;
@@ -1039,8 +1012,7 @@ namespace adlx
         * If the state of manual power tuning is not successfully returned, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL IsSupportedManualPowerTuning (IADLXGPU* pGPU, adlx_bool* supported) = 0;
@@ -1069,8 +1041,7 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX  In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetAutoTuning (IADLXGPU* pGPU, IADLXInterface** ppAutoTuning) = 0;
@@ -1099,8 +1070,7 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX  In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetPresetTuning (IADLXGPU* pGPU, IADLXInterface** ppPresetTuning) = 0;
@@ -1132,8 +1102,7 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX  In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetManualGFXTuning (IADLXGPU* pGPU, IADLXInterface** ppManualGFXTuning) = 0;
@@ -1165,8 +1134,7 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX  In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-		*@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetManualVRAMTuning (IADLXGPU* pGPU, IADLXInterface** ppManualVRAMTuning) = 0;
@@ -1196,8 +1164,7 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX  In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetManualFanTuning (IADLXGPU* pGPU, IADLXInterface** ppManualFanTuning) = 0;
@@ -1226,8 +1193,7 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX  In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IGPUTuning.h", @ADLX_First_Ver}
+        *@copydoc IADLXGPUTuningServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetManualPowerTuning (IADLXGPU* pGPU, IADLXInterface** ppManualPowerTuning) = 0;

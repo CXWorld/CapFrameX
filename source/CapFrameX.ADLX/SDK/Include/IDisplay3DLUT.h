@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -43,8 +43,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details Some GPUs support built-in 3D LUT profiles for displays to improve and enhance game and application color vibrancy. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL IsSupportedSCE (adlx_bool* supported) = 0;
@@ -69,8 +68,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details The vivid gaming preset enhances color saturation and vibrance. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL IsSupportedSCEVividGaming (adlx_bool* supported) = 0;
@@ -93,8 +91,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL IsCurrentSCEDisabled (adlx_bool* sceDisabled) = 0;
@@ -119,8 +116,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details The vivid gaming preset enhances color saturation and vibrance. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL IsCurrentSCEVividGaming (adlx_bool* vividGaming) = 0;
@@ -143,8 +139,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL SetSCEDisabled () = 0;
@@ -169,8 +164,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details The vivid gaming preset enhances color saturation and vibrance. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL SetSCEVividGaming () = 0;
@@ -193,11 +187,11 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         * @addinfo
+        * @ENG_START_DOX
         * The Dynamic Contrast preset is designed to boost brightness low and mid tone areas while leaving other areas almost untouched.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL IsSupportedSCEDynamicContrast (adlx_bool* supported) = 0;
@@ -220,11 +214,10 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         * @addinfo
-        * The Dynamic Contrast preset is designed to boost brightness low and mid tone areas while leaving other areas almost untouched.
+        *@ENG_START_DOX The Dynamic Contrast preset is designed to boost brightness low and mid tone areas while leaving other areas almost untouched.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL IsCurrentSCEDynamicContrast (adlx_bool* dynamicContrast) = 0;
@@ -250,12 +243,11 @@ namespace adlx
         *@ENG_START_DOX @details The maximum contrast, minimum contrast, and step contrast of the Dynamic Contrast color enhancement preset are read only. @ENG_END_DOX
         *
         * @addinfo
-        * The Dynamic Contrast preset is designed to boost brightness low and mid tone areas while leaving other areas almost untouched.
+        *@ENG_START_DOX The Dynamic Contrast preset is designed to boost brightness low and mid tone areas while leaving other areas almost untouched.
         * @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetSCEDynamicContrastRange (ADLX_IntRange* range) = 0;
@@ -278,11 +270,10 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         * @addinfo
-        * The Dynamic Contrast preset is designed to boost brightness low and mid tone areas while leaving other areas almost untouched.
+        *@ENG_START_DOX The Dynamic Contrast preset is designed to boost brightness low and mid tone areas while leaving other areas almost untouched.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetSCEDynamicContrast (adlx_int* contrast) = 0;
@@ -305,11 +296,10 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         * @addinfo
-        * The Dynamic Contrast preset is designed to boost brightness low and mid tone areas while leaving other areas almost untouched.
+        *@ENG_START_DOX The Dynamic Contrast preset is designed to boost brightness low and mid tone areas while leaving other areas almost untouched.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL SetSCEDynamicContrast (adlx_int contrast) = 0;
@@ -334,8 +324,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details Some GPUs support custom 3D LUT panel calibration for eDP displays to improve and enhance game and application color vibrancy. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL IsSupportedUser3DLUT (adlx_bool* supported) = 0;
@@ -358,8 +347,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL ClearUser3DLUT () = 0;
@@ -393,8 +381,7 @@ namespace adlx
         * Setting a custom 3D LUT data suitable for the HDR mode of the display with @ref DOX_IADLXDisplay3DLUT_SetHDRUser3DLUT will delete the custom 3D LUT data for the SDR mode that was previously created with @ref DOX_IADLXDisplay3DLUT_SetAllUser3DLUT. If a custom 3D LUT data suitable for the SDR mode is also required, it must be set with @ref DOX_IADLXDisplay3DLUT_SetSDRUser3DLUT.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetSDRUser3DLUT (ADLX_3DLUT_TRANSFER_FUNCTION* transferFunction, ADLX_3DLUT_COLORSPACE* colorSpace, adlx_int* pointsNumber, ADLX_3DLUT_Data* data) = 0;
@@ -433,8 +420,7 @@ namespace adlx
         * Setting a custom 3D LUT data suitable for the HDR mode of the display with @ref DOX_IADLXDisplay3DLUT_SetHDRUser3DLUT will delete the custom 3D LUT data for the SDR mode that was previously created with @ref DOX_IADLXDisplay3DLUT_SetAllUser3DLUT. If a custom 3D LUT data suitable for the SDR mode is also required, it must be set with @ref DOX_IADLXDisplay3DLUT_SetSDRUser3DLUT.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL SetSDRUser3DLUT (ADLX_3DLUT_TRANSFER_FUNCTION transferFunction, ADLX_3DLUT_COLORSPACE colorSpace, adlx_int pointsNumber, const ADLX_3DLUT_Data* data) = 0;
@@ -468,8 +454,7 @@ namespace adlx
         * Setting a custom 3D LUT data suitable for the HDR mode of the display with @ref DOX_IADLXDisplay3DLUT_SetHDRUser3DLUT will delete the custom 3D LUT data for the SDR mode that was previously created with @ref DOX_IADLXDisplay3DLUT_SetAllUser3DLUT. If a custom 3D LUT data suitable for the SDR mode is also required, it must be set with @ref DOX_IADLXDisplay3DLUT_SetSDRUser3DLUT.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetHDRUser3DLUT (ADLX_3DLUT_TRANSFER_FUNCTION* transferFunction, ADLX_3DLUT_COLORSPACE* colorSpace, adlx_int* pointsNumber, ADLX_3DLUT_Data* data) = 0;
@@ -508,8 +493,7 @@ namespace adlx
         * Setting a custom 3D LUT data suitable for the HDR mode of the display with @ref DOX_IADLXDisplay3DLUT_SetHDRUser3DLUT will delete the custom 3D LUT data for the SDR mode that was previously created with @ref DOX_IADLXDisplay3DLUT_SetAllUser3DLUT. If a custom 3D LUT data suitable for the SDR mode is also required, it must be set with @ref DOX_IADLXDisplay3DLUT_SetSDRUser3DLUT.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL SetHDRUser3DLUT (ADLX_3DLUT_TRANSFER_FUNCTION transferFunction, ADLX_3DLUT_COLORSPACE colorSpace, adlx_int pointsNumber, const ADLX_3DLUT_Data* data) = 0;
@@ -543,8 +527,7 @@ namespace adlx
         * Setting a custom 3D LUT data suitable for the HDR mode of the display with @ref DOX_IADLXDisplay3DLUT_SetHDRUser3DLUT will delete the custom 3D LUT data for the SDR mode that was previously created with @ref DOX_IADLXDisplay3DLUT_SetAllUser3DLUT. If a custom 3D LUT data suitable for the SDR mode is also required, it must be set with @ref DOX_IADLXDisplay3DLUT_SetSDRUser3DLUT.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetAllUser3DLUT (ADLX_3DLUT_TRANSFER_FUNCTION* transferFunction, ADLX_3DLUT_COLORSPACE* colorSpace, adlx_int* pointsNumber, ADLX_3DLUT_Data* data) = 0;
@@ -583,8 +566,7 @@ namespace adlx
         * Setting a custom 3D LUT data suitable for the HDR mode of the display with @ref DOX_IADLXDisplay3DLUT_SetHDRUser3DLUT will delete the custom 3D LUT data for the SDR mode that was previously created with @ref DOX_IADLXDisplay3DLUT_SetAllUser3DLUT. If a custom 3D LUT data suitable for the SDR mode is also required, it must be set with @ref DOX_IADLXDisplay3DLUT_SetSDRUser3DLUT.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL SetAllUser3DLUT (ADLX_3DLUT_TRANSFER_FUNCTION transferFunction, ADLX_3DLUT_COLORSPACE colorSpace, adlx_int pointsNumber, const ADLX_3DLUT_Data* data) = 0;
@@ -625,8 +607,7 @@ namespace adlx
         * Setting a custom 3D LUT data suitable for the HDR mode of the display with @ref DOX_IADLXDisplay3DLUT_SetHDRUser3DLUT will delete the custom 3D LUT data for the SDR mode that was previously created with @ref DOX_IADLXDisplay3DLUT_SetAllUser3DLUT. If a custom 3D LUT data suitable for the SDR mode is also required, it must be set with @ref DOX_IADLXDisplay3DLUT_SetSDRUser3DLUT.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplay3DLUT.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUT_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetUser3DLUTIndex (adlx_int lutSize, const ADLX_UINT16_RGB* rgbCoordinate, adlx_int* index) = 0;

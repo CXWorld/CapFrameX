@@ -1,5 +1,5 @@
 // 
-// Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -23,10 +23,12 @@
 * N/A
 *
 * @retvalues
+* @ENG_START_DOX
 * If __ADLXHelper_Initialize__ is successfully executed, __ADLX_OK__ is returned.<br>
 * If __ADLXHelper_Initialize__ is not successfully executed, an error code is returned.<br>
 * If ADLX was previously successfully initialized with any of the initialization functions, __ADLX_ALREADY_INITIALIZED__ is returned.<br>
 * Refer to @ref ADLX_RESULT for success codes and error codes.
+* @ENG_END_DOX
 *
 * @detaileddesc
 * @ENG_START_DOX
@@ -53,10 +55,12 @@ ADLX_RESULT             ADLXHelper_Initialize();
 * N/A
 *
 * @retvalues
+* @ENG_START_DOX
 * If __ADLXHelper_InitializeWithIncompatibleDriver__ is successfully executed, __ADLX_OK__ is returned.<br>
 * If __ADLXHelper_InitializeWithIncompatibleDriver__ is not successfully executed, an error code is returned.<br>
 * If ADLX was previously successfully initialized with any of the initialization functions, __ADLX_ALREADY_INITIALIZED__ is returned.<br>
 * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
+* @ENG_END_DOX
 *
 * @detaileddesc
 * @ENG_START_DOX
@@ -84,10 +88,12 @@ ADLX_RESULT             ADLXHelper_InitializeWithIncompatibleDriver();
 * @paramrow{2.,[in],adlMainMemoryFree,@ref ADLX_ADL_Main_Memory_Free,@ENG_START_DOX The callback handler of the memory deallocation function. @ENG_END_DOX}
 *
 * @retvalues
+* @ENG_START_DOX
 * If __ADLXHelper_InitializeWithCallerAdl__ is successfully executed, __ADLX_OK__ is returned.<br>
 * If __ADLXHelper_InitializeWithCallerAdl__ is not successfully executed, an error code is returned.<br>
 * If ADLX was previously successfully initialized with any of the Initialize versions, __ADLX_ALREADY_INITIALIZED__ is returned.<br>
 * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
+* @ENG_END_DOX
 *
 * @detaileddesc
 * @ENG_START_DOX
@@ -116,9 +122,11 @@ ADLX_RESULT             ADLXHelper_InitializeWithCallerAdl (adlx_handle adlConte
 * N/A
 *
 * @retvalues
+* @ENG_START_DOX
 * If __ADLXHelper_Terminate__ is successfully executed, __ADLX_OK__ is returned.<br>
 * If __ADLXHelper_Terminate__ is not successfully executed, an error code is returned.<br>
 * Refer to @ref ADLX_RESULT for success codes and error codes.
+* @ENG_END_DOX
 *
 * @detaileddesc
 * @ENG_START_DOX
@@ -146,8 +154,11 @@ ADLX_RESULT             ADLXHelper_Terminate();
 * N/A
 *
 * @retvalues
+* @ENG_START_DOX
 * If ADLX was successfully initialized before this function call, the @ref DOX_IADLXSystem interface is returned.<br>
 * If ADLX was not successfully initialized, __nullptr__ is returned.
+* @ENG_END_DOX
+*
 * @requirements
 * @DetailsTable{#include "ADLXHelper/Windows/C/ADLXHelper.h", @ADLX_First_Ver}
 */
@@ -167,11 +178,13 @@ IADLXSystem*            ADLXHelper_GetSystemServices ();
 * N/A
 *
 * @retvalues
+* @ENG_START_DOX
 * If ADLX was successfully initialized with ADL, a valid pointer of the @ref DOX_IADLMapping interface is returned.<br>
 * If ADLX was initialized under any of the following circumstances, __nullptr__ is returned.<br>
 * - ADLX initialization was with other initialization methods.<br>
 * - ADLX initialization was failed.<br>
 * - ADLX initialization was not called.<br>
+* @ENG_END_DOX
 *
 * @detaileddesc
 * @ENG_START_DOX
@@ -197,7 +210,10 @@ IADLMapping*            ADLXHelper_GetAdlMapping();
 * N/A
 *
 * @retvalues
+* @ENG_START_DOX
 * The full version of ADLX.
+* @ENG_END_DOX
+*
 * @requirements
 * @DetailsTable{#include "ADLXHelper/Windows/C/ADLXHelper.h", @ADLX_First_Ver}
 */
@@ -217,7 +233,10 @@ adlx_uint64             ADLXHelper_QueryFullVersion();
 * N/A
 *
 * @retvalues
+* @ENG_START_DOX
 * The version of ADLX.
+* @ENG_END_DOX
+*
 * @requirements
 * @DetailsTable{#include "ADLXHelper/Windows/C/ADLXHelper.h", @ADLX_First_Ver}
 */

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -187,9 +187,9 @@ extern "C"
     * If the full version is successfully returned, __ADLX_OK__ is returned.<br>
     * If the full version is not successfully returned, an error code is returned.<br>
     * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
-    * @ENG_END_DOX
     * @detaileddesc
     * The pointer of the function is returned by the @ref adlx_get_proc_address using the @ref ADLX_QUERY_FULL_VERSION_FUNCTION_NAME as the function name.
+    * @ENG_END_DOX
     * @requirements
     * @DetailsTable{#include "ADLX.h", @ADLX_First_Ver}
     */
@@ -197,7 +197,7 @@ extern "C"
     /**
     * @typedef ADLXQueryFullVersion_Fn
     * @ingroup ADLXDefs
-    * The typedef of QueryFullVersion function.
+    * @ENG_START_DOX The typedef of QueryFullVersion function. @ENG_END_DOX
     * @definition
     *  @codeStart
     *   typedef @ref ADLX_RESULT (ADLX_CDECL_CALL *QueryFullVersion_Fn)(adlx_uint64* fullVersion)
@@ -223,9 +223,9 @@ extern "C"
     * If the version is successfully returned, __ADLX_OK__ is returned.<br>
     * If the version is not successfully returned, an error code is returned.<br>
     * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
-    * @ENG_END_DOX
     * @detaileddesc
     * The pointer of the function is returned by the @ref adlx_get_proc_address using the @ref ADLX_QUERY_VERSION_FUNCTION_NAME as the function name.
+    * @ENG_END_DOX
     * @requirements
     * @DetailsTable{#include "ADLX.h", @ADLX_First_Ver}
     */
@@ -233,7 +233,7 @@ extern "C"
     /**
     * @typedef ADLXQueryVersion_Fn
     * @ingroup ADLXDefs
-    * The typedef of QueryVersion function.
+    * @ENG_START_DOX The typedef of QueryVersion function. @ENG_END_DOX
     * @definition
     *  @codeStart
     *   typedef @ref ADLX_RESULT (ADLX_CDECL_CALL *QueryVersion_Fn)(const char** version)
@@ -260,9 +260,9 @@ extern "C"
     * If ADLX was successfully initialized, __ADLX_OK__ is returned.<br>
     * If ADLX was not successfully initialized, an error code is returned.<br>
     * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
-    * @ENG_END_DOX
     * @detaileddesc
     * The pointer of the function is returned by the @ref adlx_get_proc_address using the @ref ADLX_INIT_FUNCTION_NAME or @ref ADLX_INIT_WITH_INCOMPATIBLE_DRIVER_FUNCTION_NAME as the function name.
+    * @ENG_END_DOX
     * @requirements
     * @DetailsTable{#include "ADLX.h", @ADLX_First_Ver}
     */
@@ -270,7 +270,7 @@ extern "C"
     /**
     * @typedef ADLXInitialize_Fn
     * @ingroup ADLXDefs
-    * The typedef of ADLXInitialize function.
+    * @ENG_START_DOX The typedef of ADLXInitialize function. @ENG_END_DOX
     * @definition
     *  @codeStart
     *  typedef @ref ADLX_RESULT (ADLX_CDECL_CALL *ADLXInitialize_Fn)(adlx_uint64 version, @ref DOX_IADLXSystem** ppSystem)
@@ -300,9 +300,9 @@ extern "C"
     * If ADLX was successfully initialized, __ADLX_OK__ is returned.<br>
     * If ADLX was not successfully initialized, an error code is returned.<br>
     * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
-    * @ENG_END_DOX
     * @detaileddesc
     * The pointer of the function is returned by the @ref adlx_get_proc_address using the @ref ADLX_INIT_WITH_CALLER_ADL_FUNCTION_NAME as the function name.
+    * @ENG_END_DOX
     * @requirements
     * @DetailsTable{#include "ADLX.h", @ADLX_First_Ver}
     */
@@ -310,7 +310,7 @@ extern "C"
     /**
     * @typedef ADLXInitializeWithCallerAdl_Fn
     * @ingroup ADLXDefs
-    * The typedef of ADLXInitializeWithCallerAdl function.
+    * @ENG_START_DOX The typedef of ADLXInitializeWithCallerAdl function. @ENG_END_DOX
     * @definition
     *  @codeStart
     *   typedef @ref ADLX_RESULT (ADLX_CDECL_CALL *ADLXInitializeWithCallerAdl_Fn)(adlx_uint64 version, @ref DOX_IADLXSystem** ppSystem, @ref DOX_IADLMapping** ppAdlMapping, adlx_handle adlContext, @ref ADLX_ADL_Main_Memory_Free adlMainMemoryFree)
@@ -336,9 +336,9 @@ extern "C"
     * If the function is successfully executed, __ADLX_OK__ is returned.<br>
     * If the function is not successfully executed, an error code is returned.<br>
     * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
-    * @ENG_END_DOX
     * @detaileddesc
     * The pointer of the function is returned by the @ref adlx_get_proc_address using the @ref ADLX_TERMINATE_FUNCTION_NAME as the function name.
+    * @ENG_END_DOX
     * @requirements
     * @DetailsTable{#include "ADLX.h", @ADLX_First_Ver}
     */
@@ -346,7 +346,7 @@ extern "C"
     /**
     * @typedef ADLXTerminate_Fn
     * @ingroup ADLXDefs
-    * The typedef of ADLXTerminate function.
+    * @ENG_START_DOX The typedef of ADLXTerminate function. @ENG_END_DOX
     * @definition
     *  @codeStart
     *   typedef ADLX_RESULT (ADLX_CDECL_CALL *ADLXTerminate_Fn)()

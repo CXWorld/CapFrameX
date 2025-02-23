@@ -1,5 +1,5 @@
 ﻿//
-// Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -67,8 +67,7 @@ namespace adlx
         * @ENG_END_DOX
         *
         *
-        * @requirements
-        * @DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        * @copydoc IADLXDisplay_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL ManufacturerID (adlx_uint* manufacturerID) const = 0;
@@ -100,8 +99,7 @@ namespace adlx
         * @details The display type can be used to discover if the display is a TV, a Digital Flat Panel, or any other kind of display.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        * @copydoc IADLXDisplay_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL DisplayType (ADLX_DISPLAY_TYPE* displayType) const = 0;
@@ -132,8 +130,7 @@ namespace adlx
         * @details The connector type can be used to discover if the display is connected to the GPU using HDMI, DisplayPort or any other kind of display interface.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        * @copydoc IADLXDisplay_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL ConnectorType (ADLX_DISPLAY_CONNECTOR_TYPE* connectType) const = 0;
@@ -169,8 +166,7 @@ namespace adlx
         * The returned memory buffer is valid within the lifetime of the @ref DOX_IADLXDisplay interface. If the application uses the display name beyond the  lifetime of the IADLXDisplay @ref DOX_IADLXDisplay interface, the application must make a copy of the display name.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        * @copydoc IADLXDisplay_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL Name (const char** displayName) const = 0;
@@ -206,8 +202,7 @@ namespace adlx
         * The returned memory buffer is valid within the lifetime of the @ref DOX_IADLXDisplay interface. If the application uses the EDID beyond the  lifetime of the IADLXDisplay @ref DOX_IADLXDisplay interface, the application must make a copy of the EDID.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        * @copydoc IADLXDisplay_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL EDID (const char** edid) const = 0;
@@ -239,8 +234,7 @@ namespace adlx
         * @details The  native resolution of the display is shown in the Windows Advanced display settings as Active signal resolution.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        * @copydoc IADLXDisplay_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL NativeResolution (adlx_int* maxHResolution, adlx_int* maxVResolution) const = 0;
@@ -271,8 +265,7 @@ namespace adlx
         * @details The refresh rate returns the number of times per second the display shows a new image.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        * @copydoc IADLXDisplay_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL RefreshRate (adlx_double* refreshRate) const = 0;
@@ -303,8 +296,7 @@ namespace adlx
         * @details The pixel clock rate is the speed at which pixels are transmitted over a video signal such as HDMI or DVI, to fit a full frame of pixels in one refresh cycle.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        * @copydoc IADLXDisplay_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL PixelClock (adlx_uint* pixelClock) const = 0;
@@ -335,8 +327,7 @@ namespace adlx
         * @details The scan type can be progressive or interlaced.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        * @copydoc IADLXDisplay_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL ScanType (ADLX_DISPLAY_SCAN_TYPE* scanType) const = 0;
@@ -366,8 +357,7 @@ namespace adlx
         *@ENG_START_DOX
         *In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetGPU (IADLXGPU** ppGPU) = 0;
@@ -390,8 +380,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include"ISystem.h", @ADLX_First_Ver}
+        * @copydoc IADLXDisplay_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL UniqueId(adlx_size* uniqueId) = 0;
@@ -477,8 +466,7 @@ namespace adlx
         * In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        * @copydoc IADLXDisplayList_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL At (const adlx_uint location, IADLXDisplay** ppItem) = 0;
@@ -504,8 +492,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayList_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL Add_Back (IADLXDisplay* pItem) = 0;
@@ -578,8 +565,7 @@ namespace adlx
         * The method should return quickly to not block the execution path in ADLX. If the method requires a long processing of the event notification, the application must hold onto a reference to the new display list with @ref DOX_IADLXInterface_Acquire and make it available on an asynchronous thread and return immediately. When the asynchronous thread is done processing it must discard the new display list with @ref DOX_IADLXInterface_Release. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayListChangedListener_REQ_TABLE
         *
         */
         virtual adlx_bool ADLX_STD_CALL OnDisplayListChanged (IADLXDisplayList* pNewDisplay) = 0;
@@ -638,8 +624,7 @@ namespace adlx
         *@ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamutChangedEvent_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetDisplay (IADLXDisplay** ppDisplay) = 0;
@@ -667,8 +652,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplayGamutChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamutChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsWhitePointChanged () = 0;
@@ -696,8 +680,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplayGamutChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamutChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsColorSpaceChanged () = 0;
@@ -762,8 +745,7 @@ namespace adlx
         * The method should return quickly to not block the execution path in ADLX. If the method requires a long processing of the event notification, the application must hold onto a reference to the gamut change event with @ref DOX_IADLXInterface_Acquire and make it available on an asynchronous thread and return immediately. When the asynchronous thread is done processing it must discard the gamut change event with @ref DOX_IADLXInterface_Release. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamutChangedListener_REQ_TABLE
         *
         */
         virtual adlx_bool ADLX_STD_CALL OnDisplayGamutChanged (IADLXDisplayGamutChangedEvent* pDisplayGamutChangedEvent) = 0;
@@ -822,8 +804,7 @@ namespace adlx
         *@ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGammaChangedEvent_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetDisplay (IADLXDisplay** ppDisplay) = 0;
@@ -851,8 +832,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplayGammaChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGammaChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsGammaRampChanged () = 0;
@@ -881,8 +861,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplayGammaChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGammaChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsGammaCoefficientChanged () = 0;
@@ -911,8 +890,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplayGammaChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGammaChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsReGammaChanged () = 0;
@@ -940,8 +918,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplayGammaChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGammaChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsDeGammaChanged () = 0;
@@ -1008,8 +985,7 @@ namespace adlx
         * The method should return quickly to not block the execution path in ADLX. If the method requires a long processing of the event notification, the application must hold onto a reference to the gamma change event with @ref DOX_IADLXInterface_Acquire and make it available on an asynchronous thread and return immediately. When the asynchronous thread is done processing it must discard the gamma change event with @ref DOX_IADLXInterface_Release. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGammaChangedListener_REQ_TABLE
         *
         */
         virtual adlx_bool ADLX_STD_CALL OnDisplayGammaChanged (IADLXDisplayGammaChangedEvent* pDisplayGammaChangedEvent) = 0;
@@ -1068,8 +1044,7 @@ namespace adlx
         *@ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUTChangedEvent_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetDisplay (IADLXDisplay** ppDisplay) = 0;
@@ -1097,8 +1072,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplay3DLUTChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUTChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsSCEChanged() = 0;
@@ -1125,8 +1099,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplay3DLUTChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUTChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsCustom3DLUTChanged() = 0;
@@ -1190,8 +1163,7 @@ namespace adlx
         * The method should return quickly to not block the execution path in ADLX. If the method requires a long processing of the event notification, the application must hold onto a reference to the 3D LUT change event with @ref DOX_IADLXInterface_Acquire and make it available on an asynchronous thread and return immediately. When the asynchronous thread is done processing it must discard the 3D LUT change event with @ref DOX_IADLXInterface_Release.<br> @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplay3DLUTChangedListener_REQ_TABLE
         *
         */
         virtual adlx_bool ADLX_STD_CALL OnDisplay3DLUTChanged (IADLXDisplay3DLUTChangedEvent* pDisplay3DLUTChangedEvent) = 0;
@@ -1251,8 +1223,7 @@ namespace adlx
         * @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "displaySetting.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplaySettingsChangedEvent_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetDisplay (IADLXDisplay** ppDisplay) = 0;
@@ -1279,8 +1250,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplaySettingsChangedEvent_GetDisplay.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplaySettings.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplaySettingsChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsFreeSyncChanged () = 0;
@@ -1307,8 +1277,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplaySettingsChangedEvent_GetDisplay.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplaySettings.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplaySettingsChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsVSRChanged () = 0;
@@ -1337,8 +1306,7 @@ namespace adlx
         * @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplaySettings.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplaySettingsChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsGPUScalingChanged () = 0;
@@ -1365,8 +1333,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplaySettingsChangedEvent_GetDisplay.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplaySettings.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplaySettingsChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsScalingModeChanged () = 0;
@@ -1394,8 +1361,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplaySettingsChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplaySettings.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplaySettingsChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsIntegerScalingChanged () = 0;
@@ -1423,8 +1389,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplaySettingsChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplaySettings.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplaySettingsChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsColorDepthChanged () = 0;
@@ -1452,8 +1417,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplaySettingsChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplaySettings.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplaySettingsChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsPixelFormatChanged () = 0;
@@ -1480,8 +1444,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplaySettingsChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplaySettings.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplaySettingsChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsHDCPChanged () = 0;
@@ -1509,8 +1472,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplaySettingsChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplaySettings.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplaySettingsChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsCustomColorHueChanged () = 0;
@@ -1538,8 +1500,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplaySettingsChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplaySettings.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplaySettingsChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsCustomColorSaturationChanged () = 0;
@@ -1566,8 +1527,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplaySettingsChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplaySettings.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplaySettingsChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsCustomColorBrightnessChanged () = 0;
@@ -1595,8 +1555,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplaySettingsChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplaySettings.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplaySettingsChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsCustomColorTemperatureChanged () = 0;
@@ -1624,8 +1583,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplaySettingsChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplaySettings.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplaySettingsChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsCustomColorContrastChanged () = 0;
@@ -1653,8 +1611,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplaySettingsChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplaySettings.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplaySettingsChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsCustomResolutionChanged () = 0;
@@ -1681,8 +1638,7 @@ namespace adlx
         * __Note:__ To obtain the display, use @ref DOX_IADLXDisplaySettingsChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplaySettings.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplaySettingsChangedEvent_REQ_TABLE
         *
         */
         virtual adlx_bool   ADLX_STD_CALL IsVariBrightChanged () = 0;
@@ -1759,8 +1715,7 @@ namespace adlx
         * The method should return quickly to not block the execution path in ADLX. If the method requires a long processing of the event notification, the application must hold onto a reference to the display settings change event with @ref DOX_IADLXInterface_Acquire and make it available on an asynchronous thread and return immediately. When the asynchronous thread is done processing it must discard the display settings change event with @ref DOX_IADLXInterface_Release. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IdisplaySettings.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplaySettingsChangedListener_REQ_TABLE
         *
         */
         virtual adlx_bool ADLX_STD_CALL OnDisplaySettingsChanged (IADLXDisplaySettingsChangedEvent* pDisplaySettingChangedEvent) = 0;
@@ -1816,8 +1771,7 @@ namespace adlx
         * The event listener instance must exist until the application unregisters the event listener with @ref DOX_IADLXDisplayChangedHandling_RemoveDisplayListEventListener. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayChangedHandling_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL AddDisplayListEventListener (IADLXDisplayListChangedListener* pDisplayListChangedListener) = 0;
@@ -1846,8 +1800,7 @@ namespace adlx
         * After the event listener is successfully unregistered, ADLX will no longer call @ref DOX_IADLXDisplayListChangedListener_OnDisplayListChanged method of the listener when the display list changes. The application can discard the event listener instance. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayChangedHandling_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL RemoveDisplayListEventListener (IADLXDisplayListChangedListener* pDisplayListChangedListener) = 0;
@@ -1877,8 +1830,7 @@ namespace adlx
         * The event listener instance must exist until the application unregisters the event listener with @ref DOX_IADLXDisplayChangedHandling_RemoveDisplayGamutEventListener. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayChangedHandling_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL AddDisplayGamutEventListener (IADLXDisplayGamutChangedListener* pDisplayGamutChangedListener) = 0;
@@ -1907,8 +1859,7 @@ namespace adlx
         * After the event listener is successfully unregistered, ADLX will no longer call @ref DOX_IADLXDisplayGamutChangedListener_OnDisplayGamutChanged method of the listener when the display gamut changes. The application can discard the event listener instance. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayChangedHandling_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL RemoveDisplayGamutEventListener (IADLXDisplayGamutChangedListener* pDisplayGamutChangedListener) = 0;
@@ -1938,8 +1889,7 @@ namespace adlx
         * The event listener instance must exist until the application unregisters the event listener with @ref DOX_IADLXDisplayChangedHandling_RemoveDisplayGammaEventListener. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayChangedHandling_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL AddDisplayGammaEventListener (IADLXDisplayGammaChangedListener* pDisplayGammaChangedListener) = 0;
@@ -1968,8 +1918,7 @@ namespace adlx
         * After the event listener is successfully unregistered, ADLX will no longer call @ref DOX_IADLXDisplayGammaChangedListener_OnDisplayGammaChanged method of the listener when the display gamma changes. The application can discard the event listener instance. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayChangedHandling_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL RemoveDisplayGammaEventListener (IADLXDisplayGammaChangedListener* pDisplayGammaChangedListener) = 0;
@@ -1999,8 +1948,7 @@ namespace adlx
         * The event listener instance must exist until the application unregisters the event listener with @ref DOX_IADLXDisplayChangedHandling_RemoveDisplay3DLUTEventListener. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayChangedHandling_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL AddDisplay3DLUTEventListener (IADLXDisplay3DLUTChangedListener* pDisplay3DLUTChangedListener) = 0;
@@ -2029,8 +1977,7 @@ namespace adlx
         * After the event listener is successfully unregistered, ADLX will no longer call @ref DOX_IADLXDisplay3DLUTChangedListener_OnDisplay3DLUTChanged method of the listener when the display 3D LUT changes. The application can discard the event listener instance. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayChangedHandling_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL RemoveDisplay3DLUTEventListener (IADLXDisplay3DLUTChangedListener* pDisplay3DLUTChangedListener) = 0;
@@ -2059,8 +2006,7 @@ namespace adlx
         * The event listener instance must exist until the application unregisters the event listener with @ref DOX_IADLXDisplayChangedHandling_RemoveDisplaySettingsEventListener.<br> @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplaySettings.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayChangedHandling_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL AddDisplaySettingsEventListener (IADLXDisplaySettingsChangedListener* pDisplaySettingsChangedListener) = 0;
@@ -2090,8 +2036,7 @@ namespace adlx
         * The application can discard the event listener instance. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplaySettings.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayChangedHandling_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL RemoveDisplaySettingsEventListener (IADLXDisplaySettingsChangedListener* pDisplaySettingsChangedListener) = 0;
@@ -2167,8 +2112,7 @@ namespace adlx
         * @details For more information about the AMD GPUs, refer to @ref @adlx_gpu_support "ADLX GPU Support".
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        * @copydoc IADLXDisplayServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetNumberOfDisplays (adlx_uint* numDisplays) = 0;
@@ -2205,8 +2149,7 @@ namespace adlx
         * In C++ when using a smart pointer for the returned interface there is no need to call @ref DOX_IADLXInterface_Release because the smart pointer calls it internally.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        * @copydoc IADLXDisplayServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetDisplays (IADLXDisplayList** ppDisplay) = 0;
@@ -2240,8 +2183,7 @@ namespace adlx
         * In C++ when using a smart pointer for the returned interface there is no need to call @ref DOX_IADLXInterface_Release because the smart pointer calls it internally.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL Get3DLUT (IADLXDisplay* pDisplay, IADLXDisplay3DLUT** ppDisp3DLUT) = 0;
@@ -2273,8 +2215,7 @@ namespace adlx
         * In C++ when using a smart pointer for the returned interface there is no need to call @ref DOX_IADLXInterface_Release because the smart pointer calls it internally.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetGamut (IADLXDisplay* pDisplay, IADLXDisplayGamut** ppDispGamut) = 0;
@@ -2306,8 +2247,7 @@ namespace adlx
         * In C++ when using a smart pointer for the returned interface there is no need to call @ref DOX_IADLXInterface_Release because the smart pointer calls it internally.
         * @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetGamma (IADLXDisplay* pDisplay, IADLXDisplayGamma** ppDispGamma) = 0;
@@ -2343,8 +2283,7 @@ namespace adlx
         * In C++ when using a smart pointer for the display changing listener interface there is no need to call @ref DOX_IADLXInterface_Release because the smart pointer calls it internally.
         * @ENG_END_DOX
         *
-        * @requirements
-        * @DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        * @copydoc IADLXDisplayServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL GetDisplayChangedHandling (IADLXDisplayChangedHandling** ppDisplayChangedHandling) = 0;
@@ -2374,8 +2313,7 @@ namespace adlx
         *@ENG_START_DOX
         *In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetFreeSync (IADLXDisplay* pDisplay, IADLXDisplayFreeSync** ppFreeSync) = 0;
@@ -2406,8 +2344,7 @@ namespace adlx
         *@ENG_START_DOX
         *In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetVirtualSuperResolution (IADLXDisplay* pDisplay, IADLXDisplayVSR** ppVSR) = 0;
@@ -2438,8 +2375,7 @@ namespace adlx
         *@ENG_START_DOX
         *In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetGPUScaling (IADLXDisplay* pDisplay, IADLXDisplayGPUScaling** ppGPUScaling) = 0;
@@ -2470,8 +2406,7 @@ namespace adlx
         *@ENG_START_DOX
         *In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetScalingMode (IADLXDisplay* pDisplay, IADLXDisplayScalingMode** ppScalingMode) = 0;
@@ -2502,8 +2437,7 @@ namespace adlx
         *@ENG_START_DOX
         *In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetIntegerScaling (IADLXDisplay* pDisplay, IADLXDisplayIntegerScaling** ppIntegerScaling) = 0;
@@ -2533,8 +2467,7 @@ namespace adlx
         *@ENG_START_DOX
         *In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetColorDepth (IADLXDisplay* pDisplay, IADLXDisplayColorDepth** ppColorDepth) = 0;
@@ -2564,8 +2497,7 @@ namespace adlx
         *@ENG_START_DOX
         *In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetPixelFormat (IADLXDisplay* pDisplay, IADLXDisplayPixelFormat** ppPixelFormat) = 0;
@@ -2595,8 +2527,7 @@ namespace adlx
         *@ENG_START_DOX
         *In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetCustomColor (IADLXDisplay* pDisplay, IADLXDisplayCustomColor** ppCustomColor) = 0;
@@ -2626,8 +2557,7 @@ namespace adlx
         *@ENG_START_DOX
         *In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetHDCP (IADLXDisplay* pDisplay, IADLXDisplayHDCP** ppHDCP) = 0;
@@ -2657,8 +2587,7 @@ namespace adlx
         *@ENG_START_DOX
         *In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetCustomResolution (IADLXDisplay* pDisplay, IADLXDisplayCustomResolution** ppCustomResolution) = 0;
@@ -2688,8 +2617,7 @@ namespace adlx
         *@ENG_START_DOX
         *In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplays.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayServices_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetVariBright (IADLXDisplay* pDisplay, IADLXDisplayVariBright** ppVariBright) = 0;

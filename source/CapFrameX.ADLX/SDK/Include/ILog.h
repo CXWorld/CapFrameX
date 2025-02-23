@@ -1,5 +1,5 @@
 // 
-// Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -43,8 +43,7 @@ namespace adlx
 		 * The method should return quickly to not block the execution path in ADLX. If the method requires a long processing of the log trace, the application must copy the log message and process it asynchronously.
          * @ENG_END_DOX
          *
-         * @requirements
-         * @DetailsTable{#include"ISystem.h", @ADLX_First_Ver}
+         * @copydoc IADLXLog_REQ_TABLE
          *
          * @seealso
          * @ref DOX_IADLXSystem_EnableLog

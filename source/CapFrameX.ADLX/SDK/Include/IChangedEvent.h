@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -37,8 +37,7 @@ namespace adlx
         * If the event has an unknown trigger, __SYNC_ORIGIN_UNKNOWN__ is returned. <br>
         *@ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IADLXChangedEvent.h", @ADLX_First_Ver}
+        *@copydoc IADLXChangedEvent_REQ_TABLE
         *
         */
         virtual ADLX_SYNC_ORIGIN   ADLX_STD_CALL GetOrigin() = 0;

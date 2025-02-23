@@ -1,5 +1,5 @@
 // 
-// Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -40,8 +40,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details The gamut color space CCIR709, also known as Rec.709, BT.709, and ITU 709, is a standard developed by ITU-R for image encoding and signal characteristics for high-definition television. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedCCIR709ColorSpace (adlx_bool* supported) const = 0;
@@ -67,8 +66,7 @@ namespace adlx
         *@ENG_START_DOX @details The color space CCIR601 is a standard, originally issued in 1982 by the CCIR, for encoding interlaced analog video signals in digital video form and is also known as Rec.601 or BT.601. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedCCIR601ColorSpace (adlx_bool* supported) const = 0;
@@ -94,8 +92,7 @@ namespace adlx
         *@ENG_START_DOX @details The standard gamut Adobe RGB (1998) color space or opRGB was developed by Adobe Systems, Inc. in 1998. The color space was designed to encompass most of the colors achievable on CMYK color printers, but by using RGB primary colors on a device such as a computer display. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedAdobeRgbColorSpace (adlx_bool* supported) const = 0;
@@ -121,8 +118,7 @@ namespace adlx
         *@ENG_START_DOX @details The standard gamut CIERgb or standard RGB (red, green, blue) color space was co-operatively created by Microsoft and Hewlett-Packard (HP) in 1996 to be used on monitors, printers, and websites. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedCIERgbColorSpace (adlx_bool* supported) const = 0;
@@ -147,8 +143,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details ITU-R Recommendation BT.2020, is commonly known by the abbreviations Rec.2020 or BT.2020. It defines various aspects of Ultra-High-Definition Television (UHDTV) with Standard Dynamic Range (SDR) and Wide Color Gamut (WCG), including picture resolutions, frame rates with progressive scan, bit depths, color primaries, RGB, and luma-chroma color representations, chroma subsampling, and opto-electronic transfer function. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedCCIR2020ColorSpace (adlx_bool* supported) const = 0;
@@ -173,8 +168,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details The custom color space can be changed as required. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedCustomColorSpace (adlx_bool* supported) const = 0;
@@ -197,8 +191,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupported5000kWhitePoint (adlx_bool* supported) const = 0;
@@ -221,8 +214,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupported6500kWhitePoint (adlx_bool* supported) const = 0;
@@ -245,8 +237,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupported7500kWhitePoint (adlx_bool* supported) const = 0;
@@ -269,8 +260,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupported9300kWhitePoint (adlx_bool* supported) const = 0;
@@ -293,8 +283,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsSupportedCustomWhitePoint (adlx_bool* supported) const = 0;
@@ -317,8 +306,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsCurrent5000kWhitePoint (adlx_bool* isSet) const = 0;
@@ -341,8 +329,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsCurrent6500kWhitePoint (adlx_bool* isSet) const = 0;
@@ -365,8 +352,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsCurrent7500kWhitePoint (adlx_bool* isSet) const = 0;
@@ -389,8 +375,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsCurrent9300kWhitePoint (adlx_bool* isSet) const = 0;
@@ -413,8 +398,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsCurrentCustomWhitePoint (adlx_bool* isSet) const = 0;
@@ -437,8 +421,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL GetWhitePoint (ADLX_Point* point) const = 0;
@@ -461,8 +444,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsCurrentCCIR709ColorSpace (adlx_bool* isSet) const = 0;
@@ -485,8 +467,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsCurrentCCIR601ColorSpace (adlx_bool* isSet) const = 0;
@@ -509,8 +490,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsCurrentAdobeRgbColorSpace (adlx_bool* isSet) const = 0;
@@ -533,8 +513,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsCurrentCIERgbColorSpace (adlx_bool* isSet) const = 0;
@@ -557,8 +536,7 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsCurrentCCIR2020ColorSpace (adlx_bool* isSet) const = 0;
@@ -583,8 +561,7 @@ namespace adlx
         *@detaileddesc
         *@ENG_START_DOX @details For more information on color coordinates, refer to @ref ADLX_GamutColorSpace. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT ADLX_STD_CALL IsCurrentCustomColorSpace (adlx_bool* isSet) const = 0;
@@ -609,8 +586,7 @@ namespace adlx
        *@detaileddesc
        *@ENG_START_DOX @details The gamut color space coordinates consist of (y, x) chromaticity coordinates for the red, green, and blue channels. @ENG_END_DOX
        *
-       *@requirements
-       *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+       *@copydoc IADLXDisplayGamut_REQ_TABLE
        *
        */
         virtual ADLX_RESULT         ADLX_STD_CALL GetGamutColorSpace (ADLX_GamutColorSpace* gamutColorSpace) const = 0;
@@ -637,8 +613,7 @@ namespace adlx
         *@ENG_START_DOX @details For more information on white point coordinates, Refer to @ref ADLX_Point. <br>
         * For more information on color space coordinates, refer to @ref ADLX_GamutColorSpace. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL SetGamut (ADLX_WHITE_POINT predefinedWhitePoint, ADLX_GAMUT_SPACE predefinedGamutSpace) = 0;
@@ -665,8 +640,7 @@ namespace adlx
         *@ENG_START_DOX @details For more information on white point coordinates, refer to @ref ADLX_Point. <br>
         * For more information on color space coordinates, refer to @ref ADLX_GamutColorSpace. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL SetGamut (ADLX_RGB customWhitePoint, ADLX_GAMUT_SPACE predefinedGamutSpace) = 0;
@@ -693,8 +667,7 @@ namespace adlx
         *@ENG_START_DOX @details For more information on white point coordinates, refer to @ref ADLX_Point. <br>
         * For more information on color space coordinates, refer to @ref ADLX_GamutColorSpace. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL SetGamut (ADLX_WHITE_POINT predefinedWhitePoint, ADLX_GamutColorSpace customGamut) = 0;
@@ -721,8 +694,7 @@ namespace adlx
         *@ENG_START_DOX @details For more information on white point coordinates, Refer to @ref ADLX_Point. <br>
         * For more information on color space coordinates, refer to @ref ADLX_GamutColorSpace. @ENG_END_DOX
         *
-        *@requirements
-        *@DetailsTable{#include "IDisplayGamut.h", @ADLX_First_Ver}
+        *@copydoc IADLXDisplayGamut_REQ_TABLE
         *
         */
         virtual ADLX_RESULT         ADLX_STD_CALL SetGamut (ADLX_RGB customWhitePoint, ADLX_GamutColorSpace customGamut) = 0;

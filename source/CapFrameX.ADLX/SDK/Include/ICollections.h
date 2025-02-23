@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -54,8 +54,7 @@ namespace adlx
 
         @ENG_END_DOX
 
-        @requirements
-        @DetailsTable{#include"ICollections.h", @ADLX_First_Ver}
+        @copydoc IADLXList_REQ_TABLE
 
         */
         virtual adlx_uint           ADLX_STD_CALL Size () = 0;
@@ -85,8 +84,7 @@ namespace adlx
           @details If the list has no interfaces, then @ref DOX_IADLXList_Size will return zero, and __Empty__ will return __true__.
           @ENG_END_DOX
 
-          @requirements
-          @DetailsTable{#include"ICollections.h", @ADLX_First_Ver}
+          @copydoc IADLXList_REQ_TABLE
 
          */
         virtual adlx_bool           ADLX_STD_CALL Empty () = 0;
@@ -122,8 +120,7 @@ namespace adlx
           @snippetCode
           @snippet ADLXSnippet.h Iterate ADLXList
 
-          @requirements
-          @DetailsTable{#include"ICollections.h", @ADLX_First_Ver}
+          @copydoc IADLXList_REQ_TABLE
 
           */
         virtual adlx_uint           ADLX_STD_CALL Begin () = 0;
@@ -158,8 +155,7 @@ namespace adlx
          @snippetCode
          @snippet ADLXSnippet.h Iterate ADLXList
 
-         @requirements
-         @DetailsTable{#include"ICollections.h", @ADLX_First_Ver}
+         @copydoc IADLXList_REQ_TABLE
 
          */
         virtual adlx_uint           ADLX_STD_CALL End () = 0;
@@ -196,8 +192,7 @@ namespace adlx
         In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation.
         @ENG_END_DOX
 
-        @requirements
-        @DetailsTable{#include"ICollections.h", @ADLX_First_Ver}
+        @copydoc IADLXList_REQ_TABLE
 
         */
         virtual ADLX_RESULT         ADLX_STD_CALL At (const adlx_uint location, IADLXInterface** ppItem) = 0;
@@ -230,8 +225,7 @@ namespace adlx
          @details After this call returns successfully, @ref DOX_IADLXList_Size returns zero.
          @ENG_END_DOX
 
-         @requirements
-         @DetailsTable{#include"ICollections.h", @ADLX_First_Ver}
+         @copydoc IADLXList_REQ_TABLE
 
          */
         virtual ADLX_RESULT         ADLX_STD_CALL Clear () = 0;
@@ -263,8 +257,7 @@ namespace adlx
         @details Removes an interface from the end of the list. The list must not be empty.
         @ENG_END_DOX
 
-        @requirements
-        @DetailsTable{#include"ICollections.h", @ADLX_First_Ver}
+        @copydoc IADLXList_REQ_TABLE
 
         */
         virtual ADLX_RESULT         ADLX_STD_CALL Remove_Back () = 0;
@@ -291,8 +284,7 @@ namespace adlx
         @ENG_END_DOX
 
 
-        @requirements
-        @DetailsTable{#include"ICollections.h", @ADLX_First_Ver}
+        @copydoc IADLXList_REQ_TABLE
 
         */
         virtual ADLX_RESULT         ADLX_STD_CALL Add_Back (IADLXInterface* pItem) = 0;

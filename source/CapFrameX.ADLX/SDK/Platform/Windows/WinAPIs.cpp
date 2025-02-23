@@ -1,5 +1,5 @@
-// 
-// Copyright (c) 2021 - 2022 Advanced Micro Devices, Inc. All rights reserved.
+//
+// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 //This abstracts Win32 APIs in ADLX ones so we insulate from platform
@@ -7,7 +7,7 @@
 #include <cstdlib>
 
 #if defined(_WIN32) // Microsoft compiler
-    #include <Windows.h>
+#include <Windows.h>
 #else
 #error define your copiler
 #endif
@@ -27,7 +27,7 @@ adlx_long ADLX_CDECL_CALL adlx_atomic_inc (adlx_long* X)
 adlx_long ADLX_CDECL_CALL adlx_atomic_dec (adlx_long* X)
 {
 #if defined(_WIN32) // Microsoft compiler
-    return InterlockedDecrement((long*)X);
+    return InterlockedDecrement ((long*)X);
 #endif
 }
 
@@ -48,7 +48,7 @@ adlx_handle ADLX_CDECL_CALL adlx_load_library (const TCHAR* filename)
 int ADLX_CDECL_CALL adlx_free_library (adlx_handle module)
 {
 #if defined(_WIN32) // Microsoft compiler
-	return ::FreeLibrary((HMODULE)module) == TRUE;
+    return ::FreeLibrary ((HMODULE)module) == TRUE;
 #endif
 }
 
@@ -56,9 +56,8 @@ int ADLX_CDECL_CALL adlx_free_library (adlx_handle module)
 void* ADLX_CDECL_CALL adlx_get_proc_address (adlx_handle module, const char* procName)
 {
 #if defined(_WIN32) // Microsoft compiler
-	return (void*)::GetProcAddress((HMODULE)module, procName);
+    return (void*)::GetProcAddress ((HMODULE)module, procName);
 #endif
 }
-
 
 //#endif //_WIN32
