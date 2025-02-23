@@ -1,17 +1,22 @@
-﻿using CapFrameX.Contracts.Logging;
-using CapFrameX.Contracts.Configuration;
+﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Logging;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
+using CapFrameX.Extensions;
+using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Hotkey;
+using CapFrameX.Monitoring.Contracts;
+using CapFrameX.Overlay;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using Microsoft.Extensions.Logging;
 using OxyPlot;
 using OxyPlot.Axes;
+using OxyPlot.Legends;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
@@ -20,18 +25,13 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using OxyPlot.Legends;
-using CapFrameX.Overlay;
-using CapFrameX.Extensions.NetStandard;
-using CapFrameX.Monitoring.Contracts;
-using System.Diagnostics;
-using CapFrameX.Extensions;
 
 namespace CapFrameX.ViewModel
 {
@@ -631,7 +631,9 @@ namespace CapFrameX.ViewModel
                         _logger.LogInformation("Hotkey ({captureHotkeyString}) callback triggered. Lock capture service state is {lockCaptureServiceState}.", CaptureHotkeyString, _captureManager.LockCaptureService);
                         _logger.LogInformation("IsCapturing state: {isCapturingState}", _captureManager.IsCapturing);
                         if (!_captureManager.LockCaptureService)
+                        {
                             SetCaptureMode();
+                        }
                     }
                 });
         }
@@ -745,7 +747,7 @@ namespace CapFrameX.ViewModel
             {
                 process.Blacklist();
             }
-            _processList.Save();
+            _processList?.Save();
 
             SelectedProcessToCapture = null;
             StartCaptureService();
@@ -763,7 +765,7 @@ namespace CapFrameX.ViewModel
             if (process is CXProcess)
             {
                 process.Whitelist();
-                _processList.Save();
+                _processList?.Save();
             }
 
             StartCaptureService();
@@ -798,7 +800,8 @@ namespace CapFrameX.ViewModel
                     entry.UpdateCaptureTime(captureTime);
 
                 }
-                _processList.Save();
+
+                _processList?.Save();
             }
             catch (Exception e)
             {
@@ -953,13 +956,27 @@ namespace CapFrameX.ViewModel
                         // prefer file description
                         if (!fileDescription.IsNullOrEmpty())
                         {
-                            _gameFileDescriptionCache.Add(processName, fileDescription);
-                            return fileDescription;
+                            if (processNameStripped != fileDescription)
+                            {
+                                _gameFileDescriptionCache.Add(processName, fileDescription);
+                                return fileDescription;
+                            }
+                            else
+                            {
+                                return _processList.FindProcessByName(processName)?.DisplayName ?? processNameStripped;
+                            }
                         }
                         else if (!mainWindoTitle.IsNullOrEmpty())
                         {
-                            _gameFileDescriptionCache.Add(processName, mainWindoTitle);
-                            return mainWindoTitle;
+                            if (processNameStripped != mainWindoTitle)
+                            {
+                                _gameFileDescriptionCache.Add(processName, mainWindoTitle);
+                                return mainWindoTitle;
+                            }
+                            else
+                            {
+                                return _processList.FindProcessByName(processName)?.DisplayName ?? processNameStripped;
+                            }
                         }
                     }
                     catch (Exception ex)

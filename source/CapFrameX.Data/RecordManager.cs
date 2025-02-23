@@ -732,17 +732,38 @@ namespace CapFrameX.Data
 
             if (processes.Length > 0)
             {
-                string mainWindoTitle = processes.First().MainWindowTitle.TrimEnd();
-                string fileDescription = processes.First().MainModule.FileVersionInfo.FileDescription.TrimEnd();
+                try
+                {
+                    string mainWindoTitle = processes.First()?.MainWindowTitle?.TrimEnd();
+                    string fileDescription = processes.First()?.MainModule?.FileVersionInfo?.FileDescription?.TrimEnd();
 
-                // prefer file description
-                if (!fileDescription.IsNullOrEmpty())
-                {
-                    return fileDescription;
+                    // prefer file description
+                    if (!fileDescription.IsNullOrEmpty())
+                    {
+                        if (processNameStripped != fileDescription)
+                        {
+                            return fileDescription;
+                        }
+                        else
+                        {
+                            return _processList.FindProcessByName(processName)?.DisplayName ?? processNameStripped;
+                        }
+                    }
+                    else if (!mainWindoTitle.IsNullOrEmpty())
+                    {
+                        if (processNameStripped != mainWindoTitle)
+                        {
+                            return mainWindoTitle;
+                        }
+                        else
+                        {
+                            return _processList.FindProcessByName(processName)?.DisplayName ?? processNameStripped;
+                        }
+                    }
                 }
-                else if (!mainWindoTitle.IsNullOrEmpty())
+                catch (Exception ex)
                 {
-                    return mainWindoTitle;
+                    _logger.LogError(ex, "Error getting game name from process info");
                 }
             }
 
