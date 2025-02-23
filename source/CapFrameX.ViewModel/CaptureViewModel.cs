@@ -798,7 +798,6 @@ namespace CapFrameX.ViewModel
                 else if (entry is CXProcess)
                 {
                     entry.UpdateCaptureTime(captureTime);
-
                 }
 
                 _processList?.Save();
@@ -819,7 +818,9 @@ namespace CapFrameX.ViewModel
                 return lastProcessCaptureTime?.ToString(CultureInfo.InvariantCulture) != CaptureTimeString;
             }
             else
+            {
                 return false;
+            }
         }
 
         private IDisposable GetListUpdateHeartBeat()
@@ -851,7 +852,9 @@ namespace CapFrameX.ViewModel
                 if (!ProcessesToCapture.Contains(_lastCapturedProcess) ||
                     (selectedProcessToCapture != null &&
                     selectedProcessToCapture != _lastCapturedProcess))
+                {
                     _overlayService.ResetHistory();
+                }
             }
 
             // fire update global hook if new process is detected
@@ -899,7 +902,6 @@ namespace CapFrameX.ViewModel
 
             var processId = ProcessesInfo.FirstOrDefault(info => info.Item1 == currentProcess).Item2;
             _rTSSService.ProcessIdStream.OnNext(processId);
-
 
             _updateCurrentProcess?.Publish(new ViewMessages.CurrentProcessToCapture(currentProcess, processId));
         }
@@ -1070,11 +1072,14 @@ namespace CapFrameX.ViewModel
 
             // temp. fix for disabled run history checkbox from previous versions
             if (historyEntry != null)
+            {
                 historyEntry.ShowOnOverlayIsEnabled = true;
+            }
 
             if (!UseRunHistory)
+            {
                 UseAggregation = false;
-
+            }
         }
 
         private void SetGlobalHookEventResetHistoryHotkey()
@@ -1084,7 +1089,5 @@ namespace CapFrameX.ViewModel
 
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.ResetHistory, () => _overlayService.ResetHistory());
         }
-
-
     }
 }
