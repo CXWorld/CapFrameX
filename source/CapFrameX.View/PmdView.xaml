@@ -52,7 +52,7 @@
                         <ColumnDefinition Width="170"/>
                     </Grid.ColumnDefinitions>
                     <!--Style="{StaticResource MaterialDesignOutlinedTextBox}"-->
-                    <ScrollViewer Grid.Row="0" Grid.Column="0" Margin="5 0 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer Grid.Row="0" Grid.Column="0" Margin="5 0 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
                         <StackPanel>
                             <GroupBox Header="GPU Total Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
                                 <StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
@@ -135,7 +135,7 @@
 							</controls:PlotViewCustomZoom>
                         </Grid>
                     </Grid>
-                    <ScrollViewer Grid.Row="1" Grid.Column="0" Margin="5 5 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer Grid.Row="1" Grid.Column="0" Margin="5 5 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
                         <StackPanel>
                             <GroupBox Header="CPU Total Power" FontSize="17" Foreground="White" Style="{DynamicResource MaterialDesignGroupBox}">
                                 <StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
@@ -264,7 +264,7 @@
                             <Border Height="45" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch">
                                 <CheckBox Margin="5 0 0 0" FontSize="13" Content="Log PMD Data" IsChecked="{Binding UseLogging}"></CheckBox>
                             </Border>
-                            <Border Height="160" Margin="5 20 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch">
+                            <Border Height="160" Margin="5 10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch">
                                 <StackPanel>
                                     <TextBlock Text="Downsampling Factor" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
                                     <ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
@@ -297,7 +297,7 @@
                                     </ComboBox>
                                 </StackPanel>
                             </Border>
-                            <Border Height="80" Margin="5 20 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch">
+                            <Border Height="80" Margin="5 10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch">
                                 <StackPanel>
                                     <TextBlock Text="Chart Length [s]" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
                                     <ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
@@ -313,7 +313,7 @@
                                     </ComboBox>
                                 </StackPanel>
                             </Border>
-                            <Border Height="45" Margin="5 20 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch">
+                            <Border Height="45" Margin="5 10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch">
                                 <CheckBox Margin="5 0 0 0" FontSize="13" Content="Show Charts" IsChecked="{Binding UpdateCharts}"></CheckBox>
                             </Border>
                         </StackPanel>
