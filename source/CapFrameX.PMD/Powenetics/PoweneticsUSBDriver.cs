@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using CapFrameX.Contracts.PMD;
 
-namespace CapFrameX.PMD
+namespace CapFrameX.PMD.Powenetics
 {
     public class PoweneticsUSBDriver : IPoweneticsDriver
     {

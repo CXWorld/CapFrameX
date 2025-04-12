@@ -230,7 +230,7 @@
       <Name>CapFrameX.Remote</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Capture.Contracts\CapFrameX.Capture.Contracts.csproj">
-      <Project>{5742C860-6313-4477-BF11-839C35AE5588}</Project>
+      <Project>{5742c860-6313-4477-bf11-839c35ae5588}</Project>
       <Name>CapFrameX.Capture.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Charts\Core40\Core.csproj">
@@ -262,7 +262,7 @@
       <Name>CapFrameX.Extensions.NetStandard</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj">
-      <Project>{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}</Project>
+      <Project>{a4559b99-7fcb-40ef-bf97-d293a2b7d6d3}</Project>
       <Name>CapFrameX.Extensions</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Hardware.Controller\CapFrameX.Hardware.Controller.csproj">
@@ -274,7 +274,7 @@
       <Name>CapFrameX.Hotkey</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Monitoring.Contracts\CapFrameX.Monitoring.Contracts.csproj">
-      <Project>{2F0D1227-BE4F-4501-B3A2-66A753ED742C}</Project>
+      <Project>{2f0d1227-be4f-4501-b3a2-66a753ed742c}</Project>
       <Name>CapFrameX.Monitoring.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.MVVM\CapFrameX.MVVM.csproj">
@@ -286,7 +286,7 @@
       <Name>CapFrameX.Overlay</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.PMD\CapFrameX.PMD.csproj">
-      <Project>{8A0EFF6F-A7BC-450A-AC29-D0F5CCD96BC3}</Project>
+      <Project>{8a0eff6f-a7bc-450a-ac29-d0f5ccd96bc3}</Project>
       <Name>CapFrameX.PMD</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj">

@@ -1,7 +1,7 @@
 ﻿using CapFrameX.Contracts.PMD;
 using System;
 
-namespace CapFrameX.PMD
+namespace CapFrameX.PMD.Powenetics
 {
     public interface IPoweneticsDriver
     {

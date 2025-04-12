@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.PMD;
 using CapFrameX.PMD;
+using CapFrameX.PMD.Powenetics;
 using OxyPlot;
 using Prism.Commands;
 using System;
@@ -24,6 +25,7 @@ namespace CapFrameX.ViewModel.SubModels
 
         private List<PoweneticsChannel[]> _chartaDataBuffer = new List<PoweneticsChannel[]>(1000 * 10);
         private PoweneticsMetricsManager _pmdDataMetricsManager = new PoweneticsMetricsManager(500, 10);
+        private PmdAnalysisChartManager _pmdDataChartManager = new PmdAnalysisChartManager();
 
         private readonly object _updateChartBufferLock = new object();
         private readonly IPoweneticsService _pmdService;
@@ -187,13 +189,17 @@ namespace CapFrameX.ViewModel.SubModels
 
                     UpdatePmdDataWindow(_pmdDataWindowSeconds);
 
-                    //_pmdAnalysisChartManager.AxisDefinitions["X_Axis_Time_GPU"].Maximum = _pmdDataWindowSeconds;
-                    //_pmdAnalysisChartManager.AxisDefinitions["X_Axis_Time_GPU"].AbsoluteMaximum = _pmdDataWindowSeconds;
-                    //_pmdAnalysisChartManager.AxisDefinitions["X_Axis_Time_CPU"].Maximum = _pmdDataWindowSeconds;
-                    //_pmdAnalysisChartManager.AxisDefinitions["X_Axis_Time_CPU"].AbsoluteMaximum = _pmdDataWindowSeconds;
+                    _pmdDataChartManager.AxisDefinitions["X_Axis_Time_GPU"].Maximum = _pmdDataWindowSeconds;
+                    _pmdDataChartManager.AxisDefinitions["X_Axis_Time_GPU"].AbsoluteMaximum = _pmdDataWindowSeconds;
+                    _pmdDataChartManager.AxisDefinitions["X_Axis_Time_CPU"].Maximum = _pmdDataWindowSeconds;
+                    _pmdDataChartManager.AxisDefinitions["X_Axis_Time_CPU"].AbsoluteMaximum = _pmdDataWindowSeconds;
                 }
             }
         }
+
+        public PlotModel EPS12VModel => _pmdDataChartManager.Eps12VModel;
+
+        public PlotModel PciExpressModel => _pmdDataChartManager.PciExpressModel;
 
         public PoweneticsViewModel(IPoweneticsService pmdService, IAppConfiguration appConfiguration)
         {
@@ -201,6 +207,9 @@ namespace CapFrameX.ViewModel.SubModels
             _appConfiguration = appConfiguration;
 
             ResetPmdMetricsCommand = new DelegateCommand(() => _pmdDataMetricsManager.ResetHistory());
+
+            _pmdDataChartManager.UseDarkMode = _appConfiguration.UseDarkMode;
+            _pmdDataChartManager.UpdateChartsTheme();
 
             _pmdService.PmdstatusStream
                 .SubscribeOnDispatcher()
@@ -215,7 +224,7 @@ namespace CapFrameX.ViewModel.SubModels
         {
             if (!_updateCharts)
             {
-                //_pmdDataChartManager.ResetRealTimePlotModels();
+                _pmdDataChartManager.ResetRealTimePlotModels();
                 _chartaDataBuffer.Clear();
             }
         }
@@ -295,8 +304,8 @@ namespace CapFrameX.ViewModel.SubModels
                     .Select(p => new DataPoint(p.X, p.Y));
             }
 
-            //_pmdAnalysisChartManager.DrawEps12VChart(eps12VPowerDrawPoints);
-            //_pmdAnalysisChartManager.DrawPciExpressChart(pciExpressPowerDrawPoints);
+            _pmdDataChartManager.DrawEps12VChart(eps12VPowerDrawPoints);
+            _pmdDataChartManager.DrawPciExpressChart(pciExpressPowerDrawPoints);
         }
 
         internal void UpdatePmdDataWindow(int pmdDataWindowSeconds)

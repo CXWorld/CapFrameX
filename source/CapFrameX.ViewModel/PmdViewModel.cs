@@ -5,6 +5,7 @@ using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.PMD;
+using CapFrameX.PMD.Powenetics;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.ViewModel.SubModels;
 using Microsoft.Extensions.Logging;
@@ -50,10 +51,6 @@ namespace CapFrameX.ViewModel
             get => _gpuName;
             set { _gpuName = value; RaisePropertyChanged(); }
         }
-
-        public PlotModel EPS12VModel => _pmdAnalysisChartManager.Eps12VModel;
-
-        public PlotModel PciExpressModel => _pmdAnalysisChartManager.PciExpressModel;
 
         public PlotModel CpuAnalysisModel => _pmdAnalysisChartManager.CpuAnalysisModel;
 

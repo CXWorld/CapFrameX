@@ -7,7 +7,7 @@ using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Monitoring.Contracts;
-using CapFrameX.PMD;
+using CapFrameX.PMD.Powenetics;
 using CapFrameX.PresentMonInterface;
 using Microsoft.Extensions.Logging;
 using System;

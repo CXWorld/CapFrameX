@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 
-namespace CapFrameX.PMD
+namespace CapFrameX.PMD.Powenetics
 {
     public interface IPoweneticsService
     {

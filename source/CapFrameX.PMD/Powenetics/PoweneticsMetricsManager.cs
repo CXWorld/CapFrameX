@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-namespace CapFrameX.PMD
+namespace CapFrameX.PMD.Powenetics
 {
     public class PoweneticsMetricsManager : BindableBase
     {

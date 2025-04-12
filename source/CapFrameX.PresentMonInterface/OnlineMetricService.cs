@@ -2,7 +2,7 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.EventAggregation.Messages;
-using CapFrameX.PMD;
+using CapFrameX.PMD.Powenetics;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using Microsoft.Extensions.Logging;
 using Prism.Events;

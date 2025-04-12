@@ -1,4 +1,8 @@
-﻿using System;
+﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.PMD;
+using CapFrameX.Extensions.NetStandard;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
@@ -6,12 +10,8 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Windows;
-using CapFrameX.Contracts.Configuration;
-using Microsoft.Extensions.Logging;
-using CapFrameX.Extensions.NetStandard;
-using CapFrameX.Contracts.PMD;
 
-namespace CapFrameX.PMD
+namespace CapFrameX.PMD.Powenetics
 {
     public class PoweneticsService : IPoweneticsService
     {

@@ -2,7 +2,7 @@
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Extensions;
-using CapFrameX.PMD;
+using CapFrameX.PMD.Powenetics;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Remote;
 using DryIoc;

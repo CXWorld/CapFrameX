@@ -303,7 +303,7 @@
 									<TextBlock Text="Chart Length [s]" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
 									<ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
 					                          materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
-					                          ItemsSource="{Binding PmdDataWindows}" SelectedItem="{Binding PoweneticsViewModel.SelectedPmdDataWindow}"
+					                          ItemsSource="{Binding PoweneticsViewModel.PmdDataWindows}" SelectedItem="{Binding PoweneticsViewModel.SelectedPmdDataWindow}"
                                               ToolTipService.ShowDuration="25000">
 										<ComboBox.ToolTip>
 											<ToolTip StaysOpen="True" MaxWidth="275">

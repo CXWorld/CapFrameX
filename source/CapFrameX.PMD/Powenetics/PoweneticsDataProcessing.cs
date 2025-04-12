@@ -1,7 +1,7 @@
 ﻿using MathNet.Numerics.Interpolation;
 using System.Linq;
 
-namespace CapFrameX.PMD
+namespace CapFrameX.PMD.Powenetics
 {
     public class PoweneticsDataProcessing
     {

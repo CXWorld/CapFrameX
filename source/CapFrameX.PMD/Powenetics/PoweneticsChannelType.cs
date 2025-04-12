@@ -1,4 +1,4 @@
-﻿namespace CapFrameX.PMD
+﻿namespace CapFrameX.PMD.Powenetics
 {
     public enum PoweneticsChannelType
     {

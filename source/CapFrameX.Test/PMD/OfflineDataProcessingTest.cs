@@ -1,4 +1,4 @@
-﻿using CapFrameX.PMD;
+﻿using CapFrameX.PMD.Powenetics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CapFrameX.Test.PMD
