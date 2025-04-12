@@ -27,7 +27,7 @@ namespace CapFrameX.PresentMonInterface
         private readonly ICaptureService _captureService;
         private readonly IEventAggregator _eventAggregator;
         private readonly IOverlayEntryCore _overlayEntryCore;
-        private readonly IPmdService _pmdService;
+        private readonly IPoweneticsService _pmdService;
         private readonly ILogger<OnlineMetricService> _logger;
         private readonly IAppConfiguration _appConfiguration;
         private readonly object _lockRealtimeMetric = new object();
@@ -41,7 +41,7 @@ namespace CapFrameX.PresentMonInterface
         private List<double> _displaytimes5Seconds = new List<double>(LIST_CAPACITY / 4);
         private List<double> _measuretimesRealtimeSeconds = new List<double>(LIST_CAPACITY);
         private List<double> _measuretimes5Seconds = new List<double>(LIST_CAPACITY / 4);
-        private List<PmdChannel[]> _channelDataBuffer = new List<PmdChannel[]>(PMD_BUFFER_CAPACITY);
+        private List<PoweneticsChannel[]> _channelDataBuffer = new List<PoweneticsChannel[]>(PMD_BUFFER_CAPACITY);
         private string _currentProcess;
         private int _currentProcessId;
         private readonly double _maxOnlineStutteringIntervalLength = 5d;
@@ -52,7 +52,7 @@ namespace CapFrameX.PresentMonInterface
             ICaptureService captureServive,
             IEventAggregator eventAggregator,
             IOverlayEntryCore oerlayEntryCore,
-            IPmdService pmdService,
+            IPoweneticsService pmdService,
             ILogger<OnlineMetricService> logger,
             IAppConfiguration appConfiguration)
         {
@@ -263,7 +263,7 @@ namespace CapFrameX.PresentMonInterface
             catch { ResetMetrics(); }
         }
 
-        private void UpdatePmdMetrics(IList<PmdChannel[]> metricsData)
+        private void UpdatePmdMetrics(IList<PoweneticsChannel[]> metricsData)
         {
             lock (_lockPmdMetrics)
             {
@@ -363,18 +363,18 @@ namespace CapFrameX.PresentMonInterface
             {
                 pmdMetrics = new OnlinePmdMetrics()
                 {
-                    GpuPowerCurrent = GetPmdCurrentPowerByIndexGroup(_channelDataBuffer, PmdChannelExtensions.GPUPowerIndexGroup),
-                    CpuPowerCurrent = GetPmdCurrentPowerByIndexGroup(_channelDataBuffer, PmdChannelExtensions.EPSPowerIndexGroup),
-                    SystemPowerCurrent = GetPmdCurrentPowerByIndexGroup(_channelDataBuffer, PmdChannelExtensions.SystemPowerIndexGroup),
+                    GpuPowerCurrent = GetPmdCurrentPowerByIndexGroup(_channelDataBuffer, PoweneticsChannelExtensions.GPUPowerIndexGroup),
+                    CpuPowerCurrent = GetPmdCurrentPowerByIndexGroup(_channelDataBuffer, PoweneticsChannelExtensions.EPSPowerIndexGroup),
+                    SystemPowerCurrent = GetPmdCurrentPowerByIndexGroup(_channelDataBuffer, PoweneticsChannelExtensions.SystemPowerIndexGroup),
                 };
 
-                _channelDataBuffer = new List<PmdChannel[]>(PMD_BUFFER_CAPACITY);
+                _channelDataBuffer = new List<PoweneticsChannel[]>(PMD_BUFFER_CAPACITY);
             }
 
             return pmdMetrics;
         }
 
-        private float GetPmdCurrentPowerByIndexGroup(IList<PmdChannel[]> channelData, int[] indexGroup)
+        private float GetPmdCurrentPowerByIndexGroup(IList<PoweneticsChannel[]> channelData, int[] indexGroup)
         {
             double sum = 0;
 

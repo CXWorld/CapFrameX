@@ -211,6 +211,9 @@
     <Compile Include="SensorViewModel.cs" />
     <Compile Include="StateViewModel.cs" />
     <Compile Include="StateViewModelSystemStatus.cs" />
+    <Compile Include="SubModels\BenchlabViewModel.cs" />
+    <Compile Include="SubModels\PmdViewModelBase.cs" />
+    <Compile Include="SubModels\PoweneticsViewModel.cs" />
     <Compile Include="SubModels\SensorGroupControl.cs" />
     <Compile Include="SubModels\OverlayGroupControl.cs" />
     <Compile Include="SubModels\OverlayGroupSeparating.cs" />

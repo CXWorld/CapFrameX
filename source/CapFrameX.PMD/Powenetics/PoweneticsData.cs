@@ -1,6 +1,6 @@
 ﻿namespace CapFrameX.PMD
 {
-    public struct PmdSample
+    public struct PoweneticsSample
     {
         public double Time;
         public double Value;

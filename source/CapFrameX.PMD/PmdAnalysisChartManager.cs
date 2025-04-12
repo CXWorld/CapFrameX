@@ -3,7 +3,6 @@ using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.PlotBuilder;
 using OxyPlot;
 using OxyPlot.Axes;
-using OxyPlot.Series;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +11,7 @@ using LineSeries = CapFrameX.Statistics.PlotBuilder.LineSeries;
 
 namespace CapFrameX.PMD
 {
-    public class PmdDataChartManager
+    public class PmdAnalysisChartManager
     {
         private List<double> _ePS12VModelMaxYValueBuffer = new List<double>(10);
         private List<double> _pciExpressModelMaxYValueBuffer = new List<double>(10);
@@ -66,7 +65,7 @@ namespace CapFrameX.PMD
 
         public bool DrawSensorPower { get; set; } = false;
 
-        public PmdDataChartManager()
+        public PmdAnalysisChartManager()
         {
             // Metrics
             Eps12VModel.Axes.Add(AxisDefinitions["X_Axis_Time_CPU"]);

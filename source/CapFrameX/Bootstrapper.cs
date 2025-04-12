@@ -85,7 +85,7 @@ namespace CapFrameX
             base.ConfigureContainer();
 
             // Intialize static classes
-            PmdChannelExtensions.Initialize();
+            PoweneticsChannelExtensions.Initialize();
 
 			// Vertical components
 			Container.ConfigureSerilogILogger(Log.Logger);
@@ -136,8 +136,8 @@ namespace CapFrameX
                     await loginManager.HandleRedirect(url => Task.FromResult(Process.Start(url)));
                 });
             Container.Register<CaptureManager>(Reuse.Singleton);
-            Container.Register<IPmdService, PmdService>(Reuse.Singleton);
-            Container.Register<IPmdDriver, PmdUSBDriver>(Reuse.Singleton);
+            Container.Register<IPoweneticsService, PoweneticsService>(Reuse.Singleton);
+            Container.Register<IPoweneticsDriver, PoweneticsUSBDriver>(Reuse.Singleton);
 			Container.Register<IThreadAffinityController, ThreadAffinityController>(Reuse.Singleton);
 			Container.Register<IFrameViewService, FrameViewService>(Reuse.Singleton);
 		}

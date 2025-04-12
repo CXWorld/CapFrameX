@@ -13,18 +13,18 @@ using CapFrameX.Contracts.PMD;
 
 namespace CapFrameX.PMD
 {
-    public class PmdService : IPmdService
+    public class PoweneticsService : IPoweneticsService
     {
-        private readonly IPmdDriver _pmdDriver;
+        private readonly IPoweneticsDriver _pmdDriver;
         private readonly IAppConfiguration _appConfiguration;
-        private readonly ILogger<PmdService> _logger;
-        private readonly ISubject<PmdChannel[]> _pmdChannelStream = new Subject<PmdChannel[]>();
+        private readonly ILogger<PoweneticsService> _logger;
+        private readonly ISubject<PoweneticsChannel[]> _pmdChannelStream = new Subject<PoweneticsChannel[]>();
 
         private IDisposable _pmdChannelStreamDisposable;
         private IObservable<int> _pmdThroughput;
-        private LinkedList<PmdChannel[]> _channelsBuffer = new LinkedList<PmdChannel[]>();
+        private LinkedList<PoweneticsChannel[]> _channelsBuffer = new LinkedList<PoweneticsChannel[]>();
 
-        public IObservable<PmdChannel[]> PmdChannelStream => _pmdChannelStream.AsObservable();
+        public IObservable<PoweneticsChannel[]> PmdChannelStream => _pmdChannelStream.AsObservable();
 
         public IObservable<EPmdDriverStatus> PmdstatusStream => _pmdDriver.PmdstatusStream;
 
@@ -53,8 +53,8 @@ namespace CapFrameX.PMD
             }
         }
 
-        public PmdService(IPmdDriver pmdDriver, IAppConfiguration appConfiguration,
-            ILogger<PmdService> logger)
+        public PoweneticsService(IPoweneticsDriver pmdDriver, IAppConfiguration appConfiguration,
+            ILogger<PoweneticsService> logger)
         {
             _pmdDriver = pmdDriver;
             _appConfiguration = appConfiguration;
@@ -91,7 +91,7 @@ namespace CapFrameX.PMD
         public bool ShutDownDriver()
         {
             _pmdChannelStreamDisposable?.Dispose();
-            _channelsBuffer = new LinkedList<PmdChannel[]>();
+            _channelsBuffer = new LinkedList<PoweneticsChannel[]>();
 
             return _pmdDriver.Disconnect();
         }
@@ -104,29 +104,29 @@ namespace CapFrameX.PMD
             return comPorts;
         }
 
-        public IEnumerable<Point> GetEPS12VPowerPmdDataPoints(IList<PmdChannel[]> channelData)
+        public IEnumerable<Point> GetEPS12VPowerPmdDataPoints(IList<PoweneticsChannel[]> channelData)
         {
             var minTimeStamp = channelData.First()[0].TimeStamp;
             foreach (var channel in channelData)
             {
-                var sumPower = PmdChannelExtensions.EPSPowerIndexGroup.Sum(index => channel[index].Value);
+                var sumPower = PoweneticsChannelExtensions.EPSPowerIndexGroup.Sum(index => channel[index].Value);
                 yield return new Point((channel[0].TimeStamp - minTimeStamp) * 1E-03, sumPower);
             }
         }
 
-        public IEnumerable<Point> GetPciExpressPowerPmdDataPoints(IList<PmdChannel[]> channelData)
+        public IEnumerable<Point> GetPciExpressPowerPmdDataPoints(IList<PoweneticsChannel[]> channelData)
         {
             var minTimeStamp = channelData.First()[0].TimeStamp;
             foreach (var channel in channelData)
             {
-                var sumPower = PmdChannelExtensions.GPUPowerIndexGroup.Sum(index => channel[index].Value);
+                var sumPower = PoweneticsChannelExtensions.GPUPowerIndexGroup.Sum(index => channel[index].Value);
                 yield return new Point((channel[0].TimeStamp - minTimeStamp) * 1E-03, sumPower);
             }
         }
 
-        private void FilterChannelsBuffer(IList<PmdChannel[]> buffer)
+        private void FilterChannelsBuffer(IList<PoweneticsChannel[]> buffer)
         {
-            PmdChannel[] channels;
+            PoweneticsChannel[] channels;
 
             switch (DownSamplingMode)
             {
@@ -145,7 +145,7 @@ namespace CapFrameX.PMD
             _pmdChannelStream.OnNext(channels);
         }
 
-        private PmdChannel[] GetAveragePmdChannel(IList<PmdChannel[]> buffer)
+        private PoweneticsChannel[] GetAveragePmdChannel(IList<PoweneticsChannel[]> buffer)
         {
             var avergeSample = buffer.First();
 

@@ -3,16 +3,16 @@ using System.Linq;
 
 namespace CapFrameX.PMD
 {
-    public class PmdDataProcessing
+    public class PoweneticsDataProcessing
     {
-        public static PmdSample[] GetMappedPmdData(PmdSample[] referenceSamples, PmdSample[] mappingSamples)
+        public static PoweneticsSample[] GetMappedPmdData(PoweneticsSample[] referenceSamples, PoweneticsSample[] mappingSamples)
 		{
             var linearSpline = LinearSpline.Interpolate(
                 mappingSamples.Select(sample => sample.Time), 
                 mappingSamples.Select(sample => sample.Value));
 
 			return referenceSamples
-                .Select(sample => new PmdSample() 
+                .Select(sample => new PoweneticsSample() 
                 { 
                     Time = sample.Time, 
                     Value = linearSpline.Interpolate(sample.Time) 

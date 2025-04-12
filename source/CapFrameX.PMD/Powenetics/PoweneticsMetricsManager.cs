@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace CapFrameX.PMD
 {
-    public class PmdMetricsManager : BindableBase
+    public class PoweneticsMetricsManager : BindableBase
     {
         const string ZERO_WATT = "0.0 W";
 
@@ -246,19 +246,19 @@ namespace CapFrameX.PMD
 
         public int PmdDataWindowSeconds { get; set; }
 
-        public PmdMetricsManager(int pmdMetricRefreshPeriod, int pmdDataWindowSeconds)
+        public PoweneticsMetricsManager(int pmdMetricRefreshPeriod, int pmdDataWindowSeconds)
         {
             PmdMetricRefreshPeriod = pmdMetricRefreshPeriod;
             PmdDataWindowSeconds = pmdDataWindowSeconds;
         }
 
-        public void UpdateMetrics(IList<PmdChannel[]> metricsData)
+        public void UpdateMetrics(IList<PoweneticsChannel[]> metricsData)
         {
             PmdMetricSet pmdMetricSet;
             int historyLength = (int)(PmdDataWindowSeconds / (PmdMetricRefreshPeriod / 1000d));
 
             // All GPU
-            pmdMetricSet = GetPmdMetricSetByIndexGroup(metricsData, PmdChannelExtensions.GPUPowerIndexGroup);
+            pmdMetricSet = GetPmdMetricSetByIndexGroup(metricsData, PoweneticsChannelExtensions.GPUPowerIndexGroup);
             lock (_resetHistoryLock)
             {
                 UpdateHistory(pmdMetricSet, _allGpuPowerAvgHistory, historyLength);
@@ -272,7 +272,7 @@ namespace CapFrameX.PMD
             }
 
             // All PCI Express
-            pmdMetricSet = GetPmdMetricSetByIndexGroup(metricsData, PmdChannelExtensions.PCIePowerIndexGroup);
+            pmdMetricSet = GetPmdMetricSetByIndexGroup(metricsData, PoweneticsChannelExtensions.PCIePowerIndexGroup);
             lock (_resetHistoryLock)
             {
                 UpdateHistory(pmdMetricSet, _allPciExAvgHistory, historyLength);
@@ -286,7 +286,7 @@ namespace CapFrameX.PMD
             }
 
             // PCI Express Slot
-            pmdMetricSet = GetPmdMetricSetByIndexGroup(metricsData, PmdChannelExtensions.PCIeSlotPowerIndexGroup);
+            pmdMetricSet = GetPmdMetricSetByIndexGroup(metricsData, PoweneticsChannelExtensions.PCIeSlotPowerIndexGroup);
             lock (_resetHistoryLock)
             {
                 UpdateHistory(pmdMetricSet, _pciExSlotAvgHistory, historyLength);
@@ -300,7 +300,7 @@ namespace CapFrameX.PMD
             }
 
             // All EPS 12V 
-            pmdMetricSet = GetPmdMetricSetByIndexGroup(metricsData, PmdChannelExtensions.EPSPowerIndexGroup);
+            pmdMetricSet = GetPmdMetricSetByIndexGroup(metricsData, PoweneticsChannelExtensions.EPSPowerIndexGroup);
             lock (_resetHistoryLock)
             {
                 UpdateHistory(pmdMetricSet, _allCpuPowerAvgHistory, historyLength);
@@ -314,7 +314,7 @@ namespace CapFrameX.PMD
             }
 
             // All ATX
-            pmdMetricSet = GetPmdMetricSetByIndexGroup(metricsData, PmdChannelExtensions.ATXPowerIndexGroup);
+            pmdMetricSet = GetPmdMetricSetByIndexGroup(metricsData, PoweneticsChannelExtensions.ATXPowerIndexGroup);
             lock (_resetHistoryLock)
             {
                 UpdateHistory(pmdMetricSet, _allAtxPowerAvgHistory, historyLength);
@@ -328,7 +328,7 @@ namespace CapFrameX.PMD
             }
 
             // All System
-            pmdMetricSet = GetPmdMetricSetByIndexGroup(metricsData, PmdChannelExtensions.SystemPowerIndexGroup);
+            pmdMetricSet = GetPmdMetricSetByIndexGroup(metricsData, PoweneticsChannelExtensions.SystemPowerIndexGroup);
             lock (_resetHistoryLock)
             {
                 UpdateHistory(pmdMetricSet, _allPowerAvgHistory, historyLength);
@@ -342,7 +342,7 @@ namespace CapFrameX.PMD
             }
         }
 
-        public PmdMetricSet GetPmdMetricSetByIndexGroup(IList<PmdChannel[]> channelData, int[] indexGroup)
+        public PmdMetricSet GetPmdMetricSetByIndexGroup(IList<PoweneticsChannel[]> channelData, int[] indexGroup)
         {
             float max = float.MinValue;
             float min = float.MaxValue;

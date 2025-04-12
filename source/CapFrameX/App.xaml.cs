@@ -212,7 +212,7 @@ namespace CapFrameX
 
             try
             {
-                var pmdDriver = _bootstrapper.Container.Resolve<IPmdDriver>();
+                var pmdDriver = _bootstrapper.Container.Resolve<IPoweneticsDriver>();
                 pmdDriver?.Disconnect();
             }
             catch (Exception ex)

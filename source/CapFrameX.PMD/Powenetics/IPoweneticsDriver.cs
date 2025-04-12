@@ -3,9 +3,9 @@ using System;
 
 namespace CapFrameX.PMD
 {
-    public interface IPmdDriver
+    public interface IPoweneticsDriver
     {
-        IObservable<PmdChannel[]> PmdChannelStream { get; }
+        IObservable<PoweneticsChannel[]> PmdChannelStream { get; }
 
         IObservable<EPmdDriverStatus> PmdstatusStream { get; }
 

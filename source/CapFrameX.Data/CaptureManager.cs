@@ -56,7 +56,7 @@ namespace CapFrameX.Data
         private readonly IAppConfiguration _appConfiguration;
         private readonly IRTSSService _rtssService;
         private readonly ISensorConfig _sensorConfig;
-        private readonly IPmdService _pmdService;
+        private readonly IPoweneticsService _pmdService;
         private readonly ILogEntryManager _logEntryManager;
         private readonly List<string[]> _captureDataArchive = new List<string[]>();
         private readonly object _archiveLock = new object();
@@ -121,7 +121,7 @@ namespace CapFrameX.Data
             IRTSSService rtssService,
             ISensorConfig sensorConfig,
             ProcessList processList,
-            IPmdService pmdService,
+            IPoweneticsService pmdService,
             ILogEntryManager logEntryManager)
         {
             _presentMonCaptureService = presentMonCaptureService;
@@ -424,11 +424,11 @@ namespace CapFrameX.Data
             _logEntryManager.AddLogEntry("Started filling archive.", ELogMessageType.AdvancedInfo, false);
         }
 
-        private void FillPmdDataLists(PmdChannel[] channel)
+        private void FillPmdDataLists(PoweneticsChannel[] channel)
         {
-            _pmdDataGpuPower.AddLast(PmdChannelExtensions.GPUPowerIndexGroup.Sum(index => channel[index].Value));
-            _pmdDataCpuPower.AddLast(PmdChannelExtensions.EPSPowerIndexGroup.Sum(index => channel[index].Value));
-            _pmdDataSystemPower.AddLast(PmdChannelExtensions.SystemPowerIndexGroup.Sum(index => channel[index].Value));
+            _pmdDataGpuPower.AddLast(PoweneticsChannelExtensions.GPUPowerIndexGroup.Sum(index => channel[index].Value));
+            _pmdDataCpuPower.AddLast(PoweneticsChannelExtensions.EPSPowerIndexGroup.Sum(index => channel[index].Value));
+            _pmdDataSystemPower.AddLast(PoweneticsChannelExtensions.SystemPowerIndexGroup.Sum(index => channel[index].Value));
         }
 
         private async Task WriteExtractedCaptureDataToFileAsync()

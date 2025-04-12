@@ -117,16 +117,16 @@
   <ItemGroup>
     <Compile Include="Benchlab\BenchlabPmdService.cs" />
     <Compile Include="Benchlab\Sensor.cs" />
-    <Compile Include="IPmdDriver.cs" />
-    <Compile Include="IPmdService.cs" />
-    <Compile Include="PmdChannel.cs" />
-    <Compile Include="PmdChannelType.cs" />
-    <Compile Include="PmdData.cs" />
-    <Compile Include="PmdDataChartManager.cs" />
-    <Compile Include="PmdDataProcessing.cs" />
-    <Compile Include="PmdMetricsManager.cs" />
-    <Compile Include="PmdService.cs" />
-    <Compile Include="PmdUSBDriver.cs" />
+    <Compile Include="Powenetics\IPoweneticsDriver.cs" />
+    <Compile Include="Powenetics\IPoweneticsService.cs" />
+    <Compile Include="Powenetics\PoweneticsChannel.cs" />
+    <Compile Include="Powenetics\PoweneticsChannelType.cs" />
+    <Compile Include="Powenetics\PoweneticsData.cs" />
+    <Compile Include="PmdAnalysisChartManager.cs" />
+    <Compile Include="Powenetics\PoweneticsDataProcessing.cs" />
+    <Compile Include="Powenetics\PoweneticsMetricsManager.cs" />
+    <Compile Include="Powenetics\PoweneticsService.cs" />
+    <Compile Include="Powenetics\PoweneticsUSBDriver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -155,9 +155,7 @@
       <Name>CapFrameX.Statistics.PlotBuilder</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Powenetics\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\Microsoft.Extensions.Logging.Abstractions.6.0.2\build\Microsoft.Extensions.Logging.Abstractions.targets" Condition="Exists('..\..\packages\Microsoft.Extensions.Logging.Abstractions.6.0.2\build\Microsoft.Extensions.Logging.Abstractions.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

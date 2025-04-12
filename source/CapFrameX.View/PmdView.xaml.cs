@@ -13,14 +13,24 @@ namespace CapFrameX.View
             InitializeComponent();
         }
 
-        private void ResetEPS12VChartMetrics_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void ResetPoweneticsEPS12VChartMetrics_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            EPS12VPlotViewMetrics.ResetAllAxes();
+            PoweneticsEPS12VPlotViewMetrics.ResetAllAxes();
         }
 
-        private void ResetPciExpressChartMetrics_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void ResetPoweneticsPciExpressChartMetrics_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            PciExpressPlotViewMetrics.ResetAllAxes();
+            PoweneticsPciExpressPlotViewMetrics.ResetAllAxes();
+        }
+
+        private void ResetBenchlabEPS12VChartMetrics_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            BenchlabEPS12VPlotViewMetrics.ResetAllAxes();
+        }
+
+        private void ResetBenchlabPciExpressChartMetrics_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            BenchlabPciExpressPlotViewMetrics.ResetAllAxes();
         }
 
         private void ResetEPS12VChartAnalysis_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -52,10 +62,6 @@ namespace CapFrameX.View
                 AnalysisChartGrid.RowDefinitions.RemoveAt(2);
             else
                 return;
-        }
-
-        
-
-
+        }        
     }
 }

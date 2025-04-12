@@ -1,6 +1,6 @@
 ﻿namespace CapFrameX.PMD
 {
-    public enum PmdChannelType
+    public enum PoweneticsChannelType
     {
         EPS,
         PCIe,
@@ -8,7 +8,7 @@
         ATX,
     }
 
-    public enum PmdMeasurand
+    public enum PoweneticsMeasurand
     {
         Current,
         Voltage,

@@ -6,9 +6,9 @@ using System.Windows;
 
 namespace CapFrameX.PMD
 {
-    public interface IPmdService
+    public interface IPoweneticsService
     {
-        IObservable<PmdChannel[]> PmdChannelStream { get; }
+        IObservable<PoweneticsChannel[]> PmdChannelStream { get; }
 
         IObservable<EPmdDriverStatus> PmdstatusStream { get; }
         
@@ -28,8 +28,8 @@ namespace CapFrameX.PMD
 
         PmdSampleFilterMode DownSamplingMode { get; set; }
 
-        IEnumerable<Point> GetEPS12VPowerPmdDataPoints(IList<PmdChannel[]> channelDat0);
+        IEnumerable<Point> GetEPS12VPowerPmdDataPoints(IList<PoweneticsChannel[]> channelDat0);
 
-        IEnumerable<Point> GetPciExpressPowerPmdDataPoints(IList<PmdChannel[]> channelDat0);
+        IEnumerable<Point> GetPciExpressPowerPmdDataPoints(IList<PoweneticsChannel[]> channelDat0);
     }
 }
