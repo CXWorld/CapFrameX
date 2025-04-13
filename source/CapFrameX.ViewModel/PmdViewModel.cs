@@ -5,6 +5,7 @@ using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.PMD;
+using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.ViewModel.SubModels;
@@ -156,8 +157,8 @@ namespace CapFrameX.ViewModel
 
         public BenchlabViewModel BenchlabViewModel { get; }
 
-        public PmdViewModel(IPoweneticsService poweneticsService, IAppConfiguration appConfiguration, ISensorService sensorService,
-            ILogger<PmdViewModel> logger, IEventAggregator eventAggregator, ISystemInfo systemInfo)
+        public PmdViewModel(IPoweneticsService poweneticsService, IBenchlabService benchlabService, IAppConfiguration appConfiguration,
+            ISensorService sensorService, ILogger<PmdViewModel> logger, IEventAggregator eventAggregator, ISystemInfo systemInfo)
         {
             _appConfiguration = appConfiguration;
             _eventAggregator = eventAggregator;
@@ -165,7 +166,7 @@ namespace CapFrameX.ViewModel
             _systemInfo = systemInfo;
 
             PoweneticsViewModel = new PoweneticsViewModel(poweneticsService, appConfiguration);
-            BenchlabViewModel = new BenchlabViewModel();
+            BenchlabViewModel = new BenchlabViewModel(benchlabService, appConfiguration);
 
             CopyGpuPowerValuesCommand = new DelegateCommand(OnCopyGpuPowerValues);
             CopyGpuPowerPointsCommand = new DelegateCommand(OnCopyGpuPowerPoints);
@@ -396,7 +397,7 @@ namespace CapFrameX.ViewModel
             RaisePropertyChanged(nameof(SessionGpuName));
             GetAverageMetrics();
         }
-        
+
 
         private void GetAverageMetrics()
         {

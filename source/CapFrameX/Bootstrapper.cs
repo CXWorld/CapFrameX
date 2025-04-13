@@ -15,6 +15,7 @@ using CapFrameX.Extensions;
 using CapFrameX.Hardware.Controller;
 using CapFrameX.Monitoring.Contracts;
 using CapFrameX.Overlay;
+using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.RTSSIntegration;
@@ -138,7 +139,8 @@ namespace CapFrameX
             Container.Register<CaptureManager>(Reuse.Singleton);
             Container.Register<IPoweneticsService, PoweneticsService>(Reuse.Singleton);
             Container.Register<IPoweneticsDriver, PoweneticsUSBDriver>(Reuse.Singleton);
-			Container.Register<IThreadAffinityController, ThreadAffinityController>(Reuse.Singleton);
+            Container.Register<IBenchlabService, BenchlabService>(Reuse.Singleton);
+            Container.Register<IThreadAffinityController, ThreadAffinityController>(Reuse.Singleton);
 			Container.Register<IFrameViewService, FrameViewService>(Reuse.Singleton);
 		}
 

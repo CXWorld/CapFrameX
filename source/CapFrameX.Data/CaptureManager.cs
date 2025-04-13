@@ -7,6 +7,7 @@ using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Monitoring.Contracts;
+using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
 using CapFrameX.PresentMonInterface;
 using Microsoft.Extensions.Logging;
@@ -56,7 +57,8 @@ namespace CapFrameX.Data
         private readonly IAppConfiguration _appConfiguration;
         private readonly IRTSSService _rtssService;
         private readonly ISensorConfig _sensorConfig;
-        private readonly IPoweneticsService _pmdService;
+        private readonly IPoweneticsService _poweneticsService;
+        private readonly IBenchlabService _benchlabService;
         private readonly ILogEntryManager _logEntryManager;
         private readonly List<string[]> _captureDataArchive = new List<string[]>();
         private readonly object _archiveLock = new object();
@@ -66,7 +68,8 @@ namespace CapFrameX.Data
         private IDisposable _disposableCaptureStream;
         private IDisposable _disposableArchiveStream;
         private IDisposable _autoCompletionDisposableStream;
-        private IDisposable _disposablePmdDataStream;
+        private IDisposable _disposablePoweneticsDataStream;
+        private IDisposable _disposableBenchlabDataStream;
         private IDisposable _rTSSFrameTimesIntervalStream;
         private List<string[]> _captureData = new List<string[]>();
         private bool _fillArchive;
@@ -121,7 +124,8 @@ namespace CapFrameX.Data
             IRTSSService rtssService,
             ISensorConfig sensorConfig,
             ProcessList processList,
-            IPoweneticsService pmdService,
+            IPoweneticsService poweneticsService,
+            IBenchlabService benchlabService,
             ILogEntryManager logEntryManager)
         {
             _presentMonCaptureService = presentMonCaptureService;
@@ -134,7 +138,8 @@ namespace CapFrameX.Data
             _rtssService = rtssService;
             _sensorConfig = sensorConfig;
             _processList = processList;
-            _pmdService = pmdService;
+            _poweneticsService = poweneticsService;
+            _benchlabService = benchlabService;
             _logEntryManager = logEntryManager;
             _presentMonCaptureService.IsCaptureModeActiveStream.OnNext(false);
         }
@@ -223,9 +228,13 @@ namespace CapFrameX.Data
                 _pmdDataCpuPower = new LinkedList<float>();
                 _pmdDataSystemPower = new LinkedList<float> { };
 
-                _disposablePmdDataStream = _pmdService.PmdChannelStream
+                _disposablePoweneticsDataStream = _poweneticsService.PmdChannelStream
                     .ObserveOn(new EventLoopScheduler())
                     .Subscribe(channels => FillPmdDataLists(channels));
+
+                _disposableBenchlabDataStream = _benchlabService.PmdSensorStream
+                    .ObserveOn(new EventLoopScheduler())
+                    .Subscribe(sensorSample => FillPmdDataLists(sensorSample));
             }
 
             _disposableCaptureStream = _presentMonCaptureService
@@ -355,7 +364,8 @@ namespace CapFrameX.Data
             _disposableCaptureStream?.Dispose();
 
             // Stop PMD logging
-            _disposablePmdDataStream?.Dispose();
+            _disposablePoweneticsDataStream?.Dispose();
+            _disposableBenchlabDataStream?.Dispose();
 
             _logEntryManager.AddLogEntry("Processing captured data", ELogMessageType.BasicInfo, false);
 
@@ -431,6 +441,13 @@ namespace CapFrameX.Data
             _pmdDataSystemPower.AddLast(PoweneticsChannelExtensions.SystemPowerIndexGroup.Sum(index => channel[index].Value));
         }
 
+        private void FillPmdDataLists(SensorSample sensorSample)
+        {
+            _pmdDataGpuPower.AddLast((float)sensorSample.Sensors[_benchlabService.GpuPowerSensorIndex].Value);
+            _pmdDataCpuPower.AddLast((float)sensorSample.Sensors[_benchlabService.CpuPowerSensorIndex].Value);
+            _pmdDataSystemPower.AddLast((float)sensorSample.Sensors[_benchlabService.SytemPowerSensorIndex].Value);
+        }
+
         private async Task WriteExtractedCaptureDataToFileAsync()
         {
             try
@@ -460,18 +477,30 @@ namespace CapFrameX.Data
 
                 if (_appConfiguration.UsePmdDataLogging)
                 {
-                    sessionRun.SampleTime = _pmdService.DownSamplingSize;
+                    if (_poweneticsService.IsServiceRunning)
+                    {
+                        sessionRun.SampleTime = _poweneticsService.DownSamplingSize;
+                        int count = (int)(finalCaptureTime / (1E-03 * sessionRun.SampleTime));
 
-                    int count = (int)(finalCaptureTime / (1E-03 * sessionRun.SampleTime));
+                        if (_pmdDataGpuPower.Any())
+                            sessionRun.PmdGpuPower = _pmdDataGpuPower.Take(count).ToArray();
+                        if (_pmdDataCpuPower.Any())
+                            sessionRun.PmdCpuPower = _pmdDataCpuPower.Take(count).ToArray();
+                        if (_pmdDataSystemPower.Any())
+                            sessionRun.PmdSystemPower = _pmdDataSystemPower.Take(count).ToArray();
+                    }
+                    else if (_benchlabService.IsServiceRunning)
+                    {
+                        sessionRun.SampleTime = _benchlabService.MonitoringInterval;
+                        int count = (int)(finalCaptureTime / (1E-03 * sessionRun.SampleTime));
 
-                    if (_pmdDataGpuPower.Any())
-                        sessionRun.PmdGpuPower = _pmdDataGpuPower.Take(count).ToArray();
-
-                    if (_pmdDataCpuPower.Any())
-                        sessionRun.PmdCpuPower = _pmdDataCpuPower.Take(count).ToArray();
-
-                    if (_pmdDataSystemPower.Any())
-                        sessionRun.PmdSystemPower = _pmdDataSystemPower.Take(count).ToArray();
+                        if (_pmdDataGpuPower.Any())
+                            sessionRun.PmdGpuPower = _pmdDataGpuPower.Take(count).ToArray();
+                        if (_pmdDataCpuPower.Any())
+                            sessionRun.PmdCpuPower = _pmdDataCpuPower.Take(count).ToArray();
+                        if (_pmdDataSystemPower.Any())
+                            sessionRun.PmdSystemPower = _pmdDataSystemPower.Take(count).ToArray();
+                    }
                 }
 
                 if (_appConfiguration.UseRunHistory)
@@ -592,7 +621,7 @@ namespace CapFrameX.Data
 
             var unionCaptureData = filteredArchive.Concat(filteredCaptureData.Skip(distinctIndex)).ToList();
             var unionCaptureDataStartTime = GetCpuStartQpcFromDataLine(unionCaptureData.First());
-            var unionCaptureDataEndTime = GetCpuStartQpcFromDataLine(unionCaptureData.Last());       
+            var unionCaptureDataEndTime = GetCpuStartQpcFromDataLine(unionCaptureData.Last());
 
             var captureInterval = new List<string[]>();
 

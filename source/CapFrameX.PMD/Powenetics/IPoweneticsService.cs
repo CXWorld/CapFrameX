@@ -28,8 +28,10 @@ namespace CapFrameX.PMD.Powenetics
 
         PmdSampleFilterMode DownSamplingMode { get; set; }
 
-        IEnumerable<Point> GetEPS12VPowerPmdDataPoints(IList<PoweneticsChannel[]> channelDat0);
+        bool IsServiceRunning { get; }
 
-        IEnumerable<Point> GetPciExpressPowerPmdDataPoints(IList<PoweneticsChannel[]> channelDat0);
+        IEnumerable<Point> GetEPS12VPowerPmdDataPoints(IList<PoweneticsChannel[]> channelData);
+
+        IEnumerable<Point> GetPciExpressPowerPmdDataPoints(IList<PoweneticsChannel[]> channelData);
     }
 }

@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.EventAggregation.Messages;
+using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using Microsoft.Extensions.Logging;
@@ -27,7 +28,8 @@ namespace CapFrameX.PresentMonInterface
         private readonly ICaptureService _captureService;
         private readonly IEventAggregator _eventAggregator;
         private readonly IOverlayEntryCore _overlayEntryCore;
-        private readonly IPoweneticsService _pmdService;
+        private readonly IPoweneticsService _poweneticsService;
+        private readonly IBenchlabService _benchlabService;
         private readonly ILogger<OnlineMetricService> _logger;
         private readonly IAppConfiguration _appConfiguration;
         private readonly object _lockRealtimeMetric = new object();
@@ -42,6 +44,7 @@ namespace CapFrameX.PresentMonInterface
         private List<double> _measuretimesRealtimeSeconds = new List<double>(LIST_CAPACITY);
         private List<double> _measuretimes5Seconds = new List<double>(LIST_CAPACITY / 4);
         private List<PoweneticsChannel[]> _channelDataBuffer = new List<PoweneticsChannel[]>(PMD_BUFFER_CAPACITY);
+        private List<SensorSample> _sensorDataBuffer = new List<SensorSample>(PMD_BUFFER_CAPACITY);
         private string _currentProcess;
         private int _currentProcessId;
         private readonly double _maxOnlineStutteringIntervalLength = 5d;
@@ -52,14 +55,16 @@ namespace CapFrameX.PresentMonInterface
             ICaptureService captureServive,
             IEventAggregator eventAggregator,
             IOverlayEntryCore oerlayEntryCore,
-            IPoweneticsService pmdService,
+            IPoweneticsService poweneticsService,
+            IBenchlabService benchlabService,
             ILogger<OnlineMetricService> logger,
             IAppConfiguration appConfiguration)
         {
             _captureService = captureServive;
             _eventAggregator = eventAggregator;
             _overlayEntryCore = oerlayEntryCore;
-            _pmdService = pmdService;
+            _poweneticsService = poweneticsService;
+            _benchlabService = benchlabService;
             _logger = logger;
             _appConfiguration = appConfiguration;
 
@@ -99,7 +104,13 @@ namespace CapFrameX.PresentMonInterface
                 .Where(x => EvaluateRealtimeMetrics())
                 .Subscribe(UpdateOnlineMetrics);
 
-            _pmdService.PmdChannelStream
+            _poweneticsService.PmdChannelStream
+                .ObserveOn(new EventLoopScheduler())
+                .Where(_ => EvaluatePmdMetrics())
+                .Buffer(TimeSpan.FromMilliseconds(50))
+                .Subscribe(metricsData => UpdatePmdMetrics(metricsData));
+
+            _benchlabService.PmdSensorStream
                 .ObserveOn(new EventLoopScheduler())
                 .Where(_ => EvaluatePmdMetrics())
                 .Buffer(TimeSpan.FromMilliseconds(50))
@@ -271,6 +282,14 @@ namespace CapFrameX.PresentMonInterface
             }
         }
 
+        private void UpdatePmdMetrics(IList<SensorSample> metricsData)
+        {
+            lock (_lockPmdMetrics)
+            {
+                _sensorDataBuffer.AddRange(metricsData);
+            }
+        }
+
         private void ResetMetrics()
         {
             lock (_lockRealtimeMetric)
@@ -361,14 +380,30 @@ namespace CapFrameX.PresentMonInterface
 
             lock (_lockPmdMetrics)
             {
-                pmdMetrics = new OnlinePmdMetrics()
+                if (_channelDataBuffer.Any())
                 {
-                    GpuPowerCurrent = GetPmdCurrentPowerByIndexGroup(_channelDataBuffer, PoweneticsChannelExtensions.GPUPowerIndexGroup),
-                    CpuPowerCurrent = GetPmdCurrentPowerByIndexGroup(_channelDataBuffer, PoweneticsChannelExtensions.EPSPowerIndexGroup),
-                    SystemPowerCurrent = GetPmdCurrentPowerByIndexGroup(_channelDataBuffer, PoweneticsChannelExtensions.SystemPowerIndexGroup),
-                };
-
-                _channelDataBuffer = new List<PoweneticsChannel[]>(PMD_BUFFER_CAPACITY);
+                    pmdMetrics = new OnlinePmdMetrics()
+                    {
+                        GpuPowerCurrent = GetPmdCurrentPowerByIndexGroup(_channelDataBuffer, PoweneticsChannelExtensions.GPUPowerIndexGroup),
+                        CpuPowerCurrent = GetPmdCurrentPowerByIndexGroup(_channelDataBuffer, PoweneticsChannelExtensions.EPSPowerIndexGroup),
+                        SystemPowerCurrent = GetPmdCurrentPowerByIndexGroup(_channelDataBuffer, PoweneticsChannelExtensions.SystemPowerIndexGroup),
+                    };
+                    _channelDataBuffer = new List<PoweneticsChannel[]>(PMD_BUFFER_CAPACITY);
+                }
+                else if (_sensorDataBuffer.Any())
+                {
+                    pmdMetrics = new OnlinePmdMetrics()
+                    {
+                        GpuPowerCurrent = GetPmdCurrentPowerByIndex(_sensorDataBuffer, _benchlabService.GpuPowerSensorIndex),
+                        CpuPowerCurrent = GetPmdCurrentPowerByIndex(_sensorDataBuffer, _benchlabService.CpuPowerSensorIndex),
+                        SystemPowerCurrent = GetPmdCurrentPowerByIndex(_sensorDataBuffer, _benchlabService.SytemPowerSensorIndex),
+                    };
+                    _sensorDataBuffer = new List<SensorSample>(PMD_BUFFER_CAPACITY);
+                }
+                else
+                {
+                    pmdMetrics = new OnlinePmdMetrics();
+                }
             }
 
             return pmdMetrics;
@@ -385,6 +420,17 @@ namespace CapFrameX.PresentMonInterface
             }
 
             return (float)(sum / channelData.Count);
+        }
+
+        private float GetPmdCurrentPowerByIndex(IList<SensorSample> sensorData, int index)
+        {
+            double sum = 0;
+            foreach (var sample in sensorData)
+            {
+                var currentChannlesSumPower = sample.Sensors[index].Value;
+                sum += currentChannlesSumPower;
+            }
+            return (float)(sum / sensorData.Count);
         }
 
         public void ResetRealtimeMetrics() => ResetMetrics();

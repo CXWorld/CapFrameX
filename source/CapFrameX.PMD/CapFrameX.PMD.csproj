@@ -115,8 +115,11 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Benchlab\BenchlabPmdService.cs" />
+    <Compile Include="Benchlab\BenchlabMetricsManager.cs" />
+    <Compile Include="Benchlab\BenchlabService.cs" />
+    <Compile Include="Benchlab\IBenchlabService.cs" />
     <Compile Include="Benchlab\Sensor.cs" />
+    <Compile Include="PmdMetricSet.cs" />
     <Compile Include="Powenetics\IPoweneticsDriver.cs" />
     <Compile Include="Powenetics\IPoweneticsService.cs" />
     <Compile Include="Powenetics\PoweneticsChannel.cs" />
@@ -145,6 +148,10 @@
     <ProjectReference Include="..\CapFrameX.Extensions.NetStandard\CapFrameX.Extensions.NetStandard.csproj">
       <Project>{554c8784-954a-4e3d-9c79-d347def7e069}</Project>
       <Name>CapFrameX.Extensions.NetStandard</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj">
+      <Project>{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}</Project>
+      <Name>CapFrameX.Extensions</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
       <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>

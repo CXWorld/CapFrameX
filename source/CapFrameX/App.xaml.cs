@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Extensions;
+using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Remote;
@@ -218,6 +219,16 @@ namespace CapFrameX
             catch (Exception ex)
             {
                 Log.Logger.Error(ex, "Error while shutting down the PMD driver.");
+            }
+
+            try
+            {
+                var benchlabSerivce = _bootstrapper.Container.Resolve<IBenchlabService>();
+                benchlabSerivce?.ShutDownService();
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while stopping the BENCHLAB service.");
             }
 
             try

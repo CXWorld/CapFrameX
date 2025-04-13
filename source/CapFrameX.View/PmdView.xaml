@@ -53,7 +53,7 @@
 						<ColumnDefinition Width="170"/>
 					</Grid.ColumnDefinitions>
 					<!--Style="{StaticResource MaterialDesignOutlinedTextBox}"-->
-					<ScrollViewer Grid.Row="0" Grid.Column="0" Margin="5 0 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+					<ScrollViewer Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Margin="5 0 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 						<StackPanel>
 							<GroupBox Header="GPU Total Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
@@ -109,35 +109,6 @@
 									</StackPanel>
 								</StackPanel>
 							</GroupBox>
-						</StackPanel>
-					</ScrollViewer>
-					<Grid Grid.Row="0" Grid.Column="1">
-						<Grid>
-							<Grid.RowDefinitions>
-								<RowDefinition Height="50"/>
-								<RowDefinition Height="1*"/>
-							</Grid.RowDefinitions>
-							<Grid Margin="0 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
-								<TextBlock Text="{Binding GpuName, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
-									FontWeight="Bold" FontSize="18"/>
-							</Grid>
-							<controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="PoweneticsPciExpressPlotViewMetrics" 
-                                Model="{Binding PoweneticsViewModel.PciExpressModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 0"
-								MouseDoubleClick="ResetPoweneticsPciExpressChartMetrics_MouseDoubleClick">
-								<controls:PlotViewCustomZoom.DefaultTrackerTemplate>
-									<ControlTemplate>
-										<oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
-											<oxy:TrackerControl.Content>
-												<TextBlock Text="{Binding}" Margin="5" />
-											</oxy:TrackerControl.Content>
-										</oxy:TrackerControl>
-									</ControlTemplate>
-								</controls:PlotViewCustomZoom.DefaultTrackerTemplate>
-							</controls:PlotViewCustomZoom>
-						</Grid>
-					</Grid>
-					<ScrollViewer Grid.Row="1" Grid.Column="0" Margin="5 5 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
-						<StackPanel>
 							<GroupBox Header="CPU Total Power" FontSize="17" Foreground="White" Style="{DynamicResource MaterialDesignGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
@@ -173,7 +144,7 @@
 							<GroupBox Header="System Power" FontSize="17" Style="{StaticResource MaterialDesignGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<materialDesign:PackIcon Foreground="Red" Margin="120 -55 0 0" Visibility="{Binding PoweneticsViewModel.PmdMetrics.SystemPowerIncomplete, Converter={StaticResource TrueToVisibleConverter}}" 
-                                                 Kind="Information" VerticalAlignment="Center" >
+										Kind="Information" VerticalAlignment="Center" >
 										<materialDesign:PackIcon.ToolTip>
 											<TextBlock Text="Some needed power sources are missing for this metric to be accurate"/>
 										</materialDesign:PackIcon.ToolTip>
@@ -194,6 +165,31 @@
 							</GroupBox>
 						</StackPanel>
 					</ScrollViewer>
+					<Grid Grid.Row="0" Grid.Column="1">
+						<Grid>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="50"/>
+								<RowDefinition Height="1*"/>
+							</Grid.RowDefinitions>
+							<Grid Margin="0 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+								<TextBlock Text="{Binding GpuName, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
+									FontWeight="Bold" FontSize="18"/>
+							</Grid>
+							<controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="PoweneticsPciExpressPlotViewMetrics" 
+                                Model="{Binding PoweneticsViewModel.PciExpressModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 0"
+								MouseDoubleClick="ResetPoweneticsPciExpressChartMetrics_MouseDoubleClick">
+								<controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+									<ControlTemplate>
+										<oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
+											<oxy:TrackerControl.Content>
+												<TextBlock Text="{Binding}" Margin="5" />
+											</oxy:TrackerControl.Content>
+										</oxy:TrackerControl>
+									</ControlTemplate>
+								</controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+							</controls:PlotViewCustomZoom>
+						</Grid>
+					</Grid>
 					<Grid Grid.Row="1" Grid.Column="1">
 						<Grid>
 							<Grid.RowDefinitions>
@@ -220,7 +216,7 @@
 						</Grid>
 					</Grid>
 					<Button Grid.Row="2" Margin="0 0 0 2" Width="190" Height="40" Command="{Binding PoweneticsViewModel.ResetPmdMetricsCommand}"
-                            Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
+						Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
 						Reset PMD Metrics
 					</Button>
 					<Grid Grid.Row="2" Grid.Column="1" Margin="0 0 0 2" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
@@ -238,9 +234,9 @@
 
 							<TextBlock Text="COM Port" FontSize="14" VerticalAlignment="Center" Margin="30 0 0 0"/>
 							<ComboBox Margin="10 -20 0 0" Padding="0 10 0 0" FontSize="14" Style="{StaticResource MaterialDesignComboBox}"
-					                  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="80" Height="40" materialDesign:HintAssist.HintOpacity=".8"
-					                  ItemsSource="{Binding PoweneticsViewModel.ComPortsItemsSource}" SelectedItem="{Binding PoweneticsViewModel.SelectedComPort}" IsEnabled="{Binding PoweneticsViewModel.IsComPortEnabled}"
-                                      ToolTipService.ShowDuration="25000">
+								materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="80" Height="40" materialDesign:HintAssist.HintOpacity=".8"
+								ItemsSource="{Binding PoweneticsViewModel.ComPortsItemsSource}" SelectedItem="{Binding PoweneticsViewModel.SelectedComPort}" IsEnabled="{Binding PoweneticsViewModel.IsComPortEnabled}"
+								ToolTipService.ShowDuration="25000">
 								<ComboBox.ToolTip>
 									<ToolTip MaxWidth="350">
 										<TextBlock Text="Select the COM Port." 
@@ -281,9 +277,9 @@
 									</ComboBox>
 									<TextBlock Text="Downsampling Mode" FontSize="13" HorizontalAlignment="Left" Margin="10 20 0 0"/>
 									<ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
-					                          materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="100" Height="30" materialDesign:HintAssist.HintOpacity=".8"
-					                          ItemsSource="{Binding PoweneticsViewModel.DownsamplingModes}" SelectedItem="{Binding PoweneticsViewModel.SelectedDownSamlingMode}"
-                                              ToolTipService.ShowDuration="25000">
+										materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="100" Height="30" materialDesign:HintAssist.HintOpacity=".8"
+										ItemsSource="{Binding PoweneticsViewModel.DownsamplingModes}" SelectedItem="{Binding PoweneticsViewModel.SelectedDownSamlingMode}"
+										ToolTipService.ShowDuration="25000">
 										<ComboBox.ToolTip>
 											<ToolTip StaysOpen="True" MaxWidth="275">
 												<TextBlock Text="Sets the downsampling mode." 
@@ -302,9 +298,9 @@
 								<StackPanel>
 									<TextBlock Text="Chart Length [s]" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
 									<ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
-					                          materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
-					                          ItemsSource="{Binding PoweneticsViewModel.PmdDataWindows}" SelectedItem="{Binding PoweneticsViewModel.SelectedPmdDataWindow}"
-                                              ToolTipService.ShowDuration="25000">
+										materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
+										ItemsSource="{Binding PoweneticsViewModel.PmdDataWindows}" SelectedItem="{Binding PoweneticsViewModel.SelectedPmdDataWindow}"
+										ToolTipService.ShowDuration="25000">
 										<ComboBox.ToolTip>
 											<ToolTip StaysOpen="True" MaxWidth="275">
 												<TextBlock Text="Sets the lenght [s] of the charts." 
@@ -350,37 +346,69 @@
 						<ColumnDefinition Width="170"/>
 					</Grid.ColumnDefinitions>
 					<!--Style="{StaticResource MaterialDesignOutlinedTextBox}"-->
-					<ScrollViewer Grid.Row="0" Grid.Column="0" Margin="5 0 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+					<ScrollViewer Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Margin="5 0 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 						<StackPanel>
-							<GroupBox Header="GPU Total Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
+							<GroupBox Header="GPU Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
-										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.AllGpuPowerCur}"/>
-									</StackPanel> 
+										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.GpuPowerCur}"/>
+									</StackPanel>
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Avg"/>
-										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.AllGpuPowerAvg}"/>
+										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.GpuPowerAvg}"/>
 									</StackPanel>
 									<StackPanel Margin="0 0 0 0" Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Max"/>
-										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.AllGpuPowerMax}"/>
+										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.GpuPowerMax}"/>
 									</StackPanel>
 								</StackPanel>
 							</GroupBox>
-							<GroupBox Header="PCIe Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
+							<GroupBox Header="CPU Power" FontSize="17" Foreground="White" Style="{DynamicResource MaterialDesignGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
-										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.AllPciExCur}"/>
+										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.CpuPowerCur}"/>
 									</StackPanel>
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Avg"/>
-										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.AllPciExAvg}"/>
+										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.CpuPowerAvg}"/>
+									</StackPanel>
+									<StackPanel Margin="0 0 0 0" Orientation="Horizontal">
+										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Max"/>
+										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.CpuPowerMax}"/>
+									</StackPanel>
+								</StackPanel>
+							</GroupBox>
+							<GroupBox Header="Mainboard Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
+								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
+									<StackPanel Orientation="Horizontal">
+										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
+										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.MainboardPowerCur}"/>
+									</StackPanel>
+									<StackPanel Orientation="Horizontal">
+										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Avg"/>
+										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.MainboardPowerAvg}"/>
 									</StackPanel>
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Max"/>
-										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.AllPciExMax}"/>
+										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.MainboardPowerMax}"/>
+									</StackPanel>
+								</StackPanel>
+							</GroupBox>
+							<GroupBox Header="System Power" FontSize="17" Style="{StaticResource MaterialDesignGroupBox}">
+								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
+									<StackPanel Orientation="Horizontal">
+										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
+										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.SystemPowerCur}"/>
+									</StackPanel>
+									<StackPanel Orientation="Horizontal">
+										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Avg"/>
+										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.SystemPowerAvg}"/>
+									</StackPanel>
+									<StackPanel Orientation="Horizontal">
+										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Max"/>
+										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.SystemPowerMax}"/>
 									</StackPanel>
 								</StackPanel>
 							</GroupBox>
@@ -411,58 +439,6 @@
 							</controls:PlotViewCustomZoom>
 						</Grid>
 					</Grid>
-					<ScrollViewer Grid.Row="1" Grid.Column="0" Margin="5 5 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
-						<StackPanel>
-							<GroupBox Header="CPU Total Power" FontSize="17" Foreground="White" Style="{DynamicResource MaterialDesignGroupBox}">
-								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
-									<StackPanel Orientation="Horizontal">
-										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
-										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.AllCpuPowerCur}"/>
-									</StackPanel>
-									<StackPanel Orientation="Horizontal">
-										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Avg"/>
-										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.AllCpuPowerAvg}"/>
-									</StackPanel>
-									<StackPanel Margin="0 0 0 0" Orientation="Horizontal">
-										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Max"/>
-										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.AllCpuPowerMax}"/>
-									</StackPanel>
-								</StackPanel>
-							</GroupBox>
-							<GroupBox Header="ATX Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
-								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
-									<StackPanel Orientation="Horizontal">
-										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
-										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.AllAtxPowerCur}"/>
-									</StackPanel>
-									<StackPanel Orientation="Horizontal">
-										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Avg"/>
-										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.AllAtxPowerAvg}"/>
-									</StackPanel>
-									<StackPanel Orientation="Horizontal">
-										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Max"/>
-										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.AllAtxPowerMax}"/>
-									</StackPanel>
-								</StackPanel>
-							</GroupBox>
-							<GroupBox Header="System Power" FontSize="17" Style="{StaticResource MaterialDesignGroupBox}">
-								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
-									<StackPanel Orientation="Horizontal">
-										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
-										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.AllPowerCur}"/>
-									</StackPanel>
-									<StackPanel Orientation="Horizontal">
-										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Avg"/>
-										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.AllPowerAvg}"/>
-									</StackPanel>
-									<StackPanel Orientation="Horizontal">
-										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Max"/>
-										<Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding BenchlabViewModel.PmdMetrics.AllPowerMax}"/>
-									</StackPanel>
-								</StackPanel>
-							</GroupBox>
-						</StackPanel>
-					</ScrollViewer>
 					<Grid Grid.Row="1" Grid.Column="1">
 						<Grid>
 							<Grid.RowDefinitions>
@@ -474,8 +450,8 @@
                              FontWeight="Bold" FontSize="18"/>
 							</Grid>
 							<controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="BenchlabEPS12VPlotViewMetrics" 
-                             Model="{Binding BenchlabViewModel.EPS12VModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 5"
-							 MouseDoubleClick="ResetBenchlabEPS12VChartMetrics_MouseDoubleClick">
+								 Model="{Binding BenchlabViewModel.EPS12VModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 5"
+								 MouseDoubleClick="ResetBenchlabEPS12VChartMetrics_MouseDoubleClick">
 								<controls:PlotViewCustomZoom.DefaultTrackerTemplate>
 									<ControlTemplate>
 										<oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
@@ -490,7 +466,7 @@
 					</Grid>
 					<Button Grid.Row="2" Margin="0 0 0 2" Width="190" Height="40" Command="{Binding BenchlabViewModel.ResetPmdMetricsCommand}"
 						Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
-						Reset PMD Metrics
+							Reset PMD Metrics
 					</Button>
 					<Grid Grid.Row="2" Grid.Column="1" Margin="0 0 0 2" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
 						<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="20 0 0 0">
@@ -505,11 +481,6 @@
 								</ToggleButton.ToolTip>
 							</ToggleButton>
 						</StackPanel>
-						<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 0 20 0">
-							<TextBlock VerticalAlignment="Center" FontSize="14">PMD Service Status:</TextBlock>
-							<TextBlock Margin="10 0 0 0" Width="Auto" VerticalAlignment="Center" Text="{Binding BenchlabViewModel.PmdCaptureStatus, Converter={StaticResource EnumDescriptionConverter}}" 
-								FontWeight="Bold" FontSize="14" Foreground="{Binding BenchlabViewModel.PmdCaptureStatus, Converter={StaticResource PmdStatusColorConverter}}"/>
-						</StackPanel>
 					</Grid>
 					<!--PMD Options (right side menu)-->
 					<Grid Grid.RowSpan="3" Grid.Column="2" Margin="5 0 0 2" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
@@ -521,13 +492,13 @@
 							<Border Height="45" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch">
 								<CheckBox Margin="5 0 0 0" FontSize="13" Content="Log PMD Data" IsChecked="{Binding UseLogging}"></CheckBox>
 							</Border>
-							<Border Height="160" Margin="5 10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch">
+							<Border Height="80" Margin="5 10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch">
 								<StackPanel>
-									<TextBlock Text="Downsampling Factor" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
+									<TextBlock Text="Monitoring Interval [ms]" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
 									<ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
-										  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
-										  ItemsSource="{Binding BenchlabViewModel.MonitoringIntervals}" SelectedItem="{Binding BenchlabViewModel.SelectedMonitoringInterval}"
-										  ToolTipService.ShowDuration="25000">
+										materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
+										ItemsSource="{Binding BenchlabViewModel.MonitoringIntervals}" SelectedItem="{Binding BenchlabViewModel.SelectedMonitoringInterval}"
+										ToolTipService.ShowDuration="25000">
 										<ComboBox.ToolTip>
 											<ToolTip StaysOpen="True" MaxWidth="275">
 												<TextBlock Text="Sets the monitoring interval [ms] for the PMD device." 
@@ -541,9 +512,9 @@
 								<StackPanel>
 									<TextBlock Text="Chart Length [s]" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
 									<ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
-										  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
-										  ItemsSource="{Binding PmdDataWindows}" SelectedItem="{Binding BenchlabViewModel.SelectedPmdDataWindow}"
-										  ToolTipService.ShowDuration="25000">
+										materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
+										ItemsSource="{Binding BenchlabViewModel.PmdDataWindows}" SelectedItem="{Binding BenchlabViewModel.SelectedPmdDataWindow}"
+										ToolTipService.ShowDuration="25000">
 										<ComboBox.ToolTip>
 											<ToolTip StaysOpen="True" MaxWidth="275">
 												<TextBlock Text="Sets the lenght [s] of the charts." 
@@ -583,7 +554,7 @@
 							</Grid.RowDefinitions>
 							<Grid Margin="0 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
 								<TextBlock Text="{Binding SessionGpuName, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
-                                         FontWeight="Bold" FontSize="18"/>
+									FontWeight="Bold" FontSize="18"/>
 							</Grid>
 							<controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="PciExpressPlotViewAnalysis" 
                                          Model="{Binding GpuAnalysisModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 4 0 0"
@@ -614,11 +585,11 @@
 						</Grid.RowDefinitions>
 						<Grid Margin="0 4 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
 							<TextBlock Text="{Binding SessionCpuName, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
-                                       FontWeight="Bold" FontSize="18"/>
+								FontWeight="Bold" FontSize="18"/>
 						</Grid>
 						<controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="EPS12VPlotViewAnalysis" 
-                                                     Model="{Binding CpuAnalysisModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 4 0 2"
-										             MouseDoubleClick="ResetEPS12VChartAnalysis_MouseDoubleClick">
+							Model="{Binding CpuAnalysisModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 4 0 2"
+							MouseDoubleClick="ResetEPS12VChartAnalysis_MouseDoubleClick">
 							<controls:PlotViewCustomZoom.DefaultTrackerTemplate>
 								<ControlTemplate>
 									<oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
@@ -645,7 +616,7 @@
 						</Grid.RowDefinitions>
 						<Grid Margin="0 2 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
 							<TextBlock Text="Performance" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
-                                       FontWeight="Bold" FontSize="18"/>
+								FontWeight="Bold" FontSize="18"/>
 						</Grid>
 						<controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="FrametimeAnalysis"
                                                      Model="{Binding FrametimeModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 4 0 2"
@@ -667,8 +638,8 @@
 								<ComboBoxItem>FPS</ComboBoxItem>
 								<ComboBox.Text>
 									<Binding Path="SelectedChartView"
-						                    Mode="TwoWay"
-						                    UpdateSourceTrigger="PropertyChanged">
+										Mode="TwoWay"
+										UpdateSourceTrigger="PropertyChanged">
 									</Binding>
 								</ComboBox.Text>
 							</ComboBox>

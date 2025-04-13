@@ -1,4 +1,7 @@
-﻿namespace CapFrameX.PMD.Benchlab
+﻿using System.Collections;
+using System.Collections.Generic;
+
+namespace CapFrameX.PMD.Benchlab
 {
     public enum SensorType
     {
@@ -13,6 +16,12 @@
         Usage,
         Dummy,
         Other
+    }
+
+    public class SensorSample
+    {
+        public long TimeStamp { get; set; }
+        public IList<Sensor> Sensors { get; set; } = new List<Sensor>();
     }
 
     public class Sensor

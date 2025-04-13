@@ -1,7 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.PMD;
 using CapFrameX.Extensions.NetStandard;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO.Ports;
@@ -17,12 +16,11 @@ namespace CapFrameX.PMD.Powenetics
     {
         private readonly IPoweneticsDriver _pmdDriver;
         private readonly IAppConfiguration _appConfiguration;
-        private readonly ILogger<PoweneticsService> _logger;
         private readonly ISubject<PoweneticsChannel[]> _pmdChannelStream = new Subject<PoweneticsChannel[]>();
 
         private IDisposable _pmdChannelStreamDisposable;
         private IObservable<int> _pmdThroughput;
-        private LinkedList<PoweneticsChannel[]> _channelsBuffer = new LinkedList<PoweneticsChannel[]>();
+        private bool _isServiceRunning;
 
         public IObservable<PoweneticsChannel[]> PmdChannelStream => _pmdChannelStream.AsObservable();
 
@@ -53,20 +51,23 @@ namespace CapFrameX.PMD.Powenetics
             }
         }
 
-        public PoweneticsService(IPoweneticsDriver pmdDriver, IAppConfiguration appConfiguration,
-            ILogger<PoweneticsService> logger)
+        public bool IsServiceRunning => _isServiceRunning;
+
+        public LinkedList<PoweneticsChannel[]> ChannelsBuffer { get; private set; } = new LinkedList<PoweneticsChannel[]>();
+
+        public PoweneticsService(IPoweneticsDriver pmdDriver, IAppConfiguration appConfiguration)
         {
             _pmdDriver = pmdDriver;
             _appConfiguration = appConfiguration;
-            _logger = logger;
         }
 
         public bool StartDriver()
         {
             if (PortName == null) return false;
 
+            _isServiceRunning = true;
             SetDownsampledStream();
-                
+
             // Troughput after downsampling
             _pmdThroughput =
                 _pmdChannelStream
@@ -90,8 +91,9 @@ namespace CapFrameX.PMD.Powenetics
 
         public bool ShutDownDriver()
         {
+            _isServiceRunning = false;
             _pmdChannelStreamDisposable?.Dispose();
-            _channelsBuffer = new LinkedList<PoweneticsChannel[]>();
+            ChannelsBuffer = new LinkedList<PoweneticsChannel[]>();
 
             return _pmdDriver.Disconnect();
         }
