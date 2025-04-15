@@ -17,13 +17,13 @@ namespace CapFrameX.PresentMonInterface
     {
         public const int ApplicationName_INDEX = 0;
         public const int ProcessID_INDEX = 1;
-        public const int TimeInSeconds_INDEX = 9;
-        public const int MsBetweenPresents_INDEX = 10;
+        public const int TimeInSeconds_INDEX = 8;
+        public const int MsBetweenPresents_INDEX = 9;
         // PresentMon version >=2.2
-        public const int CpuBusy_INDEX = 11;
-        public const int GpuBusy_INDEX = 15;
-        public const int MsBetweenDisplayed_INDEX = 18;
-        public const int VALID_LINE_LENGTH = 21;
+        public const int CpuBusy_INDEX = 10;
+        public const int GpuBusy_INDEX = 14;
+        public const int MsBetweenDisplayed_INDEX = 17;
+        public const int VALID_LINE_LENGTH = 20;
 
         // PresentMon < v1.7.0
         //public static readonly string COLUMN_HEADER =
@@ -53,7 +53,12 @@ namespace CapFrameX.PresentMonInterface
         public static readonly string COLUMN_HEADER =
             $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
             $"FrameType,CPUStartQPCTime,FrameTime,CPUBusy,CPUWait,GPULatency,GPUTime,GPUBusy,GPUWait,DisplayLatency,DisplayedTime," +
-            $"AnimationError,AnimationTime";       
+            $"AnimationError,AnimationTime";
+
+        // w/o FrameType
+        //Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,
+        //CPUStartQPCTime,FrameTime,CPUBusy,CPUWait,GPULatency,GPUTime,GPUBusy,GPUWait,DisplayLatency,DisplayedTime,
+        //AnimationError,AnimationTime
 
         private readonly ISubject<string[]> _outputDataStream;
         private readonly object _listLock = new object();
@@ -225,7 +230,6 @@ namespace CapFrameX.PresentMonInterface
                             _logger.LogError("Invalid line split array length. {lineSplit}", string.Join(",", lineSplit));
                             return;
                         }
-
 
                         lock (_listLock)
                         {

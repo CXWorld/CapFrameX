@@ -33,8 +33,9 @@ namespace CapFrameX.PresentMonInterface
                 arguments += "--no_track_input";
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--qpc_time_ms";
-                arguments += PARAMETER_SEPARATOR;
-                arguments += "--track_frame_type";
+                // w/o FrameType, it's flawed when using XeFG
+                //arguments += PARAMETER_SEPARATOR;
+                //arguments += "--track_frame_type";
 
                 if (ExcludeProcesses != null && ExcludeProcesses.Any())
                 {
@@ -69,8 +70,9 @@ namespace CapFrameX.PresentMonInterface
                 arguments += "--no_track_input";
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--qpc_time_ms";
-                arguments += PARAMETER_SEPARATOR;
-                arguments += "--track_frame_type";
+                // w/o FrameType, it's flawed when using XeFG
+                //arguments += PARAMETER_SEPARATOR;
+                //arguments += "--track_frame_type";
             }
 
             return arguments;
