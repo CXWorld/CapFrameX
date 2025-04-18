@@ -211,7 +211,7 @@ namespace CapFrameX.ViewModel.SubModels
             _pmdDataChartManager.UseDarkMode = _appConfiguration.UseDarkMode;
             _pmdDataChartManager.UpdateChartsTheme();
 
-            _pmdService.PmdstatusStream
+            _pmdService.PmdStatusStream
                 .SubscribeOnDispatcher()
                 .Subscribe(status => PmdCaptureStatus = status);
 

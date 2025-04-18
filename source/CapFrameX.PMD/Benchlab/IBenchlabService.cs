@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CapFrameX.Contracts.PMD;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 
@@ -21,6 +22,8 @@ namespace CapFrameX.PMD.Benchlab
         bool IsServiceRunning { get; }
 
         IObservable<SensorSample> PmdSensorStream { get; }
+
+        IObservable<EPmdServiceStatus> PmdServiceStatusStream { get; }
 
         void StartService();
 

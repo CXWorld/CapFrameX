@@ -248,7 +248,7 @@
 						<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 0 20 0">
 							<TextBlock VerticalAlignment="Center" FontSize="14">PMD Service Status:</TextBlock>
 							<TextBlock Margin="10 0 0 0" Width="Auto" VerticalAlignment="Center" Text="{Binding PmdCaptureStatus, Converter={StaticResource EnumDescriptionConverter}}" 
-                           FontWeight="Bold" FontSize="14" Foreground="{Binding PoweneticsViewModel.PmdCaptureStatus, Converter={StaticResource PmdStatusColorConverter}}"/>
+								FontWeight="Bold" FontSize="14" Foreground="{Binding PoweneticsViewModel.PmdCaptureStatus, Converter={StaticResource PmdStatusColorConverter}}"/>
 						</StackPanel>
 					</Grid>
 					<!--PMD Options (right side menu)-->
@@ -480,6 +480,11 @@
 									</ToolTip>
 								</ToggleButton.ToolTip>
 							</ToggleButton>
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 0 20 0">
+							<TextBlock VerticalAlignment="Center" FontSize="14">PMD Service Status:</TextBlock>
+							<TextBlock Margin="10 0 0 0" Width="Auto" VerticalAlignment="Center" Text="{Binding BenchlabViewModel.PmdServiceStatus, Converter={StaticResource EnumDescriptionConverter}}" 
+								FontWeight="Bold" FontSize="14" Foreground="{Binding BenchlabViewModel.PmdServiceStatus, Converter={StaticResource PmdStatusColorConverter}}"/>
 						</StackPanel>
 					</Grid>
 					<!--PMD Options (right side menu)-->

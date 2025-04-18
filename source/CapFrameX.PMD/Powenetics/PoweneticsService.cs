@@ -24,7 +24,7 @@ namespace CapFrameX.PMD.Powenetics
 
         public IObservable<PoweneticsChannel[]> PmdChannelStream => _pmdChannelStream.AsObservable();
 
-        public IObservable<EPmdDriverStatus> PmdstatusStream => _pmdDriver.PmdstatusStream;
+        public IObservable<EPmdDriverStatus> PmdStatusStream => _pmdDriver.PmdstatusStream;
 
         public IObservable<int> PmdThroughput => _pmdThroughput;
 

@@ -10,7 +10,7 @@ namespace CapFrameX.PMD.Powenetics
     {
         IObservable<PoweneticsChannel[]> PmdChannelStream { get; }
 
-        IObservable<EPmdDriverStatus> PmdstatusStream { get; }
+        IObservable<EPmdDriverStatus> PmdStatusStream { get; }
         
         IObservable<int> PmdThroughput { get; }
 

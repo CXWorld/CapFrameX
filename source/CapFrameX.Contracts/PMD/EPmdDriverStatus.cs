@@ -11,4 +11,16 @@ namespace CapFrameX.Contracts.PMD
         [Description("Error")]
         Error
     }
+
+    public enum EPmdServiceStatus
+    {
+        [Description("Waiting")]
+        Waiting,
+        [Description("Running")]
+        Running,
+        [Description("Stopped")]
+        Stopped,
+        [Description("Error")]
+        Error
+    }
 }

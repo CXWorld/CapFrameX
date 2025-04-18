@@ -1,4 +1,5 @@
-﻿using CapFrameX.Extensions;
+﻿using CapFrameX.Contracts.PMD;
+using CapFrameX.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -7,18 +8,24 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.ServiceProcess;
 using System.Threading.Tasks;
 using System.Windows;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace CapFrameX.PMD.Benchlab
 {
     public class BenchlabService : IBenchlabService
     {
+        private const string SERVICE_NAME = "BENCHLAB Service";
+
         // intital 10 samples per second
         private int _sampleInterval = 100;
         private bool _isServiceRunning;
         private readonly ISubject<SensorSample> _pmdSensorStream = new Subject<SensorSample>();
+        private readonly ISubject<EPmdServiceStatus> _pmdServiceStatusStream = new Subject<EPmdServiceStatus>();
         private IDisposable _pmdSensorStreamDisposable;
+        private IDisposable _pmdServiceStatusStreamDisposable;
 
         public int CpuPowerSensorIndex { get; private set; }
 
@@ -52,6 +59,8 @@ namespace CapFrameX.PMD.Benchlab
 
         public IObservable<SensorSample> PmdSensorStream => _pmdSensorStream.AsObservable();
 
+        public IObservable<EPmdServiceStatus> PmdServiceStatusStream => _pmdServiceStatusStream.AsObservable();
+
         private async Task<IList<Sensor>> GetUpdatedSensorListAsync()
         {
             var json = string.Empty;
@@ -74,11 +83,25 @@ namespace CapFrameX.PMD.Benchlab
 
         public void StartService()
         {
-            _isServiceRunning = true;
-
             // set sensor indices
             IList<Sensor> initialSensorList = null;
-            Task.Run(async () => initialSensorList = await GetUpdatedSensorListAsync()).Wait();
+            try
+            {
+                var isServiceRunning = GetServiceRunningStatus(SERVICE_NAME);
+                if (!isServiceRunning)
+                {
+                    _pmdServiceStatusStream.OnNext(EPmdServiceStatus.Stopped);
+                    return;
+                }
+
+                Task.Run(async () => initialSensorList = await GetUpdatedSensorListAsync()).Wait();
+                _isServiceRunning = true;
+            }
+            catch
+            {
+                _pmdServiceStatusStream.OnNext(EPmdServiceStatus.Error);
+                return;
+            }
 
             if (!initialSensorList.IsNullOrEmpty())
             {
@@ -114,14 +137,45 @@ namespace CapFrameX.PMD.Benchlab
                         };
                         _pmdSensorStream.OnNext(sensorSample);
                     });
+
+                _pmdServiceStatusStreamDisposable = Observable.Interval(TimeSpan.FromMilliseconds(1000))
+                    .Subscribe(_ =>
+                    {
+                        var isServiceRunning = GetServiceRunningStatus(SERVICE_NAME);
+                        if (!isServiceRunning)
+                        {
+                            _isServiceRunning = false;
+                            _pmdServiceStatusStream.OnNext(EPmdServiceStatus.Stopped);
+                        }
+                        else
+                        {
+                            _isServiceRunning = true;
+                            _pmdServiceStatusStream.OnNext(EPmdServiceStatus.Running);
+                        }
+                    });
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the named Windows service is currently running.
+        /// </summary>
+        static bool GetServiceRunningStatus(string serviceName)
+        {
+            using (ServiceController sc = new ServiceController(serviceName))
+            {
+                return sc.Status == ServiceControllerStatus.Running;
             }
         }
 
         public void ShutDownService()
         {
             _isServiceRunning = false;
+
             _pmdSensorStreamDisposable?.Dispose();
             _pmdSensorStreamDisposable = null;
+
+            _pmdServiceStatusStreamDisposable?.Dispose();
+            _pmdServiceStatusStreamDisposable = null;
         }
 
         public IEnumerable<Point> GetEPS12VPowerPmdDataPoints(IList<SensorSample> sensorData)

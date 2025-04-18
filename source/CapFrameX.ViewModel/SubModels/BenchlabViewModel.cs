@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.PMD;
 using CapFrameX.PMD;
 using CapFrameX.PMD.Benchlab;
 using OxyPlot;
@@ -9,6 +10,7 @@ using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace CapFrameX.ViewModel.SubModels
 {
@@ -18,6 +20,7 @@ namespace CapFrameX.ViewModel.SubModels
         private bool _updateMetrics = true;
         private bool _usePmdService;
         private int _pmdDataWindowSeconds = 10;
+        private EPmdServiceStatus _pmdServiceStatus = EPmdServiceStatus.Waiting;
 
         private List<SensorSample> _chartaDataBuffer = new List<SensorSample>(1000 * 10);
         private BenchlabMetricsManager _pmdDataMetricsManager;
@@ -112,6 +115,16 @@ namespace CapFrameX.ViewModel.SubModels
             }
         }
 
+        public EPmdServiceStatus PmdServiceStatus
+        {
+            get => _pmdServiceStatus;
+            set
+            {
+                _pmdServiceStatus = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public int SelectedPmdDataWindow
         {
             get => _pmdDataWindowSeconds;
@@ -148,6 +161,21 @@ namespace CapFrameX.ViewModel.SubModels
 
             _pmdDataChartManager.UseDarkMode = _appConfiguration.UseDarkMode;
             _pmdDataChartManager.UpdateChartsTheme();
+
+            _pmdService.PmdServiceStatusStream
+                .Subscribe(status =>
+                {
+                    Dispatcher.CurrentDispatcher.Invoke(() =>
+                    {
+                        PmdServiceStatus = status;
+
+                        if(status != EPmdServiceStatus.Running)
+                        {
+                            _pmdDataChartManager.ResetRealTimePlotModels();
+                            _chartaDataBuffer.Clear();
+                        }
+                    });
+                });
         }
 
         private void SubscribePmdDataStreamCharts()

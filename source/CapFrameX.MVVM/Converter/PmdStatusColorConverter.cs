@@ -15,23 +15,46 @@ namespace CapFrameX.MVVM.Converter
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (!(value is EPmdDriverStatus))
+            if (!(value is EPmdDriverStatus) && !(value is EPmdServiceStatus))
                 return ErrorColor;
 
-            EPmdDriverStatus status = (EPmdDriverStatus)value;
-
             var color = string.Empty;
-            switch (status)
+
+            if (value is EPmdDriverStatus)
             {
-                case EPmdDriverStatus.Ready:
-                    color = ReadyColor;
-                    break;
-                case EPmdDriverStatus.Connected:
-                    color = ConnectedColor;
-                    break;
-                case EPmdDriverStatus.Error:
-                    color = ErrorColor;
-                    break;
+                EPmdDriverStatus status = (EPmdDriverStatus)value;
+
+                switch (status)
+                {
+                    case EPmdDriverStatus.Ready:
+                        color = ReadyColor;
+                        break;
+                    case EPmdDriverStatus.Connected:
+                        color = ConnectedColor;
+                        break;
+                    case EPmdDriverStatus.Error:
+                        color = ErrorColor;
+                        break;
+                }
+            }
+            else if (value is EPmdServiceStatus)
+            {
+                EPmdServiceStatus status = (EPmdServiceStatus)value;
+                switch (status)
+                {
+                    case EPmdServiceStatus.Waiting:
+                        color = ReadyColor;
+                        break;
+                    case EPmdServiceStatus.Running:
+                        color = ConnectedColor;
+                        break;
+                    case EPmdServiceStatus.Stopped:
+                        color = ReadyColor;
+                        break;
+                    case EPmdServiceStatus.Error:
+                        color = ErrorColor;
+                        break;
+                }
             }
 
             return color;
