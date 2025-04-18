@@ -1,20 +1,18 @@
 ﻿using AutoMapper;
+using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Webservice.Data.Commands;
 using CapFrameX.Webservice.Data.DTO;
+using CapFrameX.Webservice.Data.Extensions;
 using CapFrameX.Webservice.Data.Interfaces;
 using FluentValidation;
 using MediatR;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CapFrameX.Webservice.Data.Extensions;
-using CapFrameX.Statistics.NetStandard;
-using CapFrameX.Statistics.NetStandard.Contracts;
 
 namespace CapFrameX.Webservice.Implementation.Handlers
 {
