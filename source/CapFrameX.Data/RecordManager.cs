@@ -673,7 +673,9 @@ namespace CapFrameX.Data
                         }
                     }
 
-                    targetSessionRun.Hash = Convert.ToString(targetSessionRun.GetHashCode()); // Dirty Hack weil (weil Alex Hacks mag) Rohdaten nicht mehr vorhanden. Hash ist nicht vergleichbar mit dem Hash, welcher aus den PresentMonLines erstellt wird
+                    // Dirty Hack weil (weil Alex Hacks mag) Rohdaten nicht mehr vorhanden.
+                    // Hash ist nicht vergleichbar mit dem Hash, welcher aus den PresentMonLines erstellt wird
+                    targetSessionRun.Hash = Convert.ToString(targetSessionRun.GetHashCode());
                 }
 
                 // remove runs without data
@@ -729,8 +731,16 @@ namespace CapFrameX.Data
             var processNameStripped = processName.StripExeExtension();
             Process[] processes = Process.GetProcessesByName(processNameStripped);
 
-            if (processes.Length > 0)
+            if (processes.Any())
             {
+                // prefer getting game name from process list
+                var gameName = _processList.FindProcessByName(processName)?.DisplayName;
+
+                if (gameName != null)
+                {
+                    return gameName;
+                }
+
                 try
                 {
                     string mainWindoTitle = processes.First()?.MainWindowTitle?.TrimEnd();
@@ -743,20 +753,12 @@ namespace CapFrameX.Data
                         {
                             return fileDescription;
                         }
-                        else
-                        {
-                            return _processList.FindProcessByName(processName)?.DisplayName ?? processNameStripped;
-                        }
                     }
                     else if (!mainWindoTitle.IsNullOrEmpty())
                     {
                         if (processNameStripped != mainWindoTitle)
                         {
                             return mainWindoTitle;
-                        }
-                        else
-                        {
-                            return _processList.FindProcessByName(processName)?.DisplayName ?? processNameStripped;
                         }
                     }
                 }
@@ -773,7 +775,7 @@ namespace CapFrameX.Data
         {
             var filename = CaptureServiceConfiguration.GetCaptureFilename(processName);
             var directory = recordDirectory is null ? await _recordObserver.ObservingDirectoryStream.Take(1) : new DirectoryInfo(recordDirectory);
-            return System.IO.Path.Combine(directory.FullName, filename);
+            return Path.Combine(directory.FullName, filename);
         }
 
         public ISessionRun ConvertPresentDataLinesToSessionRun(IEnumerable<string> presentLines)

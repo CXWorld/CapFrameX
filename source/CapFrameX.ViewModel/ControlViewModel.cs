@@ -742,7 +742,7 @@ namespace CapFrameX.ViewModel
                         _processList.UploadProcessInfo(processName, gameName);
                     }
                 }
-                _processList.Save();
+                _processList?.Save();
                 RecordInfoList.Where(record => record.ProcessName == processName).ForEach(record =>
                 {
                     record.GameName = process.DisplayName;
@@ -813,22 +813,22 @@ namespace CapFrameX.ViewModel
         private void SubscribeToResetRecord()
         {
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ResetRecord>>()
-                            .Subscribe(msg =>
-                            {
-                                SelectedRecordInfo = null;
-                                _selectedRecordings = null;
-                            });
+                .Subscribe(msg =>
+                {
+                    SelectedRecordInfo = null;
+                    _selectedRecordings = null;
+                });
         }
 
         private void SubscribeToSetFileRecordInfoExternal()
         {
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.SetFileRecordInfoExternal>>()
-                            .Subscribe(msg =>
-                            {
-                                SelectedRecordInfo = RecordInfoList
-                                    .FirstOrDefault(info => info.Id == msg.RecordInfo.Id);
-                                _selectedRecordings = null;
-                            });
+                .Subscribe(msg =>
+                {
+                    SelectedRecordInfo = RecordInfoList
+                        .FirstOrDefault(info => info.Id == msg.RecordInfo.Id);
+                    _selectedRecordings = null;
+                });
         }
 
         private void SubscribeToCloudFolderChanged()

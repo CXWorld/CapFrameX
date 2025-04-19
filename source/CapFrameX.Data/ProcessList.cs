@@ -1,4 +1,8 @@
-﻿using System;
+﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Extensions;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
@@ -8,10 +12,6 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using CapFrameX.Contracts.Configuration;
-using CapFrameX.Extensions;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace CapFrameX.Data
 {

@@ -169,7 +169,7 @@ namespace CapFrameX.ViewModel.SubModels
                     {
                         PmdServiceStatus = status;
 
-                        if(status != EPmdServiceStatus.Running)
+                        if (status != EPmdServiceStatus.Running)
                         {
                             _pmdDataChartManager.ResetRealTimePlotModels();
                             _chartaDataBuffer.Clear();

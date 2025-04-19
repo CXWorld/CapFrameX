@@ -45,12 +45,21 @@ namespace CapFrameX.ViewModel
         public string CpuName
         {
             get => _cpuName;
-            set { _cpuName = value; RaisePropertyChanged(); }
+            set
+            {
+                _cpuName = value;
+                RaisePropertyChanged();
+            }
         }
+
         public string GpuName
         {
             get => _gpuName;
-            set { _gpuName = value; RaisePropertyChanged(); }
+            set
+            {
+                _gpuName = value;
+                RaisePropertyChanged();
+            }
         }
 
         public PlotModel CpuAnalysisModel => _pmdAnalysisChartManager.CpuAnalysisModel;
@@ -380,6 +389,9 @@ namespace CapFrameX.ViewModel
             _useUpdateSession = true;
             PoweneticsViewModel.ManageChartsUpdate();
             BenchlabViewModel.ManageChartsUpdate();
+
+            CpuName = _systemInfo.GetProcessorName();
+            GpuName = _systemInfo.GetGraphicCardName();
 
             if (_session == null || _session?.Hash != _previousSession?.Hash)
             {

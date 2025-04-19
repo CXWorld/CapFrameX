@@ -948,8 +948,17 @@ namespace CapFrameX.ViewModel
             {
                 Process[] processes = Process.GetProcessesByName(processNameStripped);
 
-                if (processes.Length > 0)
+                if (processes.Any())
                 {
+                    // prefer getting game name from process list
+                    var gameName = _processList.FindProcessByName(processName)?.DisplayName;
+
+                    if (gameName != null)
+                    {
+                        _gameFileDescriptionCache.Add(processName, gameName);
+                        return gameName;
+                    }
+
                     try
                     {
                         string mainWindoTitle = processes.First()?.MainWindowTitle?.TrimEnd();
@@ -963,10 +972,6 @@ namespace CapFrameX.ViewModel
                                 _gameFileDescriptionCache.Add(processName, fileDescription);
                                 return fileDescription;
                             }
-                            else
-                            {
-                                return _processList.FindProcessByName(processName)?.DisplayName ?? processNameStripped;
-                            }
                         }
                         else if (!mainWindoTitle.IsNullOrEmpty())
                         {
@@ -974,10 +979,6 @@ namespace CapFrameX.ViewModel
                             {
                                 _gameFileDescriptionCache.Add(processName, mainWindoTitle);
                                 return mainWindoTitle;
-                            }
-                            else
-                            {
-                                return _processList.FindProcessByName(processName)?.DisplayName ?? processNameStripped;
                             }
                         }
                     }

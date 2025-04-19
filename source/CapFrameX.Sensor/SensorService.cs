@@ -1,7 +1,9 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
+using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
+using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Monitoring.Contracts;
 using Microsoft.Extensions.Logging;
 using OpenHardwareMonitor.Hardware;
@@ -21,7 +23,7 @@ namespace CapFrameX.Sensor
         private readonly object _lockComputer = new object();
         private readonly ISensorConfig _sensorConfig;
         private readonly IRTSSService _rTSSService;
-        private readonly IAppConfiguration _appConfig;
+        private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<SensorService> _logger;
         private readonly IDisposable _logDisposable;
 
@@ -50,36 +52,34 @@ namespace CapFrameX.Sensor
 
         public IObservable<(DateTime, Dictionary<ISensorEntry, float>)> SensorSnapshotStream { get; private set; }
 
-		public IObservable<TimeSpan> OsdUpdateStream => _osdUpdateSubject.AsObservable();
+        public IObservable<TimeSpan> OsdUpdateStream => _osdUpdateSubject.AsObservable();
 
         public Subject<bool> IsLoggingActiveStream { get; }
 
-        public bool UseSensorLogging => _appConfig.UseSensorLogging;
+        public bool UseSensorLogging => _appConfiguration.UseSensorLogging;
 
-        public bool IsOverlayActive => _appConfig.IsOverlayActive;
+        public bool IsOverlayActive => _appConfiguration.IsOverlayActive;
 
         public Func<bool> IsSensorWebsocketActive { get; set; } = () => false;
 
         public TaskCompletionSource<bool> SensorServiceCompletionSource { get; }
            = new TaskCompletionSource<bool>();
 
-        public SensorService(IAppConfiguration appConfig,
-                             ISensorConfig sensorConfig,
-                             IRTSSService rTSSService,
-                             ILogger<SensorService> logger)
+        public SensorService(IAppConfiguration appConfig, ISensorConfig sensorConfig,
+            IRTSSService rTSSService, ILogger<SensorService> logger)
         {
-            _appConfig = appConfig;
+            _appConfiguration = appConfig;
             _sensorConfig = sensorConfig;
             _rTSSService = rTSSService;
             _logger = logger;
-            _currentOSDTimespan = TimeSpan.FromMilliseconds(_appConfig.OSDRefreshPeriod);
-            _currentLoggingTimespan = TimeSpan.FromMilliseconds(_appConfig.SensorLoggingRefreshPeriod);
+            _currentOSDTimespan = TimeSpan.FromMilliseconds(_appConfiguration.OSDRefreshPeriod);
+            _currentLoggingTimespan = TimeSpan.FromMilliseconds(_appConfiguration.SensorLoggingRefreshPeriod);
             _loggingUpdateSubject = new BehaviorSubject<TimeSpan>(_currentLoggingTimespan);
             _osdUpdateSubject = new BehaviorSubject<TimeSpan>(_currentOSDTimespan);
             _sensorUpdateSubject = new BehaviorSubject<TimeSpan>(CurrentSensorTimespan);
             IsLoggingActiveStream = new Subject<bool>();
 
-            _sensorConfig.SensorLoggingRefreshPeriod = _appConfig.SensorLoggingRefreshPeriod;
+            _sensorConfig.SensorLoggingRefreshPeriod = _appConfiguration.SensorLoggingRefreshPeriod;
 
             Observable.FromAsync(() => StartOpenHardwareMonitor())
                .Delay(TimeSpan.FromMilliseconds(500))
@@ -97,12 +97,12 @@ namespace CapFrameX.Sensor
                .Replay(0)
                .RefCount();
 
-           _logDisposable = SensorSnapshotStream
-                .Sample(_loggingUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
-                .Where(_ => _isServiceAlive)
-                .Where(_ => _isLoggingActive && UseSensorLogging)
-                .SubscribeOn(Scheduler.Default)
-                .Subscribe(sensorData => LogCurrentValues(sensorData.Item2, sensorData.Item1));
+            _logDisposable = SensorSnapshotStream
+                 .Sample(_loggingUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
+                 .Where(_ => _isServiceAlive)
+                 .Where(_ => _isLoggingActive && UseSensorLogging)
+                 .SubscribeOn(Scheduler.Default)
+                 .Subscribe(sensorData => LogCurrentValues(sensorData.Item2, sensorData.Item1));
 
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
         }
@@ -174,10 +174,10 @@ namespace CapFrameX.Sensor
             {
                 try
                 {
-                    _computer = new Computer(_sensorConfig, _rTSSService, _appConfig);
+                    _computer = new Computer(_sensorConfig, _rTSSService, _appConfiguration);
                     _computer.Open();
                     _computer.CPUEnabled = true;
-                    _computer.GPUEnabled = true;         
+                    _computer.GPUEnabled = true;
                     _computer.RAMEnabled = true;
                     _computer.MainboardEnabled = false;
                     _computer.FanControllerEnabled = false;
@@ -192,7 +192,7 @@ namespace CapFrameX.Sensor
 
         private void UpdateSensorInterval()
         {
-            _sensorConfig.SensorLoggingRefreshPeriod = _appConfig.SensorLoggingRefreshPeriod;
+            _sensorConfig.SensorLoggingRefreshPeriod = _appConfiguration.SensorLoggingRefreshPeriod;
             _sensorUpdateSubject.OnNext(CurrentSensorTimespan);
         }
 
@@ -261,7 +261,8 @@ namespace CapFrameX.Sensor
             _sessionSensorDataLive.AddMeasureTime(timestamp);
             foreach (var sensorPair in currentValues)
             {
-                if (_sensorConfig.GetSensorIsActive(sensorPair.Key.Identifier)) {
+                if (_sensorConfig.GetSensorIsActive(sensorPair.Key.Identifier))
+                {
                     _sessionSensorDataLive.AddSensorValue(sensorPair.Key, sensorPair.Value);
                 }
             }
@@ -345,28 +346,48 @@ namespace CapFrameX.Sensor
 
         public string GetCpuName()
         {
-            IHardware cpu = null;
-            lock (_lockComputer)
-            {
-                cpu = _computer?.Hardware
-                    .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.CPU);
-            }
+            bool hasCustomInfo = _appConfiguration.HardwareInfoSource
+              .ConvertToEnum<EHardwareInfoSource>() == EHardwareInfoSource.Custom;
 
-            return cpu != null ? cpu.Name : "Unknown";
+            if (!hasCustomInfo)
+            {
+                IHardware cpu = null;
+                lock (_lockComputer)
+                {
+                    cpu = _computer?.Hardware
+                        .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.CPU);
+                }
+
+                return cpu != null ? cpu.Name : "Unknown";
+            }
+            else
+            {
+                return _appConfiguration.CustomCpuDescription;
+            }
         }
 
         public string GetGpuName()
         {
-            IHardware gpu = null;
-            lock (_lockComputer)
-            {
-                gpu = _computer?.Hardware
-                   .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAti
-                       || hdw.HardwareType == HardwareType.GpuNvidia
-                       || hdw.HardwareType == HardwareType.GpuIntel);
-            }
+            bool hasCustomInfo = _appConfiguration.HardwareInfoSource
+                .ConvertToEnum<EHardwareInfoSource>() == EHardwareInfoSource.Custom;
 
-            return gpu != null ? gpu.Name : "Unknown";
+            if (!hasCustomInfo)
+            {
+                IHardware gpu = null;
+                lock (_lockComputer)
+                {
+                    gpu = _computer?.Hardware
+                       .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAti
+                           || hdw.HardwareType == HardwareType.GpuNvidia
+                           || hdw.HardwareType == HardwareType.GpuIntel);
+                }
+
+                return gpu != null ? gpu.Name : "Unknown";
+            }
+            else
+            {
+                return _appConfiguration.CustomGpuDescription;
+            }
         }
     }
 }
