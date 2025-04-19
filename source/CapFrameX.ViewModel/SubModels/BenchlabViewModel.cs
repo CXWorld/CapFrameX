@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -230,12 +231,12 @@ namespace CapFrameX.ViewModel.SubModels
         {
             if (startService)
             {
-                _chartaDataBuffer.Clear();
-                _pmdDataMetricsManager.ResetHistory();
-                _pmdService.StartService();
-
                 SubscribePmdDataStreamCharts();
                 SubscribePmdDataStreamMetrics();
+
+                _chartaDataBuffer.Clear();
+                _pmdDataMetricsManager.ResetHistory();
+                Task.Run(async () => await _pmdService.StartService());
             }
             else
             {

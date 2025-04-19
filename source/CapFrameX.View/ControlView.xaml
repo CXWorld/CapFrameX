@@ -473,8 +473,8 @@
 						 Margin="5 0 5 0" FontSize="14" Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}"
                          KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
                     <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="0 0 0 0" Width="{Binding ElementName=ControlViewControl, Path=ActualWidth, Converter={StaticResource AddValueConverterSaveButton}}" MaxWidth="330"
-                    Style="{DynamicResource MaterialDesignFlatButton}" Command="{Binding AcceptEditingDialogCommand}" FontSize="16" HorizontalAlignment="Left">
-                        SAVE
+                        Style="{DynamicResource MaterialDesignFlatButton}" Command="{Binding AcceptEditingDialogCommand}" FontSize="16" HorizontalAlignment="Left">
+                            SAVE
                     </Button>
                 </Grid>
             </Expander>

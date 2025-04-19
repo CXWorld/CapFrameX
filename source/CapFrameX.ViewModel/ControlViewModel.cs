@@ -704,11 +704,11 @@ namespace CapFrameX.ViewModel
                     var session = _recordManager.LoadData(recordInfo.FullPath);
 
                     _recordManager.UpdateCustomData(recordInfo,
-                            _customCpuDescriptionChanged ? CustomCpuDescription : session.Info.Processor,
-                            _customGpuDescriptionChanged ? CustomGpuDescription : session.Info.GPU,
-                            _customRamDescriptionChanged ? CustomRamDescription : session.Info.SystemRam,
-                            _customGameNameChanged ? CustomGameName : session.Info.GameName,
-                            _customCommentChanged ? CustomComment : session.Info.Comment);
+                        _customCpuDescriptionChanged ? CustomCpuDescription : session.Info.Processor,
+                        _customGpuDescriptionChanged ? CustomGpuDescription : session.Info.GPU,
+                        _customRamDescriptionChanged ? CustomRamDescription : session.Info.SystemRam,
+                        _customGameNameChanged ? CustomGameName : session.Info.GameName,
+                        _customCommentChanged ? CustomComment : session.Info.Comment);
                 }
             }
 

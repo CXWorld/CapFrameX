@@ -3,6 +3,7 @@ using CapFrameX.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
@@ -11,7 +12,6 @@ using System.Reactive.Subjects;
 using System.ServiceProcess;
 using System.Threading.Tasks;
 using System.Windows;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace CapFrameX.PMD.Benchlab
 {
@@ -51,7 +51,7 @@ namespace CapFrameX.PMD.Benchlab
                     if (_isServiceRunning)
                     {
                         ShutDownService();
-                        StartService();
+                        Task.Run(async () => await StartService());
                     }
                 }
             }
@@ -81,9 +81,8 @@ namespace CapFrameX.PMD.Benchlab
             return sensorList ?? new List<Sensor>();
         }
 
-        public void StartService()
+        public async Task StartService()
         {
-            // set sensor indices
             IList<Sensor> initialSensorList = null;
             try
             {
@@ -94,7 +93,24 @@ namespace CapFrameX.PMD.Benchlab
                     return;
                 }
 
-                Task.Run(async () => initialSensorList = await GetUpdatedSensorListAsync()).Wait();
+                // Start both the fetch and a 2-second delay
+                var fetchTask = GetUpdatedSensorListAsync();
+                var timeoutTask = Task.Delay(TimeSpan.FromSeconds(2));
+
+                // Wait for whichever completes first
+                var completed = await Task.WhenAny(fetchTask, timeoutTask);
+
+                if (completed == fetchTask)
+                {
+                    // Fetch finished within 2 seconds
+                    initialSensorList = await fetchTask;
+                }
+                else
+                {
+                    _pmdServiceStatusStream.OnNext(EPmdServiceStatus.Error);
+                    return;
+                }
+
                 _isServiceRunning = true;
             }
             catch

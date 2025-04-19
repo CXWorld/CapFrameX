@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.PMD;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace CapFrameX.PMD.Benchlab
@@ -25,7 +26,7 @@ namespace CapFrameX.PMD.Benchlab
 
         IObservable<EPmdServiceStatus> PmdServiceStatusStream { get; }
 
-        void StartService();
+        Task StartService();
 
         void ShutDownService();
 
