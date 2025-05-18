@@ -13,9 +13,8 @@ namespace CapFrameX.Contracts.Sensor
         TaskCompletionSource<bool> SensorServiceCompletionSource { get; }
         Func<bool> IsSensorWebsocketActive { get; set; }
         Subject<bool> IsLoggingActiveStream { get; }
-
         void StartSensorLogging();
-        void StopSensorLogging();
+        Task StopSensorLogging();
         ISessionSensorData2 GetSensorSessionData();
         void ShutdownSensorService();
         string GetGpuDriverVersion();

@@ -214,13 +214,10 @@ namespace CapFrameX.Sensor
             }
         }
 
-        public void StopSensorLogging()
+        public async Task StopSensorLogging()
         {
-            Observable.Timer(_currentLoggingTimespan)
-                .Subscribe(_ =>
-            {
-                _isLoggingActive = false;
-            });
+            await Task.Delay(_currentLoggingTimespan);
+            _isLoggingActive = false;
         }
 
         public async Task<IEnumerable<ISensorEntry>> GetSensorEntries()

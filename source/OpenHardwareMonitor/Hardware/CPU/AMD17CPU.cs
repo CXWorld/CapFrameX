@@ -400,7 +400,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 }
             }
 
-            if (sensorConfig.GetSensorEvaluate(packagePowerSensor.IdentifierString))
+            if (sensorConfig.GetSensorEvaluate(packagePowerSensor?.IdentifierString ?? "Undefined"))
             {
                 if (energyUnitMultiplier != 0 &&
                   Ring0.Rdmsr(MSR_PKG_ENERGY_STAT, out uint energyConsumed, out _))

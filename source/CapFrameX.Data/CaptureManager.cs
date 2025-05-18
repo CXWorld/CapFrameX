@@ -281,9 +281,7 @@ namespace CapFrameX.Data
 
             // Start capturing RTSS frame times
             _rTSSFrameTimesIntervalStream = GetRTSSFrameTimesIntervalHeartBeat(options.ProcessInfo.Item2);
-
             _sensorService.StartSensorLogging();
-
             delayStopwatch.Stop();
 
             if (options.CaptureTime > 0d)
@@ -335,10 +333,10 @@ namespace CapFrameX.Data
             LockCaptureService = true;
 
             _timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
+            await _sensorService.StopSensorLogging();
             _soundManager.PlaySound(Sound.CaptureStopped);
             _overlayService.StopCaptureTimer();
             _autoCompletionDisposableStream?.Dispose();
-            _sensorService.StopSensorLogging();
             _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Processing });
 
             // Stop capturing RTSS frame times
@@ -480,7 +478,7 @@ namespace CapFrameX.Data
                     if (_poweneticsService.IsServiceRunning)
                     {
                         sessionRun.SampleTime = _poweneticsService.DownSamplingSize;
-                        int count = (int)(finalCaptureTime / (1E-03 * sessionRun.SampleTime));
+                        int count = (int)(finalCaptureTime / (1E-03 * sessionRun.SampleTime)) + 1;
 
                         if (_pmdDataGpuPower.Any())
                             sessionRun.PmdGpuPower = _pmdDataGpuPower.Take(count).ToArray();
@@ -492,7 +490,7 @@ namespace CapFrameX.Data
                     else if (_benchlabService.IsServiceRunning)
                     {
                         sessionRun.SampleTime = _benchlabService.MonitoringInterval;
-                        int count = (int)(finalCaptureTime / (1E-03 * sessionRun.SampleTime));
+                        int count = (int)(finalCaptureTime / (1E-03 * sessionRun.SampleTime)) + 1;
 
                         if (_pmdDataGpuPower.Any())
                             sessionRun.PmdGpuPower = _pmdDataGpuPower.Take(count).ToArray();
