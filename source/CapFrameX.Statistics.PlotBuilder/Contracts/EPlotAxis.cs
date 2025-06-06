@@ -14,6 +14,8 @@ namespace CapFrameX.Statistics.PlotBuilder.Contracts
 		YAXISCLOCK,
 		YAXISTEMPERATURE,
 		YAXISVOLTAGE,
-		YAXISDATA
-	}
+		YAXISDATA,
+        YAXISDISTRIBUTION,
+        XAXISFRAMETIMES
+    }
 }

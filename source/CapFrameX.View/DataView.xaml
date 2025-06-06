@@ -144,7 +144,7 @@
                             </TabItem>
                             <TabItem>
                                 <TabItem.Header>
-                                    <Label FontSize="12">L-Shape</Label>
+                                    <Label FontSize="12">L-shape</Label>
                                 </TabItem.Header>
                                 <Grid>
                                     <Grid Margin="-15 0 0 1" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
@@ -180,6 +180,16 @@
                                             </lvc:Axis>
                                         </lvc:CartesianChart.AxisY>
                                     </lvc:CartesianChart>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Width="150">
+                                <TabItem.Header>
+                                    <Label FontSize="12">Frame Time Distribution</Label>
+                                </TabItem.Header>
+                                <Grid>
+                                    <Grid Margin="-15 0 0 1" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                                    </Grid>
+                                    <controls:FrametimeDistributionGraphControl DataContext="{Binding FrametimeDistributionGraphDataContext}" Background="{DynamicResource MaterialDesignBackground}"/>
                                 </Grid>
                             </TabItem>
                         </TabControl>

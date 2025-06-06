@@ -100,6 +100,8 @@ namespace CapFrameX.ViewModel
 
         public FpsGraphDataContext FpsGraphDataContext { get; }
 
+        public FrametimeDistributionGraphDataContext FrametimeDistributionGraphDataContext { get; }
+
         public IAppConfiguration AppConfiguration => _appConfiguration;
 
         public Array ChartYAxisSettings => Enum.GetValues(typeof(EChartYAxisSetting));
@@ -691,6 +693,8 @@ namespace CapFrameX.ViewModel
                 _appConfiguration, _frametimeStatisticProvider, _eventAggregator);
             FpsGraphDataContext = new FpsGraphDataContext(_localRecordDataServer,
                 _appConfiguration, _frametimeStatisticProvider, _eventAggregator);
+            FrametimeDistributionGraphDataContext = new FrametimeDistributionGraphDataContext(_localRecordDataServer,
+                _appConfiguration, _frametimeStatisticProvider, _eventAggregator);
 
             MessageDialogContent = new ConditionalMessageDialog();
 
@@ -746,6 +750,10 @@ namespace CapFrameX.ViewModel
         {
             _onUpdateChart.Subscribe(_ =>
             {
+                FrametimeDistributionGraphDataContext.BuildPlotmodel(new VisibleGraphs(ShowGpuLoad, ShowCpuLoad, ShowCpuMaxThreadLoad, ShowGpuPowerLimit,
+                    ShowPcLatency, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold,
+                    ShowGpuActiveChart, _appConfiguration.UseDisplayChangeMetrics));
+
                 FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(ShowGpuLoad, ShowCpuLoad, ShowCpuMaxThreadLoad, ShowGpuPowerLimit, 
                     ShowPcLatency, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold, 
                     ShowGpuActiveChart, _appConfiguration.UseDisplayChangeMetrics));
@@ -753,6 +761,7 @@ namespace CapFrameX.ViewModel
                 FrametimeGraphDataContext.BuildPlotmodel(new VisibleGraphs(ShowGpuLoad, ShowCpuLoad, ShowCpuMaxThreadLoad, ShowGpuPowerLimit, 
                     ShowPcLatency, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold, 
                     ShowGpuActiveChart, _appConfiguration.UseDisplayChangeMetrics), 
+
                     plotModel =>
                 {
                     FrametimeGraphDataContext.UpdateAxis(EPlotAxis.YAXISFRAMETIMES, axis =>
@@ -760,7 +769,8 @@ namespace CapFrameX.ViewModel
                         var tuple = GetYAxisSettingFromSelection(SelecetedChartYAxisSetting);
                         SetFrametimeChartYAxisSetting(tuple);
                     });
-                });
+                }                
+                );
 
                 RaisePropertyChanged(nameof(GpuActiveDeviationPercentage));
             });
@@ -1235,6 +1245,7 @@ namespace CapFrameX.ViewModel
                 // Do update actions
                 FrametimeGraphDataContext.RecordSession = _session;
                 FpsGraphDataContext.RecordSession = _session;
+                FrametimeDistributionGraphDataContext.RecordSession = _session;
 
                 UpdateRangeSliderParameter();
                 UpdateMainCharts();
@@ -1778,6 +1789,7 @@ namespace CapFrameX.ViewModel
         {
             FrametimeGraphDataContext.Reset();
             FpsGraphDataContext.Reset();
+            FrametimeDistributionGraphDataContext.Reset();
             _localRecordDataServer.CurrentSession = null;
             LShapeCollection?.Clear();
             StatisticCollection?.Clear();

@@ -129,6 +129,23 @@ namespace CapFrameX.Statistics.PlotBuilder
                 }
             },
             {
+                EPlotAxis.XAXISFRAMETIMES, new LinearAxis()
+                {
+                    Key = EPlotAxis.XAXISFRAMETIMES.GetDescription(),
+                    Position = AxisPosition.Bottom,
+                    Title = "Frametime [ms]",
+                    FontSize = 13,
+                    MajorGridlineStyle = LineStyle.Solid,
+                    MajorGridlineThickness = 1,
+                    MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+                    MinorTickSize = 0,
+                    MajorTickSize = 5,
+                    MajorStep = 2,
+                    AbsoluteMinimum = 0,
+                    AxisTitleDistance = 10
+                }
+            },
+            {
                 EPlotAxis.YAXISFPS, new LinearAxis()
                 {
                     Key = EPlotAxis.YAXISFPS.GetDescription(),
@@ -159,7 +176,26 @@ namespace CapFrameX.Statistics.PlotBuilder
                     AbsoluteMinimum = 0,
                     AxisTitleDistance = 15
                 }
+            },
+                {
+                EPlotAxis.YAXISDISTRIBUTION, new LinearAxis()
+                {
+                    Key = EPlotAxis.YAXISDISTRIBUTION.GetDescription(),
+                    Position = AxisPosition.Left,
+                    Title = "Time Distribution [%]",
+                    FontSize = 13,
+                    MajorGridlineStyle = LineStyle.Solid,
+                    MajorGridlineThickness = 1,
+                    MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+                    MinorTickSize = 0,
+                    MajorTickSize = 0,
+                    MajorStep = 2,
+                    AbsoluteMaximum = 101,
+                    AbsoluteMinimum = 0,
+                    AxisTitleDistance = 15
+                }
             }
+
         };
 
         public void Reset()
@@ -324,5 +360,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 sceneNumber++;
             }
         }
+
+
     }
 }

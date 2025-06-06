@@ -226,6 +226,9 @@
     <Compile Include="Controls\CustomRangeSlider.cs" />
     <Compile Include="Controls\CXColorPicker.cs" />
     <Compile Include="Controls\EAxisDescription.cs" />
+    <Compile Include="Controls\FrametimeDistributionGraphControl.xaml.cs">
+      <DependentUpon>FrametimeDistributionGraphControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\FpsGraphControl.xaml.cs">
       <DependentUpon>FpsGraphControl.xaml</DependentUpon>
     </Compile>
@@ -291,6 +294,10 @@
     <Page Include="ComparisonView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\FrametimeDistributionGraphControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Controls\FpsGraphControl.xaml">
       <SubType>Designer</SubType>

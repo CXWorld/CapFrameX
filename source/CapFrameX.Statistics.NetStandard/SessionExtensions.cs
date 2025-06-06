@@ -560,5 +560,62 @@ namespace CapFrameX.Statistics.NetStandard
 
             return Math.Round(Math.Abs((gpuActiveTimesAverage - frametimesAverage) / frametimesAverage  * 100), MidpointRounding.AwayFromZero);
         }
+
+        public static IList<Point> GetFrametimeDistributionPoints(this ISession session, double startTime, double endTime,
+            IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
+        {
+
+            var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
+            var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
+            var frametimes = frametimeStatisticProvider?
+                .GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray(), eRemoveOutlierMethod)
+                ?? Enumerable.Empty<double>().ToList();
+
+            var filteredFrameTimes = FilterDataWithinTimeWindow(frameStartTimes, frametimes, startTime, endTime);
+
+            // Bin increments
+            double increments = 0.25;
+            double maxValue = filteredFrameTimes.Max();
+
+
+            // Create Bins (start, end)
+            List<(double start, double end)> bins = new List<(double, double)>();
+            for (double start = 0; start < maxValue; start += increments)
+            {
+                double end = Math.Round(start + increments, 10);
+                bins.Add((start, end));
+            }
+
+            // Expand last bin if maxValue doesn't fit
+            if (bins.Count == 0 || bins.Last().end < maxValue)
+            {
+                double start = bins.Count > 0 ? bins.Last().end : 0;
+                double end = Math.Round(start + increments, 10);
+                bins.Add((start, end));
+            }
+
+
+            // Distribution list (X = bin threshold, Y = percentage)
+            double totalSum = filteredFrameTimes.Sum();
+            List<Point> frametimeDistribution = new List<Point>();
+
+            foreach (var (start, end) in bins)
+            {
+                bool isLastBin = (start, end) == bins.Last();
+
+                // sum of values in bin
+                double binSum = filteredFrameTimes
+                    .Where(w => isLastBin ? (w >= start && w <= end) : (w >= start && w < end))
+                    .Sum();
+
+                if (binSum > 0 )
+                {
+                    double percentage = (binSum / totalSum) * 100;
+                    frametimeDistribution.Add(new Point(end, percentage));
+                }
+            }
+
+            return frametimeDistribution;
+        }
     }
 }

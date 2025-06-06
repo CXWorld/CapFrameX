@@ -193,6 +193,7 @@
     <Compile Include="ComparisonViewModel.cs" />
     <Compile Include="ComparisonViewModelLabel.cs" />
     <Compile Include="ComparisonViewModelItems.cs" />
+    <Compile Include="DataContext\FrametimeDistributionGraphDataContext.cs" />
     <Compile Include="DataContext\FpsGraphDataContext.cs" />
     <Compile Include="DataContext\FrametimeGraphDataContext.cs" />
     <Compile Include="DataContext\GraphDataContextBase.cs" />

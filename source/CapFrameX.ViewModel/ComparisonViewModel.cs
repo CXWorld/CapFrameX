@@ -55,6 +55,7 @@ namespace CapFrameX.ViewModel
 
         private PlotModel _comparisonFrametimesModel;
         private PlotModel _comparisonFpsModel;
+        private PlotModel _comparisonDistributionModel;
         private SeriesCollection _comparisonRowChartSeriesCollection;
         private SeriesCollection _comparisonRowChartSeriesCollectionLegend;
         private SeriesCollection _varianceStatisticCollection;
@@ -234,6 +235,16 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
+        public PlotModel ComparisonDistributionModel
+        {
+            get { return _comparisonDistributionModel; }
+            set
+            {
+                _comparisonDistributionModel = value;
+                RaisePropertyChanged();
+            }
+        }
+        
 
         public SeriesCollection ComparisonRowChartSeriesCollection
         {
@@ -879,6 +890,56 @@ namespace CapFrameX.ViewModel
                 MinorTickSize = 0,
                 MajorTickSize = 0
             });
+
+
+            // Distribution
+            ComparisonDistributionModel = new PlotModel
+            {
+                PlotMargins = new OxyThickness(40, 10, 10, 70),
+                PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
+                TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black,
+                DefaultFontSize = 13 * _legendFontSizeFactor
+            };
+
+            ComparisonDistributionModel.Legends.Add(new Legend()
+            {
+                LegendPosition = LegendPosition.TopCenter,
+                LegendOrientation = LegendOrientation.Horizontal,
+                SeriesInvisibleTextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
+            });
+
+            //Axes
+            //X
+            ComparisonFpsModel.Axes.Add(new LinearAxis()
+            {
+                Key = "xAxis",
+                Position = OxyPlot.Axes.AxisPosition.Bottom,
+                Title = "Frame time [ms]",
+                AxisTitleDistance = 10,
+                FontSize = 13,
+                MajorGridlineStyle = LineStyle.Solid,
+                MajorGridlineThickness = 1,
+                MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
+                MinorTickSize = 0,
+                MajorTickSize = 0
+            });
+
+            //Y
+            ComparisonFpsModel.Axes.Add(new LinearAxis()
+            {
+                Key = "yAxis",
+                Position = OxyPlot.Axes.AxisPosition.Left,
+                Title = "Frame Time Distribution [%]",
+                AxisTitleDistance = 10,
+                FontSize = 13,
+                MajorGridlineStyle = LineStyle.Solid,
+                MajorGridlineThickness = 1,
+                MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
+                AbsoluteMinimum = 0,
+                MinorTickSize = 0,
+                MajorTickSize = 0
+            });
+
         }
 
         private void SetRowSeries()
