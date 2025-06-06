@@ -38,6 +38,8 @@ namespace CapFrameX.Data
 
         IList<Point> GetGpuActiveFpsPointTimeWindow();
 
+		IList<Point> GetDistributionPointTimeWindow();
+
 		double GetGpuActiveDeviationPercentage();
 
         void SetTimeWindow(double currentTime, double windowLength);

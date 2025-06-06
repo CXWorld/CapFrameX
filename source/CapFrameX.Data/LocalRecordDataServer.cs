@@ -97,6 +97,16 @@ namespace CapFrameX.Data
             return CurrentSession.GetGpuActiveTimePointsTimeWindow(startTime, endTime, _appConfiguration, RemoveOutlierMethod);
         }
 
+        public IList<Point> GetFrametimeDistributionPointTimeWindow()
+        {
+            if (CurrentSession == null)
+                return null;
+
+            double startTime = CurrentTime;
+            double endTime = startTime + WindowLength;
+            return CurrentSession.GetFrametimeDistributionPoints(startTime, endTime, _appConfiguration, RemoveOutlierMethod);
+        }
+
         public IList<double> GetFpsTimeWindow()
         {
             return GetFrametimeTimeWindow()?.Select(ft => 1000 / ft).ToList();
@@ -115,6 +125,10 @@ namespace CapFrameX.Data
         public IList<Point> GetGpuActiveFpsPointTimeWindow()
         {
             return GetGpuActiveTimePointTimeWindow()?.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
+        }
+        public IList<Point> GetDistributionPointTimeWindow()
+        {
+            return GetFrametimeDistributionPointTimeWindow()?.Select(pnt => new Point(pnt.X, pnt.Y)).ToList();
         }
 
         public double GetGpuActiveDeviationPercentage()

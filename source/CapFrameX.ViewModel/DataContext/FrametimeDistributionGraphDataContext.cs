@@ -23,20 +23,9 @@ namespace CapFrameX.ViewModel.DataContext
 
         public PlotModel FrametimeDistributionModel => PlotModel;
 
-        public bool ShowGpuActiveCommands
-        {
-            get { return _showGpuActiveCommands; }
-            set
-            {
-                _showGpuActiveCommands = value;
-                RaisePropertyChanged();
-            }
-        }
 
-        public ICommand CopyFpsValuesCommand { get; }
-        public ICommand CopyFpsPointsCommand { get; }
-        public ICommand CopyGpuActiveFpsValuesCommand { get; }
-        public ICommand CopyGpuActiveFpsPointsCommand { get; }
+        public ICommand CopyDistributionPointsCommand { get; }
+
         public ICommand SavePlotAsSVG { get; }
         public ICommand SavePlotAsPNG { get; }
 
@@ -49,11 +38,8 @@ namespace CapFrameX.ViewModel.DataContext
                                    IEventAggregator eventAggregator) :
             base(appConfiguration, recordDataServer, frametimesStatisticProvider, eventAggregator)
         {
-            CopyFpsValuesCommand = new DelegateCommand(OnCopyFpsValues);
-            CopyFpsPointsCommand = new DelegateCommand(OnCopyFpsPoints);
 
-            CopyGpuActiveFpsValuesCommand = new DelegateCommand(OnCopyGpuActiveFpsValues);
-            CopyGpuActiveFpsPointsCommand = new DelegateCommand(OnCopyGpuActiveFpsPoints);
+            CopyDistributionPointsCommand = new DelegateCommand(OnCopyDistributionPoints);
 
             SavePlotAsSVG = new DelegateCommand(() => OnSavePlotAsImage("fps", "svg"));
             SavePlotAsPNG = new DelegateCommand(() => OnSavePlotAsImage("fps", "png"));
@@ -83,7 +69,6 @@ namespace CapFrameX.ViewModel.DataContext
                 PlotModel = plotModel;
             });
 
-            ShowGpuActiveCommands = plotSettings.ShowGpuActiveCharts;
         }
 
         public void Reset()
@@ -102,71 +87,19 @@ namespace CapFrameX.ViewModel.DataContext
             _frametimeDistributionPlotBuilder.UpdateAxis(axis, action);
         }
 
-        private void OnCopyFpsValues()
+
+        private void OnCopyDistributionPoints()
         {
             if (RecordSession == null)
                 return;
 
-            var fps = RecordDataServer.GetFpsTimeWindow();
+            var distributionPoints = RecordDataServer.GetDistributionPointTimeWindow();
             StringBuilder builder = new StringBuilder();
 
-            foreach (var framerate in fps)
+            for (int i = 0; i < distributionPoints.Count; i++)
             {
-                builder.Append(Math.Round(framerate, 2, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            }
-
-            Clipboard.SetDataObject(builder.ToString(), false);
-        }
-
-        private void OnCopyGpuActiveFpsValues()
-        {
-            if (RecordSession == null)
-                return;
-
-            var fps = RecordDataServer.GetFpsTimeWindow();
-            var gpuActiveFps = RecordDataServer.GetGpuActiveFpsTimeWindow();
-            StringBuilder builder = new StringBuilder();
-
-            for (int i = 0; i < fps.Count; i++)
-            {
-                builder.Append(Math.Round(fps[i], 2, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture) + "\t" +
-                    Math.Round(gpuActiveFps[i], 2, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            }
-
-            Clipboard.SetDataObject(builder.ToString(), false);
-        }
-
-        private void OnCopyFpsPoints()
-        {
-            if (RecordSession == null)
-                return;
-
-            var fpsPoints = RecordDataServer.GetFpsPointTimeWindow();
-            StringBuilder builder = new StringBuilder();
-
-            for (int i = 0; i < fpsPoints.Count; i++)
-            {
-                builder.Append(Math.Round(fpsPoints[i].X, 2).ToString(CultureInfo.InvariantCulture) + "\t" +
-                    Math.Round(fpsPoints[i].Y, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            }
-
-            Clipboard.SetDataObject(builder.ToString(), false);
-        }
-
-        private void OnCopyGpuActiveFpsPoints()
-        {
-            if (RecordSession == null)
-                return;
-
-            var fpsPoints = RecordDataServer.GetFpsPointTimeWindow();
-            var gpuActiveFpsPoints = RecordDataServer.GetGpuActiveFpsPointTimeWindow();
-            StringBuilder builder = new StringBuilder();
-
-            for (int i = 0; i < fpsPoints.Count; i++)
-            {
-                builder.Append(Math.Round(fpsPoints[i].X, 2).ToString(CultureInfo.InvariantCulture) + "\t" +
-                    Math.Round(fpsPoints[i].Y, 2).ToString(CultureInfo.InvariantCulture) + "\t"+
-                    Math.Round(gpuActiveFpsPoints[i].Y, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                builder.Append(Math.Round(distributionPoints[i].X, 2).ToString(CultureInfo.InvariantCulture) + "\t" +
+                    Math.Round(distributionPoints[i].Y, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);
