@@ -8,12 +8,14 @@ using CapFrameX.MVVM.Dialogs;
 using CapFrameX.Sensor.Reporting;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
+using CapFrameX.Statistics.PlotBuilder.Contracts;
 using GongSolutions.Wpf.DragDrop;
 using LiveCharts;
 using LiveCharts.Defaults;
 using LiveCharts.Wpf;
 using Microsoft.Extensions.Logging;
 using OxyPlot;
+using OxyPlot.Annotations;
 using OxyPlot.Axes;
 using OxyPlot.Legends;
 using Prism.Commands;
@@ -34,6 +36,7 @@ using System.Windows.Media;
 using ComparisonCollection = System.Collections.ObjectModel
     .ObservableCollection<CapFrameX.ViewModel.ComparisonRecordInfoWrapper>;
 using DragDropEffects = System.Windows.DragDropEffects;
+using FontWeights = OxyPlot.FontWeights;
 using IDropTarget = GongSolutions.Wpf.DragDrop.IDropTarget;
 using Point = CapFrameX.Statistics.NetStandard.Point;
 
@@ -439,10 +442,11 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged(nameof(IsBarChartTabActive));
                 RaisePropertyChanged(nameof(IsLineChartTabActive));
                 RaisePropertyChanged(nameof(IsVarianceChartTabActive));
+                RaisePropertyChanged(nameof(IsDistributionTabActive)); 
                 OnChartItemChanged();
                 UpdateCharts();
 
-                if (!IsLineChartTabActive)
+                if (!IsLineChartTabActive && !IsDistributionTabActive)
                 {
                     SortComparisonItems();
                 }
@@ -736,6 +740,11 @@ namespace CapFrameX.ViewModel
             get { return SelectedChartItem?.Header.ToString().Contains("Variances") ?? false; }
         }
 
+        public bool IsDistributionTabActive
+        {
+            get { return SelectedChartItem?.Header.ToString().Contains("Distribution") ?? false; }
+        }
+
         public ICommand RemoveAllComparisonsCommand { get; }
 
         public ICommand SaveFrametimePlotAsSVG { get; }
@@ -745,6 +754,10 @@ namespace CapFrameX.ViewModel
         public ICommand SaveFrametimePlotAsPNG { get; }
 
         public ICommand SaveFPSPlotAsPNG { get; }
+
+        public ICommand SaveDistributionPlotAsSVG { get; }
+
+        public ICommand SaveDistributionPlotAsPNG { get; }
 
         public ComparisonCollection ComparisonRecords { get; private set; }
             = new ComparisonCollection();
@@ -775,8 +788,10 @@ namespace CapFrameX.ViewModel
             MessageDialogContent = new MessageDialog();
             SaveFrametimePlotAsSVG = new DelegateCommand(() => OnSavePlotAsImage("frametimes", "svg"));
             SaveFPSPlotAsSVG = new DelegateCommand(() => OnSavePlotAsImage("fps", "svg"));
+            SaveDistributionPlotAsSVG = new DelegateCommand(() => OnSavePlotAsImage("distribution", "svg"));
             SaveFrametimePlotAsPNG = new DelegateCommand(() => OnSavePlotAsImage("frametimes", "png"));
             SaveFPSPlotAsPNG = new DelegateCommand(() => OnSavePlotAsImage("fps", "png"));
+            SaveDistributionPlotAsPNG = new DelegateCommand(() => OnSavePlotAsImage("distribution", "png"));
 
             ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}",
             _appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
@@ -910,7 +925,7 @@ namespace CapFrameX.ViewModel
 
             //Axes
             //X
-            ComparisonFpsModel.Axes.Add(new LinearAxis()
+            ComparisonDistributionModel.Axes.Add(new LinearAxis()
             {
                 Key = "xAxis",
                 Position = OxyPlot.Axes.AxisPosition.Bottom,
@@ -921,11 +936,13 @@ namespace CapFrameX.ViewModel
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
                 MinorTickSize = 0,
-                MajorTickSize = 0
+                MajorTickSize = 0,
+                Maximum = 40,
+                AbsoluteMinimum = 0
             });
 
             //Y
-            ComparisonFpsModel.Axes.Add(new LinearAxis()
+            ComparisonDistributionModel.Axes.Add(new LinearAxis()
             {
                 Key = "yAxis",
                 Position = OxyPlot.Axes.AxisPosition.Left,
@@ -936,9 +953,37 @@ namespace CapFrameX.ViewModel
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
                 AbsoluteMinimum = 0,
+                Maximum = 20,
+                AbsoluteMaximum = 101,
                 MinorTickSize = 0,
-                MajorTickSize = 0
+                MajorTickSize = 0,
+                MajorStep = 2
             });
+
+            ComparisonDistributionModel.Annotations.Clear();
+            var refreshRates = new List<int> { 30, 60, 90, 120, 144, 240 };
+
+            foreach (var rate in refreshRates)
+            {
+
+                LineAnnotation Line = new LineAnnotation()
+                {
+                    StrokeThickness = 2,
+                    Color = OxyColors.Gray,
+                    Type = LineAnnotationType.Vertical,
+                    Text = rate + " Hz",
+                    FontWeight = FontWeights.Bold,
+                    FontSize = 10,
+                    TextColor = OxyColor.FromRgb(150, 150, 150),
+                    TextOrientation = AnnotationTextOrientation.Horizontal,
+                    TextHorizontalAlignment = OxyPlot.HorizontalAlignment.Left,
+                    TextVerticalAlignment = OxyPlot.VerticalAlignment.Middle,
+                    TextPadding = -40,
+                    TextMargin = 7,
+                    X = 1000 / rate
+                };
+                ComparisonDistributionModel.Annotations.Add(Line); ;
+            }
 
         }
 
@@ -1128,12 +1173,14 @@ namespace CapFrameX.ViewModel
             ResetBarChartSeriesTitles();
             ComparisonFrametimesModel.Series.Clear();
             ComparisonFpsModel.Series.Clear();
+            ComparisonDistributionModel.Series.Clear();
             ComparisonLShapeCollection.Clear();
 
             //Reset axes of all charts
             ResetLShapeChart.OnNext(default);
             ComparisonFrametimesModel.ResetAllAxes();
             ComparisonFpsModel.ResetAllAxes();
+            ComparisonDistributionModel.ResetAllAxes();
 
             if (SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false)
                 SetColumnChart();
@@ -1143,6 +1190,7 @@ namespace CapFrameX.ViewModel
             {
                 SetFrametimeChart();
                 SetFpsChart();
+                SetDistributionChart();
                 SetLShapeChart();
             }
             OnComparisonContextChanged();
@@ -1151,7 +1199,14 @@ namespace CapFrameX.ViewModel
         }
 
         private void OnChartItemChanged()
-            => ColorPickerVisibility = SelectedChartItem?.Header.ToString().Contains("Line") ?? false;
+        {
+            if (SelectedChartItem?.Header.ToString().Contains("Line") ?? false)
+                ColorPickerVisibility = true;
+            else if (SelectedChartItem?.Header.ToString().Contains("Distribution") ?? false)
+                ColorPickerVisibility = true;
+            else
+                ColorPickerVisibility = false;
+        } 
 
         private void OnSortModeChanged()
             => SortComparisonItems();
@@ -1343,17 +1398,28 @@ namespace CapFrameX.ViewModel
                                 ComparisonFpsModel.Series[i].Title = labels[i].Context;
                         }
                     }
+
+                    if (ComparisonDistributionModel.Series.Count == ComparisonRecords.Count)
+                    {
+                        for (int i = 0; i < ComparisonRecords.Count; i++)
+                        {
+                            if (!ComparisonRecords[i].IsHideModeSelected)
+                                ComparisonDistributionModel.Series[i].Title = labels[i].Context;
+                        }
+                    }
                 }
             }
 
             if (ComparisonFrametimesModel == null
-                || ComparisonFpsModel == null)
+                || ComparisonFpsModel == null
+                || ComparisonDistributionModel == null)
             {
                 InitializePlotModels();
             }
             SetLabels(GetLabels());
             ComparisonFrametimesModel.InvalidatePlot(true);
             ComparisonFpsModel.InvalidatePlot(true);
+            ComparisonDistributionModel.InvalidatePlot(true);
         }
 
         private void UpdateRangeSliderParameter()
@@ -1550,6 +1616,85 @@ namespace CapFrameX.ViewModel
             ComparisonFpsModel.InvalidatePlot(true);
         }
 
+        private void UpdateAxesMinMaxDistributionChart()
+        {
+
+            if (ComparisonRecords == null || !ComparisonRecords.Any())
+                return;
+
+            var xAxis = ComparisonDistributionModel.GetAxisOrDefault("xAxis", null);
+            var yAxis = ComparisonDistributionModel.GetAxisOrDefault("yAxis", null);
+
+            if (xAxis == null || yAxis == null)
+                return;
+
+            double startTime = FirstSeconds;
+            double endTime = LastSeconds;
+
+            xAxis.Reset();
+
+            double xMin = 0;
+            double xMax = 0;
+            double yMin = 0;
+            double yMax = 0;
+
+            var sessionParallelQuery = ComparisonRecords.Select(record => record.WrappedRecordInfo.Session).AsParallel();
+
+            xMin = sessionParallelQuery.Min(session =>
+            {
+                var window = session.GetFrametimeDistributionPoints(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
+                if (window.Any())
+                    return window.First().X;
+                else
+                    return double.MaxValue;
+            });
+
+            xMax = sessionParallelQuery.Max(session =>
+            {
+                var window = session.GetFrametimeDistributionPoints(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
+                if (window.Any())
+                    return window.Last().X;
+                else
+                    return double.MinValue;
+            });
+
+            yMin = sessionParallelQuery.Min(session =>
+            {
+                IList<Point> window = null;
+
+                window = session.GetFrametimeDistributionPoints(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
+
+                if (window.Any())
+                    return window.Min(pnt => pnt.Y);
+                else
+                    return double.MaxValue;
+            });
+
+            yMax = sessionParallelQuery.Max(session =>
+            {
+                IList<Point> window = null;
+
+                window = session.GetFrametimeDistributionPoints(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
+
+                if (window.Any())
+                    return window.Max(pnt => pnt.Y);
+                else
+                    return double.MinValue;
+            });
+
+            xAxis.Minimum = xMin - 1;
+            xAxis.Maximum = xMax;
+
+            yAxis.Minimum = yMin - (yMax - yMin) / 6;
+            yAxis.Maximum = yMax + (yMax - yMin) / 6;
+
+
+
+
+
+            ComparisonDistributionModel.InvalidatePlot(true);
+        }
+
         private void UpdateBarChartHeight()
         {
             int recordCount = ComparisonRecords.Count;
@@ -1586,6 +1731,11 @@ namespace CapFrameX.ViewModel
             for (int i = 0; i < ComparisonFpsModel.Series.Count; i++)
             {
                 ComparisonFpsModel.Series[i].Title = string.Empty;
+            }
+
+            for (int i = 0; i < ComparisonDistributionModel.Series.Count; i++)
+            {
+                ComparisonDistributionModel.Series[i].Title = string.Empty;
             }
 
             ComparisonRowChartLabels = Array.Empty<string>();
@@ -1698,6 +1848,16 @@ namespace CapFrameX.ViewModel
             UpdateAxesMinMaxFpsChart();
         }
 
+        private void SetDistributionChart()
+        {
+            for (int i = 0; i < ComparisonRecords.Count; i++)
+            {
+                AddToDistributionChart(ComparisonRecords[i]);
+            }
+
+            UpdateAxesMinMaxDistributionChart();
+        }
+
         private void SetLShapeChart()
         {
             for (int i = 0; i < ComparisonRecords.Count; i++)
@@ -1780,6 +1940,38 @@ namespace CapFrameX.ViewModel
 
             fpsSeries.Points.AddRange(fpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y)));
             ComparisonFpsModel.Series.Add(fpsSeries);
+        }
+
+        private void AddToDistributionChart(ComparisonRecordInfoWrapper wrappedComparisonInfo)
+        {
+            double startTime = FirstSeconds;
+            double endTime = LastSeconds;
+            var session = wrappedComparisonInfo.WrappedRecordInfo.Session;
+
+            IEnumerable<Point> distributionPoints = null;
+
+
+            distributionPoints = session.GetFrametimeDistributionPoints(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None)
+                .Select(pnt => new Point(pnt.X, pnt.Y));
+
+            var chartTitle = string.Empty;
+
+            var color = wrappedComparisonInfo.FrametimeGraphColor.Value;
+            var distributionSeries = new Statistics.PlotBuilder.LineSeries()
+            {
+                Tag = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Id,
+                Title = chartTitle,
+                StrokeThickness = 2,
+                LegendStrokeThickness = 4,
+                Color = wrappedComparisonInfo.IsHideModeSelected ?
+                OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B),
+                InterpolationAlgorithm = null,
+                EdgeRenderingMode = EdgeRenderingMode.PreferGeometricAccuracy
+
+            };
+
+            distributionSeries.Points.AddRange(distributionPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y)));
+            ComparisonDistributionModel.Series.Add(distributionSeries);
         }
 
         private void AddToLShapeChart(ComparisonRecordInfoWrapper wrappedComparisonInfo)
@@ -2001,11 +2193,21 @@ namespace CapFrameX.ViewModel
 
             if (fileFormat == "svg")
             {
-                ImageExport.SavePlotAsSVG(plotType == "frametimes" ? ComparisonFrametimesModel : ComparisonFpsModel, filename, _appConfiguration.HorizontalGraphExportRes, _appConfiguration.VerticalGraphExportRes);
+                if (plotType == "frametimes")
+                    ImageExport.SavePlotAsSVG(ComparisonFrametimesModel, filename, _appConfiguration.HorizontalGraphExportRes, _appConfiguration.VerticalGraphExportRes);
+                else if (plotType == "fps")
+                    ImageExport.SavePlotAsSVG(ComparisonFpsModel, filename, _appConfiguration.HorizontalGraphExportRes, _appConfiguration.VerticalGraphExportRes);
+                else
+                    ImageExport.SavePlotAsSVG(ComparisonDistributionModel, filename, _appConfiguration.HorizontalGraphExportRes, _appConfiguration.VerticalGraphExportRes);
             }
             else if (fileFormat == "png")
             {
-                ImageExport.SavePlotAsPNG(plotType == "frametimes" ? ComparisonFrametimesModel : ComparisonFpsModel, filename, _appConfiguration.HorizontalGraphExportRes, _appConfiguration.VerticalGraphExportRes, _appConfiguration.UseDarkMode);
+                if (plotType == "frametimes")
+                    ImageExport.SavePlotAsPNG(ComparisonFrametimesModel, filename, _appConfiguration.HorizontalGraphExportRes, _appConfiguration.VerticalGraphExportRes, _appConfiguration.UseDarkMode);
+                else if (plotType == "fps")
+                    ImageExport.SavePlotAsPNG(ComparisonFpsModel, filename, _appConfiguration.HorizontalGraphExportRes, _appConfiguration.VerticalGraphExportRes, _appConfiguration.UseDarkMode);
+                else
+                    ImageExport.SavePlotAsPNG(ComparisonDistributionModel, filename, _appConfiguration.HorizontalGraphExportRes, _appConfiguration.VerticalGraphExportRes, _appConfiguration.UseDarkMode);
             }
         }
 

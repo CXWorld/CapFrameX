@@ -574,7 +574,7 @@ namespace CapFrameX.Statistics.NetStandard
             var filteredFrameTimes = FilterDataWithinTimeWindow(frameStartTimes, frametimes, startTime, endTime);
 
             // Bin increments
-            double increments = 0.25;
+            double increments = 0.05;
             double maxValue = filteredFrameTimes.Max();
 
 

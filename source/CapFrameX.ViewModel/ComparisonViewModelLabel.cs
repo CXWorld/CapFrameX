@@ -16,7 +16,8 @@ namespace CapFrameX.ViewModel
 			{
 				ComparisonFrametimesModel.Series.ForEach(series => series.Title = null);
 				ComparisonFpsModel.Series.ForEach(series => series.Title = null);
-			}
+                ComparisonDistributionModel.Series.ForEach(series => series.Title = null);
+            }
 			else
 			{
 				OnComparisonContextChanged();
@@ -24,7 +25,8 @@ namespace CapFrameX.ViewModel
 
 			ComparisonFrametimesModel.InvalidatePlot(true);
 			ComparisonFpsModel.InvalidatePlot(true);
-		}
+            ComparisonDistributionModel.InvalidatePlot(true);
+        }
 
 		private string[] GetLabelForContext(ComparisonRecordInfo record, EComparisonContext context)
 		{

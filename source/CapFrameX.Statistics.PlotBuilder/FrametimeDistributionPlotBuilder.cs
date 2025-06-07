@@ -64,7 +64,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                     TextVerticalAlignment = VerticalAlignment.Middle,
                     TextPadding = -50,
                     TextMargin = 15,
-                    X = 1000 / rate
+                    X = 1000.0 / rate
                 };
                 plotModel.Annotations.Add(Line); ;
             }
@@ -80,21 +80,21 @@ namespace CapFrameX.Statistics.PlotBuilder
                 return;
 
             int count = frametimeDistributionPoints.Count;
-            var frametimeDataPoints = frametimeDistributionPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
+            var distributionDataPoints = frametimeDistributionPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
 
             plotModel.Series.Clear();
 
-            var frametimeSeries = new LineSeries
+            var distributionSeries = new LineSeries
             {
                 Title = "Distribution",
                 StrokeThickness = 3,
                 LegendStrokeThickness = 4,
                 Color = Constants.FrametimeColor,
-                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
+                EdgeRenderingMode = EdgeRenderingMode.PreferGeometricAccuracy
             };
 
 
-            frametimeSeries.Points.AddRange(frametimeDataPoints);
+            distributionSeries.Points.AddRange(distributionDataPoints);
 
 
 
@@ -103,7 +103,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 axis.Minimum = frametimeDistributionPoints.First().X - 1;
                 axis.Maximum = frametimeDistributionPoints.Last().X + 1;
             });
-            plotModel.Series.Add(frametimeSeries);
+            plotModel.Series.Add(distributionSeries);
 
             plotModel.InvalidatePlot(true);
         }

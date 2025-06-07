@@ -19,10 +19,7 @@ namespace CapFrameX.ViewModel.DataContext
 {
     public class FrametimeDistributionGraphDataContext : GraphDataContextBase
     {
-        private bool _showGpuActiveCommands;
-
         public PlotModel FrametimeDistributionModel => PlotModel;
-
 
         public ICommand CopyDistributionPointsCommand { get; }
 

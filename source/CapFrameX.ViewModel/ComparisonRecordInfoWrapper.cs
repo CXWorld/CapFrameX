@@ -110,22 +110,31 @@ namespace CapFrameX.ViewModel
 				var tag = WrappedRecordInfo.FileRecordInfo.Id;
 				var frametimesChart = _viewModel.ComparisonFrametimesModel
 					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
-				var lShapeChart = _viewModel.ComparisonLShapeCollection
+                var fpsChart = _viewModel.ComparisonFpsModel
+					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+				var distributionChart = _viewModel.ComparisonDistributionModel
+                    .Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+                var lShapeChart = _viewModel.ComparisonLShapeCollection
 					.FirstOrDefault(chart => chart.Id == tag) as LineSeries;
 
-				if (frametimesChart == null || lShapeChart == null)
+				if (frametimesChart == null || fpsChart == null || distributionChart == null || lShapeChart == null)
 					return;
 
 				var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
 				frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
-				lShapeChart.Stroke = solidColorBrush;
+                fpsChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
+                distributionChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
+
+                lShapeChart.Stroke = solidColorBrush;
 
 				_viewModel.ComparisonColorManager.FreeColor(Color);				
 				Color = solidColorBrush;
 				_viewModel.ComparisonColorManager.LockColorOnChange(Color);
 
 				_viewModel.ComparisonFrametimesModel.InvalidatePlot(true);
-			}
+                _viewModel.ComparisonFpsModel.InvalidatePlot(true);
+                _viewModel.ComparisonDistributionModel.InvalidatePlot(true);
+            }
 		}
 
 		private void OnHideModeChanged()
@@ -140,7 +149,10 @@ namespace CapFrameX.ViewModel
 				var fpsChart = _viewModel.ComparisonFpsModel
 					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
 
-				var lShapeChart = _viewModel.ComparisonLShapeCollection
+                var distributionChart = _viewModel.ComparisonDistributionModel
+					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+
+                var lShapeChart = _viewModel.ComparisonLShapeCollection
 					.FirstOrDefault(chart => chart.Id == tag) as LineSeries;
 
 				if (frametimesChart == null || lShapeChart == null)
@@ -150,10 +162,12 @@ namespace CapFrameX.ViewModel
 				{
 					frametimesChart.Color = OxyColors.Transparent;
 					fpsChart.Color = OxyColors.Transparent;
+					distributionChart.Color = OxyColors.Transparent;
 					lShapeChart.Stroke = Brushes.Transparent;
 					lShapeChart.PointForeground = Brushes.Transparent;
 					frametimesChart.Title = string.Empty;
 					fpsChart.Title = string.Empty;
+					distributionChart.Title = string.Empty;
 				}
 				else
 				{
@@ -161,15 +175,19 @@ namespace CapFrameX.ViewModel
 					var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
 					frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
 					fpsChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
-					lShapeChart.Stroke = solidColorBrush;
+
+					distributionChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
+                    lShapeChart.Stroke = solidColorBrush;
 					lShapeChart.PointForeground = solidColorBrush;
 					frametimesChart.Title = _viewModel.GetChartLabel(WrappedRecordInfo).Context;
 					fpsChart.Title = _viewModel.GetChartLabel(WrappedRecordInfo).Context;
-				}
+					distributionChart.Title = _viewModel.GetChartLabel(WrappedRecordInfo).Context;
+                }
 
 				_viewModel.ComparisonFrametimesModel.InvalidatePlot(true);
 				_viewModel.ComparisonFpsModel.InvalidatePlot(true);
-			}
+                _viewModel.ComparisonDistributionModel.InvalidatePlot(true);
+            }
 		}
 
 		public ComparisonRecordInfoWrapper Clone()
@@ -193,8 +211,10 @@ namespace CapFrameX.ViewModel
 					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
 				var fpsChart = _viewModel.ComparisonFpsModel
 					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+                var distributionChart = _viewModel.ComparisonDistributionModel
+					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
 
-				if (frametimesChart == null
+                if (frametimesChart == null
 					|| fpsChart == null)
 					return;
 
@@ -203,18 +223,22 @@ namespace CapFrameX.ViewModel
 
                 frametimesChart.StrokeThickness += 2;
                 fpsChart.StrokeThickness += 2;
+                distributionChart.StrokeThickness += 2;
 
                 int indexFrametimes = _viewModel.ComparisonFrametimesModel.Series.IndexOf(frametimesChart);
 				int indexFps = _viewModel.ComparisonFpsModel.Series.IndexOf(fpsChart);
+               int indexDistribution = _viewModel.ComparisonDistributionModel.Series.IndexOf(distributionChart);
 
-				//Move to end
-				_viewModel.ComparisonFrametimesModel.Series.Move(indexFrametimes, _viewModel.ComparisonFrametimesModel.Series.Count - 1);
+                //Move to end
+                _viewModel.ComparisonFrametimesModel.Series.Move(indexFrametimes, _viewModel.ComparisonFrametimesModel.Series.Count - 1);
 				_viewModel.ComparisonFpsModel.Series.Move(indexFps, _viewModel.ComparisonFpsModel.Series.Count - 1);
+				_viewModel.ComparisonDistributionModel.Series.Move(indexDistribution, _viewModel.ComparisonDistributionModel.Series.Count - 1);
 
 				// Update plot
 				_viewModel.ComparisonFrametimesModel.InvalidatePlot(true);
 				_viewModel.ComparisonFpsModel.InvalidatePlot(true);
-			}
+                _viewModel.ComparisonDistributionModel.InvalidatePlot(true);
+            }
 
 			if (_viewModel.ComparisonRowChartSeriesCollection.Any())
 			{
@@ -246,7 +270,10 @@ namespace CapFrameX.ViewModel
 				var fpsChart = _viewModel.ComparisonFpsModel
 					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
 
-				if (frametimesChart == null
+                var distributionChart = _viewModel.ComparisonDistributionModel
+					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+
+                if (frametimesChart == null
 					|| fpsChart == null)
 					return;
 
@@ -255,11 +282,14 @@ namespace CapFrameX.ViewModel
 
 				frametimesChart.StrokeThickness -= 2;
 				fpsChart.StrokeThickness -= 2;
+				distributionChart.StrokeThickness -= 2;
 
 				// Update plot
 				_viewModel.ComparisonFrametimesModel.InvalidatePlot(true);
 				_viewModel.ComparisonFpsModel.InvalidatePlot(true);
-			}
+				_viewModel.ComparisonDistributionModel.InvalidatePlot(true);
+
+            }
 
 			if (_viewModel.ComparisonRowChartSeriesCollection.Any())
 			{
