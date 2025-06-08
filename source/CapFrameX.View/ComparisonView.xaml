@@ -324,13 +324,19 @@
                     <TabItem.Header>
                         <Label FontSize="12">Frame Time Distribution</Label>
                     </TabItem.Header>
-                    <DockPanel>
-                        <TextBlock DockPanel.Dock="Top" Grid.Row="0" Margin="0 10 0 0" FontWeight="Bold" FontSize="18" Text="{Binding CurrentGameName}" HorizontalAlignment="Center"
-							   Visibility="{Binding ShowGameNameTitle, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <Grid Name="DistributionGrid">
+                        <Grid.RowDefinitions>
+                            <!--Edit box for custom title-->
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <!--frametimes/fps-->
+                            <RowDefinition Height="2*"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="1*"></RowDefinition>
+                        </Grid.RowDefinitions>
                         <TextBox DockPanel.Dock="Top" Grid.Row="0" HorizontalAlignment="Center" Visibility="{Binding Path=IsChecked, ElementName=ShowCustomTitleToggleButton, Converter={StaticResource TrueToVisibleConverter}}"
                                  Text="Type your title here..." Height="30" MinWidth="50" 
                                  FontSize="18" PreviewKeyDown="CustomTitle_PreviewKeyDown" />
-                        <controls:PlotViewCustomZoom Background="Transparent" Model="{Binding DataContext.ComparisonDistributionModel, ElementName=ComparisonViewUserControl}">
+                        <controls:PlotViewCustomZoom Grid.Row="1" Background="Transparent" Model="{Binding DataContext.ComparisonDistributionModel, ElementName=ComparisonViewUserControl}">
                             <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                                 <ControlTemplate>
                                     <oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
@@ -347,7 +353,41 @@
                                 </ContextMenu>
                             </controls:PlotViewCustomZoom.ContextMenu>
                         </controls:PlotViewCustomZoom>
-                    </DockPanel>
+                        <Grid Grid.Row="2" Margin="0 5 0 0"  Visibility="{Binding ElementName=RangeSliderActiveToggleButton, Path=IsChecked, Converter={StaticResource TrueToVisibleConverter}}"
+                              Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                            <controls:CustomRangeSlider Margin="45 10 10 30" LowerValue="{Binding FirstSeconds}" UpperValue="{Binding LastSeconds}" 
+                                                 Maximum="{Binding MaxRecordingTime}"                                    
+									             TickPlacement="BottomRight" TickFrequency="2.5"
+                                                 MinRange="{Binding MinRangeSliderRange}"
+                                                 TrackColor="Gray"
+									             Style="{StaticResource CustomRangeSlider}"/>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 10 5" Height="22">
+                                <TextBlock Text="Range:" Margin="0 5 5 0"/>
+                                <TextBox Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" Grid.Row="1" materialDesign:HintAssist.Hint="Start (s)" HorizontalAlignment="Center" Width="45"
+                                         ToolTip="Range Slider start point" PreviewKeyDown="FirstSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center">
+                                    <TextBox.Text>
+                                        <Binding Path="FirstSeconds"
+                                                 StringFormat="F2"
+								                 Mode="TwoWay"
+								                 UpdateSourceTrigger="LostFocus">
+                                        </Binding>
+                                    </TextBox.Text>
+                                </TextBox>
+                                <TextBlock Text="-" Margin="3 3 3 0"/>
+                                <TextBox  Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" Grid.Row="1" materialDesign:HintAssist.Hint="End (s)" HorizontalAlignment="Center" Width="45"
+                                        ToolTip="Range Slider end point" PreviewKeyDown="LastSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center">
+                                    <TextBox.Text>
+                                        <Binding Path="LastSeconds"
+                                                 StringFormat="F2"
+								                 Mode="TwoWay"
+								                 UpdateSourceTrigger="LostFocus">
+                                        </Binding>
+                                    </TextBox.Text>
+                                </TextBox>
+                                <TextBlock Text="{Binding RemainingRecordingTime}" Margin="10 0 0 0" VerticalAlignment="Center" FontSize="14"></TextBlock>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
                 </TabItem>
             </TabControl>
         </materialDesign:DialogHost>

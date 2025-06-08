@@ -1688,8 +1688,19 @@ namespace CapFrameX.ViewModel
             yAxis.Minimum = yMin - (yMax - yMin) / 6;
             yAxis.Maximum = yMax + (yMax - yMin) / 6;
 
+            double stepSize = 0;
+            if (yMax <= 5)
+                stepSize = 0.5;
+            else if (yMax <= 10)
+                stepSize = 1;
+            else if (yMax <= 20)
+                stepSize = 2;
+            else if (yMax <= 50)
+                stepSize = 5;
+            else
+                stepSize = 10;
 
-
+            yAxis.MajorStep = stepSize;
 
 
             ComparisonDistributionModel.InvalidatePlot(true);

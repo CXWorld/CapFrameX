@@ -57,13 +57,13 @@ namespace CapFrameX.Statistics.PlotBuilder
                     Type = LineAnnotationType.Vertical,
                     Text = rate + " Hz",
                     FontWeight = FontWeights.Bold,
-                    FontSize = 14,
+                    FontSize = 10,
                     TextColor = OxyColor.FromRgb(150, 150, 150),
                     TextOrientation = AnnotationTextOrientation.Horizontal,
                     TextHorizontalAlignment = HorizontalAlignment.Left,
                     TextVerticalAlignment = VerticalAlignment.Middle,
-                    TextPadding = -50,
-                    TextMargin = 15,
+                    TextPadding = -40,
+                    TextMargin = 5,
                     X = 1000.0 / rate
                 };
                 plotModel.Annotations.Add(Line); ;
@@ -114,7 +114,21 @@ namespace CapFrameX.Statistics.PlotBuilder
              {
 
                  axis.Minimum = 0;
-                 axis.Maximum = yMax + 10;
+                 axis.Maximum = yMax * 1.2;
+
+                 double stepSize = 0;
+                 if (yMax <= 5)
+                     stepSize = 0.5;
+                 else if (yMax <= 10)
+                     stepSize = 1;
+                 else if (yMax <= 20)
+                     stepSize = 2;
+                 else if (yMax <= 50)
+                     stepSize = 5;
+                 else
+                     stepSize = 10;
+
+                 axis.MajorStep = stepSize;
              });
         }
     }
