@@ -362,6 +362,15 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         internal int[] Temperatures;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct NvGpuArchInfo
+    {
+        public uint Version;
+        public uint Architecture;       // NV_GPU_ARCHITECTURE_ID
+        public uint Implementation;     // NV_GPU_ARCH_IMPLEMENTATION_ID
+        public uint Revision;           // NV_GPU_CHIP_REVISION
+    }
+
     internal class NVAPI
     {
         public const int MAX_PHYSICAL_GPUS = 64;
@@ -406,6 +415,8 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
           Marshal.SizeOf(typeof(PerformanceStatusV1)) | 0x10000;
         public static readonly uint GPU_THERMAL_STATUS_VER = (uint)
           Marshal.SizeOf(typeof(PrivateThermalSensorsV2)) | 0x20000;
+        public static readonly uint GPU_ARCH_INFO_VER = (uint)
+            Marshal.SizeOf(typeof(NvGpuArchInfo)) | 0x20000;
 
         private delegate IntPtr nvapi_QueryInterfaceDelegate(uint id);
 
@@ -508,6 +519,10 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         public delegate NvStatus NvAPI_GPU_GetThermalStatusDelegate(
             NvPhysicalGpuHandle gpuHandle, ref PrivateThermalSensorsV2 thermalSensorsStatus);
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GPU_GetArchInfoDelegate(
+           NvPhysicalGpuHandle gpuHandle, ref NvGpuArchInfo archInfo);
+
         private static readonly bool available;
         private static readonly nvapi_QueryInterfaceDelegate nvapi_QueryInterface;
         private static readonly NvAPI_InitializeDelegate NvAPI_Initialize;
@@ -556,6 +571,8 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             NvAPI_GPU_PerfGetStatus;
         public static readonly NvAPI_GPU_GetThermalStatusDelegate
             NvAPI_GPU_ThermalGetStatus;
+        public static readonly NvAPI_GPU_GetArchInfoDelegate 
+            NvAPI_GPU_GetArchInfo;
 
         private NVAPI() { }
 
@@ -655,8 +672,42 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 GetDelegate(0x67B5DB55, out NvAPI_GetVBlankCounter);
                 GetDelegate(0x3d358a0c, out NvAPI_GPU_PerfGetStatus);
                 GetDelegate(0x65FE3AAD, out NvAPI_GPU_ThermalGetStatus);
+                GetDelegate(0xD8265D24, out NvAPI_GPU_GetArchInfo);
 
                 available = true;
+            }
+        }
+
+        public static string GetGpuGeneration(NvPhysicalGpuHandle gpuHandle)
+        {
+            var info = new NvGpuArchInfo { Version = GPU_ARCH_INFO_VER };
+            var status = NvAPI_GPU_GetArchInfo(gpuHandle, ref info);
+            if (status != NvStatus.OK)
+                throw new InvalidOperationException($"NvAPI_GetArchInfo failed: {status}");
+
+            switch (info.Architecture)
+            {
+                // Tesla                                  
+                case 0x0100: return "Tesla";
+                // Fermi                                  
+                case 0x0110: return "Fermi";
+                // Kepler                                 
+                case 0x0120: return "Kepler";
+                // Maxwell                                
+                case 0x0130: return "Maxwell";
+                // Pascal                                 
+                case 0x0140: return "Pascal";
+                // Volta                                  
+                case 0x0150: return "Volta";
+                // Turing (e.g. TU100)                    
+                case 0x0160: return "Turing";
+                // Ampere (e.g. GA100)                    
+                case 0x0170: return "Ampere";
+                // Ada Lovelace (e.g. AD100)              
+                case 0x0190: return "Ada Lovelace";
+                // Blackwell (e.g. GB202)  
+                case 0x1B0: return "Blackwell";
+                default: return $"Unknown (0x{info.Architecture:X})";
             }
         }
 
@@ -664,6 +715,5 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         {
             get { return available; }
         }
-
     }
 }

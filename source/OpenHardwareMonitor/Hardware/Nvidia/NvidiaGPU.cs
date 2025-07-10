@@ -54,6 +54,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly Sensor temperatureLimit;
         private readonly Sensor voltageLimit;
         private readonly Control fanControl;
+        private readonly string gpuGeneration;
 
         public NvidiaGPU(int adapterIndex, NvPhysicalGpuHandle handle,
           NvDisplayHandle? displayHandle, ISettings settings, ISensorConfig config, IProcessService processService)
@@ -67,7 +68,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             this.stopwatch = new Stopwatch();
 
             Log.Information($"Nv graphics card detected: {name}");
-
+            this.gpuGeneration = NVAPI.GetGpuGeneration(handle);
             NvGPUThermalSettings thermalSettings = GetThermalSettings();
             Log.Information($"NvAPI GetThermalSettings sensor count: {thermalSettings.Count}");
             temperatures = new Sensor[thermalSettings.Count];
@@ -320,8 +321,12 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                     NVAPI.NvAPI_GPU_ThermalGetStatus(handle, ref thermalSensor) == NvStatus.OK)
                 {
                     hotSpotTemperature.Value = thermalSensor.Temperatures[1] / 256f;
-                    // Ampere - 9, Ada Lovelace - 7
-                    var memJuncTemp = thermalSensor.Temperatures[9] == 0 ? thermalSensor.Temperatures[7] : thermalSensor.Temperatures[9];
+
+                    // Ampere - 9, Ada Lovelace - 7, Blackwell - 2
+                    int memoryJunctionTempIndex = gpuGeneration == "Ampere" ? 9 : 
+                        gpuGeneration == "Ada Lovelace" ? 7 : gpuGeneration == "Blackwell" ? 2 : 0;
+
+                    var memJuncTemp = thermalSensor.Temperatures[memoryJunctionTempIndex];
                     memoryJunctionTemperature.Value = memJuncTemp / 256f;
                 }
 
