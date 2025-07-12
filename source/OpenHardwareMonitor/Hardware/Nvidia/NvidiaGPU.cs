@@ -323,11 +323,18 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                     hotSpotTemperature.Value = thermalSensor.Temperatures[1] / 256f;
 
                     // Ampere - 9, Ada Lovelace - 7, Blackwell - 2
-                    int memoryJunctionTempIndex = gpuGeneration == "Ampere" ? 9 : 
+                    int memoryJunctionTempIndex = gpuGeneration == "Ampere" ? 9 :
                         gpuGeneration == "Ada Lovelace" ? 7 : gpuGeneration == "Blackwell" ? 2 : 0;
 
-                    var memJuncTemp = thermalSensor.Temperatures[memoryJunctionTempIndex];
-                    memoryJunctionTemperature.Value = memJuncTemp / 256f;
+                    if (memoryJunctionTempIndex > 0)
+                    {
+                        var memJuncTemp = thermalSensor.Temperatures[memoryJunctionTempIndex];
+                        memoryJunctionTemperature.Value = memJuncTemp / 256f;
+                    }
+                    else
+                    {
+                        memoryJunctionTemperature.Value = null;
+                    }
                 }
 
                 if (sensorConfig.GetSensorEvaluate(hotSpotTemperature.IdentifierString)
@@ -708,7 +715,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                       == NVML.NvmlReturn.Success)
                     {
                         pcieThroughputTx.Value = value / (1024f * 1024f);
-						ActivateSensor(pcieThroughputTx);
+                        ActivateSensor(pcieThroughputTx);
                     }
                 }
                 else
