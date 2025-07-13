@@ -703,13 +703,13 @@ namespace CapFrameX.Data
         /// <returns></returns>
         private double GetCpuStartQpcFromDataLine(string[] lineSplit)
         {
-            return 1E-03 * Convert.ToDouble(lineSplit[PresentMonCaptureService.TimeInSeconds_INDEX], CultureInfo.InvariantCulture);
+            return 1E-03 * Convert.ToDouble(lineSplit[PresentMonCaptureService.StartTimeInSeconds_INDEX], CultureInfo.InvariantCulture);
         }
 
         private double GetTimeFromDataLine(string line)
         {
             var lineSplit = line.Split(',');
-            var length = Convert.ToDouble(lineSplit[PresentMonCaptureService.TimeInSeconds_INDEX], CultureInfo.InvariantCulture);
+            var length = Convert.ToDouble(lineSplit[PresentMonCaptureService.StartTimeInSeconds_INDEX], CultureInfo.InvariantCulture);
             return Math.Round(length, 2, MidpointRounding.AwayFromZero);
         }
 
@@ -722,7 +722,7 @@ namespace CapFrameX.Data
 
             // normalize time
             var currentLineSplit = firstLineSplit;
-            currentLineSplit[PresentMonCaptureService.TimeInSeconds_INDEX] = "0";
+            currentLineSplit[PresentMonCaptureService.StartTimeInSeconds_INDEX] = "0";
             double previousNormalizedTime = 0;
             double delta = 0;
 
@@ -748,7 +748,7 @@ namespace CapFrameX.Data
                 previousNormalizedTime = normalizedTime;
 
                 currentLineSplit = lineSplit;
-                currentLineSplit[PresentMonCaptureService.TimeInSeconds_INDEX] = (normalizedTime + delta).ToString(CultureInfo.InvariantCulture);
+                currentLineSplit[PresentMonCaptureService.StartTimeInSeconds_INDEX] = (normalizedTime + delta).ToString(CultureInfo.InvariantCulture);
 
                 lines.Add(string.Join(",", currentLineSplit));
             }
