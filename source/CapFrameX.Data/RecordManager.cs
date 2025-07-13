@@ -795,7 +795,9 @@ namespace CapFrameX.Data
                 int indexSyncInterval = -1;
                 int indexPcLatency = -1;
                 int indexmsGPUActive = -1;
+                int indexmsCPUActive = -1;
                 int indexCPUStartQPCTime = -1;
+                int indexCPUStartQPCTimeInMs = -1;
 
                 string headerLine;
                 string firstLine = presentLines.First();
@@ -816,9 +818,11 @@ namespace CapFrameX.Data
                     PresentMonRuntime = "unknown"
                 };
 
-                // $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing," +
-                // $"PresentMode,CPUStartQPCTime,FrameTime,CPUBusy,CPUWait,GPULatency,GPUTime,GPUBusy,GPUWait,DisplayLatency," +
-                // $"DisplayedTime,AnimationError";
+                // w/o FrameType
+                //Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,
+                //TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency,
+                //MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy,
+                //MsGPUWait,MsAnimationError,AnimationTime
 
                 var metrics = Array.ConvertAll(headerLine.Split(','), p => p.Trim());
                 for (int i = 0; i < metrics.Count(); i++)
@@ -876,13 +880,21 @@ namespace CapFrameX.Data
                     {
                         indexPcLatency = i;
                     }
-                    if (string.Compare(metrics[i], "msGPUActive") == 0 || string.Compare(metrics[i], "GPUBusy") == 0)
+                    if (string.Compare(metrics[i], "msGPUActive") == 0 || string.Compare(metrics[i], "GPUBusy") == 0 || string.Compare(metrics[i], "MsGPUBusy") == 0)
                     {
                         indexmsGPUActive = i;
+                    }
+                    if (string.Compare(metrics[i], "MsCPUBusy") == 0)
+                    {
+                        indexmsCPUActive = i;
                     }
                     if (string.Compare(metrics[i], "CPUStartQPCTime") == 0)
                     {
                         indexCPUStartQPCTime = i;
+                    }
+                    if (string.Compare(metrics[i], "CPUStartQPCTimeInMs") == 0)
+                    {
+                        indexCPUStartQPCTimeInMs = i;
                     }
                 }
 
@@ -898,9 +910,9 @@ namespace CapFrameX.Data
 
                 var presentModeMapping = Enum.GetValues(typeof(EPresentMode)).Cast<EPresentMode>()
                     .ToDictionary(e => e.GetDescription(), e => (int)e);
-                for (int lineNo = 0; lineNo < dataLines.Count(); lineNo++)
+                for (int lineIndex = 0; lineIndex < dataLines.Count(); lineIndex++)
                 {
-                    string line = dataLines[lineNo];
+                    string line = dataLines[lineIndex];
                     if (!line.Any())
                     {
                         continue;
@@ -908,7 +920,7 @@ namespace CapFrameX.Data
                     var lineCharList = new List<char>();
                     string[] values = Array.Empty<string>();
 
-                    if (lineNo == 0)
+                    if (lineIndex == 0)
                     {
                         int isInner = -1;
                         for (int i = 0; i < line.Length; i++)
@@ -927,7 +939,7 @@ namespace CapFrameX.Data
                     values = line.Split(',');
                     double frameStart = 0;
 
-                    if (lineNo == 0)
+                    if (lineIndex == 0)
                     {
                         sessionRun.PresentMonRuntime = GetStringFromArray(values, indexRuntime);
                     }
@@ -936,7 +948,7 @@ namespace CapFrameX.Data
                     {
                         if (double.TryParse(GetStringFromArray(values, indexFrameStart), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart))
                         {
-                            captureData.TimeInSeconds[lineNo] = frameStart;
+                            captureData.TimeInSeconds[lineIndex] = frameStart;
                         }
                     }
 
@@ -944,7 +956,15 @@ namespace CapFrameX.Data
                     {
                         if (double.TryParse(GetStringFromArray(values, indexCPUStartQPCTime), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart))
                         {
-                            captureData.TimeInSeconds[lineNo] = frameStart * 1E-03;
+                            captureData.TimeInSeconds[lineIndex] = frameStart * 1E-03;
+                        }
+                    }
+
+                    if (indexCPUStartQPCTimeInMs > -1)
+                    {
+                        if (double.TryParse(GetStringFromArray(values, indexCPUStartQPCTimeInMs), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart))
+                        {
+                            captureData.TimeInSeconds[lineIndex] = frameStart * 1E-03;
                         }
                     }
 
@@ -952,7 +972,7 @@ namespace CapFrameX.Data
                     {
                         if (double.TryParse(GetStringFromArray(values, indexFrameTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameTime))
                         {
-                            captureData.MsBetweenPresents[lineNo] = frameTime;
+                            captureData.MsBetweenPresents[lineIndex] = frameTime;
                         }
                     }
 
@@ -960,11 +980,11 @@ namespace CapFrameX.Data
                     {
                         if (int.TryParse(GetStringFromArray(values, indexAppMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var appMissed))
                         {
-                            captureData.Dropped[lineNo] = Convert.ToBoolean(appMissed);
+                            captureData.Dropped[lineIndex] = Convert.ToBoolean(appMissed);
                         }
                         else
                         {
-                            captureData.Dropped[lineNo] = true;
+                            captureData.Dropped[lineIndex] = true;
                         }
                     }
 
@@ -972,7 +992,7 @@ namespace CapFrameX.Data
                     {
                         if (double.TryParse(GetStringFromArray(values, indexDisplayTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var displayTime))
                         {
-                            captureData.MsBetweenDisplayChange[lineNo] = displayTime;
+                            captureData.MsBetweenDisplayChange[lineIndex] = displayTime;
                         }
                     }
 
@@ -980,7 +1000,7 @@ namespace CapFrameX.Data
                     {
                         if (double.TryParse(GetStringFromArray(values, indexUntilDisplayedTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var untilDisplayTime))
                         {
-                            captureData.MsUntilDisplayed[lineNo] = untilDisplayTime;
+                            captureData.MsUntilDisplayed[lineIndex] = untilDisplayTime;
                         }
                     }
 
@@ -988,7 +1008,7 @@ namespace CapFrameX.Data
                     {
                         if (double.TryParse(GetStringFromArray(values, indexMsInPresentAPI), NumberStyles.Any, CultureInfo.InvariantCulture, out var inPresentAPITime))
                         {
-                            captureData.MsInPresentAPI[lineNo] = inPresentAPITime;
+                            captureData.MsInPresentAPI[lineIndex] = inPresentAPITime;
                         }
                     }
 
@@ -996,7 +1016,7 @@ namespace CapFrameX.Data
                     {
                         if (double.TryParse(GetStringFromArray(values, indexQPCTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var qPCTime))
                         {
-                            captureData.QPCTime[lineNo] = qPCTime;
+                            captureData.QPCTime[lineIndex] = qPCTime;
                         }
                     }
 
@@ -1004,7 +1024,7 @@ namespace CapFrameX.Data
                     {
                         if (presentModeMapping.TryGetValue(GetStringFromArray(values, indexPresentMode), out var presentMode))
                         {
-                            captureData.PresentMode[lineNo] = presentMode;
+                            captureData.PresentMode[lineIndex] = presentMode;
                         }
                     }
 
@@ -1012,32 +1032,39 @@ namespace CapFrameX.Data
                     {
                         if (int.TryParse(GetStringFromArray(values, indexAllowsTearing), NumberStyles.Any, CultureInfo.InvariantCulture, out var allowsTearing))
                         {
-                            captureData.AllowsTearing[lineNo] = allowsTearing;
+                            captureData.AllowsTearing[lineIndex] = allowsTearing;
                         }
                     }
                     if (indexSyncInterval > -1)
                     {
                         if (int.TryParse(GetStringFromArray(values, indexSyncInterval), NumberStyles.Any, CultureInfo.InvariantCulture, out var syncInterval))
                         {
-                            captureData.SyncInterval[lineNo] = syncInterval;
+                            captureData.SyncInterval[lineIndex] = syncInterval;
                         }
                     }
                     if (indexPcLatency > -1)
                     {
                         if (double.TryParse(GetStringFromArray(values, indexPcLatency), NumberStyles.Any, CultureInfo.InvariantCulture, out var pcLatency))
                         {
-                            captureData.PcLatency[lineNo] = pcLatency;
+                            captureData.PcLatency[lineIndex] = pcLatency;
                         }
                         else
                         {
-                            captureData.PcLatency[lineNo] = double.NaN;
+                            captureData.PcLatency[lineIndex] = double.NaN;
                         }
                     }
                     if (indexmsGPUActive > -1)
                     {
                         if (double.TryParse(GetStringFromArray(values, indexmsGPUActive), NumberStyles.Any, CultureInfo.InvariantCulture, out var gpuActive))
                         {
-                            captureData.GpuActive[lineNo] = gpuActive;
+                            captureData.GpuActive[lineIndex] = gpuActive;
+                        }
+                    }
+                    if (indexmsCPUActive > -1)
+                    {
+                        if (double.TryParse(GetStringFromArray(values, indexmsCPUActive), NumberStyles.Any, CultureInfo.InvariantCulture, out var cpuActive))
+                        {
+                            captureData.CpuActive[lineIndex] = cpuActive;
                         }
                     }
                 }

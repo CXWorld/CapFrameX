@@ -62,7 +62,20 @@ namespace CapFrameX.Statistics.NetStandard
 			return FilterDataWithinTimeWindow(frameStartTimes, gpuActiveTimes, startTime, endTime);
 		}
 
-		public static IList<Point> GetFrametimePointsTimeWindow(this ISession session, double startTime, double endTime,
+        public static IList<double> GetCpuActiveTimeTimeWindow(this ISession session, double startTime, double endTime,
+            IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
+        {
+            var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
+            var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
+
+            var cpuActiveTimes = frametimeStatisticProvider?
+                .GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.CpuActive).ToArray(), eRemoveOutlierMethod)
+                ?? Enumerable.Empty<double>().ToList();
+
+            return FilterDataWithinTimeWindow(frameStartTimes, cpuActiveTimes, startTime, endTime);
+        }
+
+        public static IList<Point> GetFrametimePointsTimeWindow(this ISession session, double startTime, double endTime,
             IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
         {
             var frametimeStatisticProvider = new FrametimeStatisticProvider(options);

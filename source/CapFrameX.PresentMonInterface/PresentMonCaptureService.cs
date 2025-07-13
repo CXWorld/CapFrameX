@@ -18,12 +18,12 @@ namespace CapFrameX.PresentMonInterface
         public const int ApplicationName_INDEX = 0;
         public const int ProcessID_INDEX = 1;
         public const int TimeInSeconds_INDEX = 8;
-        public const int MsBetweenPresents_INDEX = 9;
+        public const int MsBetweenPresents_INDEX = 10;
         // PresentMon version >=2.2
-        public const int CpuBusy_INDEX = 10;
-        public const int GpuBusy_INDEX = 14;
-        public const int MsBetweenDisplayed_INDEX = 17;
-        public const int VALID_LINE_LENGTH = 20;
+        public const int CpuBusy_INDEX = 18;
+        public const int GpuBusy_INDEX = 22;
+        public const int MsBetweenDisplayed_INDEX = 11;
+        public const int VALID_LINE_LENGTH = 26;
 
         // PresentMon < v1.7.0
         //public static readonly string COLUMN_HEADER =
@@ -49,7 +49,7 @@ namespace CapFrameX.PresentMonInterface
         //    $"PresentMode,CPUStartQPCTime,FrameTime,CPUBusy,CPUWait,GPULatency,GPUTime,GPUBusy,GPUWait,DisplayLatency," +
         //    $"DisplayedTime,AnimationError";
 
-        // PresentMon >= v2.3
+        // PresentMon = v2.3
         // w FrameType
         //public static readonly string COLUMN_HEADER =
         //    $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
@@ -60,10 +60,23 @@ namespace CapFrameX.PresentMonInterface
         //Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,
         //CPUStartQPCTime,FrameTime,CPUBusy,CPUWait,GPULatency,GPUTime,GPUBusy,GPUWait,DisplayLatency,DisplayedTime,
         //AnimationError,AnimationTime
+        //public static readonly string COLUMN_HEADER =
+        //   $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
+        //   $"CPUStartQPCTime,FrameTime,CPUBusy,CPUWait,GPULatency,GPUTime,GPUBusy,GPUWait,DisplayLatency,DisplayedTime," +
+        //   $"AnimationError,AnimationTime";
+
+        // PresentMon >= v2.3.1
+        // w/o FrameType
+        //Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,
+        //TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency,
+        //MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy,
+        //MsGPUWait,MsAnimationError,AnimationTime
+
         public static readonly string COLUMN_HEADER =
-           $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
-           $"CPUStartQPCTime,FrameTime,CPUBusy,CPUWait,GPULatency,GPUTime,GPUBusy,GPUWait,DisplayLatency,DisplayedTime," +
-           $"AnimationError,AnimationTime";
+            $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
+            $"TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency," +
+            $"MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy," +
+            $"MsGPUWait,MsAnimationError,AnimationTime";
 
         private readonly ISubject<string[]> _outputDataStream;
         private readonly object _listLock = new object();

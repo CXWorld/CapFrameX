@@ -746,6 +746,24 @@ namespace CapFrameX.ViewModel
             return false;
         }
 
+        private bool GetIsCpuActiveChartAvailable()
+        {
+            if (_session == null)
+                return false;
+
+            if (_session.Runs == null
+                || !_session.Runs.Any())
+                return false;
+
+            if (_session.Runs
+                .All(run => run.CaptureData != null)
+                && _session.Runs
+                .All(run => !run.CaptureData.CpuActive.IsNullOrEmpty()))
+                return true;
+
+            return false;
+        }
+
         private void Setup()
         {
             _onUpdateChart.Subscribe(_ =>

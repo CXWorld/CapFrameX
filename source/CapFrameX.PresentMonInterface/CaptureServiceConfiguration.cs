@@ -6,7 +6,7 @@ namespace CapFrameX.PresentMonInterface
 {
     public static class CaptureServiceConfiguration
     {
-        public static string PresentMonAppName = "PresentMon-2.3.0-x64";
+        public static string PresentMonAppName = "PresentMon-2.3.1-x64";
 
         public static IServiceStartInfo GetServiceStartInfo(string arguments)
         {

@@ -15,5 +15,6 @@
 		bool[] Dropped { get; set; }
         double[] PcLatency { get; set; }
         double[] GpuActive { get; set; }
+		double[] CpuActive { get; set; }
     }
 }
