@@ -1,17 +1,18 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Extensions.NetStandard;
 using Microsoft.Extensions.Logging;
+using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows;
-using System.Windows.Media;
 
 namespace CapFrameX.Data
 {
     public class SoundManager
     {
-        private readonly Dictionary<string, MediaPlayer> _playerDictionary = new Dictionary<string, MediaPlayer>(6);
+        private readonly Dictionary<string, AudioFileReader> _audioFileDictionary
+            = new Dictionary<string, AudioFileReader>(6);
         private readonly IAppConfiguration _configuration;
         private readonly ILogger<SoundManager> _logger;
 
@@ -66,10 +67,10 @@ namespace CapFrameX.Data
             {
                 try
                 {
-                    _playerDictionary.Add(path, new MediaPlayer());
-                    _playerDictionary[path].Open(new Uri(path, UriKind.Relative));
+                    var audioFile = new AudioFileReader(path);
+                    _audioFileDictionary.Add(path, audioFile);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _logger.LogError(ex, $"Error while add player {path}.");
                 }
@@ -113,10 +114,13 @@ namespace CapFrameX.Data
                 try
                 {
                     var path = Path.Combine("Sounds", currentSoundMode.ConvertToString(), $"{sound.ConvertToString()}.mp3");
-                    var player = _playerDictionary[path];
-                    player.Volume = currentVolume;
-                    player.Play();
-                    player.Open(new Uri(path, UriKind.Relative));
+                    var audioFile = _audioFileDictionary[path];
+
+                    var outputDevice = new WaveOutEvent();
+                    audioFile.Position = 0;
+                    outputDevice.Init(audioFile);
+                    outputDevice.Volume = (float)currentVolume;
+                    outputDevice.Play();
                 }
                 catch (Exception ex)
                 {
