@@ -52,6 +52,14 @@ namespace CapFrameX.Data
             _observingDirectorySubject.OnCompleted();
         }
 
+        public void RefreshCurrentDirectory()
+        {
+            if (string.IsNullOrWhiteSpace(_currentDir))
+                return;
+
+            _directoryFilesSubject.OnNext(_currentFiles);
+        }
+
         public void ObserveDirectory(string dir)
         {
             if (string.IsNullOrWhiteSpace(dir) || dir == _currentDir)

@@ -6,6 +6,7 @@ using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.MVVM.Dialogs;
+using DynamicData;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic.FileIO;
 using Microsoft.WindowsAPICodePack.Dialogs;
@@ -57,6 +58,7 @@ namespace CapFrameX.ViewModel
         private bool _customRamDescriptionChanged = false;
         private bool _customGameNameChanged = false;
         private bool _customCommentChanged = false;
+        private bool _directManuallyRefreshed = false;
 
         public bool ShowCreationDate
         {
@@ -286,6 +288,8 @@ namespace CapFrameX.ViewModel
 
         public ICommand DuplicateRecordFileCommand { get; }
 
+        public ICommand RefreshDirectoryCommand { get; }
+
         public ICommand AcceptEditingDialogCommand { get; }
 
         public ICommand DeleteRecordCommand { get; }
@@ -333,6 +337,7 @@ namespace CapFrameX.ViewModel
             DeleteRecordFileCommand = new DelegateCommand(OnDeleteRecordFile);
             MoveRecordFileCommand = new DelegateCommand(() => OnMoveRecordFile(null));
             DuplicateRecordFileCommand = new DelegateCommand(OnDuplicateRecordFile);
+            RefreshDirectoryCommand = new DelegateCommand(OnRefreshDirectory);
             AcceptEditingDialogCommand = new DelegateCommand(OnAcceptEditingDialog);
             DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);
             OpenObservedFolderCommand = new DelegateCommand(OnOpenObservedFolder);
@@ -449,12 +454,12 @@ namespace CapFrameX.ViewModel
                 .ObserveOn(context)
                 .Subscribe(directory =>
                 {
+                    _directManuallyRefreshed = false;
                     HasValidSource = directory?.Exists ?? false;
                     RaisePropertyChanged(nameof(HasValidSource));
                 });
 
             _recordObserver.DirectoryFilesStream
-                .DistinctUntilChanged()
                 .Do(_ =>
                 {
                     RecordInfoList.Clear();
@@ -463,6 +468,17 @@ namespace CapFrameX.ViewModel
                 })
                 .Select(fileInfos =>
                 {
+                    if (!_directManuallyRefreshed)
+                    {
+                        // if aggregated file size is >512MB, skip processing
+                        if (fileInfos.Sum(fi => fi.Length) > 512 * 1024 * 1024)
+                        {
+                            _logger.LogWarning("Aggregated file size exceeds 512MB, skipping processing.");
+                            DirectoryLoading = false;
+                            return Observable.Empty<IFileRecordInfo[]>();
+                        }
+                    }
+
                     return Observable.Merge(fileInfos.Select(GetFileRecordInfo), 30)
                         .Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
                         .Distinct(recordFileInfo => recordFileInfo.Hash)
@@ -662,6 +678,16 @@ namespace CapFrameX.ViewModel
                 catch { }
             }
             TreeViewUpdateStream.OnNext(default);
+        }
+
+        private void OnRefreshDirectory()
+        {
+            if (_appConfiguration.ObservedDirectory.IsNullOrEmpty())
+                return;
+
+            _directManuallyRefreshed = true;
+            DirectoryLoading = true;
+            _recordObserver.RefreshCurrentDirectory();
         }
 
         private void ResetInfoEditBoxes()

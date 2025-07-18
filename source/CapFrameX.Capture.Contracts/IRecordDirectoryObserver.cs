@@ -13,5 +13,7 @@ namespace CapFrameX.Capture.Contracts
         IObservable<DirectoryInfo> ObservingDirectoryStream { get; }
 
         void ObserveDirectory(string dir);
+
+        void RefreshCurrentDirectory();
     }
 }
