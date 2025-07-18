@@ -17,7 +17,7 @@ namespace CapFrameX.PresentMonInterface
     {
         public const int ApplicationName_INDEX = 0;
         public const int ProcessID_INDEX = 1;
-        public const int TimeInSeconds_INDEX = 8;
+        public const int StartTimeInSeconds_INDEX = 16;
         public const int MsBetweenPresents_INDEX = 10;
         // PresentMon version >=2.2
         public const int CpuBusy_INDEX = 18;

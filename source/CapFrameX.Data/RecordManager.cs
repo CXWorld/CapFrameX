@@ -819,9 +819,9 @@ namespace CapFrameX.Data
                 };
 
                 // w/o FrameType
-                //Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,
-                //TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency,
-                //MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy,
+                //0:Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,
+                //8:TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency,
+                //14:MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy,
                 //MsGPUWait,MsAnimationError,AnimationTime
 
                 var metrics = Array.ConvertAll(headerLine.Split(','), p => p.Trim());
@@ -964,7 +964,7 @@ namespace CapFrameX.Data
                     {
                         if (double.TryParse(GetStringFromArray(values, indexCPUStartQPCTimeInMs), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart))
                         {
-                            captureData.TimeInSeconds[lineIndex] = frameStart * 1E-03;
+                            captureData.TimeInSeconds[lineIndex] = frameStart;
                         }
                     }
 

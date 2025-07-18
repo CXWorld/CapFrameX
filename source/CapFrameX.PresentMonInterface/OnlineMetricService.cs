@@ -175,7 +175,7 @@ namespace CapFrameX.PresentMonInterface
                     return;
             }
 
-            if (!double.TryParse(lineSplit[PresentMonCaptureService.TimeInSeconds_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double startTime))
+            if (!double.TryParse(lineSplit[PresentMonCaptureService.StartTimeInSeconds_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double startTime))
             {
                 ResetMetrics();
                 return;
