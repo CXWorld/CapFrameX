@@ -227,9 +227,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
         {
             uint cpuDfsId = 0;
             uint cpuFid = 0;
+
             if (Ring0.Rdmsr(MSR_P_STATE_0, out uint eax, out _))
             {
-                if (model == 0x44)
+                if (model == 0x44 || model == 0x24)
                 {
                     // Zen 5 new approach without divisor
                     // CoreCOF = Core::X86::Msr::PStateDef[CpuFid[11:0]]*5MHz
@@ -239,6 +240,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 cpuDfsId = (eax >> 8) & 0x3f;
                 cpuFid = eax & 0xff;
             }
+
             return 2.0 * cpuFid / cpuDfsId;
         }
 
@@ -249,6 +251,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 value = 0;
                 return false;
             }
+
             return Ring0.ReadPciConfig(0, 0x64, out value);
         }
 
@@ -345,6 +348,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                         case 0x61: // Zen 4 Raphael
                         case 0x75: // Phoenix
                         case 0x44: // Zen 5 Granite Ridge
+                        case 0x24: // Zen 5 Strix Point
                             {
                                 sviPlane0Offset = F17H_M01H_SVI + 0x10;
                                 sviPlane1Offset = F17H_M01H_SVI + 0xC;
@@ -375,7 +379,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     double vcc;
                     uint svi0PlaneXVddCor;
 
-                    if (model is 0x61 || model is 0x44)
+                    if (model is 0x61 || model is 0x44 || model is 0x24)
                         smuSvi0Tfn |= 0x01 | 0x02;
 
                     // Core (0x01)
@@ -497,7 +501,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 // MSR ID = 0xc0010293
                 if (Ring0.Rdmsr(MSR_FAMILY_17H_P_STATE, out uint eax, out _))
                 {
-                    if (cpu.model == 0x44)
+                    if (cpu.model == 0x44 || cpu.model == 0x24)
                     {
                         // Zen 5 new approach without divisor
                         // CoreCOF = Core::X86::Msr::PStateDef[CpuFid[11:0]]*5MHz
@@ -506,6 +510,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
                     uint cpuDfsId = (eax >> 8) & 0x3f;
                     uint cpuFid = eax & 0xff;
+
                     return 2.0 * cpuFid / cpuDfsId;
                 }
                 else
@@ -565,13 +570,14 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 const float vidStep = 0.00625f;
                 float vcc;
 
-                // Family 19h
+                // Family 19h + 1Ah
                 // Raphael: 0x61
                 // Phoenix: 0x75
                 // Rembrandt: 0x40
                 // Granite Ridge: 0x44
-                if (cpu.family == 0x19 && (cpu.model == 0x61 || cpu.model == 0x75
-                    || cpu.model == 0x40 || cpu.model == 0x44))
+                // Strix Point: 0x24
+                if ((cpu.family == 0x19 || cpu.family == 0x1A) && (cpu.model == 0x61 || cpu.model == 0x75
+                    || cpu.model == 0x40 || cpu.model == 0x44 || cpu.model == 0x24))
                 {
                     vcc = vidStep * cpuVid;
                 }
