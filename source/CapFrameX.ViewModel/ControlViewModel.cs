@@ -460,6 +460,7 @@ namespace CapFrameX.ViewModel
                 });
 
             _recordObserver.DirectoryFilesStream
+                .ObserveOn(context)
                 .Do(_ =>
                 {
                     RecordInfoList.Clear();
