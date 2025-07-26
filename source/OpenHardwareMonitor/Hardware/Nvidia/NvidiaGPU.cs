@@ -575,26 +575,26 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                     power.Value = powerStatus.TotalGpuPowermW * 1E-03f;
                     ActivateSensor(power);
 
-                    //for (int i = 0; i < powerStatus.Channels.Length; i++)
-                    //{
-                    //	if (powerStatus.Channels[i].PwrAvgmW > 0)
-                    //		Console.WriteLine($"Channel {i}: {powerStatus.Channels[i].PwrAvgmW * 1E-03f}W");
-                    //}
-
-                    // Channel 4 = PCIe slot
-                    if (powerStatus.Channels[4].PwrAvgmW > 0)
-                    {
-                        pcieSlotPower.Value = powerStatus.Channels[4].PwrAvgmW * 1E-03f;
-                        ActivateSensor(pcieSlotPower);
-                    }
-
-                    // very dirty 12VHPWR detection
-                    if (this.name.Contains("3090 Ti") || this.name.Contains("4090")
-                        || this.name.Contains("4080") || this.name.Contains("4070"))
+                    // 12VHPWR detection
+                    if (this.name.Contains("3090 Ti") || this.gpuGeneration == "Ada Lovelace")
                     {
                         // Channel 5 = 16-pin
                         sixteenPinPower.Value = powerStatus.Channels[5].PwrAvgmW * 1E-03f;
                         ActivateSensor(sixteenPinPower);
+
+                        // Channel 4 = PCIe slot
+                        pcieSlotPower.Value = powerStatus.Channels[4].PwrAvgmW * 1E-03f;
+                        ActivateSensor(pcieSlotPower);
+                    }
+                    else if (this.gpuGeneration == "Blackwell")
+                    {
+                        // Channel 2 = 16-pin
+                        sixteenPinPower.Value = powerStatus.Channels[2].PwrAvgmW * 1E-03f;
+                        ActivateSensor(sixteenPinPower);
+
+                        // Channel 1 = PCIe slot
+                        pcieSlotPower.Value = powerStatus.Channels[1].PwrAvgmW * 1E-03f;
+                        ActivateSensor(pcieSlotPower);
                     }
                     // Channel 5-7 = 8-pin
                     else
