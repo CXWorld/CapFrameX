@@ -11,297 +11,374 @@ using System;
 using System.Linq;
 using System.Windows.Input;
 using System.Windows.Media;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace CapFrameX.ViewModel
 {
-	public class ComparisonRecordInfoWrapper : BindableBase, IMouseEventHandler
-	{
-		private PubSubEvent<ViewMessages.SetFileRecordInfoExternal> _setFileRecordInfoExternalEvent;
+    public class ComparisonRecordInfoWrapper : BindableBase, IMouseEventHandler
+    {
+        private PubSubEvent<ViewMessages.SetFileRecordInfoExternal> _setFileRecordInfoExternalEvent;
 
-		private Color? _frametimeGraphColor;
-		private SolidColorBrush _color;
-		private ComparisonViewModel _viewModel;
-		private bool _isHideModeSelected;
+        private Color? _frametimeGraphColor;
+        private SolidColorBrush _color;
+        private ComparisonViewModel _viewModel;
+        private bool _isHideModeSelected;
 
-		public Color? FrametimeGraphColor
-		{
-			get { return _frametimeGraphColor; }
-			set
-			{
-				bool onChanged = _frametimeGraphColor != null;
-				_frametimeGraphColor = value;
-				RaisePropertyChanged();
-				if (onChanged)
-					OnColorChanged();
-			}
-		}
-
-		public SolidColorBrush Color
-		{
-			get { return _color; }
-			set
-			{
-				_color = value;
-				RaisePropertyChanged();
-			}
-		}
-
-		private bool _myBool;
-
-		public bool MyBool
-		{
-			get { return _myBool; }
-			set
-			{
-				_myBool = value;
-				RaisePropertyChanged();
-			}
-		}
-
-		public bool IsHideModeSelected
-		{
-			get { return _isHideModeSelected; }
-			set
-			{
-				_isHideModeSelected = value;
-				RaisePropertyChanged();
-				OnHideModeChanged();
-			}
-		}
-
-		public ComparisonRecordInfo WrappedRecordInfo { get; }
-
-		public ICommand RemoveCommand { get; }
-
-		public ICommand MouseDownCommand { get; }
-
-		public ComparisonRecordInfoWrapper(ComparisonRecordInfo info, ComparisonViewModel viewModel)
-		{
-			WrappedRecordInfo = info;
-			_viewModel = viewModel;
-
-			_setFileRecordInfoExternalEvent =
-				viewModel.EventAggregator.GetEvent<PubSubEvent<ViewMessages.SetFileRecordInfoExternal>>();
-
-			RemoveCommand = new DelegateCommand(OnRemove);
-			MouseDownCommand = new DelegateCommand(OnMouseDown);
-		}
-
-		private void OnMouseDown()
-			=> _setFileRecordInfoExternalEvent
-				.Publish(new ViewMessages
-				.SetFileRecordInfoExternal(WrappedRecordInfo.FileRecordInfo));
-
-		private void OnRemove()
-		{
-			if (!_viewModel.ComparisonRecords.Any())
-				return;
-
-			_viewModel.RemoveComparisonItem(this);
-		}
-
-		private void OnColorChanged()
-		{
-			if (FrametimeGraphColor.HasValue && _viewModel.ComparisonRecords.Any()
-				&& _viewModel.ComparisonFrametimesModel.Series.Any() && _viewModel.ComparisonLShapeCollection.Any())
-			{
-				Color color = FrametimeGraphColor.Value;
-
-				var tag = WrappedRecordInfo.FileRecordInfo.Id;
-				var frametimesChart = _viewModel.ComparisonFrametimesModel
-					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
-                var fpsChart = _viewModel.ComparisonFpsModel
-					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
-				var distributionChart = _viewModel.ComparisonDistributionModel
-                    .Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
-                var lShapeChart = _viewModel.ComparisonLShapeCollection
-					.FirstOrDefault(chart => chart.Id == tag) as LineSeries;
-
-				if (frametimesChart == null || fpsChart == null || distributionChart == null || lShapeChart == null)
-					return;
-
-				var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
-				frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
-                fpsChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
-                distributionChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
-
-                lShapeChart.Stroke = solidColorBrush;
-
-				_viewModel.ComparisonColorManager.FreeColor(Color);				
-				Color = solidColorBrush;
-				_viewModel.ComparisonColorManager.LockColorOnChange(Color);
-
-				_viewModel.ComparisonFrametimesModel.InvalidatePlot(true);
-                _viewModel.ComparisonFpsModel.InvalidatePlot(true);
-                _viewModel.ComparisonDistributionModel.InvalidatePlot(true);
+        public Color? FrametimeGraphColor
+        {
+            get { return _frametimeGraphColor; }
+            set
+            {
+                bool onChanged = _frametimeGraphColor != null;
+                _frametimeGraphColor = value;
+                RaisePropertyChanged();
+                if (onChanged)
+                    OnColorChanged();
             }
-		}
+        }
 
-		private void OnHideModeChanged()
-		{
-			if (FrametimeGraphColor.HasValue && _viewModel.ComparisonRecords.Any()
-				&& _viewModel.ComparisonFrametimesModel.Series.Any() && _viewModel.ComparisonLShapeCollection.Any())
-			{
-				var tag = WrappedRecordInfo.FileRecordInfo.Id;
-				var frametimesChart = _viewModel.ComparisonFrametimesModel
-					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+        public SolidColorBrush Color
+        {
+            get { return _color; }
+            set
+            {
+                _color = value;
+                RaisePropertyChanged();
+            }
+        }
 
-				var fpsChart = _viewModel.ComparisonFpsModel
-					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+        private bool _myBool;
 
-                var distributionChart = _viewModel.ComparisonDistributionModel
-					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+        public bool MyBool
+        {
+            get { return _myBool; }
+            set
+            {
+                _myBool = value;
+                RaisePropertyChanged();
+            }
+        }
 
-                var lShapeChart = _viewModel.ComparisonLShapeCollection
-					.FirstOrDefault(chart => chart.Id == tag) as LineSeries;
+        public bool IsHideModeSelected
+        {
+            get { return _isHideModeSelected; }
+            set
+            {
+                _isHideModeSelected = value;
+                RaisePropertyChanged();
+                OnHideModeChanged();
+            }
+        }
 
-				if (frametimesChart == null || lShapeChart == null)
-					return;
+        public ComparisonRecordInfo WrappedRecordInfo { get; }
 
-				if (IsHideModeSelected)
-				{
-					frametimesChart.Color = OxyColors.Transparent;
-					fpsChart.Color = OxyColors.Transparent;
-					distributionChart.Color = OxyColors.Transparent;
-					lShapeChart.Stroke = Brushes.Transparent;
-					lShapeChart.PointForeground = Brushes.Transparent;
-					frametimesChart.Title = string.Empty;
-					fpsChart.Title = string.Empty;
-					distributionChart.Title = string.Empty;
-				}
-				else
-				{
-					Color color = FrametimeGraphColor.Value;
-					var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
-					frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
-					fpsChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
+        public ICommand RemoveCommand { get; }
 
-					distributionChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
+        public ICommand MouseDownCommand { get; }
+
+        public ComparisonRecordInfoWrapper(ComparisonRecordInfo info, ComparisonViewModel viewModel)
+        {
+            WrappedRecordInfo = info;
+            _viewModel = viewModel;
+
+            _setFileRecordInfoExternalEvent =
+                viewModel.EventAggregator.GetEvent<PubSubEvent<ViewMessages.SetFileRecordInfoExternal>>();
+
+            RemoveCommand = new DelegateCommand(OnRemove);
+            MouseDownCommand = new DelegateCommand(OnMouseDown);
+        }
+
+        private void OnMouseDown()
+            => _setFileRecordInfoExternalEvent
+                .Publish(new ViewMessages
+                .SetFileRecordInfoExternal(WrappedRecordInfo.FileRecordInfo));
+
+        private void OnRemove()
+        {
+            if (!_viewModel.ComparisonRecords.Any())
+                return;
+
+            _viewModel.RemoveComparisonItem(this);
+        }
+
+        private void OnColorChanged()
+        {
+            if (FrametimeGraphColor.HasValue && _viewModel.ComparisonRecords.Any())
+
+            {
+                if (_viewModel.ComparisonFrametimesModel.Series.Any() && _viewModel.ComparisonLShapeCollection.Any())
+
+                {
+                    Color color = FrametimeGraphColor.Value;
+
+                    var tag = WrappedRecordInfo.FileRecordInfo.Id;
+                    var frametimesChart = _viewModel.ComparisonFrametimesModel
+                        .Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+                    var fpsChart = _viewModel.ComparisonFpsModel
+                        .Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+                    var distributionChart = _viewModel.ComparisonDistributionModel
+                        .Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+                    var lShapeChart = _viewModel.ComparisonLShapeCollection
+                        .FirstOrDefault(chart => chart.Id == tag) as LineSeries;
+
+
+
+                    if (frametimesChart == null || fpsChart == null || lShapeChart == null)
+                        return;
+
+                    var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
+                    frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
+                    fpsChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
+
                     lShapeChart.Stroke = solidColorBrush;
-					lShapeChart.PointForeground = solidColorBrush;
-					frametimesChart.Title = _viewModel.GetChartLabel(WrappedRecordInfo).Context;
-					fpsChart.Title = _viewModel.GetChartLabel(WrappedRecordInfo).Context;
-					distributionChart.Title = _viewModel.GetChartLabel(WrappedRecordInfo).Context;
+
+                    _viewModel.ComparisonColorManager.FreeColor(Color);
+                    Color = solidColorBrush;
+                    _viewModel.ComparisonColorManager.LockColorOnChange(Color);
+
+                    _viewModel.ComparisonFrametimesModel.InvalidatePlot(true);
+                    _viewModel.ComparisonFpsModel.InvalidatePlot(true);
+
                 }
 
-				_viewModel.ComparisonFrametimesModel.InvalidatePlot(true);
-				_viewModel.ComparisonFpsModel.InvalidatePlot(true);
-                _viewModel.ComparisonDistributionModel.InvalidatePlot(true);
+                if (_viewModel.ComparisonDistributionModel.Series.Any())
+                {
+                    Color color = FrametimeGraphColor.Value;
+
+                    var tag = WrappedRecordInfo.FileRecordInfo.Id;
+                    var distributionChart = _viewModel.ComparisonDistributionModel
+                        .Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+
+                    if (distributionChart == null)
+                        return;
+                    var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
+                    distributionChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
+                    _viewModel.ComparisonDistributionModel.InvalidatePlot(true);
+                }
+
             }
-		}
+        }
 
-		public ComparisonRecordInfoWrapper Clone()
-		{
-			return new ComparisonRecordInfoWrapper(WrappedRecordInfo, _viewModel)
-			{
-				Color = Color,
-				FrametimeGraphColor = FrametimeGraphColor,
-			};
-		}
+        private void OnHideModeChanged()
+        {
+            if (FrametimeGraphColor.HasValue && _viewModel.ComparisonRecords.Any())
+            {
+                if (_viewModel.ComparisonFrametimesModel.Series.Any() && _viewModel.ComparisonLShapeCollection.Any())
+                {
+                    var tag = WrappedRecordInfo.FileRecordInfo.Id;
+                    var frametimesChart = _viewModel.ComparisonFrametimesModel
+                        .Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
 
-		void IMouseEventHandler.OnMouseEnter()
-		{
-			if (!_viewModel.ComparisonRecords.Any())
-				return;
+                    var fpsChart = _viewModel.ComparisonFpsModel
+                        .Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
 
-			if (_viewModel.ComparisonFrametimesModel.Series.Any())
-			{
-				var tag = WrappedRecordInfo.FileRecordInfo.Id;
-				var frametimesChart = _viewModel.ComparisonFrametimesModel
-					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
-				var fpsChart = _viewModel.ComparisonFpsModel
-					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
-                var distributionChart = _viewModel.ComparisonDistributionModel
-					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+                    var lShapeChart = _viewModel.ComparisonLShapeCollection
+                        .FirstOrDefault(chart => chart.Id == tag) as LineSeries;
+
+                    if (frametimesChart == null || lShapeChart == null)
+                        return;
+
+                    if (IsHideModeSelected)
+                    {
+                        frametimesChart.Color = OxyColors.Transparent;
+                        fpsChart.Color = OxyColors.Transparent;
+                        lShapeChart.Stroke = Brushes.Transparent;
+                        lShapeChart.PointForeground = Brushes.Transparent;
+                        frametimesChart.Title = string.Empty;
+                        fpsChart.Title = string.Empty;
+
+                    }
+                    else
+                    {
+                        Color color = FrametimeGraphColor.Value;
+                        var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
+                        frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
+                        fpsChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
+
+
+                        lShapeChart.Stroke = solidColorBrush;
+                        lShapeChart.PointForeground = solidColorBrush;
+                        frametimesChart.Title = _viewModel.GetChartLabel(WrappedRecordInfo).Context;
+                        fpsChart.Title = _viewModel.GetChartLabel(WrappedRecordInfo).Context;
+
+                    }
+
+                    _viewModel.ComparisonFrametimesModel.InvalidatePlot(true);
+                    _viewModel.ComparisonFpsModel.InvalidatePlot(true);
+
+                }
+
+                if (_viewModel.ComparisonDistributionModel.Series.Any())
+                {
+                    var tag = WrappedRecordInfo.FileRecordInfo.Id;
+
+                    var distributionChart = _viewModel.ComparisonDistributionModel
+                        .Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+
+                    if (distributionChart == null)
+                        return;
+
+                    if (IsHideModeSelected)
+                    {
+                        distributionChart.Color = OxyColors.Transparent;
+                        distributionChart.Title = string.Empty;
+                    }
+                    else
+                    {
+                        Color color = FrametimeGraphColor.Value;
+                        var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
+                        distributionChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
+                        distributionChart.Title = _viewModel.GetChartLabel(WrappedRecordInfo).Context;
+                    }
+
+                    _viewModel.ComparisonDistributionModel.InvalidatePlot(true);
+                }
+            }
+        }
+
+        public ComparisonRecordInfoWrapper Clone()
+        {
+            return new ComparisonRecordInfoWrapper(WrappedRecordInfo, _viewModel)
+            {
+                Color = Color,
+                FrametimeGraphColor = FrametimeGraphColor,
+            };
+        }
+
+        void IMouseEventHandler.OnMouseEnter()
+        {
+            if (!_viewModel.ComparisonRecords.Any())
+                return;
+
+            if (_viewModel.ComparisonFrametimesModel.Series.Any())
+            {
+                var tag = WrappedRecordInfo.FileRecordInfo.Id;
+                var frametimesChart = _viewModel.ComparisonFrametimesModel
+                    .Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+                var fpsChart = _viewModel.ComparisonFpsModel
+                    .Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
 
                 if (frametimesChart == null
-					|| fpsChart == null)
-					return;
+                    || fpsChart == null)
+                    return;
 
                 //frametimesChart.StrokeThickness = 2.5;
                 //fpsChart.StrokeThickness = 5;
 
                 frametimesChart.StrokeThickness += 2;
                 fpsChart.StrokeThickness += 2;
-                distributionChart.StrokeThickness += 2;
+
+
 
                 int indexFrametimes = _viewModel.ComparisonFrametimesModel.Series.IndexOf(frametimesChart);
-				int indexFps = _viewModel.ComparisonFpsModel.Series.IndexOf(fpsChart);
-               int indexDistribution = _viewModel.ComparisonDistributionModel.Series.IndexOf(distributionChart);
+                int indexFps = _viewModel.ComparisonFpsModel.Series.IndexOf(fpsChart);
 
                 //Move to end
                 _viewModel.ComparisonFrametimesModel.Series.Move(indexFrametimes, _viewModel.ComparisonFrametimesModel.Series.Count - 1);
-				_viewModel.ComparisonFpsModel.Series.Move(indexFps, _viewModel.ComparisonFpsModel.Series.Count - 1);
-				_viewModel.ComparisonDistributionModel.Series.Move(indexDistribution, _viewModel.ComparisonDistributionModel.Series.Count - 1);
+                _viewModel.ComparisonFpsModel.Series.Move(indexFps, _viewModel.ComparisonFpsModel.Series.Count - 1);
 
-				// Update plot
-				_viewModel.ComparisonFrametimesModel.InvalidatePlot(true);
-				_viewModel.ComparisonFpsModel.InvalidatePlot(true);
+
+                // Update plot
+                _viewModel.ComparisonFrametimesModel.InvalidatePlot(true);
+                _viewModel.ComparisonFpsModel.InvalidatePlot(true);
+
+            }
+
+            if (_viewModel.ComparisonDistributionModel.Series.Any())
+            {
+                var tag = WrappedRecordInfo.FileRecordInfo.Id;
+                var distributionChart = _viewModel.ComparisonDistributionModel
+                    .Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+
+                if (distributionChart == null)
+                    return;
+
+                distributionChart.StrokeThickness += 2;
+
+                int indexDistribution = _viewModel.ComparisonDistributionModel.Series.IndexOf(distributionChart);
+
+                _viewModel.ComparisonDistributionModel.Series.Move(indexDistribution, _viewModel.ComparisonDistributionModel.Series.Count - 1);
                 _viewModel.ComparisonDistributionModel.InvalidatePlot(true);
             }
 
-			if (_viewModel.ComparisonRowChartSeriesCollection.Any())
-			{
-				// highlight bar chart chartpoint
-				var series = _viewModel.ComparisonRowChartSeriesCollection;
-				var index = _viewModel.ComparisonRecords.IndexOf(this);
 
-				foreach (var item in series)
-				{
-					var rowSeries = item as RowSeries;
-					rowSeries.HighlightChartPoint(_viewModel.ComparisonRecords.Count - index - 1);
-				}
-			}
-		}
+            if (_viewModel.ComparisonRowChartSeriesCollection.Any())
+            {
+                // highlight bar chart chartpoint
+                var series = _viewModel.ComparisonRowChartSeriesCollection;
+                var index = _viewModel.ComparisonRecords.IndexOf(this);
 
-		void IMouseEventHandler.OnMouseLeave()
-		{
-			if (!_viewModel.ComparisonRecords.Any())
-				return;
+                foreach (var item in series)
+                {
+                    var rowSeries = item as RowSeries;
+                    rowSeries.HighlightChartPoint(_viewModel.ComparisonRecords.Count - index - 1);
+                }
+            }
+        }
 
-			var index = _viewModel.ComparisonRecords.IndexOf(this);
+        void IMouseEventHandler.OnMouseLeave()
+        {
+            if (!_viewModel.ComparisonRecords.Any())
+                return;
 
-			if (_viewModel.ComparisonFrametimesModel.Series.Any())
-			{
-				var tag = WrappedRecordInfo.FileRecordInfo.Id;
-				var frametimesChart = _viewModel.ComparisonFrametimesModel
-					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+            var index = _viewModel.ComparisonRecords.IndexOf(this);
 
-				var fpsChart = _viewModel.ComparisonFpsModel
-					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+            if (_viewModel.ComparisonFrametimesModel.Series.Any())
+            {
+                var tag = WrappedRecordInfo.FileRecordInfo.Id;
+                var frametimesChart = _viewModel.ComparisonFrametimesModel
+                    .Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
 
-                var distributionChart = _viewModel.ComparisonDistributionModel
-					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+                var fpsChart = _viewModel.ComparisonFpsModel
+                    .Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
 
-                if (frametimesChart == null
-					|| fpsChart == null)
-					return;
+                var distributionChart = new OxyPlot.Series.LineSeries();
 
-				//frametimesChart.StrokeThickness = 1.5;
-				//fpsChart.StrokeThickness = 3;
+                if (_viewModel.SelectedChartItem?.Header.ToString().Contains("Distribution") ?? false)
 
-				frametimesChart.StrokeThickness -= 2;
-				fpsChart.StrokeThickness -= 2;
-				distributionChart.StrokeThickness -= 2;
 
-				// Update plot
-				_viewModel.ComparisonFrametimesModel.InvalidatePlot(true);
-				_viewModel.ComparisonFpsModel.InvalidatePlot(true);
-				_viewModel.ComparisonDistributionModel.InvalidatePlot(true);
+                    if (frametimesChart == null
+                        || fpsChart == null)
+                        return;
+
+                //frametimesChart.StrokeThickness = 1.5;
+                //fpsChart.StrokeThickness = 3;
+
+                frametimesChart.StrokeThickness -= 2;
+                fpsChart.StrokeThickness -= 2;
+
+
+                // Update plot
+                _viewModel.ComparisonFrametimesModel.InvalidatePlot(true);
+                _viewModel.ComparisonFpsModel.InvalidatePlot(true);
+
 
             }
 
-			if (_viewModel.ComparisonRowChartSeriesCollection.Any())
-			{
-				// unhighlight bar chart chartpoint
-				var series = _viewModel.ComparisonRowChartSeriesCollection;
+            if (_viewModel.ComparisonDistributionModel.Series.Any())
+            {
+                var tag = WrappedRecordInfo.FileRecordInfo.Id;
+                var distributionChart = _viewModel.ComparisonDistributionModel
+                    .Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
 
-				foreach (var item in series)
-				{
-					var rowSeries = item as RowSeries;
-					rowSeries.UnHighlightChartPoint(_viewModel.ComparisonRecords.Count - index - 1);
-				}
-			}
-		}
-	}
+                if (distributionChart == null)
+                    return;
+
+                distributionChart.StrokeThickness -= 2;
+                _viewModel.ComparisonDistributionModel.InvalidatePlot(true);
+            }
+
+            if (_viewModel.ComparisonRowChartSeriesCollection.Any())
+            {
+                // unhighlight bar chart chartpoint
+                var series = _viewModel.ComparisonRowChartSeriesCollection;
+
+                foreach (var item in series)
+                {
+                    var rowSeries = item as RowSeries;
+                    rowSeries.UnHighlightChartPoint(_viewModel.ComparisonRecords.Count - index - 1);
+                }
+            }
+        }
+    }
 }

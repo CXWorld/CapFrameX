@@ -1186,12 +1186,15 @@ namespace CapFrameX.ViewModel
                 SetColumnChart();
             else if (SelectedChartItem?.Header.ToString().Contains("Variances") ?? false)
                 SetVarianceChart();
-            else
+            else if (SelectedChartItem?.Header.ToString().Contains("Line") ?? false)
             {
                 SetFrametimeChart();
                 SetFpsChart();
-                SetDistributionChart();
                 SetLShapeChart();
+            }
+            else
+            {
+                SetDistributionChart();
             }
             OnComparisonContextChanged();
 
