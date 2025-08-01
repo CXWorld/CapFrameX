@@ -33,6 +33,7 @@ using CapFrameX.Statistics.PlotBuilder.Contracts;
 using Microsoft.Extensions.Logging;
 using CapFrameX.Extensions;
 using CapFrameX.Statistics.NetStandard;
+using System.Threading;
 
 namespace CapFrameX.ViewModel
 {
@@ -226,7 +227,22 @@ namespace CapFrameX.ViewModel
             {
                 _selectedChartItem = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(SelectedChartHeader));
                 OnChartItemChanged();
+            }
+        }
+        public string SelectedChartHeader
+        {
+            get
+            {
+                if (_selectedChartItem is TabItem tab)
+                {
+                    if (tab.Header is Label label)
+                        return label.Content?.ToString();
+                    return tab.Header?.ToString();
+                }
+
+                return string.Empty;
             }
         }
 
@@ -777,32 +793,48 @@ namespace CapFrameX.ViewModel
             return false;
         }
 
+        private VisibleGraphs GetVisibleGraphs() =>
+        new VisibleGraphs(
+        ShowGpuLoad,
+        ShowCpuLoad,
+        ShowCpuMaxThreadLoad,
+        ShowGpuPowerLimit,
+        ShowPcLatency,
+        ShowAggregationSeparators,
+        ShowStutteringThresholds,
+        StutteringFactor,
+        StutteringLowFPSThreshold,
+        ShowGpuActiveChart,
+        _appConfiguration.UseDisplayChangeMetrics
+    );
+
         private void Setup()
         {
             _onUpdateChart.Subscribe(_ =>
             {
-                FrametimeDistributionGraphDataContext.BuildPlotmodel(new VisibleGraphs(ShowGpuLoad, ShowCpuLoad, ShowCpuMaxThreadLoad, ShowGpuPowerLimit,
-                    ShowPcLatency, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold,
-                    ShowGpuActiveChart, _appConfiguration.UseDisplayChangeMetrics));
-
-                FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(ShowGpuLoad, ShowCpuLoad, ShowCpuMaxThreadLoad, ShowGpuPowerLimit,
-                    ShowPcLatency, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold,
-                    ShowGpuActiveChart, _appConfiguration.UseDisplayChangeMetrics));
-
-                FrametimeGraphDataContext.BuildPlotmodel(new VisibleGraphs(ShowGpuLoad, ShowCpuLoad, ShowCpuMaxThreadLoad, ShowGpuPowerLimit,
-                    ShowPcLatency, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold,
-                    ShowGpuActiveChart, _appConfiguration.UseDisplayChangeMetrics),
-
-                    plotModel =>
+                if (SelectedChartHeader.Contains("Distribution"))
                 {
-                    FrametimeGraphDataContext.UpdateAxis(EPlotAxis.YAXISFRAMETIMES, axis =>
+                    FrametimeDistributionGraphDataContext.BuildPlotmodel(GetVisibleGraphs());
+                }
+                    
+
+                if (SelectedChartHeader.Contains("FPS"))
+                {
+                    FpsGraphDataContext.BuildPlotmodel(GetVisibleGraphs());
+                }
+                   
+
+                if (SelectedChartHeader.Contains("Times"))
+                {
+                    FrametimeGraphDataContext.BuildPlotmodel(GetVisibleGraphs(), plotModel =>
                     {
-                        var tuple = GetYAxisSettingFromSelection(SelecetedChartYAxisSetting);
-                        SetFrametimeChartYAxisSetting(tuple);
+                        FrametimeGraphDataContext.UpdateAxis(EPlotAxis.YAXISFRAMETIMES, axis =>
+                        {
+                            var tuple = GetYAxisSettingFromSelection(SelecetedChartYAxisSetting);
+                            SetFrametimeChartYAxisSetting(tuple);
+                        });
                     });
                 }
-                );
-
                 RaisePropertyChanged(nameof(GpuActiveDeviationPercentage));
             });
         }
@@ -838,7 +870,7 @@ namespace CapFrameX.ViewModel
                 .ToString("0.00", CultureInfo.InvariantCulture) + " s)";
 
 
-            if(AnalysisRangeSliderRealTime)
+            if (AnalysisRangeSliderRealTime)
             {
                 RealTimeUpdateCharts();
                 UpdateSecondaryCharts();
@@ -1125,6 +1157,7 @@ namespace CapFrameX.ViewModel
         private void OnChartItemChanged()
         {
             UpdateSecondaryCharts();
+            _onUpdateChart.OnNext(default);
         }
 
         private void OnRemoveOutliersChanged()
@@ -1153,9 +1186,7 @@ namespace CapFrameX.ViewModel
         private void OnFilterModeChanged()
         {
             _localRecordDataServer.FilterMode = SelectedFilterMode;
-            FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(ShowGpuLoad, ShowCpuLoad, ShowCpuMaxThreadLoad,
-                ShowGpuPowerLimit, ShowPcLatency, ShowAggregationSeparators, ShowStutteringThresholds,
-                StutteringFactor, StutteringLowFPSThreshold, ShowGpuActiveChart, _appConfiguration.UseDisplayChangeMetrics));
+            FpsGraphDataContext.BuildPlotmodel(GetVisibleGraphs());
         }
 
         private async void OnCutRecord(bool inverse)

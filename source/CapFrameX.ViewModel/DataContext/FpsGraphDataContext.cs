@@ -21,7 +21,17 @@ namespace CapFrameX.ViewModel.DataContext
     {
         private bool _showGpuActiveCommands;
 
-        public PlotModel FpsModel => PlotModel;
+
+        private PlotModel _fpsModel;
+        public PlotModel FpsModel
+        {
+            get => _fpsModel;
+            private set
+            {
+                _fpsModel = value;
+                RaisePropertyChanged(nameof(FpsModel));
+            }
+        }
 
         public bool ShowGpuActiveCommands
         {
@@ -80,7 +90,7 @@ namespace CapFrameX.ViewModel.DataContext
                 if (yAxis != null)
                     yAxis.MajorGridlineColor = AppConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30);
 
-                PlotModel = plotModel;
+                FpsModel = plotModel;
             });
 
             ShowGpuActiveCommands = plotSettings.ShowGpuActiveCharts;
