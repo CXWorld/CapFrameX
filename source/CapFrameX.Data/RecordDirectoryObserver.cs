@@ -106,7 +106,6 @@ namespace CapFrameX.Data
                 _logger.LogInformation("File created: {path}", fileInfo.FullName);
                 _fileCreatedSubject.OnNext(fileInfo);
                 _currentFiles.Add(fileInfo);
-                _directoryFilesSubject.OnNext(_currentFiles);
             }            
 
             void OnFileChanged(object sender, FileSystemEventArgs e)
@@ -120,7 +119,6 @@ namespace CapFrameX.Data
                     _logger.LogInformation("File changed: {path}", fileInfo.FullName);
                     fileInfo.Refresh();
                     _fileChangedSubject.OnNext(fileInfo);
-                    _directoryFilesSubject.OnNext(_currentFiles);
                 }
             }
 
@@ -148,7 +146,6 @@ namespace CapFrameX.Data
                     var fileInfo = new FileInfo(e.FullPath);
                     _fileDeletedSubject.OnNext(fileInfo);
                     _currentFiles.Remove(_currentFiles.First(f => f.FullName.Equals(fileInfo.FullName)));
-                    _directoryFilesSubject.OnNext(_currentFiles);
                     _logger.LogInformation("File deleted: {path}", fileInfo.FullName);
                 }
                 catch 

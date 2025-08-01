@@ -21,7 +21,7 @@ namespace CapFrameX.PMD.Benchlab
     public class SensorSample
     {
         public long TimeStamp { get; set; }
-        public IList<Sensor> Sensors { get; set; } = new List<Sensor>();
+        public IList<Sensor> Sensors { get; set; }
     }
 
     public class Sensor
