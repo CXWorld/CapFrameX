@@ -831,14 +831,23 @@ namespace CapFrameX.ViewModel
             UpdateSecondaryCharts();
         }
 
+        private DateTime _lastExecutionTime = DateTime.MinValue;
+        private const double MinIntervalMs = 200; // 1000 ms / 5 = 200 ms
+
         private void OnRangeSliderValueChanged()
         {
+            // Throttling: Prüfe, ob genug Zeit seit dem letzten Aufruf vergangen ist
+            if (DateTime.UtcNow - _lastExecutionTime < TimeSpan.FromMilliseconds(MinIntervalMs))
+            {
+                return; // Zu früh – ignoriere den Aufruf
+            }
+            _lastExecutionTime = DateTime.UtcNow;
+
+            // Dein Original-Code
             _localRecordDataServer.SetTimeWindow(FirstSeconds, LastSeconds - FirstSeconds);
             RemainingRecordingTime = "(" + Math.Round(LastSeconds - FirstSeconds, 2)
                 .ToString("0.00", CultureInfo.InvariantCulture) + " s)";
-
-
-            if(AnalysisRangeSliderRealTime)
+            if (AnalysisRangeSliderRealTime)
             {
                 RealTimeUpdateCharts();
                 UpdateSecondaryCharts();
