@@ -316,13 +316,8 @@ namespace CapFrameX.ViewModel
 
         public ISubject<bool> CreateFolderdialogIsOpenStream = new BehaviorSubject<bool>(false);
 
-        public ControlViewModel(IRecordDirectoryObserver recordObserver,
-                                IEventAggregator eventAggregator,
-                                IAppConfiguration appConfiguration, RecordManager recordManager,
-                                ISystemInfo systemInfo,
-                                ProcessList processList,
-                                ILogger<ControlViewModel> logger,
-                                ApplicationState applicationState)
+        public ControlViewModel(IRecordDirectoryObserver recordObserver, IEventAggregator eventAggregator, IAppConfiguration appConfiguration, 
+            RecordManager recordManager, ISystemInfo systemInfo, ProcessList processList, ILogger<ControlViewModel> logger, ApplicationState applicationState)
         {
             _recordObserver = recordObserver;
             _eventAggregator = eventAggregator;
