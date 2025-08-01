@@ -1264,6 +1264,14 @@ typedef struct _ctl_get_set_wire_format_config_t ctl_get_set_wire_format_config_
 typedef struct _ctl_display_settings_t ctl_display_settings_t;
 
 ///////////////////////////////////////////////////////////////////////////////
+/// @brief Forward-declare ctl_ecc_properties_t
+typedef struct _ctl_ecc_properties_t ctl_ecc_properties_t;
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief Forward-declare ctl_ecc_state_desc_t
+typedef struct _ctl_ecc_state_desc_t ctl_ecc_state_desc_t;
+
+///////////////////////////////////////////////////////////////////////////////
 /// @brief Forward-declare ctl_engine_properties_t
 typedef struct _ctl_engine_properties_t ctl_engine_properties_t;
 
@@ -1504,6 +1512,7 @@ typedef enum _ctl_3d_feature_t
     CTL_3D_FEATURE_VRR_WINDOWED_BLT = 14,           ///< VRR windowed blt. Control VRR for windowed mode game
     CTL_3D_FEATURE_GLOBAL_OR_PER_APP = 15,          ///< Set global settings or per application settings
     CTL_3D_FEATURE_LOW_LATENCY = 16,                ///< Low latency mode. Contains generic enum type fields
+    CTL_3D_FEATURE_FRAME_GENERATION = 17,           ///< Frame Generation
     CTL_3D_FEATURE_MAX
 
 } ctl_3d_feature_t;
@@ -4709,6 +4718,130 @@ ctlGetSetDisplaySettings(
 #if !defined(__GNUC__)
 #pragma endregion // display
 #endif
+// Intel 'ctlApi' for Device Adapter - ECC
+#if !defined(__GNUC__)
+#pragma region ecc
+#endif
+///////////////////////////////////////////////////////////////////////////////
+/// @brief ECC properties.
+typedef struct _ctl_ecc_properties_t
+{
+    uint32_t Size;                                  ///< [in] size of this structure
+    uint8_t Version;                                ///< [in] version of this structure
+    bool isSupported;                               ///< [out] Indicates if ECC support is available.
+    bool canControl;                                ///< [out] Indicates if software can control the ECC assuming the user has
+                                                    ///< permissions.
+
+} ctl_ecc_properties_t;
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief ECC state.
+typedef enum _ctl_ecc_state_t
+{
+    CTL_ECC_STATE_ECC_DEFAULT_STATE = 0,            ///< ECC Default State
+    CTL_ECC_STATE_ECC_ENABLED_STATE = 1,            ///< ECC Enabled State
+    CTL_ECC_STATE_ECC_DISABLED_STATE = 2,           ///< ECC Disabled State
+    CTL_ECC_STATE_MAX
+
+} ctl_ecc_state_t;
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief ECC state descriptor. If the currentEccState is not equal to
+///        pendingEccState, then system reboot is needed for the pendingEccState
+///        to be applied.
+typedef struct _ctl_ecc_state_desc_t
+{
+    uint32_t Size;                                  ///< [in] size of this structure
+    uint8_t Version;                                ///< [in] version of this structure
+    ctl_ecc_state_t currentEccState;                ///< [in,out] Indicates the ECC state.
+                                                    ///< A valid input can be one of the ::ctl_ecc_state_t enum values.
+                                                    ///< A valid output will be either CTL_ECC_STATE_ECC_ENABLED_STATE or CTL_ECC_STATE_ECC_DISABLED_STATE.
+    ctl_ecc_state_t pendingEccState;                ///< [out] Indicates the pending ECC state from ctlEccSetState() call. A
+                                                    ///< valid output will be either CTL_ECC_STATE_ECC_ENABLED_STATE or
+                                                    ///< CTL_ECC_STATE_ECC_DISABLED_STATE.
+
+} ctl_ecc_state_desc_t;
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief Get ECC properties.
+/// 
+/// @details
+///     - The application may call this function from simultaneous threads.
+///     - The implementation of this function should be lock-free.
+/// 
+/// @returns
+///     - CTL_RESULT_SUCCESS
+///     - CTL_RESULT_ERROR_UNINITIALIZED
+///     - CTL_RESULT_ERROR_DEVICE_LOST
+///     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
+///         + `nullptr == hDAhandle`
+///     - CTL_RESULT_ERROR_INVALID_NULL_POINTER
+///         + `nullptr == pProperties`
+CTL_APIEXPORT ctl_result_t CTL_APICALL
+ctlEccGetProperties(
+    ctl_device_adapter_handle_t hDAhandle,          ///< [in][release] Handle to display adapter
+    ctl_ecc_properties_t* pProperties               ///< [in,out] Will contain ECC properties.
+    );
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief Get ECC state.
+/// 
+/// @details
+///     - The application may call this function from simultaneous threads.
+///     - The implementation of this function should be lock-free.
+/// 
+/// @returns
+///     - CTL_RESULT_SUCCESS
+///     - CTL_RESULT_ERROR_UNINITIALIZED
+///     - CTL_RESULT_ERROR_DEVICE_LOST
+///     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
+///         + `nullptr == hDAhandle`
+///     - CTL_RESULT_ERROR_INVALID_NULL_POINTER
+///         + `nullptr == pState`
+///     - CTL_RESULT_ERROR_INVALID_ENUMERATION
+///         + `::CTL_ECC_STATE_ECC_DISABLED_STATE < pState->currentEccState`
+///         + `::CTL_ECC_STATE_ECC_DISABLED_STATE < pState->pendingEccState`
+CTL_APIEXPORT ctl_result_t CTL_APICALL
+ctlEccGetState(
+    ctl_device_adapter_handle_t hDAhandle,          ///< [in][release] Handle to display adapter
+    ctl_ecc_state_desc_t* pState                    ///< [in,out] Will contain the current ECC state and pending ECC state to
+                                                    ///< be applied from previous ctlEccSetState() call.
+    );
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief Set ECC state. Setting CTL_ECC_STATE_ECC_DEFAULT_STATE will reset the
+///        ECC state to the factory settings.
+/// 
+/// @details
+///     - The application may call this function from simultaneous threads.
+///     - The implementation of this function should be lock-free.
+/// 
+/// @returns
+///     - CTL_RESULT_SUCCESS
+///     - CTL_RESULT_ERROR_UNINITIALIZED
+///     - CTL_RESULT_ERROR_DEVICE_LOST
+///     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
+///         + `nullptr == hDAhandle`
+///     - CTL_RESULT_ERROR_INVALID_NULL_POINTER
+///         + `nullptr == pState`
+///     - CTL_RESULT_ERROR_INVALID_ENUMERATION
+///         + `::CTL_ECC_STATE_ECC_DISABLED_STATE < pState->currentEccState`
+///         + `::CTL_ECC_STATE_ECC_DISABLED_STATE < pState->pendingEccState`
+CTL_APIEXPORT ctl_result_t CTL_APICALL
+ctlEccSetState(
+    ctl_device_adapter_handle_t hDAhandle,          ///< [in][release] Handle to display adapter
+    ctl_ecc_state_desc_t* pState                    ///< [in,out] Will contain the new ECC state and pending ECC state from
+                                                    ///< ctlEccSetState() call.
+                                                    ///< New ECC State can be set only if isSupported is true and canControl is true.
+                                                    ///< ctlEccGetState() can be called to determine if the currentEccState is
+                                                    ///< not equal to pendingEccState, then system reboot is needed for the
+                                                    ///< pendingEccState to be applied.
+    );
+
+
+#if !defined(__GNUC__)
+#pragma endregion // ecc
+#endif
 // Intel 'ctlApi' for Device Adapter - Engine groups
 #if !defined(__GNUC__)
 #pragma region engine
@@ -5282,6 +5415,9 @@ ctlGetFirmwareComponentProperties(
 /// @details
 ///     - This API allows caller to allow/block a compatible discrete graphics
 ///       card's firmware train PCIE links at higher speeds on compatible hosts.
+///     - System needs to be powered off and restarted for the new state to take
+///       affect. The new state will not be applied on only a warm reboot of the
+///       system.
 ///     - This is a reserved capability. By default, this capability will not be
 ///       enabled, need application to activate it, please contact Intel for
 ///       activation.
@@ -8341,6 +8477,30 @@ typedef ctl_result_t (CTL_APICALL *ctl_pfnGetSetWireFormat_t)(
 typedef ctl_result_t (CTL_APICALL *ctl_pfnGetSetDisplaySettings_t)(
     ctl_display_output_handle_t,
     ctl_display_settings_t*
+    );
+
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief Function-pointer for ctlEccGetProperties 
+typedef ctl_result_t (CTL_APICALL *ctl_pfnEccGetProperties_t)(
+    ctl_device_adapter_handle_t,
+    ctl_ecc_properties_t*
+    );
+
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief Function-pointer for ctlEccGetState 
+typedef ctl_result_t (CTL_APICALL *ctl_pfnEccGetState_t)(
+    ctl_device_adapter_handle_t,
+    ctl_ecc_state_desc_t*
+    );
+
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief Function-pointer for ctlEccSetState 
+typedef ctl_result_t (CTL_APICALL *ctl_pfnEccSetState_t)(
+    ctl_device_adapter_handle_t,
+    ctl_ecc_state_desc_t*
     );
 
 

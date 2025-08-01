@@ -2514,6 +2514,139 @@ ctlGetSetDisplaySettings(
 
 
 /**
+* @brief Get ECC properties.
+* 
+* @details
+*     - The application may call this function from simultaneous threads.
+*     - The implementation of this function should be lock-free.
+* 
+* @returns
+*     - CTL_RESULT_SUCCESS
+*     - CTL_RESULT_ERROR_UNINITIALIZED
+*     - CTL_RESULT_ERROR_DEVICE_LOST
+*     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
+*         + `nullptr == hDAhandle`
+*     - CTL_RESULT_ERROR_INVALID_NULL_POINTER
+*         + `nullptr == pProperties`
+*/
+ctl_result_t CTL_APICALL
+ctlEccGetProperties(
+    ctl_device_adapter_handle_t hDAhandle,          ///< [in][release] Handle to display adapter
+    ctl_ecc_properties_t* pProperties               ///< [in,out] Will contain ECC properties.
+    )
+{
+    ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
+    
+
+    HINSTANCE hinstLibPtr = GetLoaderHandle();
+
+    if (NULL != hinstLibPtr)
+    {
+        ctl_pfnEccGetProperties_t pfnEccGetProperties = (ctl_pfnEccGetProperties_t)GetProcAddress(hinstLibPtr, "ctlEccGetProperties");
+        if (pfnEccGetProperties)
+        {
+            result = pfnEccGetProperties(hDAhandle, pProperties);
+        }
+    }
+
+    return result;
+}
+
+
+/**
+* @brief Get ECC state.
+* 
+* @details
+*     - The application may call this function from simultaneous threads.
+*     - The implementation of this function should be lock-free.
+* 
+* @returns
+*     - CTL_RESULT_SUCCESS
+*     - CTL_RESULT_ERROR_UNINITIALIZED
+*     - CTL_RESULT_ERROR_DEVICE_LOST
+*     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
+*         + `nullptr == hDAhandle`
+*     - CTL_RESULT_ERROR_INVALID_NULL_POINTER
+*         + `nullptr == pState`
+*     - CTL_RESULT_ERROR_INVALID_ENUMERATION
+*         + `::CTL_ECC_STATE_ECC_DISABLED_STATE < pState->currentEccState`
+*         + `::CTL_ECC_STATE_ECC_DISABLED_STATE < pState->pendingEccState`
+*/
+ctl_result_t CTL_APICALL
+ctlEccGetState(
+    ctl_device_adapter_handle_t hDAhandle,          ///< [in][release] Handle to display adapter
+    ctl_ecc_state_desc_t* pState                    ///< [in,out] Will contain the current ECC state and pending ECC state to
+                                                    ///< be applied from previous ctlEccSetState() call.
+    )
+{
+    ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
+    
+
+    HINSTANCE hinstLibPtr = GetLoaderHandle();
+
+    if (NULL != hinstLibPtr)
+    {
+        ctl_pfnEccGetState_t pfnEccGetState = (ctl_pfnEccGetState_t)GetProcAddress(hinstLibPtr, "ctlEccGetState");
+        if (pfnEccGetState)
+        {
+            result = pfnEccGetState(hDAhandle, pState);
+        }
+    }
+
+    return result;
+}
+
+
+/**
+* @brief Set ECC state. Setting CTL_ECC_STATE_ECC_DEFAULT_STATE will reset the
+*        ECC state to the factory settings.
+* 
+* @details
+*     - The application may call this function from simultaneous threads.
+*     - The implementation of this function should be lock-free.
+* 
+* @returns
+*     - CTL_RESULT_SUCCESS
+*     - CTL_RESULT_ERROR_UNINITIALIZED
+*     - CTL_RESULT_ERROR_DEVICE_LOST
+*     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
+*         + `nullptr == hDAhandle`
+*     - CTL_RESULT_ERROR_INVALID_NULL_POINTER
+*         + `nullptr == pState`
+*     - CTL_RESULT_ERROR_INVALID_ENUMERATION
+*         + `::CTL_ECC_STATE_ECC_DISABLED_STATE < pState->currentEccState`
+*         + `::CTL_ECC_STATE_ECC_DISABLED_STATE < pState->pendingEccState`
+*/
+ctl_result_t CTL_APICALL
+ctlEccSetState(
+    ctl_device_adapter_handle_t hDAhandle,          ///< [in][release] Handle to display adapter
+    ctl_ecc_state_desc_t* pState                    ///< [in,out] Will contain the new ECC state and pending ECC state from
+                                                    ///< ctlEccSetState() call.
+                                                    ///< New ECC State can be set only if isSupported is true and canControl is true.
+                                                    ///< ctlEccGetState() can be called to determine if the currentEccState is
+                                                    ///< not equal to pendingEccState, then system reboot is needed for the
+                                                    ///< pendingEccState to be applied.
+    )
+{
+    ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
+    
+
+    HINSTANCE hinstLibPtr = GetLoaderHandle();
+
+    if (NULL != hinstLibPtr)
+    {
+        ctl_pfnEccSetState_t pfnEccSetState = (ctl_pfnEccSetState_t)GetProcAddress(hinstLibPtr, "ctlEccSetState");
+        if (pfnEccSetState)
+        {
+            result = pfnEccSetState(hDAhandle, pState);
+        }
+    }
+
+    return result;
+}
+
+
+/**
 * @brief Get handle of engine groups
 * 
 * @details
@@ -3098,6 +3231,9 @@ ctlGetFirmwareComponentProperties(
 * @details
 *     - This API allows caller to allow/block a compatible discrete graphics
 *       card's firmware train PCIE links at higher speeds on compatible hosts.
+*     - System needs to be powered off and restarted for the new state to take
+*       affect. The new state will not be applied on only a warm reboot of the
+*       system.
 *     - This is a reserved capability. By default, this capability will not be
 *       enabled, need application to activate it, please contact Intel for
 *       activation.
