@@ -203,6 +203,11 @@
                                      TrackColor="OrangeRed"
 									 Style="{StaticResource CustomRangeSlider}"
                                      Thumb.DragCompleted="RangeSlider_DragCompleted"/>
+                        
+                        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 10 0" Height="25">
+                            <TextBlock Text="Real time update" Margin="40 5 3 0" Foreground="{DynamicResource MaterialDesignBody}" />
+                            <CheckBox IsChecked="{Binding AnalysisRangeSliderRealTime, Mode=TwoWay}" Foreground="{DynamicResource MaterialDesignBody}"/>
+                        </StackPanel>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 10 0" Height="25">
                             <TextBlock Text="Range:" Margin="0 5 5 0" Foreground="{DynamicResource MaterialDesignBody}"/>
                             <TextBox Grid.Row="1" materialDesign:HintAssist.Hint="Start (s)" HorizontalAlignment="Center" Width="45" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"

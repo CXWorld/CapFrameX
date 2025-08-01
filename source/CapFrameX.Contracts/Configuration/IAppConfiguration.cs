@@ -190,7 +190,11 @@ namespace CapFrameX.Contracts.Configuration
 		/// </summary>
 		bool AreThresholdValuesAbsolute { get; set; }
 
-		int OverlayEntryConfigurationFile { get; set; }
+        bool AnalysisRangeSliderRealTime { get; set; }
+
+        bool ComparisonRangeSliderRealTime { get; set; }
+
+        int OverlayEntryConfigurationFile { get; set; }
 
 		int SensorLoggingRefreshPeriod { get; set; }
 

@@ -66,7 +66,12 @@ namespace CapFrameX.View
 			(DataContext as ComparisonViewModel).OnRangeSliderValuesChanged();
 		}
 
-		private void CustomTitle_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void RangeSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            (DataContext as ComparisonViewModel).OnRangeSliderDragCompleted();
+        }
+
+        private void CustomTitle_PreviewKeyDown(object sender, KeyEventArgs e)
 		{
 			var key = e.Key;
 
