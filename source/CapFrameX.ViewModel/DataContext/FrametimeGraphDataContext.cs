@@ -44,7 +44,17 @@ namespace CapFrameX.ViewModel.DataContext
 
         public ICommand SavePlotAsPNG { get; }
 
-        public PlotModel FrametimeModel => PlotModel;
+
+        private PlotModel _frametimeModel;
+        public PlotModel FrametimeModel
+        {
+            get => _frametimeModel;
+            private set
+            {
+                _frametimeModel = value;
+                RaisePropertyChanged(nameof(FrametimeModel));
+            }
+        }
 
         private readonly FrametimePlotBuilder _frametimePlotBuilder;
 
@@ -83,7 +93,7 @@ namespace CapFrameX.ViewModel.DataContext
                 if (yAxis != null)
                     yAxis.MajorGridlineColor = AppConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30);
 
-                PlotModel = plotModel;
+                FrametimeModel = plotModel;
             });
 
             ShowGpuActiveCommands = plotSettings.ShowGpuActiveCharts;

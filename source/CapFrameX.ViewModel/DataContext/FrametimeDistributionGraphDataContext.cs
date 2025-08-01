@@ -19,7 +19,17 @@ namespace CapFrameX.ViewModel.DataContext
 {
     public class FrametimeDistributionGraphDataContext : GraphDataContextBase
     {
-        public PlotModel FrametimeDistributionModel => PlotModel;
+
+        private PlotModel _frametimeDistributionModel;
+        public PlotModel FrametimeDistributionModel
+        {
+            get => _frametimeDistributionModel;
+            private set
+            {
+                _frametimeDistributionModel = value;
+                RaisePropertyChanged(nameof(FrametimeDistributionModel));
+            }
+        }
 
         public ICommand CopyDistributionPointsCommand { get; }
 
@@ -63,7 +73,7 @@ namespace CapFrameX.ViewModel.DataContext
                 if (yAxis != null)
                     yAxis.MajorGridlineColor = AppConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30);
 
-                PlotModel = plotModel;
+                FrametimeDistributionModel = plotModel;
             });
 
         }
