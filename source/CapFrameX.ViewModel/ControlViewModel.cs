@@ -464,16 +464,16 @@ namespace CapFrameX.ViewModel
                 })
                 .Select(fileInfos =>
                 {
-                    if (!_directManuallyRefreshed)
-                    {
-                        // if aggregated file size is >512MB, skip processing
-                        if (fileInfos.Sum(fi => fi.Length) > 24 * 1024 * 1024)
-                        {
-                            _logger.LogWarning("Aggregated file size exceeds 512MB, skipping processing.");
-                            DirectoryLoading = false;
-                            return Observable.Empty<IFileRecordInfo[]>();
-                        }
-                    }
+                    //if (!_directManuallyRefreshed)
+                    //{
+                    //    // if aggregated file size is >512MB, skip processing
+                    //    if (fileInfos.Sum(fi => fi.Length) > 24 * 1024 * 1024)
+                    //    {
+                    //        _logger.LogWarning("Aggregated file size exceeds 512MB, skipping processing.");
+                    //        DirectoryLoading = false;
+                    //        return Observable.Empty<IFileRecordInfo[]>();
+                    //    }
+                    //}
 
                     return Observable.Merge(fileInfos.Select(GetFileRecordInfo), 30)
                         .Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
