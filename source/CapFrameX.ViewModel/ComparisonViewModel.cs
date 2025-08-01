@@ -247,7 +247,7 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
-        
+
 
         public SeriesCollection ComparisonRowChartSeriesCollection
         {
@@ -402,9 +402,11 @@ namespace CapFrameX.ViewModel
             {
                 _firstSeconds = value;
                 RaisePropertyChanged();
-                UpdateCharts();
                 RemainingRecordingTime = "(" + Math.Round(LastSeconds - _firstSeconds, 2, MidpointRounding.AwayFromZero)
                     .ToString("0.00", CultureInfo.InvariantCulture) + " s)";
+
+                if (ComparisonRangeSliderRealTime)
+                    UpdateCharts();
             }
         }
 
@@ -415,9 +417,11 @@ namespace CapFrameX.ViewModel
             {
                 _lastSeconds = value;
                 RaisePropertyChanged();
-                UpdateCharts();
                 RemainingRecordingTime = "(" + Math.Round(_lastSeconds - FirstSeconds, 2, MidpointRounding.AwayFromZero)
                     .ToString("0.00", CultureInfo.InvariantCulture) + " s)";
+
+                if (ComparisonRangeSliderRealTime)
+                    UpdateCharts();
             }
         }
 
@@ -442,7 +446,7 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged(nameof(IsBarChartTabActive));
                 RaisePropertyChanged(nameof(IsLineChartTabActive));
                 RaisePropertyChanged(nameof(IsVarianceChartTabActive));
-                RaisePropertyChanged(nameof(IsDistributionTabActive)); 
+                RaisePropertyChanged(nameof(IsDistributionTabActive));
                 OnChartItemChanged();
                 UpdateCharts();
 
@@ -516,7 +520,8 @@ namespace CapFrameX.ViewModel
             {
                 _isRangeSliderActive = value;
                 RaisePropertyChanged();
-                OnRangeSliderChanged();
+                if (!value)
+                    OnRangeSliderChanged();
             }
         }
 
@@ -725,6 +730,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool ComparisonRangeSliderRealTime
+        {
+            get { return _appConfiguration.ComparisonRangeSliderRealTime; }
+            set
+            {
+                _appConfiguration.ComparisonRangeSliderRealTime = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public bool IsBarChartTabActive
         {
             get { return SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false; }
@@ -764,7 +779,7 @@ namespace CapFrameX.ViewModel
 
         public double BarChartMaxRowHeight { get; private set; } = 25;
 
-        public Array SortMetricItemsSource 
+        public Array SortMetricItemsSource
             => new[] { "First Metric", "Second Metric", "Third Metric", "Comment Label", "CPU Label", "GPU Label" };
 
         public Array LegendFontSizeItemsSource => new[] { 1, 1.5, 2 };
@@ -1209,7 +1224,7 @@ namespace CapFrameX.ViewModel
                 ColorPickerVisibility = true;
             else
                 ColorPickerVisibility = false;
-        } 
+        }
 
         private void OnSortModeChanged()
             => SortComparisonItems();
@@ -1275,7 +1290,7 @@ namespace CapFrameX.ViewModel
                         {
                             var samples = _appConfiguration.UseDisplayChangeMetrics
                                 ? displayChangeTimeWindow : frametimeTimeWindow;
-                          
+
                             metricValue = GetMetricValue(displayChangeTimeWindow, metric);
                         }
 
@@ -1345,6 +1360,15 @@ namespace CapFrameX.ViewModel
 
             if (LastSeconds > MaxRecordingTime || LastSeconds <= 0)
                 LastSeconds = MaxRecordingTime;
+
+            if (!ComparisonRangeSliderRealTime)
+                UpdateCharts();
+        }
+
+        public void OnRangeSliderDragCompleted()
+        {
+            if (!ComparisonRangeSliderRealTime)
+                UpdateCharts();
         }
 
         internal class ChartLabel
@@ -1947,7 +1971,7 @@ namespace CapFrameX.ViewModel
                 Color = wrappedComparisonInfo.IsHideModeSelected ?
                 OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B),
                 InterpolationAlgorithm = SelectedFilterMode == EFilterMode.TimeIntervalAverage ? InterpolationAlgorithms.CanonicalSpline : null,
-                EdgeRenderingMode = SelectedFilterMode == EFilterMode.TimeIntervalAverage 
+                EdgeRenderingMode = SelectedFilterMode == EFilterMode.TimeIntervalAverage
                     ? EdgeRenderingMode.PreferGeometricAccuracy : EdgeRenderingMode.PreferSpeed
 
             };

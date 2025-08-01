@@ -440,6 +440,11 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool AnalysisRangeSliderRealTime
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
 
         // Aggregation Settings
         public string SecondMetricAggregation
@@ -665,6 +670,11 @@ namespace CapFrameX.Configuration
         public string ThirdMetricBarColor
         {
             get => Get<string>("#FFB400");
+            set => Set(value);
+        }
+        public bool ComparisonRangeSliderRealTime
+        {
+            get => Get<bool>(false);
             set => Set(value);
         }
 
