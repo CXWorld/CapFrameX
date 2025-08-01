@@ -1248,6 +1248,7 @@ namespace CapFrameX.ViewModel
                 {
                     _session = msg.CurrentSession;
                     RecordInfo = msg.RecordInfo;
+                    _callCount = 0;
                     RaisePropertyChanged(nameof(AdditionalGraphsEnabled));
 
                     if (_useUpdateSession)

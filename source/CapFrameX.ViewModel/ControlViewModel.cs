@@ -467,7 +467,7 @@ namespace CapFrameX.ViewModel
                     if (!_directManuallyRefreshed)
                     {
                         // if aggregated file size is >512MB, skip processing
-                        if (fileInfos.Sum(fi => fi.Length) > 512 * 1024 * 1024)
+                        if (fileInfos.Sum(fi => fi.Length) > 24 * 1024 * 1024)
                         {
                             _logger.LogWarning("Aggregated file size exceeds 512MB, skipping processing.");
                             DirectoryLoading = false;
