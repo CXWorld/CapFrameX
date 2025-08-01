@@ -1,43 +1,46 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
-using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Data;
+using CapFrameX.Data.Session.Contracts;
+using CapFrameX.EventAggregation.Messages;
+using CapFrameX.Extensions;
+using CapFrameX.MVVM.Dialogs;
+using CapFrameX.Sensor.Reporting;
+using CapFrameX.Sensor.Reporting.Contracts;
+using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Statistics.NetStandard.Contracts;
+using CapFrameX.Statistics.PlotBuilder.Contracts;
 using CapFrameX.ViewModel.DataContext;
 using LiveCharts;
 using LiveCharts.Defaults;
 using LiveCharts.Wpf;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using CapFrameX.MVVM.Dialogs;
-using CapFrameX.Data.Session.Contracts;
-using System.Collections.ObjectModel;
-using System.Reactive.Linq;
-using CapFrameX.Sensor.Reporting.Contracts;
-using CapFrameX.Sensor.Reporting;
-using CapFrameX.Statistics.NetStandard.Contracts;
-using CapFrameX.Statistics.PlotBuilder.Contracts;
-using Microsoft.Extensions.Logging;
-using CapFrameX.Extensions;
-using CapFrameX.Statistics.NetStandard;
 
 namespace CapFrameX.ViewModel
 {
     public partial class DataViewModel : BindableBase, INavigationAware
     {
+        private const double MinIntervalSeconds = 0.2;
+
         private readonly IStatisticProvider _frametimeStatisticProvider;
         private readonly IFrametimeAnalyzer _frametimeAnalyzer;
         private readonly IEventAggregator _eventAggregator;
@@ -91,8 +94,17 @@ namespace CapFrameX.ViewModel
         private EFilterMode _selectedFilterMode = EFilterMode.None;
         private ELShapeMetrics _lShapeMetric = ELShapeMetrics.Frametimes;
         private string _lShapeYaxisLabel = "Frametimes (ms)" + Environment.NewLine + " ";
+        private long _frequency;
+        private long _lastPerformanceCount = 0;
+        private int _callCount = 0;
 
         private ISubject<Unit> _onUpdateChart = new BehaviorSubject<Unit>(default);
+
+        [DllImport("Kernel32.dll")]
+        private static extern bool QueryPerformanceCounter(out long lpPerformanceCount);
+
+        [DllImport("Kernel32.dll")]
+        private static extern bool QueryPerformanceFrequency(out long lpFrequency);
 
         public IFileRecordInfo RecordInfo { get; private set; }
 
@@ -711,6 +723,8 @@ namespace CapFrameX.ViewModel
 
             MessageDialogContent = new ConditionalMessageDialog();
 
+            QueryPerformanceFrequency(out _frequency);
+
             SubscribeToEvents();
             InitializeStatisticParameter();
             SetThresholdLabels();
@@ -831,17 +845,27 @@ namespace CapFrameX.ViewModel
             UpdateSecondaryCharts();
         }
 
-        private DateTime _lastExecutionTime = DateTime.MinValue;
-        private const double MinIntervalMs = 200; // 1000 ms / 5 = 200 ms
-
         private void OnRangeSliderValueChanged()
         {
-            // Throttling: Prüfe, ob genug Zeit seit dem letzten Aufruf vergangen ist
-            if (DateTime.UtcNow - _lastExecutionTime < TimeSpan.FromMilliseconds(MinIntervalMs))
+            _callCount++; // Zähle jeden Aufruf hoch
+
+            long currentCount;
+            QueryPerformanceCounter(out currentCount);
+
+            // Berechne das minimale Interval in Ticks
+            long minIntervalTicks = (long)(_frequency * MinIntervalSeconds);
+
+            // Throttling: Für die ersten zwei Aufrufe immer erlauben
+            if (_callCount > 2)
             {
-                return; // Zu früh – ignoriere den Aufruf
+                // Ab dem dritten Aufruf: Prüfe, ob genug Zeit vergangen ist
+                if (_lastPerformanceCount != 0 && (currentCount - _lastPerformanceCount) < minIntervalTicks)
+                {
+                    return; // Zu früh – ignoriere den Aufruf
+                }
             }
-            _lastExecutionTime = DateTime.UtcNow;
+
+            _lastPerformanceCount = currentCount;
 
             // Dein Original-Code
             _localRecordDataServer.SetTimeWindow(FirstSeconds, LastSeconds - FirstSeconds);
