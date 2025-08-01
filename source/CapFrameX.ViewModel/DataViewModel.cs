@@ -94,17 +94,8 @@ namespace CapFrameX.ViewModel
         private EFilterMode _selectedFilterMode = EFilterMode.None;
         private ELShapeMetrics _lShapeMetric = ELShapeMetrics.Frametimes;
         private string _lShapeYaxisLabel = "Frametimes (ms)" + Environment.NewLine + " ";
-        private long _frequency;
-        private long _lastPerformanceCount = 0;
-        private int _callCount = 0;
 
         private ISubject<Unit> _onUpdateChart = new BehaviorSubject<Unit>(default);
-
-        [DllImport("Kernel32.dll")]
-        private static extern bool QueryPerformanceCounter(out long lpPerformanceCount);
-
-        [DllImport("Kernel32.dll")]
-        private static extern bool QueryPerformanceFrequency(out long lpFrequency);
 
         public IFileRecordInfo RecordInfo { get; private set; }
 
@@ -738,8 +729,6 @@ namespace CapFrameX.ViewModel
 
             MessageDialogContent = new ConditionalMessageDialog();
 
-            QueryPerformanceFrequency(out _frequency);
-
             SubscribeToEvents();
             InitializeStatisticParameter();
             SetThresholdLabels();
@@ -878,26 +867,6 @@ namespace CapFrameX.ViewModel
 
         private void OnRangeSliderValueChanged()
         {
-            _callCount++; // Zähle jeden Aufruf hoch
-
-            long currentCount;
-            QueryPerformanceCounter(out currentCount);
-
-            // Berechne das minimale Interval in Ticks
-            long minIntervalTicks = (long)(_frequency * MinIntervalSeconds);
-
-            // Throttling: Für die ersten zwei Aufrufe immer erlauben
-            if (_callCount > 2)
-            {
-                // Ab dem dritten Aufruf: Prüfe, ob genug Zeit vergangen ist
-                if (_lastPerformanceCount != 0 && (currentCount - _lastPerformanceCount) < minIntervalTicks)
-                {
-                    return; // Zu früh – ignoriere den Aufruf
-                }
-            }
-
-            _lastPerformanceCount = currentCount;
-
             // Dein Original-Code
             _localRecordDataServer.SetTimeWindow(FirstSeconds, LastSeconds - FirstSeconds);
             RemainingRecordingTime = "(" + Math.Round(LastSeconds - FirstSeconds, 2)
@@ -1248,7 +1217,6 @@ namespace CapFrameX.ViewModel
                 {
                     _session = msg.CurrentSession;
                     RecordInfo = msg.RecordInfo;
-                    _callCount = 0;
                     RaisePropertyChanged(nameof(AdditionalGraphsEnabled));
 
                     if (_useUpdateSession)

@@ -58,7 +58,6 @@ namespace CapFrameX.ViewModel
         private bool _customRamDescriptionChanged = false;
         private bool _customGameNameChanged = false;
         private bool _customCommentChanged = false;
-        private bool _directManuallyRefreshed = false;
 
         public bool ShowCreationDate
         {
@@ -449,7 +448,6 @@ namespace CapFrameX.ViewModel
                 .ObserveOn(context)
                 .Subscribe(directory =>
                 {
-                    _directManuallyRefreshed = false;
                     HasValidSource = directory?.Exists ?? false;
                     RaisePropertyChanged(nameof(HasValidSource));
                 });
@@ -464,17 +462,6 @@ namespace CapFrameX.ViewModel
                 })
                 .Select(fileInfos =>
                 {
-                    //if (!_directManuallyRefreshed)
-                    //{
-                    //    // if aggregated file size is >512MB, skip processing
-                    //    if (fileInfos.Sum(fi => fi.Length) > 24 * 1024 * 1024)
-                    //    {
-                    //        _logger.LogWarning("Aggregated file size exceeds 512MB, skipping processing.");
-                    //        DirectoryLoading = false;
-                    //        return Observable.Empty<IFileRecordInfo[]>();
-                    //    }
-                    //}
-
                     return Observable.Merge(fileInfos.Select(GetFileRecordInfo), 30)
                         .Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
                         .Distinct(recordFileInfo => recordFileInfo.Hash)
@@ -681,7 +668,6 @@ namespace CapFrameX.ViewModel
             if (_appConfiguration.ObservedDirectory.IsNullOrEmpty())
                 return;
 
-            _directManuallyRefreshed = true;
             DirectoryLoading = true;
             _recordObserver.RefreshCurrentDirectory();
         }
