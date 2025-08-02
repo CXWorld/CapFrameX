@@ -194,7 +194,7 @@ namespace CapFrameX.PresentMonInterface
             double displayedTime = 0;
             if (_appConfiguration.UseDisplayChangeMetrics)
             {
-                if (!double.TryParse(lineSplit[PresentMonCaptureService.MsBetweenDisplayed_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out displayedTime))
+                if (!double.TryParse(lineSplit[PresentMonCaptureService.MsBetweenDisplayChange_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out displayedTime))
                 {
                     ResetMetrics();
                     return;

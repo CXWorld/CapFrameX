@@ -46,7 +46,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
             SapphireRapids,
             MeteorLake,
             LunarLake,
-            ArrowLake
+            ArrowLake,
+            NovaLake
         }
 
         private readonly Sensor[] coreTemperatures;
@@ -313,6 +314,22 @@ namespace OpenHardwareMonitor.Hardware.CPU
                         }
                     }
                     break;
+                case 0x12:
+                    {
+                        switch (model)
+                        {
+                            case 0x01: // Nova Lake-S (Intel 18A + TSMC N2) 
+                            case 0x03: // Nova Lake-L (Intel 18A + TSMC N2) 
+                                microarchitecture = Microarchitecture.NovaLake;
+                                tjMax = GetTjMaxFromMSR();
+                                break;
+                            default:
+                                microarchitecture = Microarchitecture.Unknown;
+                                tjMax = Floats(100);
+                                break;
+                        }
+                    }
+                    break;
                 default:
                     microarchitecture = Microarchitecture.Unknown;
                     tjMax = Floats(100);
@@ -356,6 +373,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 case Microarchitecture.MeteorLake:
                 case Microarchitecture.LunarLake:
                 case Microarchitecture.ArrowLake:
+                case Microarchitecture.NovaLake:
                     {
                         if (Ring0.Rdmsr(MSR_PLATFORM_INFO, out uint eax, out _))
                         {
@@ -445,7 +463,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 microarchitecture == Microarchitecture.SapphireRapids ||
                 microarchitecture == Microarchitecture.MeteorLake ||
                 microarchitecture == Microarchitecture.LunarLake ||
-                microarchitecture == Microarchitecture.ArrowLake)
+                microarchitecture == Microarchitecture.ArrowLake ||
+                microarchitecture == Microarchitecture.NovaLake)
             {
                 powerSensors = new Sensor[energyStatusMSRs.Length];
                 lastEnergyTime = new DateTime[energyStatusMSRs.Length];
@@ -626,6 +645,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                                 case Microarchitecture.MeteorLake:
                                 case Microarchitecture.LunarLake:
                                 case Microarchitecture.ArrowLake:
+                                case Microarchitecture.NovaLake:
                                     {
                                         uint multiplier = (eax >> 8) & 0xff;
                                         coreClocks[i].Value = (float)(multiplier * newBusClock);

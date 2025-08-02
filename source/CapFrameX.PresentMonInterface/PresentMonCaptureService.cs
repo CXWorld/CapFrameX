@@ -19,10 +19,10 @@ namespace CapFrameX.PresentMonInterface
         public const int ProcessID_INDEX = 1;
         public const int StartTimeInSeconds_INDEX = 16;
         public const int MsBetweenPresents_INDEX = 10;
-        // PresentMon version >=2.2
+        // PresentMon version >=2.3.1
         public const int CpuBusy_INDEX = 18;
         public const int GpuBusy_INDEX = 22;
-        public const int MsBetweenDisplayed_INDEX = 11;
+        public const int MsBetweenDisplayChange_INDEX = 11;
         public const int VALID_LINE_LENGTH = 26;
 
         // PresentMon < v1.7.0

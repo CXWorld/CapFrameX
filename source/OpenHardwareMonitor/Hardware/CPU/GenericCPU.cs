@@ -17,31 +17,31 @@ using System.Runtime.InteropServices;
 
 namespace OpenHardwareMonitor.Hardware.CPU
 {
-	internal class GenericCPU : Hardware
-	{
-		protected readonly CPUID[][] cpuid;
+    internal class GenericCPU : Hardware
+    {
+        protected readonly CPUID[][] cpuid;
 
-		private readonly Dictionary<int, int> threadCountMap = new Dictionary<int, int>();
-		private readonly Dictionary<int, int> threadCoreMap = new Dictionary<int, int>();
+        private readonly Dictionary<int, int> threadCountMap = new Dictionary<int, int>();
+        private readonly Dictionary<int, int> threadCoreMap = new Dictionary<int, int>();
 
-		protected readonly uint family;
-		protected readonly uint model;
-		protected readonly uint packageType;
-		protected readonly uint stepping;
+        protected readonly uint family;
+        protected readonly uint model;
+        protected readonly uint packageType;
+        protected readonly uint stepping;
 
-		protected readonly int processorIndex;
-		protected readonly int coreCount;
-		private readonly double estimatedTimeStampCounterFrequency;
-		private readonly double estimatedTimeStampCounterFrequencyError;
+        protected readonly int processorIndex;
+        protected readonly int coreCount;
+        private readonly double estimatedTimeStampCounterFrequency;
+        private readonly double estimatedTimeStampCounterFrequencyError;
 
-		private readonly Vendor vendor;
+        private readonly Vendor vendor;
 
-		private readonly CPULoad cpuLoad;
-		private readonly Sensor totalLoad;
-		private readonly Sensor maxLoad;
-		private readonly Sensor[] threadLoads;
+        private readonly CPULoad cpuLoad;
+        private readonly Sensor totalLoad;
+        private readonly Sensor maxLoad;
+        private readonly Sensor[] threadLoads;
 
-		private const uint CPUID_CORE_MASK_STATUS = 0x1A;
+        private const uint CPUID_CORE_MASK_STATUS = 0x1A;
 
         protected string CoreString(int i)
         {
@@ -58,196 +58,218 @@ namespace OpenHardwareMonitor.Hardware.CPU
             string corelabel = string.Empty;
             if (CpuArchitecture.IsHybridDesign(cpuid[i][0]))
             {
-                var previousAffinity = ThreadAffinity.Set(cpuid[i][0].Affinity);
-				if (Opcode.Cpuid(CPUID_CORE_MASK_STATUS, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
-				{
-					switch (eax >> 24)
-					{
-						case 0x20000002: corelabel = " LP-E"; break;
-                        case 0x20: corelabel = " E"; break;
-						case 0x40: corelabel = " P"; break;
-						default: break;
-					}
-				}
-				 
-				ThreadAffinity.Set(previousAffinity);
-			}
+                if (cpuid[i][0].Vendor == Vendor.Intel)
+                {
+                    var previousAffinity = ThreadAffinity.Set(cpuid[i][0].Affinity);
+                    if (Opcode.Cpuid(CPUID_CORE_MASK_STATUS, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
+                    {
+                        switch (eax >> 24)
+                        {
+                            case 0x20000002: corelabel = " LP-E"; break;
+                            case 0x20: corelabel = " E"; break;
+                            case 0x40: corelabel = " P"; break;
+                            default: break;
+                        }
+                    }
 
-			return corelabel;
-		}
+                    ThreadAffinity.Set(previousAffinity);
+                }
+                else if (cpuid[i][0].Vendor == Vendor.AMD)
+                {
+                    var previousAffinity = ThreadAffinity.Set(cpuid[i][0].Affinity);
+                    if (Opcode.Cpuid(0x80000026, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
+                    {
+                        if ((eax & (1u << 30)) != 0) // Heterogeneous core topology supported
+                        {
+                            uint coreType = (ebx >> 28) & 0xF;
+                            switch (coreType)
+                            {
+                                case 0: corelabel = " P"; break;
+                                case 1: corelabel = " D"; break;
+                                default: break; // Undefined or error
+                            }
+                        }
+                    }
 
-		private string BuildCoreThreadString(int i)
-		{
-			int core = threadCoreMap[i];
-			int coreThreadCount = threadCountMap[core];
+                    ThreadAffinity.Set(previousAffinity);
+                }
+            }
 
-			if (coreThreadCount == 1)
-			{
-				return CoreString(core) + " - Thread #1";
-			}
-			else if (coreCount == 1)
-			{
-				return $"{CoreString(core)} - Thread #" + (i + 1);
-			}
-			else
-			{
-				return $"{CoreString(core)} - Thread #" + ((i % coreThreadCount) + 1);
-			}
-		}
+            return corelabel;
+        }
 
-		public GenericCPU(int processorIndex, CPUID[][] cpuid, ISettings settings)
-			: base(cpuid[0][0].Name, CreateIdentifier(cpuid[0][0].Vendor, processorIndex), settings)
-		{
-			this.cpuid = cpuid;
+        private string BuildCoreThreadString(int i)
+        {
+            int core = threadCoreMap[i];
+            int coreThreadCount = threadCountMap[core];
 
-			this.vendor = cpuid[0][0].Vendor;
+            if (coreThreadCount == 1)
+            {
+                return CoreString(core) + " - Thread #1";
+            }
+            else if (coreCount == 1)
+            {
+                return $"{CoreString(core)} - Thread #" + (i + 1);
+            }
+            else
+            {
+                return $"{CoreString(core)} - Thread #" + ((i % coreThreadCount) + 1);
+            }
+        }
 
-			this.family = cpuid[0][0].Family;
-			this.model = cpuid[0][0].Model;
-			this.stepping = cpuid[0][0].Stepping;
-			this.packageType = cpuid[0][0].PkgType;
+        public GenericCPU(int processorIndex, CPUID[][] cpuid, ISettings settings)
+            : base(cpuid[0][0].Name, CreateIdentifier(cpuid[0][0].Vendor, processorIndex), settings)
+        {
+            this.cpuid = cpuid;
 
-			FillThreadMaps(cpuid);
+            this.vendor = cpuid[0][0].Vendor;
 
-			bool hasGlobalThreadCount = threadCountMap.Values.Distinct().Count() == 1;
+            this.family = cpuid[0][0].Family;
+            this.model = cpuid[0][0].Model;
+            this.stepping = cpuid[0][0].Stepping;
+            this.packageType = cpuid[0][0].PkgType;
 
-			Log.Logger.Information("CPUID core count: {coreCount}.", cpuid.Length);
+            FillThreadMaps(cpuid);
 
-			if (hasGlobalThreadCount)
-				Log.Logger.Information("CPUID thread count per core: {coreThreadCount}.", cpuid[0].Length);
-			else
-				Log.Logger.Information("CPU has different thread counts per core.");
+            bool hasGlobalThreadCount = threadCountMap.Values.Distinct().Count() == 1;
 
-			this.processorIndex = processorIndex;
-			this.coreCount = cpuid.Length;
+            Log.Logger.Information("CPUID core count: {coreCount}.", cpuid.Length);
 
-			// check if processor has MSRs
-			if (cpuid[0][0].Data.GetLength(0) > 1
-				&& (cpuid[0][0].Data[1, 3] & 0x20) != 0)
-				HasModelSpecificRegisters = true;
-			else
-				HasModelSpecificRegisters = false;
+            if (hasGlobalThreadCount)
+                Log.Logger.Information("CPUID thread count per core: {coreThreadCount}.", cpuid[0].Length);
+            else
+                Log.Logger.Information("CPU has different thread counts per core.");
 
-			// check if processor has a TSC
-			if (cpuid[0][0].Data.GetLength(0) > 1
-				&& (cpuid[0][0].Data[1, 3] & 0x10) != 0)
-				HasTimeStampCounter = true;
-			else
-				HasTimeStampCounter = false;
+            this.processorIndex = processorIndex;
+            this.coreCount = cpuid.Length;
 
-			if (coreCount > 1 || threadCountMap.Values.Max() > 1)
-				totalLoad = new Sensor("CPU Total", 0, SensorType.Load, this, settings);
-			else
-				totalLoad = null;
-			threadLoads = new Sensor[threadCountMap.Values.Sum()];
-			for (int i = 0; i < threadLoads.Length; i++)
-				threadLoads[i] = new Sensor(BuildCoreThreadString(i), i + 1,
-					SensorType.Load, this, settings);
-			maxLoad = new Sensor("CPU Max", threadLoads.Length + 1, SensorType.Load, this, settings);
-			cpuLoad = new CPULoad(cpuid);
+            // check if processor has MSRs
+            if (cpuid[0][0].Data.GetLength(0) > 1
+                && (cpuid[0][0].Data[1, 3] & 0x20) != 0)
+                HasModelSpecificRegisters = true;
+            else
+                HasModelSpecificRegisters = false;
 
-			if (cpuLoad.IsAvailable)
-			{
-				foreach (Sensor sensor in threadLoads)
-					ActivateSensor(sensor);
-				if (totalLoad != null)
-					ActivateSensor(totalLoad);
-				if (maxLoad != null)
-					ActivateSensor(maxLoad);
-			}
+            // check if processor has a TSC
+            if (cpuid[0][0].Data.GetLength(0) > 1
+                && (cpuid[0][0].Data[1, 3] & 0x10) != 0)
+                HasTimeStampCounter = true;
+            else
+                HasTimeStampCounter = false;
 
-			if (HasTimeStampCounter)
-			{
-				var previousAffinity = ThreadAffinity.Set(cpuid[0][0].Affinity);
+            if (coreCount > 1 || threadCountMap.Values.Max() > 1)
+                totalLoad = new Sensor("CPU Total", 0, SensorType.Load, this, settings);
+            else
+                totalLoad = null;
+            threadLoads = new Sensor[threadCountMap.Values.Sum()];
+            for (int i = 0; i < threadLoads.Length; i++)
+                threadLoads[i] = new Sensor(BuildCoreThreadString(i), i + 1,
+                    SensorType.Load, this, settings);
+            maxLoad = new Sensor("CPU Max", threadLoads.Length + 1, SensorType.Load, this, settings);
+            cpuLoad = new CPULoad(cpuid);
 
-				EstimateTimeStampCounterFrequency(
-					out estimatedTimeStampCounterFrequency,
-					out estimatedTimeStampCounterFrequencyError);
+            if (cpuLoad.IsAvailable)
+            {
+                foreach (Sensor sensor in threadLoads)
+                    ActivateSensor(sensor);
+                if (totalLoad != null)
+                    ActivateSensor(totalLoad);
+                if (maxLoad != null)
+                    ActivateSensor(maxLoad);
+            }
 
-				EstimatedTimeStampCounterFrequencyError = estimatedTimeStampCounterFrequencyError;
+            if (HasTimeStampCounter)
+            {
+                var previousAffinity = ThreadAffinity.Set(cpuid[0][0].Affinity);
 
-				ThreadAffinity.Set(previousAffinity);
-			}
-			else
-			{
-				EstimatedTimeStampCounterFrequencyError = 0;
-			}
+                EstimateTimeStampCounterFrequency(
+                    out estimatedTimeStampCounterFrequency,
+                    out estimatedTimeStampCounterFrequencyError);
 
-			TimeStampCounterFrequency = estimatedTimeStampCounterFrequency;
-		}
+                EstimatedTimeStampCounterFrequencyError = estimatedTimeStampCounterFrequencyError;
 
-		private void FillThreadMaps(CPUID[][] cpuid)
-		{
-			int threadCount = 0;
-			for (int i = 0; i < cpuid.Length; i++)
-			{
-				threadCountMap.Add(i, cpuid[i].Length);
+                ThreadAffinity.Set(previousAffinity);
+            }
+            else
+            {
+                EstimatedTimeStampCounterFrequencyError = 0;
+            }
 
-				for (int t = 0; t < cpuid[i].Length; t++)
-				{
-					threadCoreMap.Add(threadCount++, i);
-				}
-			}
-		}
+            TimeStampCounterFrequency = estimatedTimeStampCounterFrequency;
+        }
 
-		private static Identifier CreateIdentifier(Vendor vendor,
-			int processorIndex)
-		{
-			string s;
-			switch (vendor)
-			{
-				case Vendor.AMD: s = "amdcpu"; break;
-				case Vendor.Intel: s = "intelcpu"; break;
-				default: s = "genericcpu"; break;
-			}
-			return new Identifier(s,
-				processorIndex.ToString(CultureInfo.InvariantCulture));
-		}
+        private void FillThreadMaps(CPUID[][] cpuid)
+        {
+            int threadCount = 0;
+            for (int i = 0; i < cpuid.Length; i++)
+            {
+                threadCountMap.Add(i, cpuid[i].Length);
 
-		[DllImport("CapFrameX.Hwinfo.dll")]
-		public static extern long GetTimeStampCounterFrequency();
+                for (int t = 0; t < cpuid[i].Length; t++)
+                {
+                    threadCoreMap.Add(threadCount++, i);
+                }
+            }
+        }
 
-		private void EstimateTimeStampCounterFrequency(out double frequency,
-			out double error)
-		{
-			try
-			{
-				frequency = GetTimeStampCounterFrequency() / 1E06;
-				error = frequency == 0 ? 1 : 0;
-			}
-			catch
-			{
-				frequency = 0;
-				error = 1;
-			}
-		}
+        private static Identifier CreateIdentifier(Vendor vendor,
+            int processorIndex)
+        {
+            string s;
+            switch (vendor)
+            {
+                case Vendor.AMD: s = "amdcpu"; break;
+                case Vendor.Intel: s = "intelcpu"; break;
+                default: s = "genericcpu"; break;
+            }
+            return new Identifier(s,
+                processorIndex.ToString(CultureInfo.InvariantCulture));
+        }
 
-		protected virtual uint[] GetMSRs() => null;
+        [DllImport("CapFrameX.Hwinfo.dll")]
+        public static extern long GetTimeStampCounterFrequency();
 
-		public override HardwareType HardwareType => HardwareType.CPU;
+        private void EstimateTimeStampCounterFrequency(out double frequency,
+            out double error)
+        {
+            try
+            {
+                frequency = GetTimeStampCounterFrequency() / 1E06;
+                error = frequency == 0 ? 1 : 0;
+            }
+            catch
+            {
+                frequency = 0;
+                error = 1;
+            }
+        }
 
-		public bool HasModelSpecificRegisters { get; }
+        protected virtual uint[] GetMSRs() => null;
 
-		public bool HasTimeStampCounter { get; }
+        public override HardwareType HardwareType => HardwareType.CPU;
 
-		public double TimeStampCounterFrequency { get; set; }
+        public bool HasModelSpecificRegisters { get; }
 
-		public double EstimatedTimeStampCounterFrequencyError { get; set; }
+        public bool HasTimeStampCounter { get; }
 
-		public override Vendor Vendor => vendor;
+        public double TimeStampCounterFrequency { get; set; }
 
-		public override void Update()
-		{
-			if (cpuLoad.IsAvailable)
-			{
-				cpuLoad.Update();
-				for (int i = 0; i < threadLoads.Length; i++)
-					threadLoads[i].Value = cpuLoad.GetThreadLoad(i);
-				if (totalLoad != null)
-					totalLoad.Value = cpuLoad.GetTotalLoad();
-				if (maxLoad != null)
-					maxLoad.Value = cpuLoad.GetMaxLoad();
-			}
-		}
-	}
+        public double EstimatedTimeStampCounterFrequencyError { get; set; }
+
+        public override Vendor Vendor => vendor;
+
+        public override void Update()
+        {
+            if (cpuLoad.IsAvailable)
+            {
+                cpuLoad.Update();
+                for (int i = 0; i < threadLoads.Length; i++)
+                    threadLoads[i].Value = cpuLoad.GetThreadLoad(i);
+                if (totalLoad != null)
+                    totalLoad.Value = cpuLoad.GetTotalLoad();
+                if (maxLoad != null)
+                    maxLoad.Value = cpuLoad.GetMaxLoad();
+            }
+        }
+    }
 }

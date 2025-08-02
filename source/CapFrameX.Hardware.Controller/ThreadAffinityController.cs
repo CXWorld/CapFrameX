@@ -16,7 +16,8 @@ namespace CapFrameX.Hardware.Controller
     public enum HybridCore
     {
         Performance,
-        Efficiency
+        Efficiency,
+        Dense
     }
 
     public enum AffinityState
@@ -25,7 +26,8 @@ namespace CapFrameX.Hardware.Controller
         PCores,
         ECores,
         CCD0,
-        CCD1
+        CCD1,
+        DCores
     }
 
     public class ThreadAffinityController : IThreadAffinityController
