@@ -135,9 +135,7 @@ namespace CapFrameX.ViewModel
             if (!colorOverride.HasValue || !_viewModel.ComparisonRecords.Any())
                 return;
 
-            _viewModel.IsDistributionChartDirty = true;
-            _viewModel.IsFpsChartDirty = true;
-            _viewModel.IsFrametimeChartDirty = true;
+            _viewModel.SetChartUpdateFlags();
 
             var color = colorOverride.Value;
             var tag = WrappedRecordInfo.FileRecordInfo.Id;

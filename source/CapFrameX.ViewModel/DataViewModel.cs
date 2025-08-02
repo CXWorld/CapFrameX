@@ -576,6 +576,7 @@ namespace CapFrameX.ViewModel
             {
                 _showGpuLoad = value;
                 RaisePropertyChanged();
+                SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
             }
         }
@@ -587,6 +588,7 @@ namespace CapFrameX.ViewModel
             {
                 _showCpuLoad = value;
                 RaisePropertyChanged();
+                SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
             }
         }
@@ -598,6 +600,7 @@ namespace CapFrameX.ViewModel
             {
                 _showCpuMaxThreadLoad = value;
                 RaisePropertyChanged();
+                SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
             }
         }
@@ -609,6 +612,7 @@ namespace CapFrameX.ViewModel
             {
                 _showGpuPowerLimit = value;
                 RaisePropertyChanged();
+                SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
             }
         }
@@ -631,6 +635,7 @@ namespace CapFrameX.ViewModel
             {
                 _showGpuActiveChart = value;
                 RaisePropertyChanged();
+                SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
             }
         }
@@ -651,11 +656,9 @@ namespace CapFrameX.ViewModel
             get { return _aggregationSeparators; }
             set
             {
-                _aggregationSeparators = value;
+                _aggregationSeparators = value;                              
                 RaisePropertyChanged();
-
-                _isFpsChartDirty = true;
-                _isFrametimeChartDirty = true;
+                SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
             }
         }
@@ -667,8 +670,7 @@ namespace CapFrameX.ViewModel
             {
                 _showStutteringThresholds = value;
                 RaisePropertyChanged();
-                _isFpsChartDirty = true;
-                _isFrametimeChartDirty = true;
+                SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
             }
         }
@@ -879,14 +881,12 @@ namespace CapFrameX.ViewModel
 
         private void OnRangeSliderValueChanged()
         {
-            // Dein Original-Code
+            
             _localRecordDataServer.SetTimeWindow(FirstSeconds, LastSeconds - FirstSeconds);
             RemainingRecordingTime = "(" + Math.Round(LastSeconds - FirstSeconds, 2)
                 .ToString("0.00", CultureInfo.InvariantCulture) + " s)";
 
-            _isDistributionChartDirty = true;
-            _isFpsChartDirty = true;
-            _isFrametimeChartDirty = true;
+            SetChartUpdateFlags();
 
             if (AnalysisRangeSliderRealTime)
             {
@@ -1189,9 +1189,8 @@ namespace CapFrameX.ViewModel
             CurrentGameName = RemoveOutliers ? $"{RecordInfo.GameName} (outlier-cleaned)"
                 : RecordInfo.GameName;
 
-            _isDistributionChartDirty = true;
-            _isFpsChartDirty = true;
-            _isFrametimeChartDirty = true;
+            SetChartUpdateFlags();
+
 
             UpdateMainCharts();
             UpdateSecondaryCharts();
@@ -1261,10 +1260,7 @@ namespace CapFrameX.ViewModel
             if (_session != null && RecordInfo != null)
             {
 
-                _isDistributionChartDirty = true;
-                _isFpsChartDirty = true;
-                _isFrametimeChartDirty = true;
-
+                SetChartUpdateFlags();
 
                 CurrentGameName = RemoveOutliers ? $"{RecordInfo.GameName} (outlier-cleaned)"
                     : RecordInfo.GameName;
@@ -2004,6 +2000,16 @@ namespace CapFrameX.ViewModel
             return setting;
         }
 
+        private void SetChartUpdateFlags(bool frametimes = true, bool fps = true, bool distribution = true)
+        {
+            if(frametimes)
+            _isFrametimeChartDirty = true;
+            if(fps)
+            _isFpsChartDirty = true;
+            if(distribution)
+            _isDistributionChartDirty = true;
+        }
+
 
         public void OnStutteringOptionsChanged()
         {
@@ -2018,9 +2024,7 @@ namespace CapFrameX.ViewModel
             if (LastSeconds > MaxRecordingTime || LastSeconds <= 0)
                 LastSeconds = MaxRecordingTime;
 
-            _isDistributionChartDirty = true;
-            _isFpsChartDirty = true;
-            _isFrametimeChartDirty = true;
+            SetChartUpdateFlags();
 
             if (!AnalysisRangeSliderRealTime)
             {

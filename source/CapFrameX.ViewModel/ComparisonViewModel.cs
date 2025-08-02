@@ -408,9 +408,7 @@ namespace CapFrameX.ViewModel
                 RemainingRecordingTime = "(" + Math.Round(LastSeconds - _firstSeconds, 2, MidpointRounding.AwayFromZero)
                     .ToString("0.00", CultureInfo.InvariantCulture) + " s)";
 
-                _isDistributionChartDirty = true;
-                _isFpsChartDirty = true;
-                _isFrametimeChartDirty = true;
+                SetChartUpdateFlags();
 
                 if (ComparisonRangeSliderRealTime)
                     UpdateCharts();
@@ -427,9 +425,7 @@ namespace CapFrameX.ViewModel
                 RemainingRecordingTime = "(" + Math.Round(_lastSeconds - FirstSeconds, 2, MidpointRounding.AwayFromZero)
                     .ToString("0.00", CultureInfo.InvariantCulture) + " s)";
 
-                _isDistributionChartDirty = true;
-                _isFpsChartDirty = true;
-                _isFrametimeChartDirty = true;
+                SetChartUpdateFlags();
 
                 if (ComparisonRangeSliderRealTime)
                     UpdateCharts();
@@ -443,9 +439,7 @@ namespace CapFrameX.ViewModel
             {
                 _isContextLegendActive = value;
 
-                _isDistributionChartDirty = true;
-                _isFpsChartDirty = true;
-                _isFrametimeChartDirty = true;
+                SetChartUpdateFlags();
                 RaisePropertyChanged();
                 OnShowContextLegendChanged();
             }
@@ -1226,6 +1220,15 @@ namespace CapFrameX.ViewModel
                     }
                 };
         }
+        public void SetChartUpdateFlags(bool frametimes = true, bool fps = true, bool distribution = true)
+        {
+            if (frametimes)
+                _isFrametimeChartDirty = true;
+            if (fps)
+                _isFpsChartDirty = true;
+            if (distribution)
+                _isDistributionChartDirty = true;
+        }
 
         private void UpdateCharts()
         {
@@ -1233,23 +1236,25 @@ namespace CapFrameX.ViewModel
                 return;
             ResetBarChartSeriesTitles();
 
+            //Clear series and reset axes of all charts
+
             if (_isFrametimeChartDirty)
+            {
                 ComparisonFrametimesModel.Series.Clear();
-            if (_isFpsChartDirty)
-            ComparisonFpsModel.Series.Clear();
-            if (_isDistributionChartDirty)
-            ComparisonDistributionModel.Series.Clear();
-
-            ComparisonLShapeCollection.Clear();
-
-            //Reset axes of all charts
-            ResetLShapeChart.OnNext(default);
-            if (_isFrametimeChartDirty)
                 ComparisonFrametimesModel.ResetAllAxes();
+            }
             if (_isFpsChartDirty)
+            {
+                ComparisonFpsModel.Series.Clear();
                 ComparisonFpsModel.ResetAllAxes();
+            }
             if (_isDistributionChartDirty)
+            {
+                ComparisonDistributionModel.Series.Clear();
                 ComparisonDistributionModel.ResetAllAxes();
+            }
+            ComparisonLShapeCollection.Clear();
+            ResetLShapeChart.OnNext(default);
 
             var header = SelectedChartItem?.Header?.ToString();
 
@@ -1264,7 +1269,6 @@ namespace CapFrameX.ViewModel
                     SetFrametimeChart();
                     _isFrametimeChartDirty = false;
                 }
-
                 if (_isFpsChartDirty)
                 {
                     SetFpsChart();
