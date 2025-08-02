@@ -49,6 +49,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             {
                 return $"CPU Core{GetCoreLabel(i)}";
             }
+
             return $"CPU Core #{i + 1}{GetCoreLabel(i)}";
         }
 
@@ -79,14 +80,15 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     var previousAffinity = ThreadAffinity.Set(cpuid[i][0].Affinity);
                     if (Opcode.Cpuid(0x80000026, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
                     {
-                        if ((eax & (1u << 30)) != 0) // Heterogeneous core topology supported
+                        // Heterogeneous core topology supported
+                        if ((eax & (1u << 30)) != 0)
                         {
                             uint coreType = (ebx >> 28) & 0xF;
                             switch (coreType)
                             {
                                 case 0: corelabel = " P"; break;
                                 case 1: corelabel = " D"; break;
-                                default: break; // Undefined or error
+                                default: break;
                             }
                         }
                     }
