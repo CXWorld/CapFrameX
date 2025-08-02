@@ -707,6 +707,8 @@ namespace CapFrameX.ViewModel
             set
             {
                 _showGpuActiveLineCharts = value;
+                IsFpsChartDirty = true;
+                IsFrametimeChartDirty = true;
                 RaisePropertyChanged();
                 UpdateCharts();
             }
@@ -1233,7 +1235,7 @@ namespace CapFrameX.ViewModel
 
             if (_isFrametimeChartDirty)
                 ComparisonFrametimesModel.Series.Clear();
-            if(_isFpsChartDirty)
+            if (_isFpsChartDirty)
             ComparisonFpsModel.Series.Clear();
             if (_isDistributionChartDirty)
             ComparisonDistributionModel.Series.Clear();
