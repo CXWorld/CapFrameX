@@ -135,6 +135,10 @@ namespace CapFrameX.ViewModel
             if (!colorOverride.HasValue || !_viewModel.ComparisonRecords.Any())
                 return;
 
+            _viewModel.IsDistributionChartDirty = true;
+            _viewModel.IsFpsChartDirty = true;
+            _viewModel.IsFrametimeChartDirty = true;
+
             var color = colorOverride.Value;
             var tag = WrappedRecordInfo.FileRecordInfo.Id;
             var oxyColor = OxyColor.FromArgb(color.A, color.R, color.G, color.B);

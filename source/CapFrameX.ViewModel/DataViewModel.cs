@@ -94,6 +94,9 @@ namespace CapFrameX.ViewModel
         private EFilterMode _selectedFilterMode = EFilterMode.None;
         private ELShapeMetrics _lShapeMetric = ELShapeMetrics.Frametimes;
         private string _lShapeYaxisLabel = "Frametimes (ms)" + Environment.NewLine + " ";
+        private bool _isDistributionChartDirty = true;
+        private bool _isFpsChartDirty = true;
+        private bool _isFrametimeChartDirty = true;
 
         private ISubject<Unit> _onUpdateChart = new BehaviorSubject<Unit>(default);
 
@@ -650,6 +653,9 @@ namespace CapFrameX.ViewModel
             {
                 _aggregationSeparators = value;
                 RaisePropertyChanged();
+
+                _isFpsChartDirty = true;
+                _isFrametimeChartDirty = true;
                 _onUpdateChart.OnNext(default);
             }
         }
@@ -661,6 +667,8 @@ namespace CapFrameX.ViewModel
             {
                 _showStutteringThresholds = value;
                 RaisePropertyChanged();
+                _isFpsChartDirty = true;
+                _isFrametimeChartDirty = true;
                 _onUpdateChart.OnNext(default);
             }
         }
@@ -814,19 +822,22 @@ namespace CapFrameX.ViewModel
         {
             _onUpdateChart.Subscribe(_ =>
             {
-                if (SelectedChartHeader.Contains("Distribution"))
+                
+                if (SelectedChartHeader.Contains("Distribution") && _isDistributionChartDirty)
                 {
                     FrametimeDistributionGraphDataContext.BuildPlotmodel(GetVisibleGraphs());
+                    _isDistributionChartDirty = false;
                 }
                     
 
-                if (SelectedChartHeader.Contains("FPS"))
+                if (SelectedChartHeader.Contains("FPS")&& _isFpsChartDirty)
                 {
                     FpsGraphDataContext.BuildPlotmodel(GetVisibleGraphs());
+                    _isFpsChartDirty = false;
                 }
                    
 
-                if (SelectedChartHeader.Contains("Times"))
+                if (SelectedChartHeader.Contains("Times")&& _isFrametimeChartDirty)
                 {
                     FrametimeGraphDataContext.BuildPlotmodel(GetVisibleGraphs(), plotModel =>
                     {
@@ -836,6 +847,7 @@ namespace CapFrameX.ViewModel
                             SetFrametimeChartYAxisSetting(tuple);
                         });
                     });
+                    _isFrametimeChartDirty = false;
                 }
                 RaisePropertyChanged(nameof(GpuActiveDeviationPercentage));
             });
@@ -871,6 +883,11 @@ namespace CapFrameX.ViewModel
             _localRecordDataServer.SetTimeWindow(FirstSeconds, LastSeconds - FirstSeconds);
             RemainingRecordingTime = "(" + Math.Round(LastSeconds - FirstSeconds, 2)
                 .ToString("0.00", CultureInfo.InvariantCulture) + " s)";
+
+            _isDistributionChartDirty = true;
+            _isFpsChartDirty = true;
+            _isFrametimeChartDirty = true;
+
             if (AnalysisRangeSliderRealTime)
             {
                 RealTimeUpdateCharts();
@@ -1172,6 +1189,10 @@ namespace CapFrameX.ViewModel
             CurrentGameName = RemoveOutliers ? $"{RecordInfo.GameName} (outlier-cleaned)"
                 : RecordInfo.GameName;
 
+            _isDistributionChartDirty = true;
+            _isFpsChartDirty = true;
+            _isFrametimeChartDirty = true;
+
             UpdateMainCharts();
             UpdateSecondaryCharts();
 
@@ -1239,6 +1260,12 @@ namespace CapFrameX.ViewModel
         {
             if (_session != null && RecordInfo != null)
             {
+
+                _isDistributionChartDirty = true;
+                _isFpsChartDirty = true;
+                _isFrametimeChartDirty = true;
+
+
                 CurrentGameName = RemoveOutliers ? $"{RecordInfo.GameName} (outlier-cleaned)"
                     : RecordInfo.GameName;
                 SystemInfos = _recordManager.GetSystemInfos(RecordInfo);
@@ -1991,6 +2018,9 @@ namespace CapFrameX.ViewModel
             if (LastSeconds > MaxRecordingTime || LastSeconds <= 0)
                 LastSeconds = MaxRecordingTime;
 
+            _isDistributionChartDirty = true;
+            _isFpsChartDirty = true;
+            _isFrametimeChartDirty = true;
 
             if (!AnalysisRangeSliderRealTime)
             {

@@ -106,6 +106,9 @@ namespace CapFrameX.ViewModel
         private EFilterMode _selectedFilterMode;
         private string _lShapeYaxisLabel = "Frametimes (ms)" + Environment.NewLine + " ";
         private bool _showGpuActiveLineCharts;
+        private bool _isDistributionChartDirty = true;
+        private bool _isFpsChartDirty = true;
+        private bool _isFrametimeChartDirty = true;
 
         public Array FirstMetricItems => Enum.GetValues(typeof(EMetric))
             .Cast<EMetric>().Where(metric => metric != EMetric.None && metric != EMetric.GpuActiveAverage && metric != EMetric.GpuActiveOnePercentLowAverage && metric != EMetric.GpuActiveP1)
@@ -405,6 +408,10 @@ namespace CapFrameX.ViewModel
                 RemainingRecordingTime = "(" + Math.Round(LastSeconds - _firstSeconds, 2, MidpointRounding.AwayFromZero)
                     .ToString("0.00", CultureInfo.InvariantCulture) + " s)";
 
+                _isDistributionChartDirty = true;
+                _isFpsChartDirty = true;
+                _isFrametimeChartDirty = true;
+
                 if (ComparisonRangeSliderRealTime)
                     UpdateCharts();
             }
@@ -420,6 +427,10 @@ namespace CapFrameX.ViewModel
                 RemainingRecordingTime = "(" + Math.Round(_lastSeconds - FirstSeconds, 2, MidpointRounding.AwayFromZero)
                     .ToString("0.00", CultureInfo.InvariantCulture) + " s)";
 
+                _isDistributionChartDirty = true;
+                _isFpsChartDirty = true;
+                _isFrametimeChartDirty = true;
+
                 if (ComparisonRangeSliderRealTime)
                     UpdateCharts();
             }
@@ -431,6 +442,10 @@ namespace CapFrameX.ViewModel
             set
             {
                 _isContextLegendActive = value;
+
+                _isDistributionChartDirty = true;
+                _isFpsChartDirty = true;
+                _isFrametimeChartDirty = true;
                 RaisePropertyChanged();
                 OnShowContextLegendChanged();
             }
@@ -740,6 +755,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
+
         public bool IsBarChartTabActive
         {
             get { return SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false; }
@@ -758,6 +774,34 @@ namespace CapFrameX.ViewModel
         public bool IsDistributionTabActive
         {
             get { return SelectedChartItem?.Header.ToString().Contains("Distribution") ?? false; }
+        }
+
+        public bool IsDistributionChartDirty
+        {
+            get { return _isDistributionChartDirty; }
+            set
+            {
+                _isDistributionChartDirty = value;
+                RaisePropertyChanged();
+            }
+        }
+        public bool IsFpsChartDirty
+        {
+            get { return _isFpsChartDirty; }
+            set
+            {
+                _isFpsChartDirty = value;
+                RaisePropertyChanged();
+            }
+        }
+        public bool IsFrametimeChartDirty
+        {
+            get { return _isFrametimeChartDirty; }
+            set
+            {
+                _isFrametimeChartDirty = value;
+                RaisePropertyChanged();
+            }
         }
 
         public ICommand RemoveAllComparisonsCommand { get; }
@@ -1186,31 +1230,52 @@ namespace CapFrameX.ViewModel
             if (!_doUpdateCharts)
                 return;
             ResetBarChartSeriesTitles();
-            ComparisonFrametimesModel.Series.Clear();
+
+            if (_isFrametimeChartDirty)
+                ComparisonFrametimesModel.Series.Clear();
+            if(_isFpsChartDirty)
             ComparisonFpsModel.Series.Clear();
+            if (_isDistributionChartDirty)
             ComparisonDistributionModel.Series.Clear();
+
             ComparisonLShapeCollection.Clear();
 
             //Reset axes of all charts
             ResetLShapeChart.OnNext(default);
-            ComparisonFrametimesModel.ResetAllAxes();
-            ComparisonFpsModel.ResetAllAxes();
-            ComparisonDistributionModel.ResetAllAxes();
+            if (_isFrametimeChartDirty)
+                ComparisonFrametimesModel.ResetAllAxes();
+            if (_isFpsChartDirty)
+                ComparisonFpsModel.ResetAllAxes();
+            if (_isDistributionChartDirty)
+                ComparisonDistributionModel.ResetAllAxes();
 
-            if (SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false)
+            var header = SelectedChartItem?.Header?.ToString();
+
+            if (header?.Contains("Bar charts") ?? false)
                 SetColumnChart();
-            else if (SelectedChartItem?.Header.ToString().Contains("Variances") ?? false)
+            else if (header?.Contains("Variances") ?? false)
                 SetVarianceChart();
-            else if (SelectedChartItem?.Header.ToString().Contains("Line") ?? false)
+            else if (header?.Contains("Line") ?? false)
             {
-                SetFrametimeChart();
-                SetFpsChart();
+                if (_isFrametimeChartDirty)
+                {
+                    SetFrametimeChart();
+                    _isFrametimeChartDirty = false;
+                }
+
+                if (_isFpsChartDirty)
+                {
+                    SetFpsChart();
+                    _isFpsChartDirty = false;
+                }
                 SetLShapeChart();
             }
-            else
+            else if (_isDistributionChartDirty)
             {
                 SetDistributionChart();
+                _isDistributionChartDirty = false;
             }
+
             OnComparisonContextChanged();
 
             RaisePropertyChanged(nameof(MetricAndLabelOptionsEnabled));
@@ -1342,6 +1407,8 @@ namespace CapFrameX.ViewModel
 
         private void OnFilterModeChanged()
         {
+
+            _isFpsChartDirty = true;
             ComparisonFpsModel.Series.Clear();
             SetFpsChart();
             OnComparisonContextChanged();
