@@ -12,11 +12,11 @@ namespace OpenHardwareMonitor.Hardware
         private const byte SMU_PCI_ADDR_REG = 0xC4;
         private const byte SMU_PCI_DATA_REG = 0xC8;
         private const uint SMU_REQ_MAX_ARGS = 6;
-        private const uint SMU_RETRIES_MAX = 8096;
+        private const uint SMU_RETRIES_MAX = 2*8096;
 
         private uint _argsAddr;
         private uint _cmdAddr;
-        private uint _dramBaseAddr;
+        private ulong _dramBaseAddr;
         private uint _pmTableSize;
         private uint _pmTableSizeAlt;
         private uint _pmTableVersion;
@@ -235,6 +235,7 @@ namespace OpenHardwareMonitor.Hardware
                         }
                 }
             }
+
             if (family == 0x19)
             {
                 switch (model)
@@ -274,6 +275,7 @@ namespace OpenHardwareMonitor.Hardware
                         }
                 }
             }
+
             if (family == 0x1A)
             {
                 switch (model)
@@ -292,32 +294,10 @@ namespace OpenHardwareMonitor.Hardware
                         }
                 }
             }
+
             return CpuCodeName.Undefined;
         }
-        public string GetReport()
-        {
-            StringBuilder r = new StringBuilder();
-            r.AppendLine("Ryzen SMU");
-            r.AppendLine();
-            r.AppendLine($" PM table version: 0x{_pmTableVersion:X8}");
-            r.AppendLine($" PM table supported: {_supportedCPU}");
-            r.AppendLine($" PM table layout defined: {IsPmTableLayoutDefined()}");
-            if (_supportedCPU)
-            {
-                r.AppendLine($" PM table size: 0x{_pmTableSize:X3}");
-                r.AppendLine($" PM table start address: 0x{_dramBaseAddr:X8}");
-                r.AppendLine();
-                r.AppendLine(" PM table dump:");
-                r.AppendLine(" Idx Offset Value");
-                r.AppendLine(" ------------------------");
-                float[] pm_values = GetPmTable();
-                for (int i = 0; i < pm_values.Length; i++)
-                {
-                    r.AppendLine($" {i,4} 0x{i * 4:X3} {pm_values[i]}");
-                }
-            }
-            return r.ToString();
-        }
+
         private bool SetAddresses(CpuCodeName codeName)
         {
             switch (codeName)
@@ -372,19 +352,16 @@ namespace OpenHardwareMonitor.Hardware
                 return args[0];
             return 0;
         }
-
         public Dictionary<uint, SmuSensorType> GetPmTableStructure()
         {
             if (!IsPmTableLayoutDefined())
                 return new Dictionary<uint, SmuSensorType>();
             return _supportedPmTableVersions[_pmTableVersion];
         }
-
         public bool IsPmTableLayoutDefined()
         {
             return _supportedPmTableVersions.ContainsKey(_pmTableVersion);
         }
-
         public float[] GetPmTable()
         {
             if (!_supportedCPU || !TransferTableToDram())
@@ -393,20 +370,22 @@ namespace OpenHardwareMonitor.Hardware
             // Fix for Zen+ empty values on first call.
             if (table.Length == 0 || table[0] == 0)
             {
-                Thread.Sleep(10);
+                Thread.Sleep(100);
                 TransferTableToDram();
                 table = ReadDramToArray();
             }
             return table;
         }
+
         private float[] ReadDramToArray()
         {
             float[] table = new float[_pmTableSize / 4];
-            byte[] bytes = InpOut.ReadMemory(new IntPtr(_dramBaseAddr), _pmTableSize);
+            byte[] bytes = InpOut.ReadMemory(new IntPtr((long)_dramBaseAddr), _pmTableSize);
             if (bytes != null)
                 Buffer.BlockCopy(bytes, 0, table, 0, bytes.Length);
             return table;
         }
+
         private bool SetupPmTableAddrAndSize()
         {
             if (_pmTableSize == 0)
@@ -415,10 +394,12 @@ namespace OpenHardwareMonitor.Hardware
                 SetupDramBaseAddr();
             return _dramBaseAddr != 0 && _pmTableSize != 0;
         }
+
         private void SetupPmTableSize()
         {
             if (!GetPmTableVersion(ref _pmTableVersion))
                 return;
+
             switch (_cpuCodeName)
             {
                 case CpuCodeName.Matisse:
@@ -512,11 +493,6 @@ namespace OpenHardwareMonitor.Hardware
                                     _pmTableSize = 0x5D0;
                                     break;
                                 }
-                            case 0x610905:
-                                {
-                                    _pmTableSize = 0x5D4; // Example, adjust if known
-                                    break;
-                                }
                             default:
                                 {
                                     return;
@@ -541,11 +517,6 @@ namespace OpenHardwareMonitor.Hardware
                             case 0x440904:
                                 {
                                     _pmTableSize = 0x5D0;
-                                    break;
-                                }
-                            case 0x440905:
-                                {
-                                    _pmTableSize = 0x5D4; // Example, adjust if known
                                     break;
                                 }
                             default:
@@ -732,7 +703,7 @@ namespace OpenHardwareMonitor.Hardware
             bool command = SendCommand(fn[0], ref args);
             if (!command)
                 return;
-            _dramBaseAddr = args[0] | ((uint)args[1] << 32);
+            _dramBaseAddr = args[0] | ((ulong)args[1] << 32);
         }
 
         private void SetupAddrClass2(uint[] fn)
@@ -779,8 +750,9 @@ namespace OpenHardwareMonitor.Hardware
             // 2nd base.
             parts[1] = args[0];
             // == Part 2 End ==
-            _dramBaseAddr = parts[0] & 0xFFFFFFFF;
+            _dramBaseAddr = parts[0] & 0xFFFFFFFFUL;
         }
+
         private void SetupDramBaseAddr()
         {
             uint[] fn = { 0, 0, 0 };
@@ -872,14 +844,17 @@ namespace OpenHardwareMonitor.Hardware
             }
             return SendCommand(fn, ref args);
         }
+
         private bool SendCommand(uint msg, ref uint[] args)
         {
             uint[] cmdArgs = new uint[SMU_REQ_MAX_ARGS];
             int argsLength = Math.Min(args.Length, cmdArgs.Length);
+
             for (int i = 0; i < argsLength; ++i)
                 cmdArgs[i] = args[i];
+
             uint tmp = 0;
-            if (_mutex.WaitOne(5000))
+            if (Ring0.WaitPciBusMutex(10000))
             {
                 // Step 1: Wait until the RSP register is non-zero.
                 tmp = 0;
@@ -888,24 +863,29 @@ namespace OpenHardwareMonitor.Hardware
                 {
                     if (!ReadReg(_rspAddr, ref tmp))
                     {
-                        _mutex.ReleaseMutex();
+                        Ring0.ReleasePciBusMutex();
                         return false;
                     }
                 }
+
                 while (tmp == 0 && 0 != retries--);
+
                 // Step 1.b: A command is still being processed meaning a new command cannot be issued.
                 if (retries == 0 && tmp == 0)
                 {
-                    _mutex.ReleaseMutex();
+                    Ring0.ReleasePciBusMutex();
                     return false;
                 }
+
                 // Step 2: Write zero (0) to the RSP register
                 WriteReg(_rspAddr, 0);
                 // Step 3: Write the argument(s) into the argument register(s)
                 for (int i = 0; i < cmdArgs.Length; ++i)
                     WriteReg(_argsAddr + (uint)(i * 4), cmdArgs[i]);
+
                 // Step 4: Write the message Id into the Message ID register
                 WriteReg(_cmdAddr, msg);
+
                 // Step 5: Wait until the Response register is non-zero.
                 tmp = 0;
                 retries = SMU_RETRIES_MAX;
@@ -913,31 +893,37 @@ namespace OpenHardwareMonitor.Hardware
                 {
                     if (!ReadReg(_rspAddr, ref tmp))
                     {
-                        _mutex.ReleaseMutex();
+                        Ring0.ReleasePciBusMutex();
                         return false;
                     }
                 }
+
                 while (tmp == 0 && retries-- != 0);
+
                 if (retries == 0 && tmp != (uint)Status.OK)
                 {
-                    _mutex.ReleaseMutex();
+                    Ring0.ReleasePciBusMutex();
                     return false;
                 }
+
                 // Step 6: If the Response register contains OK, then SMU has finished processing the message.
                 args = new uint[SMU_REQ_MAX_ARGS];
                 for (byte i = 0; i < SMU_REQ_MAX_ARGS; i++)
                 {
                     if (!ReadReg(_argsAddr + (uint)(i * 4), ref args[i]))
                     {
-                        _mutex.ReleaseMutex();
+                        Ring0.ReleasePciBusMutex();
                         return false;
                     }
                 }
+
                 ReadReg(_rspAddr, ref tmp);
-                _mutex.ReleaseMutex();
+                Ring0.ReleasePciBusMutex();
             }
+
             return tmp == (uint)Status.OK;
         }
+
         private static void WriteReg(uint addr, uint data)
         {
             if (Ring0.WaitPciBusMutex(10))
@@ -949,6 +935,7 @@ namespace OpenHardwareMonitor.Hardware
                 Ring0.ReleasePciBusMutex();
             }
         }
+
         private static bool ReadReg(uint addr, ref uint data)
         {
             bool read = false;
@@ -962,12 +949,14 @@ namespace OpenHardwareMonitor.Hardware
             }
             return read;
         }
+
         public struct SmuSensorType
         {
             public string Name;
             public SensorType Type;
             public float Scale;
         }
+
         private enum Status : uint
         {
             OK = 0x01,
@@ -976,6 +965,7 @@ namespace OpenHardwareMonitor.Hardware
             CmdRejectedPrereq = 0xFD,
             CmdRejectedBusy = 0xFC
         }
+
         private enum CpuCodeName
         {
             Undefined,

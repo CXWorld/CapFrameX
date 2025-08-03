@@ -90,14 +90,14 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 }
             }
 
-            smu = new RyzenSMU(family, model, packageType);
-            var pmTable = smu.GetPmTable();
+            //smu = new RyzenSMU(family, model, packageType);
+            //var pmTable = smu.GetPmTable();
 
-            foreach (KeyValuePair<uint, RyzenSMU.SmuSensorType> sensor in smu.GetPmTableStructure())
-            {
-                smuSensors.Add(sensor, new Sensor(sensor.Value.Name, 1, sensor.Value.Type, this, this.settings));
-                ActivateSensor(smuSensors[sensor]);
-            }
+            //foreach (KeyValuePair<uint, RyzenSMU.SmuSensorType> sensor in smu.GetPmTableStructure())
+            //{
+            //    smuSensors.Add(sensor, new Sensor(sensor.Value.Name, 1, sensor.Value.Type, this, this.settings));
+            //    ActivateSensor(smuSensors[sensor]);
+            //}
 
             coreTemperature = new Sensor(
               "CPU Package", 0, SensorType.Temperature, this, new[] {
