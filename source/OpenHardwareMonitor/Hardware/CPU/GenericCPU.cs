@@ -8,7 +8,6 @@
 	
 */
 
-using OpenHardwareMonitor.Hardware.Mainboard;
 using Serilog;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,6 +18,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 {
     internal class GenericCPU : Hardware
     {
+        private bool isHybrid;
         protected readonly CPUID[][] cpuid;
 
         private readonly Dictionary<int, int> threadCountMap = new Dictionary<int, int>();
@@ -57,7 +57,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         protected string GetCoreLabel(int i)
         {
             string corelabel = string.Empty;
-            if (CpuArchitecture.IsHybridDesign(cpuid[i]))
+            if (isHybrid)
             {
                 if (cpuid[i][0].Vendor == Vendor.Intel)
                 {
@@ -144,6 +144,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
             this.processorIndex = processorIndex;
             this.coreCount = cpuid.Length;
+            this.isHybrid = CpuArchitecture.IsHybridDesign(cpuid.Select(core => core[0]).ToArray());
 
             // check if processor has MSRs
             if (cpuid[0][0].Data.GetLength(0) > 1
