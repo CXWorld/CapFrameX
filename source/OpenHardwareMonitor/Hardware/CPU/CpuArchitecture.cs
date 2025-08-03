@@ -1,45 +1,79 @@
-﻿namespace OpenHardwareMonitor.Hardware.CPU
+﻿using System;
+
+namespace OpenHardwareMonitor.Hardware.CPU
 {
     public class CpuArchitecture
     {
-        public static bool IsHybridDesign(CPUID cpu)
+        private const uint CPUID_CORE_MASK_STATUS = 0x1A;
+
+        public static bool IsHybridDesign(CPUID[] cPUIDs)
         {
-            if (cpu.Vendor == Vendor.Intel)
+            Vendor vendor = cPUIDs[0].Vendor;
+
+            // Alder Lake (Intel 7/10nm): 0x97, 0x9A
+            // Raptor Lake (Intel 7/10nm): 0xB7
+            // Raptor Lake-H (Intel 7/10nm): 0xBA
+            // Raptor Lake (Alder Lake Refresh) (Intel 7/10nm): 0xBF
+            // Meteor Lake (Intel 4/7nm): 0xAA
+            // Lunar Lake (TSMC 3nm): 0xBD
+            // Arrow Lake (TSMC 3nm): 0xC6
+            // Arrow Lake-H (TSMC 3nm): 0xC5
+            if (vendor == Vendor.Intel)
             {
-                switch (cpu.Family)
+                bool isHybrid = false;
+
+                for (int i = 0; i < cPUIDs.Length; i++)
                 {
-                    case 0x06:
-                        // Alder Lake (Intel 7/10nm): 0x97, 0x9A
-                        // Raptor Lake (Intel 7/10nm): 0xB7
-                        // Raptor Lake-H (Intel 7/10nm): 0xBA
-                        // Raptor Lake (Alder Lake Refresh) (Intel 7/10nm): 0xBF
-                        // Meteor Lake (Intel 4/7nm): 0xAA
-                        // Lunar Lake (TSMC 3nm): 0xBD
-                        // Arrow Lake (TSMC 3nm): 0xC6
-                        // Arrow Lake-H (TSMC 3nm): 0xC5
-                        return cpu.Model == 0x97 || cpu.Model == 0x9A || cpu.Model == 0xB7 || cpu.Model == 0xBA || cpu.Model == 0xBF ||
-                            cpu.Model == 0xAA || cpu.Model == 0xBD || cpu.Model == 0xC6 || cpu.Model == 0xC5;
+                    var previousAffinity = ThreadAffinity.Set(cPUIDs[i].Affinity);
+                    if (Opcode.Cpuid(CPUID_CORE_MASK_STATUS, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
+                    {
+                        switch (eax >> 24)
+                        {
+                            // Efficiency cores (E-cores)
+                            case 0x20: isHybrid = true; break;
+                            default: break;
+                        }
+                    }
 
-                    case 0x12:
-                        // Nova Lake-S (Intel 18A + TSMC N2): 0x01
-                        // Nova Lake-L (Intel 18A + TSMC N2): 0x03
-                        return cpu.Model == 0x01 || cpu.Model == 0x03;
+                    ThreadAffinity.Set(previousAffinity);
 
-                    default:
-                        return false;
+                    if (isHybrid)
+                        break;
                 }
+
+                return isHybrid;
+
             }
-            else if (cpu.Vendor == Vendor.AMD)
+            // Zen 5c Strix Point
+            // Zen 4c Phoenix 2
+            else if (vendor == Vendor.AMD)
             {
-                switch (cpu.Family)
+                bool isHybrid = false;
+
+                for (int i = 0; i < cPUIDs.Length; i++)
                 {
-                    case 0x1A:
-                        return true; // Zen 5c Strix Point
-                    case 0x19:
-                        return true; // Zen 4c Phoenix 2
-                    default:
-                        return false;
+                    var previousAffinity = ThreadAffinity.Set(cPUIDs[i].Affinity);
+                    if (Opcode.Cpuid(0x80000026, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
+                    {
+                        if ((eax & (1u << 30)) != 0)
+                        {
+                            uint coreType = (ebx >> 28) & 0xF;
+                            switch (coreType)
+                            {
+                                // Dense cores (D-cores)
+                                case 1: isHybrid = true; break;
+                                default: break;
+                            }
+                        }
+                    }
+
+                    ThreadAffinity.Set(previousAffinity);
+
+                    if (isHybrid)
+                        break;
                 }
+
+                return isHybrid;
             }
             else
             {

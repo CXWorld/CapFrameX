@@ -57,7 +57,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         protected string GetCoreLabel(int i)
         {
             string corelabel = string.Empty;
-            if (CpuArchitecture.IsHybridDesign(cpuid[i][0]))
+            if (CpuArchitecture.IsHybridDesign(cpuid[i]))
             {
                 if (cpuid[i][0].Vendor == Vendor.Intel)
                 {
