@@ -25,6 +25,9 @@ namespace CapFrameX.PresentMonInterface
 
         public static string GetCaptureFilename(string processName)
         {
+            if (processName.Contains("?"))
+                processName = string.Empty;
+
             DateTime now = DateTime.Now;
             string dateTimeFormat = $"{now.Year}-{now.Month:d2}-" +
                 $"{now.Day:d2}T{now.Hour}{now.Minute}{now.Second}";
