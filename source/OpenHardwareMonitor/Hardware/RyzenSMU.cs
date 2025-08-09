@@ -1,6 +1,5 @@
 ﻿// ported from: https://gitlab.com/leogx9r/ryzen_smu
 // and: https://github.com/irusanov/SMUDebugTool
-
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,7 +12,15 @@ namespace OpenHardwareMonitor.Hardware
         private const byte SMU_PCI_ADDR_REG = 0xC4;
         private const byte SMU_PCI_DATA_REG = 0xC8;
         private const uint SMU_REQ_MAX_ARGS = 6;
-        private const uint SMU_RETRIES_MAX = 8096;
+        private const uint SMU_RETRIES_MAX = 2*8096;
+
+        private uint _argsAddr;
+        private uint _cmdAddr;
+        private ulong _dramBaseAddr;
+        private uint _pmTableSize;
+        private uint _pmTableSizeAlt;
+        private uint _pmTableVersion;
+        private uint _rspAddr;
 
         private readonly CpuCodeName _cpuCodeName;
         private readonly Mutex _mutex = new Mutex();
@@ -72,8 +79,8 @@ namespace OpenHardwareMonitor.Hardware
                 }
             },
             {
-		        // Zen 3 
-		        0x00380805, new Dictionary<uint, SmuSensorType>
+                // Zen 3
+                0x00380805, new Dictionary<uint, SmuSensorType>
                 {
                     { 15, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
                     { 21, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
@@ -81,39 +88,105 @@ namespace OpenHardwareMonitor.Hardware
                     { 50, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
                     { 51, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
                     { 115, new SmuSensorType { Name = "SoC", Type = SensorType.Temperature, Scale = 1 } },
-			        //{ 66, new SmuSensorType { Name = "Bus Speed", Type = SensorType.Clock, Scale = 1 } },
-			        //{ 188, new SmuSensorType { Name = "Core #1", Type = SensorType.Clock, Scale = 1000 } },
-			        //{ 189, new SmuSensorType { Name = "Core #2", Type = SensorType.Clock, Scale = 1000 } },
-			        //{ 190, new SmuSensorType { Name = "Core #3", Type = SensorType.Clock, Scale = 1000 } },
-			        //{ 191, new SmuSensorType { Name = "Core #4", Type = SensorType.Clock, Scale = 1000 } },
-			        //{ 192, new SmuSensorType { Name = "Core #5", Type = SensorType.Clock, Scale = 1000 } },
-			        //{ 193, new SmuSensorType { Name = "Core #6", Type = SensorType.Clock, Scale = 1000 } },
-		        }
+                //{ 66, new SmuSensorType { Name = "Bus Speed", Type = SensorType.Clock, Scale = 1 } },
+                //{ 188, new SmuSensorType { Name = "Core #1", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 189, new SmuSensorType { Name = "Core #2", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 190, new SmuSensorType { Name = "Core #3", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 191, new SmuSensorType { Name = "Core #4", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 192, new SmuSensorType { Name = "Core #5", Type = SensorType.Clock, Scale = 1000 } },
+                //{ 193, new SmuSensorType { Name = "Core #6", Type = SensorType.Clock, Scale = 1000 } },
+                }
+            },
+            {
+                // Zen 3+ Rembrandt
+                0x00440005, new Dictionary<uint, SmuSensorType>
+                {
+                    { 15, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
+                    { 21, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
+                    { 48, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
+                    { 50, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
+                    { 51, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
+                    { 115, new SmuSensorType { Name = "SoC", Type = SensorType.Temperature, Scale = 1 } },
+                    // Additional sensors could be added if layouts are known, but using basic for now
+                }
+            },
+            {
+                // Zen 4 Raphael
+                0x00610905, new Dictionary<uint, SmuSensorType>
+                {
+                    { 15, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
+                    { 21, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
+                    { 48, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
+                    { 50, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
+                    { 51, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
+                    { 115, new SmuSensorType { Name = "SoC", Type = SensorType.Temperature, Scale = 1 } },
+                    // Additional sensors could be added if layouts are known, but using basic for now
+                }
+            },
+            {
+                // Zen 4 Phoenix
+                0x00740005, new Dictionary<uint, SmuSensorType>
+                {
+                    { 15, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
+                    { 21, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
+                    { 48, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
+                    { 50, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
+                    { 51, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
+                    { 115, new SmuSensorType { Name = "SoC", Type = SensorType.Temperature, Scale = 1 } },
+                    // Additional sensors could be added if layouts are known, but using basic for now
+                }
+            },
+            {
+                // Zen 4 Hawk Point
+                0x004C0008, new Dictionary<uint, SmuSensorType>
+                {
+                    { 15, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
+                    { 21, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
+                    { 48, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
+                    { 50, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
+                    { 51, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
+                    { 115, new SmuSensorType { Name = "SoC", Type = SensorType.Temperature, Scale = 1 } },
+                    // Additional sensors could be added if layouts are known, but using basic for now
+                }
+            },
+            {
+                // Zen 5 Granite Ridge
+                0x00440905, new Dictionary<uint, SmuSensorType>
+                {
+                    { 15, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
+                    { 21, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
+                    { 48, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
+                    { 50, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
+                    { 51, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
+                    { 115, new SmuSensorType { Name = "SoC", Type = SensorType.Temperature, Scale = 1 } },
+                    // Additional sensors could be added if layouts are known, but using basic for now
+                }
+            },
+            {
+                // Zen 5 Strix Point
+                0x005D0008, new Dictionary<uint, SmuSensorType>
+                {
+                    { 15, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
+                    { 21, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
+                    { 48, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
+                    { 50, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
+                    { 51, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
+                    { 115, new SmuSensorType { Name = "SoC", Type = SensorType.Temperature, Scale = 1 } },
+                    // Additional sensors could be added if layouts are known, but using basic for now
+                }
             }
         };
-
-        private uint _argsAddr;
-        private uint _cmdAddr;
-        private uint _dramBaseAddr;
-        private uint _pmTableSize;
-        private uint _pmTableSizeAlt;
-        private uint _pmTableVersion;
-        private uint _rspAddr;
 
         public RyzenSMU(uint family, uint model, uint packageType)
         {
             _cpuCodeName = GetCpuCodeName(family, model, packageType);
-
             _supportedCPU = Environment.Is64BitOperatingSystem == Environment.Is64BitProcess && SetAddresses(_cpuCodeName);
-
             if (_supportedCPU)
             {
                 InpOut.Open();
-
                 SetupPmTableAddrAndSize();
             }
         }
-
         private static CpuCodeName GetCpuCodeName(uint family, uint model, uint packageType)
         {
             if (family == 0x17)
@@ -184,6 +257,37 @@ namespace OpenHardwareMonitor.Hardware
                         {
                             return CpuCodeName.Cezanne;
                         }
+                    case 0x61:
+                        {
+                            return CpuCodeName.Raphael;
+                        }
+                    case 0x74:
+                        {
+                            return CpuCodeName.Phoenix;
+                        }
+                    case 0x78:
+                        {
+                            return CpuCodeName.HawkPoint;
+                        }
+                    default:
+                        {
+                            return CpuCodeName.Undefined;
+                        }
+                }
+            }
+
+            if (family == 0x1A)
+            {
+                switch (model)
+                {
+                    case 0x24:
+                        {
+                            return CpuCodeName.StrixPoint;
+                        }
+                    case 0x44:
+                        {
+                            return CpuCodeName.GraniteRidge;
+                        }
                     default:
                         {
                             return CpuCodeName.Undefined;
@@ -194,35 +298,6 @@ namespace OpenHardwareMonitor.Hardware
             return CpuCodeName.Undefined;
         }
 
-        public string GetReport()
-        {
-            StringBuilder r = new StringBuilder();
-
-            r.AppendLine("Ryzen SMU");
-            r.AppendLine();
-            r.AppendLine($" PM table version: 0x{_pmTableVersion:X8}");
-            r.AppendLine($" PM table supported: {_supportedCPU}");
-            r.AppendLine($" PM table layout defined: {IsPmTableLayoutDefined()}");
-
-            if (_supportedCPU)
-            {
-                r.AppendLine($" PM table size: 0x{_pmTableSize:X3}");
-                r.AppendLine($" PM table start address: 0x{_dramBaseAddr:X8}");
-                r.AppendLine();
-                r.AppendLine(" PM table dump:");
-                r.AppendLine("  Idx    Offset   Value");
-                r.AppendLine(" ------------------------");
-
-                float[] pm_values = GetPmTable();
-                for (int i = 0; i < pm_values.Length; i++)
-                {
-                    r.AppendLine($" {i,4}    0x{i * 4:X3}    {pm_values[i]}");
-                }
-            }
-
-            return r.ToString();
-        }
-
         private bool SetAddresses(CpuCodeName codeName)
         {
             switch (codeName)
@@ -230,11 +305,12 @@ namespace OpenHardwareMonitor.Hardware
                 case CpuCodeName.CastlePeak:
                 case CpuCodeName.Matisse:
                 case CpuCodeName.Vermeer:
+                case CpuCodeName.Raphael:
+                case CpuCodeName.GraniteRidge:
                     {
                         _cmdAddr = 0x3B10524;
                         _rspAddr = 0x3B10570;
                         _argsAddr = 0x3B10A40;
-
                         return true;
                     }
                 case CpuCodeName.Colfax:
@@ -245,7 +321,6 @@ namespace OpenHardwareMonitor.Hardware
                         _cmdAddr = 0x3B1051C;
                         _rspAddr = 0x3B10568;
                         _argsAddr = 0x3B10590;
-
                         return true;
                     }
                 case CpuCodeName.Renoir:
@@ -253,11 +328,15 @@ namespace OpenHardwareMonitor.Hardware
                 case CpuCodeName.RavenRidge:
                 case CpuCodeName.RavenRidge2:
                 case CpuCodeName.Dali:
+                case CpuCodeName.Rembrandt:
+                case CpuCodeName.Cezanne:
+                case CpuCodeName.Phoenix:
+                case CpuCodeName.HawkPoint:
+                case CpuCodeName.StrixPoint:
                     {
                         _cmdAddr = 0x3B10A20;
                         _rspAddr = 0x3B10A80;
                         _argsAddr = 0x3B10A88;
-
                         return true;
                     }
                 default:
@@ -266,59 +345,44 @@ namespace OpenHardwareMonitor.Hardware
                     }
             }
         }
-
         public uint GetSmuVersion()
         {
             uint[] args = { 1 };
-
             if (SendCommand(0x02, ref args))
                 return args[0];
-
-
             return 0;
         }
-
         public Dictionary<uint, SmuSensorType> GetPmTableStructure()
         {
             if (!IsPmTableLayoutDefined())
                 return new Dictionary<uint, SmuSensorType>();
-
-
             return _supportedPmTableVersions[_pmTableVersion];
         }
-
         public bool IsPmTableLayoutDefined()
         {
             return _supportedPmTableVersions.ContainsKey(_pmTableVersion);
         }
-
         public float[] GetPmTable()
         {
             if (!_supportedCPU || !TransferTableToDram())
                 return new float[] { 0 };
-
-
             float[] table = ReadDramToArray();
-
             // Fix for Zen+ empty values on first call.
             if (table.Length == 0 || table[0] == 0)
             {
-                Thread.Sleep(10);
+                Thread.Sleep(100);
                 TransferTableToDram();
                 table = ReadDramToArray();
             }
-
             return table;
         }
 
         private float[] ReadDramToArray()
         {
             float[] table = new float[_pmTableSize / 4];
-
-            byte[] bytes = InpOut.ReadMemory(new IntPtr(_dramBaseAddr), _pmTableSize);
+            byte[] bytes = InpOut.ReadMemory(new IntPtr((long)_dramBaseAddr), _pmTableSize);
             if (bytes != null)
                 Buffer.BlockCopy(bytes, 0, table, 0, bytes.Length);
-
             return table;
         }
 
@@ -326,10 +390,8 @@ namespace OpenHardwareMonitor.Hardware
         {
             if (_pmTableSize == 0)
                 SetupPmTableSize();
-
             if (_dramBaseAddr == 0)
                 SetupDramBaseAddr();
-
             return _dramBaseAddr != 0 && _pmTableSize != 0;
         }
 
@@ -337,7 +399,6 @@ namespace OpenHardwareMonitor.Hardware
         {
             if (!GetPmTableVersion(ref _pmTableVersion))
                 return;
-
 
             switch (_cpuCodeName)
             {
@@ -370,7 +431,6 @@ namespace OpenHardwareMonitor.Hardware
                                     return;
                                 }
                         }
-
                         break;
                     }
                 case CpuCodeName.Vermeer:
@@ -412,7 +472,58 @@ namespace OpenHardwareMonitor.Hardware
                                     return;
                                 }
                         }
-
+                        break;
+                    }
+                case CpuCodeName.Raphael:
+                    {
+                        switch (_pmTableVersion)
+                        {
+                            case 0x610902:
+                                {
+                                    _pmTableSize = 0x594;
+                                    break;
+                                }
+                            case 0x610903:
+                                {
+                                    _pmTableSize = 0x5A4;
+                                    break;
+                                }
+                            case 0x610904:
+                                {
+                                    _pmTableSize = 0x5D0;
+                                    break;
+                                }
+                            default:
+                                {
+                                    return;
+                                }
+                        }
+                        break;
+                    }
+                case CpuCodeName.GraniteRidge:
+                    {
+                        switch (_pmTableVersion)
+                        {
+                            case 0x440902:
+                                {
+                                    _pmTableSize = 0x594;
+                                    break;
+                                }
+                            case 0x440903:
+                                {
+                                    _pmTableSize = 0x5A4;
+                                    break;
+                                }
+                            case 0x440904:
+                                {
+                                    _pmTableSize = 0x5D0;
+                                    break;
+                                }
+                            default:
+                                {
+                                    return;
+                                }
+                        }
                         break;
                     }
                 case CpuCodeName.Renoir:
@@ -450,7 +561,6 @@ namespace OpenHardwareMonitor.Hardware
                                     return;
                                 }
                         }
-
                         break;
                     }
                 case CpuCodeName.Cezanne:
@@ -467,7 +577,70 @@ namespace OpenHardwareMonitor.Hardware
                                     return;
                                 }
                         }
-
+                        break;
+                    }
+                case CpuCodeName.Rembrandt:
+                    {
+                        switch (_pmTableVersion)
+                        {
+                            case 0x440005:
+                                {
+                                    _pmTableSize = 0x944;
+                                    break;
+                                }
+                            default:
+                                {
+                                    return;
+                                }
+                        }
+                        break;
+                    }
+                case CpuCodeName.Phoenix:
+                    {
+                        switch (_pmTableVersion)
+                        {
+                            case 0x740005:
+                                {
+                                    _pmTableSize = 0x944;
+                                    break;
+                                }
+                            default:
+                                {
+                                    return;
+                                }
+                        }
+                        break;
+                    }
+                case CpuCodeName.HawkPoint:
+                    {
+                        switch (_pmTableVersion)
+                        {
+                            case 0x4C0008:
+                                {
+                                    _pmTableSize = 0x944;
+                                    break;
+                                }
+                            default:
+                                {
+                                    return;
+                                }
+                        }
+                        break;
+                    }
+                case CpuCodeName.StrixPoint:
+                    {
+                        switch (_pmTableVersion)
+                        {
+                            case 0x5D0008:
+                                {
+                                    _pmTableSize = 0x944;
+                                    break;
+                                }
+                            default:
+                                {
+                                    return;
+                                }
+                        }
                         break;
                     }
                 case CpuCodeName.Picasso:
@@ -484,12 +657,10 @@ namespace OpenHardwareMonitor.Hardware
                     }
             }
         }
-
         private bool GetPmTableVersion(ref uint version)
         {
             uint[] args = { 0 };
             uint fn;
-
             switch (_cpuCodeName)
             {
                 case CpuCodeName.RavenRidge:
@@ -500,11 +671,18 @@ namespace OpenHardwareMonitor.Hardware
                     }
                 case CpuCodeName.Matisse:
                 case CpuCodeName.Vermeer:
+                case CpuCodeName.Raphael:
+                case CpuCodeName.GraniteRidge:
                     {
                         fn = 0x08;
                         break;
                     }
                 case CpuCodeName.Renoir:
+                case CpuCodeName.Cezanne:
+                case CpuCodeName.Rembrandt:
+                case CpuCodeName.Phoenix:
+                case CpuCodeName.HawkPoint:
+                case CpuCodeName.StrixPoint:
                     {
                         fn = 0x06;
                         break;
@@ -514,110 +692,91 @@ namespace OpenHardwareMonitor.Hardware
                         return false;
                     }
             }
-
             bool ret = SendCommand(fn, ref args);
             version = args[0];
-
             return ret;
         }
 
         private void SetupAddrClass1(uint[] fn)
         {
             uint[] args = { 1, 1 };
-
             bool command = SendCommand(fn[0], ref args);
             if (!command)
                 return;
-
-
-            _dramBaseAddr = args[0] | (args[1] << 32);
+            _dramBaseAddr = args[0] | ((ulong)args[1] << 32);
         }
 
         private void SetupAddrClass2(uint[] fn)
         {
             uint[] args = { 0, 0, 0, 0, 0, 0 };
-
             bool command = SendCommand(fn[0], ref args);
             if (!command)
                 return;
-
-
             args = new uint[] { 0 };
             command = SendCommand(fn[1], ref args);
             if (!command)
                 return;
-
-
             _dramBaseAddr = args[0];
         }
 
         private void SetupAddrClass3(uint[] fn)
         {
             uint[] parts = { 0, 0 };
-
             // == Part 1 ==
             uint[] args = { 3 };
             bool command = SendCommand(fn[0], ref args);
             if (!command)
                 return;
-
-
             args = new uint[] { 3 };
             command = SendCommand(fn[2], ref args);
             if (!command)
                 return;
-
-
             // 1st Base.
             parts[0] = args[0];
             // == Part 1 End ==
-
             // == Part 2 ==
             args = new uint[] { 3 };
             command = SendCommand(fn[1], ref args);
             if (!command)
                 return;
-
-
             args = new uint[] { 5 };
             command = SendCommand(fn[0], ref args);
             if (!command)
                 return;
-
-
             args = new uint[] { 5 };
             command = SendCommand(fn[2], ref args);
             if (!command)
                 return;
-
-
             // 2nd base.
             parts[1] = args[0];
             // == Part 2 End ==
-
-            _dramBaseAddr = parts[0] & 0xFFFFFFFF;
+            _dramBaseAddr = parts[0] & 0xFFFFFFFFUL;
         }
 
         private void SetupDramBaseAddr()
         {
             uint[] fn = { 0, 0, 0 };
-
             switch (_cpuCodeName)
             {
                 case CpuCodeName.Vermeer:
                 case CpuCodeName.Matisse:
                 case CpuCodeName.CastlePeak:
+                case CpuCodeName.Raphael:
+                case CpuCodeName.GraniteRidge:
                     {
                         fn[0] = 0x06;
                         SetupAddrClass1(fn);
-
                         return;
                     }
                 case CpuCodeName.Renoir:
+                case CpuCodeName.Cezanne:
+                case CpuCodeName.Rembrandt:
+                case CpuCodeName.Phoenix:
+                case CpuCodeName.HawkPoint:
+                case CpuCodeName.StrixPoint:
                     {
                         fn[0] = 0x66;
                         SetupAddrClass1(fn);
-
                         return;
                     }
                 case CpuCodeName.Colfax:
@@ -626,7 +785,6 @@ namespace OpenHardwareMonitor.Hardware
                         fn[0] = 0x0b;
                         fn[1] = 0x0c;
                         SetupAddrClass2(fn);
-
                         return;
                     }
                 case CpuCodeName.Dali:
@@ -638,7 +796,6 @@ namespace OpenHardwareMonitor.Hardware
                         fn[1] = 0x3d;
                         fn[2] = 0x0b;
                         SetupAddrClass3(fn);
-
                         return;
                     }
                 default:
@@ -647,21 +804,26 @@ namespace OpenHardwareMonitor.Hardware
                     }
             }
         }
-
         public bool TransferTableToDram()
         {
             uint[] args = { 0 };
             uint fn;
-
             switch (_cpuCodeName)
             {
                 case CpuCodeName.Matisse:
                 case CpuCodeName.Vermeer:
+                case CpuCodeName.Raphael:
+                case CpuCodeName.GraniteRidge:
                     {
                         fn = 0x05;
                         break;
                     }
                 case CpuCodeName.Renoir:
+                case CpuCodeName.Cezanne:
+                case CpuCodeName.Rembrandt:
+                case CpuCodeName.Phoenix:
+                case CpuCodeName.HawkPoint:
+                case CpuCodeName.StrixPoint:
                     {
                         args[0] = 3;
                         fn = 0x65;
@@ -680,7 +842,6 @@ namespace OpenHardwareMonitor.Hardware
                         return false;
                     }
             }
-
             return SendCommand(fn, ref args);
         }
 
@@ -693,33 +854,31 @@ namespace OpenHardwareMonitor.Hardware
                 cmdArgs[i] = args[i];
 
             uint tmp = 0;
-            if (_mutex.WaitOne(5000))
+            if (Ring0.WaitPciBusMutex(10000))
             {
                 // Step 1: Wait until the RSP register is non-zero.
-
                 tmp = 0;
                 uint retries = SMU_RETRIES_MAX;
                 do
                 {
                     if (!ReadReg(_rspAddr, ref tmp))
                     {
-                        _mutex.ReleaseMutex();
+                        Ring0.ReleasePciBusMutex();
                         return false;
                     }
                 }
+
                 while (tmp == 0 && 0 != retries--);
 
                 // Step 1.b: A command is still being processed meaning a new command cannot be issued.
-
                 if (retries == 0 && tmp == 0)
                 {
-                    _mutex.ReleaseMutex();
+                    Ring0.ReleasePciBusMutex();
                     return false;
                 }
 
                 // Step 2: Write zero (0) to the RSP register
                 WriteReg(_rspAddr, 0);
-
                 // Step 3: Write the argument(s) into the argument register(s)
                 for (int i = 0; i < cmdArgs.Length; ++i)
                     WriteReg(_argsAddr + (uint)(i * 4), cmdArgs[i]);
@@ -734,32 +893,32 @@ namespace OpenHardwareMonitor.Hardware
                 {
                     if (!ReadReg(_rspAddr, ref tmp))
                     {
-                        _mutex.ReleaseMutex();
+                        Ring0.ReleasePciBusMutex();
                         return false;
                     }
                 }
+
                 while (tmp == 0 && retries-- != 0);
 
                 if (retries == 0 && tmp != (uint)Status.OK)
                 {
-                    _mutex.ReleaseMutex();
+                    Ring0.ReleasePciBusMutex();
                     return false;
                 }
 
-                // Step 6: If the Response register contains OK, then SMU has finished processing  the message.
-
+                // Step 6: If the Response register contains OK, then SMU has finished processing the message.
                 args = new uint[SMU_REQ_MAX_ARGS];
                 for (byte i = 0; i < SMU_REQ_MAX_ARGS; i++)
                 {
                     if (!ReadReg(_argsAddr + (uint)(i * 4), ref args[i]))
                     {
-                        _mutex.ReleaseMutex();
+                        Ring0.ReleasePciBusMutex();
                         return false;
                     }
                 }
 
                 ReadReg(_rspAddr, ref tmp);
-                _mutex.ReleaseMutex();
+                Ring0.ReleasePciBusMutex();
             }
 
             return tmp == (uint)Status.OK;
@@ -773,7 +932,6 @@ namespace OpenHardwareMonitor.Hardware
                 {
                     Ring0.WritePciConfig(0x00, SMU_PCI_DATA_REG, data);
                 }
-
                 Ring0.ReleasePciBusMutex();
             }
         }
@@ -781,17 +939,14 @@ namespace OpenHardwareMonitor.Hardware
         private static bool ReadReg(uint addr, ref uint data)
         {
             bool read = false;
-
             if (Ring0.WaitPciBusMutex(10))
             {
                 if (Ring0.WritePciConfig(0x00, SMU_PCI_ADDR_REG, addr))
                 {
                     read = Ring0.ReadPciConfig(0x00, SMU_PCI_DATA_REG, out data);
                 }
-
                 Ring0.ReleasePciBusMutex();
             }
-
             return read;
         }
 
@@ -829,7 +984,12 @@ namespace OpenHardwareMonitor.Hardware
             Vangogh,
             Cezanne,
             Milan,
-            Dali
+            Dali,
+            Raphael,
+            Phoenix,
+            HawkPoint,
+            GraniteRidge,
+            StrixPoint
         }
     }
 }

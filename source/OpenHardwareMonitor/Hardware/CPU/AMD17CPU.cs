@@ -90,23 +90,24 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 }
             }
 
-            //this.smu = new RyzenSMU(family, model, packageType);
+            //smu = new RyzenSMU(family, model, packageType);
             //var pmTable = smu.GetPmTable();
 
             //foreach (KeyValuePair<uint, RyzenSMU.SmuSensorType> sensor in smu.GetPmTableStructure())
             //{
-            //    //_smuSensors.Add(sensor, new Sensor(sensor.Value.Name, _cpu._sensorTypeIndex[sensor.Value.Type]++, sensor.Value.Type, _cpu, _cpu._settings));
+            //    smuSensors.Add(sensor, new Sensor(sensor.Value.Name, 1, sensor.Value.Type, this, this.settings));
+            //    ActivateSensor(smuSensors[sensor]);
             //}
 
             coreTemperature = new Sensor(
               "CPU Package", 0, SensorType.Temperature, this, new[] {
-            new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
+                new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
                 }, this.settings);
 
             if (tctlOffset != 0.0f)
                 tctlTemperature = new Sensor(
                 "CPU Tctl", 1, true, SensorType.Temperature, this, new[] {
-            new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
+                new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
                   }, this.settings);
 
             ccdMaxTemperature = new Sensor(
