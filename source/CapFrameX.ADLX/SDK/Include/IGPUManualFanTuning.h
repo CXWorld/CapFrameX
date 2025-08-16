@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -816,4 +816,192 @@ struct IADLXManualFanTuning { const IADLXManualFanTuningVtbl *pVtbl; };
 #endif //__cplusplus
 #pragma endregion IADLXManualFanTuning
 
+#pragma region IADLXManualFanTuning1
+#if defined (__cplusplus)
+namespace adlx
+{
+    class ADLX_NO_VTABLE IADLXManualFanTuning1 : public IADLXManualFanTuning
+    {
+    public:
+        ADLX_DECLARE_IID(L"IADLXManualFanTuning1")
+
+        /**
+        *@page DOX_IADLXManualFanTuning1_GetDefaultFanTuningStates GetDefaultFanTuningStates
+        *@ENG_START_DOX @brief Gets the reference counted list of default GPU fan tuning states on a GPU. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    GetDefaultFanTuningStates (@ref DOX_IADLXManualFanTuningStateList** ppStates)
+        *@codeEnd
+        *
+        *@params
+        *@paramrow{1.,[out],ppStates,@ref DOX_IADLXManualFanTuningStateList**,@ENG_START_DOX The address of a pointer to the returned interface. If the interface is not successfully returned\, the method sets the dereferenced address __*ppStates__ to __nullptr__. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the list of GPU fan tuning default states is successfully returned, __ADLX_OK__ is returned.<br>
+        * If the list of GPU fan tuning default states is not successfully returned, an error code is returned.<br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
+        *
+        *@detaileddesc
+        *@ENG_START_DOX @details The returned interface must be discarded with @ref DOX_IADLXInterface_Release when it is no longer needed. @ENG_END_DOX
+        *
+        *@addinfo
+        *@ENG_START_DOX  In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
+        *
+        *@copydoc IADLXManualFanTuning1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT         ADLX_STD_CALL GetDefaultFanTuningStates(IADLXManualFanTuningStateList** ppStates) = 0;
+
+        /**
+        *@page DOX_IADLXManualFanTuning1_GetMinAcousticLimitDefault GetMinAcousticLimitDefault
+        *@ENG_START_DOX @brief Gets the default minimum acoustic limit on a GPU. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    GetMinAcousticLimitDefault (adlx_int* defaultVal)
+        *@codeEnd
+        *
+        *@params
+        *@paramrow{1.,[out],defaultVal,adlx_int*,@ENG_START_DOX The pointer to a variable where the min acoustic limit default value (in MHz) is returned. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the min acoustic limit default value is successfully returned, __ADLX_OK__ is returned.<br>
+        * If the min acoustic limit default value is not successfully returned, an error code is returned.<br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
+        *
+        * @addinfo
+        * @ENG_START_DOX
+        * Some GPUs support Minimum Acoustic Limit adjustments (in MHz).
+        * @ENG_END_DOX
+        *
+        *@copydoc IADLXManualFanTuning1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT         ADLX_STD_CALL GetMinAcousticLimitDefault(adlx_int* defaultVal) = 0;
+
+        /**
+        *@page DOX_IADLXManualFanTuning1_GetMinFanSpeedDefault GetMinFanSpeedDefault
+        *@ENG_START_DOX @brief Gets the default minimum fan speed on a GPU. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    GetMinFanSpeedDefault (adlx_int* defaultVal)
+        *@codeEnd
+        *
+        *@params
+        *@paramrow{1.,[out],value,adlx_int*,@ENG_START_DOX The pointer to a variable where the minimum fan speed default value (in RPM) is returned. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the minimum fan speed default value is successfully returned, __ADLX_OK__ is returned.<br>
+        * If the minimum fan speed default value is not successfully returned, an error code is returned.<br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
+        *
+        * @addinfo
+        * @ENG_START_DOX
+        * Some GPUs support minimum fan speed adjustments (in MHz).
+        * @ENG_END_DOX
+        *
+        *@copydoc IADLXManualFanTuning1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT         ADLX_STD_CALL GetMinFanSpeedDefault(adlx_int* defaultVal) = 0;
+
+        /**
+        *@page DOX_IADLXManualFanTuning1_GetTargetFanSpeedDefault GetTargetFanSpeedDefault
+        *@ENG_START_DOX @brief Gets the default target fan speed on a GPU. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    GetTargetFanSpeedDefault (adlx_int* defaultVal)
+        *@codeEnd
+        *
+        *@params
+        *@paramrow{1.,[out],defaultVal,adlx_int*,@ENG_START_DOX The pointer to a variable where the target fan speed default value (in RPM) is returned. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the target fan speed default value is successfully returned, __ADLX_OK__ is returned.<br>
+        * If the target fan speed default value is not successfully returned, an error code is returned.<br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
+        *
+        *@copydoc IADLXManualFanTuning1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT         ADLX_STD_CALL GetTargetFanSpeedDefault(adlx_int* defaultVal) = 0;
+
+        /**
+        *@page DOX_IADLXManualFanTuning1_GetDefaultZeroRPMState GetDefaultZeroRPMState
+        *@ENG_START_DOX @brief Gets the default zero RPM is state on a GPU. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    GetDefaultZeroRPMState (adlx_bool* defaultVal)
+        *@codeEnd
+        *
+        *@params
+        *@paramrow{1.,[out],defaultVal,adlx_bool*,@ENG_START_DOX The pointer to a variable where the default state of zero RPM is returned. The variable is __true__ if default zero RPM is enabled. The variable is __false__ if default zero RPM is not enabled. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the default state of zero RPM is successfully returned, __ADLX_OK__ is returned.<br>
+        * If the default state of zero RPM is not successfully returned, an error code is returned.<br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
+        *
+        * @addinfo
+        * @ENG_START_DOX
+        * Zero RPM enables quiet operation when the GPU is under a light load and speeds up the fans when the GPU load and temperature increases.
+        * @ENG_END_DOX
+        *
+        *@copydoc IADLXManualFanTuning1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT         ADLX_STD_CALL GetDefaultZeroRPMState(adlx_bool* defaultVal) = 0;
+    };
+    //----------------------------------------------------------------------------------------------
+    typedef IADLXInterfacePtr_T<IADLXManualFanTuning1> IADLXManualFanTuning1Ptr;
+} //namespace adlx
+#else //__cplusplus
+ADLX_DECLARE_IID(IADLXManualFanTuning1, L"IADLXManualFanTuning1")
+
+typedef struct IADLXManualFanTuning1 IADLXManualFanTuning1;
+
+typedef struct IADLXManualFanTuning1Vtbl
+{
+    //IADLXInterface
+    adlx_long(ADLX_STD_CALL* Acquire)(IADLXManualFanTuning1* pThis);
+    adlx_long(ADLX_STD_CALL* Release)(IADLXManualFanTuning1* pThis);
+    ADLX_RESULT(ADLX_STD_CALL* QueryInterface)(IADLXManualFanTuning1* pThis, const wchar_t* interfaceId, void** ppInterface);
+
+    //IADLXManualFanTuningState
+    ADLX_RESULT(ADLX_STD_CALL* GetFanTuningRanges)(IADLXManualFanTuning1* pThis, ADLX_IntRange* speedRange, ADLX_IntRange* temperatureRange);
+    ADLX_RESULT(ADLX_STD_CALL* GetFanTuningStates)(IADLXManualFanTuning1* pThis, IADLXManualFanTuningStateList** ppStates);
+    ADLX_RESULT(ADLX_STD_CALL* GetEmptyFanTuningStates)(IADLXManualFanTuning1* pThis, IADLXManualFanTuningStateList** ppStates);
+    ADLX_RESULT(ADLX_STD_CALL* IsValidFanTuningStates)(IADLXManualFanTuning1* pThis, IADLXManualFanTuningStateList* pStates, adlx_int* errorIndex);
+    ADLX_RESULT(ADLX_STD_CALL* SetFanTuningStates)(IADLXManualFanTuning1* pThis, IADLXManualFanTuningStateList* pStates);
+    ADLX_RESULT(ADLX_STD_CALL* IsSupportedZeroRPM)(IADLXManualFanTuning1* pThis, adlx_bool* supported);
+    ADLX_RESULT(ADLX_STD_CALL* GetZeroRPMState)(IADLXManualFanTuning1* pThis, adlx_bool* isSet);
+    ADLX_RESULT(ADLX_STD_CALL* SetZeroRPMState)(IADLXManualFanTuning1* pThis, adlx_bool set);
+    ADLX_RESULT(ADLX_STD_CALL* IsSupportedMinAcousticLimit)(IADLXManualFanTuning1* pThis, adlx_bool* supported);
+    ADLX_RESULT(ADLX_STD_CALL* GetMinAcousticLimitRange)(IADLXManualFanTuning1* pThis, ADLX_IntRange* tuningRange);
+    ADLX_RESULT(ADLX_STD_CALL* GetMinAcousticLimit)(IADLXManualFanTuning1* pThis, adlx_int* value);
+    ADLX_RESULT(ADLX_STD_CALL* SetMinAcousticLimit)(IADLXManualFanTuning1* pThis, adlx_int value);
+    ADLX_RESULT(ADLX_STD_CALL* IsSupportedMinFanSpeed)(IADLXManualFanTuning1* pThis, adlx_bool* supported);
+    ADLX_RESULT(ADLX_STD_CALL* GetMinFanSpeedRange)(IADLXManualFanTuning1* pThis, ADLX_IntRange* tuningRange);
+    ADLX_RESULT(ADLX_STD_CALL* GetMinFanSpeed)(IADLXManualFanTuning1* pThis, adlx_int* value);
+    ADLX_RESULT(ADLX_STD_CALL* SetMinFanSpeed)(IADLXManualFanTuning1* pThis, adlx_int value);
+    ADLX_RESULT(ADLX_STD_CALL* IsSupportedTargetFanSpeed)(IADLXManualFanTuning1* pThis, adlx_bool* supported);
+    ADLX_RESULT(ADLX_STD_CALL* GetTargetFanSpeedRange)(IADLXManualFanTuning1* pThis, ADLX_IntRange* tuningRange);
+    ADLX_RESULT(ADLX_STD_CALL* GetTargetFanSpeed)(IADLXManualFanTuning1* pThis, adlx_int* value);
+    ADLX_RESULT(ADLX_STD_CALL* SetTargetFanSpeed)(IADLXManualFanTuning1* pThis, adlx_int value);
+
+    //IADLXManualFanTuningState1
+    ADLX_RESULT(ADLX_STD_CALL* GetDefaultFanTuningStates)(IADLXManualFanTuning1* pThis, IADLXManualFanTuningStateList** ppStates);
+    ADLX_RESULT(ADLX_STD_CALL* GetMinAcousticLimitDefault)(IADLXManualFanTuning1* pThis, adlx_int* defaultVal);
+    ADLX_RESULT(ADLX_STD_CALL* GetMinFanSpeedDefault)(IADLXManualFanTuning1* pThis, adlx_int* defaultVal);
+    ADLX_RESULT(ADLX_STD_CALL* GetTargetFanSpeedDefault)(IADLXManualFanTuning1* pThis, adlx_int* defaultVal);
+    ADLX_RESULT(ADLX_STD_CALL* GetDefaultZeroRPMState)(IADLXManualFanTuning1* pThis, adlx_bool* defaultVal);
+}IADLXManualFanTuning1Vtbl;
+
+struct IADLXManualFanTuning1 { const IADLXManualFanTuning1Vtbl* pVtbl; };
+#endif //__cplusplus
+#pragma endregion IADLXManualFanTuning1
 #endif//ADLX_IGPUMANUALFANTUNING_H

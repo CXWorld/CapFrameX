@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -88,7 +88,7 @@ namespace adlx
         *@codeEnd
         *
         *@params
-        *@paramrow{1.,[out] ,apuShiftValue,adlx_int* ,@ENG_START_DOX The pointer to a variable where the apu shift alue value is returned. @ENG_END_DOX}
+        *@paramrow{1.,[out] ,apuShiftValue,adlx_int* ,@ENG_START_DOX The pointer to a variable where the apu shift value is returned. @ENG_END_DOX}
         *@paramrow{1.,[out] ,gpuShiftValue,adlx_int* ,@ENG_START_DOX The pointer to a variable where the gpu shift value is returned. @ENG_END_DOX}
         *@paramrow{1.,[out] ,apuShiftLimit,adlx_int* ,@ENG_START_DOX The pointer to a variable where the apu shift limit value is returned. @ENG_END_DOX}
         *@paramrow{1.,[out] ,gpuShiftLimit,adlx_int* ,@ENG_START_DOX The pointer to a variable where the gpu shift limit value is returned. @ENG_END_DOX}

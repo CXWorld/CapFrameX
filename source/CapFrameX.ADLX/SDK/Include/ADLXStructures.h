@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -7,10 +7,6 @@
 #define ADLX_STRUCTURES_H
 #pragma once
 #include "ADLXDefines.h"
-
-#if defined (__cplusplus)
-using namespace adlx;
-#endif
 
 /**   @file */
 //-------------------------------------------------------------------------------------------------
@@ -191,5 +187,20 @@ typedef struct ADLX_3DLUT_Data
                                                  For 3D LUT data we use ushort 0 - 0xFFFF, data must be zero-padded to 16-bit. @ENG_END_DOX */
 } ADLX_3DLUT_Data;
 #pragma endregion ADLX_3DLUT_Data
+
+#pragma region ADLX_LUID
+/**
+* @struct ADLX_LUID
+* @ingroup structuresVal
+* @ENG_START_DOX
+* @brief This structure contains the local identifier information of the adapter.
+* @ENG_END_DOX
+*/
+typedef struct ADLX_LUID
+{
+    adlx_ulong lowPart;    /**< @ENG_START_DOX Specifies the low part of the local id. @ENG_END_DOX */
+    adlx_long highPart;    /**< @ENG_START_DOX Specifies the high part of the local id. @ENG_END_DOX */
+} ADLX_LUID;
+#pragma endregion ADLX_LUID
 
 #endif //ADLX_STRUCTURES_H

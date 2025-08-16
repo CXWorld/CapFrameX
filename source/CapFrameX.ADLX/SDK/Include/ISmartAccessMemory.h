@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -68,7 +68,7 @@ namespace adlx
 			
 		/**
 		*@page DOX_IADLXSmartAccessMemory_SetEnabled SetEnabled
-		*@ENG_START_DOX @brief Enable or disable the state of AMD SmartAccess Memory on a GPU. @ENG_END_DOX
+		*@ENG_START_DOX @brief This method is deprecated. To enable or disable the state of the AMD SmartAccess Memory, enable or disable Re-Size BAR Support into the system BIOS.  @ENG_END_DOX
 		*
 		*@syntax
 		*@codeStart
@@ -79,19 +79,7 @@ namespace adlx
 		* @paramrow{1.,[in],enable,adlx_bool,@ENG_START_DOX The new AMD SmartAccess Memory state. Set __true__ to enable AMD SmartAccess Memory. Set __false__ to disable AMD SmartAccess Memory. @ENG_END_DOX}
 		*
 		*@retvalues
-		*@ENG_START_DOX  If the state of AMD SmartAccess Memory is successfully set, __ADLX_OK__ is returned.<br>
-		* If the state of AMD SmartAccess Memory is not successfully set, an error code is returned.<br>
-		* Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
-		*
-		*@detaileddesc
-		*@ENG_START_DOX @details The __SetEnabled__ method triggers an asynchronous operation that results in changing the maximum size of VRAM of a GPU that the CPU can address.<br>
-		* While this operation is in progress, the applications that run in the context of the GPU or make calls in the driver for the GPU will behave unexpectedly. Before making this call,
-		* ensure that these applications release the GPU context, such as by closing their user interfaces, and that they will not make calls into the GPU driver during this operation.
-		* This procedure will allow those applications to continue to function correctly during and after the operation is completed.<br>
-		* To learn when the operation is completed, register an event listener interface using @ref DOX_IADLXGPUTuningServices_GetGPUTuningChangedHandling before calling __SetEnabled__.
-		* ADLX will call @ref DOX_IADLXGPUTuningChangedListener_OnGPUTuningChanged into the event listener interface twice during the asynchronous execution of __SetEnabled__:
-		* once before the operation is started, and the second time, after the operation is completed. Use @ref DOX_IADLXGPUTuningChangedEvent1_IsSmartAccessMemoryChanged and
-		* @ref DOX_IADLXGPUTuningChangedEvent1_GetSmartAccessMemoryStatus to discover the state of this operation. @ENG_END_DOX
+		*@ENG_START_DOX ADLX_NOT_SUPPORTED @ENG_END_DOX
 		*
 		*@copydoc IADLXSmartAccessMemory_REQ_TABLE
 		*

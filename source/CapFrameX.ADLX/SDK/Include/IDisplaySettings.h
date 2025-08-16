@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 - 2024 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2023 - 2025 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -48,7 +48,7 @@ namespace adlx
         virtual ADLX_RESULT         ADLX_STD_CALL IsSupported (adlx_bool* supported) = 0;
         /**
         *@page DOX_IADLXDisplayFreeSync_IsEnabled IsEnabled
-        *@ENG_START_DOX @brief Checks if the AMD FreeSync™ is enabled on a GPU. @ENG_END_DOX
+        *@ENG_START_DOX @brief Checks if the AMD FreeSync™ is enabled on a display. @ENG_END_DOX
         *
         *@syntax
         *@codeStart
@@ -126,7 +126,6 @@ struct IADLXDisplayFreeSync
 };
 
 #endif
-
 #pragma endregion IADLXDisplayFreeSync interface
 
 #pragma region IADLXDisplayVSR interface
@@ -302,8 +301,13 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX  GPU scaling uses the GPU to scale up lower resolutions to fit the display. <br>
         * GPU scaling requires a digital connection (DVI, HDMI or DisplayPort™) from the display to the GPU. <br>
-        * __Note__: @ref DOX_IADLXDisplayIntegerScaling "Integer Display Scaling" is not supported when GPU scaling is disabled.<br>
-        * GPU scaling is required for @ref DOX_IADLX3DRadeonSuperResolution "Radeon™ Super Resolution". GPU scaling is automatically enabled when Radeon Super Resolution is enabled. @ENG_END_DOX
+        *
+        * @depifc
+        * When GPU scaling is disabled, @ref DOX_IADLXDisplayIntegerScaling "Integer Display Scaling" is not supported.<br>
+        *
+        * GPU scaling is required for @ref DOX_IADLX3DRadeonSuperResolution "Radeon™ Super Resolution". GPU scaling is automatically enabled when Radeon Super Resolution is enabled.<br>
+        *
+        *@ENG_END_DOX
         *
         *@copydoc IADLXDisplayGPUScaling_REQ_TABLE
         *
@@ -330,8 +334,13 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX  GPU scaling uses the GPU to scale up lower resolutions to fit the display. <br>
         * GPU scaling requires a digital connection (DVI, HDMI or DisplayPort™) from the display to the GPU.<br>
-        * __Note:__ @ref DOX_IADLXDisplayIntegerScaling "Integer Display Scaling" is not supported when GPU scaling is disabled. <br>
-        * GPU scaling is required for @ref DOX_IADLX3DRadeonSuperResolution "Radeon™ Super Resolution". By disabling GPU scaling when Radeon Super Resolution is enabled, Radeon Super Resolution is automatically disabled.@ENG_END_DOX
+        *
+        * @depifc
+        * When GPU scaling is disabled, @ref DOX_IADLXDisplayIntegerScaling "Integer Display Scaling" is not supported.<br>
+        *
+        * GPU scaling is required for @ref DOX_IADLX3DRadeonSuperResolution "Radeon™ Super Resolution". GPU scaling is automatically enabled when Radeon Super Resolution is enabled.<br>
+        *
+        *@ENG_END_DOX
         *
         *@copydoc IADLXDisplayGPUScaling_REQ_TABLE
         *
@@ -421,12 +430,9 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX  GPU scaling determines the method used to stretch and position images to fit the display.<br>
         * @depifc
-        * On some AMD GPUs, Display Scaling Mode is mutually exclusive with @ref DOX_IADLX3DRadeonSuperResolution "Radeon Super Resolution".<br>
+        * On some AMD GPUs, __CENTERED__ scaling mode cannot be simultaneously enabled with @ref DOX_IADLX3DRadeonSuperResolution "Radeon Super Resolution".<br>
         *
-        * When Display Scaling Mode is enabled, the mutually exclusive features are automatically disabled. If a mutually exclusive feature is re-enabled, its previous configuration settings are restored.<br>
-        *
-        * If Radeon Super Resolution is enabled when the scaling mode is __CENTERED__, the scaling mode is automatically set to __FULL_PANEL__.@ENG_END_DOX
-        *
+        * If Radeon Super Resolution is enabled when the scaling mode is __CENTERED__, the scaling mode is automatically set to __FULL_PANEL__.<br>
         *
         *@copydoc IADLXDisplayScalingMode_REQ_TABLE
         *
@@ -452,11 +458,10 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX  GPU scaling determines the method used to stretch and position images to fit the display.<br>
         * @depifc
-        * On some AMD GPUs, Display Scaling Mode is mutually exclusive with @ref DOX_IADLX3DRadeonSuperResolution "Radeon Super Resolution".<br>
+        * On some AMD GPUs, __CENTERED__ Display Scaling Mode cannot be simultaneously enabled with @ref DOX_IADLX3DRadeonSuperResolution "Radeon Super Resolution".<br>
         *
-        * When Display Scaling Mode is enabled, the mutually exclusive features are automatically disabled. If a mutually exclusive feature is re-enabled, its previous configuration settings are restored.<br>
-        *
-        * If Radeon Super Resolution is enabled when the scaling mode is __CENTERED__, the scaling mode is automatically set to __FULL_PANEL__.@ENG_END_DOX
+        * When __CENTERED__ scaling mode is set, the mutually exclusive features are automatically disabled.<br>
+        * @ENG_END_DOX
         *
         *
         *@copydoc IADLXDisplayScalingMode_REQ_TABLE
@@ -521,7 +526,10 @@ namespace adlx
         *
         *@addinfo
         *@ENG_START_DOX  Integer Display Scaling gives a sharp, pixelated look to images scaled up to fit the display. Images that can't be scaled to match the display's exact size and shape will be centered on screen. Integer Display Scaling enhances visuals in old games to revive vintage gaming experiences on a modern display.<br>
-        * __Note__: Integer Display Scaling is not supported when @ref DOX_IADLXDisplayGPUScaling "GPU scaling" is disabled. @ENG_END_DOX
+        *@depifc
+        *
+        * Integer Display Scaling is not supported when @ref DOX_IADLXDisplayGPUScaling "GPU Scaling" is disabled.
+        *@ENG_END_DOX
         *
         *
         *@copydoc IADLXDisplayIntegerScaling_REQ_TABLE
@@ -548,10 +556,12 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX  Integer Display Scaling gives a sharp, pixelated look to images scaled up to fit the display. Images that can't be scaled to match the display's exact size and shape will be centered on screen. Integer Display Scaling enhances visuals in old games to revive vintage gaming experiences on a modern display.<br>
         *@depifc
-        * On some AMD GPUs, Integer Display Scaling is mutually exclusive with @ref DOX_IADLX3DRadeonSuperResolution "Radeon Super Resolution".<br>
+        * On some AMD GPUs, Integer Display Scaling cannot be simultaneously enabled with @ref DOX_IADLX3DRadeonSuperResolution "Radeon Super Resolution".<br>
         *
-        * When a mutually exclusive feature is enabled, Integer Display Scaling is automatically disabled. If Integer Display Scaling is later re-enabled, its previous configuration settings will be restored.<br>
-        * .@ENG_END_DOX
+        * When Integer Display Scaling is enabled, the mutually exclusive features are automatically disabled. If a mutually exclusive feature is re-enabled, its previous configuration settings are restored.<br>
+        *
+        * Integer Display Scaling is not supported when @ref DOX_IADLXDisplayGPUScaling "GPU Scaling" is disabled.<br>
+        * @ENG_END_DOX
         *
         *
         *@copydoc IADLXDisplayIntegerScaling_REQ_TABLE
@@ -578,10 +588,11 @@ namespace adlx
         *@addinfo
         *@ENG_START_DOX  Integer Display Scaling gives a sharp, pixelated look to images scaled up to fit the display. Images that can't be scaled to match the display's exact size and shape will be centered on screen. Integer Display Scaling enhances visuals in old games to revive vintage gaming experiences on a modern display.<br>
         *@depifc
-        * On some AMD GPUs, Integer Display Scaling is mutually exclusive with @ref DOX_IADLX3DRadeonSuperResolution "Radeon Super Resolution".<br>
+        * On some AMD GPUs, Integer Display Scaling cannot be simultaneously enabled with @ref DOX_IADLX3DRadeonSuperResolution "Radeon Super Resolution".<br>
         *
         * When Integer Display Scaling is enabled, the mutually exclusive features are automatically disabled. If a mutually exclusive feature is re-enabled, its previous configuration settings are restored.<br>
-        * .@ENG_END_DOX
+        * Integer Display Scaling is not supported when @ref DOX_IADLXDisplayGPUScaling "GPU Scaling" is disabled.
+        * @ENG_END_DOX
         *
         *
         *@copydoc IADLXDisplayIntegerScaling_REQ_TABLE
@@ -2468,6 +2479,332 @@ struct IADLXDisplayVariBright
 
 #pragma endregion IADLXDisplayVariBright interface
 
+#pragma region IADLXDisplayVariBright1 interface
+
+#if defined (__cplusplus)
+namespace adlx
+{
+    class ADLX_NO_VTABLE IADLXDisplayVariBright1 : public IADLXDisplayVariBright
+    {
+    public:
+        ADLX_DECLARE_IID(L"IADLXDisplayVariBright1")
+        /**
+        *@page DOX_IADLXDisplayVariBright1_IsBacklightAdaptiveSupported IsBacklightAdaptiveSupported
+        *@ENG_START_DOX @brief Checks if Backlight Adaptive Vari-Bright Scaling mode is supported on a display. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    IsBacklightAdaptiveSupported (adlx_bool* supported)
+        *@codeEnd
+        *
+        *@params
+        * @paramrow{1.,[out],supported,adlx_bool*,@ENG_START_DOX The pointer to a variable where the supported status of Backlight Adaptive Vari-Bright Scaling mode is returned. The variable is __true__ if Backlight Adaptive Vari-Bright Scaling mode is supported. The variable is __false__ if Backlight Adaptive Vari-Bright Scaling mode is not supported. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the supported status of Backlight Adaptive Vari-Bright Scaling mode is successfully returned, __ADLX_OK__ is returned. <br>
+        * If the supported status of Backlight Adaptive Vari-Bright Scaling mode is not successfully returned, an error code is returned. <br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *
+        *
+        *@copydoc IADLXDisplayVariBright1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT ADLX_STD_CALL IsBacklightAdaptiveSupported(adlx_bool* supported) = 0;
+        /**
+        *@page DOX_IADLXDisplayVariBright1_IsBacklightAdaptiveEnabled  IsBacklightAdaptiveEnabled 
+        *@ENG_START_DOX @brief Checks if Backlight Adaptive Vari-Bright Scaling mode is enabled on a display. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    IsBacklightAdaptiveEnabled (adlx_bool* enabled)
+        *@codeEnd
+        *
+        *@params
+        * @paramrow{1.,[out],enabled,adlx_bool*,@ENG_START_DOX The pointer to a variable where the state of Backlight Adaptive Vari-Bright Scaling mode is returned. The variable is __true__ if Backlight Adaptive Vari-Bright Scaling mode is enabled. The variable is __false__ if Backlight Adaptive Vari-Bright Scaling mode is not enabled. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the state of Backlight Adaptive Vari-Bright Scaling mode is successfully returned, __ADLX_OK__ is returned. <br>
+        * If the state of Backlight Adaptive Vari-Bright Scaling mode is not successfully returned, an error code is returned. <br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *
+        *
+        *@copydoc IADLXDisplayVariBright1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT ADLX_STD_CALL IsBacklightAdaptiveEnabled(adlx_bool* enabled) = 0;
+        /**
+        *@page DOX_IADLXDisplayVariBright1_SetBacklightAdaptiveEnabled SetBacklightAdaptiveEnabled
+        *@ENG_START_DOX @brief Sets Backlight Adaptive Vari-Bright Scaling mode enabled or disabled on a display. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    SetBacklightAdaptiveEnabled (adlx_bool enable)
+        *@codeEnd
+        *
+        *@params
+        * @paramrow{1.,[in],enable,adlx_bool,@ENG_START_DOX The new Backlight Adaptive Vari-Bright Scaling mode state. Set __true__ to enable Backlight Adaptive Vari-Bright Scaling mode. Set __false__ to disable Backlight Adaptive Vari-Bright Scaling mode. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the state of Backlight Adaptive Vari-Bright Scaling mode is successfully set, __ADLX_OK__ is returned. <br>
+        * If the state of Backlight Adaptive Vari-Bright Scaling mode is not successfully set, an error code is returned. <br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *
+        *
+        *@copydoc IADLXDisplayVariBright1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT ADLX_STD_CALL SetBacklightAdaptiveEnabled(adlx_bool enabled) = 0;
+        /**
+        *@page DOX_IADLXDisplayVariBright1_IsBatteryLifeSupported IsBatteryLifeSupported
+        *@ENG_START_DOX @brief Checks if Battery Life Vari-Bright Scaling mode is supported on a display. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    IsBatteryLifeSupported (adlx_bool* supported)
+        *@codeEnd
+        *
+        *@params
+        * @paramrow{1.,[out],supported,adlx_bool*,@ENG_START_DOX The pointer to a variable where the supported status of Battery Life Vari-Bright Scaling mode is returned. The variable is __true__ if Battery Life Vari-Bright Scaling mode is supported. The variable is __false__ if Battery Life Vari-Bright Scaling mode is not supported. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the supported status of Battery Life Vari-Bright Scaling mode is successfully returned, __ADLX_OK__ is returned. <br>
+        * If the supported status of Battery Life Vari-Bright Scaling mode is not successfully returned, an error code is returned. <br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *
+        *
+        *@copydoc IADLXDisplayVariBright1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT ADLX_STD_CALL IsBatteryLifeSupported(adlx_bool* supported) = 0;
+        /**
+        *@page DOX_IADLXDisplayVariBright1_IsBatteryLifeEnabled  IsBatteryLifeEnabled
+        *@ENG_START_DOX @brief Checks if Battery Life Vari-Bright Scaling mode is enabled on a display. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    IsBatteryLifeEnabled (adlx_bool* enabled)
+        *@codeEnd
+        *
+        *@params
+        * @paramrow{1.,[out],enabled,adlx_bool*,@ENG_START_DOX The pointer to a variable where the state of Battery Life Vari-Bright Scaling mode is returned. The variable is __true__ if Battery Life Vari-Bright Scaling mode is enabled. The variable is __false__ if Battery Life Vari-Bright Scaling mode is not enabled. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the state of Battery Life Vari-Bright Scaling mode is successfully returned, __ADLX_OK__ is returned. <br>
+        * If the state of Battery Life Vari-Bright Scaling mode is not successfully returned, an error code is returned. <br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *
+        *
+        *@copydoc IADLXDisplayVariBright1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT ADLX_STD_CALL IsBatteryLifeEnabled(adlx_bool* enabled) = 0;
+        /**
+        *@page DOX_IADLXDisplayVariBright1_SetBatteryLifeEnabled SetBatteryLifeEnabled
+        *@ENG_START_DOX @brief Sets Battery Life Vari-Bright Scaling mode enabled or disabled on a display. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    SetBatteryLifeEnabled (adlx_bool enable)
+        *@codeEnd
+        *
+        *@params
+        * @paramrow{1.,[in],enable,adlx_bool,@ENG_START_DOX The new Battery Life Vari-Bright Scaling mode state. Set __true__ to enable Battery Life Vari-Bright Scaling mode. Set __false__ to disable Battery Life Vari-Bright Scaling mode. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the state of Battery Life Vari-Bright Scaling mode is successfully set, __ADLX_OK__ is returned. <br>
+        * If the state of Battery Life Vari-Bright Scaling mode is not successfully set, an error code is returned. <br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *
+        *
+        *@copydoc IADLXDisplayVariBright1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT ADLX_STD_CALL SetBatteryLifeEnabled(adlx_bool enabled) = 0;
+        /**
+        *@page DOX_IADLXDisplayVariBright1_IsWindowsPowerModeSupported IsWindowsPowerModeSupported
+        *@ENG_START_DOX @brief Checks if Windows Power Mode Vari-Bright Scaling mode is supported on a display. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    IsWindowsPowerModeSupported (adlx_bool* supported)
+        *@codeEnd
+        *
+        *@params
+        * @paramrow{1.,[out],supported,adlx_bool*,@ENG_START_DOX The pointer to a variable where the supported status of Windows Power Mode Vari-Bright Scaling mode is returned. The variable is __true__ if Windows Power Mode Vari-Bright Scaling mode is supported. The variable is __false__ if Windows Power Mode Vari-Bright Scaling mode is not supported. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the supported status of Windows Power Mode Vari-Bright Scaling mode is successfully returned, __ADLX_OK__ is returned. <br>
+        * If the supported status of Windows Power Mode Vari-Bright Scaling mode is not successfully returned, an error code is returned. <br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *
+        *
+        *@copydoc IADLXDisplayVariBright1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT ADLX_STD_CALL IsWindowsPowerModeSupported(adlx_bool* supported) = 0;
+        /**
+        *@page DOX_IADLXDisplayVariBright1_IsWindowsPowerModeEnabled  IsWindowsPowerModeEnabled 
+        *@ENG_START_DOX @brief Checks if Windows Power Mode Vari-Bright Scaling mode is enabled on a display. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    IsWindowsPowerModeEnabled (adlx_bool* enabled)
+        *@codeEnd
+        *
+        *@params
+        * @paramrow{1.,[out],enabled,adlx_bool*,@ENG_START_DOX The pointer to a variable where the state of Windows Power Mode Vari-Bright Scaling mode is returned. The variable is __true__ if Windows Power Mode Vari-Bright Scaling mode is enabled. The variable is __false__ if Windows Power Mode Vari-Bright Scaling mode is not enabled. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the state of Windows Power Mode Vari-Bright Scaling mode is successfully returned, __ADLX_OK__ is returned. <br>
+        * If the state of Windows Power Mode Vari-Bright Scaling mode is not successfully returned, an error code is returned. <br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *
+        *
+        *@copydoc IADLXDisplayVariBright1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT ADLX_STD_CALL IsWindowsPowerModeEnabled(adlx_bool* enabled) = 0;
+        /**
+        *@page DOX_IADLXDisplayVariBright1_SetWindowsPowerModeEnabled SetWindowsPowerModeEnabled
+        *@ENG_START_DOX @brief Sets Windows Power Mode Vari-Bright Scaling mode enabled or disabled on a display. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    SetWindowsPowerModeEnabled (adlx_bool enable)
+        *@codeEnd
+        *
+        *@params
+        * @paramrow{1.,[in],enable,adlx_bool,@ENG_START_DOX The new Windows Power Mode Vari-Bright Scaling mode state. Set __true__ to enable Windows Power Mode Vari-Bright Scaling mode. Set __false__ to disable Windows Power Mode Vari-Bright Scaling mode. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the state of Windows Power Mode Vari-Bright Scaling mode is successfully set, __ADLX_OK__ is returned. <br>
+        * If the state of Windows Power Mode Vari-Bright Scaling mode is not successfully set, an error code is returned. <br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *
+        *
+        *@copydoc IADLXDisplayVariBright1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT ADLX_STD_CALL SetWindowsPowerModeEnabled(adlx_bool enabled) = 0;
+        /**
+        *@page DOX_IADLXDisplayVariBright1_IsFullScreenVideoSupported IsFullScreenVideoSupported
+        *@ENG_START_DOX @brief Checks if Full-Screen Video Vari-Bright Scaling mode is supported on a display. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    IsFullScreenVideoSupported (adlx_bool* supported)
+        *@codeEnd
+        *
+        *@params
+        * @paramrow{1.,[out],supported,adlx_bool*,@ENG_START_DOX The pointer to a variable where the supported status of Full-Screen Video Vari-Bright Scaling mode is returned. The variable is __true__ if Full-Screen Video Vari-Bright Scaling mode is supported. The variable is __false__ if Full-Screen Video Vari-Bright Scaling mode is not supported. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the supported status of Full-Screen Video Vari-Bright Scaling mode is successfully returned, __ADLX_OK__ is returned. <br>
+        * If the supported status of Full-Screen Video Vari-Bright Scaling mode is not successfully returned, an error code is returned. <br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *
+        *
+        *@copydoc IADLXDisplayVariBright1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT ADLX_STD_CALL IsFullScreenVideoSupported(adlx_bool* supported) = 0;
+        /**
+        *@page DOX_IADLXDisplayVariBright1_IsFullScreenVideoEnabled  IsFullScreenVideoEnabled 
+        *@ENG_START_DOX @brief Checks if Full-Screen Video Vari-Bright Scaling mode is enabled on a display. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    IsFullScreenVideoEnabled (adlx_bool* enabled)
+        *@codeEnd
+        *
+        *@params
+        * @paramrow{1.,[out],enabled,adlx_bool*,@ENG_START_DOX The pointer to a variable where the state of Full-Screen Video Vari-Bright Scaling mode is returned. The variable is __true__ if Full-Screen Video Vari-Bright Scaling mode is enabled. The variable is __false__ if Full-Screen Video Vari-Bright Scaling mode is not enabled. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the state of Full-Screen Video Vari-Bright Scaling mode is successfully returned, __ADLX_OK__ is returned. <br>
+        * If the state of Full-Screen Video Vari-Bright Scaling mode is not successfully returned, an error code is returned. <br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *
+        *
+        *@copydoc IADLXDisplayVariBright1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT ADLX_STD_CALL IsFullScreenVideoEnabled(adlx_bool* enabled) = 0;
+        /**
+        *@page DOX_IADLXDisplayVariBright1_SetFullScreenVideoEnabled SetFullScreenVideoEnabled
+        *@ENG_START_DOX @brief Sets Full-Screen Video Vari-Bright Scaling mode enabled or disabled on a display. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    SetFullScreenVideoEnabled (adlx_bool enable)
+        *@codeEnd
+        *
+        *@params
+        * @paramrow{1.,[in],enable,adlx_bool,@ENG_START_DOX The new Full-Screen Video Vari-Bright Scaling mode state. Set __true__ to enable Full-Screen Video Vari-Bright Scaling mode. Set __false__ to disable Full-Screen Video Vari-Bright Scaling mode. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the state of Full-Screen Video Vari-Bright Scaling mode is successfully set, __ADLX_OK__ is returned. <br>
+        * If the state of Full-Screen Video Vari-Bright Scaling mode is not successfully set, an error code is returned. <br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *
+        *
+        *@copydoc IADLXDisplayVariBright1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT ADLX_STD_CALL SetFullScreenVideoEnabled(adlx_bool enabled) = 0;
+    };
+
+    typedef IADLXInterfacePtr_T<IADLXDisplayVariBright1> IADLXDisplayVariBright1Ptr;
+}
+#else
+ADLX_DECLARE_IID(IADLXDisplayVariBright1, L"IADLXDisplayVariBright1")
+typedef struct IADLXDisplayVariBright1 IADLXDisplayVariBright1;
+
+typedef struct IADLXDisplayVariBright1Vtbl
+{
+    //IADLXInterface
+    adlx_long(ADLX_STD_CALL* Acquire)(IADLXDisplayVariBright1* pThis);
+    adlx_long(ADLX_STD_CALL* Release)(IADLXDisplayVariBright1* pThis);
+    ADLX_RESULT(ADLX_STD_CALL* QueryInterface)(IADLXDisplayVariBright1* pThis, const wchar_t* interfaceId, void** ppInterface);
+
+    // Vari-Bright interface
+    ADLX_RESULT(ADLX_STD_CALL* IsSupported)(IADLXDisplayVariBright1* pThis, adlx_bool* supported);
+    ADLX_RESULT(ADLX_STD_CALL* IsEnabled)(IADLXDisplayVariBright1* pThis, adlx_bool* enabled);
+    ADLX_RESULT(ADLX_STD_CALL* SetEnabled)(IADLXDisplayVariBright1* pThis, adlx_bool enabled);
+    ADLX_RESULT(ADLX_STD_CALL* IsCurrentMaximizeBrightness)(IADLXDisplayVariBright1* pThis, adlx_bool* maximizeBrightness);
+    ADLX_RESULT(ADLX_STD_CALL* IsCurrentOptimizeBrightness)(IADLXDisplayVariBright1* pThis, adlx_bool* optimizeBrightness);
+    ADLX_RESULT(ADLX_STD_CALL* IsCurrentBalanced)(IADLXDisplayVariBright1* pThis, adlx_bool* balanced);
+    ADLX_RESULT(ADLX_STD_CALL* IsCurrentOptimizeBattery)(IADLXDisplayVariBright1* pThis, adlx_bool* optimizeBattery);
+    ADLX_RESULT(ADLX_STD_CALL* IsCurrentMaximizeBattery)(IADLXDisplayVariBright1* pThis, adlx_bool* maximizeBattery);
+    ADLX_RESULT(ADLX_STD_CALL* SetMaximizeBrightness)(IADLXDisplayVariBright1* pThis);
+    ADLX_RESULT(ADLX_STD_CALL* SetOptimizeBrightness)(IADLXDisplayVariBright1* pThis);
+    ADLX_RESULT(ADLX_STD_CALL* SetBalanced)(IADLXDisplayVariBright1* pThis);
+    ADLX_RESULT(ADLX_STD_CALL* SetOptimizeBattery)(IADLXDisplayVariBright1* pThis);
+    ADLX_RESULT(ADLX_STD_CALL* SetMaximizeBattery)(IADLXDisplayVariBright1* pThis);
+
+    // Vari-Bright1 interface
+    ADLX_RESULT(ADLX_STD_CALL* IsBacklightAdaptiveSupported)(IADLXDisplayVariBright1* pThis, adlx_bool* supported);
+    ADLX_RESULT(ADLX_STD_CALL* IsBacklightAdaptiveEnabled)(IADLXDisplayVariBright1* pThis, adlx_bool* enabled);
+    ADLX_RESULT(ADLX_STD_CALL* SetBacklightAdaptiveEnabled)(IADLXDisplayVariBright1* pThis, adlx_bool enabled);
+    ADLX_RESULT(ADLX_STD_CALL* IsBatteryLifeSupported)(IADLXDisplayVariBright1* pThis, adlx_bool* supported);
+    ADLX_RESULT(ADLX_STD_CALL* IsBatteryLifeEnabled)(IADLXDisplayVariBright1* pThis, adlx_bool* enabled);
+    ADLX_RESULT(ADLX_STD_CALL* SetBatteryLifeEnabled)(IADLXDisplayVariBright1* pThis, adlx_bool enabled);
+    ADLX_RESULT(ADLX_STD_CALL* IsWindowsPowerModeSupported)(IADLXDisplayVariBright1* pThis, adlx_bool* supported);
+    ADLX_RESULT(ADLX_STD_CALL* IsWindowsPowerModeEnabled)(IADLXDisplayVariBright1* pThis, adlx_bool* enabled);
+    ADLX_RESULT(ADLX_STD_CALL* SetWindowsPowerModeEnabled)(IADLXDisplayVariBright1* pThis, adlx_bool enabled);
+    ADLX_RESULT(ADLX_STD_CALL* IsFullScreenVideoSupported)(IADLXDisplayVariBright1* pThis, adlx_bool* supported);
+    ADLX_RESULT(ADLX_STD_CALL* IsFullScreenVideoEnabled)(IADLXDisplayVariBright1* pThis, adlx_bool* enabled);
+    ADLX_RESULT(ADLX_STD_CALL* SetFullScreenVideoEnabled)(IADLXDisplayVariBright1* pThis, adlx_bool enabled);
+} IADLXDisplayVariBright1Vtbl;
+
+struct IADLXDisplayVariBright1
+{
+    const IADLXDisplayVariBright1Vtbl* pVtbl;
+};
+#endif
+
+#pragma endregion IADLXDisplayVariBright1 interface
+
 #pragma region IADLXDisplayConnectivtyExperience interface
 
 #if defined (__cplusplus)
@@ -2914,5 +3251,226 @@ struct IADLXDisplayBlanking
 #endif
 
 #pragma endregion IADLXDisplayBlanking interface
+
+#pragma region IADLXDisplayDynamicRefreshRateControl interface
+
+#if defined (__cplusplus)
+namespace adlx
+{
+    class ADLX_NO_VTABLE IADLXDisplayDynamicRefreshRateControl : public IADLXInterface
+    {
+    public:
+        ADLX_DECLARE_IID(L"IADLXDisplayDynamicRefreshRateControl")
+        /**
+        *@page DOX_IADLXDisplayDynamicRefreshRateControl_IsSupported IsSupported
+        *@ENG_START_DOX @brief Checks if the Dynamic Refresh Rate Control is supported on a display. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    IsSupported (adlx_bool* supported)
+        *@codeEnd
+        *
+        *@params
+        * @paramrow{1.,[out],supported,adlx_bool*,@ENG_START_DOX The pointer to a variable where the state of Dynamic Refresh Rate Control is returned. The variable is __true__ if Dynamic Refresh Rate Control is supported. The variable is __false__ if Dynamic Refresh Rate Control is not supported.  @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the state of Dynamic Refresh Rate Control is successfully returned, __ADLX_OK__ is returned. <br>
+        * If the state of Dynamic Refresh Rate Control is not successfully returned, an error code is returned. <br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *
+        *@copydoc IADLXDisplayDynamicRefreshRateControl_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT         ADLX_STD_CALL IsSupported(adlx_bool* supported) = 0;
+        /**
+        *@page DOX_IADLXDisplayDynamicRefreshRateControl_IsEnabled IsEnabled
+        *@ENG_START_DOX @brief Checks if the Dynamic Refresh Rate Control is enabled on a display. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    IsEnabled (adlx_bool* enabled)
+        *@codeEnd
+        *
+        *@params
+        * @paramrow{1.,[out],enabled,adlx_bool*,@ENG_START_DOX The pointer to a variable where the state of Dynamic Refresh Rate Control is returned. The variable is __true__ if Dynamic Refresh Rate Control is enabled. The variable is __false__ if Dynamic Refresh Rate Control is not enabled. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the state of Dynamic Refresh Rate Control is successfully returned, __ADLX_OK__ is returned. <br>
+        * If the state of Dynamic Refresh Rate Control is not successfully returned, an error code is returned. <br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *
+        *@copydoc IADLXDisplayDynamicRefreshRateControl_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT         ADLX_STD_CALL IsEnabled(adlx_bool* enabled) = 0;
+        /**
+        *@page DOX_IADLXDisplayDynamicRefreshRateControl_SetEnabled SetEnabled
+        *@ENG_START_DOX @brief Sets the Dynamic Refresh Rate Control to enabled or disabled state on a display. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    SetEnabled (adlx_bool enable)
+        *@codeEnd
+        *
+        *@params
+        * @paramrow{1.,[in],enable,adlx_bool,@ENG_START_DOX The new Dynamic Refresh Rate Control state. Set __true__ to enable Dynamic Refresh Rate Control. Set __false__ to disable Dynamic Refresh Rate Control. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the state of Dynamic Refresh Rate Control is successfully set, __ADLX_OK__ is returned. <br>
+        * If the state of Dynamic Refresh Rate Control is not successfully set, an error code is returned. <br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *
+        *@copydoc IADLXDisplayDynamicRefreshRateControl_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT         ADLX_STD_CALL SetEnabled(adlx_bool enabled) = 0;
+    };
+    typedef IADLXInterfacePtr_T<IADLXDisplayDynamicRefreshRateControl> IADLXDisplayDynamicRefreshRateControlPtr;
+}
+
+#else
+ADLX_DECLARE_IID(IADLXDisplayDynamicRefreshRateControl, L"IADLXDisplayDynamicRefreshRateControl")
+typedef struct IADLXDisplayDynamicRefreshRateControl IADLXDisplayDynamicRefreshRateControl;
+
+typedef struct IADLXDynamicRefreshRateControlVtbl
+{
+    //IADLXInterface
+    adlx_long(ADLX_STD_CALL* Acquire)(IADLXDisplayDynamicRefreshRateControl* pThis);
+    adlx_long(ADLX_STD_CALL* Release)(IADLXDisplayDynamicRefreshRateControl* pThis);
+    ADLX_RESULT(ADLX_STD_CALL* QueryInterface)(IADLXDisplayDynamicRefreshRateControl* pThis, const wchar_t* interfaceId, void** ppInterface);
+
+    //IADLXDisplayDynamicRefreshRateControl
+    ADLX_RESULT(ADLX_STD_CALL* IsSupported)(IADLXDisplayDynamicRefreshRateControl* pThis, adlx_bool* supported);
+    ADLX_RESULT(ADLX_STD_CALL* IsEnabled)(IADLXDisplayDynamicRefreshRateControl* pThis, adlx_bool* enabled);
+    ADLX_RESULT(ADLX_STD_CALL* SetEnabled)(IADLXDisplayDynamicRefreshRateControl* pThis, adlx_bool enabled);
+} IADLXDynamicRefreshRateControlVtbl;
+
+struct IADLXDisplayDynamicRefreshRateControl
+{
+    const IADLXDynamicRefreshRateControlVtbl* pVtbl;
+};
+
+#endif
+
+#pragma endregion IADLXDisplayDynamicRefreshRateControl interface
+
+#pragma region IADLXDisplayFreeSyncColorAccuracy interface
+
+#if defined (__cplusplus)
+namespace adlx
+{
+    class ADLX_NO_VTABLE IADLXDisplayFreeSyncColorAccuracy : public IADLXInterface
+    {
+    public:
+        ADLX_DECLARE_IID(L"IADLXDisplayFreeSyncColorAccuracy")
+
+        /**
+        *@page DOX_IADLXDisplayFreeSyncColorAccuracy_IsSupported IsSupported
+        *@ENG_START_DOX @brief Checks if configuring FreeSync color accuracy is supported on a display. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    IsSupported (adlx_bool* supported)
+        *@codeEnd
+        *
+        *@params
+        * @paramrow{1.,[out],supported,adlx_bool*,@ENG_START_DOX The pointer to a variable where the state of FreeSync color accuracy is returned. The variable is __true__ if FreeSync color accuracy configuration is supported. The variable is __false__ if FreeSync color accuracy configuration  is not supported.  @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the state of FreeSync color accuracy is successfully returned, __ADLX_OK__ is returned. <br>
+        * If the state of FreeSync color accuracy is not successfully returned, an error code is returned. <br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *
+        *@addinfo
+        *@ENG_START_DOX  When enabled, the FreeSync color accuracy activates the AMD FreeSync(TM) Premium Pro HDR media profile for the display for optimal color accuracy when viewing HDR content.When disabled, it activates the HDR10 media profile for the display.
+        *
+        *@ENG_END_DOX
+        *
+        *@copydoc IADLXDisplayFreeSyncColorAccuracy_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT         ADLX_STD_CALL IsSupported(adlx_bool* supported) = 0;
+        /**
+        *@page DOX_IADLXDisplayFreeSyncColorAccuracy_IsEnabled IsEnabled
+        *@ENG_START_DOX @brief Checks if AMD FreeSync(TM) Premium Pro HDR media profile is activated on a display. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    IsEnabled (adlx_bool* enabled)
+        *@codeEnd
+        *
+        *@params
+        * @paramrow{1.,[out],enabled,adlx_bool*,@ENG_START_DOX The pointer to a variable where the state of FreeSync color accuracy is returned. The variable is __true__ if AMD FreeSync(TM) Premium Pro HDR media profile is activated. The variable is __false__ if the HDR10 media profile is activated. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the state of FreeSync color accuracy is successfully returned, __ADLX_OK__ is returned. <br>
+        * If the state of FreeSync color accuracy is not successfully returned, an error code is returned. <br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *
+        *@addinfo
+        *@ENG_START_DOX  When enabled, the FreeSync color accuracy activates the AMD FreeSync(TM) Premium Pro HDR media profile for the display for optimal color accuracy when viewing HDR content.When disabled, it activates the HDR10 media profile for the display.
+        *
+        *@ENG_END_DOX
+        *
+        *@copydoc IADLXDisplayFreeSyncColorAccuracy_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT         ADLX_STD_CALL IsEnabled(adlx_bool* enabled) = 0;
+        /**
+        *@page DOX_IADLXDisplayFreeSyncColorAccuracy_SetEnabled SetEnabled
+        *@ENG_START_DOX @brief Activates or deactivates the AMD FreeSync(TM) Premium Pro HDR media profile on a display. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    SetEnabled (adlx_bool enable)
+        *@codeEnd
+        *
+        *@params
+        * @paramrow{1.,[in],enable,adlx_bool,@ENG_START_DOX The new FreeSync color accuracy state. Set __true__ to activate the AMD FreeSync(TM) Premium Pro HDR media profile. Set __false__ to activate the HDR10 media profile. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the FreeSync color accuracy enabled status is successfully set, __ADLX_OK__ is returned. <br>
+        * If the FreeSync color accuracy enabled status is not successfully set, an error code is returned. <br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
+        *
+        *@addinfo
+        *@ENG_START_DOX  When enabled, the FreeSync color accuracy activates the AMD FreeSync(TM) Premium Pro HDR media profile for the display for optimal color accuracy when viewing HDR content.When disabled, it activates the HDR10 media profile for the display.
+        *
+        *@ENG_END_DOX
+        *
+        *@copydoc IADLXDisplayFreeSyncColorAccuracy_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT         ADLX_STD_CALL SetEnabled(adlx_bool enabled) = 0;
+    };
+    typedef IADLXInterfacePtr_T<IADLXDisplayFreeSyncColorAccuracy> IADLXDisplayFreeSyncColorAccuracyPtr;
+}
+
+#else
+ADLX_DECLARE_IID(IADLXDisplayFreeSyncColorAccuracy, L"IADLXDisplayFreeSyncColorAccuracy")
+typedef struct IADLXDisplayFreeSyncColorAccuracy IADLXDisplayFreeSyncColorAccuracy;
+
+typedef struct IADLXDisplayFreeSyncColorAccuracyVtbl
+{
+    //IADLXInterface
+    adlx_long(ADLX_STD_CALL* Acquire)(IADLXDisplayFreeSyncColorAccuracy* pThis);
+    adlx_long(ADLX_STD_CALL* Release)(IADLXDisplayFreeSyncColorAccuracy* pThis);
+    ADLX_RESULT(ADLX_STD_CALL* QueryInterface)(IADLXDisplayFreeSyncColorAccuracy* pThis, const wchar_t* interfaceId, void** ppInterface);
+
+    //IADLXDisplayFreeSyncColorAccuracy
+    ADLX_RESULT(ADLX_STD_CALL* IsSupported)(IADLXDisplayFreeSyncColorAccuracy* pThis, adlx_bool* supported);
+    ADLX_RESULT(ADLX_STD_CALL* IsEnabled)(IADLXDisplayFreeSyncColorAccuracy* pThis, adlx_bool* enabled);
+    ADLX_RESULT(ADLX_STD_CALL* SetEnabled)(IADLXDisplayFreeSyncColorAccuracy* pThis, adlx_bool enabled);
+
+} IADLXDisplayFreeSyncColorAccuracyVtbl;
+
+struct IADLXDisplayFreeSyncColorAccuracy
+{
+    const IADLXDisplayFreeSyncColorAccuracyVtbl* pVtbl;
+};
+
+#endif
+
+#pragma endregion IADLXDisplayFreeSyncColorAccuracy interface
 
 #endif // ADLX_IDISPLAYSETTING_H

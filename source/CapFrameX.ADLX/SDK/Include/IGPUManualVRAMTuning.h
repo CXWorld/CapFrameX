@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 #ifndef ADLX_IGPUMANUALVRAMTUNING_H
@@ -111,7 +111,7 @@ namespace adlx
         *
         *@syntax
         *@codeStart
-        * @ref ADLX_RESULT    SetMemoryTimingLevel (@ref ADLX_MEMORYTIMING_DESCRIPTION description)
+        * @ref ADLX_RESULT    SetMemoryTimingDescription (@ref ADLX_MEMORYTIMING_DESCRIPTION description)
         *@codeEnd
         *
         *@params
@@ -396,7 +396,7 @@ namespace adlx
         *
         *@syntax
         *@codeStart
-        * @ref ADLX_RESULT    SetMemoryTimingLevel (@ref ADLX_MEMORYTIMING_DESCRIPTION description)
+        * @ref ADLX_RESULT    SetMemoryTimingDescription (@ref ADLX_MEMORYTIMING_DESCRIPTION description)
         *@codeEnd
         *
         *@params
@@ -510,5 +510,67 @@ typedef struct IADLXManualVRAMTuning2Vtbl
 struct IADLXManualVRAMTuning2 { const IADLXManualVRAMTuning2Vtbl *pVtbl; };
 #endif //__cplusplus
 #pragma endregion IADLXManualVRAMTuning2
+
+#pragma region IADLXManualVRAMTuning2_1
+#if defined (__cplusplus)
+namespace adlx
+{
+    class ADLX_NO_VTABLE IADLXManualVRAMTuning2_1 : public IADLXManualVRAMTuning2
+    {
+    public:
+        ADLX_DECLARE_IID(L"IADLXManualVRAMTuning2_1")
+
+        /**
+        *@page DOX_IADLXManualVRAMTuning2_1_GetMaxVRAMFrequencyDefault GetMaxVRAMFrequencyDefault
+        *@ENG_START_DOX @brief Gets the default maximum VRAM frequency on a GPU. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    GetMaxVRAMFrequencyDefault (adlx_int* defaultVal)
+        *@codeEnd
+        *
+        *@params
+        *@paramrow{1.,[out],defaultVal,adlx_int*,@ENG_START_DOX The pointer to a variable where the default max frequency (in MHz) is returned. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the default max frequency is successfully returned, __ADLX_OK__ is returned.<br>
+        * If the default max frequency is not successfully returned, an error code is returned.<br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
+        *
+        *@copydoc IADLXManualVRAMTuning2_1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT         ADLX_STD_CALL GetMaxVRAMFrequencyDefault(adlx_int* defaultVal) = 0;
+    };
+    //----------------------------------------------------------------------------------------------
+    typedef IADLXInterfacePtr_T<IADLXManualVRAMTuning2_1> IADLXManualVRAMTuning2_1Ptr;
+} //namespace adlx
+#else //__cplusplus
+ADLX_DECLARE_IID(IADLXManualVRAMTuning2_1, L"IADLXManualVRAMTuning2_1")
+typedef struct IADLXManualVRAMTuning2_1 IADLXManualVRAMTuning2_1;
+typedef struct IADLXManualVRAMTuning2_1Vtbl
+{
+    //IADLXInterface
+    adlx_long(ADLX_STD_CALL* Acquire)(IADLXManualVRAMTuning2_1* pThis);
+    adlx_long(ADLX_STD_CALL* Release)(IADLXManualVRAMTuning2_1* pThis);
+    ADLX_RESULT(ADLX_STD_CALL* QueryInterface)(IADLXManualVRAMTuning2_1* pThis, const wchar_t* interfaceId, void** ppInterface);
+
+    //IADLXManualVRAMTuning2
+    ADLX_RESULT(ADLX_STD_CALL* IsSupportedMemoryTiming)(IADLXManualVRAMTuning2_1* pThis, adlx_bool* supported);
+    ADLX_RESULT(ADLX_STD_CALL* GetSupportedMemoryTimingDescriptionList)(IADLXManualVRAMTuning2_1* pThis, IADLXMemoryTimingDescriptionList** ppDescriptionList);
+    ADLX_RESULT(ADLX_STD_CALL* GetMemoryTimingDescription)(IADLXManualVRAMTuning2_1* pThis, ADLX_MEMORYTIMING_DESCRIPTION* description);
+    ADLX_RESULT(ADLX_STD_CALL* SetMemoryTimingDescription)(IADLXManualVRAMTuning2_1* pThis, ADLX_MEMORYTIMING_DESCRIPTION description);
+
+    ADLX_RESULT(ADLX_STD_CALL* GetMaxVRAMFrequencyRange)(IADLXManualVRAMTuning2_1* pThis, ADLX_IntRange* tuningRange);
+    ADLX_RESULT(ADLX_STD_CALL* GetMaxVRAMFrequency)(IADLXManualVRAMTuning2_1* pThis, adlx_int* freq);
+    ADLX_RESULT(ADLX_STD_CALL* SetMaxVRAMFrequency)(IADLXManualVRAMTuning2_1* pThis, adlx_int freq);
+
+    //IADLXManualVRAMTuning2_1
+    ADLX_RESULT(ADLX_STD_CALL* GetMaxVRAMFrequencyDefault)(IADLXManualVRAMTuning2_1* pThis, adlx_int* defaultVal);
+}IADLXManualVRAMTuning2_1Vtbl;
+
+struct IADLXManualVRAMTuning2_1 { const IADLXManualVRAMTuning2_1Vtbl* pVtbl; };
+#endif //__cplusplus
+#pragma endregion IADLXManualVRAMTuning2_1
 
 #endif//ADLX_IGPUMANUALVRAMTUNING_H

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -7,7 +7,7 @@
 #define ADLX_IPERFORMANCEMONITORING2_H
 #pragma once
 
-#include "IPerformanceMonitoring.h"
+#include "IPerformanceMonitoring1.h"
 
 #pragma region IADLXGPUMetricsSupport1
 #if defined (__cplusplus)

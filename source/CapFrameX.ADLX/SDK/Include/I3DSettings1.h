@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 - 2024 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2023 - 2025 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -72,11 +72,6 @@ namespace adlx
         * @addinfo
         * @ENG_START_DOX
         * AMD Fluid Motion Frames is a frame generating feature to achieve higher in-game frame rates. <br>
-        *
-        * @depifc
-        * AMD Fluid Motion Frames cannot be simultaneously enabled with @ref DOX_IADLX3DChill "AMD Radeon Chill".<br>
-        *
-        * When a mutually exclusive feature is enabled, AMD Fluid Motion Frames is automatically disabled.<br>
         * @ENG_END_DOX
         *
         *@copydoc IADLX3DAMDFluidMotionFrames_REQ_TABLE
@@ -104,12 +99,6 @@ namespace adlx
         * @addinfo
         * @ENG_START_DOX
         * AMD Fluid Motion Frames is a frame generating feature to achieve higher in-game frame rates. <br>
-        *
-        * @depifc
-        * AMD Fluid Motion Frames cannot be simultaneously enabled with @ref DOX_IADLX3DChill "AMD Radeon Chill".<br>
-        *
-        * If AMD Fluid Motion Frames is enabled, the mutually exclusive features are automatically disabled.
-        * When a mutually exclusive feature is re-enabled, its previous configuration settings are restored.<br>
         * @ENG_END_DOX
         *
         *@copydoc IADLX3DAMDFluidMotionFrames_REQ_TABLE

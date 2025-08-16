@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -248,5 +248,93 @@ typedef struct IADLXManualPowerTuningVtbl
 struct IADLXManualPowerTuning { const IADLXManualPowerTuningVtbl *pVtbl; };
 #endif //__cplusplus
 #pragma endregion IADLXManualPowerTuning
+
+
+#pragma region IADLXManualPowerTuning1
+#if defined (__cplusplus)
+namespace adlx
+{
+    class ADLX_NO_VTABLE IADLXManualPowerTuning1 : public IADLXManualPowerTuning
+    {
+    public:
+        ADLX_DECLARE_IID(L"IADLXManualPowerTuning1")
+
+        /**
+        *@page DOX_IADLXManualPowerTuning1_GetPowerLimitDefault GetPowerLimitDefault
+        *@ENG_START_DOX @brief Gets the default power limit on a GPU. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * @ref ADLX_RESULT    GetPowerLimitDefault(adlx_int* defaultVal)
+        *@codeEnd
+        *
+        *@params
+        *@paramrow{1.,[out],defaultVal,adlx_int*,@ENG_START_DOX The pointer to a variable where the default power limit (in %) is returned. @ENG_END_DOX}
+        *
+        *@retvalues
+        *@ENG_START_DOX  If the default power limit is successfully returned, __ADLX_OK__ is returned.<br>
+        * If the default power limit is not successfully returned, an error code is returned.<br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
+        *
+        *@copydoc IADLXManualPowerTuning1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT         ADLX_STD_CALL GetPowerLimitDefault(adlx_int* defaultVal) = 0;
+
+        /**
+        *@page DOX_IADLXManualPowerTuning1_GetTDCLimitDefault GetTDCLimitDefault
+        * @ENG_START_DOX @brief Gets the default Thermal Design Current (TDC) limit on a GPU. @ENG_END_DOX
+        * 
+        * @syntax
+        * @codeStart
+        * @ref ADLX_RESULT    GetTDCLimitDefault(adlx_int* defaultVal)
+        * @codeEnd
+        *
+        * @params
+        * @paramrow{1.,[out],defaultVal,adlx_int*,@ENG_START_DOX The pointer to a variable where the default TDC limit (in %) is returned. @ENG_END_DOX}
+        * 
+        * @retvalues
+        * @ENG_START_DOX  If the default TDC limit is successfully returned, __ADLX_OK__ is returned.<br>
+        * If the default TDC limit is not successfully returned, an error code is returned.<br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
+        *
+        * @copydoc IADLXManualPowerTuning1_REQ_TABLE
+        *
+        */
+        virtual ADLX_RESULT         ADLX_STD_CALL GetTDCLimitDefault(adlx_int* defaultVal) = 0;
+    };
+    //----------------------------------------------------------------------------------------------
+    typedef IADLXInterfacePtr_T<IADLXManualPowerTuning1> IADLXManualPowerTuning1Ptr;
+} //namespace adlx
+#else //__cplusplus
+ADLX_DECLARE_IID(IADLXManualPowerTuning1, L"IADLXManualPowerTuning1")
+
+typedef struct IADLXManualPowerTuning1 IADLXManualPowerTuning1;
+
+typedef struct IADLXManualPowerTuning1Vtbl
+{
+    //IADLXInterface
+    adlx_long(ADLX_STD_CALL* Acquire)(IADLXManualPowerTuning1* pThis);
+    adlx_long(ADLX_STD_CALL* Release)(IADLXManualPowerTuning1* pThis);
+    ADLX_RESULT(ADLX_STD_CALL* QueryInterface)(IADLXManualPowerTuning1* pThis, const wchar_t* interfaceId, void** ppInterface);
+
+    //IADLXManualPowerTuning
+    ADLX_RESULT(ADLX_STD_CALL* GetPowerLimitRange)(IADLXManualPowerTuning1* pThis, ADLX_IntRange* tuningRange);
+    ADLX_RESULT(ADLX_STD_CALL* GetPowerLimit)(IADLXManualPowerTuning1* pThis, adlx_int* curVal);
+    ADLX_RESULT(ADLX_STD_CALL* SetPowerLimit)(IADLXManualPowerTuning1* pThis, adlx_int curVal);
+    ADLX_RESULT(ADLX_STD_CALL* IsSupportedTDCLimit)(IADLXManualPowerTuning1* pThis, adlx_bool* supported);
+    ADLX_RESULT(ADLX_STD_CALL* GetTDCLimitRange)(IADLXManualPowerTuning1* pThis, ADLX_IntRange* tuningRange);
+    ADLX_RESULT(ADLX_STD_CALL* GetTDCLimit)(IADLXManualPowerTuning1* pThis, adlx_int* curVal);
+    ADLX_RESULT(ADLX_STD_CALL* SetTDCLimit)(IADLXManualPowerTuning1* pThis, adlx_int curVal);
+
+    //IADLXManualPowerTuning1
+    ADLX_RESULT(ADLX_STD_CALL* GetPowerLimitDefault)(IADLXManualPowerTuning1* pThis, adlx_int* defaultVal);
+    ADLX_RESULT(ADLX_STD_CALL* GetTDCLimitDefault)(IADLXManualPowerTuning1* pThis, adlx_int* defaultVal);
+
+}IADLXManualPowerTuning1Vtbl;
+
+struct IADLXManualPowerTuning1 { const IADLXManualPowerTuning1Vtbl* pVtbl; };
+#endif //__cplusplus
+#pragma endregion IADLXManualPowerTuning1
 
 #endif//ADLX_IGPUMANUALPOWERTUNING_H

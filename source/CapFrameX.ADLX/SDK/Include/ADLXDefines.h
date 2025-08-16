@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2024 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -31,9 +31,9 @@
 /**
   * @defgroup typedefs ADLX Primitive Data Types
   * @ENG_START_DOX
-  * @brief This section provides definitions for ADLX primitive data types.
+  * This section provides definitions for ADLX primitive data types.
   * @ENG_END_DOX
-  * 
+  *
   * @requirements
   * @DetailsTable{#include "ADLXDefines.h", @ADLX_First_Ver}
   *
@@ -292,7 +292,8 @@ typedef enum
     ADLX_PENDING_OPERATION,         /**< @ENG_START_DOX This result indicates a failure due to an operation currently in progress. @ENG_END_DOX */
     ADLX_GPU_INACTIVE,              /**< @ENG_START_DOX This result indicates that the GPU is inactive. @ENG_END_DOX */
     ADLX_GPU_IN_USE,                /**< @ENG_START_DOX This result indicates that the GPU is in used by applications. @ENG_END_DOX */
-    ADLX_TIMEOUT_OPERATION          /**< @ENG_START_DOX This result indicates that the operation is timeout. @ENG_END_DOX */
+    ADLX_TIMEOUT_OPERATION,         /**< @ENG_START_DOX This result indicates that the operation is timeout. @ENG_END_DOX */
+    ADLX_NOT_ACTIVE                 /**< @ENG_START_DOX This result indicates that the asked feature is inactive. @ENG_END_DOX */
 } ADLX_RESULT;
 
 /**
@@ -318,11 +319,6 @@ typedef enum
 #define ADLX_FAILED(x) (ADLX_OK != (x)  && ADLX_ALREADY_ENABLED != (x) && ADLX_ALREADY_INITIALIZED != (x))
 
 #pragma endregion ADLX_RESULT
-
-#if defined (__cplusplus)
-namespace adlx
-{
-#endif
 
 #pragma region ADLX_HG_TYPE
 /**
@@ -952,6 +948,23 @@ typedef enum
 }ADLX_SSM_BIAS_MODE;
 #pragma endregion ADLX_SSM_BIAS_MODE
 
+#pragma region ADLX_SSECO_INACTIVE_REASON
+/** @enum ADLX_SMARTSHIFT_ECO_INACTIVE_REASON
+ *  @ingroup enumerations
+ * @ENG_START_DOX
+ *  @brief Indicates the type of SmartShift Eco inactive state reason.
+ * @ENG_END_DOX
+ */
+typedef enum
+{
+    INACTIVE_REASON_UNKNOWN = 0,                            /**< @ENG_START_DOX SmartShift Eco is inactive for an unknown reason. @ENG_END_DOX */
+    INACTIVE_REASON_PRIMARY_DISPLAY_CONNECTED_TO_DGPU,      /**< @ENG_START_DOX SmartShift Eco is inactive because the DGPU is driving the primary display. @ENG_END_DOX */
+    INACTIVE_REASON_DETACHABLE_GPU_CONNECTED,               /**< @ENG_START_DOX SmartShift Eco is inactive because a detachable GPU is connected. @ENG_END_DOX */
+    INACTIVE_REASON_SESSION_INACTIVE,                       /**< @ENG_START_DOX SmartShift Eco is inactive because the current Windows user session is inactive. @ENG_END_DOX */
+    INACTIVE_REASON_MULTIPLE_SESSION_ACTIVE                 /**< @ENG_START_DOX SmartShift Eco is inactive because there are multiple active Windows user sessions. @ENG_END_DOX */
+} ADLX_SMARTSHIFT_ECO_INACTIVE_REASON;
+#pragma endregion ADLX_SSECO_INACTIVE_REASON
+
 #pragma region ADLX_ANTILAG_STATE
 /**
  * @enum ADLX_ANTILAG_STATE
@@ -1001,9 +1014,7 @@ typedef enum
 #pragma endregion ADLX_APP_GPU_DEPENDENCY
 
 #pragma endregion ADLX data types
-#if defined (__cplusplus)
-} //namespace adlx
-#endif
+
 //-------------------------------------------------------------------------------------------------
 //definitions for IADLXInterface
 #pragma region ADLX_DECLARE_IID
