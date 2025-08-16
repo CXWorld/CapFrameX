@@ -111,7 +111,7 @@ namespace CapFrameX.Hardware.Controller
                             case Vendor.Intel:
                                 // Intel (Hybrid)
                                 {
-                                    if (CpuArchitecture.IsHybridDesign(_coreThreads[0]))
+                                    if (CpuArchitecture.IsHybridDesign(_threads))
                                     {
                                         for (int i = 0; i < _threads.Length; i++)
                                         {
@@ -136,7 +136,7 @@ namespace CapFrameX.Hardware.Controller
                             case Vendor.AMD:
                                 {
                                     // AMD (Hybrid)
-                                    if (CpuArchitecture.IsHybridDesign(_coreThreads[0]))
+                                    if (CpuArchitecture.IsHybridDesign(_threads))
                                     {
                                         for (int i = 0; i < _threads.Length; i++)
                                         {

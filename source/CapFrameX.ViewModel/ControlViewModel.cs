@@ -727,7 +727,7 @@ namespace CapFrameX.ViewModel
         private void AddOrUpdateProcess(string processName, string gameName)
         {
             if (string.IsNullOrWhiteSpace(processName) || string.IsNullOrWhiteSpace(gameName)
-                || (processName.Replace(".exe", string.Empty) == gameName))
+                || (processName.Replace(".exe", string.Empty) == gameName) || processName.Contains("??"))
             {
                 return;
             }
