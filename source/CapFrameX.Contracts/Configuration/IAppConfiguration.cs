@@ -262,6 +262,18 @@ namespace CapFrameX.Contracts.Configuration
 		string SecondMetricBarColor { get; set; }
 
 		string ThirdMetricBarColor { get; set; }
+		string ComparisonLineGraphColorOne { get; set; }
+        string ComparisonLineGraphColorTwo { get; set; }
+        string ComparisonLineGraphColorThree { get; set; }
+        string ComparisonLineGraphColorFour { get; set; }
+        string ComparisonLineGraphColorFive { get; set; }
+        string ComparisonLineGraphColorSix { get; set; }
+        string ComparisonLineGraphColorSeven { get; set; }
+        string ComparisonLineGraphColorEight { get; set; }
+        string ComparisonLineGraphColorNine { get; set; }
+        string ComparisonLineGraphColorTen { get; set; }
+        string ComparisonLineGraphColorEleven { get; set; }
+
 
         string PingURL { get; set; }
     }

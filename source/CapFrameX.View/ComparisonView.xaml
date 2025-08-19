@@ -44,6 +44,29 @@
                 <Setter Property="Padding" Value="0"/>
                 <Setter Property="Height" Value="25" />
             </Style>
+            <Style x:Key="ColorPickerToggleButtonStyle" TargetType="ToggleButton">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToggleButton" 
+                                 xmlns:chrome="clr-namespace:Xceed.Wpf.Toolkit.Chromes;assembly=Xceed.Wpf.Toolkit">
+                            <Grid SnapsToDevicePixels="True">
+                                <Grid>
+                                    <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="1"
+                                    SnapsToDevicePixels="True">
+                                        <ContentPresenter Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                                    </Border>
+                                </Grid>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid x:Name="ComparisonAreaGrid">
@@ -489,28 +512,7 @@
                                 <ctrls:CXColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="0" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding FirstMetricBarColor}" 
 													DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
                                     <ctrls:CXColorPicker.ButtonStyle>
-                                        <Style TargetType="ToggleButton">
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="ToggleButton" xmlns:chrome="clr-namespace:Xceed.Wpf.Toolkit.Chromes;assembly=Xceed.Wpf.Toolkit">
-                                                        <Grid SnapsToDevicePixels="True">
-                                                            <Grid>
-                                                                <Border Background="{TemplateBinding Background}"
-																		BorderBrush="{TemplateBinding BorderBrush}"
-																		BorderThickness="1"																						
-																		SnapsToDevicePixels="True">
-                                                                    <ContentPresenter Content="{TemplateBinding Content}"
-																					  ContentTemplate="{TemplateBinding ContentTemplate}"
-																					  ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-																					  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-																					  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
-                                                                </Border>
-                                                            </Grid>
-                                                        </Grid>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
+                                        <StaticResource ResourceKey="ColorPickerToggleButtonStyle"/>
                                     </ctrls:CXColorPicker.ButtonStyle>
                                 </ctrls:CXColorPicker>
                                 
@@ -527,28 +529,7 @@
                                 <ctrls:CXColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="1" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding SecondMetricBarColor}" 
 																      DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
                                     <ctrls:CXColorPicker.ButtonStyle>
-                                        <Style TargetType="ToggleButton">
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="ToggleButton" xmlns:chrome="clr-namespace:Xceed.Wpf.Toolkit.Chromes;assembly=Xceed.Wpf.Toolkit">
-                                                        <Grid SnapsToDevicePixels="True">
-                                                            <Grid>
-                                                                <Border Background="{TemplateBinding Background}"
-																		BorderBrush="{TemplateBinding BorderBrush}"
-																		BorderThickness="1"																						
-																		SnapsToDevicePixels="True">
-                                                                    <ContentPresenter Content="{TemplateBinding Content}"
-																					ContentTemplate="{TemplateBinding ContentTemplate}"
-																					ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-																					VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-																					HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
-                                                                </Border>
-                                                            </Grid>
-                                                        </Grid>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
+                                        <StaticResource ResourceKey="ColorPickerToggleButtonStyle"/>
                                     </ctrls:CXColorPicker.ButtonStyle>
                                 </ctrls:CXColorPicker>
                                 
@@ -564,28 +545,7 @@
                                 <ctrls:CXColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="2" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding ThirdMetricBarColor}" 
 																      DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
                                     <ctrls:CXColorPicker.ButtonStyle>
-                                        <Style TargetType="ToggleButton">
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="ToggleButton" xmlns:chrome="clr-namespace:Xceed.Wpf.Toolkit.Chromes;assembly=Xceed.Wpf.Toolkit">
-                                                        <Grid SnapsToDevicePixels="True">
-                                                            <Grid>
-                                                                <Border Background="{TemplateBinding Background}"
-																		BorderBrush="{TemplateBinding BorderBrush}"
-																		BorderThickness="1"																						
-																		SnapsToDevicePixels="True">
-                                                                    <ContentPresenter Content="{TemplateBinding Content}"
-																						ContentTemplate="{TemplateBinding ContentTemplate}"
-																						ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-																						VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-																						HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
-                                                                </Border>
-                                                            </Grid>
-                                                        </Grid>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
+                                        <StaticResource ResourceKey="ColorPickerToggleButtonStyle"/>
                                     </ctrls:CXColorPicker.ButtonStyle>
                                 </ctrls:CXColorPicker>
                                 <StackPanel Margin="10 0 0 0" Orientation="Vertical" Grid.Column="3" Grid.RowSpan="2" VerticalAlignment="Center">
@@ -814,28 +774,7 @@
 																      DisplayColorAndName="False" 
 																	  Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}">
                                                         <ctrls:CXColorPicker.ButtonStyle>
-                                                            <Style TargetType="ToggleButton">
-                                                                <Setter Property="Template">
-                                                                    <Setter.Value>
-                                                                        <ControlTemplate TargetType="ToggleButton" xmlns:chrome="clr-namespace:Xceed.Wpf.Toolkit.Chromes;assembly=Xceed.Wpf.Toolkit">
-                                                                            <Grid SnapsToDevicePixels="True">
-                                                                                <Grid>
-                                                                                    <Border Background="{TemplateBinding Background}"
-																							BorderBrush="{TemplateBinding BorderBrush}"
-																							BorderThickness="1"																						
-																							SnapsToDevicePixels="True">
-                                                                                        <ContentPresenter Content="{TemplateBinding Content}"
-																										  ContentTemplate="{TemplateBinding ContentTemplate}"
-																										  ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-																										  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-																										  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
-                                                                                    </Border>
-                                                                                </Grid>
-                                                                            </Grid>
-                                                                        </ControlTemplate>
-                                                                    </Setter.Value>
-                                                                </Setter>
-                                                            </Style>
+                                                            <StaticResource ResourceKey="ColorPickerToggleButtonStyle"/>
                                                         </ctrls:CXColorPicker.ButtonStyle>
                                                     </ctrls:CXColorPicker>
                                                     <Button Grid.Row="0" Grid.Column="2" Margin="0 -2 2 0" Padding="0" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" BorderThickness="0" Background="Transparent" Foreground="{DynamicResource MaterialDesignBody}"
@@ -875,6 +814,83 @@
                                 BorderBrush="Transparent">
                             <materialDesign:PackIcon Kind="PlaylistRemove" Height="25" Width="25" />
                         </Button>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"  Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}">
+                            <TextBlock Text="Color&#10;order" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
+                            <materialDesign:PopupBox  Foreground="{DynamicResource MaterialDesignBody}" StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="LeftAndAlignBottomEdges"
+                                                      ToolTip="Change the order in which new graphs get their colors">
+                                <materialDesign:Card Width="110" Margin="0 0 0 0">
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock Text="Colors get applied&#10;after app restart" Margin="3" VerticalAlignment="Center" TextAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
+                                        <ctrls:CXColorPicker Width="25" Height="25" Grid.Row="1" Grid.Column="0" Margin="0 10 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding LineGraphColorOne}" 
+													DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
+                                            <ctrls:CXColorPicker.ButtonStyle>
+                                                <StaticResource ResourceKey="ColorPickerToggleButtonStyle"/>
+                                            </ctrls:CXColorPicker.ButtonStyle>
+                                        </ctrls:CXColorPicker>
+                                        <ctrls:CXColorPicker Width="25" Height="25" Grid.Row="1" Grid.Column="0" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding LineGraphColorTwo}" 
+													DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
+                                            <ctrls:CXColorPicker.ButtonStyle>
+                                                <StaticResource ResourceKey="ColorPickerToggleButtonStyle"/>
+                                            </ctrls:CXColorPicker.ButtonStyle>
+                                        </ctrls:CXColorPicker>
+                                        <ctrls:CXColorPicker Width="25" Height="25" Grid.Row="1" Grid.Column="0" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding LineGraphColorThree}" 
+													DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
+                                            <ctrls:CXColorPicker.ButtonStyle>
+                                                <StaticResource ResourceKey="ColorPickerToggleButtonStyle"/>
+                                            </ctrls:CXColorPicker.ButtonStyle>
+                                        </ctrls:CXColorPicker>
+                                        <ctrls:CXColorPicker Width="25" Height="25" Grid.Row="1" Grid.Column="0" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding LineGraphColorFour}" 
+													DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
+                                            <ctrls:CXColorPicker.ButtonStyle>
+                                                <StaticResource ResourceKey="ColorPickerToggleButtonStyle"/>
+                                            </ctrls:CXColorPicker.ButtonStyle>
+                                        </ctrls:CXColorPicker>
+                                        <ctrls:CXColorPicker Width="25" Height="25" Grid.Row="1" Grid.Column="0" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding LineGraphColorFive}" 
+													DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
+                                            <ctrls:CXColorPicker.ButtonStyle>
+                                                <StaticResource ResourceKey="ColorPickerToggleButtonStyle"/>
+                                            </ctrls:CXColorPicker.ButtonStyle>
+                                        </ctrls:CXColorPicker>
+                                        <ctrls:CXColorPicker Width="25" Height="25" Grid.Row="1" Grid.Column="0" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding LineGraphColorSix}" 
+													DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
+                                            <ctrls:CXColorPicker.ButtonStyle>
+                                                <StaticResource ResourceKey="ColorPickerToggleButtonStyle"/>
+                                            </ctrls:CXColorPicker.ButtonStyle>
+                                        </ctrls:CXColorPicker>
+                                        <ctrls:CXColorPicker Width="25" Height="25" Grid.Row="1" Grid.Column="0" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding LineGraphColorSeven}" 
+													DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
+                                            <ctrls:CXColorPicker.ButtonStyle>
+                                                <StaticResource ResourceKey="ColorPickerToggleButtonStyle"/>
+                                            </ctrls:CXColorPicker.ButtonStyle>
+                                        </ctrls:CXColorPicker>
+                                        <ctrls:CXColorPicker Width="25" Height="25" Grid.Row="1" Grid.Column="0" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding LineGraphColorEight}" 
+													DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
+                                            <ctrls:CXColorPicker.ButtonStyle>
+                                                <StaticResource ResourceKey="ColorPickerToggleButtonStyle"/>
+                                            </ctrls:CXColorPicker.ButtonStyle>
+                                        </ctrls:CXColorPicker>
+                                        <ctrls:CXColorPicker Width="25" Height="25" Grid.Row="1" Grid.Column="0" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding LineGraphColorNine}" 
+													DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
+                                            <ctrls:CXColorPicker.ButtonStyle>
+                                                <StaticResource ResourceKey="ColorPickerToggleButtonStyle"/>
+                                            </ctrls:CXColorPicker.ButtonStyle>
+                                        </ctrls:CXColorPicker>
+                                        <ctrls:CXColorPicker Width="25" Height="25" Grid.Row="1" Grid.Column="0" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding LineGraphColorTen}" 
+													DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
+                                            <ctrls:CXColorPicker.ButtonStyle>
+                                                <StaticResource ResourceKey="ColorPickerToggleButtonStyle"/>
+                                            </ctrls:CXColorPicker.ButtonStyle>
+                                        </ctrls:CXColorPicker>
+                                        <ctrls:CXColorPicker Width="25" Height="25" Grid.Row="1" Grid.Column="0" Margin="0 5 0 10" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding LineGraphColorEleven}" 
+													DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
+                                            <ctrls:CXColorPicker.ButtonStyle>
+                                                <StaticResource ResourceKey="ColorPickerToggleButtonStyle"/>
+                                            </ctrls:CXColorPicker.ButtonStyle>
+                                        </ctrls:CXColorPicker>
+                                    </StackPanel>
+                                </materialDesign:Card>
+                        </materialDesign:PopupBox>
+                        </StackPanel>
                     </Grid>
                 </Grid>
             </Border>

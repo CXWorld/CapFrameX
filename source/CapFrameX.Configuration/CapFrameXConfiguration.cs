@@ -677,6 +677,62 @@ namespace CapFrameX.Configuration
             get => Get<bool>(false);
             set => Set(value);
         }
+        public string ComparisonLineGraphColorOne
+        {
+            get => Get<string>("#FF76B900");
+            set => Set(value);
+        }
+        public string ComparisonLineGraphColorTwo
+        {
+            get => Get<string>("#FFED1C24");
+            set => Set(value);
+        }
+        public string ComparisonLineGraphColorThree
+        {
+            get => Get<string>("#FF0071C5");
+            set => Set(value);
+        }
+        public string ComparisonLineGraphColorFour
+        {
+            get => Get<string>("#FFF17D20");
+            set => Set(value);
+        }
+        public string ComparisonLineGraphColorFive
+        {
+            get => Get<string>("#FFFFB400");
+            set => Set(value);
+        }
+        public string ComparisonLineGraphColorSix
+        {
+            get => Get<string>("#FF6400A0");
+            set => Set(value);
+        }
+        public string ComparisonLineGraphColorSeven
+        {
+            get => Get<string>("#FF9865EB");
+            set => Set(value);
+        }
+        public string ComparisonLineGraphColorEight
+        {
+            get => Get<string>("#FF00FFFF");
+            set => Set(value);
+        }
+        public string ComparisonLineGraphColorNine
+        {
+            get => Get<string>("#FFA0522D");
+            set => Set(value);
+        }
+        public string ComparisonLineGraphColorTen
+        {
+            get => Get<string>("#FF0000CD");
+            set => Set(value);
+        }
+        public string ComparisonLineGraphColorEleven
+        {
+            get => Get<string>("#FF000000");
+            set => Set(value);
+        }
+
 
         // Sensor Settings
         public bool UseSensorLogging
