@@ -20,14 +20,41 @@ namespace CapFrameX.Configuration
         private readonly ILogger<JsonSettingsStorage> _logger;
         private readonly Subject<int> _saveFileSubject = new Subject<int>();
         private readonly Dictionary<string, object> _configDictionary = new Dictionary<string, object>();
+        private TaskCompletionSource<bool> _saveCompletionSource = null;
+        private readonly object _lock = new object();
 
         public JsonSettingsStorage(ILogger<JsonSettingsStorage> logger)
         {
             _logger = logger;
+
             _saveFileSubject
                 .AsObservable()
+                .Do(_ =>
+                {
+                    lock (_lock)
+                    {
+                        if (_saveCompletionSource == null || _saveCompletionSource.Task.IsCompleted)
+                            _saveCompletionSource = new TaskCompletionSource<bool>();
+                    }
+                })
                 .Throttle(TimeSpan.FromMilliseconds(1000))
-                .SelectMany(_ => Observable.Timer(TimeSpan.FromMilliseconds(200)).Select(x => Save()).Retry(4))
+                .SelectMany(_ =>
+                    Observable.Timer(TimeSpan.FromMilliseconds(200))
+                        .Select(x =>
+                        {
+                            Save();
+                            return true;
+                        })
+                        .Do(result =>
+                        {
+                            lock (_lock)
+                            {
+                                if (_saveCompletionSource != null)
+                                    _saveCompletionSource.TrySetResult(true);
+                            }
+                        })
+                        .Retry(4)
+                )
                 .Subscribe();
         }
 
@@ -136,7 +163,15 @@ namespace CapFrameX.Configuration
                 throw;
             }
         }
+        public Task WaitForPendingSaveAsync()
+        {
+            lock (_lock)
+            {
+                return _saveCompletionSource != null ? _saveCompletionSource.Task : Task.CompletedTask;
+            }
+        }
     }
+
 
     internal class JsonSettingsStorageException : Exception
     {
