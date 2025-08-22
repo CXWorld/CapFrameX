@@ -9,6 +9,7 @@ using CapFrameX.Sensor.Reporting;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
+using CapFrameX.ViewModel.SubModels;
 using GongSolutions.Wpf.DragDrop;
 using LiveCharts;
 using LiveCharts.Defaults;
@@ -24,6 +25,7 @@ using Prism.Mvvm;
 using Prism.Regions;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Reactive;
@@ -131,6 +133,7 @@ namespace CapFrameX.ViewModel
             .ToArray();
 
         public ISubject<Unit> ResetLShapeChart = new Subject<Unit>();
+
 
         public Func<double, string> PercentageFormatter
         {
@@ -741,96 +744,6 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public Color LineGraphColorOne
-        {
-            get { return (Color)ColorConverter.ConvertFromString(_appConfiguration.ComparisonLineGraphColorOne); }
-            set
-            {
-                _appConfiguration.ComparisonLineGraphColorOne = value.ToString();
-            }
-        }
-        public Color LineGraphColorTwo
-        {
-            get { return (Color)ColorConverter.ConvertFromString(_appConfiguration.ComparisonLineGraphColorTwo); }
-            set
-            {
-                _appConfiguration.ComparisonLineGraphColorTwo = value.ToString();
-            }
-        }
-        public Color LineGraphColorThree
-        {
-            get { return (Color)ColorConverter.ConvertFromString(_appConfiguration.ComparisonLineGraphColorThree); }
-            set
-            {
-                _appConfiguration.ComparisonLineGraphColorThree = value.ToString();
-            }
-        }
-        public Color LineGraphColorFour
-        {
-            get { return (Color)ColorConverter.ConvertFromString(_appConfiguration.ComparisonLineGraphColorFour); }
-            set
-            {
-                _appConfiguration.ComparisonLineGraphColorFour = value.ToString();
-            }
-        }
-        public Color LineGraphColorFive
-        {
-            get { return (Color)ColorConverter.ConvertFromString(_appConfiguration.ComparisonLineGraphColorFive); }
-            set
-            {
-                _appConfiguration.ComparisonLineGraphColorFive = value.ToString();
-            }
-        }
-        public Color LineGraphColorSix
-        {
-            get { return (Color)ColorConverter.ConvertFromString(_appConfiguration.ComparisonLineGraphColorSix); }
-            set
-            {
-                _appConfiguration.ComparisonLineGraphColorSix = value.ToString();
-            }
-        }
-        public Color LineGraphColorSeven
-        {
-            get { return (Color)ColorConverter.ConvertFromString(_appConfiguration.ComparisonLineGraphColorSeven); }
-            set
-            {
-                _appConfiguration.ComparisonLineGraphColorSeven = value.ToString();
-            }
-        }
-        public Color LineGraphColorEight
-        {
-            get { return (Color)ColorConverter.ConvertFromString(_appConfiguration.ComparisonLineGraphColorEight); }
-            set
-            {
-                _appConfiguration.ComparisonLineGraphColorEight = value.ToString();
-            }
-        }
-        public Color LineGraphColorNine
-        {
-            get { return (Color)ColorConverter.ConvertFromString(_appConfiguration.ComparisonLineGraphColorNine); }
-            set
-            {
-                _appConfiguration.ComparisonLineGraphColorNine = value.ToString();
-            }
-        }
-        public Color LineGraphColorTen
-        {
-            get { return (Color)ColorConverter.ConvertFromString(_appConfiguration.ComparisonLineGraphColorTen); }
-            set
-            {
-                _appConfiguration.ComparisonLineGraphColorTen = value.ToString();
-            }
-        }
-        public Color LineGraphColorEleven
-        {
-            get { return (Color)ColorConverter.ConvertFromString(_appConfiguration.ComparisonLineGraphColorEleven); }
-            set
-            {
-                _appConfiguration.ComparisonLineGraphColorEleven = value.ToString();
-            }
-        }
-
-
         public bool ComparisonRangeSliderRealTime
         {
             get { return _appConfiguration.ComparisonRangeSliderRealTime; }
@@ -889,6 +802,8 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
+
+        public ObservableCollection<ComparisonColorItems> LineGraphColors { get; set; }
 
         public ICommand RemoveAllComparisonsCommand { get; }
 
@@ -951,6 +866,15 @@ namespace CapFrameX.ViewModel
             SubscribeToUpdateRecordInfos();
             SubscribeToThemeChanged();
             SetLineGraphColors();
+
+
+            LineGraphColors = new ObservableCollection<ComparisonColorItems>(
+                _appConfiguration.ComparisonLineGraphColors
+                    .Select(c => new ComparisonColorItems
+                    {
+                        Color = (Color)ColorConverter.ConvertFromString(c)
+                    })
+            );
         }
 
         private void InitializePlotModels()
@@ -2348,17 +2272,8 @@ namespace CapFrameX.ViewModel
 
         private void SetLineGraphColors()
         {
-            _comparisonColorManager.SetColor(0, LineGraphColorOne);
-            _comparisonColorManager.SetColor(1, LineGraphColorTwo);
-            _comparisonColorManager.SetColor(2, LineGraphColorThree);
-            _comparisonColorManager.SetColor(3, LineGraphColorFour);
-            _comparisonColorManager.SetColor(4, LineGraphColorFive);
-            _comparisonColorManager.SetColor(5, LineGraphColorSix);
-            _comparisonColorManager.SetColor(6, LineGraphColorSeven);
-            _comparisonColorManager.SetColor(7, LineGraphColorEight);
-            _comparisonColorManager.SetColor(8, LineGraphColorNine);
-            _comparisonColorManager.SetColor(9, LineGraphColorTen);
-            _comparisonColorManager.SetColor(10, LineGraphColorEleven);
+            _comparisonColorManager.SetColors(LineGraphColors);
+
         }
 
         private void SubscribeToSelectRecord()
@@ -2473,6 +2388,13 @@ namespace CapFrameX.ViewModel
                     }
                 }
             }
+        }
+
+        public void SaveLineGraphColors()
+        {
+            _appConfiguration.ComparisonLineGraphColors = LineGraphColors
+                .Select(c => c.Color.ToString())
+                .ToList();
         }
 
         void IDropTarget.DragOver(IDropInfo dropInfo)

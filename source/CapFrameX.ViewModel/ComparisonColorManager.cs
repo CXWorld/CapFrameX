@@ -1,6 +1,8 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.ViewModel.SubModels;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Media;
 
@@ -27,13 +29,18 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public void SetColor(int number, Color color)
-		{
-			_comparisonBrushes[number].Color = color;
+        public void SetColors(ObservableCollection<ComparisonColorItems> lineGraphColors)
+        {
+            if (lineGraphColors == null)
+                return;
 
-		}
+            for (int i = 0; i < _comparisonBrushes.Length && i < lineGraphColors.Count; i++)
+            {
+                _comparisonBrushes[i] = new SolidColorBrush(lineGraphColors[i].Color);
+            }
+        }
 
-		public SolidColorBrush GetNextFreeColor()
+        public SolidColorBrush GetNextFreeColor()
 		{
 			var entry = _usedColorDictionary.Where(e => e.Value == false)
 				.Select(e => (KeyValuePair<int, bool>?)e)

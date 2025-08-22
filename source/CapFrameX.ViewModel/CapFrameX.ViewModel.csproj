@@ -213,6 +213,7 @@
     <Compile Include="StateViewModel.cs" />
     <Compile Include="StateViewModelSystemStatus.cs" />
     <Compile Include="SubModels\BenchlabViewModel.cs" />
+    <Compile Include="SubModels\ComparisonColorItems.cs" />
     <Compile Include="SubModels\PmdViewModelBase.cs" />
     <Compile Include="SubModels\PoweneticsViewModel.cs" />
     <Compile Include="SubModels\SensorGroupControl.cs" />

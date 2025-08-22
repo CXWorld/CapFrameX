@@ -153,13 +153,13 @@ namespace CapFrameX.Configuration
         }
 
         public bool UseAdlFallback
-		{
-			get => Get<bool>(false);
-			set => Set(value);
-		}
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
 
 
-		public string PingURL
+        public string PingURL
         {
             get => Get<string>("google.com");
             set => Set(value);
@@ -491,38 +491,38 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
-		public string ThreadAffinityHotkey
-		{
-			get => Get<string>("Control+A");
-			set => Set(value);
-		}
+        public string ThreadAffinityHotkey
+        {
+            get => Get<string>("Control+A");
+            set => Set(value);
+        }
 
         public string ResetMetricsHotkey
-		{
-			get => Get<string>("Alt+M");
-			set => Set(value);
-		}
+        {
+            get => Get<string>("Alt+M");
+            set => Set(value);
+        }
 
-		public int OSDRefreshPeriod
+        public int OSDRefreshPeriod
         {
             get => Get<int>(1000);
             set => Set(value);
         }
 
         public int MetricInterval
-		{
-			get => Get<int>(20);
-			set => Set(value);
-		}
+        {
+            get => Get<int>(20);
+            set => Set(value);
+        }
 
-		public bool AutoDisableOverlay
-		{
-			get => Get<bool>(true);
-			set => Set(value);
-		}
+        public bool AutoDisableOverlay
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
 
-		public bool UseThreadAffinity
-		{
+        public bool UseThreadAffinity
+        {
             get => Get<bool>(false);
             set => Set(value);
         }
@@ -677,59 +677,14 @@ namespace CapFrameX.Configuration
             get => Get<bool>(false);
             set => Set(value);
         }
-        public string ComparisonLineGraphColorOne
+        public List<string> ComparisonLineGraphColors
         {
-            get => Get<string>("#FF76B900");
-            set => Set(value);
-        }
-        public string ComparisonLineGraphColorTwo
+            get => Get<List<string>>(new List<string>
         {
-            get => Get<string>("#FFED1C24");
-            set => Set(value);
-        }
-        public string ComparisonLineGraphColorThree
-        {
-            get => Get<string>("#FF0071C5");
-            set => Set(value);
-        }
-        public string ComparisonLineGraphColorFour
-        {
-            get => Get<string>("#FFF17D20");
-            set => Set(value);
-        }
-        public string ComparisonLineGraphColorFive
-        {
-            get => Get<string>("#FFFFB400");
-            set => Set(value);
-        }
-        public string ComparisonLineGraphColorSix
-        {
-            get => Get<string>("#FF6400A0");
-            set => Set(value);
-        }
-        public string ComparisonLineGraphColorSeven
-        {
-            get => Get<string>("#FF9865EB");
-            set => Set(value);
-        }
-        public string ComparisonLineGraphColorEight
-        {
-            get => Get<string>("#FF00FFFF");
-            set => Set(value);
-        }
-        public string ComparisonLineGraphColorNine
-        {
-            get => Get<string>("#FFA0522D");
-            set => Set(value);
-        }
-        public string ComparisonLineGraphColorTen
-        {
-            get => Get<string>("#FF0000CD");
-            set => Set(value);
-        }
-        public string ComparisonLineGraphColorEleven
-        {
-            get => Get<string>("#FF000000");
+            "#FF76B900", "#FFED1C24", "#FF0071C5", "#FFF17D20",
+            "#FFFFB400", "#FF6400A0", "#FF9865EB", "#FF00FFFF",
+            "#FFA0522D", "#FF0000CD", "#FF000000"
+        });
             set => Set(value);
         }
 
