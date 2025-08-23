@@ -85,6 +85,7 @@ namespace CapFrameX.View
         {
 
              (DataContext as ComparisonViewModel).SaveLineGraphColors();
+            (DataContext as ComparisonViewModel).SetLineGraphColors();
         }
 
         private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)

@@ -818,16 +818,15 @@
                             <TextBlock Text="Color&#10;order" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
                             <materialDesign:PopupBox  Foreground="{DynamicResource MaterialDesignBody}" StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="LeftAndAlignBottomEdges"
                                                       ToolTip="Change the order in which new graphs get their colors" Closed="ColorPickerPopup_Closed">
-                                <materialDesign:Card Width="110" Margin="0 0 0 0">
-                                    <StackPanel Orientation="Vertical">
-                                        <TextBlock Text="Colors get applied&#10;after app restart" Margin="3" VerticalAlignment="Center" TextAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
+                                <materialDesign:Card Width="110">
+                                    <StackPanel Orientation="Vertical" Margin="0 5 0 5">
+                                        <TextBlock Text="Order in which&#10;colors are applied&#10;to added records" Margin="3" VerticalAlignment="Center" TextAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
                                         <ItemsControl ItemsSource="{Binding LineGraphColors}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
                                                     <UniformGrid Columns="1" />
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
-
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
                                                     <ctrls:CXColorPicker Width="25" Height="25"

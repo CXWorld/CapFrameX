@@ -865,8 +865,6 @@ namespace CapFrameX.ViewModel
             SubscribeToSelectRecord();
             SubscribeToUpdateRecordInfos();
             SubscribeToThemeChanged();
-            SetLineGraphColors();
-
 
             LineGraphColors = new ObservableCollection<ComparisonColorItems>(
                 _appConfiguration.ComparisonLineGraphColors
@@ -875,6 +873,8 @@ namespace CapFrameX.ViewModel
                         Color = (Color)ColorConverter.ConvertFromString(c)
                     })
             );
+
+            SetLineGraphColors();
         }
 
         private void InitializePlotModels()
@@ -2270,12 +2270,6 @@ namespace CapFrameX.ViewModel
             return Color.FromArgb(highlightColor.A, highlightColor.R, highlightColor.G, highlightColor.B);
         }
 
-        private void SetLineGraphColors()
-        {
-            _comparisonColorManager.SetColors(LineGraphColors);
-
-        }
-
         private void SubscribeToSelectRecord()
         {
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.SelectSession>>()
@@ -2388,6 +2382,10 @@ namespace CapFrameX.ViewModel
                     }
                 }
             }
+        }
+        public void SetLineGraphColors()
+        {
+            _comparisonColorManager.SetColors(LineGraphColors);
         }
 
         public void SaveLineGraphColors()
