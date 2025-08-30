@@ -194,6 +194,8 @@ namespace CapFrameX.Statistics.NetStandard
         /// <returns>metric value</returns>
         public double GetFpsMetricValue(IList<double> sequence, EMetric metric)
         {
+            if (!sequence.Any()) return double.NaN;
+
             double metricValue;
             IList<double> fps = sequence.Select(ft => 1000 / ft).ToList();
             switch (metric)
