@@ -582,7 +582,8 @@
 				</materialDesign:PopupBox>
 			</StackPanel>
 
-			<StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10 10 5 0" Orientation="Horizontal">
+			<StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10 10 5 0" Orientation="Horizontal"
+                        Visibility="{Binding IsLineChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
 				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Legend:</TextBlock>
 				<ToggleButton Name="ContextLegendActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 					  ToolTip="Show selected labels as chart legend" IsChecked="{Binding IsContextLegendActive}"/>
@@ -660,88 +661,88 @@
 				</StackPanel.Style>
 			</StackPanel>
 
-			<StackPanel Grid.Column="6" Margin="10 10 5 0" Orientation="Horizontal" Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToCollapsedConverter}}">
-				<TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Further Settings</TextBlock>
-				<materialDesign:PopupBox Foreground="{DynamicResource MaterialDesignBody}" StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
-				<materialDesign:Card Width="Auto" Margin="0 0 0 -10">
-					<StackPanel Orientation="Horizontal" Margin="10">
-						<ComboBox Margin="10 0 20 10" Width="40" Height="40"
-						  materialDesign:HintAssist.Hint="Size" materialDesign:HintAssist.HintOpacity=".8" materialDesign:HintAssist.IsFloating="True" materialDesign:ComboBoxAssist.ClassicMode="True"
+            <StackPanel Grid.Column="6" Margin="10 10 5 0" Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Further Settings</TextBlock>
+                <materialDesign:PopupBox Foreground="{DynamicResource MaterialDesignBody}" StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
+                    <materialDesign:Card Width="Auto" Margin="0 0 0 -10">
+                        <StackPanel Orientation="Horizontal" Margin="10">
+                            <ComboBox Margin="10 0 20 10" Width="80" Height="40"
+						  materialDesign:HintAssist.Hint="Legend size" materialDesign:HintAssist.HintOpacity=".8" materialDesign:HintAssist.IsFloating="True" materialDesign:ComboBoxAssist.ClassicMode="True"
 						  ItemsSource="{Binding LegendFontSizeItemsSource}" SelectedItem="{Binding LegendFontSizeFactor}" Foreground="{DynamicResource MaterialDesignBody}" >
-						</ComboBox>
+                            </ComboBox>
 
-						<StackPanel HorizontalAlignment="Right" Margin="10 10 10 0" Orientation="Horizontal"
+                            <StackPanel HorizontalAlignment="Right" Margin="10 10 10 0" Orientation="Horizontal"
 							Visibility="{Binding IsLineChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
-							<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">GPU-Busy times:</TextBlock>
-							<ToggleButton Name="GPUActiveMetricsToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">GPU-Busy times:</TextBlock>
+                                <ToggleButton Name="GPUActiveMetricsToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 								  ToolTip="Show GPU-Busy times instead of regular frametimes" IsChecked="{Binding ShowGpuActiveLineCharts}"/>
-						</StackPanel>
+                            </StackPanel>
 
-						<StackPanel Margin="10 10 10 0" VerticalAlignment="Center" Orientation="Horizontal"
+                            <StackPanel Margin="10 10 10 0" VerticalAlignment="Center" Orientation="Horizontal"
 							Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
-							<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Relative Mode:</TextBlock>
-							<ToggleButton Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Relative Mode:</TextBlock>
+                                <ToggleButton Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 							  ToolTip="Toggle fixed relative mode. Target value selectable by mouse click." IsChecked="{Binding UseComparisonRelativeMode}"/>
-						</StackPanel>
+                            </StackPanel>
 
-						<StackPanel HorizontalAlignment="Right" Margin="10 10 10 0" Orientation="Horizontal"
+                            <StackPanel HorizontalAlignment="Right" Margin="10 10 10 0" Orientation="Horizontal"
 							Visibility="{Binding IsVarianceChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
-							<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Auto scale:</TextBlock>
-							<ToggleButton  Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Auto scale:</TextBlock>
+                                <ToggleButton  Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 							    ToolTip="Auto scale variance bars based on the first variance group" IsChecked="{Binding VarianceAutoScaling}"/>
-						</StackPanel>
 
-						<StackPanel Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20 10 10 0" Orientation="Horizontal" Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}">
-							<TextBlock Text="Color&#10;order" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
-							<materialDesign:PopupBox  Foreground="{DynamicResource MaterialDesignBody}" StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="LeftAndAlignBottomEdges"
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20 10 10 0" Orientation="Horizontal" Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}">
+                                <TextBlock Text="Color&#10;order" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
+                                <materialDesign:PopupBox  Foreground="{DynamicResource MaterialDesignBody}" StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="LeftAndAlignBottomEdges"
                                ToolTip="Change the order in which new graphs get their colors" Closed="ColorPickerPopup_Closed">
-								<materialDesign:Card Width="110">
-									<StackPanel Orientation="Vertical" Margin="0 5 0 5">
-										<TextBlock Text="Order in which&#10;colors are applied&#10;to added records" Margin="3" VerticalAlignment="Center" TextAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
-										<ItemsControl ItemsSource="{Binding LineGraphColors}">
-											<ItemsControl.ItemsPanel>
-												<ItemsPanelTemplate>
-													<UniformGrid Columns="1" />
-												</ItemsPanelTemplate>
-											</ItemsControl.ItemsPanel>
-											<ItemsControl.ItemTemplate>
-												<DataTemplate>
-													<ctrls:CXColorPicker Width="25" Height="25"
+                                    <materialDesign:Card Width="110">
+                                        <StackPanel Orientation="Vertical" Margin="0 5 0 5">
+                                            <TextBlock Text="Order in which&#10;colors are applied&#10;to added records" Margin="3" VerticalAlignment="Center" TextAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
+                                            <ItemsControl ItemsSource="{Binding LineGraphColors}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <UniformGrid Columns="1" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <ctrls:CXColorPicker Width="25" Height="25"
 														 Margin="0,5,0,0"
 														 Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"
 														 SelectedColor="{Binding Color, Mode=TwoWay}"
 														 DisplayColorAndName="False"
 														 AvailableColorsSortingMode="HueSaturationBrightness">
-														<ctrls:CXColorPicker.ButtonStyle>
-															<StaticResource ResourceKey="ColorPickerToggleButtonStyle"/>
-														</ctrls:CXColorPicker.ButtonStyle>
-													</ctrls:CXColorPicker>
-												</DataTemplate>
-											</ItemsControl.ItemTemplate>
-										</ItemsControl>
-									</StackPanel>
-								</materialDesign:Card>
-							</materialDesign:PopupBox>
-						</StackPanel>
-						<StackPanel.Style>
-							<Style>
-								<Style.Triggers>
-									<MultiDataTrigger>
-										<MultiDataTrigger.Conditions>
-											<Condition Binding="{Binding Path=IsLineChartTabActive}" Value="false"/>
-											<Condition Binding="{Binding Path=IsDistributionTabActive}" Value="false"/>
-										</MultiDataTrigger.Conditions>
-										<Setter Property="ItemsControl.Visibility" Value="Collapsed"/>
-									</MultiDataTrigger>
-								</Style.Triggers>
-							</Style>
-						</StackPanel.Style>
-					</StackPanel>
-				</materialDesign:Card>
-			</materialDesign:PopupBox>
-			</StackPanel>
-
-		</Grid>
+                                                            <ctrls:CXColorPicker.ButtonStyle>
+                                                                <StaticResource ResourceKey="ColorPickerToggleButtonStyle"/>
+                                                            </ctrls:CXColorPicker.ButtonStyle>
+                                                        </ctrls:CXColorPicker>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </materialDesign:Card>
+                                </materialDesign:PopupBox>
+                            </StackPanel>
+                        </StackPanel>
+                    </materialDesign:Card>
+                </materialDesign:PopupBox>
+                <StackPanel.Style>
+                    <Style>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Path=IsLineChartTabActive}" Value="false"/>
+                                    <Condition Binding="{Binding Path=IsDistributionTabActive}" Value="false"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="ItemsControl.Visibility" Value="Collapsed"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+            </StackPanel>
+        </Grid>
 		<!-- Copmparison List -->
 		<StackPanel Margin="5 10 5 0" Grid.Column="1" Grid.RowSpan="2" Orientation="Vertical">
 			<TextBox IsReadOnly="True" Foreground="{DynamicResource MaterialDesignBody}"
@@ -799,18 +800,18 @@
 														<RowDefinition Height="1*"/>
 													</Grid.RowDefinitions>
 													<Grid.ColumnDefinitions>
-														<ColumnDefinition Width="140"/>
-														<ColumnDefinition Width="80"/>
+														<ColumnDefinition Width="170"/>
+														<ColumnDefinition Width="45"/>
 														<ColumnDefinition Width="25"/>
 													</Grid.ColumnDefinitions>
 													<TextBlock Margin="3 0 0 0" Grid.Row="0"  Grid.Column="0" Grid.ColumnSpan="2" FontWeight="Bold" Text="{Binding WrappedRecordInfo.Game}" />
 													<TextBlock Text="{Binding WrappedRecordInfo.InfoText}" TextWrapping="Wrap"
-																   Width="140" Margin="3 0 0 0" Grid.Row="1" Grid.Column="0"
+																   Width="170" Margin="3 0 0 0" Grid.Row="1" Grid.Column="0"
 																   LineStackingStrategy="BlockLineHeight"
 																   FontSize="13"
 																   LineHeight="14"
 																   MaxHeight="52"/>
-													<ctrls:CXColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="1" Margin="0 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding FrametimeGraphColor}" 
+													<ctrls:CXColorPicker Width="45" Height="25" Grid.Row="1" Grid.Column="1" Margin="0 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding FrametimeGraphColor}" 
 																      DisplayColorAndName="False" 
 																	  Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}">
 														<ctrls:CXColorPicker.ButtonStyle>
@@ -820,7 +821,7 @@
 													<Button Grid.Row="0" Grid.Column="2" Margin="0 -2 2 0" Padding="0" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" BorderThickness="0" Background="Transparent" Foreground="{DynamicResource MaterialDesignBody}"
 															Content="{materialDesign:PackIcon Close, Size=12}" Command="{Binding RemoveCommand}">
 													</Button>
-													<ToggleButton Grid.Row="1" Grid.Column="2" Margin="0 0 -2 6" Width="20" Height="20" HorizontalAlignment="Right" VerticalAlignment="Bottom" 
+													<ToggleButton Grid.Row="1" Grid.Column="2" Margin="0 0 -2 4" Width="20" Height="20" HorizontalAlignment="Right" VerticalAlignment="Bottom" 
 																  Style="{StaticResource MaterialDesignActionToggleButton}"
                                                                   Foreground="White"
 																  Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}"

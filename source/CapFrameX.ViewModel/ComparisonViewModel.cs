@@ -692,6 +692,9 @@ namespace CapFrameX.ViewModel
             set
             {
                 _legendFontSizeFactor = value;
+                _isFrametimeChartDirty = true;
+                _isFpsChartDirty = true;
+                _isDistributionChartDirty = true;
                 RaisePropertyChanged();
                 InitializePlotModels();
                 UpdateCharts();
