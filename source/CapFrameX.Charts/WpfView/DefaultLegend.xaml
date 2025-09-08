@@ -34,7 +34,7 @@
              d:DataContext="{d:DesignInstance local:DefaultLegend}"
              Name="This">
     <UserControl.Resources>
-            <local:OrientationConverter x:Key="OrientationConverter"></local:OrientationConverter>
+        <local:OrientationConverter x:Key="OrientationConverter"></local:OrientationConverter>
     </UserControl.Resources>
     <UserControl.Template>
         <ControlTemplate>
@@ -43,7 +43,7 @@
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel MaxWidth="{Binding MaxWidth, ElementName=This}"
-                                       MaxHeight="{Binding MaxHeight, ElementName=This}">
+                                MaxHeight="{Binding MaxHeight, ElementName=This}">
                                 <WrapPanel.Orientation>
                                     <MultiBinding Converter="{StaticResource OrientationConverter}">
                                         <Binding Path="Orientation"/>
