@@ -5,8 +5,8 @@ using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Monitoring.Contracts;
+using LibreHardwareMonitor.Hardware;
 using Microsoft.Extensions.Logging;
-using OpenHardwareMonitor.Hardware;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -27,7 +27,7 @@ namespace CapFrameX.Sensor
         private readonly ILogger<SensorService> _logger;
         private readonly IDisposable _logDisposable;
 
-        private IComputer _computer;
+        private Computer _computer;
         private SessionSensorDataLive _sessionSensorDataLive;
         private bool _isLoggingActive = false;
         private bool _isServiceAlive = true;
@@ -174,14 +174,11 @@ namespace CapFrameX.Sensor
             {
                 try
                 {
-                    _computer = new Computer(_sensorConfig, _rTSSService, _appConfiguration);
+                    _computer = new Computer();
                     _computer.Open();
-                    _computer.CPUEnabled = true;
-                    _computer.GPUEnabled = true;
-                    _computer.RAMEnabled = true;
-                    _computer.MainboardEnabled = false;
-                    _computer.FanControllerEnabled = false;
-                    _computer.HDDEnabled = false;
+                    _computer.IsCpuEnabled = true;
+                    _computer.IsGpuEnabled = true;
+                    _computer.IsMemoryEnabled = true;
                 }
                 catch (Exception ex)
                 {
@@ -235,7 +232,7 @@ namespace CapFrameX.Sensor
                         {
                             entries.Add(new SensorEntry()
                             {
-                                Identifier = sensor.IdentifierString,
+                                Identifier = sensor.Identifier.ToString(),
                                 Value = sensor.Value,
                                 Name = sensor.Name,
                                 SensorType = sensor.SensorType.ToString(),
@@ -279,7 +276,7 @@ namespace CapFrameX.Sensor
                         if (sensor.Value != null)
                             dict.TryAdd(new SensorEntry()
                             {
-                                Identifier = sensor.IdentifierString,
+                                Identifier = sensor.Identifier.ToString(),
                                 Value = sensor.Value,
                                 Name = sensor.Name,
                                 SensorType = sensor.SensorType.ToString(),
@@ -333,12 +330,12 @@ namespace CapFrameX.Sensor
             lock (_lockComputer)
             {
                 gpu = _computer?.Hardware
-               .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAti
+               .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAmd
                    || hdw.HardwareType == HardwareType.GpuNvidia
                    || hdw.HardwareType == HardwareType.GpuIntel);
             }
 
-            return gpu != null ? gpu.GetDriverVersion() : "Unknown";
+            return /*gpu != null ? gpu.GetDriverVersion() : "Unknown";*/ "Unknown";
         }
 
         public string GetCpuName()
@@ -352,7 +349,7 @@ namespace CapFrameX.Sensor
                 lock (_lockComputer)
                 {
                     cpu = _computer?.Hardware
-                        .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.CPU);
+                        .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.Cpu);
                 }
 
                 return cpu != null ? cpu.Name : "Unknown";
@@ -374,7 +371,7 @@ namespace CapFrameX.Sensor
                 lock (_lockComputer)
                 {
                     gpu = _computer?.Hardware
-                       .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAti
+                       .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAmd
                            || hdw.HardwareType == HardwareType.GpuNvidia
                            || hdw.HardwareType == HardwareType.GpuIntel);
                 }

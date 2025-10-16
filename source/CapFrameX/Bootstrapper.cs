@@ -25,7 +25,6 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Updater;
 using DryIoc;
 using Microsoft.Extensions.Logging;
-using OpenHardwareMonitor.Hardware;
 using Prism.DryIoc;
 using Prism.Events;
 using Prism.Modularity;
@@ -111,6 +110,7 @@ namespace CapFrameX
             Container.Register<ISensorService, SensorService>(Reuse.Singleton);
             var sensorConfigFolder = Path.Combine(Environment
                 .GetFolderPath(Environment.SpecialFolder.ApplicationData), @"CapFrameX\Configuration\");
+            // We don't use a sensor config for new LibreHardwareMonitor based sensor service
             Container.RegisterInstance<ISensorConfig>(new SensorConfig(sensorConfigFolder), Reuse.Singleton);
             Container.Register<ISensorEntryProvider, SensorEntryProvider>(Reuse.Singleton);
             Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);

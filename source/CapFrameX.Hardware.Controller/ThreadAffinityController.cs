@@ -1,9 +1,8 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
+using LibreHardwareMonitor.Hardware.Cpu;
 using Microsoft.Extensions.Logging;
-using OpenHardwareMonitor.Hardware;
-using OpenHardwareMonitor.Hardware.CPU;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -34,8 +33,8 @@ namespace CapFrameX.Hardware.Controller
     {
         private const uint CPUID_CORE_MASK_STATUS = 0x1A;
 
-        private CPUID[] _threads;
-        private CPUID[][] _coreThreads;
+        private CpuId[] _threads;
+        private CpuId[][] _coreThreads;
         private Vendor _vendor;
         private int _currentProcessId;
 
@@ -91,116 +90,116 @@ namespace CapFrameX.Hardware.Controller
                 _currentProcessId = id;
             });
 
-            Task.Factory.StartNew(async () =>
-            {
-                try
-                {
-                    await sensorService.SensorServiceCompletionSource.Task;
-                    await Task.Delay(500);
+            //Task.Factory.StartNew(async () =>
+            //{
+            //    try
+            //    {
+            //        await sensorService.SensorServiceCompletionSource.Task;
+            //        await Task.Delay(500);
 
-                    CPUID[][] processorThreads = CPUGroup.GetProcessorThreads();
-                    _threads = processorThreads.First();
-                    _vendor = _threads[0].Vendor;
+            //        CpuId[][] processorThreads = CpuGroup.GetProcessorThreads();
+            //        _threads = processorThreads.First();
+            //        _vendor = _threads[0].Vendor;
 
-                    if (_threads.Length > 0)
-                    {
-                        _coreThreads = CPUGroup.GroupThreadsByCore(_threads);
+            //        if (_threads.Length > 0)
+            //        {
+            //            _coreThreads = CPUGroup.GroupThreadsByCore(_threads);
 
-                        switch (_threads[0].Vendor)
-                        {
-                            case Vendor.Intel:
-                                // Intel (Hybrid)
-                                {
-                                    if (CpuArchitecture.IsHybridDesign(_threads))
-                                    {
-                                        for (int i = 0; i < _threads.Length; i++)
-                                        {
-                                            var previousAffinity = ThreadAffinity.Set(_threads[i].Affinity);
-                                            if (Opcode.Cpuid(CPUID_CORE_MASK_STATUS, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
-                                            {
-                                                switch (eax >> 24)
-                                                {
-                                                    case 0x20: _hybridCoreDict.Add(i, HybridCore.Efficiency); break;
-                                                    case 0x40: _hybridCoreDict.Add(i, HybridCore.Performance); break;
-                                                    default: break;
-                                                }
-                                            }
+            //            switch (_threads[0].Vendor)
+            //            {
+            //                case Vendor.Intel:
+            //                    // Intel (Hybrid)
+            //                    {
+            //                        if (CpuArchitecture.IsHybridDesign(_threads))
+            //                        {
+            //                            for (int i = 0; i < _threads.Length; i++)
+            //                            {
+            //                                var previousAffinity = ThreadAffinity.Set(_threads[i].Affinity);
+            //                                if (Opcode.Cpuid(CPUID_CORE_MASK_STATUS, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
+            //                                {
+            //                                    switch (eax >> 24)
+            //                                    {
+            //                                        case 0x20: _hybridCoreDict.Add(i, HybridCore.Efficiency); break;
+            //                                        case 0x40: _hybridCoreDict.Add(i, HybridCore.Performance); break;
+            //                                        default: break;
+            //                                    }
+            //                                }
 
-                                            ThreadAffinity.Set(previousAffinity);
-                                        }
+            //                                ThreadAffinity.Set(previousAffinity);
+            //                            }
 
-                                        _isSupportedCPU = true;
-                                    }
-                                }
-                                break;
-                            case Vendor.AMD:
-                                {
-                                    // AMD (Hybrid)
-                                    if (CpuArchitecture.IsHybridDesign(_threads))
-                                    {
-                                        for (int i = 0; i < _threads.Length; i++)
-                                        {
-                                            var previousAffinity = ThreadAffinity.Set(_threads[i].Affinity);
-                                            if (Opcode.Cpuid(0x80000026, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
-                                            {
-                                                // Heterogeneous core topology supported
-                                                if ((eax & (1u << 30)) != 0)
-                                                {
-                                                    uint coreType = (ebx >> 28) & 0xF;
-                                                    switch (coreType)
-                                                    {
-                                                        case 0: _hybridCoreDict.Add(i, HybridCore.Performance); break;
-                                                        case 1: _hybridCoreDict.Add(i, HybridCore.Dense); break;
-                                                        default: break;
-                                                    }
-                                                }
-                                            }
+            //                            _isSupportedCPU = true;
+            //                        }
+            //                    }
+            //                    break;
+            //                case Vendor.AMD:
+            //                    {
+            //                        // AMD (Hybrid)
+            //                        if (CpuArchitecture.IsHybridDesign(_threads))
+            //                        {
+            //                            for (int i = 0; i < _threads.Length; i++)
+            //                            {
+            //                                var previousAffinity = ThreadAffinity.Set(_threads[i].Affinity);
+            //                                if (Opcode.Cpuid(0x80000026, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
+            //                                {
+            //                                    // Heterogeneous core topology supported
+            //                                    if ((eax & (1u << 30)) != 0)
+            //                                    {
+            //                                        uint coreType = (ebx >> 28) & 0xF;
+            //                                        switch (coreType)
+            //                                        {
+            //                                            case 0: _hybridCoreDict.Add(i, HybridCore.Performance); break;
+            //                                            case 1: _hybridCoreDict.Add(i, HybridCore.Dense); break;
+            //                                            default: break;
+            //                                        }
+            //                                    }
+            //                                }
 
-                                            ThreadAffinity.Set(previousAffinity);
-                                        }
+            //                                ThreadAffinity.Set(previousAffinity);
+            //                            }
 
-                                        _isSupportedCPU = true;
-                                    }
-                                    else
-                                    {
-                                        switch (_threads[0].Family)
-                                        {
-                                            case 0x17:
-                                            case 0x19:
-                                            case 0x60:
-                                            case 0x61:
-                                            case 0x70:
-                                            case 0x1A:
-                                            case 0x75:
-                                            case 0x44:
-                                                // Ryzen (2 CCDs)
-                                                {
-                                                    if (_coreThreads[0][0].Name.Contains("900") || _coreThreads[0][0].Name.Contains("950"))
-                                                    {
-                                                        if (_coreThreads.Length > 8)
-                                                        {
-                                                            _isSupportedCPU = true;
-                                                        }
-                                                    }
-                                                }
-                                                break;
-                                        }
-                                        break;
-                                    }
-                                } 
-                                break;
-                            default:
-                                break;
-                        }
-                    }
+            //                            _isSupportedCPU = true;
+            //                        }
+            //                        else
+            //                        {
+            //                            switch (_threads[0].Family)
+            //                            {
+            //                                case 0x17:
+            //                                case 0x19:
+            //                                case 0x60:
+            //                                case 0x61:
+            //                                case 0x70:
+            //                                case 0x1A:
+            //                                case 0x75:
+            //                                case 0x44:
+            //                                    // Ryzen (2 CCDs)
+            //                                    {
+            //                                        if (_coreThreads[0][0].Name.Contains("900") || _coreThreads[0][0].Name.Contains("950"))
+            //                                        {
+            //                                            if (_coreThreads.Length > 8)
+            //                                            {
+            //                                                _isSupportedCPU = true;
+            //                                            }
+            //                                        }
+            //                                    }
+            //                                    break;
+            //                            }
+            //                            break;
+            //                        }
+            //                    } 
+            //                    break;
+            //                default:
+            //                    break;
+            //            }
+            //        }
 
-                    _logger.LogDebug("{componentName} Ready", this.GetType().Name);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error wile initializing Thread Affinity Controller");
-                }
-            });
+            //        _logger.LogDebug("{componentName} Ready", this.GetType().Name);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        _logger.LogError(ex, "Error wile initializing Thread Affinity Controller");
+            //    }
+            //});
         }
 
         public void ToggleAffinity()

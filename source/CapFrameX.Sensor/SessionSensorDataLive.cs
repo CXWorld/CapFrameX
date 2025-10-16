@@ -1,10 +1,7 @@
 ﻿using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
-using OpenHardwareMonitor.Hardware;
 using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 
 namespace CapFrameX.Sensor

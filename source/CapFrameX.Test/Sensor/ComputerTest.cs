@@ -1,5 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OpenHardwareMonitor.Hardware;
+﻿using LibreHardwareMonitor.Hardware;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 
 namespace CapFrameX.Test.Sensor
@@ -10,18 +10,16 @@ namespace CapFrameX.Test.Sensor
         [TestMethod]
         public void InitializeHardware_AnyDectedHardware()
         {
-            var computer = new Computer(null, null, null);
+            var computer = new Computer();
             computer.HardwareAdded += new HardwareEventHandler(h => { });
             computer.HardwareRemoved += new HardwareEventHandler(h => { });
 
             computer.Open();
 
-            computer.MainboardEnabled = true;
-            computer.FanControllerEnabled = true;
-            computer.GPUEnabled = true;
-            computer.CPUEnabled = true;
-            computer.RAMEnabled = true;
-            computer.HDDEnabled = true;
+            computer.IsMotherboardEnabled = true;
+            computer.IsGpuEnabled = true;
+            computer.IsCpuEnabled = true;
+            computer.IsMemoryEnabled = true;
 
             Assert.IsTrue(computer.Hardware.Any());
 

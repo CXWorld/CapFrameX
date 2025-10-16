@@ -11,7 +11,6 @@ using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using OpenHardwareMonitor.Hardware;
 using Prism.Events;
 using System;
 using System.Collections.Concurrent;

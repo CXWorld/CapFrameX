@@ -2,15 +2,12 @@
 using CapFrameX.Contracts.MVVM;
 using CapFrameX.MVVM;
 using CapFrameX.View.UITracker;
-using Prism;
 using Serilog;
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Forms;
 using System.Windows.Interop;
 
 namespace CapFrameX

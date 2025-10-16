@@ -7,8 +7,8 @@ using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
+using LibreHardwareMonitor.Hardware;
 using Microsoft.Extensions.Logging;
-using OpenHardwareMonitor.Hardware;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -586,7 +586,7 @@ namespace CapFrameX.Overlay
                 return true;
             }
             else if (sensor.Name.Contains("Memory")
-                && hardwareType == HardwareType.RAM
+                && hardwareType == HardwareType.Memory
                 && sensorType == SensorType.Load)
             {
                 return true;
@@ -723,36 +723,36 @@ namespace CapFrameX.Overlay
             Enum.TryParse(hardwareTypeString, out HardwareType hardwareType);
             switch (hardwareType)
             {
-                case HardwareType.Mainboard:
+                case HardwareType.Motherboard:
                     type = EOverlayEntryType.Mainboard;
                     break;
                 case HardwareType.SuperIO:
                     type = EOverlayEntryType.Undefined;
                     break;
-                case HardwareType.CPU:
+                case HardwareType.Cpu:
                     type = EOverlayEntryType.CPU;
                     break;
-                case HardwareType.RAM:
+                case HardwareType.Memory:
                     type = EOverlayEntryType.RAM;
                     break;
                 case HardwareType.GpuNvidia:
                     type = EOverlayEntryType.GPU;
                     break;
-                case HardwareType.GpuAti:
+                case HardwareType.GpuAmd:
                     type = EOverlayEntryType.GPU;
                     break;
                 case HardwareType.GpuIntel:
                     type = EOverlayEntryType.GPU;
                     break;
-                case HardwareType.TBalancer:
-                    type = EOverlayEntryType.Undefined;
-                    break;
-                case HardwareType.Heatmaster:
-                    type = EOverlayEntryType.Undefined;
-                    break;
-                case HardwareType.HDD:
-                    type = EOverlayEntryType.HDD;
-                    break;
+                //case HardwareType.TBalancer:
+                //    type = EOverlayEntryType.Undefined;
+                //    break;
+                //case HardwareType.Heatmaster:
+                //    type = EOverlayEntryType.Undefined;
+                //    break;
+                //case HardwareType.HDD:
+                //    type = EOverlayEntryType.HDD;
+                //    break;
             }
 
             return type;

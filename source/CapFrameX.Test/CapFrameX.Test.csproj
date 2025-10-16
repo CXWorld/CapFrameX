@@ -157,9 +157,9 @@
       <Project>{aaa73d26-5cd6-4066-b84c-5bd34057b346}</Project>
       <Name>CapFrameX</Name>
     </ProjectReference>
-    <ProjectReference Include="..\OpenHardwareMonitor\OpenHardwareMonitorLib.csproj">
-      <Project>{b0397530-545a-471d-bb74-027ae456df1a}</Project>
-      <Name>OpenHardwareMonitorLib</Name>
+    <ProjectReference Include="..\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj">
+      <Project>{51E4211C-F281-11A3-9390-A6B54F703498}</Project>
+      <Name>LibreHardwareMonitorLib</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

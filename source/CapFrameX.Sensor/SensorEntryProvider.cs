@@ -1,7 +1,7 @@
 ﻿using CapFrameX.Contracts.Sensor;
 using CapFrameX.Extensions;
 using CapFrameX.Monitoring.Contracts;
-using OpenHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Hardware;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -80,8 +80,8 @@ namespace CapFrameX.Sensor
 
             switch (sensor.Name)
             {
-                case "CPU Total" when hardwareType == HardwareType.CPU:
-                case "CPU Max" when hardwareType == HardwareType.CPU:
+                case "CPU Total" when hardwareType == HardwareType.Cpu:
+                case "CPU Max" when hardwareType == HardwareType.Cpu:
                 case "CPU Max Clock" when sensorType == SensorType.Clock:
                 case "CPU Package" when sensorType == SensorType.Power:
                 case "CPU Package" when sensorType == SensorType.Temperature:
@@ -90,11 +90,11 @@ namespace CapFrameX.Sensor
                 case "GPU Core" when sensorType == SensorType.Clock:
                 case "GPU Power" when hardwareType == HardwareType.GpuNvidia:
                 case "GPU Power Limit" when hardwareType == HardwareType.GpuNvidia:
-                case "GPU Total" when hardwareType == HardwareType.GpuAti:
-				case "GPU TBP" when hardwareType == HardwareType.GpuAti:
+                case "GPU Total" when hardwareType == HardwareType.GpuAmd:
+				case "GPU TBP" when hardwareType == HardwareType.GpuAmd:
                 case "GPU TBP" when hardwareType == HardwareType.GpuIntel:
                 case "GPU TDP" when hardwareType == HardwareType.GpuIntel:
-                case "Used Memory Game" when hardwareType == HardwareType.RAM:
+                case "Used Memory Game" when hardwareType == HardwareType.Memory:
                 case "GPU Memory Dedicated" when sensorType == SensorType.Data:
                     isDefault = true;
                     break;
