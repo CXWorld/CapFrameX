@@ -7,6 +7,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using LibreHardwareMonitor.PawnIo;
 
@@ -17,6 +18,7 @@ internal sealed class IntelCpu : GenericCpu
     private readonly Sensor _busClock;
     private readonly Sensor _coreAvg;
     private readonly Sensor[] _coreClocks;
+    private readonly Sensor _maxClock;
     private readonly Sensor _coreMax;
     private readonly Sensor[] _coreTemperatures;
     private readonly Sensor[] _coreVIDs;
@@ -409,6 +411,9 @@ internal sealed class IntelCpu : GenericCpu
                 ActivateSensor(_coreClocks[i]);
         }
 
+        _maxClock = new Sensor("CPU Max", _coreClocks.Length + 1, SensorType.Clock, this, settings);
+        ActivateSensor(_maxClock);
+
         if (_microArchitecture is MicroArchitecture.Airmont or
             MicroArchitecture.AlderLake or
             MicroArchitecture.ArrowLake or
@@ -590,7 +595,7 @@ internal sealed class IntelCpu : GenericCpu
             }
         }
 
-        if (HasTimeStampCounter && _timeStampCounterMultiplier > 0)
+            if (HasTimeStampCounter && _timeStampCounterMultiplier > 0)
         {
             double newBusClock = 0;
             for (int i = 0; i < _coreClocks.Length; i++)
@@ -641,6 +646,8 @@ internal sealed class IntelCpu : GenericCpu
                     _coreClocks[i].Value = (float)TimeStampCounterFrequency;
                 }
             }
+
+            _maxClock.Value = _coreClocks.Max(clk => clk.Value);
 
             if (newBusClock > 0)
             {

@@ -57,7 +57,7 @@ public class GenericCpu : Hardware
         _isInvariantTimeStampCounter = cpuId[0][0].ExtData.GetLength(0) > 7 && (cpuId[0][0].ExtData[7, 3] & 0x100) != 0;
 
         _totalLoad = _coreCount > 1 ? new Sensor("CPU Total", 0, SensorType.Load, this, settings) : null;
-        _maxLoad = _coreCount > 1 ? new Sensor("CPU Core Max", 1, SensorType.Load, this, settings) : null;
+        _maxLoad = _coreCount > 1 ? new Sensor("CPU Max", 1, SensorType.Load, this, settings) : null;
 
         _cpuLoad = new CpuLoad(cpuId);
         if (_cpuLoad.IsAvailable)
