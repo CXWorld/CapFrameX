@@ -8,6 +8,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using LibreHardwareMonitor.PawnIo;
@@ -18,6 +19,7 @@ internal sealed class Amd10Cpu : AmdCpu
 {
     private readonly Sensor _busClock;
     private readonly Sensor[] _coreClocks;
+    private readonly Sensor _maxClock;
     private readonly Sensor _coreTemperature;
     private readonly Sensor _coreVoltage;
     private readonly Sensor[] _cStatesResidency;
@@ -63,12 +65,15 @@ internal sealed class Amd10Cpu : AmdCpu
                 ActivateSensor(_coreClocks[i]);
         }
 
+        _maxClock = new Sensor("CPU Max Clock", _coreClocks.Length + 1, SensorType.Clock, this, settings);
+        ActivateSensor(_maxClock);
+
         // set affinity to the first thread for all frequency estimations
         GroupAffinity previousAffinity = ThreadAffinity.Set(cpuId[0][0].Affinity);
 
         _timeStampCounterMultiplier = MeasureTimeStampCounterMultiplier();
 
-        // restore the thread affinity.
+        // restore the thread affinity
         ThreadAffinity.Set(previousAffinity);
 
         // the file reader for lm-sensors support on Linux
@@ -98,7 +103,7 @@ internal sealed class Amd10Cpu : AmdCpu
 
         if (_pawnModule.HaveCstateResidencyInfo())
         {
-            _cStatesResidency = new[] { new Sensor("CPU Package C2", 0, SensorType.Level, this, settings), new Sensor("CPU Package C3", 1, SensorType.Level, this, settings) };
+            _cStatesResidency = [new Sensor("CPU Package C2", 0, SensorType.Level, this, settings), new Sensor("CPU Package C3", 1, SensorType.Level, this, settings)];
             ActivateSensor(_cStatesResidency[0]);
             ActivateSensor(_cStatesResidency[1]);
         }
@@ -308,6 +313,9 @@ internal sealed class Amd10Cpu : AmdCpu
                 if (newNbVoltage > maxNbVoltage)
                     maxNbVoltage = newNbVoltage;
             }
+
+            // set max clock
+            _maxClock.Value = _coreClocks.Max(clock => clock.Value);
 
             _coreVoltage.Value = maxCoreVoltage;
             _northbridgeVoltage.Value = maxNbVoltage;

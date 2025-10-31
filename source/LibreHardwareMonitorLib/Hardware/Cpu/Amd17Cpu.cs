@@ -110,6 +110,7 @@ internal sealed class Amd17Cpu : AmdCpu
         private readonly Sensor _avgClock;
         private readonly Sensor _avgClockEffcetive;
         private readonly Sensor _maxClock;
+        private readonly Sensor _maxEffectiveClock;
 
         private readonly Sensor[] _ccdTemperatures;
         private readonly Sensor _coreTemperatureTctl;
@@ -140,12 +141,14 @@ internal sealed class Amd17Cpu : AmdCpu
             _busClock = new Sensor("CPU Bus", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
             _avgClock = new Sensor("CPU Clock", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
             _avgClockEffcetive = new Sensor("CPU Effective Clock", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
-            _maxClock = new Sensor("CPU Max", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
+            _maxClock = new Sensor("CPU Max Clock", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
+            _maxEffectiveClock = new Sensor("CPU Max Eff. Clock", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
 
             _cpu.ActivateSensor(_packagePower);
             _cpu.ActivateSensor(_avgClock);
             _cpu.ActivateSensor(_avgClockEffcetive);
             _cpu.ActivateSensor(_maxClock);
+            _cpu.ActivateSensor(_maxEffectiveClock);
 
             foreach (KeyValuePair<uint, RyzenSMU.SmuSensorType> sensor in _cpu._smu.GetPmTableStructure())
             {
@@ -153,7 +156,7 @@ internal sealed class Amd17Cpu : AmdCpu
             }
         }
 
-        public List<NumaNode> Nodes { get; } = new();
+        public List<NumaNode> Nodes { get; } = [];
 
         public void UpdateSensors()
         {
@@ -425,15 +428,19 @@ internal sealed class Amd17Cpu : AmdCpu
             if (Nodes == null || Nodes.Count == 0)
                 return;
 
+            // Average and max clock
             double clock = Nodes.Average(x => x.CoreClock);
             _avgClock.Value = (float)Math.Round(clock, 0);
 
+            clock = Nodes.SelectMany(x => x.Cores).Max(c => c.CoreClock);
+            _maxClock.Value = (float)Math.Round(clock, 0);
+
+            // Average and max effective clock
             clock = Nodes.Average(x => x.EffectiveClock);
             _avgClockEffcetive.Value = (float)Math.Round(clock, 0);
 
-            clock = Nodes.SelectMany(x => x.Cores)
-             .Max(c => c.CoreClock); ;
-            _maxClock.Value = (float)Math.Round(clock, 0);
+            clock = Nodes.SelectMany(x => x.Cores).Max(c => c.EffectiveClock);
+            _maxEffectiveClock.Value = (float)Math.Round(clock, 0);
         }
 
         private double GetTimeStampCounterMultiplier()

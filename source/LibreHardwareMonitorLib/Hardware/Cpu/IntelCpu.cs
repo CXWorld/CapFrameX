@@ -353,15 +353,14 @@ internal sealed class IntelCpu : GenericCpu
             for (int i = 0; i < _coreTemperatures.Length; i++)
             {
                 _coreTemperatures[i] = new Sensor(CoreString(i),
-                                                  coreSensorId,
-                                                  SensorType.Temperature,
-                                                  this,
-                                                  new[]
-                                                  {
-                                                      new ParameterDescription("TjMax [°C]", "TjMax temperature of the core sensor.\n" + "Temperature = TjMax - TSlope * Value.", tjMax[i]),
-                                                      new ParameterDescription("TSlope [°C]", "Temperature slope of the digital thermal sensor.\n" + "Temperature = TjMax - TSlope * Value.", 1)
-                                                  },
-                                                  settings);
+                    coreSensorId,
+                    SensorType.Temperature,
+                    this,
+                    [
+                        new ParameterDescription("TjMax [°C]", "TjMax temperature of the core sensor.\n" + "Temperature = TjMax - TSlope * Value.", tjMax[i]),
+                        new ParameterDescription("TSlope [°C]", "Temperature slope of the digital thermal sensor.\n" + "Temperature = TjMax - TSlope * Value.", 1)
+                    ],
+                    settings);
 
                 ActivateSensor(_coreTemperatures[i]);
                 coreSensorId++;
@@ -374,15 +373,14 @@ internal sealed class IntelCpu : GenericCpu
         if (cpuId[0][0].Data.GetLength(0) > 6 && (cpuId[0][0].Data[6, 0] & 0x40) != 0 && _microArchitecture != MicroArchitecture.Unknown)
         {
             _packageTemperature = new Sensor("CPU Package",
-                                             coreSensorId,
-                                             SensorType.Temperature,
-                                             this,
-                                             new[]
-                                             {
-                                                 new ParameterDescription("TjMax [°C]", "TjMax temperature of the package sensor.\n" + "Temperature = TjMax - TSlope * Value.", tjMax[0]),
-                                                 new ParameterDescription("TSlope [°C]", "Temperature slope of the digital thermal sensor.\n" + "Temperature = TjMax - TSlope * Value.", 1)
-                                             },
-                                             settings);
+                coreSensorId,
+                SensorType.Temperature,
+                this,
+                [
+                    new ParameterDescription("TjMax [°C]", "TjMax temperature of the package sensor.\n" + "Temperature = TjMax - TSlope * Value.", tjMax[0]),
+                    new ParameterDescription("TSlope [°C]", "Temperature slope of the digital thermal sensor.\n" + "Temperature = TjMax - TSlope * Value.", 1)
+                ],
+                settings);
 
             ActivateSensor(_packageTemperature);
             coreSensorId++;
@@ -411,7 +409,7 @@ internal sealed class IntelCpu : GenericCpu
                 ActivateSensor(_coreClocks[i]);
         }
 
-        _maxClock = new Sensor("CPU Max", _coreClocks.Length + 1, SensorType.Clock, this, settings);
+        _maxClock = new Sensor("CPU Max Clock", _coreClocks.Length + 1, SensorType.Clock, this, settings);
         ActivateSensor(_maxClock);
 
         if (_microArchitecture is MicroArchitecture.Airmont or

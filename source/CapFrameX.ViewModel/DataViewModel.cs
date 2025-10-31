@@ -807,18 +807,17 @@ namespace CapFrameX.ViewModel
 
         private VisibleGraphs GetVisibleGraphs() =>
         new VisibleGraphs(
-        ShowGpuLoad,
-        ShowCpuLoad,
-        ShowCpuMaxThreadLoad,
-        ShowGpuPowerLimit,
-        ShowPcLatency,
-        ShowAggregationSeparators,
-        ShowStutteringThresholds,
-        StutteringFactor,
-        StutteringLowFPSThreshold,
-        ShowGpuActiveChart,
-        _appConfiguration.UseDisplayChangeMetrics
-    );
+            ShowGpuLoad,
+            ShowCpuLoad,
+            ShowCpuMaxThreadLoad,
+            ShowGpuPowerLimit,
+            ShowPcLatency,
+            ShowAggregationSeparators,
+            ShowStutteringThresholds,
+            StutteringFactor,
+            StutteringLowFPSThreshold,
+            ShowGpuActiveChart,
+            _appConfiguration.UseDisplayChangeMetrics);
 
         private void Setup()
         {

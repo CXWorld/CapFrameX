@@ -973,7 +973,8 @@
 						</StackPanel>
 					</Grid>
 				</Border>
-				<Grid  Grid.Row="3" Grid.ColumnSpan="2" VerticalAlignment="Top" Height="105">
+				<!--Removed Affinity Controller Feature-->
+				<Grid Grid.Row="3" Grid.ColumnSpan="2" VerticalAlignment="Top" Height="105" Visibility="Collapsed">
 					<Border Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
 						<Grid>
 							<TextBlock Margin="0 10 0 0" HorizontalAlignment="Center" Text="Hardware Controller" FontSize="16"/>
