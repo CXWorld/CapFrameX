@@ -316,7 +316,7 @@ internal sealed class NvidiaGpu : GenericGpu
 
             if (_nvmlDevice.HasValue)
             {
-                _powerUsage = new Sensor("GPU Package", 0, SensorType.Power, this, settings);
+                _powerUsage = new Sensor("GPU Power", 0, SensorType.Power, this, settings);
 
                 _pcieThroughputRx = new Sensor("GPU PCIe Rx", 0, SensorType.Throughput, this, settings);
                 _pcieThroughputTx = new Sensor("GPU PCIe Tx", 1, SensorType.Throughput, this, settings);
