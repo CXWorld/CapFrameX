@@ -189,7 +189,7 @@
 		<WixVariable Id="NetFx472RedistInstallCondition" Value="" Overridable="yes" />
 		<WixVariable Id="NetFx472RedistPackageDirectory" Value="redist\" Overridable="yes" />
 
-		<!--<PackageGroup Id="NetFx472Redist">
+		<PackageGroup Id="NetFx472Redist">
       <ExePackage
           InstallCommand="/q /norestart /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx472FullLog].html&quot;"
           RepairCommand="/q /norestart /repair /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx472FullLog].html&quot;"
@@ -214,6 +214,6 @@
           Size="71607232"
           Version="4.7.3062.0" />
       </ExePackage>
-    </PackageGroup>-->
+    </PackageGroup>
 	</Fragment>
 </Wix>
