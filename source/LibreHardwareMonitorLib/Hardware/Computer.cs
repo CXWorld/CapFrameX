@@ -170,8 +170,8 @@ public class Computer : IComputer
             {
                 if (value)
                 {
-                    Add(new AmdGpuGroup(_settings));
                     Add(new NvidiaGroup(_settings));
+                    Add(new AmdGpuGroup(_settings));                
                     Add(new IntelGpuGroup(GetIntelCpus(), _settings));
                 }
                 else
@@ -505,8 +505,8 @@ public class Computer : IComputer
 
         if (_gpuEnabled)
         {
-            Add(new AmdGpuGroup(_settings));
             Add(new NvidiaGroup(_settings));
+            Add(new AmdGpuGroup(_settings));
             Add(new IntelGpuGroup(GetIntelCpus(), _settings));
         }
 
