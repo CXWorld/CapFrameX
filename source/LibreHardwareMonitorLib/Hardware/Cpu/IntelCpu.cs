@@ -409,7 +409,7 @@ internal sealed class IntelCpu : GenericCpu
                 ActivateSensor(_coreClocks[i]);
         }
 
-        _maxClock = new Sensor("CPU Max Clock", _coreClocks.Length + 1, SensorType.Clock, this, settings);
+        _maxClock = new Sensor("CPU Max", _coreClocks.Length + 1, SensorType.Clock, this, settings);
         ActivateSensor(_maxClock);
 
         if (_microArchitecture is MicroArchitecture.Airmont or
@@ -466,10 +466,10 @@ internal sealed class IntelCpu : GenericCpu
                     _lastEnergyTime[i] = DateTime.UtcNow;
                     _lastEnergyConsumed[i] = eax;
                     _powerSensors[i] = new Sensor(powerSensorLabels[i],
-                                                  i,
-                                                  SensorType.Power,
-                                                  this,
-                                                  settings);
+                        i,
+                        SensorType.Power,
+                        this,
+                        settings);
 
                     ActivateSensor(_powerSensors[i]);
                 }

@@ -65,7 +65,7 @@ internal sealed class Amd10Cpu : AmdCpu
                 ActivateSensor(_coreClocks[i]);
         }
 
-        _maxClock = new Sensor("CPU Max Clock", _coreClocks.Length + 1, SensorType.Clock, this, settings);
+        _maxClock = new Sensor("CPU Max", _coreClocks.Length + 1, SensorType.Clock, this, settings);
         ActivateSensor(_maxClock);
 
         // set affinity to the first thread for all frequency estimations

@@ -38,7 +38,7 @@ namespace CapFrameX.Data.Session.Converters
             InsertValues("CpuPower", "CPU Package", "Power", sessionRun.SensorData.CpuPower.Cast<object>());
             InsertValues("CpuTemp", "CPU Package", "Temperature", sessionRun.SensorData.CpuTemp.Cast<object>());
             InsertValues("CpuLoad", "CPU Total", "Load", sessionRun.SensorData.CpuUsage.Cast<object>());
-            InsertValues("CpuMaxClock", "CPU Max Clock", "Clock", sessionRun.SensorData.CpuMaxClock.Cast<object>());
+            InsertValues("CpuMaxClock", "CPU Max", "Clock", sessionRun.SensorData.CpuMaxClock.Cast<object>());
             InsertValues("CpuMaxThreadLoad", "CPU Max", "Load", sessionRun.SensorData.CpuMaxThreadUsage.Cast<object>());
 
             //GPU

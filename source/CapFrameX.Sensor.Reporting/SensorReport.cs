@@ -137,7 +137,8 @@ namespace CapFrameX.Sensor.Reporting
             }
 
             var sensorReportItems = new List<ISensorReportItem>();
-            foreach (var sensor in GetSensorReportEntries(sessionsSensorData, startTime, endTime).Where(x => x.Type != "Time"))
+            foreach (var sensor in GetSensorReportEntries(sessionsSensorData, startTime, endTime)
+                .Where(x => x.Type != "Time"))
             {
                 if (sensor.Values.Any())
                 {
@@ -165,7 +166,7 @@ namespace CapFrameX.Sensor.Reporting
             {
                 foreach (var sensor in sensorData)
                 {
-                    var sensorDictKey = sensor.Value.Name + "/" + sensor.Value.Type;
+                    var sensorDictKey = $"{sensor.Value.Name}/{sensor.Value.Type}";
                     if (!sensorDict.TryGetValue(sensorDictKey, out var sensorValues))
                     {
                         sensorValues = new List<double>();

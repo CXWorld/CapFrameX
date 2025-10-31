@@ -42,11 +42,11 @@ internal sealed class Amd0FCpu : AmdCpu
             for (int i = 0; i < _coreCount; i++)
             {
                 _coreTemperatures[i] = new Sensor("Core #" + (i + 1),
-                                                  i,
-                                                  SensorType.Temperature,
-                                                  this,
-                                                  [new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\nTemperature = Value + Offset.", offset)],
-                                                  settings);
+                    i,
+                    SensorType.Temperature,
+                    this,
+                    [new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\nTemperature = Value + Offset.", offset)],
+                    settings);
             }
         }
         else
