@@ -101,7 +101,7 @@ internal sealed class AmdGpu : GenericGpu
         _powerCore = new Sensor("GPU Core", 0, SensorType.Power, this, settings);
         _powerPpt = new Sensor("GPU PPT", 1, SensorType.Power, this, settings);
         _powerSoC = new Sensor("GPU SoC", 2, SensorType.Power, this, settings);
-        _powerTotal = new Sensor("GPU Package", 3, SensorType.Power, this, settings);
+        _powerTotal = new Sensor("GPU Power", 3, SensorType.Power, this, settings);
 
         _fullscreenFps = new Sensor("Fullscreen FPS", 0, SensorType.Factor, this, settings);
 

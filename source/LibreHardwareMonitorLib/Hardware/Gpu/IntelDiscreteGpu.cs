@@ -82,7 +82,7 @@ internal sealed class IntelDiscreteGpu : GenericGpu
         _voltageMemory = new Sensor("GPU Memory", 1, SensorType.Voltage, this, settings);
 
         // Initialize power sensors
-        _powerGpu = new Sensor("GPU Package", 0, SensorType.Power, this, settings);
+        _powerGpu = new Sensor("GPU Power", 0, SensorType.Power, this, settings);
         _powerTotal = new Sensor("GPU Total", 1, SensorType.Power, this, settings);
 
         // Initialize utilization sensors
