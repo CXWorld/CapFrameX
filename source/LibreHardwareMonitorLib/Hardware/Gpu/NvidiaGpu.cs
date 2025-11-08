@@ -4,13 +4,14 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using LibreHardwareMonitor.Hardware.Memory;
+using LibreHardwareMonitor.Interop;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using LibreHardwareMonitor.Interop;
-using Microsoft.Win32;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
 
@@ -397,8 +398,8 @@ internal sealed class NvidiaGpu : GenericGpu
 
                                         _d3dDeviceId = deviceId;
 
-                                        _gpuDedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", smallDataSensorIndex++, SensorType.SmallData, this, settings);
-                                        _gpuSharedMemoryUsage = new Sensor("D3D Shared Memory Used", smallDataSensorIndex, SensorType.SmallData, this, settings);
+                                        _gpuDedicatedMemoryUsage = new Sensor("GPU Memory Dedicated", smallDataSensorIndex++, SensorType.Data, this, settings);
+                                        _gpuSharedMemoryUsage = new Sensor("GPU Memory Shared", smallDataSensorIndex, SensorType.Data, this, settings);
 
                                         _gpuNodeUsage = new Sensor[deviceInfo.Nodes.Length];
                                         _gpuNodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
@@ -419,9 +420,9 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        _memoryFree = new Sensor("GPU Memory Free", 0, SensorType.SmallData, this, settings);
-        _memoryUsed = new Sensor("GPU Memory Used", 1, SensorType.SmallData, this, settings);
-        _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.SmallData, this, settings);
+        _memoryFree = new Sensor("GPU Memory Free", 0, SensorType.Data, this, settings);
+        _memoryUsed = new Sensor("GPU Memory Used", 1, SensorType.Data, this, settings);
+        _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.Data, this, settings);
         _memoryLoad = new Sensor("GPU Memory", 3, SensorType.Load, this, settings);
 
         Update();
@@ -445,8 +446,8 @@ internal sealed class NvidiaGpu : GenericGpu
     {
         if (_d3dDeviceId != null && D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
         {
-            _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024;
-            _gpuSharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024;
+            _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024 / 1024;
+            _gpuSharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024 / 1024;
             ActivateSensor(_gpuDedicatedMemoryUsage);
             ActivateSensor(_gpuSharedMemoryUsage);
 
@@ -621,14 +622,15 @@ internal sealed class NvidiaGpu : GenericGpu
             {
                 uint free = memoryInfo.CurrentAvailableDedicatedVideoMemory;
                 uint total = memoryInfo.DedicatedVideoMemory;
+                float used = Math.Max(total - free, 0);
 
-                _memoryTotal.Value = total / 1024;
+                _memoryTotal.Value = total / 1024 / 1024;
                 ActivateSensor(_memoryTotal);
 
-                _memoryFree.Value = free / 1024;
+                _memoryFree.Value = free / 1024 / 1024;
                 ActivateSensor(_memoryFree);
 
-                _memoryUsed.Value = (total - free) / 1024;
+                _memoryUsed.Value = used / 1024 / 1024;
                 ActivateSensor(_memoryUsed);
 
                 _memoryLoad.Value = ((float)(total - free) / total) * 100;

@@ -11,13 +11,13 @@ internal sealed class VirtualMemory : Hardware
     public VirtualMemory(ISettings settings)
         : base("Virtual Memory", new Identifier("vram"), settings)
     {
-        VirtualMemoryUsed = new Sensor("Memory Used", 2, SensorType.Data, this, settings);
+        VirtualMemoryUsed = new Sensor("Virtual RAM Used", 2, SensorType.Data, this, settings);
         ActivateSensor(VirtualMemoryUsed);
 
-        VirtualMemoryAvailable = new Sensor("Memory Available", 3, SensorType.Data, this, settings);
+        VirtualMemoryAvailable = new Sensor("Virtual RAM Available", 3, SensorType.Data, this, settings);
         ActivateSensor(VirtualMemoryAvailable);
 
-        VirtualMemoryLoad = new Sensor("Memory", 1, SensorType.Load, this, settings);
+        VirtualMemoryLoad = new Sensor("Virtual RAM Usage", 1, SensorType.Load, this, settings);
         ActivateSensor(VirtualMemoryLoad);
     }
 

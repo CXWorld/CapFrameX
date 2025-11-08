@@ -105,9 +105,9 @@ internal sealed class AmdGpu : GenericGpu
 
         _fullscreenFps = new Sensor("Fullscreen FPS", 0, SensorType.Factor, this, settings);
 
-        _memoryUsed = new Sensor("GPU Memory Used", 0, SensorType.SmallData, this, settings);
-        _memoryFree = new Sensor("GPU Memory Free", 1, SensorType.SmallData, this, settings);
-        _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.SmallData, this, settings);
+        _memoryUsed = new Sensor("GPU Memory Used", 0, SensorType.Data, this, settings);
+        _memoryFree = new Sensor("GPU Memory Free", 1, SensorType.Data, this, settings);
+        _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.Data, this, settings);
 
         if (!Software.OperatingSystem.IsUnix)
         {
@@ -127,12 +127,12 @@ internal sealed class AmdGpu : GenericGpu
                         int nodeSensorIndex = 2;
                         int memorySensorIndex = 3;
 
-                        _gpuDedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
-                        _gpuDedicatedMemoryFree = new Sensor("D3D Dedicated Memory Free", memorySensorIndex++, SensorType.SmallData, this, settings);
-                        _gpuDedicatedMemoryTotal = new Sensor("D3D Dedicated Memory Total", memorySensorIndex++, SensorType.SmallData, this, settings);
-                        _gpuSharedMemoryUsage = new Sensor("D3D Shared Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
-                        _gpuSharedMemoryFree = new Sensor("D3D Shared Memory Free", memorySensorIndex++, SensorType.SmallData, this, settings);
-                        _gpuSharedMemoryTotal = new Sensor("D3D Shared Memory Total", memorySensorIndex++, SensorType.SmallData, this, settings);
+                        _gpuDedicatedMemoryUsage = new Sensor("GPU Memory Dedicated", memorySensorIndex++, SensorType.Data, this, settings);
+                        _gpuDedicatedMemoryFree = new Sensor("GPU Memory Dedicated Free", memorySensorIndex++, SensorType.Data, this, settings);
+                        _gpuDedicatedMemoryTotal = new Sensor("GPU Memory Dedicated Total", memorySensorIndex++, SensorType.Data, this, settings);
+                        _gpuSharedMemoryUsage = new Sensor("GPU Memory Shared", memorySensorIndex++, SensorType.Data, this, settings);
+                        _gpuSharedMemoryFree = new Sensor("GPU Memory Shared Free", memorySensorIndex++, SensorType.Data, this, settings);
+                        _gpuSharedMemoryTotal = new Sensor("GPU Memory Shared Total", memorySensorIndex++, SensorType.Data, this, settings);
 
                         _gpuNodeUsage = new Sensor[deviceInfo.Nodes.Length];
                         _gpuNodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
@@ -155,7 +155,7 @@ internal sealed class AmdGpu : GenericGpu
         if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_MemoryInfoX4_Get)) &&
             AtiAdlxx.ADL2_Adapter_MemoryInfoX4_Get(_context, _adapterInfo.AdapterIndex, out memoryInfo) == AtiAdlxx.ADLStatus.ADL_OK)
         {
-            _memoryTotal.Value = memoryInfo.iMemorySize / 1024 / 1024;
+            _memoryTotal.Value = memoryInfo.iMemorySize / 1024 / 1024 / 1024;
             ActivateSensor(_memoryTotal);
         }
 
@@ -314,18 +314,18 @@ internal sealed class AmdGpu : GenericGpu
     {
         if (_d3dDeviceId != null && D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
         {
-            _gpuDedicatedMemoryTotal.Value = 1f * deviceInfo.GpuVideoMemoryLimit / 1024 / 1024;
-            _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024;
+            _gpuDedicatedMemoryTotal.Value = 1f * deviceInfo.GpuVideoMemoryLimit / 1024 / 1024 / 1024;
+            _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024 / 1024;
             _gpuDedicatedMemoryFree.Value = _gpuDedicatedMemoryTotal.Value - _gpuDedicatedMemoryUsage.Value;
-            _gpuSharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024;
-            _gpuSharedMemoryTotal.Value = 1f * deviceInfo.GpuSharedLimit / 1024 / 1024;
+            _gpuSharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024 / 1024;
+            _gpuSharedMemoryTotal.Value = 1f * deviceInfo.GpuSharedLimit / 1024 / 1024 / 1024;
             _gpuSharedMemoryFree.Value = _gpuSharedMemoryTotal.Value - _gpuSharedMemoryUsage.Value;
-            ActivateSensor(_gpuDedicatedMemoryTotal);
-            ActivateSensor(_gpuDedicatedMemoryFree);
+            //ActivateSensor(_gpuDedicatedMemoryTotal);
+            //ActivateSensor(_gpuDedicatedMemoryFree);
             ActivateSensor(_gpuDedicatedMemoryUsage);
             ActivateSensor(_gpuSharedMemoryUsage);
-            ActivateSensor(_gpuSharedMemoryFree);
-            ActivateSensor(_gpuSharedMemoryTotal);
+            //ActivateSensor(_gpuSharedMemoryFree);
+            //ActivateSensor(_gpuSharedMemoryTotal);
 
             foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
             {
@@ -343,7 +343,7 @@ internal sealed class AmdGpu : GenericGpu
         if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_DedicatedVRAMUsage_Get)) &&
             AtiAdlxx.ADL2_Adapter_DedicatedVRAMUsage_Get(_context, _adapterInfo.AdapterIndex, out vramUsed) == AtiAdlxx.ADLStatus.ADL_OK)
         {
-            _memoryUsed.Value = vramUsed;
+            _memoryUsed.Value = vramUsed / 1024;
             ActivateSensor(_memoryUsed);
         }
 
