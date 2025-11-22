@@ -17,12 +17,12 @@ namespace CapFrameX.PresentMonInterface
     {
         public const int ApplicationName_INDEX = 0;
         public const int ProcessID_INDEX = 1;
-        public const int StartTimeInSeconds_INDEX = 16;
         public const int MsBetweenPresents_INDEX = 10;
-        // PresentMon version >=2.3.1
-        public const int CpuBusy_INDEX = 18;
-        public const int GpuBusy_INDEX = 22;
         public const int MsBetweenDisplayChange_INDEX = 11;
+        // PresentMon version >=2.4.0
+        public const int StartTimeInSeconds_INDEX = 15;
+        public const int CpuBusy_INDEX = 17;
+        public const int GpuBusy_INDEX = 21;
         public const int VALID_LINE_LENGTH = 26;
 
         // PresentMon < v1.7.0
@@ -72,11 +72,24 @@ namespace CapFrameX.PresentMonInterface
         //MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy,
         //MsGPUWait,MsAnimationError,AnimationTime
 
+        //public static readonly string COLUMN_HEADER =
+        //    $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
+        //    $"TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency," +
+        //    $"MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy," +
+        //    $"MsGPUWait,MsAnimationError,AnimationTime";
+
+        // PresentMon >= v2.4.0
+        // w/o FrameType
+        // Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,
+        // TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency,#
+        // MsUntilDisplayed,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy,
+        // MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay
+
         public static readonly string COLUMN_HEADER =
             $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
             $"TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency," +
-            $"MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy," +
-            $"MsGPUWait,MsAnimationError,AnimationTime";
+            $"MsUntilDisplayed,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy," +
+            $"MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay";
 
         private readonly ISubject<string[]> _outputDataStream;
         private readonly object _listLock = new object();
@@ -133,7 +146,7 @@ namespace CapFrameX.PresentMonInterface
                     if (!string.IsNullOrWhiteSpace(e.Data))
                     {
                         var lineSplit = e.Data.Split(',');
-                        if (lineSplit.Length == VALID_LINE_LENGTH)
+                        if (lineSplit.Length >= VALID_LINE_LENGTH)
                         {
                             if (lineSplit[ApplicationName_INDEX] != "<error>")
                             {

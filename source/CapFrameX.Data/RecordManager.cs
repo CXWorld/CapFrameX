@@ -819,17 +819,24 @@ namespace CapFrameX.Data
                 };
 
                 // w/o FrameType
-                //0:Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,
-                //8:TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency,
-                //14:MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy,
-                //MsGPUWait,MsAnimationError,AnimationTime
+                // Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,
+                // TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency,#
+                // MsUntilDisplayed,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy,
+                // MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay
 
+                string frameStartUnit = "s";
                 var metrics = Array.ConvertAll(headerLine.Split(','), p => p.Trim());
                 for (int i = 0; i < metrics.Count(); i++)
                 {
-                    if (string.Compare(metrics[i], "AppRenderStart") == 0 || string.Compare(metrics[i], "TimeInSeconds") == 0)
+                    if (string.Compare(metrics[i], "AppRenderStart") == 0 || string.Compare(metrics[i], "TimeInSeconds") == 0
+                         || string.Compare(metrics[i], "TimeInMs") == 0)
                     {
                         indexFrameStart = i;
+
+                        if (string.Compare(metrics[i], "TimeInMs") == 0)
+                        {
+                            frameStartUnit = "ms";
+                        }
                     }
                     if (string.Compare(metrics[i], "MsBetweenAppPresents", true) == 0
                         || string.Compare(metrics[i], "msBetweenPresents", true) == 0
@@ -892,7 +899,7 @@ namespace CapFrameX.Data
                     {
                         indexCPUStartQPCTime = i;
                     }
-                    if (string.Compare(metrics[i], "CPUStartQPCTimeInMs") == 0)
+                    if (string.Compare(metrics[i], "CPUStartQPCTimeInMs") == 0 || (string.Compare(metrics[i], "CPUStartTimeInMs") == 0))
                     {
                         indexCPUStartQPCTimeInMs = i;
                     }
@@ -948,7 +955,14 @@ namespace CapFrameX.Data
                     {
                         if (double.TryParse(GetStringFromArray(values, indexFrameStart), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart))
                         {
-                            captureData.TimeInSeconds[lineIndex] = frameStart;
+                            if (frameStartUnit == "ms")
+                            {
+                                captureData.TimeInSeconds[lineIndex] = frameStart * 1E-03;
+                            }
+                            else
+                            {
+                                captureData.TimeInSeconds[lineIndex] = frameStart;
+                            }
                         }
                     }
 
