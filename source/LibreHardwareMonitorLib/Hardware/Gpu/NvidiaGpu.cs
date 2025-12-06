@@ -651,14 +651,14 @@ internal sealed class NvidiaGpu : GenericGpu
             uint? rx = NvidiaML.NvmlDeviceGetPcieThroughput(_nvmlDevice.Value, NvidiaML.NvmlPcieUtilCounter.RxBytes);
             if (rx.HasValue)
             {
-                _pcieThroughputRx.Value = rx * 1024;
+                _pcieThroughputRx.Value = rx / (1024f * 1024f);
                 ActivateSensor(_pcieThroughputRx);
             }
 
             uint? tx = NvidiaML.NvmlDeviceGetPcieThroughput(_nvmlDevice.Value, NvidiaML.NvmlPcieUtilCounter.TxBytes);
             if (tx.HasValue)
             {
-                _pcieThroughputTx.Value = tx * 1024;
+                _pcieThroughputTx.Value = tx / (1024f * 1024f);
                 ActivateSensor(_pcieThroughputTx);
             }
         }
