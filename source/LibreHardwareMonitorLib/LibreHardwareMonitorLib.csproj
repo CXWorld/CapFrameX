@@ -70,5 +70,8 @@
       <Pack>True</Pack>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj" />
+  </ItemGroup>
   <Import Project="main.nuget.target" Condition="'$(PackMainNuget)' == 'true'" />
 </Project>
