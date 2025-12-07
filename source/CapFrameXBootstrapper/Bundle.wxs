@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
 	 xmlns:bal="http://schemas.microsoft.com/wix/BalExtension"
-     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+   xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
 	<?define VersionNumber="!(bind.packageVersion.CapFrameXPackage)" ?>
 	<?define NetFx472MinRelease = 461808 ?>
 	<?define NetFx472WebLink = http://go.microsoft.com/fwlink/?LinkId=863262 ?>
 	<?define NetFx472RedistLink = http://go.microsoft.com/fwlink/?LinkId=863265 ?>
 	<?define NetFx472EulaLink = http://referencesource.microsoft.com/license.html ?>
 	<Bundle Name="CapFrameX Capture and Analysis Tool"
-					  Version="$(var.VersionNumber)"
+					Version="$(var.VersionNumber)"
 				  Manufacturer="DevTechProfile"
-					  UpgradeCode="D124F3FF-D15F-4B43-BD0D-CD631DD931DA"
-			IconSourceFile="../CapFrameX/Icons/cx_icon_BUC.ico">
+					UpgradeCode="D124F3FF-D15F-4B43-BD0D-CD631DD931DA"
+					IconSourceFile="../CapFrameX/Icons/cx_icon_BUC.ico">
 		<BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLargeLicense">
 			<bal:WixStandardBootstrapperApplication
 						LicenseFile="license.rtf"
@@ -63,8 +63,8 @@
     <util:RegistrySearch
 			Id="PawnIO_VersionMajor"
 			Root="HKLM"
-			Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PawnIO"
-			Name="VersionMajor"
+			Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PawnIO\VersionMajor"
+			Value="VersionMajor"
 			Variable="PawnIO_VersionMajor"
 			Result="value" />
 
