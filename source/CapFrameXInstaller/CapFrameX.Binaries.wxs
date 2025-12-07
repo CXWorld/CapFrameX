@@ -231,6 +231,9 @@
             <Component Id="cmp9FA13AD80A88A2237F460D513A2F1968" Guid="*" Win64="yes">
                 <File Id="filA4C1E22C089DF7BCB008768D9AC16DEF" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\EmbedIO.dll" />
             </Component>
+            <Component Id="cmp8B68D09AD1765F657697D80A201F17BB" Guid="*" Win64="yes">
+                <File Id="fil3E215BC472B1DFB93FC2651B0B62F494" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\filename.txt" />
+            </Component>
             <Component Id="cmp461E1E7FBE4E607F33327C277F03BE7A" Guid="*" Win64="yes">
                 <File Id="fil452E4A22939EC280C632FEA277D3B3A2" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\FluentValidation.dll" />
             </Component>
@@ -595,6 +598,9 @@
                 <Component Id="cmp884CFA9AEAA106F3EB8459916D87CC94" Guid="*" Win64="yes">
                     <File Id="filE829FFB9DD41F064EB121ECAFD50D645" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\PresentMon-2.3.1-x64.exe" />
                 </Component>
+                <Component Id="cmpD1B4D9EBB1BAFEBCFAB9EA0CA2417F33" Guid="*" Win64="yes">
+                    <File Id="fil33097FA70F582C66F2E0BBF82853E062" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\PresentMon-2.4.0-x64.exe" />
+                </Component>
             </Directory>
             <Directory Id="dir7FED47FDBD11E3D1CBA94060517400E8" Name="ProcessList">
                 <Component Id="cmpA6A9ED7D0D14A0EB3F1B6598611EC6CB" Guid="*" Win64="yes">
@@ -728,6 +734,7 @@
             <ComponentRef Id="cmpB54AA7145F7DD7C9F4F5BCED9FE3DD87" />
             <ComponentRef Id="cmp3A3DCB2CB767F63098FA411AE7BB90A7" />
             <ComponentRef Id="cmp9FA13AD80A88A2237F460D513A2F1968" />
+            <ComponentRef Id="cmp8B68D09AD1765F657697D80A201F17BB" />
             <ComponentRef Id="cmp461E1E7FBE4E607F33327C277F03BE7A" />
             <ComponentRef Id="cmpFDA802159822E5F335299869D8F57A96" />
             <ComponentRef Id="cmp781EEA928029B571EC5B4E7090BD7946" />
@@ -851,6 +858,7 @@
             <ComponentRef Id="cmp3A774BB34CD3664183116E92839E312E" />
             <ComponentRef Id="cmpA4F6ACC1ED64F9C0B54E2615B754768A" />
             <ComponentRef Id="cmp884CFA9AEAA106F3EB8459916D87CC94" />
+            <ComponentRef Id="cmpD1B4D9EBB1BAFEBCFAB9EA0CA2417F33" />
             <ComponentRef Id="cmpA6A9ED7D0D14A0EB3F1B6598611EC6CB" />
             <ComponentRef Id="cmpC873D207335D245293F8991C675338F3" />
             <ComponentRef Id="cmp614D68FE53DA984A3D71375B620FF70E" />

@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using Microsoft.Win32.SafeHandles;
+using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
-using LibreHardwareMonitor.Interop;
-using Microsoft.Win32;
-using Microsoft.Win32.SafeHandles;
 using PInvoke = Windows.Win32.PInvoke;
 
 namespace LibreHardwareMonitor.PawnIo;
@@ -66,12 +65,12 @@ public class PawnIo
     internal static unsafe PawnIo LoadModuleFromResource(Assembly assembly, string resourceName)
     {
         SafeFileHandle handle = PInvoke.CreateFile(@"\\.\PawnIO",
-                                                   (uint)FileAccess.ReadWrite,
-                                                   FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE,
-                                                   null,
-                                                   FILE_CREATION_DISPOSITION.OPEN_EXISTING,
-                                                   FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_NORMAL,
-                                                   null);
+            (uint)FileAccess.ReadWrite,
+            FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE,
+            null,
+            FILE_CREATION_DISPOSITION.OPEN_EXISTING,
+            FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_NORMAL,
+            null);
 
         if (handle.IsInvalid)
             return new PawnIo(null);
