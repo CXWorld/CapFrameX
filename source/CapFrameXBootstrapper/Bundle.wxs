@@ -63,7 +63,7 @@
     <util:RegistrySearch
 			Id="PawnIO_VersionMajor"
 			Root="HKLM"
-			Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PawnIO\VersionMajor"
+			Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PawnIO"
 			Value="VersionMajor"
 			Variable="PawnIO_VersionMajor"
 			Result="value" />
