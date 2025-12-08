@@ -1,5 +1,4 @@
-﻿using Microsoft.Win32;
-using Microsoft.Win32.SafeHandles;
+﻿using Microsoft.Win32.SafeHandles;
 using System;
 using System.IO;
 using System.Reflection;
@@ -11,6 +10,9 @@ using PInvoke = Windows.Win32.PInvoke;
 
 namespace LibreHardwareMonitor.PawnIo;
 
+/// <summary>
+/// Provides functionality to interact with the PawnIO driver for executing functions in loaded PawnIO modules.
+/// </summary>
 public class PawnIo
 {
     private const uint DEVICE_TYPE = 41394u << 16;
@@ -22,23 +24,12 @@ public class PawnIo
 
     static PawnIo()
     {
-        using RegistryKey subKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PawnIO");
+        var driverPath = DriverInstaller.GetPawnIODriverPath();
 
-        if (Version.TryParse(subKey?.GetValue("DisplayVersion") as string, out Version version))
-        {
-            Version = version;
-        }
-        else
-        {
-            using RegistryKey registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
-
-            using RegistryKey subKeyWow64 = registryKey.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PawnIO");
-
-            if (Version.TryParse(subKeyWow64?.GetValue("DisplayVersion") as string, out version))
-            {
-                Version = version;
-            }
-        }
+        // Install and start the PawnIO driver
+        DriverInstaller.InstallAndStartDriver(
+         serviceName: DriverInstaller.PAWNIO_SERVICE_NAME,
+         sysFilePath: driverPath);
     }
 
     private PawnIo(SafeFileHandle handle) => _handle = handle;

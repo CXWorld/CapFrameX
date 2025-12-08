@@ -60,14 +60,6 @@
 		  UpgradeCode="65E5BD06-6392-3027-8C26-853107D3CF1A"
 		  Condition="VersionNT" />
 
-    <util:RegistrySearch
-			Id="PawnIO_VersionMajor"
-			Root="HKLM"
-			Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PawnIO"
-			Value="VersionMajor"
-			Variable="PawnIO_VersionMajor"
-			Result="value" />
-
 		<!-- Visual C++ 2015-2019 Redistributable minimum runtime msi package version -->
 		<Variable Name="VCRedist2015" Type="version" Value="14.28.29914.0" />
 
@@ -136,11 +128,6 @@
 
 			<!--Nvidia FrameView SDK package-->
 			<!--<ExePackage Id='FrameView' Compressed='yes' SourceFile='../../installers/FVSDKSetup.exe'/>-->
-
-			<!--PawnIO-->
-			<ExePackage Id='PawnIO' Compressed='yes' SourceFile='../../installers/PawnIO_setup.exe'
-				DetectCondition="PawnIO_VersionMajor = '2'"/>
-
 		</Chain>
 	</Bundle>
 

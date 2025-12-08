@@ -37,6 +37,22 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="PawnIo\PawnIO.sys" />
+    <None Remove="PawnIo\PawnIOLib.dll" />
+    <None Remove="PawnIo\PawnIOLib.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="PawnIo\PawnIO.sys">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PawnIo\PawnIOLib.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PawnIo\PawnIOLib.h">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="Resources\PawnIO\LpcIO.bin" />
     <EmbeddedResource Include="Resources\PawnIo\LpcACPIEC.bin" />
     <EmbeddedResource Include="Resources\PawnIo\IntelMSR.bin" />
@@ -61,6 +77,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="RAMSPDToolkit-NDD" Version="1.3.2" />
+    <PackageReference Include="Serilog" Version="2.9.0" />
     <PackageReference Include="System.Management" Version="9.0.9" />
     <PackageReference Include="System.Memory" Version="4.6.3" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="System.Threading.AccessControl" Version="9.0.9" />
