@@ -164,16 +164,11 @@ internal sealed class IntelDiscreteGpu : GenericGpu
         return false;
     }
 
-    public override string GetDriverVersion()
-    {
-        //char driverVersion[CTL_MAX_DRIVER_VERSION_LEN] = "";
-        //LARGE_INTEGER LIDriverVersion;
-        //LIDriverVersion.QuadPart = StDeviceAdapterProperties.driver_version;
-        //sprintf_s(driverVersion, "%d.%d.%d.%d", HIWORD(LIDriverVersion.HighPart), LOWORD(LIDriverVersion.HighPart), HIWORD(LIDriverVersion.LowPart), LOWORD(LIDriverVersion.LowPart));
-
-        ulong version = DriverVersion;
-        return $"{(version >> 48) & 0xFFFF}.{(version >> 32) & 0xFFFF}.{(version >> 16) & 0xFFFF}.{version & 0xFFFF}";
-    }
+    public override string GetDriverVersion() 
+        => $"{(DriverVersion >> 48) & 0xFFFF}" +
+        $".{(DriverVersion >> 32) & 0xFFFF}" +
+        $".{(DriverVersion >> 16) & 0xFFFF}" +
+        $".{DriverVersion & 0xFFFF}";
 
     public override void Update()
     {
