@@ -705,8 +705,13 @@ internal sealed class AmdGpu : GenericGpu
             return driverString;
         }
 
-        // SYSTEM\CurrentControlSet\Control\Class\
-        return GetDriverStringFromPath(Path.Combine("SYSTEM\\CurrentControlSet\\Control\\Class\\", _adapterInfo.DriverPath));
+        const string prefix = @"\Registry\Machine\";
+
+        string subPath = _adapterInfo.DriverPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+            ? _adapterInfo.DriverPath.Substring(prefix.Length)
+            : _adapterInfo.DriverPath;
+
+        return GetDriverStringFromPath(subPath);
     }
 
     public override string GetReport()
