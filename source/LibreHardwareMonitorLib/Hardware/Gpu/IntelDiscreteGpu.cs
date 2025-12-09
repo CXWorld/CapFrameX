@@ -27,8 +27,8 @@ internal sealed class IntelDiscreteGpu : GenericGpu
     private readonly Sensor _loadRenderCompute;
 
     // Power sensors
-    private readonly Sensor _powerGpu;
-    private readonly Sensor _powerTotal;
+    private readonly Sensor _gpuTdp;
+    private readonly Sensor _gpuTbp;
 
     // Temperature sensors
     private readonly Sensor _temperatureGpuCore;
@@ -82,8 +82,8 @@ internal sealed class IntelDiscreteGpu : GenericGpu
         _voltageMemory = new Sensor("GPU Memory", 1, SensorType.Voltage, this, settings);
 
         // Initialize power sensors
-        _powerGpu = new Sensor("GPU Power", 0, SensorType.Power, this, settings);
-        _powerTotal = new Sensor("GPU Total", 1, SensorType.Power, this, settings);
+        _gpuTdp = new Sensor("GPU TDB", 0, SensorType.Power, this, settings);
+        _gpuTbp = new Sensor("GPU TBP", 1, SensorType.Power, this, settings);
 
         // Initialize utilization sensors
         _loadGlobalActivity = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
@@ -182,8 +182,8 @@ internal sealed class IntelDiscreteGpu : GenericGpu
                 return;
 
             // Update power sensors
-            UpdatePowerFromEnergyCounter(_telemetry.gpuEnergyCounter, ref _lastEnergyReading, _powerGpu);
-            UpdatePowerFromEnergyCounter(_telemetry.totalCardEnergyCounter, ref _lastTotalCardEnergyReading, _powerTotal);
+            UpdatePowerFromEnergyCounter(_telemetry.gpuEnergyCounter, ref _lastEnergyReading, _gpuTdp);
+            UpdatePowerFromEnergyCounter(_telemetry.totalCardEnergyCounter, ref _lastTotalCardEnergyReading, _gpuTbp);
 
             // Update temperature sensors
             UpdateSensorFromTelemetry(_telemetry.gpuCurrentTemperature, _temperatureGpuCore);
