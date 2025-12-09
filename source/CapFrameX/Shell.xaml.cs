@@ -45,6 +45,7 @@ namespace CapFrameX
 
         private readonly ISettingsStorage _settingsStorage;
 
+
         private GridLength ColumnAWidthSaved { get; set; }
 
         public Shell(ISettingsStorage settingsStorage)
@@ -81,7 +82,7 @@ namespace CapFrameX
 
         private void Resize(object sender, EventArgs e)
         {
-            if (WindowState == WindowState.Minimized)
+            if (WindowState == WindowState.Minimized && (ConfigurationProvider.AppConfiguration?.MinimizeToTray ?? true))
             {
                 Hide();
             }
@@ -103,15 +104,29 @@ namespace CapFrameX
 
         private void SystemTray_TrayLeftMouseDownClick(object sender, RoutedEventArgs e)
         {
-            if (Visibility == Visibility.Visible)
+            bool minimizeToTray = ConfigurationProvider.AppConfiguration?.MinimizeToTray ?? true;
+
+            if (minimizeToTray)
             {
-                Hide();
+                if (Visibility == Visibility.Visible)
+                {
+                    Hide();
+                }
+                else
+                {
+                    this.ShowAndFocus();
+                    if (WindowState == WindowState.Minimized)
+                        WindowState = WindowState.Normal;
+                }
             }
             else
             {
-                this.ShowAndFocus();
-                if (WindowState == WindowState.Minimized)
-                    WindowState = WindowState.Normal;
+                WindowState = WindowState == WindowState.Minimized
+                    ? WindowState.Normal
+                    : WindowState.Minimized;
+
+                if (WindowState == WindowState.Normal)
+                    this.ShowAndFocus();
             }
         }
 
