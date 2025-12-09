@@ -335,7 +335,7 @@ namespace CapFrameX.Sensor
                    || hdw.HardwareType == HardwareType.GpuIntel);
             }
 
-            return /*gpu != null ? gpu.GetDriverVersion() : "Unknown";*/ "Unknown";
+            return gpu != null ? gpu.GetDriverVersion() : "Unknown";
         }
 
         public string GetCpuName()

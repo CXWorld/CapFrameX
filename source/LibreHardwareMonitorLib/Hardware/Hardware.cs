@@ -88,6 +88,10 @@ public abstract class Hardware : IHardware
     }
 
     /// <inheritdoc />
+    public virtual string GetDriverVersion()
+       => "Unknown";
+
+    /// <inheritdoc />
     public abstract void Update();
 
     /// <inheritdoc />

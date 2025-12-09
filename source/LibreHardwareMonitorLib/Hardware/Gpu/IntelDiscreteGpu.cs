@@ -105,7 +105,7 @@ internal sealed class IntelDiscreteGpu : GenericGpu
 
     public override string DeviceId => _deviceId ?? GetDeviceId(_handle);
 
-    public uint DriverVersion { get; private set; }
+    public ulong DriverVersion { get; private set; }
 
     public override HardwareType HardwareType => HardwareType.GpuIntel;
 
@@ -156,12 +156,23 @@ internal sealed class IntelDiscreteGpu : GenericGpu
             _deviceId = $"0x{_properties.pci_device_id:X4}";
             VendorId = _properties.pci_vendor_id;
             RevisionId = _properties.rev_id;
-            DriverVersion = (uint)_properties.driver_version;
+            DriverVersion = _properties.driver_version;
             IsValid = true;
             return true;
         }
 
         return false;
+    }
+
+    public override string GetDriverVersion()
+    {
+        //char driverVersion[CTL_MAX_DRIVER_VERSION_LEN] = "";
+        //LARGE_INTEGER LIDriverVersion;
+        //LIDriverVersion.QuadPart = StDeviceAdapterProperties.driver_version;
+        //sprintf_s(driverVersion, "%d.%d.%d.%d", HIWORD(LIDriverVersion.HighPart), LOWORD(LIDriverVersion.HighPart), HIWORD(LIDriverVersion.LowPart), LOWORD(LIDriverVersion.LowPart));
+
+        ulong version = DriverVersion;
+        return $"{(version >> 48) & 0xFFFF}.{(version >> 32) & 0xFFFF}.{(version >> 16) & 0xFFFF}.{version & 0xFFFF}";
     }
 
     public override void Update()

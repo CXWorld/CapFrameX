@@ -80,12 +80,22 @@ public class PawnIo
         return new PawnIo(null);
     }
 
+    /// <summary>
+    /// Closes the underlying handle to the PawnIO driver.
+    /// </summary>
     public void Close()
     {
         if (IsLoaded)
             _handle.Close();
     }
 
+    /// <summary>
+    /// Executes a function in the loaded PawnIO module with the specified name and input parameters.
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="input"></param>
+    /// <param name="outLength"></param>
+    /// <returns></returns>
     public unsafe long[] Execute(string name, long[] input, int outLength)
     {
         if (IsLoaded)
@@ -111,6 +121,17 @@ public class PawnIo
         return new long[outLength];
     }
 
+    /// <summary>
+    /// Executes a function in the loaded PawnIO module with the specified name and input parameters,
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="inBuffer"></param>
+    /// <param name="inSize"></param>
+    /// <param name="outBuffer"></param>
+    /// <param name="outSize"></param>
+    /// <param name="returnSize"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
     public unsafe int ExecuteHr(string name, long[] inBuffer, uint inSize, long[] outBuffer, uint outSize, out uint returnSize)
     {
         if (inBuffer.Length < inSize)

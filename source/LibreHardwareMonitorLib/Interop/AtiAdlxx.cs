@@ -130,14 +130,14 @@ internal static class AtiAdlxx
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     public static extern ADLStatus ADL2_Adapter_PMLog_Support_Get(IntPtr context, int adapterIndex,
-                                                                  ref ADLPMLogSupportInfo pPMLogSupportInfo);
+        ref ADLPMLogSupportInfo pPMLogSupportInfo);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     public static extern ADLStatus ADL2_Adapter_PMLog_Start(IntPtr context, int adapterIndex,
-                                                            ref ADLPMLogStartInput pPMLogStartInput,
-                                                            ref ADLPMLogStartOutput pPMLogStartOutput,
-                                                            uint device);
+        ref ADLPMLogStartInput pPMLogStartInput,
+        ref ADLPMLogStartOutput pPMLogStartOutput,
+        uint device);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]

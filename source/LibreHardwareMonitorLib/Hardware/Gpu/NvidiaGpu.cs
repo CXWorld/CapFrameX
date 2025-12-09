@@ -4,7 +4,6 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using LibreHardwareMonitor.Hardware.Memory;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32;
 using System;
@@ -12,6 +11,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using static LibreHardwareMonitor.Interop.NvApi;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
 
@@ -664,6 +664,32 @@ internal sealed class NvidiaGpu : GenericGpu
         }
     }
 
+    public override string GetDriverVersion()
+    {
+        var r = new StringBuilder();
+
+        if (_displayHandle.HasValue && NvApi.NvAPI_GetDisplayDriverVersion != null)
+        {
+            NvApi.NvDisplayDriverVersion driverVersion = new()
+            {
+                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvDisplayDriverVersion>(1)
+            };
+
+            if (NvApi.NvAPI_GetDisplayDriverVersion(_displayHandle.Value,
+              ref driverVersion) == NvStatus.OK)
+            {
+                r.Append(driverVersion.DriverVersion / 100);
+                r.Append(".");
+                r.Append((driverVersion.DriverVersion % 100).ToString("00",
+                  CultureInfo.InvariantCulture));
+            }
+        }
+        else
+            return base.GetDriverVersion();
+
+        return r.ToString();
+    }
+
     public override string GetReport()
     {
         StringBuilder r = new();
@@ -675,7 +701,11 @@ internal sealed class NvidiaGpu : GenericGpu
 
         if (_displayHandle.HasValue && NvApi.NvAPI_GetDisplayDriverVersion != null)
         {
-            NvApi.NvDisplayDriverVersion driverVersion = new() { Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvDisplayDriverVersion>(1) };
+            NvApi.NvDisplayDriverVersion driverVersion = new()
+            {
+                Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvDisplayDriverVersion>(1)
+            };
+
             if (NvApi.NvAPI_GetDisplayDriverVersion(_displayHandle.Value, ref driverVersion) == NvApi.NvStatus.OK)
             {
                 r.Append("Driver Version: ");

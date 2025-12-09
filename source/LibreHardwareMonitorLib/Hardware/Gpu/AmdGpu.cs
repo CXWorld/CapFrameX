@@ -4,12 +4,14 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using LibreHardwareMonitor.Interop;
+using Microsoft.Win32;
 using System;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
 
@@ -681,6 +683,30 @@ internal sealed class AmdGpu : GenericGpu
         }
 
         base.Close();
+    }
+
+    public override string GetDriverVersion()
+    {
+        string GetDriverStringFromPath(string path)
+        {
+            string driverString = null;
+
+            using (RegistryKey key = Registry.LocalMachine.OpenSubKey(path))
+            {
+                if (key != null)
+                {
+                    var sv = key.GetValue("RadeonSoftwareVersion");
+                    var radeonSoftwareVersion = sv == null ? string.Empty : sv.ToString();
+
+                    driverString = $"Adrenalin {radeonSoftwareVersion}";
+                }
+            }
+
+            return driverString;
+        }
+
+        // SYSTEM\CurrentControlSet\Control\Class\
+        return GetDriverStringFromPath(Path.Combine("SYSTEM\\CurrentControlSet\\Control\\Class\\", _adapterInfo.DriverPath));
     }
 
     public override string GetReport()

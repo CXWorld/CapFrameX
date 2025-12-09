@@ -65,6 +65,12 @@ public interface IHardware : IElement
     void Update();
 
     /// <summary>
+    /// Gets the driver version of the hardware device.
+    /// </summary>
+    /// <returns></returns>
+    string GetDriverVersion();
+
+    /// <summary>
     /// An <see langword="event"/> that will be triggered when a new sensor appears.
     /// </summary>
     event SensorEventHandler SensorAdded;

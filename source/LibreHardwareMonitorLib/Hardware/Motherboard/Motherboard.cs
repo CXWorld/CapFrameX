@@ -172,8 +172,11 @@ public class Motherboard : IHardware
     /// <summary>
     /// Motherboard itself cannot be updated. Update <see cref="SubHardware" /> instead.
     /// </summary>
-    public void Update()
-    { }
+    public void Update() { }
+
+    /// <inheritdoc />
+    public virtual string GetDriverVersion()
+      => "Unknown";
 
     /// <inheritdoc />
     public void Accept(IVisitor visitor)
