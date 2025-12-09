@@ -403,8 +403,13 @@
 											<CheckBox Margin="0 0 0 0" IsChecked="{Binding StartMinimized, Mode=TwoWay}">
 											</CheckBox>
 										</StackPanel>
-										<StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Margin="0 5 0 5" >
-											<TextBox Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Margin="15 5 0 5" PreviewKeyDown="TextBox_KeyEnterUpdate" Width="215" IsReadOnly="False"
+                                        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Margin="20 5 0 5" >
+                                            <TextBlock Margin="0 0 0 0" Text="Minimize to tray" TextAlignment="Left" TextWrapping="Wrap" Width="80"/>
+                                            <CheckBox Margin="0 0 0 10" IsChecked="{Binding MinimizeToTray, Mode=TwoWay}">
+                                            </CheckBox>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Margin="0 0 0 5" >
+											<TextBox Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Margin="15 0 0 5" PreviewKeyDown="TextBox_KeyEnterUpdate" Width="215" IsReadOnly="False"
                                                   materialDesign:HintAssist.Hint="Ping URL" ToolTip="URL to use for the network ping overlay entry">
 												<TextBox.Text>
 													<Binding Path="DataContext.PingURL"

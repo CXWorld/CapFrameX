@@ -73,9 +73,12 @@ namespace CapFrameX
 
             // set window to tray or revert back to last tracked WindowState
             if (config.StartMinimized)
-                Application.Current.MainWindow.Hide();
+                if(config.MinimizeToTray)
+                    Application.Current.MainWindow.Hide();
+                else
+                    Application.Current.MainWindow.WindowState = WindowState.Minimized;
             else
-                Application.Current.MainWindow.WindowState = startupWindowState;
+                    Application.Current.MainWindow.WindowState = startupWindowState;
 
             LogWindowState();
         }

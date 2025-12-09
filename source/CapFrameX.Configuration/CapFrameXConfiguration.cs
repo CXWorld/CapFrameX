@@ -92,6 +92,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool MinimizeToTray
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
         public bool Autostart
         {
             get => Get<bool>(false);

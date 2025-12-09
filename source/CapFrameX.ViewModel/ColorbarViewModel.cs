@@ -369,6 +369,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool MinimizeToTray
+        {
+            get { return _appConfiguration.MinimizeToTray; }
+            set
+            {
+                _appConfiguration.MinimizeToTray = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public bool Autostart
         {
             get { return _appConfiguration.Autostart; }
