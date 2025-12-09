@@ -204,8 +204,9 @@ namespace CapFrameX.Contracts.Configuration
 		string CaptureFileMode { get; set; }
 
 		bool StartMinimized { get; set; }
+        bool MinimizeToTray { get; set; }
 
-		bool Autostart { get; set; }
+        bool Autostart { get; set; }
 
 		bool IsGpuAccelerationActive { get; set; }
 
