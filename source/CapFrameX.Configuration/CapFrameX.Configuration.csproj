@@ -111,6 +111,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CapFrameXConfiguration.cs" />
+    <Compile Include="ConfigurationProvider.cs" />
     <Compile Include="ISettingsStorage.cs" />
     <Compile Include="JsonSettingsStorage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

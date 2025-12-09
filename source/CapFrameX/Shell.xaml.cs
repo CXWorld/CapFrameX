@@ -36,7 +36,6 @@ namespace CapFrameX
             EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | (enabled ? MF_ENABLED : MF_GRAYED));
         }
 
-
         public ContentControl GlobalScreenshotArea => ScreenshotArea;
 
         public bool IsGpuAccelerationActive { get; set; }
@@ -79,6 +78,7 @@ namespace CapFrameX
             base.OnSourceInitialized(e);
             IconHelper.RemoveIcon(this);
         }
+
         private void Resize(object sender, EventArgs e)
         {
             if (WindowState == WindowState.Minimized)

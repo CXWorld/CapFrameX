@@ -57,6 +57,7 @@ namespace CapFrameX
 
             // get config
             var config = Container.Resolve<IAppConfiguration>();
+            ConfigurationProvider.AppConfiguration = config;
 
             // get Shell to set the hardware acceleration
             var shell = Container.Resolve<IShell>();
