@@ -117,6 +117,7 @@
     <Compile Include="Converter\AddSubsctractConverter.cs" />
     <Compile Include="Converter\AddValueConverter.cs" />
     <Compile Include="Converter\EnumDescriptionConverter.cs" />
+    <Compile Include="Converter\EnumShortDescriptionConverter.cs" />
     <Compile Include="Converter\InequalityToValueConverter.cs" />
     <Compile Include="Converter\InvertBoolConverter.cs" />
     <Compile Include="Converter\ModeColorConverter.cs" />
@@ -164,6 +165,10 @@
     <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj">
       <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
       <Name>CapFrameX.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Extensions.NetStandard\CapFrameX.Extensions.NetStandard.csproj">
+      <Project>{554C8784-954A-4E3D-9C79-D347DEF7E069}</Project>
+      <Name>CapFrameX.Extensions.NetStandard</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj">
       <Project>{a4559b99-7fcb-40ef-bf97-d293a2b7d6d3}</Project>

@@ -1,5 +1,4 @@
-﻿using CapFrameX.Contracts.Sensor;
-using System;
+﻿using System;
 
 namespace CapFrameX.Contracts.Overlay
 {
@@ -54,7 +53,9 @@ namespace CapFrameX.Contracts.Overlay
         /// Font size (subscript/superscript) of the entry's value
         /// </summary>
         int ValueFontSize { get; set; }
-
+        /// <summary>
+        /// Formatted group name including color, text size, and alignment
+        /// </summary>
         string FormattedGroupName { get; }
         /// <summary>
         /// Complete value format including color, text size, and alignment

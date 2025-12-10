@@ -8,7 +8,6 @@ using LibreHardwareMonitor.Interop;
 using Microsoft.Win32;
 using System;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -65,6 +64,7 @@ internal sealed class AmdGpu : GenericGpu
     private readonly Sensor _temperatureSoC;
     private readonly Sensor _temperatureVddc;
     private readonly ushort _pmLogSampleRate = 1000;
+
     private bool _overdrive8LogExists;
 
     public AmdGpu(IntPtr amdContext, AtiAdlxx.ADLAdapterInfo adapterInfo, AtiAdlxx.ADLGcnInfo gcnInfo, ISettings settings)
@@ -200,10 +200,10 @@ internal sealed class AmdGpu : GenericGpu
                 _adlPMLogStartInput.ulSampleRate = _pmLogSampleRate;
 
                 if (AtiAdlxx.ADL2_Adapter_PMLog_Start(_context,
-                                                      adapterInfo.AdapterIndex,
-                                                      ref _adlPMLogStartInput,
-                                                      ref _adlPMLogStartOutput,
-                                                      _device) == AtiAdlxx.ADLStatus.ADL_OK)
+                    adapterInfo.AdapterIndex,
+                    ref _adlPMLogStartInput,
+                    ref _adlPMLogStartOutput,
+                    _device) == AtiAdlxx.ADLStatus.ADL_OK)
                 {
                     _pmLogStarted = true;
                 }

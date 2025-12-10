@@ -136,6 +136,10 @@
       <Project>{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}</Project>
       <Name>CapFrameX.Data.Session</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Extensions.NetStandard\CapFrameX.Extensions.NetStandard.csproj">
+      <Project>{554C8784-954A-4E3D-9C79-D347DEF7E069}</Project>
+      <Name>CapFrameX.Extensions.NetStandard</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Monitoring.Contracts\CapFrameX.Monitoring.Contracts.csproj">
       <Project>{2F0D1227-BE4F-4501-B3A2-66A753ED742C}</Project>
       <Name>CapFrameX.Monitoring.Contracts</Name>
