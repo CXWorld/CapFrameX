@@ -717,7 +717,6 @@ namespace CapFrameX.ViewModel
             // 4. RAM
             // 5. OnlineMetric
             // 6. Undefined
-
             var sortedEntries = OverlayEntries.OrderBy(entry =>
             {
                 switch (entry.OverlayEntryType)

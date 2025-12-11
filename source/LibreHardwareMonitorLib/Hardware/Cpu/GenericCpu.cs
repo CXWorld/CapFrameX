@@ -8,6 +8,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
@@ -93,7 +94,11 @@ internal class GenericCpu : Hardware
         if (HasTimeStampCounter)
         {
             GroupAffinity previousAffinity = ThreadAffinity.Set(cpuId[0][0].Affinity);
-            EstimateTimeStampCounterFrequency(out _estimatedTimeStampCounterFrequency, out _estimatedTimeStampCounterFrequencyError);
+
+            EstimateTimeStampCounterFrequency(
+                out _estimatedTimeStampCounterFrequency, 
+                out _estimatedTimeStampCounterFrequencyError);
+
             ThreadAffinity.Set(previousAffinity);
         }
         else
@@ -142,56 +147,22 @@ internal class GenericCpu : Hardware
         return new Identifier(s, processorIndex.ToString(CultureInfo.InvariantCulture));
     }
 
+    [DllImport("CapFrameX.Hwinfo.dll")]
+    public static extern long GetTimeStampCounterFrequency();
+
     private static void EstimateTimeStampCounterFrequency(out double frequency, out double error)
     {
-        // preload the function
-        EstimateTimeStampCounterFrequency(0, out double f, out double e);
-        EstimateTimeStampCounterFrequency(0, out f, out e);
-
-        // estimate the frequency
-        error = double.MaxValue;
-        frequency = 0;
-        for (int i = 0; i < 5; i++)
+        try
         {
-            EstimateTimeStampCounterFrequency(0.025, out f, out e);
-            if (e < error)
-            {
-                error = e;
-                frequency = f;
-            }
-
-            if (error < 1e-4)
-                break;
+            frequency = GetTimeStampCounterFrequency() / 1E06;
+            error = frequency == 0 ? 1 : 0;
+        }
+        catch
+        {
+            frequency = 0;
+            error = 1;
         }
     }
-
-    private static void EstimateTimeStampCounterFrequency(double timeWindow, out double frequency, out double error)
-    {
-        long ticks = (long)(timeWindow * Stopwatch.Frequency);
-
-        long timeBegin = Stopwatch.GetTimestamp() + (long)Math.Ceiling(0.001 * ticks);
-        long timeEnd = timeBegin + ticks;
-
-        while (Stopwatch.GetTimestamp() < timeBegin)
-        { }
-
-        ulong countBegin = OpCode.Rdtsc();
-        long afterBegin = Stopwatch.GetTimestamp();
-
-        while (Stopwatch.GetTimestamp() < timeEnd)
-        { }
-
-        ulong countEnd = OpCode.Rdtsc();
-        long afterEnd = Stopwatch.GetTimestamp();
-
-        double delta = timeEnd - timeBegin;
-        frequency = 1e-6 * ((double)(countEnd - countBegin) * Stopwatch.Frequency) / delta;
-
-        double beginError = (afterBegin - timeBegin) / delta;
-        double endError = (afterEnd - timeEnd) / delta;
-        error = beginError + endError;
-    }
-
 
     public override string GetReport()
     {
@@ -229,38 +200,6 @@ internal class GenericCpu : Hardware
 
     public override void Update()
     {
-        if (HasTimeStampCounter && _isInvariantTimeStampCounter)
-        {
-            // make sure always the same thread is used
-            GroupAffinity previousAffinity = ThreadAffinity.Set(_cpuId[0][0].Affinity);
-
-            // read time before and after getting the TSC to estimate the error
-            long firstTime = Stopwatch.GetTimestamp();
-            ulong timeStampCount = OpCode.Rdtsc();
-            long time = Stopwatch.GetTimestamp();
-
-            // restore the thread affinity mask
-            ThreadAffinity.Set(previousAffinity);
-
-            double delta = (double)(time - _lastTime) / Stopwatch.Frequency;
-            double error = (double)(time - firstTime) / Stopwatch.Frequency;
-
-            // only use data if they are measured accurate enough (max 0.1ms delay)
-            if (error < 0.0001)
-            {
-                // ignore the first reading because there are no initial values
-                // ignore readings with too large or too small time window
-                if (_lastTime != 0 && delta is > 0.5 and < 2)
-                {
-                    // update the TSC frequency with the new value
-                    TimeStampCounterFrequency = (timeStampCount - _lastTimeStampCount) / (1e6 * delta);
-                }
-
-                _lastTimeStampCount = timeStampCount;
-                _lastTime = time;
-            }
-        }
-
         if (_cpuLoad.IsAvailable)
         {
             _cpuLoad.Update();
