@@ -240,15 +240,6 @@ namespace CapFrameX
                 Log.Logger.Error(ex, "Error while shutting down the web server.");
             }
 
-            try
-            {
-                DriverInstaller.StopAndRemoveDriver(DriverInstaller.PAWNIO_SERVICE_NAME);
-            }
-            catch(Exception ex)
-            {
-                Log.Logger.Error(ex, "Error while shutting down PawnIO driverr.");
-            }
-
             // Close FrameView session
             var frameViewService = _bootstrapper.Container.Resolve<IFrameViewService>();
             frameViewService?.CloseFrameViewService();
