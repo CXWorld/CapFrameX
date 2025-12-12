@@ -171,8 +171,8 @@
 		        </TextBlock>
 
 				<materialDesign:PopupBox Grid.Column="1" DataContext="{Binding Path=DataContext, ElementName=ColorbarViewName}"
-                                         materialDesign:Closed="PopupBox_Closed" RequestBringIntoView="PopupBox_RequestBringIntoView"
-                                         Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right">
+					materialDesign:Closed="PopupBox_Closed" RequestBringIntoView="PopupBox_RequestBringIntoView"
+					Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right" Opened="PopupBoxOpened">
 					<materialDesign:PopupBox.ToggleContent>
 						<materialDesign:PackIcon Kind="Cog" Width="30" Height="30" Foreground="White"/>
 					</materialDesign:PopupBox.ToggleContent>
@@ -181,6 +181,9 @@
 							<RadioButton Margin="18 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
 										 IsChecked="{Binding OptionsViewSelected}"
 										 Content="OPTIONS" />
+							<RadioButton Margin="18 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
+										 IsChecked="{Binding HardwareViewSelected}"
+										 Content="HARDWARE" />
 							<RadioButton Margin="18 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
 										 IsChecked="{Binding AppViewSelected}"
 										 Content="APP" />
@@ -205,11 +208,6 @@
 											</Style>
 										</Grid.Resources>
 										<Grid.RowDefinitions>
-											<RowDefinition Height="*" />
-											<RowDefinition Height="*" />
-											<RowDefinition Height="*" />
-											<RowDefinition Height="*" />
-											<RowDefinition Height="*" />
 											<RowDefinition Height="*" />
 											<RowDefinition Height="*" />
 											<RowDefinition Height="*" />
@@ -269,18 +267,6 @@
 										</StackPanel>
 
 										<StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="10 0 0 0">
-											<CheckBox IsChecked="{Binding UseTBPSim, Mode=TwoWay}" ToolTipService.ShowDuration="25000">
-												<CheckBox.ToolTip>
-													<ToolTip MaxWidth="400">
-														<TextBlock TextWrapping="Wrap" Text="If sensor data of a record contains &quot;TBP Sim&quot; values (RDNA + Intel Arc GPUs only), use these for analysis like FPS/W instead of &quot;GPU Total&quot;
-                                                                   &#10;For changes to take effect the analysis and comparison pages have to be reloaded and already inserted records on report page need to be added again"></TextBlock>
-													</ToolTip>
-												</CheckBox.ToolTip>
-											</CheckBox>
-											<TextBlock Text="Use &quot;TBP Sim&quot; values for analysis if available" VerticalAlignment="Center"></TextBlock>
-										</StackPanel>
-
-										<StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="10 0 0 0">
 											<CheckBox IsChecked="{Binding UseDisplayChangeMetrics, Mode=TwoWay}" ToolTipService.ShowDuration="25000">
 												<CheckBox.ToolTip>
 													<ToolTip MaxWidth="400">
@@ -292,7 +278,7 @@
 											<TextBlock Text="Use &quot;MsBetweenDisplayChange&quot; metrics" VerticalAlignment="Center"></TextBlock>
 										</StackPanel>
 
-										<StackPanel Grid.Row="3" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 5 0 5">
+										<StackPanel Grid.Row="2" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 5 0 5">
 											<TextBox Width="350" IsReadOnly="True" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
 											<Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.SelectScreenshotFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select screenshot folder">
 												<materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />
@@ -302,10 +288,58 @@
 											</Button>
 										</StackPanel>
 
+									</Grid>
+								</DataTemplate>
+
+								<DataTemplate x:Name="HardwareDataTemplate" x:Key="HardwareContent">
+									<Grid Margin="10">
+										<Grid.Resources>
+											<Style TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
+												<Setter Property="Margin" Value="8,8,10,8" />
+											</Style>
+											<Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
+												<Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
+												<Setter Property="Margin" Value="8" />
+											</Style>
+										</Grid.Resources>
+										<Grid.RowDefinitions>
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+										</Grid.RowDefinitions>
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="*"/>
+											<ColumnDefinition Width="*"/>
+											<ColumnDefinition Width="*"/>
+										</Grid.ColumnDefinitions>
+
+										<ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Primary Graphics Adapter" HorizontalAlignment="Left"
+											ToolTip="Sets the primary graphics adapter for monitoring and logging. Restart CapFrameX after changing the adapter."
+											materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="200" Height="40" Margin="20 15 10 15"
+											ItemsSource="{Binding Path=DataContext.GraphicsAdapters, ElementName=ColorbarViewName}">
+											<ComboBox.Text>
+												<Binding Path="SelectedGraphicsAdapter"
+												 Mode="TwoWay"
+												 UpdateSourceTrigger="PropertyChanged"/>
+											</ComboBox.Text>
+										</ComboBox>
+
+										<StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="10 0 0 0">
+											<CheckBox IsChecked="{Binding UseTBPSim, Mode=TwoWay}" ToolTipService.ShowDuration="25000">
+												<CheckBox.ToolTip>
+													<ToolTip MaxWidth="400">
+														<TextBlock TextWrapping="Wrap" Text="If sensor data of a record contains &quot;TBP Sim&quot; values (RDNA + Intel Arc GPUs only), use these for analysis like FPS/W instead of &quot;GPU Total&quot;
+															&#10;For changes to take effect the analysis and comparison pages have to be reloaded and already inserted records on report page need to be added again"></TextBlock>
+													</ToolTip>
+												</CheckBox.ToolTip>
+											</CheckBox>
+											<TextBlock Text="Use &quot;TBP Sim&quot; values for analysis if available" VerticalAlignment="Center"></TextBlock>
+										</StackPanel>
+
 										<ComboBox Grid.Row="4" Grid.Column="0" materialDesign:HintAssist.Hint="Hardware info source"
-												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="0 10 0 0" Width="145" Height="40"
-												  ItemsSource="{Binding Path=DataContext.HardwareInfoSourceItems, ElementName=ColorbarViewName}" 
-												  SelectedItem="{Binding Path=DataContext.SelectedHardwareInfoSource, ElementName=ColorbarViewName}">
+										  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="0 10 0 0" Width="145" Height="40"
+										  ItemsSource="{Binding Path=DataContext.HardwareInfoSourceItems, ElementName=ColorbarViewName}" 
+										  SelectedItem="{Binding Path=DataContext.SelectedHardwareInfoSource, ElementName=ColorbarViewName}">
 											<ComboBox.ItemTemplate>
 												<DataTemplate>
 													<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
@@ -313,17 +347,17 @@
 											</ComboBox.ItemTemplate>
 										</ComboBox>
 										<ComboBox Grid.Row="4" Grid.Column="1" materialDesign:HintAssist.Hint="Capture file mode" ToolTipService.ShowDuration="25000"
-												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="0 15 0 0" Width="120" Height="40"
-												  ItemsSource="{Binding Path=DataContext.CaptureFileModeItems, ElementName=ColorbarViewName}" 
-												  SelectedItem="{Binding Path=DataContext.SelectedCaptureFileMode, ElementName=ColorbarViewName}">
+										  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="0 15 0 0" Width="120" Height="40"
+										  ItemsSource="{Binding Path=DataContext.CaptureFileModeItems, ElementName=ColorbarViewName}" 
+										  SelectedItem="{Binding Path=DataContext.SelectedCaptureFileMode, ElementName=ColorbarViewName}">
 											<ComboBox.ToolTip>
 												<ToolTip MaxWidth="400" Placement="Top">
 													<TextBlock Text="JSON:
-                                               &#10;Records are saves as json files with all needed data
-                                               &#10;
-                                               &#10;JSON + CSV:
-                                               &#10;For each record a csv file is created in addition to the json file. The csv file includes all PresentMon data. CX will only use the json files, the csv files are only for special analysis of PresentMon data" 
-										   TextWrapping="Wrap"/>
+													   &#10;Records are saves as json files with all needed data
+													   &#10;
+													   &#10;JSON + CSV:
+													   &#10;For each record a csv file is created in addition to the json file. The csv file includes all PresentMon data. CX will only use the json files, the csv files are only for special analysis of PresentMon data" 
+													TextWrapping="Wrap"/>
 												</ToolTip>
 											</ComboBox.ToolTip>
 											<ComboBox.ItemTemplate>
@@ -334,37 +368,38 @@
 										</ComboBox>
 
 										<TextBox Grid.Row="5" Grid.ColumnSpan="2" Margin="18 15 0 0" materialDesign:HintAssist.Hint="CPU" materialDesign:HintAssist.HintOpacity="1"
-												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}" PreviewKeyDown="HardwareDescription_PreviewKeyDown">
+											Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}" PreviewKeyDown="HardwareDescription_PreviewKeyDown">
 											<TextBox.Text>
 												<Binding Path="DataContext.CustomCpuDescription"
-														 ElementName="ColorbarViewName"
-														 Mode="TwoWay"
-														 UpdateSourceTrigger="LostFocus">
+												 ElementName="ColorbarViewName"
+												 Mode="TwoWay"
+												 UpdateSourceTrigger="LostFocus">
 												</Binding>
 											</TextBox.Text>
 										</TextBox>
 										<TextBox Grid.Row="6" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="GPU" Margin="18 10 0 0"
-												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}" PreviewKeyDown="HardwareDescription_PreviewKeyDown">
+											Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}" PreviewKeyDown="HardwareDescription_PreviewKeyDown">
 											<TextBox.Text>
 												<Binding Path="DataContext.CustomGpuDescription"
-														 ElementName="ColorbarViewName"
-														 Mode="TwoWay"
-														 UpdateSourceTrigger="LostFocus">
+												 ElementName="ColorbarViewName"
+												 Mode="TwoWay"
+												 UpdateSourceTrigger="LostFocus">
 												</Binding>
 											</TextBox.Text>
 										</TextBox>
 										<TextBox Grid.Row="7" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="RAM" Margin="18 10 0 0"
-												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}" PreviewKeyDown="HardwareDescription_PreviewKeyDown">
+											Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}" PreviewKeyDown="HardwareDescription_PreviewKeyDown">
 											<TextBox.Text>
 												<Binding Path="DataContext.CustomRamDescription"
-														 ElementName="ColorbarViewName"
-														 Mode="TwoWay"
-														 UpdateSourceTrigger="LostFocus">
+												 ElementName="ColorbarViewName"
+												 Mode="TwoWay"
+												 UpdateSourceTrigger="LostFocus">
 												</Binding>
 											</TextBox.Text>
 										</TextBox>
 									</Grid>
 								</DataTemplate>
+
 								<DataTemplate x:Key="AppContent">
 									<Grid Margin="10">
 										<Grid.Resources>
@@ -480,6 +515,9 @@
 									<Style.Triggers>
 										<DataTrigger Binding="{Binding DataContext.SelectedView, ElementName=ColorbarViewName}" Value="Options">
 											<Setter Property="ContentTemplate" Value="{StaticResource OptionsContent}" />
+										</DataTrigger>
+										<DataTrigger Binding="{Binding DataContext.SelectedView, ElementName=ColorbarViewName}" Value="Hardware">
+											<Setter Property="ContentTemplate" Value="{StaticResource HardwareContent}" />
 										</DataTrigger>
 										<DataTrigger Binding="{Binding DataContext.SelectedView, ElementName=ColorbarViewName}" Value="App">
 											<Setter Property="ContentTemplate" Value="{StaticResource AppContent}" />

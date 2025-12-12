@@ -122,6 +122,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public string GraphicsAdapter
+        {
+            get => Get<string>("Auto");
+            set => Set(value);
+        }
+
         public bool UseDarkMode
         {
             get => Get<bool>(false);

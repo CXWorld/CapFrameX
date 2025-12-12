@@ -214,7 +214,9 @@ namespace CapFrameX.Contracts.Configuration
 
 		int VerticalGraphExportRes { get; set; }
 
-		bool ReportShowAverageRow { get; set; }
+		string GraphicsAdapter { get; set; }
+
+        bool ReportShowAverageRow { get; set; }
 
         bool ReportUsePMDValues { get; set; }
 

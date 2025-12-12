@@ -193,6 +193,19 @@ namespace CapFrameX.Sensor
             _sensorUpdateSubject.OnNext(CurrentSensorTimespan);
         }
 
+        public IEnumerable<IHardware> GetDetectedGpus()
+        {
+            IEnumerable<IHardware> gpus = null;
+            lock (_lockComputer)
+            {
+                gpus = _computer?.Hardware
+               .Where(hdw => hdw.HardwareType == HardwareType.GpuAmd
+                   || hdw.HardwareType == HardwareType.GpuNvidia
+                   || hdw.HardwareType == HardwareType.GpuIntel);
+            }
+            return gpus;
+        }
+
         public ISessionSensorData2 GetSensorSessionData()
         {
             return UseSensorLogging ? _sessionSensorDataLive
@@ -272,7 +285,7 @@ namespace CapFrameX.Sensor
                 if (sensors != null)
                 {
                     foreach (var sensor in sensors)
-                    {
+                    {                       
                         if (sensor.Value != null)
                             dict.TryAdd(new SensorEntry()
                             {
@@ -308,6 +321,23 @@ namespace CapFrameX.Sensor
                            return subHardware.Sensors;
                        }));
                    });
+            }
+
+            var selectedGpuName = _appConfiguration.GraphicsAdapter;
+
+            if (selectedGpuName != "Auto")
+            {
+                // Filter GPU sensors by adapter name
+                sensors = sensors.Where(sensor =>
+                {
+                    if (sensor.Hardware.HardwareType == HardwareType.GpuAmd
+                        || sensor.Hardware.HardwareType == HardwareType.GpuNvidia
+                        || sensor.Hardware.HardwareType == HardwareType.GpuIntel)
+                    {
+                        return sensor.Hardware.Name == selectedGpuName;
+                    }
+                    return true;
+                });
             }
 
             return sensors;

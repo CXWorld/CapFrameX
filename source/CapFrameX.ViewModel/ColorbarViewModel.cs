@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.MVVM;
+using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
@@ -34,6 +35,7 @@ namespace CapFrameX.ViewModel
         private readonly IRegionManager _regionManager;
         private readonly IEventAggregator _eventAggregator;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly ISensorService _sensorService;
         private readonly ILogger<ColorbarViewModel> _logger;
         private readonly IShell _shell;
         private readonly ISystemInfo _systemInfo;
@@ -54,6 +56,7 @@ namespace CapFrameX.ViewModel
         private bool _hasCustomInfo;
         private string _selectedView = "Options";
         private bool _optionsViewSelected = true;
+        private bool _hardwareViewSelected;
         private bool _appViewSelected;
         private bool _remoteViewSelected;
         private bool _helpViewSelected;
@@ -195,6 +198,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public string SelectedGraphicsAdapter
+        {
+            get { return _appConfiguration.GraphicsAdapter; }
+            set
+            {
+                _appConfiguration.GraphicsAdapter = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public int FpsValuesRoundingDigits
         {
             get { return _appConfiguration.FpsValuesRoundingDigits; }
@@ -322,6 +335,17 @@ namespace CapFrameX.ViewModel
             set
             {
                 _optionsViewSelected = value;
+                OnViewSelectionChanged();
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool HardwareViewSelected
+        {
+            get { return _hardwareViewSelected; }
+            set
+            {
+                _hardwareViewSelected = value;
                 OnViewSelectionChanged();
                 RaisePropertyChanged();
             }
@@ -458,7 +482,7 @@ namespace CapFrameX.ViewModel
                 _appConfiguration.UseDisplayChangeMetrics = value;
                 RaisePropertyChanged();
             }
-        }        
+        }
 
         public string PingURL
         {
@@ -488,6 +512,8 @@ namespace CapFrameX.ViewModel
 
         public Array AverageTimeWindows => new int[] { 250, 500, 1000 };
 
+        public Array GraphicsAdapters { get; set; }
+
         public IAppConfiguration AppConfiguration => _appConfiguration;
 
         public ILogger<ColorbarViewModel> Logger => _logger;
@@ -504,9 +530,12 @@ namespace CapFrameX.ViewModel
 
         public bool IsLoggedIn { get; private set; }
 
+        public ISensorService SensorService => _sensorService;
+
         public ColorbarViewModel(IRegionManager regionManager,
             IEventAggregator eventAggregator,
             IAppConfiguration appConfiguration,
+            ISensorService sensorService,
             ILogger<ColorbarViewModel> logger,
             IShell shell,
             ISystemInfo systemInfo,
@@ -515,6 +544,7 @@ namespace CapFrameX.ViewModel
             _regionManager = regionManager;
             _eventAggregator = eventAggregator;
             _appConfiguration = appConfiguration;
+            _sensorService = sensorService;
             _logger = logger;
             _shell = shell;
             _systemInfo = systemInfo;
@@ -527,6 +557,21 @@ namespace CapFrameX.ViewModel
 
             HasCustomInfo = SelectedHardwareInfoSource == EHardwareInfoSource.Custom;
             IsLoggedIn = _loginManager.State.Token != null;
+
+            // Set GraphicsAdapters on dispatcher async
+            System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
+            {
+                await sensorService.SensorServiceCompletionSource.Task;
+
+                GraphicsAdapters = sensorService.GetDetectedGpus()
+                    .Select(g => g.Name)
+                    .Distinct()
+                    .Prepend("Auto")
+                    .ToArray();
+
+                RaisePropertyChanged(nameof(GraphicsAdapters));
+            });
+
             SetAggregatorEvents();
             SubscribeToAggregatorEvents();
             SetHardwareInfoDefaultsFromDatabase();
@@ -665,12 +710,15 @@ namespace CapFrameX.ViewModel
             if (OptionsViewSelected)
                 SelectedView = "Options";
 
+            if(HardwareViewSelected)
+                SelectedView = "Hardware";
+
             if (AppViewSelected)
                 SelectedView = "App";
 
             if (RemoteViewSelected)
-            { 
-                SelectedView = "Remote"; 
+            {
+                SelectedView = "Remote";
                 RaisePropertyChanged(nameof(OsdHttpUrl));
                 RaisePropertyChanged(nameof(OsdWSUrl));
                 RaisePropertyChanged(nameof(SensorsWSUrl));
@@ -742,7 +790,7 @@ namespace CapFrameX.ViewModel
                     RegistryKey startKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run", true);
                     startKey?.DeleteValue(appName);
                 }
-                catch (ArgumentException) { };
+                catch (ArgumentException) { }
             }
         }
 
@@ -804,12 +852,13 @@ namespace CapFrameX.ViewModel
         private bool CheckURL(string url)
         {
             Ping pingSender = new Ping();
-            try 
-            { 
+            try
+            {
                 PingReply reply = pingSender.Send(url);
                 return true;
             }
-            catch { return false; };
+            catch { return false; }
+            ;
         }
     }
 }

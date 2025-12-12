@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Data.Session.Contracts;
+using LibreHardwareMonitor.Hardware;
 using System;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
@@ -24,5 +25,6 @@ namespace CapFrameX.Contracts.Sensor
         void SetLoggingInterval(TimeSpan timeSpan);
         void SetOSDInterval(TimeSpan timeSpan);
         Task<IEnumerable<ISensorEntry>> GetSensorEntries();
+        IEnumerable<IHardware> GetDetectedGpus();
     }
 }

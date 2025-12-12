@@ -7,6 +7,7 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -67,7 +68,7 @@ namespace CapFrameX.View
                 if (currentPageName == "Analysis")
                 {
                     var name = "CX" + "_" +
-                          DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + "_" + $"{currentRecordInfo.GameName}" + "_" + $"{ currentRecordInfo.Comment}.png";
+                          DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + "_" + $"{currentRecordInfo.GameName}" + "_" + $"{currentRecordInfo.Comment}.png";
 
                     Regex r = new Regex(string.Format("[{0}]", Regex.Escape(REGEX_SEARCH)));
                     var adjustedName = r.Replace(name, " ");
@@ -296,5 +297,7 @@ namespace CapFrameX.View
                 Keyboard.ClearFocus();
             }
         }
+
+        private void PopupBoxOpened(object sender, RoutedEventArgs e) { }
     }
 }

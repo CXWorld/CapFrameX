@@ -413,6 +413,10 @@
       <Project>{AD4536B2-C977-4CB8-8540-866928671C2D}</Project>
       <Name>CapFrameX.ViewModel</Name>
     </ProjectReference>
+    <ProjectReference Include="..\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj">
+      <Project>{51E4211C-F281-11A3-9390-A6B54F703498}</Project>
+      <Name>LibreHardwareMonitorLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

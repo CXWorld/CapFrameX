@@ -32,8 +32,6 @@ internal class GenericCpu : Hardware
     private readonly Sensor _totalLoad;
     private readonly Sensor _maxLoad;
     private readonly Vendor _vendor;
-    private long _lastTime;
-    private ulong _lastTimeStampCount;
 
     public GenericCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(cpuId[0][0].Name, CreateIdentifier(cpuId[0][0].Vendor, processorIndex), settings)
     {
@@ -189,8 +187,8 @@ internal class GenericCpu : Hardware
         r.AppendLine("Time Stamp Counter: " + (HasTimeStampCounter ? _isInvariantTimeStampCounter ? "Invariant" : "Not Invariant" : "None"));
         r.AppendLine(string.Format(CultureInfo.InvariantCulture, "Estimated Time Stamp Counter Frequency: {0} MHz", Math.Round(_estimatedTimeStampCounterFrequency * 100) * 0.01));
         r.AppendLine(string.Format(CultureInfo.InvariantCulture,
-                                   "Estimated Time Stamp Counter Frequency Error: {0} Mhz",
-                                   Math.Round(_estimatedTimeStampCounterFrequency * _estimatedTimeStampCounterFrequencyError * 1e5) * 1e-5));
+            "Estimated Time Stamp Counter Frequency Error: {0} Mhz",
+            Math.Round(_estimatedTimeStampCounterFrequency * _estimatedTimeStampCounterFrequencyError * 1e5) * 1e-5));
 
         r.AppendLine(string.Format(CultureInfo.InvariantCulture, "Time Stamp Counter Frequency: {0} MHz", Math.Round(TimeStampCounterFrequency * 100) * 0.01));
         r.AppendLine();
