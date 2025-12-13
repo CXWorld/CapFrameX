@@ -15,6 +15,8 @@ namespace LibreHardwareMonitor.Hardware.Cpu;
 
 internal class GenericCpu : Hardware
 {
+    private const uint CPUID_CORE_MASK_STATUS = 0x1A;
+
     protected readonly int _coreCount;
     protected readonly CpuId[][] _cpuId;
     protected readonly uint _family;
@@ -22,6 +24,7 @@ internal class GenericCpu : Hardware
     protected readonly uint _packageType;
     protected readonly uint _stepping;
     protected readonly int _threadCount;
+    protected readonly bool _isHybrid;
 
     private readonly CpuLoad _cpuLoad;
     private readonly double _estimatedTimeStampCounterFrequency;
@@ -45,6 +48,7 @@ internal class GenericCpu : Hardware
         Index = processorIndex;
         _coreCount = cpuId.Length;
         _threadCount = cpuId.Sum(x => x.Length);
+        _isHybrid = CpuArchitecture.IsHybridDesign([.. cpuId.Select(core => core[0])]);
 
         // Check if processor has MSRs.
         HasModelSpecificRegisters = cpuId[0][0].Data.GetLength(0) > 1 && (cpuId[0][0].Data[1, 3] & 0x20) != 0;
@@ -128,9 +132,58 @@ internal class GenericCpu : Hardware
     protected string CoreString(int i)
     {
         if (_coreCount == 1)
-            return "CPU Core";
+        {
+            return $"CPU Core{GetCoreLabel(i)}";
+        }
 
-        return "CPU Core #" + (i + 1);
+        return $"CPU Core #{i + 1}{GetCoreLabel(i)}";
+    }
+
+    // https://github.com/InstLatx64/InstLatX64_Demo/commit/e149a972655aff9c41f3eac66ad51fcfac1262b5
+    private string GetCoreLabel(int i)
+    {
+        string corelabel = string.Empty;
+        if (_isHybrid)
+        {
+            if (_cpuId[i][0].Vendor == Vendor.Intel)
+            {
+                var previousAffinity = ThreadAffinity.Set(_cpuId[i][0].Affinity);
+                if (OpCode.CpuId(CPUID_CORE_MASK_STATUS, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
+                {
+                    switch (eax >> 24)
+                    {
+                        case 0x20000002: corelabel = " LP-E"; break;
+                        case 0x20: corelabel = " E"; break;
+                        case 0x40: corelabel = " P"; break;
+                        default: break;
+                    }
+                }
+
+                ThreadAffinity.Set(previousAffinity);
+            }
+            else if (_cpuId[i][0].Vendor == Vendor.AMD)
+            {
+                var previousAffinity = ThreadAffinity.Set(_cpuId[i][0].Affinity);
+                if (OpCode.CpuId(0x80000026, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
+                {
+                    // Heterogeneous core topology supported
+                    if ((eax & (1u << 30)) != 0)
+                    {
+                        uint coreType = (ebx >> 28) & 0xF;
+                        switch (coreType)
+                        {
+                            case 0: corelabel = " P"; break;
+                            case 1: corelabel = " D"; break;
+                            default: break;
+                        }
+                    }
+                }
+
+                ThreadAffinity.Set(previousAffinity);
+            }
+        }
+
+        return corelabel;
     }
 
     private static Identifier CreateIdentifier(Vendor vendor, int processorIndex)
