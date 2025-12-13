@@ -3,13 +3,13 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
+using LibreHardwareMonitor.Interop;
 using System;
 using System.Runtime.InteropServices;
-using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
 
-internal sealed class IntelDiscreteGpu : GenericGpu
+internal sealed class IntelGclGpu : GenericGpu
 {
     // Constants
     private const double MemoryFrequencyDivisor = 8.0; // Intel GCL returns memory frequency multiplied by 8
@@ -59,11 +59,15 @@ internal sealed class IntelDiscreteGpu : GenericGpu
     // Telemetry data
     private IntelGcl.ctl_power_telemetry_t _telemetry;
 
-    public IntelDiscreteGpu(IntelGcl.ctl_device_adapter_handle_t handle, ISettings settings)
+    public IntelGclGpu(IntelGcl.ctl_device_adapter_handle_t handle, ISettings settings)
         : base(GetDeviceName(handle), new Identifier("gpu-intel", GetDeviceId(handle)), settings)
     {
         _handle = handle;
         IsValid = false;
+
+        // See _ctl_adapter_properties_flag_t in igcl_api header for details
+        // CTL_ADAPTER_PROPERTIES_FLAG_INTEGRATED = CTL_BIT(0)
+        IsDiscreteGpu = _properties.graphics_adapter_properties != 1;
 
         // Initialize device properties
         if (!InitializeDevice())
@@ -164,7 +168,7 @@ internal sealed class IntelDiscreteGpu : GenericGpu
         return false;
     }
 
-    public override string GetDriverVersion() 
+    public override string GetDriverVersion()
         => $"{(DriverVersion >> 48) & 0xFFFF}" +
         $".{(DriverVersion >> 32) & 0xFFFF}" +
         $".{(DriverVersion >> 16) & 0xFFFF}" +

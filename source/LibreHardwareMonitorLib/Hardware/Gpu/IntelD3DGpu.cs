@@ -6,7 +6,7 @@ using Microsoft.Win32;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
 
-internal class IntelIntegratedGpu : GenericGpu
+internal class IntelD3dGpu : GenericGpu
 {
     private const uint MSR_PP1_ENERGY_STATUS = 0x641;
 
@@ -26,14 +26,14 @@ internal class IntelIntegratedGpu : GenericGpu
 
     private readonly IntelMsr _pawnModule;
 
-    public IntelIntegratedGpu(Cpu.IntelCpu intelCpu, string deviceId, D3DDisplayDevice.D3DDeviceInfo deviceInfo, ISettings settings)
+    public IntelD3dGpu(Cpu.IntelCpu intelCpu, string deviceId, D3DDisplayDevice.D3DDeviceInfo deviceInfo, ISettings settings)
         : base(GetName(deviceId),
                new Identifier("gpu-intel-integrated", deviceId.ToString(CultureInfo.InvariantCulture)),
                settings)
     {
         _pawnModule = new IntelMsr();
-
         _deviceId = deviceId;
+        IsDiscreteGpu = !deviceInfo.Integrated;
 
         int memorySensorIndex = 0;
 

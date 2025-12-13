@@ -20,4 +20,9 @@ public abstract class GenericGpu : Hardware
     /// Gets the device identifier.
     /// </summary>
     public abstract string DeviceId { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the GPU is a discrete GPU.
+    /// </summary>
+    public bool IsDiscreteGpu { get; set; } = true;
 }

@@ -56,7 +56,7 @@ internal class IntelGpuGroup : IGroup
                     {
                         try
                         {
-                            var gpu = new IntelDiscreteGpu(handle, settings);
+                            var gpu = new IntelGclGpu(handle, settings);
                             if (gpu.IsValid)
                             {
                                 _report.Append("Discrete GPU: ");
@@ -133,7 +133,7 @@ internal class IntelGpuGroup : IGroup
                         {
                             // It may seem strange to only use the first cpu here, but in-case we have a multi cpu system with integrated graphics (does that exist?),
                             // we would pick up the multiple device identifiers above and would add one instance for each CPU.
-                            _hardware.Add(new IntelIntegratedGpu(intelCpus[0], deviceId, deviceInfo, settings));
+                            _hardware.Add(new IntelD3dGpu(intelCpus[0], deviceId, deviceInfo, settings));
                         }
                     }
 
