@@ -6,6 +6,7 @@ using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Monitoring.Contracts;
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.Hardware.Gpu;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
@@ -347,19 +348,19 @@ namespace CapFrameX.Sensor
                         || hdw.HardwareType == HardwareType.GpuNvidia
                         || hdw.HardwareType == HardwareType.GpuIntel);
 
+                // We need at least one adapter
                 if (gpuCount <= 1) return sensors;
 
-                // Filter GPU sensors by iGPU name
+                // Auto behavior: filter iGPUs
                 sensors = sensors.Where(sensor =>
                 {
                     if (sensor.Hardware.HardwareType == HardwareType.GpuAmd
                         || sensor.Hardware.HardwareType == HardwareType.GpuNvidia
                         || sensor.Hardware.HardwareType == HardwareType.GpuIntel)
                     {
-                        return !sensor.Hardware.Name.Contains("AMD Radeon(TM) Graphics")
-                            && !sensor.Hardware.Name.Contains("UHD Graphics")
-                            && !sensor.Hardware.Name.Contains("Xe Graphics")
-                            && !sensor.Hardware.Name.Contains("Intel(R) Graphics");
+                        var isDiscreteGpu = (sensor.Hardware as GenericGpu)?.IsDiscreteGpu ?? true;
+                        // Identify AMD iGPU by name until lib is ported to newer ADLX
+                        return !sensor.Hardware.Name.Contains("AMD Radeon(TM) Graphics") && isDiscreteGpu;
                     }
 
                     return true;
