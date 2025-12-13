@@ -285,7 +285,7 @@ namespace CapFrameX.Sensor
                 if (sensors != null)
                 {
                     foreach (var sensor in sensors)
-                    {                       
+                    {
                         if (sensor.Value != null)
                             dict.TryAdd(new SensorEntry()
                             {
@@ -323,9 +323,9 @@ namespace CapFrameX.Sensor
                    });
             }
 
-            var selectedGpuName = _appConfiguration.GraphicsAdapter;
+            var selectedAdapter = _appConfiguration.GraphicsAdapter;
 
-            if (selectedGpuName != "Auto")
+            if (selectedAdapter != "Auto")
             {
                 // Filter GPU sensors by adapter name
                 sensors = sensors.Where(sensor =>
@@ -334,8 +334,34 @@ namespace CapFrameX.Sensor
                         || sensor.Hardware.HardwareType == HardwareType.GpuNvidia
                         || sensor.Hardware.HardwareType == HardwareType.GpuIntel)
                     {
-                        return sensor.Hardware.Name == selectedGpuName;
+                        return sensor.Hardware.Name == selectedAdapter;
                     }
+
+                    return true;
+                });
+            }
+            else
+            {
+                var gpuCount = _computer.Hardware
+                    .Count(hdw => hdw.HardwareType == HardwareType.GpuAmd
+                        || hdw.HardwareType == HardwareType.GpuNvidia
+                        || hdw.HardwareType == HardwareType.GpuIntel);
+
+                if (gpuCount <= 1) return sensors;
+
+                // Filter GPU sensors by iGPU name
+                sensors = sensors.Where(sensor =>
+                {
+                    if (sensor.Hardware.HardwareType == HardwareType.GpuAmd
+                        || sensor.Hardware.HardwareType == HardwareType.GpuNvidia
+                        || sensor.Hardware.HardwareType == HardwareType.GpuIntel)
+                    {
+                        return !sensor.Hardware.Name.Contains("AMD Radeon(TM) Graphics")
+                            && !sensor.Hardware.Name.Contains("UHD Graphics")
+                            && !sensor.Hardware.Name.Contains("Xe Graphics")
+                            && !sensor.Hardware.Name.Contains("Intel(R) Graphics");
+                    }
+
                     return true;
                 });
             }
