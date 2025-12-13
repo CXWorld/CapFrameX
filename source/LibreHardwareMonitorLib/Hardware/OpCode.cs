@@ -237,14 +237,14 @@ internal static class OpCode
 
             Type mmapProts = assembly.GetType("Mono.Unix.Native.MmapProts");
             object mmapProtsParam = Enum.ToObject(mmapProts,
-                                                  (int)mmapProts.GetField("PROT_READ").GetValue(null) |
-                                                  (int)mmapProts.GetField("PROT_WRITE").GetValue(null) |
-                                                  (int)mmapProts.GetField("PROT_EXEC").GetValue(null));
+                (int)mmapProts.GetField("PROT_READ").GetValue(null) |
+                (int)mmapProts.GetField("PROT_WRITE").GetValue(null) |
+                (int)mmapProts.GetField("PROT_EXEC").GetValue(null));
 
             Type mmapFlags = assembly.GetType("Mono.Unix.Native.MmapFlags");
             object mmapFlagsParam = Enum.ToObject(mmapFlags,
-                                                  (int)mmapFlags.GetField("MAP_ANONYMOUS").GetValue(null) |
-                                                  (int)mmapFlags.GetField("MAP_PRIVATE").GetValue(null));
+                (int)mmapFlags.GetField("MAP_ANONYMOUS").GetValue(null) |
+                (int)mmapFlags.GetField("MAP_PRIVATE").GetValue(null));
 
             if (mmap != null)
                 _codeBuffer = (IntPtr)mmap.Invoke(null, [IntPtr.Zero, _size, mmapProtsParam, mmapFlagsParam, -1, 0]);
@@ -252,9 +252,9 @@ internal static class OpCode
         else
         {
             _codeBuffer = (IntPtr)PInvoke.VirtualAlloc(null,
-                                                       (UIntPtr)_size,
-                                                       VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE,
-                                                       PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
+                (UIntPtr)_size,
+                VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE,
+                PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
         }
 
         Marshal.Copy(rdTscCode, 0, _codeBuffer, rdTscCode.Length);

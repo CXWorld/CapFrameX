@@ -3,6 +3,7 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
+using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,8 +14,6 @@ using Windows.Win32.Devices.DeviceAndDriverInstallation;
 using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.System.Power;
-using LibreHardwareMonitor.Interop;
-using Microsoft.Win32.SafeHandles;
 
 namespace LibreHardwareMonitor.Hardware.Battery;
 
@@ -29,9 +28,9 @@ internal class BatteryGroup : IGroup
             return;
 
         SetupDiDestroyDeviceInfoListSafeHandle hdev = PInvoke.SetupDiGetClassDevs(PInvoke.GUID_DEVICE_BATTERY,
-                                                                                  null,
-                                                                                  HWND.Null,
-                                                                                  SETUP_DI_GET_CLASS_DEVS_FLAGS.DIGCF_PRESENT | SETUP_DI_GET_CLASS_DEVS_FLAGS.DIGCF_DEVICEINTERFACE);
+            null,
+            HWND.Null,
+            SETUP_DI_GET_CLASS_DEVS_FLAGS.DIGCF_PRESENT | SETUP_DI_GET_CLASS_DEVS_FLAGS.DIGCF_DEVICEINTERFACE);
 
         if (!hdev.IsInvalid)
         {
@@ -41,10 +40,10 @@ internal class BatteryGroup : IGroup
                 data.cbSize = (uint)sizeof(SP_DEVICE_INTERFACE_DATA);
 
                 if (!PInvoke.SetupDiEnumDeviceInterfaces(hdev,
-                                                         null,
-                                                         PInvoke.GUID_DEVICE_BATTERY,
-                                                         i,
-                                                         ref data))
+                    null,
+                    PInvoke.GUID_DEVICE_BATTERY,
+                    i,
+                    ref data))
                 {
                     if (Marshal.GetLastWin32Error() == (int)WIN32_ERROR.ERROR_NO_MORE_ITEMS)
                         break;
@@ -54,11 +53,11 @@ internal class BatteryGroup : IGroup
                     uint cbRequired = 0;
 
                     PInvoke.SetupDiGetDeviceInterfaceDetail(hdev,
-                                                            data,
-                                                            null,
-                                                            0,
-                                                            &cbRequired,
-                                                            null);
+                        data,
+                        null,
+                        0,
+                        &cbRequired,
+                        null);
 
                     if (Marshal.GetLastWin32Error() == (int)WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER)
                     {
@@ -67,11 +66,11 @@ internal class BatteryGroup : IGroup
                         pData->cbSize = (uint)sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA_W);
 
                         if (PInvoke.SetupDiGetDeviceInterfaceDetail(hdev,
-                                                                    data,
-                                                                    pData,
-                                                                    cbRequired,
-                                                                    &cbRequired,
-                                                                    null))
+                                data,
+                                pData,
+                                cbRequired,
+                                &cbRequired,
+                                null))
                         {
                             string devicePath = pData->DevicePath.ToString();
 
@@ -83,25 +82,25 @@ internal class BatteryGroup : IGroup
                                 uint dwWait = 0;
                                 uint bytesReturned = 0;
                                 if (PInvoke.DeviceIoControl(battery,
-                                                            PInvoke.IOCTL_BATTERY_QUERY_TAG,
-                                                            &dwWait,
-                                                            sizeof(uint),
-                                                            &bqi.BatteryTag,
-                                                            sizeof(uint),
-                                                            &bytesReturned,
-                                                            null))
+                                        PInvoke.IOCTL_BATTERY_QUERY_TAG,
+                                        &dwWait,
+                                        sizeof(uint),
+                                        &bqi.BatteryTag,
+                                        sizeof(uint),
+                                        &bytesReturned,
+                                        null))
                                 {
                                     BATTERY_INFORMATION bi = default;
                                     bqi.InformationLevel = BATTERY_QUERY_INFORMATION_LEVEL.BatteryInformation;
 
                                     if (PInvoke.DeviceIoControl(battery,
-                                                                PInvoke.IOCTL_BATTERY_QUERY_INFORMATION,
-                                                                &bqi,
-                                                                (uint)sizeof(BATTERY_QUERY_INFORMATION),
-                                                                &bi,
-                                                                (uint)sizeof(BATTERY_INFORMATION),
-                                                                &bytesReturned,
-                                                                null))
+                                            PInvoke.IOCTL_BATTERY_QUERY_INFORMATION,
+                                            &bqi,
+                                            (uint)sizeof(BATTERY_QUERY_INFORMATION),
+                                            &bi,
+                                            (uint)sizeof(BATTERY_INFORMATION),
+                                            &bytesReturned,
+                                            null))
                                     {
                                         // Only batteries count.
 
@@ -143,13 +142,13 @@ internal class BatteryGroup : IGroup
             uint returnBytes = 0;
 
             if (PInvoke.DeviceIoControl(battery,
-                                        PInvoke.IOCTL_BATTERY_QUERY_INFORMATION,
-                                        &bqi,
-                                        (uint)sizeof(BATTERY_QUERY_INFORMATION),
-                                        pSpan,
-                                        200,
-                                        &returnBytes,
-                                        null))
+                    PInvoke.IOCTL_BATTERY_QUERY_INFORMATION,
+                    &bqi,
+                    (uint)sizeof(BATTERY_QUERY_INFORMATION),
+                    pSpan,
+                    200,
+                    &returnBytes,
+                    null))
             {
                 value = span.ToString();
                 result = true;

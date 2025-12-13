@@ -290,7 +290,6 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.NetBurst:
                 if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out uint _, out uint edx))
                     _timeStampCounterMultiplier = ((edx >> 8) & 0x1f) + (0.5 * ((edx >> 14) & 1));
-
                 break;
             case MicroArchitecture.Airmont:
             case MicroArchitecture.AlderLake:
