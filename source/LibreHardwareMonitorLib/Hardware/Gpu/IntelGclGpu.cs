@@ -65,13 +65,13 @@ internal sealed class IntelGclGpu : GenericGpu
         _handle = handle;
         IsValid = false;
 
-        // See _ctl_adapter_properties_flag_t in igcl_api header for details
-        // CTL_ADAPTER_PROPERTIES_FLAG_INTEGRATED = CTL_BIT(0)
-        IsDiscreteGpu = _properties.graphics_adapter_properties != 1;
-
         // Initialize device properties
         if (!InitializeDevice())
             return;
+
+        // See _ctl_adapter_properties_flag_t in igcl_api header for details
+        // CTL_ADAPTER_PROPERTIES_FLAG_INTEGRATED = CTL_BIT(0)
+        IsDiscreteGpu = _properties.graphics_adapter_properties != 1;
 
         // Initialize temperature sensors
         _temperatureGpuCore = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings);
