@@ -559,6 +559,7 @@ namespace CapFrameX.ViewModel
             IsLoggedIn = _loginManager.State.Token != null;
 
             // Set GraphicsAdapters on dispatcher async
+            // Wait for sensor service initialization to complete
             System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
             {
                 await sensorService.SensorServiceCompletionSource.Task;
@@ -574,7 +575,7 @@ namespace CapFrameX.ViewModel
 
             SetAggregatorEvents();
             SubscribeToAggregatorEvents();
-            SetHardwareInfoDefaultsFromDatabase();
+            SetHardwareInfoDefaultsFromConfig();
 
             OnAutostartChanged(true);
 
@@ -594,7 +595,7 @@ namespace CapFrameX.ViewModel
             await _loginManager.Logout();
         }
 
-        private void SetHardwareInfoDefaultsFromDatabase()
+        private void SetHardwareInfoDefaultsFromConfig()
         {
             if (CustomCpuDescription == "CPU")
                 CustomCpuDescription = _systemInfo.GetProcessorName();
@@ -702,7 +703,7 @@ namespace CapFrameX.ViewModel
             HasCustomInfo = SelectedHardwareInfoSource == EHardwareInfoSource.Custom;
 
             // manage defaults
-            SetHardwareInfoDefaultsFromDatabase();
+            SetHardwareInfoDefaultsFromConfig();
         }
 
         private void OnViewSelectionChanged()
@@ -858,7 +859,6 @@ namespace CapFrameX.ViewModel
                 return true;
             }
             catch { return false; }
-            ;
         }
     }
 }
