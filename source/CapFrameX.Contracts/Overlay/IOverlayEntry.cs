@@ -25,7 +25,9 @@ namespace CapFrameX.Contracts.Overlay
         /// Complete value format including color, text size, decimal points and alignment
         /// </summary>
         string ValueFormat { get; set; }
-
+        /// <summary>
+        /// Formatted value including color, text size, decimal points and alignment
+        /// </summary>
         string FormattedValue { get; }
         /// <summary>
         /// Determines if the entry is shown on the overlay
@@ -35,7 +37,9 @@ namespace CapFrameX.Contracts.Overlay
         /// Determines if the checkbox to show this entry on the overlay is enabled in the overlay items list
         /// </summary>
         bool ShowOnOverlayIsEnabled { get; set; }
-
+        /// <summary>
+        /// Group name of the entry
+        /// </summary>
         string GroupName { get; set; }
         /// <summary>
         /// Determines if a graph is shown for this entry

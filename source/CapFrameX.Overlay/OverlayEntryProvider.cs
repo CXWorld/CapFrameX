@@ -423,7 +423,7 @@ namespace CapFrameX.Overlay
                             sensorOverlayEntryClones[i].UpperLimitColor = configEntry.UpperLimitColor;
                             sensorOverlayEntryClones[i].LowerLimitColor = configEntry.LowerLimitColor;
 
-                            if (!sensorOverlayEntryClones[i].Description.Contains("CPU Core"))
+                            if (!sensorOverlayEntryClones[i].Description.Contains("Core"))
                                 sensorOverlayEntryClones[i].GroupName = configEntry.GroupName;
                         }
                     }

@@ -21,6 +21,7 @@ namespace CapFrameX.Sensor
 {
     public class SensorService : ISensorService
     {
+        private GpuSensorCache _gpuSensorCache;
         private readonly object _lockComputer = new object();
         private readonly ISensorConfig _sensorConfig;
         private readonly IRTSSService _rTSSService;
@@ -308,67 +309,149 @@ namespace CapFrameX.Sensor
             return (DateTime.UtcNow, dict.ToDictionary(x => x.Key, x => x.Value));
         }
 
+
         private IEnumerable<ISensor> GetSensors()
         {
-            IEnumerable<ISensor> sensors = null;
+            List<ISensor> sensors;
+            GpuSensorCache gpuCache;
+
             lock (_lockComputer)
             {
-                sensors = _computer.Hardware.SelectMany(hardware =>
-                   {
-                       hardware.Update();
-                       return hardware.Sensors.Concat(hardware.SubHardware.SelectMany(subHardware =>
-                       {
-                           subHardware.Update();
-                           return subHardware.Sensors;
-                       }));
-                   });
+                // Update + collect sensors in a single pass; materialize under lock.
+                sensors = new List<ISensor>(capacity: 1024);
+
+                foreach (var hw in _computer.Hardware)
+                {
+                    hw.Update();
+                    CollectSensors(hw, sensors);
+                }
+
+                // Cache GPU count + GPU sensors once
+                gpuCache = GetOrBuildGpuCacheLocked();
             }
 
             var selectedAdapter = _appConfiguration.GraphicsAdapter;
 
-            if (selectedAdapter != "Auto")
+            // If a specific adapter was selected, filter GPU sensors to that adapter name.
+            if (!string.Equals(selectedAdapter, "Auto", StringComparison.Ordinal))
             {
-                // Filter GPU sensors by adapter name
-                sensors = sensors.Where(sensor =>
+                if (gpuCache.SensorIdsByAdapterName.TryGetValue(selectedAdapter, out var allowedGpuIds))
                 {
-                    if (sensor.Hardware.HardwareType == HardwareType.GpuAmd
-                        || sensor.Hardware.HardwareType == HardwareType.GpuNvidia
-                        || sensor.Hardware.HardwareType == HardwareType.GpuIntel)
+                    return sensors.Where(s =>
                     {
-                        return sensor.Hardware.Name == selectedAdapter;
-                    }
+                        if (!IsGpu(s.Hardware.HardwareType))
+                            return true;
 
-                    return true;
-                });
-            }
-            else
-            {
-                var gpuCount = _computer.Hardware
-                    .Count(hdw => hdw.HardwareType == HardwareType.GpuAmd
-                        || hdw.HardwareType == HardwareType.GpuNvidia
-                        || hdw.HardwareType == HardwareType.GpuIntel);
+                        // Only pay Identifier.ToString() for GPU sensors
+                        return allowedGpuIds.Contains(s.Identifier.ToString());
+                    });
+                }
 
-                // We need at least one adapter
-                if (gpuCount <= 1) return sensors;
-
-                // Auto behavior: filter iGPUs
-                sensors = sensors.Where(sensor =>
-                {
-                    if (sensor.Hardware.HardwareType == HardwareType.GpuAmd
-                        || sensor.Hardware.HardwareType == HardwareType.GpuNvidia
-                        || sensor.Hardware.HardwareType == HardwareType.GpuIntel)
-                    {
-                        var isDiscreteGpu = (sensor.Hardware as GenericGpu)?.IsDiscreteGpu ?? true;
-                        // Identify AMD iGPU by name until lib is ported to newer ADLX
-                        return !sensor.Hardware.Name.Contains("AMD Radeon(TM) Graphics") && isDiscreteGpu;
-                    }
-
-                    return true;
-                });
+                // Selected adapter not found: keep non-GPU sensors, drop GPU sensors.
+                return sensors.Where(s => !IsGpu(s.Hardware.HardwareType));
             }
 
-            return sensors;
+            // Auto behavior: if only one GPU, do nothing.
+            if (gpuCache.GpuCount <= 1)
+                return sensors;
+
+            // Auto behavior: filter iGPUs for GPU sensors only
+            return sensors.Where(s =>
+            {
+                if (!IsGpu(s.Hardware.HardwareType))
+                    return true;
+
+                // Use cached per-sensor GPU info when available (avoids repeated casts / name checks)
+                var id = s.Identifier.ToString();
+                if (gpuCache.SensorsById.TryGetValue(id, out var info))
+                {
+                    // Identify AMD iGPU by name until lib is ported to newer ADLX
+                    if (info.AdapterName.Contains("AMD Radeon(TM) Graphics"))
+                        return false;
+
+                    return info.IsDiscreteGpu;
+                }
+
+                // Fallback (should be rare)
+                var isDiscreteGpu = (s.Hardware as GenericGpu)?.IsDiscreteGpu ?? true;
+                return !s.Hardware.Name.Contains("AMD Radeon(TM) Graphics") && isDiscreteGpu;
+            });
         }
+
+        private GpuSensorCache GetOrBuildGpuCacheLocked()
+        {
+            // Callers must hold _lockComputer
+            if (_gpuSensorCache != null)
+                return _gpuSensorCache;
+
+            var sensorsById = new Dictionary<string, GpuSensorInfo>(StringComparer.Ordinal);
+            var idsByAdapterName = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+
+            int gpuCount = 0;
+            foreach (var hw in _computer.Hardware)
+            {
+                if (!IsGpu(hw.HardwareType))
+                    continue;
+
+                gpuCount++;
+                AddGpuSensorsToCache(hw, sensorsById, idsByAdapterName);
+            }
+
+            _gpuSensorCache = new GpuSensorCache(gpuCount, sensorsById, idsByAdapterName);
+            return _gpuSensorCache;
+        }
+
+        private static void AddGpuSensorsToCache(
+            IHardware gpuHardware,
+            Dictionary<string, GpuSensorInfo> sensorsById,
+            Dictionary<string, HashSet<string>> idsByAdapterName)
+        {
+            var adapterName = gpuHardware.Name;
+            var isDiscrete = (gpuHardware as GenericGpu)?.IsDiscreteGpu ?? true;
+
+            void addSensor(ISensor s)
+            {
+                // Key requirement: Identifier.ToString()
+                var id = s.Identifier.ToString();
+
+                // Avoid exceptions on duplicates; first wins is fine for caching
+                if (!sensorsById.ContainsKey(id))
+                    sensorsById[id] = new GpuSensorInfo(s, adapterName, isDiscrete);
+
+                if (!idsByAdapterName.TryGetValue(adapterName, out var set))
+                {
+                    set = new HashSet<string>(StringComparer.Ordinal);
+                    idsByAdapterName[adapterName] = set;
+                }
+                set.Add(id);
+            }
+
+            foreach (var s in gpuHardware.Sensors)
+                addSensor(s);
+
+            foreach (var sub in gpuHardware.SubHardware)
+            {
+                // sub.Update() is done by the caller during the main update pass,
+                // but harmless if called again; avoid repeating it here.
+                foreach (var s in sub.Sensors)
+                    addSensor(s);
+            }
+        }
+
+        private static void CollectSensors(IHardware hardware, List<ISensor> target)
+        {
+            // hardware.Sensors is typically an array, so AddRange is efficient
+            target.AddRange(hardware.Sensors);
+
+            foreach (var sub in hardware.SubHardware)
+            {
+                sub.Update();
+                target.AddRange(sub.Sensors);
+            }
+        }
+
+        private static bool IsGpu(HardwareType type) =>
+            type is HardwareType.GpuAmd || type is HardwareType.GpuNvidia || type is HardwareType.GpuIntel;
 
         public void ShutdownSensorService()
         {

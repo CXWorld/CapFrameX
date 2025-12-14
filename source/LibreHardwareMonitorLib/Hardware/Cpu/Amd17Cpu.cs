@@ -331,10 +331,10 @@ internal sealed class Amd17Cpu : AmdCpu
                             if (_ccdTemperatures[i] == null)
                             {
                                 _cpu.ActivateSensor(_ccdTemperatures[i] = new Sensor($"CCD{i + 1} (Tdie)",
-                                                                                     _cpu._sensorTypeIndex[SensorType.Temperature]++,
-                                                                                     SensorType.Temperature,
-                                                                                     _cpu,
-                                                                                     _cpu._settings));
+                                    _cpu._sensorTypeIndex[SensorType.Temperature]++,
+                                    SensorType.Temperature,
+                                    _cpu,
+                                    _cpu._settings));
                             }
 
                             _ccdTemperatures[i].Value = ccdTemp;
@@ -349,19 +349,19 @@ internal sealed class Amd17Cpu : AmdCpu
                         if (_ccdsMaxTemperature == null)
                         {
                             _cpu.ActivateSensor(_ccdsMaxTemperature = new Sensor("CCDs Max (Tdie)",
-                                                                                 _cpu._sensorTypeIndex[SensorType.Temperature]++,
-                                                                                 SensorType.Temperature,
-                                                                                 _cpu,
-                                                                                 _cpu._settings));
+                                _cpu._sensorTypeIndex[SensorType.Temperature]++,
+                                SensorType.Temperature,
+                                _cpu,
+                                _cpu._settings));
                         }
 
                         if (_ccdsAverageTemperature == null)
                         {
                             _cpu.ActivateSensor(_ccdsAverageTemperature = new Sensor("CCDs Average (Tdie)",
-                                                                                     _cpu._sensorTypeIndex[SensorType.Temperature]++,
-                                                                                     SensorType.Temperature,
-                                                                                     _cpu,
-                                                                                     _cpu._settings));
+                                _cpu._sensorTypeIndex[SensorType.Temperature]++,
+                                SensorType.Temperature,
+                                _cpu,
+                                _cpu._settings));
                         }
 
                         _ccdsMaxTemperature.Value = activeCcds.Max(x => x.Value);
@@ -541,8 +541,7 @@ internal sealed class Amd17Cpu : AmdCpu
                 core.AppedThread(thread);
         }
 
-        public static void UpdateSensors()
-        { }
+        public static void UpdateSensors() { }
     }
 
     private class CpuThread
@@ -642,7 +641,7 @@ internal sealed class Amd17Cpu : AmdCpu
         private readonly Sensor _clock;
         private readonly Sensor _clockEffective;
         private readonly Amd17Cpu _cpu;
-        private readonly Sensor _multiplier;
+        // private readonly Sensor _multiplier;
         private readonly Sensor _power;
         private readonly Sensor _vcore;
         private ISensor _busSpeed;
@@ -658,13 +657,13 @@ internal sealed class Amd17Cpu : AmdCpu
             CoreId = id;
             _clock = new Sensor("Core #" + CoreId, _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu._settings);
             _clockEffective = new Sensor("Core #" + CoreId + " (Effective)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu._settings);
-            _multiplier = new Sensor("Core #" + CoreId, cpu._sensorTypeIndex[SensorType.Factor]++, SensorType.Factor, cpu, cpu._settings);
+            // _multiplier = new Sensor("Core #" + CoreId, cpu._sensorTypeIndex[SensorType.Factor]++, SensorType.Factor, cpu, cpu._settings);
             _power = new Sensor("Core #" + CoreId + " (SMU)", cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, cpu, cpu._settings);
             _vcore = new Sensor("Core #" + CoreId + " VID", cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, cpu, cpu._settings);
 
             cpu.ActivateSensor(_clock);
             cpu.ActivateSensor(_clockEffective);
-            cpu.ActivateSensor(_multiplier);
+            // cpu.ActivateSensor(_multiplier);
             cpu.ActivateSensor(_power);
             cpu.ActivateSensor(_vcore);
         }
@@ -758,7 +757,7 @@ internal sealed class Amd17Cpu : AmdCpu
                     coreClock = curCpuFid * 5;
 
                     // multiplier, clock speed with 100Mhz as Multiplier Reference
-                    _multiplier.Value = (float)((curCpuFid * 5) / busClock);
+                    // _multiplier.Value = (float)((curCpuFid * 5) / busClock);
                 }
                 else
                 {
@@ -773,7 +772,7 @@ internal sealed class Amd17Cpu : AmdCpu
                     coreClock = (curCpuFid / (double)curCpuDfsId * (busClock * 2));
 
                     // multiplier
-                    _multiplier.Value = (float)(curCpuFid / (double)curCpuDfsId * 2.0);
+                    // _multiplier.Value = (float)(curCpuFid / (double)curCpuDfsId * 2.0);
                 }
 
                 //clock values valid when AperfDelta < MperfDelta (ratio is < 1.0)

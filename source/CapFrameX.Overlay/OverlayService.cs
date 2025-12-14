@@ -583,11 +583,13 @@ namespace CapFrameX.Overlay
                     sensorType == SensorType.Voltage)
                     return false;
 
+                // Special Ryzen core sensors
+                if (sensor.Name.Contains("SMU") || sensor.Name.Contains("Effective"))
+                    return false;
+
                 return true;
             }
-            else if (sensor.Name.Contains("Memory")
-                && hardwareType == HardwareType.Memory
-                && sensorType == SensorType.Load)
+            else if (sensor.Name.Contains("RAM") && !sensor.Name.Contains("Virtual RAM"))
             {
                 return true;
             }
@@ -600,7 +602,7 @@ namespace CapFrameX.Overlay
             var name = sensor.Name;
             if (name.Contains("CPU Core #"))
             {
-                name = name.Replace("Core #", "");
+                name = name.Replace("Core #", "").Trim();
             }
             else if (name.Contains("CPU Max Clock"))
             {
@@ -643,12 +645,22 @@ namespace CapFrameX.Overlay
 
             if (name.Contains(" - Thread #1"))
             {
-                name = name.Replace(" - Thread #1", "");
+                name = name.Replace(" - Thread #1", "").Trim();
             }
 
             if (name.Contains(" - Thread #2"))
             {
-                name = name.Replace(" - Thread #2", "");
+                name = name.Replace(" - Thread #2", "").Trim();
+            }
+
+            if (name.Contains("Thread #1"))
+            {
+                name = name.Replace("Thread #1", "").Trim();
+            }
+
+            if (name.Contains("Thread #2"))
+            {
+                name = name.Replace("Thread #2", "").Trim();
             }
 
             if (name.Contains("Monitor Refresh Rate"))

@@ -96,7 +96,7 @@ namespace CapFrameX.Overlay
                         GroupName = "<APP>",
                         Value = 0d,
                         ValueFormat = default,
-                        ShowGraph = false,
+                        ShowGraph = true,
                         ShowGraphIsEnabled = true,
                         Color = string.Empty
                     },
@@ -111,7 +111,7 @@ namespace CapFrameX.Overlay
                         GroupName = "<APP>",
                         Value = 0d,
                         ValueFormat = default,
-                        ShowGraph = false,
+                        ShowGraph = true,
                         ShowGraphIsEnabled = true,
                         Color = string.Empty
                     },

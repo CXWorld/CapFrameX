@@ -133,10 +133,10 @@ internal class GenericCpu : Hardware
     {
         if (_coreCount == 1)
         {
-            return $"CPU Core{GetCoreLabel(i)}";
+            return $"Core {GetCoreLabel(i)}";
         }
 
-        return $"CPU Core #{i + 1}{GetCoreLabel(i)}";
+        return $"Core #{i + 1} {GetCoreLabel(i)}";
     }
 
     // https://github.com/InstLatx64/InstLatX64_Demo/commit/e149a972655aff9c41f3eac66ad51fcfac1262b5
@@ -152,9 +152,9 @@ internal class GenericCpu : Hardware
                 {
                     switch (eax >> 24)
                     {
-                        case 0x20000002: corelabel = " LP-E"; break;
-                        case 0x20: corelabel = " E"; break;
-                        case 0x40: corelabel = " P"; break;
+                        case 0x20000002: corelabel = "LP-E"; break;
+                        case 0x20: corelabel = "E"; break;
+                        case 0x40: corelabel = "P"; break;
                         default: break;
                     }
                 }
@@ -172,8 +172,8 @@ internal class GenericCpu : Hardware
                         uint coreType = (ebx >> 28) & 0xF;
                         switch (coreType)
                         {
-                            case 0: corelabel = " P"; break;
-                            case 1: corelabel = " D"; break;
+                            case 0: corelabel = "P"; break;
+                            case 1: corelabel = "D"; break;
                             default: break;
                         }
                     }
