@@ -35,7 +35,7 @@ namespace CapFrameX.Overlay
         private static readonly HashSet<string> ONLINE_METRIC_NAMES = new HashSet<string>()
         {
             "OnlineAverage", "OnlineP1","OnlineP0dot1", "OnlineP0dot2", "Online1PercentLow", "Online0dot1PercentLow", "Online0dot2PercentLow",
-            "OnlineGpuActiveTimeAverage", "OnlineGpuActiveTimeAverage", "OnlineFrameTimeAverage",
+            "OnlineGpuActiveTimeAverage", "OnlineCpuActiveTimeAverage", "OnlineFrameTimeAverage",
             "OnlineGpuActiveTimePercentageDeviation", "OnlineStutteringPercentage", "PmdGpuPowerCurrent",
             "PmdCpuPowerCurrent", "PmdSystemPowerCurrent"
         };

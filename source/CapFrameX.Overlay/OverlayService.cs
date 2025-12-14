@@ -573,14 +573,15 @@ namespace CapFrameX.Overlay
             Enum.TryParse(sensor.SensorType, out SensorType sensorType);
             Enum.TryParse(sensor.HardwareType, out HardwareType hardwareType);
 
-            if (sensor.Name.Contains("Core"))
+            if (hardwareType == HardwareType.Cpu && sensor.Name.Contains("Core"))
             {
                 if ((sensorType == SensorType.Power &&
                     sensor.Name.Contains("CPU")) ||
                     (sensorType == SensorType.Temperature &&
                     sensor.Name.Contains("CPU")) ||
                     sensor.Name.Contains("VRM") ||
-                    sensorType == SensorType.Voltage)
+                    sensorType == SensorType.Voltage ||
+                    sensorType == SensorType.Temperature)
                     return false;
 
                 // Special Ryzen core sensors
@@ -588,6 +589,20 @@ namespace CapFrameX.Overlay
                     return false;
 
                 return true;
+            }
+            else if(hardwareType == HardwareType.GpuNvidia || 
+                hardwareType == HardwareType.GpuAmd || hardwareType == HardwareType.GpuIntel)
+            {
+                if (sensorType == SensorType.Clock || sensorType == SensorType.Temperature 
+                    || (sensorType == SensorType.Load && !sensor.Name.Contains("Mem")))
+                {
+                    if(sensor.Name.Contains("D3D") || sensor.Name.Contains("Hot Spot")) 
+                        return false;
+
+                    return true;
+                }
+
+                return false;
             }
             else if (sensor.Name.Contains("RAM") && !sensor.Name.Contains("Virtual RAM"))
             {
