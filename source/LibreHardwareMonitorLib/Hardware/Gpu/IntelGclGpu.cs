@@ -74,12 +74,12 @@ internal sealed class IntelGclGpu : GenericGpu
         IsDiscreteGpu = _properties.graphics_adapter_properties != 1;
 
         // Initialize temperature sensors
-        _temperatureGpuCore = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings);
+        _temperatureGpuCore = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings) { IsPresentationDefault = true };
         _temperatureMemory = new Sensor("GPU Memory", 1, SensorType.Temperature, this, settings);
 
         // Initialize clock sensors
-        _clockCore = new Sensor("GPU Core", 0, SensorType.Clock, this, settings);
-        _clockMemory = new Sensor("GPU Memory", 1, SensorType.Clock, this, settings);
+        _clockCore = new Sensor("GPU Core", 0, SensorType.Clock, this, settings) { IsPresentationDefault = true };
+        _clockMemory = new Sensor("GPU Memory", 1, SensorType.Clock, this, settings) { IsPresentationDefault = true };
 
         // Initialize voltage sensors
         _voltageCore = new Sensor("GPU Core", 0, SensorType.Voltage, this, settings);
@@ -87,10 +87,10 @@ internal sealed class IntelGclGpu : GenericGpu
 
         // Initialize power sensors
         _gpuTdp = new Sensor("GPU TDB", 0, SensorType.Power, this, settings);
-        _gpuTbp = new Sensor("GPU TBP", 1, SensorType.Power, this, settings);
+        _gpuTbp = new Sensor("GPU TBP", 1, SensorType.Power, this, settings) { IsPresentationDefault = true };
 
         // Initialize utilization sensors
-        _loadGlobalActivity = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
+        _loadGlobalActivity = new Sensor("GPU Core", 0, SensorType.Load, this, settings) { IsPresentationDefault = true };
         _loadRenderCompute = new Sensor("GPU Render/Compute", 1, SensorType.Load, this, settings);
         _loadMedia = new Sensor("GPU Media", 2, SensorType.Load, this, settings);
 

@@ -11,5 +11,7 @@
         string HardwareType { get; set; }
 
         string SensorType { get; set; }
+
+        bool IsPresentationDefault { get; set; }
     }
 }

@@ -162,6 +162,12 @@ internal class Sensor : ISensor
         }
     }
 
+    /// <summary>
+    /// Indicates whether this sensor is the default presentation sensor for its type.
+    /// Must be set by the hardware implementation. Default is false.
+    /// </summary>
+    public bool IsPresentationDefault { get; set; } = false;
+
     public void ResetMin()
     {
         Min = null;

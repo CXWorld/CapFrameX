@@ -79,7 +79,10 @@ internal sealed class NvidiaGpu : GenericGpu
                     _ => "GPU"
                 };
 
-                _temperatures[i] = new Sensor(name, i, SensorType.Temperature, this, Array.Empty<ParameterDescription>(), settings);
+                _temperatures[i] = new Sensor(name, i, SensorType.Temperature, this, [], settings)
+                {
+                    IsPresentationDefault = name == "GPU Core"
+                };
                 ActivateSensor(_temperatures[i]);
             }
         }
@@ -135,7 +138,12 @@ internal sealed class NvidiaGpu : GenericGpu
                         };
 
                         if (name != null)
-                            clocks.Add(new Sensor(name, i, SensorType.Clock, this, settings));
+                        {
+                            clocks.Add(new Sensor(name, i, SensorType.Clock, this, settings)
+                            { 
+                                IsPresentationDefault = name == "GPU Core" || name == "GPU Memory" 
+                            });
+                        }
                     }
                 }
 
@@ -244,7 +252,9 @@ internal sealed class NvidiaGpu : GenericGpu
                     string name = GetUtilizationDomainName(utilizationDomain);
 
                     if (name != null)
-                        loads.Add(new Sensor(name, index, SensorType.Load, this, settings));
+                    {
+                        loads.Add(new Sensor(name, index, SensorType.Load, this, settings) { IsPresentationDefault = name == "GPU Core"});
+                    }
                 }
             }
 
@@ -317,7 +327,7 @@ internal sealed class NvidiaGpu : GenericGpu
 
             if (_nvmlDevice.HasValue)
             {
-                _powerUsage = new Sensor("GPU Power", 0, SensorType.Power, this, settings);
+                _powerUsage = new Sensor("GPU Power", 0, SensorType.Power, this, settings) { IsPresentationDefault = true };
 
                 _pcieThroughputRx = new Sensor("GPU PCIe Rx", 0, SensorType.Throughput, this, settings);
                 _pcieThroughputTx = new Sensor("GPU PCIe Tx", 1, SensorType.Throughput, this, settings);

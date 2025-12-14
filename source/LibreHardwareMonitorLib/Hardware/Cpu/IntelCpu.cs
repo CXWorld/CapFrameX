@@ -379,7 +379,8 @@ internal sealed class IntelCpu : GenericCpu
                     new ParameterDescription("TjMax [°C]", "TjMax temperature of the package sensor.\n" + "Temperature = TjMax - TSlope * Value.", tjMax[0]),
                     new ParameterDescription("TSlope [°C]", "Temperature slope of the digital thermal sensor.\n" + "Temperature = TjMax - TSlope * Value.", 1)
                 ],
-                settings);
+                settings)
+            { IsPresentationDefault = true };
 
             ActivateSensor(_packageTemperature);
             coreSensorId++;
@@ -403,7 +404,7 @@ internal sealed class IntelCpu : GenericCpu
         _coreClocks = new Sensor[_coreCount];
         for (int i = 0; i < _coreClocks.Length; i++)
         {
-            _coreClocks[i] = new Sensor(CoreString(i), i + 1, SensorType.Clock, this, settings);
+            _coreClocks[i] = new Sensor(CoreString(i), i + 1, SensorType.Clock, this, settings) { IsPresentationDefault = true };
             if (HasTimeStampCounter && _microArchitecture != MicroArchitecture.Unknown)
                 ActivateSensor(_coreClocks[i]);
         }
@@ -468,7 +469,8 @@ internal sealed class IntelCpu : GenericCpu
                         i,
                         SensorType.Power,
                         this,
-                        settings);
+                        settings)
+                    { IsPresentationDefault = powerSensorLabels[i] == "CPU Package" };
 
                     ActivateSensor(_powerSensors[i]);
                 }
@@ -592,7 +594,7 @@ internal sealed class IntelCpu : GenericCpu
             }
         }
 
-            if (HasTimeStampCounter && _timeStampCounterMultiplier > 0)
+        if (HasTimeStampCounter && _timeStampCounterMultiplier > 0)
         {
             double newBusClock = 0;
             for (int i = 0; i < _coreClocks.Length; i++)

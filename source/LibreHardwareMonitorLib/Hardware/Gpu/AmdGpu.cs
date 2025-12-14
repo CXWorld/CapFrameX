@@ -76,7 +76,7 @@ internal sealed class AmdGpu : GenericGpu
         BusNumber = adapterInfo.BusNumber;
         DeviceNumber = adapterInfo.DeviceNumber;
 
-        _temperatureCore = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings);
+        _temperatureCore = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings) { IsPresentationDefault = true };
         _temperatureMemory = new Sensor("GPU Memory", 1, SensorType.Temperature, this, settings);
         _temperatureVddc = new Sensor("GPU VR VDDC", 2, SensorType.Temperature, this, settings);
         _temperatureMvdd = new Sensor("GPU VR MVDD", 3, SensorType.Temperature, this, settings);
@@ -85,9 +85,9 @@ internal sealed class AmdGpu : GenericGpu
         _temperaturePlx = new Sensor("GPU PLX", 6, SensorType.Temperature, this, settings);
         _temperatureHotSpot = new Sensor("GPU Hot Spot", 7, SensorType.Temperature, this, settings);
 
-        _coreClock = new Sensor("GPU Core", 0, SensorType.Clock, this, settings);
+        _coreClock = new Sensor("GPU Core", 0, SensorType.Clock, this, settings) { IsPresentationDefault = true };
         _socClock = new Sensor("GPU SoC", 1, SensorType.Clock, this, settings);
-        _memoryClock = new Sensor("GPU Memory", 2, SensorType.Clock, this, settings);
+        _memoryClock = new Sensor("GPU Memory", 2, SensorType.Clock, this, settings) { IsPresentationDefault = true };
 
         _fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
 
@@ -95,7 +95,7 @@ internal sealed class AmdGpu : GenericGpu
         _memoryVoltage = new Sensor("GPU Memory", 1, SensorType.Voltage, this, settings);
         _socVoltage = new Sensor("GPU SoC", 2, SensorType.Voltage, this, settings);
 
-        _coreLoad = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
+        _coreLoad = new Sensor("GPU Core", 0, SensorType.Load, this, settings) { IsPresentationDefault = true };
         _memoryLoad = new Sensor("GPU Memory", 1, SensorType.Load, this, settings);
 
         _controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
@@ -103,7 +103,7 @@ internal sealed class AmdGpu : GenericGpu
         _powerCore = new Sensor("GPU Core", 0, SensorType.Power, this, settings);
         _powerPpt = new Sensor("GPU PPT", 1, SensorType.Power, this, settings);
         _powerSoC = new Sensor("GPU SoC", 2, SensorType.Power, this, settings);
-        _powerTotal = new Sensor("GPU Power", 3, SensorType.Power, this, settings);
+        _powerTotal = new Sensor("GPU Power", 3, SensorType.Power, this, settings) { IsPresentationDefault = true };
 
         _fullscreenFps = new Sensor("Fullscreen FPS", 0, SensorType.Factor, this, settings);
 

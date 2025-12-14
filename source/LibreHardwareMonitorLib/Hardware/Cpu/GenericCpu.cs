@@ -75,7 +75,7 @@ internal class GenericCpu : Hardware
                     {
                         // Some cores may have 2 threads while others have only one (e.g. P-cores vs E-cores on Intel 12th gen).
                         string sensorName = CoreString(coreIdx) + (cpuId[coreIdx].Length > 1 ? $" Thread #{threadIdx + 1}" : string.Empty);
-                        _threadLoads[thread] = new Sensor(sensorName, thread + 2, SensorType.Load, this, settings);
+                        _threadLoads[thread] = new Sensor(sensorName, thread + 2, SensorType.Load, this, settings) { IsPresentationDefault = true };
 
                         ActivateSensor(_threadLoads[thread]);
                     }
@@ -98,7 +98,7 @@ internal class GenericCpu : Hardware
             GroupAffinity previousAffinity = ThreadAffinity.Set(cpuId[0][0].Affinity);
 
             EstimateTimeStampCounterFrequency(
-                out _estimatedTimeStampCounterFrequency, 
+                out _estimatedTimeStampCounterFrequency,
                 out _estimatedTimeStampCounterFrequencyError);
 
             ThreadAffinity.Set(previousAffinity);

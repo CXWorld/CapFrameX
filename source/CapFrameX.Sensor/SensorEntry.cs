@@ -13,5 +13,7 @@ namespace CapFrameX.Sensor
         public string HardwareType { get; set; }
 
         public string SensorType { get; set; }
+        
+        public bool IsPresentationDefault { get; set; }
     }
 }

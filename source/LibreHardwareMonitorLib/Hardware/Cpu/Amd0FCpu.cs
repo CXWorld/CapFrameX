@@ -58,7 +58,7 @@ internal sealed class Amd0FCpu : AmdCpu
         _coreClocks = new Sensor[_coreCount];
         for (int i = 0; i < _coreClocks.Length; i++)
         {
-            _coreClocks[i] = new Sensor(CoreString(i), i + 1, SensorType.Clock, this, settings);
+            _coreClocks[i] = new Sensor(CoreString(i), i + 1, SensorType.Clock, this, settings) { IsPresentationDefault = true };
             if (HasTimeStampCounter)
                 ActivateSensor(_coreClocks[i]);
         }

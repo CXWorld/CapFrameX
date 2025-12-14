@@ -210,7 +210,7 @@ namespace CapFrameX.Overlay
                     new OverlayEntryWrapper("OnlineAverage")
                     {
                         OverlayEntryType = EOverlayEntryType.OnlineMetric,
-                        ShowOnOverlay = false,
+                        ShowOnOverlay = true,
                         ShowOnOverlayIsEnabled = true,
                         Description = "Real-time average FPS",
                         GroupName = "Average",
@@ -270,7 +270,7 @@ namespace CapFrameX.Overlay
                     new OverlayEntryWrapper("Online1PercentLow")
 					{
 						OverlayEntryType = EOverlayEntryType.OnlineMetric,
-						ShowOnOverlay = false,
+						ShowOnOverlay = true,
 						ShowOnOverlayIsEnabled = true,
 						Description = "Real-time 1% Low FPS",
 						GroupName = "1% Low",

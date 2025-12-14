@@ -14,6 +14,7 @@ namespace LibreHardwareMonitor.Hardware;
 /// </summary>
 public enum SensorType
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     Voltage, // V
     Current, // A
     Power, // W
@@ -35,6 +36,7 @@ public enum SensorType
     Noise, // dBA
     Conductivity, // µS/cm
     Humidity // %
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }
 
 /// <summary>
@@ -66,6 +68,9 @@ public struct SensorValue
 /// </summary>
 public interface ISensor : IElement
 {
+    /// <summary>
+    /// <inheritdoc cref="IControl"/>
+    /// </summary>
     IControl Control { get; }
 
     /// <summary>
@@ -73,6 +78,9 @@ public interface ISensor : IElement
     /// </summary>
     IHardware Hardware { get; }
 
+    /// <summary>
+    /// Gets the unique identifier of this sensor.
+    /// </summary>
     Identifier Identifier { get; }
 
     /// <summary>
@@ -80,6 +88,9 @@ public interface ISensor : IElement
     /// </summary>
     int Index { get; }
 
+    /// <summary>
+    /// Gets a value indicating whether the sensor is hidden by default in the user interface.
+    /// </summary>
     bool IsDefaultHidden { get; }
 
     /// <summary>
@@ -98,6 +109,9 @@ public interface ISensor : IElement
     /// </summary>
     string Name { get; set; }
 
+    /// <summary>
+    /// Gets a list of parameters for the given sensor.
+    /// </summary>
     IReadOnlyList<IParameter> Parameters { get; }
 
     /// <summary>
@@ -111,10 +125,18 @@ public interface ISensor : IElement
     float? Value { get; }
 
     /// <summary>
+    /// Gets a value indicating whether the sensor is used as default presentation in the user interface (overlay etc.).
+    /// </summary>
+    bool IsPresentationDefault { get; }
+
+    /// <summary>
     /// Gets a list of recorded values for the given sensor.
     /// </summary>
     IEnumerable<SensorValue> Values { get; }
 
+    /// <summary>
+    /// Gets or sets the time window for which the values are stored in <see cref="Values"/>.
+    /// </summary>
     TimeSpan ValuesTimeWindow { get; set; }
 
     /// <summary>

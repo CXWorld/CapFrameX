@@ -18,6 +18,8 @@ namespace CapFrameX.Sensor
 
         public string SensorType { get; set; }
 
+        public bool IsPresentationDefault { get; set; }
+
         public bool UseForLogging
         {
             get => _useForLogging;

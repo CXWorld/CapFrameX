@@ -440,7 +440,7 @@ namespace CapFrameX.Overlay
                 ShowGraph = false,
                 ShowGraphIsEnabled = false,
                 ShowOnOverlayIsEnabled = true,
-                ShowOnOverlay = GetIsDefaultOverlayItem(sensor),
+                ShowOnOverlay = sensor.IsPresentationDefault,
                 Value = 0,
                 ValueUnitFormat = GetValueUnitString(sensor.SensorType),
                 ValueAlignmentAndDigits = GetValueAlignmentAndDigitsString(sensor.SensorType)
@@ -566,50 +566,6 @@ namespace CapFrameX.Overlay
             {
                 return "°C";
             }
-        }
-
-        private bool GetIsDefaultOverlayItem(ISensorEntry sensor)
-        {
-            Enum.TryParse(sensor.SensorType, out SensorType sensorType);
-            Enum.TryParse(sensor.HardwareType, out HardwareType hardwareType);
-
-            if (hardwareType == HardwareType.Cpu && sensor.Name.Contains("Core"))
-            {
-                if ((sensorType == SensorType.Power &&
-                    sensor.Name.Contains("CPU")) ||
-                    (sensorType == SensorType.Temperature &&
-                    sensor.Name.Contains("CPU")) ||
-                    sensor.Name.Contains("VRM") ||
-                    sensorType == SensorType.Voltage ||
-                    sensorType == SensorType.Temperature)
-                    return false;
-
-                // Special Ryzen core sensors
-                if (sensor.Name.Contains("SMU") || sensor.Name.Contains("Effective"))
-                    return false;
-
-                return true;
-            }
-            else if(hardwareType == HardwareType.GpuNvidia || 
-                hardwareType == HardwareType.GpuAmd || hardwareType == HardwareType.GpuIntel)
-            {
-                if (sensorType == SensorType.Clock || sensorType == SensorType.Temperature 
-                    || (sensorType == SensorType.Load && !sensor.Name.Contains("Mem")))
-                {
-                    if(sensor.Name.Contains("D3D") || sensor.Name.Contains("Hot Spot")) 
-                        return false;
-
-                    return true;
-                }
-
-                return false;
-            }
-            else if (sensor.Name.Contains("RAM") && !sensor.Name.Contains("Virtual RAM"))
-            {
-                return true;
-            }
-            else
-                return false;
         }
 
         private string GetGroupName(ISensorEntry sensor)

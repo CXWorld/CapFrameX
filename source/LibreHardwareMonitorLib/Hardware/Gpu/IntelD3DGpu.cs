@@ -39,7 +39,7 @@ internal class IntelD3dGpu : GenericGpu
 
         if (deviceInfo.GpuDedicatedLimit > 0)
         {
-            _dedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
+            _dedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings) { IsPresentationDefault = true };
         }
 
         _sharedMemoryUsage = new Sensor("D3D Shared Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
@@ -57,7 +57,7 @@ internal class IntelD3dGpu : GenericGpu
             {
                 _lastEnergyTime = DateTime.UtcNow;
                 _lastEnergyConsumed = eax;
-                _powerSensor = new Sensor("GPU Power", 0, SensorType.Power, this, settings);
+                _powerSensor = new Sensor("GPU Power", 0, SensorType.Power, this, settings) { IsPresentationDefault = true };
                 ActivateSensor(_powerSensor);
             }
         }

@@ -251,7 +251,8 @@ namespace CapFrameX.Sensor
                                 Value = sensor.Value,
                                 Name = sensor.Name,
                                 SensorType = sensor.SensorType.ToString(),
-                                HardwareType = sensor.Hardware.HardwareType.ToString()
+                                HardwareType = sensor.Hardware.HardwareType.ToString(),
+                                IsPresentationDefault = sensor.IsPresentationDefault
                             });
                         }
                     }

@@ -60,7 +60,7 @@ internal sealed class Amd10Cpu : AmdCpu
         _coreClocks = new Sensor[_coreCount];
         for (int i = 0; i < _coreClocks.Length; i++)
         {
-            _coreClocks[i] = new Sensor(CoreString(i), i + 1, SensorType.Clock, this, settings);
+            _coreClocks[i] = new Sensor(CoreString(i), i + 1, SensorType.Clock, this, settings) { IsPresentationDefault = true };
             if (HasTimeStampCounter)
                 ActivateSensor(_coreClocks[i]);
         }
@@ -103,7 +103,7 @@ internal sealed class Amd10Cpu : AmdCpu
 
         if (_pawnModule.HaveCstateResidencyInfo())
         {
-            _cStatesResidency = [new Sensor("CPU Package C2", 0, SensorType.Level, this, settings), new Sensor("CPU Package C3", 1, SensorType.Level, this, settings)];
+            _cStatesResidency = [new Sensor("CPU Package C2", 0, SensorType.Level, this, settings), new Sensor("CPU Package C3", 1, SensorType.Level, this, settings) { IsPresentationDefault = true}];
             ActivateSensor(_cStatesResidency[0]);
             ActivateSensor(_cStatesResidency[1]);
         }
