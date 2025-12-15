@@ -9,6 +9,8 @@ namespace CapFrameX.Contracts.Overlay
 
         Dictionary<string, IOverlayEntry> RealtimeMetricEntryDict { get; }
 
+        IOverlayEntry GetOverlayEntry(string key);
+
         TaskCompletionSource<bool> OverlayEntryCoreCompletionSource { get; }
     }
 }

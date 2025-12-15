@@ -18,5 +18,11 @@ namespace CapFrameX.Overlay
             RealtimeMetricEntryDict = new Dictionary<string, IOverlayEntry>();
             OverlayEntryCoreCompletionSource = new TaskCompletionSource<bool>();
         }
+
+        public IOverlayEntry GetOverlayEntry(string key)
+        {
+            OverlayEntryDict.TryGetValue(key, out var entry);
+            return entry;
+        }
     }
 }
