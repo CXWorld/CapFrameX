@@ -24,5 +24,11 @@ namespace CapFrameX.Overlay
             OverlayEntryDict.TryGetValue(key, out var entry);
             return entry;
         }
+
+        public IOverlayEntry GetRealtimeMetricEntry(string key)
+        {
+            RealtimeMetricEntryDict.TryGetValue(key, out var entry);
+            return entry;
+        }
     }
 }

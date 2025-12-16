@@ -121,18 +121,18 @@ namespace CapFrameX.PresentMonInterface
         {
             try
             {
-                return (_overlayEntryCore.GetOverlayEntry("OnlineAverage")?.ShowOnOverlay ?? false)
-                    || (_overlayEntryCore.GetOverlayEntry("OnlineP1")?.ShowOnOverlay ?? false)
-                    || (_overlayEntryCore.GetOverlayEntry("OnlineP0dot1")?.ShowOnOverlay ?? false)
-                    || (_overlayEntryCore.GetOverlayEntry("OnlineP0dot2")?.ShowOnOverlay ?? false)
-                    || (_overlayEntryCore.GetOverlayEntry("Online1PercentLow")?.ShowOnOverlay ?? false)
-                    || (_overlayEntryCore.GetOverlayEntry("Online0dot1PercentLow")?.ShowOnOverlay ?? false)
-                    || (_overlayEntryCore.GetOverlayEntry("Online0dot2PercentLow")?.ShowOnOverlay ?? false)
-                    || (_overlayEntryCore.GetOverlayEntry("OnlineStutteringPercentage")?.ShowOnOverlay ?? false)
-                    || (_overlayEntryCore.GetOverlayEntry("OnlineGpuActiveTimeAverage")?.ShowOnOverlay ?? false)
-                    || (_overlayEntryCore.GetOverlayEntry("OnlineCpuActiveTimeAverage")?.ShowOnOverlay ?? false)
-                    || (_overlayEntryCore.GetOverlayEntry("OnlineFrameTimeAverage")?.ShowOnOverlay ?? false)
-                    || (_overlayEntryCore.GetOverlayEntry("OnlineGpuActiveTimePercentageDeviation")?.ShowOnOverlay ?? false);
+                return (_overlayEntryCore.GetRealtimeMetricEntry("OnlineAverage")?.ShowOnOverlay ?? false)
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineP1")?.ShowOnOverlay ?? false)
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineP0dot1")?.ShowOnOverlay ?? false)
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineP0dot2")?.ShowOnOverlay ?? false)
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("Online1PercentLow")?.ShowOnOverlay ?? false)
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("Online0dot1PercentLow")?.ShowOnOverlay ?? false)
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("Online0dot2PercentLow")?.ShowOnOverlay ?? false)
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineStutteringPercentage")?.ShowOnOverlay ?? false)
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineGpuActiveTimeAverage")?.ShowOnOverlay ?? false)
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineCpuActiveTimeAverage")?.ShowOnOverlay ?? false)
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineFrameTimeAverage")?.ShowOnOverlay ?? false)
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineGpuActiveTimePercentageDeviation")?.ShowOnOverlay ?? false);
             }
             catch { return true; }
         }
@@ -141,9 +141,9 @@ namespace CapFrameX.PresentMonInterface
         {
             try
             {
-                return (_overlayEntryCore.GetOverlayEntry("PmdGpuPowerCurrent")?.ShowOnOverlay ?? false)
-                    || (_overlayEntryCore.GetOverlayEntry("PmdCpuPowerCurrent")?.ShowOnOverlay ?? false)
-                    || (_overlayEntryCore.GetOverlayEntry("PmdSystemPowerCurrent")?.ShowOnOverlay ?? false);
+                return (_overlayEntryCore.GetRealtimeMetricEntry("PmdGpuPowerCurrent")?.ShowOnOverlay ?? false)
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("PmdCpuPowerCurrent")?.ShowOnOverlay ?? false)
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("PmdSystemPowerCurrent")?.ShowOnOverlay ?? false);
 
             }
             catch { return false; }

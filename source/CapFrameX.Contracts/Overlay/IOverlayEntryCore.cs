@@ -12,6 +12,8 @@ namespace CapFrameX.Contracts.Overlay
 
         IOverlayEntry GetOverlayEntry(string key);
 
+        IOverlayEntry GetRealtimeMetricEntry(string key);
+
         TaskCompletionSource<bool> OverlayEntryCoreCompletionSource { get; }
     }
 }
