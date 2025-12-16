@@ -46,9 +46,12 @@ internal static class NvApi
     public static NvAPI_GPU_GetUsagesDelegate NvAPI_GPU_GetUsages { get; internal set; }
     public static NvAPI_GPU_SetCoolerLevelsDelegate NvAPI_GPU_SetCoolerLevels { get; internal set; }
     public static NvAPI_GPU_GetThermalSensorsDelegate NvAPI_GPU_GetThermalSensors { get; internal set; }
+    public static NvAPI_GPU_GetCurrentVoltageDelegate NvAPI_GPU_GetCurrentVoltage { get; internal set; }
 
     private static NvAPI_GetInterfaceVersionStringDelegate _nvAPI_GetInterfaceVersionString;
+
     private static NvAPI_GPU_GetFullNameDelegate _nvAPI_GPU_GetFullName;
+
 
     public static void Initialize()
     {
@@ -90,6 +93,7 @@ internal static class NvApi
             NvAPI_GPU_ClientFanCoolersSetControl = GetDelegate<NvAPI_GPU_ClientFanCoolersSetControlDelegate>(0xA58971A5);
             NvAPI_GPU_ClientPowerTopologyGetStatus = GetDelegate<NvAPI_GPU_ClientPowerTopologyGetStatusDelegate>(0x0EDCF624E);
             NvAPI_GPU_GetThermalSensors = GetDelegate<NvAPI_GPU_GetThermalSensorsDelegate>(0x65FE3AAD);
+            NvAPI_GPU_GetCurrentVoltage = GetDelegate<NvAPI_GPU_GetCurrentVoltageDelegate>(0x465f9bcf);
 
             IsAvailable = true;
         }
@@ -157,6 +161,9 @@ internal static class NvApi
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate NvStatus NvAPI_GPU_SetCoolerLevelsDelegate(NvPhysicalGpuHandle gpuHandle, int coolerIndex, ref NvCoolerLevels NvCoolerLevels);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate NvStatus NvAPI_GPU_GetCurrentVoltageDelegate(NvPhysicalGpuHandle gpuHandle, ref NvGpuVoltageStatus voltageStatus);
 
     public enum NvFanControlMode : uint
     {
@@ -269,6 +276,21 @@ internal static class NvApi
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8, ArraySubType = UnmanagedType.U4)]
         private readonly uint[] _reserved;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
+    internal struct NvGpuVoltageStatus
+    {
+        public uint Version;
+        public uint Unknown1;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
+        public uint[] Unknown2;
+
+        public uint ValueInuV;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
+        public uint[] Unknown3;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]

@@ -4,6 +4,7 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using LibreHardwareMonitor.Hardware.Motherboard;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32;
 using System;
@@ -43,8 +44,11 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor _pcieThroughputTx;
     private readonly Sensor[] _powers;
     private readonly Sensor _powerUsage;
+    private readonly Sensor _voltage;
+    private readonly Sensor _voltageLimit;
     private readonly Sensor[] _temperatures;
     private readonly uint _thermalSensorsMask;
+    private readonly Sensor _monitorRefreshRate;
 
     public NvidiaGpu(int adapterIndex, NvApi.NvPhysicalGpuHandle handle, NvApi.NvDisplayHandle? displayHandle, ISettings settings)
         : base(GetName(handle),
@@ -140,8 +144,8 @@ internal sealed class NvidiaGpu : GenericGpu
                         if (name != null)
                         {
                             clocks.Add(new Sensor(name, i, SensorType.Clock, this, settings)
-                            { 
-                                IsPresentationDefault = name == "GPU Core" || name == "GPU Memory" 
+                            {
+                                IsPresentationDefault = name == "GPU Core" || name == "GPU Memory"
                             });
                         }
                     }
@@ -253,7 +257,7 @@ internal sealed class NvidiaGpu : GenericGpu
 
                     if (name != null)
                     {
-                        loads.Add(new Sensor(name, index, SensorType.Load, this, settings) { IsPresentationDefault = name == "GPU Core"});
+                        loads.Add(new Sensor(name, index, SensorType.Load, this, settings) { IsPresentationDefault = name == "GPU Core" });
                     }
                 }
             }
@@ -295,7 +299,7 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        // Power.
+        // Power
         NvApi.NvPowerTopology powerTopology = GetPowerTopology(out NvApi.NvStatus powerStatus);
         if (powerStatus == NvApi.NvStatus.OK && powerTopology.Count > 0)
         {
@@ -316,6 +320,15 @@ internal sealed class NvidiaGpu : GenericGpu
                     ActivateSensor(_powers[i]);
                 }
             }
+        }
+
+        // Voltage
+        NvApi.NvGpuVoltageStatus voltageStatus = GetVoltageStatus(out NvApi.NvStatus nvStatus);
+        if (nvStatus == NvApi.NvStatus.OK)
+        {
+            _voltage = new Sensor("GPU Voltage", 0, SensorType.Voltage, this, settings);
+            _voltage.Value = voltageStatus.ValueInuV / 1E06f;
+            ActivateSensor(_voltage);
         }
 
         if (NvidiaML.IsAvailable || NvidiaML.Initialize())
@@ -625,7 +638,7 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        if (_displayHandle != null)
+        if (_displayHandle is not null)
         {
             NvApi.NvMemoryInfo memoryInfo = GetMemoryInfo(out status);
             if (status == NvApi.NvStatus.OK)
@@ -645,6 +658,15 @@ internal sealed class NvidiaGpu : GenericGpu
 
                 _memoryLoad.Value = ((float)(total - free) / total) * 100;
                 ActivateSensor(_memoryLoad);
+            }
+        }
+
+        if (_voltage is not null)
+        {
+            NvApi.NvGpuVoltageStatus voltageStatus = GetVoltageStatus(out status);
+            if (status == NvApi.NvStatus.OK)
+            {
+                _voltage.Value = voltageStatus.ValueInuV / 1E06f;
             }
         }
 
@@ -1183,6 +1205,21 @@ internal sealed class NvidiaGpu : GenericGpu
 
         status = NvApi.NvAPI_GPU_ClientPowerTopologyGetStatus(_handle, ref powerTopology);
         return status == NvApi.NvStatus.OK ? powerTopology : default;
+    }
+
+    private NvApi.NvGpuVoltageStatus GetVoltageStatus(out NvApi.NvStatus voltageStatus)
+    {
+        if (NvApi.NvAPI_GPU_GetCurrentVoltage == null)
+        {
+            voltageStatus = NvApi.NvStatus.Error;
+            return default;
+        }
+        NvApi.NvGpuVoltageStatus statusInfo = new()
+        {
+            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvGpuVoltageStatus>(1)
+        };
+        voltageStatus = NvApi.NvAPI_GPU_GetCurrentVoltage(_handle, ref statusInfo);
+        return voltageStatus == NvApi.NvStatus.OK ? statusInfo : default;
     }
 
     private int GetTachReading(out NvApi.NvStatus status)
