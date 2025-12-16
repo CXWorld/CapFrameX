@@ -15,6 +15,7 @@ using Prism.Events;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -64,10 +65,6 @@ namespace CapFrameX.Overlay
         private BlockingCollection<IOverlayEntry> _overlayEntries;
         private double _ping = double.NaN;
         private int _currentProcessId;
-
-        private bool _showFramerateGraphSave;
-        private bool _showFrametimeGraphSave;
-
         public bool HasHardwareChanged { get; set; }
         public bool ShowSystemTimeSeconds { get; set; }
 
@@ -132,12 +129,14 @@ namespace CapFrameX.Overlay
             {
                 UpdateFormatting();
             }
+
             return _overlayEntries.ToArray();
         }
 
         public IOverlayEntry GetOverlayEntry(string identifier)
         {
             _identifierOverlayEntryDict.TryGetValue(identifier, out IOverlayEntry entry);
+
             return entry;
         }
 
@@ -316,7 +315,7 @@ namespace CapFrameX.Overlay
                     || entry.Identifier == "Ping" || entry.Identifier == "ThreadAffinityState" || entry.Identifier == "PCLatency")
                 {
                     if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey(entry.Identifier))
-                        _overlayEntryCore.RealtimeMetricEntryDict.Add(entry.Identifier, entry);
+                        _overlayEntryCore.RealtimeMetricEntryDict.TryAdd(entry.Identifier, entry);
                     else
                         _overlayEntryCore.RealtimeMetricEntryDict[entry.Identifier] = entry;
                 }

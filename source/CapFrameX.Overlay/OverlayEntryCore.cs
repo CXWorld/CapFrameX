@@ -1,21 +1,21 @@
 ﻿using CapFrameX.Contracts.Overlay;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Overlay
 {
     public class OverlayEntryCore : IOverlayEntryCore
     {
-        public Dictionary<string, IOverlayEntry> OverlayEntryDict { get; }
+        public ConcurrentDictionary<string, IOverlayEntry> OverlayEntryDict { get; }
 
         public TaskCompletionSource<bool> OverlayEntryCoreCompletionSource { get; }
 
-        public Dictionary<string, IOverlayEntry> RealtimeMetricEntryDict { get; }
+        public ConcurrentDictionary<string, IOverlayEntry> RealtimeMetricEntryDict { get; }
 
         public OverlayEntryCore()
         {
-            OverlayEntryDict = new Dictionary<string, IOverlayEntry>();
-            RealtimeMetricEntryDict = new Dictionary<string, IOverlayEntry>();
+            OverlayEntryDict = new ConcurrentDictionary<string, IOverlayEntry>();
+            RealtimeMetricEntryDict = new ConcurrentDictionary<string, IOverlayEntry>();
             OverlayEntryCoreCompletionSource = new TaskCompletionSource<bool>();
         }
 

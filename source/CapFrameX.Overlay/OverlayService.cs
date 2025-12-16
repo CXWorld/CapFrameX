@@ -47,9 +47,9 @@ namespace CapFrameX.Overlay
         private int _numberOfRuns;
         private IList<IMetricAnalysis> _metricAnalysis = new List<IMetricAnalysis>();
         private ISubject<IOverlayEntry[]> _onDictionaryUpdated = new Subject<IOverlayEntry[]>();
-		private bool _isServiceAlive = true;
+        private bool _isServiceAlive = true;
 
-		public bool IsOverlayActive => _appConfiguration.IsOverlayActive;
+        public bool IsOverlayActive => _appConfiguration.IsOverlayActive;
 
         public ISubject<bool> IsOverlayActiveStream { get; }
 
@@ -104,7 +104,7 @@ namespace CapFrameX.Overlay
                 .Subscribe(hideOSD =>
                 {
                     overlayOnAPIOnly = hideOSD;
-                    if (hideOSD) 
+                    if (hideOSD)
                         _rTSSService.ReleaseOSD();
                 });
 
@@ -135,10 +135,10 @@ namespace CapFrameX.Overlay
                            CurrentOverlayEntries = entries;
                            OSDUpdateNotifier(entries);
 
-                           if(!overlayOnAPIOnly)
-                           { 
-                                _rTSSService.SetOverlayEntries(entries);
-                                await _rTSSService.CheckRTSSRunningAndRefresh();
+                           if (!overlayOnAPIOnly)
+                           {
+                               _rTSSService.SetOverlayEntries(entries);
+                               await _rTSSService.CheckRTSSRunningAndRefresh();
                            }
                        });
                });
@@ -155,8 +155,8 @@ namespace CapFrameX.Overlay
                            if (sensorData.Item2.Any())
                                UpdateOverlayEntries(sensorData.Item2);
 
-                           if (_overlayEntryCore.OverlayEntryDict.Values.Any())
-                               _onDictionaryUpdated.OnNext(_overlayEntryCore.OverlayEntryDict.Values.ToArray());
+                               if (_overlayEntryCore.OverlayEntryDict.Values.Any())
+                                   _onDictionaryUpdated.OnNext(_overlayEntryCore.OverlayEntryDict.Values.ToArray());
                        });
                 });
 
@@ -388,6 +388,7 @@ namespace CapFrameX.Overlay
             {
                 var sensorIdentifier = sensorPair.Key.Identifier.ToString();
                 var sensorValue = sensorPair.Value;
+
                 lock (_dictLock)
                 {
                     if (_overlayEntryCore.OverlayEntryDict.TryGetValue(sensorIdentifier, out IOverlayEntry entry))
@@ -399,7 +400,7 @@ namespace CapFrameX.Overlay
         }
 
         public void ShutdownOverlayService()
-		{
+        {
             _isServiceAlive = false;
             _overlayActiveStreamDisposable?.Dispose();
         }
@@ -418,7 +419,7 @@ namespace CapFrameX.Overlay
                         var dictEntry = CreateOverlayEntry(sensor);
                         var id = sensor.Identifier.ToString();
                         if (!_overlayEntryCore.OverlayEntryDict.ContainsKey(id))
-                            _overlayEntryCore.OverlayEntryDict.Add(id, dictEntry);
+                            _overlayEntryCore.OverlayEntryDict.TryAdd(id, dictEntry);
                     }
                 }
 
@@ -727,15 +728,15 @@ namespace CapFrameX.Overlay
                 case HardwareType.GpuIntel:
                     type = EOverlayEntryType.GPU;
                     break;
-                //case HardwareType.TBalancer:
-                //    type = EOverlayEntryType.Undefined;
-                //    break;
-                //case HardwareType.Heatmaster:
-                //    type = EOverlayEntryType.Undefined;
-                //    break;
-                //case HardwareType.HDD:
-                //    type = EOverlayEntryType.HDD;
-                //    break;
+                    //case HardwareType.TBalancer:
+                    //    type = EOverlayEntryType.Undefined;
+                    //    break;
+                    //case HardwareType.Heatmaster:
+                    //    type = EOverlayEntryType.Undefined;
+                    //    break;
+                    //case HardwareType.HDD:
+                    //    type = EOverlayEntryType.HDD;
+                    //    break;
             }
 
             return type;
@@ -769,7 +770,7 @@ namespace CapFrameX.Overlay
                 concatedDisplaytimes.AddRange(displaytimeSet);
             }
 
-            return _statisticProvider.GetMetricAnalysis(concatedFrametimes, concatedDisplaytimes, 
+            return _statisticProvider.GetMetricAnalysis(concatedFrametimes, concatedDisplaytimes,
                 _appConfiguration.UseDisplayChangeMetrics, SecondMetric, ThirdMetric).ResultString;
         }
     }

@@ -71,11 +71,11 @@ internal sealed class DimmMemory : Hardware
 
     private void CreateSensorsDDR4(DDR4Accessor accessor, bool hasThermalSensor, bool addTimings = false)
     {
-        if (hasThermalSensor)
-        {
-            //Temperature Resolution (fixed value)
-            AddSensor("Temperature Sensor Resolution", 0, false, SensorType.Temperature, accessor.TemperatureResolution);
-        }
+        //if (hasThermalSensor)
+        //{
+        //    //Temperature Resolution (fixed value)
+        //    AddSensor("Temperature Sensor Resolution", 0, false, SensorType.Temperature, accessor.TemperatureResolution);
+        //}
 
         if (addTimings)
         {
@@ -105,11 +105,11 @@ internal sealed class DimmMemory : Hardware
 
     private void CreateSensorsDDR5(DDR5Accessor accessor, bool hasThermalSensor, bool addTimings = false)
     {
-        if (hasThermalSensor)
-        {
-            //Temperature Resolution (fixed value)
-            AddSensor("Temperature Sensor Resolution", 0, false, SensorType.Temperature, accessor.TemperatureResolution);
-        }
+        //if (hasThermalSensor)
+        //{
+        //    //Temperature Resolution (fixed value)
+        //    AddSensor("Temperature Sensor Resolution", 0, false, SensorType.Temperature, accessor.TemperatureResolution);
+        //}
 
         if (addTimings)
         {
