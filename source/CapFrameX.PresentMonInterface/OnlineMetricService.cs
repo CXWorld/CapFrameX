@@ -134,7 +134,7 @@ namespace CapFrameX.PresentMonInterface
                     || (_overlayEntryCore.GetOverlayEntry("OnlineFrameTimeAverage")?.ShowOnOverlay ?? false)
                     || (_overlayEntryCore.GetOverlayEntry("OnlineGpuActiveTimePercentageDeviation")?.ShowOnOverlay ?? false);
             }
-            catch { return false; }
+            catch { return true; }
         }
 
         private bool EvaluatePmdMetrics()
