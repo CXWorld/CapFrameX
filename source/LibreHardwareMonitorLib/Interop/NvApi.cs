@@ -26,6 +26,9 @@ internal static class NvApi
     private const string DllName = "nvapi.dll";
     private const string DllName64 = "nvapi64.dll";
 
+    private static NvAPI_GetInterfaceVersionStringDelegate _nvAPI_GetInterfaceVersionString;
+    private static NvAPI_GPU_GetFullNameDelegate _nvAPI_GPU_GetFullName;
+
     public static NvAPI_EnumNvidiaDisplayHandleDelegate NvAPI_EnumNvidiaDisplayHandle { get; internal set; }
     public static NvAPI_EnumPhysicalGPUsDelegate NvAPI_EnumPhysicalGPUs { get; internal set; }
     public static NvAPI_GetDisplayDriverVersionDelegate NvAPI_GetDisplayDriverVersion { get; internal set; }
@@ -47,11 +50,6 @@ internal static class NvApi
     public static NvAPI_GPU_SetCoolerLevelsDelegate NvAPI_GPU_SetCoolerLevels { get; internal set; }
     public static NvAPI_GPU_GetThermalSensorsDelegate NvAPI_GPU_GetThermalSensors { get; internal set; }
     public static NvAPI_GPU_GetCurrentVoltageDelegate NvAPI_GPU_GetCurrentVoltage { get; internal set; }
-
-    private static NvAPI_GetInterfaceVersionStringDelegate _nvAPI_GetInterfaceVersionString;
-
-    private static NvAPI_GPU_GetFullNameDelegate _nvAPI_GPU_GetFullName;
-
 
     public static void Initialize()
     {
