@@ -75,6 +75,7 @@
   <ItemGroup>
     <Compile Include="IProcessService.cs" />
     <Compile Include="ISensorConfig.cs" />
+    <Compile Include="ProcessServiceProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

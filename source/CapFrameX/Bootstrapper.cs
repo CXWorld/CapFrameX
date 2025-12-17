@@ -59,6 +59,9 @@ namespace CapFrameX
             var config = Container.Resolve<IAppConfiguration>();
             ConfigurationProvider.AppConfiguration = config;
 
+            // get process service
+            ProcessServiceProvider.ProcessService = Container.Resolve<IRTSSService>();
+
             // get Shell to set the hardware acceleration
             var shell = Container.Resolve<IShell>();
             shell.IsGpuAccelerationActive = config.IsGpuAccelerationActive;

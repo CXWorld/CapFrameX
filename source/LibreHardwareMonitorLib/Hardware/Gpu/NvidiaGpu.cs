@@ -4,11 +4,11 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using LibreHardwareMonitor.Hardware.Motherboard;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -18,6 +18,9 @@ namespace LibreHardwareMonitor.Hardware.Gpu;
 
 internal sealed class NvidiaGpu : GenericGpu
 {
+    private uint _lastBlankCounter;
+
+    private readonly Stopwatch _stopwatch;
     private readonly int _adapterIndex;
     private readonly Sensor[] _clocks;
     private readonly int _clockVersion;
@@ -45,19 +48,17 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor[] _powers;
     private readonly Sensor _powerUsage;
     private readonly Sensor _voltage;
-    private readonly Sensor _voltageLimit;
     private readonly Sensor[] _temperatures;
     private readonly uint _thermalSensorsMask;
     private readonly Sensor _monitorRefreshRate;
 
     public NvidiaGpu(int adapterIndex, NvApi.NvPhysicalGpuHandle handle, NvApi.NvDisplayHandle? displayHandle, ISettings settings)
-        : base(GetName(handle),
-               new Identifier("gpu-nvidia", adapterIndex.ToString(CultureInfo.InvariantCulture)),
-               settings)
+        : base(GetName(handle), new Identifier("gpu-nvidia", adapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
     {
         _adapterIndex = adapterIndex;
         _handle = handle;
         _displayHandle = displayHandle;
+        _stopwatch = new Stopwatch();
 
         bool hasBusId = NvApi.NvAPI_GPU_GetBusId(handle, out uint busId) == NvApi.NvStatus.OK;
 
@@ -117,7 +118,7 @@ internal sealed class NvidiaGpu : GenericGpu
             _thermalSensorsMask = 0;
         }
 
-        // Clock frequencies.
+        // Clock frequencies
         for (int clockVersion = 1; clockVersion <= 3; clockVersion++)
         {
             _clockVersion = clockVersion;
@@ -329,6 +330,15 @@ internal sealed class NvidiaGpu : GenericGpu
             _voltage = new Sensor("GPU Voltage", 0, SensorType.Voltage, this, settings);
             _voltage.Value = voltageStatus.ValueInuV / 1E06f;
             ActivateSensor(_voltage);
+        }
+
+        // Monitor Refresh Rate
+        NvApi.NvStatus pCounterStatus = NvApi.NvAPI_GetVBlankCounter(displayHandle.Value, out uint pCounter);
+        if (pCounterStatus == NvApi.NvStatus.OK)
+        {
+            _monitorRefreshRate = new Sensor("Monitor Refresh Rate", 0, SensorType.Frequency, this, settings);
+            _monitorRefreshRate.Value = 0;
+            ActivateSensor(_monitorRefreshRate);
         }
 
         if (NvidiaML.IsAvailable || NvidiaML.Initialize())
@@ -667,6 +677,26 @@ internal sealed class NvidiaGpu : GenericGpu
             if (status == NvApi.NvStatus.OK)
             {
                 _voltage.Value = voltageStatus.ValueInuV / 1E06f;
+            }
+        }
+
+        if (_monitorRefreshRate is not null)
+        {
+            NvApi.NvStatus blankCounterStatus = NvApi.NvAPI_GetVBlankCounter(_displayHandle.Value, out uint blankCounter);
+            if (blankCounterStatus == NvApi.NvStatus.OK)
+            {
+                var deltaTicks = _stopwatch.ElapsedTicks;
+                _stopwatch.Restart();
+
+                lock (_displayLock)
+                {
+                    var currentRefreshRate = (float)(blankCounter - _lastBlankCounter) / deltaTicks * Stopwatch.Frequency;
+                    _refreshRateBuffer.Add(currentRefreshRate);
+                    var refreshRateFiltered = (float)Math.Ceiling(_refreshRateBuffer.RefreshRates.Average());
+                    _monitorRefreshRate.Value = refreshRateFiltered > _refreshRateCurrentWindowHandle ? _refreshRateCurrentWindowHandle : refreshRateFiltered;
+                }
+
+                _lastBlankCounter = blankCounter;
             }
         }
 

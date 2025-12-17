@@ -42,7 +42,7 @@ internal class Sensor : ISensor
         Hardware hardware,
         ParameterDescription[] parameterDescriptions,
         ISettings settings,
-        bool disableHistory = false)
+        bool disableHistory = true)
     {
         Index = index;
         IsDefaultHidden = defaultHidden;

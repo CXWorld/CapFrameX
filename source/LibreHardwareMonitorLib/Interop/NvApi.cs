@@ -50,6 +50,7 @@ internal static class NvApi
     public static NvAPI_GPU_SetCoolerLevelsDelegate NvAPI_GPU_SetCoolerLevels { get; internal set; }
     public static NvAPI_GPU_GetThermalSensorsDelegate NvAPI_GPU_GetThermalSensors { get; internal set; }
     public static NvAPI_GPU_GetCurrentVoltageDelegate NvAPI_GPU_GetCurrentVoltage { get; internal set; }
+    public static NvAPI_GetVBlankCounterDelegate NvAPI_GetVBlankCounter { get; internal set; }
 
     public static void Initialize()
     {
@@ -92,6 +93,7 @@ internal static class NvApi
             NvAPI_GPU_ClientPowerTopologyGetStatus = GetDelegate<NvAPI_GPU_ClientPowerTopologyGetStatusDelegate>(0x0EDCF624E);
             NvAPI_GPU_GetThermalSensors = GetDelegate<NvAPI_GPU_GetThermalSensorsDelegate>(0x65FE3AAD);
             NvAPI_GPU_GetCurrentVoltage = GetDelegate<NvAPI_GPU_GetCurrentVoltageDelegate>(0x465f9bcf);
+            NvAPI_GetVBlankCounter = GetDelegate<NvAPI_GetVBlankCounterDelegate>(0x67B5DB55);
 
             IsAvailable = true;
         }
@@ -162,6 +164,9 @@ internal static class NvApi
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate NvStatus NvAPI_GPU_GetCurrentVoltageDelegate(NvPhysicalGpuHandle gpuHandle, ref NvGpuVoltageStatus voltageStatus);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate NvStatus NvAPI_GetVBlankCounterDelegate(NvDisplayHandle displayHandle, out uint pCounter);
 
     public enum NvFanControlMode : uint
     {
