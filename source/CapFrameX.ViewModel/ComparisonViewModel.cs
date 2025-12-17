@@ -1380,7 +1380,7 @@ namespace CapFrameX.ViewModel
                             var samples = _appConfiguration.UseDisplayChangeMetrics
                                 ? displayChangeTimeWindow : frametimeTimeWindow;
 
-                            metricValue = GetMetricValue(displayChangeTimeWindow, metric);
+                            metricValue = GetMetricValue(samples, metric);
                         }
 
                     }
