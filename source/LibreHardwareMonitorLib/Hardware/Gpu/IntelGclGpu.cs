@@ -4,435 +4,265 @@
 // All Rights Reserved.
 
 using LibreHardwareMonitor.Interop;
-using System;
-using System.Runtime.InteropServices;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
 
 internal sealed class IntelGclGpu : GenericGpu
 {
-    // Constants
-    private const double MemoryFrequencyDivisor = 8.0; // Intel GCL returns memory frequency multiplied by 8
+    private readonly uint _index;
+    private readonly int _busNumber;
+    private readonly int _deviceNumber;
+    private readonly int _busWidth;
+    private string _driverVersion;
 
-    // Clock sensors
-    private readonly Sensor _clockCore;
-    private readonly Sensor _clockMemory;
-
-    // Fan sensors
-    private readonly Sensor[] _fans;
-
-    // Utilization sensors
-    private readonly Sensor _loadGlobalActivity;
-    private readonly Sensor _loadMedia;
-    private readonly Sensor _loadRenderCompute;
-
-    // Power sensors
-    private readonly Sensor _gpuTdp;
-    private readonly Sensor _gpuTbp;
-
-    // Temperature sensors
-    private readonly Sensor _temperatureGpuCore;
+    private readonly Sensor _temperatureCore;
     private readonly Sensor _temperatureMemory;
 
-    // Voltage sensors
+    private readonly Sensor _powerTdp;
+    private readonly Sensor _powerTbp;
+
+    private readonly Sensor _powerVram;
+
+    private readonly Sensor _clockCore;
+    private readonly Sensor _clockVram;
+
     private readonly Sensor _voltageCore;
-    private readonly Sensor _voltageMemory;
+    private readonly Sensor _voltageVram;
 
-    // Timestamps
-    private double _currentTimestamp = double.NaN;
-    private string _deviceId;
+    private readonly Sensor _usageCore;
+    private readonly Sensor _usageRenderEngine;
+    private readonly Sensor _usageMediaEngine;
 
-    // Intel GCL properties and data
-    private readonly IntelGcl.ctl_device_adapter_handle_t _handle;
+    private readonly Sensor _bandwidthReadVram;
+    private readonly Sensor _bandwidthWriteVram;
 
-    // Power calculation support
-    private double _lastEnergyReading = double.NaN;
+    // ToDo: get all fans info
+    private readonly Sensor _speedFan;
 
-    // Activity counter calculation support
-    private double _lastGlobalActivityCounter = double.NaN;
-    private double _lastMediaActivityCounter = double.NaN;
-    private double _lastRenderComputeActivityCounter = double.NaN;
-    private double _lastTimestamp = double.NaN;
-    private double _lastTotalCardEnergyReading = double.NaN;
-    private IntelGcl.ctl_device_adapter_properties_t _properties;
-
-    // Telemetry data
-    private IntelGcl.ctl_power_telemetry_t _telemetry;
-
-    public IntelGclGpu(IntelGcl.ctl_device_adapter_handle_t handle, ISettings settings)
-        : base(GetDeviceName(handle), new Identifier("gpu-intel", GetDeviceId(handle)), settings)
+    public IntelGclGpu(uint index, IgclDeviceInfo deviceInfo, ISettings settings)
+        : base(deviceInfo.DeviceName, new Identifier("gpu-intel", index.ToString()), settings)
     {
-        _handle = handle;
-        IsValid = false;
-
-        // Initialize device properties
-        if (!InitializeDevice())
-            return;
+        _index = index;
 
         // See _ctl_adapter_properties_flag_t in igcl_api header for details
         // CTL_ADAPTER_PROPERTIES_FLAG_INTEGRATED = CTL_BIT(0)
-        IsDiscreteGpu = _properties.graphics_adapter_properties != 1;
+        IsDiscreteGpu = deviceInfo.Adapter_Property_Flag != 1;
 
-        // Initialize temperature sensors
-        _temperatureGpuCore = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings) { IsPresentationDefault = true };
+        _index = index;
+        _busNumber = deviceInfo.AdapterID;
+        _deviceNumber = (int)deviceInfo.Pci_device_id;
+        _busWidth = (int)IGCL.GetBusWidth(index);
+        _driverVersion = deviceInfo.DriverVersion;
+
+        // define alle sensors
+        _temperatureCore = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings);
         _temperatureMemory = new Sensor("GPU Memory", 1, SensorType.Temperature, this, settings);
 
-        // Initialize clock sensors
-        _clockCore = new Sensor("GPU Core", 0, SensorType.Clock, this, settings) { IsPresentationDefault = true };
-        _clockMemory = new Sensor("GPU Memory", 1, SensorType.Clock, this, settings) { IsPresentationDefault = true };
+        _powerTdp = new Sensor("GPU TDP", 0, SensorType.Power, this, settings);
+        _powerTbp = new Sensor("GPU TBP", 1, SensorType.Power, this, settings);
+        _powerVram = new Sensor("GPU VRAM", 2, SensorType.Power, this, settings);
 
-        // Initialize voltage sensors
+        _clockCore = new Sensor("GPU Core", 0, SensorType.Clock, this, settings);
+        _clockVram = new Sensor("GPU Memory", 1, SensorType.Clock, this, settings);
+
         _voltageCore = new Sensor("GPU Core", 0, SensorType.Voltage, this, settings);
-        _voltageMemory = new Sensor("GPU Memory", 1, SensorType.Voltage, this, settings);
+        _voltageVram = new Sensor("GPU Memory", 1, SensorType.Voltage, this, settings);
 
-        // Initialize power sensors
-        _gpuTdp = new Sensor("GPU TDB", 0, SensorType.Power, this, settings);
-        _gpuTbp = new Sensor("GPU TBP", 1, SensorType.Power, this, settings) { IsPresentationDefault = true };
+        _usageCore = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
+        _usageRenderEngine = new Sensor("GPU Computing", 1, SensorType.Load, this, settings);
+        _usageMediaEngine = new Sensor("GPU Media Engine", 2, SensorType.Load, this, settings);
 
-        // Initialize utilization sensors
-        _loadGlobalActivity = new Sensor("GPU Core", 0, SensorType.Load, this, settings) { IsPresentationDefault = true };
-        _loadRenderCompute = new Sensor("GPU Render/Compute", 1, SensorType.Load, this, settings);
-        _loadMedia = new Sensor("GPU Media", 2, SensorType.Load, this, settings);
+        _bandwidthReadVram = new Sensor("GPU Memory Read", 4, SensorType.Throughput, this, settings);
+        _bandwidthWriteVram = new Sensor("GPU Memory Write", 5, SensorType.Throughput, this, settings);
 
-        // Initialize fan sensors based on available fans
-        int fanCount = (int)GetFanCount();
-        _fans = new Sensor[fanCount];
-
-        for (int i = 0; i < fanCount; i++)
-        {
-            string fanName = fanCount == 1 ? "GPU Fan" : $"GPU Fan {i + 1}";
-            _fans[i] = new Sensor(fanName, i, SensorType.Fan, this, settings);
-        }
+        _speedFan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
 
         Update();
     }
 
-    public override string DeviceId => _deviceId ?? GetDeviceId(_handle);
-
-    public ulong DriverVersion { get; private set; }
+    public override string DeviceId => Identifier.ToString();
 
     public override HardwareType HardwareType => HardwareType.GpuIntel;
 
-    public bool IsValid { get; private set; }
-
-    public uint RevisionId { get; private set; }
-
-    public uint VendorId { get; private set; }
-
-    private static bool TryGetDeviceProperties(IntelGcl.ctl_device_adapter_handle_t handle, out IntelGcl.ctl_device_adapter_properties_t properties)
-    {
-        properties = new IntelGcl.ctl_device_adapter_properties_t
-        {
-            Size = (uint)Marshal.SizeOf(typeof(IntelGcl.ctl_device_adapter_properties_t)),
-            Version = 2
-        };
-
-        int result = IntelGcl.ctlGetDeviceProperties(handle, ref properties);
-        return result == (int)IntelGcl.ctl_result_t.CTL_RESULT_SUCCESS &&
-               properties.device_type == IntelGcl.ctl_device_type_t.CTL_DEVICE_TYPE_GRAPHICS;
-    }
-
-    private static string GetDeviceName(IntelGcl.ctl_device_adapter_handle_t handle)
-    {
-        if (TryGetDeviceProperties(handle, out IntelGcl.ctl_device_adapter_properties_t properties))
-        {
-            return properties.name;
-        }
-
-        return "Intel GPU";
-    }
-
-    private static string GetDeviceId(IntelGcl.ctl_device_adapter_handle_t handle)
-    {
-        if (TryGetDeviceProperties(handle, out IntelGcl.ctl_device_adapter_properties_t properties))
-        {
-            return $"0x{properties.pci_device_id:X4}";
-        }
-
-        return "0x0000";
-    }
-
-    // Device initialization
-    private bool InitializeDevice()
-    {
-        if (TryGetDeviceProperties(_handle, out _properties))
-        {
-            _deviceId = $"0x{_properties.pci_device_id:X4}";
-            VendorId = _properties.pci_vendor_id;
-            RevisionId = _properties.rev_id;
-            DriverVersion = _properties.driver_version;
-            IsValid = true;
-            return true;
-        }
-
-        return false;
-    }
+    public bool IsValid { get; private set; } = true;
 
     public override string GetDriverVersion()
-        => $"{(DriverVersion >> 48) & 0xFFFF}" +
-        $".{(DriverVersion >> 32) & 0xFFFF}" +
-        $".{(DriverVersion >> 16) & 0xFFFF}" +
-        $".{DriverVersion & 0xFFFF}";
+        => !string.IsNullOrWhiteSpace(_driverVersion) ? _driverVersion.ToString() : "Unknown";
 
     public override void Update()
     {
-        if (!IsValid)
-            return;
-
+        // Get telemetry data from IGCL
+        var igclTelemetryData = new IgclTelemetryData();
         try
         {
-            // Update telemetry data from Intel GCL
-            if (!UpdateTelemetry())
-                return;
-
-            // Update power sensors
-            UpdatePowerFromEnergyCounter(_telemetry.gpuEnergyCounter, ref _lastEnergyReading, _gpuTdp);
-            UpdatePowerFromEnergyCounter(_telemetry.totalCardEnergyCounter, ref _lastTotalCardEnergyReading, _gpuTbp);
-
-            // Update temperature sensors
-            UpdateSensorFromTelemetry(_telemetry.gpuCurrentTemperature, _temperatureGpuCore);
-            UpdateSensorFromTelemetry(_telemetry.vramCurrentTemperature, _temperatureMemory);
-
-            // Update clock sensors
-            UpdateSensorFromTelemetry(_telemetry.gpuCurrentClockFrequency, _clockCore);
-            UpdateMemoryFrequency(_clockMemory);
-
-            // Update voltage sensors
-            UpdateSensorFromTelemetry(_telemetry.gpuVoltage, _voltageCore);
-            UpdateSensorFromTelemetry(_telemetry.vramVoltage, _voltageMemory);
-
-            // Update utilization sensors
-            UpdateUtilizationFromActivityCounter(_telemetry.globalActivityCounter, ref _lastGlobalActivityCounter, _loadGlobalActivity);
-            UpdateUtilizationFromActivityCounter(_telemetry.renderComputeActivityCounter, ref _lastRenderComputeActivityCounter, _loadRenderCompute);
-            UpdateUtilizationFromActivityCounter(_telemetry.mediaActivityCounter, ref _lastMediaActivityCounter, _loadMedia);
-
-            // Update fan sensors
-            UpdateFanSpeeds(_fans);
+            IGCL.GetIgclTelemetryData(_index, ref igclTelemetryData);
         }
-        catch (Exception ex)
+        catch { return; }
+
+        // GPU Core Temperature
+        if (igclTelemetryData.gpuCurrentTemperatureSupported)
         {
-            // Log error but don't crash the update
-            System.Diagnostics.Debug.WriteLine($"Error updating Intel GPU sensors: {ex.Message}");
-        }
-    }
-
-    private bool UpdateTelemetry()
-    {
-        if (!IsValid)
-            return false;
-
-        var telemetry = new IntelGcl.ctl_power_telemetry_t
-        {
-            Size = (uint)Marshal.SizeOf(typeof(IntelGcl.ctl_power_telemetry_t)),
-            Version = 1,
-            psu = new IntelGcl.ctl_psu_info_t[IntelGcl.CTL_PSU_COUNT],
-            fanSpeed = new IntelGcl.ctl_oc_telemetry_item_t[IntelGcl.CTL_FAN_COUNT]
-        };
-
-        if (IntelGcl.ctlPowerTelemetryGet(_handle, ref telemetry) == (int)IntelGcl.ctl_result_t.CTL_RESULT_SUCCESS)
-        {
-            _telemetry = telemetry;
-            _lastTimestamp = _currentTimestamp;
-            _currentTimestamp = _telemetry.timeStamp.bSupported ? GetTelemetryValue(_telemetry.timeStamp) : DateTimeOffset.UtcNow.Ticks;
-            return true;
-        }
-
-        return false;
-    }
-
-    private void UpdateMemoryFrequency(Sensor sensor)
-    {
-        double frequency = double.NaN;
-
-        uint freqCount = 0;
-        int result = IntelGcl.ctlEnumFrequencyDomains(_handle, ref freqCount, null);
-
-        if (result == (int)IntelGcl.ctl_result_t.CTL_RESULT_SUCCESS && freqCount > 0)
-        {
-            var freqHandles = new IntelGcl.ctl_freq_handle_t[freqCount];
-            result = IntelGcl.ctlEnumFrequencyDomains(_handle, ref freqCount, freqHandles);
-
-            if (result == (int)IntelGcl.ctl_result_t.CTL_RESULT_SUCCESS)
-            {
-                for (int i = 0; i < freqCount; i++)
-                {
-                    var properties = new IntelGcl.ctl_freq_properties_t
-                    {
-                        Size = (uint)Marshal.SizeOf(typeof(IntelGcl.ctl_freq_properties_t)),
-                        Version = 0
-                    };
-
-                    result = IntelGcl.ctlFrequencyGetProperties(freqHandles[i], ref properties);
-
-                    if (result == (int)IntelGcl.ctl_result_t.CTL_RESULT_SUCCESS &&
-                        properties.type == IntelGcl.ctl_freq_domain_t.CTL_FREQ_DOMAIN_MEMORY)
-                    {
-                        var state = new IntelGcl.ctl_freq_state_t
-                        {
-                            Size = (uint)Marshal.SizeOf(typeof(IntelGcl.ctl_freq_state_t)),
-                            Version = 0
-                        };
-
-                        result = IntelGcl.ctlFrequencyGetState(freqHandles[i], ref state);
-
-                        if (result == (int)IntelGcl.ctl_result_t.CTL_RESULT_SUCCESS && state.actual >= 0)
-                        {
-                            frequency = state.actual / MemoryFrequencyDivisor;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (double.IsNaN(frequency) && _telemetry.vramCurrentClockFrequency.bSupported)
-        {
-            frequency = GetTelemetryValue(_telemetry.vramCurrentClockFrequency);
-        }
-
-        if (!double.IsNaN(frequency))
-        {
-            sensor.Value = (float)frequency;
-            ActivateSensor(sensor);
+            _temperatureCore.Value = (float)igclTelemetryData.gpuCurrentTemperatureValue;
+            ActivateSensor(_temperatureCore);
         }
         else
         {
-            sensor.Value = null;
-        }
-    }
-
-    private uint GetFanCount()
-    {
-        uint fanCount = 0;
-        int result = IntelGcl.ctlEnumFans(_handle, ref fanCount, null);
-
-        if (result == (int)IntelGcl.ctl_result_t.CTL_RESULT_SUCCESS)
-        {
-            return fanCount;
+            _temperatureCore.Value = null;
         }
 
-        return 0;
-    }
-
-    private void UpdateFanSpeeds(Sensor[] fanSensors)
-    {
-        uint fanCount = (uint)Math.Min(Math.Max(0, GetFanCount()), fanSensors.Length);
-        if (fanCount == 0)
-            return;
-
-        var fanHandles = new IntelGcl.ctl_fan_handle_t[fanCount];
-        int result = IntelGcl.ctlEnumFans(_handle, ref fanCount, fanHandles);
-
-        if (result == (int)IntelGcl.ctl_result_t.CTL_RESULT_SUCCESS)
+        // VRAM Temperature
+        if (igclTelemetryData.vramCurrentTemperatureSupported)
         {
-            for (int i = 0; i < fanCount; i++)
-            {
-                int fanSpeed = -1;
-                result = IntelGcl.ctlFanGetState(fanHandles[i], IntelGcl.ctl_fan_speed_units_t.CTL_FAN_SPEED_UNITS_RPM, ref fanSpeed);
-
-                if (result == (int)IntelGcl.ctl_result_t.CTL_RESULT_SUCCESS && fanSpeed >= 0)
-                {
-                    fanSensors[i].Value = fanSpeed;
-                    ActivateSensor(fanSensors[i]);
-                }
-                else
-                {
-                    fanSensors[i].Value = null;
-                }
-            }
-
-            for (int i = (int)fanCount; i < fanSensors.Length; i++)
-            {
-                fanSensors[i].Value = null;
-            }
-        }
-    }
-
-    private void UpdateSensorFromTelemetry(IntelGcl.ctl_oc_telemetry_item_t telemetryItem, Sensor sensor)
-    {
-        if (telemetryItem.bSupported)
-        {
-            sensor.Value = (float)GetTelemetryValue(telemetryItem);
-            ActivateSensor(sensor);
+            _temperatureMemory.Value = (float)igclTelemetryData.vramCurrentTemperatureValue;
+            ActivateSensor(_temperatureMemory);
         }
         else
         {
-            sensor.Value = null;
+            _temperatureMemory.Value = null;
         }
-    }
 
-    private double GetTelemetryValue(IntelGcl.ctl_oc_telemetry_item_t item)
-    {
-        return item.type switch
+        // GPU Core Power
+        if (igclTelemetryData.gpuEnergySupported)
         {
-            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_FLOAT => item.value.datafloat,
-            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_DOUBLE => item.value.datadouble,
-            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_UINT32 => item.value.datau32,
-            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_INT32 => item.value.data32,
-            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_UINT64 => item.value.datau64,
-            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_INT64 => item.value.data64,
-            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_UINT16 => item.value.datau16,
-            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_INT16 => item.value.data16,
-            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_UINT8 => item.value.datau8,
-            IntelGcl.ctl_data_type_t.CTL_DATA_TYPE_INT8 => item.value.data8,
-            _ => double.NaN
-        };
-    }
-
-    private void UpdatePowerFromEnergyCounter(IntelGcl.ctl_oc_telemetry_item_t energyCounter, ref double lastEnergyReading, Sensor powerSensor)
-    {
-        if (!IsValid || powerSensor == null)
-            return;
-
-        double currentEnergy = energyCounter.bSupported ? GetTelemetryValue(energyCounter) : double.NaN;
-        double deltaTime = _currentTimestamp - _lastTimestamp;
-
-        if (deltaTime > 0.0 && !double.IsNaN(currentEnergy) && !double.IsNaN(lastEnergyReading))
-        {
-            double deltaEnergy = currentEnergy - lastEnergyReading;
-            double power = deltaEnergy / deltaTime;
-            power = power < 0 ? 0 : power;
-
-            powerSensor.Value = (float)power;
-            ActivateSensor(powerSensor);
+            _powerTdp.Value = (float)igclTelemetryData.gpuEnergyValue;
+            ActivateSensor(_powerTdp);
         }
         else
         {
-            powerSensor.Value = null;
+            _powerTdp.Value = null;
         }
 
-        lastEnergyReading = currentEnergy;
-    }
-
-    private void UpdateUtilizationFromActivityCounter(IntelGcl.ctl_oc_telemetry_item_t activityCounter, ref double lastActivityReading, Sensor activitySensor)
-    {
-        if (!IsValid || activitySensor == null)
-            return;
-
-        double currentActivity = activityCounter.bSupported ? GetTelemetryValue(activityCounter) : double.NaN;
-        double deltaTime = _currentTimestamp - _lastTimestamp;
-
-        if (deltaTime > 0 && !double.IsNaN(currentActivity) && !double.IsNaN(lastActivityReading))
+        // GPU Total Board Power
+        if (igclTelemetryData.totalCardEnergySupported)
         {
-            double activeDiff = currentActivity - lastActivityReading;
-            if (activeDiff >= 0)
-            {
-                double activity = (activeDiff / deltaTime) * 100.0;
-                activity = Math.Min(Math.Max(activity, 0.0), 100.0);
-
-                activitySensor.Value = (float)activity;
-                ActivateSensor(activitySensor);
-            }
-            else
-            {
-                activitySensor.Value = null;
-            }
+            _powerTbp.Value = (float)igclTelemetryData.totalCardEnergyValue;
+            ActivateSensor(_powerTbp);
         }
         else
         {
-            activitySensor.Value = null;
+            _powerTbp.Value = null;
         }
 
-        lastActivityReading = currentActivity;
+        // VRAM Temperature
+        if (igclTelemetryData.vramEnergySupported)
+        {
+            _powerVram.Value = (float)igclTelemetryData.vramEnergyValue;
+            ActivateSensor(_powerVram);
+        }
+        else
+        {
+            _powerVram.Value = null;
+        }
+
+        // GPU Core Frequency
+        if (igclTelemetryData.gpuCurrentClockFrequencySupported)
+        {
+            _clockCore.Value = (float)igclTelemetryData.gpuCurrentClockFrequencyValue;
+            ActivateSensor(_clockCore);
+        }
+        else
+        {
+            _clockCore.Value = null;
+        }
+
+        // VRAM Frequency
+        if (igclTelemetryData.vramCurrentClockFrequencySupported)
+        {
+            _clockVram.Value = (float)igclTelemetryData.vramCurrentClockFrequencyValue;
+            ActivateSensor(_clockVram);
+        }
+        else
+        {
+            _clockVram.Value = null;
+        }
+
+        // GPU Core Frequency
+        if (igclTelemetryData.gpuVoltageSupported)
+        {
+            _voltageCore.Value = (float)igclTelemetryData.gpuVoltagValue;
+            ActivateSensor(_voltageCore);
+        }
+        else
+        {
+            _voltageCore.Value = null;
+        }
+
+        // VRAM Voltage
+        if (igclTelemetryData.vramVoltageSupported)
+        {
+            _voltageVram.Value = (float)igclTelemetryData.vramVoltageValue;
+            ActivateSensor(_voltageVram);
+        }
+        else
+        {
+            _voltageVram.Value = null;
+        }
+
+        // GPU Usage
+        if (igclTelemetryData.globalActivitySupported)
+        {
+            _usageCore.Value = (float)igclTelemetryData.globalActivityValue;
+            ActivateSensor(_usageCore);
+        }
+        else
+        {
+            _usageCore.Value = null;
+        }
+
+        // Render Engine Usage
+        if (igclTelemetryData.renderComputeActivitySupported)
+        {
+            _usageRenderEngine.Value = (float)igclTelemetryData.renderComputeActivityValue;
+            ActivateSensor(_usageRenderEngine);
+        }
+        else
+        {
+            _usageRenderEngine.Value = null;
+        }
+
+        // Media Engine Usage
+        if (igclTelemetryData.mediaActivitySupported)
+        {
+            _usageMediaEngine.Value = (float)igclTelemetryData.mediaActivityValue;
+            ActivateSensor(_usageMediaEngine);
+        }
+        else
+        {
+            _usageMediaEngine.Value = null;
+        }
+
+        // VRAM Read Bandwidth
+        if (igclTelemetryData.vramReadBandwidthSupported)
+        {
+            _bandwidthReadVram.Value = (float)(igclTelemetryData.vramReadBandwidthValue * _busWidth / 1024);
+            ActivateSensor(_bandwidthReadVram);
+        }
+        else
+        {
+            _bandwidthReadVram.Value = null;
+        }
+
+        // VRAM Write Bandwidth
+        if (igclTelemetryData.vramWriteBandwidthSupported)
+        {
+            _bandwidthWriteVram.Value = (float)(igclTelemetryData.vramWriteBandwidthValue * _busWidth / 1024);
+            ActivateSensor(_bandwidthWriteVram);
+        }
+        else
+        {
+            _bandwidthWriteVram.Value = null;
+        }
+
+        // ToDo: get all fans info
+        // Fanspeed (n Fans)
+        if (igclTelemetryData.fanSpeedSupported)
+        {
+            _speedFan.Value = (float)igclTelemetryData.fanSpeedValue;
+            ActivateSensor(_speedFan);
+        }
+        else
+        {
+            _speedFan.Value = null;
+        }
     }
 }

@@ -38,15 +38,15 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
                                         if (IGCL.GetIgclTelemetryData((uint)index, ref igclTelemetryData))
                                         {
                                             hardware.Add(new IntelGPU(
-                                                  deviceInfo.DeviceName,
-                                                  index,
-                                                  deviceInfo.AdapterID,
-                                                  (int)deviceInfo.Pci_device_id,
-                                                  (int)IGCL.GetBusWidth((uint)index),
-                                                  deviceInfo.DriverVersion,
-                                                  settings,
-                                                  sensorConfig,
-                                                  processService));
+                                                deviceInfo.DeviceName,
+                                                index,
+                                                deviceInfo.AdapterID,
+                                                (int)deviceInfo.Pci_device_id,
+                                                (int)IGCL.GetBusWidth((uint)index),
+                                                deviceInfo.DriverVersion,
+                                                settings,
+                                                sensorConfig,
+                                                processService));
 
                                             Log.Logger.Information($"Intel graphics card detected:: {deviceInfo.DeviceName}");
                                         }

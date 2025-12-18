@@ -26,10 +26,7 @@ internal class IntelGpuGroup : IGroup
 
             try
             {
-                if (IntelGcl.IsAvailable)
-                {
-                    gclInitialized = IntelGcl.Initialize();
-                }
+                gclInitialized = IGCL.IntializeIgcl();
             }
             catch (Exception ex)
             {
@@ -48,17 +45,21 @@ internal class IntelGpuGroup : IGroup
             {
                 try
                 {
-                    var handles = IntelGcl.GetDeviceHandles();
+                    var adapterCount = IGCL.GetAdpaterCount();
                     _report.Append("Device handles found: ");
-                    _report.AppendLine(handles.Length.ToString(CultureInfo.InvariantCulture));
+                    _report.AppendLine(adapterCount.ToString());
 
-                    foreach (var handle in handles)
+                    for (uint index = 0; index < adapterCount; index++)
                     {
                         try
                         {
-                            var gpu = new IntelGclGpu(handle, settings);
-                            if (gpu.IsValid)
+                            var deviceInfo = new IgclDeviceInfo();
+                            IGCL.GetDeviceInfo(index, ref deviceInfo);
+
+                            if (deviceInfo.Pci_vendor_id == IGCL.Intel_VENDOR_ID)
                             {
+                                var gpu = new IntelGclGpu(index, deviceInfo, settings);
+
                                 _report.Append("Discrete GPU: ");
                                 _report.AppendLine(gpu.Name);
                                 _report.Append("Device ID: ");
@@ -68,10 +69,7 @@ internal class IntelGpuGroup : IGroup
                                 _hardware.Add(gpu);
                                 _report.AppendLine("Successfully added discrete GPU to hardware list");
                             }
-                            else
-                            {
-                                _report.AppendLine("Skipped invalid GPU device");
-                            }
+
                         }
                         catch (Exception ex)
                         {
@@ -158,9 +156,9 @@ internal class IntelGpuGroup : IGroup
         // Shutdown Intel GCL
         try
         {
-            if (IntelGcl.IsInitialized)
+            if (IGCL.IsInitialized)
             {
-                IntelGcl.Cleanup();
+                IGCL.CloseIgcl();
             }
         }
         catch

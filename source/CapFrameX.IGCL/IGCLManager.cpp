@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdexcept>
+#include <vector>
+#include <cstdint>
+#include <cmath>
 
 double deltatimestamp = 0;
 double prevtimestamp = 0;
@@ -27,6 +30,37 @@ double prevvramWriteBandwidthCounter = 0;
 
 ctl_api_handle_t hAPIHandle;
 ctl_device_adapter_handle_t* hDevices;
+
+// Keep ALL "prev/cur" values per device index.
+struct TelemetryDeltaState
+{
+    bool   initialized = false;
+
+    double prevTimestamp = 0.0;
+    double curTimestamp = 0.0;
+
+    double prevGpuEnergy = 0.0;
+    double curGpuEnergy = 0.0;
+
+    double prevTotalCardEnergy = 0.0;
+    double curTotalCardEnergy = 0.0;
+
+    double prevGlobalActivity = 0.0;
+    double curGlobalActivity = 0.0;
+
+    double prevRenderComputeActivity = 0.0;
+    double curRenderComputeActivity = 0.0;
+
+    double prevMediaActivity = 0.0;
+    double curMediaActivity = 0.0;
+
+    double prevVramEnergy = 0.0;
+    double curVramEnergy = 0.0;
+};
+
+// One state entry per hDevices[] slot.
+// Ensure this is sized appropriately when you discover/enumerate devices.
+static std::vector<TelemetryDeltaState> g_state;
 
 bool IntializeIgcl()
 {
@@ -72,6 +106,7 @@ uint32_t GetAdpaterCount()
 		}
 
 		result = ctlEnumerateDevices(hAPIHandle, &adapter_count, hDevices);
+        g_state.resize(adapter_count);
 
 		if (CTL_RESULT_SUCCESS != result)
 		{
@@ -163,6 +198,7 @@ bool GetDeviceInfo(const uint32_t index, IgclDeviceInfo* deviceInfo)
 		deviceInfo->Pci_vendor_id = StDeviceAdapterProperties.pci_vendor_id;
 		deviceInfo->Pci_device_id = StDeviceAdapterProperties.pci_device_id;
 		deviceInfo->Rev_id = StDeviceAdapterProperties.rev_id;
+		deviceInfo->Adapter_Property_Flag = StDeviceAdapterProperties.graphics_adapter_properties;
 
 		char driverVersion[CTL_MAX_DRIVER_VERSION_LEN] = "";
 		LARGE_INTEGER LIDriverVersion;
@@ -174,121 +210,170 @@ bool GetDeviceInfo(const uint32_t index, IgclDeviceInfo* deviceInfo)
 	return true;
 }
 
+static inline bool IsValidDelta(double dt)
+{
+	return std::isfinite(dt) && dt > 0.0;
+}
+
 bool GetIgclTelemetryData(const uint32_t index, IgclTelemetryData* telemetryData)
 {
-	bool check = true;
-	ctl_power_telemetry_t pPowerTelemetry = {};
-	pPowerTelemetry.Size = sizeof(ctl_power_telemetry_t);
+    if (!telemetryData) return false;
+    if (index >= g_state.size()) return false;
+    if (hDevices[index] == NULL) return false;
 
-	if (NULL != hDevices[index])
-	{
-		ctl_result_t status = ctlPowerTelemetryGet(hDevices[index], &pPowerTelemetry);
+    ctl_power_telemetry_t pPowerTelemetry = {};
+    pPowerTelemetry.Size = sizeof(ctl_power_telemetry_t);
 
-		if (status == ctl_result_t::CTL_RESULT_SUCCESS)
-		{
-			prevtimestamp = curtimestamp;
-			curtimestamp = pPowerTelemetry.timeStamp.value.datadouble;
-			deltatimestamp = curtimestamp - prevtimestamp;
+    ctl_result_t status = ctlPowerTelemetryGet(hDevices[index], &pPowerTelemetry);
+    if (status != ctl_result_t::CTL_RESULT_SUCCESS) return false;
 
-			if (pPowerTelemetry.gpuEnergyCounter.bSupported)
-			{
-				telemetryData->gpuEnergySupported = true;
-				prevgpuEnergyCounter = curgpuEnergyCounter;
-				curgpuEnergyCounter = pPowerTelemetry.gpuEnergyCounter.value.datadouble;
+    auto& st = g_state[index];
 
-				telemetryData->gpuEnergyValue = (curgpuEnergyCounter - prevgpuEnergyCounter) / deltatimestamp;
-			}
+    // Update timestamps per device
+    st.prevTimestamp = st.curTimestamp;
+    st.curTimestamp = pPowerTelemetry.timeStamp.value.datadouble;
 
-			if (pPowerTelemetry.totalCardEnergyCounter.bSupported)
-			{
-				telemetryData->totalCardEnergySupported = true;
-				prevtotalCardEnergyCounter = curtotalCardEnergyCounter;
-				curtotalCardEnergyCounter = pPowerTelemetry.totalCardEnergyCounter.value.datadouble;
+    const double dt = st.curTimestamp - st.prevTimestamp;
 
-				telemetryData->totalCardEnergyValue = (curtotalCardEnergyCounter - prevtotalCardEnergyCounter) / deltatimestamp;
-			}
+    // First call (or invalid dt): capture counters but do not compute rates yet.
+    const bool canComputeRates = st.initialized && IsValidDelta(dt);
 
-			telemetryData->gpuVoltageSupported = pPowerTelemetry.gpuVoltage.bSupported;
-			telemetryData->gpuVoltagValue = pPowerTelemetry.gpuVoltage.value.datadouble;
+    // GPU energy rate
+    if (pPowerTelemetry.gpuEnergyCounter.bSupported)
+    {
+        telemetryData->gpuEnergySupported = true;
 
-			telemetryData->gpuCurrentClockFrequencySupported = pPowerTelemetry.gpuCurrentClockFrequency.bSupported;
-			telemetryData->gpuCurrentClockFrequencyValue = pPowerTelemetry.gpuCurrentClockFrequency.value.datadouble;
+        st.prevGpuEnergy = st.curGpuEnergy;
+        st.curGpuEnergy = pPowerTelemetry.gpuEnergyCounter.value.datadouble;
 
-			telemetryData->gpuCurrentTemperatureSupported = pPowerTelemetry.gpuCurrentTemperature.bSupported;
-			telemetryData->gpuCurrentTemperatureValue = pPowerTelemetry.gpuCurrentTemperature.value.datadouble;
+        if (canComputeRates)
+            telemetryData->gpuEnergyValue = (st.curGpuEnergy - st.prevGpuEnergy) / dt;
+        else
+            telemetryData->gpuEnergyValue = 0.0;
+    }
+    else
+    {
+        telemetryData->gpuEnergySupported = false;
+    }
 
-			if (pPowerTelemetry.globalActivityCounter.bSupported)
-			{
-				telemetryData->globalActivitySupported = true;
-				prevglobalActivityCounter = curglobalActivityCounter;
-				curglobalActivityCounter = pPowerTelemetry.globalActivityCounter.value.datadouble;
+    // Total card energy rate
+    if (pPowerTelemetry.totalCardEnergyCounter.bSupported)
+    {
+        telemetryData->totalCardEnergySupported = true;
 
-				telemetryData->globalActivityValue = 100 * (curglobalActivityCounter - prevglobalActivityCounter) / deltatimestamp;
-			}
+        st.prevTotalCardEnergy = st.curTotalCardEnergy;
+        st.curTotalCardEnergy = pPowerTelemetry.totalCardEnergyCounter.value.datadouble;
 
-			if (pPowerTelemetry.renderComputeActivityCounter.bSupported)
-			{
-				telemetryData->renderComputeActivitySupported = true;
-				prevrenderComputeActivityCounter = currenderComputeActivityCounter;
-				currenderComputeActivityCounter = pPowerTelemetry.renderComputeActivityCounter.value.datadouble;
+        if (canComputeRates)
+            telemetryData->totalCardEnergyValue = (st.curTotalCardEnergy - st.prevTotalCardEnergy) / dt;
+        else
+            telemetryData->totalCardEnergyValue = 0.0;
+    }
+    else
+    {
+        telemetryData->totalCardEnergySupported = false;
+    }
 
-				telemetryData->renderComputeActivityValue = 100 * (currenderComputeActivityCounter - prevrenderComputeActivityCounter) / deltatimestamp;
-			}
+    telemetryData->gpuVoltageSupported = pPowerTelemetry.gpuVoltage.bSupported;
+    telemetryData->gpuVoltagValue = pPowerTelemetry.gpuVoltage.value.datadouble;
 
-			if (pPowerTelemetry.mediaActivityCounter.bSupported)
-			{
-				telemetryData->mediaActivitySupported = true;
-				prevmediaActivityCounter = curmediaActivityCounter;
-				curmediaActivityCounter = pPowerTelemetry.mediaActivityCounter.value.datadouble;
+    telemetryData->gpuCurrentClockFrequencySupported = pPowerTelemetry.gpuCurrentClockFrequency.bSupported;
+    telemetryData->gpuCurrentClockFrequencyValue = pPowerTelemetry.gpuCurrentClockFrequency.value.datadouble;
 
-				telemetryData->mediaActivityValue = 100 * (curmediaActivityCounter - prevmediaActivityCounter) / deltatimestamp;
-			}
+    telemetryData->gpuCurrentTemperatureSupported = pPowerTelemetry.gpuCurrentTemperature.bSupported;
+    telemetryData->gpuCurrentTemperatureValue = pPowerTelemetry.gpuCurrentTemperature.value.datadouble;
 
-			if (pPowerTelemetry.vramEnergyCounter.bSupported)
-			{
-				telemetryData->vramEnergySupported = true;
-				prevvramEnergyCounter = curvramEnergyCounter;
-				curvramEnergyCounter = pPowerTelemetry.vramEnergyCounter.value.datadouble;
+    // Global activity rate
+    if (pPowerTelemetry.globalActivityCounter.bSupported)
+    {
+        telemetryData->globalActivitySupported = true;
 
-				telemetryData->vramEnergyValue = (curvramEnergyCounter - prevvramEnergyCounter) / deltatimestamp;
-			}
+        st.prevGlobalActivity = st.curGlobalActivity;
+        st.curGlobalActivity = pPowerTelemetry.globalActivityCounter.value.datadouble;
 
-			telemetryData->vramVoltageSupported = pPowerTelemetry.vramVoltage.bSupported;
-			telemetryData->vramVoltageValue = pPowerTelemetry.vramVoltage.value.datadouble;
+        if (canComputeRates)
+            telemetryData->globalActivityValue = 100.0 * (st.curGlobalActivity - st.prevGlobalActivity) / dt;
+        else
+            telemetryData->globalActivityValue = 0.0;
+    }
+    else
+    {
+        telemetryData->globalActivitySupported = false;
+    }
 
-			telemetryData->vramCurrentClockFrequencySupported = pPowerTelemetry.vramCurrentClockFrequency.bSupported;
-			telemetryData->vramCurrentClockFrequencyValue = pPowerTelemetry.vramCurrentClockFrequency.value.datadouble;
+    // Render/compute activity rate
+    if (pPowerTelemetry.renderComputeActivityCounter.bSupported)
+    {
+        telemetryData->renderComputeActivitySupported = true;
 
-			//if (pPowerTelemetry.vramReadBandwidthCounter.bSupported)
-			//{
-			//	telemetryData->vramReadBandwidthSupported = true;
-			//	prevvramReadBandwidthCounter = curvramReadBandwidthCounter;
-			//	curvramReadBandwidthCounter = pPowerTelemetry.vramReadBandwidthCounter.value.datadouble;
+        st.prevRenderComputeActivity = st.curRenderComputeActivity;
+        st.curRenderComputeActivity = pPowerTelemetry.renderComputeActivityCounter.value.datadouble;
 
-			//	telemetryData->vramReadBandwidthValue = 100 * (curvramReadBandwidthCounter - prevvramReadBandwidthCounter) / deltatimestamp;
-			//}
+        if (canComputeRates)
+            telemetryData->renderComputeActivityValue =
+            100.0 * (st.curRenderComputeActivity - st.prevRenderComputeActivity) / dt;
+        else
+            telemetryData->renderComputeActivityValue = 0.0;
+    }
+    else
+    {
+        telemetryData->renderComputeActivitySupported = false;
+    }
 
-			telemetryData->vramReadBandwidthSupported = pPowerTelemetry.vramReadBandwidthCounter.bSupported;
-			telemetryData->vramReadBandwidthValue = pPowerTelemetry.vramReadBandwidthCounter.value.datadouble;
+    // Media activity rate
+    if (pPowerTelemetry.mediaActivityCounter.bSupported)
+    {
+        telemetryData->mediaActivitySupported = true;
 
-			telemetryData->vramWriteBandwidthSupported = pPowerTelemetry.vramWriteBandwidthCounter.bSupported;
-			telemetryData->vramWriteBandwidthValue = pPowerTelemetry.vramWriteBandwidthCounter.value.datadouble;
+        st.prevMediaActivity = st.curMediaActivity;
+        st.curMediaActivity = pPowerTelemetry.mediaActivityCounter.value.datadouble;
 
-			telemetryData->vramCurrentTemperatureSupported = pPowerTelemetry.vramCurrentTemperature.bSupported;
-			telemetryData->vramCurrentTemperatureValue = pPowerTelemetry.vramCurrentTemperature.value.datadouble;
+        if (canComputeRates)
+            telemetryData->mediaActivityValue = 100.0 * (st.curMediaActivity - st.prevMediaActivity) / dt;
+        else
+            telemetryData->mediaActivityValue = 0.0;
+    }
+    else
+    {
+        telemetryData->mediaActivitySupported = false;
+    }
 
-			telemetryData->fanSpeedSupported = pPowerTelemetry.fanSpeed[0].bSupported;
-			telemetryData->fanSpeedValue = pPowerTelemetry.fanSpeed[0].value.datadouble;
-		}
-		else
-		{
-			check = false;
-		}
-	}
-	else
-	{
-		check = false;
-	}
+    // VRAM energy rate
+    if (pPowerTelemetry.vramEnergyCounter.bSupported)
+    {
+        telemetryData->vramEnergySupported = true;
 
-	return check;
+        st.prevVramEnergy = st.curVramEnergy;
+        st.curVramEnergy = pPowerTelemetry.vramEnergyCounter.value.datadouble;
+
+        if (canComputeRates)
+            telemetryData->vramEnergyValue = (st.curVramEnergy - st.prevVramEnergy) / dt;
+        else
+            telemetryData->vramEnergyValue = 0.0;
+    }
+    else
+    {
+        telemetryData->vramEnergySupported = false;
+    }
+
+    telemetryData->vramVoltageSupported = pPowerTelemetry.vramVoltage.bSupported;
+    telemetryData->vramVoltageValue = pPowerTelemetry.vramVoltage.value.datadouble;
+
+    telemetryData->vramCurrentClockFrequencySupported = pPowerTelemetry.vramCurrentClockFrequency.bSupported;
+    telemetryData->vramCurrentClockFrequencyValue = pPowerTelemetry.vramCurrentClockFrequency.value.datadouble;
+
+    telemetryData->vramReadBandwidthSupported = pPowerTelemetry.vramReadBandwidthCounter.bSupported;
+    telemetryData->vramReadBandwidthValue = pPowerTelemetry.vramReadBandwidthCounter.value.datadouble;
+
+    telemetryData->vramWriteBandwidthSupported = pPowerTelemetry.vramWriteBandwidthCounter.bSupported;
+    telemetryData->vramWriteBandwidthValue = pPowerTelemetry.vramWriteBandwidthCounter.value.datadouble;
+
+    telemetryData->vramCurrentTemperatureSupported = pPowerTelemetry.vramCurrentTemperature.bSupported;
+    telemetryData->vramCurrentTemperatureValue = pPowerTelemetry.vramCurrentTemperature.value.datadouble;
+
+    telemetryData->fanSpeedSupported = pPowerTelemetry.fanSpeed[0].bSupported;
+    telemetryData->fanSpeedValue = pPowerTelemetry.fanSpeed[0].value.datadouble;
+
+    st.initialized = true;
+    return true;
 }

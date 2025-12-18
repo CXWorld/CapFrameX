@@ -74,7 +74,8 @@ typedef struct IgclDeviceInfo
 	uint32_t Pci_vendor_id;
 	uint32_t Pci_device_id;
 	uint32_t Rev_id;
-	char DriverVersion[CTL_MAX_DRIVER_VERSION_LEN];
+	char DriverVersion[CTL_MAX_DRIVER_VERSION_LEN]; 
+	uint32_t Adapter_Property_Flag;
 };
 
 #define IGCL_API __declspec(dllimport)

@@ -1,8 +1,8 @@
-﻿using System;
+﻿using LibreHardwareMonitor.PawnIo;
+using Microsoft.Win32;
+using System;
 using System.Globalization;
 using System.Linq;
-using LibreHardwareMonitor.PawnIo;
-using Microsoft.Win32;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
 
@@ -27,9 +27,7 @@ internal class IntelD3dGpu : GenericGpu
     private readonly IntelMsr _pawnModule;
 
     public IntelD3dGpu(Cpu.IntelCpu intelCpu, string deviceId, D3DDisplayDevice.D3DDeviceInfo deviceInfo, ISettings settings)
-        : base(GetName(deviceId),
-               new Identifier("gpu-intel-integrated", deviceId.ToString(CultureInfo.InvariantCulture)),
-               settings)
+        : base(GetName(deviceId), new Identifier("gpu-intel-integrated", deviceId.ToString(CultureInfo.InvariantCulture)), settings)
     {
         _pawnModule = new IntelMsr();
         _deviceId = deviceId;
