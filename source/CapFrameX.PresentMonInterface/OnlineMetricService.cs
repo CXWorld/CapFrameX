@@ -21,6 +21,7 @@ namespace CapFrameX.PresentMonInterface
         private const double STUTTERING_THRESHOLD = 2d;
         private const int LIST_CAPACITY = 20000;
         private const int PMD_BUFFER_CAPACITY = 2200;
+        private const double FIVE_SECONDS_INTERVAL_LENGTH = 5.0;
 
         private readonly object _currentProcessLock = new object();
 
@@ -32,9 +33,11 @@ namespace CapFrameX.PresentMonInterface
         private readonly IBenchlabService _benchlabService;
         private readonly ILogger<OnlineMetricService> _logger;
         private readonly IAppConfiguration _appConfiguration;
+
         private readonly object _lockRealtimeMetric = new object();
         private readonly object _lock5SecondsMetric = new object();
         private readonly object _lockPmdMetrics = new object();
+
         private List<double> _frametimesRealtimeSeconds = new List<double>(LIST_CAPACITY);
         private List<double> _displayedtimesRealtimeSeconds = new List<double>(LIST_CAPACITY);
         private List<double> _gpuActiveTimesRealtimeSeconds = new List<double>(LIST_CAPACITY);
@@ -47,7 +50,6 @@ namespace CapFrameX.PresentMonInterface
         private List<SensorSample> _sensorDataBuffer = new List<SensorSample>(PMD_BUFFER_CAPACITY);
         private string _currentProcess;
         private int _currentProcessId;
-        private readonly double _maxOnlineStutteringIntervalLength = 5d;
 
         private int MetricInterval => _appConfiguration.MetricInterval == 0 ? 20 : _appConfiguration.MetricInterval;
 
@@ -256,11 +258,11 @@ namespace CapFrameX.PresentMonInterface
                     _frametimes5Seconds.Add(frameTime);
                     _displaytimes5Seconds.Add(displayedTime);
 
-                    if (startTime - _measuretimes5Seconds.First() > _maxOnlineStutteringIntervalLength)
+                    if (startTime - _measuretimes5Seconds.First() > FIVE_SECONDS_INTERVAL_LENGTH)
                     {
                         int position = 0;
                         while (position < _measuretimes5Seconds.Count &&
-                            startTime - _measuretimes5Seconds[position] > _maxOnlineStutteringIntervalLength)
+                            startTime - _measuretimes5Seconds[position] > FIVE_SECONDS_INTERVAL_LENGTH)
                             position++;
 
                         if (position > 0)
