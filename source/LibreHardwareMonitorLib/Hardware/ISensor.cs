@@ -130,6 +130,11 @@ public interface ISensor : IElement
     bool IsPresentationDefault { get; }
 
     /// <summary>
+    /// Gets a sort key for the presentation of this sensor in the user interface.
+    /// </summary>
+    string PresentationSortKey { get; set; }
+
+    /// <summary>
     /// Gets a list of recorded values for the given sensor.
     /// </summary>
     IEnumerable<SensorValue> Values { get; }

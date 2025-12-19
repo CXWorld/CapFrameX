@@ -31,7 +31,6 @@ internal sealed class AmdGpu : GenericGpu
     private readonly Sensor _fan;
     private readonly Control _fanControl;
     private readonly bool _frameMetricsStarted;
-    private readonly Sensor _fullscreenFps;
     private readonly Sensor _gpuDedicatedMemoryUsage;
     private readonly Sensor _gpuDedicatedMemoryFree;
     private readonly Sensor _gpuDedicatedMemoryTotal;
@@ -67,7 +66,7 @@ internal sealed class AmdGpu : GenericGpu
 
     private bool _overdrive8LogExists;
 
-    public AmdGpu(IntPtr amdContext, AtiAdlxx.ADLAdapterInfo adapterInfo, AtiAdlxx.ADLGcnInfo gcnInfo, ISettings settings)
+    public AmdGpu(IntPtr amdContext, int index, AtiAdlxx.ADLAdapterInfo adapterInfo, AtiAdlxx.ADLGcnInfo gcnInfo, ISettings settings)
         : base(adapterInfo.AdapterName.Trim(), new Identifier("gpu-amd", adapterInfo.AdapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
     {
         _context = amdContext;
@@ -76,40 +75,63 @@ internal sealed class AmdGpu : GenericGpu
         BusNumber = adapterInfo.BusNumber;
         DeviceNumber = adapterInfo.DeviceNumber;
 
-        _temperatureCore = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings) { IsPresentationDefault = true };
-        _temperatureMemory = new Sensor("GPU Memory", 1, SensorType.Temperature, this, settings);
-        _temperatureVddc = new Sensor("GPU VR VDDC", 2, SensorType.Temperature, this, settings);
-        _temperatureMvdd = new Sensor("GPU VR MVDD", 3, SensorType.Temperature, this, settings);
-        _temperatureSoC = new Sensor("GPU VR SoC", 4, SensorType.Temperature, this, settings);
-        _temperatureLiquid = new Sensor("GPU Liquid", 5, SensorType.Temperature, this, settings);
-        _temperaturePlx = new Sensor("GPU PLX", 6, SensorType.Temperature, this, settings);
-        _temperatureHotSpot = new Sensor("GPU Hot Spot", 7, SensorType.Temperature, this, settings);
+        _temperatureCore = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings) 
+            { IsPresentationDefault = true, PresentationSortKey = $"{index}_2_0" };
+        _temperatureMemory = new Sensor("GPU Memory", 1, SensorType.Temperature, this, settings)
+            { PresentationSortKey = $"{index}_2_1" };
+        _temperatureVddc = new Sensor("GPU VR VDDC", 2, SensorType.Temperature, this, settings)
+            { PresentationSortKey = $"{index}_2_2" };
+        _temperatureMvdd = new Sensor("GPU VR MVDD", 3, SensorType.Temperature, this, settings)
+            { PresentationSortKey = $"{index}_2_3" };
+        _temperatureSoC = new Sensor("GPU VR SoC", 4, SensorType.Temperature, this, settings)
+            { PresentationSortKey = $"{index}_2_4" };
+        _temperatureLiquid = new Sensor("GPU Liquid", 5, SensorType.Temperature, this, settings)
+            { PresentationSortKey = $"{index}_2_5" };
+        _temperaturePlx = new Sensor("GPU PLX", 6, SensorType.Temperature, this, settings)
+            { PresentationSortKey = $"{index}_2_6" };
+        _temperatureHotSpot = new Sensor("GPU Hot Spot", 7, SensorType.Temperature, this, settings)
+            { PresentationSortKey = $"{index}_2_7" };
 
-        _coreClock = new Sensor("GPU Core", 0, SensorType.Clock, this, settings) { IsPresentationDefault = true };
-        _socClock = new Sensor("GPU SoC", 1, SensorType.Clock, this, settings);
-        _memoryClock = new Sensor("GPU Memory", 2, SensorType.Clock, this, settings) { IsPresentationDefault = true };
+        _coreClock = new Sensor("GPU Core", 0, SensorType.Clock, this, settings) 
+            { IsPresentationDefault = true, PresentationSortKey = $"{index}_0_0" };
+        _socClock = new Sensor("GPU SoC", 1, SensorType.Clock, this, settings)
+            { PresentationSortKey = $"{index}_0_1" };
+        _memoryClock = new Sensor("GPU Memory", 2, SensorType.Clock, this, settings)
+        { IsPresentationDefault = true, PresentationSortKey = $"{index}_0_2" };
 
-        _fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
+        _fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings)
+            { PresentationSortKey = $"{index}_5_0" };
 
-        _coreVoltage = new Sensor("GPU Core", 0, SensorType.Voltage, this, settings);
-        _memoryVoltage = new Sensor("GPU Memory", 1, SensorType.Voltage, this, settings);
-        _socVoltage = new Sensor("GPU SoC", 2, SensorType.Voltage, this, settings);
+        _coreVoltage = new Sensor("GPU Core", 0, SensorType.Voltage, this, settings)
+            { PresentationSortKey = $"{index}_4_0" };
+        _memoryVoltage = new Sensor("GPU Memory", 1, SensorType.Voltage, this, settings)
+            { PresentationSortKey = $"{index}_4_1" };
+        _socVoltage = new Sensor("GPU SoC", 2, SensorType.Voltage, this, settings)
+            { PresentationSortKey = $"{index}_4_2" };
 
-        _coreLoad = new Sensor("GPU Core", 0, SensorType.Load, this, settings) { IsPresentationDefault = true };
-        _memoryLoad = new Sensor("GPU Memory", 1, SensorType.Load, this, settings);
+        _coreLoad = new Sensor("GPU Core", 0, SensorType.Load, this, settings)
+            { IsPresentationDefault = true, PresentationSortKey = $"{index}_1_0" };
+        _memoryLoad = new Sensor("GPU Memory", 1, SensorType.Load, this, settings)
+            { PresentationSortKey = $"{index}_1_1" };
 
-        _controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
+        _controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings)
+            { PresentationSortKey = $"{index}_5_1" };
 
-        _powerCore = new Sensor("GPU Core", 0, SensorType.Power, this, settings);
-        _powerPpt = new Sensor("GPU PPT", 1, SensorType.Power, this, settings);
-        _powerSoC = new Sensor("GPU SoC", 2, SensorType.Power, this, settings);
-        _powerTotal = new Sensor("GPU Power", 3, SensorType.Power, this, settings) { IsPresentationDefault = true };
+        _powerCore = new Sensor("GPU Core", 0, SensorType.Power, this, settings)
+            { PresentationSortKey = $"{index}_3_0" };
+        _powerPpt = new Sensor("GPU PPT", 1, SensorType.Power, this, settings)
+            { PresentationSortKey = $"{index}_3_1" };
+        _powerSoC = new Sensor("GPU SoC", 2, SensorType.Power, this, settings)
+            { PresentationSortKey = $"{index}_3_2" };
+        _powerTotal = new Sensor("GPU Power", 3, SensorType.Power, this, settings) 
+            { IsPresentationDefault = true, PresentationSortKey = $"{index}_3_3" };
 
-        _fullscreenFps = new Sensor("Fullscreen FPS", 0, SensorType.Factor, this, settings);
-
-        _memoryUsed = new Sensor("GPU Memory Used", 0, SensorType.Data, this, settings);
-        _memoryFree = new Sensor("GPU Memory Free", 1, SensorType.Data, this, settings);
-        _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.Data, this, settings);
+        _memoryUsed = new Sensor("GPU Memory Used", 0, SensorType.Data, this, settings)
+            {  PresentationSortKey = $"{index}_6_0" };
+        _memoryFree = new Sensor("GPU Memory Free", 1, SensorType.Data, this, settings)
+            { PresentationSortKey = $"{index}_6_1" };
+        _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.Data, this, settings)
+            { PresentationSortKey = $"{index}_6_2" };
 
         if (!Software.OperatingSystem.IsUnix)
         {
@@ -129,12 +151,18 @@ internal sealed class AmdGpu : GenericGpu
                         int nodeSensorIndex = 2;
                         int memorySensorIndex = 3;
 
-                        _gpuDedicatedMemoryUsage = new Sensor("GPU Memory Dedicated", memorySensorIndex++, SensorType.Data, this, settings);
-                        _gpuDedicatedMemoryFree = new Sensor("GPU Memory Dedicated Free", memorySensorIndex++, SensorType.Data, this, settings);
-                        _gpuDedicatedMemoryTotal = new Sensor("GPU Memory Dedicated Total", memorySensorIndex++, SensorType.Data, this, settings);
-                        _gpuSharedMemoryUsage = new Sensor("GPU Memory Shared", memorySensorIndex++, SensorType.Data, this, settings);
-                        _gpuSharedMemoryFree = new Sensor("GPU Memory Shared Free", memorySensorIndex++, SensorType.Data, this, settings);
-                        _gpuSharedMemoryTotal = new Sensor("GPU Memory Shared Total", memorySensorIndex++, SensorType.Data, this, settings);
+                        _gpuDedicatedMemoryUsage = new Sensor("GPU Memory Dedicated", memorySensorIndex++, SensorType.Data, this, settings)
+                            { PresentationSortKey = $"{index}_7_0" };
+                        _gpuDedicatedMemoryFree = new Sensor("GPU Memory Dedicated Free", memorySensorIndex++, SensorType.Data, this, settings)
+                            { PresentationSortKey = $"{index}_7_1" };
+                        _gpuDedicatedMemoryTotal = new Sensor("GPU Memory Dedicated Total", memorySensorIndex++, SensorType.Data, this, settings)
+                            { PresentationSortKey = $"{index}_7_2" };
+                        _gpuSharedMemoryUsage = new Sensor("GPU Memory Shared", memorySensorIndex++, SensorType.Data, this, settings)
+                            { PresentationSortKey = $"{index}_8_0" };
+                        _gpuSharedMemoryFree = new Sensor("GPU Memory Shared Free", memorySensorIndex++, SensorType.Data, this, settings)
+                            { PresentationSortKey = $"{index}_8_1" };
+                        _gpuSharedMemoryTotal = new Sensor("GPU Memory Shared Total", memorySensorIndex++, SensorType.Data, this, settings)
+                            { PresentationSortKey = $"{index}_8_2" };
 
                         _gpuNodeUsage = new Sensor[deviceInfo.Nodes.Length];
                         _gpuNodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
@@ -142,7 +170,8 @@ internal sealed class AmdGpu : GenericGpu
 
                         foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
                         {
-                            _gpuNodeUsage[node.Id] = new Sensor(node.Name, nodeSensorIndex++, SensorType.Load, this, settings);
+                            _gpuNodeUsage[node.Id] = new Sensor(node.Name, nodeSensorIndex++, SensorType.Load, this, settings)
+                                { PresentationSortKey = $"{index}_9_{nodeSensorIndex}" };
                             _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
                             _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
                         }
@@ -164,16 +193,6 @@ internal sealed class AmdGpu : GenericGpu
         int supported = 0;
         int enabled = 0;
         int version = 0;
-
-        if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps)) &&
-            AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps(_context, _adapterInfo.AdapterIndex, ref supported) == AtiAdlxx.ADLStatus.ADL_OK &&
-            supported == AtiAdlxx.ADL_TRUE &&
-            AtiAdlxx.ADL2_Adapter_FrameMetrics_Start(_context, _adapterInfo.AdapterIndex, 0) == AtiAdlxx.ADLStatus.ADL_OK)
-        {
-            _frameMetricsStarted = true;
-            _fullscreenFps.Value = -1;
-            ActivateSensor(_fullscreenFps);
-        }
 
         if (AtiAdlxx.UsePmLogForFamily(_adlGcnInfo.ASICFamilyId) &&
             AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_PMLog_Support_Get)) &&
@@ -353,15 +372,6 @@ internal sealed class AmdGpu : GenericGpu
         {
             _memoryFree.Value = _memoryTotal.Value - _memoryUsed.Value;
             ActivateSensor(_memoryFree);
-        }
-
-        if (_frameMetricsStarted)
-        {
-            float framesPerSecond = 0;
-            if (AtiAdlxx.ADL2_Adapter_FrameMetrics_Get(_context, _adapterInfo.AdapterIndex, 0, ref framesPerSecond) == AtiAdlxx.ADLStatus.ADL_OK)
-            {
-                _fullscreenFps.Value = framesPerSecond;
-            }
         }
 
         if (_overdriveApiSupported)

@@ -331,11 +331,13 @@ internal sealed class IntelCpu : GenericCpu
         //is only available when the cpu has more than 1 core
         if (cpuId[0][0].Data.GetLength(0) > 6 && (cpuId[0][0].Data[6, 0] & 0x40) != 0 && _microArchitecture != MicroArchitecture.Unknown && _coreCount > 1)
         {
-            _coreMax = new Sensor("Core Max", coreSensorId, SensorType.Temperature, this, settings);
+            _coreMax = new Sensor("Core Max", coreSensorId, SensorType.Temperature, this, settings)
+            { PresentationSortKey = $"3_0" };
             ActivateSensor(_coreMax);
             coreSensorId++;
 
-            _coreAvg = new Sensor("Core Average", coreSensorId, SensorType.Temperature, this, settings);
+            _coreAvg = new Sensor("Core Average", coreSensorId, SensorType.Temperature, this, settings)
+            { PresentationSortKey = $"3_1" };
             ActivateSensor(_coreAvg);
             coreSensorId++;
         }
@@ -359,7 +361,8 @@ internal sealed class IntelCpu : GenericCpu
                         new ParameterDescription("TjMax [°C]", "TjMax temperature of the core sensor.\n" + "Temperature = TjMax - TSlope * Value.", tjMax[i]),
                         new ParameterDescription("TSlope [°C]", "Temperature slope of the digital thermal sensor.\n" + "Temperature = TjMax - TSlope * Value.", 1)
                     ],
-                    settings);
+                    settings)
+                { PresentationSortKey = $"3_2_{i}" };
 
                 ActivateSensor(_coreTemperatures[i]);
                 coreSensorId++;
@@ -380,7 +383,7 @@ internal sealed class IntelCpu : GenericCpu
                     new ParameterDescription("TSlope [°C]", "Temperature slope of the digital thermal sensor.\n" + "Temperature = TjMax - TSlope * Value.", 1)
                 ],
                 settings)
-            { IsPresentationDefault = true };
+            { IsPresentationDefault = true, PresentationSortKey = $"3_3" };
 
             ActivateSensor(_packageTemperature);
             coreSensorId++;
@@ -392,7 +395,8 @@ internal sealed class IntelCpu : GenericCpu
             _distToTjMaxTemperatures = new Sensor[_coreCount];
             for (int i = 0; i < _distToTjMaxTemperatures.Length; i++)
             {
-                _distToTjMaxTemperatures[i] = new Sensor(CoreString(i) + " Distance to TjMax", coreSensorId, SensorType.Temperature, this, settings);
+                _distToTjMaxTemperatures[i] = new Sensor(CoreString(i) + " Distance to TjMax", coreSensorId, SensorType.Temperature, this, settings)
+                    { PresentationSortKey = $"3_4_{i}" };
                 ActivateSensor(_distToTjMaxTemperatures[i]);
                 coreSensorId++;
             }
@@ -400,16 +404,19 @@ internal sealed class IntelCpu : GenericCpu
         else
             _distToTjMaxTemperatures = Array.Empty<Sensor>();
 
-        _busClock = new Sensor("Bus Speed", 0, SensorType.Clock, this, settings);
+        _busClock = new Sensor("Bus Speed", 0, SensorType.Clock, this, settings)
+            { PresentationSortKey = $"0_0" };
         _coreClocks = new Sensor[_coreCount];
         for (int i = 0; i < _coreClocks.Length; i++)
         {
-            _coreClocks[i] = new Sensor(CoreString(i), i + 1, SensorType.Clock, this, settings) { IsPresentationDefault = true };
+            _coreClocks[i] = new Sensor(CoreString(i), i + 1, SensorType.Clock, this, settings) 
+            { IsPresentationDefault = true, PresentationSortKey = $"0_1_{i}"  };
             if (HasTimeStampCounter && _microArchitecture != MicroArchitecture.Unknown)
                 ActivateSensor(_coreClocks[i]);
         }
 
-        _maxClock = new Sensor("CPU Max", _coreClocks.Length + 1, SensorType.Clock, this, settings);
+        _maxClock = new Sensor("CPU Max", _coreClocks.Length + 1, SensorType.Clock, this, settings)
+            { PresentationSortKey = $"0_2" };
         ActivateSensor(_maxClock);
 
         if (_microArchitecture is MicroArchitecture.Airmont or
@@ -470,7 +477,7 @@ internal sealed class IntelCpu : GenericCpu
                         SensorType.Power,
                         this,
                         settings)
-                    { IsPresentationDefault = powerSensorLabels[i] == "CPU Package" };
+                    { IsPresentationDefault = powerSensorLabels[i] == "CPU Package", PresentationSortKey = $"2_{i}" };
 
                     ActivateSensor(_powerSensors[i]);
                 }
@@ -479,14 +486,16 @@ internal sealed class IntelCpu : GenericCpu
 
         if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out eax, out uint _) && ((eax >> 32) & 0xFFFF) > 0)
         {
-            _coreVoltage = new Sensor("CPU Core", 0, SensorType.Voltage, this, settings);
+            _coreVoltage = new Sensor("CPU Core", 0, SensorType.Voltage, this, settings)
+                { PresentationSortKey = $"4_0" };
             ActivateSensor(_coreVoltage);
         }
 
         _coreVIDs = new Sensor[_coreCount];
         for (int i = 0; i < _coreVIDs.Length; i++)
         {
-            _coreVIDs[i] = new Sensor(CoreString(i), i + 1, SensorType.Voltage, this, settings);
+            _coreVIDs[i] = new Sensor(CoreString(i), i + 1, SensorType.Voltage, this, settings)
+                { PresentationSortKey = $"4_1_{i}" };
             ActivateSensor(_coreVIDs[i]);
         }
 

@@ -35,7 +35,8 @@ internal sealed class DimmMemory : Hardware
                         SensorType.Temperature,
                         this,
                         settings,
-                        accessor as IThermalSensor);
+                        accessor as IThermalSensor)
+                    { PresentationSortKey = $"1_{accessor.Index}"};
                     break;
             }
         }

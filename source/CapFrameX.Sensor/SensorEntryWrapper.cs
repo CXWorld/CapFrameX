@@ -10,6 +10,8 @@ namespace CapFrameX.Sensor
 
         public string Identifier { get; set; }
 
+        public string SortKey { get; set; }
+
         public string Name { get; set; }
 
         public object Value { get; set; }

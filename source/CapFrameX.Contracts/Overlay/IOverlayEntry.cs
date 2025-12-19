@@ -113,6 +113,10 @@ namespace CapFrameX.Contracts.Overlay
         /// States if the value was below, above or between set upper/lower limits at the last update
         /// </summary>
         LimitState LastLimitState { get; set; }
+        /// <summary>
+        /// Sort key used to sort the overlay entries in the overlay items list
+        /// </summary>
+        string SortKey { get; set; }
 
         Action<string> UpdateGroupName { get; set; }
 

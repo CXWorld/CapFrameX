@@ -116,11 +116,11 @@ internal class AmdGpuGroup : IGroup
                             {
                                 if (sensorsSupported > 0)
                                 {
-                                    _hardware.Add(new AmdGpu(_context, adapterInfo[i], gcnInfo, settings));
+                                    _hardware.Add(new AmdGpu(_context, i, adapterInfo[i], gcnInfo, settings));
                                 }
                                 else
                                 {
-                                    potentialHardware.Add(new AmdGpu(_context, adapterInfo[i], gcnInfo, settings));
+                                    potentialHardware.Add(new AmdGpu(_context, i, adapterInfo[i], gcnInfo, settings));
                                 }
                             }
 

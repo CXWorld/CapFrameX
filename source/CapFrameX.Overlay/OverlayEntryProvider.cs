@@ -3,6 +3,7 @@ using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
+using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.Hardware.Controller;
@@ -594,7 +595,8 @@ namespace CapFrameX.Overlay
                         default:
                             return 7;
                     }
-                }).ToBlockingCollection());
+                }).ThenBy(entry => entry.SortKey, new SortKeyComparer())
+                .ToBlockingCollection());
         }
 
         private async Task UpdateSensorData()

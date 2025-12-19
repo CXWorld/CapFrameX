@@ -736,7 +736,7 @@ namespace CapFrameX.ViewModel
                     default:
                         return 7;
                 }
-            }).ToList();
+            }).ThenBy(entry => entry.SortKey, new SortKeyComparer()).ToList();
 
             // Update OverlayEntryProvider accordingly
             foreach (var entry in sortedEntries)

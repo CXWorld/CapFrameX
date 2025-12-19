@@ -248,6 +248,7 @@ namespace CapFrameX.Sensor
                             entries.Add(new SensorEntry()
                             {
                                 Identifier = sensor.Identifier.ToString(),
+                                SortKey = sensor.PresentationSortKey,
                                 Value = sensor.Value,
                                 Name = sensor.Name,
                                 SensorType = sensor.SensorType.ToString(),

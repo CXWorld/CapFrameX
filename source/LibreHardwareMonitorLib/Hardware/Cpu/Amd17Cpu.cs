@@ -3,11 +3,12 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
+using LibreHardwareMonitor.Hardware.Motherboard;
+using LibreHardwareMonitor.PawnIo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using LibreHardwareMonitor.PawnIo;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
@@ -131,18 +132,36 @@ internal sealed class Amd17Cpu : AmdCpu
         {
             _cpu = (Amd17Cpu)hardware;
 
-            _packagePower = new Sensor("CPU Package", _cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, _cpu, _cpu._settings) { IsPresentationDefault = true };
-            _coreTemperatureTctl = new Sensor("CPU (Tctl)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings);
-            _coreTemperatureTdie = new Sensor("CPU (Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings);
-            _coreTemperatureTctlTdie = new Sensor("CPU Package (Tctl/Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings);
+            //Clock 0
+            //Load 1
+            //Power 2
+            //Temperature 3
+            //Voltage 4
+            //Misc 5
+
+            _packagePower = new Sensor("CPU Package", _cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, _cpu, _cpu._settings) 
+                { IsPresentationDefault = true, PresentationSortKey = "2_1_0" };
+            _coreTemperatureTctl = new Sensor("CPU (Tctl)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings)
+                { PresentationSortKey = "3_1_0" };
+            _coreTemperatureTdie = new Sensor("CPU (Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings)
+                { PresentationSortKey = "3_1_1" };
+            _coreTemperatureTctlTdie = new Sensor("CPU Package (Tctl/Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings)
+                { PresentationSortKey = "3_1_2" };
             _ccdTemperatures = new Sensor[8]; // Hardcoded until there's a way to get max CCDs.
-            _coreVoltage = new Sensor("CPU Core (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings);
-            _socVoltage = new Sensor("CPU SoC (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings);
-            _busClock = new Sensor("CPU Bus", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
-            _avgClock = new Sensor("CPU Clock", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
-            _avgClockEffcetive = new Sensor("CPU Effective", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
-            _maxClock = new Sensor("CPU Max", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
-            _maxEffectiveClock = new Sensor("CPU Max Effective", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings);
+            _coreVoltage = new Sensor("CPU Core (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings)
+                { PresentationSortKey = "4_1_0" };
+            _socVoltage = new Sensor("CPU SoC (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings)
+                { PresentationSortKey = "4_1_1" };
+            _busClock = new Sensor("CPU Bus", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings)
+                { PresentationSortKey = "0_1_0" };
+            _avgClock = new Sensor("CPU Clock", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings)
+                { PresentationSortKey = "0_1_1" };
+            _avgClockEffcetive = new Sensor("CPU Effective", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings)
+                { PresentationSortKey = "0_1_2" };
+            _maxClock = new Sensor("CPU Max", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings)
+                { PresentationSortKey = "0_1_3" };
+            _maxEffectiveClock = new Sensor("CPU Max Effective", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings)
+                { PresentationSortKey = "0_1_4" };
 
             _cpu.ActivateSensor(_packagePower);
             _cpu.ActivateSensor(_avgClock);
@@ -152,7 +171,11 @@ internal sealed class Amd17Cpu : AmdCpu
 
             foreach (KeyValuePair<uint, RyzenSMU.SmuSensorType> sensor in _cpu._smu.GetPmTableStructure())
             {
-                _smuSensors.Add(sensor, new Sensor(sensor.Value.Name, _cpu._sensorTypeIndex[sensor.Value.Type]++, sensor.Value.Type, _cpu, _cpu._settings));
+                _smuSensors.Add(sensor, new Sensor(sensor.Value.Name, _cpu._sensorTypeIndex[sensor.Value.Type]++, sensor.Value.Type, _cpu, _cpu._settings)
+                {
+                    PresentationSortKey = $"5_{(int)sensor.Value.Type}_{sensor.Key}"
+                });
+
             }
         }
 
@@ -352,7 +375,8 @@ internal sealed class Amd17Cpu : AmdCpu
                                 _cpu._sensorTypeIndex[SensorType.Temperature]++,
                                 SensorType.Temperature,
                                 _cpu,
-                                _cpu._settings));
+                                _cpu._settings)
+                            { PresentationSortKey = "3_2_1" });
                         }
 
                         if (_ccdsAverageTemperature == null)
@@ -361,7 +385,8 @@ internal sealed class Amd17Cpu : AmdCpu
                                 _cpu._sensorTypeIndex[SensorType.Temperature]++,
                                 SensorType.Temperature,
                                 _cpu,
-                                _cpu._settings));
+                                _cpu._settings)
+                            { PresentationSortKey = "3_2_2" });
                         }
 
                         _ccdsMaxTemperature.Value = activeCcds.Max(x => x.Value);
@@ -655,11 +680,15 @@ internal sealed class Amd17Cpu : AmdCpu
         {
             _cpu = cpu;
             CoreId = id;
-            _clock = new Sensor("Core #" + CoreId, _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu._settings) { IsPresentationDefault = true };
-            _clockEffective = new Sensor("Core #" + CoreId + " (Effective)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu._settings);
+            _clock = new Sensor("Core #" + CoreId, _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu._settings)
+                { IsPresentationDefault = true, PresentationSortKey = $"0_0_0_{id}" };
+            _clockEffective = new Sensor("Core #" + CoreId + " (Effective)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu._settings)
+                { PresentationSortKey = $"0_0_1_{id}" };
             // _multiplier = new Sensor("Core #" + CoreId, cpu._sensorTypeIndex[SensorType.Factor]++, SensorType.Factor, cpu, cpu._settings);
-            _power = new Sensor("Core #" + CoreId + " (SMU)", cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, cpu, cpu._settings);
-            _vcore = new Sensor("Core #" + CoreId + " VID", cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, cpu, cpu._settings);
+            _power = new Sensor("Core #" + CoreId + " (SMU)", cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, cpu, cpu._settings)
+                { PresentationSortKey = $"2_0_{id}" };
+            _vcore = new Sensor("Core #" + CoreId + " VID", cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, cpu, cpu._settings)
+                { PresentationSortKey = $"3_0_{id}" };
 
             cpu.ActivateSensor(_clock);
             cpu.ActivateSensor(_clockEffective);

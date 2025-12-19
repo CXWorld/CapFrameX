@@ -26,7 +26,7 @@ internal class IntelD3dGpu : GenericGpu
 
     private readonly IntelMsr _pawnModule;
 
-    public IntelD3dGpu(Cpu.IntelCpu intelCpu, string deviceId, D3DDisplayDevice.D3DDeviceInfo deviceInfo, ISettings settings)
+    public IntelD3dGpu(Cpu.IntelCpu intelCpu, int index, string deviceId, D3DDisplayDevice.D3DDeviceInfo deviceInfo, ISettings settings)
         : base(GetName(deviceId), new Identifier("gpu-intel-integrated", deviceId.ToString(CultureInfo.InvariantCulture)), settings)
     {
         _pawnModule = new IntelMsr();
@@ -35,28 +35,36 @@ internal class IntelD3dGpu : GenericGpu
 
         int memorySensorIndex = 0;
 
-        if (deviceInfo.GpuDedicatedLimit > 0)
+        if (deviceInfo.GpuDedicatedLimit > 0 || IsDiscreteGpu)
         {
-            _dedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings) { IsPresentationDefault = true };
+            _dedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings) 
+                { IsPresentationDefault = true, PresentationSortKey = $"{index}_1" };
         }
 
-        _sharedMemoryUsage = new Sensor("D3D Shared Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings);
+        _sharedMemoryUsage = new Sensor("D3D Shared Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings)
+            { PresentationSortKey = $"{index}_2_0" };
 
         if (deviceInfo.GpuSharedLimit > 0)
         {
-            _sharedMemoryFree = new Sensor("D3D Shared Memory Free", memorySensorIndex++, SensorType.SmallData, this, settings);
-            _sharedMemoryLimit = new Sensor("D3D Shared Memory Total", memorySensorIndex++, SensorType.SmallData, this, settings);
+            _sharedMemoryFree = new Sensor("D3D Shared Memory Free", memorySensorIndex++, SensorType.SmallData, this, settings)
+                { PresentationSortKey = $"{index}_3_1" };
+            _sharedMemoryLimit = new Sensor("D3D Shared Memory Total", memorySensorIndex++, SensorType.SmallData, this, settings)
+                { PresentationSortKey = $"{index}_3_2" };
         }
 
-        if (_pawnModule.ReadMsr(MSR_PP1_ENERGY_STATUS, out uint eax, out uint _))
+        if (!IsDiscreteGpu)
         {
-            _energyUnitMultiplier = intelCpu.EnergyUnitsMultiplier;
-            if (_energyUnitMultiplier != 0)
+            if (_pawnModule.ReadMsr(MSR_PP1_ENERGY_STATUS, out uint eax, out uint _))
             {
-                _lastEnergyTime = DateTime.UtcNow;
-                _lastEnergyConsumed = eax;
-                _powerSensor = new Sensor("GPU Power", 0, SensorType.Power, this, settings) { IsPresentationDefault = true };
-                ActivateSensor(_powerSensor);
+                _energyUnitMultiplier = intelCpu.EnergyUnitsMultiplier;
+                if (_energyUnitMultiplier != 0)
+                {
+                    _lastEnergyTime = DateTime.UtcNow;
+                    _lastEnergyConsumed = eax;
+                    _powerSensor = new Sensor("GPU Power", 0, SensorType.Power, this, settings) 
+                        { IsPresentationDefault = true, PresentationSortKey = $"{index}_0" };
+                    ActivateSensor(_powerSensor);
+                }
             }
         }
 
@@ -67,7 +75,8 @@ internal class IntelD3dGpu : GenericGpu
         int nodeSensorIndex = 0;
         foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
         {
-            _nodeUsage[node.Id] = new Sensor(node.Name, nodeSensorIndex++, SensorType.Load, this, settings);
+            _nodeUsage[node.Id] = new Sensor(node.Name, nodeSensorIndex++, SensorType.Load, this, settings)
+                { PresentationSortKey = $"{index}_4_{nodeSensorIndex}" };
             _nodeUsagePrevValue[node.Id] = node.RunningTime;
             _nodeUsagePrevTick[node.Id] = node.QueryTime;
         }

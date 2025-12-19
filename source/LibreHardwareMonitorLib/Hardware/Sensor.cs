@@ -168,6 +168,8 @@ internal class Sensor : ISensor
     /// </summary>
     public bool IsPresentationDefault { get; set; } = false;
 
+    public string PresentationSortKey { get; set; } = "999_999";
+
     public void ResetMin()
     {
         Min = null;

@@ -40,12 +40,13 @@ internal class IntelGpuGroup : IGroup
             _report.AppendLine(gclInitialized.ToString(CultureInfo.InvariantCulture));
             _report.AppendLine();
 
+            uint adapterCount = 0;
             // Enumerate discrete GPUs using Intel GCL
             if (gclInitialized)
             {
                 try
                 {
-                    var adapterCount = IGCL.GetAdpaterCount();
+                     adapterCount = IGCL.GetAdpaterCount();
                     _report.Append("Device handles found: ");
                     _report.AppendLine(adapterCount.ToString());
 
@@ -127,12 +128,15 @@ internal class IntelGpuGroup : IGroup
                         _report.Append("Integrated: ");
                         _report.AppendLine(deviceInfo.Integrated.ToString(CultureInfo.InvariantCulture));
 
-                        if (deviceInfo.Integrated)
-                        {
-                            // It may seem strange to only use the first cpu here, but in-case we have a multi cpu system with integrated graphics (does that exist?),
-                            // we would pick up the multiple device identifiers above and would add one instance for each CPU.
-                            _hardware.Add(new IntelD3dGpu(intelCpus[0], deviceId, deviceInfo, settings));
-                        }
+                        // We also want D3D VRAM counters for discrete Intel GPUs
+                        _hardware.Add(new IntelD3dGpu(intelCpus[0], (int)adapterCount + i, deviceId, deviceInfo, settings));
+
+                        //if (deviceInfo.Integrated)
+                        //{
+                        //    // It may seem strange to only use the first cpu here, but in-case we have a multi cpu system with integrated graphics (does that exist?),
+                        //    // we would pick up the multiple device identifiers above and would add one instance for each CPU.
+                        //    _hardware.Add(new IntelD3dGpu(intelCpus[0], (int)adapterCount + i, deviceId, deviceInfo, settings));
+                        //}
                     }
 
                     _report.AppendLine();

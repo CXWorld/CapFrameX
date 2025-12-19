@@ -62,7 +62,7 @@ internal sealed class NvidiaGpu : GenericGpu
 
         bool hasBusId = NvApi.NvAPI_GPU_GetBusId(handle, out uint busId) == NvApi.NvStatus.OK;
 
-        // Thermal settings.
+        // Thermal settings
         NvApi.NvThermalSettings thermalSettings = GetThermalSettings(out NvApi.NvStatus status);
         if (status == NvApi.NvStatus.OK && thermalSettings.Count > 0)
         {
@@ -86,15 +86,18 @@ internal sealed class NvidiaGpu : GenericGpu
 
                 _temperatures[i] = new Sensor(name, i, SensorType.Temperature, this, [], settings)
                 {
-                    IsPresentationDefault = name == "GPU Core"
+                    IsPresentationDefault = name == "GPU Core",
+                    PresentationSortKey = $"{adapterIndex}_2_0_{i}"
                 };
                 ActivateSensor(_temperatures[i]);
             }
         }
 
-        // Thermal sensors.
-        _hotSpotTemperature = new Sensor("GPU Hot Spot", (int)thermalSettings.Count + 1, SensorType.Temperature, this, settings);
-        _memoryJunctionTemperature = new Sensor("GPU Memory Junction", (int)thermalSettings.Count + 2, SensorType.Temperature, this, settings);
+        // Thermal sensors
+        _hotSpotTemperature = new Sensor("GPU Hot Spot", (int)thermalSettings.Count + 1, SensorType.Temperature, this, settings)
+        { PresentationSortKey = $"{adapterIndex}_2_0_{thermalSettings.Count + 1}" };
+        _memoryJunctionTemperature = new Sensor("GPU Memory Junction", (int)thermalSettings.Count + 2, SensorType.Temperature, this, settings)
+        { PresentationSortKey = $"{adapterIndex}_2_0_{thermalSettings.Count + 2}" };
         bool hasAnyThermalSensor = false;
 
         for (int thermalSensorsMaxBit = 0; thermalSensorsMaxBit < 32; thermalSensorsMaxBit++)
@@ -146,7 +149,8 @@ internal sealed class NvidiaGpu : GenericGpu
                         {
                             clocks.Add(new Sensor(name, i, SensorType.Clock, this, settings)
                             {
-                                IsPresentationDefault = name == "GPU Core" || name == "GPU Memory"
+                                IsPresentationDefault = name == "GPU Core" || name == "GPU Memory",
+                                PresentationSortKey = $"{adapterIndex}_0_{i}"
                             });
                         }
                     }
@@ -164,7 +168,7 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        // Fans + controllers.
+        // Fans + controllers
         NvApi.NvFanCoolersStatus fanCoolers = GetFanCoolersStatus(out status);
         if (status == NvApi.NvStatus.OK && fanCoolers.Count > 0)
         {
@@ -176,7 +180,10 @@ internal sealed class NvidiaGpu : GenericGpu
 
                 string name = "GPU Fan" + (fanCoolers.Count > 1 ? " " + (i + 1) : string.Empty);
 
-                _fans[i] = new Sensor(name, (int)item.CoolerId, SensorType.Fan, this, settings);
+                _fans[i] = new Sensor(name, (int)item.CoolerId, SensorType.Fan, this, settings)
+                {
+                    PresentationSortKey = $"{adapterIndex}_5_{i}"
+                };
                 ActivateSensor(_fans[i]);
             }
         }
@@ -185,7 +192,8 @@ internal sealed class NvidiaGpu : GenericGpu
             GetTachReading(out status);
             if (status == NvApi.NvStatus.OK)
             {
-                _fans = new[] { new Sensor("GPU", 1, SensorType.Fan, this, settings) };
+                _fans = new[] { new Sensor("GPU", 1, SensorType.Fan, this, settings) 
+                    { PresentationSortKey = $"{adapterIndex}_5" } };
                 ActivateSensor(_fans[0]);
             }
         }
@@ -205,7 +213,8 @@ internal sealed class NvidiaGpu : GenericGpu
                 NvApi.NvFanCoolersStatusItem fanItem = Array.Find(fanCoolers.Items, x => x.CoolerId == item.CoolerId);
                 if (!fanItem.Equals(default(NvApi.NvFanCoolersStatusItem)))
                 {
-                    _controls[i] = new Sensor(name, (int)item.CoolerId, SensorType.Control, this, settings);
+                    _controls[i] = new Sensor(name, (int)item.CoolerId, SensorType.Control, this, settings)
+                        { PresentationSortKey = $"{adapterIndex}_6_{i}" };
                     ActivateSensor(_controls[i]);
 
                     _fanControls[i] = new Control(_controls[i], settings, fanItem.CurrentMinLevel, fanItem.CurrentMaxLevel);
@@ -230,7 +239,8 @@ internal sealed class NvidiaGpu : GenericGpu
                     NvApi.NvCooler cooler = coolerSettings.Cooler[i];
                     string name = "GPU Fan" + (coolerSettings.Count > 1 ? " " + cooler.Controller : string.Empty);
 
-                    _controls[i] = new Sensor(name, i, SensorType.Control, this, settings);
+                    _controls[i] = new Sensor(name, i, SensorType.Control, this, settings)
+                        { PresentationSortKey = $"{adapterIndex}_6_{i}" };
                     ActivateSensor(_controls[i]);
 
                     _fanControls[i] = new Control(_controls[i], settings, cooler.DefaultMin, cooler.DefaultMax);
@@ -243,7 +253,7 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        // Load usages.
+        // Load usages
         NvApi.NvDynamicPStatesInfo pStatesInfo = GetDynamicPstatesInfoEx(out status);
         if (status == NvApi.NvStatus.OK)
         {
@@ -258,7 +268,8 @@ internal sealed class NvidiaGpu : GenericGpu
 
                     if (name != null)
                     {
-                        loads.Add(new Sensor(name, index, SensorType.Load, this, settings) { IsPresentationDefault = name == "GPU Core" });
+                        loads.Add(new Sensor(name, index, SensorType.Load, this, settings) 
+                            { IsPresentationDefault = name == "GPU Core", PresentationSortKey = $"{adapterIndex}_1_{index}" });
                     }
                 }
             }
@@ -286,7 +297,10 @@ internal sealed class NvidiaGpu : GenericGpu
                         string name = GetUtilizationDomainName(utilizationDomain);
 
                         if (name != null)
-                            loads.Add(new Sensor(name, index, SensorType.Load, this, settings));
+                        {
+                            loads.Add(new Sensor(name, index, SensorType.Load, this, settings)
+                                { PresentationSortKey = $"{adapterIndex}_1_{index}" });
+                        }
                     }
                 }
 
@@ -317,7 +331,11 @@ internal sealed class NvidiaGpu : GenericGpu
 
                 if (name != null)
                 {
-                    _powers[i] = new Sensor(name, i + (_loads?.Length ?? 0), SensorType.Load, this, settings);
+                    _powers[i] = new Sensor(name, i + (_loads?.Length ?? 0), SensorType.Load, this, settings)
+                    {
+                        IsPresentationDefault = name == "GPU Power",
+                        PresentationSortKey = $"{adapterIndex}_3_{i}"
+                    };
                     ActivateSensor(_powers[i]);
                 }
             }
@@ -327,7 +345,8 @@ internal sealed class NvidiaGpu : GenericGpu
         NvApi.NvGpuVoltageStatus voltageStatus = GetVoltageStatus(out NvApi.NvStatus nvStatus);
         if (nvStatus == NvApi.NvStatus.OK)
         {
-            _voltage = new Sensor("GPU Voltage", 0, SensorType.Voltage, this, settings);
+            _voltage = new Sensor("GPU Voltage", 0, SensorType.Voltage, this, settings)
+                { PresentationSortKey = $"{adapterIndex}_4" };
             _voltage.Value = voltageStatus.ValueInuV / 1E06f;
             ActivateSensor(_voltage);
         }
@@ -336,7 +355,8 @@ internal sealed class NvidiaGpu : GenericGpu
         NvApi.NvStatus pCounterStatus = NvApi.NvAPI_GetVBlankCounter(displayHandle.Value, out uint pCounter);
         if (pCounterStatus == NvApi.NvStatus.OK)
         {
-            _monitorRefreshRate = new Sensor("Monitor Refresh Rate", 0, SensorType.Frequency, this, settings);
+            _monitorRefreshRate = new Sensor("Monitor Refresh Rate", 0, SensorType.Frequency, this, settings)
+                { PresentationSortKey = $"{adapterIndex}_9" };
             _monitorRefreshRate.Value = 0;
             ActivateSensor(_monitorRefreshRate);
         }
@@ -352,8 +372,10 @@ internal sealed class NvidiaGpu : GenericGpu
             {
                 _powerUsage = new Sensor("GPU Power", 0, SensorType.Power, this, settings) { IsPresentationDefault = true };
 
-                _pcieThroughputRx = new Sensor("GPU PCIe Rx", 0, SensorType.Throughput, this, settings);
-                _pcieThroughputTx = new Sensor("GPU PCIe Tx", 1, SensorType.Throughput, this, settings);
+                _pcieThroughputRx = new Sensor("GPU PCIe Rx", 0, SensorType.Throughput, this, settings)
+                    { PresentationSortKey = $"{adapterIndex}_7_0" };
+                _pcieThroughputTx = new Sensor("GPU PCIe Tx", 1, SensorType.Throughput, this, settings)
+                    { PresentationSortKey = $"{adapterIndex}_7_1" };
 
                 if (!Software.OperatingSystem.IsUnix)
                 {
@@ -431,8 +453,10 @@ internal sealed class NvidiaGpu : GenericGpu
 
                                         _d3dDeviceId = deviceId;
 
-                                        _gpuDedicatedMemoryUsage = new Sensor("GPU Memory Dedicated", smallDataSensorIndex++, SensorType.Data, this, settings);
-                                        _gpuSharedMemoryUsage = new Sensor("GPU Memory Shared", smallDataSensorIndex, SensorType.Data, this, settings);
+                                        _gpuDedicatedMemoryUsage = new Sensor("GPU Memory Dedicated", smallDataSensorIndex++, SensorType.Data, this, settings)
+                                            { PresentationSortKey = $"{adapterIndex}_8_0" };
+                                        _gpuSharedMemoryUsage = new Sensor("GPU Memory Shared", smallDataSensorIndex, SensorType.Data, this, settings)
+                                            { PresentationSortKey = $"{adapterIndex}_8_1" };
 
                                         _gpuNodeUsage = new Sensor[deviceInfo.Nodes.Length];
                                         _gpuNodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
@@ -440,7 +464,8 @@ internal sealed class NvidiaGpu : GenericGpu
 
                                         foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
                                         {
-                                            _gpuNodeUsage[node.Id] = new Sensor(node.Name, loadSensorIndex++, SensorType.Load, this, settings);
+                                            _gpuNodeUsage[node.Id] = new Sensor(node.Name, loadSensorIndex++, SensorType.Load, this, settings)
+                                                { PresentationSortKey = $"{adapterIndex}_10_{loadSensorIndex}" };
                                             _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
                                             _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
                                         }
@@ -453,10 +478,14 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        _memoryFree = new Sensor("GPU Memory Free", 0, SensorType.Data, this, settings);
-        _memoryUsed = new Sensor("GPU Memory Used", 1, SensorType.Data, this, settings);
-        _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.Data, this, settings);
-        _memoryLoad = new Sensor("GPU Memory", 3, SensorType.Load, this, settings);
+        _memoryFree = new Sensor("GPU Memory Free", 0, SensorType.Data, this, settings)
+            { PresentationSortKey = $"{adapterIndex}_8_2" };
+        _memoryUsed = new Sensor("GPU Memory Used", 1, SensorType.Data, this, settings)
+            { PresentationSortKey = $"{adapterIndex}_8_3" };
+        _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.Data, this, settings)
+            { PresentationSortKey = $"{adapterIndex}_8_4" };
+        _memoryLoad = new Sensor("GPU Memory", 3, SensorType.Load, this, settings)
+            { PresentationSortKey = $"{adapterIndex}_8_5" };
 
         Update();
     }

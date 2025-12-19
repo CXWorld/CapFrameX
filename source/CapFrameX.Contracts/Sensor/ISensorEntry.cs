@@ -4,6 +4,8 @@
     {
         string Identifier { get; set; }
 
+        string SortKey { get; set; }    
+
         string Name { get; set; } 
 
         object Value { get; set; }

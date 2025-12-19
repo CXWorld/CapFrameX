@@ -1,5 +1,4 @@
 ﻿using CapFrameX.Contracts.Overlay;
-using CapFrameX.Contracts.Sensor;
 using Newtonsoft.Json;
 using Prism.Mvvm;
 using System;
@@ -39,6 +38,8 @@ namespace CapFrameX.Overlay
         private object _value;
 
         public string Identifier { get; }
+
+        public string SortKey { get; set; } = "0_0_0_0_0";
 
         public EOverlayEntryType OverlayEntryType { get; set; }
 
@@ -422,6 +423,7 @@ namespace CapFrameX.Overlay
         {
             return new OverlayEntryWrapper(Identifier)
             {
+                SortKey = SortKey,
                 OverlayEntryType = OverlayEntryType,
                 Description = Description,
                 ValueFormat = ValueFormat,
