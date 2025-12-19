@@ -386,6 +386,21 @@ namespace CapFrameX.Overlay
                         Color = string.Empty
                     },
 
+                    // PC Latency
+                    new OverlayEntryWrapper("OnlinePcLatency")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "PC Latency (ms)",
+                        GroupName = "PC Latency",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
+                    },
+
                     // PMD
                     new OverlayEntryWrapper("PmdGpuPowerCurrent")
                     {

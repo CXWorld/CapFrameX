@@ -1,5 +1,4 @@
 ﻿using CapFrameX.Statistics.NetStandard.Contracts;
-using System;
 
 namespace CapFrameX.PresentMonInterface
 {
@@ -16,6 +15,8 @@ namespace CapFrameX.PresentMonInterface
         double GetOnlineGpuActiveTimeDeviationMetricValue();
 
         double GetOnlineStutteringPercentageValue();
+
+        double GetOnlinePcLatencyAverageValue();
 
         OnlinePmdMetrics GetPmdMetricsPowerCurrent();
 
