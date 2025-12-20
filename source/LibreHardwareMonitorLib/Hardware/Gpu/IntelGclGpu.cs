@@ -55,41 +55,41 @@ internal sealed class IntelGclGpu : GenericGpu
         _driverVersion = deviceInfo.DriverVersion;
 
         _temperatureCore = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings)
-            { IsPresentationDefault = true, PresentationSortKey = $"{index}_2_0" };
+        { IsPresentationDefault = true, PresentationSortKey = $"{index}_2_0" };
         _temperatureMemory = new Sensor("GPU Memory", 1, SensorType.Temperature, this, settings)
-            { PresentationSortKey = $"{index}_2_1" };
+        { PresentationSortKey = $"{index}_2_1" };
 
         _powerTbp = new Sensor("GPU TBP", 1, SensorType.Power, this, settings)
-            { IsPresentationDefault = true, PresentationSortKey = $"{index}_3_0" };
+        { IsPresentationDefault = true, PresentationSortKey = $"{index}_3_0" };
         _powerTdp = new Sensor("GPU TDP", 0, SensorType.Power, this, settings)
-            { PresentationSortKey = $"{index}_3_1" };
+        { PresentationSortKey = $"{index}_3_1" };
         _powerVram = new Sensor("GPU VRAM", 2, SensorType.Power, this, settings)
-            { PresentationSortKey = $"{index}_3_2" };
+        { PresentationSortKey = $"{index}_3_2" };
 
         _clockCore = new Sensor("GPU Core", 0, SensorType.Clock, this, settings)
-            { IsPresentationDefault = true, PresentationSortKey = $"{index}_0_0" };
+        { IsPresentationDefault = true, PresentationSortKey = $"{index}_0_0" };
         _clockVram = new Sensor("GPU Memory", 1, SensorType.Clock, this, settings)
-            { IsPresentationDefault = true, PresentationSortKey = $"{index}_0_1" };
+        { IsPresentationDefault = true, PresentationSortKey = $"{index}_0_1" };
 
         _voltageCore = new Sensor("GPU Core", 0, SensorType.Voltage, this, settings)
-            { PresentationSortKey = $"{index}_4_0" };
+        { PresentationSortKey = $"{index}_4_0" };
         _voltageVram = new Sensor("GPU Memory", 1, SensorType.Voltage, this, settings)
-            { PresentationSortKey = $"{index}_4_1" };
+        { PresentationSortKey = $"{index}_4_1" };
 
         _usageCore = new Sensor("GPU Core", 0, SensorType.Load, this, settings)
-            { IsPresentationDefault = true, PresentationSortKey = $"{index}_1_0" };
+        { IsPresentationDefault = true, PresentationSortKey = $"{index}_1_0" };
         _usageRenderEngine = new Sensor("GPU Computing", 1, SensorType.Load, this, settings)
-            { PresentationSortKey = $"{index}_1_1" };
+        { PresentationSortKey = $"{index}_1_1" };
         _usageMediaEngine = new Sensor("GPU Media Engine", 2, SensorType.Load, this, settings)
-            { PresentationSortKey = $"{index}_1_2" };
+        { PresentationSortKey = $"{index}_1_2" };
 
         _bandwidthReadVram = new Sensor("GPU Memory Read", 4, SensorType.Throughput, this, settings)
-            { PresentationSortKey = $"{index}_6_0" };
+        { PresentationSortKey = $"{index}_6_0" };
         _bandwidthWriteVram = new Sensor("GPU Memory Write", 5, SensorType.Throughput, this, settings)
-            { PresentationSortKey = $"{index}_6_1" };
+        { PresentationSortKey = $"{index}_6_1" };
 
         _speedFan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings)
-            { PresentationSortKey = $"{index}_5_0" };
+        { PresentationSortKey = $"{index}_5_0" };
 
         Update();
     }

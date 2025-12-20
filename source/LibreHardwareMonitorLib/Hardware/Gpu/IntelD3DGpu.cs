@@ -37,19 +37,19 @@ internal class IntelD3dGpu : GenericGpu
 
         if (deviceInfo.GpuDedicatedLimit > 0 || IsDiscreteGpu)
         {
-            _dedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings) 
-                { IsPresentationDefault = true, PresentationSortKey = $"{index}_1" };
+            _dedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings)
+            { IsPresentationDefault = true, PresentationSortKey = $"{index}_1" };
         }
 
         _sharedMemoryUsage = new Sensor("D3D Shared Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings)
-            { PresentationSortKey = $"{index}_2_0" };
+        { PresentationSortKey = $"{index}_2_0" };
 
         if (deviceInfo.GpuSharedLimit > 0)
         {
             _sharedMemoryFree = new Sensor("D3D Shared Memory Free", memorySensorIndex++, SensorType.SmallData, this, settings)
-                { PresentationSortKey = $"{index}_3_1" };
+            { PresentationSortKey = $"{index}_3_1" };
             _sharedMemoryLimit = new Sensor("D3D Shared Memory Total", memorySensorIndex++, SensorType.SmallData, this, settings)
-                { PresentationSortKey = $"{index}_3_2" };
+            { PresentationSortKey = $"{index}_3_2" };
         }
 
         if (!IsDiscreteGpu)
@@ -61,8 +61,8 @@ internal class IntelD3dGpu : GenericGpu
                 {
                     _lastEnergyTime = DateTime.UtcNow;
                     _lastEnergyConsumed = eax;
-                    _powerSensor = new Sensor("GPU Power", 0, SensorType.Power, this, settings) 
-                        { IsPresentationDefault = true, PresentationSortKey = $"{index}_0" };
+                    _powerSensor = new Sensor("GPU Power", 0, SensorType.Power, this, settings)
+                    { IsPresentationDefault = true, PresentationSortKey = $"{index}_0" };
                     ActivateSensor(_powerSensor);
                 }
             }
@@ -76,7 +76,7 @@ internal class IntelD3dGpu : GenericGpu
         foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
         {
             _nodeUsage[node.Id] = new Sensor(node.Name, nodeSensorIndex++, SensorType.Load, this, settings)
-                { PresentationSortKey = $"{index}_4_{nodeSensorIndex}" };
+            { PresentationSortKey = $"{index}_4_{nodeSensorIndex}" };
             _nodeUsagePrevValue[node.Id] = node.RunningTime;
             _nodeUsagePrevTick[node.Id] = node.QueryTime;
         }

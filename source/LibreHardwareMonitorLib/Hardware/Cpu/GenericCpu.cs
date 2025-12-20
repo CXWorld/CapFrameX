@@ -59,7 +59,7 @@ internal class GenericCpu : Hardware
         // Check if processor supports an invariant TSC.
         _isInvariantTimeStampCounter = cpuId[0][0].ExtData.GetLength(0) > 7 && (cpuId[0][0].ExtData[7, 3] & 0x100) != 0;
 
-        _totalLoad = _coreCount > 1 ? new Sensor("CPU Total", 0, SensorType.Load, this, settings) { PresentationSortKey = "1_2_1"} : null;
+        _totalLoad = _coreCount > 1 ? new Sensor("CPU Total", 0, SensorType.Load, this, settings) { PresentationSortKey = "1_2_1" } : null;
         _maxLoad = _coreCount > 1 ? new Sensor("CPU Max", 1, SensorType.Load, this, settings) { PresentationSortKey = "1_2_2" } : null;
 
         _cpuLoad = new CpuLoad(cpuId);
@@ -75,8 +75,8 @@ internal class GenericCpu : Hardware
                     {
                         // Some cores may have 2 threads while others have only one (e.g. P-cores vs E-cores on Intel 12th gen).
                         string sensorName = CoreString(coreIdx) + (cpuId[coreIdx].Length > 1 ? $" Thread #{threadIdx + 1}" : string.Empty);
-                        _threadLoads[thread] = new Sensor(sensorName, thread + 2, SensorType.Load, this, settings) 
-                            { IsPresentationDefault = true, PresentationSortKey = $"1_1_{coreIdx + threadIdx}" };
+                        _threadLoads[thread] = new Sensor(sensorName, thread + 2, SensorType.Load, this, settings)
+                        { IsPresentationDefault = true, PresentationSortKey = $"1_1_{coreIdx + threadIdx}" };
 
                         ActivateSensor(_threadLoads[thread]);
                     }

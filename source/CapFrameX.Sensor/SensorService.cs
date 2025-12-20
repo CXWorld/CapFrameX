@@ -368,6 +368,7 @@ namespace CapFrameX.Sensor
                 if (gpuCache.SensorsById.TryGetValue(id, out var info))
                 {
                     // Identify AMD iGPU by name until lib is ported to newer ADLX
+                    // Todo: Remove when LibreHardwareMonitor supports ADLX
                     if (info.AdapterName.Contains("AMD Radeon(TM) Graphics"))
                         return false;
 

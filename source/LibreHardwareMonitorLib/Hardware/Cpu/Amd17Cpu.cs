@@ -139,29 +139,29 @@ internal sealed class Amd17Cpu : AmdCpu
             //Voltage 4
             //Misc 5
 
-            _packagePower = new Sensor("CPU Package", _cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, _cpu, _cpu._settings) 
-                { IsPresentationDefault = true, PresentationSortKey = "2_1_0" };
+            _packagePower = new Sensor("CPU Package", _cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, _cpu, _cpu._settings)
+            { IsPresentationDefault = true, PresentationSortKey = "2_1_0" };
             _coreTemperatureTctl = new Sensor("CPU (Tctl)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings)
-                { PresentationSortKey = "3_1_0" };
+            { PresentationSortKey = "3_1_0" };
             _coreTemperatureTdie = new Sensor("CPU (Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings)
-                { PresentationSortKey = "3_1_1" };
+            { PresentationSortKey = "3_1_1" };
             _coreTemperatureTctlTdie = new Sensor("CPU Package (Tctl/Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings)
-                { PresentationSortKey = "3_1_2" };
+            { PresentationSortKey = "3_1_2" };
             _ccdTemperatures = new Sensor[8]; // Hardcoded until there's a way to get max CCDs.
             _coreVoltage = new Sensor("CPU Core (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings)
-                { PresentationSortKey = "4_1_0" };
+            { PresentationSortKey = "4_1_0" };
             _socVoltage = new Sensor("CPU SoC (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings)
-                { PresentationSortKey = "4_1_1" };
+            { PresentationSortKey = "4_1_1" };
             _busClock = new Sensor("CPU Bus", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings)
-                { PresentationSortKey = "0_1_0" };
+            { PresentationSortKey = "0_1_0" };
             _avgClock = new Sensor("CPU Clock", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings)
-                { PresentationSortKey = "0_1_1" };
+            { PresentationSortKey = "0_1_1" };
             _avgClockEffcetive = new Sensor("CPU Effective", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings)
-                { PresentationSortKey = "0_1_2" };
+            { PresentationSortKey = "0_1_2" };
             _maxClock = new Sensor("CPU Max", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings)
-                { PresentationSortKey = "0_1_3" };
+            { PresentationSortKey = "0_1_3" };
             _maxEffectiveClock = new Sensor("CPU Max Effective", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings)
-                { PresentationSortKey = "0_1_4" };
+            { PresentationSortKey = "0_1_4" };
 
             _cpu.ActivateSensor(_packagePower);
             _cpu.ActivateSensor(_avgClock);
@@ -198,7 +198,7 @@ internal sealed class Amd17Cpu : AmdCpu
             // PU [3:0]
             _cpu._pawnModule.ReadMsr(MSR_PWR_UNIT, out uint eax, out uint _);
             int esu = (int)((eax >> 8) & 0x1F);
-            double energyBaseUnit = Math.Pow(0.5,esu);
+            double energyBaseUnit = Math.Pow(0.5, esu);
 
 
             // MSRC001_029B
@@ -528,7 +528,7 @@ internal sealed class Amd17Cpu : AmdCpu
         {
             get
             {
-                if(Cores == null)
+                if (Cores == null)
                     return 0;
 
                 return Cores.Average(x => x.CoreClock);
@@ -584,10 +584,10 @@ internal sealed class Amd17Cpu : AmdCpu
         private Amd17Cpu _cpu;
         public CpuId Cpu { get { return _cpuId; } }
 
-        public TimeSpan SampleDuration { get; private set; }= TimeSpan.Zero;
+        public TimeSpan SampleDuration { get; private set; } = TimeSpan.Zero;
         public double EffectiveClock { get; private set; } = 0;
 
-        public ulong MperfDelta { get {  return _mperfDelta; } }
+        public ulong MperfDelta { get { return _mperfDelta; } }
         public ulong AperfDelta { get { return _aperfDelta; } }
 
         public CpuThread(Amd17Cpu cpu, CpuId cpuId)
@@ -643,7 +643,7 @@ internal sealed class Amd17Cpu : AmdCpu
             if (_aperfDelta > 20000e6)
                 _aperfDelta = 0;
 
-            if(_aperfDelta == 0 || _mperfDelta == 0)
+            if (_aperfDelta == 0 || _mperfDelta == 0)
             {
                 //overflow possible, numbers are > 20 GHz
                 _lastSampleTime = new(0);
@@ -681,14 +681,14 @@ internal sealed class Amd17Cpu : AmdCpu
             _cpu = cpu;
             CoreId = id;
             _clock = new Sensor("Core #" + CoreId, _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu._settings)
-                { IsPresentationDefault = true, PresentationSortKey = $"0_0_0_{id}" };
+            { IsPresentationDefault = true, PresentationSortKey = $"0_0_0_{id}" };
             _clockEffective = new Sensor("Core #" + CoreId + " (Effective)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu._settings)
-                { PresentationSortKey = $"0_0_1_{id}" };
+            { PresentationSortKey = $"0_0_1_{id}" };
             // _multiplier = new Sensor("Core #" + CoreId, cpu._sensorTypeIndex[SensorType.Factor]++, SensorType.Factor, cpu, cpu._settings);
             _power = new Sensor("Core #" + CoreId + " (SMU)", cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, cpu, cpu._settings)
-                { PresentationSortKey = $"2_0_{id}" };
+            { PresentationSortKey = $"2_0_{id}" };
             _vcore = new Sensor("Core #" + CoreId + " VID", cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, cpu, cpu._settings)
-                { PresentationSortKey = $"3_0_{id}" };
+            { PresentationSortKey = $"3_0_{id}" };
 
             cpu.ActivateSensor(_clock);
             cpu.ActivateSensor(_clockEffective);
@@ -739,7 +739,7 @@ internal sealed class Amd17Cpu : AmdCpu
             uint msrPstate = eax;
             int curCpuVid = (int)((eax >> 14) & 0xff);
 
-            foreach(var t in Threads)
+            foreach (var t in Threads)
             {
                 t.ReadPerformanceCounter();
             }

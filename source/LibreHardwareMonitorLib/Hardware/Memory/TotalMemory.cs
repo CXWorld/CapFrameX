@@ -11,13 +11,16 @@ internal sealed class TotalMemory : Hardware
     public TotalMemory(ISettings settings)
         : base("Total Memory", new Identifier("ram"), settings)
     {
-        PhysicalMemoryUsed = new Sensor("RAM Used", 0, SensorType.Data, this, settings) { IsPresentationDefault = true };
+        PhysicalMemoryUsed = new Sensor("RAM Used", 0, SensorType.Data, this, settings)
+        { IsPresentationDefault = true, PresentationSortKey = "2_0" };
         ActivateSensor(PhysicalMemoryUsed);
 
-        PhysicalMemoryAvailable = new Sensor("RAM Available", 1, SensorType.Data, this, settings);
+        PhysicalMemoryAvailable = new Sensor("RAM Available", 1, SensorType.Data, this, settings)
+        { PresentationSortKey = "2_1" };
         ActivateSensor(PhysicalMemoryAvailable);
 
-        PhysicalMemoryLoad = new Sensor("RAM Usage", 0, SensorType.Load, this, settings) { IsPresentationDefault = true };
+        PhysicalMemoryLoad = new Sensor("RAM Usage", 0, SensorType.Load, this, settings)
+        { IsPresentationDefault = true, PresentationSortKey = "2_2" };
         ActivateSensor(PhysicalMemoryLoad);
     }
 

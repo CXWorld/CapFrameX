@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.Win32.Foundation;
-using LibreHardwareMonitor.Hardware;
-
-namespace LibreHardwareMonitor.Hardware.Cpu
+﻿namespace LibreHardwareMonitor.Hardware.Cpu
 {
     /// <summary>
     /// Provides methods to determine CPU architecture features.

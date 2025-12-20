@@ -75,63 +75,63 @@ internal sealed class AmdGpu : GenericGpu
         BusNumber = adapterInfo.BusNumber;
         DeviceNumber = adapterInfo.DeviceNumber;
 
-        _temperatureCore = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings) 
-            { IsPresentationDefault = true, PresentationSortKey = $"{index}_2_0" };
+        _temperatureCore = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings)
+        { IsPresentationDefault = true, PresentationSortKey = $"{index}_2_0" };
         _temperatureMemory = new Sensor("GPU Memory", 1, SensorType.Temperature, this, settings)
-            { PresentationSortKey = $"{index}_2_1" };
+        { PresentationSortKey = $"{index}_2_1" };
         _temperatureVddc = new Sensor("GPU VR VDDC", 2, SensorType.Temperature, this, settings)
-            { PresentationSortKey = $"{index}_2_2" };
+        { PresentationSortKey = $"{index}_2_2" };
         _temperatureMvdd = new Sensor("GPU VR MVDD", 3, SensorType.Temperature, this, settings)
-            { PresentationSortKey = $"{index}_2_3" };
+        { PresentationSortKey = $"{index}_2_3" };
         _temperatureSoC = new Sensor("GPU VR SoC", 4, SensorType.Temperature, this, settings)
-            { PresentationSortKey = $"{index}_2_4" };
+        { PresentationSortKey = $"{index}_2_4" };
         _temperatureLiquid = new Sensor("GPU Liquid", 5, SensorType.Temperature, this, settings)
-            { PresentationSortKey = $"{index}_2_5" };
+        { PresentationSortKey = $"{index}_2_5" };
         _temperaturePlx = new Sensor("GPU PLX", 6, SensorType.Temperature, this, settings)
-            { PresentationSortKey = $"{index}_2_6" };
+        { PresentationSortKey = $"{index}_2_6" };
         _temperatureHotSpot = new Sensor("GPU Hot Spot", 7, SensorType.Temperature, this, settings)
-            { PresentationSortKey = $"{index}_2_7" };
+        { PresentationSortKey = $"{index}_2_7" };
 
-        _coreClock = new Sensor("GPU Core", 0, SensorType.Clock, this, settings) 
-            { IsPresentationDefault = true, PresentationSortKey = $"{index}_0_0" };
+        _coreClock = new Sensor("GPU Core", 0, SensorType.Clock, this, settings)
+        { IsPresentationDefault = true, PresentationSortKey = $"{index}_0_0" };
         _socClock = new Sensor("GPU SoC", 1, SensorType.Clock, this, settings)
-            { PresentationSortKey = $"{index}_0_1" };
+        { PresentationSortKey = $"{index}_0_1" };
         _memoryClock = new Sensor("GPU Memory", 2, SensorType.Clock, this, settings)
         { IsPresentationDefault = true, PresentationSortKey = $"{index}_0_2" };
 
         _fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings)
-            { PresentationSortKey = $"{index}_5_0" };
+        { PresentationSortKey = $"{index}_5_0" };
 
         _coreVoltage = new Sensor("GPU Core", 0, SensorType.Voltage, this, settings)
-            { PresentationSortKey = $"{index}_4_0" };
+        { PresentationSortKey = $"{index}_4_0" };
         _memoryVoltage = new Sensor("GPU Memory", 1, SensorType.Voltage, this, settings)
-            { PresentationSortKey = $"{index}_4_1" };
+        { PresentationSortKey = $"{index}_4_1" };
         _socVoltage = new Sensor("GPU SoC", 2, SensorType.Voltage, this, settings)
-            { PresentationSortKey = $"{index}_4_2" };
+        { PresentationSortKey = $"{index}_4_2" };
 
         _coreLoad = new Sensor("GPU Core", 0, SensorType.Load, this, settings)
-            { IsPresentationDefault = true, PresentationSortKey = $"{index}_1_0" };
+        { IsPresentationDefault = true, PresentationSortKey = $"{index}_1_0" };
         _memoryLoad = new Sensor("GPU Memory", 1, SensorType.Load, this, settings)
-            { PresentationSortKey = $"{index}_1_1" };
+        { PresentationSortKey = $"{index}_1_1" };
 
         _controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings)
-            { PresentationSortKey = $"{index}_5_1" };
+        { PresentationSortKey = $"{index}_5_1" };
 
         _powerCore = new Sensor("GPU Core", 0, SensorType.Power, this, settings)
-            { PresentationSortKey = $"{index}_3_0" };
+        { PresentationSortKey = $"{index}_3_0" };
         _powerPpt = new Sensor("GPU PPT", 1, SensorType.Power, this, settings)
-            { PresentationSortKey = $"{index}_3_1" };
+        { PresentationSortKey = $"{index}_3_1" };
         _powerSoC = new Sensor("GPU SoC", 2, SensorType.Power, this, settings)
-            { PresentationSortKey = $"{index}_3_2" };
-        _powerTotal = new Sensor("GPU Power", 3, SensorType.Power, this, settings) 
-            { IsPresentationDefault = true, PresentationSortKey = $"{index}_3_3" };
+        { PresentationSortKey = $"{index}_3_2" };
+        _powerTotal = new Sensor("GPU Power", 3, SensorType.Power, this, settings)
+        { IsPresentationDefault = true, PresentationSortKey = $"{index}_3_3" };
 
         _memoryUsed = new Sensor("GPU Memory Used", 0, SensorType.Data, this, settings)
-            {  PresentationSortKey = $"{index}_6_0" };
+        { PresentationSortKey = $"{index}_6_0" };
         _memoryFree = new Sensor("GPU Memory Free", 1, SensorType.Data, this, settings)
-            { PresentationSortKey = $"{index}_6_1" };
+        { PresentationSortKey = $"{index}_6_1" };
         _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.Data, this, settings)
-            { PresentationSortKey = $"{index}_6_2" };
+        { PresentationSortKey = $"{index}_6_2" };
 
         if (!Software.OperatingSystem.IsUnix)
         {
@@ -152,17 +152,17 @@ internal sealed class AmdGpu : GenericGpu
                         int memorySensorIndex = 3;
 
                         _gpuDedicatedMemoryUsage = new Sensor("GPU Memory Dedicated", memorySensorIndex++, SensorType.Data, this, settings)
-                            { PresentationSortKey = $"{index}_7_0" };
+                        { PresentationSortKey = $"{index}_7_0" };
                         _gpuDedicatedMemoryFree = new Sensor("GPU Memory Dedicated Free", memorySensorIndex++, SensorType.Data, this, settings)
-                            { PresentationSortKey = $"{index}_7_1" };
+                        { PresentationSortKey = $"{index}_7_1" };
                         _gpuDedicatedMemoryTotal = new Sensor("GPU Memory Dedicated Total", memorySensorIndex++, SensorType.Data, this, settings)
-                            { PresentationSortKey = $"{index}_7_2" };
+                        { PresentationSortKey = $"{index}_7_2" };
                         _gpuSharedMemoryUsage = new Sensor("GPU Memory Shared", memorySensorIndex++, SensorType.Data, this, settings)
-                            { PresentationSortKey = $"{index}_8_0" };
+                        { PresentationSortKey = $"{index}_8_0" };
                         _gpuSharedMemoryFree = new Sensor("GPU Memory Shared Free", memorySensorIndex++, SensorType.Data, this, settings)
-                            { PresentationSortKey = $"{index}_8_1" };
+                        { PresentationSortKey = $"{index}_8_1" };
                         _gpuSharedMemoryTotal = new Sensor("GPU Memory Shared Total", memorySensorIndex++, SensorType.Data, this, settings)
-                            { PresentationSortKey = $"{index}_8_2" };
+                        { PresentationSortKey = $"{index}_8_2" };
 
                         _gpuNodeUsage = new Sensor[deviceInfo.Nodes.Length];
                         _gpuNodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
@@ -171,7 +171,7 @@ internal sealed class AmdGpu : GenericGpu
                         foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
                         {
                             _gpuNodeUsage[node.Id] = new Sensor(node.Name, nodeSensorIndex++, SensorType.Load, this, settings)
-                                { PresentationSortKey = $"{index}_9_{nodeSensorIndex}" };
+                            { PresentationSortKey = $"{index}_9_{nodeSensorIndex}" };
                             _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
                             _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
                         }
