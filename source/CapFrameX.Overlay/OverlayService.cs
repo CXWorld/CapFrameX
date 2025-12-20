@@ -596,14 +596,6 @@ namespace CapFrameX.Overlay
                 else if (name.Contains("Shared"))
                     name = name.Replace("GPU Mem Shared", "GPU Mem");
             }
-            else if(name.Contains("D3D"))
-            {
-                if(name.Contains("D3D Dedicated"))
-                    name = name.Replace("D3D Dedicated", "Dedicated");
-
-                if (name.Contains("D3D Shared"))
-                    name = name.Replace("D3D Shared", "Shared");
-            }
             else if (name.Contains("Power Limit"))
             {
                 name = name.Replace("Power Limit", "PL");
@@ -615,6 +607,15 @@ namespace CapFrameX.Overlay
             else if (name.Contains("Voltage Limit"))
             {
                 name = name.Replace("Voltage Limit", "VL");
+            }
+
+            if (name.Contains("D3D"))
+            {
+                if (name.Contains("D3D Dedicated"))
+                    name = name.Replace("D3D Dedicated", "Dedicated");
+
+                if (name.Contains("D3D Shared"))
+                    name = name.Replace("D3D Shared", "Shared");
             }
 
             if (name.Contains(" - Thread #1"))
