@@ -36,7 +36,7 @@ namespace CapFrameX.Overlay
         private static readonly HashSet<string> ONLINE_METRIC_NAMES = new HashSet<string>()
         {
             "OnlineAverage", "OnlineP1","OnlineP0dot1", "OnlineP0dot2", "Online1PercentLow", "Online0dot1PercentLow", "Online0dot2PercentLow",
-            "OnlineGpuActiveTimeAverage", "OnlineCpuActiveTimeAverage", "OnlineFrameTimeAverage",
+            "OnlineGpuActiveTimeAverage", "OnlineCpuActiveTimeAverage", "OnlineFrameTimeAverage", "OnlinePcLatency",
             "OnlineGpuActiveTimePercentageDeviation", "OnlineStutteringPercentage", "PmdGpuPowerCurrent",
             "PmdCpuPowerCurrent", "PmdSystemPowerCurrent"
         };
@@ -737,6 +737,14 @@ namespace CapFrameX.Overlay
                 stutteringPercentage.Value = Math.Round(_onlineMetricService.GetOnlineStutteringPercentageValue(), 1, MidpointRounding.AwayFromZero);
             }
 
+            // PC Latency
+            _identifierOverlayEntryDict.TryGetValue("OnlinePcLatency", out IOverlayEntry pcLatency);
+
+            if (pcLatency != null && pcLatency.ShowOnOverlay)
+            {
+                pcLatency.Value = Math.Round(_onlineMetricService.GetOnlinePcLatencyAverageValue(), 1, MidpointRounding.AwayFromZero);
+            }
+
             // PMD metrics
             _identifierOverlayEntryDict.TryGetValue("PmdGpuPowerCurrent", out IOverlayEntry pmdGpuPowerCurrent);
             _identifierOverlayEntryDict.TryGetValue("PmdCpuPowerCurrent", out IOverlayEntry pmdcpuPowerCurrent);
@@ -934,6 +942,15 @@ namespace CapFrameX.Overlay
             {
                 stutteringPercentage.ValueUnitFormat = "%";
                 stutteringPercentage.ValueAlignmentAndDigits = "{0,5:F1}";
+            }
+
+            // PC Latency
+            _identifierOverlayEntryDict.TryGetValue("OnlinePcLatency", out IOverlayEntry pcLatency);
+
+            if (pcLatency != null)
+            {
+                pcLatency.ValueUnitFormat = "ms";
+                pcLatency.ValueAlignmentAndDigits = "{0,5:F1}";
             }
 
             // ping

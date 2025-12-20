@@ -20,10 +20,11 @@ namespace CapFrameX.PresentMonInterface
         public const int MsBetweenPresents_INDEX = 10;
         public const int MsBetweenDisplayChange_INDEX = 11;
         // PresentMon version >=2.4.0
-        public const int StartTimeInSeconds_INDEX = 15;
-        public const int CpuBusy_INDEX = 17;
-        public const int GpuBusy_INDEX = 21;
-        public const int VALID_LINE_LENGTH = 26;
+        public const int MsPCLatency_INDEX = 16;
+        public const int StartTimeInSeconds_INDEX = 16;
+        public const int CpuBusy_INDEX = 18;
+        public const int GpuBusy_INDEX = 22;
+        public const int VALID_LINE_LENGTH = 27;
 
         // PresentMon < v1.7.0
         //public static readonly string COLUMN_HEADER =
@@ -88,7 +89,7 @@ namespace CapFrameX.PresentMonInterface
         public static readonly string COLUMN_HEADER =
             $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
             $"TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency," +
-            $"MsUntilDisplayed,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy," +
+            $"MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy," +
             $"MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay";
 
         private readonly ISubject<string[]> _outputDataStream;

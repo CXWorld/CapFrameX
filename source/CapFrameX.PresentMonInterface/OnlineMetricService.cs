@@ -43,6 +43,7 @@ namespace CapFrameX.PresentMonInterface
         private List<double> _gpuActiveTimesRealtimeSeconds = new List<double>(LIST_CAPACITY);
         private List<double> _cpuActiveTimesRealtimeSeconds = new List<double>(LIST_CAPACITY);
         private List<double> _frametimes5Seconds = new List<double>(LIST_CAPACITY / 4);
+        private List<double> _pcLatency5Seconds = new List<double>(LIST_CAPACITY / 4);
         private List<double> _displaytimes5Seconds = new List<double>(LIST_CAPACITY / 4);
         private List<double> _measuretimesRealtimeSeconds = new List<double>(LIST_CAPACITY);
         private List<double> _measuretimes5Seconds = new List<double>(LIST_CAPACITY / 4);
@@ -134,7 +135,8 @@ namespace CapFrameX.PresentMonInterface
                     || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineGpuActiveTimeAverage")?.ShowOnOverlay ?? false)
                     || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineCpuActiveTimeAverage")?.ShowOnOverlay ?? false)
                     || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineFrameTimeAverage")?.ShowOnOverlay ?? false)
-                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineGpuActiveTimePercentageDeviation")?.ShowOnOverlay ?? false);
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineGpuActiveTimePercentageDeviation")?.ShowOnOverlay ?? false)
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlinePcLatency")?.ShowOnOverlay ?? false);
             }
             catch { return true; }
         }
@@ -216,6 +218,13 @@ namespace CapFrameX.PresentMonInterface
                 return;
             }
 
+            double pcLatency = double.NaN;
+            if (!double.TryParse(lineSplit[PresentMonCaptureService.MsPCLatency_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out pcLatency))
+            {
+                pcLatency = double.NaN;
+            }
+
+
             // it makes no sense to calculate fps metrics with
             // frame times above the stuttering threshold
             // filtering high frame times caused by focus lost for example
@@ -257,6 +266,7 @@ namespace CapFrameX.PresentMonInterface
                     _measuretimes5Seconds.Add(startTime);
                     _frametimes5Seconds.Add(frameTime);
                     _displaytimes5Seconds.Add(displayedTime);
+                    _pcLatency5Seconds.Add(pcLatency);
 
                     if (startTime - _measuretimes5Seconds.First() > FIVE_SECONDS_INTERVAL_LENGTH)
                     {
@@ -270,6 +280,7 @@ namespace CapFrameX.PresentMonInterface
                             _frametimes5Seconds.RemoveRange(0, position);
                             _displaytimes5Seconds.RemoveRange(0, position);
                             _measuretimes5Seconds.RemoveRange(0, position);
+                            _pcLatency5Seconds.RemoveRange(0, position);
                         }
                     }
                 }
@@ -304,7 +315,6 @@ namespace CapFrameX.PresentMonInterface
                 _measuretimesRealtimeSeconds = new List<double>(capacity);
                 _gpuActiveTimesRealtimeSeconds = new List<double>(capacity);
                 _cpuActiveTimesRealtimeSeconds = new List<double>(capacity);
-
             }
         }
 
@@ -374,6 +384,19 @@ namespace CapFrameX.PresentMonInterface
 
                 return _frametimeStatisticProvider
                     .GetOnlineStutteringTimePercentage(samples, _appConfiguration.StutteringFactor);
+            }
+        }
+
+        public double GetOnlinePcLatencyAverageValue()
+        {
+            lock (_lock5SecondsMetric)
+            {
+                // Return NaN if no valid pc latency samples are available
+                if (!_pcLatency5Seconds.Any() || _pcLatency5Seconds.Any(x => double.IsNaN(x)))
+                    return double.NaN;
+
+                return _frametimeStatisticProvider
+                    .GetFrametimeMetricValue(_pcLatency5Seconds, EMetric.Average);
             }
         }
 

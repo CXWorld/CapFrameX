@@ -36,6 +36,8 @@ namespace CapFrameX.PresentMonInterface
                 // w/o FrameType, it's flawed when using XeFG
                 //arguments += PARAMETER_SEPARATOR;
                 //arguments += "--track_frame_type";
+                arguments += PARAMETER_SEPARATOR;
+                arguments += "--track_pc_latency";
 
                 if (ExcludeProcesses != null && ExcludeProcesses.Any())
                 {
@@ -73,6 +75,8 @@ namespace CapFrameX.PresentMonInterface
                 // w/o FrameType, it's flawed when using XeFG
                 //arguments += PARAMETER_SEPARATOR;
                 //arguments += "--track_frame_type";
+                arguments += PARAMETER_SEPARATOR;
+                arguments += "--track_pc_latency";
             }
 
             return arguments;

@@ -821,7 +821,7 @@ namespace CapFrameX.Data
                 // w/o FrameType
                 // Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,
                 // TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency,#
-                // MsUntilDisplayed,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy,
+                // MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy,
                 // MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay
 
                 string frameStartUnit = "s";
@@ -902,7 +902,7 @@ namespace CapFrameX.Data
                     if (string.Compare(metrics[i], "CPUStartQPCTimeInMs") == 0 || (string.Compare(metrics[i], "CPUStartTimeInMs") == 0))
                     {
                         indexCPUStartQPCTimeInMs = i;
-                    }
+                    }         
                 }
 
                 var captureData = new SessionCaptureData(presentLines.Count());
