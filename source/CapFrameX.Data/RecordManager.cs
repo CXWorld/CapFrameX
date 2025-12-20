@@ -434,7 +434,7 @@ namespace CapFrameX.Data
             }
         }
 
-        public async Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName, string comment, string recordDirectory = null, List<ISessionInfo> HWInfo = null)
+        public async Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName, string comment, string recordDirectory = null, List<ISessionInfo> hwInfo = null)
         {
             var filePath = await GetOutputFilename(processName, recordDirectory);
 
@@ -465,20 +465,20 @@ namespace CapFrameX.Data
                 Version appVersion = new Version();
 
 
-                if (HWInfo != null)
+                if (hwInfo != null)
                 {
-                    cpuInfo = HWInfo?.First().Processor;
-                    gpuInfo = HWInfo?.First().GPU;
-                    ramInfo = HWInfo?.First().SystemRam;
-                    mbInfo = HWInfo?.First().Motherboard;
-                    osInfo = HWInfo?.First().OS;
-                    gpuDriverInfo = HWInfo?.First().GPUDriverVersion;
-                    appVersion = HWInfo?.First().AppVersion;
-                    apiInfo = HWInfo?.First().ApiInfo;
-                    resizableBar = HWInfo?.First().ResizableBar;
-                    winGameMode = HWInfo?.First().WinGameMode;
-                    hAGS = HWInfo?.First().HAGS;
-                    resolutionInfo = HWInfo?.First().ResolutionInfo;
+                    cpuInfo = hwInfo?.First().Processor;
+                    gpuInfo = hwInfo?.First().GPU;
+                    ramInfo = hwInfo?.First().SystemRam;
+                    mbInfo = hwInfo?.First().Motherboard;
+                    osInfo = hwInfo?.First().OS;
+                    gpuDriverInfo = hwInfo?.First().GPUDriverVersion;
+                    appVersion = hwInfo?.First().AppVersion;
+                    apiInfo = hwInfo?.First().ApiInfo;
+                    resizableBar = hwInfo?.First().ResizableBar;
+                    winGameMode = hwInfo?.First().WinGameMode;
+                    hAGS = hwInfo?.First().HAGS;
+                    resolutionInfo = hwInfo?.First().ResolutionInfo;
                 }
 
                 else

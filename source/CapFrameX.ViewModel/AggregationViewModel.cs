@@ -422,7 +422,7 @@ namespace CapFrameX.ViewModel
                 string process = string.Empty;
                 var filteredFileRecordInfoList = _fileRecordInfoList.Where((x, i) => !outlierFlags[i]);
 
-                var HWInfo = new List<ISessionInfo>();
+                var hwInfo = new List<ISessionInfo>();
 
                 var runs = new List<ISessionRun>();
 
@@ -430,11 +430,11 @@ namespace CapFrameX.ViewModel
                 {
                     var otherSession = _recordManager.LoadData(recordInfo.FullPath);
                     process = otherSession.Info.ProcessName;
-                    HWInfo.Add(otherSession.Info);
+                    hwInfo.Add(otherSession.Info);
                     runs.AddRange(otherSession.Runs);
                 }
 
-                _recordManager.SaveSessionRunsToFile(runs, process, string.Empty, null, HWInfo);
+                _recordManager.SaveSessionRunsToFile(runs, process, string.Empty, null, hwInfo);
             });
         }
 

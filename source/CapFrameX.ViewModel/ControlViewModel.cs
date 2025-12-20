@@ -549,6 +549,7 @@ namespace CapFrameX.ViewModel
         {
             if (!RecordInfoList.Any())
                 return;
+
             string destinationfolder = string.Empty;
 
             // when moving with D&D, skip file dialog and don't rebuild TreeView

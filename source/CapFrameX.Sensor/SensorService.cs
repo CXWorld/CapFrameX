@@ -366,18 +366,13 @@ namespace CapFrameX.Sensor
                 // Use cached per-sensor GPU info when available (avoids repeated casts / name checks)
                 var id = s.Identifier.ToString();
                 if (gpuCache.SensorsById.TryGetValue(id, out var info))
-                {
-                    // Identify AMD iGPU by name until lib is ported to newer ADLX
-                    // Todo: Remove when LibreHardwareMonitor supports ADLX
-                    if (info.AdapterName.Contains("AMD Radeon(TM) Graphics"))
-                        return false;
-
+                {                   
                     return info.IsDiscreteGpu;
                 }
 
                 // Fallback (should be rare)
                 var isDiscreteGpu = (s.Hardware as GenericGpu)?.IsDiscreteGpu ?? true;
-                return !s.Hardware.Name.Contains("AMD Radeon(TM) Graphics") && isDiscreteGpu;
+                return isDiscreteGpu;
             });
         }
 
@@ -510,16 +505,33 @@ namespace CapFrameX.Sensor
 
             if (!hasCustomInfo)
             {
-                IHardware gpu = null;
-                lock (_lockComputer)
+                if(_appConfiguration.GraphicsAdapter != "Auto")
                 {
-                    gpu = _computer?.Hardware
-                       .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAmd
-                           || hdw.HardwareType == HardwareType.GpuNvidia
-                           || hdw.HardwareType == HardwareType.GpuIntel);
+                    return _appConfiguration.GraphicsAdapter;
                 }
 
-                return gpu != null ? gpu.Name : "Unknown";
+                List<IHardware> gpus = null;
+                lock (_lockComputer)
+                {
+                    gpus = _computer?.Hardware
+                       .Where(hdw => hdw.HardwareType == HardwareType.GpuAmd
+                           || hdw.HardwareType == HardwareType.GpuNvidia
+                           || hdw.HardwareType == HardwareType.GpuIntel).ToList();
+                }
+
+                if (gpus != null && gpus.Count == 1)
+                {
+                    return gpus[0].Name;
+                }
+                else if (gpus != null && gpus.Count > 1)
+                {
+                    var discreteGpu = gpus.FirstOrDefault(g => (g as GenericGpu)?.IsDiscreteGpu ?? true);
+                    if (discreteGpu != null)
+                        return discreteGpu.Name;
+                    return gpus[0].Name;
+                }
+
+                return "Unknown";
             }
             else
             {

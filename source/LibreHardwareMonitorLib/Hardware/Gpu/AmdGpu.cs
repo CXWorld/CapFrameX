@@ -75,6 +75,10 @@ internal sealed class AmdGpu : GenericGpu
         BusNumber = adapterInfo.BusNumber;
         DeviceNumber = adapterInfo.DeviceNumber;
 
+        // Identify AMD iGPU by name until lib is ported to newer ADLX
+        // Todo: Remove when LibreHardwareMonitor supports ADLX
+        IsDiscreteGpu = _name != "AMD Radeon(TM) Graphics" && _name != "AMD Radeon Graphics";
+
         _temperatureCore = new Sensor("GPU Core", 0, SensorType.Temperature, this, settings)
         { IsPresentationDefault = true, PresentationSortKey = $"{index}_2_0" };
         _temperatureMemory = new Sensor("GPU Memory", 1, SensorType.Temperature, this, settings)

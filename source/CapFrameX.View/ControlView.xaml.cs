@@ -2,20 +2,21 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.Extensions;
 using CapFrameX.Extensions.NetStandard;
+using CapFrameX.View.Controls;
 using CapFrameX.ViewModel;
 using System;
-using System.IO;
-using System.Windows;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using CapFrameX.View.Controls;
-using System.Threading.Tasks;
 
 namespace CapFrameX.View
 {
@@ -41,8 +42,8 @@ namespace CapFrameX.View
             => _viewModel.AppConfiguration.CaptureRootDirectory;
 
         private string DefaultPath = Path.Combine
-                        (Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                        @"CapFrameX\Captures\");
+            (Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            @"CapFrameX\Captures\");
 
         private bool IsDragDropActive;
         private TreeViewItem ObservedTreeViewItem;
@@ -501,17 +502,28 @@ namespace CapFrameX.View
 
         public string GetFullPath(TreeViewItem node)
         {
-            if (node == null)
-                throw new ArgumentNullException();
+            if (node == null) throw new ArgumentNullException(nameof(node));
 
-            var result = Convert.ToString(node.Header);
+            string rootName = new DirectoryInfo(CaptureRootDirectory).Name;
 
-            for (var i = GetParentItem(node); i != null; i = GetParentItem(i))
-                result = i.Header + "\\" + result;
+            // Collect path segments from node up to root
+            var segments = new Stack<string>();
+            for (TreeViewItem i = node; i != null; i = GetParentItem(i))
+            {
+                var name = Convert.ToString(i.Header);
+                if (!string.IsNullOrWhiteSpace(name))
+                    segments.Push(name);
+            }
 
-            DirectoryInfo parentDir = Directory.GetParent(CaptureRootDirectory);
+            // If the TreeView path already includes the root folder name, drop it once.
+            if (segments.Count > 0 &&
+                string.Equals(segments.Peek(), rootName, StringComparison.OrdinalIgnoreCase))
+            {
+                segments.Pop();
+            }
 
-            return parentDir + "\\" + result;
+            // Combine safely
+            return Path.Combine(CaptureRootDirectory, Path.Combine(segments.ToArray()));
         }
 
         static TreeViewItem GetParentItem(TreeViewItem item)
