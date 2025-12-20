@@ -96,6 +96,11 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CapFrameX.FrameView", "source\CapFrameX.FrameView\CapFrameX.FrameView.vcxproj", "{87B58E06-6264-4BB0-B3CA-596992331CB9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibreHardwareMonitorLib", "source\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj", "{51E4211C-F281-11A3-9390-A6B54F703498}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7158F27F-0F57-4216-A6EA-04FA24EFDDDF} = {7158F27F-0F57-4216-A6EA-04FA24EFDDDF}
+		{9746F818-C1B9-461D-BD07-D20A103DC751} = {9746F818-C1B9-461D-BD07-D20A103DC751}
+		{CFA42830-B349-4978-B708-5B1BFA9C579B} = {CFA42830-B349-4978-B708-5B1BFA9C579B}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
