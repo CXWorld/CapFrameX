@@ -354,7 +354,7 @@ namespace CapFrameX.Sensor
             }
 
             // Auto behavior: if only one GPU, do nothing.
-            if (gpuCache.GpuCount <= 1)
+            if (gpuCache.SensorIdsByAdapterName.Count <= 1)
                 return sensors;
 
             // Auto behavior: filter iGPUs for GPU sensors only
