@@ -291,6 +291,34 @@ namespace CapFrameX.Overlay
             selectedEntry.FormatChanged = true;
         }
 
+        public void SortOverlayEntriesByType()
+        {
+            var sortedEntries = _overlayEntries
+                .OrderBy(entry =>
+                {
+                    switch (entry.OverlayEntryType)
+                    {
+                        case EOverlayEntryType.CX:
+                            return 1;
+                        case EOverlayEntryType.GPU:
+                            return 2;
+                        case EOverlayEntryType.CPU:
+                            return 3;
+                        case EOverlayEntryType.RAM:
+                            return 4;
+                        case EOverlayEntryType.OnlineMetric:
+                            return 5;
+                        case EOverlayEntryType.Undefined:
+                            return 6;
+                        default:
+                            return 7;
+                    }
+                }).ThenBy(entry => entry.SortKey, new SortKeyComparer())
+                .ToList();
+
+            _overlayEntries = sortedEntries.ToBlockingCollection();
+        }
+
         public async Task LoadOrSetDefault()
         {
             try

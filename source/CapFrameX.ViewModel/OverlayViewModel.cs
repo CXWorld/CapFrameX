@@ -739,22 +739,7 @@ namespace CapFrameX.ViewModel
             }).ThenBy(entry => entry.SortKey, new SortKeyComparer()).ToList();
 
             // Update OverlayEntryProvider accordingly
-            foreach (var entry in sortedEntries)
-            {
-                int sourceIndex = OverlayEntries.IndexOf(entry);
-                int targetIndex = sortedEntries.IndexOf(entry);
-
-                // move downwards
-                if (sourceIndex < targetIndex)
-                {
-                    _overlayEntryProvider.MoveEntry(sourceIndex, targetIndex - 1);
-                }
-                // moving upwards
-                else
-                {
-                    _overlayEntryProvider.MoveEntry(sourceIndex, targetIndex);
-                }
-            }
+            _overlayEntryProvider.SortOverlayEntriesByType();
 
             OverlayEntries.Clear();
             OverlayEntries.AddRange(sortedEntries);

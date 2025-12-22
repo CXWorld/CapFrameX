@@ -28,5 +28,7 @@ namespace CapFrameX.Contracts.Overlay
 		Task<IOverlayEntry[]> GetOverlayEntries(bool updateFormats = true);
 
 		Task<IEnumerable<IOverlayEntry>> GetDefaultOverlayEntries();
+
+		void SortOverlayEntriesByType();
     }
 }
