@@ -5,7 +5,6 @@
 
 using CapFrameX.Service.Monitoring.Contracts;
 using System.Reactive.Linq;
-using System;
 using System.Diagnostics;
 
 namespace CapFrameX.Service.Monitoring.Hardware.Gpu;
@@ -15,10 +14,12 @@ namespace CapFrameX.Service.Monitoring.Hardware.Gpu;
 /// </summary>
 public abstract class GenericGpu : Hardware
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     protected readonly object _displayLock = new();
     protected RefreshRateBuffer<float> _refreshRateBuffer;
-    protected Display _display;
+    protected Display? _display;
     protected float _refreshRateCurrentWindowHandle;
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GenericGpu" /> class.
@@ -30,7 +31,7 @@ public abstract class GenericGpu : Hardware
     {
         _refreshRateBuffer = new RefreshRateBuffer<float>(2);
 
-        ProcessServiceProvider.ProcessService
+        ProcessServiceProvider.ProcessService?
             .ProcessIdStream
             .DistinctUntilChanged()
             .Subscribe(id =>
