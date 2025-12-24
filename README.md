@@ -1,6 +1,41 @@
 ![Screenshot](images/CX_Header_Logo_Wide.jpg)
 # CapFrameX
-Frametimes capture and analysis tool based on Intel's [PresentMon](https://github.com/GameTechDev/PresentMon). Overlay provided by [Rivatuner Statistics Server](https://www.guru3d.com/content-page/rivatuner.html). 
+Frametimes capture and analysis tool based on Intel's [PresentMon](https://github.com/GameTechDev/PresentMon). Overlay provided by [Rivatuner Statistics Server](https://www.guru3d.com/content-page/rivatuner.html).
+
+# Repository Structure
+
+This monorepo contains the CapFrameX 2.0 rewrite with separated backend and frontend:
+
+## CapFrameX.Service
+Backend service built with .NET, located in `CapFrameX.Service/`
+
+**Projects:**
+- `CapFrameX.Service.Api` - REST API endpoints
+- `CapFrameX.Service.Application` - Application logic layer
+- `CapFrameX.Service.Core` - Core domain models and interfaces
+- `CapFrameX.Service.Infrastructure` - Infrastructure and data access
+
+**Getting Started:**
+```bash
+cd CapFrameX.Service
+dotnet restore
+dotnet build
+```
+
+Open `CapFrameX.Service/CapFrameX.Service.sln` in Visual Studio or your preferred IDE.
+
+## CapFrameX.UI
+Frontend application built with Angular and Tauri, located in `CapFrameX.UI/`
+
+**Getting Started:**
+```bash
+cd CapFrameX.UI
+npm install
+npm start
+```
+
+## Legacy Code
+The original WPF application code is located in the `source/` directory and is being migrated to the new architecture.
 
 # Remark in our own interest
 If you are a reviewer or a youtuber using CapFrameX to get your data, it would be nice to mention us and link to our software.

@@ -1,0 +1,43 @@
+{
+  "productName": "CapFrameX",
+  "version": "0.0.1",
+  "identifier": "com.capframex.app",
+  "build": {
+    "beforeDevCommand": "npm run start",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://localhost:4200",
+    "frontendDist": "../dist/capframex-ui/browser"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "CapFrameX",
+        "width": 1280,
+        "height": 800,
+        "resizable": true,
+        "fullscreen": false,
+        "minWidth": 800,
+        "minHeight": 600
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
+    }
+  }
+}

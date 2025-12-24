@@ -1,0 +1,43 @@
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) CapFrameX.Service.Monitoring and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
+
+namespace CapFrameX.Service.Monitoring.Hardware.Memory;
+
+internal sealed class VirtualMemory : Hardware
+{
+    public VirtualMemory(ISettings settings)
+        : base("Virtual Memory", new Identifier("vram"), settings)
+    {
+        VirtualMemoryUsed = new Sensor("Virtual RAM Used", 2, SensorType.Data, this, settings);
+        ActivateSensor(VirtualMemoryUsed);
+
+        VirtualMemoryAvailable = new Sensor("Virtual RAM Available", 3, SensorType.Data, this, settings);
+        ActivateSensor(VirtualMemoryAvailable);
+
+        VirtualMemoryLoad = new Sensor("Virtual RAM Usage", 1, SensorType.Load, this, settings);
+        ActivateSensor(VirtualMemoryLoad);
+    }
+
+    public override HardwareType HardwareType => HardwareType.Memory;
+
+    internal Sensor VirtualMemoryAvailable { get; }
+
+    internal Sensor VirtualMemoryLoad { get; }
+
+    internal Sensor VirtualMemoryUsed { get; }
+
+    public override void Update()
+    {
+        if (Software.OperatingSystem.IsUnix)
+        {
+            MemoryLinux.Update(this);
+        }
+        else
+        {
+            MemoryWindows.Update(this);
+        }
+    }
+}
