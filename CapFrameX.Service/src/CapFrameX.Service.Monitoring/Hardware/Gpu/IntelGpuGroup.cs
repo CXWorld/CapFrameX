@@ -3,12 +3,10 @@
 // Copyright (C) CapFrameX.Service.Monitoring and Contributors.
 // All Rights Reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Text;
 using CapFrameX.Service.Monitoring.Hardware.Cpu;
 using CapFrameX.Service.Monitoring.Interop;
+using System.Globalization;
+using System.Text;
 
 namespace CapFrameX.Service.Monitoring.Hardware.Gpu;
 
