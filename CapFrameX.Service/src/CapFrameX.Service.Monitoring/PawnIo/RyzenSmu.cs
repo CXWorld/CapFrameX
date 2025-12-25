@@ -5,7 +5,7 @@ namespace CapFrameX.Service.Monitoring.PawnIo;
 
 public class RyzenSmu
 {
-    private readonly PawnIo _pawnIO = PawnIo.LoadModuleFromResource(typeof(IntelMsr).Assembly, $"{nameof(CapFrameX.Service.Monitoring)}.Resources.PawnIo.RyzenSMU.bin");
+    private readonly PawnIo _pawnIO = PawnIo.LoadModuleFromResource(typeof(IntelMsr).Assembly, $"CapFrameX.Service.Monitoring.Resources.PawnIo.RyzenSMU.bin");
 
     public uint GetSmuVersion()
     {

@@ -4,7 +4,7 @@ namespace CapFrameX.Service.Monitoring.PawnIo;
 
 public class AmdFamily0F
 {
-    private readonly PawnIo _pawnIO = PawnIo.LoadModuleFromResource(typeof(AmdFamily0F).Assembly, $"{nameof(CapFrameX.Service.Monitoring)}.Resources.PawnIo.AMDFamily0F.bin");
+    private readonly PawnIo _pawnIO = PawnIo.LoadModuleFromResource(typeof(AmdFamily0F).Assembly, $"CapFrameX.Service.Monitoring.Resources.PawnIo.AMDFamily0F.bin");
 
     public bool ReadMsr(uint index, out uint eax, out uint edx)
     {

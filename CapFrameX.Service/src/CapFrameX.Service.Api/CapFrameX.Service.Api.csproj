@@ -17,5 +17,6 @@
   <ItemGroup>
     <ProjectReference Include="..\CapFrameX.Service.Application\CapFrameX.Service.Application.csproj" />
     <ProjectReference Include="..\CapFrameX.Service.Infrastructure\CapFrameX.Service.Infrastructure.csproj" />
+    <ProjectReference Include="..\CapFrameX.Service.Monitoring\CapFrameX.Service.Monitoring.csproj" />
   </ItemGroup>
 </Project>

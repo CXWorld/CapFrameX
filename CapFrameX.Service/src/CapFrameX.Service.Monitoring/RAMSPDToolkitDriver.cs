@@ -40,7 +40,7 @@ internal sealed class RAMSPDToolkitDriver : IPawnIODriver
 
         try
         {
-            var pawnIO = PawnIo.PawnIo.LoadModuleFromResource(typeof(RAMSPDToolkitDriver).Assembly, $"{nameof(CapFrameX.Service.Monitoring)}.Resources.PawnIO.{moduleResourceFilename}");
+            var pawnIO = PawnIo.PawnIo.LoadModuleFromResource(typeof(RAMSPDToolkitDriver).Assembly, $"CapFrameX.Service.Monitoring.Resources.PawnIO.{moduleResourceFilename}");
 
             if (pawnIO.IsLoaded)
             {

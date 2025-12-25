@@ -5,7 +5,7 @@ namespace CapFrameX.Service.Monitoring.PawnIo;
 public class IntelMsr
 {
     private readonly long[] _inArray = new long[1];
-    private readonly PawnIo _pawnIO = PawnIo.LoadModuleFromResource(typeof(IntelMsr).Assembly, $"{nameof(CapFrameX.Service.Monitoring)}.Resources.PawnIo.IntelMSR.bin");
+    private readonly PawnIo _pawnIO = PawnIo.LoadModuleFromResource(typeof(IntelMsr).Assembly, $"CapFrameX.Service.Monitoring.Resources.PawnIo.IntelMSR.bin");
 
     public bool ReadMsr(uint index, out ulong value)
     {
