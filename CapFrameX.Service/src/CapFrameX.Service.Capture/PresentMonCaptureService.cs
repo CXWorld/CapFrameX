@@ -1,6 +1,5 @@
 using CapFrameX.Service.Capture.Contracts;
 using Microsoft.Extensions.Logging;
-using System.Buffers;
 using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -31,7 +30,6 @@ public sealed class PresentMonCaptureService : ICaptureService, IDisposable
     private readonly ILogger<PresentMonCaptureService> _logger;
     private readonly Subject<string[]> _outputDataStream;
     private readonly Subject<bool> _isCaptureModeActiveStream;
-    private readonly ArrayPool<string> _stringArrayPool;
 
     // Process tracking with lock-free reads
     private volatile HashSet<(string ProcessName, int ProcessId)> _presentMonProcesses;
@@ -51,7 +49,6 @@ public sealed class PresentMonCaptureService : ICaptureService, IDisposable
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _outputDataStream = new Subject<string[]>();
         _isCaptureModeActiveStream = new Subject<bool>();
-        _stringArrayPool = ArrayPool<string>.Create(ValidLineLength, 50);
         _presentMonProcesses = new HashSet<(string, int)>();
 
         // Initialize parameter mapping
