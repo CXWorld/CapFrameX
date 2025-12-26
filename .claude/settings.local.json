@@ -11,7 +11,19 @@
       "Bash(dotnet clean:*)",
       "Bash(dotnet restore:*)",
       "Bash(dotnet add:*)",
-      "Bash(dotnet test:*)"
+      "Bash(dotnet test:*)",
+      "Bash(dotnet tool install:*)",
+      "Bash(dotnet ef migrations:*)",
+      "Bash(dotnet tool:*)",
+      "Bash(dotnet run:*)",
+      "Bash(pwsh create-images.ps1)",
+      "Bash(powershell -File:*)",
+      "Bash(dotnet publish:*)",
+      "Bash(ren:*)",
+      "Bash(dotnet list:*)",
+      "Bash(dotnet nuget:*)",
+      "Bash(dir \"C:\\\\Users\\\\DevTe\\\\.nuget\\\\packages\\\\wixsharp\" /b)",
+      "Bash(del:*)"
     ]
   }
 }

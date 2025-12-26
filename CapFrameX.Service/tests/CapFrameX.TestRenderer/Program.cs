@@ -244,6 +244,8 @@ class Program
             throw new Exception($"Shader program linking failed: {infoLog}");
         }
 
+        // Shaders can be deleted after linking - they're reference counted by OpenGL
+        // and will be automatically freed when the program is deleted
         _gl.DeleteShader(vertexShader);
         _gl.DeleteShader(fragmentShader);
 
