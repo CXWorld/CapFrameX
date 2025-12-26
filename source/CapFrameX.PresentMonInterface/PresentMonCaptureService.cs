@@ -147,12 +147,16 @@ namespace CapFrameX.PresentMonInterface
                     if (!string.IsNullOrWhiteSpace(e.Data))
                     {
                         var lineSplit = e.Data.Split(',');
-                        if (lineSplit.Length >= VALID_LINE_LENGTH)
+                        if (lineSplit.Length == VALID_LINE_LENGTH)
                         {
                             if (lineSplit[ApplicationName_INDEX] != "<error>")
                             {
                                 _outputDataStream.OnNext(lineSplit);
                             }
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"Invalid line received from PresentMon with length {lineSplit.Length}");
                         }
                     }
                 };
