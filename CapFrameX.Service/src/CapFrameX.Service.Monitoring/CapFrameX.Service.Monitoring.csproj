@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>CapFrameX.Service.Monitoring</AssemblyName>
     <RootNamespace>CapFrameX.Service.Monitoring</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -8,7 +8,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Platforms>x64;x86;ARM64</Platforms>
     <RuntimeIdentifiers>win-x64;win-x86;win-arm64</RuntimeIdentifiers>
-    <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <NoWarn>$(NoWarn);CA1416;CS1591;CS8618;CS8603;CS8625</NoWarn>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -54,8 +54,6 @@
     <PackageReference Include="Serilog" Version="2.9.0" />
     <PackageReference Include="System.Management" Version="9.0.9" />
     <PackageReference Include="System.Reactive" Version="4.3.2" />
-    <PackageReference Include="System.Threading.AccessControl" Version="9.0.9" />
-    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageReference Include="System.IO.Ports" Version="9.0.9" />
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />

@@ -31,7 +31,7 @@ public class SuiteRepositoryTests : IDisposable
             Id = Guid.NewGuid(),
             Name = "Test Suite",
             Description = "Test Description",
-            Type = SuiteType.GameBenchmark
+            Type = SuiteType.GameReview
         };
 
         // Act
@@ -77,19 +77,19 @@ public class SuiteRepositoryTests : IDisposable
         // Arrange
         var suites = new[]
         {
-            new Suite { Id = Guid.NewGuid(), Name = "Suite 1", Type = SuiteType.GameBenchmark, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new Suite { Id = Guid.NewGuid(), Name = "Suite 1", Type = SuiteType.GameReview, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
             new Suite { Id = Guid.NewGuid(), Name = "Suite 2", Type = SuiteType.HardwareReview, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-            new Suite { Id = Guid.NewGuid(), Name = "Suite 3", Type = SuiteType.GameBenchmark, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
+            new Suite { Id = Guid.NewGuid(), Name = "Suite 3", Type = SuiteType.GameReview, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
         };
         _context.Suites.AddRange(suites);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetAllAsync(type: SuiteType.GameBenchmark);
+        var result = await _repository.GetAllAsync(type: SuiteType.GameReview);
 
         // Assert
         Assert.Equal(2, result.Count());
-        Assert.All(result, s => Assert.Equal(SuiteType.GameBenchmark, s.Type));
+        Assert.All(result, s => Assert.Equal(SuiteType.GameReview, s.Type));
     }
 
     [Fact]
@@ -128,7 +128,7 @@ public class SuiteRepositoryTests : IDisposable
         {
             Id = Guid.NewGuid(),
             Name = "To Delete",
-            Type = SuiteType.GameBenchmark,
+            Type = SuiteType.GameReview,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -149,8 +149,8 @@ public class SuiteRepositoryTests : IDisposable
         // Arrange
         var suites = new[]
         {
-            new Suite { Id = Guid.NewGuid(), Name = "Suite 1", Type = SuiteType.GameBenchmark, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-            new Suite { Id = Guid.NewGuid(), Name = "Suite 2", Type = SuiteType.GameBenchmark, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new Suite { Id = Guid.NewGuid(), Name = "Suite 1", Type = SuiteType.GameReview, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new Suite { Id = Guid.NewGuid(), Name = "Suite 2", Type = SuiteType.GameReview, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
             new Suite { Id = Guid.NewGuid(), Name = "Suite 3", Type = SuiteType.HardwareReview, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
         };
         _context.Suites.AddRange(suites);
@@ -158,7 +158,7 @@ public class SuiteRepositoryTests : IDisposable
 
         // Act
         var totalCount = await _repository.CountAsync();
-        var gameCount = await _repository.CountAsync(SuiteType.GameBenchmark);
+        var gameCount = await _repository.CountAsync(SuiteType.GameReview);
 
         // Assert
         Assert.Equal(3, totalCount);
@@ -173,7 +173,7 @@ public class SuiteRepositoryTests : IDisposable
         {
             Id = Guid.NewGuid(),
             Name = "Suite with Sessions",
-            Type = SuiteType.GameBenchmark,
+            Type = SuiteType.GameReview,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };

@@ -1,0 +1,52 @@
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+  <Fragment>
+    <ComponentGroup Id="ServiceComponents" Directory="INSTALLFOLDER">
+
+      <!-- Windows Service Component -->
+      <Component Id="CapFrameXServiceComponent" Guid="A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D">
+
+        <!-- Service Installation -->
+        <ServiceInstall Id="CapFrameXServiceInstall"
+                        Name="CapFrameXService"
+                        DisplayName="CapFrameX Service"
+                        Description="CapFrameX background service for frame capture and hardware monitoring"
+                        Type="ownProcess"
+                        Start="auto"
+                        ErrorControl="normal"
+                        Account="LocalSystem">
+          <util:ServiceConfig xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util"
+                              FirstFailureActionType="restart"
+                              SecondFailureActionType="restart"
+                              ThirdFailureActionType="restart"
+                              RestartServiceDelayInSeconds="60" />
+        </ServiceInstall>
+
+        <!-- Service Control -->
+        <ServiceControl Id="CapFrameXServiceControl"
+                        Name="CapFrameXService"
+                        Start="install"
+                        Stop="both"
+                        Remove="uninstall"
+                        Wait="yes" />
+
+        <!-- Main Service Executable -->
+        <File Id="CapFrameXServiceExe"
+              Source="$(var.CapFrameX.Service.Api.TargetDir)CapFrameX.Service.Api.exe"
+              KeyPath="yes" />
+
+      </Component>
+
+      <!-- Service Configuration Component -->
+      <Component Id="ServiceConfigComponent" Guid="B2C3D4E5-F6A7-4B5C-8D9E-7F6A5B4C3D2E">
+        <File Id="AppSettingsJson"
+              Source="$(var.CapFrameX.Service.Api.TargetDir)appsettings.json" />
+        <!--<File Id="AppSettingsProductionJson"
+              Source="$(var.CapFrameX.Service.Api.TargetDir)appsettings.Production.json" />
+        <File Id="AppSettingsDevelopmentJson"
+              Source="$(var.CapFrameX.Service.Api.TargetDir)appsettings.Development.json" />-->
+      </Component>
+
+    </ComponentGroup>
+  </Fragment>
+</Wix>

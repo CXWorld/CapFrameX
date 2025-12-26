@@ -1,7 +1,39 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <Fragment>
+    <!-- Program Files installation directory -->
     <StandardDirectory Id="ProgramFiles6432Folder">
-      <Directory Id="INSTALLFOLDER" Name="!(bind.Property.Manufacturer) !(bind.Property.ProductName)" />
+      <Directory Id="INSTALLFOLDER" Name="CapFrameX Service" />
     </StandardDirectory>
+
+    <!-- Application Data directory for database and logs -->
+    <StandardDirectory Id="CommonAppDataFolder">
+      <Directory Id="CompanyFolder" Name="CapFrameX">
+        <Directory Id="APPDATAFOLDER" Name="Service">
+          <Directory Id="DATABASEFOLDER" Name="Database" />
+          <Directory Id="LOGSFOLDER" Name="Logs" />
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ApplicationDataFolders" Directory="APPDATAFOLDER">
+      <!-- Create the folders and set permissions -->
+      <Component Id="DatabaseFolderComponent" Guid="F6A7B8C9-DAE0-4F5A-8B9C-7D6E5F4A3B2C" Directory="DATABASEFOLDER">
+        <CreateFolder>
+          <util:PermissionEx xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util"
+                             User="Everyone"
+                             GenericAll="yes" />
+        </CreateFolder>
+      </Component>
+
+      <Component Id="LogsFolderComponent" Guid="A7B8C9DA-E0F1-4A5B-9C8D-7E6F5A4B3C2D" Directory="LOGSFOLDER">
+        <CreateFolder>
+          <util:PermissionEx xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util"
+                             User="Everyone"
+                             GenericAll="yes" />
+        </CreateFolder>
+      </Component>
+    </ComponentGroup>
   </Fragment>
 </Wix>

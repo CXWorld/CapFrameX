@@ -1,0 +1,46 @@
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <ComponentGroup Id="ServiceBinaries" Directory="INSTALLFOLDER">
+
+      <!-- Runtime DLLs Component -->
+      <Component Id="RuntimeDllsComponent" Guid="C3D4E5F6-A7B8-4C5D-9E8F-7A6B5C4D3E2F">
+        <File Id="RuntimeConfigJson"
+              Source="$(var.CapFrameX.Service.Api.TargetDir)CapFrameX.Service.Api.runtimeconfig.json" />
+        <File Id="DepsJson"
+              Source="$(var.CapFrameX.Service.Api.TargetDir)CapFrameX.Service.Api.deps.json" />
+      </Component>
+
+      <!-- Application DLLs Component -->
+      <Component Id="ApplicationDllsComponent" Guid="D4E5F6A7-B8C9-4D5E-8F9A-7B6C5D4E3F2A">
+        <File Id="CapFrameXServiceApiDll"
+              Source="$(var.CapFrameX.Service.Api.TargetDir)CapFrameX.Service.Api.dll" />
+        <File Id="CapFrameXServiceApplicationDll"
+              Source="$(var.CapFrameX.Service.Api.TargetDir)CapFrameX.Service.Application.dll" />
+        <File Id="CapFrameXServiceCoreDll"
+              Source="$(var.CapFrameX.Service.Api.TargetDir)CapFrameX.Service.Core.dll" />
+        <File Id="CapFrameXServiceInfrastructureDll"
+              Source="$(var.CapFrameX.Service.Api.TargetDir)CapFrameX.Service.Infrastructure.dll" />
+        <File Id="CapFrameXServiceMonitoringDll"
+              Source="$(var.CapFrameX.Service.Api.TargetDir)CapFrameX.Service.Monitoring.dll" />
+        <File Id="CapFrameXServiceCaptureDll"
+              Source="$(var.CapFrameX.Service.Api.TargetDir)CapFrameX.Service.Capture.dll" />
+        <File Id="CapFrameXServiceInputDll"
+              Source="$(var.CapFrameX.Service.Api.TargetDir)CapFrameX.Service.Input.dll" />
+        <File Id="CapFrameXServiceDataDll"
+              Source="$(var.CapFrameX.Service.Api.TargetDir)CapFrameX.Service.Data.dll" />
+      </Component>
+
+      <!-- Native Libraries Component -->
+      <Component Id="NativeLibrariesComponent" Guid="E5F6A7B8-C9DA-4E5F-9A8B-7C6D5E4F3A2B">
+        <!-- Hardware monitoring low-level DLLs -->
+        <File Id="CapFrameXADLXDll"
+              Source="$(var.CapFrameX.Service.Api.TargetDir)CapFrameX.ADLX.dll" />
+        <File Id="CapFrameXHwinfoDll"
+              Source="$(var.CapFrameX.Service.Api.TargetDir)CapFrameX.Hwinfo.dll" />
+        <File Id="CapFrameXIGCLDll"
+              Source="$(var.CapFrameX.Service.Api.TargetDir)CapFrameX.IGCL.dll" />
+      </Component>
+
+    </ComponentGroup>
+  </Fragment>
+</Wix>

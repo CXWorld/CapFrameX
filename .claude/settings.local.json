@@ -23,7 +23,9 @@
       "Bash(dotnet list:*)",
       "Bash(dotnet nuget:*)",
       "Bash(dir \"C:\\\\Users\\\\DevTe\\\\.nuget\\\\packages\\\\wixsharp\" /b)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "Bash(dir /s /b *.dll)",
+      "Bash(findstr:*)"
     ]
   }
 }

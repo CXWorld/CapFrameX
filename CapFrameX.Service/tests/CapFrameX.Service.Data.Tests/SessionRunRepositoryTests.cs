@@ -28,7 +28,7 @@ public class SessionRunRepositoryTests : IDisposable
         {
             Id = suiteId,
             Name = "Test Suite",
-            Type = SuiteType.GameBenchmark,
+            Type = SuiteType.GameReview,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         });

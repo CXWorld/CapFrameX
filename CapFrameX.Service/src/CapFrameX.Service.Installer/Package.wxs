@@ -1,9 +1,50 @@
-﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
-  <Package Id="TODO_Manufacturer.CapFrameX.Service.Installer" Name="CapFrameX.Service.Installer" Manufacturer="TODO Manufacturer" Version="1.0.0.0">
-    <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" />
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
 
-    <Feature Id="Main">
-      <ComponentGroupRef Id="ExampleComponents" />
+  <Package Id="CapFrameXServiceInstallerId"
+           Name="CapFrameX Service"
+           Manufacturer="CapFrameX"
+           Version="2.0.0.0"
+           UpgradeCode="8F5B4C2D-9E3A-4B1F-A6D7-2C8E9F0A1B3D"
+           Language="1033"
+           Compressed="yes"
+           InstallerVersion="500">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed."
+                  AllowSameVersionUpgrades="yes" />
+
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- .NET 10 Runtime Check -->
+    <Property Id="DOTNET10INSTALLED">
+      <RegistrySearch Id="DotNet10x64"
+                      Root="HKLM"
+                      Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedhost"
+                      Name="Version"
+                      Type="raw" />
+    </Property>
+
+    <!--<util:RegistrySearch Id="DotNet10Runtime"
+                         Root="HKLM"
+                         Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.NETCore.App"
+                         Value="10.0"
+                         Result="exists"
+                         Variable="DOTNET10RUNTIME" />-->
+
+    <Launch Condition="DOTNET10RUNTIME OR Installed"
+            Message="This application requires .NET 10.0 Runtime or later. Please install .NET 10.0 Runtime from https://dotnet.microsoft.com/download/dotnet/10.0" />
+
+    <!-- UI -->
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+
+    <ui:WixUI Id="WixUI_Minimal" />
+
+    <!-- Features -->
+    <Feature Id="ProductFeature" Title="CapFrameX Service" Level="1">
+      <ComponentGroupRef Id="ServiceComponents" />
+      <ComponentGroupRef Id="ServiceBinaries" />
+      <ComponentGroupRef Id="ApplicationDataFolders" />
     </Feature>
   </Package>
 </Wix>

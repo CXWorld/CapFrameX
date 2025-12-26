@@ -1,2 +1,18 @@
 ﻿<Project Sdk="WixToolset.Sdk/6.0.2">
+  <PropertyGroup>
+    <OutputName>CapFrameXServiceInstaller</OutputName>
+    <OutputType>Package</OutputType>
+    <Platform>x64</Platform>
+    <WixTargetsPath Condition="'$(WixTargetsPath)' == ''">$(MSBuildExtensionsPath)\WiX Toolset\v4\wix.targets</WixTargetsPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="WixToolset.UI.wixext" Version="6.0.2" />
+    <PackageReference Include="WixToolset.Util.wixext" Version="6.0.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="License.rtf" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CapFrameX.Service.Api\CapFrameX.Service.Api.csproj" />
+  </ItemGroup>
 </Project>

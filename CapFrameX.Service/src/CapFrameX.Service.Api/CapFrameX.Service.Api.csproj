@@ -16,7 +16,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CapFrameX.Service.Application\CapFrameX.Service.Application.csproj" />
+    <ProjectReference Include="..\CapFrameX.Service.Capture\CapFrameX.Service.Capture.csproj" />
+    <ProjectReference Include="..\CapFrameX.Service.Core\CapFrameX.Service.Core.csproj" />
+    <ProjectReference Include="..\CapFrameX.Service.Data\CapFrameX.Service.Data.csproj" />
     <ProjectReference Include="..\CapFrameX.Service.Infrastructure\CapFrameX.Service.Infrastructure.csproj" />
+    <ProjectReference Include="..\CapFrameX.Service.Input\CapFrameX.Service.Input.csproj" />
     <ProjectReference Include="..\CapFrameX.Service.Monitoring\CapFrameX.Service.Monitoring.csproj" />
   </ItemGroup>
 </Project>
