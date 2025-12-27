@@ -259,3 +259,6 @@ paket-files/
 __pycache__/
 *.pyc
 source/publish webservice.ps1
+
+# Claude Code
+.claude/
