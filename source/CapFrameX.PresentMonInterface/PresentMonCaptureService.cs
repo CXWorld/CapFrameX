@@ -150,7 +150,7 @@ namespace CapFrameX.PresentMonInterface
                         var lineSplit = e.Data.Split(',');
                         if (lineSplit.Length == VALID_LINE_LENGTH)
                         {
-                            if (lineSplit[ApplicationName_INDEX] != "<error>")
+                            if (lineSplit[ApplicationName_INDEX] != "<error>" && lineSplit[ApplicationName_INDEX] != string.Empty)
                             {
                                 if (!_detectedProcesses.Contains(lineSplit[ApplicationName_INDEX]))
                                 {
