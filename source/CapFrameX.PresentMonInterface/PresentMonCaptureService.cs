@@ -99,6 +99,7 @@ namespace CapFrameX.PresentMonInterface
         private bool _isUpdating;
         private IDisposable _hearBeatDisposable;
         private IDisposable _processNameDisposable;
+        private HashSet<string> _detectedProcesses = new HashSet<string>();
 
         public Dictionary<string, int> ParameterNameIndexMapping { get; }
 
@@ -151,6 +152,12 @@ namespace CapFrameX.PresentMonInterface
                         {
                             if (lineSplit[ApplicationName_INDEX] != "<error>")
                             {
+                                if (!_detectedProcesses.Contains(lineSplit[ApplicationName_INDEX]))
+                                {
+                                    _detectedProcesses.Add(lineSplit[ApplicationName_INDEX]);
+                                    _logger.LogInformation($"Detected process: {lineSplit[ApplicationName_INDEX]} with PID {lineSplit[1]}");
+                                }
+                  
                                 _outputDataStream.OnNext(lineSplit);
                             }
                         }

@@ -384,6 +384,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions">
       <Version>6.0.2</Version>
     </PackageReference>
+    <PackageReference Include="Microsoft.Win32.Registry">
+      <Version>5.0.0</Version>
+    </PackageReference>
     <PackageReference Include="Prism.Core">
       <Version>7.0.0.396</Version>
     </PackageReference>
@@ -407,6 +410,9 @@
     </PackageReference>
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe">
       <Version>6.1.2</Version>
+    </PackageReference>
+    <PackageReference Include="System.Security.Principal.Windows">
+      <Version>5.0.0</Version>
     </PackageReference>
     <PackageReference Include="System.Threading.Tasks.Extensions">
       <Version>4.5.4</Version>
