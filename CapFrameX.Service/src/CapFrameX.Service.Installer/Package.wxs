@@ -16,35 +16,38 @@
 
     <MediaTemplate EmbedCab="yes" />
 
-    <!-- .NET 10 Runtime Check -->
-    <Property Id="DOTNET10INSTALLED">
-      <RegistrySearch Id="DotNet10x64"
+    <!-- .NET 10 Runtime Check - Read version from registry -->
+    <Property Id="DOTNET_VERSION">
+      <RegistrySearch Id="DotNetVersionSearch"
                       Root="HKLM"
                       Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedhost"
                       Name="Version"
                       Type="raw" />
     </Property>
 
-    <!--<util:RegistrySearch Id="DotNet10Runtime"
-                         Root="HKLM"
-                         Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.NETCore.App"
-                         Value="10.0"
-                         Result="exists"
-                         Variable="DOTNET10RUNTIME" />-->
-
-    <Launch Condition="DOTNET10RUNTIME OR Installed"
+    <!-- Launch condition: Check if version contains "10." (substring match) -->
+    <Launch Condition="(DOTNET_VERSION &gt;&lt; &quot;10.&quot;) OR Installed"
             Message="This application requires .NET 10.0 Runtime or later. Please install .NET 10.0 Runtime from https://dotnet.microsoft.com/download/dotnet/10.0" />
 
     <!-- UI -->
     <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
 
-    <ui:WixUI Id="WixUI_Minimal" />
+    <ui:WixUI Id="WixUI_FeatureTree" />
 
     <!-- Features -->
-    <Feature Id="ProductFeature" Title="CapFrameX Service" Level="1">
+    <Feature Id="ProductFeature" Title="CapFrameX Service" Level="1" Display="expand"
+             Description="Core CapFrameX Service for frame capture and hardware monitoring">
       <ComponentGroupRef Id="ServiceComponents" />
       <ComponentGroupRef Id="ServiceBinaries" />
       <ComponentGroupRef Id="ApplicationDataFolders" />
+
+      <!-- Benchlab Service as optional sub-feature -->
+      <Feature Id="BenchlabFeature" Title="Benchlab PMD Service" Level="1"
+               Description="Benchlab Power Measurement Device service for hardware power monitoring. Requires Benchlab hardware.">
+        <ComponentGroupRef Id="BenchlabServiceComponents" />
+        <ComponentGroupRef Id="BenchlabRuntimeNet7Components" />
+        <ComponentGroupRef Id="BenchlabRuntimeNet8Components" />
+      </Feature>
     </Feature>
   </Package>
 </Wix>

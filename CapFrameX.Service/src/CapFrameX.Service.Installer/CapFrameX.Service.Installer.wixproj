@@ -4,6 +4,7 @@
     <OutputType>Package</OutputType>
     <Platform>x64</Platform>
     <WixTargetsPath Condition="'$(WixTargetsPath)' == ''">$(MSBuildExtensionsPath)\WiX Toolset\v4\wix.targets</WixTargetsPath>
+    <DefineConstants>BenchlabServiceDir=$(MSBuildProjectDirectory)\..\..\misc\Benchlab_Service\</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="WixToolset.UI.wixext" Version="6.0.2" />

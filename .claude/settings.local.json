@@ -25,7 +25,8 @@
       "Bash(dir \"C:\\\\Users\\\\DevTe\\\\.nuget\\\\packages\\\\wixsharp\" /b)",
       "Bash(del:*)",
       "Bash(dir /s /b *.dll)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(dir:*)"
     ]
   }
 }

@@ -11,6 +11,16 @@
         <Directory Id="APPDATAFOLDER" Name="Service">
           <Directory Id="DATABASEFOLDER" Name="Database" />
           <Directory Id="LOGSFOLDER" Name="Logs" />
+          <Directory Id="BENCHLABFOLDER" Name="Benchlab_Service">
+            <Directory Id="BENCHLAB_RUNTIMES" Name="runtimes">
+              <Directory Id="BENCHLAB_WIN" Name="win">
+                <Directory Id="BENCHLAB_WIN_LIB" Name="lib">
+                  <Directory Id="BENCHLAB_WIN_LIB_NET7" Name="net7.0" />
+                  <Directory Id="BENCHLAB_WIN_LIB_NET8" Name="net8.0" />
+                </Directory>
+              </Directory>
+            </Directory>
+          </Directory>
         </Directory>
       </Directory>
     </StandardDirectory>
@@ -28,6 +38,14 @@
       </Component>
 
       <Component Id="LogsFolderComponent" Guid="A7B8C9DA-E0F1-4A5B-9C8D-7E6F5A4B3C2D" Directory="LOGSFOLDER">
+        <CreateFolder>
+          <util:PermissionEx xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util"
+                             User="Everyone"
+                             GenericAll="yes" />
+        </CreateFolder>
+      </Component>
+
+      <Component Id="BenchlabFolderComponent" Guid="B8C9DAE0-F1A2-4B5C-8D9E-7F6A5B4C3D2E" Directory="BENCHLABFOLDER">
         <CreateFolder>
           <util:PermissionEx xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util"
                              User="Everyone"

@@ -1,0 +1,184 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+  <Fragment>
+    <ComponentGroup Id="BenchlabServiceComponents" Directory="BENCHLABFOLDER">
+
+      <!-- Benchlab Windows Service Component -->
+      <Component Id="BenchlabServiceComponent" Guid="C9DAE0F1-A2B3-4C5D-8E9F-7A6B5C4D3E2F">
+
+        <!-- Service Installation -->
+        <ServiceInstall Id="BenchlabServiceInstall"
+                        Name="BenchlabService"
+                        DisplayName="Benchlab PMD Service"
+                        Description="Benchlab Power Measurement Device service for hardware monitoring"
+                        Type="ownProcess"
+                        Start="auto"
+                        ErrorControl="normal"
+                        Account="LocalSystem">
+          <util:ServiceConfig xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util"
+                              FirstFailureActionType="restart"
+                              SecondFailureActionType="restart"
+                              ThirdFailureActionType="restart"
+                              RestartServiceDelayInSeconds="60" />
+        </ServiceInstall>
+
+        <!-- Service Control -->
+        <ServiceControl Id="BenchlabServiceControl"
+                        Name="BenchlabService"
+                        Start="install"
+                        Stop="both"
+                        Remove="uninstall"
+                        Wait="yes" />
+
+        <!-- Main Service Executable -->
+        <File Id="PMDServiceExe"
+              Source="$(var.BenchlabServiceDir)PMD_Service.exe"
+              KeyPath="yes" />
+
+      </Component>
+
+      <!-- Benchlab Service Runtime Files -->
+      <Component Id="BenchlabRuntimeComponent" Guid="DAE0F1A2-B3C4-4D5E-9F8A-7B6C5D4E3F2A">
+        <File Id="PMDServiceDll"
+              Source="$(var.BenchlabServiceDir)PMD_Service.dll" />
+        <File Id="PMDServiceDepsJson"
+              Source="$(var.BenchlabServiceDir)PMD_Service.deps.json" />
+        <File Id="PMDServiceRuntimeConfigJson"
+              Source="$(var.BenchlabServiceDir)PMD_Service.runtimeconfig.json" />
+      </Component>
+
+      <!-- Benchlab Core Library -->
+      <Component Id="BenchlabCoreComponent" Guid="E0F1A2B3-C4D5-4E5F-8A9B-7C6D5E4F3A2B">
+        <File Id="BenchlabCoreDll"
+              Source="$(var.BenchlabServiceDir)BENCHLAB_Core.dll" />
+      </Component>
+
+      <!-- Benchlab Configuration -->
+      <Component Id="BenchlabConfigComponent" Guid="F1A2B3C4-D5E6-4F5A-9B8C-7D6E5F4A3B2C">
+        <File Id="BenchlabAppSettingsJson"
+              Source="$(var.BenchlabServiceDir)appsettings.json" />
+      </Component>
+
+      <!-- Microsoft Extensions Libraries -->
+      <Component Id="BenchlabMsExtConfigComponent" Guid="A2B3C4D5-E6F7-4A5B-8C9D-7E6F5A4B3C2D">
+        <File Id="MsExtConfigAbstractionsDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Configuration.Abstractions.dll" />
+        <File Id="MsExtConfigBinderDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Configuration.Binder.dll" />
+        <File Id="MsExtConfigCommandLineDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Configuration.CommandLine.dll" />
+        <File Id="MsExtConfigDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Configuration.dll" />
+        <File Id="MsExtConfigEnvVarsDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Configuration.EnvironmentVariables.dll" />
+        <File Id="MsExtConfigFileExtDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Configuration.FileExtensions.dll" />
+        <File Id="MsExtConfigJsonDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Configuration.Json.dll" />
+        <File Id="MsExtConfigUserSecretsDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Configuration.UserSecrets.dll" />
+      </Component>
+
+      <Component Id="BenchlabMsExtDIComponent" Guid="B3C4D5E6-F7A8-4B5C-9D8E-7F6A5B4C3D2E">
+        <File Id="MsExtDIAbstractionsDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
+        <File Id="MsExtDIDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.DependencyInjection.dll" />
+      </Component>
+
+      <Component Id="BenchlabMsExtDiagComponent" Guid="C4D5E6F7-A8B9-4C5D-8E9F-7A6B5C4D3E2F">
+        <File Id="MsExtDiagAbstractionsDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Diagnostics.Abstractions.dll" />
+        <File Id="MsExtDiagDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Diagnostics.dll" />
+      </Component>
+
+      <Component Id="BenchlabMsExtFileComponent" Guid="D5E6F7A8-B9CA-4D5E-9F8A-7B6C5D4E3F2A">
+        <File Id="MsExtFileProvidersAbstractionsDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.FileProviders.Abstractions.dll" />
+        <File Id="MsExtFileProvidersPhysicalDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.FileProviders.Physical.dll" />
+        <File Id="MsExtFileSystemGlobbingDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.FileSystemGlobbing.dll" />
+      </Component>
+
+      <Component Id="BenchlabMsExtHostingComponent" Guid="E6F7A8B9-CADB-4E5F-8A9B-7C6D5E4F3A2B">
+        <File Id="MsExtHostingAbstractionsDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Hosting.Abstractions.dll" />
+        <File Id="MsExtHostingDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Hosting.dll" />
+        <File Id="MsExtHostingWindowsServicesDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Hosting.WindowsServices.dll" />
+      </Component>
+
+      <Component Id="BenchlabMsExtLoggingComponent" Guid="F7A8B9CA-DBEC-4F5A-9B8C-7D6E5F4A3B2C">
+        <File Id="MsExtLoggingAbstractionsDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Logging.Abstractions.dll" />
+        <File Id="MsExtLoggingConfigurationDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Logging.Configuration.dll" />
+        <File Id="MsExtLoggingConsoleDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Logging.Console.dll" />
+        <File Id="MsExtLoggingDebugDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Logging.Debug.dll" />
+        <File Id="MsExtLoggingDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Logging.dll" />
+        <File Id="MsExtLoggingEventLogDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Logging.EventLog.dll" />
+        <File Id="MsExtLoggingEventSourceDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Logging.EventSource.dll" />
+      </Component>
+
+      <Component Id="BenchlabMsExtOptionsComponent" Guid="A8B9CADB-ECFD-4A5B-8C9D-7E6F5A4B3C2D">
+        <File Id="MsExtOptionsConfigExtDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Options.ConfigurationExtensions.dll" />
+        <File Id="MsExtOptionsDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Options.dll" />
+        <File Id="MsExtPrimitivesDll"
+              Source="$(var.BenchlabServiceDir)Microsoft.Extensions.Primitives.dll" />
+      </Component>
+
+      <!-- System Libraries -->
+      <Component Id="BenchlabSystemLibsComponent" Guid="B9CADBEC-FDAE-4B5C-9D8E-7F6A5B4C3D2E">
+        <File Id="SysDiagDiagSourceDll"
+              Source="$(var.BenchlabServiceDir)System.Diagnostics.DiagnosticSource.dll" />
+        <File Id="SysDiagEventLogDll"
+              Source="$(var.BenchlabServiceDir)System.Diagnostics.EventLog.dll" />
+        <File Id="SysIOPipelinesDll"
+              Source="$(var.BenchlabServiceDir)System.IO.Pipelines.dll" />
+        <File Id="SysIOPortsDll"
+              Source="$(var.BenchlabServiceDir)System.IO.Ports.dll" />
+        <File Id="SysSvcProcessSvcControllerDll"
+              Source="$(var.BenchlabServiceDir)System.ServiceProcess.ServiceController.dll" />
+        <File Id="SysTextEncodingsWebDll"
+              Source="$(var.BenchlabServiceDir)System.Text.Encodings.Web.dll" />
+        <File Id="SysTextJsonDll"
+              Source="$(var.BenchlabServiceDir)System.Text.Json.dll" />
+      </Component>
+
+    </ComponentGroup>
+  </Fragment>
+
+  <!-- Windows Runtime Libraries (net7.0) -->
+  <Fragment>
+    <ComponentGroup Id="BenchlabRuntimeNet7Components" Directory="BENCHLAB_WIN_LIB_NET7">
+      <Component Id="BenchlabWinNet7Component" Guid="CADBECFD-AEBF-4C5D-8E9F-7A6B5C4D3E2F">
+        <File Id="WinNet7SysIOPortsDll"
+              Source="$(var.BenchlabServiceDir)runtimes\win\lib\net7.0\System.IO.Ports.dll" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+  <!-- Windows Runtime Libraries (net8.0) -->
+  <Fragment>
+    <ComponentGroup Id="BenchlabRuntimeNet8Components" Directory="BENCHLAB_WIN_LIB_NET8">
+      <Component Id="BenchlabWinNet8Component" Guid="DBECFDAE-BFCA-4D5E-9F8A-7B6C5D4E3F2A">
+        <File Id="WinNet8SysDiagEventLogDll"
+              Source="$(var.BenchlabServiceDir)runtimes\win\lib\net8.0\System.Diagnostics.EventLog.dll" />
+        <File Id="WinNet8SysDiagEventLogMsgDll"
+              Source="$(var.BenchlabServiceDir)runtimes\win\lib\net8.0\System.Diagnostics.EventLog.Messages.dll" />
+        <File Id="WinNet8SysSvcProcessDll"
+              Source="$(var.BenchlabServiceDir)runtimes\win\lib\net8.0\System.ServiceProcess.ServiceController.dll" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
