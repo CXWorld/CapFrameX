@@ -978,7 +978,7 @@ namespace CapFrameX.Data
                     {
                         if (double.TryParse(GetStringFromArray(values, indexCPUStartQPCTimeInMs), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart))
                         {
-                            captureData.TimeInSeconds[lineIndex] = frameStart;
+                            captureData.TimeInSeconds[lineIndex] = frameStart * 1E-03;
                         }
                     }
 
