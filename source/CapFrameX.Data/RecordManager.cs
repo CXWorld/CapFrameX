@@ -812,6 +812,9 @@ namespace CapFrameX.Data
                     headerLine = PresentMonCaptureService.COLUMN_HEADER;
                 }
 
+                // Filter lines by dominant process and SwapChainAddress
+                presentLines = FilterByDominantSwapChain(presentLines, headerLine);
+
                 var sessionRun = new SessionRun()
                 {
                     Hash = string.Join(",", presentLines).GetSha1(),
@@ -978,7 +981,7 @@ namespace CapFrameX.Data
                     {
                         if (double.TryParse(GetStringFromArray(values, indexCPUStartQPCTimeInMs), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart))
                         {
-                            captureData.TimeInSeconds[lineIndex] = frameStart * 1E-03;
+                            captureData.TimeInSeconds[lineIndex] = frameStart * 1E-03; ;
                         }
                     }
 
@@ -1119,6 +1122,105 @@ namespace CapFrameX.Data
                 _logger.LogError(e, "Error converting PresentData");
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Filters present data lines to include only the dominant process and its dominant SwapChainAddress.
+        /// This handles scenarios where multiple processes or multiple swap chains per process are present.
+        /// </summary>
+        private IEnumerable<string> FilterByDominantSwapChain(IEnumerable<string> presentLines, string headerLine)
+        {
+            var linesList = presentLines.ToList();
+            if (!linesList.Any())
+                return linesList;
+
+            // Find SwapChainAddress index from header
+            var metrics = Array.ConvertAll(headerLine.Split(','), p => p.Trim());
+            int swapChainIndex = -1;
+            int processNameIndex = -1;
+
+            for (int i = 0; i < metrics.Length; i++)
+            {
+                if (string.Compare(metrics[i], "SwapChainAddress", true) == 0)
+                    swapChainIndex = i;
+                if (string.Compare(metrics[i], "Application", true) == 0)
+                    processNameIndex = i;
+            }
+
+            // If SwapChainAddress column not found, return lines as-is
+            if (swapChainIndex < 0 || processNameIndex < 0)
+                return linesList;
+
+            // Parse all lines to extract (ProcessName, SwapChainAddress) pairs and count occurrences
+            var processSwapChainCounts = new Dictionary<(string ProcessName, string SwapChain), int>();
+            var lineData = new List<(string Line, string ProcessName, string SwapChain)>();
+
+            foreach (var line in linesList)
+            {
+                var values = line.Split(',');
+                if (values.Length <= Math.Max(swapChainIndex, processNameIndex))
+                    continue;
+
+                var processName = values[processNameIndex];
+                var swapChain = values[swapChainIndex];
+                var key = (processName, swapChain);
+
+                if (!processSwapChainCounts.ContainsKey(key))
+                    processSwapChainCounts[key] = 0;
+                processSwapChainCounts[key]++;
+
+                lineData.Add((line, processName, swapChain));
+            }
+
+            if (!processSwapChainCounts.Any())
+                return linesList;
+
+            // Group by process and find the dominant SwapChain for each process
+            var processCounts = processSwapChainCounts
+                .GroupBy(kvp => kvp.Key.ProcessName)
+                .ToDictionary(
+                    g => g.Key,
+                    g => new
+                    {
+                        TotalFrames = g.Sum(x => x.Value),
+                        DominantSwapChain = g.OrderByDescending(x => x.Value).First().Key.SwapChain,
+                        DominantSwapChainCount = g.OrderByDescending(x => x.Value).First().Value
+                    });
+
+            // Select the dominant process (the one with the most frames from its dominant SwapChain)
+            var dominantProcess = processCounts
+                .OrderByDescending(p => p.Value.DominantSwapChainCount)
+                .First();
+
+            var selectedProcessName = dominantProcess.Key;
+            var selectedSwapChain = dominantProcess.Value.DominantSwapChain;
+
+            _logger.LogInformation($"SwapChain filtering: Selected process '{selectedProcessName}' with SwapChain '{selectedSwapChain}' " +
+                $"({dominantProcess.Value.DominantSwapChainCount} frames out of {dominantProcess.Value.TotalFrames} total for this process)");
+
+            // Log if we're filtering out other processes or swap chains
+            if (processCounts.Count > 1)
+            {
+                _logger.LogInformation($"SwapChain filtering: Filtered out {processCounts.Count - 1} other process(es)");
+            }
+
+            var otherSwapChainsForProcess = processSwapChainCounts
+                .Where(kvp => kvp.Key.ProcessName == selectedProcessName && kvp.Key.SwapChain != selectedSwapChain)
+                .ToList();
+
+            if (otherSwapChainsForProcess.Any())
+            {
+                var filteredCount = otherSwapChainsForProcess.Sum(x => x.Value);
+                _logger.LogInformation($"SwapChain filtering: Filtered out {filteredCount} frames from {otherSwapChainsForProcess.Count} other SwapChain(s) for process '{selectedProcessName}'");
+            }
+
+            // Filter lines to only include the selected process and SwapChain
+            var filteredLines = lineData
+                .Where(ld => ld.ProcessName == selectedProcessName && ld.SwapChain == selectedSwapChain)
+                .Select(ld => ld.Line)
+                .ToList();
+
+            return filteredLines;
         }
 
         public void NormalizeStartTimesOfSessionRuns(IEnumerable<ISessionRun> sessionRuns)

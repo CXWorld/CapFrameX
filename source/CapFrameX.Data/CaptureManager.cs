@@ -540,7 +540,6 @@ namespace CapFrameX.Data
                 return Enumerable.Empty<string[]>().ToList();
             }
 
-            var startTimeWithOffset = GetCpuStartQpcFromDataLine(_captureData.First());
             var stopwatchTime = (_timestampStopCapture - _timestampStartCapture) / 1000d;
 
             if (string.IsNullOrWhiteSpace(_captureTimeString))
@@ -591,6 +590,33 @@ namespace CapFrameX.Data
                 var currentProcess = GetProcessNameFromDataLine(line);
                 return currentProcess == _currentCaptureOptions.ProcessInfo.Item1 && uniqueProcessIdDict[currentProcess].Count() == 1;
             }).ToList();
+
+            // Filter by dominant SwapChainAddress to handle mixed swap chain scenarios (e.g., CS2 with DXGI + Vulkan)
+            var allProcessFilteredData = filteredArchive.Concat(filteredCaptureData).ToList();
+            if (allProcessFilteredData.Any())
+            {
+                var swapChainCounts = allProcessFilteredData
+                    .GroupBy(line => GetSwapChainAddressFromDataLine(line))
+                    .ToDictionary(g => g.Key, g => g.Count());
+
+                if (swapChainCounts.Count > 1)
+                {
+                    var dominantSwapChain = swapChainCounts.OrderByDescending(kvp => kvp.Value).First();
+                    var filteredOutCount = allProcessFilteredData.Count - dominantSwapChain.Value;
+
+                    _logEntryManager.AddLogEntry($"Multiple SwapChains detected. Using dominant SwapChain '{dominantSwapChain.Key}' " +
+                        $"({dominantSwapChain.Value} frames). Filtered out {filteredOutCount} frames from {swapChainCounts.Count - 1} other SwapChain(s).",
+                        ELogMessageType.BasicInfo, false);
+
+                    filteredArchive = filteredArchive
+                        .Where(line => GetSwapChainAddressFromDataLine(line) == dominantSwapChain.Key)
+                        .ToList();
+
+                    filteredCaptureData = filteredCaptureData
+                        .Where(line => GetSwapChainAddressFromDataLine(line) == dominantSwapChain.Key)
+                        .ToList();
+                }
+            }
 
             if (!filteredArchive.Any())
             {
@@ -696,6 +722,11 @@ namespace CapFrameX.Data
             return lineSplit[PresentMonCaptureService.ProcessID_INDEX];
         }
 
+        private string GetSwapChainAddressFromDataLine(string[] lineSplit)
+        {
+            return lineSplit[PresentMonCaptureService.SwapChainAddress_INDEX];
+        }
+
         /// <summary>
         ///  Return the start time of the frame in seconds
         /// </summary>
@@ -748,7 +779,7 @@ namespace CapFrameX.Data
                 previousNormalizedTime = normalizedTime;
 
                 currentLineSplit = lineSplit;
-                currentLineSplit[PresentMonCaptureService.StartTimeInSeconds_INDEX] = (normalizedTime + delta).ToString(CultureInfo.InvariantCulture);
+                currentLineSplit[PresentMonCaptureService.StartTimeInSeconds_INDEX] = (1E03 * (normalizedTime + delta)).ToString(CultureInfo.InvariantCulture);
 
                 lines.Add(string.Join(",", currentLineSplit));
             }

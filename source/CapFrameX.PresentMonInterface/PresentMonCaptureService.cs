@@ -17,6 +17,7 @@ namespace CapFrameX.PresentMonInterface
     {
         public const int ApplicationName_INDEX = 0;
         public const int ProcessID_INDEX = 1;
+        public const int SwapChainAddress_INDEX = 2;
         public const int MsBetweenPresents_INDEX = 10;
         public const int MsBetweenDisplayChange_INDEX = 11;
         // PresentMon version >=2.4.0
@@ -150,20 +151,16 @@ namespace CapFrameX.PresentMonInterface
                         var lineSplit = e.Data.Split(',');
                         if (lineSplit.Length == VALID_LINE_LENGTH)
                         {
-                            if (lineSplit[ApplicationName_INDEX] != "<error>" && lineSplit[ApplicationName_INDEX] != string.Empty)
+                            if (lineSplit[ApplicationName_INDEX] != "<error>")
                             {
-                                if (!_detectedProcesses.Contains(lineSplit[ApplicationName_INDEX]))
-                                {
-                                    _detectedProcesses.Add(lineSplit[ApplicationName_INDEX]);
-                                    _logger.LogInformation($"Detected process: {lineSplit[ApplicationName_INDEX]} with PID {lineSplit[1]}");
-                                }
-                  
+                                //if (!_detectedProcesses.Contains(lineSplit[ApplicationName_INDEX]))
+                                //{
+                                //    _detectedProcesses.Add(lineSplit[ApplicationName_INDEX]);
+                                //    _logger.LogInformation($"Detected process: {lineSplit[ApplicationName_INDEX]} with PID {lineSplit[1]}");
+                                //}
+
                                 _outputDataStream.OnNext(lineSplit);
                             }
-                        }
-                        else
-                        {
-                            _logger.LogWarning($"Invalid line received from PresentMon with length {lineSplit.Length}");
                         }
                     }
                 };
