@@ -48,6 +48,12 @@
         <ComponentGroupRef Id="BenchlabRuntimeNet7Components" />
         <ComponentGroupRef Id="BenchlabRuntimeNet8Components" />
       </Feature>
+
+      <!-- RTSS Overlay Provider as optional sub-feature -->
+      <Feature Id="RTSSOverlayFeature" Title="RTSS Overlay Provider" Level="1"
+               Description="Provides frame timing and sensor data to RivaTuner Statistics Server Overlay Editor. Requires RTSS to be installed.">
+        <ComponentGroupRef Id="OverlayProviderComponents" />
+      </Feature>
     </Feature>
   </Package>
 </Wix>

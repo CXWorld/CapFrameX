@@ -4,7 +4,7 @@
     <OutputType>Package</OutputType>
     <Platform>x64</Platform>
     <WixTargetsPath Condition="'$(WixTargetsPath)' == ''">$(MSBuildExtensionsPath)\WiX Toolset\v4\wix.targets</WixTargetsPath>
-    <DefineConstants>BenchlabServiceDir=$(MSBuildProjectDirectory)\..\..\misc\Benchlab_Service\</DefineConstants>
+    <DefineConstants>BenchlabServiceDir=$(MSBuildProjectDirectory)\..\..\misc\Benchlab_Service\;CapFrameX.Service.Overlay.PublishDir=$(MSBuildProjectDirectory)\..\CapFrameX.Service.Overlay\bin\Release\net10.0-windows\win-x64\publish\</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="WixToolset.UI.wixext" Version="6.0.2" />
@@ -15,5 +15,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CapFrameX.Service.Api\CapFrameX.Service.Api.csproj" />
+    <ProjectReference Include="..\CapFrameX.Service.Overlay\CapFrameX.Service.Overlay.csproj" />
   </ItemGroup>
 </Project>

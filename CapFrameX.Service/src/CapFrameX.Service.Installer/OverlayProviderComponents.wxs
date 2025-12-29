@@ -1,0 +1,27 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <!-- RTSS Plugins directory structure -->
+    <StandardDirectory Id="ProgramFilesFolder">
+      <Directory Id="RTSSFolder" Name="RivaTuner Statistics Server">
+        <Directory Id="RTSSPluginsFolder" Name="Plugins">
+          <Directory Id="RTSSPluginsClientFolder" Name="Client">
+            <Directory Id="CAPFRAMEX_PROVIDER_FOLDER" Name="CapFrameXDataProvider" />
+          </Directory>
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="OverlayProviderComponents" Directory="CAPFRAMEX_PROVIDER_FOLDER">
+
+      <!-- CapFrameXDataProvider - Self-contained single-file executable -->
+      <Component Id="CapFrameXDataProviderExe" Guid="D4E5F6A7-B8C9-4D5E-9F0A-1B2C3D4E5F6A">
+        <File Id="CapFrameXDataProviderExeFile"
+              Source="$(var.CapFrameX.Service.Overlay.PublishDir)CapFrameXDataProvider.exe"
+              KeyPath="yes" />
+      </Component>
+
+    </ComponentGroup>
+  </Fragment>
+</Wix>

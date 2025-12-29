@@ -54,6 +54,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Service.Data.Test
 EndProject
 Project("{B7DD6F7E-DEF8-4E67-B5B7-07EF123DB6F0}") = "CapFrameX.Service.Installer", "src\CapFrameX.Service.Installer\CapFrameX.Service.Installer.wixproj", "{592D71FC-65B3-4882-9F8E-BF553AB0A9FD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Service.Overlay", "src\CapFrameX.Service.Overlay\CapFrameX.Service.Overlay.csproj", "{06B195FC-0B94-4FE8-BD44-4792B03C9531}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -338,6 +340,22 @@ Global
 		{592D71FC-65B3-4882-9F8E-BF553AB0A9FD}.Release|x64.Build.0 = Release|x64
 		{592D71FC-65B3-4882-9F8E-BF553AB0A9FD}.Release|x86.ActiveCfg = Release|x86
 		{592D71FC-65B3-4882-9F8E-BF553AB0A9FD}.Release|x86.Build.0 = Release|x86
+		{06B195FC-0B94-4FE8-BD44-4792B03C9531}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06B195FC-0B94-4FE8-BD44-4792B03C9531}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06B195FC-0B94-4FE8-BD44-4792B03C9531}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{06B195FC-0B94-4FE8-BD44-4792B03C9531}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{06B195FC-0B94-4FE8-BD44-4792B03C9531}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{06B195FC-0B94-4FE8-BD44-4792B03C9531}.Debug|x64.Build.0 = Debug|Any CPU
+		{06B195FC-0B94-4FE8-BD44-4792B03C9531}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{06B195FC-0B94-4FE8-BD44-4792B03C9531}.Debug|x86.Build.0 = Debug|Any CPU
+		{06B195FC-0B94-4FE8-BD44-4792B03C9531}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06B195FC-0B94-4FE8-BD44-4792B03C9531}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06B195FC-0B94-4FE8-BD44-4792B03C9531}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{06B195FC-0B94-4FE8-BD44-4792B03C9531}.Release|ARM64.Build.0 = Release|Any CPU
+		{06B195FC-0B94-4FE8-BD44-4792B03C9531}.Release|x64.ActiveCfg = Release|Any CPU
+		{06B195FC-0B94-4FE8-BD44-4792B03C9531}.Release|x64.Build.0 = Release|Any CPU
+		{06B195FC-0B94-4FE8-BD44-4792B03C9531}.Release|x86.ActiveCfg = Release|Any CPU
+		{06B195FC-0B94-4FE8-BD44-4792B03C9531}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -360,6 +378,7 @@ Global
 		{E3EC12BC-6D76-4E5E-880C-5D914FAF03C2} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{F848C78D-86FB-4778-ACCD-E86CF9046676} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{592D71FC-65B3-4882-9F8E-BF553AB0A9FD} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{06B195FC-0B94-4FE8-BD44-4792B03C9531} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9A30210E-E32B-4E65-AF8D-F141C804A3ED}
