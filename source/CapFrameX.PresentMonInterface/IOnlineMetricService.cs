@@ -1,8 +1,9 @@
 ﻿using CapFrameX.Statistics.NetStandard.Contracts;
+using System;
 
 namespace CapFrameX.PresentMonInterface
 {
-    public interface IOnlineMetricService
+    public interface IOnlineMetricService : IDisposable
     {
         double GetOnlineFpsMetricValue(EMetric metric);
 

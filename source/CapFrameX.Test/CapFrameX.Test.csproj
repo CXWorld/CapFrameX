@@ -82,6 +82,8 @@
     <Compile Include="PresentMonInterface\SystemInfoTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sensor\ComputerTest.cs" />
+    <Compile Include="Statistics\CircularBufferTest.cs" />
+    <Compile Include="Statistics\FrametimeStatisticProviderTest.cs" />
     <Compile Include="TestHelper.cs" />
     <Compile Include="Updater\UpdateCheckTest.cs" />
   </ItemGroup>
@@ -148,6 +150,10 @@
     <ProjectReference Include="..\CapFrameX.Sensor\CapFrameX.Sensor.csproj">
       <Project>{b1b0e5f1-942a-476c-bea4-8b9ffbca04c6}</Project>
       <Name>CapFrameX.Sensor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
+      <Project>{dc30f7f7-5725-4de9-b271-0d621b559cd5}</Project>
+      <Name>CapFrameX.Statistics.NetStandard</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Updater\CapFrameX.Updater.csproj">
       <Project>{5d12aa37-cc30-4476-94ad-11c15dc65518}</Project>

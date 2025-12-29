@@ -22,7 +22,7 @@ namespace CapFrameX.PresentMonInterface
         public const int MsBetweenDisplayChange_INDEX = 11;
         // PresentMon version >=2.4.0
         public const int MsPCLatency_INDEX = 15;
-        public const int StartTimeInSeconds_INDEX = 16;
+        public const int StartTimeInMs_INDEX = 16;
         public const int CpuBusy_INDEX = 18;
         public const int GpuBusy_INDEX = 22;
         public const int VALID_LINE_LENGTH = 27;

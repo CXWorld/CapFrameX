@@ -71,6 +71,9 @@ namespace CapFrameX.Data
         private IDisposable _disposablePoweneticsDataStream;
         private IDisposable _disposableBenchlabDataStream;
         private IDisposable _rTSSFrameTimesIntervalStream;
+        private EventLoopScheduler _captureStreamScheduler;
+        private EventLoopScheduler _poweneticsScheduler;
+        private EventLoopScheduler _benchlabScheduler;
         private List<string[]> _captureData = new List<string[]>();
         private bool _fillArchive;
         private double _qpcTimeStart;
@@ -228,19 +231,26 @@ namespace CapFrameX.Data
                 _pmdDataCpuPower = new LinkedList<float>();
                 _pmdDataSystemPower = new LinkedList<float> { };
 
+                // Create schedulers that we can dispose later
+                _poweneticsScheduler = new EventLoopScheduler();
+                _benchlabScheduler = new EventLoopScheduler();
+
                 _disposablePoweneticsDataStream = _poweneticsService.PmdChannelStream
-                    .ObserveOn(new EventLoopScheduler())
+                    .ObserveOn(_poweneticsScheduler)
                     .Subscribe(channels => FillPmdDataLists(channels));
 
                 _disposableBenchlabDataStream = _benchlabService.PmdSensorStream
-                    .ObserveOn(new EventLoopScheduler())
+                    .ObserveOn(_benchlabScheduler)
                     .Subscribe(sensorSample => FillPmdDataLists(sensorSample));
             }
+
+            // Create scheduler for capture stream
+            _captureStreamScheduler = new EventLoopScheduler();
 
             _disposableCaptureStream = _presentMonCaptureService
                 .FrameDataStream
                 .Skip(1)
-                .ObserveOn(new EventLoopScheduler())
+                .ObserveOn(_captureStreamScheduler)
                 .Subscribe(lineSplit =>
                 {
                     _captureData.Add(lineSplit);
@@ -360,10 +370,16 @@ namespace CapFrameX.Data
 
             // Stop Present logging
             _disposableCaptureStream?.Dispose();
+            _captureStreamScheduler?.Dispose();
+            _captureStreamScheduler = null;
 
             // Stop PMD logging
             _disposablePoweneticsDataStream?.Dispose();
             _disposableBenchlabDataStream?.Dispose();
+            _poweneticsScheduler?.Dispose();
+            _benchlabScheduler?.Dispose();
+            _poweneticsScheduler = null;
+            _benchlabScheduler = null;
 
             _logEntryManager.AddLogEntry("Processing captured data", ELogMessageType.BasicInfo, false);
 
@@ -734,13 +750,13 @@ namespace CapFrameX.Data
         /// <returns></returns>
         private double GetCpuStartQpcFromDataLine(string[] lineSplit)
         {
-            return 1E-03 * Convert.ToDouble(lineSplit[PresentMonCaptureService.StartTimeInSeconds_INDEX], CultureInfo.InvariantCulture);
+            return 1E-03 * Convert.ToDouble(lineSplit[PresentMonCaptureService.StartTimeInMs_INDEX], CultureInfo.InvariantCulture);
         }
 
         private double GetTimeFromDataLine(string line)
         {
             var lineSplit = line.Split(',');
-            var length = Convert.ToDouble(lineSplit[PresentMonCaptureService.StartTimeInSeconds_INDEX], CultureInfo.InvariantCulture);
+            var length = Convert.ToDouble(lineSplit[PresentMonCaptureService.StartTimeInMs_INDEX], CultureInfo.InvariantCulture);
             return Math.Round(length, 2, MidpointRounding.AwayFromZero);
         }
 
@@ -753,7 +769,7 @@ namespace CapFrameX.Data
 
             // normalize time
             var currentLineSplit = firstLineSplit;
-            currentLineSplit[PresentMonCaptureService.StartTimeInSeconds_INDEX] = "0";
+            currentLineSplit[PresentMonCaptureService.StartTimeInMs_INDEX] = "0";
             double previousNormalizedTime = 0;
             double delta = 0;
 
@@ -779,7 +795,7 @@ namespace CapFrameX.Data
                 previousNormalizedTime = normalizedTime;
 
                 currentLineSplit = lineSplit;
-                currentLineSplit[PresentMonCaptureService.StartTimeInSeconds_INDEX] = (1E03 * (normalizedTime + delta)).ToString(CultureInfo.InvariantCulture);
+                currentLineSplit[PresentMonCaptureService.StartTimeInMs_INDEX] = (1E03 * (normalizedTime + delta)).ToString(CultureInfo.InvariantCulture);
 
                 lines.Add(string.Join(",", currentLineSplit));
             }

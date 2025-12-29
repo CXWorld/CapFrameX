@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Statistics.NetStandard.Contracts;
 using MathNet.Numerics.Statistics;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -17,9 +18,39 @@ namespace CapFrameX.Statistics.NetStandard
         private const double TAU = 0.999;
         private readonly IFrametimeStatisticProviderOptions _options;
 
+        // Thread-local reusable buffers to avoid allocations in hot paths
+        [ThreadStatic]
+        private static double[] _fpsBuffer;
+        [ThreadStatic]
+        private static double[] _sortBuffer;
+
         public FrametimeStatisticProvider(IFrametimeStatisticProviderOptions options)
         {
             _options = options;
+        }
+
+        /// <summary>
+        /// Gets or creates a thread-local buffer for FPS calculations.
+        /// </summary>
+        private static double[] GetFpsBuffer(int minSize)
+        {
+            if (_fpsBuffer == null || _fpsBuffer.Length < minSize)
+            {
+                _fpsBuffer = new double[Math.Max(minSize, 1024)];
+            }
+            return _fpsBuffer;
+        }
+
+        /// <summary>
+        /// Gets or creates a thread-local buffer for sorting operations.
+        /// </summary>
+        private static double[] GetSortBuffer(int minSize)
+        {
+            if (_sortBuffer == null || _sortBuffer.Length < minSize)
+            {
+                _sortBuffer = new double[Math.Max(minSize, 1024)];
+            }
+            return _sortBuffer;
         }
 
         public double GetAdaptiveStandardDeviation(IList<double> sequence, double timeWindow)
@@ -141,7 +172,8 @@ namespace CapFrameX.Statistics.NetStandard
         }
 
         /// <summary>
-        /// Equivalent x% low integral metric definition to MSI Afterburner
+        /// Equivalent x% low integral metric definition to MSI Afterburner.
+        /// Optimized to use thread-local buffer for sorting to avoid allocations.
         /// </summary>
         /// <param name="sequence"></param>
         /// <param name="pQuantile"></param>
@@ -151,22 +183,52 @@ namespace CapFrameX.Statistics.NetStandard
             if (!sequence.Any())
                 return double.NaN;
 
-            var sequenceSorted = sequence.OrderByDescending(x => x).ToArray();
-            var totelTime = sequence.Sum();
-            var percentLowTime = totelTime * (1 - pQuantile);
+            int count = sequence.Count;
+
+            // Use thread-local buffer for sorting to avoid allocation
+            var sortBuffer = GetSortBuffer(count);
+
+            // Copy sequence to buffer
+            for (int i = 0; i < count; i++)
+            {
+                sortBuffer[i] = sequence[i];
+            }
+
+            // Sort in descending order (using Array.Sort then reverse, or custom comparison)
+            Array.Sort(sortBuffer, 0, count);
+            // Reverse to get descending order
+            int left = 0;
+            int right = count - 1;
+            while (left < right)
+            {
+                double temp = sortBuffer[left];
+                sortBuffer[left] = sortBuffer[right];
+                sortBuffer[right] = temp;
+                left++;
+                right--;
+            }
+
+            // Calculate total time
+            double totalTime = 0;
+            for (int i = 0; i < count; i++)
+            {
+                totalTime += sortBuffer[i];
+            }
+
+            var percentLowTime = totalTime * (1 - pQuantile);
             var lowTimeSum = 0d;
             var percentLowIndex = 0;
 
-            for (int i = 0; i < sequenceSorted.Length; i++)
+            for (int i = 0; i < count; i++)
             {
-                lowTimeSum += sequenceSorted[i];
+                lowTimeSum += sortBuffer[i];
                 percentLowIndex = i;
 
                 if (lowTimeSum >= percentLowTime)
                     break;
             }
 
-            return sequenceSorted[percentLowIndex];
+            return sortBuffer[percentLowIndex];
         }
 
         /// <summary>
@@ -197,70 +259,126 @@ namespace CapFrameX.Statistics.NetStandard
         {
             if (!sequence.Any()) return double.NaN;
 
-            double metricValue;
-            IList<double> fps = sequence.Select(ft => 1000 / ft).ToList();
-            switch (metric)
+            try
             {
-                case EMetric.Max:
-                    metricValue = fps.Max();
-                    break;
-                case EMetric.P99:
-                    metricValue = GetPQuantileSequence(fps, 0.99);
-                    break;
-                case EMetric.P95:
-                    metricValue = GetPQuantileSequence(fps, 0.95);
-                    break;
-                case EMetric.Average:
-                case EMetric.GpuActiveAverage:
-                    metricValue = sequence.Count * 1000 / sequence.Sum();
-                    break;
-                case EMetric.Median:
-                    metricValue = GetPQuantileSequence(fps, 0.5);
-                    break;
-                case EMetric.P5:
-                    metricValue = GetPQuantileSequence(fps, 0.05);
-                    break;
-                case EMetric.P1:
-                case EMetric.GpuActiveP1:
-                    metricValue = GetPQuantileSequence(fps, 0.01);
-                    break;
-                case EMetric.P0dot2:
-                    metricValue = GetPQuantileSequence(fps, 0.002);
-                    break;
-                case EMetric.P0dot1:
-                    metricValue = GetPQuantileSequence(fps, 0.001);
-                    break;
-                case EMetric.OnePercentLowAverage:
-                case EMetric.GpuActiveOnePercentLowAverage:
-                    metricValue = 1000 / GetPercentageHighAverageSequence(sequence, 1 - 0.01);
-                    break;
-                case EMetric.ZerodotTwoPercentLowAverage:
-                    metricValue = 1000 / GetPercentageHighAverageSequence(sequence, 1 - 0.002);
-                    break;
-                case EMetric.ZerodotOnePercentLowAverage:
-                    metricValue = 1000 / GetPercentageHighAverageSequence(sequence, 1 - 0.001);
-                    break;
-                case EMetric.OnePercentLowIntegral:
-                    metricValue = 1000 / GetPercentageHighIntegralSequence(sequence, 1 - 0.01);
-                    break;
-                case EMetric.ZerodotTwoPercentLowIntegral:
-                    metricValue = 1000 / GetPercentageHighIntegralSequence(sequence, 1 - 0.002);
-                    break;
-                case EMetric.ZerodotOnePercentLowIntegral:
-                    metricValue = 1000 / GetPercentageHighIntegralSequence(sequence, 1 - 0.001);
-                    break;
-                case EMetric.Min:
-                    metricValue = fps.Min();
-                    break;
-                case EMetric.AdaptiveStd:
-                    metricValue = GetAdaptiveStandardDeviation(fps, _options.IntervalAverageWindowTime);
-                    break;
-                default:
-                    metricValue = double.NaN;
-                    break;
-            }
+                double metricValue;
 
-            return Math.Round(metricValue, _options.FpsValuesRoundingDigits, MidpointRounding.AwayFromZero);
+                // Use thread-local buffer to avoid allocation for FPS conversion
+                var fpsBuffer = GetFpsBuffer(sequence.Count);
+                int count = sequence.Count;
+                for (int i = 0; i < count; i++)
+                {
+                    fpsBuffer[i] = 1000.0 / sequence[i];
+                }
+
+                // Create an ArraySegment that acts as IList<double> for the buffer
+                var fps = new ArraySegment<double>(fpsBuffer, 0, count);
+
+                switch (metric)
+                {
+                    case EMetric.Max:
+                        metricValue = GetMax(fps);
+                        break;
+                    case EMetric.P99:
+                        metricValue = GetPQuantileSequence(fps, 0.99);
+                        break;
+                    case EMetric.P95:
+                        metricValue = GetPQuantileSequence(fps, 0.95);
+                        break;
+                    case EMetric.Average:
+                    case EMetric.GpuActiveAverage:
+                        metricValue = sequence.Count * 1000 / sequence.Sum();
+                        break;
+                    case EMetric.Median:
+                        metricValue = GetPQuantileSequence(fps, 0.5);
+                        break;
+                    case EMetric.P5:
+                        metricValue = GetPQuantileSequence(fps, 0.05);
+                        break;
+                    case EMetric.P1:
+                    case EMetric.GpuActiveP1:
+                        metricValue = GetPQuantileSequence(fps, 0.01);
+                        break;
+                    case EMetric.P0dot2:
+                        metricValue = GetPQuantileSequence(fps, 0.002);
+                        break;
+                    case EMetric.P0dot1:
+                        metricValue = GetPQuantileSequence(fps, 0.001);
+                        break;
+                    case EMetric.OnePercentLowAverage:
+                    case EMetric.GpuActiveOnePercentLowAverage:
+                        metricValue = 1000 / GetPercentageHighAverageSequence(sequence, 1 - 0.01);
+                        break;
+                    case EMetric.ZerodotTwoPercentLowAverage:
+                        metricValue = 1000 / GetPercentageHighAverageSequence(sequence, 1 - 0.002);
+                        break;
+                    case EMetric.ZerodotOnePercentLowAverage:
+                        metricValue = 1000 / GetPercentageHighAverageSequence(sequence, 1 - 0.001);
+                        break;
+                    case EMetric.OnePercentLowIntegral:
+                        metricValue = 1000 / GetPercentageHighIntegralSequence(sequence, 1 - 0.01);
+                        break;
+                    case EMetric.ZerodotTwoPercentLowIntegral:
+                        metricValue = 1000 / GetPercentageHighIntegralSequence(sequence, 1 - 0.002);
+                        break;
+                    case EMetric.ZerodotOnePercentLowIntegral:
+                        metricValue = 1000 / GetPercentageHighIntegralSequence(sequence, 1 - 0.001);
+                        break;
+                    case EMetric.Min:
+                        metricValue = GetMin(fps);
+                        break;
+                    case EMetric.AdaptiveStd:
+                        // For AdaptiveStd, we need to pass as IList - use a temporary list
+                        var fpsList = new List<double>(count);
+                        for (int i = 0; i < count; i++)
+                            fpsList.Add(fpsBuffer[i]);
+                        metricValue = GetAdaptiveStandardDeviation(fpsList, _options.IntervalAverageWindowTime);
+                        break;
+                    default:
+                        metricValue = double.NaN;
+                        break;
+                }
+
+                return Math.Round(metricValue, _options.FpsValuesRoundingDigits, MidpointRounding.AwayFromZero);
+            }
+            catch (Exception)
+            {
+                return double.NaN;
+            }
+        }
+
+        /// <summary>
+        /// Gets the maximum value from an array segment without allocations.
+        /// </summary>
+        private static double GetMax(ArraySegment<double> segment)
+        {
+            if (segment.Count == 0)
+                return double.NaN;
+
+            double max = segment.Array[segment.Offset];
+            for (int i = segment.Offset + 1; i < segment.Offset + segment.Count; i++)
+            {
+                if (segment.Array[i] > max)
+                    max = segment.Array[i];
+            }
+            return max;
+        }
+
+        /// <summary>
+        /// Gets the minimum value from an array segment without allocations.
+        /// </summary>
+        private static double GetMin(ArraySegment<double> segment)
+        {
+            if (segment.Count == 0)
+                return double.NaN;
+
+            double min = segment.Array[segment.Offset];
+            for (int i = segment.Offset + 1; i < segment.Offset + segment.Count; i++)
+            {
+                if (segment.Array[i] < min)
+                    min = segment.Array[i];
+            }
+            return min;
         }
 
         public double GetFrametimeMetricValue(IList<double> sequence, EMetric metric)

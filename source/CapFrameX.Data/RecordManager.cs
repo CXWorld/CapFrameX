@@ -263,21 +263,28 @@ namespace CapFrameX.Data
 
         private ISession LoadSessionFromJSON(FileInfo fileInfo)
         {
-            using (var stream = new StreamReader(fileInfo.FullName))
+            try
             {
-                using (JsonReader jsonReader = new JsonTextReader(stream))
+                using (var stream = new StreamReader(fileInfo.FullName))
                 {
-                    JsonSerializer serializer = new JsonSerializer();
-                    var session = serializer.Deserialize<Session.Classes.Session>(jsonReader);
-                    foreach (var sessionrun in session.Runs)
+                    using (JsonReader jsonReader = new JsonTextReader(stream))
                     {
-                        if (sessionrun.SensorData != null && sessionrun.SensorData2 == null)
+                        JsonSerializer serializer = new JsonSerializer();
+                        var session = serializer.Deserialize<Session.Classes.Session>(jsonReader);
+                        foreach (var sessionrun in session.Runs)
                         {
-                            SessionSensorDataConverter.ConvertToSensorData2(sessionrun);
+                            if (sessionrun.SensorData != null && sessionrun.SensorData2 == null)
+                            {
+                                SessionSensorDataConverter.ConvertToSensorData2(sessionrun);
+                            }
                         }
+                        return session;
                     }
-                    return session;
                 }
+            }
+            catch
+            {
+                throw;
             }
         }
 
@@ -905,7 +912,7 @@ namespace CapFrameX.Data
                     if (string.Compare(metrics[i], "CPUStartQPCTimeInMs") == 0 || (string.Compare(metrics[i], "CPUStartTimeInMs") == 0))
                     {
                         indexCPUStartQPCTimeInMs = i;
-                    }         
+                    }
                 }
 
                 var captureData = new SessionCaptureData(presentLines.Count());
