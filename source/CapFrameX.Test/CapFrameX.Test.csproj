@@ -75,9 +75,15 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Data\CaptureManagerTest.cs" />
     <Compile Include="Data\FileRecordInfoTest.cs" />
     <Compile Include="Extensions\ObservableExtensionsTest.cs" />
     <Compile Include="Extensions\StringExtensionsTest.cs" />
+    <Compile Include="Mocks\MockBenchlabService.cs" />
+    <Compile Include="Mocks\MockCaptureService.cs" />
+    <Compile Include="Mocks\MockPoweneticsService.cs" />
+    <Compile Include="Mocks\MockRecordManager.cs" />
+    <Compile Include="Mocks\MockSensorService.cs" />
     <Compile Include="PMD\OfflineDataProcessingTest.cs" />
     <Compile Include="PresentMonInterface\SystemInfoTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -111,6 +117,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CapFrameX.Capture.Contracts\CapFrameX.Capture.Contracts.csproj">
+      <Project>{5742C860-6313-4477-BF11-839C35AE5588}</Project>
+      <Name>CapFrameX.Capture.Contracts</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Configuration\CapFrameX.Configuration.csproj">
       <Project>{d0a09fa9-d19e-4ccc-bf0e-104893cfe48b}</Project>
       <Name>CapFrameX.Configuration</Name>
@@ -175,6 +185,9 @@
   <ItemGroup>
     <Reference Include="Castle.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Castle.Core.4.4.0\lib\net45\Castle.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="DryIoc, Version=2.12.10.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DryIoc.dll.2.12.10\lib\net45\DryIoc.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=6.0.0.2, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Extensions.Logging.Abstractions.6.0.2\lib\net461\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
