@@ -1,0 +1,283 @@
+using CapFrameX.Capture.Contracts;
+using CapFrameX.PresentMonInterface;
+using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
+using System.Windows;
+using System.Windows.Threading;
+
+namespace CapFrameX
+{
+    public partial class DebugMonitorWindow : Window, INotifyPropertyChanged
+    {
+        private readonly ICaptureService _captureService;
+        private readonly DispatcherTimer _performanceTimer;
+        private IDisposable _frameDataSubscription;
+
+        private Process _capFrameXProcess;
+        private Process _presentMonProcess;
+        private PerformanceCounter _capFrameXCpuCounter;
+        private PerformanceCounter _presentMonCpuCounter;
+        private DateTime _lastCpuCheckTime;
+        private TimeSpan _lastCapFrameXCpuTime;
+        private TimeSpan _lastPresentMonCpuTime;
+
+        // CapFrameX metrics
+        private double _capFrameXCpuUsage;
+        public double CapFrameXCpuUsage
+        {
+            get => _capFrameXCpuUsage;
+            set { _capFrameXCpuUsage = value; OnPropertyChanged(); }
+        }
+
+        private double _capFrameXMemoryUsage;
+        public double CapFrameXMemoryUsage
+        {
+            get => _capFrameXMemoryUsage;
+            set { _capFrameXMemoryUsage = value; OnPropertyChanged(); }
+        }
+
+        // PresentMon metrics
+        private double _presentMonCpuUsage;
+        public double PresentMonCpuUsage
+        {
+            get => _presentMonCpuUsage;
+            set { _presentMonCpuUsage = value; OnPropertyChanged(); }
+        }
+
+        private double _presentMonMemoryUsage;
+        public double PresentMonMemoryUsage
+        {
+            get => _presentMonMemoryUsage;
+            set { _presentMonMemoryUsage = value; OnPropertyChanged(); }
+        }
+
+        private string _presentMonStatus = "Not Running";
+        public string PresentMonStatus
+        {
+            get => _presentMonStatus;
+            set { _presentMonStatus = value; OnPropertyChanged(); }
+        }
+
+        // ETW metrics
+        private double _etwBufferFillPct;
+        public double EtwBufferFillPct
+        {
+            get => _etwBufferFillPct;
+            set { _etwBufferFillPct = value; OnPropertyChanged(); }
+        }
+
+        private int _etwBuffersInUse;
+        public int EtwBuffersInUse
+        {
+            get => _etwBuffersInUse;
+            set { _etwBuffersInUse = value; OnPropertyChanged(); }
+        }
+
+        private int _etwTotalBuffers;
+        public int EtwTotalBuffers
+        {
+            get => _etwTotalBuffers;
+            set { _etwTotalBuffers = value; OnPropertyChanged(); }
+        }
+
+        private int _etwEventsLost;
+        public int EtwEventsLost
+        {
+            get => _etwEventsLost;
+            set { _etwEventsLost = value; OnPropertyChanged(); }
+        }
+
+        private int _etwBuffersLost;
+        public int EtwBuffersLost
+        {
+            get => _etwBuffersLost;
+            set { _etwBuffersLost = value; OnPropertyChanged(); }
+        }
+
+        private DateTime _lastUpdateTime;
+        public DateTime LastUpdateTime
+        {
+            get => _lastUpdateTime;
+            set { _lastUpdateTime = value; OnPropertyChanged(); }
+        }
+
+        public DebugMonitorWindow(ICaptureService captureService)
+        {
+            InitializeComponent();
+            DataContext = this;
+
+            _captureService = captureService;
+            _capFrameXProcess = Process.GetCurrentProcess();
+            _lastCpuCheckTime = DateTime.UtcNow;
+            _lastCapFrameXCpuTime = _capFrameXProcess.TotalProcessorTime;
+
+            // Setup performance monitoring timer
+            _performanceTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(500)
+            };
+            _performanceTimer.Tick += PerformanceTimer_Tick;
+            _performanceTimer.Start();
+
+            // Subscribe to frame data stream for ETW metrics
+            SubscribeToFrameData();
+
+            Closed += DebugMonitorWindow_Closed;
+        }
+
+        private void SubscribeToFrameData()
+        {
+            _frameDataSubscription = _captureService.FrameDataStream
+                .Sample(TimeSpan.FromMilliseconds(250))
+                .ObserveOn(Application.Current.Dispatcher)
+                .Subscribe(OnFrameData);
+        }
+
+        private void OnFrameData(string[] frameData)
+        {
+            try
+            {
+                if (frameData.Length > PresentMonCaptureService.EtwBuffersLost_INDEX)
+                {
+                    if (double.TryParse(frameData[PresentMonCaptureService.EtwBufferFillPct_INDEX],
+                        System.Globalization.NumberStyles.Any,
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        out double bufferFillPct))
+                    {
+                        EtwBufferFillPct = bufferFillPct;
+                    }
+
+                    if (int.TryParse(frameData[PresentMonCaptureService.EtwBuffersInUse_INDEX], out int buffersInUse))
+                    {
+                        EtwBuffersInUse = buffersInUse;
+                    }
+
+                    if (int.TryParse(frameData[PresentMonCaptureService.EtwTotalBuffers_INDEX], out int totalBuffers))
+                    {
+                        EtwTotalBuffers = totalBuffers;
+                    }
+
+                    if (int.TryParse(frameData[PresentMonCaptureService.EtwEventsLost_INDEX], out int eventsLost))
+                    {
+                        EtwEventsLost = eventsLost;
+                    }
+
+                    if (int.TryParse(frameData[PresentMonCaptureService.EtwBuffersLost_INDEX], out int buffersLost))
+                    {
+                        EtwBuffersLost = buffersLost;
+                    }
+
+                    LastUpdateTime = DateTime.Now;
+                }
+            }
+            catch
+            {
+                // Ignore parsing errors
+            }
+        }
+
+        private void PerformanceTimer_Tick(object sender, EventArgs e)
+        {
+            UpdateCapFrameXMetrics();
+            UpdatePresentMonMetrics();
+        }
+
+        private void UpdateCapFrameXMetrics()
+        {
+            try
+            {
+                _capFrameXProcess.Refresh();
+
+                // Calculate CPU usage
+                var currentTime = DateTime.UtcNow;
+                var currentCpuTime = _capFrameXProcess.TotalProcessorTime;
+                var cpuUsedMs = (currentCpuTime - _lastCapFrameXCpuTime).TotalMilliseconds;
+                var totalMsPassed = (currentTime - _lastCpuCheckTime).TotalMilliseconds;
+
+                if (totalMsPassed > 0)
+                {
+                    CapFrameXCpuUsage = (cpuUsedMs / (Environment.ProcessorCount * totalMsPassed)) * 100;
+                }
+
+                _lastCapFrameXCpuTime = currentCpuTime;
+
+                // Memory usage in MB
+                CapFrameXMemoryUsage = _capFrameXProcess.WorkingSet64 / (1024.0 * 1024.0);
+            }
+            catch
+            {
+                // Process may have exited
+            }
+        }
+
+        private void UpdatePresentMonMetrics()
+        {
+            try
+            {
+                // Find PresentMon process
+                var presentMonProcesses = Process.GetProcessesByName("PresentMon-2.4.0-x64");
+
+                if (presentMonProcesses.Length > 0)
+                {
+                    var newProcess = presentMonProcesses[0];
+
+                    if (_presentMonProcess == null || _presentMonProcess.Id != newProcess.Id)
+                    {
+                        _presentMonProcess = newProcess;
+                        _lastPresentMonCpuTime = _presentMonProcess.TotalProcessorTime;
+                        PresentMonStatus = "Running";
+                    }
+
+                    _presentMonProcess.Refresh();
+
+                    // Calculate CPU usage
+                    var currentTime = DateTime.UtcNow;
+                    var currentCpuTime = _presentMonProcess.TotalProcessorTime;
+                    var cpuUsedMs = (currentCpuTime - _lastPresentMonCpuTime).TotalMilliseconds;
+                    var totalMsPassed = (currentTime - _lastCpuCheckTime).TotalMilliseconds;
+
+                    if (totalMsPassed > 0)
+                    {
+                        PresentMonCpuUsage = (cpuUsedMs / (Environment.ProcessorCount * totalMsPassed)) * 100;
+                    }
+
+                    _lastPresentMonCpuTime = currentCpuTime;
+
+                    // Memory usage in MB
+                    PresentMonMemoryUsage = _presentMonProcess.WorkingSet64 / (1024.0 * 1024.0);
+                }
+                else
+                {
+                    _presentMonProcess = null;
+                    PresentMonCpuUsage = 0;
+                    PresentMonMemoryUsage = 0;
+                    PresentMonStatus = "Not Running";
+                }
+
+                // Update the last check time
+                _lastCpuCheckTime = DateTime.UtcNow;
+            }
+            catch
+            {
+                PresentMonStatus = "Error";
+            }
+        }
+
+        private void DebugMonitorWindow_Closed(object sender, EventArgs e)
+        {
+            _performanceTimer?.Stop();
+            _frameDataSubscription?.Dispose();
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+}

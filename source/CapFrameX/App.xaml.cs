@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.Overlay;
+﻿using CapFrameX.Capture.Contracts;
+using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Extensions;
@@ -33,6 +34,9 @@ namespace CapFrameX
         private WebServer _webServer;
         private bool _isSingleInstance = true;
         private Mutex _mutex;
+#if DEBUG
+        private DebugMonitorWindow _debugMonitorWindow;
+#endif
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -84,6 +88,13 @@ namespace CapFrameX
                         await _webServer.RunAsync().ConfigureAwait(false);
                     }
                 });
+
+#if DEBUG
+                // Open debug monitor window in Debug mode
+                var captureService = _bootstrapper.Container.Resolve<ICaptureService>();
+                _debugMonitorWindow = new DebugMonitorWindow(captureService);
+                _debugMonitorWindow.Show();
+#endif
             }
         }
 
@@ -171,6 +182,14 @@ namespace CapFrameX
 
             if (!_isSingleInstance)
                 return;
+
+#if DEBUG
+            try
+            {
+                _debugMonitorWindow?.Close();
+            }
+            catch { }
+#endif
 
             try
             {

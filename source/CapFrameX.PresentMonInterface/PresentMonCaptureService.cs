@@ -25,7 +25,13 @@ namespace CapFrameX.PresentMonInterface
         public const int StartTimeInMs_INDEX = 16;
         public const int CpuBusy_INDEX = 18;
         public const int GpuBusy_INDEX = 22;
-        public const int VALID_LINE_LENGTH = 27;
+        // Custom PresentMon build - ETW tracking columns
+        public const int EtwBufferFillPct_INDEX = 27;
+        public const int EtwBuffersInUse_INDEX = 28;
+        public const int EtwTotalBuffers_INDEX = 29;
+        public const int EtwEventsLost_INDEX = 30;
+        public const int EtwBuffersLost_INDEX = 31;
+        public const int VALID_LINE_LENGTH = 32;
 
         // PresentMon < v1.7.0
         //public static readonly string COLUMN_HEADER =
@@ -87,11 +93,17 @@ namespace CapFrameX.PresentMonInterface
         // MsUntilDisplayed,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy,
         // MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay
 
+        // Custom PresentMon build >= v2.4.0 with ETW tracking
+        // Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,
+        // TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency,
+        // MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy,
+        // MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,EtwBufferFillPct,EtwBuffersInUse,EtwTotalBuffers,EtwEventsLost,EtwBuffersLost
+
         public static readonly string COLUMN_HEADER =
             $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
             $"TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency," +
             $"MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy," +
-            $"MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay";
+            $"MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,EtwBufferFillPct,EtwBuffersInUse,EtwTotalBuffers,EtwEventsLost,EtwBuffersLost";
 
         private readonly ISubject<string[]> _outputDataStream;
         private readonly object _listLock = new object();
