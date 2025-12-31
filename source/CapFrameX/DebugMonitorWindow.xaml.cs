@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -13,9 +14,16 @@ namespace CapFrameX
 {
     public partial class DebugMonitorWindow : Window, INotifyPropertyChanged
     {
+        [DllImport("kernel32.dll")]
+        private static extern bool QueryPerformanceCounter(out long lpPerformanceCount);
+
+        [DllImport("kernel32.dll")]
+        private static extern bool QueryPerformanceFrequency(out long lpFrequency);
+
         private readonly ICaptureService _captureService;
         private readonly DispatcherTimer _performanceTimer;
         private IDisposable _frameDataSubscription;
+        private readonly double _qpcFrequency;
 
         private Process _capFrameXProcess;
         private Process _presentMonProcess;
@@ -98,6 +106,14 @@ namespace CapFrameX
             set { _etwBuffersLost = value; OnPropertyChanged(); }
         }
 
+        // Processing delay metric
+        private double _processingDelayMs;
+        public double ProcessingDelayMs
+        {
+            get => _processingDelayMs;
+            set { _processingDelayMs = value; OnPropertyChanged(); }
+        }
+
         private DateTime _lastUpdateTime;
         public DateTime LastUpdateTime
         {
@@ -114,6 +130,10 @@ namespace CapFrameX
             _capFrameXProcess = Process.GetCurrentProcess();
             _lastCpuCheckTime = DateTime.UtcNow;
             _lastCapFrameXCpuTime = _capFrameXProcess.TotalProcessorTime;
+
+            // Initialize QPC frequency for delay calculation
+            QueryPerformanceFrequency(out long lpFrequency);
+            _qpcFrequency = lpFrequency;
 
             // Setup performance monitoring timer
             _performanceTimer = new DispatcherTimer
@@ -143,6 +163,17 @@ namespace CapFrameX
             {
                 if (frameData.Length > PresentMonCaptureService.EtwBuffersLost_INDEX)
                 {
+                    // Calculate processing delay
+                    if (double.TryParse(frameData[PresentMonCaptureService.CPUStartQPCTimeInMs_INDEX],
+                        System.Globalization.NumberStyles.Any,
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        out double cpuStartQpcTimeMs))
+                    {
+                        QueryPerformanceCounter(out long currentCounter);
+                        double currentQpcTimeMs = (currentCounter / _qpcFrequency) * 1000.0;
+                        ProcessingDelayMs = currentQpcTimeMs - cpuStartQpcTimeMs;
+                    }
+
                     if (double.TryParse(frameData[PresentMonCaptureService.EtwBufferFillPct_INDEX],
                         System.Globalization.NumberStyles.Any,
                         System.Globalization.CultureInfo.InvariantCulture,
