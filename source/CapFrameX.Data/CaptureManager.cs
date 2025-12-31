@@ -48,7 +48,7 @@ namespace CapFrameX.Data
         private const int PRESICE_OFFSET = 2500;
         private const int ARCHIVE_LENGTH = 500;
 
-        private readonly ICaptureService _presentMonCaptureService;
+        private readonly ICaptureService _captureService;
         private readonly ISensorService _sensorService;
         private readonly IOverlayService _overlayService;
         private readonly SoundManager _soundManager;
@@ -103,7 +103,7 @@ namespace CapFrameX.Data
             set
             {
                 _isCapturing = value;
-                _presentMonCaptureService.IsCaptureModeActiveStream.OnNext(value);
+                _captureService.IsCaptureModeActiveStream.OnNext(value);
                 _sensorConfig.IsCapturing = value;
                 if (!value)
                     _captureStatusChange.OnNext(new CaptureStatus { Status = ECaptureStatus.Stopped });
@@ -131,7 +131,7 @@ namespace CapFrameX.Data
             IBenchlabService benchlabService,
             ILogEntryManager logEntryManager)
         {
-            _presentMonCaptureService = presentMonCaptureService;
+            _captureService = presentMonCaptureService;
             _sensorService = sensorService;
             _overlayService = overlayService;
             _soundManager = soundManager;
@@ -144,11 +144,11 @@ namespace CapFrameX.Data
             _poweneticsService = poweneticsService;
             _benchlabService = benchlabService;
             _logEntryManager = logEntryManager;
-            _presentMonCaptureService.IsCaptureModeActiveStream.OnNext(false);
+            _captureService.IsCaptureModeActiveStream.OnNext(false);
         }
 
         public IEnumerable<(string, int)> GetAllFilteredProcesses(HashSet<string> filter)
-            => _presentMonCaptureService.GetAllFilteredProcesses(filter);
+            => _captureService.GetAllFilteredProcesses(filter);
 
         public async Task StartCapture(CaptureOptions options)
         {
@@ -247,7 +247,7 @@ namespace CapFrameX.Data
             // Create scheduler for capture stream
             _captureStreamScheduler = new EventLoopScheduler();
 
-            _disposableCaptureStream = _presentMonCaptureService
+            _disposableCaptureStream = _captureService
                 .FrameDataStream
                 .Skip(1)
                 .ObserveOn(_captureStreamScheduler)
@@ -396,7 +396,7 @@ namespace CapFrameX.Data
             _fillArchive = true;
             ResetArchive();
 
-            _disposableArchiveStream = _presentMonCaptureService
+            _disposableArchiveStream = _captureService
                 .FrameDataStream
                 .Skip(1)
                 .Where(x => _fillArchive == true)
@@ -411,12 +411,12 @@ namespace CapFrameX.Data
             _disposableArchiveStream?.Dispose();
             _fillArchive = false;
             ResetArchive();
-            _presentMonCaptureService.StopCaptureService();
+            _captureService.StopCaptureService();
         }
 
         public bool StartCaptureService(IServiceStartInfo startInfo)
         {
-            return _presentMonCaptureService.StartCaptureService(startInfo);
+            return _captureService.StartCaptureService(startInfo);
         }
 
         public void ToggleSensorLogging(bool enabled)
@@ -750,13 +750,13 @@ namespace CapFrameX.Data
         /// <returns></returns>
         private double GetCpuStartQpcFromDataLine(string[] lineSplit)
         {
-            return 1E-03 * Convert.ToDouble(lineSplit[PresentMonCaptureService.StartTimeInMs_INDEX], CultureInfo.InvariantCulture);
+            return 1E-03 * Convert.ToDouble(lineSplit[_captureService.CPUStartQPCTimeInMs_INDEX], CultureInfo.InvariantCulture);
         }
 
         private double GetTimeFromDataLine(string line)
         {
             var lineSplit = line.Split(',');
-            var length = Convert.ToDouble(lineSplit[PresentMonCaptureService.StartTimeInMs_INDEX], CultureInfo.InvariantCulture);
+            var length = Convert.ToDouble(lineSplit[_captureService.CPUStartQPCTimeInMs_INDEX], CultureInfo.InvariantCulture);
             return Math.Round(length, 2, MidpointRounding.AwayFromZero);
         }
 
@@ -769,7 +769,7 @@ namespace CapFrameX.Data
 
             // normalize time
             var currentLineSplit = firstLineSplit;
-            currentLineSplit[PresentMonCaptureService.StartTimeInMs_INDEX] = "0";
+            currentLineSplit[_captureService.CPUStartQPCTimeInMs_INDEX] = "0";
             double previousNormalizedTime = 0;
             double delta = 0;
 
@@ -795,7 +795,7 @@ namespace CapFrameX.Data
                 previousNormalizedTime = normalizedTime;
 
                 currentLineSplit = lineSplit;
-                currentLineSplit[PresentMonCaptureService.StartTimeInMs_INDEX] = (1E03 * (normalizedTime + delta)).ToString(CultureInfo.InvariantCulture);
+                currentLineSplit[_captureService.CPUStartQPCTimeInMs_INDEX] = (1E03 * (normalizedTime + delta)).ToString(CultureInfo.InvariantCulture);
 
                 lines.Add(string.Join(",", currentLineSplit));
             }

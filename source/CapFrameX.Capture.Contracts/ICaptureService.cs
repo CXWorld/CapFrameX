@@ -17,6 +17,19 @@ namespace CapFrameX.Capture.Contracts
         // QPCTime (time stamp)
         Dictionary<string, int> ParameterNameIndexMapping { get; }
 
+        string ColumnHeader { get; }
+
+        // Dynamic column indices based on capture configuration
+        int CPUStartQPCTimeInMs_INDEX { get; }
+        int CpuBusy_INDEX { get; }
+        int GpuBusy_INDEX { get; }
+        int EtwBufferFillPct_INDEX { get; }
+        int EtwBuffersInUse_INDEX { get; }
+        int EtwTotalBuffers_INDEX { get; }
+        int EtwEventsLost_INDEX { get; }
+        int EtwBuffersLost_INDEX { get; }
+        int ValidLineLength { get; }
+
         IObservable<string[]> FrameDataStream { get; }
 
         Subject<bool> IsCaptureModeActiveStream { get; }

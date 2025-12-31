@@ -208,7 +208,13 @@ namespace CapFrameX.PresentMonInterface
                     return;
             }
 
-            if (!double.TryParse(lineSplit[PresentMonCaptureService.StartTimeInMs_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double startTime))
+            // Calculate dynamic indices based on UsePcLatency setting
+            bool usePcLatency = _appConfiguration.UsePcLatency;
+            int startTimeIndex = usePcLatency ? 16 : 15;
+            int gpuBusyIndex = usePcLatency ? 22 : 21;
+            int cpuBusyIndex = usePcLatency ? 18 : 17;
+
+            if (!double.TryParse(lineSplit[startTimeIndex], NumberStyles.Any, CultureInfo.InvariantCulture, out double startTime))
             {
                 ResetMetrics();
                 return;
@@ -234,23 +240,26 @@ namespace CapFrameX.PresentMonInterface
                 }
             }
 
-            if (!double.TryParse(lineSplit[PresentMonCaptureService.GpuBusy_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double gpuActiveTime))
+            if (!double.TryParse(lineSplit[gpuBusyIndex], NumberStyles.Any, CultureInfo.InvariantCulture, out double gpuActiveTime))
             {
                 ResetMetrics();
                 return;
             }
 
-            if (!double.TryParse(lineSplit[PresentMonCaptureService.CpuBusy_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double cpuActiveTime))
+            if (!double.TryParse(lineSplit[cpuBusyIndex], NumberStyles.Any, CultureInfo.InvariantCulture, out double cpuActiveTime))
             {
                 ResetMetrics();
                 return;
             }
 
             double pcLatency = double.NaN;
-            if (!double.TryParse(lineSplit[PresentMonCaptureService.MsPCLatency_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out pcLatency))
+            if (usePcLatency)
             {
-                // Don't reset metrics if PC latency if not available
-                pcLatency = double.NaN;
+                if (!double.TryParse(lineSplit[PresentMonCaptureService.MsPCLatency_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out pcLatency))
+                {
+                    // Don't reset metrics if PC latency if not available
+                    pcLatency = double.NaN;
+                }
             }
 
             try

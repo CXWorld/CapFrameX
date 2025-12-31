@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Capture.Contracts;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;

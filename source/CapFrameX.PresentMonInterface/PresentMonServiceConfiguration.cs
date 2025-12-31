@@ -19,6 +19,8 @@ namespace CapFrameX.PresentMonInterface
 
         public List<string> ExcludeProcesses { get; set; }
 
+        public bool TrackPcLatency { get; set; } = true;
+
         public string ConfigParameterToArguments()
         {
             var arguments = string.Empty;
@@ -36,8 +38,11 @@ namespace CapFrameX.PresentMonInterface
                 // w/o FrameType, it's flawed when using XeFG
                 //arguments += PARAMETER_SEPARATOR;
                 //arguments += "--track_frame_type";
-                arguments += PARAMETER_SEPARATOR;
-                arguments += "--track_pc_latency";
+                if (TrackPcLatency)
+                {
+                    arguments += PARAMETER_SEPARATOR;
+                    arguments += "--track_pc_latency";
+                }
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--track_etw_status";
 
@@ -77,8 +82,11 @@ namespace CapFrameX.PresentMonInterface
                 // w/o FrameType, it's flawed when using XeFG
                 //arguments += PARAMETER_SEPARATOR;
                 //arguments += "--track_frame_type";
-                arguments += PARAMETER_SEPARATOR;
-                arguments += "--track_pc_latency";
+                if (TrackPcLatency)
+                {
+                    arguments += PARAMETER_SEPARATOR;
+                    arguments += "--track_pc_latency";
+                }
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--track_etw_status";
             }

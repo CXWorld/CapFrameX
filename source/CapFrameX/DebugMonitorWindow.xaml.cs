@@ -1,9 +1,7 @@
 using CapFrameX.Capture.Contracts;
-using CapFrameX.PresentMonInterface;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -161,10 +159,10 @@ namespace CapFrameX
         {
             try
             {
-                if (frameData.Length > PresentMonCaptureService.EtwBuffersLost_INDEX)
+                if (frameData.Length >= _captureService.ValidLineLength)
                 {
                     // Calculate processing delay
-                    if (double.TryParse(frameData[PresentMonCaptureService.CPUStartQPCTimeInMs_INDEX],
+                    if (double.TryParse(frameData[_captureService.CPUStartQPCTimeInMs_INDEX],
                         System.Globalization.NumberStyles.Any,
                         System.Globalization.CultureInfo.InvariantCulture,
                         out double cpuStartQpcTimeMs))
@@ -174,7 +172,7 @@ namespace CapFrameX
                         ProcessingDelayMs = currentQpcTimeMs - cpuStartQpcTimeMs;
                     }
 
-                    if (double.TryParse(frameData[PresentMonCaptureService.EtwBufferFillPct_INDEX],
+                    if (double.TryParse(frameData[_captureService.EtwBufferFillPct_INDEX],
                         System.Globalization.NumberStyles.Any,
                         System.Globalization.CultureInfo.InvariantCulture,
                         out double bufferFillPct))
@@ -182,22 +180,22 @@ namespace CapFrameX
                         EtwBufferFillPct = bufferFillPct;
                     }
 
-                    if (int.TryParse(frameData[PresentMonCaptureService.EtwBuffersInUse_INDEX], out int buffersInUse))
+                    if (int.TryParse(frameData[_captureService.EtwBuffersInUse_INDEX], out int buffersInUse))
                     {
                         EtwBuffersInUse = buffersInUse;
                     }
 
-                    if (int.TryParse(frameData[PresentMonCaptureService.EtwTotalBuffers_INDEX], out int totalBuffers))
+                    if (int.TryParse(frameData[_captureService.EtwTotalBuffers_INDEX], out int totalBuffers))
                     {
                         EtwTotalBuffers = totalBuffers;
                     }
 
-                    if (int.TryParse(frameData[PresentMonCaptureService.EtwEventsLost_INDEX], out int eventsLost))
+                    if (int.TryParse(frameData[_captureService.EtwEventsLost_INDEX], out int eventsLost))
                     {
                         EtwEventsLost = eventsLost;
                     }
 
-                    if (int.TryParse(frameData[PresentMonCaptureService.EtwBuffersLost_INDEX], out int buffersLost))
+                    if (int.TryParse(frameData[_captureService.EtwBuffersLost_INDEX], out int buffersLost))
                     {
                         EtwBuffersLost = buffersLost;
                     }

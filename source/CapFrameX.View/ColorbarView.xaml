@@ -211,6 +211,7 @@
 											<RowDefinition Height="*" />
 											<RowDefinition Height="*" />
 											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
 										</Grid.RowDefinitions>
 										<Grid.ColumnDefinitions>
 											<ColumnDefinition Width="*"/>
@@ -278,7 +279,19 @@
 											<TextBlock Text="Use &quot;MsBetweenDisplayChange&quot; metrics" VerticalAlignment="Center"></TextBlock>
 										</StackPanel>
 
-										<StackPanel Grid.Row="2" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 5 0 5">
+										<StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="10 0 0 0">
+											<CheckBox IsChecked="{Binding UsePcLatency, Mode=TwoWay}" ToolTipService.ShowDuration="25000">
+												<CheckBox.ToolTip>
+													<ToolTip MaxWidth="400">
+														<TextBlock TextWrapping="Wrap" Text="Enable PC Latency tracking via PresentMon. When enabled, the &quot;MsPCLatency&quot; column will be available in the capture data.
+																   &#10;Requires restart of the capture service to take effect."></TextBlock>
+													</ToolTip>
+												</CheckBox.ToolTip>
+											</CheckBox>
+											<TextBlock Text="Use PC Latency" VerticalAlignment="Center"></TextBlock>
+										</StackPanel>
+
+										<StackPanel Grid.Row="3" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 5 0 5">
 											<TextBox Width="350" IsReadOnly="True" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
 											<Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.SelectScreenshotFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select screenshot folder">
 												<materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />

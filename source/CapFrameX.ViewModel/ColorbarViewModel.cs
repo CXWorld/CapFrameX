@@ -484,6 +484,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool UsePcLatency
+        {
+            get { return _appConfiguration.UsePcLatency; }
+            set
+            {
+                _appConfiguration.UsePcLatency = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public string PingURL
         {
             get { return _appConfiguration.PingURL; }

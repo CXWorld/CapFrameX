@@ -49,6 +49,9 @@ namespace CapFrameX.Test.Mocks
         public const int EtwBuffersLost_INDEX = 31;
         public const int VALID_LINE_LENGTH = 32;
 
+        public string ColumnHeader => string.Join(",",
+            Enumerable.Range(0, VALID_LINE_LENGTH).Select(i => $"Column{i}"));
+
         private readonly Subject<string[]> _frameDataSubject;
         private readonly Random _random;
         private readonly List<MockProcess> _processes;
@@ -69,6 +72,17 @@ namespace CapFrameX.Test.Mocks
         public Dictionary<string, int> ParameterNameIndexMapping { get; }
         public IObservable<string[]> FrameDataStream => _frameDataSubject.AsObservable();
         public Subject<bool> IsCaptureModeActiveStream { get; }
+
+        // ICaptureService dynamic index properties (mock uses fixed 32-column format)
+        int ICaptureService.CPUStartQPCTimeInMs_INDEX => StartTimeInMs_INDEX;
+        int ICaptureService.CpuBusy_INDEX => CpuBusy_INDEX;
+        int ICaptureService.GpuBusy_INDEX => GpuBusy_INDEX;
+        int ICaptureService.EtwBufferFillPct_INDEX => EtwBufferFillPct_INDEX;
+        int ICaptureService.EtwBuffersInUse_INDEX => EtwBuffersInUse_INDEX;
+        int ICaptureService.EtwTotalBuffers_INDEX => EtwTotalBuffers_INDEX;
+        int ICaptureService.EtwEventsLost_INDEX => EtwEventsLost_INDEX;
+        int ICaptureService.EtwBuffersLost_INDEX => EtwBuffersLost_INDEX;
+        int ICaptureService.ValidLineLength => VALID_LINE_LENGTH;
 
         /// <summary>
         /// Current simulation scenario. Can be changed during capture.

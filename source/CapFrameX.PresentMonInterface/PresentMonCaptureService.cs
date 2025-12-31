@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Capture.Contracts;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Extensions;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -15,96 +16,53 @@ namespace CapFrameX.PresentMonInterface
 {
     public class PresentMonCaptureService : ICaptureService
     {
-        public const int ApplicationName_INDEX = 0;
-        public const int ProcessID_INDEX = 1;
-        public const int SwapChainAddress_INDEX = 2;
-        public const int MsBetweenPresents_INDEX = 10;
-        public const int MsBetweenDisplayChange_INDEX = 11;
-        // PresentMon version >=2.4.0
-        public const int MsPCLatency_INDEX = 15;
-        public const int CPUStartQPCTimeInMs_INDEX = 16;
-        public const int StartTimeInMs_INDEX = 16;
-        public const int CpuBusy_INDEX = 18;
-        public const int GpuBusy_INDEX = 22;
+        // Column header with PC latency tracking (32 columns)
+        public static readonly string COLUMN_HEADER_WITH_PC_LATENCY =
+            "Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
+            "TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency," +
+            "MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy," +
+            "MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,EtwBufferFillPct,EtwBuffersInUse,EtwTotalBuffers,EtwEventsLost,EtwBuffersLost";
+
+        // Column header without PC latency tracking (31 columns)
+        public static readonly string COLUMN_HEADER_WITHOUT_PC_LATENCY =
+            "Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
+            "TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency," +
+            "MsUntilDisplayed,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy," +
+            "MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,EtwBufferFillPct,EtwBuffersInUse,EtwTotalBuffers,EtwEventsLost,EtwBuffersLost";
+
+        // Parsed column arrays for index lookup
+        private static readonly string[] ColumnsWithPcLatency = COLUMN_HEADER_WITH_PC_LATENCY.Split(',');
+        private static readonly string[] ColumnsWithoutPcLatency = COLUMN_HEADER_WITHOUT_PC_LATENCY.Split(',');
+
+        // Fixed indices (same in both headers)
+        public static readonly int ApplicationName_INDEX = Array.IndexOf(ColumnsWithPcLatency, "Application");
+        public static readonly int ProcessID_INDEX = Array.IndexOf(ColumnsWithPcLatency, "ProcessID");
+        public static readonly int SwapChainAddress_INDEX = Array.IndexOf(ColumnsWithPcLatency, "SwapChainAddress");
+        public static readonly int MsBetweenPresents_INDEX = Array.IndexOf(ColumnsWithPcLatency, "MsBetweenPresents");
+        public static readonly int MsBetweenDisplayChange_INDEX = Array.IndexOf(ColumnsWithPcLatency, "MsBetweenDisplayChange");
+        public static readonly int MsPCLatency_INDEX = Array.IndexOf(ColumnsWithPcLatency, "MsPCLatency");
+
+        private readonly IAppConfiguration _appConfiguration;
+
+        // Dynamic indices - derived from the appropriate column header based on UsePcLatency setting
+        private string[] CurrentColumns => _appConfiguration.UsePcLatency ? ColumnsWithPcLatency : ColumnsWithoutPcLatency;
+
+        public int CPUStartQPCTimeInMs_INDEX => Array.IndexOf(CurrentColumns, "CPUStartQPCTimeInMs");
+        public int StartTimeInMs_INDEX => Array.IndexOf(CurrentColumns, "CPUStartQPCTimeInMs");
+        public int CpuBusy_INDEX => Array.IndexOf(CurrentColumns, "MsCPUBusy");
+        public int GpuBusy_INDEX => Array.IndexOf(CurrentColumns, "MsGPUBusy");
+
         // Custom PresentMon build - ETW tracking columns
-        public const int EtwBufferFillPct_INDEX = 27;
-        public const int EtwBuffersInUse_INDEX = 28;
-        public const int EtwTotalBuffers_INDEX = 29;
-        public const int EtwEventsLost_INDEX = 30;
-        public const int EtwBuffersLost_INDEX = 31;
-        public const int VALID_LINE_LENGTH = 32;
+        public int EtwBufferFillPct_INDEX => Array.IndexOf(CurrentColumns, "EtwBufferFillPct");
+        public int EtwBuffersInUse_INDEX => Array.IndexOf(CurrentColumns, "EtwBuffersInUse");
+        public int EtwTotalBuffers_INDEX => Array.IndexOf(CurrentColumns, "EtwTotalBuffers");
+        public int EtwEventsLost_INDEX => Array.IndexOf(CurrentColumns, "EtwEventsLost");
+        public int EtwBuffersLost_INDEX => Array.IndexOf(CurrentColumns, "EtwBuffersLost");
+        public int ValidLineLength => CurrentColumns.Length;
 
-        // PresentMon < v1.7.0
-        //public static readonly string COLUMN_HEADER =
-        //    $"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags," +
-        //    $"AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,MsBetweenPresents," +
-        //    $"MsBetweenDisplayChange,MsInPresentAPI,MsUntilRenderComplete,MsUntilDisplayed,QPCTime";
-
-        // PresentMon >= v1.7.1
-        //public static readonly string COLUMN_HEADER =
-        //    $"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags," +
-        //    $"Dropped,TimeInSeconds,msInPresentAPI,msBetweenPresents,AllowsTearing,PresentMode," +
-        //    $"msUntilRenderComplete,msUntilDisplayed,msBetweenDisplayChange,WasBatched,DwmNotified,QPCTime";
-
-        // PresentMon >= v1.9
-        //public static readonly string COLUMN_HEADER =
-        //    $"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags,Dropped," +
-        //    $"TimeInSeconds,msInPresentAPI,msBetweenPresents,AllowsTearing,PresentMode,msUntilRenderComplete," +
-        //    $"msUntilDisplayed,msBetweenDisplayChange,WasBatched,DwmNotified,msUntilRenderStart,msGPUActive,QPCTime";
-
-        // PresentMon >= v2.2
-        //public static readonly string COLUMN_HEADER =
-        //    $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing," +
-        //    $"PresentMode,CPUStartQPCTime,FrameTime,CPUBusy,CPUWait,GPULatency,GPUTime,GPUBusy,GPUWait,DisplayLatency," +
-        //    $"DisplayedTime,AnimationError";
-
-        // PresentMon = v2.3
-        // w FrameType
-        //public static readonly string COLUMN_HEADER =
-        //    $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
-        //    $"FrameType,CPUStartQPCTime,FrameTime,CPUBusy,CPUWait,GPULatency,GPUTime,GPUBusy,GPUWait,DisplayLatency,DisplayedTime," +
-        //    $"AnimationError,AnimationTime";
-
-        // w/o FrameType
-        //Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,
-        //CPUStartQPCTime,FrameTime,CPUBusy,CPUWait,GPULatency,GPUTime,GPUBusy,GPUWait,DisplayLatency,DisplayedTime,
-        //AnimationError,AnimationTime
-        //public static readonly string COLUMN_HEADER =
-        //   $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
-        //   $"CPUStartQPCTime,FrameTime,CPUBusy,CPUWait,GPULatency,GPUTime,GPUBusy,GPUWait,DisplayLatency,DisplayedTime," +
-        //   $"AnimationError,AnimationTime";
-
-        // PresentMon >= v2.3.1
-        // w/o FrameType
-        //Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,
-        //TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency,
-        //MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy,
-        //MsGPUWait,MsAnimationError,AnimationTime
-
-        //public static readonly string COLUMN_HEADER =
-        //    $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
-        //    $"TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency," +
-        //    $"MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy," +
-        //    $"MsGPUWait,MsAnimationError,AnimationTime";
-
-        // PresentMon >= v2.4.0
-        // w/o FrameType
-        // Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,
-        // TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency,#
-        // MsUntilDisplayed,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy,
-        // MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay
-
-        // Custom PresentMon build >= v2.4.0 with ETW tracking
-        // Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,
-        // TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency,
-        // MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy,
-        // MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,EtwBufferFillPct,EtwBuffersInUse,EtwTotalBuffers,EtwEventsLost,EtwBuffersLost
-
-        public static readonly string COLUMN_HEADER =
-            $"Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
-            $"TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency," +
-            $"MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy," +
-            $"MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,EtwBufferFillPct,EtwBuffersInUse,EtwTotalBuffers,EtwEventsLost,EtwBuffersLost";
+        public string ColumnHeader => _appConfiguration.UsePcLatency
+            ? COLUMN_HEADER_WITH_PC_LATENCY
+            : COLUMN_HEADER_WITHOUT_PC_LATENCY;
 
         private readonly ISubject<string[]> _outputDataStream;
         private readonly object _listLock = new object();
@@ -113,7 +71,6 @@ namespace CapFrameX.PresentMonInterface
         private bool _isUpdating;
         private IDisposable _hearBeatDisposable;
         private IDisposable _processNameDisposable;
-        private HashSet<string> _detectedProcesses = new HashSet<string>();
 
         public Dictionary<string, int> ParameterNameIndexMapping { get; }
 
@@ -121,12 +78,13 @@ namespace CapFrameX.PresentMonInterface
             => _outputDataStream.AsObservable();
         public Subject<bool> IsCaptureModeActiveStream { get; }
 
-        public PresentMonCaptureService(ILogger<PresentMonCaptureService> logger)
+        public PresentMonCaptureService(ILogger<PresentMonCaptureService> logger, IAppConfiguration appConfiguration)
         {
             _outputDataStream = new Subject<string[]>();
             IsCaptureModeActiveStream = new Subject<bool>();
             _presentMonProcesses = new HashSet<(string, int)>();
             _logger = logger;
+            _appConfiguration = appConfiguration;
         }
 
         public bool StartCaptureService(IServiceStartInfo startinfo)
@@ -162,16 +120,10 @@ namespace CapFrameX.PresentMonInterface
                     if (!string.IsNullOrWhiteSpace(e.Data))
                     {
                         var lineSplit = e.Data.Split(',');
-                        if (lineSplit.Length == VALID_LINE_LENGTH)
+                        if (lineSplit.Length == ValidLineLength)
                         {
                             if (lineSplit[ApplicationName_INDEX] != "<error>")
                             {
-                                //if (!_detectedProcesses.Contains(lineSplit[ApplicationName_INDEX]))
-                                //{
-                                //    _detectedProcesses.Add(lineSplit[ApplicationName_INDEX]);
-                                //    _logger.LogInformation($"Detected process: {lineSplit[ApplicationName_INDEX]} with PID {lineSplit[1]}");
-                                //}
-
                                 _outputDataStream.OnNext(lineSplit);
                             }
                         }

@@ -53,6 +53,7 @@ namespace CapFrameX.Data
         private readonly ProcessList _processList;
         private readonly IRTSSService _rTSSService;
         private readonly IEventAggregator _eventAggregator;
+        private readonly ICaptureService _captureService;
         private PubSubEvent<ViewMessages.UpdateSystemInfo> _updateSystemInfoEvent;
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -66,7 +67,8 @@ namespace CapFrameX.Data
             ISystemInfo systemInfo,
             ProcessList processList,
             IRTSSService rTSSService,
-            IEventAggregator eventAggregator)
+            IEventAggregator eventAggregator,
+            ICaptureService captureService)
         {
             _logger = logger;
             _appConfiguration = appConfiguration;
@@ -77,6 +79,7 @@ namespace CapFrameX.Data
             _processList = processList;
             _rTSSService = rTSSService;
             _eventAggregator = eventAggregator;
+            _captureService = captureService;
             _updateSystemInfoEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSystemInfo>>();
         }
 
@@ -432,7 +435,7 @@ namespace CapFrameX.Data
             try
             {
                 var filePath = await GetOutputFilename(process, recordDirectory);
-                lines = new string[] { IGNOREFLAGMARKER, PresentMonCaptureService.COLUMN_HEADER }.Concat(lines);
+                lines = new string[] { IGNOREFLAGMARKER, _captureService.ColumnHeader }.Concat(lines);
                 File.WriteAllLines(filePath + ".csv", lines);
             }
             catch (Exception ex)
@@ -816,7 +819,7 @@ namespace CapFrameX.Data
                 }
                 else
                 {
-                    headerLine = PresentMonCaptureService.COLUMN_HEADER;
+                    headerLine = _captureService.ColumnHeader;
                 }
 
                 // Filter lines by dominant process and SwapChainAddress

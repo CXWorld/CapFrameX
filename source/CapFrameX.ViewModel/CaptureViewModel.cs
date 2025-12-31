@@ -726,7 +726,8 @@ namespace CapFrameX.ViewModel
             return new PresentMonServiceConfiguration
             {
                 RedirectOutputStream = true,
-                ExcludeProcesses = _processList.GetIgnoredProcessNames().ToList()
+                ExcludeProcesses = _processList.GetIgnoredProcessNames().ToList(),
+                TrackPcLatency = _appConfiguration.UsePcLatency
             };
         }
 

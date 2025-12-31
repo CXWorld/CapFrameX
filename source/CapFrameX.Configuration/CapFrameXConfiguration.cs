@@ -164,6 +164,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool UsePcLatency
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
         public bool UseAdlFallback
         {
             get => Get<bool>(false);
