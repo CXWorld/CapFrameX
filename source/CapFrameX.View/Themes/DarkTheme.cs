@@ -47,7 +47,8 @@ namespace CapFrameX.View.Themes
 
         // CX blue switch
         // 1c5f8a
-        public Color MaterialDesignToolBackground { get; } = (Color)ColorConverter.ConvertFromString("#23689F");
+        // previous: 23689F
+        public Color MaterialDesignToolBackground { get; } = (Color)ColorConverter.ConvertFromString("#2196F3");
 
 
         public Color MaterialDesignFlatButtonClick { get; } = (Color)ColorConverter.ConvertFromString("#19757575");

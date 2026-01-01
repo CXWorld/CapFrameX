@@ -166,7 +166,7 @@ namespace CapFrameX.Configuration
 
         public bool UsePcLatency
         {
-            get => Get<bool>(false);
+            get => Get<bool>(true);
             set => Set(value);
         }
 

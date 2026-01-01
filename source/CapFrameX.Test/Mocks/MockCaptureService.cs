@@ -74,14 +74,14 @@ namespace CapFrameX.Test.Mocks
         public Subject<bool> IsCaptureModeActiveStream { get; }
 
         // ICaptureService dynamic index properties (mock uses fixed 32-column format)
-        int ICaptureService.CPUStartQPCTimeInMs_INDEX => StartTimeInMs_INDEX;
-        int ICaptureService.CpuBusy_INDEX => CpuBusy_INDEX;
-        int ICaptureService.GpuBusy_INDEX => GpuBusy_INDEX;
-        int ICaptureService.EtwBufferFillPct_INDEX => EtwBufferFillPct_INDEX;
-        int ICaptureService.EtwBuffersInUse_INDEX => EtwBuffersInUse_INDEX;
-        int ICaptureService.EtwTotalBuffers_INDEX => EtwTotalBuffers_INDEX;
-        int ICaptureService.EtwEventsLost_INDEX => EtwEventsLost_INDEX;
-        int ICaptureService.EtwBuffersLost_INDEX => EtwBuffersLost_INDEX;
+        int ICaptureService.CPUStartQPCTimeInMs_Index => StartTimeInMs_INDEX;
+        int ICaptureService.CpuBusy_Index => CpuBusy_INDEX;
+        int ICaptureService.GpuBusy_Index => GpuBusy_INDEX;
+        int ICaptureService.EtwBufferFillPct_Index => EtwBufferFillPct_INDEX;
+        int ICaptureService.EtwBuffersInUse_Index => EtwBuffersInUse_INDEX;
+        int ICaptureService.EtwTotalBuffers_Index => EtwTotalBuffers_INDEX;
+        int ICaptureService.EtwEventsLost_Index => EtwEventsLost_INDEX;
+        int ICaptureService.EtwBuffersLost_Index => EtwBuffersLost_INDEX;
         int ICaptureService.ValidLineLength => VALID_LINE_LENGTH;
 
         /// <summary>

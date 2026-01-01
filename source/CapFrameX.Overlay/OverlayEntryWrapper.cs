@@ -165,7 +165,7 @@ namespace CapFrameX.Overlay
             }
         }
 
-        public bool IsEntryEnabled { get; set; }
+        public bool IsEntryEnabled { get; set; } = true;
 
         public bool ShowOnOverlay
         {

@@ -6,7 +6,6 @@ using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
-using Microsoft.Extensions.Logging;
 using Prism.Events;
 using System;
 using System.Collections.Generic;
@@ -32,7 +31,6 @@ namespace CapFrameX.PresentMonInterface
         private readonly IOverlayEntryCore _overlayEntryCore;
         private readonly IPoweneticsService _poweneticsService;
         private readonly IBenchlabService _benchlabService;
-        private readonly ILogger<OnlineMetricService> _logger;
         private readonly IAppConfiguration _appConfiguration;
 
         private readonly object _lockRealtimeMetric = new object();
@@ -57,8 +55,8 @@ namespace CapFrameX.PresentMonInterface
         private List<SensorSample> _sensorDataBuffer = new List<SensorSample>(PMD_BUFFER_CAPACITY);
 
         // Reusable list buffers to avoid allocations during metric calculations
-        private List<double> _reusableListBuffer;
-        private List<double> _reusableListBuffer2;
+        private List<double> _reusableListBufferA;
+        private List<double> _reusableListBufferB;
 
         // Disposable resources
         private IDisposable _frameDataSubscription;
@@ -80,7 +78,6 @@ namespace CapFrameX.PresentMonInterface
             IOverlayEntryCore oerlayEntryCore,
             IPoweneticsService poweneticsService,
             IBenchlabService benchlabService,
-            ILogger<OnlineMetricService> logger,
             IAppConfiguration appConfiguration)
         {
             _captureService = captureServive;
@@ -88,14 +85,13 @@ namespace CapFrameX.PresentMonInterface
             _overlayEntryCore = oerlayEntryCore;
             _poweneticsService = poweneticsService;
             _benchlabService = benchlabService;
-            _logger = logger;
             _appConfiguration = appConfiguration;
 
             _frametimeStatisticProvider = frametimeStatisticProvider;
 
             // Initialize reusable buffers
-            _reusableListBuffer = new List<double>(LIST_CAPACITY);
-            _reusableListBuffer2 = new List<double>(LIST_CAPACITY);
+            _reusableListBufferA = new List<double>(LIST_CAPACITY);
+            _reusableListBufferB = new List<double>(LIST_CAPACITY);
 
             SubscribeToUpdateSession();
             ConnectOnlineMetricDataStream();
@@ -208,11 +204,10 @@ namespace CapFrameX.PresentMonInterface
                     return;
             }
 
-            // Calculate dynamic indices based on UsePcLatency setting
-            bool usePcLatency = _appConfiguration.UsePcLatency;
-            int startTimeIndex = usePcLatency ? 16 : 15;
-            int gpuBusyIndex = usePcLatency ? 22 : 21;
-            int cpuBusyIndex = usePcLatency ? 18 : 17;
+            // Get dynamic indices based on configuration
+            int startTimeIndex = _captureService.CPUStartQPCTimeInMs_Index;
+            int gpuBusyIndex = _captureService.GpuBusy_Index;
+            int cpuBusyIndex = _captureService.CpuBusy_Index;
 
             if (!double.TryParse(lineSplit[startTimeIndex], NumberStyles.Any, CultureInfo.InvariantCulture, out double startTime))
             {
@@ -253,7 +248,7 @@ namespace CapFrameX.PresentMonInterface
             }
 
             double pcLatency = double.NaN;
-            if (usePcLatency)
+            if (_appConfiguration.UsePcLatency)
             {
                 if (!double.TryParse(lineSplit[PresentMonCaptureService.MsPCLatency_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out pcLatency))
                 {
@@ -373,14 +368,15 @@ namespace CapFrameX.PresentMonInterface
         {
             lock (_lockRealtimeMetric)
             {
-                var buffer = _appConfiguration.UseDisplayChangeMetrics
+                // Use frame times when calculating average fps
+                var buffer = (_appConfiguration.UseDisplayChangeMetrics && metric != EMetric.Average)
                     ? _displayedtimesRealtimeSeconds : _frametimesRealtimeSeconds;
 
                 if (buffer == null || buffer.Count == 0)
                     return double.NaN;
 
                 // Reuse list buffer to avoid allocations
-                var samples = buffer.ToList(_reusableListBuffer);
+                var samples = buffer.ToList(_reusableListBufferA);
 
                 return _frametimeStatisticProvider
                     .GetFpsMetricValue(samples, metric);
@@ -394,7 +390,7 @@ namespace CapFrameX.PresentMonInterface
                 if (_frametimesRealtimeSeconds == null || _frametimesRealtimeSeconds.Count == 0)
                     return double.NaN;
 
-                var samples = _frametimesRealtimeSeconds.ToList(_reusableListBuffer);
+                var samples = _frametimesRealtimeSeconds.ToList(_reusableListBufferA);
 
                 return _frametimeStatisticProvider
                     .GetFrametimeMetricValue(samples, metric);
@@ -408,7 +404,7 @@ namespace CapFrameX.PresentMonInterface
                 if (_gpuActiveTimesRealtimeSeconds == null || _gpuActiveTimesRealtimeSeconds.Count == 0)
                     return double.NaN;
 
-                var samples = _gpuActiveTimesRealtimeSeconds.ToList(_reusableListBuffer);
+                var samples = _gpuActiveTimesRealtimeSeconds.ToList(_reusableListBufferA);
 
                 return _frametimeStatisticProvider
                     .GetFrametimeMetricValue(samples, metric);
@@ -422,7 +418,7 @@ namespace CapFrameX.PresentMonInterface
                 if (_cpuActiveTimesRealtimeSeconds == null || _cpuActiveTimesRealtimeSeconds.Count == 0)
                     return double.NaN;
 
-                var samples = _cpuActiveTimesRealtimeSeconds.ToList(_reusableListBuffer);
+                var samples = _cpuActiveTimesRealtimeSeconds.ToList(_reusableListBufferA);
 
                 return _frametimeStatisticProvider
                     .GetFrametimeMetricValue(samples, metric);
@@ -437,8 +433,8 @@ namespace CapFrameX.PresentMonInterface
                     _gpuActiveTimesRealtimeSeconds == null || _gpuActiveTimesRealtimeSeconds.Count == 0)
                     return double.NaN;
 
-                var frametimeSamples = _frametimesRealtimeSeconds.ToList(_reusableListBuffer);
-                var gpuActiveSamples = _gpuActiveTimesRealtimeSeconds.ToList(_reusableListBuffer2);
+                var frametimeSamples = _frametimesRealtimeSeconds.ToList(_reusableListBufferA);
+                var gpuActiveSamples = _gpuActiveTimesRealtimeSeconds.ToList(_reusableListBufferB);
 
                 var frameTimeAverage = _frametimeStatisticProvider
                     .GetFrametimeMetricValue(frametimeSamples, EMetric.Average);
@@ -453,13 +449,10 @@ namespace CapFrameX.PresentMonInterface
         {
             lock (_lock5SecondsMetric)
             {
-                if (_frametimes5Seconds == null || (_frametimes5Seconds.Count == 0 && !_appConfiguration.UseDisplayChangeMetrics))
-                    return 0;
-
-                if (_displaytimes5Seconds == null || (_displaytimes5Seconds.Count == 0 && _appConfiguration.UseDisplayChangeMetrics))
-                    return 0;
-
                 var buffer = _appConfiguration.UseDisplayChangeMetrics ? _displaytimes5Seconds : _frametimes5Seconds;
+
+                if (buffer == null || buffer.Count == 0)
+                    return double.NaN;
 
                 // Check for NaN values
                 foreach (var sample in buffer)
@@ -468,7 +461,7 @@ namespace CapFrameX.PresentMonInterface
                         return double.NaN;
                 }
 
-                var samples = buffer.ToList(_reusableListBuffer);
+                var samples = buffer.ToList(_reusableListBufferA);
 
                 return _frametimeStatisticProvider
                     .GetOnlineStutteringTimePercentage(samples, _appConfiguration.StutteringFactor);
@@ -483,7 +476,7 @@ namespace CapFrameX.PresentMonInterface
                 if (_pcLatency5Seconds == null || _pcLatency5Seconds.Count == 0)
                     return double.NaN;
 
-                var samples = _pcLatency5Seconds.ToList(_reusableListBuffer);
+                var samples = _pcLatency5Seconds.ToList(_reusableListBufferA);
 
                 // Check for NaN values
                 foreach (var sample in samples)
@@ -607,8 +600,8 @@ namespace CapFrameX.PresentMonInterface
                     _sensorDataBuffer?.Clear();
                 }
 
-                _reusableListBuffer?.Clear();
-                _reusableListBuffer2?.Clear();
+                _reusableListBufferA?.Clear();
+                _reusableListBufferB?.Clear();
             }
 
             _disposed = true;

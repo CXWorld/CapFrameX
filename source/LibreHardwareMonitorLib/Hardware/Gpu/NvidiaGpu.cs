@@ -192,8 +192,7 @@ internal sealed class NvidiaGpu : GenericGpu
             GetTachReading(out status);
             if (status == NvApi.NvStatus.OK)
             {
-                _fans = new[] { new Sensor("GPU", 1, SensorType.Fan, this, settings)
-                    { PresentationSortKey = $"{adapterIndex}_5" } };
+                _fans = [new Sensor("GPU", 1, SensorType.Fan, this, settings) { PresentationSortKey = $"{adapterIndex}_5" }];
                 ActivateSensor(_fans[0]);
             }
         }
@@ -333,8 +332,7 @@ internal sealed class NvidiaGpu : GenericGpu
                 {
                     _powers[i] = new Sensor(name, i + (_loads?.Length ?? 0), SensorType.Load, this, settings)
                     {
-                        IsPresentationDefault = name == "GPU Power",
-                        PresentationSortKey = $"{adapterIndex}_3_{i}"
+                        PresentationSortKey = $"{adapterIndex}_3_1_{i}"
                     };
                     ActivateSensor(_powers[i]);
                 }
@@ -370,7 +368,8 @@ internal sealed class NvidiaGpu : GenericGpu
 
             if (_nvmlDevice.HasValue)
             {
-                _powerUsage = new Sensor("GPU Power", 0, SensorType.Power, this, settings) { IsPresentationDefault = true };
+                _powerUsage = new Sensor("GPU Power", 0, SensorType.Power, this, settings) 
+                { IsPresentationDefault = true, PresentationSortKey = $"{adapterIndex}_3_0" };
 
                 _pcieThroughputRx = new Sensor("GPU PCIe Rx", 0, SensorType.Throughput, this, settings)
                 { PresentationSortKey = $"{adapterIndex}_7_0" };

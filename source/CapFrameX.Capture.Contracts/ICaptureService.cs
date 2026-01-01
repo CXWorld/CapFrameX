@@ -20,14 +20,14 @@ namespace CapFrameX.Capture.Contracts
         string ColumnHeader { get; }
 
         // Dynamic column indices based on capture configuration
-        int CPUStartQPCTimeInMs_INDEX { get; }
-        int CpuBusy_INDEX { get; }
-        int GpuBusy_INDEX { get; }
-        int EtwBufferFillPct_INDEX { get; }
-        int EtwBuffersInUse_INDEX { get; }
-        int EtwTotalBuffers_INDEX { get; }
-        int EtwEventsLost_INDEX { get; }
-        int EtwBuffersLost_INDEX { get; }
+        int CPUStartQPCTimeInMs_Index { get; }
+        int CpuBusy_Index { get; }
+        int GpuBusy_Index { get; }
+        int EtwBufferFillPct_Index { get; }
+        int EtwBuffersInUse_Index { get; }
+        int EtwTotalBuffers_Index { get; }
+        int EtwEventsLost_Index { get; }
+        int EtwBuffersLost_Index { get; }
         int ValidLineLength { get; }
 
         IObservable<string[]> FrameDataStream { get; }

@@ -6,20 +6,6 @@ namespace CapFrameX.Contracts.Configuration
 {
     public interface IAppConfiguration : IFrametimeStatisticProviderOptions, IPmdServiceConfiguration
 	{
-		/// <summary>
-		/// Emits an events when a configuration entry has been changes
-		/// </summary>
-		// Example code to add in constructor
-		/*
-            _appConfiguration.OnValueChanged
-                .Where(x => x.key == nameof(IAppConfiguration.*key*))
-                .Select(x => (*type*)x.value)
-                .Subscribe(value =>
-                {
-                    do stuff();
-
-                });
-		*/
 		IObservable<(string key, object value)> OnValueChanged { get; }
 
 		double StutteringFactor { get; set; }

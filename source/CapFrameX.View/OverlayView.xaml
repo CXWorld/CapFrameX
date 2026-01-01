@@ -173,7 +173,7 @@
                                  Foreground="{DynamicResource MaterialDesignBody}"
                                  Command="{Binding ConfigSwitchCommand}" CommandParameter="2"/>
 							<Button Width="28" Height="28" Margin="7 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                            ToolTip="Reset to defaults" Command="{Binding OpenResetDialogCommand}"
+								ToolTip="Reset to defaults" Command="{Binding OpenResetDialogCommand}"
                             materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="Restore" Height="22" Width="22" />
 							</Button>

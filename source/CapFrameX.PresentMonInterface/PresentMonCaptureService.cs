@@ -47,17 +47,17 @@ namespace CapFrameX.PresentMonInterface
         // Dynamic indices - derived from the appropriate column header based on UsePcLatency setting
         private string[] CurrentColumns => _appConfiguration.UsePcLatency ? ColumnsWithPcLatency : ColumnsWithoutPcLatency;
 
-        public int CPUStartQPCTimeInMs_INDEX => Array.IndexOf(CurrentColumns, "CPUStartQPCTimeInMs");
+        public int CPUStartQPCTimeInMs_Index => Array.IndexOf(CurrentColumns, "CPUStartQPCTimeInMs");
         public int StartTimeInMs_INDEX => Array.IndexOf(CurrentColumns, "CPUStartQPCTimeInMs");
-        public int CpuBusy_INDEX => Array.IndexOf(CurrentColumns, "MsCPUBusy");
-        public int GpuBusy_INDEX => Array.IndexOf(CurrentColumns, "MsGPUBusy");
+        public int CpuBusy_Index => Array.IndexOf(CurrentColumns, "MsCPUBusy");
+        public int GpuBusy_Index => Array.IndexOf(CurrentColumns, "MsGPUBusy");
 
         // Custom PresentMon build - ETW tracking columns
-        public int EtwBufferFillPct_INDEX => Array.IndexOf(CurrentColumns, "EtwBufferFillPct");
-        public int EtwBuffersInUse_INDEX => Array.IndexOf(CurrentColumns, "EtwBuffersInUse");
-        public int EtwTotalBuffers_INDEX => Array.IndexOf(CurrentColumns, "EtwTotalBuffers");
-        public int EtwEventsLost_INDEX => Array.IndexOf(CurrentColumns, "EtwEventsLost");
-        public int EtwBuffersLost_INDEX => Array.IndexOf(CurrentColumns, "EtwBuffersLost");
+        public int EtwBufferFillPct_Index => Array.IndexOf(CurrentColumns, "EtwBufferFillPct");
+        public int EtwBuffersInUse_Index => Array.IndexOf(CurrentColumns, "EtwBuffersInUse");
+        public int EtwTotalBuffers_Index => Array.IndexOf(CurrentColumns, "EtwTotalBuffers");
+        public int EtwEventsLost_Index => Array.IndexOf(CurrentColumns, "EtwEventsLost");
+        public int EtwBuffersLost_Index => Array.IndexOf(CurrentColumns, "EtwBuffersLost");
         public int ValidLineLength => CurrentColumns.Length;
 
         public string ColumnHeader => _appConfiguration.UsePcLatency
