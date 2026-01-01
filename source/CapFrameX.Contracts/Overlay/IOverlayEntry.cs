@@ -30,6 +30,10 @@ namespace CapFrameX.Contracts.Overlay
         /// </summary>
         string FormattedValue { get; }
         /// <summary>
+        /// Determines if the entry is enabled and available for use
+        /// </summary>
+        bool IsEntryEnabled { get; set; }
+        /// <summary>
         /// Determines if the entry is shown on the overlay
         /// </summary>
         bool ShowOnOverlay { get; set; }

@@ -14,6 +14,7 @@ namespace CapFrameX.Overlay
         private readonly object _valueLock = new object();
         private readonly object _limitsLock = new object();
 
+        private bool _isEntryEnabled = true;
         private bool _showOnOverlay;
         private bool _showOnOverlayIsEnabled;
         private string _groupName;
@@ -163,6 +164,8 @@ namespace CapFrameX.Overlay
                     _valueFormat = value;
             }
         }
+
+        public bool IsEntryEnabled { get; set; }
 
         public bool ShowOnOverlay
         {
@@ -427,6 +430,7 @@ namespace CapFrameX.Overlay
                 OverlayEntryType = OverlayEntryType,
                 Description = Description,
                 ValueFormat = ValueFormat,
+                IsEntryEnabled = IsEntryEnabled,
                 ShowOnOverlay = ShowOnOverlay,
                 ShowOnOverlayIsEnabled = ShowOnOverlayIsEnabled,
                 GroupName = GroupName,

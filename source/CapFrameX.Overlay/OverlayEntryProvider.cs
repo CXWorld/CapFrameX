@@ -370,6 +370,7 @@ namespace CapFrameX.Overlay
                 entry.ValueUnitFormat = GetSensorOverlayEntry(entry.Identifier)?.ValueUnitFormat);
             _overlayEntries.ForEach(entry =>
                 entry.ValueAlignmentAndDigits = GetSensorOverlayEntry(entry.Identifier)?.ValueAlignmentAndDigits);
+
             SetOnlineMetricFormats();
             SetOnlineMetricsIsNumericState();
             SetRTSSMetricFormats();
@@ -393,7 +394,9 @@ namespace CapFrameX.Overlay
 
             string json = File.ReadAllText(GetConfigurationFileName(_appConfiguration.OverlayEntryConfigurationFile));
             var overlayEntriesFromJson = JsonConvert.DeserializeObject<OverlayEntryPersistence>(json)
-                .OverlayEntries.ToBlockingCollection<IOverlayEntry>();
+                .OverlayEntries
+                .Where(entry => GetIsEntryEnabled(entry))
+                .ToBlockingCollection<IOverlayEntry>();
 
             var sensorOverlayEntryClones = _overlayEntryCore.OverlayEntryDict.Values.Select(entry => entry.Clone()).ToList();
             var sensorOverlayEntryDescriptions = sensorOverlayEntryClones
@@ -509,7 +512,9 @@ namespace CapFrameX.Overlay
             }
 
             // Manage default entries from Utils list
-            var utilsDefaults = OverlayUtils.GetOverlayEntryDefaults();
+            var utilsDefaults = OverlayUtils.GetOverlayEntryDefaults(_appConfiguration)
+                .Where(item => item.IsEntryEnabled)
+                .ToList();
 
             foreach (var defaultEntry in utilsDefaults)
             {
@@ -528,6 +533,19 @@ namespace CapFrameX.Overlay
             }
 
             return configOverlayEntries.ToBlockingCollection();
+        }
+
+        private bool GetIsEntryEnabled(OverlayEntryWrapper entry)
+        {
+            // Manage enabled state special cases (get state from sources like config)
+            // PC Latency (coofig)
+            if (entry.Identifier == "OnlinePcLatency")
+            {
+                entry.IsEntryEnabled = _appConfiguration.UsePcLatency;
+            }
+
+            // Return true by default
+            return entry.IsEntryEnabled;
         }
 
         private void CheckOSVersion()
@@ -589,7 +607,8 @@ namespace CapFrameX.Overlay
 
         private async Task<BlockingCollection<IOverlayEntry>> GetOverlayEntryDefaults()
         {
-            var overlayEntries = OverlayUtils.GetOverlayEntryDefaults()
+            var overlayEntries = OverlayUtils.GetOverlayEntryDefaults(_appConfiguration)
+                .Where(item => item.IsEntryEnabled)
                 .Select(item => (item as IOverlayEntry).Clone())
                 .ToBlockingCollection();
 
