@@ -121,7 +121,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FrameViewService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SensorConfig.cs" />
     <Compile Include="SensorEntry.cs" />

@@ -246,7 +246,7 @@ internal sealed class IntelCpu : GenericCpu
                         case 0x96: // Intel Celeron ElkhartLake 
                             _microArchitecture = MicroArchitecture.ElkhartLake;
                             tjMax = GetTjMaxFromMsr();
-                            break;
+                            break; 
 
                         default:
                             _microArchitecture = MicroArchitecture.Unknown;

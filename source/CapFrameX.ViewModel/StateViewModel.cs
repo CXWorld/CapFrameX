@@ -7,7 +7,6 @@ using CapFrameX.Contracts.Sensor;
 using CapFrameX.Contracts.UpdateCheck;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
-using CapFrameX.Sensor;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -36,7 +35,6 @@ namespace CapFrameX.ViewModel
 		private bool _isCaptureModeActive;
 		private bool _isOverlayActive;
 		private string _updateHyperlinkText;
-		private bool _isFrameViewAvailable;
 
 		private bool IsBeta => GetBetaState();
 
@@ -91,16 +89,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool IsFrameViewAvailable
-		{
-			get { return _isFrameViewAvailable; }
-			set
-			{
-				_isFrameViewAvailable = value;
-				RaisePropertyChanged();
-			}
-		}
-
 		public string VersionString
 		{
 			get
@@ -130,7 +118,6 @@ namespace CapFrameX.ViewModel
 							  IRTSSService rTSSService,
 							  ISystemInfo systemInfo,
 							  ISensorService sensorService,
-							  IFrameViewService frameViewService,
 							  ILogger<StateViewModel> logger)
 		{
 			_eventAggregator = eventAggregator;
@@ -179,10 +166,6 @@ namespace CapFrameX.ViewModel
 					RaisePropertyChanged(nameof(IsUpdateAvailable));
 				});
 			});
-
-			Task.Run(async () => await frameViewService.IntializeFrameViewService())
-				.ContinueWith(_ => IsFrameViewAvailable = frameViewService.IsFrameViewAvailable, 
-				TaskScheduler.FromCurrentSynchronizationContext());
 		}
 
 		private Assembly GetAssemblyByName(string name)

@@ -259,10 +259,6 @@ namespace CapFrameX
             {
                 Log.Logger.Error(ex, "Error while shutting down the web server.");
             }
-
-            // Close FrameView session
-            var frameViewService = _bootstrapper.Container.Resolve<IFrameViewService>();
-            frameViewService?.CloseFrameViewService();
         }
 
         private void ApplicationStartup(object sender, StartupEventArgs e)

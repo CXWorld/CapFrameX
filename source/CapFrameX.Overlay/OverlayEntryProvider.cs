@@ -50,7 +50,6 @@ namespace CapFrameX.Overlay
         private readonly ISensorConfig _sensorConfig;
         private readonly IOverlayEntryCore _overlayEntryCore;
         private readonly IThreadAffinityController _threadAffinityController;
-        private readonly IFrameViewService _frameViewService;
 
         private readonly ILogger<OverlayEntryProvider> _logger;
         private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict
@@ -77,7 +76,6 @@ namespace CapFrameX.Overlay
             ISensorConfig sensorConfig,
             IOverlayEntryCore overlayEntryCore,
             IThreadAffinityController threadAffinityController,
-            IFrameViewService frameViewService,
             ILogger<OverlayEntryProvider> logger)
         {
             _sensorService = sensorService;
@@ -89,7 +87,6 @@ namespace CapFrameX.Overlay
             _sensorConfig = sensorConfig;
             _overlayEntryCore = overlayEntryCore;
             _threadAffinityController = threadAffinityController;
-            _frameViewService = frameViewService;
             _logger = logger;
 
             _ = Task.Run(async () => await LoadOrSetDefault())
@@ -123,7 +120,6 @@ namespace CapFrameX.Overlay
             UpdateAppInfo();
             UpdateThreadAffinityState();
             UpdateNetworkPing();
-            UpdatePCLatency();
 
             if (updateFormats)
             {
@@ -855,16 +851,6 @@ namespace CapFrameX.Overlay
             {
                 ping.Value = Math.Round(_ping, 0, MidpointRounding.AwayFromZero);
                 SetPing();
-            }
-        }
-
-        private void UpdatePCLatency()
-        {
-            _identifierOverlayEntryDict.TryGetValue("PCLatency", out IOverlayEntry pcLatency);
-
-            if (pcLatency != null && pcLatency.ShowOnOverlay)
-            {
-                pcLatency.Value = _frameViewService.GetAveragePcLatency(_currentProcessId);
             }
         }
 

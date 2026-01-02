@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.32112.339
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11312.151 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX", "source\CapFrameX\CapFrameX.csproj", "{AAA73D26-5CD6-4066-B84C-5BD34057B346}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -92,8 +92,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CapFrameX.ADLX", "source\CapFrameX.ADLX\CapFrameX.ADLX.vcxproj", "{CFA42830-B349-4978-B708-5B1BFA9C579B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Hardware.Controller", "source\CapFrameX.Hardware.Controller\CapFrameX.Hardware.Controller.csproj", "{62E9AEEB-B322-48D0-B69B-FE64E62C461B}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CapFrameX.FrameView", "source\CapFrameX.FrameView\CapFrameX.FrameView.vcxproj", "{87B58E06-6264-4BB0-B3CA-596992331CB9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibreHardwareMonitorLib", "source\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj", "{51E4211C-F281-11A3-9390-A6B54F703498}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -575,18 +573,6 @@ Global
 		{62E9AEEB-B322-48D0-B69B-FE64E62C461B}.Release|x64.Build.0 = Release|x64
 		{62E9AEEB-B322-48D0-B69B-FE64E62C461B}.Release|x86.ActiveCfg = Release|Any CPU
 		{62E9AEEB-B322-48D0-B69B-FE64E62C461B}.Release|x86.Build.0 = Release|Any CPU
-		{87B58E06-6264-4BB0-B3CA-596992331CB9}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{87B58E06-6264-4BB0-B3CA-596992331CB9}.Debug|Any CPU.Build.0 = Debug|x64
-		{87B58E06-6264-4BB0-B3CA-596992331CB9}.Debug|x64.ActiveCfg = Debug|x64
-		{87B58E06-6264-4BB0-B3CA-596992331CB9}.Debug|x64.Build.0 = Debug|x64
-		{87B58E06-6264-4BB0-B3CA-596992331CB9}.Debug|x86.ActiveCfg = Debug|Win32
-		{87B58E06-6264-4BB0-B3CA-596992331CB9}.Debug|x86.Build.0 = Debug|Win32
-		{87B58E06-6264-4BB0-B3CA-596992331CB9}.Release|Any CPU.ActiveCfg = Release|x64
-		{87B58E06-6264-4BB0-B3CA-596992331CB9}.Release|Any CPU.Build.0 = Release|x64
-		{87B58E06-6264-4BB0-B3CA-596992331CB9}.Release|x64.ActiveCfg = Release|x64
-		{87B58E06-6264-4BB0-B3CA-596992331CB9}.Release|x64.Build.0 = Release|x64
-		{87B58E06-6264-4BB0-B3CA-596992331CB9}.Release|x86.ActiveCfg = Release|Win32
-		{87B58E06-6264-4BB0-B3CA-596992331CB9}.Release|x86.Build.0 = Release|Win32
 		{51E4211C-F281-11A3-9390-A6B54F703498}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{51E4211C-F281-11A3-9390-A6B54F703498}.Debug|Any CPU.Build.0 = Debug|x64
 		{51E4211C-F281-11A3-9390-A6B54F703498}.Debug|x64.ActiveCfg = Debug|x64

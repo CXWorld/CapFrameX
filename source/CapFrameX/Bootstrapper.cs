@@ -148,7 +148,6 @@ namespace CapFrameX
             Container.Register<IPoweneticsDriver, PoweneticsUSBDriver>(Reuse.Singleton);
             Container.Register<IBenchlabService, BenchlabService>(Reuse.Singleton);
             Container.Register<IThreadAffinityController, ThreadAffinityController>(Reuse.Singleton);
-			Container.Register<IFrameViewService, FrameViewService>(Reuse.Singleton);
 		}
 
         /// <summary>
