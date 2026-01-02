@@ -174,7 +174,7 @@ internal class GenericCpu : Hardware
                                     }
                                 }
                             }
-                            corelabel = hasL3 ? "E" : "LP-E";
+                            corelabel = hasL3 ? "E" : "LPE";
                             break;
                         case 0x40:
                             corelabel = "P";
