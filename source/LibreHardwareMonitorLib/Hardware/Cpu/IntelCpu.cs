@@ -5,6 +5,7 @@
 // All Rights Reserved.
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -239,14 +240,20 @@ internal sealed class IntelCpu : GenericCpu
                             _microArchitecture = MicroArchitecture.LunarLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
-                        case 0x8F: // Intel Xeon W5-3435X // SapphireRapids 
+
+                        case 0xCC: // Intel Core Ultra X5/7/9 PantherLake
+                            _microArchitecture = MicroArchitecture.PantherLake;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+
+                        case 0x8F: // Intel Xeon W5-3435X SapphireRapids 
                             _microArchitecture = MicroArchitecture.SapphireRapids;
                             tjMax = GetTjMaxFromMsr();
                             break;
                         case 0x96: // Intel Celeron ElkhartLake 
                             _microArchitecture = MicroArchitecture.ElkhartLake;
                             tjMax = GetTjMaxFromMsr();
-                            break; 
+                            break;
 
                         default:
                             _microArchitecture = MicroArchitecture.Unknown;
@@ -305,6 +312,7 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.JasperLake:
             case MicroArchitecture.KabyLake:
             case MicroArchitecture.LunarLake:
+            case MicroArchitecture.PantherLake:
             case MicroArchitecture.Nehalem:
             case MicroArchitecture.MeteorLake:
             case MicroArchitecture.RaptorLake:
@@ -433,6 +441,7 @@ internal sealed class IntelCpu : GenericCpu
             MicroArchitecture.JasperLake or
             MicroArchitecture.KabyLake or
             MicroArchitecture.LunarLake or
+            MicroArchitecture.PantherLake or
             MicroArchitecture.MeteorLake or
             MicroArchitecture.RaptorLake or
             MicroArchitecture.RocketLake or
@@ -526,6 +535,47 @@ internal sealed class IntelCpu : GenericCpu
 
         return result;
     }
+
+    private void ReportCoreInfo(int coreIndex)
+    {
+        var previousAffinity = ThreadAffinity.Set(_cpuId[coreIndex][0].Affinity);
+
+        Debug.WriteLine($"=== Core {coreIndex} ===");
+
+        // Leaf 0x1A - Hybrid info
+        if (OpCode.CpuId(0x1A, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
+        {
+            Console.WriteLine($"Leaf 0x1A: EAX=0x{eax:X8} EBX=0x{ebx:X8} ECX=0x{ecx:X8} EDX=0x{edx:X8}");
+        }
+
+        // Leaf 0x1F - V2 Extended Topology
+        Debug.WriteLine("Leaf 0x1F:");
+        for (uint sub = 0; sub < 10; sub++)
+        {
+            if (OpCode.CpuId(0x1F, sub, out eax, out ebx, out ecx, out edx))
+            {
+                uint levelType = (ecx >> 8) & 0xFF;
+                Debug.WriteLine($"  Sub {sub}: EAX=0x{eax:X8} EBX=0x{ebx:X8} ECX=0x{ecx:X8} EDX=0x{edx:X8} (LevelType={levelType})");
+                if (levelType == 0) break;
+            }
+        }
+
+        // Leaf 0x4 - Cache topology
+        Debug.WriteLine("Leaf 0x4:");
+        for (uint sub = 0; sub < 6; sub++)
+        {
+            if (OpCode.CpuId(0x4, sub, out eax, out ebx, out ecx, out edx))
+            {
+                uint cacheType = eax & 0x1F;
+                if (cacheType == 0) break;
+                uint cacheLevel = (eax >> 5) & 0x7;
+                Debug.WriteLine($"  Sub {sub}: L{cacheLevel} Type={cacheType} EAX=0x{eax:X8}");
+            }
+        }
+
+        ThreadAffinity.Set(previousAffinity);
+    }
+
 
     public override string GetReport()
     {
@@ -631,6 +681,7 @@ internal sealed class IntelCpu : GenericCpu
                         case MicroArchitecture.JasperLake:
                         case MicroArchitecture.KabyLake:
                         case MicroArchitecture.LunarLake:
+                        case MicroArchitecture.PantherLake:
                         case MicroArchitecture.MeteorLake:
                         case MicroArchitecture.RaptorLake:
                         case MicroArchitecture.RocketLake:
@@ -686,17 +737,43 @@ internal sealed class IntelCpu : GenericCpu
             }
         }
 
+        // Read package-level core voltage
         if (_coreVoltage != null && _pawnModule.ReadMsr(IA32_PERF_STATUS, out _, out uint edx))
         {
-            _coreVoltage.Value = ((edx >> 32) & 0xFFFF) / (float)(1 << 13);
+            // Voltage is in bits 47:32 of the 64-bit MSR (IA32_PERF_STATUS)
+            // ReadMsr returns: eax = bits 31:0, edx = bits 63:32
+            // Therefore, voltage (bits 47:32) is in bits 15:0 of edx
+            uint vid = edx & 0xFFFF;
+
+            if (vid > 0)
+            {
+                // Voltage formula: VID / 2^13 (documented for Sandy Bridge and some later CPUs)
+                _coreVoltage.Value = vid / (float)(1 << 13);
+            }
+            else
+            {
+                // VID field is 0 on modern HWP-enabled CPUs (Skylake and newer)
+                // Voltage is managed internally by hardware and not exposed via this MSR
+                DeactivateSensor(_coreVoltage);
+            }
         }
 
+        // Read per-core VIDs
         for (int i = 0; i < _coreVIDs.Length; i++)
         {
-            if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out _, out edx, _cpuId[i][0].Affinity) && ((edx >> 32) & 0xFFFF) > 0)
+            if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out _, out edx, _cpuId[i][0].Affinity))
             {
-                _coreVIDs[i].Value = ((edx >> 32) & 0xFFFF) / (float)(1 << 13);
-                ActivateSensor(_coreVIDs[i]);
+                uint vid = edx & 0xFFFF;
+
+                if (vid > 0)
+                {
+                    _coreVIDs[i].Value = vid / (float)(1 << 13);
+                    ActivateSensor(_coreVIDs[i]);
+                }
+                else
+                {
+                    DeactivateSensor(_coreVIDs[i]);
+                }
             }
             else
             {
@@ -724,6 +801,7 @@ internal sealed class IntelCpu : GenericCpu
         JasperLake,
         KabyLake,
         LunarLake,
+        PantherLake,
         Nehalem,
         NetBurst,
         MeteorLake,

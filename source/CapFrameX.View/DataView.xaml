@@ -344,9 +344,9 @@
                                         </materialDesign:PopupBox>
                                         <TextBlock VerticalAlignment="Center" Text="Options" FontSize="14"/>
                                     </StackPanel>
-                                    <Border Margin="12 0 0 20" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Bottom" BorderBrush="{DynamicResource MaterialDesignBody}" BorderThickness="1"
+                                    <Border Margin="12 0 0 15" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Bottom" BorderBrush="{DynamicResource MaterialDesignBody}" BorderThickness="1"
                                             Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource TrueToVisibleConverter}}">
-                                        <Label Margin="2 0 2 0" FontSize="16" Content="{Binding AvgPcLatency}" Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource TrueToVisibleConverter}}"/>
+                                        <Label Margin="2 0 2 0" FontSize="14" Content="{Binding AvgPcLatency}" Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource TrueToVisibleConverter}}"/>
                                     </Border>
                                 </Grid>
                             </TabItem>

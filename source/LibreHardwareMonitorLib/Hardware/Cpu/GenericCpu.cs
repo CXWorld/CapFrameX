@@ -149,14 +149,38 @@ internal class GenericCpu : Hardware
             if (_cpuId[i][0].Vendor == Vendor.Intel)
             {
                 var previousAffinity = ThreadAffinity.Set(_cpuId[i][0].Affinity);
+
                 if (OpCode.CpuId(CPUID_CORE_MASK_STATUS, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
                 {
-                    switch (eax >> 24)
+                    uint coreType = eax >> 24;
+
+                    switch (coreType)
                     {
-                        case 0x20000002: corelabel = "LP-E"; break;
-                        case 0x20: corelabel = "E"; break;
-                        case 0x40: corelabel = "P"; break;
-                        default: break;
+                        case 0x20: // Efficient core
+                                   // Check for L3 cache to distinguish E from LP-E
+                            bool hasL3 = false;
+                            for (uint sub = 0; sub < 10; sub++)
+                            {
+                                if (OpCode.CpuId(0x4, sub, out uint eax4, out _, out _, out _))
+                                {
+                                    uint cacheType = eax4 & 0x1F;
+                                    if (cacheType == 0) break;
+
+                                    uint cacheLevel = (eax4 >> 5) & 0x7;
+                                    if (cacheLevel == 3)
+                                    {
+                                        hasL3 = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            corelabel = hasL3 ? "E" : "LP-E";
+                            break;
+                        case 0x40:
+                            corelabel = "P";
+                            break;
+                        default:
+                            break;
                     }
                 }
 

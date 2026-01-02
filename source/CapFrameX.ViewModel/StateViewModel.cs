@@ -109,16 +109,16 @@ namespace CapFrameX.ViewModel
 		public ICommand UpdateStatusInfoCommand { get; }
 
 		public StateViewModel(IEventAggregator eventAggregator,
-							  IAppConfiguration appConfiguration,
-							  ICaptureService captureService,
-							  IOverlayService overlayService,
-							  IUpdateCheck updateCheck,
-							  IAppVersionProvider appVersionProvider,
-							  LoginManager loginManager,
-							  IRTSSService rTSSService,
-							  ISystemInfo systemInfo,
-							  ISensorService sensorService,
-							  ILogger<StateViewModel> logger)
+			IAppConfiguration appConfiguration,
+			ICaptureService captureService,
+			IOverlayService overlayService,
+			IUpdateCheck updateCheck,
+			IAppVersionProvider appVersionProvider,
+			LoginManager loginManager,
+			IRTSSService rTSSService,
+			ISystemInfo systemInfo,
+			ISensorService sensorService,
+			ILogger<StateViewModel> logger)
 		{
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
