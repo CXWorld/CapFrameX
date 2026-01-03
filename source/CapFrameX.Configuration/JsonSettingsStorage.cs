@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,7 +20,10 @@ namespace CapFrameX.Configuration
                 "CapFrameX", "Configuration", "AppSettings.json");
         private readonly ILogger<JsonSettingsStorage> _logger;
         private readonly Subject<int> _saveFileSubject = new Subject<int>();
-        private readonly Dictionary<string, object> _configDictionary = new Dictionary<string, object>();
+
+        // Changed to ConcurrentDictionary for thread-safe access
+        private readonly ConcurrentDictionary<string, object> _configDictionary = new ConcurrentDictionary<string, object>();
+
         private TaskCompletionSource<bool> _saveCompletionSource = null;
         private readonly object _lock = new object();
 
@@ -60,6 +64,7 @@ namespace CapFrameX.Configuration
 
         public T GetValue<T>(string key)
         {
+            // ConcurrentDictionary.TryGetValue is thread-safe
             if (_configDictionary.TryGetValue(key, out var value))
             {
                 if (value is long) value = Convert.ToInt32(value);
@@ -92,9 +97,24 @@ namespace CapFrameX.Configuration
 
         public void SetValue(string key, object value)
         {
-            if (!_configDictionary.TryGetValue(key, out var oldValue) || !oldValue.Equals(value))
+            // Use AddOrUpdate for atomic check-and-set
+            var valueChanged = false;
+            _configDictionary.AddOrUpdate(key,
+                // Add factory: key doesn't exist
+                addValue => { valueChanged = true; return value; },
+                // Update factory: key exists, check if value changed
+                (k, oldValue) =>
+                {
+                    if (!oldValue.Equals(value))
+                    {
+                        valueChanged = true;
+                        return value;
+                    }
+                    return oldValue;
+                });
+
+            if (valueChanged)
             {
-                _configDictionary[key] = value;
                 _saveFileSubject.OnNext(default);
             }
         }
@@ -123,7 +143,7 @@ namespace CapFrameX.Configuration
 
                     foreach (var kvp in dict)
                     {
-                        _configDictionary.Add(kvp.Key, kvp.Value);
+                        _configDictionary.TryAdd(kvp.Key, kvp.Value);
                     }
 
                     return Task.FromResult(true);
@@ -144,7 +164,13 @@ namespace CapFrameX.Configuration
                 lock (_iOLock)
                 {
                     var file = new FileInfo(_jsonFilePath);
-                    var fileContent = JsonConvert.SerializeObject(_configDictionary.ToDictionary(x => x.Key, x => x.Value), Formatting.Indented);
+
+                    // ToArray() creates an atomic snapshot of the ConcurrentDictionary
+                    var snapshot = _configDictionary.ToArray();
+                    var fileContent = JsonConvert.SerializeObject(
+                        snapshot.ToDictionary(x => x.Key, x => x.Value),
+                        Formatting.Indented);
+
                     if (string.IsNullOrWhiteSpace(fileContent))
                     {
                         _logger.LogError("Error writing Configurationfile. Cannot create config from Dictionary", _configDictionary);
@@ -163,6 +189,7 @@ namespace CapFrameX.Configuration
                 throw;
             }
         }
+
         public Task WaitForPendingSaveAsync()
         {
             lock (_lock)
@@ -171,7 +198,6 @@ namespace CapFrameX.Configuration
             }
         }
     }
-
 
     internal class JsonSettingsStorageException : Exception
     {
