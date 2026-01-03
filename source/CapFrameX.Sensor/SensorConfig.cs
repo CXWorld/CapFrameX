@@ -4,6 +4,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -40,7 +41,7 @@ namespace CapFrameX.Sensor
         public SensorConfig(string sensorConfigFolder)
         {
             _sensorConfigFolder = sensorConfigFolder;
-            Task.Run(async () => await LoadOrSetDefault());
+            Task.Run(async () => await LoadOrSetDefault()).Wait();
         }
 
         public bool GetSensorIsActive(string identifier)
@@ -122,6 +123,12 @@ namespace CapFrameX.Sensor
             try
             {
                 _activeSensorsDict = await GetInitializedSensorEntryDictionary();
+
+                // Load default as fallback
+                if (_activeSensorsDict == null || !_activeSensorsDict.Values.Any())
+                {
+                    _activeSensorsDict = await GetSensorEntryDefaults();
+                }
             }
             catch (Exception ex)
             {
@@ -157,6 +164,9 @@ namespace CapFrameX.Sensor
 
         public Dictionary<string, bool> GetSensorConfigCopy()
         {
+            // _activeSensorsDict is null return empty dict
+            if (_activeSensorsDict == null) return new Dictionary<string, bool>();
+
             var copy = new Dictionary<string, bool>();
             foreach (var item in _activeSensorsDict)
             {
