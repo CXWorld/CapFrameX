@@ -97,7 +97,7 @@ The screenshot button takes a screenshot of the current view excluding the recor
   JSON + CSV: Additional CSV file that won't be used by CX but can be opened to get a better view on the raw PresentMon data  
 
 ## Settings (Hardware)
-![Screenshot](images/01_global_hardware.png)
+![Screenshot](images/01_global_options_hardware.png)
 * Primary Graphics Adapter. Select the primary graphics adapter for sensor and overlay management. Auto (default) removes iGPU when it least one dGPU is detected.
 * Hardware info source = What will be written into the capture file as your CPU, GPU and RAM config.  
   Automatic detection: What's delivered by the system  
