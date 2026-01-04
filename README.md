@@ -9,6 +9,34 @@ If you want to use images of the CapFrameX analysis, you could use the built in 
 # Release
 Download link: https://github.com/DevTechProfile/CapFrameX/releases
 
+# Tips & Tricks
+The following tips address the most common issues reported by users and can help resolve stability, overlay, and capture-related problems efficiently. We recommend working through them in order if you encounter unexpected behavior.
+
+1. **Ensure you are running the latest version**  
+   If you experience application crashes or unstable behavior, verify that you have installed **CapFrameX v1.7.8 Patch 1** or newer. Many known issues have been resolved in this patch.
+
+2. **Reset application settings**  
+   In some cases, corrupted or outdated configuration files may cause problems. Deleting  
+   `%appdata%/CapFrameX/Configuration/AppSettings.json`  
+   will reset CapFrameX to its default settings and often resolves startup or UI-related issues.
+
+3. **Reset overlay configuration files**  
+   If overlay-related problems persist, try deleting the overlay configuration files located at  
+   `%appdata%/CapFrameX/Configuration/OverlayEntryConfiguration_(0/1/2).json`.  
+   These files will be recreated automatically on the next application start.
+
+4. **Restore missing or zero-value overlay entries**  
+   When overlay entries are missing or display constant zero values, open the **Overlay** tab and use the **Reset** button to restore all overlay entries to a valid default state.
+
+5. **Fix incorrect overlay entry order**  
+   If the order of overlay entries appears inconsistent or unintentionally rearranged, use the **Sort** button in the **Overlay** tab to restore a clean and logical ordering.
+
+6. **Resolve frametime anomalies after updates**  
+   In rare cases, existing background capture processes can interfere with CapFrameX after an update. If you encounter frametime issues, close all running **PresentMon** processes before installing or launching CapFrameX v1.7.8.
+
+7. **Avoid conflicts with other monitoring tools**  
+   Applications such as **HWiNFO** or **AIDA64** that implement their own FPS or frametime metrics may conflict with CapFrameX’s capture service, as they also rely on PresentMon-based mechanisms. Disabling overlapping FPS or frametime monitoring features in those tools is strongly recommended when using CapFrameX.
+
 # Capture frametimes
 ![Screenshot](images/02_capture.png)
 
@@ -27,10 +55,6 @@ Download link: https://github.com/DevTechProfile/CapFrameX/releases
 
 # Sensor
 ![Screenshot](images/08b_sensor.png)
-
-# Synchronization (Input lag)
-![Screenshot](images/10_sync_IL.png)
-![Screenshot](images/11_sync_DT.png)
 
 # Report table (Excel)
 ![Screenshot](images/09_report.png)
@@ -61,20 +85,26 @@ Located at the top
 Contains all the different views, a screenshot button, a login button (for additional cloud services), a direct link to the CX website and an options menu. 
 The screenshot button takes a screenshot of the current view excluding the record list.
 
-## Options (Options tab)
+## Settings (Options)
 ![Screenshot](images/01_global_options.png)
 * Graph filter window size = The time period in which the filtered FPS graphs are being averaged (Analysis & Comparison View)
 * FPS values decimals = The number of decimals for the FPS values
-* Use "TBP Sim" sensor values (AMD graphics cards) if available
-* Screenshot directory = The directory in which your screenshots are saved.
-* Hardware info source = What will be written into the capture file as your CPU, GPU and RAM config.  
-  Automatic detection: What's delivered by the system  
-  Custom description: What you write into the text boxes below  
+* Screenshot directory = The directory in which your screenshots are saved. 
+* Use "MsBetweenDisplayChange" metrics. Uses diplay times for metric calculation. Enble this option when using Frame Generation.
+* Use PC Latency. Still beta state. Disable if you encounter frame time issues. Restart CapFameX after changing the option.
 * Capture file mode = How capture files are saved  
   JSON: Standard JSON file  
   JSON + CSV: Additional CSV file that won't be used by CX but can be opened to get a better view on the raw PresentMon data  
 
-## Options (App tab)
+## Settings (Hardware)
+![Screenshot](images/01_global_hardware.png)
+* Primary Graphics Adapter. Select the primary graphics adapter for sensor and overlay management. Auto (default) removes iGPU when it least one dGPU is detected.
+* Hardware info source = What will be written into the capture file as your CPU, GPU and RAM config.  
+  Automatic detection: What's delivered by the system  
+  Custom description: What you write into the text boxes below
+* Use "TBP Sim" sensor values (AMD graphics cards) if available
+
+## Settings (App)
 ![Screenshot](images/01_global_options_app.png)
 * Start with windows & Start minimized = Autostart option and starting in tray
 * "Dark Mode" UI color mode
@@ -179,19 +209,6 @@ These values can be copied to clipboard via context menu, either as min/avg/max 
 ## Report view
 This is a simple view where you can add your records to see all the relevant parameters all at once. You can also just copy them with a right-click to add them into any other program. This is also possible for the graphs and performance parameters in the single record view.
 
-## Synchronization view
-This view shows you an approximated input lag analysis as well as some other synchronization details. 
-
-Tab "Approximated input lag"
-Using various data from PresentMon, we can give a fairly accurate approximation on the input lag. Note that this doesn't include the additional latency from your mouse/keyboard or your monitor.
-For that we've included an offset that you can set yourself depending on your hardware.
-This input lag is shown in the graph and in the distribution below as well as a small bar chart for the upper and lower bounds as well as the expected input lag. 
-
-Tab "Until displayed times" 
-The chart shows the times when a frame was successfully sent to the monitor and being displayed.
-Below the Graph you can see the amount of frames within the valid sync range of your monitor (that you can enter next to it).  
-At the bottom you can see the distribution of the until displayed times and beside it another pie chart which shows the number of dropped frames.
-
 ## Cloud view
 In this view you can upload and download records to easily share them with others.
 
@@ -209,34 +226,12 @@ This doesn't affect any processes you already have on your list. If our online l
 * Report: parameter table
 * Synchronization: display changed times(dc), histogram data
 
-# Using CX monitoring library in your own projects
-The hardware monitoring library is based on [Open Hardware Monitor](https://github.com/openhardwaremonitor/openhardwaremonitor). It is customized and extended with many additional sensors. If you want to use it in your own projects note the following points.
-* Import the projects "OpenHardwareMonitorLib" and "CapFrameX.Monitoring.Contracts"
-* Allow unsafe code in the build options of the project "OpenHardwareMonitorLib"
-* Implement "IProcessService" (see sample code)
-* Install all necessary Nuget packages: 
-
-```packages.config
-<packages>
-  <package id="Microsoft.Extensions.Logging.Abstractions" version="5.0.0" targetFramework="net472" />
-  <package id="Newtonsoft.Json" version="12.0.1" targetFramework="net472" />
-  <package id="Serilog" version="2.9.0" targetFramework="net472" />
-  <package id="System.Buffers" version="4.5.1" targetFramework="net472" />
-  <package id="System.ComponentModel.Annotations" version="4.7.0" targetFramework="net472" />
-  <package id="System.Memory" version="4.5.4" targetFramework="net472" />
-  <package id="System.Numerics.Vectors" version="4.5.0" targetFramework="net472" />
-  <package id="System.Reactive" version="4.3.2" targetFramework="net472" />
-  <package id="System.Runtime.CompilerServices.Unsafe" version="5.0.0" targetFramework="net472" />
-  <package id="System.Threading.Tasks.Extensions" version="4.5.4" targetFramework="net472" />
-  <package id="System.ValueTuple" version="4.5.0" targetFramework="net472" />
-</packages>
-```
-
 Potential conflicts with the Nuget packages can be solved via Package Manger Console. Just type "Update-Package -reinstall". The calling application must run as administrator. See "MonitoringLibTestApp" example code how to integrate the customized library.
 
 # Requirements
-* .NET 4.7.2
-* Microsoft Visual C++ Redistributable Package
+* .NET 9.0 (no installer check, must be intalled manually)
+* .NET 4.7.2 (installer check)
+* Microsoft Visual C++ Redistributable Package (installer check)
 
 # Build requirements
 * MS Visual Studio 2022
@@ -250,6 +245,6 @@ Potential conflicts with the Nuget packages can be solved via Package Manger Con
 * Solution Platform x64
 
 # Dev roadmap
-* Enhancements
+* CapFrameX 2.0 with service-client architecture
 
 
