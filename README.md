@@ -9,7 +9,7 @@ If you want to use images of the CapFrameX analysis, you could use the built in 
 # Release
 Download link: https://github.com/DevTechProfile/CapFrameX/releases
 
-# Tips & Tricks
+# Troubleshooting & Known Issues
 The following tips address the most common issues reported by users and can help resolve stability, overlay, and capture-related problems efficiently. We recommend working through them in order if you encounter unexpected behavior.
 
 1. **Ensure you are running the latest version**  
