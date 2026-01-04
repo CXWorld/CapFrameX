@@ -9,17 +9,72 @@ using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
+/// <summary>
+/// Represents the CPU vendor.
+/// </summary>
 public enum Vendor
 {
+    /// <summary>
+    /// Unknown vendor.
+    /// </summary>
     Unknown,
+
+    /// <summary>
+    /// Intel Corporation.
+    /// </summary>
     Intel,
+
+    /// <summary>
+    /// Advanced Micro Devices (AMD).
+    /// </summary>
     AMD
 }
 
+/// <summary>
+/// Represents the type of CPU core in hybrid architectures.
+/// </summary>
+public enum CpuCoreType
+{
+    /// <summary>
+    /// Non-hybrid core type.
+    /// </summary>
+    Standard = 0,
+
+    /// <summary>
+    /// Performance core (P-core) - Intel and AMD.
+    /// </summary>
+    PerformanceCore = 1,
+
+    /// <summary>
+    /// Efficiency core (E-core) - Intel.
+    /// </summary>
+    EfficiencyCore = 2,
+
+    /// <summary>
+    /// Low-Power Efficiency core (LPE-core) - Intel.
+    /// </summary>
+    LowPowerEfficiencyCore = 3,
+
+    /// <summary>
+    /// Dense core (D-core) - AMD.
+    /// </summary>
+    DenseCore = 4
+}
+
+/// <summary>
+/// Represents CPUID information for a single logical processor.
+/// </summary>
 public class CpuId
 {
 #pragma warning disable CS3003 // Type is not CLS-compliant
+    /// <summary>
+    /// The base CPUID function number.
+    /// </summary>
     public const uint CPUID_0 = 0;
+
+    /// <summary>
+    /// The extended CPUID function number base.
+    /// </summary>
     public const uint CPUID_EXT = 0x80000000;
 #pragma warning restore CS3003 // Type is not CLS-compliant
 
@@ -73,6 +128,12 @@ public class CpuId
         return count;
     }
 
+    /// <summary>
+    /// Gets the CPUID information for the specified processor group and thread.
+    /// </summary>
+    /// <param name="group">The processor group index.</param>
+    /// <param name="thread">The thread index within the group.</param>
+    /// <returns>A <see cref="CpuId"/> instance, or <c>null</c> if the thread could not be accessed.</returns>
     public static CpuId Get(int group, int thread)
     {
         if (thread >= 64)
@@ -263,36 +324,84 @@ public class CpuId
           - (_coreId << (int)(_threadMaskWith));
     }
 
+    /// <summary>
+    /// Gets the processor name.
+    /// </summary>
     public string Name => _name;
 
+    /// <summary>
+    /// Gets the full CPU brand string as reported by CPUID.
+    /// </summary>
     public string BrandString => _cpuBrandString;
 
+    /// <summary>
+    /// Gets the processor group index.
+    /// </summary>
     public int Group => _group;
 
+    /// <summary>
+    /// Gets the thread index within the processor group.
+    /// </summary>
     public int Thread => _thread;
 
+    /// <summary>
+    /// Gets the processor affinity for this logical processor.
+    /// </summary>
     public GroupAffinity Affinity => _affinity;
 
+    /// <summary>
+    /// Gets the CPU vendor.
+    /// </summary>
     public Vendor Vendor => _vendor;
 
+    /// <summary>
+    /// Gets the CPU family identifier.
+    /// </summary>
     public uint Family => _family;
 
+    /// <summary>
+    /// Gets the CPU model identifier.
+    /// </summary>
     public uint Model => _model;
 
+    /// <summary>
+    /// Gets the CPU stepping revision.
+    /// </summary>
     public uint Stepping => _stepping;
 
+    /// <summary>
+    /// Gets the package type identifier.
+    /// </summary>
     public uint PkgType => _pkgType;
 
+    /// <summary>
+    /// Gets the APIC identifier for this logical processor.
+    /// </summary>
     public uint ApicId => _apicId;
 
+    /// <summary>
+    /// Gets the physical processor identifier.
+    /// </summary>
     public uint ProcessorId => _processorId;
 
+    /// <summary>
+    /// Gets the core identifier within the processor.
+    /// </summary>
     public uint CoreId => _coreId;
 
+    /// <summary>
+    /// Gets the thread identifier within the core.
+    /// </summary>
     public uint ThreadId => _threadId;
 
+    /// <summary>
+    /// Gets the raw CPUID data for standard functions.
+    /// </summary>
     public uint[,] Data => _cpuidData;
 
+    /// <summary>
+    /// Gets the raw CPUID data for extended functions.
+    /// </summary>
     public uint[,] ExtData => _cpuidExtData;
 }
 

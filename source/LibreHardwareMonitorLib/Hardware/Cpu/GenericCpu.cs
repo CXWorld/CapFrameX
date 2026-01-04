@@ -13,7 +13,10 @@ using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
-internal class GenericCpu : Hardware
+/// <summary>
+/// Class GenericCpu for basic CPU management
+/// </summary>
+public class GenericCpu : Hardware
 {
     private const uint CPUID_CORE_MASK_STATUS = 0x1A;
 
@@ -36,6 +39,12 @@ internal class GenericCpu : Hardware
     private readonly Sensor _maxLoad;
     private readonly Vendor _vendor;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GenericCpu"/> class.
+    /// </summary>
+    /// <param name="processorIndex">The zero-based processor index.</param>
+    /// <param name="cpuId">The CPUID data for all cores and threads.</param>
+    /// <param name="settings">The settings instance.</param>
     public GenericCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(cpuId[0][0].Name, CreateIdentifier(cpuId[0][0].Vendor, processorIndex), settings)
     {
         _cpuId = cpuId;
@@ -117,10 +126,17 @@ internal class GenericCpu : Hardware
     /// </summary>
     public CpuId[][] CpuId => _cpuId;
 
+    /// <inheritdoc />
     public override HardwareType HardwareType => HardwareType.Cpu;
 
+    /// <summary>
+    /// Gets a value indicating whether the processor supports model-specific registers (MSRs).
+    /// </summary>
     public bool HasModelSpecificRegisters { get; }
 
+    /// <summary>
+    /// Gets a value indicating whether the processor has a time stamp counter (TSC).
+    /// </summary>
     public bool HasTimeStampCounter { get; }
 
     /// <summary>
@@ -128,6 +144,9 @@ internal class GenericCpu : Hardware
     /// </summary>
     public int Index { get; }
 
+    /// <summary>
+    /// Gets the time stamp counter frequency in MHz.
+    /// </summary>
     public double TimeStampCounterFrequency { get; private set; }
 
     protected string CoreString(int i)
@@ -211,6 +230,102 @@ internal class GenericCpu : Hardware
         return corelabel;
     }
 
+    /// <summary>
+    /// Gets the core type for the specified core index.
+    /// </summary>
+    /// <param name="coreIndex">The zero-based core index.</param>
+    /// <returns>The <see cref="CpuCoreType"/> of the specified core.</returns>
+    public CpuCoreType GetCoreType(int coreIndex)
+    {
+        if (coreIndex < 0 || coreIndex >= _coreCount)
+            return CpuCoreType.Standard;
+
+        if (!_isHybrid)
+            return CpuCoreType.Standard;
+
+        if (_cpuId[coreIndex][0].Vendor == Vendor.Intel)
+        {
+            var previousAffinity = ThreadAffinity.Set(_cpuId[coreIndex][0].Affinity);
+
+            try
+            {
+                if (OpCode.CpuId(CPUID_CORE_MASK_STATUS, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
+                {
+                    uint coreType = eax >> 24;
+
+                    switch (coreType)
+                    {
+                        case 0x20: // Efficient core
+                            // Check for L3 cache to distinguish E from LP-E
+                            bool hasL3 = false;
+                            for (uint sub = 0; sub < 10; sub++)
+                            {
+                                if (OpCode.CpuId(0x4, sub, out uint eax4, out _, out _, out _))
+                                {
+                                    uint cacheType = eax4 & 0x1F;
+                                    if (cacheType == 0) break;
+
+                                    uint cacheLevel = (eax4 >> 5) & 0x7;
+                                    if (cacheLevel == 3)
+                                    {
+                                        hasL3 = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            return hasL3 ? CpuCoreType.EfficiencyCore : CpuCoreType.LowPowerEfficiencyCore;
+                        case 0x40:
+                            return CpuCoreType.PerformanceCore;
+                        default:
+                            return CpuCoreType.Standard;
+                    }
+                }
+            }
+            finally
+            {
+                ThreadAffinity.Set(previousAffinity);
+            }
+        }
+        else if (_cpuId[coreIndex][0].Vendor == Vendor.AMD)
+        {
+            var previousAffinity = ThreadAffinity.Set(_cpuId[coreIndex][0].Affinity);
+
+            try
+            {
+                if (OpCode.CpuId(0x80000026, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
+                {
+                    // Heterogeneous core topology supported
+                    if ((eax & (1u << 30)) != 0)
+                    {
+                        uint coreType = (ebx >> 28) & 0xF;
+                        switch (coreType)
+                        {
+                            case 0: return CpuCoreType.PerformanceCore;
+                            case 1: return CpuCoreType.DenseCore;
+                            default: return CpuCoreType.Standard;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                ThreadAffinity.Set(previousAffinity);
+            }
+        }
+
+        return CpuCoreType.Standard;
+    }
+
+    /// <summary>
+    /// Gets the number of cores in this CPU.
+    /// </summary>
+    public int CoreCount => _coreCount;
+
+    /// <summary>
+    /// Gets whether this CPU has a hybrid architecture with different core types.
+    /// </summary>
+    public bool IsHybrid => _isHybrid;
+
     private static Identifier CreateIdentifier(Vendor vendor, int processorIndex)
     {
         string s = vendor switch
@@ -223,6 +338,10 @@ internal class GenericCpu : Hardware
         return new Identifier(s, processorIndex.ToString(CultureInfo.InvariantCulture));
     }
 
+    /// <summary>
+    /// Gets the time stamp counter frequency from the native HWInfo library.
+    /// </summary>
+    /// <returns>The time stamp counter frequency in Hz.</returns>
     [DllImport("CapFrameX.Hwinfo.dll")]
     public static extern long GetTimeStampCounterFrequency();
 
@@ -240,6 +359,7 @@ internal class GenericCpu : Hardware
         }
     }
 
+    /// <inheritdoc />
     public override string GetReport()
     {
         StringBuilder r = new();
@@ -274,6 +394,7 @@ internal class GenericCpu : Hardware
         return r.ToString();
     }
 
+    /// <inheritdoc />
     public override void Update()
     {
         if (_cpuLoad.IsAvailable)
