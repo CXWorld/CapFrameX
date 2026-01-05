@@ -1,0 +1,46 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CapFrameX.App.ViewModels"
+        xmlns:views="using:CapFrameX.App.Views"
+        x:Class="CapFrameX.App.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="CapFrameX Linux"
+        Width="1200" Height="800"
+        MinWidth="900" MinHeight="600"
+        WindowStartupLocation="CenterScreen">
+
+    <Design.DataContext>
+        <vm:MainViewModel />
+    </Design.DataContext>
+
+    <DockPanel>
+        <!-- Status Bar -->
+        <Border DockPanel.Dock="Bottom" Background="#1e1e1e" Padding="10 5">
+            <StackPanel Orientation="Horizontal" Spacing="20">
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                    <Ellipse Width="10" Height="10">
+                        <Ellipse.Fill>
+                            <SolidColorBrush Color="{Binding IsConnected, Converter={x:Static views:MainWindow.ConnectionColorConverter}}" />
+                        </Ellipse.Fill>
+                    </Ellipse>
+                    <TextBlock Text="{Binding ConnectionStatus}" FontSize="12" VerticalAlignment="Center" />
+                </StackPanel>
+                <Button Content="Reconnect" Command="{Binding ConnectCommand}"
+                        IsVisible="{Binding !IsConnected}" FontSize="11" Padding="8 2" />
+            </StackPanel>
+        </Border>
+
+        <!-- Tab Navigation -->
+        <TabControl SelectedIndex="{Binding SelectedTabIndex}">
+            <TabItem Header="Capture">
+                <views:CaptureView DataContext="{Binding CaptureViewModel}" />
+            </TabItem>
+            <TabItem Header="Analysis">
+                <views:AnalysisView DataContext="{Binding AnalysisViewModel}" />
+            </TabItem>
+            <TabItem Header="Compare">
+                <views:CompareView DataContext="{Binding CompareViewModel}" />
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>

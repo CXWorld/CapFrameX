@@ -1,0 +1,40 @@
+# Build outputs
+build/
+bin/
+obj/
+
+# .NET
+*.user
+*.suo
+.vs/
+*.DotSettings.user
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*~
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# Compiled objects
+*.o
+*.so
+*.a
+
+# NuGet
+packages/
+*.nupkg
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

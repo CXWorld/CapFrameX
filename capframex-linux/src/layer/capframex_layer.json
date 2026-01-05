@@ -1,0 +1,17 @@
+{
+    "file_format_version": "1.0.0",
+    "layer": {
+        "name": "VK_LAYER_capframex_capture",
+        "type": "GLOBAL",
+        "library_path": "/usr/lib/libcapframex_layer.so",
+        "api_version": "1.3.0",
+        "implementation_version": "1",
+        "description": "CapFrameX Frametime Capture Layer",
+        "disable_environment": {
+            "DISABLE_CAPFRAMEX_LAYER": "1"
+        },
+        "enable_environment": {
+            "ENABLE_CAPFRAMEX_LAYER": "1"
+        }
+    }
+}
