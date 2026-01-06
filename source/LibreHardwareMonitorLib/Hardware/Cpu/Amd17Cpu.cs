@@ -782,7 +782,7 @@ internal sealed class Amd17Cpu : AmdCpu
                     // CpuFid[11:0]: core frequency ID.Read - write.Reset: XXXh.Specifies the core frequency multiplier.The core
                     // COF is a function of CpuFid and CpuDid, and defined by CoreCOF.
                     int curCpuFid = (int)(msrPstate & 0xfff);
-                    coreClock = curCpuFid * 5;
+                    coreClock = curCpuFid * 5d * busClock / 100d;
 
                     // multiplier, clock speed with 100Mhz as Multiplier Reference
                     // _multiplier.Value = (float)((curCpuFid * 5) / busClock);
