@@ -52,4 +52,5 @@ public struct FrameDataPointIpc
     public ulong TimestampNs;
     public float FrametimeMs;
     public float Fps;
+    public int Pid;  // Source process ID
 }

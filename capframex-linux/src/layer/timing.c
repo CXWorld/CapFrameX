@@ -60,7 +60,7 @@ void timing_record_frame(uint64_t frame_number, uint64_t pre_present_ns, uint64_
 
     pthread_mutex_unlock(&timing_mutex);
 
-    // Send data to IPC client (if capturing)
+    // Always send frame data to daemon (continuous streaming)
     ipc_client_send_frame_data(frame);
 }
 

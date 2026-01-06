@@ -14,24 +14,36 @@
     </Design.DataContext>
 
     <DockPanel>
-        <!-- Status Bar -->
-        <Border DockPanel.Dock="Bottom" Background="#1e1e1e" Padding="10 5">
-            <StackPanel Orientation="Horizontal" Spacing="20">
-                <StackPanel Orientation="Horizontal" Spacing="5">
-                    <Ellipse Width="10" Height="10">
-                        <Ellipse.Fill>
-                            <SolidColorBrush Color="{Binding IsConnected, Converter={x:Static views:MainWindow.ConnectionColorConverter}}" />
-                        </Ellipse.Fill>
-                    </Ellipse>
-                    <TextBlock Text="{Binding ConnectionStatus}" FontSize="12" VerticalAlignment="Center" />
+        <!-- Header with Logo -->
+        <Border DockPanel.Dock="Top" Background="#0D1117" Padding="15 10">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <!-- Logo and Title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <Image Source="/Assets/logo_blue.png" Height="32" />
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="CapFrameX" FontSize="18" FontWeight="Bold" Foreground="#4AA3DF" />
+                        <TextBlock Text="Linux Edition" FontSize="11" Opacity="0.6" Margin="0 -2 0 0" />
+                    </StackPanel>
                 </StackPanel>
-                <Button Content="Reconnect" Command="{Binding ConnectCommand}"
-                        IsVisible="{Binding !IsConnected}" FontSize="11" Padding="8 2" />
-            </StackPanel>
+
+                <!-- Connection Status -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Ellipse Width="8" Height="8" VerticalAlignment="Center">
+                            <Ellipse.Fill>
+                                <SolidColorBrush Color="{Binding IsConnected, Converter={x:Static views:MainWindow.ConnectionColorConverter}}" />
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <TextBlock Text="{Binding ConnectionStatus}" FontSize="12" Opacity="0.8" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <Button Content="Reconnect" Command="{Binding ConnectCommand}"
+                            IsVisible="{Binding !IsConnected}" FontSize="11" Padding="10 4" Classes="accent" />
+                </StackPanel>
+            </Grid>
         </Border>
 
         <!-- Tab Navigation -->
-        <TabControl SelectedIndex="{Binding SelectedTabIndex}">
+        <TabControl SelectedIndex="{Binding SelectedTabIndex}" Padding="0">
             <TabItem Header="Capture">
                 <views:CaptureView DataContext="{Binding CaptureViewModel}" />
             </TabItem>
@@ -43,4 +55,21 @@
             </TabItem>
         </TabControl>
     </DockPanel>
+
+    <Window.Styles>
+        <Style Selector="TabControl">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="TabItem">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Padding" Value="20 12" />
+            <Setter Property="Foreground" Value="#888888" />
+        </Style>
+        <Style Selector="TabItem:selected">
+            <Setter Property="Foreground" Value="#4AA3DF" />
+        </Style>
+        <Style Selector="TabItem:pointerover">
+            <Setter Property="Foreground" Value="#AAAAAA" />
+        </Style>
+    </Window.Styles>
 </Window>

@@ -56,6 +56,13 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    [RelayCommand]
+    private void SelectTab(string indexStr)
+    {
+        if (int.TryParse(indexStr, out var index))
+            SelectedTabIndex = index;
+    }
+
     partial void OnSelectedTabIndexChanged(int value)
     {
         CurrentView = value switch

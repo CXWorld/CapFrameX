@@ -57,9 +57,6 @@ typedef struct {
 void layer_init(void);
 void layer_cleanup(void);
 
-// Check if capture is enabled for current process
-bool layer_is_capture_enabled(void);
-
 // Get dispatch tables
 InstanceData* layer_get_instance_data(VkInstance instance);
 DeviceData* layer_get_device_data(VkDevice device);

@@ -22,4 +22,5 @@ public record FrameDataPoint
     public ulong TimestampNs { get; init; }
     public float FrametimeMs { get; init; }
     public float Fps { get; init; }
+    public int Pid { get; init; }  // Source process ID
 }

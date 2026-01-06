@@ -5,13 +5,13 @@
              x:Class="CapFrameX.App.Views.CompareView"
              x:DataType="vm:CompareViewModel">
 
-    <Grid RowDefinitions="Auto,*,Auto" Margin="10">
+    <Grid RowDefinitions="Auto,*,Auto" Margin="15">
         <!-- Top - Session Selection -->
         <Grid Grid.Row="0" ColumnDefinitions="*,*" Margin="0 0 0 10">
             <!-- Available Sessions -->
-            <Border Grid.Column="0" Background="#2d2d2d" CornerRadius="8" Padding="15" Margin="0 0 5 0" MaxHeight="200">
+            <Border Grid.Column="0" Background="#1E2A3A" CornerRadius="10" Padding="15" Margin="0 0 5 0" MaxHeight="200" BorderBrush="#2A3F55" BorderThickness="1">
                 <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="Available Sessions" FontWeight="SemiBold" Margin="0 0 0 10" />
+                    <TextBlock DockPanel.Dock="Top" Text="Available Sessions" FontWeight="SemiBold" Foreground="#4AA3DF" Margin="0 0 0 10" />
                     <ListBox ItemsSource="{Binding AvailableSessions}" Background="Transparent">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
@@ -19,7 +19,7 @@
                                     <Button DockPanel.Dock="Right" Content="Add"
                                             Command="{Binding $parent[UserControl].((vm:CompareViewModel)DataContext).AddSessionCommand}"
                                             CommandParameter="{Binding}"
-                                            Padding="10 3" FontSize="11" />
+                                            Padding="10 3" FontSize="11" Classes="accent" />
                                     <StackPanel>
                                         <TextBlock Text="{Binding GameName}" FontWeight="SemiBold" />
                                         <TextBlock Text="{Binding StartTime, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}"
@@ -33,10 +33,10 @@
             </Border>
 
             <!-- Selected Sessions -->
-            <Border Grid.Column="1" Background="#2d2d2d" CornerRadius="8" Padding="15" Margin="5 0 0 0" MaxHeight="200">
+            <Border Grid.Column="1" Background="#1E2A3A" CornerRadius="10" Padding="15" Margin="5 0 0 0" MaxHeight="200" BorderBrush="#2A3F55" BorderThickness="1">
                 <DockPanel>
                     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0 0 0 10">
-                        <TextBlock Text="Sessions to Compare" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        <TextBlock Text="Sessions to Compare" FontWeight="SemiBold" Foreground="#4AA3DF" VerticalAlignment="Center" />
                         <Button Content="Clear All" Command="{Binding ClearAllCommand}"
                                 Margin="10 0 0 0" Padding="8 3" FontSize="11" />
                     </StackPanel>
@@ -58,9 +58,9 @@
         </Grid>
 
         <!-- Middle - Combined Chart -->
-        <Border Grid.Row="1" Background="#2d2d2d" CornerRadius="8" Padding="15" Margin="0 0 0 10">
+        <Border Grid.Row="1" Background="#1E2A3A" CornerRadius="10" Padding="15" Margin="0 0 0 10" BorderBrush="#2A3F55" BorderThickness="1">
             <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Text="Frametime Comparison" FontWeight="SemiBold" Margin="0 0 0 10" />
+                <TextBlock DockPanel.Dock="Top" Text="Frametime Comparison" FontWeight="SemiBold" Foreground="#4AA3DF" Margin="0 0 0 10" />
                 <lvc:CartesianChart Series="{Binding FrametimeSeries}"
                                     XAxes="{Binding XAxes}"
                                     YAxes="{Binding YAxes}"
@@ -69,9 +69,9 @@
         </Border>
 
         <!-- Bottom - Comparison Table -->
-        <Border Grid.Row="2" Background="#2d2d2d" CornerRadius="8" Padding="15">
+        <Border Grid.Row="2" Background="#1E2A3A" CornerRadius="10" Padding="15" BorderBrush="#2A3F55" BorderThickness="1">
             <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Text="Statistics Comparison" FontWeight="SemiBold" Margin="0 0 0 10" />
+                <TextBlock DockPanel.Dock="Top" Text="Statistics Comparison" FontWeight="SemiBold" Foreground="#4AA3DF" Margin="0 0 0 10" />
                 <DataGrid ItemsSource="{Binding ComparisonTable}"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"

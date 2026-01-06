@@ -17,16 +17,19 @@
 
 // IPC Message Types
 typedef enum {
-    MSG_GAME_STARTED = 1,      // Daemon -> Layer/App
-    MSG_GAME_STOPPED = 2,      // Daemon -> Layer/App
-    MSG_START_CAPTURE = 3,     // App -> Layer
-    MSG_STOP_CAPTURE = 4,      // App -> Layer
-    MSG_FRAMETIME_DATA = 5,    // Layer -> App
+    MSG_GAME_STARTED = 1,      // Daemon -> App: game process detected
+    MSG_GAME_STOPPED = 2,      // Daemon -> App: game process exited
+    MSG_START_CAPTURE = 3,     // App -> Daemon: subscribe to frame stream for PID
+    MSG_STOP_CAPTURE = 4,      // App -> Daemon: unsubscribe from frame stream
+    MSG_FRAMETIME_DATA = 5,    // Layer -> Daemon -> App: continuous frame data
     MSG_PING = 6,              // Keepalive
     MSG_PONG = 7,              // Keepalive response
     MSG_CONFIG_UPDATE = 8,     // App -> Daemon/Layer
     MSG_STATUS_REQUEST = 9,    // App -> Daemon
     MSG_STATUS_RESPONSE = 10,  // Daemon -> App
+    MSG_LAYER_HELLO = 11,      // Layer -> Daemon: layer announces itself with PID/process info
+    MSG_SWAPCHAIN_CREATED = 12,// Layer -> Daemon: swapchain info (resolution, format)
+    MSG_SWAPCHAIN_DESTROYED = 13, // Layer -> Daemon: swapchain destroyed
 } MessageType;
 
 // Process information structure
@@ -62,7 +65,24 @@ typedef struct {
     uint64_t timestamp_ns;
     float frametime_ms;
     float fps;
+    pid_t pid;  // Source process ID (for daemon to route to correct subscriber)
 } FrameDataPoint;
+
+// Layer hello message - layer announces itself to daemon
+typedef struct {
+    pid_t pid;
+    char process_name[MAX_GAME_NAME_LENGTH];
+    char gpu_name[MAX_GAME_NAME_LENGTH];
+} LayerHelloPayload;
+
+// Swapchain info message
+typedef struct {
+    pid_t pid;
+    uint32_t width;
+    uint32_t height;
+    uint32_t format;
+    uint32_t image_count;
+} SwapchainInfoPayload;
 
 // Shared memory structure for active PIDs
 typedef struct {

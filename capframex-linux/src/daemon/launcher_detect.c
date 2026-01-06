@@ -1,7 +1,10 @@
+#define _GNU_SOURCE
 #include "launcher_detect.h"
+#include "process_monitor.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <fnmatch.h>
 
 // Known launchers and their executable patterns
@@ -52,7 +55,27 @@ static const char* DEFAULT_BLACKLIST[] = {
     "python",
     "python3",
     "pressure-vessel",
+    "pressure-vessel-wrap",
     "pv-bwrap",
+    "srt-bwrap",
+    "pv-adverb",
+    "steam-runtime-*",
+    "reaper",
+    "_v2-entry-point",
+    "proton",
+    "steam-runtime-launcher-*",
+    "*-inspect-library",
+    "*-capsule-capture-libs",
+    "*-detect-platform",
+    "*-detect-lib",
+    "wine64",
+    "wine64-preloade",
+    "wineboot.exe",
+    "rundll32.exe",
+    "regsvr32.exe",
+    "ntlm_auth",
+    "gst-plugin-scanner",
+    "ld-linux*",
     NULL
 };
 
@@ -178,6 +201,31 @@ bool launcher_is_launcher_child(pid_t pid, LauncherType* out_launcher_type) {
     return false;
 }
 
+static bool is_wine_preloader(const char* exe_path) {
+    return exe_path && (strstr(exe_path, "wine64-preloader") != NULL ||
+                        strstr(exe_path, "wine-preloader") != NULL);
+}
+
+static bool get_wine_game_name(pid_t pid, char* buffer, size_t buffer_size) {
+    // For Wine processes, get the actual game name from /proc/[pid]/comm
+    char proc_path[64];
+    snprintf(proc_path, sizeof(proc_path), "/proc/%d/comm", pid);
+
+    FILE* f = fopen(proc_path, "r");
+    if (!f) return false;
+
+    if (fgets(buffer, buffer_size, f)) {
+        size_t len = strlen(buffer);
+        if (len > 0 && buffer[len - 1] == '\n') {
+            buffer[len - 1] = '\0';
+        }
+        fclose(f);
+        return true;
+    }
+    fclose(f);
+    return false;
+}
+
 bool launcher_is_game_process(const ProcessInfo* info) {
     if (!info) return false;
 
@@ -191,12 +239,59 @@ bool launcher_is_game_process(const ProcessInfo* info) {
         return true;
     }
 
-    // Check if it's a launcher itself
+    // Special handling for Wine/Proton games - MUST check BEFORE launcher type check
+    // because wine64-preloader matches "wine*" pattern but hosts actual game processes
+    if (is_wine_preloader(info->exe_path)) {
+        char comm_name[256];
+        if (get_wine_game_name(info->pid, comm_name, sizeof(comm_name))) {
+            // Check if the comm name is blacklisted
+            if (launcher_is_blacklisted(comm_name)) {
+                return false;
+            }
+            // Wine game processes have truncated names in comm, but they're real games
+            // Exclude known system/helper processes
+            if (strcasecmp(comm_name, "wineserver") == 0 ||
+                strcasecmp(comm_name, "wine64-preloade") == 0 ||
+                strcasecmp(comm_name, "wine-preloader") == 0 ||
+                strcasecmp(comm_name, "wine64") == 0 ||
+                strcasecmp(comm_name, "wine") == 0 ||
+                strcasecmp(comm_name, "wineboot.exe") == 0 ||
+                strcasecmp(comm_name, "services.exe") == 0 ||
+                strcasecmp(comm_name, "winedevice.exe") == 0 ||
+                strcasecmp(comm_name, "plugplay.exe") == 0 ||
+                strcasecmp(comm_name, "explorer.exe") == 0 ||
+                strcasecmp(comm_name, "rpcss.exe") == 0 ||
+                strcasecmp(comm_name, "tabtip.exe") == 0 ||
+                strcasecmp(comm_name, "conhost.exe") == 0 ||
+                strcasecmp(comm_name, "steam.exe") == 0 ||
+                strcasecmp(comm_name, "steamwebhelper.") == 0 ||
+                strcasecmp(comm_name, "crashpad_handle") == 0 ||
+                strncasecmp(comm_name, "crashpad", 8) == 0 ||
+                strcasecmp(comm_name, "xalia.exe") == 0 ||
+                strcasecmp(comm_name, "svchost.exe") == 0 ||
+                strcasecmp(comm_name, "rundll32.exe") == 0 ||
+                strcasecmp(comm_name, "regsvr32.exe") == 0 ||
+                strcasecmp(comm_name, "start.exe") == 0 ||
+                strcasecmp(comm_name, "cmd.exe") == 0 ||
+                strcasecmp(comm_name, "wineconsole") == 0 ||
+                strcasecmp(comm_name, "winedbg") == 0 ||
+                strncasecmp(comm_name, "proton", 6) == 0 ||
+                strncasecmp(comm_name, "pressure-", 9) == 0) {
+                return false;
+            }
+            // Looks like a real game process
+            return true;
+        }
+        // Wine preloader that didn't match - not a game
+        return false;
+    }
+
+    // Check if it's a launcher itself (non-Wine)
     if (launcher_detect_type(info) != LAUNCHER_UNKNOWN) {
         return false;
     }
 
-    // Check if it's in a known game directory
+    // Check if it's in a known game directory (for native Linux games)
     if (is_in_game_directory(info->exe_path)) {
         return true;
     }

@@ -108,9 +108,12 @@ VKAPI_ATTR VkResult VKAPI_CALL layer_CreateSwapchainKHR(
     if (result == VK_SUCCESS) {
         add_swapchain(device, *pSwapchain, pCreateInfo);
 
-        // Notify IPC client of new swapchain
-        ipc_client_notify_swapchain_created(pCreateInfo->imageExtent.width,
-                                            pCreateInfo->imageExtent.height);
+        // Notify daemon of new swapchain
+        ipc_client_send_swapchain_created(
+            pCreateInfo->imageExtent.width,
+            pCreateInfo->imageExtent.height,
+            (uint32_t)pCreateInfo->imageFormat,
+            pCreateInfo->minImageCount);
     }
 
     return result;
@@ -126,9 +129,22 @@ VKAPI_ATTR void VKAPI_CALL layer_DestroySwapchainKHR(
 
     remove_swapchain(swapchain);
 
+    // Notify daemon of swapchain destruction
+    ipc_client_send_swapchain_destroyed();
+
     if (dev_data->dispatch.DestroySwapchainKHR) {
         dev_data->dispatch.DestroySwapchainKHR(device, swapchain, pAllocator);
     }
+}
+
+// Internal version without locking (caller must hold mutex)
+static SwapchainData* swapchain_get_data_unlocked(VkSwapchainKHR swapchain) {
+    for (int i = 0; i < swapchain_count; i++) {
+        if (swapchain_list[i].swapchain == swapchain) {
+            return &swapchain_list[i];
+        }
+    }
+    return NULL;
 }
 
 VKAPI_ATTR VkResult VKAPI_CALL layer_QueuePresentKHR(
@@ -139,7 +155,7 @@ VKAPI_ATTR VkResult VKAPI_CALL layer_QueuePresentKHR(
     DeviceData* dev_data = NULL;
     pthread_mutex_lock(&swapchain_mutex);
     if (pPresentInfo->swapchainCount > 0) {
-        SwapchainData* sc = swapchain_get_data(pPresentInfo->pSwapchains[0]);
+        SwapchainData* sc = swapchain_get_data_unlocked(pPresentInfo->pSwapchains[0]);
         if (sc) {
             dev_data = layer_get_device_data(sc->device);
         }
@@ -159,8 +175,9 @@ VKAPI_ATTR VkResult VKAPI_CALL layer_QueuePresentKHR(
     uint64_t post_present_time = timing_get_timestamp();
 
     // Update frame data for each presented swapchain
+    pthread_mutex_lock(&swapchain_mutex);
     for (uint32_t i = 0; i < pPresentInfo->swapchainCount; i++) {
-        SwapchainData* sc_data = swapchain_get_data(pPresentInfo->pSwapchains[i]);
+        SwapchainData* sc_data = swapchain_get_data_unlocked(pPresentInfo->pSwapchains[i]);
         if (sc_data) {
             sc_data->frame_count++;
 
@@ -168,6 +185,7 @@ VKAPI_ATTR VkResult VKAPI_CALL layer_QueuePresentKHR(
             timing_record_frame(sc_data->frame_count, pre_present_time, post_present_time);
         }
     }
+    pthread_mutex_unlock(&swapchain_mutex);
 
     return result;
 }

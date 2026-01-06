@@ -5,9 +5,9 @@
              x:Class="CapFrameX.App.Views.CaptureView"
              x:DataType="vm:CaptureViewModel">
 
-    <Grid ColumnDefinitions="300,*" Margin="10">
+    <Grid ColumnDefinitions="300,*" Margin="15">
         <!-- Left Panel - Game Selection -->
-        <Border Grid.Column="0" Background="#2d2d2d" CornerRadius="8" Padding="15" Margin="0 0 10 0">
+        <Border Grid.Column="0" Background="#1E2A3A" CornerRadius="10" Padding="15" Margin="0 0 10 0" BorderBrush="#2A3F55" BorderThickness="1">
             <DockPanel>
                 <TextBlock DockPanel.Dock="Top" Text="Detected Games" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 10" />
 
@@ -22,7 +22,12 @@
                             Classes.capturing="{Binding IsCapturing}">
                         <Button.Styles>
                             <Style Selector="Button.capturing">
-                                <Setter Property="Background" Value="#c0392b" />
+                                <Setter Property="Background" Value="#E74C3C" />
+                                <Setter Property="Foreground" Value="White" />
+                            </Style>
+                            <Style Selector="Button:not(.capturing)">
+                                <Setter Property="Background" Value="#4AA3DF" />
+                                <Setter Property="Foreground" Value="White" />
                             </Style>
                         </Button.Styles>
                     </Button>
@@ -51,44 +56,54 @@
         <Grid Grid.Column="1" RowDefinitions="Auto,*">
             <!-- Statistics Cards -->
             <WrapPanel Grid.Row="0" Margin="0 0 0 10">
-                <Border Background="#2d2d2d" CornerRadius="8" Padding="20 15" Margin="0 0 10 10" MinWidth="120">
+                <Border Background="#1E2A3A" CornerRadius="10" Padding="20 15" Margin="0 0 10 10" MinWidth="120" BorderBrush="#2A3F55" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="FPS" FontSize="12" Opacity="0.7" />
+                        <TextBlock Text="FPS" FontSize="12" Foreground="#4AA3DF" />
                         <TextBlock Text="{Binding CurrentFps, StringFormat='{}{0:F1}'}" FontSize="28" FontWeight="Bold" />
                     </StackPanel>
                 </Border>
 
-                <Border Background="#2d2d2d" CornerRadius="8" Padding="20 15" Margin="0 0 10 10" MinWidth="120">
+                <Border Background="#1E2A3A" CornerRadius="10" Padding="20 15" Margin="0 0 10 10" MinWidth="120" BorderBrush="#2A3F55" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="1% Low" FontSize="12" Opacity="0.7" />
+                        <TextBlock Text="1% Low" FontSize="12" Foreground="#4AA3DF" />
                         <TextBlock Text="{Binding P1LowFps, StringFormat='{}{0:F1}'}" FontSize="28" FontWeight="Bold" />
                     </StackPanel>
                 </Border>
 
-                <Border Background="#2d2d2d" CornerRadius="8" Padding="20 15" Margin="0 0 10 10" MinWidth="120">
+                <Border Background="#1E2A3A" CornerRadius="10" Padding="20 15" Margin="0 0 10 10" MinWidth="120" BorderBrush="#2A3F55" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="0.1% Low" FontSize="12" Opacity="0.7" />
+                        <TextBlock Text="0.1% Low" FontSize="12" Foreground="#4AA3DF" />
                         <TextBlock Text="{Binding P01LowFps, StringFormat='{}{0:F1}'}" FontSize="28" FontWeight="Bold" />
                     </StackPanel>
                 </Border>
 
-                <Border Background="#2d2d2d" CornerRadius="8" Padding="20 15" Margin="0 0 10 10" MinWidth="120">
+                <Border Background="#1E2A3A" CornerRadius="10" Padding="20 15" Margin="0 0 10 10" MinWidth="120" BorderBrush="#2A3F55" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="Frames" FontSize="12" Opacity="0.7" />
+                        <TextBlock Text="Frames" FontSize="12" Foreground="#4AA3DF" />
                         <TextBlock Text="{Binding FrameCount}" FontSize="28" FontWeight="Bold" />
                     </StackPanel>
                 </Border>
 
-                <Border Background="#2d2d2d" CornerRadius="8" Padding="20 15" Margin="0 0 10 10" MinWidth="120">
+                <Border Background="#1E2A3A" CornerRadius="10" Padding="20 15" Margin="0 0 10 10" MinWidth="120" BorderBrush="#2A3F55" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="Duration" FontSize="12" Opacity="0.7" />
+                        <TextBlock Text="Duration" FontSize="12" Foreground="#4AA3DF" />
                         <TextBlock Text="{Binding CaptureDuration}" FontSize="28" FontWeight="Bold" />
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#1E2A3A" CornerRadius="10" Padding="20 15" Margin="0 0 10 10" MinWidth="120" BorderBrush="#2A3F55" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Avg Frametime" FontSize="12" Foreground="#4AA3DF" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding AverageFrametime, StringFormat='{}{0:F2}'}" FontSize="28" FontWeight="Bold" />
+                            <TextBlock Text="ms" FontSize="14" VerticalAlignment="Bottom" Margin="4 0 0 5" Opacity="0.7" />
+                        </StackPanel>
                     </StackPanel>
                 </Border>
             </WrapPanel>
 
             <!-- Live Chart -->
-            <Border Grid.Row="1" Background="#2d2d2d" CornerRadius="8" Padding="15">
+            <Border Grid.Row="1" Background="#1E2A3A" CornerRadius="10" Padding="15" BorderBrush="#2A3F55" BorderThickness="1">
                 <lvc:CartesianChart Series="{Binding FrametimeSeries}"
                                     XAxes="{Binding XAxes}"
                                     YAxes="{Binding YAxes}"

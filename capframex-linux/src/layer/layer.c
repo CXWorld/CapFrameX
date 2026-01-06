@@ -9,6 +9,12 @@
 #include <pthread.h>
 #include <unistd.h>
 
+// Forward declarations for layer entry points
+VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL layer_GetInstanceProcAddr(
+    VkInstance instance, const char* pName);
+VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL layer_GetDeviceProcAddr(
+    VkDevice device, const char* pName);
+
 // Simple hash map for instance/device data
 #define MAX_INSTANCES 16
 #define MAX_DEVICES 16
@@ -29,6 +35,20 @@ void layer_init(void) {
 
     timing_init();
     ipc_client_init();
+
+    // Try to connect to daemon (will stream frames when connected)
+    fprintf(stderr, "[CapFrameX Layer] Attempting daemon connection...\n");
+    fflush(stderr);
+    bool conn_result = ipc_client_connect();
+    fprintf(stderr, "[CapFrameX Layer] Connection result: %d\n", conn_result);
+    fflush(stderr);
+
+    if (conn_result) {
+        fprintf(stderr, "[CapFrameX Layer] Connected to daemon - streaming enabled\n");
+    } else {
+        fprintf(stderr, "[CapFrameX Layer] Daemon not available - running standalone\n");
+    }
+    fflush(stderr);
 
     layer_initialized = true;
     fprintf(stderr, "[CapFrameX Layer] Initialized for PID %d\n", getpid());
@@ -52,10 +72,6 @@ void layer_cleanup(void) {
     pthread_mutex_unlock(&map_mutex);
 
     layer_initialized = false;
-}
-
-bool layer_is_capture_enabled(void) {
-    return ipc_client_is_capture_active();
 }
 
 InstanceData* layer_get_instance_data(VkInstance instance) {
@@ -266,11 +282,15 @@ static VKAPI_ATTR VkResult VKAPI_CALL layer_CreateDevice(
 
 #undef LOAD_DEVICE_PROC
 
-    // Store GPU name
+    // Store GPU name and notify daemon
     VkPhysicalDeviceProperties props;
     inst_data->dispatch.GetPhysicalDeviceProperties(physicalDevice, &props);
     strncpy(inst_data->gpu_name, props.deviceName, sizeof(inst_data->gpu_name) - 1);
     inst_data->physical_device = physicalDevice;
+
+    // Update IPC with GPU info and send updated hello
+    ipc_client_set_gpu_name(inst_data->gpu_name);
+    ipc_client_send_hello(inst_data->gpu_name);
 
     layer_store_device_data(*pDevice, data);
 

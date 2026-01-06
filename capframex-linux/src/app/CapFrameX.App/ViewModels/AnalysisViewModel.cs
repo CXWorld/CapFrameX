@@ -6,7 +6,9 @@ using CapFrameX.Core.Data;
 using CapFrameX.Shared.Models;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
 using LiveChartsCore.Defaults;
+using SkiaSharp;
 
 namespace CapFrameX.App.ViewModels;
 
@@ -62,10 +64,13 @@ public partial class AnalysisViewModel : ObservableObject
     public ISeries[] FpsSeries { get; }
     public ISeries[] HistogramSeries { get; }
 
-    public Axis[] FrametimeXAxes { get; } = { new Axis { Name = "Time (s)" } };
-    public Axis[] FrametimeYAxes { get; } = { new Axis { Name = "Frametime (ms)" } };
-    public Axis[] FpsXAxes { get; } = { new Axis { Name = "Time (s)" } };
-    public Axis[] FpsYAxes { get; } = { new Axis { Name = "FPS" } };
+    private static readonly SolidColorPaint WhitePaint = new(SKColors.White);
+    private static readonly SolidColorPaint GrayPaint = new(new SKColor(100, 100, 100));
+
+    public Axis[] FrametimeXAxes { get; } = { new Axis { Name = "Time (s)", NamePaint = WhitePaint, LabelsPaint = WhitePaint, SeparatorsPaint = GrayPaint } };
+    public Axis[] FrametimeYAxes { get; } = { new Axis { Name = "Frametime (ms)", NamePaint = WhitePaint, LabelsPaint = WhitePaint, SeparatorsPaint = GrayPaint } };
+    public Axis[] FpsXAxes { get; } = { new Axis { Name = "Time (s)", NamePaint = WhitePaint, LabelsPaint = WhitePaint, SeparatorsPaint = GrayPaint } };
+    public Axis[] FpsYAxes { get; } = { new Axis { Name = "FPS", NamePaint = WhitePaint, LabelsPaint = WhitePaint, SeparatorsPaint = GrayPaint } };
 
     public AnalysisViewModel(SessionManager sessionManager)
     {

@@ -5,9 +5,9 @@
              x:Class="CapFrameX.App.Views.AnalysisView"
              x:DataType="vm:AnalysisViewModel">
 
-    <Grid ColumnDefinitions="280,*" Margin="10">
+    <Grid ColumnDefinitions="280,*" Margin="15">
         <!-- Left Panel - Session List -->
-        <Border Grid.Column="0" Background="#2d2d2d" CornerRadius="8" Padding="15" Margin="0 0 10 0">
+        <Border Grid.Column="0" Background="#1E2A3A" CornerRadius="10" Padding="15" Margin="0 0 10 0" BorderBrush="#2A3F55" BorderThickness="1">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Spacing="10" Margin="0 0 0 10">
                     <TextBlock Text="Sessions" FontSize="16" FontWeight="SemiBold" />
@@ -31,7 +31,7 @@
                                            FontSize="11" Opacity="0.7" />
                                 <StackPanel Orientation="Horizontal" Spacing="10">
                                     <TextBlock Text="{Binding AverageFps, StringFormat='Avg: {0:F0} FPS'}" FontSize="11" />
-                                    <TextBlock Text="{Binding FrameCount, StringFormat='{0} frames'}" FontSize="11" Opacity="0.5" />
+                                    <TextBlock Text="{Binding FrameCount, StringFormat='{}{0} frames'}" FontSize="11" Opacity="0.5" />
                                 </StackPanel>
                             </StackPanel>
                         </DataTemplate>
@@ -44,60 +44,60 @@
         <Grid Grid.Column="1" RowDefinitions="Auto,*,*">
             <!-- Statistics -->
             <WrapPanel Grid.Row="0" Margin="0 0 0 10">
-                <Border Background="#2d2d2d" CornerRadius="8" Padding="15 10" Margin="0 0 10 10" MinWidth="100">
+                <Border Background="#1E2A3A" CornerRadius="10" Padding="15 10" Margin="0 0 10 10" MinWidth="100" BorderBrush="#2A3F55" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="Avg FPS" FontSize="11" Opacity="0.7" />
+                        <TextBlock Text="Avg FPS" FontSize="11" Foreground="#4AA3DF" />
                         <TextBlock Text="{Binding AverageFps, StringFormat='{}{0:F1}'}" FontSize="22" FontWeight="Bold" />
                     </StackPanel>
                 </Border>
 
-                <Border Background="#2d2d2d" CornerRadius="8" Padding="15 10" Margin="0 0 10 10" MinWidth="100">
+                <Border Background="#1E2A3A" CornerRadius="10" Padding="15 10" Margin="0 0 10 10" MinWidth="100" BorderBrush="#2A3F55" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="1% Low" FontSize="11" Opacity="0.7" />
+                        <TextBlock Text="1% Low" FontSize="11" Foreground="#4AA3DF" />
                         <TextBlock Text="{Binding P1Fps, StringFormat='{}{0:F1}'}" FontSize="22" FontWeight="Bold" />
                     </StackPanel>
                 </Border>
 
-                <Border Background="#2d2d2d" CornerRadius="8" Padding="15 10" Margin="0 0 10 10" MinWidth="100">
+                <Border Background="#1E2A3A" CornerRadius="10" Padding="15 10" Margin="0 0 10 10" MinWidth="100" BorderBrush="#2A3F55" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="0.1% Low" FontSize="11" Opacity="0.7" />
+                        <TextBlock Text="0.1% Low" FontSize="11" Foreground="#4AA3DF" />
                         <TextBlock Text="{Binding P01Fps, StringFormat='{}{0:F1}'}" FontSize="22" FontWeight="Bold" />
                     </StackPanel>
                 </Border>
 
-                <Border Background="#2d2d2d" CornerRadius="8" Padding="15 10" Margin="0 0 10 10" MinWidth="100">
+                <Border Background="#1E2A3A" CornerRadius="10" Padding="15 10" Margin="0 0 10 10" MinWidth="100" BorderBrush="#2A3F55" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="Avg Frametime" FontSize="11" Opacity="0.7" />
+                        <TextBlock Text="Avg Frametime" FontSize="11" Foreground="#4AA3DF" />
                         <TextBlock Text="{Binding AverageFrametime, StringFormat='{}{0:F2} ms'}" FontSize="22" FontWeight="Bold" />
                     </StackPanel>
                 </Border>
 
-                <Border Background="#2d2d2d" CornerRadius="8" Padding="15 10" Margin="0 0 10 10" MinWidth="100">
+                <Border Background="#1E2A3A" CornerRadius="10" Padding="15 10" Margin="0 0 10 10" MinWidth="100" BorderBrush="#2A3F55" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="Std Dev" FontSize="11" Opacity="0.7" />
+                        <TextBlock Text="Std Dev" FontSize="11" Foreground="#4AA3DF" />
                         <TextBlock Text="{Binding StdDev, StringFormat='{}{0:F2} ms'}" FontSize="22" FontWeight="Bold" />
                     </StackPanel>
                 </Border>
 
-                <Border Background="#2d2d2d" CornerRadius="8" Padding="15 10" Margin="0 0 10 10" MinWidth="100">
+                <Border Background="#1E2A3A" CornerRadius="10" Padding="15 10" Margin="0 0 10 10" MinWidth="100" BorderBrush="#2A3F55" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="Frames" FontSize="11" Opacity="0.7" />
+                        <TextBlock Text="Frames" FontSize="11" Foreground="#4AA3DF" />
                         <TextBlock Text="{Binding FrameCount}" FontSize="22" FontWeight="Bold" />
                     </StackPanel>
                 </Border>
 
-                <Border Background="#2d2d2d" CornerRadius="8" Padding="15 10" Margin="0 0 10 10" MinWidth="100">
+                <Border Background="#1E2A3A" CornerRadius="10" Padding="15 10" Margin="0 0 10 10" MinWidth="100" BorderBrush="#2A3F55" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="Duration" FontSize="11" Opacity="0.7" />
+                        <TextBlock Text="Duration" FontSize="11" Foreground="#4AA3DF" />
                         <TextBlock Text="{Binding Duration}" FontSize="22" FontWeight="Bold" />
                     </StackPanel>
                 </Border>
             </WrapPanel>
 
             <!-- Frametime Chart -->
-            <Border Grid.Row="1" Background="#2d2d2d" CornerRadius="8" Padding="15" Margin="0 0 0 10">
+            <Border Grid.Row="1" Background="#1E2A3A" CornerRadius="10" Padding="15" Margin="0 0 0 10" BorderBrush="#2A3F55" BorderThickness="1">
                 <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="Frametime" FontWeight="SemiBold" Margin="0 0 0 10" />
+                    <TextBlock DockPanel.Dock="Top" Text="Frametime" FontWeight="SemiBold" Foreground="#4AA3DF" Margin="0 0 0 10" />
                     <lvc:CartesianChart Series="{Binding FrametimeSeries}"
                                         XAxes="{Binding FrametimeXAxes}"
                                         YAxes="{Binding FrametimeYAxes}"
@@ -107,9 +107,9 @@
 
             <!-- FPS Chart and Histogram -->
             <Grid Grid.Row="2" ColumnDefinitions="*,*">
-                <Border Grid.Column="0" Background="#2d2d2d" CornerRadius="8" Padding="15" Margin="0 0 5 0">
+                <Border Grid.Column="0" Background="#1E2A3A" CornerRadius="10" Padding="15" Margin="0 0 5 0" BorderBrush="#2A3F55" BorderThickness="1">
                     <DockPanel>
-                        <TextBlock DockPanel.Dock="Top" Text="FPS" FontWeight="SemiBold" Margin="0 0 0 10" />
+                        <TextBlock DockPanel.Dock="Top" Text="FPS" FontWeight="SemiBold" Foreground="#4AA3DF" Margin="0 0 0 10" />
                         <lvc:CartesianChart Series="{Binding FpsSeries}"
                                             XAxes="{Binding FpsXAxes}"
                                             YAxes="{Binding FpsYAxes}"
@@ -117,9 +117,9 @@
                     </DockPanel>
                 </Border>
 
-                <Border Grid.Column="1" Background="#2d2d2d" CornerRadius="8" Padding="15" Margin="5 0 0 0">
+                <Border Grid.Column="1" Background="#1E2A3A" CornerRadius="10" Padding="15" Margin="5 0 0 0" BorderBrush="#2A3F55" BorderThickness="1">
                     <DockPanel>
-                        <TextBlock DockPanel.Dock="Top" Text="Distribution" FontWeight="SemiBold" Margin="0 0 0 10" />
+                        <TextBlock DockPanel.Dock="Top" Text="Distribution" FontWeight="SemiBold" Foreground="#4AA3DF" Margin="0 0 0 10" />
                         <lvc:CartesianChart Series="{Binding HistogramSeries}" />
                     </DockPanel>
                 </Border>

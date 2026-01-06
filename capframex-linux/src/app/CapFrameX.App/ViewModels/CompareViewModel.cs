@@ -31,8 +31,11 @@ public partial class CompareViewModel : ObservableObject
 
     public ObservableCollection<ISeries> FrametimeSeries => _frametimeSeries;
 
-    public Axis[] XAxes { get; } = { new Axis { Name = "Frame" } };
-    public Axis[] YAxes { get; } = { new Axis { Name = "Frametime (ms)" } };
+    private static readonly SolidColorPaint WhitePaint = new(SKColors.White);
+    private static readonly SolidColorPaint GrayPaint = new(new SKColor(100, 100, 100));
+
+    public Axis[] XAxes { get; } = { new Axis { Name = "Frame", NamePaint = WhitePaint, LabelsPaint = WhitePaint, SeparatorsPaint = GrayPaint } };
+    public Axis[] YAxes { get; } = { new Axis { Name = "Frametime (ms)", NamePaint = WhitePaint, LabelsPaint = WhitePaint, SeparatorsPaint = GrayPaint } };
 
     private static readonly SKColor[] SeriesColors =
     {

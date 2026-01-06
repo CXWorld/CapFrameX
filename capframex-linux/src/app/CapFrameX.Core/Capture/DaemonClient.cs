@@ -62,7 +62,13 @@ public class CaptureService : IDisposable
 
     public async Task<bool> ConnectAsync(CancellationToken cancellationToken = default)
     {
-        return await _client.ConnectAsync(cancellationToken);
+        var result = await _client.ConnectAsync(cancellationToken);
+        if (result)
+        {
+            // Request list of already detected games
+            await _client.RequestStatusAsync();
+        }
+        return result;
     }
 
     public async Task DisconnectAsync()

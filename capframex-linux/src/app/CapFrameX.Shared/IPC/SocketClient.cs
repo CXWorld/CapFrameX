@@ -179,9 +179,9 @@ public class DaemonClient : IDisposable
                     var gameInfo = new GameInfo
                     {
                         Pid = gamePayload.Pid,
-                        Name = GetStringFromFixedBuffer(gamePayload, 0),
-                        ExePath = GetStringFromFixedBuffer(gamePayload, 1),
-                        Launcher = GetStringFromFixedBuffer(gamePayload, 2),
+                        Name = GetStringFromFixedBuffer(ref gamePayload, 0),
+                        ExePath = GetStringFromFixedBuffer(ref gamePayload, 1),
+                        Launcher = GetStringFromFixedBuffer(ref gamePayload, 2),
                         DetectedTime = DateTime.Now
                     };
                     GameDetected?.Invoke(this, gameInfo);
@@ -205,7 +205,8 @@ public class DaemonClient : IDisposable
                         FrameNumber = frameData.FrameNumber,
                         TimestampNs = frameData.TimestampNs,
                         FrametimeMs = frameData.FrametimeMs,
-                        Fps = frameData.Fps
+                        Fps = frameData.Fps,
+                        Pid = frameData.Pid
                     };
                     FrameDataReceived?.Invoke(this, point);
                 }
@@ -230,16 +231,17 @@ public class DaemonClient : IDisposable
         }
     }
 
-    private static unsafe string GetStringFromFixedBuffer(GameDetectedPayload payload, int bufferIndex)
+    private static unsafe string GetStringFromFixedBuffer(ref GameDetectedPayload payload, int bufferIndex)
     {
-        fixed (byte* ptr = bufferIndex switch
+        fixed (GameDetectedPayload* p = &payload)
         {
-            0 => payload.GameName,
-            1 => payload.ExePath,
-            2 => payload.Launcher,
-            _ => payload.GameName
-        })
-        {
+            byte* ptr = bufferIndex switch
+            {
+                0 => p->GameName,
+                1 => p->ExePath,
+                2 => p->Launcher,
+                _ => p->GameName
+            };
             return Marshal.PtrToStringAnsi((IntPtr)ptr) ?? string.Empty;
         }
     }

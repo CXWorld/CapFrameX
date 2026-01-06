@@ -3,7 +3,6 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using CapFrameX.App.Views;
 using CapFrameX.App.ViewModels;
-using CapFrameX.App.Services;
 using CapFrameX.Core.Capture;
 using CapFrameX.Core.Data;
 using Microsoft.Extensions.DependencyInjection;

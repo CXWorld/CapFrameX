@@ -1,5 +1,4 @@
 #include "ipc_client.h"
-#include "data_export.h"
 #include "../daemon/common.h"
 
 #include <stdio.h>
@@ -10,19 +9,17 @@
 #include <pthread.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <sys/mman.h>
-#include <fcntl.h>
 
 static int sock_fd = -1;
-static int shm_fd = -1;
-static SharedPidList* shm_pids = NULL;
 static bool connected = false;
-static bool capture_active = false;
 static pthread_t receiver_thread;
 static volatile bool receiver_running = false;
 static pthread_mutex_t ipc_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-static CaptureSessionInfo current_capture_info;
+// Cached process info for frame data
+static pid_t cached_pid = 0;
+static char cached_process_name[256] = {0};
+static char cached_gpu_name[256] = {0};
 
 static const char* get_socket_path(void) {
     static char path[256];
@@ -36,7 +33,7 @@ static const char* get_socket_path(void) {
 }
 
 static int send_message(MessageType type, void* payload, uint32_t payload_size) {
-    if (sock_fd < 0) return -1;
+    if (sock_fd < 0 || !connected) return -1;
 
     size_t total_size = sizeof(MessageHeader) + payload_size;
     char* buffer = malloc(total_size);
@@ -62,20 +59,6 @@ static int send_message(MessageType type, void* payload, uint32_t payload_size) 
 
 static void handle_message(MessageHeader* header, void* payload) {
     switch (header->type) {
-        case MSG_START_CAPTURE:
-            fprintf(stderr, "[CapFrameX Layer] Received start capture command\n");
-            ipc_client_start_capture(
-                current_capture_info.game_name,
-                current_capture_info.gpu_name,
-                current_capture_info.resolution_width,
-                current_capture_info.resolution_height);
-            break;
-
-        case MSG_STOP_CAPTURE:
-            fprintf(stderr, "[CapFrameX Layer] Received stop capture command\n");
-            ipc_client_stop_capture();
-            break;
-
         case MSG_PING:
             send_message(MSG_PONG, NULL, 0);
             break;
@@ -85,6 +68,7 @@ static void handle_message(MessageHeader* header, void* payload) {
             break;
 
         default:
+            // Layer ignores most messages - it just streams data
             break;
     }
     (void)payload;
@@ -115,40 +99,30 @@ static void* receiver_thread_func(void* arg) {
     return NULL;
 }
 
-static bool open_shared_memory(void) {
-    shm_fd = shm_open(CAPFRAMEX_SHM_NAME, O_RDONLY, 0);
-    if (shm_fd == -1) {
-        return false;
-    }
-
-    shm_pids = mmap(NULL, sizeof(SharedPidList), PROT_READ, MAP_SHARED, shm_fd, 0);
-    if (shm_pids == MAP_FAILED) {
-        close(shm_fd);
-        shm_fd = -1;
-        shm_pids = NULL;
-        return false;
-    }
-
-    return true;
-}
-
-static bool is_pid_active(void) {
-    if (!shm_pids) return false;
-
-    pid_t my_pid = getpid();
-    for (uint32_t i = 0; i < shm_pids->count; i++) {
-        if (shm_pids->pids[i] == my_pid) {
-            return true;
+static void get_process_name(char* buffer, size_t size) {
+    char path[64];
+    snprintf(path, sizeof(path), "/proc/%d/comm", getpid());
+    FILE* f = fopen(path, "r");
+    if (f) {
+        if (fgets(buffer, size, f)) {
+            size_t len = strlen(buffer);
+            if (len > 0 && buffer[len-1] == '\n') {
+                buffer[len-1] = '\0';
+            }
         }
+        fclose(f);
+    } else {
+        strncpy(buffer, "Unknown", size - 1);
+        buffer[size - 1] = '\0';
     }
-    return false;
 }
 
 void ipc_client_init(void) {
     pthread_mutex_lock(&ipc_mutex);
 
-    // Try to open shared memory (non-blocking, just for PID checking)
-    open_shared_memory();
+    // Cache process info
+    cached_pid = getpid();
+    get_process_name(cached_process_name, sizeof(cached_process_name));
 
     pthread_mutex_unlock(&ipc_mutex);
 }
@@ -156,15 +130,8 @@ void ipc_client_init(void) {
 void ipc_client_cleanup(void) {
     pthread_mutex_lock(&ipc_mutex);
 
-    if (capture_active) {
-        pthread_mutex_unlock(&ipc_mutex);
-        ipc_client_stop_capture();
-        pthread_mutex_lock(&ipc_mutex);
-    }
-
     if (receiver_running) {
         receiver_running = false;
-        // Send a dummy message to unblock recv
         shutdown(sock_fd, SHUT_RDWR);
         pthread_join(receiver_thread, NULL);
     }
@@ -172,16 +139,6 @@ void ipc_client_cleanup(void) {
     if (sock_fd >= 0) {
         close(sock_fd);
         sock_fd = -1;
-    }
-
-    if (shm_pids) {
-        munmap(shm_pids, sizeof(SharedPidList));
-        shm_pids = NULL;
-    }
-
-    if (shm_fd >= 0) {
-        close(shm_fd);
-        shm_fd = -1;
     }
 
     connected = false;
@@ -223,6 +180,10 @@ bool ipc_client_connect(void) {
     fprintf(stderr, "[CapFrameX Layer] Connected to daemon\n");
 
     pthread_mutex_unlock(&ipc_mutex);
+
+    // Send hello message to announce ourselves
+    ipc_client_send_hello(cached_gpu_name);
+
     return true;
 }
 
@@ -230,69 +191,75 @@ bool ipc_client_is_connected(void) {
     return connected;
 }
 
-bool ipc_client_is_capture_active(void) {
-    // Check both IPC capture flag and shared memory
-    if (capture_active) return true;
-    return is_pid_active();
+void ipc_client_set_gpu_name(const char* gpu_name) {
+    pthread_mutex_lock(&ipc_mutex);
+    if (gpu_name) {
+        strncpy(cached_gpu_name, gpu_name, sizeof(cached_gpu_name) - 1);
+        cached_gpu_name[sizeof(cached_gpu_name) - 1] = '\0';
+    }
+    pthread_mutex_unlock(&ipc_mutex);
+}
+
+void ipc_client_send_hello(const char* gpu_name) {
+    if (!connected) return;
+
+    LayerHelloPayload payload = {0};
+    payload.pid = cached_pid;
+    strncpy(payload.process_name, cached_process_name, sizeof(payload.process_name) - 1);
+    if (gpu_name && strlen(gpu_name) > 0) {
+        strncpy(payload.gpu_name, gpu_name, sizeof(payload.gpu_name) - 1);
+    } else {
+        strncpy(payload.gpu_name, cached_gpu_name, sizeof(payload.gpu_name) - 1);
+    }
+
+    send_message(MSG_LAYER_HELLO, &payload, sizeof(payload));
+
+    fprintf(stderr, "[CapFrameX Layer] Sent hello: PID=%d, process=%s, GPU=%s\n",
+            payload.pid, payload.process_name, payload.gpu_name);
+}
+
+void ipc_client_send_swapchain_created(uint32_t width, uint32_t height,
+                                        uint32_t format, uint32_t image_count) {
+    if (!connected) return;
+
+    SwapchainInfoPayload payload = {
+        .pid = cached_pid,
+        .width = width,
+        .height = height,
+        .format = format,
+        .image_count = image_count
+    };
+
+    send_message(MSG_SWAPCHAIN_CREATED, &payload, sizeof(payload));
+
+    fprintf(stderr, "[CapFrameX Layer] Sent swapchain info: %ux%u\n", width, height);
+}
+
+void ipc_client_send_swapchain_destroyed(void) {
+    if (!connected) return;
+
+    SwapchainInfoPayload payload = {
+        .pid = cached_pid,
+        .width = 0,
+        .height = 0,
+        .format = 0,
+        .image_count = 0
+    };
+
+    send_message(MSG_SWAPCHAIN_DESTROYED, &payload, sizeof(payload));
 }
 
 void ipc_client_send_frame_data(const FrameTimingData* frame) {
-    if (!capture_active) return;
+    // Always send if connected - continuous streaming model
+    if (!connected) return;
 
-    // Add to local capture buffer
-    data_export_add_frame(frame);
+    FrameDataPoint point = {
+        .frame_number = frame->frame_number,
+        .timestamp_ns = frame->timestamp_ns,
+        .frametime_ms = frame->frametime_ms,
+        .fps = (frame->frametime_ms > 0) ? 1000.0f / frame->frametime_ms : 0,
+        .pid = cached_pid
+    };
 
-    // If connected, also send via IPC for live monitoring
-    if (connected) {
-        FrameDataPoint point = {
-            .frame_number = frame->frame_number,
-            .timestamp_ns = frame->timestamp_ns,
-            .frametime_ms = frame->frametime_ms,
-            .fps = (frame->frametime_ms > 0) ? 1000.0f / frame->frametime_ms : 0
-        };
-        send_message(MSG_FRAMETIME_DATA, &point, sizeof(point));
-    }
-}
-
-void ipc_client_notify_swapchain_created(uint32_t width, uint32_t height) {
-    current_capture_info.resolution_width = width;
-    current_capture_info.resolution_height = height;
-}
-
-void ipc_client_start_capture(const char* game_name, const char* gpu_name,
-                               uint32_t width, uint32_t height) {
-    pthread_mutex_lock(&ipc_mutex);
-
-    if (capture_active) {
-        pthread_mutex_unlock(&ipc_mutex);
-        return;
-    }
-
-    strncpy(current_capture_info.game_name, game_name ? game_name : "Unknown",
-            sizeof(current_capture_info.game_name) - 1);
-    strncpy(current_capture_info.gpu_name, gpu_name ? gpu_name : "Unknown",
-            sizeof(current_capture_info.gpu_name) - 1);
-    current_capture_info.resolution_width = width;
-    current_capture_info.resolution_height = height;
-
-    capture_active = true;
-
-    pthread_mutex_unlock(&ipc_mutex);
-
-    data_export_start_session(&current_capture_info);
-}
-
-void ipc_client_stop_capture(void) {
-    pthread_mutex_lock(&ipc_mutex);
-
-    if (!capture_active) {
-        pthread_mutex_unlock(&ipc_mutex);
-        return;
-    }
-
-    capture_active = false;
-
-    pthread_mutex_unlock(&ipc_mutex);
-
-    data_export_end_session();
+    send_message(MSG_FRAMETIME_DATA, &point, sizeof(point));
 }
