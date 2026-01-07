@@ -30,9 +30,21 @@ public partial class App : Application
             {
                 DataContext = Services.GetRequiredService<MainViewModel>()
             };
+
+            desktop.ShutdownRequested += OnShutdownRequested;
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void OnShutdownRequested(object? sender, ShutdownRequestedEventArgs e)
+    {
+        // Dispose services to stop daemon
+        var captureService = Services.GetService<CaptureService>();
+        captureService?.Dispose();
+
+        var mainViewModel = Services.GetService<MainViewModel>();
+        mainViewModel?.Dispose();
     }
 
     private static void ConfigureServices(IServiceCollection services)

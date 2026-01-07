@@ -17,6 +17,9 @@ bool ipc_client_connect(void);
 // Check if connected to daemon
 bool ipc_client_is_connected(void);
 
+// Try to reconnect if not connected (rate-limited)
+bool ipc_client_try_reconnect(void);
+
 // Set GPU name (call when device is created)
 void ipc_client_set_gpu_name(const char* gpu_name);
 

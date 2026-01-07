@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <pthread.h>
+#include <time.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 
@@ -20,6 +21,10 @@ static pthread_mutex_t ipc_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pid_t cached_pid = 0;
 static char cached_process_name[256] = {0};
 static char cached_gpu_name[256] = {0};
+
+// Reconnection tracking
+static time_t last_connect_attempt = 0;
+#define RECONNECT_INTERVAL_SEC 2
 
 static const char* get_socket_path(void) {
     static char path[256];
@@ -189,6 +194,19 @@ bool ipc_client_connect(void) {
 
 bool ipc_client_is_connected(void) {
     return connected;
+}
+
+bool ipc_client_try_reconnect(void) {
+    if (connected) return true;
+
+    time_t now = time(NULL);
+    if (now - last_connect_attempt < RECONNECT_INTERVAL_SEC) {
+        return false;  // Too soon to retry
+    }
+    last_connect_attempt = now;
+
+    // Try to connect
+    return ipc_client_connect();
 }
 
 void ipc_client_set_gpu_name(const char* gpu_name) {

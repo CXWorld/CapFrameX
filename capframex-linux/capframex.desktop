@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=CapFrameX
+Comment=Frametime capture and analysis for Linux
+Exec=/home/capframex/Code/CapFrameX/capframex-linux/src/app/CapFrameX.App/bin/Debug/net8.0/CapFrameX.App
+Icon=capframex
+Terminal=false
+Type=Application
+Categories=Utility;System;Monitor;
+StartupWMClass=CapFrameX.App
+Keywords=frametime;fps;benchmark;gaming;vulkan;

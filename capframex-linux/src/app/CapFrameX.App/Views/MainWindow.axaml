@@ -5,6 +5,7 @@
         x:Class="CapFrameX.App.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Title="CapFrameX Linux"
+        Icon="avares://CapFrameX.App/Assets/app_icon.png"
         Width="1200" Height="800"
         MinWidth="900" MinHeight="600"
         WindowStartupLocation="CenterScreen">
@@ -14,30 +15,49 @@
     </Design.DataContext>
 
     <DockPanel>
-        <!-- Header with Logo -->
-        <Border DockPanel.Dock="Top" Background="#0D1117" Padding="15 10">
-            <Grid ColumnDefinitions="Auto,*,Auto">
-                <!-- Logo and Title -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                    <Image Source="/Assets/logo_blue.png" Height="32" />
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="CapFrameX" FontSize="18" FontWeight="Bold" Foreground="#4AA3DF" />
-                        <TextBlock Text="Linux Edition" FontSize="11" Opacity="0.6" Margin="0 -2 0 0" />
-                    </StackPanel>
+        <!-- Status Bar at Bottom -->
+        <Border DockPanel.Dock="Bottom" Background="#0D1117" Padding="12 6" BorderThickness="0 1 0 0" BorderBrush="#1F2937">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+                <!-- Connection Status -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Ellipse Width="8" Height="8" VerticalAlignment="Center">
+                        <Ellipse.Fill>
+                            <SolidColorBrush Color="{Binding IsConnected, Converter={x:Static views:MainWindow.ConnectionColorConverter}}" />
+                        </Ellipse.Fill>
+                    </Ellipse>
+                    <TextBlock Text="{Binding ConnectionStatus}" FontSize="11" Opacity="0.8" VerticalAlignment="Center" />
+                    <Button Content="Reconnect" Command="{Binding ConnectCommand}"
+                            IsVisible="{Binding !IsConnected}" FontSize="10" Padding="8 2" Margin="4 0 0 0" />
                 </StackPanel>
 
-                <!-- Connection Status -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <Ellipse Width="8" Height="8" VerticalAlignment="Center">
-                            <Ellipse.Fill>
-                                <SolidColorBrush Color="{Binding IsConnected, Converter={x:Static views:MainWindow.ConnectionColorConverter}}" />
-                            </Ellipse.Fill>
-                        </Ellipse>
-                        <TextBlock Text="{Binding ConnectionStatus}" FontSize="12" Opacity="0.8" VerticalAlignment="Center" />
+                <!-- Separator -->
+                <Rectangle Grid.Column="1" Width="1" Fill="#374151" Margin="12 2" />
+
+                <!-- Vulkan Layer Status -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Ellipse Width="8" Height="8" VerticalAlignment="Center">
+                        <Ellipse.Fill>
+                            <SolidColorBrush Color="{Binding IsVulkanLayerActive, Converter={x:Static views:MainWindow.ConnectionColorConverter}}" />
+                        </Ellipse.Fill>
+                    </Ellipse>
+                    <TextBlock Text="{Binding VulkanLayerStatus}" FontSize="11" Opacity="0.8" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- Separator -->
+                <Rectangle Grid.Column="3" Width="1" Fill="#374151" Margin="12 2" />
+
+                <!-- Resource Usage -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="App:" FontSize="10" Opacity="0.5" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding AppMemoryUsage}" FontSize="10" Opacity="0.7" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding AppCpuUsage}" FontSize="10" Opacity="0.7" VerticalAlignment="Center" Margin="4 0 0 0" />
                     </StackPanel>
-                    <Button Content="Reconnect" Command="{Binding ConnectCommand}"
-                            IsVisible="{Binding !IsConnected}" FontSize="11" Padding="10 4" Classes="accent" />
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="Daemon:" FontSize="10" Opacity="0.5" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding DaemonMemoryUsage}" FontSize="10" Opacity="0.7" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding DaemonCpuUsage}" FontSize="10" Opacity="0.7" VerticalAlignment="Center" Margin="4 0 0 0" />
+                    </StackPanel>
                 </StackPanel>
             </Grid>
         </Border>

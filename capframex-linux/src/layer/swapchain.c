@@ -151,6 +151,27 @@ VKAPI_ATTR VkResult VKAPI_CALL layer_QueuePresentKHR(
     VkQueue queue,
     const VkPresentInfoKHR* pPresentInfo)
 {
+    // Try to reconnect to daemon if not connected (handles game started before daemon)
+    if (!ipc_client_is_connected()) {
+        if (ipc_client_try_reconnect()) {
+            // Reconnected - send hello with GPU name
+            pthread_mutex_lock(&swapchain_mutex);
+            if (pPresentInfo->swapchainCount > 0) {
+                SwapchainData* sc = swapchain_get_data_unlocked(pPresentInfo->pSwapchains[0]);
+                if (sc) {
+                    DeviceData* tmp_dev = layer_get_device_data(sc->device);
+                    if (tmp_dev && tmp_dev->instance_data) {
+                        pthread_mutex_unlock(&swapchain_mutex);
+                        ipc_client_send_hello(tmp_dev->instance_data->gpu_name);
+                        fprintf(stderr, "[CapFrameX Layer] Reconnected to daemon\n");
+                        pthread_mutex_lock(&swapchain_mutex);
+                    }
+                }
+            }
+            pthread_mutex_unlock(&swapchain_mutex);
+        }
+    }
+
     // Find device data from queue (simplified - we check all devices)
     DeviceData* dev_data = NULL;
     pthread_mutex_lock(&swapchain_mutex);
