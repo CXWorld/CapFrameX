@@ -44,45 +44,46 @@
 			<![CDATA[NOT (VersionNT = v6.3 AND NT603HALVER < v6.3.9600.17031)]]>
 		</bal:Condition>
 
-		<!-- Visual C++ 2015-2019 Redistributable (x64) minimum runtime msi package version -->
-		<util:ProductSearch
+		<!-- Visual C++ 2015-2022 Redistributable (x64) - Registry-based detection -->
+		<util:RegistrySearch
 		  Id="VCRedist2015x64"
-		  Result="version"
-		  Variable="VCRedist2015x64"
-		  UpgradeCode="36F68A90-239C-34DF-B58C-64B30153CE35"
+		  Root="HKLM"
+		  Key="SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64"
+		  Value="Installed"
+		  Result="value"
+		  Variable="VCRedist2015x64Installed"
 		  Condition="VersionNT64" />
 
-		<!-- Visual C++ 2015-2019 Redistributable (x86) minimum runtime msi package version -->
-		<util:ProductSearch
+		<!-- Visual C++ 2015-2022 Redistributable (x86) - Registry-based detection -->
+		<util:RegistrySearch
 		  Id="VCRedist2015x86"
-		  Result="version"
-		  Variable="VCRedist2015x86"
-		  UpgradeCode="65E5BD06-6392-3027-8C26-853107D3CF1A"
+		  Root="HKLM"
+		  Key="SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86"
+		  Value="Installed"
+		  Result="value"
+		  Variable="VCRedist2015x86Installed"
 		  Condition="VersionNT" />
 
-		<!-- Visual C++ 2015-2019 Redistributable minimum runtime msi package version -->
-		<Variable Name="VCRedist2015" Type="version" Value="14.28.29914.0" />
-
 		<Chain>
-			<!-- Visual C++ 2015-2019 Redistributable (x64) - 14.28.29914 -->
+			<!-- Visual C++ 2015-2022 Redistributable (x64) - 14.28.29914 -->
 			<ExePackage
 			  Id="vc_redist.x64.exe"
 			  Name="vc_redist.x64.14.28.29914.0.exe"
-			  DisplayName="Microsoft Visual C++ 2015-2019 Redistributable (x64) - 14.28.29914"
+			  DisplayName="Microsoft Visual C++ 2015-2022 Redistributable (x64) - 14.28.29914"
 			  Cache="no"
 			  Compressed="no"
 			  PerMachine="yes"
 			  Permanent="yes"
 			  Protocol="burn"
 			  InstallCondition="VersionNT64"
-			  DetectCondition="VCRedist2015x64 >= VCRedist2015"
+			  DetectCondition="VCRedist2015x64Installed = 1"
 			  DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/85d47aa9-69ae-4162-8300-e6b7e4bf3cf3/52B196BBE9016488C735E7B41805B651261FFA5D7AA86EB6A1D0095BE83687B2/VC_redist.x64.exe"
 			  InstallCommand="/install /quiet /norestart"
 			  RepairCommand="/repair /quiet /norestart"
 			  UninstallCommand="/uninstall /quiet /norestart" >
 				<RemotePayload
-				  ProductName="Microsoft Visual C++ 2015-2019 Redistributable (x64) - 14.28.29914"
-				  Description="Microsoft Visual C++ 2015-2019 Redistributable (x64) - 14.28.29914"
+				  ProductName="Microsoft Visual C++ 2015-2022 Redistributable (x64) - 14.28.29914"
+				  Description="Microsoft Visual C++ 2015-2022 Redistributable (x64) - 14.28.29914"
 				  Version="14.28.29914.0"
 				  CertificatePublicKey="F49F9B33E25E33CCA0BFB15A62B7C29FFAB3880B"
 				  CertificateThumbprint="ABDCA79AF9DD48A0EA702AD45260B3C03093FB4B"
@@ -90,25 +91,25 @@
 				  Size="14882064" />
 			</ExePackage>
 
-			<!-- Visual C++ 2015-2019 Redistributable (x86) - 14.28.29914 -->
+			<!-- Visual C++ 2015-2022 Redistributable (x86) - 14.28.29914 -->
 			<ExePackage
 			  Id="vc_redist.x86.exe"
 			  Name="vc_redist.x86.14.28.29914.0.exe"
-			  DisplayName="Microsoft Visual C++ 2015-2019 Redistributable (x86) - 14.28.29914"
+			  DisplayName="Microsoft Visual C++ 2015-2022 Redistributable (x86) - 14.28.29914"
 			  Cache="no"
 			  Compressed="no"
 			  PerMachine="yes"
 			  Permanent="yes"
 			  Protocol="burn"
 			  InstallCondition="VersionNT"
-			  DetectCondition="VCRedist2015x86 >= VCRedist2015"
+			  DetectCondition="VCRedist2015x86Installed = 1"
 			  DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/85d47aa9-69ae-4162-8300-e6b7e4bf3cf3/14563755AC24A874241935EF2C22C5FCE973ACB001F99E524145113B2DC638C1/VC_redist.x86.exe"
 			  InstallCommand="/install /quiet /norestart"
 			  RepairCommand="/repair /quiet /norestart"
 			  UninstallCommand="/uninstall /quiet /norestart" >
 				<RemotePayload
-				  ProductName="Microsoft Visual C++ 2015-2019 Redistributable (x86) - 14.28.29914"
-				  Description="Microsoft Visual C++ 2015-2019 Redistributable (x86) - 14.28.29914"
+				  ProductName="Microsoft Visual C++ 2015-2022 Redistributable (x86) - 14.28.29914"
+				  Description="Microsoft Visual C++ 2015-2022 Redistributable (x86) - 14.28.29914"
 				  Version="14.28.29914.0"
 				  CertificatePublicKey="F49F9B33E25E33CCA0BFB15A62B7C29FFAB3880B"
 				  CertificateThumbprint="ABDCA79AF9DD48A0EA702AD45260B3C03093FB4B"
