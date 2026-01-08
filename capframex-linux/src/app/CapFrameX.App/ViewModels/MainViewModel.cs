@@ -52,6 +52,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public CaptureViewModel CaptureViewModel { get; }
     public AnalysisViewModel AnalysisViewModel { get; }
     public CompareViewModel CompareViewModel { get; }
+    public SettingsViewModel SettingsViewModel { get; }
 
     public MainViewModel(CaptureService captureService)
     {
@@ -61,6 +62,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         CaptureViewModel = App.Services.GetRequiredService<CaptureViewModel>();
         AnalysisViewModel = App.Services.GetRequiredService<AnalysisViewModel>();
         CompareViewModel = App.Services.GetRequiredService<CompareViewModel>();
+        SettingsViewModel = App.Services.GetRequiredService<SettingsViewModel>();
 
         CurrentView = CaptureViewModel;
 
@@ -199,6 +201,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             0 => CaptureViewModel,
             1 => AnalysisViewModel,
             2 => CompareViewModel,
+            3 => SettingsViewModel,
             _ => CaptureViewModel
         };
     }

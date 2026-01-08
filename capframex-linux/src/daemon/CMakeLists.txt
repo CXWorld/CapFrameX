@@ -4,6 +4,7 @@ set(DAEMON_SOURCES
     launcher_detect.c
     ipc.c
     config.c
+    ignore_list.c
 )
 
 set(DAEMON_HEADERS
@@ -12,6 +13,7 @@ set(DAEMON_HEADERS
     ipc.h
     config.h
     common.h
+    ignore_list.h
 )
 
 add_executable(capframex-daemon ${DAEMON_SOURCES} ${DAEMON_HEADERS})

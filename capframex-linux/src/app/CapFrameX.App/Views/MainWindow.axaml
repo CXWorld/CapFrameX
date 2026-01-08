@@ -70,8 +70,11 @@
             <TabItem Header="Analysis">
                 <views:AnalysisView DataContext="{Binding AnalysisViewModel}" />
             </TabItem>
-            <TabItem Header="Compare">
+            <TabItem Header="Comparison">
                 <views:CompareView DataContext="{Binding CompareViewModel}" />
+            </TabItem>
+            <TabItem Header="Settings">
+                <views:SettingsPanel DataContext="{Binding SettingsViewModel}" />
             </TabItem>
         </TabControl>
     </DockPanel>

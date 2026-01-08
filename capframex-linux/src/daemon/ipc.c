@@ -1,7 +1,9 @@
 #include "ipc.h"
+#include "ignore_list.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <unistd.h>
 #include <errno.h>
 #include <pthread.h>
@@ -17,6 +19,44 @@
 #define MAX_LAYERS 64
 #define MAX_APP_SUBSCRIPTIONS 16
 #define RECV_BUFFER_SIZE 4096
+
+// Blacklist of process names that should not appear in the game list
+// These are system/utility processes that may use Vulkan but aren't games
+static const char* process_blacklist[] = {
+    "steamwebhelper",
+    "explorer.exe",
+    "explorer",
+    "steam",
+    "steamclient",
+    "wine",
+    "wineserver",
+    "winedevice",
+    "plugplay.exe",
+    "services.exe",
+    "wineboot.exe",
+    "conhost.exe",
+    "cmd.exe",
+    "start.exe",
+    NULL  // Sentinel
+};
+
+static bool is_blacklisted_process(const char* process_name) {
+    if (!process_name || process_name[0] == '\0') return false;
+
+    // Check hardcoded blacklist
+    for (int i = 0; process_blacklist[i] != NULL; i++) {
+        if (strcasecmp(process_name, process_blacklist[i]) == 0) {
+            return true;
+        }
+    }
+
+    // Check user ignore list
+    if (ignore_list_contains(process_name)) {
+        return true;
+    }
+
+    return false;
+}
 
 static int server_socket = -1;
 static int shm_fd = -1;
@@ -53,6 +93,11 @@ static uint64_t get_timestamp_ns(void) {
 }
 
 static int create_socket(void) {
+#if CAPFRAMEX_SOCKET_USE_TMP
+    // Use /tmp for Proton compatibility - containers can access /tmp
+    snprintf(socket_path, sizeof(socket_path), "/tmp/%s-%d",
+             CAPFRAMEX_SOCKET_NAME, getuid());
+#else
     const char* runtime_dir = getenv("XDG_RUNTIME_DIR");
     if (runtime_dir) {
         snprintf(socket_path, sizeof(socket_path), "%s/%s",
@@ -61,6 +106,7 @@ static int create_socket(void) {
         snprintf(socket_path, sizeof(socket_path), "/tmp/%s-%d",
                  CAPFRAMEX_SOCKET_NAME, getuid());
     }
+#endif
 
     unlink(socket_path);
 
@@ -182,23 +228,51 @@ ClientType ipc_get_client_type(int fd) {
 }
 
 // Layer client management
-void ipc_register_layer(int client_fd, const LayerHelloPayload* hello) {
+// Returns true if this is a new layer (should be broadcast), false if updated or blacklisted
+bool ipc_register_layer(int client_fd, const LayerHelloPayload* hello) {
+    // Check blacklist first
+    if (is_blacklisted_process(hello->process_name)) {
+        LOG_INFO("Layer from blacklisted process ignored: PID=%d, process=%s",
+                 hello->pid, hello->process_name);
+        set_client_type(client_fd, CLIENT_TYPE_LAYER);
+        return false;
+    }
+
     pthread_mutex_lock(&layers_mutex);
 
-    // Check if already registered (update existing)
+    // Check if already registered by PID (update existing - don't broadcast again)
     for (int i = 0; i < layer_count; i++) {
-        if (layer_clients[i].fd == client_fd || layer_clients[i].pid == hello->pid) {
+        if (layer_clients[i].pid == hello->pid) {
+            // Same PID, different surface/GPU - update but don't broadcast
             layer_clients[i].fd = client_fd;
+            strncpy(layer_clients[i].process_name, hello->process_name,
+                    sizeof(layer_clients[i].process_name) - 1);
+            // Only update GPU name if the new one is more specific
+            if (strlen(hello->gpu_name) > strlen(layer_clients[i].gpu_name)) {
+                strncpy(layer_clients[i].gpu_name, hello->gpu_name,
+                        sizeof(layer_clients[i].gpu_name) - 1);
+            }
+            LOG_INFO("Layer updated (same PID): PID=%d, process=%s, GPU=%s",
+                     hello->pid, hello->process_name, hello->gpu_name);
+            pthread_mutex_unlock(&layers_mutex);
+            set_client_type(client_fd, CLIENT_TYPE_LAYER);
+            return false;  // Not new, don't broadcast
+        }
+    }
+
+    // Check if same fd (reconnection with different PID - update)
+    for (int i = 0; i < layer_count; i++) {
+        if (layer_clients[i].fd == client_fd) {
             layer_clients[i].pid = hello->pid;
             strncpy(layer_clients[i].process_name, hello->process_name,
                     sizeof(layer_clients[i].process_name) - 1);
             strncpy(layer_clients[i].gpu_name, hello->gpu_name,
                     sizeof(layer_clients[i].gpu_name) - 1);
-            LOG_INFO("Layer updated: PID=%d, process=%s, GPU=%s",
+            LOG_INFO("Layer updated (same fd): PID=%d, process=%s, GPU=%s",
                      hello->pid, hello->process_name, hello->gpu_name);
             pthread_mutex_unlock(&layers_mutex);
             set_client_type(client_fd, CLIENT_TYPE_LAYER);
-            return;
+            return true;  // New PID on existing connection, broadcast
         }
     }
 
@@ -219,12 +293,15 @@ void ipc_register_layer(int client_fd, const LayerHelloPayload* hello) {
 
         LOG_INFO("Layer registered: PID=%d, process=%s, GPU=%s (total=%d)",
                  hello->pid, hello->process_name, hello->gpu_name, layer_count);
+        pthread_mutex_unlock(&layers_mutex);
+        set_client_type(client_fd, CLIENT_TYPE_LAYER);
+        return true;  // New layer, broadcast
     } else {
         LOG_WARN("Max layers reached, cannot register PID=%d", hello->pid);
+        pthread_mutex_unlock(&layers_mutex);
+        set_client_type(client_fd, CLIENT_TYPE_LAYER);
+        return false;
     }
-
-    pthread_mutex_unlock(&layers_mutex);
-    set_client_type(client_fd, CLIENT_TYPE_LAYER);
 }
 
 void ipc_update_layer_swapchain(int client_fd, const SwapchainInfoPayload* info) {
@@ -366,15 +443,60 @@ void ipc_unregister_app(int client_fd) {
 }
 
 // Forward frame data to subscribed apps
+static uint64_t frames_received = 0;
+static uint64_t frames_forwarded = 0;
+static uint64_t last_frame_log = 0;
+static bool first_frame_logged = false;
+
 void ipc_forward_frame_data(const FrameDataPoint* frame) {
+    frames_received++;
+
+    // Log the very first frame for debugging
+    if (!first_frame_logged) {
+        LOG_INFO(">>> First frame received! pid=%d, frametime=%.2fms <<<",
+                 frame->pid, frame->frametime_ms);
+        first_frame_logged = true;
+    }
+
     pthread_mutex_lock(&subscriptions_mutex);
 
+    int forwarded_this_frame = 0;
     for (int i = 0; i < subscription_count; i++) {
         if (app_subscriptions[i].subscribed_pid == frame->pid) {
             // This app is subscribed to this layer's frames
-            ipc_send(app_subscriptions[i].fd, MSG_FRAMETIME_DATA,
+            int result = ipc_send(app_subscriptions[i].fd, MSG_FRAMETIME_DATA,
                      (void*)frame, sizeof(FrameDataPoint));
+            if (result == 0) {
+                frames_forwarded++;
+                forwarded_this_frame++;
+            }
         }
+    }
+
+    // Log periodically (every 500 frames for more visibility)
+    if (frames_received - last_frame_log >= 500) {
+        LOG_INFO("Frame stats: received=%lu, forwarded=%lu, subs=%d, frame_pid=%d, forwarded_now=%d",
+                 (unsigned long)frames_received, (unsigned long)frames_forwarded,
+                 subscription_count, frame->pid, forwarded_this_frame);
+
+        // Log subscription details - helps diagnose PID mismatch
+        for (int i = 0; i < subscription_count; i++) {
+            LOG_INFO("  Sub[%d]: fd=%d, wants_pid=%d (frame has pid=%d, match=%s)",
+                     i, app_subscriptions[i].fd, app_subscriptions[i].subscribed_pid,
+                     frame->pid,
+                     app_subscriptions[i].subscribed_pid == frame->pid ? "YES" : "NO");
+        }
+
+        // Log layer info
+        pthread_mutex_lock(&layers_mutex);
+        LOG_INFO("  Layers connected: %d", layer_count);
+        for (int i = 0; i < layer_count; i++) {
+            LOG_INFO("    Layer[%d]: pid=%d, process=%s",
+                     i, layer_clients[i].pid, layer_clients[i].process_name);
+        }
+        pthread_mutex_unlock(&layers_mutex);
+
+        last_frame_log = frames_received;
     }
 
     pthread_mutex_unlock(&subscriptions_mutex);
@@ -398,11 +520,7 @@ static void handle_client_message(int client_fd, char* buffer, ssize_t len) {
         return;  // Don't pass to callback
     }
 
-    // Handle layer hello
-    if (header->type == MSG_LAYER_HELLO && payload) {
-        LayerHelloPayload* hello = (LayerHelloPayload*)payload;
-        ipc_register_layer(client_fd, hello);
-    }
+    // Note: MSG_LAYER_HELLO is handled in main.c callback to use return value for broadcast decision
 
     // Handle swapchain messages
     if (header->type == MSG_SWAPCHAIN_CREATED && payload) {
@@ -662,4 +780,8 @@ bool ipc_has_clients(void) {
     bool has = client_count > 0;
     pthread_mutex_unlock(&clients_mutex);
     return has;
+}
+
+bool ipc_is_blacklisted_process(const char* process_name) {
+    return is_blacklisted_process(process_name);
 }

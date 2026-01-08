@@ -65,7 +65,8 @@ const char* ipc_get_socket_path(void);
 bool ipc_has_clients(void);
 
 // Layer client management
-void ipc_register_layer(int client_fd, const LayerHelloPayload* hello);
+// Returns true if this is a new layer (not already registered by PID), false if updated existing
+bool ipc_register_layer(int client_fd, const LayerHelloPayload* hello);
 void ipc_update_layer_swapchain(int client_fd, const SwapchainInfoPayload* info);
 void ipc_unregister_layer(int client_fd);
 LayerClient* ipc_get_layer_by_pid(pid_t pid);
@@ -83,5 +84,8 @@ void ipc_forward_frame_data(const FrameDataPoint* frame);
 
 // Get client type
 ClientType ipc_get_client_type(int fd);
+
+// Check if a process name is blacklisted (should not appear in game list)
+bool ipc_is_blacklisted_process(const char* process_name);
 
 #endif // CAPFRAMEX_IPC_H

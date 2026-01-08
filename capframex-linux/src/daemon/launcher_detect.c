@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 #include "launcher_detect.h"
 #include "process_monitor.h"
+#include "ignore_list.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -151,11 +152,17 @@ static bool is_in_game_directory(const char* exe_path) {
 bool launcher_is_blacklisted(const char* exe_name) {
     if (!exe_name) return false;
 
+    // Check hardcoded/default blacklist
     for (int i = 0; i < blacklist_count; i++) {
         if (custom_blacklist[i] &&
             fnmatch(custom_blacklist[i], exe_name, FNM_CASEFOLD) == 0) {
             return true;
         }
+    }
+
+    // Check user ignore list
+    if (ignore_list_contains(exe_name)) {
+        return true;
     }
 
     return false;

@@ -3,7 +3,10 @@ using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CapFrameX.Core.Capture;
+using CapFrameX.Core.Configuration;
 using CapFrameX.Core.Data;
+using CapFrameX.Core.Hotkey;
+using CapFrameX.Core.System;
 using CapFrameX.Shared.Models;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
@@ -18,11 +21,17 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
     private readonly CaptureService _captureService;
     private readonly FrametimeReceiver _frametimeReceiver;
     private readonly SessionManager _sessionManager;
+    private readonly IGlobalHotkeyService _hotkeyService;
+    private readonly ISettingsService _settingsService;
+    private readonly ISystemInfoService _systemInfoService;
     private readonly IDisposable _gameDetectedSub;
     private readonly IDisposable _gameExitedSub;
     private readonly IDisposable _frameDataSub;
+    private readonly IDisposable _hotkeySub;
+    private readonly IDisposable _settingsSub;
     private readonly System.Timers.Timer _statsTimer;
     private readonly System.Timers.Timer _processPollTimer;
+    private System.Timers.Timer? _autoStopTimer;
 
     [ObservableProperty]
     private ObservableCollection<GameInfo> _detectedGames = new();
@@ -62,11 +71,26 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
     public Axis[] XAxes { get; }
     public Axis[] YAxes { get; }
 
-    public CaptureViewModel(CaptureService captureService, FrametimeReceiver frametimeReceiver, SessionManager sessionManager)
+    // System info
+    public SystemInfo SystemInfo { get; private set; } = new();
+
+    public CaptureViewModel(
+        CaptureService captureService,
+        FrametimeReceiver frametimeReceiver,
+        SessionManager sessionManager,
+        IGlobalHotkeyService hotkeyService,
+        ISettingsService settingsService,
+        ISystemInfoService systemInfoService)
     {
         _captureService = captureService;
         _frametimeReceiver = frametimeReceiver;
         _sessionManager = sessionManager;
+        _hotkeyService = hotkeyService;
+        _settingsService = settingsService;
+        _systemInfoService = systemInfoService;
+
+        // Load system info
+        SystemInfo = _systemInfoService.GetSystemInfo();
 
         // Initialize chart with proper styling
         var accentColor = new SKColor(74, 163, 223); // #4AA3DF
@@ -155,6 +179,21 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
         {
             DetectedGames.Add(game);
         }
+
+        // Setup hotkey service
+        _hotkeyService.SetCaptureHotkey(_settingsService.Settings.CaptureHotkey);
+        _hotkeySub = _hotkeyService.CaptureHotkeyPressed.Subscribe(_ =>
+        {
+            Console.WriteLine("[CaptureVM] Hotkey pressed - toggling capture");
+            Avalonia.Threading.Dispatcher.UIThread.Post(async () => await ToggleCaptureAsync());
+        });
+
+        // Subscribe to settings changes
+        _settingsSub = _settingsService.SettingsChanged.Subscribe(settings =>
+        {
+            Console.WriteLine($"[CaptureVM] Settings changed - updating hotkey to {settings.CaptureHotkey}");
+            _hotkeyService.SetCaptureHotkey(settings.CaptureHotkey);
+        });
     }
 
     private int _lastLoggedFrameCount = 0;
@@ -232,6 +271,26 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
         }
     }
 
+    [RelayCommand]
+    private async Task AddToIgnoreListAsync(GameInfo? game)
+    {
+        if (game == null) return;
+
+        Console.WriteLine($"[CaptureVM] Adding to ignore list: {game.Name}");
+
+        await _captureService.AddToIgnoreListAsync(game.Name);
+
+        // Remove from detected games list immediately (daemon will filter future detections)
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            DetectedGames.Remove(game);
+            if (SelectedGame?.Pid == game.Pid)
+            {
+                SelectedGame = null;
+            }
+        });
+    }
+
     private async Task StartCaptureAsync()
     {
         if (SelectedGame == null) return;
@@ -246,10 +305,32 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
         IsCapturing = true;
         CaptureButtonText = "Stop Capture";
         Console.WriteLine($"[CaptureVM] Capture started - subscribed to PID {SelectedGame.Pid}");
+
+        // Setup auto-stop timer if enabled
+        var settings = _settingsService.Settings;
+        if (settings.AutoStopEnabled && settings.CaptureDurationSeconds > 0)
+        {
+            Console.WriteLine($"[CaptureVM] Auto-stop enabled: {settings.CaptureDurationSeconds} seconds");
+            _autoStopTimer?.Dispose();
+            // Add 500ms buffer to account for timer/dispatch latency and ensure full duration
+            _autoStopTimer = new System.Timers.Timer(settings.CaptureDurationSeconds * 1000 + 500);
+            _autoStopTimer.AutoReset = false;
+            _autoStopTimer.Elapsed += async (_, _) =>
+            {
+                Console.WriteLine("[CaptureVM] Auto-stop timer elapsed");
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () => await StopCaptureAsync());
+            };
+            _autoStopTimer.Start();
+        }
     }
 
     private async Task StopCaptureAsync()
     {
+        // Cancel auto-stop timer if running
+        _autoStopTimer?.Stop();
+        _autoStopTimer?.Dispose();
+        _autoStopTimer = null;
+
         await _captureService.StopCaptureAsync();
         _frametimeReceiver.StopCapture();
 
@@ -277,7 +358,10 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
         _gameDetectedSub.Dispose();
         _gameExitedSub.Dispose();
         _frameDataSub.Dispose();
+        _hotkeySub.Dispose();
+        _settingsSub.Dispose();
         _statsTimer.Dispose();
         _processPollTimer.Dispose();
+        _autoStopTimer?.Dispose();
     }
 }

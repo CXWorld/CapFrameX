@@ -6,13 +6,15 @@
              x:DataType="vm:CaptureViewModel">
 
     <Grid ColumnDefinitions="300,*" Margin="15">
-        <!-- Left Panel - Game Selection -->
-        <Border Grid.Column="0" Background="#1E2A3A" CornerRadius="10" Padding="15" Margin="0 0 10 0" BorderBrush="#2A3F55" BorderThickness="1">
-            <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Text="Detected Games" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 10" />
+        <!-- Left Panel - Game Selection and System Info -->
+        <Grid Grid.Column="0" RowDefinitions="*,Auto" Margin="0 0 10 0">
+            <!-- Game Selection -->
+            <Border Grid.Row="0" Background="#1E2A3A" CornerRadius="10" Padding="15" BorderBrush="#2A3F55" BorderThickness="1">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Detected Games" FontSize="16" FontWeight="SemiBold" Margin="0 0 0 10" />
 
-                <StackPanel DockPanel.Dock="Bottom" Spacing="10" Margin="0 10 0 0">
-                    <Button Content="{Binding CaptureButtonText}"
+                    <StackPanel DockPanel.Dock="Bottom" Spacing="10" Margin="0 10 0 0">
+                        <Button Content="{Binding CaptureButtonText}"
                             Command="{Binding ToggleCaptureCommand}"
                             IsEnabled="{Binding SelectedGame, Converter={x:Static ObjectConverters.IsNotNull}}"
                             HorizontalAlignment="Stretch"
@@ -36,6 +38,13 @@
                 <ListBox ItemsSource="{Binding DetectedGames}"
                          SelectedItem="{Binding SelectedGame}"
                          Background="Transparent">
+                    <ListBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Add to Ignore List"
+                                      Command="{Binding AddToIgnoreListCommand}"
+                                      CommandParameter="{Binding SelectedGame}" />
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Margin="5">
@@ -51,6 +60,43 @@
                 </ListBox>
             </DockPanel>
         </Border>
+
+            <!-- System Info Panel -->
+            <Border Grid.Row="1" Background="#1E2A3A" CornerRadius="10" Padding="15" Margin="0 10 0 0" BorderBrush="#2A3F55" BorderThickness="1">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="System Info" FontSize="14" FontWeight="SemiBold" Foreground="#4AA3DF" Margin="0 0 0 5" />
+
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" Margin="0">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="CPU" FontSize="11" Opacity="0.6" Margin="0 0 10 4" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SystemInfo.CpuName}" FontSize="11" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding SystemInfo.CpuName}" />
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Cores" FontSize="11" Opacity="0.6" Margin="0 0 10 4" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" FontSize="11">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0}C / {1}T">
+                                    <Binding Path="SystemInfo.CpuCores" />
+                                    <Binding Path="SystemInfo.CpuThreads" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="RAM" FontSize="11" Opacity="0.6" Margin="0 0 10 4" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SystemInfo.TotalRam}" FontSize="11" />
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="GPU" FontSize="11" Opacity="0.6" Margin="0 0 10 4" />
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SystemInfo.GpuName}" FontSize="11" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding SystemInfo.GpuName}" />
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="iGPU" FontSize="11" Opacity="0.6" Margin="0 0 10 4"
+                                   IsVisible="{Binding SystemInfo.HasIgpu}" />
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SystemInfo.IgpuName}" FontSize="11" TextTrimming="CharacterEllipsis"
+                                   ToolTip.Tip="{Binding SystemInfo.IgpuName}" IsVisible="{Binding SystemInfo.HasIgpu}" />
+
+                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Board" FontSize="11" Opacity="0.6" Margin="0 0 10 0" />
+                        <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SystemInfo.Motherboard}" FontSize="11" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding SystemInfo.Motherboard}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
 
         <!-- Right Panel - Live Stats and Chart -->
         <Grid Grid.Column="1" RowDefinitions="Auto,*">

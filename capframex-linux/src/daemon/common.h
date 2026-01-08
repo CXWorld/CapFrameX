@@ -7,7 +7,9 @@
 #include <sys/types.h>
 
 #define CAPFRAMEX_VERSION "1.0.0"
+// Use /tmp for socket so Proton containers can access it
 #define CAPFRAMEX_SOCKET_NAME "capframex.sock"
+#define CAPFRAMEX_SOCKET_USE_TMP 1
 #define CAPFRAMEX_SHM_NAME "/capframex_pids"
 #define CAPFRAMEX_SHM_DATA_NAME "/capframex_framedata"
 
@@ -30,6 +32,11 @@ typedef enum {
     MSG_LAYER_HELLO = 11,      // Layer -> Daemon: layer announces itself with PID/process info
     MSG_SWAPCHAIN_CREATED = 12,// Layer -> Daemon: swapchain info (resolution, format)
     MSG_SWAPCHAIN_DESTROYED = 13, // Layer -> Daemon: swapchain destroyed
+    MSG_IGNORE_LIST_ADD = 14,     // App -> Daemon: add process to ignore list
+    MSG_IGNORE_LIST_REMOVE = 15,  // App -> Daemon: remove process from ignore list
+    MSG_IGNORE_LIST_GET = 16,     // App -> Daemon: request full ignore list
+    MSG_IGNORE_LIST_RESPONSE = 17,// Daemon -> App: ignore list contents
+    MSG_IGNORE_LIST_UPDATED = 18, // Daemon -> App: broadcast ignore list changed
 } MessageType;
 
 // Process information structure
@@ -90,6 +97,11 @@ typedef struct {
     uint32_t version;
     pid_t pids[MAX_TRACKED_PROCESSES];
 } SharedPidList;
+
+// Ignore list entry (for add/remove messages)
+typedef struct {
+    char process_name[MAX_GAME_NAME_LENGTH];
+} IgnoreListEntry;
 
 // Utility macros
 #define LOG_INFO(fmt, ...) fprintf(stdout, "[INFO] " fmt "\n", ##__VA_ARGS__)

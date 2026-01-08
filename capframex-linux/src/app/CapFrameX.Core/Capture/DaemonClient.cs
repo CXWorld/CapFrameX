@@ -16,6 +16,8 @@ public class CaptureService : IDisposable
     private readonly Subject<int> _gameExited = new();
     private readonly Subject<FrameDataPoint> _frameData = new();
     private readonly Subject<bool> _connectionStatus = new();
+    private readonly Subject<List<string>> _ignoreListReceived = new();
+    private readonly Subject<bool> _ignoreListUpdated = new();
 
     private readonly List<GameInfo> _detectedGames = new();
     private bool _isCapturing;
@@ -50,12 +52,17 @@ public class CaptureService : IDisposable
 
         _client.Connected += (_, _) => _connectionStatus.OnNext(true);
         _client.Disconnected += (_, _) => _connectionStatus.OnNext(false);
+
+        _client.IgnoreListReceived += (_, list) => _ignoreListReceived.OnNext(list);
+        _client.IgnoreListUpdated += (_, _) => _ignoreListUpdated.OnNext(true);
     }
 
     public IObservable<GameInfo> GameDetected => _gameDetected.AsObservable();
     public IObservable<int> GameExited => _gameExited.AsObservable();
     public IObservable<FrameDataPoint> FrameData => _frameData.AsObservable();
     public IObservable<bool> ConnectionStatus => _connectionStatus.AsObservable();
+    public IObservable<List<string>> IgnoreListReceived => _ignoreListReceived.AsObservable();
+    public IObservable<bool> IgnoreListUpdated => _ignoreListUpdated.AsObservable();
 
     public bool IsConnected => _client.IsConnected;
     public bool IsCapturing => _isCapturing;
@@ -99,6 +106,17 @@ public class CaptureService : IDisposable
 
     private async Task<bool> TryStartDaemonAsync(CancellationToken cancellationToken)
     {
+        // Check if daemon is already running
+        var existingDaemons = Process.GetProcessesByName("capframex-daemon");
+        if (existingDaemons.Length > 0)
+        {
+            Console.WriteLine($"[CaptureService] Daemon already running (PID {existingDaemons[0].Id}), waiting for socket...");
+            foreach (var p in existingDaemons) p.Dispose();
+            // Daemon is running but socket not ready yet - just wait
+            await Task.Delay(1000, cancellationToken);
+            return true;
+        }
+
         var daemonPath = FindDaemonPath();
         if (daemonPath == null)
         {
@@ -219,6 +237,21 @@ public class CaptureService : IDisposable
         _capturingPid = 0;
     }
 
+    public async Task AddToIgnoreListAsync(string processName)
+    {
+        await _client.AddToIgnoreListAsync(processName);
+    }
+
+    public async Task RemoveFromIgnoreListAsync(string processName)
+    {
+        await _client.RemoveFromIgnoreListAsync(processName);
+    }
+
+    public async Task RequestIgnoreListAsync()
+    {
+        await _client.RequestIgnoreListAsync();
+    }
+
     public void StopDaemon()
     {
         try
@@ -244,6 +277,8 @@ public class CaptureService : IDisposable
         _gameExited.Dispose();
         _frameData.Dispose();
         _connectionStatus.Dispose();
+        _ignoreListReceived.Dispose();
+        _ignoreListUpdated.Dispose();
         _client.Dispose();
         StopDaemon();
     }

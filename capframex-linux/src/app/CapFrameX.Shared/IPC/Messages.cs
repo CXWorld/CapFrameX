@@ -17,6 +17,14 @@ public enum MessageType : uint
     ConfigUpdate = 8,
     StatusRequest = 9,
     StatusResponse = 10,
+    LayerHello = 11,
+    SwapchainCreated = 12,
+    SwapchainDestroyed = 13,
+    IgnoreListAdd = 14,
+    IgnoreListRemove = 15,
+    IgnoreListGet = 16,
+    IgnoreListResponse = 17,
+    IgnoreListUpdated = 18,
 }
 
 /// <summary>
@@ -53,4 +61,13 @@ public struct FrameDataPointIpc
     public float FrametimeMs;
     public float Fps;
     public int Pid;  // Source process ID
+}
+
+/// <summary>
+/// Ignore list entry for IPC (must match daemon/common.h)
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi)]
+public unsafe struct IgnoreListEntry
+{
+    public fixed byte ProcessName[256];
 }

@@ -20,15 +20,37 @@ public class DaemonClient : IDisposable
     public event EventHandler<FrameDataPoint>? FrameDataReceived;
     public event EventHandler? Connected;
     public event EventHandler? Disconnected;
+    public event EventHandler<List<string>>? IgnoreListReceived;
+    public event EventHandler? IgnoreListUpdated;
 
     public bool IsConnected => _socket?.Connected ?? false;
 
     public DaemonClient()
     {
-        var runtimeDir = Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR");
-        _socketPath = runtimeDir != null
-            ? Path.Combine(runtimeDir, "capframex.sock")
-            : $"/tmp/capframex.sock-{Environment.ProcessId}";
+        // Use /tmp for Proton compatibility - matches daemon and layer
+        // Get real user ID (not effective) to match getuid() in C
+        var uid = GetRealUid();
+        _socketPath = $"/tmp/capframex.sock-{uid}";
+    }
+
+    private static uint GetRealUid()
+    {
+        try
+        {
+            // Read /proc/self/status to get real UID
+            var status = File.ReadAllText("/proc/self/status");
+            foreach (var line in status.Split('\n'))
+            {
+                if (line.StartsWith("Uid:"))
+                {
+                    var parts = line.Split('\t', StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length >= 2 && uint.TryParse(parts[1], out var uid))
+                        return uid;
+                }
+            }
+        }
+        catch { }
+        return 1000; // Fallback
     }
 
     public async Task<bool> ConnectAsync(CancellationToken cancellationToken = default)
@@ -95,6 +117,32 @@ public class DaemonClient : IDisposable
     public async Task RequestStatusAsync()
     {
         await SendMessageAsync(MessageType.StatusRequest, Array.Empty<byte>());
+    }
+
+    public async Task AddToIgnoreListAsync(string processName)
+    {
+        var payload = CreateIgnoreListEntryPayload(processName);
+        await SendMessageAsync(MessageType.IgnoreListAdd, payload);
+    }
+
+    public async Task RemoveFromIgnoreListAsync(string processName)
+    {
+        var payload = CreateIgnoreListEntryPayload(processName);
+        await SendMessageAsync(MessageType.IgnoreListRemove, payload);
+    }
+
+    public async Task RequestIgnoreListAsync()
+    {
+        await SendMessageAsync(MessageType.IgnoreListGet, Array.Empty<byte>());
+    }
+
+    private static byte[] CreateIgnoreListEntryPayload(string processName)
+    {
+        var payload = new byte[256]; // Size of IgnoreListEntry.ProcessName
+        var nameBytes = System.Text.Encoding.ASCII.GetBytes(processName);
+        var copyLen = Math.Min(nameBytes.Length, 255);
+        Buffer.BlockCopy(nameBytes, 0, payload, 0, copyLen);
+        return payload;
     }
 
     private async Task SendMessageAsync(MessageType type, byte[] payload)
@@ -215,7 +263,47 @@ public class DaemonClient : IDisposable
             case MessageType.Pong:
                 // Keepalive response - could update connection status
                 break;
+
+            case MessageType.IgnoreListResponse:
+                if (payload.Length >= sizeof(uint))
+                {
+                    var ignoreList = ParseIgnoreListResponse(payload);
+                    IgnoreListReceived?.Invoke(this, ignoreList);
+                }
+                break;
+
+            case MessageType.IgnoreListUpdated:
+                IgnoreListUpdated?.Invoke(this, EventArgs.Empty);
+                break;
         }
+    }
+
+    private static List<string> ParseIgnoreListResponse(byte[] payload)
+    {
+        var result = new List<string>();
+        if (payload.Length < sizeof(uint))
+            return result;
+
+        var count = BitConverter.ToUInt32(payload, 0);
+        var offset = sizeof(uint);
+
+        for (uint i = 0; i < count && offset < payload.Length; i++)
+        {
+            // Find null terminator
+            var end = offset;
+            while (end < payload.Length && payload[end] != 0)
+                end++;
+
+            if (end > offset)
+            {
+                var name = System.Text.Encoding.ASCII.GetString(payload, offset, end - offset);
+                result.Add(name);
+            }
+
+            offset = end + 1; // Skip null terminator
+        }
+
+        return result;
     }
 
     private static T BytesToStruct<T>(byte[] bytes) where T : struct
