@@ -18,11 +18,10 @@ namespace CapFrameX.PresentMonInterface
 {
     public class OnlineMetricService : IOnlineMetricService
     {
-        private const double STUTTERING_THRESHOLD = 2d;
         private const int LIST_CAPACITY = 20000;
         private const int PMD_BUFFER_CAPACITY = 2200;
         private const double FIVE_SECONDS_INTERVAL_LENGTH = 5.0;
-        private const double ANIMATION_ERROR_INTERVAL_LENGTH = 0.25;
+        private const double ANIMATION_ERROR_INTERVAL_LENGTH = 0.5;
 
         private readonly object _currentProcessLock = new object();
 
@@ -36,6 +35,7 @@ namespace CapFrameX.PresentMonInterface
 
         private readonly object _lockRealtimeMetric = new object();
         private readonly object _lock5SecondsMetric = new object();
+        private readonly object _lock1SecondMetric = new object();
         private readonly object _lockAnimationErrorMetric = new object();
         private readonly object _lockPmdMetrics = new object();
 
@@ -48,13 +48,16 @@ namespace CapFrameX.PresentMonInterface
 
         // Circular buffers for 5-second window metrics
         private CircularBuffer<double> _frametimes5Seconds;
-        private CircularBuffer<double> _pcLatency5Seconds;
         private CircularBuffer<double> _displaytimes5Seconds;
         private CircularBuffer<double> _measuretimes5Seconds;
 
+        // Circular buffers for 1-second window metrics
+        private CircularBuffer<double> _pcLatency1Second;
+        private CircularBuffer<double> _measuretimes1Second;
+
         // Circular buffers for 250ms animation error window metrics
-        private CircularBuffer<double> _animationError250Ms;
-        private CircularBuffer<double> _measuretimes250Ms;
+        private CircularBuffer<double> _animationError500Ms;
+        private CircularBuffer<double> _measuretimes500Ms;
 
         // PMD buffers (kept as lists since they're cleared after consumption)
         private List<PoweneticsChannel[]> _channelDataBuffer = new List<PoweneticsChannel[]>(PMD_BUFFER_CAPACITY);
@@ -280,11 +283,11 @@ namespace CapFrameX.PresentMonInterface
                 lock (_lockRealtimeMetric)
                 {
                     // n seconds window - using circular buffer for O(1) add and efficient removal
+                    _measuretimesRealtimeSeconds.Add(startTime);
                     _frametimesRealtimeSeconds.Add(frameTime);
                     _displayedtimesRealtimeSeconds.Add(displayedTime);
                     _gpuActiveTimesRealtimeSeconds.Add(gpuActiveTime);
                     _cpuActiveTimesRealtimeSeconds.Add(cpuActiveTime);
-                    _measuretimesRealtimeSeconds.Add(startTime);
 
                     // Remove old entries that exceed the metric interval
                     if (_measuretimesRealtimeSeconds.Any() &&
@@ -293,11 +296,30 @@ namespace CapFrameX.PresentMonInterface
                         while (_measuretimesRealtimeSeconds.Count > 0 &&
                             startTime - _measuretimesRealtimeSeconds.PeekFirst() > MetricInterval)
                         {
+                            _measuretimesRealtimeSeconds.RemoveFirst();
                             _frametimesRealtimeSeconds.RemoveFirst();
                             _displayedtimesRealtimeSeconds.RemoveFirst();
                             _gpuActiveTimesRealtimeSeconds.RemoveFirst();
-                            _cpuActiveTimesRealtimeSeconds.RemoveFirst();
-                            _measuretimesRealtimeSeconds.RemoveFirst();
+                            _cpuActiveTimesRealtimeSeconds.RemoveFirst();;
+                        }
+                    }
+                }
+
+                lock (_lock1SecondMetric)
+                {
+                    // 1 second window - using circular buffer for O(1) add and efficient removal
+                    _measuretimes1Second.Add(startTime);
+                    _pcLatency1Second.Add(pcLatency);
+
+                    // Remove old entries that exceed the 1 second interval
+                    if (_measuretimes1Second.Any() &&
+                        startTime - _measuretimes1Second.PeekFirst() > 1.0)
+                    {
+                        while (_measuretimes1Second.Count > 0 &&
+                            startTime - _measuretimes1Second.PeekFirst() > 1.0)
+                        {
+                            _measuretimes1Second.RemoveFirst();
+                            _pcLatency1Second.RemoveFirst();
                         }
                     }
                 }
@@ -308,7 +330,6 @@ namespace CapFrameX.PresentMonInterface
                     _measuretimes5Seconds.Add(startTime);
                     _frametimes5Seconds.Add(frameTime);
                     _displaytimes5Seconds.Add(displayedTime);
-                    _pcLatency5Seconds.Add(pcLatency);
 
                     // Remove old entries that exceed the 5 second interval
                     if (_measuretimes5Seconds.Any() &&
@@ -317,10 +338,9 @@ namespace CapFrameX.PresentMonInterface
                         while (_measuretimes5Seconds.Count > 0 &&
                             startTime - _measuretimes5Seconds.PeekFirst() > FIVE_SECONDS_INTERVAL_LENGTH)
                         {
+                            _measuretimes5Seconds.RemoveFirst();
                             _frametimes5Seconds.RemoveFirst();
                             _displaytimes5Seconds.RemoveFirst();
-                            _measuretimes5Seconds.RemoveFirst();
-                            _pcLatency5Seconds.RemoveFirst();
                         }
                     }
                 }
@@ -328,18 +348,18 @@ namespace CapFrameX.PresentMonInterface
                 lock (_lockAnimationErrorMetric)
                 {
                     // 250ms window - using circular buffer for O(1) add and efficient removal
-                    _measuretimes250Ms.Add(startTime);
-                    _animationError250Ms.Add(animationError);
+                    _measuretimes500Ms.Add(startTime);
+                    _animationError500Ms.Add(animationError);
 
                     // Remove old entries that exceed the 250ms interval
-                    if (_measuretimes250Ms.Any() &&
-                        startTime - _measuretimes250Ms.PeekFirst() > ANIMATION_ERROR_INTERVAL_LENGTH)
+                    if (_measuretimes500Ms.Any() &&
+                        startTime - _measuretimes500Ms.PeekFirst() > ANIMATION_ERROR_INTERVAL_LENGTH)
                     {
-                        while (_measuretimes250Ms.Count > 0 &&
-                            startTime - _measuretimes250Ms.PeekFirst() > ANIMATION_ERROR_INTERVAL_LENGTH)
+                        while (_measuretimes500Ms.Count > 0 &&
+                            startTime - _measuretimes500Ms.PeekFirst() > ANIMATION_ERROR_INTERVAL_LENGTH)
                         {
-                            _measuretimes250Ms.RemoveFirst();
-                            _animationError250Ms.RemoveFirst();
+                            _measuretimes500Ms.RemoveFirst();
+                            _animationError500Ms.RemoveFirst();
                         }
                     }
                 }
@@ -390,6 +410,13 @@ namespace CapFrameX.PresentMonInterface
                 _cpuActiveTimesRealtimeSeconds = new CircularBuffer<double>(capacity);
             }
 
+            lock (_lock1SecondMetric)
+            {
+                int capacity1Second = LIST_CAPACITY / 20;
+                _measuretimes1Second = new CircularBuffer<double>(capacity1Second);
+                _pcLatency1Second = new CircularBuffer<double>(capacity1Second);
+            }
+
             lock (_lock5SecondsMetric)
             {
                 int capacity5Seconds = LIST_CAPACITY / 4;
@@ -397,16 +424,15 @@ namespace CapFrameX.PresentMonInterface
                 _frametimes5Seconds = new CircularBuffer<double>(capacity5Seconds);
                 _displaytimes5Seconds = new CircularBuffer<double>(capacity5Seconds);
                 _measuretimes5Seconds = new CircularBuffer<double>(capacity5Seconds);
-                _pcLatency5Seconds = new CircularBuffer<double>(capacity5Seconds);
             }
 
             lock (_lockAnimationErrorMetric)
             {
-                // 250ms at high framerate (e.g., 500fps = 125 frames per 250ms)
-                int capacity250Ms = 200;
+                // 500ms at high framerate (e.g., 500fps = 250 frames per 500ms)
+                int capacity500Ms = 600;
 
-                _animationError250Ms = new CircularBuffer<double>(capacity250Ms);
-                _measuretimes250Ms = new CircularBuffer<double>(capacity250Ms);
+                _animationError500Ms = new CircularBuffer<double>(capacity500Ms);
+                _measuretimes500Ms = new CircularBuffer<double>(capacity500Ms);
             }
         }
 
@@ -516,13 +542,13 @@ namespace CapFrameX.PresentMonInterface
 
         public double GetOnlinePcLatencyAverageValue()
         {
-            lock (_lock5SecondsMetric)
+            lock (_lock1SecondMetric)
             {
                 // Return NaN if no valid pc latency samples are available
-                if (_pcLatency5Seconds == null || _pcLatency5Seconds.Count == 0)
+                if (_pcLatency1Second == null || _pcLatency1Second.Count == 0)
                     return double.NaN;
 
-                var samples = _pcLatency5Seconds.ToList(_reusableListBufferA);
+                var samples = _pcLatency1Second.ToList(_reusableListBufferA);
 
                 // Check for NaN values
                 foreach (var sample in samples)
@@ -541,13 +567,13 @@ namespace CapFrameX.PresentMonInterface
             lock (_lockAnimationErrorMetric)
             {
                 // Return NaN if no valid animation error samples are available
-                if (_animationError250Ms == null || _animationError250Ms.Count == 0)
+                if (_animationError500Ms == null || _animationError500Ms.Count == 0)
                     return double.NaN;
 
                 double maxAbsValue = 0d;
                 double resultValue = double.NaN;
 
-                foreach (var sample in _animationError250Ms)
+                foreach (var sample in _animationError500Ms)
                 {
                     if (double.IsNaN(sample))
                         continue;
@@ -665,13 +691,18 @@ namespace CapFrameX.PresentMonInterface
                     _frametimes5Seconds?.Clear();
                     _displaytimes5Seconds?.Clear();
                     _measuretimes5Seconds?.Clear();
-                    _pcLatency5Seconds?.Clear();
+                }
+
+                lock (_lock1SecondMetric)
+                {
+                    _pcLatency1Second?.Clear();
+                    _measuretimes1Second?.Clear();
                 }
 
                 lock (_lockAnimationErrorMetric)
                 {
-                    _animationError250Ms?.Clear();
-                    _measuretimes250Ms?.Clear();
+                    _animationError500Ms?.Clear();
+                    _measuretimes500Ms?.Clear();
                 }
 
                 lock (_lockPmdMetrics)

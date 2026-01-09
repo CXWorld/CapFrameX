@@ -27,7 +27,6 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -649,6 +648,7 @@ namespace CapFrameX.ViewModel
             {
                 _showPcLatency = value;
                 RaisePropertyChanged();
+                SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
             }
         }
@@ -660,6 +660,7 @@ namespace CapFrameX.ViewModel
             {
                 _showAnimationError = value;
                 RaisePropertyChanged();
+                SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
             }
         }
@@ -881,14 +882,14 @@ namespace CapFrameX.ViewModel
                 }
                     
 
-                if (SelectedChartHeader.Contains("FPS")&& _isFpsChartDirty)
+                if (SelectedChartHeader.Contains("FPS") && _isFpsChartDirty)
                 {
                     FpsGraphDataContext.BuildPlotmodel(GetVisibleGraphs());
                     _isFpsChartDirty = false;
                 }
                    
 
-                if (SelectedChartHeader.Contains("Times")&& _isFrametimeChartDirty)
+                if (SelectedChartHeader.Contains("Times") && _isFrametimeChartDirty)
                 {
                     FrametimeGraphDataContext.BuildPlotmodel(GetVisibleGraphs(), plotModel =>
                     {
@@ -2021,8 +2022,11 @@ namespace CapFrameX.ViewModel
 
                         if (IsAnimationErrorAvailable && ShowAnimationError)
                         {
+                            var minAnimationError = _localRecordDataServer.CurrentSession.Runs.Max(run =>
+                                run.CaptureData.AnimationError.Where(x => !double.IsNaN(x)).DefaultIfEmpty(0).Min());
                             var maxAnimationError = _localRecordDataServer.CurrentSession.Runs.Max(run =>
-                                run.CaptureData.AnimationError.Where(x => !double.IsNaN(x)).Select(x => Math.Abs(x)).DefaultIfEmpty(0).Max());
+                                run.CaptureData.AnimationError.Where(x => !double.IsNaN(x)).DefaultIfEmpty(0).Max());
+                            yMin = Math.Min(yMin, minAnimationError);
                             yMax = Math.Max(yMax, maxAnimationError);
                         }
 
