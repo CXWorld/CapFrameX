@@ -12,7 +12,7 @@ using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware;
 
-internal static class ThreadAffinity
+public static class ThreadAffinity
 {
     /// <summary>
     /// Initializes static members of the <see cref="ThreadAffinity" /> class.

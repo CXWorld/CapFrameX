@@ -3,7 +3,6 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
-using LibreHardwareMonitor.Hardware.Motherboard;
 using LibreHardwareMonitor.PawnIo;
 using System;
 using System.Collections.Generic;
@@ -669,7 +668,7 @@ internal sealed class Amd17Cpu : AmdCpu
         // private readonly Sensor _multiplier;
         private readonly Sensor _power;
         private readonly Sensor _vcore;
-        private ISensor _busSpeed;
+        private ISensor _busClock;
         private DateTime _lastSampleTime = new(0);
         private uint _lastPwrValue = 0;
 
@@ -771,9 +770,9 @@ internal sealed class Amd17Cpu : AmdCpu
             {
                 double coreClock = 0;
                 double busClock = 100.0; //bus speed in MHz
-                _busSpeed ??= _cpu.Sensors.FirstOrDefault(x => x.Name == "Bus Speed");
-                if (_busSpeed?.Value.HasValue == true && _busSpeed.Value > 0)
-                    busClock = (double)_busSpeed.Value;
+                _busClock ??= _cpu.Sensors.FirstOrDefault(x => x.Name == "CPU Bus");
+                if (_busClock?.Value.HasValue == true && _busClock.Value > 0)
+                    busClock = (double)_busClock.Value;
 
                 if (thread.Cpu.Family == 0x1A)
                 {
@@ -783,7 +782,7 @@ internal sealed class Amd17Cpu : AmdCpu
                     // CpuFid[11:0]: core frequency ID.Read - write.Reset: XXXh.Specifies the core frequency multiplier.The core
                     // COF is a function of CpuFid and CpuDid, and defined by CoreCOF.
                     int curCpuFid = (int)(msrPstate & 0xfff);
-                    coreClock = curCpuFid * 5;
+                    coreClock = curCpuFid * 5d * busClock / 100d;
 
                     // multiplier, clock speed with 100Mhz as Multiplier Reference
                     // _multiplier.Value = (float)((curCpuFid * 5) / busClock);

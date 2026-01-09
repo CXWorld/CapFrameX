@@ -1,0 +1,94 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:CapFrameX.App.ViewModels"
+             x:Class="CapFrameX.App.Views.SettingsPanel"
+             x:DataType="vm:SettingsViewModel">
+
+    <ScrollViewer Padding="20">
+        <StackPanel Spacing="20" MaxWidth="600">
+            <!-- Capture Hotkey Section -->
+            <Border Background="#1E2A3A" CornerRadius="10" Padding="20" BorderBrush="#2A3F55" BorderThickness="1">
+                <StackPanel Spacing="15">
+                    <TextBlock Text="Capture Hotkey" FontSize="18" FontWeight="SemiBold" Foreground="#4AA3DF" />
+
+                    <TextBlock Text="Press the hotkey while a game is running to start/stop capture."
+                               FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                        <TextBox Grid.Column="0" Grid.Row="0"
+                                 Text="{Binding CaptureHotkey}"
+                                 Watermark="e.g. F12, Control+F12"
+                                 Margin="0 0 10 0" />
+
+                        <TextBlock Grid.Column="0" Grid.Row="1"
+                                   Text="{Binding HotkeyStatus}"
+                                   FontSize="11" Opacity="0.6" Margin="0 5 0 0" />
+                    </Grid>
+
+                    <!-- Quick hotkey buttons -->
+                    <WrapPanel Margin="0 10 0 0">
+                        <Button Content="F11" Command="{Binding SetHotkeyCommand}" CommandParameter="F11"
+                                Margin="0 0 8 8" Padding="15 8" />
+                        <Button Content="F12" Command="{Binding SetHotkeyCommand}" CommandParameter="F12"
+                                Margin="0 0 8 8" Padding="15 8" />
+                        <Button Content="Ctrl+F11" Command="{Binding SetHotkeyCommand}" CommandParameter="Control+F11"
+                                Margin="0 0 8 8" Padding="15 8" />
+                        <Button Content="Ctrl+F12" Command="{Binding SetHotkeyCommand}" CommandParameter="Control+F12"
+                                Margin="0 0 8 8" Padding="15 8" />
+                        <Button Content="Shift+F12" Command="{Binding SetHotkeyCommand}" CommandParameter="Shift+F12"
+                                Margin="0 0 8 8" Padding="15 8" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Auto-Stop Section -->
+            <Border Background="#1E2A3A" CornerRadius="10" Padding="20" BorderBrush="#2A3F55" BorderThickness="1">
+                <StackPanel Spacing="15">
+                    <TextBlock Text="Auto-Stop Capture" FontSize="18" FontWeight="SemiBold" Foreground="#4AA3DF" />
+
+                    <TextBlock Text="Automatically stop capture after a specified duration."
+                               FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+
+                    <CheckBox Content="Enable auto-stop" IsChecked="{Binding AutoStopEnabled}" />
+
+                    <StackPanel Orientation="Horizontal" Spacing="10" IsEnabled="{Binding AutoStopEnabled}">
+                        <TextBlock Text="Duration:" VerticalAlignment="Center" />
+                        <Border BorderBrush="#3A4F65" BorderThickness="1" CornerRadius="4">
+                            <NumericUpDown Value="{Binding CaptureDurationSeconds}"
+                                           Minimum="1"
+                                           Maximum="3600"
+                                           Increment="5"
+                                           Width="120"
+                                           FormatString="0"
+                                           BorderThickness="0" />
+                        </Border>
+                        <TextBlock Text="seconds" VerticalAlignment="Center" Opacity="0.7" />
+                    </StackPanel>
+
+                    <!-- Quick duration buttons -->
+                    <WrapPanel Margin="0 5 0 0" IsEnabled="{Binding AutoStopEnabled}">
+                        <Button Content="10s" Command="{Binding SetDurationCommand}" CommandParameter="10"
+                                Margin="0 0 8 8" Padding="15 8" />
+                        <Button Content="30s" Command="{Binding SetDurationCommand}" CommandParameter="30"
+                                Margin="0 0 8 8" Padding="15 8" />
+                        <Button Content="60s" Command="{Binding SetDurationCommand}" CommandParameter="60"
+                                Margin="0 0 8 8" Padding="15 8" />
+                        <Button Content="120s" Command="{Binding SetDurationCommand}" CommandParameter="120"
+                                Margin="0 0 8 8" Padding="15 8" />
+                        <Button Content="300s" Command="{Binding SetDurationCommand}" CommandParameter="300"
+                                Margin="0 0 8 8" Padding="15 8" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Settings Path Info -->
+            <Border Background="#1E2A3A" CornerRadius="10" Padding="20" BorderBrush="#2A3F55" BorderThickness="1">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Settings Location" FontSize="14" FontWeight="SemiBold" Foreground="#4AA3DF" />
+                    <TextBlock Text="~/.config/capframex/settings.json"
+                               FontSize="12" Opacity="0.6" FontFamily="monospace" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

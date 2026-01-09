@@ -97,6 +97,16 @@ namespace CapFrameX.Data
             return CurrentSession.GetGpuActiveTimePointsTimeWindow(startTime, endTime, _appConfiguration, RemoveOutlierMethod);
         }
 
+        public IList<Point> GetCpuActiveTimePointTimeWindow()
+        {
+            if (CurrentSession == null)
+                return null;
+
+            double startTime = CurrentTime;
+            double endTime = startTime + WindowLength;
+            return CurrentSession.GetCpuActiveTimePointsTimeWindow(startTime, endTime, _appConfiguration, RemoveOutlierMethod);
+        }
+
         public IList<Point> GetFrametimeDistributionPointTimeWindow()
         {
             if (CurrentSession == null)

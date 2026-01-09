@@ -1,0 +1,65 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="CapFrameX.App.App"
+             RequestedThemeVariant="Dark">
+    <Application.Styles>
+        <FluentTheme>
+            <FluentTheme.Palettes>
+                <ColorPaletteResources x:Key="Dark" Accent="#4AA3DF"
+                    AltHigh="#FF000000" AltLow="#FF000000" AltMedium="#FF000000"
+                    AltMediumHigh="#FF000000" AltMediumLow="#FF000000"
+                    BaseHigh="#FFFFFFFF" BaseLow="#FF3B3B3B" BaseMedium="#FF9A9A9A"
+                    BaseMediumHigh="#FFB4B4B4" BaseMediumLow="#FF6A6A6A"
+                    ChromeAltLow="#FFB4B4B4" ChromeBlackHigh="#FF000000"
+                    ChromeBlackLow="#FFB4B4B4" ChromeBlackMedium="#FF000000"
+                    ChromeBlackMediumLow="#FF000000" ChromeDisabledHigh="#FF3B3B3B"
+                    ChromeDisabledLow="#FF9A9A9A" ChromeGray="#FF808080"
+                    ChromeHigh="#FF808080" ChromeLow="#FF151515" ChromeMedium="#FF1D1D1D"
+                    ChromeMediumLow="#FF2B2B2B" ChromeWhite="#FFFFFFFF"
+                    ListLow="#FF1D1D1D" ListMedium="#FF3B3B3B"
+                    RegionColor="#FF1A1A2E" />
+            </FluentTheme.Palettes>
+        </FluentTheme>
+
+        <!-- Custom Styles -->
+        <Style Selector="Window">
+            <Setter Property="Background" Value="#FF121220" />
+        </Style>
+
+        <Style Selector="TabControl">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+
+        <Style Selector="TabItem">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Padding" Value="16 10" />
+        </Style>
+
+        <Style Selector="TabItem:selected /template/ Border#PART_SelectedPipe">
+            <Setter Property="Background" Value="#4AA3DF" />
+        </Style>
+
+        <Style Selector="Button.accent">
+            <Setter Property="Background" Value="#4AA3DF" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <Style Selector="Button.accent:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#5BB4F0" />
+        </Style>
+
+        <Style Selector="Button.accent:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#3992CE" />
+        </Style>
+    </Application.Styles>
+
+    <Application.Resources>
+        <SolidColorBrush x:Key="AccentBrush" Color="#4AA3DF" />
+        <SolidColorBrush x:Key="AccentBrushLight" Color="#5BB4F0" />
+        <SolidColorBrush x:Key="AccentBrushDark" Color="#3992CE" />
+        <SolidColorBrush x:Key="CardBackground" Color="#1E2A3A" />
+        <SolidColorBrush x:Key="CardBackgroundAlt" Color="#243447" />
+        <SolidColorBrush x:Key="SurfaceBackground" Color="#121220" />
+        <SolidColorBrush x:Key="StatusBarBackground" Color="#0D1117" />
+    </Application.Resources>
+</Application>

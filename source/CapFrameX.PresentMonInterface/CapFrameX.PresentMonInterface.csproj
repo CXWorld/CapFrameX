@@ -132,11 +132,11 @@
     <Compile Include="CaptureServiceConfiguration.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="PresentMon\CX_PresentMon-2.4.1-x64.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="PresentMon\license.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="PresentMon\PresentMon-2.4.0-x64.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Sounds\Voice\CaptureStopped.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

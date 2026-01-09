@@ -27,7 +27,6 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -80,16 +79,20 @@ namespace CapFrameX.ViewModel
         private bool _showCpuMaxThreadLoad;
         private bool _showGpuPowerLimit;
         private bool _showPcLatency;
+        private bool _showAnimationError;
         private bool _aggregationSeparators;
         private bool _showStutteringThresholds;
         private string _avgPcLatency;
         private bool _isPcLatencyAvailable;
+        private bool _isAnimationErrorAvailable;
         private bool _isCpuLoadAvailable;
         private bool _isCpuMaxLoadAvailable;
         private bool _isGpuLoadAvailable;
         private bool _isGpuPowerLimitAvailable;
         private bool _isGpuActiveChartAvailable;
         private bool _showGpuActiveChart;
+        private bool _isCpuActiveChartAvailable;
+        private bool _showCpuActiveChart;
         private bool _useFrametimeStatisticParameters;
         private EFilterMode _selectedFilterMode = EFilterMode.None;
         private ELShapeMetrics _lShapeMetric = ELShapeMetrics.Frametimes;
@@ -453,6 +456,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool IsAnimationErrorAvailable
+        {
+            get { return _isAnimationErrorAvailable; }
+            set
+            {
+                _isAnimationErrorAvailable = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public bool IsCpuLoadAvailable
         {
             get { return _isCpuLoadAvailable; }
@@ -499,6 +512,16 @@ namespace CapFrameX.ViewModel
             set
             {
                 _isGpuActiveChartAvailable = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool IsCpuActiveChartAvailable
+        {
+            get { return _isCpuActiveChartAvailable; }
+            set
+            {
+                _isCpuActiveChartAvailable = value;
                 RaisePropertyChanged();
             }
         }
@@ -552,7 +575,8 @@ namespace CapFrameX.ViewModel
             get => _session == null ? false
                 : _session.Runs.Any(r => r.SensorData != null
                 || r.SensorData2 != null
-                || _session.Runs.All(run => !run.CaptureData.PcLatency.IsNullOrEmpty()));
+                || _session.Runs.All(run => !run.CaptureData.PcLatency.IsNullOrEmpty())
+                || _session.Runs.All(run => !run.CaptureData.AnimationError.IsNullOrEmpty()));
         }
 
         public ICommand CopyStatisticalParameterCommand { get; }
@@ -624,6 +648,19 @@ namespace CapFrameX.ViewModel
             {
                 _showPcLatency = value;
                 RaisePropertyChanged();
+                SetChartUpdateFlags(true, true, false);
+                _onUpdateChart.OnNext(default);
+            }
+        }
+
+        public bool ShowAnimationError
+        {
+            get => _showAnimationError;
+            set
+            {
+                _showAnimationError = value;
+                RaisePropertyChanged();
+                SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
             }
         }
@@ -634,6 +671,18 @@ namespace CapFrameX.ViewModel
             set
             {
                 _showGpuActiveChart = value;
+                RaisePropertyChanged();
+                SetChartUpdateFlags(true, true, false);
+                _onUpdateChart.OnNext(default);
+            }
+        }
+
+        public bool ShowCpuActiveChart
+        {
+            get => _showCpuActiveChart;
+            set
+            {
+                _showCpuActiveChart = value;
                 RaisePropertyChanged();
                 SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
@@ -812,11 +861,13 @@ namespace CapFrameX.ViewModel
             ShowCpuMaxThreadLoad,
             ShowGpuPowerLimit,
             ShowPcLatency,
+            ShowAnimationError,
             ShowAggregationSeparators,
             ShowStutteringThresholds,
             StutteringFactor,
             StutteringLowFPSThreshold,
             ShowGpuActiveChart,
+            ShowCpuActiveChart,
             _appConfiguration.UseDisplayChangeMetrics);
 
         private void Setup()
@@ -831,14 +882,14 @@ namespace CapFrameX.ViewModel
                 }
                     
 
-                if (SelectedChartHeader.Contains("FPS")&& _isFpsChartDirty)
+                if (SelectedChartHeader.Contains("FPS") && _isFpsChartDirty)
                 {
                     FpsGraphDataContext.BuildPlotmodel(GetVisibleGraphs());
                     _isFpsChartDirty = false;
                 }
                    
 
-                if (SelectedChartHeader.Contains("Times")&& _isFrametimeChartDirty)
+                if (SelectedChartHeader.Contains("Times") && _isFrametimeChartDirty)
                 {
                     FrametimeGraphDataContext.BuildPlotmodel(GetVisibleGraphs(), plotModel =>
                     {
@@ -1295,6 +1346,19 @@ namespace CapFrameX.ViewModel
                     AvgPcLatency = $"PC Latency: {Math.Round(pcLatency, 1, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture)}ms";
                 }
 
+                // Update Animation Error
+                IsAnimationErrorAvailable = _session.Runs.All(run => !run.CaptureData.AnimationError.IsNullOrEmpty()) && _session.Runs.All(run =>
+                {
+                    var filteredValues = run.CaptureData.AnimationError.Where(x => !double.IsNaN(x));
+                    return filteredValues.Any();
+                });
+
+                if (!IsAnimationErrorAvailable)
+                {
+                    _showAnimationError = false;
+                    RaisePropertyChanged(nameof(ShowAnimationError));
+                }
+
                 // Check load metrics
                 IsCpuLoadAvailable = _session.Runs.All(run => run.SensorData2 != null && !run.SensorData2.CpuUsage.IsNullOrEmpty());
                 if (!IsCpuLoadAvailable)
@@ -1330,6 +1394,14 @@ namespace CapFrameX.ViewModel
                 {
                     _showGpuActiveChart = false;
                     RaisePropertyChanged(nameof(ShowGpuActiveChart));
+                }
+
+                //Check CPU Active metric
+                IsCpuActiveChartAvailable = GetIsCpuActiveChartAvailable();
+                if (!IsCpuActiveChartAvailable)
+                {
+                    _showCpuActiveChart = false;
+                    RaisePropertyChanged(nameof(ShowCpuActiveChart));
                 }
 
                 // Do update actions
@@ -1921,11 +1993,18 @@ namespace CapFrameX.ViewModel
                             var gpuActiveTimes = _localRecordDataServer?
                             .GetGpuActiveTimePointTimeWindow().Select(pnt => pnt.Y);
 
-                            yMin = Math.Min(frametimes.Min(), gpuActiveTimes.Min());
-                            yMax = Math.Max(frametimes.Max(), gpuActiveTimes.Max());
+                            yMin = Math.Min(yMin, gpuActiveTimes.Min());
+                            yMax = Math.Max(yMax, gpuActiveTimes.Max());
                         }
 
+                        if (GetIsCpuActiveChartAvailable() && ShowCpuActiveChart)
+                        {
+                            var cpuActiveTimes = _localRecordDataServer?
+                            .GetCpuActiveTimePointTimeWindow().Select(pnt => pnt.Y);
 
+                            yMin = Math.Min(yMin, cpuActiveTimes.Min());
+                            yMax = Math.Max(yMax, cpuActiveTimes.Max());
+                        }
 
                         if (ShowStutteringThresholds)
                         {
@@ -1939,6 +2018,16 @@ namespace CapFrameX.ViewModel
                         {
                             var maxLatency = _localRecordDataServer.CurrentSession.Runs.Max(run => run.CaptureData.PcLatency.Max());
                             yMax = Math.Max(yMax, maxLatency);
+                        }
+
+                        if (IsAnimationErrorAvailable && ShowAnimationError)
+                        {
+                            var minAnimationError = _localRecordDataServer.CurrentSession.Runs.Max(run =>
+                                run.CaptureData.AnimationError.Where(x => !double.IsNaN(x)).DefaultIfEmpty(0).Min());
+                            var maxAnimationError = _localRecordDataServer.CurrentSession.Runs.Max(run =>
+                                run.CaptureData.AnimationError.Where(x => !double.IsNaN(x)).DefaultIfEmpty(0).Max());
+                            yMin = Math.Min(yMin, minAnimationError);
+                            yMax = Math.Max(yMax, maxAnimationError);
                         }
 
                         setting = new Tuple<double, double>(yMin - (yMax - yMin) / 6, yMax + (yMax - yMin) / 6);
@@ -1955,6 +2044,8 @@ namespace CapFrameX.ViewModel
 
                         double gpuActiveIqr = double.MinValue;
                         double gpuActiveMedian = double.MinValue;
+                        double cpuActiveIqr = double.MinValue;
+                        double cpuActiveMedian = double.MinValue;
 
                         if (GetIsGpuActiveChartAvailable() && ShowGpuActiveChart)
                         {
@@ -1964,11 +2055,20 @@ namespace CapFrameX.ViewModel
                             gpuActiveMedian = MathNet.Numerics.Statistics.Statistics
                                 .Median(_localRecordDataServer?
                                 .GetGpuActiveTimePointTimeWindow().Select(pnt => pnt.Y));
-
                         }
 
-                        double maxMedian = Math.Max(median, gpuActiveMedian);
-                        double maxIqr = Math.Max(iqr, gpuActiveIqr);
+                        if (GetIsCpuActiveChartAvailable() && ShowCpuActiveChart)
+                        {
+                            cpuActiveIqr = MathNet.Numerics.Statistics.Statistics
+                                .InterquartileRange(_localRecordDataServer?
+                                .GetCpuActiveTimePointTimeWindow().Select(pnt => pnt.Y));
+                            cpuActiveMedian = MathNet.Numerics.Statistics.Statistics
+                                .Median(_localRecordDataServer?
+                                .GetCpuActiveTimePointTimeWindow().Select(pnt => pnt.Y));
+                        }
+
+                        double maxMedian = Math.Max(Math.Max(median, gpuActiveMedian), cpuActiveMedian);
+                        double maxIqr = Math.Max(Math.Max(iqr, gpuActiveIqr), cpuActiveIqr);
 
                         setting = new Tuple<double, double>(maxMedian - 4 * maxIqr, maxMedian + 6 * maxIqr);
                     }

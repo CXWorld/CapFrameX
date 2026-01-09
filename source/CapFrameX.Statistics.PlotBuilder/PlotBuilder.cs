@@ -173,7 +173,6 @@ namespace CapFrameX.Statistics.PlotBuilder
                     MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
                     MinorTickSize = 0,
                     MajorTickSize = 0,
-                    AbsoluteMinimum = 0,
                     AxisTitleDistance = 15
                 }
             },
@@ -195,7 +194,6 @@ namespace CapFrameX.Statistics.PlotBuilder
                     AxisTitleDistance = 15
                 }
             }
-
         };
 
         public void Reset()
@@ -320,6 +318,36 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.Series.Add(series);
         }
 
+        protected void SetAnimationErrorChart(PlotModel plotModel, IList<Point> points)
+        {
+            var series = new LineSeries
+            {
+                Title = "Animation Error",
+                StrokeThickness = 1,
+                LegendStrokeThickness = 4,
+                Color = OxyColor.FromArgb(255, 255, 165, 0),
+                YAxisKey = EPlotAxis.YAXISFRAMETIMES.GetDescription()
+            };
+
+            series.Points.AddRange(points.Select(p => new DataPoint(p.X, p.Y)));
+            plotModel.Series.Add(series);
+        }
+
+        protected void SetCpuActiveChart(PlotModel plotModel, IList<Point> points)
+        {
+            var series = new LineSeries
+            {
+                Title = "CPU-Busy",
+                StrokeThickness = 1,
+                LegendStrokeThickness = 4,
+                Color = OxyColor.FromArgb(255, 100, 149, 237),
+                YAxisKey = EPlotAxis.YAXISFRAMETIMES.GetDescription()
+            };
+
+            series.Points.AddRange(points.Select(p => new DataPoint(p.X, p.Y)));
+            plotModel.Series.Add(series);
+        }
+
         public void SetAggregationSeparators(ISession session, PlotModel plotModel, bool showSeparators)
         {
             plotModel.Annotations.Clear();
@@ -360,7 +388,5 @@ namespace CapFrameX.Statistics.PlotBuilder
                 sceneNumber++;
             }
         }
-
-
     }
 }

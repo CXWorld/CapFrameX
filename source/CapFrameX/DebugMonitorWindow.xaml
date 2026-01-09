@@ -42,7 +42,7 @@
         </GroupBox>
 
         <!-- PresentMon Process Stats -->
-        <GroupBox Grid.Row="1" Header="PresentMon-2.4.0-x64.exe" Margin="0,0,0,10"
+        <GroupBox Grid.Row="1" Header="{Binding PresentMonApplicationName}" Margin="0,0,0,10"
                   Foreground="White" BorderBrush="#FF3E3E3E">
             <Grid Margin="5">
                 <Grid.ColumnDefinitions>

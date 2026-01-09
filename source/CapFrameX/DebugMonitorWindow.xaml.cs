@@ -1,4 +1,5 @@
 using CapFrameX.Capture.Contracts;
+using CapFrameX.PresentMonInterface;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -25,8 +26,6 @@ namespace CapFrameX
 
         private Process _capFrameXProcess;
         private Process _presentMonProcess;
-        private PerformanceCounter _capFrameXCpuCounter;
-        private PerformanceCounter _presentMonCpuCounter;
         private DateTime _lastCpuCheckTime;
         private TimeSpan _lastCapFrameXCpuTime;
         private TimeSpan _lastPresentMonCpuTime;
@@ -119,6 +118,14 @@ namespace CapFrameX
             set { _lastUpdateTime = value; OnPropertyChanged(); }
         }
 
+        private string _presentMonApplicationName;
+
+        public string PresentMonApplicationName
+        {
+            get => _presentMonApplicationName;
+            set { _presentMonApplicationName = value; OnPropertyChanged(); }
+        }
+
         public DebugMonitorWindow(ICaptureService captureService)
         {
             InitializeComponent();
@@ -128,6 +135,12 @@ namespace CapFrameX
             _capFrameXProcess = Process.GetCurrentProcess();
             _lastCpuCheckTime = DateTime.UtcNow;
             _lastCapFrameXCpuTime = _capFrameXProcess.TotalProcessorTime;
+
+            // Set PresentMon application name
+            var name = CaptureServiceConfiguration.PresentMonAppName;
+
+            // Replace "_" with "__" in name for display purposes
+            PresentMonApplicationName = name.Replace("_", "__"); ;
 
             // Initialize QPC frequency for delay calculation
             QueryPerformanceFrequency(out long lpFrequency);
@@ -248,7 +261,7 @@ namespace CapFrameX
             try
             {
                 // Find PresentMon process
-                var presentMonProcesses = Process.GetProcessesByName("PresentMon-2.4.0-x64");
+                var presentMonProcesses = Process.GetProcessesByName(CaptureServiceConfiguration.PresentMonAppName);
 
                 if (presentMonProcesses.Length > 0)
                 {

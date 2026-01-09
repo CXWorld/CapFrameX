@@ -1,0 +1,98 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CapFrameX.App.ViewModels"
+        xmlns:views="using:CapFrameX.App.Views"
+        x:Class="CapFrameX.App.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="CapFrameX Linux"
+        Icon="avares://CapFrameX.App/Assets/app_icon.png"
+        Width="1200" Height="800"
+        MinWidth="900" MinHeight="600"
+        WindowStartupLocation="CenterScreen">
+
+    <Design.DataContext>
+        <vm:MainViewModel />
+    </Design.DataContext>
+
+    <DockPanel>
+        <!-- Status Bar at Bottom -->
+        <Border DockPanel.Dock="Bottom" Background="#0D1117" Padding="12 6" BorderThickness="0 1 0 0" BorderBrush="#1F2937">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+                <!-- Connection Status -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Ellipse Width="8" Height="8" VerticalAlignment="Center">
+                        <Ellipse.Fill>
+                            <SolidColorBrush Color="{Binding IsConnected, Converter={x:Static views:MainWindow.ConnectionColorConverter}}" />
+                        </Ellipse.Fill>
+                    </Ellipse>
+                    <TextBlock Text="{Binding ConnectionStatus}" FontSize="11" Opacity="0.8" VerticalAlignment="Center" />
+                    <Button Content="Reconnect" Command="{Binding ConnectCommand}"
+                            IsVisible="{Binding !IsConnected}" FontSize="10" Padding="8 2" Margin="4 0 0 0" />
+                </StackPanel>
+
+                <!-- Separator -->
+                <Rectangle Grid.Column="1" Width="1" Fill="#374151" Margin="12 2" />
+
+                <!-- Vulkan Layer Status -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Ellipse Width="8" Height="8" VerticalAlignment="Center">
+                        <Ellipse.Fill>
+                            <SolidColorBrush Color="{Binding IsVulkanLayerActive, Converter={x:Static views:MainWindow.ConnectionColorConverter}}" />
+                        </Ellipse.Fill>
+                    </Ellipse>
+                    <TextBlock Text="{Binding VulkanLayerStatus}" FontSize="11" Opacity="0.8" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- Separator -->
+                <Rectangle Grid.Column="3" Width="1" Fill="#374151" Margin="12 2" />
+
+                <!-- Resource Usage -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="App:" FontSize="10" Opacity="0.5" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding AppMemoryUsage}" FontSize="10" Opacity="0.7" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding AppCpuUsage}" FontSize="10" Opacity="0.7" VerticalAlignment="Center" Margin="4 0 0 0" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="Daemon:" FontSize="10" Opacity="0.5" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding DaemonMemoryUsage}" FontSize="10" Opacity="0.7" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding DaemonCpuUsage}" FontSize="10" Opacity="0.7" VerticalAlignment="Center" Margin="4 0 0 0" />
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Tab Navigation -->
+        <TabControl SelectedIndex="{Binding SelectedTabIndex}" Padding="0">
+            <TabItem Header="Capture">
+                <views:CaptureView DataContext="{Binding CaptureViewModel}" />
+            </TabItem>
+            <TabItem Header="Analysis">
+                <views:AnalysisView DataContext="{Binding AnalysisViewModel}" />
+            </TabItem>
+            <TabItem Header="Comparison">
+                <views:CompareView DataContext="{Binding CompareViewModel}" />
+            </TabItem>
+            <TabItem Header="Settings">
+                <views:SettingsPanel DataContext="{Binding SettingsViewModel}" />
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+
+    <Window.Styles>
+        <Style Selector="TabControl">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="TabItem">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Padding" Value="20 12" />
+            <Setter Property="Foreground" Value="#888888" />
+        </Style>
+        <Style Selector="TabItem:selected">
+            <Setter Property="Foreground" Value="#4AA3DF" />
+        </Style>
+        <Style Selector="TabItem:pointerover">
+            <Setter Property="Foreground" Value="#AAAAAA" />
+        </Style>
+    </Window.Styles>
+</Window>

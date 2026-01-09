@@ -1,0 +1,95 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:CapFrameX.App.ViewModels"
+             xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
+             x:Class="CapFrameX.App.Views.CompareView"
+             x:DataType="vm:CompareViewModel">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="15">
+        <!-- Top - Session Selection -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,*" Margin="0 0 0 10">
+            <!-- Available Sessions -->
+            <Border Grid.Column="0" Background="#1E2A3A" CornerRadius="10" Padding="15" Margin="0 0 5 0" MaxHeight="200" BorderBrush="#2A3F55" BorderThickness="1">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Available Sessions" FontWeight="SemiBold" Foreground="#4AA3DF" Margin="0 0 0 10" />
+                    <ListBox ItemsSource="{Binding AvailableSessions}" Background="Transparent">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Content="Add"
+                                            Command="{Binding $parent[UserControl].((vm:CompareViewModel)DataContext).AddSessionCommand}"
+                                            CommandParameter="{Binding}"
+                                            Padding="10 3" FontSize="11" Classes="accent" />
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding GameName}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding StartTime, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}"
+                                                   FontSize="11" Opacity="0.6" />
+                                    </StackPanel>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <!-- Selected Sessions -->
+            <Border Grid.Column="1" Background="#1E2A3A" CornerRadius="10" Padding="15" Margin="5 0 0 0" MaxHeight="200" BorderBrush="#2A3F55" BorderThickness="1">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0 0 0 10">
+                        <TextBlock Text="Sessions to Compare" FontWeight="SemiBold" Foreground="#4AA3DF" VerticalAlignment="Center" />
+                        <Button Content="Clear All" Command="{Binding ClearAllCommand}"
+                                Margin="10 0 0 0" Padding="8 3" FontSize="11" />
+                    </StackPanel>
+                    <ListBox ItemsSource="{Binding SessionsToCompare}" Background="Transparent">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Content="Remove"
+                                            Command="{Binding $parent[UserControl].((vm:CompareViewModel)DataContext).RemoveSessionCommand}"
+                                            CommandParameter="{Binding}"
+                                            Padding="10 3" FontSize="11" />
+                                    <TextBlock Text="{Binding GameName}" VerticalAlignment="Center" />
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+        </Grid>
+
+        <!-- Middle - Combined Chart -->
+        <Border Grid.Row="1" Background="#1E2A3A" CornerRadius="10" Padding="15" Margin="0 0 0 10" BorderBrush="#2A3F55" BorderThickness="1">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="Frametime Comparison" FontWeight="SemiBold" Foreground="#4AA3DF" Margin="0 0 0 10" />
+                <lvc:CartesianChart Series="{Binding FrametimeSeries}"
+                                    XAxes="{Binding XAxes}"
+                                    YAxes="{Binding YAxes}"
+                                    ZoomMode="X" />
+            </DockPanel>
+        </Border>
+
+        <!-- Bottom - Comparison Table -->
+        <Border Grid.Row="2" Background="#1E2A3A" CornerRadius="10" Padding="15" BorderBrush="#2A3F55" BorderThickness="1">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="Statistics Comparison" FontWeight="SemiBold" Foreground="#4AA3DF" Margin="0 0 0 10" />
+                <DataGrid ItemsSource="{Binding ComparisonTable}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          GridLinesVisibility="Horizontal"
+                          BorderThickness="0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="#" Binding="{Binding Index}" Width="40" />
+                        <DataGridTextColumn Header="Game" Binding="{Binding GameName}" Width="*" />
+                        <DataGridTextColumn Header="Avg FPS" Binding="{Binding AverageFps, StringFormat='{}{0:F1}'}" Width="80" />
+                        <DataGridTextColumn Header="1% Low" Binding="{Binding P1Fps, StringFormat='{}{0:F1}'}" Width="80" />
+                        <DataGridTextColumn Header="0.1% Low" Binding="{Binding P01Fps, StringFormat='{}{0:F1}'}" Width="80" />
+                        <DataGridTextColumn Header="Min FT" Binding="{Binding MinFrametime, StringFormat='{}{0:F2}'}" Width="80" />
+                        <DataGridTextColumn Header="Max FT" Binding="{Binding MaxFrametime, StringFormat='{}{0:F2}'}" Width="80" />
+                        <DataGridTextColumn Header="Std Dev" Binding="{Binding StdDev, StringFormat='{}{0:F2}'}" Width="80" />
+                        <DataGridTextColumn Header="Frames" Binding="{Binding FrameCount}" Width="80" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>
