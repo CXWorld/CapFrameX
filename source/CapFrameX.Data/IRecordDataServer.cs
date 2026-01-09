@@ -29,6 +29,7 @@ namespace CapFrameX.Data
 
 		IList<Point> GetGpuActiveTimePointTimeWindow();
 
+		IList<Point> GetCpuActiveTimePointTimeWindow();
 
         IList<double> GetFpsTimeWindow();
 

@@ -804,6 +804,7 @@ namespace CapFrameX.Data
                 int indexAllowsTearing = -1;
                 int indexSyncInterval = -1;
                 int indexPcLatency = -1;
+                int indexMsAnimationError = -1;
                 int indexmsGPUActive = -1;
                 int indexmsCPUActive = -1;
                 int indexCPUStartQPCTime = -1;
@@ -899,6 +900,10 @@ namespace CapFrameX.Data
                     if (string.Compare(metrics[i], "MsPCLatency") == 0)
                     {
                         indexPcLatency = i;
+                    }
+                    if (string.Compare(metrics[i], "MsAnimationError") == 0)
+                    {
+                        indexMsAnimationError = i;
                     }
                     if (string.Compare(metrics[i], "msGPUActive") == 0 || string.Compare(metrics[i], "GPUBusy") == 0 || string.Compare(metrics[i], "MsGPUBusy") == 0)
                     {
@@ -1078,6 +1083,13 @@ namespace CapFrameX.Data
                         else
                         {
                             captureData.PcLatency[lineIndex] = double.NaN;
+                        }
+                    }
+                    if (indexMsAnimationError > -1)
+                    {
+                        if (double.TryParse(GetStringFromArray(values, indexMsAnimationError), NumberStyles.Any, CultureInfo.InvariantCulture, out var animationError))
+                        {
+                            captureData.AnimationError[lineIndex] = animationError;
                         }
                     }
                     if (indexmsGPUActive > -1)

@@ -36,7 +36,7 @@ namespace CapFrameX.Overlay
         private static readonly HashSet<string> ONLINE_METRIC_NAMES = new HashSet<string>()
         {
             "OnlineAverage", "OnlineP1","OnlineP0dot1", "OnlineP0dot2", "Online1PercentLow", "Online0dot1PercentLow", "Online0dot2PercentLow",
-            "OnlineGpuActiveTimeAverage", "OnlineCpuActiveTimeAverage", "OnlineFrameTimeAverage", "OnlinePcLatency",
+            "OnlineGpuActiveTimeAverage", "OnlineCpuActiveTimeAverage", "OnlineFrameTimeAverage", "OnlinePcLatency", "OnlineAnimationError",
             "OnlineGpuActiveTimePercentageDeviation", "OnlineStutteringPercentage", "PmdGpuPowerCurrent",
             "PmdCpuPowerCurrent", "PmdSystemPowerCurrent"
         };
@@ -788,6 +788,14 @@ namespace CapFrameX.Overlay
                 pcLatency.Value = Math.Round(_onlineMetricService.GetOnlinePcLatencyAverageValue(), 1, MidpointRounding.AwayFromZero);
             }
 
+            // Animation Error
+            _identifierOverlayEntryDict.TryGetValue("OnlineAnimationError", out IOverlayEntry animationError);
+
+            if (animationError != null && animationError.ShowOnOverlay)
+            {
+                animationError.Value = Math.Round(_onlineMetricService.GetOnlineAnimationErrorValue(), 1, MidpointRounding.AwayFromZero);
+            }
+
             // PMD metrics
             _identifierOverlayEntryDict.TryGetValue("PmdGpuPowerCurrent", out IOverlayEntry pmdGpuPowerCurrent);
             _identifierOverlayEntryDict.TryGetValue("PmdCpuPowerCurrent", out IOverlayEntry pmdcpuPowerCurrent);
@@ -984,6 +992,15 @@ namespace CapFrameX.Overlay
             {
                 pcLatency.ValueUnitFormat = "ms";
                 pcLatency.ValueAlignmentAndDigits = "{0,5:F1}";
+            }
+
+            // Animation Error
+            _identifierOverlayEntryDict.TryGetValue("OnlineAnimationError", out IOverlayEntry animationError);
+
+            if (animationError != null)
+            {
+                animationError.ValueUnitFormat = "ms";
+                animationError.ValueAlignmentAndDigits = "{0,5:F1}";
             }
 
             // ping

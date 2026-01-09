@@ -30,13 +30,17 @@ namespace CapFrameX.Statistics.PlotBuilder
             var displaytimespoints = session.GetDisplayChangeTimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
 
             IList<Point> GpuActiveTimePoints  = new List<Point>();
+            IList<Point> CpuActiveTimePoints  = new List<Point>();
 
             if (plotSettings.ShowGpuActiveCharts)
                 GpuActiveTimePoints = session.GetGpuActiveTimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
 
+            if (plotSettings.ShowCpuActiveCharts)
+                CpuActiveTimePoints = session.GetCpuActiveTimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
+
             var frametimes = session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);;
 
-            SetFrametimeChart(plotModel, frametimepoints, GpuActiveTimePoints, plotSettings);
+            SetFrametimeChart(plotModel, frametimepoints, GpuActiveTimePoints, CpuActiveTimePoints, plotSettings);
 
             if (plotSettings.IsAnyPercentageGraphVisible && session.HasValidSensorData())
             {
@@ -64,6 +68,12 @@ namespace CapFrameX.Statistics.PlotBuilder
                 SetPcLatencyChart(plotModel, session.GetPcLatencyPointTimeWindow());
             }
 
+            // Draw Animation Error graph
+            if (plotSettings.ShowAnimationError)
+            {
+                SetAnimationErrorChart(plotModel, session.GetAnimationErrorPointTimeWindow());
+            }
+
             var stutteringValue = frametimes.Average() * plotSettings.StutteringFactor;
             var lowFPSValue = 1000 / plotSettings.LowFPSThreshold;
 
@@ -73,7 +83,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.InvalidatePlot(true);
         }
 
-        private void SetFrametimeChart(PlotModel plotModel, IList<Point> frametimePoints, IList<Point> GpuActiveTimePoints, IPlotSettings plotSettings)
+        private void SetFrametimeChart(PlotModel plotModel, IList<Point> frametimePoints, IList<Point> GpuActiveTimePoints, IList<Point> CpuActiveTimePoints, IPlotSettings plotSettings)
         {
             if (frametimePoints == null || !frametimePoints.Any())
                 return;
@@ -81,6 +91,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             int count = frametimePoints.Count;
             var frametimeDataPoints = frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
             var GpuActiveTimeDataPoints = GpuActiveTimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
+            var CpuActiveTimeDataPoints = CpuActiveTimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
             var movingAverage = _frametimesStatisticProvider.GetMovingAverage(frametimePoints.Select(pnt => pnt.Y).ToList());
 
             var stuttering = new List<double>();
@@ -109,6 +120,15 @@ namespace CapFrameX.Statistics.PlotBuilder
                 StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
                 Color = Constants.GpuActiveTimeColor,
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
+            };
+
+            var CpuActiveTimeSeries = new LineSeries
+            {
+                Title = "CPU-Busy Times",
+                StrokeThickness = 1.5,
+                LegendStrokeThickness = 4,
+                Color = OxyColor.FromArgb(255, 100, 149, 237),
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
@@ -147,6 +167,9 @@ namespace CapFrameX.Statistics.PlotBuilder
             if (plotSettings.ShowGpuActiveCharts)
                 GpuActiveTimeSeries.Points.AddRange(GpuActiveTimeDataPoints);
 
+            if (plotSettings.ShowCpuActiveCharts)
+                CpuActiveTimeSeries.Points.AddRange(CpuActiveTimeDataPoints);
+
             UpdateAxis(EPlotAxis.XAXIS, (axis) =>
             {
                 axis.Minimum = frametimePoints.First().X;
@@ -159,8 +182,11 @@ namespace CapFrameX.Statistics.PlotBuilder
             if (plotSettings.ShowGpuActiveCharts)
                 plotModel.Series.Add(GpuActiveTimeSeries);
 
+            if (plotSettings.ShowCpuActiveCharts)
+                plotModel.Series.Add(CpuActiveTimeSeries);
+
             if (plotSettings.ShowThresholds)
-            { 
+            {
                 stutteringSeries.Points.AddRange(stuttering.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
                 lowFPSSeries.Points.AddRange(lowFPS.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
 

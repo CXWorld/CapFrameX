@@ -22,6 +22,7 @@ namespace CapFrameX.PresentMonInterface
         private const int LIST_CAPACITY = 20000;
         private const int PMD_BUFFER_CAPACITY = 2200;
         private const double FIVE_SECONDS_INTERVAL_LENGTH = 5.0;
+        private const double ANIMATION_ERROR_INTERVAL_LENGTH = 0.25;
 
         private readonly object _currentProcessLock = new object();
 
@@ -35,6 +36,7 @@ namespace CapFrameX.PresentMonInterface
 
         private readonly object _lockRealtimeMetric = new object();
         private readonly object _lock5SecondsMetric = new object();
+        private readonly object _lockAnimationErrorMetric = new object();
         private readonly object _lockPmdMetrics = new object();
 
         // Circular buffers for realtime metrics (avoid RemoveRange memory shifting)
@@ -49,6 +51,10 @@ namespace CapFrameX.PresentMonInterface
         private CircularBuffer<double> _pcLatency5Seconds;
         private CircularBuffer<double> _displaytimes5Seconds;
         private CircularBuffer<double> _measuretimes5Seconds;
+
+        // Circular buffers for 250ms animation error window metrics
+        private CircularBuffer<double> _animationError250Ms;
+        private CircularBuffer<double> _measuretimes250Ms;
 
         // PMD buffers (kept as lists since they're cleared after consumption)
         private List<PoweneticsChannel[]> _channelDataBuffer = new List<PoweneticsChannel[]>(PMD_BUFFER_CAPACITY);
@@ -160,7 +166,8 @@ namespace CapFrameX.PresentMonInterface
                     || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineCpuActiveTimeAverage")?.ShowOnOverlay ?? false)
                     || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineFrameTimeAverage")?.ShowOnOverlay ?? false)
                     || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineGpuActiveTimePercentageDeviation")?.ShowOnOverlay ?? false)
-                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlinePcLatency")?.ShowOnOverlay ?? false);
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlinePcLatency")?.ShowOnOverlay ?? false)
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineAnimationError")?.ShowOnOverlay ?? false);
             }
             catch { return true; }
         }
@@ -257,6 +264,17 @@ namespace CapFrameX.PresentMonInterface
                 }
             }
 
+            double animationError = double.NaN;
+            int animationErrorIndex = _captureService.AnimationError_Index;
+            if (animationErrorIndex >= 0 && animationErrorIndex < lineSplit.Length)
+            {
+                if (!double.TryParse(lineSplit[animationErrorIndex], NumberStyles.Any, CultureInfo.InvariantCulture, out animationError))
+                {
+                    // Don't reset metrics if animation error is not available
+                    animationError = double.NaN;
+                }
+            }
+
             try
             {
                 lock (_lockRealtimeMetric)
@@ -303,6 +321,25 @@ namespace CapFrameX.PresentMonInterface
                             _displaytimes5Seconds.RemoveFirst();
                             _measuretimes5Seconds.RemoveFirst();
                             _pcLatency5Seconds.RemoveFirst();
+                        }
+                    }
+                }
+
+                lock (_lockAnimationErrorMetric)
+                {
+                    // 250ms window - using circular buffer for O(1) add and efficient removal
+                    _measuretimes250Ms.Add(startTime);
+                    _animationError250Ms.Add(animationError);
+
+                    // Remove old entries that exceed the 250ms interval
+                    if (_measuretimes250Ms.Any() &&
+                        startTime - _measuretimes250Ms.PeekFirst() > ANIMATION_ERROR_INTERVAL_LENGTH)
+                    {
+                        while (_measuretimes250Ms.Count > 0 &&
+                            startTime - _measuretimes250Ms.PeekFirst() > ANIMATION_ERROR_INTERVAL_LENGTH)
+                        {
+                            _measuretimes250Ms.RemoveFirst();
+                            _animationError250Ms.RemoveFirst();
                         }
                     }
                 }
@@ -361,6 +398,15 @@ namespace CapFrameX.PresentMonInterface
                 _displaytimes5Seconds = new CircularBuffer<double>(capacity5Seconds);
                 _measuretimes5Seconds = new CircularBuffer<double>(capacity5Seconds);
                 _pcLatency5Seconds = new CircularBuffer<double>(capacity5Seconds);
+            }
+
+            lock (_lockAnimationErrorMetric)
+            {
+                // 250ms at high framerate (e.g., 500fps = 125 frames per 250ms)
+                int capacity250Ms = 200;
+
+                _animationError250Ms = new CircularBuffer<double>(capacity250Ms);
+                _measuretimes250Ms = new CircularBuffer<double>(capacity250Ms);
             }
         }
 
@@ -490,6 +536,34 @@ namespace CapFrameX.PresentMonInterface
             }
         }
 
+        public double GetOnlineAnimationErrorValue()
+        {
+            lock (_lockAnimationErrorMetric)
+            {
+                // Return NaN if no valid animation error samples are available
+                if (_animationError250Ms == null || _animationError250Ms.Count == 0)
+                    return double.NaN;
+
+                double maxAbsValue = 0d;
+                double resultValue = double.NaN;
+
+                foreach (var sample in _animationError250Ms)
+                {
+                    if (double.IsNaN(sample))
+                        continue;
+
+                    double absValue = Math.Abs(sample);
+                    if (absValue >= maxAbsValue)
+                    {
+                        maxAbsValue = absValue;
+                        resultValue = sample;
+                    }
+                }
+
+                return resultValue;
+            }
+        }
+
         public OnlinePmdMetrics GetPmdMetricsPowerCurrent()
         {
             OnlinePmdMetrics pmdMetrics;
@@ -592,6 +666,12 @@ namespace CapFrameX.PresentMonInterface
                     _displaytimes5Seconds?.Clear();
                     _measuretimes5Seconds?.Clear();
                     _pcLatency5Seconds?.Clear();
+                }
+
+                lock (_lockAnimationErrorMetric)
+                {
+                    _animationError250Ms?.Clear();
+                    _measuretimes250Ms?.Clear();
                 }
 
                 lock (_lockPmdMetrics)

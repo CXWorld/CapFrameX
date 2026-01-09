@@ -14,6 +14,7 @@
 		int[] SyncInterval { get; set; }
 		bool[] Dropped { get; set; }
         double[] PcLatency { get; set; }
+		double[] AnimationError { get; set; }
         double[] GpuActive { get; set; }
 		double[] CpuActive { get; set; }
     }

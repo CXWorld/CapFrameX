@@ -51,6 +51,7 @@ namespace CapFrameX.PresentMonInterface
         public int StartTimeInMs_INDEX => Array.IndexOf(CurrentColumns, "CPUStartQPCTimeInMs");
         public int CpuBusy_Index => Array.IndexOf(CurrentColumns, "MsCPUBusy");
         public int GpuBusy_Index => Array.IndexOf(CurrentColumns, "MsGPUBusy");
+        public int AnimationError_Index => Array.IndexOf(CurrentColumns, "MsAnimationError");
 
         // Custom PresentMon build - ETW tracking columns
         public int EtwBufferFillPct_Index => Array.IndexOf(CurrentColumns, "EtwBufferFillPct");

@@ -428,6 +428,22 @@ namespace CapFrameX.Overlay
                         IsEntryEnabled = appConfiguration.UsePcLatency
                     },
 
+                    // Animation Error
+                    new OverlayEntryWrapper("OnlineAnimationError")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Animation Error (ms)",
+                        GroupName = "Animation Error",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = true
+                    },
+
                     // PMD
                     new OverlayEntryWrapper("PmdGpuPowerCurrent")
                     {
