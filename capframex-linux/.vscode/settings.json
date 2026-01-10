@@ -1,0 +1,16 @@
+{
+    "dotnet.defaultSolution": "src/app/CapFrameX.sln",
+    "omnisharp.enableRoslynAnalyzers": true,
+    "omnisharp.enableEditorConfigSupport": true,
+    "omnisharp.useModernNet": true,
+    "csharp.debug.debuggerPath": "/usr/bin/netcoredbg",
+    "editor.formatOnSave": true,
+    "files.exclude": {
+        "**/bin": true,
+        "**/obj": true
+    },
+    "search.exclude": {
+        "**/bin": true,
+        "**/obj": true
+    }
+}

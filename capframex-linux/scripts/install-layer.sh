@@ -4,7 +4,8 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BUILD_LIB="$SCRIPT_DIR/build/lib/libcapframex_layer.so"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+BUILD_LIB="$PROJECT_DIR/build/lib/libcapframex_layer.so"
 INSTALL_LIB="/usr/lib/libcapframex_layer.so"
 MANIFEST_DIR="/usr/share/vulkan/implicit_layer.d"
 MANIFEST_FILE="$MANIFEST_DIR/capframex_layer.json"
