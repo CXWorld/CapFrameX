@@ -26,8 +26,6 @@ namespace CapFrameX
 
         private Process _capFrameXProcess;
         private Process _presentMonProcess;
-        private PerformanceCounter _capFrameXCpuCounter;
-        private PerformanceCounter _presentMonCpuCounter;
         private DateTime _lastCpuCheckTime;
         private TimeSpan _lastCapFrameXCpuTime;
         private TimeSpan _lastPresentMonCpuTime;

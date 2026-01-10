@@ -23,6 +23,7 @@ namespace CapFrameX.Capture.Contracts
         int CPUStartQPCTimeInMs_Index { get; }
         int CpuBusy_Index { get; }
         int GpuBusy_Index { get; }
+        int AnimationError_Index { get; }
         int EtwBufferFillPct_Index { get; }
         int EtwBuffersInUse_Index { get; }
         int EtwTotalBuffers_Index { get; }

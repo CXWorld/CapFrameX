@@ -88,29 +88,33 @@ namespace CapFrameX.ViewModel.DataContext
         public bool ShowCpuMaxThreadLoad { get; private set; }
         public bool ShowGpuPowerLimit { get; private set; }
         public bool ShowPcLatency { get; private set; }
+        public bool ShowAnimationError { get; private set; }
         public bool ShowAggregationSeparators { get; private set; }
         public bool ShowThresholds { get; private set; }
         public double StutteringFactor { get; private set; }
         public double LowFPSThreshold { get; private set; }
         public bool ShowGpuActiveCharts { get; private set; }
+        public bool ShowCpuActiveCharts { get; private set; }
         public bool ShowDisplayTimes { get; private set; }
 
 
         public bool IsAnyPercentageGraphVisible => ShowGpuLoad || ShowCpuLoad || ShowCpuMaxThreadLoad || ShowGpuPowerLimit;
 
-        public VisibleGraphs(bool gpuLoad, bool cpuLoad, bool cpuMaxThreadLoad, bool gpuPowerLimit, bool pcLatency,
-            bool aggregationSeparators, bool showThresholds, double stutteringFactor, double lowFPSThreshold, bool gpuActiveCharts, bool showDisplayTimes)
+        public VisibleGraphs(bool gpuLoad, bool cpuLoad, bool cpuMaxThreadLoad, bool gpuPowerLimit, bool pcLatency, bool animationError,
+            bool aggregationSeparators, bool showThresholds, double stutteringFactor, double lowFPSThreshold, bool gpuActiveCharts, bool cpuActiveCharts, bool showDisplayTimes)
         {
             ShowGpuLoad = gpuLoad;
             ShowCpuLoad = cpuLoad;
             ShowCpuMaxThreadLoad = cpuMaxThreadLoad;
             ShowGpuPowerLimit = gpuPowerLimit;
             ShowPcLatency = pcLatency;
+            ShowAnimationError = animationError;
             ShowAggregationSeparators = aggregationSeparators;
             ShowThresholds = showThresholds;
             StutteringFactor = stutteringFactor;
             LowFPSThreshold = lowFPSThreshold;
             ShowGpuActiveCharts = gpuActiveCharts;
+            ShowCpuActiveCharts = cpuActiveCharts;
             ShowDisplayTimes = showDisplayTimes;
         }
     }

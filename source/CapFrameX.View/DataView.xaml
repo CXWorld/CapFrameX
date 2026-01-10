@@ -881,7 +881,7 @@
 										   TextWrapping="Wrap"/>
                             </ToolTip>
                         </materialDesign:PopupBox.ToolTip>
-                        <materialDesign:Card Width="220" Margin="0 0 0 -10">
+                        <materialDesign:Card Width="420" Margin="0 0 0 -10">
                             <StackPanel>
                                 <Grid Margin="8 8 8 8">
                                     <Grid.Resources>
@@ -895,46 +895,66 @@
                                         </Style>
                                     </Grid.Resources>
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Total CPU load" VerticalAlignment="Center"
+                                    <!-- Hardware Telemetry Group (Left) -->
+                                    <TextBlock Margin="5 5 5 2" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Hardware Telemetry"
+                                               FontWeight="Bold" FontSize="13" Foreground="{DynamicResource MaterialDesignBody}"/>
+
+                                    <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Total CPU load" VerticalAlignment="Center"
                                                Visibility="{Binding IsCpuLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
-                                    <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding ShowCpuLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show CPU usage graph" 
+                                    <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowCpuLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show CPU usage graph"
                                                   Visibility="{Binding IsCpuLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
 
-                                    <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Max. CPU thread load" VerticalAlignment="Center"
+                                    <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="Max. CPU thread load" VerticalAlignment="Center"
                                                Visibility="{Binding IsCpuMaxLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
-                                    <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowCpuMaxThreadLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show max CPU thread usage graph" 
+                                    <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding ShowCpuMaxThreadLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show max CPU thread usage graph"
                                                   Visibility="{Binding IsCpuMaxLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
 
-                                    <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="GPU load" VerticalAlignment="Center"
+                                    <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="GPU load" VerticalAlignment="Center"
                                                Visibility="{Binding IsGpuLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
-                                    <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding ShowGpuLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU usage graph" 
+                                    <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowGpuLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU usage graph"
                                                   Visibility="{Binding IsGpuLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
 
-                                    <TextBlock Visibility="{Binding IsGpuPowerLimitAvailable, Converter={StaticResource FalseToCollapsedConverter}}" Margin="5" Grid.Row="3" Grid.Column="0" Text="GPU power limit" VerticalAlignment="Center"/>
-                                    <ToggleButton Visibility="{Binding IsGpuPowerLimitAvailable, Converter={StaticResource FalseToCollapsedConverter}}" Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowGpuPowerLimit}" 
+                                    <TextBlock Visibility="{Binding IsGpuPowerLimitAvailable, Converter={StaticResource FalseToCollapsedConverter}}" Margin="5" Grid.Row="4" Grid.Column="0" Text="GPU power limit" VerticalAlignment="Center"/>
+                                    <ToggleButton Visibility="{Binding IsGpuPowerLimitAvailable, Converter={StaticResource FalseToCollapsedConverter}}" Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding ShowGpuPowerLimit}"
                                                   Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU power limit" />
-                                    
-                                    <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="PC Latency" VerticalAlignment="Center"
+
+                                    <!-- Present Metrics Group (Right) -->
+                                    <TextBlock Margin="5 5 5 2" Grid.Row="0" Grid.Column="3" Grid.ColumnSpan="2" Text="Present Metrics"
+                                               FontWeight="Bold" FontSize="13" Foreground="{DynamicResource MaterialDesignBody}"/>
+
+                                    <TextBlock Margin="5" Grid.Row="1" Grid.Column="3" Text="PC Latency" VerticalAlignment="Center"
                                                Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
-                                    <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding ShowPcLatency}" Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource FalseToCollapsedConverter}}"
+                                    <ToggleButton Margin="5" Grid.Row="1" Grid.Column="4" IsChecked="{Binding ShowPcLatency}" Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource FalseToCollapsedConverter}}"
                                                   Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show PC latency graph" />
-                                    
-                                    <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="GPU-Busy times" VerticalAlignment="Center"
+
+                                    <TextBlock Margin="5" Grid.Row="2" Grid.Column="3" Text="Animation Error" VerticalAlignment="Center"
+                                               Visibility="{Binding IsAnimationErrorAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
+                                    <ToggleButton Margin="5" Grid.Row="2" Grid.Column="4" IsChecked="{Binding ShowAnimationError}" Visibility="{Binding IsAnimationErrorAvailable, Converter={StaticResource FalseToCollapsedConverter}}"
+                                                  Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show Animation Error graph" />
+
+                                    <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="GPU-Busy times" VerticalAlignment="Center"
                                                Visibility="{Binding IsGpuActiveChartAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
-                                    <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding ShowGpuActiveChart}" Visibility="{Binding IsGpuActiveChartAvailable, Converter={StaticResource FalseToCollapsedConverter}}"
+                                    <ToggleButton Margin="5" Grid.Row="3" Grid.Column="4" IsChecked="{Binding ShowGpuActiveChart}" Visibility="{Binding IsGpuActiveChartAvailable, Converter={StaticResource FalseToCollapsedConverter}}"
                                                   Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU-Busy time in frametime graphs" />
+
+                                    <TextBlock Margin="5" Grid.Row="4" Grid.Column="3" Text="CPU-Busy times" VerticalAlignment="Center"
+                                               Visibility="{Binding IsCpuActiveChartAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
+                                    <ToggleButton Margin="5" Grid.Row="4" Grid.Column="4" IsChecked="{Binding ShowCpuActiveChart}" Visibility="{Binding IsCpuActiveChartAvailable, Converter={StaticResource FalseToCollapsedConverter}}"
+                                                  Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show CPU-Busy time in frametime graphs" />
                                 </Grid>
                             </StackPanel>
                         </materialDesign:Card>

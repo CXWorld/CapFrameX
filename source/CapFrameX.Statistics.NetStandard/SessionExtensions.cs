@@ -112,6 +112,19 @@ namespace CapFrameX.Statistics.NetStandard
 			return FilterDataPointsWithinTimeWindow(frameStartTimes, gpuActiveTimes, startTime, endTime);
 		}
 
+        public static IList<Point> GetCpuActiveTimePointsTimeWindow(this ISession session, double startTime, double endTime,
+            IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
+        {
+            var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
+            var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
+
+            var cpuActiveTimes = frametimeStatisticProvider?
+                .GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.CpuActive).ToArray(), eRemoveOutlierMethod)
+                ?? Enumerable.Empty<double>().ToList();
+
+            return FilterDataPointsWithinTimeWindow(frameStartTimes, cpuActiveTimes, startTime, endTime);
+        }
+
 		public static IList<Point> GetFrametimePoints(this ISession session)
         {
             if (!session.Runs.Any())
@@ -461,6 +474,25 @@ namespace CapFrameX.Statistics.NetStandard
                 for (int i = 0; i < count; i++)
                 {
                     list.Add(new Point(times[i], latencies[i]));
+                }
+            }
+
+            return list;
+        }
+
+        public static IList<Point> GetAnimationErrorPointTimeWindow(this ISession session)
+        {
+            var list = new List<Point>();
+
+            var times = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
+            var animationErrors = session.Runs.SelectMany(r => r.CaptureData.AnimationError).ToArray();
+            int count = Math.Min(times.Count(), animationErrors.Count());
+
+            if (animationErrors.Any())
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    list.Add(new Point(times[i], animationErrors[i]));
                 }
             }
 

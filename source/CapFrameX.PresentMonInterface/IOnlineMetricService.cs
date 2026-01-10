@@ -19,6 +19,8 @@ namespace CapFrameX.PresentMonInterface
 
         double GetOnlinePcLatencyAverageValue();
 
+        double GetOnlineAnimationErrorValue();
+
         OnlinePmdMetrics GetPmdMetricsPowerCurrent();
 
         void ResetRealtimeMetrics();
