@@ -6,10 +6,30 @@ namespace CapFrameX.Core.Data;
 /// <summary>
 /// Manages capture sessions (loading, listing, organizing)
 /// </summary>
-public class SessionManager
+public class SessionManager : IDisposable
 {
     private readonly string _sessionsDirectory;
     private readonly List<SessionMetadata> _sessionCache = new();
+    private readonly FileSystemWatcher _watcher;
+    private Timer? _debounceTimer;
+    private readonly object _timerLock = new();
+    private readonly SemaphoreSlim _loadLock = new(1, 1);
+    private bool _suppressWatcher;
+
+    /// <summary>
+    /// Event fired when sessions directory changes externally (file added/removed outside the app)
+    /// </summary>
+    public event EventHandler? SessionsChanged;
+
+    /// <summary>
+    /// Event fired when a session is added
+    /// </summary>
+    public event EventHandler<SessionMetadata>? SessionAdded;
+
+    /// <summary>
+    /// Event fired when a session is removed
+    /// </summary>
+    public event EventHandler<string>? SessionRemoved;
 
     public SessionManager()
     {
@@ -18,6 +38,53 @@ public class SessionManager
 
         _sessionsDirectory = Path.Combine(dataHome, "capframex", "sessions");
         Directory.CreateDirectory(_sessionsDirectory);
+
+        // Set up file system watcher for auto-refresh
+        // Only watch for file name changes (create/delete/rename), not content changes
+        _watcher = new FileSystemWatcher(_sessionsDirectory, "*.csv")
+        {
+            NotifyFilter = NotifyFilters.FileName,
+            EnableRaisingEvents = true
+        };
+        _watcher.Created += OnSessionFileChanged;
+        _watcher.Deleted += OnSessionFileChanged;
+        _watcher.Renamed += OnSessionFileChanged;
+    }
+
+    private void OnSessionFileChanged(object sender, FileSystemEventArgs e)
+    {
+        // Skip if watcher is suppressed (we're saving a session ourselves)
+        if (_suppressWatcher) return;
+
+        // Use a timer-based debounce: reset timer on each event, fire only after 1 second of quiet
+        // This ensures the file is fully written before we try to read it
+        lock (_timerLock)
+        {
+            _debounceTimer?.Dispose();
+            _debounceTimer = new Timer(OnDebounceTimerElapsed, null, 1000, Timeout.Infinite);
+        }
+    }
+
+    private void OnDebounceTimerElapsed(object? state)
+    {
+        lock (_timerLock)
+        {
+            _debounceTimer?.Dispose();
+            _debounceTimer = null;
+        }
+        SessionsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void Dispose()
+    {
+        _watcher.EnableRaisingEvents = false;
+        _watcher.Dispose();
+        lock (_timerLock)
+        {
+            _debounceTimer?.Dispose();
+            _debounceTimer = null;
+        }
+        _loadLock.Dispose();
     }
 
     public string SessionsDirectory => _sessionsDirectory;
@@ -27,39 +94,48 @@ public class SessionManager
     /// </summary>
     public async Task<IReadOnlyList<SessionMetadata>> GetSessionsAsync()
     {
-        _sessionCache.Clear();
-
-        var csvFiles = Directory.GetFiles(_sessionsDirectory, "*.csv")
-            .OrderByDescending(f => File.GetLastWriteTime(f));
-
-        foreach (var csvFile in csvFiles)
+        await _loadLock.WaitAsync();
+        try
         {
-            try
-            {
-                var session = await SessionIO.LoadAsync(csvFile);
-                var stats = StatisticsCalculator.Calculate(session.Frames);
+            _sessionCache.Clear();
 
-                _sessionCache.Add(new SessionMetadata
+            var csvFiles = Directory.GetFiles(_sessionsDirectory, "*.csv")
+                .OrderByDescending(f => File.GetLastWriteTime(f));
+
+            foreach (var csvFile in csvFiles)
+            {
+                try
                 {
-                    Id = Path.GetFileNameWithoutExtension(csvFile),
-                    GameName = session.GameName,
-                    GpuName = session.GpuName,
-                    StartTime = session.StartTime,
-                    Duration = session.Duration,
-                    FrameCount = session.FrameCount,
-                    FilePath = csvFile,
-                    AverageFps = (float)stats.AverageFps,
-                    P1Fps = (float)stats.P1Fps,
-                    P01Fps = (float)stats.P01Fps
-                });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to load session {csvFile}: {ex.Message}");
-            }
-        }
+                    var session = await SessionIO.LoadAsync(csvFile);
+                    var stats = StatisticsCalculator.Calculate(session.Frames);
 
-        return _sessionCache;
+                    _sessionCache.Add(new SessionMetadata
+                    {
+                        Id = Path.GetFileNameWithoutExtension(csvFile),
+                        GameName = session.GameName,
+                        GpuName = session.GpuName,
+                        StartTime = session.StartTime,
+                        Duration = session.Duration,
+                        FrameCount = session.FrameCount,
+                        FilePath = csvFile,
+                        AverageFps = (float)stats.AverageFps,
+                        P1Fps = (float)stats.P1Fps,
+                        P01Fps = (float)stats.P01Fps
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to load session {csvFile}: {ex.Message}");
+                }
+            }
+
+            // Return a copy to prevent external modification
+            return _sessionCache.ToList();
+        }
+        finally
+        {
+            _loadLock.Release();
+        }
     }
 
     /// <summary>
@@ -73,14 +149,42 @@ public class SessionManager
     /// <summary>
     /// Save a new session
     /// </summary>
-    public async Task<string> SaveSessionAsync(CaptureSession session)
+    public async Task<SessionMetadata> SaveSessionAsync(CaptureSession session)
     {
         var fileName = GenerateFileName(session.GameName);
         var basePath = Path.Combine(_sessionsDirectory, fileName);
 
-        await SessionIO.SaveAsync(session, basePath);
+        // Suppress file watcher during save to avoid duplicate refresh
+        _suppressWatcher = true;
+        try
+        {
+            await SessionIO.SaveAsync(session, basePath);
+        }
+        finally
+        {
+            _suppressWatcher = false;
+        }
 
-        return session.FilePath;
+        // Calculate stats and create metadata
+        var stats = StatisticsCalculator.Calculate(session.Frames);
+        var metadata = new SessionMetadata
+        {
+            Id = Path.GetFileNameWithoutExtension(session.FilePath),
+            GameName = session.GameName,
+            GpuName = session.GpuName,
+            StartTime = session.StartTime,
+            Duration = session.Duration,
+            FrameCount = session.FrameCount,
+            FilePath = session.FilePath,
+            AverageFps = (float)stats.AverageFps,
+            P1Fps = (float)stats.P1Fps,
+            P01Fps = (float)stats.P01Fps
+        };
+
+        // Fire specific event for the new session
+        SessionAdded?.Invoke(this, metadata);
+
+        return metadata;
     }
 
     /// <summary>
@@ -88,16 +192,28 @@ public class SessionManager
     /// </summary>
     public void DeleteSession(string filePath)
     {
-        if (File.Exists(filePath))
+        // Suppress file watcher during delete to avoid full refresh
+        _suppressWatcher = true;
+        try
         {
-            File.Delete(filePath);
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+
+            var jsonPath = Path.ChangeExtension(filePath, ".json");
+            if (File.Exists(jsonPath))
+            {
+                File.Delete(jsonPath);
+            }
+        }
+        finally
+        {
+            _suppressWatcher = false;
         }
 
-        var jsonPath = Path.ChangeExtension(filePath, ".json");
-        if (File.Exists(jsonPath))
-        {
-            File.Delete(jsonPath);
-        }
+        // Fire specific event for the removed session
+        SessionRemoved?.Invoke(this, filePath);
     }
 
     /// <summary>

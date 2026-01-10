@@ -105,7 +105,7 @@ public class SystemInfoService : ISystemInfoService
                     if (parts.Length >= 2 && long.TryParse(parts[1], out var kb))
                     {
                         var gb = kb / 1024.0 / 1024.0;
-                        return $"{gb:F0} GB";
+                        return $"{gb:F1} GB";
                     }
                 }
             }

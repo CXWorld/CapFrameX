@@ -12,11 +12,12 @@ using SkiaSharp;
 
 namespace CapFrameX.App.ViewModels;
 
-public partial class AnalysisViewModel : ObservableObject
+public partial class AnalysisViewModel : ObservableObject, IDisposable
 {
     private readonly SessionManager _sessionManager;
     private CaptureSession? _currentSession;
     private FrametimeAnalyzer? _analyzer;
+    private readonly SynchronizationContext? _syncContext;
 
     [ObservableProperty]
     private ObservableCollection<SessionMetadata> _sessions = new();
@@ -26,6 +27,8 @@ public partial class AnalysisViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _isLoading;
+
+    private bool _isRefreshing;
 
     // Statistics
     [ObservableProperty]
@@ -75,6 +78,12 @@ public partial class AnalysisViewModel : ObservableObject
     public AnalysisViewModel(SessionManager sessionManager)
     {
         _sessionManager = sessionManager;
+        _syncContext = SynchronizationContext.Current;
+
+        // Subscribe to session changes
+        _sessionManager.SessionsChanged += OnSessionsChanged;
+        _sessionManager.SessionAdded += OnSessionAdded;
+        _sessionManager.SessionRemoved += OnSessionRemoved;
 
         FrametimeSeries = new ISeries[]
         {
@@ -112,19 +121,89 @@ public partial class AnalysisViewModel : ObservableObject
         _ = LoadSessionsAsync();
     }
 
+    private void OnSessionsChanged(object? sender, EventArgs e)
+    {
+        // Full refresh for external changes (files added/removed outside the app)
+        if (_syncContext != null)
+        {
+            _syncContext.Post(_ => _ = LoadSessionsAsync(), null);
+        }
+        else
+        {
+            _ = LoadSessionsAsync();
+        }
+    }
+
+    private void OnSessionAdded(object? sender, SessionMetadata metadata)
+    {
+        // Insert at beginning (newest first)
+        void AddSession() => Sessions.Insert(0, metadata);
+
+        if (_syncContext != null)
+            _syncContext.Post(_ => AddSession(), null);
+        else
+            AddSession();
+    }
+
+    private void OnSessionRemoved(object? sender, string filePath)
+    {
+        void RemoveSession()
+        {
+            var session = Sessions.FirstOrDefault(s => s.FilePath == filePath);
+            if (session != null)
+            {
+                Sessions.Remove(session);
+
+                // Clear analysis if the removed session was selected
+                if (SelectedSession == session)
+                {
+                    SelectedSession = null;
+                    _frametimeValues.Clear();
+                    _fpsValues.Clear();
+                    _histogramValues.Clear();
+                    AverageFps = 0;
+                    P1Fps = 0;
+                    P01Fps = 0;
+                }
+            }
+        }
+
+        if (_syncContext != null)
+            _syncContext.Post(_ => RemoveSession(), null);
+        else
+            RemoveSession();
+    }
+
+    public void Dispose()
+    {
+        _sessionManager.SessionsChanged -= OnSessionsChanged;
+        _sessionManager.SessionAdded -= OnSessionAdded;
+        _sessionManager.SessionRemoved -= OnSessionRemoved;
+    }
+
     [RelayCommand]
     private async Task LoadSessionsAsync()
     {
-        IsLoading = true;
-        Sessions.Clear();
+        // Prevent concurrent refreshes
+        if (_isRefreshing) return;
+        _isRefreshing = true;
 
-        var sessions = await _sessionManager.GetSessionsAsync();
-        foreach (var session in sessions)
+        try
         {
-            Sessions.Add(session);
-        }
+            IsLoading = true;
+            Sessions.Clear();
 
-        IsLoading = false;
+            var sessions = await _sessionManager.GetSessionsAsync();
+            foreach (var session in sessions)
+            {
+                Sessions.Add(session);
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+            _isRefreshing = false;
+        }
     }
 
     [RelayCommand]
@@ -201,16 +280,7 @@ public partial class AnalysisViewModel : ObservableObject
     {
         if (SelectedSession == null) return;
 
+        // SessionRemoved event will handle collection update and clearing analysis
         _sessionManager.DeleteSession(SelectedSession.FilePath);
-        Sessions.Remove(SelectedSession);
-        SelectedSession = null;
-
-        // Clear analysis
-        _frametimeValues.Clear();
-        _fpsValues.Clear();
-        _histogramValues.Clear();
-        AverageFps = 0;
-        P1Fps = 0;
-        P01Fps = 0;
     }
 }

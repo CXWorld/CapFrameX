@@ -28,12 +28,17 @@ static time_t last_connect_attempt = 0;
 
 static const char* get_socket_path(void) {
     static char path[256];
+#if CAPFRAMEX_SOCKET_USE_TMP
+    // Use /tmp for Proton compatibility - containers can access /tmp
+    snprintf(path, sizeof(path), "/tmp/%s-%d", CAPFRAMEX_SOCKET_NAME, getuid());
+#else
     const char* runtime_dir = getenv("XDG_RUNTIME_DIR");
     if (runtime_dir) {
         snprintf(path, sizeof(path), "%s/%s", runtime_dir, CAPFRAMEX_SOCKET_NAME);
     } else {
         snprintf(path, sizeof(path), "/tmp/%s-%d", CAPFRAMEX_SOCKET_NAME, getuid());
     }
+#endif
     return path;
 }
 
@@ -267,9 +272,22 @@ void ipc_client_send_swapchain_destroyed(void) {
     send_message(MSG_SWAPCHAIN_DESTROYED, &payload, sizeof(payload));
 }
 
+// Frame count for debug logging
+static uint64_t frames_sent = 0;
+static uint64_t last_log_frame = 0;
+
 void ipc_client_send_frame_data(const FrameTimingData* frame) {
     // Always send if connected - continuous streaming model
-    if (!connected) return;
+    if (!connected) {
+        // Log periodically when not connected
+        static uint64_t frames_dropped = 0;
+        frames_dropped++;
+        if (frames_dropped % 1000 == 0) {
+            fprintf(stderr, "[CapFrameX Layer] Dropped %lu frames (not connected)\n",
+                    (unsigned long)frames_dropped);
+        }
+        return;
+    }
 
     FrameDataPoint point = {
         .frame_number = frame->frame_number,
@@ -279,5 +297,13 @@ void ipc_client_send_frame_data(const FrameTimingData* frame) {
         .pid = cached_pid
     };
 
-    send_message(MSG_FRAMETIME_DATA, &point, sizeof(point));
+    int result = send_message(MSG_FRAMETIME_DATA, &point, sizeof(point));
+
+    frames_sent++;
+    // Log every 1000 frames or every 10 seconds
+    if (frames_sent - last_log_frame >= 1000) {
+        fprintf(stderr, "[CapFrameX Layer] Sent %lu frames (PID=%d, last FT=%.2fms, result=%d)\n",
+                (unsigned long)frames_sent, cached_pid, frame->frametime_ms, result);
+        last_log_frame = frames_sent;
+    }
 }
