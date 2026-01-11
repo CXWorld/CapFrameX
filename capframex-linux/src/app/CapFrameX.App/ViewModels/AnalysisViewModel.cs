@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using CapFrameX.Core.Analysis;
 using CapFrameX.Core.Data;
 using CapFrameX.Shared.Models;
+using Avalonia.Media;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
@@ -57,6 +58,25 @@ public partial class AnalysisViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     private string _duration = "";
+
+    // Session info
+    [ObservableProperty]
+    private string _gameName = "";
+
+    [ObservableProperty]
+    private string _gpuName = "";
+
+    [ObservableProperty]
+    private string _resolution = "";
+
+    [ObservableProperty]
+    private string _timingMode = "";
+
+    public bool HasPresentTiming => TimingMode == "Present Timing";
+
+    public IBrush TimingModeColor => HasPresentTiming
+        ? new SolidColorBrush(Color.Parse("#27AE60"))  // Green for Present Timing
+        : new SolidColorBrush(Colors.White);           // White for Layer Timing
 
     // Charts
     private readonly ObservableCollection<ObservableValue> _frametimeValues = new();
@@ -228,6 +248,14 @@ public partial class AnalysisViewModel : ObservableObject, IDisposable
         _analyzer = new FrametimeAnalyzer(_currentSession.Frames);
 
         var stats = _analyzer.Statistics;
+
+        // Update session info
+        GameName = _currentSession.GameName;
+        GpuName = _currentSession.GpuName;
+        Resolution = _currentSession.Resolution;
+        TimingMode = !string.IsNullOrEmpty(_currentSession.TimingMode) ? _currentSession.TimingMode : "Layer Timing";
+        OnPropertyChanged(nameof(HasPresentTiming));
+        OnPropertyChanged(nameof(TimingModeColor));
 
         // Update statistics
         AverageFps = stats.AverageFps;

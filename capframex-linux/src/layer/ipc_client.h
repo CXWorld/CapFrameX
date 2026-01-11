@@ -24,7 +24,7 @@ bool ipc_client_try_reconnect(void);
 void ipc_client_set_gpu_name(const char* gpu_name);
 
 // Send hello message to daemon (announces this layer instance)
-void ipc_client_send_hello(const char* gpu_name);
+void ipc_client_send_hello(const char* gpu_name, bool present_timing_supported);
 
 // Notify daemon about swapchain creation
 void ipc_client_send_swapchain_created(uint32_t width, uint32_t height,

@@ -8,8 +8,12 @@
 typedef struct {
     uint64_t frame_number;
     uint64_t timestamp_ns;
-    float frametime_ms;
-    float present_time_ms;  // Time spent in present call
+    float frametime_ms;           // CPU sampled frametime (CLOCK_MONOTONIC_RAW delta)
+    float present_time_ms;        // Time spent in present call
+    uint64_t actual_present_time_ns;  // From VK_EXT_present_timing (0 if not available)
+    float ms_until_render_complete;   // Time until render complete (0 if not available)
+    float ms_until_displayed;         // Time until displayed (0 if not available)
+    float actual_frametime_ms;    // Frametime from actual present timing (0 if not available)
 } FrameTimingData;
 
 // Ring buffer size (~60 seconds at 144fps)
@@ -24,8 +28,10 @@ void timing_cleanup(void);
 // Get current timestamp in nanoseconds
 uint64_t timing_get_timestamp(void);
 
-// Record a frame timing
-void timing_record_frame(uint64_t frame_number, uint64_t pre_present_ns, uint64_t post_present_ns);
+// Record a frame timing (with optional actual present time from extension)
+void timing_record_frame(uint64_t frame_number, uint64_t pre_present_ns, uint64_t post_present_ns,
+                         uint64_t actual_present_time_ns, float ms_until_render_complete,
+                         float ms_until_displayed);
 
 // Get the frame buffer for reading (returns pointer to ring buffer)
 const FrameTimingData* timing_get_frame_buffer(void);

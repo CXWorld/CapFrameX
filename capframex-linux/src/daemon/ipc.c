@@ -272,6 +272,9 @@ bool ipc_register_layer(int client_fd, const LayerHelloPayload* hello) {
                 }
             }
 
+            // Update present timing support status
+            layer_clients[i].present_timing_supported = hello->present_timing_supported != 0;
+
             // Capture data needed for broadcast before releasing lock
             pid_t broadcast_pid = layer_clients[i].pid;
             char broadcast_process_name[MAX_GAME_NAME_LENGTH];
@@ -280,6 +283,7 @@ bool ipc_register_layer(int client_fd, const LayerHelloPayload* hello) {
             uint32_t broadcast_width = layer_clients[i].swapchain_width;
             uint32_t broadcast_height = layer_clients[i].swapchain_height;
             bool has_swapchain = layer_clients[i].has_swapchain;
+            bool broadcast_present_timing = layer_clients[i].present_timing_supported;
 
             strncpy(broadcast_process_name, layer_clients[i].process_name, sizeof(broadcast_process_name) - 1);
             broadcast_process_name[sizeof(broadcast_process_name) - 1] = '\0';
@@ -304,8 +308,10 @@ bool ipc_register_layer(int client_fd, const LayerHelloPayload* hello) {
                     update.resolution_width = broadcast_width;
                     update.resolution_height = broadcast_height;
                 }
-                LOG_INFO("[DEBUG] Broadcasting GPU update to apps: PID=%d, GPU=%s, res=%ux%u",
-                         update.pid, update.gpu_name, update.resolution_width, update.resolution_height);
+                update.present_timing_supported = broadcast_present_timing ? 1 : 0;
+                LOG_INFO("[DEBUG] Broadcasting GPU update to apps: PID=%d, GPU=%s, res=%ux%u, present_timing=%d",
+                         update.pid, update.gpu_name, update.resolution_width, update.resolution_height,
+                         update.present_timing_supported);
                 ipc_broadcast_to_non_layers(MSG_GAME_UPDATED, &update, sizeof(update));
             }
 
@@ -321,8 +327,10 @@ bool ipc_register_layer(int client_fd, const LayerHelloPayload* hello) {
                     sizeof(layer_clients[i].process_name) - 1);
             strncpy(layer_clients[i].gpu_name, hello->gpu_name,
                     sizeof(layer_clients[i].gpu_name) - 1);
-            LOG_INFO("Layer updated (same fd): PID=%d, process=%s, GPU=%s",
-                     hello->pid, hello->process_name, hello->gpu_name);
+            layer_clients[i].present_timing_supported = hello->present_timing_supported != 0;
+            LOG_INFO("Layer updated (same fd): PID=%d, process=%s, GPU=%s, present_timing=%d",
+                     hello->pid, hello->process_name, hello->gpu_name,
+                     layer_clients[i].present_timing_supported);
             pthread_mutex_unlock(&layers_mutex);
             set_client_type(client_fd, CLIENT_TYPE_LAYER);
             return true;  // New PID on existing connection, broadcast
@@ -342,10 +350,12 @@ bool ipc_register_layer(int client_fd, const LayerHelloPayload* hello) {
         layer->swapchain_width = 0;
         layer->swapchain_height = 0;
         layer->swapchain_format = 0;
+        layer->present_timing_supported = hello->present_timing_supported != 0;
         layer_count++;
 
-        LOG_INFO("Layer registered: PID=%d, process=%s, GPU=%s (total=%d)",
-                 hello->pid, hello->process_name, hello->gpu_name, layer_count);
+        LOG_INFO("Layer registered: PID=%d, process=%s, GPU=%s, present_timing=%d (total=%d)",
+                 hello->pid, hello->process_name, hello->gpu_name,
+                 layer->present_timing_supported, layer_count);
         pthread_mutex_unlock(&layers_mutex);
         set_client_type(client_fd, CLIENT_TYPE_LAYER);
         return true;  // New layer, broadcast

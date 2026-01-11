@@ -220,11 +220,12 @@ VKAPI_ATTR VkResult VKAPI_CALL layer_QueuePresentKHR(
                 uint32_t image_count = sc->image_count;
                 const char* gpu_name = tmp_dev->instance_data->gpu_name;
 
+                bool present_timing = tmp_dev->present_timing_supported;
                 pthread_mutex_unlock(&swapchain_mutex);
 
                 // Send GPU info if not already sent
                 if (gpu_name && gpu_name[0] != '\0') {
-                    ipc_client_send_hello(gpu_name);
+                    ipc_client_send_hello(gpu_name, present_timing);
                 }
                 // Send swapchain info
                 ipc_client_send_swapchain_created(width, height, format, image_count);
@@ -276,10 +277,62 @@ VKAPI_ATTR VkResult VKAPI_CALL layer_QueuePresentKHR(
     for (uint32_t i = 0; i < pPresentInfo->swapchainCount; i++) {
         SwapchainData* sc_data = swapchain_get_data_unlocked(pPresentInfo->pSwapchains[i]);
         if (sc_data) {
-            sc_data->frame_count++;
+            // Store pre_present_time in ring buffer for future timing lookups
+            // Use frame_count as our internal present ID
+            sc_data->present_timestamps[sc_data->frame_count % PRESENT_HISTORY_SIZE] = pre_present_time;
 
-            // Record the frametime
-            timing_record_frame(sc_data->frame_count, pre_present_time, post_present_time);
+            // Query actual present timing from extension if available
+            uint64_t actual_present_time_ns = 0;
+            float ms_until_render_complete = 0.0f;
+            float ms_until_displayed = 0.0f;
+
+            if (dev_data && dev_data->present_timing_supported) {
+                if (dev_data->present_timing_type == PRESENT_TIMING_GOOGLE &&
+                    dev_data->dispatch.GetPastPresentationTimingGOOGLE) {
+                    // VK_GOOGLE_display_timing - returns timing for PAST frames
+                    uint32_t count = 0;
+                    VkResult timing_result = dev_data->dispatch.GetPastPresentationTimingGOOGLE(
+                        dev_data->device, sc_data->swapchain, &count, NULL);
+
+                    if (timing_result == VK_SUCCESS && count > 0) {
+                        VkPastPresentationTimingGOOGLE* timings = malloc(count * sizeof(VkPastPresentationTimingGOOGLE));
+                        if (timings) {
+                            timing_result = dev_data->dispatch.GetPastPresentationTimingGOOGLE(
+                                dev_data->device, sc_data->swapchain, &count, timings);
+
+                            if (timing_result == VK_SUCCESS && count > 0) {
+                                VkPastPresentationTimingGOOGLE* latest = &timings[count - 1];
+                                actual_present_time_ns = latest->actualPresentTime;
+
+                                // Initialize first_present_id on first timing data
+                                if (!sc_data->present_id_initialized) {
+                                    sc_data->first_present_id = latest->presentID;
+                                    sc_data->present_id_initialized = true;
+                                }
+
+                                // Normalize presentID to index into our ring buffer
+                                uint32_t normalized_id = latest->presentID - sc_data->first_present_id;
+                                uint32_t history_idx = normalized_id % PRESENT_HISTORY_SIZE;
+                                uint64_t frame_pre_present_time = sc_data->present_timestamps[history_idx];
+
+                                if (frame_pre_present_time > 0) {
+                                    if (latest->earliestPresentTime > 0) {
+                                        ms_until_render_complete = (float)(latest->earliestPresentTime - frame_pre_present_time) / 1000000.0f;
+                                    }
+                                    if (latest->actualPresentTime > 0) {
+                                        ms_until_displayed = (float)(latest->actualPresentTime - frame_pre_present_time) / 1000000.0f;
+                                    }
+                                }
+                            }
+                            free(timings);
+                        }
+                    }
+                }
+            }
+
+            sc_data->frame_count++;
+            timing_record_frame(sc_data->frame_count, pre_present_time, post_present_time,
+                                actual_present_time_ns, ms_until_render_complete, ms_until_displayed);
         }
     }
     pthread_mutex_unlock(&swapchain_mutex);

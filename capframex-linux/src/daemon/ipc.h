@@ -20,6 +20,7 @@ typedef struct {
     uint32_t swapchain_height;
     uint32_t swapchain_format;
     bool has_swapchain;
+    bool present_timing_supported;  // VK_EXT_present_timing available
 } LayerClient;
 
 // App subscription info

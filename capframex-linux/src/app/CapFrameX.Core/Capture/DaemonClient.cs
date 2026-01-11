@@ -34,7 +34,7 @@ public class CaptureService : IDisposable
             var existing = _detectedGames.FirstOrDefault(g => g.Pid == game.Pid);
             if (existing != null)
             {
-                // Update with new info (GPU, resolution) and treat as update
+                // Update with new info (GPU, resolution, timing mode) and treat as update
                 if (!string.IsNullOrEmpty(game.GpuName))
                     existing.GpuName = game.GpuName;
                 if (game.ResolutionWidth > 0 && game.ResolutionHeight > 0)
@@ -44,6 +44,7 @@ public class CaptureService : IDisposable
                 }
                 if (!string.IsNullOrEmpty(game.Launcher))
                     existing.Launcher = game.Launcher;
+                existing.PresentTimingSupported = game.PresentTimingSupported;
                 _gameUpdated.OnNext(existing);
             }
             else
@@ -64,6 +65,7 @@ public class CaptureService : IDisposable
                 existing.ResolutionHeight = update.ResolutionHeight;
                 if (!string.IsNullOrEmpty(update.Launcher))
                     existing.Launcher = update.Launcher;
+                existing.PresentTimingSupported = update.PresentTimingSupported;
             }
             _gameUpdated.OnNext(update);
         };

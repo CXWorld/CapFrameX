@@ -17,6 +17,7 @@ public class GameInfo : INotifyPropertyChanged
     private int _resolutionHeight;
     private DateTime _detectedTime;
     private bool _isCapturing;
+    private bool _presentTimingSupported;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -81,6 +82,17 @@ public class GameInfo : INotifyPropertyChanged
         get => _isCapturing;
         set => SetField(ref _isCapturing, value);
     }
+
+    public bool PresentTimingSupported
+    {
+        get => _presentTimingSupported;
+        set => SetField(ref _presentTimingSupported, value);
+    }
+
+    /// <summary>
+    /// Display name for timing mode
+    /// </summary>
+    public string TimingMode => _presentTimingSupported ? "Present Timing" : "Layer Timing";
 
     public string Resolution => ResolutionWidth > 0 && ResolutionHeight > 0
         ? $"{ResolutionWidth}x{ResolutionHeight}"

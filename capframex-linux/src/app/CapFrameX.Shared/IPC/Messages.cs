@@ -52,6 +52,8 @@ public unsafe struct GameDetectedPayload
     public fixed byte GpuName[256];
     public uint ResolutionWidth;
     public uint ResolutionHeight;
+    public byte PresentTimingSupported;  // 1 if VK_EXT_present_timing available
+    public fixed byte Padding[3];        // Alignment padding
 }
 
 /// <summary>
@@ -62,9 +64,14 @@ public struct FrameDataPointIpc
 {
     public ulong FrameNumber;
     public ulong TimestampNs;
-    public float FrametimeMs;
+    public float FrametimeMs;           // CPU sampled frametime
     public float Fps;
-    public int Pid;  // Source process ID
+    public int Pid;                      // Source process ID
+    public ulong ActualPresentTimeNs;    // From VK_EXT_present_timing (0 if not available)
+    public float MsUntilRenderComplete;  // Time until render complete (0 if not available)
+    public float MsUntilDisplayed;       // Time until displayed (0 if not available)
+    public float ActualFrametimeMs;      // Frametime from actual present timing (0 if not available)
+    public uint Padding;                 // Alignment padding
 }
 
 /// <summary>

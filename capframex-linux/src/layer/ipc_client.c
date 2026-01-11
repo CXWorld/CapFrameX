@@ -97,7 +97,7 @@ static int send_message(MessageType type, void* payload, uint32_t payload_size) 
     header->payload_size = payload_size;
 
     struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
+    clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
     header->timestamp = (uint64_t)ts.tv_sec * 1000000000ULL + (uint64_t)ts.tv_nsec;
 
     if (payload && payload_size > 0) {
@@ -263,8 +263,9 @@ bool ipc_client_connect(void) {
     // Send hello message to announce ourselves
     // Note: Full GPU + swapchain info will be sent via pending_swapchain_send mechanism
     // in QueuePresentKHR on the next frame render, which has access to correct device data
+    // At this point we don't know the present_timing status yet (device not created), pass false
     fprintf(stderr, "[CapFrameX Layer] DEBUG: Sending hello after connect, cached_gpu_name='%s'\n", cached_gpu_name);
-    ipc_client_send_hello(cached_gpu_name);
+    ipc_client_send_hello(cached_gpu_name, false);
 
     fprintf(stderr, "[CapFrameX Layer] Connected to daemon - streaming enabled\n");
 
@@ -279,7 +280,7 @@ bool ipc_client_try_reconnect(void) {
     if (connected) return true;
 
     struct timespec now;
-    clock_gettime(CLOCK_MONOTONIC, &now);
+    clock_gettime(CLOCK_MONOTONIC_RAW, &now);
 
     // Calculate elapsed time in milliseconds
     long elapsed_ms = (now.tv_sec - last_connect_attempt.tv_sec) * 1000 +
@@ -303,7 +304,7 @@ void ipc_client_set_gpu_name(const char* gpu_name) {
     pthread_mutex_unlock(&ipc_mutex);
 }
 
-void ipc_client_send_hello(const char* gpu_name) {
+void ipc_client_send_hello(const char* gpu_name, bool present_timing_supported) {
     if (!connected) {
         fprintf(stderr, "[CapFrameX Layer] DEBUG: send_hello called but not connected, GPU=%s\n",
                 gpu_name ? gpu_name : "(null)");
@@ -320,11 +321,12 @@ void ipc_client_send_hello(const char* gpu_name) {
         strncpy(payload.gpu_name, cached_gpu_name, sizeof(payload.gpu_name) - 1);
         fprintf(stderr, "[CapFrameX Layer] DEBUG: Using cached GPU name: '%s' (provided was empty)\n", cached_gpu_name);
     }
+    payload.present_timing_supported = present_timing_supported ? 1 : 0;
 
     int result = send_message(MSG_LAYER_HELLO, &payload, sizeof(payload));
 
-    fprintf(stderr, "[CapFrameX Layer] Sent hello: PID=%d, process=%s, GPU='%s', result=%d\n",
-            payload.pid, payload.process_name, payload.gpu_name, result);
+    fprintf(stderr, "[CapFrameX Layer] Sent hello: PID=%d, process=%s, GPU='%s', present_timing=%d, result=%d\n",
+            payload.pid, payload.process_name, payload.gpu_name, payload.present_timing_supported, result);
 }
 
 void ipc_client_send_swapchain_created(uint32_t width, uint32_t height,
@@ -385,7 +387,12 @@ void ipc_client_send_frame_data(const FrameTimingData* frame) {
         .timestamp_ns = frame->timestamp_ns,
         .frametime_ms = frame->frametime_ms,
         .fps = (frame->frametime_ms > 0) ? 1000.0f / frame->frametime_ms : 0,
-        .pid = cached_pid
+        .pid = cached_pid,
+        .actual_present_time_ns = frame->actual_present_time_ns,
+        .ms_until_render_complete = frame->ms_until_render_complete,
+        .ms_until_displayed = frame->ms_until_displayed,
+        .actual_frametime_ms = frame->actual_frametime_ms,
+        .padding = 0
     };
 
     int result = send_message(MSG_FRAMETIME_DATA, &point, sizeof(point));
@@ -393,8 +400,8 @@ void ipc_client_send_frame_data(const FrameTimingData* frame) {
     frames_sent++;
     // Log every 1000 frames or every 10 seconds
     if (frames_sent - last_log_frame >= 1000) {
-        fprintf(stderr, "[CapFrameX Layer] Sent %lu frames (PID=%d, last FT=%.2fms, result=%d)\n",
-                (unsigned long)frames_sent, cached_pid, frame->frametime_ms, result);
+        fprintf(stderr, "[CapFrameX Layer] Sent %lu frames (PID=%d, CPU FT=%.2fms, Actual FT=%.2fms, result=%d)\n",
+                (unsigned long)frames_sent, cached_pid, frame->frametime_ms, frame->actual_frametime_ms, result);
         last_log_frame = frames_sent;
     }
 }

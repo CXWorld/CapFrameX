@@ -68,15 +68,22 @@ typedef struct {
     char gpu_name[MAX_GAME_NAME_LENGTH];
     uint32_t resolution_width;
     uint32_t resolution_height;
+    uint8_t present_timing_supported;  // 1 if VK_EXT_present_timing available
+    uint8_t padding[3];                // Alignment padding
 } GameDetectedPayload;
 
 // Frame data for IPC
-typedef struct {
+typedef struct __attribute__((packed)) {
     uint64_t frame_number;
     uint64_t timestamp_ns;
-    float frametime_ms;
+    float frametime_ms;           // CPU sampled frametime
     float fps;
-    pid_t pid;  // Source process ID (for daemon to route to correct subscriber)
+    int32_t pid;  // Source process ID (for daemon to route to correct subscriber)
+    uint64_t actual_present_time_ns;  // From VK_EXT_present_timing (0 if not available)
+    float ms_until_render_complete;   // Time until render complete (0 if not available)
+    float ms_until_displayed;         // Time until displayed (0 if not available)
+    float actual_frametime_ms;    // Frametime from actual present timing (0 if not available)
+    uint32_t padding;             // Alignment padding
 } FrameDataPoint;
 
 // Layer hello message - layer announces itself to daemon
@@ -84,6 +91,8 @@ typedef struct {
     pid_t pid;
     char process_name[MAX_GAME_NAME_LENGTH];
     char gpu_name[MAX_GAME_NAME_LENGTH];
+    uint8_t present_timing_supported;  // 1 if VK_EXT_present_timing available
+    uint8_t padding[3];                // Alignment padding
 } LayerHelloPayload;
 
 // Swapchain info message

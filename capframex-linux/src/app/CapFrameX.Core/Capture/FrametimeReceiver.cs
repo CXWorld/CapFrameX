@@ -45,16 +45,21 @@ public class FrametimeReceiver : IDisposable
 
     public void AddFrame(FrameDataPoint point)
     {
+        // Store both CPU sampled and actual frametime (actual is 0 if extension not available)
         var frame = new FrameData
         {
             FrameNumber = point.FrameNumber,
             TimestampNs = point.TimestampNs,
-            FrametimeMs = point.FrametimeMs
+            FrametimeMs = point.FrametimeMs,
+            MsUntilRenderComplete = point.MsUntilRenderComplete,
+            MsUntilDisplayed = point.MsUntilDisplayed,
+            ActualFrametimeMs = point.ActualFrametimeMs
         };
 
         lock (_bufferLock)
         {
-            // Always update live stats rolling buffer
+            // Update live stats rolling buffer with CPU sampled frametime
+            // User can choose timing source for analysis later
             _recentFrametimes.Enqueue(point.FrametimeMs);
             if (_recentFrametimes.Count > RecentFrameCount)
             {

@@ -179,12 +179,14 @@ static void ipc_message_handler(MessageHeader* header, void* payload, int client
                     layer_payload.resolution_width = layers_copy[i].swapchain_width;
                     layer_payload.resolution_height = layers_copy[i].swapchain_height;
                 }
+                layer_payload.present_timing_supported = layers_copy[i].present_timing_supported ? 1 : 0;
                 // Get launcher chain
                 launcher_get_chain(layers_copy[i].pid, layer_payload.launcher, sizeof(layer_payload.launcher));
 
-                LOG_INFO("[DEBUG] Sending layer to client: PID=%d, process=%s, GPU=%s, has_sc=%d, res=%ux%u",
+                LOG_INFO("[DEBUG] Sending layer to client: PID=%d, process=%s, GPU=%s, has_sc=%d, res=%ux%u, present_timing=%d",
                          layer_payload.pid, layer_payload.game_name, layer_payload.gpu_name,
-                         layers_copy[i].has_swapchain, layer_payload.resolution_width, layer_payload.resolution_height);
+                         layers_copy[i].has_swapchain, layer_payload.resolution_width, layer_payload.resolution_height,
+                         layer_payload.present_timing_supported);
 
                 ipc_send(client_fd, MSG_GAME_STARTED, &layer_payload, sizeof(layer_payload));
                 sent_count++;
@@ -245,6 +247,7 @@ static void ipc_message_handler(MessageHeader* header, void* payload, int client
                             sizeof(game_payload.game_name) - 1);
                     strncpy(game_payload.gpu_name, hello->gpu_name,
                             sizeof(game_payload.gpu_name) - 1);
+                    game_payload.present_timing_supported = hello->present_timing_supported;
 
                     // Get launcher chain
                     launcher_get_chain(hello->pid, game_payload.launcher, sizeof(game_payload.launcher));
@@ -275,6 +278,7 @@ static void ipc_message_handler(MessageHeader* header, void* payload, int client
                             sizeof(update.gpu_name) - 1);
                     update.resolution_width = info->width;
                     update.resolution_height = info->height;
+                    update.present_timing_supported = layer_copy.present_timing_supported ? 1 : 0;
 
                     launcher_get_chain(info->pid, update.launcher, sizeof(update.launcher));
 
@@ -306,6 +310,7 @@ static void ipc_message_handler(MessageHeader* header, void* payload, int client
                             sizeof(update.gpu_name) - 1);
                     update.resolution_width = 0;
                     update.resolution_height = 0;
+                    update.present_timing_supported = layer_copy.present_timing_supported ? 1 : 0;
                     launcher_get_chain(info->pid, update.launcher, sizeof(update.launcher));
 
                     ipc_broadcast_to_non_layers(MSG_GAME_UPDATED, &update, sizeof(update));

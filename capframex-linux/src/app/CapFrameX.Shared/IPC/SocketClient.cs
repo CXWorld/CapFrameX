@@ -233,9 +233,10 @@ public class DaemonClient : IDisposable
                         GpuName = GetStringFromFixedBuffer(ref gamePayload, 3),
                         ResolutionWidth = (int)gamePayload.ResolutionWidth,
                         ResolutionHeight = (int)gamePayload.ResolutionHeight,
+                        PresentTimingSupported = gamePayload.PresentTimingSupported != 0,
                         DetectedTime = DateTime.Now
                     };
-                    Console.WriteLine($"[DaemonClient] DEBUG: GameStarted - PID={gameInfo.Pid}, Name={gameInfo.Name}, GPU='{gameInfo.GpuName}', Res={gameInfo.ResolutionWidth}x{gameInfo.ResolutionHeight}");
+                    Console.WriteLine($"[DaemonClient] DEBUG: GameStarted - PID={gameInfo.Pid}, Name={gameInfo.Name}, GPU='{gameInfo.GpuName}', Res={gameInfo.ResolutionWidth}x{gameInfo.ResolutionHeight}, PresentTiming={gameInfo.PresentTimingSupported}");
                     GameDetected?.Invoke(this, gameInfo);
                 }
                 break;
@@ -253,9 +254,10 @@ public class DaemonClient : IDisposable
                         GpuName = GetStringFromFixedBuffer(ref gamePayload, 3),
                         ResolutionWidth = (int)gamePayload.ResolutionWidth,
                         ResolutionHeight = (int)gamePayload.ResolutionHeight,
+                        PresentTimingSupported = gamePayload.PresentTimingSupported != 0,
                         DetectedTime = DateTime.Now
                     };
-                    Console.WriteLine($"[DaemonClient] DEBUG: GameUpdated - PID={gameInfo.Pid}, Name={gameInfo.Name}, GPU='{gameInfo.GpuName}', Res={gameInfo.ResolutionWidth}x{gameInfo.ResolutionHeight}");
+                    Console.WriteLine($"[DaemonClient] DEBUG: GameUpdated - PID={gameInfo.Pid}, Name={gameInfo.Name}, GPU='{gameInfo.GpuName}', Res={gameInfo.ResolutionWidth}x{gameInfo.ResolutionHeight}, PresentTiming={gameInfo.PresentTimingSupported}");
                     GameUpdated?.Invoke(this, gameInfo);
                 }
                 break;
@@ -278,7 +280,11 @@ public class DaemonClient : IDisposable
                         TimestampNs = frameData.TimestampNs,
                         FrametimeMs = frameData.FrametimeMs,
                         Fps = frameData.Fps,
-                        Pid = frameData.Pid
+                        Pid = frameData.Pid,
+                        ActualPresentTimeNs = frameData.ActualPresentTimeNs,
+                        MsUntilRenderComplete = frameData.MsUntilRenderComplete,
+                        MsUntilDisplayed = frameData.MsUntilDisplayed,
+                        ActualFrametimeMs = frameData.ActualFrametimeMs
                     };
                     FrameDataReceived?.Invoke(this, point);
                 }

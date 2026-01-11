@@ -11,6 +11,7 @@ static FrameTimingData frame_buffer[FRAME_BUFFER_SIZE];
 static uint32_t buffer_head = 0;
 static uint32_t buffer_count = 0;
 static uint64_t last_frame_time = 0;
+static uint64_t last_actual_present_time = 0;  // For calculating actual frametime delta
 static pthread_mutex_t timing_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void timing_init(void) {
@@ -19,6 +20,7 @@ void timing_init(void) {
     buffer_head = 0;
     buffer_count = 0;
     last_frame_time = 0;
+    last_actual_present_time = 0;
     pthread_mutex_unlock(&timing_mutex);
 }
 
@@ -28,11 +30,15 @@ void timing_cleanup(void) {
 
 uint64_t timing_get_timestamp(void) {
     struct timespec ts;
+    // Use CLOCK_MONOTONIC to match Vulkan's timing domain
+    // (VK_GOOGLE_display_timing uses CLOCK_MONOTONIC on Linux)
     clock_gettime(CLOCK_MONOTONIC, &ts);
     return (uint64_t)ts.tv_sec * 1000000000ULL + (uint64_t)ts.tv_nsec;
 }
 
-void timing_record_frame(uint64_t frame_number, uint64_t pre_present_ns, uint64_t post_present_ns) {
+void timing_record_frame(uint64_t frame_number, uint64_t pre_present_ns, uint64_t post_present_ns,
+                         uint64_t actual_present_time_ns, float ms_until_render_complete,
+                         float ms_until_displayed) {
     pthread_mutex_lock(&timing_mutex);
 
     FrameTimingData* frame = &frame_buffer[buffer_head];
@@ -40,7 +46,7 @@ void timing_record_frame(uint64_t frame_number, uint64_t pre_present_ns, uint64_
     frame->frame_number = frame_number;
     frame->timestamp_ns = pre_present_ns;
 
-    // Calculate frametime (time since last frame)
+    // Calculate CPU sampled frametime (time since last frame)
     if (last_frame_time > 0) {
         frame->frametime_ms = (float)(pre_present_ns - last_frame_time) / 1000000.0f;
     } else {
@@ -50,7 +56,21 @@ void timing_record_frame(uint64_t frame_number, uint64_t pre_present_ns, uint64_
     // Time spent in the present call itself
     frame->present_time_ms = (float)(post_present_ns - pre_present_ns) / 1000000.0f;
 
+    // Handle actual present timing from extension
+    frame->actual_present_time_ns = actual_present_time_ns;
+    frame->ms_until_render_complete = ms_until_render_complete;
+    frame->ms_until_displayed = ms_until_displayed;
+    if (actual_present_time_ns > 0 && last_actual_present_time > 0) {
+        // Calculate frametime from actual present times (actualDuration)
+        frame->actual_frametime_ms = (float)(actual_present_time_ns - last_actual_present_time) / 1000000.0f;
+    } else {
+        frame->actual_frametime_ms = 0.0f;
+    }
+
     last_frame_time = pre_present_ns;
+    if (actual_present_time_ns > 0) {
+        last_actual_present_time = actual_present_time_ns;
+    }
 
     // Advance ring buffer
     buffer_head = (buffer_head + 1) % FRAME_BUFFER_SIZE;
@@ -119,6 +139,7 @@ void timing_clear_buffer(void) {
     buffer_head = 0;
     buffer_count = 0;
     last_frame_time = 0;
+    last_actual_present_time = 0;
     pthread_mutex_unlock(&timing_mutex);
 }
 

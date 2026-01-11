@@ -35,7 +35,10 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
     private readonly System.Timers.Timer _statsTimer;
     private readonly System.Timers.Timer _processPollTimer;
     private readonly System.Timers.Timer _hardwareMetricsTimer;
+    private readonly System.Timers.Timer _captureTimerDisplay;
     private System.Timers.Timer? _autoStopTimer;
+    private DateTime _captureStartTime;
+    private int _captureTargetSeconds;
 
     [ObservableProperty]
     private ObservableCollection<GameInfo> _detectedGames = new();
@@ -63,6 +66,10 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
     public string GameInfoResolution => !string.IsNullOrEmpty(SelectedGame?.Resolution) ? SelectedGame.Resolution : "-";
     public string GameInfoGpu => !string.IsNullOrEmpty(SelectedGame?.GpuName) ? SelectedGame.GpuName : "-";
     public string GameInfoLauncher => !string.IsNullOrEmpty(SelectedGame?.Launcher) ? SelectedGame.Launcher : "-";
+    public string GameInfoTimingMode => SelectedGame?.TimingMode ?? "-";
+    public IBrush GameInfoTimingModeColor => SelectedGame?.PresentTimingSupported == true
+        ? new SolidColorBrush(Color.Parse("#27AE60"))  // Green for Present Timing
+        : new SolidColorBrush(Colors.White);           // White for Layer Timing
 
     // Legacy properties for compatibility
     public bool HasSelectedGame => SelectedGame != null;
@@ -74,6 +81,8 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(GameInfoResolution));
         OnPropertyChanged(nameof(GameInfoGpu));
         OnPropertyChanged(nameof(GameInfoLauncher));
+        OnPropertyChanged(nameof(GameInfoTimingMode));
+        OnPropertyChanged(nameof(GameInfoTimingModeColor));
         OnPropertyChanged(nameof(HasSelectedGame));
 
         // Update live view subscription when game selection changes
@@ -93,9 +102,7 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
 
     private async Task UpdateLiveViewAsync()
     {
-        // Don't manage live view while capturing - capture handles its own subscription
-        if (IsCapturing) return;
-
+        // Live view runs independently of capture state - chart always shows live data
         var shouldBeActive = LiveChartEnabled && SelectedGame != null;
 
         if (shouldBeActive && !_isLiveViewActive)
@@ -145,6 +152,12 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     private string _captureDuration = "00:00:00";
+
+    [ObservableProperty]
+    private string _captureTimeDisplay = "";
+
+    [ObservableProperty]
+    private bool _showCaptureTimer;
 
     [ObservableProperty]
     private float _averageFrametime;
@@ -278,6 +291,7 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
                     game.ResolutionHeight = update.ResolutionHeight;
                     if (!string.IsNullOrEmpty(update.Launcher))
                         game.Launcher = update.Launcher;
+                    game.PresentTimingSupported = update.PresentTimingSupported;
 
                     // If this is the selected game, notify computed properties
                     if (SelectedGame?.Pid == update.Pid)
@@ -285,6 +299,8 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
                         OnPropertyChanged(nameof(GameInfoResolution));
                         OnPropertyChanged(nameof(GameInfoGpu));
                         OnPropertyChanged(nameof(GameInfoLauncher));
+                        OnPropertyChanged(nameof(GameInfoTimingMode));
+                        OnPropertyChanged(nameof(GameInfoTimingModeColor));
                     }
                 }
             });
@@ -327,6 +343,11 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
         _hardwareMetricsTimer = new System.Timers.Timer(1000);
         _hardwareMetricsTimer.Elapsed += (_, _) => UpdateHardwareMetrics();
         _hardwareMetricsTimer.Start();
+
+        // Capture time display timer - updates every 100ms for smooth countdown
+        _captureTimerDisplay = new System.Timers.Timer(100);
+        _captureTimerDisplay.Elapsed += (_, _) => UpdateCaptureTimeDisplay();
+        _captureTimerDisplay.Start();
 
         // Populate with already detected games
         foreach (var game in _captureService.DetectedGames)
@@ -371,6 +392,29 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
             FrameCount = stats.FrameCount;
             CaptureDuration = stats.Duration.ToString(@"hh\:mm\:ss");
             AverageFrametime = stats.AverageFrametime;
+        });
+    }
+
+    private void UpdateCaptureTimeDisplay()
+    {
+        if (!IsCapturing) return;
+
+        var elapsed = DateTime.Now - _captureStartTime;
+
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            if (_captureTargetSeconds > 0)
+            {
+                // Countdown mode: show remaining time
+                var remaining = TimeSpan.FromSeconds(_captureTargetSeconds) - elapsed;
+                if (remaining.TotalSeconds < 0) remaining = TimeSpan.Zero;
+                CaptureTimeDisplay = $"-{remaining:mm\\:ss}";
+            }
+            else
+            {
+                // Elapsed mode: show time since capture started
+                CaptureTimeDisplay = elapsed.ToString(@"mm\:ss");
+            }
         });
     }
 
@@ -514,7 +558,7 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
 
         Console.WriteLine($"[CaptureVM] Starting capture for {targetGame.Name} (PID {targetGame.Pid})");
 
-        _frametimeValues.Clear();
+        // Start recording frames (don't clear chart - it runs independently)
         _frametimeReceiver.StartCapture();
 
         // If live view is already active for the same game, we're already subscribed
@@ -522,15 +566,21 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
         if (!_isLiveViewActive || _captureService.CapturingPid != targetGame.Pid)
         {
             await _captureService.StartCaptureAsync(targetGame.Pid);
+            _isLiveViewActive = true; // Mark as active since we just started
         }
-        _isLiveViewActive = false; // Capture takes over from live view
 
         IsCapturing = true;
         CaptureButtonText = "Stop Capture";
         Console.WriteLine($"[CaptureVM] Capture started - subscribed to PID {targetGame.Pid}");
 
-        // Setup auto-stop timer if enabled
+        // Start capture timer display
+        _captureStartTime = DateTime.Now;
         var settings = _settingsService.Settings;
+        _captureTargetSeconds = settings.AutoStopEnabled ? settings.CaptureDurationSeconds : 0;
+        ShowCaptureTimer = true;
+        UpdateCaptureTimeDisplay(); // Initial update
+
+        // Setup auto-stop timer if enabled
         if (settings.AutoStopEnabled && settings.CaptureDurationSeconds > 0)
         {
             Console.WriteLine($"[CaptureVM] Auto-stop enabled: {settings.CaptureDurationSeconds} seconds");
@@ -554,7 +604,11 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
         _autoStopTimer?.Dispose();
         _autoStopTimer = null;
 
-        await _captureService.StopCaptureAsync();
+        // Hide capture timer
+        ShowCaptureTimer = false;
+        CaptureTimeDisplay = "";
+
+        // Don't stop capture service - let live view continue if enabled
         _frametimeReceiver.StopCapture();
 
         IsCapturing = false;
@@ -567,6 +621,9 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
             var session = new CaptureSession
             {
                 GameName = SelectedGame?.Name ?? "Unknown",
+                GpuName = SelectedGame?.GpuName ?? string.Empty,
+                Resolution = SelectedGame?.Resolution ?? string.Empty,
+                TimingMode = SelectedGame?.TimingMode ?? "Layer Timing",
                 StartTime = DateTime.Now.AddMilliseconds(-frames.Sum(f => f.FrametimeMs)),
                 EndTime = DateTime.Now,
                 Frames = frames.ToList()
@@ -590,6 +647,7 @@ public partial class CaptureViewModel : ObservableObject, IDisposable
         _statsTimer.Dispose();
         _processPollTimer.Dispose();
         _hardwareMetricsTimer.Dispose();
+        _captureTimerDisplay.Dispose();
         _autoStopTimer?.Dispose();
     }
 }

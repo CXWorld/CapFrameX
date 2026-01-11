@@ -10,6 +10,7 @@ public class CaptureSession
     public string GpuName { get; set; } = string.Empty;
     public string CpuName { get; set; } = string.Empty;
     public string Resolution { get; set; } = string.Empty;
+    public string TimingMode { get; set; } = string.Empty;  // "Present Timing" or "Layer Timing"
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
     public TimeSpan Duration => EndTime - StartTime;
@@ -29,6 +30,7 @@ public class SessionMetadata
     public string Id { get; set; } = string.Empty;
     public string GameName { get; set; } = string.Empty;
     public string GpuName { get; set; } = string.Empty;
+    public string TimingMode { get; set; } = string.Empty;  // "Present Timing" or "Layer Timing"
     public DateTime StartTime { get; set; }
     public TimeSpan Duration { get; set; }
     public int FrameCount { get; set; }
