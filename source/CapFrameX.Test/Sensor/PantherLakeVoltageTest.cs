@@ -1,8 +1,12 @@
+using CapFrameX.Data;
 using LibreHardwareMonitor.PawnIo;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Windows.Interop;
 
 namespace CapFrameX.Test.Sensor
 {
@@ -25,6 +29,11 @@ namespace CapFrameX.Test.Sensor
         [TestMethod]
         public void ScanMsrForValidVoltage_PantherLake()
         {
+            // === Summary ===
+            // Found 2 MSR(s) with potentially valid voltage readings:
+            // MSR 0x019C: VoltageEax = 1.2500V, VoltageEdx = 0.0000V, Raw = 0x00000000883E2800
+            // MSR 0x0641: VoltageEax = 0.8818V, VoltageEdx = 0.0000V, Raw = 0x0000000000021C38
+
             var pawnModule = new IntelMsr();
             var validMsrs = new List<(uint Address, float VoltageEax, float VoltageEdx, ulong RawValue)>();
 
@@ -200,6 +209,10 @@ namespace CapFrameX.Test.Sensor
         [TestMethod]
         public void ScanWithAlternativeVoltageFormulas()
         {
+            // === Valid Voltage Candidates ===
+            // MSR 0x019C: VID / 8192(EAX[15:0]) = 1.2500V
+            // MSR 0x00CE: VID / 8192(EAX[15:0]) = 1.1563V
+
             var pawnModule = new IntelMsr();
             var validMsrs = new List<(uint Address, string Formula, float Voltage, ulong RawValue)>();
 
