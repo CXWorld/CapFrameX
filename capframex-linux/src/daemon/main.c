@@ -4,6 +4,8 @@
 #include <signal.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 
 #include "common.h"
 #include "config.h"
@@ -84,11 +86,7 @@ static void add_tracked_game(ProcessInfo* info) {
     strncpy(payload.game_name, game_name, sizeof(payload.game_name) - 1);
     strncpy(payload.exe_path, info->exe_path, sizeof(payload.exe_path) - 1);
 
-    LauncherType launcher_type;
-    if (launcher_is_launcher_child(info->pid, &launcher_type)) {
-        strncpy(payload.launcher, launcher_get_name(launcher_type),
-                sizeof(payload.launcher) - 1);
-    }
+    launcher_get_chain(info->pid, payload.launcher, sizeof(payload.launcher));
 
     ipc_broadcast(MSG_GAME_STARTED, &payload, sizeof(payload));
 
@@ -145,7 +143,7 @@ static void ipc_message_handler(MessageHeader* header, void* payload, int client
     switch (header->type) {
         case MSG_STATUS_REQUEST: {
             // Send all tracked games to the requesting client
-            LOG_INFO("Client %d requested status, sending %d games", client_fd, tracked_game_count);
+            LOG_INFO("[DEBUG] Client %d requested status, sending %d tracked games", client_fd, tracked_game_count);
             for (int i = 0; i < tracked_game_count; i++) {
                 GameDetectedPayload game_payload = {0};
                 game_payload.pid = tracked_games[i].pid;
@@ -154,44 +152,44 @@ static void ipc_message_handler(MessageHeader* header, void* payload, int client
                 strncpy(game_payload.exe_path, tracked_games[i].exe_path,
                         sizeof(game_payload.exe_path) - 1);
 
-                LauncherType launcher_type;
-                if (launcher_is_launcher_child(tracked_games[i].pid, &launcher_type)) {
-                    strncpy(game_payload.launcher, launcher_get_name(launcher_type),
-                            sizeof(game_payload.launcher) - 1);
-                }
+                launcher_get_chain(tracked_games[i].pid, game_payload.launcher, sizeof(game_payload.launcher));
 
                 ipc_send(client_fd, MSG_GAME_STARTED, &game_payload, sizeof(game_payload));
             }
 
-            // Also send info about connected layers (skip blacklisted processes)
-            int layer_count = 0;
-            LayerClient* layers = ipc_get_layers(&layer_count);
+            // FIX: Use thread-safe copy of layer data to avoid race conditions
+            // The old code returned a pointer to shared data without holding the lock
+            LayerClient layers_copy[64];  // MAX_LAYERS from ipc.c
+            int layer_count = ipc_get_layers_copy(layers_copy, 64);
             int sent_count = 0;
+            LOG_INFO("[DEBUG] Processing %d connected layers for status response", layer_count);
             for (int i = 0; i < layer_count; i++) {
                 // Skip blacklisted processes
-                if (ipc_is_blacklisted_process(layers[i].process_name)) {
+                if (ipc_is_blacklisted_process(layers_copy[i].process_name)) {
+                    LOG_INFO("[DEBUG] Skipping blacklisted layer: %s", layers_copy[i].process_name);
                     continue;
                 }
                 GameDetectedPayload layer_payload = {0};
-                layer_payload.pid = layers[i].pid;
-                strncpy(layer_payload.game_name, layers[i].process_name,
+                layer_payload.pid = layers_copy[i].pid;
+                strncpy(layer_payload.game_name, layers_copy[i].process_name,
                         sizeof(layer_payload.game_name) - 1);
-                // Include GPU name in launcher field, with resolution if available
-                if (layers[i].has_swapchain && strlen(layers[i].gpu_name) > 0) {
-                    snprintf(layer_payload.launcher, sizeof(layer_payload.launcher),
-                             "%s (%ux%u)", layers[i].gpu_name,
-                             layers[i].swapchain_width, layers[i].swapchain_height);
-                } else if (strlen(layers[i].gpu_name) > 0) {
-                    strncpy(layer_payload.launcher, layers[i].gpu_name,
-                            sizeof(layer_payload.launcher) - 1);
-                } else if (layers[i].has_swapchain) {
-                    snprintf(layer_payload.launcher, sizeof(layer_payload.launcher),
-                             "%ux%u", layers[i].swapchain_width, layers[i].swapchain_height);
+                strncpy(layer_payload.gpu_name, layers_copy[i].gpu_name,
+                        sizeof(layer_payload.gpu_name) - 1);
+                if (layers_copy[i].has_swapchain) {
+                    layer_payload.resolution_width = layers_copy[i].swapchain_width;
+                    layer_payload.resolution_height = layers_copy[i].swapchain_height;
                 }
+                // Get launcher chain
+                launcher_get_chain(layers_copy[i].pid, layer_payload.launcher, sizeof(layer_payload.launcher));
+
+                LOG_INFO("[DEBUG] Sending layer to client: PID=%d, process=%s, GPU=%s, has_sc=%d, res=%ux%u",
+                         layer_payload.pid, layer_payload.game_name, layer_payload.gpu_name,
+                         layers_copy[i].has_swapchain, layer_payload.resolution_width, layer_payload.resolution_height);
+
                 ipc_send(client_fd, MSG_GAME_STARTED, &layer_payload, sizeof(layer_payload));
                 sent_count++;
             }
-            LOG_INFO("Sent %d layer(s) to client %d (filtered from %d)", sent_count, client_fd, layer_count);
+            LOG_INFO("[DEBUG] Sent %d layer(s) to client %d (filtered from %d total)", sent_count, client_fd, layer_count);
             break;
         }
 
@@ -245,8 +243,12 @@ static void ipc_message_handler(MessageHeader* header, void* payload, int client
                     game_payload.pid = hello->pid;
                     strncpy(game_payload.game_name, hello->process_name,
                             sizeof(game_payload.game_name) - 1);
-                    strncpy(game_payload.launcher, hello->gpu_name,
-                            sizeof(game_payload.launcher) - 1);
+                    strncpy(game_payload.gpu_name, hello->gpu_name,
+                            sizeof(game_payload.gpu_name) - 1);
+
+                    // Get launcher chain
+                    launcher_get_chain(hello->pid, game_payload.launcher, sizeof(game_payload.launcher));
+
                     ipc_broadcast_to_non_layers(MSG_GAME_STARTED, &game_payload, sizeof(game_payload));
                 }
             }
@@ -254,11 +256,30 @@ static void ipc_message_handler(MessageHeader* header, void* payload, int client
         }
 
         case MSG_SWAPCHAIN_CREATED: {
-            // Layer created swapchain - could notify apps about resolution
+            // Layer created swapchain - notify apps about resolution
             if (payload) {
                 SwapchainInfoPayload* info = (SwapchainInfoPayload*)payload;
                 LOG_INFO("Swapchain created for PID %d: %ux%u",
                          info->pid, info->width, info->height);
+
+                ipc_update_layer_swapchain(client_fd, info);
+
+                // Broadcast resolution update to apps (use thread-safe copy)
+                LayerClient layer_copy;
+                if (ipc_get_layer_by_pid_copy(info->pid, &layer_copy)) {
+                    GameDetectedPayload update = {0};
+                    update.pid = info->pid;
+                    strncpy(update.game_name, layer_copy.process_name,
+                            sizeof(update.game_name) - 1);
+                    strncpy(update.gpu_name, layer_copy.gpu_name,
+                            sizeof(update.gpu_name) - 1);
+                    update.resolution_width = info->width;
+                    update.resolution_height = info->height;
+
+                    launcher_get_chain(info->pid, update.launcher, sizeof(update.launcher));
+
+                    ipc_broadcast_to_non_layers(MSG_GAME_UPDATED, &update, sizeof(update));
+                }
             }
             break;
         }
@@ -268,6 +289,27 @@ static void ipc_message_handler(MessageHeader* header, void* payload, int client
             if (payload) {
                 SwapchainInfoPayload* info = (SwapchainInfoPayload*)payload;
                 LOG_INFO("Swapchain destroyed for PID %d", info->pid);
+
+                // Clear swapchain info
+                SwapchainInfoPayload clear_info = {0};
+                clear_info.pid = info->pid;
+                ipc_update_layer_swapchain(client_fd, &clear_info);
+
+                // Broadcast update to apps (use thread-safe copy)
+                LayerClient layer_copy;
+                if (ipc_get_layer_by_pid_copy(info->pid, &layer_copy)) {
+                    GameDetectedPayload update = {0};
+                    update.pid = info->pid;
+                    strncpy(update.game_name, layer_copy.process_name,
+                            sizeof(update.game_name) - 1);
+                    strncpy(update.gpu_name, layer_copy.gpu_name,
+                            sizeof(update.gpu_name) - 1);
+                    update.resolution_width = 0;
+                    update.resolution_height = 0;
+                    launcher_get_chain(info->pid, update.launcher, sizeof(update.launcher));
+
+                    ipc_broadcast_to_non_layers(MSG_GAME_UPDATED, &update, sizeof(update));
+                }
             }
             break;
         }
@@ -412,6 +454,23 @@ int main(int argc, char* argv[]) {
     }
 
     LOG_INFO("CapFrameX Daemon %s starting...", CAPFRAMEX_VERSION);
+
+    // Check if another daemon is already running by trying to connect to socket
+    {
+        int test_sock = socket(AF_UNIX, SOCK_STREAM, 0);
+        if (test_sock >= 0) {
+            struct sockaddr_un addr = {0};
+            addr.sun_family = AF_UNIX;
+            snprintf(addr.sun_path, sizeof(addr.sun_path) - 1,
+                     "%s/.config/capframex/capframex.sock", getenv("HOME") ? getenv("HOME") : "/tmp");
+            if (connect(test_sock, (struct sockaddr*)&addr, sizeof(addr)) == 0) {
+                close(test_sock);
+                LOG_INFO("Another daemon is already running, exiting");
+                return 0;
+            }
+            close(test_sock);
+        }
+    }
 
     // Set up signal handlers
     signal(SIGINT, signal_handler);

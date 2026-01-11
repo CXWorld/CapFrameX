@@ -208,6 +208,62 @@ bool launcher_is_launcher_child(pid_t pid, LauncherType* out_launcher_type) {
     return false;
 }
 
+int launcher_get_chain(pid_t pid, char* buffer, size_t buffer_size) {
+    if (!buffer || buffer_size == 0) return 0;
+
+    buffer[0] = '\0';
+
+    // Collect launchers walking up the tree (will be in reverse order)
+    LauncherType launchers[20];
+    int launcher_count = 0;
+
+    pid_t current = pid;
+    int depth = 0;
+    const int max_depth = 20;
+
+    while (current > 1 && depth < max_depth && launcher_count < 20) {
+        ProcessInfo info;
+        if (process_get_info(current, &info) != 0) {
+            break;
+        }
+
+        LauncherType type = launcher_detect_type(&info);
+        if (type != LAUNCHER_UNKNOWN) {
+            // Avoid duplicates (e.g., multiple wine* matches)
+            if (launcher_count == 0 || launchers[launcher_count - 1] != type) {
+                launchers[launcher_count++] = type;
+            }
+        }
+
+        current = info.parent_pid;
+        depth++;
+    }
+
+    if (launcher_count == 0) return 0;
+
+    // Build the chain string in reverse order (root launcher first)
+    size_t pos = 0;
+    for (int i = launcher_count - 1; i >= 0; i--) {
+        const char* name = launcher_get_name(launchers[i]);
+        size_t name_len = strlen(name);
+
+        // Check if we have space (name + " > " separator or null terminator)
+        size_t needed = name_len + (i > 0 ? 3 : 1);
+        if (pos + needed > buffer_size) break;
+
+        memcpy(buffer + pos, name, name_len);
+        pos += name_len;
+
+        if (i > 0) {
+            memcpy(buffer + pos, " > ", 3);
+            pos += 3;
+        }
+    }
+    buffer[pos] = '\0';
+
+    return launcher_count;
+}
+
 static bool is_wine_preloader(const char* exe_path) {
     return exe_path && (strstr(exe_path, "wine64-preloader") != NULL ||
                         strstr(exe_path, "wine-preloader") != NULL);

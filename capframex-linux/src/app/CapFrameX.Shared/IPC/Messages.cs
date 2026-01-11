@@ -25,6 +25,7 @@ public enum MessageType : uint
     IgnoreListGet = 16,
     IgnoreListResponse = 17,
     IgnoreListUpdated = 18,
+    GameUpdated = 19,
 }
 
 /// <summary>
@@ -48,6 +49,9 @@ public unsafe struct GameDetectedPayload
     public fixed byte GameName[256];
     public fixed byte ExePath[4096];
     public fixed byte Launcher[256];
+    public fixed byte GpuName[256];
+    public uint ResolutionWidth;
+    public uint ResolutionHeight;
 }
 
 /// <summary>

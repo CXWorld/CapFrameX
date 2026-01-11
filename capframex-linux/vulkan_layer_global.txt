@@ -1,4 +1,0 @@
-
-  sudo cp ~/.local/lib/libcapframex_layer.so /usr/lib/
-  sudo cp ~/.local/share/vulkan/implicit_layer.d/capframex_layer.json /usr/share/vulkan/implicit_layer.d/
-  sudo sed -i 's|/home/capframex/.local/lib|/usr/lib|' /usr/share/vulkan/implicit_layer.d/capframex_layer.json

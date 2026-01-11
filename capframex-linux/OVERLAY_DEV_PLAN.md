@@ -182,6 +182,7 @@ if (g_overlayRenderer && overlay_enabled()) {
 ---
 
 ## Phase 2: Telemetry Collection
+Use the implemented hardware info in src/app/CapFrameX.Core/Hardware/ as data source for the hardware telemetry.
 
 ### 2.1 CPU Telemetry
 

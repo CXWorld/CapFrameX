@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
+#include <unistd.h>
 
 static SwapchainData swapchain_list[MAX_SWAPCHAINS];
 static int swapchain_count = 0;
@@ -39,6 +40,28 @@ SwapchainData* swapchain_get_data(VkSwapchainKHR swapchain) {
     }
     pthread_mutex_unlock(&swapchain_mutex);
     return NULL;
+}
+
+bool swapchain_get_active_info(uint32_t* width, uint32_t* height,
+                                uint32_t* format, uint32_t* image_count) {
+    pthread_mutex_lock(&swapchain_mutex);
+    fprintf(stderr, "[CapFrameX Layer] DEBUG: swapchain_get_active_info called, swapchain_count=%d\n", swapchain_count);
+    for (int i = 0; i < swapchain_count; i++) {
+        fprintf(stderr, "[CapFrameX Layer] DEBUG: swapchain[%d]: active=%d, width=%u, height=%u\n",
+                i, swapchain_list[i].active, swapchain_list[i].width, swapchain_list[i].height);
+        if (swapchain_list[i].active && swapchain_list[i].width > 0) {
+            *width = swapchain_list[i].width;
+            *height = swapchain_list[i].height;
+            *format = (uint32_t)swapchain_list[i].format;
+            *image_count = swapchain_list[i].image_count;
+            fprintf(stderr, "[CapFrameX Layer] DEBUG: Found active swapchain: %ux%u\n", *width, *height);
+            pthread_mutex_unlock(&swapchain_mutex);
+            return true;
+        }
+    }
+    fprintf(stderr, "[CapFrameX Layer] DEBUG: No active swapchain found\n");
+    pthread_mutex_unlock(&swapchain_mutex);
+    return false;
 }
 
 static SwapchainData* add_swapchain(VkDevice device, VkSwapchainKHR swapchain,
@@ -103,9 +126,13 @@ VKAPI_ATTR VkResult VKAPI_CALL layer_CreateSwapchainKHR(
         return VK_ERROR_INITIALIZATION_FAILED;
     }
 
+    fprintf(stderr, "[CapFrameX Layer] CreateSwapchainKHR called: %ux%u\n",
+            pCreateInfo->imageExtent.width, pCreateInfo->imageExtent.height);
+
     VkResult result = dev_data->dispatch.CreateSwapchainKHR(device, pCreateInfo,
                                                              pAllocator, pSwapchain);
     if (result == VK_SUCCESS) {
+        fprintf(stderr, "[CapFrameX Layer] Swapchain created successfully\n");
         add_swapchain(device, *pSwapchain, pCreateInfo);
 
         // Notify daemon of new swapchain
@@ -147,29 +174,78 @@ static SwapchainData* swapchain_get_data_unlocked(VkSwapchainKHR swapchain) {
     return NULL;
 }
 
+// Track if we need to send swapchain info
+// Set when disconnected or reconnected, cleared after successful send
+static bool pending_swapchain_send = false;
+static pthread_mutex_t pending_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 VKAPI_ATTR VkResult VKAPI_CALL layer_QueuePresentKHR(
     VkQueue queue,
     const VkPresentInfoKHR* pPresentInfo)
 {
     // Try to reconnect to daemon if not connected (handles game started before daemon)
     if (!ipc_client_is_connected()) {
-        if (ipc_client_try_reconnect()) {
-            // Reconnected - send hello with GPU name
-            pthread_mutex_lock(&swapchain_mutex);
-            if (pPresentInfo->swapchainCount > 0) {
-                SwapchainData* sc = swapchain_get_data_unlocked(pPresentInfo->pSwapchains[0]);
-                if (sc) {
-                    DeviceData* tmp_dev = layer_get_device_data(sc->device);
-                    if (tmp_dev && tmp_dev->instance_data) {
-                        pthread_mutex_unlock(&swapchain_mutex);
-                        ipc_client_send_hello(tmp_dev->instance_data->gpu_name);
-                        fprintf(stderr, "[CapFrameX Layer] Reconnected to daemon\n");
-                        pthread_mutex_lock(&swapchain_mutex);
-                    }
+        // Always mark pending when disconnected - we need to send info when we reconnect
+        pthread_mutex_lock(&pending_mutex);
+        pending_swapchain_send = true;
+        pthread_mutex_unlock(&pending_mutex);
+
+        ipc_client_try_reconnect();
+    }
+
+    // Check if we need to send swapchain info (with proper locking)
+    pthread_mutex_lock(&pending_mutex);
+    bool should_send = pending_swapchain_send;
+    pthread_mutex_unlock(&pending_mutex);
+
+    // Try to send swapchain info if pending and connected
+    bool is_connected = ipc_client_is_connected();
+    if (should_send) {
+        ipc_debug_log("pending_send=1, connected=%d, swapchainCount=%u",
+                      is_connected, pPresentInfo->swapchainCount);
+    }
+
+    if (should_send && is_connected && pPresentInfo->swapchainCount > 0) {
+        pthread_mutex_lock(&swapchain_mutex);
+        SwapchainData* sc = swapchain_get_data_unlocked(pPresentInfo->pSwapchains[0]);
+        ipc_debug_log("Swapchain lookup: sc=%p, w=%u, h=%u",
+                      (void*)sc, sc ? sc->width : 0, sc ? sc->height : 0);
+        if (sc && sc->width > 0 && sc->height > 0) {
+            DeviceData* tmp_dev = layer_get_device_data(sc->device);
+            if (tmp_dev && tmp_dev->instance_data) {
+                // Cache swapchain info before releasing lock
+                uint32_t width = sc->width;
+                uint32_t height = sc->height;
+                uint32_t format = (uint32_t)sc->format;
+                uint32_t image_count = sc->image_count;
+                const char* gpu_name = tmp_dev->instance_data->gpu_name;
+
+                pthread_mutex_unlock(&swapchain_mutex);
+
+                // Send GPU info if not already sent
+                if (gpu_name && gpu_name[0] != '\0') {
+                    ipc_client_send_hello(gpu_name);
                 }
+                // Send swapchain info
+                ipc_client_send_swapchain_created(width, height, format, image_count);
+
+                ipc_debug_log("SENT swapchain: %ux%u, clearing pending flag", width, height);
+
+                // Clear pending flag with proper locking
+                pthread_mutex_lock(&pending_mutex);
+                pending_swapchain_send = false;
+                pthread_mutex_unlock(&pending_mutex);
+
+                pthread_mutex_lock(&swapchain_mutex);
+            } else {
+                ipc_debug_log("NO DEVICE DATA: tmp_dev=%p, instance=%p",
+                              (void*)tmp_dev, tmp_dev ? (void*)tmp_dev->instance_data : NULL);
             }
-            pthread_mutex_unlock(&swapchain_mutex);
+        } else {
+            ipc_debug_log("INVALID SC: sc=%p, w=%u, h=%u",
+                          (void*)sc, sc ? sc->width : 0, sc ? sc->height : 0);
         }
+        pthread_mutex_unlock(&swapchain_mutex);
     }
 
     // Find device data from queue (simplified - we check all devices)

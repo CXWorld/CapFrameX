@@ -45,8 +45,6 @@ public class FrametimeReceiver : IDisposable
 
     public void AddFrame(FrameDataPoint point)
     {
-        if (!_isCapturing) return;
-
         var frame = new FrameData
         {
             FrameNumber = point.FrameNumber,
@@ -56,14 +54,18 @@ public class FrametimeReceiver : IDisposable
 
         lock (_bufferLock)
         {
-            _frameBuffer.Add(frame);
-            _frameCount++;
-
-            // Update rolling buffer for live stats
+            // Always update live stats rolling buffer
             _recentFrametimes.Enqueue(point.FrametimeMs);
             if (_recentFrametimes.Count > RecentFrameCount)
             {
                 _recentFrametimes.Dequeue();
+            }
+
+            // Only buffer frames when capturing
+            if (_isCapturing)
+            {
+                _frameBuffer.Add(frame);
+                _frameCount++;
             }
         }
 
@@ -116,7 +118,7 @@ public class FrametimeReceiver : IDisposable
                 AverageFrametime = avgFrametime,
                 P1Low = onePercentLow > 0 ? 1000f / onePercentLow : 0,
                 P01Low = pointOnePercentLow > 0 ? 1000f / pointOnePercentLow : 0,
-                FrameCount = _frameBuffer.Count,
+                FrameCount = _isCapturing ? _frameBuffer.Count : _recentFrametimes.Count,
                 Duration = CaptureDuration
             };
         }

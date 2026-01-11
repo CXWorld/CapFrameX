@@ -7,9 +7,9 @@
 #include <sys/types.h>
 
 #define CAPFRAMEX_VERSION "1.0.0"
-// Use /tmp for socket so Proton containers can access it
+// Use home directory for socket - Proton containers share /home but not /tmp
 #define CAPFRAMEX_SOCKET_NAME "capframex.sock"
-#define CAPFRAMEX_SOCKET_USE_TMP 1
+#define CAPFRAMEX_SOCKET_USE_HOME 1
 #define CAPFRAMEX_SHM_NAME "/capframex_pids"
 #define CAPFRAMEX_SHM_DATA_NAME "/capframex_framedata"
 
@@ -37,6 +37,7 @@ typedef enum {
     MSG_IGNORE_LIST_GET = 16,     // App -> Daemon: request full ignore list
     MSG_IGNORE_LIST_RESPONSE = 17,// Daemon -> App: ignore list contents
     MSG_IGNORE_LIST_UPDATED = 18, // Daemon -> App: broadcast ignore list changed
+    MSG_GAME_UPDATED = 19,        // Daemon -> App: game info updated (resolution, etc.)
 } MessageType;
 
 // Process information structure
@@ -64,6 +65,9 @@ typedef struct {
     char game_name[MAX_GAME_NAME_LENGTH];
     char exe_path[MAX_PATH_LENGTH];
     char launcher[MAX_GAME_NAME_LENGTH];
+    char gpu_name[MAX_GAME_NAME_LENGTH];
+    uint32_t resolution_width;
+    uint32_t resolution_height;
 } GameDetectedPayload;
 
 // Frame data for IPC

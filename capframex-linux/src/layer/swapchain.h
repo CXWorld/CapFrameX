@@ -27,6 +27,11 @@ void swapchain_cleanup_device(DeviceData* device_data);
 // Get swapchain data
 SwapchainData* swapchain_get_data(VkSwapchainKHR swapchain);
 
+// Get active swapchain info for IPC reporting
+// Returns true if an active swapchain exists, fills in the parameters
+bool swapchain_get_active_info(uint32_t* width, uint32_t* height,
+                                uint32_t* format, uint32_t* image_count);
+
 // Hooked Vulkan functions
 VKAPI_ATTR VkResult VKAPI_CALL layer_CreateSwapchainKHR(
     VkDevice device,

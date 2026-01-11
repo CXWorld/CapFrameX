@@ -36,4 +36,8 @@ void ipc_client_send_swapchain_destroyed(void);
 // Send frame data to daemon (always streams when connected)
 void ipc_client_send_frame_data(const FrameTimingData* frame);
 
+// Debug logging - enable with CAPFRAMEX_DEBUG=1 environment variable
+bool ipc_is_verbose(void);
+void ipc_debug_log(const char* fmt, ...);
+
 #endif // CAPFRAMEX_IPC_CLIENT_H

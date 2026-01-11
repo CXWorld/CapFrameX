@@ -9,9 +9,6 @@
         "description": "CapFrameX Frametime Capture Layer",
         "disable_environment": {
             "DISABLE_CAPFRAMEX_LAYER": "1"
-        },
-        "enable_environment": {
-            "ENABLE_CAPFRAMEX_LAYER": "1"
         }
     }
 }

@@ -6,7 +6,7 @@
         x:DataType="vm:MainViewModel"
         Title="CapFrameX Linux"
         Icon="avares://CapFrameX.App/Assets/app_icon.png"
-        Width="1200" Height="800"
+        Width="1280" Height="800"
         MinWidth="900" MinHeight="600"
         WindowStartupLocation="CenterScreen">
 

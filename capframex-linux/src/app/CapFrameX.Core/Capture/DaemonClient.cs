@@ -13,6 +13,7 @@ public class CaptureService : IDisposable
 {
     private readonly DaemonClient _client;
     private readonly Subject<GameInfo> _gameDetected = new();
+    private readonly Subject<GameInfo> _gameUpdated = new();
     private readonly Subject<int> _gameExited = new();
     private readonly Subject<FrameDataPoint> _frameData = new();
     private readonly Subject<bool> _connectionStatus = new();
@@ -29,8 +30,42 @@ public class CaptureService : IDisposable
 
         _client.GameDetected += (_, game) =>
         {
-            _detectedGames.Add(game);
-            _gameDetected.OnNext(game);
+            // Check for duplicate PID - update existing instead of adding
+            var existing = _detectedGames.FirstOrDefault(g => g.Pid == game.Pid);
+            if (existing != null)
+            {
+                // Update with new info (GPU, resolution) and treat as update
+                if (!string.IsNullOrEmpty(game.GpuName))
+                    existing.GpuName = game.GpuName;
+                if (game.ResolutionWidth > 0 && game.ResolutionHeight > 0)
+                {
+                    existing.ResolutionWidth = game.ResolutionWidth;
+                    existing.ResolutionHeight = game.ResolutionHeight;
+                }
+                if (!string.IsNullOrEmpty(game.Launcher))
+                    existing.Launcher = game.Launcher;
+                _gameUpdated.OnNext(existing);
+            }
+            else
+            {
+                _detectedGames.Add(game);
+                _gameDetected.OnNext(game);
+            }
+        };
+
+        _client.GameUpdated += (_, update) =>
+        {
+            // Update existing game info
+            var existing = _detectedGames.FirstOrDefault(g => g.Pid == update.Pid);
+            if (existing != null)
+            {
+                existing.GpuName = update.GpuName;
+                existing.ResolutionWidth = update.ResolutionWidth;
+                existing.ResolutionHeight = update.ResolutionHeight;
+                if (!string.IsNullOrEmpty(update.Launcher))
+                    existing.Launcher = update.Launcher;
+            }
+            _gameUpdated.OnNext(update);
         };
 
         _client.GameExited += (_, pid) =>
@@ -58,6 +93,7 @@ public class CaptureService : IDisposable
     }
 
     public IObservable<GameInfo> GameDetected => _gameDetected.AsObservable();
+    public IObservable<GameInfo> GameUpdated => _gameUpdated.AsObservable();
     public IObservable<int> GameExited => _gameExited.AsObservable();
     public IObservable<FrameDataPoint> FrameData => _frameData.AsObservable();
     public IObservable<bool> ConnectionStatus => _connectionStatus.AsObservable();
@@ -66,6 +102,7 @@ public class CaptureService : IDisposable
 
     public bool IsConnected => _client.IsConnected;
     public bool IsCapturing => _isCapturing;
+    public int CapturingPid => _capturingPid;
     public IReadOnlyList<GameInfo> DetectedGames => _detectedGames;
 
     public async Task<bool> ConnectAsync(CancellationToken cancellationToken = default)
@@ -74,7 +111,22 @@ public class CaptureService : IDisposable
         var result = await _client.ConnectAsync(cancellationToken);
         if (result)
         {
-            await _client.RequestStatusAsync();
+            Console.WriteLine("[CaptureService] Connected to existing daemon");
+
+            // Request status multiple times to ensure we get complete layer info
+            // Layers may still be reconnecting or sending swapchain info
+            // Poll frequently (every 300ms) for 5 seconds total
+            _ = Task.Run(async () =>
+            {
+                for (int i = 0; i < 15; i++)
+                {
+                    await Task.Delay(300, cancellationToken);
+                    if (i % 3 == 0) // Log every 3rd request to reduce noise
+                        Console.WriteLine($"[CaptureService] Requesting status update ({i + 1}/15)");
+                    await _client.RequestStatusAsync();
+                }
+            }, cancellationToken);
+
             return true;
         }
 
@@ -95,7 +147,20 @@ public class CaptureService : IDisposable
             if (result)
             {
                 Console.WriteLine("[CaptureService] Connected to daemon");
-                await _client.RequestStatusAsync();
+
+                // Request status multiple times to catch layer reconnections
+                // Poll frequently (every 300ms) for 5 seconds total
+                _ = Task.Run(async () =>
+                {
+                    for (int i = 0; i < 15; i++)
+                    {
+                        await Task.Delay(300, cancellationToken);
+                        if (i % 3 == 0) // Log every 3rd request to reduce noise
+                            Console.WriteLine($"[CaptureService] Requesting status update ({i + 1}/15)");
+                        await _client.RequestStatusAsync();
+                    }
+                }, cancellationToken);
+
                 return true;
             }
         }
@@ -274,12 +339,14 @@ public class CaptureService : IDisposable
     public void Dispose()
     {
         _gameDetected.Dispose();
+        _gameUpdated.Dispose();
         _gameExited.Dispose();
         _frameData.Dispose();
         _connectionStatus.Dispose();
         _ignoreListReceived.Dispose();
         _ignoreListUpdated.Dispose();
         _client.Dispose();
-        StopDaemon();
+        // Don't kill daemon on exit - let it keep running for layer connections
+        // StopDaemon();
     }
 }

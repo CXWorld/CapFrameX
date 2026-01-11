@@ -31,24 +31,21 @@ static pthread_mutex_t map_mutex = PTHREAD_MUTEX_INITIALIZER;
 static bool layer_initialized = false;
 
 void layer_init(void) {
-    if (layer_initialized) return;
+    if (layer_initialized) {
+        return;
+    }
 
     timing_init();
     ipc_client_init();
 
     // Try to connect to daemon (will stream frames when connected)
-    fprintf(stderr, "[CapFrameX Layer] Attempting daemon connection...\n");
-    fflush(stderr);
     bool conn_result = ipc_client_connect();
-    fprintf(stderr, "[CapFrameX Layer] Connection result: %d\n", conn_result);
-    fflush(stderr);
 
     if (conn_result) {
         fprintf(stderr, "[CapFrameX Layer] Connected to daemon - streaming enabled\n");
     } else {
         fprintf(stderr, "[CapFrameX Layer] Daemon not available - running standalone\n");
     }
-    fflush(stderr);
 
     layer_initialized = true;
     fprintf(stderr, "[CapFrameX Layer] Initialized for PID %d\n", getpid());
