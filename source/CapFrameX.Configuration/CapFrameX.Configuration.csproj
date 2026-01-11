@@ -114,6 +114,9 @@
     <Compile Include="ConfigurationProvider.cs" />
     <Compile Include="ISettingsStorage.cs" />
     <Compile Include="JsonSettingsStorage.cs" />
+    <Compile Include="PathService.cs" />
+    <Compile Include="PortableConfig.cs" />
+    <Compile Include="PortableModeDetector.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

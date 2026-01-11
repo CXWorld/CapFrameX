@@ -97,6 +97,10 @@ namespace CapFrameX
 			// Vertical components
 			Container.ConfigureSerilogILogger(Log.Logger);
             Container.Register<IEventAggregator, EventAggregator>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "EventAggregator");
+
+            // Register PathService first - other services depend on it for path resolution
+            Container.Register<IPathService, PathService>(Reuse.Singleton);
+
             Container.Register<ISettingsStorage, JsonSettingsStorage>(Reuse.Singleton);
             Container.Register<IAppConfiguration, CapFrameXConfiguration>(Reuse.Singleton);
             Container.RegisterInstance<IFrametimeStatisticProviderOptions>(Container.Resolve<IAppConfiguration>());
@@ -115,8 +119,8 @@ namespace CapFrameX
             Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
             Container.Register<IOnlineMetricService, OnlineMetricService>(Reuse.Singleton);
             Container.Register<ISensorService, SensorService>(Reuse.Singleton);
-            var sensorConfigFolder = Path.Combine(Environment
-                .GetFolderPath(Environment.SpecialFolder.ApplicationData), @"CapFrameX\Configuration\");
+            var pathService = Container.Resolve<IPathService>();
+            var sensorConfigFolder = pathService.ConfigFolder;
             // We don't use a sensor config for new LibreHardwareMonitor based sensor service
             Container.RegisterInstance<ISensorConfig>(new SensorConfig(sensorConfigFolder), Reuse.Singleton);
             Container.Register<ISensorEntryProvider, SensorEntryProvider>(Reuse.Singleton);
@@ -133,7 +137,7 @@ namespace CapFrameX
             var loggerProcessList = loggerFactory.CreateLogger<ProcessList>();
             Container.RegisterInstance(ProcessList.Create(
                 filename: "Processes.json",
-                foldername: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"CapFrameX\Configuration"),
+                foldername: pathService.ConfigFolder,
                 appConfiguration: Container.Resolve<IAppConfiguration>(),
                 logger: loggerProcessList));
             Container.Register<SoundManager>(Reuse.Singleton);

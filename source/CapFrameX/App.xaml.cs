@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Capture.Contracts;
+using CapFrameX.Configuration;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
@@ -68,6 +69,9 @@ namespace CapFrameX
             }
             else
             {
+                // Initialize portable mode detection before anything else
+                PortableModeDetector.Initialize();
+
                 InitializeLogger();
                 SetupExceptionHandling();
                 base.OnStartup(e);
@@ -399,14 +403,33 @@ namespace CapFrameX
 
         private static void InitializeLogger()
         {
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"CapFrameX\Logs");
+            string logPath;
+
+            if (PortableModeDetector.IsPortableMode && PortableModeDetector.Config?.Paths != null)
+            {
+                // Portable mode: resolve log path relative to app directory
+                var appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                var relativePath = PortableModeDetector.Config.Paths.Logs;
+                if (relativePath.StartsWith("./") || relativePath.StartsWith(".\\"))
+                    relativePath = relativePath.Substring(2);
+                logPath = Path.GetFullPath(Path.Combine(appDirectory, relativePath));
+            }
+            else
+            {
+                // Installed mode: use AppData
+                logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"CapFrameX\Logs");
+            }
+
+            // Ensure log directory exists
+            if (!Directory.Exists(logPath))
+                Directory.CreateDirectory(logPath);
 
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .Enrich.FromLogContext()
                 .AuditTo.Sink<InMemorySink>()
                 .WriteTo.File(
-                    path: Path.Combine(path, "CapFrameX.log"),
+                    path: Path.Combine(logPath, "CapFrameX.log"),
                     fileSizeLimitBytes: 1024 * 10000, // approx 10MB
                     rollOnFileSizeLimit: true, // if filesize is reached, it created a new file
                     retainedFileCountLimit: 10, // it keeps max 10 files

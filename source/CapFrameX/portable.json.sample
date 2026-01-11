@@ -1,0 +1,9 @@
+{
+  "portable": true,
+  "paths": {
+    "config": "./Config",
+    "captures": "./Captures",
+    "screenshots": "./Screenshots",
+    "logs": "./Logs"
+  }
+}
