@@ -88,6 +88,7 @@
     <Compile Include="PresentMonInterface\SystemInfoTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sensor\ComputerTest.cs" />
+    <Compile Include="Sensor\PantherLakeVoltageTest.cs" />
     <Compile Include="Statistics\CircularBufferTest.cs" />
     <Compile Include="Statistics\FrametimeStatisticProviderTest.cs" />
     <Compile Include="TestHelper.cs" />
