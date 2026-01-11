@@ -1,0 +1,72 @@
+<Window x:Class="CapFrameX.VoltageMonitor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Panther Lake Voltage Monitor"
+        Height="600" Width="800"
+        Background="#1E1E1E"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="Panther Lake Voltage Candidates"
+                       FontSize="18" FontWeight="Bold" Foreground="White"/>
+            <TextBlock x:Name="ProcessorInfoText"
+                       FontSize="12" Foreground="#888" Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <!-- Voltage Data Grid -->
+        <DataGrid Grid.Row="1"
+                  x:Name="VoltageGrid"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  Background="#2D2D2D"
+                  Foreground="White"
+                  BorderBrush="#444"
+                  GridLinesVisibility="Horizontal"
+                  HorizontalGridLinesBrush="#444"
+                  RowBackground="#2D2D2D"
+                  AlternatingRowBackground="#363636"
+                  HeadersVisibility="Column">
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="Background" Value="#444"/>
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="Padding" Value="8,4"/>
+                    <Setter Property="BorderBrush" Value="#555"/>
+                    <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+            <DataGrid.CellStyle>
+                <Style TargetType="DataGridCell">
+                    <Setter Property="Padding" Value="8,4"/>
+                    <Setter Property="BorderThickness" Value="0"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="#0078D4"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.CellStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Core" Binding="{Binding Core}" Width="60"/>
+                <DataGridTextColumn Header="0x019C (THERM_STATUS)" Binding="{Binding ThermStatusVoltage}" Width="160"/>
+                <DataGridTextColumn Header="0x00CE (PLATFORM_INFO)" Binding="{Binding PlatformInfoVoltage}" Width="160"/>
+                <DataGridTextColumn Header="0x0198 (PERF_STATUS)" Binding="{Binding PerfStatusVoltage}" Width="160"/>
+                <DataGridTextColumn Header="0x0641 (PP1_ENERGY)" Binding="{Binding Pp1EnergyVoltage}" Width="160"/>
+                <DataGridTextColumn Header="Raw 0x019C" Binding="{Binding ThermStatusRaw}" Width="140"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Status Bar -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,0">
+            <TextBlock Text="Polling: 1s" Foreground="#888" Margin="0,0,20,0"/>
+            <TextBlock x:Name="LastUpdateText" Foreground="#888"/>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -1,4 +1,5 @@
 using CapFrameX.Data;
+using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.PawnIo;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
@@ -313,6 +314,257 @@ namespace CapFrameX.Test.Sensor
             {
                 Debug.WriteLine($"  {formula}: {voltage:F4}V");
             }
+        }
+
+        /// <summary>
+        /// Test voltage candidate MSRs across all cores.
+        /// Based on scan results:
+        /// - MSR 0x019C (IA32_THERM_STATUS): VoltageEax = 1.2500V using VID/8192 on EAX[15:0]
+        /// - MSR 0x00CE (MSR_PLATFORM_INFO): VoltageEax = 1.1563V using VID/8192 on EAX[15:0]
+        /// </summary>
+        [TestMethod]
+        public void TestVoltageCandidatesAllCores()
+        {
+            var pawnModule = new IntelMsr();
+            int processorCount = Environment.ProcessorCount;
+
+            Debug.WriteLine("=== Panther Lake Voltage Candidates - All Cores Test ===");
+            Debug.WriteLine($"Processor count: {processorCount}");
+            Debug.WriteLine($"Formula: voltage = VID / 8192 (VID from EAX[15:0])");
+            Debug.WriteLine("");
+
+            // Candidate MSRs found in register scan
+            var candidates = new (uint Address, string Name)[]
+            {
+                (0x019C, "IA32_THERM_STATUS"),
+                (0x00CE, "MSR_PLATFORM_INFO"),
+            };
+
+            // Results storage: [msrIndex][coreIndex]
+            var results = new (bool Success, float Voltage, ulong RawValue)[candidates.Length, processorCount];
+
+            // Loop through all logical processors
+            for (int core = 0; core < processorCount; core++)
+            {
+                // Create affinity for this specific core (group 0)
+                var affinity = GroupAffinity.Single(0, core);
+
+                for (int msrIdx = 0; msrIdx < candidates.Length; msrIdx++)
+                {
+                    var (address, name) = candidates[msrIdx];
+
+                    try
+                    {
+                        if (pawnModule.ReadMsr(address, out uint eax, out uint edx, affinity))
+                        {
+                            ulong rawValue = ((ulong)edx << 32) | eax;
+                            uint vid = eax & 0xFFFF;
+                            float voltage = vid / (float)(1 << 13);
+
+                            results[msrIdx, core] = (true, voltage, rawValue);
+                        }
+                        else
+                        {
+                            results[msrIdx, core] = (false, 0, 0);
+                        }
+                    }
+                    catch
+                    {
+                        results[msrIdx, core] = (false, 0, 0);
+                    }
+                }
+            }
+
+            // Output results per MSR
+            for (int msrIdx = 0; msrIdx < candidates.Length; msrIdx++)
+            {
+                var (address, name) = candidates[msrIdx];
+                Debug.WriteLine($"=== MSR 0x{address:X4} ({name}) ===");
+
+                for (int core = 0; core < processorCount; core++)
+                {
+                    var (success, voltage, rawValue) = results[msrIdx, core];
+                    if (success)
+                    {
+                        string validMarker = (voltage >= MIN_VALID_VOLTAGE && voltage <= MAX_VALID_VOLTAGE) ? " [VALID]" : "";
+                        Debug.WriteLine($"  Core {core,2}: {voltage:F4}V (Raw: 0x{rawValue:X16}){validMarker}");
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"  Core {core,2}: FAILED TO READ");
+                    }
+                }
+                Debug.WriteLine("");
+            }
+
+            // Summary: Find MSRs that give consistent valid voltage across cores
+            Debug.WriteLine("=== Summary ===");
+            for (int msrIdx = 0; msrIdx < candidates.Length; msrIdx++)
+            {
+                var (address, name) = candidates[msrIdx];
+                int validCount = 0;
+                float minVoltage = float.MaxValue;
+                float maxVoltage = float.MinValue;
+
+                for (int core = 0; core < processorCount; core++)
+                {
+                    var (success, voltage, _) = results[msrIdx, core];
+                    if (success && voltage >= MIN_VALID_VOLTAGE && voltage <= MAX_VALID_VOLTAGE)
+                    {
+                        validCount++;
+                        minVoltage = Math.Min(minVoltage, voltage);
+                        maxVoltage = Math.Max(maxVoltage, voltage);
+                    }
+                }
+
+                if (validCount > 0)
+                {
+                    Debug.WriteLine($"MSR 0x{address:X4} ({name}): {validCount}/{processorCount} cores with valid voltage");
+                    Debug.WriteLine($"  Range: {minVoltage:F4}V - {maxVoltage:F4}V");
+                }
+                else
+                {
+                    Debug.WriteLine($"MSR 0x{address:X4} ({name}): No valid voltage readings");
+                }
+            }
+
+            pawnModule.Close();
+            Assert.IsTrue(true, "All cores voltage test completed");
+        }
+
+        /// <summary>
+        /// Test additional voltage formulas across all cores.
+        /// Some CPUs use different voltage encoding schemes.
+        /// </summary>
+        [TestMethod]
+        public void TestAlternativeVoltageFormulasAllCores()
+        {
+            var pawnModule = new IntelMsr();
+            int processorCount = Environment.ProcessorCount;
+
+            Debug.WriteLine("=== Alternative Voltage Formulas - All Cores Test ===");
+            Debug.WriteLine($"Processor count: {processorCount}");
+            Debug.WriteLine("");
+
+            // Candidate MSRs
+            var candidates = new (uint Address, string Name)[]
+            {
+                (0x019C, "IA32_THERM_STATUS"),
+                (0x00CE, "MSR_PLATFORM_INFO"),
+                (0x0198, "IA32_PERF_STATUS"),
+                (0x0641, "MSR_PP1_ENERGY_STATUS"),
+            };
+
+            // Test different formulas
+            var formulas = new (string Name, Func<uint, uint, float> Calculate)[]
+            {
+                ("VID/8192 (EAX[15:0])", (eax, edx) => (eax & 0xFFFF) / (float)(1 << 13)),
+                ("VID/8192 (EDX[15:0])", (eax, edx) => (edx & 0xFFFF) / (float)(1 << 13)),
+                ("8-bit VID (EAX[15:8]) * 1.52/255", (eax, edx) => ((eax >> 8) & 0xFF) / 255.0f * 1.52f),
+                ("8-bit VID (EAX[7:0]) * 1.52/255", (eax, edx) => (eax & 0xFF) / 255.0f * 1.52f),
+            };
+
+            foreach (var (address, name) in candidates)
+            {
+                Debug.WriteLine($"=== MSR 0x{address:X4} ({name}) ===");
+
+                foreach (var (formulaName, calculate) in formulas)
+                {
+                    Debug.WriteLine($"  Formula: {formulaName}");
+
+                    int validCount = 0;
+                    float minVoltage = float.MaxValue;
+                    float maxVoltage = float.MinValue;
+
+                    for (int core = 0; core < processorCount; core++)
+                    {
+                        var affinity = GroupAffinity.Single(0, core);
+
+                        try
+                        {
+                            if (pawnModule.ReadMsr(address, out uint eax, out uint edx, affinity))
+                            {
+                                float voltage = calculate(eax, edx);
+
+                                if (voltage >= MIN_VALID_VOLTAGE && voltage <= MAX_VALID_VOLTAGE)
+                                {
+                                    validCount++;
+                                    minVoltage = Math.Min(minVoltage, voltage);
+                                    maxVoltage = Math.Max(maxVoltage, voltage);
+                                }
+                            }
+                        }
+                        catch { }
+                    }
+
+                    if (validCount > 0)
+                    {
+                        Debug.WriteLine($"    Valid on {validCount}/{processorCount} cores: {minVoltage:F4}V - {maxVoltage:F4}V");
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"    No valid readings");
+                    }
+                }
+                Debug.WriteLine("");
+            }
+
+            pawnModule.Close();
+            Assert.IsTrue(true, "Alternative formulas test completed");
+        }
+
+        /// <summary>
+        /// Detailed per-core dump for the most promising MSR candidates.
+        /// </summary>
+        [TestMethod]
+        public void DumpVoltageMsrsPerCore()
+        {
+            var pawnModule = new IntelMsr();
+            int processorCount = Environment.ProcessorCount;
+
+            Debug.WriteLine("=== Per-Core MSR Dump ===");
+            Debug.WriteLine($"Processor count: {processorCount}");
+            Debug.WriteLine("");
+
+            // MSRs to dump
+            uint[] msrs = { 0x00CE, 0x0198, 0x019C, 0x01A2, 0x0641 };
+            string[] msrNames = { "MSR_PLATFORM_INFO", "IA32_PERF_STATUS", "IA32_THERM_STATUS", "IA32_TEMPERATURE_TARGET", "MSR_PP1_ENERGY_STATUS" };
+
+            for (int core = 0; core < processorCount; core++)
+            {
+                var affinity = GroupAffinity.Single(0, core);
+                Debug.WriteLine($"--- Core {core} ---");
+
+                for (int i = 0; i < msrs.Length; i++)
+                {
+                    try
+                    {
+                        if (pawnModule.ReadMsr(msrs[i], out uint eax, out uint edx, affinity))
+                        {
+                            ulong raw = ((ulong)edx << 32) | eax;
+
+                            // Calculate various voltage interpretations
+                            float v1 = (eax & 0xFFFF) / (float)(1 << 13);
+                            float v2 = (edx & 0xFFFF) / (float)(1 << 13);
+
+                            Debug.WriteLine($"  0x{msrs[i]:X4} ({msrNames[i]}): EAX=0x{eax:X8} EDX=0x{edx:X8}");
+                            Debug.WriteLine($"         VID/8192: EAX->{v1:F4}V, EDX->{v2:F4}V");
+                        }
+                        else
+                        {
+                            Debug.WriteLine($"  0x{msrs[i]:X4} ({msrNames[i]}): READ FAILED");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"  0x{msrs[i]:X4} ({msrNames[i]}): EXCEPTION: {ex.Message}");
+                    }
+                }
+                Debug.WriteLine("");
+            }
+
+            pawnModule.Close();
+            Assert.IsTrue(true, "Per-core dump completed");
         }
 
         private static string GetKnownMsrName(uint address)
