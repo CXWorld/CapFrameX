@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 18
-VisualStudioVersion = 18.1.11312.151
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36811.4 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX", "source\CapFrameX\CapFrameX.csproj", "{AAA73D26-5CD6-4066-B84C-5BD34057B346}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -92,8 +92,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibreHardwareMonitorLib", "
 		{9746F818-C1B9-461D-BD07-D20A103DC751} = {9746F818-C1B9-461D-BD07-D20A103DC751}
 		{CFA42830-B349-4978-B708-5B1BFA9C579B} = {CFA42830-B349-4978-B708-5B1BFA9C579B}
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.VoltageMonitor", "source\CapFrameX.VoltageMonitor\CapFrameX.VoltageMonitor.csproj", "{47AACA75-5C35-7C30-4AA7-313B56E7571B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -568,18 +566,6 @@ Global
 		{51E4211C-F281-11A3-9390-A6B54F703498}.Release|x64.Build.0 = Release|x64
 		{51E4211C-F281-11A3-9390-A6B54F703498}.Release|x86.ActiveCfg = Release|x86
 		{51E4211C-F281-11A3-9390-A6B54F703498}.Release|x86.Build.0 = Release|x86
-		{47AACA75-5C35-7C30-4AA7-313B56E7571B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{47AACA75-5C35-7C30-4AA7-313B56E7571B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{47AACA75-5C35-7C30-4AA7-313B56E7571B}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{47AACA75-5C35-7C30-4AA7-313B56E7571B}.Debug|x64.Build.0 = Debug|Any CPU
-		{47AACA75-5C35-7C30-4AA7-313B56E7571B}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{47AACA75-5C35-7C30-4AA7-313B56E7571B}.Debug|x86.Build.0 = Debug|Any CPU
-		{47AACA75-5C35-7C30-4AA7-313B56E7571B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{47AACA75-5C35-7C30-4AA7-313B56E7571B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{47AACA75-5C35-7C30-4AA7-313B56E7571B}.Release|x64.ActiveCfg = Release|Any CPU
-		{47AACA75-5C35-7C30-4AA7-313B56E7571B}.Release|x64.Build.0 = Release|Any CPU
-		{47AACA75-5C35-7C30-4AA7-313B56E7571B}.Release|x86.ActiveCfg = Release|Any CPU
-		{47AACA75-5C35-7C30-4AA7-313B56E7571B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -738,7 +738,7 @@ internal sealed class IntelCpu : GenericCpu
         }
 
         // Read package-level core voltage
-        if (_coreVoltage != null && _pawnModule.ReadMsr(IA32_PERF_STATUS, out _, out uint edx))
+        if (_coreVoltage != null && _pawnModule.ReadMsr(IA32_PERF_STATUS, out eax, out uint edx))
         {
             // Voltage is in bits 47:32 of the 64-bit MSR (IA32_PERF_STATUS)
             // ReadMsr returns: eax = bits 31:0, edx = bits 63:32
@@ -752,16 +752,25 @@ internal sealed class IntelCpu : GenericCpu
             }
             else
             {
-                // VID field is 0 on modern HWP-enabled CPUs (Skylake and newer)
-                // Voltage is managed internally by hardware and not exposed via this MSR
-                DeactivateSensor(_coreVoltage);
+                float voltageEax = (eax & 0xFFFF) / (float)(1 << 13);
+
+                if (voltageEax > 0)
+                {
+                    _coreVoltage.Value = voltageEax;
+                }
+                else
+                {
+                    // VID field is 0 on modern HWP-enabled CPUs (Skylake and newer)
+                    // Voltage is managed internally by hardware and not exposed via this MSR
+                    DeactivateSensor(_coreVoltage);
+                }
             }
         }
 
         // Read per-core VIDs
         for (int i = 0; i < _coreVIDs.Length; i++)
         {
-            if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out _, out edx, _cpuId[i][0].Affinity))
+            if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out eax, out edx, _cpuId[i][0].Affinity))
             {
                 uint vid = edx & 0xFFFF;
 
@@ -772,7 +781,16 @@ internal sealed class IntelCpu : GenericCpu
                 }
                 else
                 {
-                    DeactivateSensor(_coreVIDs[i]);
+                    float voltageEax = (eax & 0xFFFF) / (float)(1 << 13);
+                    if (voltageEax > 0)
+                    {
+                        _coreVIDs[i].Value = voltageEax;
+                        ActivateSensor(_coreVIDs[i]);
+                    }
+                    else
+                    {
+                        DeactivateSensor(_coreVIDs[i]);
+                    }
                 }
             }
             else
