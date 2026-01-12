@@ -240,6 +240,10 @@
       <Project>{4d253423-ae05-47f6-a59d-9162ec0bb1f2}</Project>
       <Name>WpfView</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Configuration\CapFrameX.Configuration.csproj">
+      <Project>{d0a09fa9-d19e-4ccc-bf0e-104893cfe48b}</Project>
+      <Name>CapFrameX.Configuration</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj">
       <Project>{4c3b8b5c-54d7-46a1-91a1-32bf82fd42cd}</Project>
       <Name>CapFrameX.Contracts</Name>

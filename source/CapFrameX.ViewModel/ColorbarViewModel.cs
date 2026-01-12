@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.Configuration;
+﻿using CapFrameX.Configuration;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.MVVM;
 using CapFrameX.Contracts.Sensor;
@@ -414,6 +415,8 @@ namespace CapFrameX.ViewModel
                 OnAutostartChanged();
             }
         }
+
+        public bool AutoStartIsEnabeld => !PortableModeDetector.IsPortableMode;
 
         public bool IsDarkModeToggleChecked
         {

@@ -384,7 +384,8 @@ namespace CapFrameX.ViewModel
 
             try
             {
-                var path = Path.Combine(_appConfiguration.ObservedDirectory, TreeViewSubFolderName);
+                var resolvedObservedDirectory = ResolveDocumentsPath(_appConfiguration.ObservedDirectory);
+                var path = Path.Combine(resolvedObservedDirectory, TreeViewSubFolderName);
                 FileSystem.CreateDirectory(path);
                 _appConfiguration.ObservedDirectory = path;
                 TreeViewUpdateStream.OnNext(default);
@@ -396,13 +397,14 @@ namespace CapFrameX.ViewModel
 
         private void OnDeleteFolder()
         {
-            if (!_appConfiguration.ObservedDirectory.Any())
+            if (_appConfiguration.ObservedDirectory.IsNullOrEmpty())
                 return;
 
             try
             {
-                var parentFolder = Directory.GetParent(_appConfiguration.ObservedDirectory);
-                FileSystem.DeleteDirectory(_appConfiguration.ObservedDirectory, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+                var resolvedObservedDirectory = ResolveDocumentsPath(_appConfiguration.ObservedDirectory);
+                var parentFolder = Directory.GetParent(resolvedObservedDirectory);
+                FileSystem.DeleteDirectory(resolvedObservedDirectory, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
 
                 _updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
                 _appConfiguration.ObservedDirectory = parentFolder.FullName;

@@ -30,6 +30,8 @@ namespace CapFrameX.Configuration
     /// </summary>
     public static class AppDependencyChecker
     {
+        public const int MajorDotNetVersionRequired = 9;
+
         // Registry keys for VC++ 2015-2022 Redistributable detection (from Bundle.wxs)
         private const string VCRedistx64RegistryKey = @"SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64";
 
@@ -85,7 +87,19 @@ namespace CapFrameX.Configuration
                     if (key != null)
                     {
                         var version = key.GetValue("Version") as string;
-                        if (!string.IsNullOrEmpty(version) && version.StartsWith("9."))
+
+                        // parse version for checking major version
+                        int majorVersion = 0;
+                        if (version != null)
+                        {
+                            var versionParts = version.Split('.');
+                            if (versionParts.Length > 0)
+                            {
+                                int.TryParse(versionParts[0], out majorVersion);
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(version) && majorVersion >= MajorDotNetVersionRequired)
                         {
                             return true;
                         }

@@ -425,7 +425,7 @@
 											</Style>
 										</Grid.Resources>
 										<Grid.RowDefinitions>
-											<RowDefinition Height="*" />
+											<RowDefinition Height="*"/>
 											<RowDefinition Height="*" />
 											<RowDefinition Height="*" />
 										</Grid.RowDefinitions>
@@ -441,7 +441,7 @@
 											<TextBlock Text="Recieve notifications"/>
 											<ToggleButton Margin="15 0 0 0" IsChecked="{Binding AppNotificationsActive, Mode=TwoWay}"/>
 										</StackPanel>
-										<StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Margin="20 5 0 5">
+										<StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Margin="20 5 0 5" IsEnabled="{Binding AutoStartIsEnabeld}">
 											<TextBlock Margin="0 0 0 0" Text="Start with Windows" TextAlignment="Left" TextWrapping="Wrap" Width="80"/>
 											<CheckBox Margin="0 0 0 0" IsChecked="{Binding Autostart, Mode=TwoWay}">
 											</CheckBox>

@@ -72,6 +72,7 @@ The application will check for these dependencies on startup and display a messa
 | UI state (window size, column widths) | `%LocalAppData%\Jot` | `./Portable/Config` |
 | Window title | "CapFrameX" | "CapFrameX Portable" |
 | Config migration | Migrates old settings | Skipped |
+| Start with Windows | Available | Disabled |
 
 ## Notes
 
