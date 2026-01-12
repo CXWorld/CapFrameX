@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using Serilog;
 using System;
 using System.IO;
 
@@ -61,8 +62,8 @@ namespace CapFrameX.Configuration
                     catch (Exception ex)
                     {
                         // Log to console since logging infrastructure isn't available yet
-                        Console.WriteLine($"Warning: Failed to load portable.json: {ex.Message}");
-                        Console.WriteLine("Falling back to installed mode.");
+                        Log.Error($"Warning: Failed to load portable.json: {ex.Message}");
+                        Log.Error("Falling back to installed mode.");
                         IsPortableMode = false;
                         Config = null;
                     }
