@@ -23,11 +23,11 @@ Create a `portable.json` file in the CapFrameX application directory with the fo
 {
   "portable": true,
   "paths": {
-    "config": "./Config",
-    "captures": "./Captures",
-    "screenshots": "./Screenshots",
-    "logs": "./Logs",
-    "cloud": "./Captures/Cloud"
+    "config": "./Portable/Config",
+    "captures": "./Portable/Captures",
+    "screenshots": "./Portable/Screenshots",
+    "logs": "./Portable/Logs",
+    "cloud": "./Portable/Captures/Cloud"
   }
 }
 ```
@@ -37,11 +37,11 @@ Create a `portable.json` file in the CapFrameX application directory with the fo
 | Property | Description | Default |
 |----------|-------------|---------|
 | `portable` | Enables portable mode when `true` | `true` |
-| `paths.config` | Configuration files (AppSettings.json, overlay configs, sensor config) | `./Config` |
-| `paths.captures` | Capture recordings | `./Captures` |
-| `paths.screenshots` | Screenshot storage | `./Screenshots` |
-| `paths.logs` | Log files | `./Logs` |
-| `paths.cloud` | Cloud download directory | `./Captures/Cloud` |
+| `paths.config` | Configuration files (AppSettings.json, overlay configs, sensor config, UI state) | `./Portable/Config` |
+| `paths.captures` | Capture recordings | `./Portable/Captures` |
+| `paths.screenshots` | Screenshot storage | `./Portable/Screenshots` |
+| `paths.logs` | Log files | `./Portable/Logs` |
+| `paths.cloud` | Cloud download directory | `./Portable/Captures/Cloud` |
 
 All paths are relative to the application directory. You can use `./` or `.\` prefix, or just the folder name.
 
@@ -58,17 +58,18 @@ The application will check for these dependencies on startup and display a messa
 
 1. Copy the CapFrameX application files to a folder
 2. Create a `portable.json` file with the configuration above
-3. (Optional) Pre-create the subdirectories: `Config`, `Captures`, `Screenshots`, `Logs`
+3. (Optional) Pre-create the `Portable` subdirectory with: `Config`, `Captures`, `Screenshots`, `Logs`
 4. The application is now portable and can be moved to any location
 
 ## Behavior Differences
 
 | Feature | Installed Mode | Portable Mode |
 |---------|---------------|---------------|
-| Config storage | `%AppData%\CapFrameX\Configuration` | `./Config` |
-| Captures storage | `Documents\CapFrameX\Captures` | `./Captures` |
-| Screenshots | `Documents\CapFrameX\Screenshots` | `./Screenshots` |
-| Logs | `%AppData%\CapFrameX\Logs` | `./Logs` |
+| Config storage | `%AppData%\CapFrameX\Configuration` | `./Portable/Config` |
+| Captures storage | `Documents\CapFrameX\Captures` | `./Portable/Captures` |
+| Screenshots | `Documents\CapFrameX\Screenshots` | `./Portable/Screenshots` |
+| Logs | `%AppData%\CapFrameX\Logs` | `./Portable/Logs` |
+| UI state (window size, column widths) | `%LocalAppData%\Jot` | `./Portable/Config` |
 | Window title | "CapFrameX" | "CapFrameX Portable" |
 | Config migration | Migrates old settings | Skipped |
 

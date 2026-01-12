@@ -167,7 +167,7 @@
     </Compile>
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="CapFrameXViewRegion.cs" />
-    <Compile Include="WindowStateService.cs" />
+    <Compile Include="WindowStateTracker.cs" />
     <Page Include="Shell.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -371,7 +371,7 @@
       <Version>1.1.0</Version>
     </PackageReference>
     <PackageReference Include="Jot">
-      <Version>2.0.3</Version>
+      <Version>2.1.17</Version>
     </PackageReference>
     <PackageReference Include="MahApps.Metro">
       <Version>2.4.3</Version>

@@ -1,15 +1,18 @@
 ﻿using Jot;
+using Jot.Storage;
 using System.Windows;
 
 namespace CapFrameX
 {
-	static class WindowStatServices
+	class WindowStateTracker
 	{
 		// expose the tracker instance
-		public static Tracker Tracker = new Tracker();
+		public Tracker Tracker { get; }
 
-		static WindowStatServices()
+		public WindowStateTracker(string folderPath)
 		{
+			Tracker = new Tracker(new JsonFileStore(folderPath));
+
 			Tracker.Configure<Window>()
 				.Id(w => w.Name)
 				.Properties(w => new { w.Height, w.Width, w.Left, w.Top, w.WindowState })

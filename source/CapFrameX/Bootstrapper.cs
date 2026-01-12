@@ -58,6 +58,10 @@ namespace CapFrameX
             var config = Container.Resolve<IAppConfiguration>();
             ConfigurationProvider.AppConfiguration = config;
 
+            // get path service
+            var pathService = Container.Resolve<IPathService>();
+            PathServiceProvider.PathService = pathService;
+
             // get process service
             ProcessServiceProvider.ProcessService = Container.Resolve<IRTSSService>();
 

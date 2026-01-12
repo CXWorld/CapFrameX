@@ -32,34 +32,34 @@ namespace CapFrameX.Configuration
         /// Default: "./Config"
         /// </summary>
         [JsonProperty("config")]
-        public string Config { get; set; } = "./Config";
+        public string Config { get; set; } = "./Portable/Config";
 
         /// <summary>
         /// Relative path for capture recordings.
         /// Default: "./Captures"
         /// </summary>
         [JsonProperty("captures")]
-        public string Captures { get; set; } = "./Captures";
+        public string Captures { get; set; } = "./Portable/Captures";
 
         /// <summary>
         /// Relative path for screenshots.
         /// Default: "./Screenshots"
         /// </summary>
         [JsonProperty("screenshots")]
-        public string Screenshots { get; set; } = "./Screenshots";
+        public string Screenshots { get; set; } = "./Portable/Screenshots";
 
         /// <summary>
         /// Relative path for log files.
         /// Default: "./Logs"
         /// </summary>
         [JsonProperty("logs")]
-        public string Logs { get; set; } = "./Logs";
+        public string Logs { get; set; } = "./Portable/Logs";
 
         /// <summary>
         /// Relative path for cloud downloads.
         /// Default: "./Captures/Cloud"
         /// </summary>
         [JsonProperty("cloud")]
-        public string Cloud { get; set; } = "./Captures/Cloud";
+        public string Cloud { get; set; } = "./Portable/Captures/Cloud";
     }
 }

@@ -230,8 +230,10 @@ internal sealed class IntelCpu : GenericCpu
                             tjMax = GetTjMaxFromMsr();
                             break;
 
-                        case 0xC5: // Intel Core Ultra 9 200 Series ArrowLake
-                        case 0xC6: // Intel Core Ultra 7 200 Series ArrowLake
+                        case 0xC5: // Intel Core Ultra 200 Series Arrow Lake-H/U
+                        case 0xC6: // Intel Core Ultra 200 Series Arrow Lake-S
+                        case 0xC7: // Intel Core Ultra 200 Series Arrow Lake-S Refresh Reserved
+                        case 0xC8: // Intel Core Ultra 200 Series Arrow Lake-S Refresh Reserved
                             _microArchitecture = MicroArchitecture.ArrowLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
@@ -242,6 +244,9 @@ internal sealed class IntelCpu : GenericCpu
                             break;
 
                         case 0xCC: // Intel Core Ultra X5/7/9 PantherLake
+                        case 0xCD: // Intel Core Ultra X5/7/9 PantherLake Reserved
+                        case 0xCE: // Intel Core Ultra X5/7/9 PantherLake Reserved
+                        case 0xCF: // Intel Core Ultra X5/7/9 PantherLake Reserved
                             _microArchitecture = MicroArchitecture.PantherLake;
                             tjMax = GetTjMaxFromMsr();
                             break;

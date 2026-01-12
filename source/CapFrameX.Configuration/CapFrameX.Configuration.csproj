@@ -115,6 +115,7 @@
     <Compile Include="ISettingsStorage.cs" />
     <Compile Include="JsonSettingsStorage.cs" />
     <Compile Include="PathService.cs" />
+    <Compile Include="PathServiceProvider.cs" />
     <Compile Include="PortableConfig.cs" />
     <Compile Include="AppDependencyChecker.cs" />
     <Compile Include="PortableModeDetector.cs" />
