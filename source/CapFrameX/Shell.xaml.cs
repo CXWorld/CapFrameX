@@ -54,6 +54,11 @@ namespace CapFrameX
             _settingsStorage = settingsStorage;
             Closing += Shell_Closing;
 
+            if (PortableModeDetector.IsPortableMode)
+            {
+                Title = "CapFrameX Portable";
+            }
+
             // Start tracking the Window instance.
             WindowStatServices.Tracker.Track(this);
             this.StateChanged += Resize;

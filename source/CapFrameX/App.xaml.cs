@@ -55,7 +55,7 @@ namespace CapFrameX
                         {
                             AppHelper.ShowWindowInCorrectState(process);
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             InitializeLogger();
                             Log.Logger.Fatal(ex, "Exception in ShowWindowInCorrectState");
@@ -69,6 +69,42 @@ namespace CapFrameX
             }
             else
             {
+                // We need to check for .NET Framework presence and C++ redistributables.
+                try
+                {
+                    var checkReport = AppDependencyChecker.CheckAndNotifyMissingDependencies();
+
+                    if (!checkReport.Valid)
+                    {
+                        var netFrameWorkMessage = checkReport.MissingDotNetFrameworkVersion != null
+                            ? $"- .NET Framework {checkReport.MissingDotNetFrameworkVersion} is not installed.\n"
+                            : string.Empty;
+
+                        var vcRedistMessage = checkReport.MissingVCRedistVersions != null
+                            ? $"- Visual C++ Redistributables missing: {string.Join(", ", checkReport.MissingVCRedistVersions)}\n"
+                            : string.Empty;
+
+                        // Show info message to user
+                        MessageBox.Show($"CapFrameX is running in portable mode and requires certain dependencies to be installed on the system.\n\n" +
+                            $"The following dependencies are missing:\n" +
+                            $"{netFrameWorkMessage}" +
+                            $"{vcRedistMessage}" +
+                            $"\nPlease install the missing dependencies and restart CapFrameX.",
+                            "Missing Dependencies",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+
+                        // Missing dependencies, exit application
+                        Current.Shutdown();
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log error
+                    Log.Logger.Fatal(ex, "Exception in AppDependencyChecker");
+                }
+
                 // Initialize portable mode detection before anything else
                 PortableModeDetector.Initialize();
 
@@ -273,44 +309,60 @@ namespace CapFrameX
                 Current.Shutdown();
             }
 
-            // unify old config folders
-            try
+            // Skip config migration in portable mode - only relevant for installed mode upgrades
+            if (!PortableModeDetector.IsPortableMode)
             {
-                var configFolderV1 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                        @"CapFrameX\Configuration\");
-                var configFolderV2 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                        @"CapFrameX\Configuration\");
-
-                if (!Directory.Exists(configFolderV2))
+                // unify old config folders
+                try
                 {
-                    Directory.CreateDirectory(configFolderV2);
-                }
+                    var configFolderV1 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                            @"CapFrameX\Configuration\");
+                    var configFolderV2 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                            @"CapFrameX\Configuration\");
 
-                if (Directory.Exists(configFolderV1))
-                {
-                    var oldSettingsFileName = Path.Combine(configFolderV1, "settings.json");
-                    var newSettingsFileName = Path.Combine(configFolderV1, "AppSettings.json");
-                    if (File.Exists(oldSettingsFileName))
+                    if (!Directory.Exists(configFolderV2))
                     {
-                        if (!File.Exists(newSettingsFileName))
-                            File.Move(oldSettingsFileName, newSettingsFileName);
-
-                        File.Delete(oldSettingsFileName);
+                        Directory.CreateDirectory(configFolderV2);
                     }
 
-                    CleanupOldConfigStorage(configFolderV1, configFolderV2);
+                    if (Directory.Exists(configFolderV1))
+                    {
+                        var oldSettingsFileName = Path.Combine(configFolderV1, "settings.json");
+                        var newSettingsFileName = Path.Combine(configFolderV1, "AppSettings.json");
+                        if (File.Exists(oldSettingsFileName))
+                        {
+                            if (!File.Exists(newSettingsFileName))
+                                File.Move(oldSettingsFileName, newSettingsFileName);
+
+                            File.Delete(oldSettingsFileName);
+                        }
+
+                        CleanupOldConfigStorage(configFolderV1, configFolderV2);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Error(ex, "Error while creating config folder.");
+                catch (Exception ex)
+                {
+                    Log.Logger.Error(ex, "Error while creating config folder.");
+                }
             }
 
             // create capture folder
             try
             {
-                var captureFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                    @"CapFrameX\Captures\");
+                string captureFolder;
+                if (PortableModeDetector.IsPortableMode && PortableModeDetector.Config != null)
+                {
+                    var appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                    var relativePath = PortableModeDetector.Config.Paths.Captures;
+                    if (relativePath.StartsWith("./") || relativePath.StartsWith(".\\"))
+                        relativePath = relativePath.Substring(2);
+                    captureFolder = Path.GetFullPath(Path.Combine(appDirectory, relativePath));
+                }
+                else
+                {
+                    captureFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                        @"CapFrameX\Captures\");
+                }
 
                 if (!Directory.Exists(captureFolder))
                 {

@@ -35,6 +35,7 @@ namespace CapFrameX.ViewModel
         private readonly IRegionManager _regionManager;
         private readonly IEventAggregator _eventAggregator;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly IPathService _pathService;
         private readonly ISensorService _sensorService;
         private readonly ILogger<ColorbarViewModel> _logger;
         private readonly IShell _shell;
@@ -542,9 +543,12 @@ namespace CapFrameX.ViewModel
 
         public ISensorService SensorService => _sensorService;
 
+        public string ResolveDocumentsPath(string path) => _pathService.ResolveDocumentsPlaceholder(path);
+
         public ColorbarViewModel(IRegionManager regionManager,
             IEventAggregator eventAggregator,
             IAppConfiguration appConfiguration,
+            IPathService pathService,
             ISensorService sensorService,
             ILogger<ColorbarViewModel> logger,
             IShell shell,
@@ -554,6 +558,7 @@ namespace CapFrameX.ViewModel
             _regionManager = regionManager;
             _eventAggregator = eventAggregator;
             _appConfiguration = appConfiguration;
+            _pathService = pathService;
             _sensorService = sensorService;
             _logger = logger;
             _shell = shell;
@@ -637,12 +642,7 @@ namespace CapFrameX.ViewModel
         {
             try
             {
-                var path = _appConfiguration.ScreenshotDirectory;
-                if (path.Contains(@"MyDocuments\CapFrameX\Screenshots"))
-                {
-                    var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                    path = Path.Combine(documentFolder, @"CapFrameX\Screenshots");
-                }
+                var path = _pathService.ResolveDocumentsPlaceholder(_appConfiguration.ScreenshotDirectory);
                 Process.Start(path);
             }
             catch { _logger.LogError("Error while opening screenshot folder."); }

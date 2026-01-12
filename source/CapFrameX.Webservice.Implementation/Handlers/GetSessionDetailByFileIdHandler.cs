@@ -1,26 +1,25 @@
-﻿using CapFrameX.Webservice.Data.Interfaces;
+﻿using CapFrameX.Data.Session.Classes;
+using CapFrameX.Data.Session.Converters;
+using CapFrameX.Extensions.NetStandard;
+using CapFrameX.Sensor.Reporting;
+using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Statistics.NetStandard.Contracts;
+using CapFrameX.Statistics.PlotBuilder;
+using CapFrameX.Statistics.PlotBuilder.Contracts;
+using CapFrameX.Webservice.Data.DTO;
+using CapFrameX.Webservice.Data.Extensions;
+using CapFrameX.Webservice.Data.Interfaces;
 using CapFrameX.Webservice.Data.Queries;
 using MediatR;
+using Newtonsoft.Json;
+using OxyPlot;
 using System;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CapFrameX.Webservice.Data.Extensions;
-using Newtonsoft.Json;
-using CapFrameX.Data.Session.Classes;
-using CapFrameX.Sensor.Reporting;
-using CapFrameX.Webservice.Data.DTO;
-using CapFrameX.Statistics.PlotBuilder;
-using CapFrameX.Statistics.NetStandard.Contracts;
-using CapFrameX.Statistics.NetStandard;
-using CapFrameX.Statistics.PlotBuilder.Contracts;
-using System.IO;
-using OxyPlot;
-using CapFrameX.Extensions.NetStandard;
-using System.ComponentModel;
-using CapFrameX.Data.Session.Contracts;
-using CapFrameX.Data.Session.Converters;
 
 namespace CapFrameX.Webservice.Implementation.Handlers
 {
@@ -105,7 +104,7 @@ namespace CapFrameX.Webservice.Implementation.Handlers
     }
 
 	class PlotSettings : IPlotSettings
-	{
+    {
 		public bool ShowGpuLoad { get; set; }
 
 		public bool ShowCpuLoad { get; set; }
@@ -115,6 +114,8 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 		public bool ShowGpuPowerLimit { get; set; }
 
         public bool ShowPcLatency { get; set; }
+
+		public bool ShowAnimationError { get; set; }
 
         public bool ShowAggregationSeparators { get; set; }
 
@@ -128,7 +129,9 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 
 		public bool ShowGpuActiveCharts { get; set; }
 
-		public bool ShowDisplayTimes { get; set; }
+		public bool ShowCpuActiveCharts { get; set; }
+
+        public bool ShowDisplayTimes { get; set; }
 
     }
 }

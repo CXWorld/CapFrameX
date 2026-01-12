@@ -33,6 +33,7 @@ namespace CapFrameX.ViewModel
         private readonly IRecordDirectoryObserver _recordObserver;
         private readonly IEventAggregator _eventAggregator;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly IPathService _pathService;
         private readonly IRecordManager _recordManager;
         private readonly ISystemInfo _systemInfo;
         private readonly ProcessList _processList;
@@ -315,12 +316,17 @@ namespace CapFrameX.ViewModel
 
         public ISubject<bool> CreateFolderdialogIsOpenStream = new BehaviorSubject<bool>(false);
 
-        public ControlViewModel(IRecordDirectoryObserver recordObserver, IEventAggregator eventAggregator, IAppConfiguration appConfiguration, 
-            RecordManager recordManager, ISystemInfo systemInfo, ProcessList processList, ILogger<ControlViewModel> logger, ApplicationState applicationState)
+        public string ResolveDocumentsPath(string path) => _pathService.ResolveDocumentsPlaceholder(path);
+
+        public string DefaultCapturesPath => _pathService.CapturesFolder;
+
+        public ControlViewModel(IRecordDirectoryObserver recordObserver, IEventAggregator eventAggregator, IAppConfiguration appConfiguration,
+            IPathService pathService, RecordManager recordManager, ISystemInfo systemInfo, ProcessList processList, ILogger<ControlViewModel> logger, ApplicationState applicationState)
         {
             _recordObserver = recordObserver;
             _eventAggregator = eventAggregator;
             _appConfiguration = appConfiguration;
+            _pathService = pathService;
             _recordManager = recordManager;
             _systemInfo = systemInfo;
             _processList = processList;
@@ -427,12 +433,7 @@ namespace CapFrameX.ViewModel
         {
             try
             {
-                var path = _appConfiguration.ObservedDirectory;
-                if (path.Contains(@"MyDocuments\CapFrameX\Captures"))
-                {
-                    var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                    path = Path.Combine(documentFolder, @"CapFrameX\Captures");
-                }
+                var path = _pathService.ResolveDocumentsPlaceholder(_appConfiguration.ObservedDirectory);
                 Process.Start(path);
             }
             catch (Exception ex) { _logger.LogError(ex, "Error while opening observed folder."); }

@@ -262,3 +262,6 @@ source/publish webservice.ps1
 
 # Claude Code
 .claude/
+
+# Ignore nul file created by bash operations
+nul

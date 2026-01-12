@@ -41,9 +41,7 @@ namespace CapFrameX.View
         private string CaptureRootDirectory
             => _viewModel.AppConfiguration.CaptureRootDirectory;
 
-        private string DefaultPath = Path.Combine
-            (Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            @"CapFrameX\Captures\");
+        private string DefaultPath => _viewModel.DefaultCapturesPath;
 
         private bool IsDragDropActive;
         private TreeViewItem ObservedTreeViewItem;
@@ -99,15 +97,25 @@ namespace CapFrameX.View
             CreateTreeViewRecursive(TrvStructure.Items[0] as TreeViewItem);
             JumpToObservedDirectoryItem(root, out var directoryFound);
 
-            if ((ExtractFullPath(CaptureRootDirectory) == ObservedDirectory))
+            if (ExtractFullPath(CaptureRootDirectory) == ExtractFullPath(ObservedDirectory))
                 root.IsSelected = true;
 
             if (!directoryFound)
             {
-                if (Directory.Exists(ObservedDirectory))
-                    _viewModel.RootDirectory = ObservedDirectory;
+                if (Directory.Exists(ExtractFullPath(CaptureRootDirectory)))
+                {
+                    if (ExtractFullPath(_viewModel.RootDirectory) != ExtractFullPath(CaptureRootDirectory))
+                    {
+                        _viewModel.RootDirectory = ExtractFullPath(CaptureRootDirectory);
+                    }
+                }
                 else
                 {
+                    // Ensure default path exists before setting it
+                    if (!Directory.Exists(DefaultPath))
+                    {
+                        Directory.CreateDirectory(DefaultPath);
+                    }
                     _viewModel.AppConfiguration.ObservedDirectory = DefaultPath;
                     _viewModel.RootDirectory = DefaultPath;
                 }
@@ -166,7 +174,7 @@ namespace CapFrameX.View
             if (tvi == null)
                 return;
 
-            if ((tvi.Tag as DirectoryInfo).FullName == ObservedDirectory)
+            if ((tvi.Tag as DirectoryInfo).FullName == ExtractFullPath(ObservedDirectory))
             {
                 tvi.BringIntoView();
                 tvi.IsSelected = true;
@@ -274,7 +282,7 @@ namespace CapFrameX.View
         {
             if (!IsDragDropActive) // When using D&D, select items to highlight them, but don't change directory
             {
-                TreeViewItem item = e.Source as TreeViewItem;               
+                TreeViewItem item = e.Source as TreeViewItem;
                 _viewModel.RecordObserver.ObserveDirectory((item.Tag as DirectoryInfo).FullName);
 
                 // Save the TreeviewItem of the observed directory
@@ -283,15 +291,7 @@ namespace CapFrameX.View
         }
 
         private string ExtractFullPath(string path)
-        {
-            if (path.Contains(@"MyDocuments\CapFrameX\Captures"))
-            {
-                var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                path = Path.Combine(documentFolder, @"CapFrameX\Captures");
-            }
-
-            return path;
-        }
+            => _viewModel.ResolveDocumentsPath(path);
 
         private void RootFolder_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -534,5 +534,5 @@ namespace CapFrameX.View
 
             return null;
         }
-	}
+    }
 }

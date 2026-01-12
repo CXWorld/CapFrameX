@@ -4,6 +4,7 @@
     "config": "./Config",
     "captures": "./Captures",
     "screenshots": "./Screenshots",
-    "logs": "./Logs"
+    "logs": "./Logs",
+    "cloud": "./Captures/Cloud"
   }
 }

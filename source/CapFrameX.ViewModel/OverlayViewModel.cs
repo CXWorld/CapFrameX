@@ -36,6 +36,7 @@ namespace CapFrameX.ViewModel
         private readonly IOverlayService _overlayService;
         private readonly IOverlayEntryProvider _overlayEntryProvider;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly IPathService _pathService;
         private readonly IEventAggregator _eventAggregator;
         private readonly ISensorService _sensorService;
         private readonly IRTSSService _rTSSService;
@@ -467,12 +468,13 @@ namespace CapFrameX.ViewModel
         public OverlayGroupSeparating OverlaySubModelGroupSeparating { get; }
 
         public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider,
-            IAppConfiguration appConfiguration, IEventAggregator eventAggregator, ISensorService sensorService, IRTSSService rTSSService,
+            IAppConfiguration appConfiguration, IPathService pathService, IEventAggregator eventAggregator, ISensorService sensorService, IRTSSService rTSSService,
             IThreadAffinityController threadAffinityController, IOnlineMetricService onlineMetricService)
         {
             _overlayService = overlayService;
             _overlayEntryProvider = overlayEntryProvider;
             _appConfiguration = appConfiguration;
+            _pathService = pathService;
             _eventAggregator = eventAggregator;
             _sensorService = sensorService;
             _rTSSService = rTSSService;
@@ -703,7 +705,7 @@ namespace CapFrameX.ViewModel
         {
             try
             {
-                Process.Start(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CapFrameX", "Configuration"));
+                Process.Start(_pathService.ConfigFolder);
             }
             catch { }
         }

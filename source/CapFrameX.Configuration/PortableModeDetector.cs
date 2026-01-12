@@ -94,6 +94,9 @@ namespace CapFrameX.Configuration
 
             if (string.IsNullOrWhiteSpace(config.Paths.Logs))
                 config.Paths.Logs = "./Logs";
+
+            if (string.IsNullOrWhiteSpace(config.Paths.Cloud))
+                config.Paths.Cloud = "./Captures/Cloud";
         }
 
         /// <summary>
@@ -114,7 +117,8 @@ namespace CapFrameX.Configuration
                     Config = "./Config",
                     Captures = "./Captures",
                     Screenshots = "./Screenshots",
-                    Logs = "./Logs"
+                    Logs = "./Logs",
+                    Cloud = "./Captures/Cloud"
                 }
             };
 

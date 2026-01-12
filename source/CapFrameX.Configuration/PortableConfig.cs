@@ -54,5 +54,12 @@ namespace CapFrameX.Configuration
         /// </summary>
         [JsonProperty("logs")]
         public string Logs { get; set; } = "./Logs";
+
+        /// <summary>
+        /// Relative path for cloud downloads.
+        /// Default: "./Captures/Cloud"
+        /// </summary>
+        [JsonProperty("cloud")]
+        public string Cloud { get; set; } = "./Captures/Cloud";
     }
 }

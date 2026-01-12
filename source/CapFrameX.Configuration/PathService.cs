@@ -18,6 +18,7 @@ namespace CapFrameX.Configuration
         public string CapturesFolder { get; }
         public string ScreenshotsFolder { get; }
         public string LogsFolder { get; }
+        public string CloudFolder { get; }
 
         public PathService(ILogger<PathService> logger)
         {
@@ -35,6 +36,7 @@ namespace CapFrameX.Configuration
                 CapturesFolder = ResolvePath(portableConfig.Paths.Captures);
                 ScreenshotsFolder = ResolvePath(portableConfig.Paths.Screenshots);
                 LogsFolder = ResolvePath(portableConfig.Paths.Logs);
+                CloudFolder = ResolvePath(portableConfig.Paths.Cloud);
             }
             else
             {
@@ -48,12 +50,14 @@ namespace CapFrameX.Configuration
                 CapturesFolder = Path.Combine(documentsPath, "CapFrameX", "Captures");
                 ScreenshotsFolder = Path.Combine(documentsPath, "CapFrameX", "Screenshots");
                 LogsFolder = Path.Combine(appDataPath, "CapFrameX", "Logs");
+                CloudFolder = Path.Combine(documentsPath, "CapFrameX", "Captures", "Cloud");
             }
 
             _logger.LogInformation("ConfigFolder: {ConfigFolder}", ConfigFolder);
             _logger.LogInformation("CapturesFolder: {CapturesFolder}", CapturesFolder);
             _logger.LogInformation("ScreenshotsFolder: {ScreenshotsFolder}", ScreenshotsFolder);
             _logger.LogInformation("LogsFolder: {LogsFolder}", LogsFolder);
+            _logger.LogInformation("CloudFolder: {CloudFolder}", CloudFolder);
         }
 
         public string ResolvePath(string relativePath)
@@ -99,12 +103,45 @@ namespace CapFrameX.Configuration
                     Directory.CreateDirectory(LogsFolder);
                     _logger.LogInformation("Created directory: {LogsFolder}", LogsFolder);
                 }
+
+                if (!Directory.Exists(CloudFolder))
+                {
+                    Directory.CreateDirectory(CloudFolder);
+                    _logger.LogInformation("Created directory: {CloudFolder}", CloudFolder);
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to create required directories");
                 throw;
             }
+        }
+
+        public string ResolveDocumentsPlaceholder(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return path;
+
+            // Check for Cloud subfolder first (more specific match)
+            if (path.Contains(@"MyDocuments\CapFrameX\Captures\Cloud"))
+            {
+                return CloudFolder;
+            }
+
+            // Check for Captures folder
+            if (path.Contains(@"MyDocuments\CapFrameX\Captures"))
+            {
+                return CapturesFolder;
+            }
+
+            // Check for Screenshots folder
+            if (path.Contains(@"MyDocuments\CapFrameX\Screenshots"))
+            {
+                return ScreenshotsFolder;
+            }
+
+            // No placeholder found, return path as-is
+            return path;
         }
     }
 }

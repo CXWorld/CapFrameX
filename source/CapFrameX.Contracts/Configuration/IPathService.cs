@@ -33,6 +33,11 @@ namespace CapFrameX.Contracts.Configuration
         string LogsFolder { get; }
 
         /// <summary>
+        /// Gets the default folder path for cloud downloads.
+        /// </summary>
+        string CloudFolder { get; }
+
+        /// <summary>
         /// Resolves a relative path to an absolute path based on the current mode.
         /// In portable mode, resolves relative to the application directory.
         /// In installed mode, resolves relative to the appropriate system folder.
@@ -45,5 +50,14 @@ namespace CapFrameX.Contracts.Configuration
         /// Ensures all required directories exist.
         /// </summary>
         void EnsureDirectoriesExist();
+
+        /// <summary>
+        /// Resolves a path that may contain the MyDocuments\CapFrameX placeholder.
+        /// If the path contains the placeholder, returns the appropriate resolved path.
+        /// Otherwise, returns the path unchanged.
+        /// </summary>
+        /// <param name="path">The path that may contain a placeholder.</param>
+        /// <returns>The resolved path.</returns>
+        string ResolveDocumentsPlaceholder(string path);
     }
 }
