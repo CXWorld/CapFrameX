@@ -67,6 +67,7 @@
 					<Grid >
 						<Grid.RowDefinitions>
 							<RowDefinition Height="45"></RowDefinition>
+							<RowDefinition Height="35"></RowDefinition>
 							<RowDefinition Height="1*"></RowDefinition>
 							<RowDefinition Height="50"></RowDefinition>
 							<RowDefinition Height="120"></RowDefinition>
@@ -178,13 +179,41 @@
 								<materialDesign:PackIcon Kind="Restore" Height="22" Width="22" />
 							</Button>
 						</StackPanel>
-						<DataGrid Grid.Row="1" x:Name="OverlayItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" FontSize="12"
-					          SelectedIndex="{Binding SelectedOverlayEntryIndex}" SelectedItem="{Binding SelectedOverlayEntry}" ItemsSource="{Binding OverlayEntries}"
+						<!--Filter Controls-->
+						<StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10 0 10 5" HorizontalAlignment="Stretch">
+							<TextBox Width="150" Height="28" FontSize="12" VerticalContentAlignment="Center"
+									 materialDesign:HintAssist.Hint="Search..." materialDesign:HintAssist.HintOpacity=".6"
+									 materialDesign:TextFieldAssist.HasClearButton="True"
+									 Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}"
+									 Foreground="{DynamicResource MaterialDesignBody}"
+									 ToolTip="Search in Description, Group Name, and Identifier"/>
+							<ComboBox Width="110" Height="28" Margin="10 0 0 0" FontSize="12" VerticalContentAlignment="Center"
+									  materialDesign:HintAssist.Hint="Entry Type" materialDesign:HintAssist.HintOpacity=".6"
+									  materialDesign:HintAssist.IsFloating="False"
+									  materialDesign:ComboBoxAssist.ClassicMode="True"
+									  ItemsSource="{Binding EntryTypeFilterItems}"
+									  SelectedItem="{Binding SelectedEntryTypeFilter}"
+									  Foreground="{DynamicResource MaterialDesignBody}"
+									  ToolTip="Filter by entry type">
+								<ComboBox.ItemTemplate>
+									<DataTemplate>
+										<TextBlock Text="{Binding Converter={StaticResource EnumShortDescriptionConverter}, TargetNullValue='All Types'}"/>
+									</DataTemplate>
+								</ComboBox.ItemTemplate>
+							</ComboBox>
+							<Button Width="24" Height="24" Margin="10 0 0 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+									ToolTip="Clear filters" Command="{Binding ClearFilterCommand}"
+									materialDesign:RippleAssist.Feedback="#DD000000">
+								<materialDesign:PackIcon Kind="FilterRemove" Height="16" Width="16" />
+							</Button>
+						</StackPanel>
+						<DataGrid Grid.Row="2" x:Name="OverlayItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" FontSize="12"
+					          SelectedIndex="{Binding SelectedOverlayEntryIndex}" SelectedItem="{Binding SelectedOverlayEntry}" ItemsSource="{Binding OverlayEntriesView}"
 					          CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" ColumnHeaderHeight="17"
 					          materialDesign:DataGridAssist.CellPadding="13 5 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="14 0 0 2" IsSynchronizedWithCurrentItem="False"
 					          ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
-					          dragdrop:DragDrop.IsDragSource="True"
-					          dragdrop:DragDrop.IsDropTarget="True"
+					          dragdrop:DragDrop.IsDragSource="{Binding HasActiveFilter, Converter={StaticResource InvertBoolConverter}}"
+					          dragdrop:DragDrop.IsDropTarget="{Binding HasActiveFilter, Converter={StaticResource InvertBoolConverter}}"
 						      dragdrop:DragDrop.DropHandler="{Binding}"
 					          dragdrop:DragDrop.UseDefaultDragAdorner="True"
 					          dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
@@ -321,7 +350,7 @@
 								</DataGridCheckBoxColumn>
 							</DataGrid.Columns>
 						</DataGrid>
-						<StackPanel Grid.Row="2" Orientation="Vertical">
+						<StackPanel Grid.Row="3" Orientation="Vertical">
 							<Border Margin="10 5 10 0" BorderThickness="0.4" BorderBrush="{DynamicResource MaterialDesignBody}">
 								<StackPanel Margin="5 5 0 5" Orientation="Horizontal">
 									<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Group Control:</TextBlock>
@@ -566,7 +595,7 @@
 							</Border>
 						</StackPanel>
 						<!--Global overlay toggle-->
-						<Grid Grid.Row="3" Margin="20 0 0 0" DockPanel.Dock="Bottom">
+						<Grid Grid.Row="4" Margin="20 0 0 0" DockPanel.Dock="Bottom">
 							<Grid.RowDefinitions>
 								<RowDefinition Height="*"/>
 								<RowDefinition Height="*"/>

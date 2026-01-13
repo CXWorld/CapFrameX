@@ -20,6 +20,7 @@ using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -27,6 +28,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
@@ -54,6 +56,9 @@ namespace CapFrameX.ViewModel
         private ResetOverlayConfigDialog _resetOverlayConfigContent;
         private bool _resetOverlayConfigContentIsOpen;
         private PubSubEvent<ViewMessages.OverlayConfigChanged> _overlayConfigChangedEvent;
+        private string _filterText = string.Empty;
+        private EOverlayEntryType? _selectedEntryTypeFilter;
+        private ICollectionView _overlayEntriesView;
 
         public bool OverlayItemsOptionsEnabled
         {
@@ -388,17 +393,56 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public string FilterText
+        {
+            get => _filterText;
+            set
+            {
+                _filterText = value;
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(HasActiveFilter));
+                RefreshOverlayEntriesView();
+            }
+        }
+
+        public EOverlayEntryType? SelectedEntryTypeFilter
+        {
+            get => _selectedEntryTypeFilter;
+            set
+            {
+                _selectedEntryTypeFilter = value;
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(HasActiveFilter));
+                RefreshOverlayEntriesView();
+            }
+        }
+
+        public ICollectionView OverlayEntriesView
+        {
+            get => _overlayEntriesView;
+            private set
+            {
+                _overlayEntriesView = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public Array EntryTypeFilterItems => new object[] { null }
+            .Concat(Enum.GetValues(typeof(EOverlayEntryType)).Cast<object>())
+            .ToArray();
+
+        public bool HasActiveFilter
+            => !string.IsNullOrWhiteSpace(_filterText) || _selectedEntryTypeFilter.HasValue;
+
         public string SelectedOverlayItemName
-            => SelectedOverlayEntryIndex > -1 ?
-            OverlayEntries[SelectedOverlayEntryIndex].Description : null;
+            => SelectedOverlayEntry?.Description;
 
         public string SelectedOverlayItemGroupName
-           => SelectedOverlayEntryIndex > -1 ?
-           OverlayEntries[SelectedOverlayEntryIndex].GroupName : null;
+           => SelectedOverlayEntry?.GroupName;
 
         public string SelectedOverlayItemSensorType
-          => SelectedOverlayEntryIndex > -1 ?
-          _sensorService.GetSensorTypeString(OverlayEntries[SelectedOverlayEntryIndex].Identifier) : null;
+          => SelectedOverlayEntry == null ? null
+          : _sensorService.GetSensorTypeString(SelectedOverlayEntry.Identifier);
 
         public ICommand ConfigSwitchCommand { get; }
 
@@ -431,6 +475,8 @@ namespace CapFrameX.ViewModel
         public ICommand OpenConfigFolderCommand { get; }
 
         public ICommand SortByEntryTypeCommand { get; }
+
+        public ICommand ClearFilterCommand { get; }
 
         public bool IsRTSSInstalled
             => _rTSSService.IsRTSSInstalled();
@@ -510,6 +556,7 @@ namespace CapFrameX.ViewModel
 
                     OverlayEntries.Clear();
                     OverlayEntries.AddRange(entries);
+                    SetupOverlayEntriesView();
                     _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
 
                     SetSaveButtonIsEnableAction();
@@ -557,6 +604,7 @@ namespace CapFrameX.ViewModel
 
             OpenConfigFolderCommand = new DelegateCommand(OnOpenConfigFolder);
             SortByEntryTypeCommand = new DelegateCommand(OnSortByEntryType);
+            ClearFilterCommand = new DelegateCommand(OnClearFilter);
 
             UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
                 "RivaTuner Statistics Server (RTSS)";
@@ -584,6 +632,7 @@ namespace CapFrameX.ViewModel
             OverlaySubModelGroupSeparating.SetOverlayEntries(overlayEntries);
             OverlayEntries.Clear();
             OverlayEntries.AddRange(overlayEntries);
+            SetupOverlayEntriesView();
             SetSaveButtonIsEnableAction();
             OverlayItemsOptionsEnabled = false;
             _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
@@ -745,7 +794,49 @@ namespace CapFrameX.ViewModel
 
             OverlayEntries.Clear();
             OverlayEntries.AddRange(sortedEntries);
+            SetupOverlayEntriesView();
             SetSaveButtonIsEnable();
+        }
+
+        private void SetupOverlayEntriesView()
+        {
+            OverlayEntriesView = CollectionViewSource.GetDefaultView(OverlayEntries);
+            OverlayEntriesView.Filter = FilterOverlayEntry;
+        }
+
+        private void RefreshOverlayEntriesView()
+        {
+            OverlayEntriesView?.Refresh();
+        }
+
+        private void OnClearFilter()
+        {
+            FilterText = string.Empty;
+            SelectedEntryTypeFilter = null;
+        }
+
+        private bool FilterOverlayEntry(object item)
+        {
+            if (!(item is IOverlayEntry entry))
+                return false;
+
+            // Filter by entry type
+            if (_selectedEntryTypeFilter.HasValue && entry.OverlayEntryType != _selectedEntryTypeFilter.Value)
+                return false;
+
+            // Filter by search text across all columns
+            if (!string.IsNullOrWhiteSpace(_filterText))
+            {
+                var searchText = _filterText.Trim();
+                bool matchesDescription = entry.Description?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+                bool matchesGroupName = entry.GroupName?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+                bool matchesIdentifier = entry.Identifier?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+
+                if (!matchesDescription && !matchesGroupName && !matchesIdentifier)
+                    return false;
+            }
+
+            return true;
         }
 
         public void UpdateGroupNameEnable()
@@ -789,6 +880,9 @@ namespace CapFrameX.ViewModel
 
         async void IDropTarget.Drop(IDropInfo dropInfo)
         {
+            if (HasActiveFilter)
+                return;
+
             if (dropInfo != null)
             {
                 if (dropInfo.VisualTarget is FrameworkElement frameworkElement)
@@ -814,6 +908,7 @@ namespace CapFrameX.ViewModel
 
                             OverlayEntries.Clear();
                             OverlayEntries.AddRange(await _overlayEntryProvider.GetOverlayEntries());
+                            SetupOverlayEntriesView();
                         }
                         else if (dropInfo.Data is IEnumerable<IOverlayEntry> overlayEntries)
                         {
@@ -841,6 +936,7 @@ namespace CapFrameX.ViewModel
 
                             OverlayEntries.Clear();
                             OverlayEntries.AddRange(await _overlayEntryProvider.GetOverlayEntries());
+                            SetupOverlayEntriesView();
                         }
 
                         SetSaveButtonIsEnable();
