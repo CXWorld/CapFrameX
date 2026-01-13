@@ -236,10 +236,12 @@ namespace CapFrameX.Data
                 _benchlabScheduler = new EventLoopScheduler();
 
                 _disposablePoweneticsDataStream = _poweneticsService.PmdChannelStream
+                    .Where(x => IsCapturing)
                     .ObserveOn(_poweneticsScheduler)
                     .Subscribe(channels => FillPmdDataLists(channels));
 
                 _disposableBenchlabDataStream = _benchlabService.PmdSensorStream
+                    .Where(x => IsCapturing)
                     .ObserveOn(_benchlabScheduler)
                     .Subscribe(sensorSample => FillPmdDataLists(sensorSample));
             }
@@ -494,7 +496,7 @@ namespace CapFrameX.Data
                     if (_poweneticsService.IsServiceRunning)
                     {
                         sessionRun.SampleTime = _poweneticsService.DownSamplingSize;
-                        int count = (int)(finalCaptureTime / (1E-03 * sessionRun.SampleTime)) + 1;
+                        int count = (int)(finalCaptureTime / sessionRun.SampleTime) + 1;
 
                         if (_pmdDataGpuPower.Any())
                             sessionRun.PmdGpuPower = _pmdDataGpuPower.Take(count).ToArray();
@@ -506,7 +508,7 @@ namespace CapFrameX.Data
                     else if (_benchlabService.IsServiceRunning)
                     {
                         sessionRun.SampleTime = _benchlabService.MonitoringInterval;
-                        int count = (int)(finalCaptureTime / (1E-03 * sessionRun.SampleTime)) + 1;
+                        int count = (int)(finalCaptureTime / sessionRun.SampleTime) + 1;
 
                         if (_pmdDataGpuPower.Any())
                             sessionRun.PmdGpuPower = _pmdDataGpuPower.Take(count).ToArray();
