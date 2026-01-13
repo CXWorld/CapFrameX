@@ -12,10 +12,6 @@
       <Link>benchlab-service\\BENCHLAB_Core.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\\..\\benchlab-service\\BENCHLAB_Core.pdb">
-      <Link>benchlab-service\\BENCHLAB_Core.pdb</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Configuration.Abstractions.dll">
       <Link>benchlab-service\\Microsoft.Extensions.Configuration.Abstractions.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -138,10 +134,6 @@
     </Content>
     <Content Include="..\\..\\benchlab-service\\PMD_Service.exe">
       <Link>benchlab-service\\PMD_Service.exe</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\\..\\benchlab-service\\PMD_Service.pdb">
-      <Link>benchlab-service\\PMD_Service.pdb</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="..\\..\\benchlab-service\\PMD_Service.runtimeconfig.json">
