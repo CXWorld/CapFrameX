@@ -1,6 +1,7 @@
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace CapFrameX.Configuration
 {
@@ -25,6 +26,15 @@ namespace CapFrameX.Configuration
         public List<string> MissingVCRedistVersions { get; set; }
     }
 
+    [Flags]
+    public enum DotNetComponents
+    {
+        None = 0,
+        Runtime = 1,
+        DesktopRuntime = 2,
+        Sdk = 4
+    }
+
     /// <summary>
     /// Checks for required runtime dependencies in portable mode.
     /// </summary>
@@ -35,8 +45,12 @@ namespace CapFrameX.Configuration
         // Registry keys for VC++ 2015-2022 Redistributable detection (from Bundle.wxs)
         private const string VCRedistx64RegistryKey = @"SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64";
 
-        // Registry key for .NET 9.0 detection
-        private const string DotNetSharedHostRegistryKey = @"SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedhost";
+        // File system paths for .NET installation detection
+        private static readonly string DotNetBasePath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet");
+        private static readonly string DotNetRuntimePath = Path.Combine(DotNetBasePath, "shared", "Microsoft.NETCore.App");
+        private static readonly string DotNetDesktopRuntimePath = Path.Combine(DotNetBasePath, "shared", "Microsoft.WindowsDesktop.App");
+        private static readonly string DotNetSdkPath = Path.Combine(DotNetBasePath, "sdk");
 
         /// <summary>
         /// Checks for missing dependencies and returns a report.
@@ -74,44 +88,103 @@ namespace CapFrameX.Configuration
         }
 
         /// <summary>
-        /// Checks if .NET 9.0 is installed by checking the sharedhost Version property.
+        /// Pr�ft, ob mindestens eine .NET 9 Komponente installiert ist.
         /// </summary>
         private static bool IsDotNet9Installed()
         {
+            return GetInstalledDotNet9Components() != DotNetComponents.None;
+        }
+
+        /// <summary>
+        /// Gets all installed .NET components for the required major version.
+        /// </summary>
+        private static DotNetComponents GetInstalledDotNet9Components()
+        {
+            var result = DotNetComponents.None;
+
+            if (IsDotNetComponentInstalled(DotNetRuntimePath, MajorDotNetVersionRequired))
+            {
+                result |= DotNetComponents.Runtime;
+            }
+
+            if (IsDotNetComponentInstalled(DotNetDesktopRuntimePath, MajorDotNetVersionRequired))
+            {
+                result |= DotNetComponents.DesktopRuntime;
+            }
+
+            if (IsDotNetComponentInstalled(DotNetSdkPath, MajorDotNetVersionRequired))
+            {
+                result |= DotNetComponents.Sdk;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Checks if a .NET component is installed at the specified path with at least the required major version.
+        /// Looks for version folders (e.g., "9.0.0", "9.0.1") in the component directory.
+        /// </summary>
+        private static bool IsDotNetComponentInstalled(string componentPath, int requiredMajorVersion)
+        {
             try
             {
-                // Check sharedhost Version property
-                // e.g., HKLM\SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedhost with Version = 9.0.11
-                using (var key = Registry.LocalMachine.OpenSubKey(DotNetSharedHostRegistryKey))
+                if (!Directory.Exists(componentPath))
+                    return false;
+
+                var versionDirectories = Directory.GetDirectories(componentPath);
+
+                foreach (var versionDir in versionDirectories)
                 {
-                    if (key != null)
+                    var folderName = Path.GetFileName(versionDir);
+                    if (TryParseMajorVersion(folderName, out int majorVersion) &&
+                        majorVersion >= requiredMajorVersion)
                     {
-                        var version = key.GetValue("Version") as string;
-
-                        // parse version for checking major version
-                        int majorVersion = 0;
-                        if (version != null)
-                        {
-                            var versionParts = version.Split('.');
-                            if (versionParts.Length > 0)
-                            {
-                                int.TryParse(versionParts[0], out majorVersion);
-                            }
-                        }
-
-                        if (!string.IsNullOrEmpty(version) && majorVersion >= MajorDotNetVersionRequired)
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
             }
             catch (Exception)
             {
-                // Registry access failed, assume not installed
+                // File system access failed
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Tries to parse the major version from a version string (e.g., "9.0.0" -> 9).
+        /// </summary>
+        private static bool TryParseMajorVersion(string version, out int majorVersion)
+        {
+            majorVersion = 0;
+
+            if (string.IsNullOrEmpty(version))
+                return false;
+
+            var versionParts = version.Split('.');
+            return versionParts.Length > 0 && int.TryParse(versionParts[0], out majorVersion);
+        }
+
+        /// <summary>
+        /// Gibt eine lesbare Beschreibung der installierten Komponenten zur�ck.
+        /// </summary>
+        public static string GetInstalledComponentsDescription()
+        {
+            var components = GetInstalledDotNet9Components();
+
+            if (components == DotNetComponents.None)
+                return $".NET {MajorDotNetVersionRequired} ist nicht installiert.";
+
+            var installed = new List<string>();
+
+            if (components.HasFlag(DotNetComponents.Runtime))
+                installed.Add("Runtime");
+            if (components.HasFlag(DotNetComponents.DesktopRuntime))
+                installed.Add("Desktop Runtime");
+            if (components.HasFlag(DotNetComponents.Sdk))
+                installed.Add("SDK");
+
+            return $".NET {MajorDotNetVersionRequired} installiert: {string.Join(", ", installed)}";
         }
 
         /// <summary>
