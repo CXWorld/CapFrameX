@@ -23,6 +23,7 @@ using LibreHardwareMonitor.Hardware.Motherboard;
 using LibreHardwareMonitor.Hardware.Network;
 using LibreHardwareMonitor.Hardware.Psu.Corsair;
 using LibreHardwareMonitor.Hardware.Psu.Msi;
+using LibreHardwareMonitor.Hardware.Simulation;
 using LibreHardwareMonitor.Hardware.Storage;
 
 namespace LibreHardwareMonitor.Hardware;
@@ -35,6 +36,7 @@ public class Computer : IComputer
     private readonly List<IGroup> _groups = new();
     private readonly object _lock = new();
     private readonly ISettings _settings;
+    private readonly SimulationConfiguration _simulationConfiguration;
 
     private bool _batteryEnabled;
     private bool _controllerEnabled;
@@ -47,22 +49,40 @@ public class Computer : IComputer
     private bool _psuEnabled;
     private SMBios _smbios;
     private bool _storageEnabled;
+    private bool IsSimulationEnabled => _simulationConfiguration?.Mode == SimulationMode.Enabled;
 
     /// <summary>
     /// Creates a new <see cref="IComputer" /> instance with basic initial <see cref="Settings" />.
     /// </summary>
     public Computer()
-    {
-        _settings = new Settings();
-    }
+        : this(new Settings(), null)
+    { }
 
     /// <summary>
     /// Creates a new <see cref="IComputer" /> instance with additional <see cref="ISettings" />.
     /// </summary>
     /// <param name="settings">Computer settings that will be transferred to each <see cref="IHardware" />.</param>
     public Computer(ISettings settings)
+        : this(settings, null)
+    { }
+
+    /// <summary>
+    /// Creates a new <see cref="IComputer" /> instance with simulation configuration.
+    /// </summary>
+    /// <param name="simulationConfiguration">Simulation settings for CPU/GPU hardware.</param>
+    public Computer(SimulationConfiguration simulationConfiguration)
+        : this(new Settings(), simulationConfiguration)
+    { }
+
+    /// <summary>
+    /// Creates a new <see cref="IComputer" /> instance with additional <see cref="ISettings" /> and simulation configuration.
+    /// </summary>
+    /// <param name="settings">Computer settings that will be transferred to each <see cref="IHardware" />.</param>
+    /// <param name="simulationConfiguration">Simulation settings for CPU/GPU hardware.</param>
+    public Computer(ISettings settings, SimulationConfiguration simulationConfiguration)
     {
         _settings = settings ?? new Settings();
+        _simulationConfiguration = simulationConfiguration;
     }
 
     /// <inheritdoc />
@@ -151,9 +171,17 @@ public class Computer : IComputer
             if (_open && value != _cpuEnabled)
             {
                 if (value)
-                    Add(new CpuGroup(_settings));
+                {
+                    if (IsSimulationEnabled)
+                        Add(new SimulatedCpuGroup(_simulationConfiguration, _settings));
+                    else
+                        Add(new CpuGroup(_settings));
+                }
                 else
+                {
                     RemoveType<CpuGroup>();
+                    RemoveType<SimulatedCpuGroup>();
+                }
             }
 
             _cpuEnabled = value;
@@ -170,15 +198,23 @@ public class Computer : IComputer
             {
                 if (value)
                 {
-                    Add(new NvidiaGroup(_settings));
-                    Add(new AmdGpuGroup(_settings));                
-                    Add(new IntelGpuGroup(GetIntelCpus(), _settings));
+                    if (IsSimulationEnabled)
+                    {
+                        Add(new SimulatedGpuGroup(_simulationConfiguration, _settings));
+                    }
+                    else
+                    {
+                        Add(new NvidiaGroup(_settings));
+                        Add(new AmdGpuGroup(_settings));
+                        Add(new IntelGpuGroup(GetIntelCpus(), _settings));
+                    }
                 }
                 else
                 {
                     RemoveType<AmdGpuGroup>();
                     RemoveType<NvidiaGroup>();
                     RemoveType<IntelGpuGroup>();
+                    RemoveType<SimulatedGpuGroup>();
                 }
             }
 
@@ -498,16 +534,28 @@ public class Computer : IComputer
             Add(new MotherboardGroup(_smbios, _settings));
 
         if (_cpuEnabled)
-            Add(new CpuGroup(_settings));
+        {
+            if (IsSimulationEnabled)
+                Add(new SimulatedCpuGroup(_simulationConfiguration, _settings));
+            else
+                Add(new CpuGroup(_settings));
+        }
 
         if (_memoryEnabled)
             Add(new MemoryGroup(_settings));
 
         if (_gpuEnabled)
         {
-            Add(new NvidiaGroup(_settings));
-            Add(new AmdGpuGroup(_settings));
-            Add(new IntelGpuGroup(GetIntelCpus(), _settings));
+            if (IsSimulationEnabled)
+            {
+                Add(new SimulatedGpuGroup(_simulationConfiguration, _settings));
+            }
+            else
+            {
+                Add(new NvidiaGroup(_settings));
+                Add(new AmdGpuGroup(_settings));
+                Add(new IntelGpuGroup(GetIntelCpus(), _settings));
+            }
         }
 
         if (_controllerEnabled)

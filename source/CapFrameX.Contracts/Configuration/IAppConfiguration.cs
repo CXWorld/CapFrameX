@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
 using System.Collections.Generic;
+using LibreHardwareMonitor.Hardware.Simulation;
 
 namespace CapFrameX.Contracts.Configuration
 {
@@ -172,6 +173,9 @@ namespace CapFrameX.Contracts.Configuration
 		bool AutoUpdateProcessList { get; set; }
 
 		bool UseSensorLogging { get; set; }
+
+		SimulationConfiguration HardwareSimulationConfiguration { get; set; }
+
 		/// <summary>
 		/// Toggle between absolute and percentage values for threshold bar charts
 		/// </summary>

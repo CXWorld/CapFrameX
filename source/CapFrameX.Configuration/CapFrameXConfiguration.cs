@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using LibreHardwareMonitor.Hardware.Simulation;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -711,6 +712,12 @@ namespace CapFrameX.Configuration
         {
             get => Get<bool>(true);
             set => Set(value);
+        }
+
+        public SimulationConfiguration HardwareSimulationConfiguration
+        {
+            get => Get<SimulationConfiguration>(new SimulationConfiguration());
+            set => Set(value ?? new SimulationConfiguration());
         }
 
         public int SensorLoggingRefreshPeriod

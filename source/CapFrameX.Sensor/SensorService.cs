@@ -176,7 +176,10 @@ namespace CapFrameX.Sensor
             {
                 try
                 {
-                    _computer = new Computer();
+                    var simulationConfiguration = _appConfiguration.HardwareSimulationConfiguration;
+                    _computer = simulationConfiguration != null
+                        ? new Computer(simulationConfiguration)
+                        : new Computer();
                     _computer.Open();
                     _computer.IsCpuEnabled = true;
                     _computer.IsGpuEnabled = true;
