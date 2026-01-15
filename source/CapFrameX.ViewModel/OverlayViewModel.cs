@@ -552,7 +552,8 @@ namespace CapFrameX.ViewModel
             _eventAggregator = eventAggregator;
             _threadAffinityController = threadAffinityController;
             _onlineMetricService = onlineMetricService;
-            _overlayConfigChangedEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.OverlayConfigChanged>>();
+            _overlayConfigChangedEvent = _eventAggregator
+                .GetEvent<PubSubEvent<ViewMessages.OverlayConfigChanged>>();
 
             // define submodels
             OverlaySubModelGroupControl = new OverlayGroupControl(this);
@@ -636,6 +637,9 @@ namespace CapFrameX.ViewModel
 
             UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
                 "RivaTuner Statistics Server (RTSS)";
+
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.OverlayConfigChanged>>()
+                .Subscribe(message => _overlayEntryProvider.UpdateOverlayEntryFormats());
 
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventOverlayConfigHotkey();

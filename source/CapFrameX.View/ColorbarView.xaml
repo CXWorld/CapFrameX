@@ -319,6 +319,8 @@
 											<RowDefinition Height="*" />
 											<RowDefinition Height="*" />
 											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
 										</Grid.RowDefinitions>
 										<Grid.ColumnDefinitions>
 											<ColumnDefinition Width="*"/>
@@ -349,7 +351,7 @@
 											<TextBlock Text="Use &quot;TBP Sim&quot; values for analysis if available" VerticalAlignment="Center"></TextBlock>
 										</StackPanel>
 
-										<ComboBox Grid.Row="4" Grid.Column="0" materialDesign:HintAssist.Hint="Hardware info source"
+										<ComboBox Grid.Row="2" Grid.Column="0" materialDesign:HintAssist.Hint="Hardware info source"
 										  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="0 10 0 0" Width="145" Height="40"
 										  ItemsSource="{Binding Path=DataContext.HardwareInfoSourceItems, ElementName=ColorbarViewName}" 
 										  SelectedItem="{Binding Path=DataContext.SelectedHardwareInfoSource, ElementName=ColorbarViewName}">
@@ -359,7 +361,8 @@
 												</DataTemplate>
 											</ComboBox.ItemTemplate>
 										</ComboBox>
-										<ComboBox Grid.Row="4" Grid.Column="1" materialDesign:HintAssist.Hint="Capture file mode" ToolTipService.ShowDuration="25000"
+										
+										<ComboBox Grid.Row="2" Grid.Column="1" materialDesign:HintAssist.Hint="Capture file mode" ToolTipService.ShowDuration="25000"
 										  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="0 15 0 0" Width="120" Height="40"
 										  ItemsSource="{Binding Path=DataContext.CaptureFileModeItems, ElementName=ColorbarViewName}" 
 										  SelectedItem="{Binding Path=DataContext.SelectedCaptureFileMode, ElementName=ColorbarViewName}">
@@ -380,17 +383,7 @@
 											</ComboBox.ItemTemplate>
 										</ComboBox>
 
-										<TextBox Grid.Row="5" Grid.ColumnSpan="2" Margin="18 15 0 0" materialDesign:HintAssist.Hint="CPU" materialDesign:HintAssist.HintOpacity="1"
-											Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}" PreviewKeyDown="HardwareDescription_PreviewKeyDown">
-											<TextBox.Text>
-												<Binding Path="DataContext.CustomCpuDescription"
-												 ElementName="ColorbarViewName"
-												 Mode="TwoWay"
-												 UpdateSourceTrigger="LostFocus">
-												</Binding>
-											</TextBox.Text>
-										</TextBox>
-										<TextBox Grid.Row="6" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="GPU" Margin="18 10 0 0"
+										<TextBox Grid.Row="3" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="GPU" Margin="18 10 0 0"
 											Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}" PreviewKeyDown="HardwareDescription_PreviewKeyDown">
 											<TextBox.Text>
 												<Binding Path="DataContext.CustomGpuDescription"
@@ -400,7 +393,7 @@
 												</Binding>
 											</TextBox.Text>
 										</TextBox>
-										<TextBox Grid.Row="7" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="RAM" Margin="18 10 0 0"
+										<TextBox Grid.Row="4" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="RAM" Margin="18 10 0 0"
 											Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}" PreviewKeyDown="HardwareDescription_PreviewKeyDown">
 											<TextBox.Text>
 												<Binding Path="DataContext.CustomRamDescription"

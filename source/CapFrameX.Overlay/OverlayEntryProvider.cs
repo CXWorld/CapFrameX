@@ -1388,5 +1388,10 @@ namespace CapFrameX.Overlay
             }
             ;
         }
+
+        public void UpdateOverlayEntryFormats()
+        {
+            _overlayEntries.ForEach(entry => entry.FormatChanged = true);
+        }
     }
 }

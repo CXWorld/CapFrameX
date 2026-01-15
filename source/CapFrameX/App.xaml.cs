@@ -10,6 +10,7 @@ using CapFrameX.PresentMonInterface;
 using CapFrameX.Remote;
 using DryIoc;
 using EmbedIO;
+using LibreHardwareMonitor.PawnIo;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Formatting.Compact;

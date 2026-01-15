@@ -27,7 +27,7 @@ public class PawnIo
         var driverPath = DriverInstaller.GetPawnIODriverPath();
 
         // Install and start the PawnIO driver
-        DriverInstaller.InstallAndStartDriver(
+        DriverInstaller.EnsureDriverReady(
          serviceName: DriverInstaller.PAWNIO_SERVICE_NAME,
          sysFilePath: driverPath);
     }

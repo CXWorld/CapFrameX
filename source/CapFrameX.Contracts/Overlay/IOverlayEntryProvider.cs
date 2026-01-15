@@ -32,5 +32,7 @@ namespace CapFrameX.Contracts.Overlay
 		void SortOverlayEntriesByType();
 
 		void UpdateOverlayEntries(IEnumerable<IOverlayEntry> entries);
+
+        void UpdateOverlayEntryFormats();
     }
 }
