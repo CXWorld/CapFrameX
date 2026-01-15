@@ -187,6 +187,8 @@ namespace CapFrameX.Contracts.Configuration
 
         int OverlayEntryConfigurationFile { get; set; }
 
+        int SelectedOverlayTemplate { get; set; }
+
 		int SensorLoggingRefreshPeriod { get; set; }
 
 		bool ShowThresholdTimes { get; set; }

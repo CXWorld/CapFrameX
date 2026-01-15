@@ -44,6 +44,7 @@ namespace CapFrameX.ViewModel
         private readonly IRTSSService _rTSSService;
         private readonly IThreadAffinityController _threadAffinityController;
         private readonly IOnlineMetricService _onlineMetricService;
+        private readonly IOverlayTemplateService _overlayTemplateService;
         private int _selectedOverlayEntryIndex = -1;
         private IOverlayEntry _selectedOverlayEntry;
         private IOverlayEntryFormatChange _checkboxes = new OverlayEntryFormatChange();
@@ -289,6 +290,19 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public EOverlayTemplate SelectedOverlayTemplate
+        {
+            get
+            {
+                return (EOverlayTemplate)_appConfiguration.SelectedOverlayTemplate;
+            }
+            set
+            {
+                _appConfiguration.SelectedOverlayTemplate = (int)value;
+                RaisePropertyChanged();
+            }
+        }
+
         public bool IsConfig0Checked
         {
             get
@@ -478,6 +492,12 @@ namespace CapFrameX.ViewModel
 
         public ICommand ClearFilterCommand { get; }
 
+        public ICommand LaunchOverlayPreviewAppCommand { get; }
+
+        public ICommand ApplyOverlayTemplateCommand { get; }
+
+        public ICommand RevertOverlayTemplateCommand { get; }
+
         public bool IsRTSSInstalled
             => _rTSSService.IsRTSSInstalled();
 
@@ -506,6 +526,10 @@ namespace CapFrameX.ViewModel
 
         public Array MetricIntervalItemsSource => new[] { 5, 10, 20, 30, 60, 120, 240, 300 };
 
+        public Array OverlayTemplateItems => Enum.GetValues(typeof(EOverlayTemplate))
+            .Cast<EOverlayTemplate>()
+            .ToArray();
+
         public ObservableCollection<IOverlayEntry> OverlayEntries { get; private set; }
             = new ObservableCollection<IOverlayEntry>();
 
@@ -515,7 +539,7 @@ namespace CapFrameX.ViewModel
 
         public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider,
             IAppConfiguration appConfiguration, IPathService pathService, IEventAggregator eventAggregator, ISensorService sensorService, IRTSSService rTSSService,
-            IThreadAffinityController threadAffinityController, IOnlineMetricService onlineMetricService)
+            IThreadAffinityController threadAffinityController, IOnlineMetricService onlineMetricService, IOverlayTemplateService overlayTemplateService)
         {
             _overlayService = overlayService;
             _overlayEntryProvider = overlayEntryProvider;
@@ -524,6 +548,7 @@ namespace CapFrameX.ViewModel
             _eventAggregator = eventAggregator;
             _sensorService = sensorService;
             _rTSSService = rTSSService;
+            _overlayTemplateService = overlayTemplateService;
             _eventAggregator = eventAggregator;
             _threadAffinityController = threadAffinityController;
             _onlineMetricService = onlineMetricService;
@@ -605,6 +630,9 @@ namespace CapFrameX.ViewModel
             OpenConfigFolderCommand = new DelegateCommand(OnOpenConfigFolder);
             SortByEntryTypeCommand = new DelegateCommand(OnSortByEntryType);
             ClearFilterCommand = new DelegateCommand(OnClearFilter);
+            LaunchOverlayPreviewAppCommand = new DelegateCommand(OnLaunchOverlayPreviewApp);
+            ApplyOverlayTemplateCommand = new DelegateCommand(OnApplyOverlayTemplate);
+            RevertOverlayTemplateCommand = new DelegateCommand(OnRevertOverlayTemplate);
 
             UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
                 "RivaTuner Statistics Server (RTSS)";
@@ -757,6 +785,104 @@ namespace CapFrameX.ViewModel
                 Process.Start(_pathService.ConfigFolder);
             }
             catch { }
+        }
+
+        private void OnLaunchOverlayPreviewApp()
+        {
+            try
+            {
+                var appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                var vkcubePath = Path.Combine(appDirectory, "3d-test-app", "vkcube.exe");
+                if (!File.Exists(vkcubePath))
+                    return;
+
+                // --present_mode 2 = VK_PRESENT_MODE_FIFO_KHR (V-Sync, ~60fps)
+                // --width/--height = window dimensions
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = vkcubePath,
+                    Arguments = "--present_mode 2 --width 520 --height 820",
+                    UseShellExecute = false
+                };
+                Process.Start(startInfo);
+            }
+            catch { }
+        }
+
+        private void OnApplyOverlayTemplate()
+        {
+            // Store current state before applying template
+            _overlayTemplateService.StoreCurrentState(OverlayEntries);
+
+            // Apply the selected template
+            _overlayTemplateService.ApplyTemplate(SelectedOverlayTemplate, OverlayEntries);
+
+            // Sort entries by category order, then by SortKey within each category
+            var sortedEntries = OverlayEntries
+                .OrderBy(entry => GetTemplateSortOrder(entry))
+                .ThenBy(entry => entry.SortKey, AlphanumericComparer.Instance)
+                .ToList();
+
+            // Update OverlayEntryProvider accordingly
+            _overlayEntryProvider.UpdateOverlayEntries(sortedEntries);
+
+            OverlayEntries.Clear();
+            OverlayEntries.AddRange(sortedEntries);
+
+            // Setup view, refresh Separators list, and notify overlay
+            SetupOverlayEntriesView();
+            OverlaySubModelGroupSeparating.SetOverlayEntries(OverlayEntries);
+            _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
+            SetSaveButtonIsEnable();
+        }
+
+        private void OnRevertOverlayTemplate()
+        {
+            // Revert to stored state
+            if (_overlayTemplateService.RevertToStoredState(OverlayEntries))
+            {
+                // Sort entries by category order, then by SortKey within each category
+                var sortedEntries = OverlayEntries
+                    .OrderBy(entry => GetTemplateSortOrder(entry))
+                    .ThenBy(entry => entry.SortKey, AlphanumericComparer.Instance)
+                    .ToList();
+
+                // Update OverlayEntryProvider accordingly
+                _overlayEntryProvider.UpdateOverlayEntries(sortedEntries);
+
+                OverlayEntries.Clear();
+                OverlayEntries.AddRange(sortedEntries);
+
+                // Setup view, refresh Separators list, and notify overlay
+                SetupOverlayEntriesView();
+                OverlaySubModelGroupSeparating.SetOverlayEntries(OverlayEntries);
+                _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
+                SetSaveButtonIsEnable();
+            }
+        }
+
+        private int GetTemplateSortOrder(IOverlayEntry entry)
+        {
+            // Framerate and Frametime always at the end
+            if (entry.Identifier == "Framerate" || entry.Identifier == "Frametime")
+                return 6;
+
+            switch (entry.OverlayEntryType)
+            {
+                case EOverlayEntryType.GPU:
+                    return 1;
+                case EOverlayEntryType.CX:
+                    // CustomCPU (CPU Model) comes before other CPU entries
+                    return entry.Identifier == "CustomCPU" ? 2 : 5;
+                case EOverlayEntryType.CPU:
+                    return 3;
+                case EOverlayEntryType.RAM:
+                    return 4;
+                case EOverlayEntryType.OnlineMetric:
+                    return 5;
+                default:
+                    return 7;
+            }
         }
 
         private void OnSortByEntryType()

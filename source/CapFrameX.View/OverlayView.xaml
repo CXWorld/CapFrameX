@@ -663,7 +663,8 @@
 		<Border Grid.Row="1" Grid.Column="2" Margin="0 0 0 0" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
 			<Grid HorizontalAlignment="Center">
 				<Grid.RowDefinitions>
-					<RowDefinition Height="30"></RowDefinition>
+					<RowDefinition Height="5"></RowDefinition>
+					<RowDefinition Height="120"></RowDefinition>
 					<RowDefinition Height="200"></RowDefinition>
 					<RowDefinition Height="320"></RowDefinition>
 					<RowDefinition Height="1*"></RowDefinition>
@@ -673,7 +674,60 @@
 					<ColumnDefinition Width="220"/>
 				</Grid.ColumnDefinitions>
 				<TextBlock Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" Text="{Binding SelectedOverlayItemName}"/>
-				<Border Grid.Row="1" Grid.Column="0" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
+				<!-- Overlay Template Picker -->
+				<Border Grid.Row="1" Grid.ColumnSpan="2" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
+					<Grid Margin="10 0 10 0">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="55"/>
+							<RowDefinition Height="65"/>
+						</Grid.RowDefinitions>
+						<StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+							<TextBlock VerticalAlignment="Center" Text="Overlay Template" FontSize="16" Margin="5 0 15 0"/>
+							<ComboBox materialDesign:ComboBoxAssist.ClassicMode="True" Margin="10 0 0 0"
+								Width="140" Height="35"
+								FontSize="14"
+								Foreground="{DynamicResource MaterialDesignBody}"
+								ItemsSource="{Binding OverlayTemplateItems}"
+								SelectedItem="{Binding SelectedOverlayTemplate}">
+								<ComboBox.ItemTemplate>
+									<DataTemplate>
+										<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+									</DataTemplate>
+								</ComboBox.ItemTemplate>
+							</ComboBox>
+						</StackPanel>
+						<UniformGrid Grid.Row="1" Columns="3" VerticalAlignment="Center">
+							<Button Height="28" Margin="5 0 5 0"
+								Style="{StaticResource MaterialDesignOutlinedButton}"
+								Command="{Binding LaunchOverlayPreviewAppCommand}"
+								ToolTip="Launch preview app">
+								<StackPanel Orientation="Horizontal">
+									<materialDesign:PackIcon Kind="Play" VerticalAlignment="Center" Margin="0 0 5 0"/>
+									<TextBlock Text="Preview" VerticalAlignment="Center"/>
+								</StackPanel>
+							</Button>
+							<Button Height="28" Margin="5 0 5 0"
+								Style="{StaticResource MaterialDesignOutlinedButton}"
+								Command="{Binding RevertOverlayTemplateCommand}"
+								ToolTip="Revert to last applied template">
+								<StackPanel Orientation="Horizontal">
+									<materialDesign:PackIcon Kind="Undo" VerticalAlignment="Center" Margin="0 0 5 0"/>
+									<TextBlock Text="Revert" VerticalAlignment="Center"/>
+								</StackPanel>
+							</Button>
+							<Button Height="28" Margin="5 0 5 0"
+								Style="{StaticResource MaterialDesignRaisedButton}"
+								Command="{Binding ApplyOverlayTemplateCommand}"
+								ToolTip="Apply selected template">
+								<StackPanel Orientation="Horizontal">
+									<materialDesign:PackIcon Kind="Check" VerticalAlignment="Center" Margin="0 0 5 0"/>
+									<TextBlock Text="Apply" VerticalAlignment="Center"/>
+								</StackPanel>
+							</Button>
+						</UniformGrid>
+					</Grid>
+				</Border>
+				<Border Grid.Row="2" Grid.Column="0" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
 					<StackPanel Margin="5" IsEnabled="{Binding OverlayItemsOptionsEnabled}">
 						<Grid>
 							<Grid.RowDefinitions>
@@ -825,7 +879,7 @@
 					</StackPanel>
 				</Border>
 				<!-- Format options -->
-				<Border Grid.Row="1" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
+				<Border Grid.Row="2" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
 					<StackPanel Margin="5" IsEnabled="{Binding OverlayItemsOptionsEnabled}">
 						<Grid>
 							<Grid.RowDefinitions>
@@ -857,7 +911,7 @@
 						</Grid>
 					</StackPanel>
 				</Border>
-				<Border Grid.Row="2" Grid.Column="0" Margin="5" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
+				<Border Grid.Row="3" Grid.Column="0" Margin="5" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
 					<DataGrid x:Name="SeparatorDataGrid" FontSize="11"
 						SelectedIndex="{Binding Path=OverlaySubModelGroupSeparating.SelectedOverlayGroupIndex}" 
 						ItemsSource="{Binding Path=OverlaySubModelGroupSeparating.OverlayGroupNameSeparatorEntries}"
@@ -945,7 +999,7 @@
 						</DataGrid.Columns>
 					</DataGrid>
 				</Border>
-				<Border Grid.Row="2" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
+				<Border Grid.Row="3" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
 					<Grid>
 						<Grid.RowDefinitions>
 							<RowDefinition Height="30"></RowDefinition>

@@ -497,6 +497,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public int SelectedOverlayTemplate
+        {
+            get => Get<int>(0);
+            set => Set(value);
+        }
+
         public string OverlayHotKey
         {
             get => Get<string>("Alt+O");

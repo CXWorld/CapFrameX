@@ -315,6 +315,11 @@ namespace CapFrameX.Overlay
             _overlayEntries = sortedEntries.ToBlockingCollection();
         }
 
+        public void UpdateOverlayEntries(IEnumerable<IOverlayEntry> entries)
+        {
+            _overlayEntries = entries.ToList().ToBlockingCollection();
+        }
+
         public async Task LoadOrSetDefault()
         {
             try
