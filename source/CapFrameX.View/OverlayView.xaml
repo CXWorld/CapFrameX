@@ -673,9 +673,9 @@
 					<ColumnDefinition Width="220"/>
 					<ColumnDefinition Width="220"/>
 				</Grid.ColumnDefinitions>
-				<TextBlock Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" Text="{Binding SelectedOverlayItemName}"/>
+				<!--<TextBlock Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" Text="{Binding SelectedOverlayItemName}"/>-->
 				<!-- Overlay Template Picker -->
-				<Border Grid.Row="1" Grid.ColumnSpan="2" Margin="5" IsEnabled="False" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
+				<Border Grid.Row="1" Grid.ColumnSpan="2" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
 					<Grid Margin="10 0 10 0">
 						<Grid.RowDefinitions>
 							<RowDefinition Height="55"/>
