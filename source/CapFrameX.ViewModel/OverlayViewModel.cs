@@ -876,8 +876,12 @@ namespace CapFrameX.ViewModel
                 case EOverlayEntryType.GPU:
                     return 1;
                 case EOverlayEntryType.CX:
-                    // CustomCPU (CPU Model) comes before other CPU entries
-                    return entry.Identifier == "CustomCPU" ? 2 : 5;
+                    // CustomCPU and CustomRAM are positioned as section headers in templates
+                    if (entry.Identifier == "CustomCPU")
+                        return 2;
+                    if (entry.Identifier == "CustomRAM")
+                        return 4;
+                    return 5;
                 case EOverlayEntryType.CPU:
                     return 3;
                 case EOverlayEntryType.RAM:
