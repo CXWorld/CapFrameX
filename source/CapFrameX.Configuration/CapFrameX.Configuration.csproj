@@ -118,6 +118,7 @@
     <Compile Include="PathServiceProvider.cs" />
     <Compile Include="PortableConfig.cs" />
     <Compile Include="AppDependencyChecker.cs" />
+    <Compile Include="EtwServiceChecker.cs" />
     <Compile Include="PortableModeDetector.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
