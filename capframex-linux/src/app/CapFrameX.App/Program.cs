@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.X11;
 
 namespace CapFrameX.App;
 
@@ -12,5 +13,9 @@ class Program
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
-            .LogToTrace();
+            .LogToTrace()
+            .With(new X11PlatformOptions
+            {
+                WmClass = "CapFrameX.App"
+            });
 }

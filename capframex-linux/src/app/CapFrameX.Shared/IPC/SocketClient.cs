@@ -16,6 +16,7 @@ public class DaemonClient : IDisposable
     private bool _disposed;
 
     public event EventHandler<GameInfo>? GameDetected;
+    public event EventHandler<GameInfo>? GameUpdated;
     public event EventHandler<int>? GameExited;
     public event EventHandler<FrameDataPoint>? FrameDataReceived;
     public event EventHandler? Connected;
@@ -27,10 +28,9 @@ public class DaemonClient : IDisposable
 
     public DaemonClient()
     {
-        // Use /tmp for Proton compatibility - matches daemon and layer
-        // Get real user ID (not effective) to match getuid() in C
-        var uid = GetRealUid();
-        _socketPath = $"/tmp/capframex.sock-{uid}";
+        // Use ~/.config/capframex for socket - Proton containers share /home but isolate /tmp
+        var home = Environment.GetEnvironmentVariable("HOME") ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        _socketPath = Path.Combine(home, ".config", "capframex", "capframex.sock");
     }
 
     private static uint GetRealUid()
@@ -230,9 +230,35 @@ public class DaemonClient : IDisposable
                         Name = GetStringFromFixedBuffer(ref gamePayload, 0),
                         ExePath = GetStringFromFixedBuffer(ref gamePayload, 1),
                         Launcher = GetStringFromFixedBuffer(ref gamePayload, 2),
+                        GpuName = GetStringFromFixedBuffer(ref gamePayload, 3),
+                        ResolutionWidth = (int)gamePayload.ResolutionWidth,
+                        ResolutionHeight = (int)gamePayload.ResolutionHeight,
+                        PresentTimingSupported = gamePayload.PresentTimingSupported != 0,
                         DetectedTime = DateTime.Now
                     };
+                    Console.WriteLine($"[DaemonClient] DEBUG: GameStarted - PID={gameInfo.Pid}, Name={gameInfo.Name}, GPU='{gameInfo.GpuName}', Res={gameInfo.ResolutionWidth}x{gameInfo.ResolutionHeight}, PresentTiming={gameInfo.PresentTimingSupported}");
                     GameDetected?.Invoke(this, gameInfo);
+                }
+                break;
+
+            case MessageType.GameUpdated:
+                if (payload.Length >= Marshal.SizeOf<GameDetectedPayload>())
+                {
+                    var gamePayload = BytesToStruct<GameDetectedPayload>(payload);
+                    var gameInfo = new GameInfo
+                    {
+                        Pid = gamePayload.Pid,
+                        Name = GetStringFromFixedBuffer(ref gamePayload, 0),
+                        ExePath = GetStringFromFixedBuffer(ref gamePayload, 1),
+                        Launcher = GetStringFromFixedBuffer(ref gamePayload, 2),
+                        GpuName = GetStringFromFixedBuffer(ref gamePayload, 3),
+                        ResolutionWidth = (int)gamePayload.ResolutionWidth,
+                        ResolutionHeight = (int)gamePayload.ResolutionHeight,
+                        PresentTimingSupported = gamePayload.PresentTimingSupported != 0,
+                        DetectedTime = DateTime.Now
+                    };
+                    Console.WriteLine($"[DaemonClient] DEBUG: GameUpdated - PID={gameInfo.Pid}, Name={gameInfo.Name}, GPU='{gameInfo.GpuName}', Res={gameInfo.ResolutionWidth}x{gameInfo.ResolutionHeight}, PresentTiming={gameInfo.PresentTimingSupported}");
+                    GameUpdated?.Invoke(this, gameInfo);
                 }
                 break;
 
@@ -254,7 +280,11 @@ public class DaemonClient : IDisposable
                         TimestampNs = frameData.TimestampNs,
                         FrametimeMs = frameData.FrametimeMs,
                         Fps = frameData.Fps,
-                        Pid = frameData.Pid
+                        Pid = frameData.Pid,
+                        ActualPresentTimeNs = frameData.ActualPresentTimeNs,
+                        MsUntilRenderComplete = frameData.MsUntilRenderComplete,
+                        MsUntilDisplayed = frameData.MsUntilDisplayed,
+                        ActualFrametimeMs = frameData.ActualFrametimeMs
                     };
                     FrameDataReceived?.Invoke(this, point);
                 }
@@ -328,6 +358,7 @@ public class DaemonClient : IDisposable
                 0 => p->GameName,
                 1 => p->ExePath,
                 2 => p->Launcher,
+                3 => p->GpuName,
                 _ => p->GameName
             };
             return Marshal.PtrToStringAnsi((IntPtr)ptr) ?? string.Empty;

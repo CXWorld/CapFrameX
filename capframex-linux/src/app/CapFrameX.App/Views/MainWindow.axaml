@@ -6,7 +6,7 @@
         x:DataType="vm:MainViewModel"
         Title="CapFrameX Linux"
         Icon="avares://CapFrameX.App/Assets/app_icon.png"
-        Width="1200" Height="800"
+        Width="1280" Height="800"
         MinWidth="900" MinHeight="600"
         WindowStartupLocation="CenterScreen">
 
@@ -20,11 +20,8 @@
             <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
                 <!-- Connection Status -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                    <Ellipse Width="8" Height="8" VerticalAlignment="Center">
-                        <Ellipse.Fill>
-                            <SolidColorBrush Color="{Binding IsConnected, Converter={x:Static views:MainWindow.ConnectionColorConverter}}" />
-                        </Ellipse.Fill>
-                    </Ellipse>
+                    <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                             Fill="{Binding IsConnected, Converter={x:Static views:MainWindow.ConnectionBrushConverter}}" />
                     <TextBlock Text="{Binding ConnectionStatus}" FontSize="11" Opacity="0.8" VerticalAlignment="Center" />
                     <Button Content="Reconnect" Command="{Binding ConnectCommand}"
                             IsVisible="{Binding !IsConnected}" FontSize="10" Padding="8 2" Margin="4 0 0 0" />
@@ -35,11 +32,8 @@
 
                 <!-- Vulkan Layer Status -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                    <Ellipse Width="8" Height="8" VerticalAlignment="Center">
-                        <Ellipse.Fill>
-                            <SolidColorBrush Color="{Binding IsVulkanLayerActive, Converter={x:Static views:MainWindow.ConnectionColorConverter}}" />
-                        </Ellipse.Fill>
-                    </Ellipse>
+                    <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                             Fill="{Binding IsVulkanLayerActive, Converter={x:Static views:MainWindow.ConnectionBrushConverter}}" />
                     <TextBlock Text="{Binding VulkanLayerStatus}" FontSize="11" Opacity="0.8" VerticalAlignment="Center" />
                 </StackPanel>
 

@@ -1,0 +1,10 @@
+{
+  "portable": true,
+  "paths": {
+    "config": "./Portable/Config",
+    "captures": "./Portable/Captures",
+    "screenshots": "./Portable/Screenshots",
+    "logs": "./Portable/Logs",
+    "cloud": "./Portable/Captures/Cloud"
+  }
+}

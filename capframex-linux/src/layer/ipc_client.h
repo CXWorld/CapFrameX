@@ -24,7 +24,7 @@ bool ipc_client_try_reconnect(void);
 void ipc_client_set_gpu_name(const char* gpu_name);
 
 // Send hello message to daemon (announces this layer instance)
-void ipc_client_send_hello(const char* gpu_name);
+void ipc_client_send_hello(const char* gpu_name, bool present_timing_supported);
 
 // Notify daemon about swapchain creation
 void ipc_client_send_swapchain_created(uint32_t width, uint32_t height,
@@ -35,5 +35,9 @@ void ipc_client_send_swapchain_destroyed(void);
 
 // Send frame data to daemon (always streams when connected)
 void ipc_client_send_frame_data(const FrameTimingData* frame);
+
+// Debug logging - enable with CAPFRAMEX_DEBUG=1 environment variable
+bool ipc_is_verbose(void);
+void ipc_debug_log(const char* fmt, ...);
 
 #endif // CAPFRAMEX_IPC_CLIENT_H

@@ -67,6 +67,7 @@
 					<Grid >
 						<Grid.RowDefinitions>
 							<RowDefinition Height="45"></RowDefinition>
+							<RowDefinition Height="35"></RowDefinition>
 							<RowDefinition Height="1*"></RowDefinition>
 							<RowDefinition Height="50"></RowDefinition>
 							<RowDefinition Height="120"></RowDefinition>
@@ -178,13 +179,41 @@
 								<materialDesign:PackIcon Kind="Restore" Height="22" Width="22" />
 							</Button>
 						</StackPanel>
-						<DataGrid Grid.Row="1" x:Name="OverlayItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" FontSize="12"
-					          SelectedIndex="{Binding SelectedOverlayEntryIndex}" SelectedItem="{Binding SelectedOverlayEntry}" ItemsSource="{Binding OverlayEntries}"
+						<!--Filter Controls-->
+						<StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10 0 10 5" HorizontalAlignment="Stretch">
+							<TextBox Width="150" Height="28" FontSize="12" VerticalContentAlignment="Center"
+									 materialDesign:HintAssist.Hint="Search..." materialDesign:HintAssist.HintOpacity=".6"
+									 materialDesign:TextFieldAssist.HasClearButton="True"
+									 Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}"
+									 Foreground="{DynamicResource MaterialDesignBody}"
+									 ToolTip="Search in Description, Group Name, and Identifier"/>
+							<ComboBox Width="110" Height="28" Margin="10 0 0 0" FontSize="12" VerticalContentAlignment="Center"
+									  materialDesign:HintAssist.Hint="Entry Type" materialDesign:HintAssist.HintOpacity=".6"
+									  materialDesign:HintAssist.IsFloating="False"
+									  materialDesign:ComboBoxAssist.ClassicMode="True"
+									  ItemsSource="{Binding EntryTypeFilterItems}"
+									  SelectedItem="{Binding SelectedEntryTypeFilter}"
+									  Foreground="{DynamicResource MaterialDesignBody}"
+									  ToolTip="Filter by entry type">
+								<ComboBox.ItemTemplate>
+									<DataTemplate>
+										<TextBlock Text="{Binding Converter={StaticResource EnumShortDescriptionConverter}, TargetNullValue='All Types'}"/>
+									</DataTemplate>
+								</ComboBox.ItemTemplate>
+							</ComboBox>
+							<Button Width="24" Height="24" Margin="10 0 0 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+									ToolTip="Clear filters" Command="{Binding ClearFilterCommand}"
+									materialDesign:RippleAssist.Feedback="#DD000000">
+								<materialDesign:PackIcon Kind="FilterRemove" Height="16" Width="16" />
+							</Button>
+						</StackPanel>
+						<DataGrid Grid.Row="2" x:Name="OverlayItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" FontSize="12"
+					          SelectedIndex="{Binding SelectedOverlayEntryIndex}" SelectedItem="{Binding SelectedOverlayEntry}" ItemsSource="{Binding OverlayEntriesView}"
 					          CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" ColumnHeaderHeight="17"
 					          materialDesign:DataGridAssist.CellPadding="13 5 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="14 0 0 2" IsSynchronizedWithCurrentItem="False"
 					          ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
-					          dragdrop:DragDrop.IsDragSource="True"
-					          dragdrop:DragDrop.IsDropTarget="True"
+					          dragdrop:DragDrop.IsDragSource="{Binding HasActiveFilter, Converter={StaticResource InvertBoolConverter}}"
+					          dragdrop:DragDrop.IsDropTarget="{Binding HasActiveFilter, Converter={StaticResource InvertBoolConverter}}"
 						      dragdrop:DragDrop.DropHandler="{Binding}"
 					          dragdrop:DragDrop.UseDefaultDragAdorner="True"
 					          dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
@@ -321,7 +350,7 @@
 								</DataGridCheckBoxColumn>
 							</DataGrid.Columns>
 						</DataGrid>
-						<StackPanel Grid.Row="2" Orientation="Vertical">
+						<StackPanel Grid.Row="3" Orientation="Vertical">
 							<Border Margin="10 5 10 0" BorderThickness="0.4" BorderBrush="{DynamicResource MaterialDesignBody}">
 								<StackPanel Margin="5 5 0 5" Orientation="Horizontal">
 									<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Group Control:</TextBlock>
@@ -566,7 +595,7 @@
 							</Border>
 						</StackPanel>
 						<!--Global overlay toggle-->
-						<Grid Grid.Row="3" Margin="20 0 0 0" DockPanel.Dock="Bottom">
+						<Grid Grid.Row="4" Margin="20 0 0 0" DockPanel.Dock="Bottom">
 							<Grid.RowDefinitions>
 								<RowDefinition Height="*"/>
 								<RowDefinition Height="*"/>
@@ -634,7 +663,8 @@
 		<Border Grid.Row="1" Grid.Column="2" Margin="0 0 0 0" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
 			<Grid HorizontalAlignment="Center">
 				<Grid.RowDefinitions>
-					<RowDefinition Height="30"></RowDefinition>
+					<RowDefinition Height="5"></RowDefinition>
+					<RowDefinition Height="120"></RowDefinition>
 					<RowDefinition Height="200"></RowDefinition>
 					<RowDefinition Height="320"></RowDefinition>
 					<RowDefinition Height="1*"></RowDefinition>
@@ -643,8 +673,61 @@
 					<ColumnDefinition Width="220"/>
 					<ColumnDefinition Width="220"/>
 				</Grid.ColumnDefinitions>
-				<TextBlock Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" Text="{Binding SelectedOverlayItemName}"/>
-				<Border Grid.Row="1" Grid.Column="0" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
+				<!--<TextBlock Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" Text="{Binding SelectedOverlayItemName}"/>-->
+				<!-- Overlay Template Picker -->
+				<Border Grid.Row="1" Grid.ColumnSpan="2" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
+					<Grid Margin="10 0 10 0">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="55"/>
+							<RowDefinition Height="65"/>
+						</Grid.RowDefinitions>
+						<StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+							<TextBlock VerticalAlignment="Center" Text="Overlay Template" FontSize="16" Margin="5 0 15 0"/>
+							<ComboBox materialDesign:ComboBoxAssist.ClassicMode="True" Margin="10 0 0 0"
+								Width="140" Height="35"
+								FontSize="14"
+								Foreground="{DynamicResource MaterialDesignBody}"
+								ItemsSource="{Binding OverlayTemplateItems}"
+								SelectedItem="{Binding SelectedOverlayTemplate}">
+								<ComboBox.ItemTemplate>
+									<DataTemplate>
+										<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+									</DataTemplate>
+								</ComboBox.ItemTemplate>
+							</ComboBox>
+						</StackPanel>
+						<UniformGrid Grid.Row="1" Columns="3" VerticalAlignment="Center">
+							<Button Height="28" Margin="5 0 5 0"
+								Style="{StaticResource MaterialDesignOutlinedButton}"
+								Command="{Binding LaunchOverlayPreviewAppCommand}"
+								ToolTip="Launch preview app">
+								<StackPanel Orientation="Horizontal">
+									<materialDesign:PackIcon Kind="Play" VerticalAlignment="Center" Margin="0 0 5 0"/>
+									<TextBlock Text="Preview" VerticalAlignment="Center"/>
+								</StackPanel>
+							</Button>
+							<Button Height="28" Margin="5 0 5 0"
+								Style="{StaticResource MaterialDesignOutlinedButton}"
+								Command="{Binding RevertOverlayTemplateCommand}"
+								ToolTip="Revert to last applied template">
+								<StackPanel Orientation="Horizontal">
+									<materialDesign:PackIcon Kind="Undo" VerticalAlignment="Center" Margin="0 0 5 0"/>
+									<TextBlock Text="Revert" VerticalAlignment="Center"/>
+								</StackPanel>
+							</Button>
+							<Button Height="28" Margin="5 0 5 0"
+								Style="{StaticResource MaterialDesignRaisedButton}"
+								Command="{Binding ApplyOverlayTemplateCommand}"
+								ToolTip="Apply selected template">
+								<StackPanel Orientation="Horizontal">
+									<materialDesign:PackIcon Kind="Check" VerticalAlignment="Center" Margin="0 0 5 0"/>
+									<TextBlock Text="Apply" VerticalAlignment="Center"/>
+								</StackPanel>
+							</Button>
+						</UniformGrid>
+					</Grid>
+				</Border>
+				<Border Grid.Row="2" Grid.Column="0" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
 					<StackPanel Margin="5" IsEnabled="{Binding OverlayItemsOptionsEnabled}">
 						<Grid>
 							<Grid.RowDefinitions>
@@ -796,7 +879,7 @@
 					</StackPanel>
 				</Border>
 				<!-- Format options -->
-				<Border Grid.Row="1" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
+				<Border Grid.Row="2" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
 					<StackPanel Margin="5" IsEnabled="{Binding OverlayItemsOptionsEnabled}">
 						<Grid>
 							<Grid.RowDefinitions>
@@ -828,7 +911,7 @@
 						</Grid>
 					</StackPanel>
 				</Border>
-				<Border Grid.Row="2" Grid.Column="0" Margin="5" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
+				<Border Grid.Row="3" Grid.Column="0" Margin="5" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
 					<DataGrid x:Name="SeparatorDataGrid" FontSize="11"
 						SelectedIndex="{Binding Path=OverlaySubModelGroupSeparating.SelectedOverlayGroupIndex}" 
 						ItemsSource="{Binding Path=OverlaySubModelGroupSeparating.OverlayGroupNameSeparatorEntries}"
@@ -916,7 +999,7 @@
 						</DataGrid.Columns>
 					</DataGrid>
 				</Border>
-				<Border Grid.Row="2" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
+				<Border Grid.Row="3" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
 					<Grid>
 						<Grid.RowDefinitions>
 							<RowDefinition Height="30"></RowDefinition>

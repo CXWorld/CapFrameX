@@ -11,11 +11,11 @@
     <PackageReference Include="Mixaill.HwInfo.D3D" Version="0.4.2" />
     <PackageReference Include="Mixaill.HwInfo.SetupApi" Version="0.4.2" />
     <PackageReference Include="Mixaill.HwInfo.Vulkan" Version="0.4.2" />
-    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="6.0.1" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="10.0.1" />
     <PackageReference Include="System.Memory" Version="4.6.3" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
     <PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
   </ItemGroup>
 
   <ItemGroup>

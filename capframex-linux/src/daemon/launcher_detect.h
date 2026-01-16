@@ -38,6 +38,11 @@ bool launcher_is_game_process(const ProcessInfo* info);
 // Check if a PID is a descendant of a launcher
 bool launcher_is_launcher_child(pid_t pid, LauncherType* out_launcher_type);
 
+// Get the full launcher chain for a PID (e.g., "Steam > Proton > Wine")
+// Returns the number of launchers found, 0 if none
+// buffer must be at least buffer_size bytes
+int launcher_get_chain(pid_t pid, char* buffer, size_t buffer_size);
+
 // Add a custom launcher pattern
 void launcher_add_custom(const char* name, const char* exe_pattern);
 

@@ -96,6 +96,33 @@ Configuration is stored in `~/.config/capframex/`
 
 Sessions are stored in `~/.local/share/capframex/sessions/`
 
+## Capture File Format
+
+Capture files are stored as CSV with an accompanying JSON metadata file.
+
+### CSV Columns
+
+| Column | Description |
+|--------|-------------|
+| `MsBetweenPresents` | CPU sampled frametime (CLOCK_MONOTONIC) |
+| `MsUntilRenderComplete` | Reserved for future use |
+| `MsUntilDisplayed` | Reserved for future use |
+| `MsActualPresent` | Actual frametime from VK_EXT_present_timing (0.00 if not available) |
+
+### Timing Modes
+
+The Vulkan layer detects whether `VK_EXT_present_timing` or `VK_GOOGLE_display_timing` extensions are available:
+
+- **Present Timing**: Actual GPU/display presentation timestamps from driver
+- **Layer Timing**: CPU sampled timestamps (fallback when extensions unavailable)
+
+Both timing sources are captured and stored when available, allowing users to choose which metric to use for analysis.
+
+## Unit Tests
+
+### vkcube
+Launch parameter: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.screen/topic/manual/vkcube.html
+
 ## License
 
 MIT

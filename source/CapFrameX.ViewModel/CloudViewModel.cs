@@ -43,6 +43,7 @@ namespace CapFrameX.ViewModel
 		private readonly IRecordManager _recordManager;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
+		private readonly IPathService _pathService;
 		private readonly ILogger<CloudViewModel> _logger;
 		private readonly IAppVersionProvider _appVersionProvider;
 		private readonly LoginManager _loginManager;
@@ -239,12 +240,13 @@ namespace CapFrameX.ViewModel
 		public bool IsLoggedIn { get; private set; }
 
 		public CloudViewModel(IStatisticProvider statisticProvider, IRecordManager recordManager,
-			IEventAggregator eventAggregator, IAppConfiguration appConfiguration, ILogger<CloudViewModel> logger, IAppVersionProvider appVersionProvider, LoginManager loginManager)
+			IEventAggregator eventAggregator, IAppConfiguration appConfiguration, IPathService pathService, ILogger<CloudViewModel> logger, IAppVersionProvider appVersionProvider, LoginManager loginManager)
 		{
 			_statisticProvider = statisticProvider;
 			_recordManager = recordManager;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
+			_pathService = pathService;
 			_logger = logger;
 			_appVersionProvider = appVersionProvider;
 			_loginManager = loginManager;
@@ -293,10 +295,7 @@ namespace CapFrameX.ViewModel
 
 		public void OnSwitchToDownloadDirectory()
 		{
-			string downloadDirectory = CloudDownloadDirectory;
-
-			if (downloadDirectory.Contains(@"MyDocuments\CapFrameX\Captures\Cloud"))
-				downloadDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Captures\Cloud");
+			string downloadDirectory = _pathService.ResolveDocumentsPlaceholder(CloudDownloadDirectory);
 
 			_appConfiguration.ObservedDirectory = downloadDirectory;
 			_selectCloudFolder.Publish(new AppMessages.SelectCloudFolder());
@@ -477,19 +476,15 @@ namespace CapFrameX.ViewModel
 				if (response.IsSuccessStatusCode)
 				{
 					var content = JsonConvert.DeserializeObject<SessionCollectionDTO>(await response.Content.ReadAsStringAsync());
+					var downloadDirectory = _pathService.ResolveDocumentsPlaceholder(_appConfiguration.CloudDownloadDirectory);
 
-					var downloadDirectory = _appConfiguration.CloudDownloadDirectory;
-
-					if (downloadDirectory.Contains(@"MyDocuments\CapFrameX\Captures\Cloud"))
-					{
-						downloadDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Captures\Cloud");
-					}
 					if (!Directory.Exists(downloadDirectory))
 					{
 						Directory.CreateDirectory(downloadDirectory);
 						_cloudFolderChanged.Publish(new AppMessages.CloudFolderChanged());
 
 					}
+
 					foreach (var session in content.Sessions)
 					{
 						string dateTimeFormat = 

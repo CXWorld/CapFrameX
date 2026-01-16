@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using CapFrameX.Contracts.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -15,9 +16,7 @@ namespace CapFrameX.Configuration
     public class JsonSettingsStorage : ISettingsStorage
     {
         private readonly object _iOLock = new object();
-        private readonly string _jsonFilePath
-            = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "CapFrameX", "Configuration", "AppSettings.json");
+        private readonly string _jsonFilePath;
         private readonly ILogger<JsonSettingsStorage> _logger;
         private readonly Subject<int> _saveFileSubject = new Subject<int>();
 
@@ -27,9 +26,10 @@ namespace CapFrameX.Configuration
         private TaskCompletionSource<bool> _saveCompletionSource = null;
         private readonly object _lock = new object();
 
-        public JsonSettingsStorage(ILogger<JsonSettingsStorage> logger)
+        public JsonSettingsStorage(ILogger<JsonSettingsStorage> logger, IPathService pathService)
         {
             _logger = logger;
+            _jsonFilePath = Path.Combine(pathService.ConfigFolder, "AppSettings.json");
 
             _saveFileSubject
                 .AsObservable()

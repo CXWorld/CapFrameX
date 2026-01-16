@@ -7,9 +7,9 @@
 #include <sys/types.h>
 
 #define CAPFRAMEX_VERSION "1.0.0"
-// Use /tmp for socket so Proton containers can access it
+// Use home directory for socket - Proton containers share /home but not /tmp
 #define CAPFRAMEX_SOCKET_NAME "capframex.sock"
-#define CAPFRAMEX_SOCKET_USE_TMP 1
+#define CAPFRAMEX_SOCKET_USE_HOME 1
 #define CAPFRAMEX_SHM_NAME "/capframex_pids"
 #define CAPFRAMEX_SHM_DATA_NAME "/capframex_framedata"
 
@@ -37,6 +37,7 @@ typedef enum {
     MSG_IGNORE_LIST_GET = 16,     // App -> Daemon: request full ignore list
     MSG_IGNORE_LIST_RESPONSE = 17,// Daemon -> App: ignore list contents
     MSG_IGNORE_LIST_UPDATED = 18, // Daemon -> App: broadcast ignore list changed
+    MSG_GAME_UPDATED = 19,        // Daemon -> App: game info updated (resolution, etc.)
 } MessageType;
 
 // Process information structure
@@ -64,15 +65,25 @@ typedef struct {
     char game_name[MAX_GAME_NAME_LENGTH];
     char exe_path[MAX_PATH_LENGTH];
     char launcher[MAX_GAME_NAME_LENGTH];
+    char gpu_name[MAX_GAME_NAME_LENGTH];
+    uint32_t resolution_width;
+    uint32_t resolution_height;
+    uint8_t present_timing_supported;  // 1 if VK_EXT_present_timing available
+    uint8_t padding[3];                // Alignment padding
 } GameDetectedPayload;
 
 // Frame data for IPC
-typedef struct {
+typedef struct __attribute__((packed)) {
     uint64_t frame_number;
     uint64_t timestamp_ns;
-    float frametime_ms;
+    float frametime_ms;           // CPU sampled frametime
     float fps;
-    pid_t pid;  // Source process ID (for daemon to route to correct subscriber)
+    int32_t pid;  // Source process ID (for daemon to route to correct subscriber)
+    uint64_t actual_present_time_ns;  // From VK_EXT_present_timing (0 if not available)
+    float ms_until_render_complete;   // Time until render complete (0 if not available)
+    float ms_until_displayed;         // Time until displayed (0 if not available)
+    float actual_frametime_ms;    // Frametime from actual present timing (0 if not available)
+    uint32_t padding;             // Alignment padding
 } FrameDataPoint;
 
 // Layer hello message - layer announces itself to daemon
@@ -80,6 +91,8 @@ typedef struct {
     pid_t pid;
     char process_name[MAX_GAME_NAME_LENGTH];
     char gpu_name[MAX_GAME_NAME_LENGTH];
+    uint8_t present_timing_supported;  // 1 if VK_EXT_present_timing available
+    uint8_t padding[3];                // Alignment padding
 } LayerHelloPayload;
 
 // Swapchain info message

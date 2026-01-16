@@ -16,7 +16,7 @@
                     <StackPanel DockPanel.Dock="Bottom" Spacing="10" Margin="0 10 0 0">
                         <Button Content="{Binding CaptureButtonText}"
                             Command="{Binding ToggleCaptureCommand}"
-                            IsEnabled="{Binding SelectedGame, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            IsEnabled="{Binding CanCapture}"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"
                             Padding="0 12"
@@ -49,11 +49,20 @@
                         <DataTemplate>
                             <StackPanel Margin="5">
                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-                                <TextBlock Text="{Binding Launcher, StringFormat='via {0}'}"
+                                <TextBlock Text="{Binding Resolution}"
+                                           FontSize="11" Opacity="0.8" Foreground="#4AA3DF"
+                                           IsVisible="{Binding Resolution, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                <TextBlock Text="{Binding GpuName}"
                                            FontSize="11" Opacity="0.7"
+                                           IsVisible="{Binding GpuName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                <TextBlock Text="{Binding Launcher, StringFormat='via {0}'}"
+                                           FontSize="11" Opacity="0.6"
                                            IsVisible="{Binding Launcher, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                <TextBlock Text="{Binding TimingMode}"
+                                           FontSize="11" Opacity="0.5" Foreground="#27AE60"
+                                           IsVisible="{Binding PresentTimingSupported}" />
                                 <TextBlock Text="{Binding Pid, StringFormat='PID: {0}'}"
-                                           FontSize="11" Opacity="0.5" />
+                                           FontSize="11" Opacity="0.4" />
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -99,9 +108,48 @@
         </Grid>
 
         <!-- Right Panel - Live Stats and Chart -->
-        <Grid Grid.Column="1" RowDefinitions="Auto,*">
+        <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto,*">
+            <!-- Game Info Bar -->
+            <Border Grid.Row="0" Background="#1E2A3A" CornerRadius="10" Padding="15 12" Margin="0 0 0 10" BorderBrush="#2A3F55" BorderThickness="1">
+                <StackPanel Orientation="Horizontal" Spacing="30">
+                    <!-- Game Name (larger, prominent) -->
+                    <TextBlock Text="{Binding GameInfoName}" FontSize="18" FontWeight="SemiBold"
+                               Foreground="{Binding GameInfoNameColor}" MaxWidth="350" TextTrimming="CharacterEllipsis"
+                               ToolTip.Tip="{Binding GameInfoName}" VerticalAlignment="Center" />
+
+                    <!-- Resolution -->
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Resolution" FontSize="11" Opacity="0.6" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding GameInfoResolution}" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="#4AA3DF" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <!-- GPU -->
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="GPU" FontSize="11" Opacity="0.6" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding GameInfoGpu}" FontSize="14" FontWeight="SemiBold"
+                                   MaxWidth="180" TextTrimming="CharacterEllipsis"
+                                   ToolTip.Tip="{Binding GameInfoGpu}" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <!-- Launcher -->
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Launcher" FontSize="11" Opacity="0.6" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding GameInfoLauncher}" FontSize="14" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <!-- Timing Mode -->
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Timing" FontSize="11" Opacity="0.6" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding GameInfoTimingMode}" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{Binding GameInfoTimingModeColor}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
             <!-- Statistics Cards -->
-            <WrapPanel Grid.Row="0" Margin="0 0 0 10">
+            <WrapPanel Grid.Row="1" Margin="0 0 0 10">
                 <Border Background="#1E2A3A" CornerRadius="10" Padding="20 15" Margin="0 0 10 10" MinWidth="120" BorderBrush="#2A3F55" BorderThickness="1">
                     <StackPanel>
                         <TextBlock Text="FPS" FontSize="12" Foreground="#4AA3DF" />
@@ -125,20 +173,6 @@
 
                 <Border Background="#1E2A3A" CornerRadius="10" Padding="20 15" Margin="0 0 10 10" MinWidth="120" BorderBrush="#2A3F55" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="Frames" FontSize="12" Foreground="#4AA3DF" />
-                        <TextBlock Text="{Binding FrameCount}" FontSize="28" FontWeight="Bold" />
-                    </StackPanel>
-                </Border>
-
-                <Border Background="#1E2A3A" CornerRadius="10" Padding="20 15" Margin="0 0 10 10" MinWidth="120" BorderBrush="#2A3F55" BorderThickness="1">
-                    <StackPanel>
-                        <TextBlock Text="Duration" FontSize="12" Foreground="#4AA3DF" />
-                        <TextBlock Text="{Binding CaptureDuration}" FontSize="28" FontWeight="Bold" />
-                    </StackPanel>
-                </Border>
-
-                <Border Background="#1E2A3A" CornerRadius="10" Padding="20 15" Margin="0 0 10 10" MinWidth="120" BorderBrush="#2A3F55" BorderThickness="1">
-                    <StackPanel>
                         <TextBlock Text="Avg Frametime" FontSize="12" Foreground="#4AA3DF" />
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="{Binding AverageFrametime, StringFormat='{}{0:F2}'}" FontSize="28" FontWeight="Bold" />
@@ -146,15 +180,84 @@
                         </StackPanel>
                     </StackPanel>
                 </Border>
+
+                <!-- Capture Timer - visible only during capture -->
+                <Border Background="#E74C3C" CornerRadius="10" Padding="20 15" Margin="0 0 10 10" MinWidth="100"
+                        BorderBrush="#C0392B" BorderThickness="1"
+                        IsVisible="{Binding ShowCaptureTimer}">
+                    <StackPanel>
+                        <TextBlock Text="Recording" FontSize="12" Foreground="White" Opacity="0.9" />
+                        <TextBlock Text="{Binding CaptureTimeDisplay}" FontSize="28" FontWeight="Bold" Foreground="White" />
+                    </StackPanel>
+                </Border>
+            </WrapPanel>
+
+            <!-- Hardware Metrics -->
+            <WrapPanel Grid.Row="2" Margin="0 0 0 10">
+                <!-- GPU Metrics -->
+                <Border Background="#1E2A3A" CornerRadius="10" Padding="15 12" Margin="0 0 10 0" BorderBrush="#2A3F55" BorderThickness="1">
+                    <StackPanel Orientation="Horizontal" Spacing="20">
+                        <TextBlock Text="GPU" FontSize="12" FontWeight="SemiBold" Foreground="#4AA3DF" VerticalAlignment="Center" Width="30" />
+                        <StackPanel>
+                            <TextBlock Text="Temp" FontSize="10" Opacity="0.6" />
+                            <TextBlock Text="{Binding GpuTemperature}" FontSize="14" FontWeight="SemiBold" FontFamily="monospace" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Power" FontSize="10" Opacity="0.6" />
+                            <TextBlock Text="{Binding GpuPower}" FontSize="14" FontWeight="SemiBold" FontFamily="monospace" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Usage" FontSize="10" Opacity="0.6" />
+                            <TextBlock Text="{Binding GpuUsage}" FontSize="14" FontWeight="SemiBold" FontFamily="monospace" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Core" FontSize="10" Opacity="0.6" />
+                            <TextBlock Text="{Binding GpuCoreClock}" FontSize="14" FontWeight="SemiBold" FontFamily="monospace" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Mem" FontSize="10" Opacity="0.6" />
+                            <TextBlock Text="{Binding GpuMemClock}" FontSize="14" FontWeight="SemiBold" FontFamily="monospace" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="VRAM" FontSize="10" Opacity="0.6" />
+                            <TextBlock Text="{Binding GpuVram}" FontSize="14" FontWeight="SemiBold" FontFamily="monospace" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- CPU Metrics -->
+                <Border Background="#1E2A3A" CornerRadius="10" Padding="15 12" Margin="0 0 10 0" BorderBrush="#2A3F55" BorderThickness="1">
+                    <StackPanel Orientation="Horizontal" Spacing="20">
+                        <TextBlock Text="CPU" FontSize="12" FontWeight="SemiBold" Foreground="#4AA3DF" VerticalAlignment="Center" Width="30" />
+                        <StackPanel>
+                            <TextBlock Text="Load" FontSize="10" Opacity="0.6" />
+                            <TextBlock Text="{Binding CpuUsage}" FontSize="14" FontWeight="SemiBold" FontFamily="monospace" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Temp" FontSize="10" Opacity="0.6" />
+                            <TextBlock Text="{Binding CpuTemperature}" FontSize="14" FontWeight="SemiBold" FontFamily="monospace" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Freq" FontSize="10" Opacity="0.6" />
+                            <TextBlock Text="{Binding CpuFrequency}" FontSize="14" FontWeight="SemiBold" FontFamily="monospace" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
             </WrapPanel>
 
             <!-- Live Chart -->
-            <Border Grid.Row="1" Background="#1E2A3A" CornerRadius="10" Padding="15" BorderBrush="#2A3F55" BorderThickness="1">
-                <lvc:CartesianChart Series="{Binding FrametimeSeries}"
-                                    XAxes="{Binding XAxes}"
-                                    YAxes="{Binding YAxes}"
-                                    TooltipPosition="Hidden"
-                                    ZoomMode="X" />
+            <Border Grid.Row="3" Background="#1E2A3A" CornerRadius="10" Padding="15" BorderBrush="#2A3F55" BorderThickness="1">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0 0 0 10">
+                        <TextBlock Text="Live Chart" FontSize="14" FontWeight="SemiBold" Foreground="#4AA3DF" VerticalAlignment="Center" />
+                        <ToggleSwitch IsChecked="{Binding LiveChartEnabled}" Margin="15 0 0 0" OnContent="" OffContent="" />
+                    </StackPanel>
+                    <lvc:CartesianChart Series="{Binding FrametimeSeries}"
+                                        XAxes="{Binding XAxes}"
+                                        YAxes="{Binding YAxes}"
+                                        TooltipPosition="Hidden"
+                                        ZoomMode="X" />
+                </DockPanel>
             </Border>
         </Grid>
     </Grid>

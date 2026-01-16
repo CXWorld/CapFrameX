@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -167,7 +167,7 @@
     </Compile>
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="CapFrameXViewRegion.cs" />
-    <Compile Include="WindowStateService.cs" />
+    <Compile Include="WindowStateTracker.cs" />
     <Page Include="Shell.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -225,6 +225,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <Import Project="benchlab-service.items" Condition="Exists('benchlab-service.items')" />
   <ItemGroup>
     <ProjectReference Include="..\CapFrameX.ApiInterface\CapFrameX.Remote.csproj">
       <Project>{A692A512-627A-4896-9D2D-4412FDD8C78C}</Project>
@@ -371,7 +372,7 @@
       <Version>1.1.0</Version>
     </PackageReference>
     <PackageReference Include="Jot">
-      <Version>2.0.3</Version>
+      <Version>2.1.17</Version>
     </PackageReference>
     <PackageReference Include="MahApps.Metro">
       <Version>2.4.3</Version>
@@ -413,7 +414,7 @@
       <Version>4.1.0</Version>
     </PackageReference>
     <PackageReference Include="System.Reactive">
-      <Version>4.3.2</Version>
+      <Version>6.1.0</Version>
     </PackageReference>
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe">
       <Version>6.1.2</Version>
@@ -422,7 +423,7 @@
       <Version>5.0.0</Version>
     </PackageReference>
     <PackageReference Include="System.Threading.Tasks.Extensions">
-      <Version>4.5.4</Version>
+      <Version>4.6.3</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

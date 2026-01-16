@@ -30,5 +30,9 @@ namespace CapFrameX.Contracts.Overlay
 		Task<IEnumerable<IOverlayEntry>> GetDefaultOverlayEntries();
 
 		void SortOverlayEntriesByType();
+
+		void UpdateOverlayEntries(IEnumerable<IOverlayEntry> entries);
+
+        void UpdateOverlayEntryFormats();
     }
 }

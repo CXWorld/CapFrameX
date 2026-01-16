@@ -29,9 +29,7 @@ namespace CapFrameX.Overlay
 {
     public class OverlayEntryProvider : IOverlayEntryProvider
     {
-        private static readonly string OVERLAY_CONFIG_FOLDER
-            = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    @"CapFrameX\Configuration\");
+        private readonly string _overlayConfigFolder;
 
         private static readonly HashSet<string> ONLINE_METRIC_NAMES = new HashSet<string>()
         {
@@ -76,6 +74,7 @@ namespace CapFrameX.Overlay
             ISensorConfig sensorConfig,
             IOverlayEntryCore overlayEntryCore,
             IThreadAffinityController threadAffinityController,
+            IPathService pathService,
             ILogger<OverlayEntryProvider> logger)
         {
             _sensorService = sensorService;
@@ -87,6 +86,7 @@ namespace CapFrameX.Overlay
             _sensorConfig = sensorConfig;
             _overlayEntryCore = overlayEntryCore;
             _threadAffinityController = threadAffinityController;
+            _overlayConfigFolder = pathService.ConfigFolder;
             _logger = logger;
 
             _ = Task.Run(async () => await LoadOrSetDefault())
@@ -152,8 +152,8 @@ namespace CapFrameX.Overlay
 
                 var json = JsonConvert.SerializeObject(persistence);
 
-                if (!Directory.Exists(OVERLAY_CONFIG_FOLDER))
-                    Directory.CreateDirectory(OVERLAY_CONFIG_FOLDER);
+                if (!Directory.Exists(_overlayConfigFolder))
+                    Directory.CreateDirectory(_overlayConfigFolder);
 
                 using (StreamWriter outputFile = new StreamWriter(GetConfigurationFileName(targetConfig)))
                 {
@@ -313,6 +313,11 @@ namespace CapFrameX.Overlay
                 .ToList();
 
             _overlayEntries = sortedEntries.ToBlockingCollection();
+        }
+
+        public void UpdateOverlayEntries(IEnumerable<IOverlayEntry> entries)
+        {
+            _overlayEntries = entries.ToList().ToBlockingCollection();
         }
 
         public async Task LoadOrSetDefault()
@@ -1341,7 +1346,7 @@ namespace CapFrameX.Overlay
 
         private string GetConfigurationFileName(int targetConfig)
         {
-            return Path.Combine(OVERLAY_CONFIG_FOLDER, $"OverlayEntryConfiguration_" +
+            return Path.Combine(_overlayConfigFolder, $"OverlayEntryConfiguration_" +
                     $"{targetConfig}.json");
         }
 
@@ -1382,6 +1387,11 @@ namespace CapFrameX.Overlay
                 _ping = double.NaN;
             }
             ;
+        }
+
+        public void UpdateOverlayEntryFormats()
+        {
+            _overlayEntries.ForEach(entry => entry.FormatChanged = true);
         }
     }
 }

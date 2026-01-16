@@ -107,19 +107,21 @@ namespace CapFrameX.ViewModel.SubModels
 		private void AddGroupNameSeparatorEntries(IEnumerable<IOverlayEntry> overlayEntries)
 		{
 			OverlayGroupNameSeparatorEntries.Clear();
-			OverlayGroupNameSeparatorEntries.AddRange
-				(overlayEntries.Where(entry => !string.IsNullOrWhiteSpace(entry.GroupName))
-				.Select(entry =>
-				{
-					var grpSepEntry = new GroupNameSeparatorEntry()
+			OverlayGroupNameSeparatorEntries.AddRange(
+				overlayEntries
+					.Where(entry => !string.IsNullOrWhiteSpace(entry.GroupName))
+					.GroupBy(entry => entry.GroupName)
+					.Select(group =>
 					{
-						GroupName = entry.GroupName,
-						UpdateGroupSeparator = UpdateGroupSeparator
-					};
-					grpSepEntry.SetGroupSeparators(entry.GroupSeparators);
+						var grpSepEntry = new GroupNameSeparatorEntry()
+						{
+							GroupName = group.Key,
+							UpdateGroupSeparator = UpdateGroupSeparator
+						};
+						grpSepEntry.SetGroupSeparators(group.Max(entry => entry.GroupSeparators));
 
-					return grpSepEntry;
-				}).DistinctBy(entry => entry.GroupName));
+						return grpSepEntry;
+					}));
 		}
 
 		private void UpdateGroupSeparator(string groupName, int separators)

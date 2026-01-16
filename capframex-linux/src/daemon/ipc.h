@@ -20,6 +20,7 @@ typedef struct {
     uint32_t swapchain_height;
     uint32_t swapchain_format;
     bool has_swapchain;
+    bool present_timing_supported;  // VK_EXT_present_timing available
 } LayerClient;
 
 // App subscription info
@@ -73,6 +74,14 @@ LayerClient* ipc_get_layer_by_pid(pid_t pid);
 LayerClient* ipc_get_layer_by_fd(int fd);
 int ipc_get_layer_count(void);
 LayerClient* ipc_get_layers(int* count);
+
+// Thread-safe copy of layer data (caller provides buffer)
+// Returns actual count copied. Buffer should be at least MAX_LAYERS sized.
+int ipc_get_layers_copy(LayerClient* buffer, int max_count);
+
+// Thread-safe copy of a single layer by PID
+// Returns true if found and copied, false if not found
+bool ipc_get_layer_by_pid_copy(pid_t pid, LayerClient* out);
 
 // App subscription management
 void ipc_subscribe_app(int client_fd, pid_t target_pid);

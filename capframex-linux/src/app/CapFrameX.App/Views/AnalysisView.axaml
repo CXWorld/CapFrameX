@@ -41,9 +41,45 @@
         </Border>
 
         <!-- Right Panel - Analysis -->
-        <Grid Grid.Column="1" RowDefinitions="Auto,*,*">
+        <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*,*">
+            <!-- Session Info Bar -->
+            <Border Grid.Row="0" Background="#1E2A3A" CornerRadius="10" Padding="15 10" Margin="0 0 0 10" BorderBrush="#2A3F55" BorderThickness="1"
+                    IsVisible="{Binding SelectedSession, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <StackPanel Orientation="Horizontal" Spacing="25">
+                    <!-- Game Name -->
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Game" FontSize="11" Opacity="0.6" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding GameName}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <!-- Resolution -->
+                    <StackPanel Orientation="Horizontal" Spacing="8"
+                                IsVisible="{Binding Resolution, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <TextBlock Text="Resolution" FontSize="11" Opacity="0.6" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding Resolution}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <!-- GPU -->
+                    <StackPanel Orientation="Horizontal" Spacing="8"
+                                IsVisible="{Binding GpuName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <TextBlock Text="GPU" FontSize="11" Opacity="0.6" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding GpuName}" FontSize="14" FontWeight="SemiBold"
+                                   MaxWidth="180" TextTrimming="CharacterEllipsis"
+                                   ToolTip.Tip="{Binding GpuName}" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <!-- Timing Mode -->
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Timing" FontSize="11" Opacity="0.6" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding TimingMode}" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{Binding TimingModeColor}"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
             <!-- Statistics -->
-            <WrapPanel Grid.Row="0" Margin="0 0 0 10">
+            <WrapPanel Grid.Row="1" Margin="0 0 0 10">
                 <Border Background="#1E2A3A" CornerRadius="10" Padding="15 10" Margin="0 0 10 10" MinWidth="100" BorderBrush="#2A3F55" BorderThickness="1">
                     <StackPanel>
                         <TextBlock Text="Avg FPS" FontSize="11" Foreground="#4AA3DF" />
@@ -95,7 +131,7 @@
             </WrapPanel>
 
             <!-- Frametime Chart -->
-            <Border Grid.Row="1" Background="#1E2A3A" CornerRadius="10" Padding="15" Margin="0 0 0 10" BorderBrush="#2A3F55" BorderThickness="1">
+            <Border Grid.Row="2" Background="#1E2A3A" CornerRadius="10" Padding="15" Margin="0 0 0 10" BorderBrush="#2A3F55" BorderThickness="1">
                 <DockPanel>
                     <TextBlock DockPanel.Dock="Top" Text="Frametime" FontWeight="SemiBold" Foreground="#4AA3DF" Margin="0 0 0 10" />
                     <lvc:CartesianChart Series="{Binding FrametimeSeries}"
@@ -106,7 +142,7 @@
             </Border>
 
             <!-- FPS Chart and Histogram -->
-            <Grid Grid.Row="2" ColumnDefinitions="*,*">
+            <Grid Grid.Row="3" ColumnDefinitions="*,*">
                 <Border Grid.Column="0" Background="#1E2A3A" CornerRadius="10" Padding="15" Margin="0 0 5 0" BorderBrush="#2A3F55" BorderThickness="1">
                     <DockPanel>
                         <TextBlock DockPanel.Dock="Top" Text="FPS" FontWeight="SemiBold" Foreground="#4AA3DF" Margin="0 0 0 10" />

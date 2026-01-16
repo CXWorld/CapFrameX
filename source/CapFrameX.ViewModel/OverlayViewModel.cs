@@ -20,6 +20,7 @@ using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -27,6 +28,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
@@ -36,11 +38,13 @@ namespace CapFrameX.ViewModel
         private readonly IOverlayService _overlayService;
         private readonly IOverlayEntryProvider _overlayEntryProvider;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly IPathService _pathService;
         private readonly IEventAggregator _eventAggregator;
         private readonly ISensorService _sensorService;
         private readonly IRTSSService _rTSSService;
         private readonly IThreadAffinityController _threadAffinityController;
         private readonly IOnlineMetricService _onlineMetricService;
+        private readonly IOverlayTemplateService _overlayTemplateService;
         private int _selectedOverlayEntryIndex = -1;
         private IOverlayEntry _selectedOverlayEntry;
         private IOverlayEntryFormatChange _checkboxes = new OverlayEntryFormatChange();
@@ -53,6 +57,9 @@ namespace CapFrameX.ViewModel
         private ResetOverlayConfigDialog _resetOverlayConfigContent;
         private bool _resetOverlayConfigContentIsOpen;
         private PubSubEvent<ViewMessages.OverlayConfigChanged> _overlayConfigChangedEvent;
+        private string _filterText = string.Empty;
+        private EOverlayEntryType? _selectedEntryTypeFilter;
+        private ICollectionView _overlayEntriesView;
 
         public bool OverlayItemsOptionsEnabled
         {
@@ -283,6 +290,19 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public EOverlayTemplate SelectedOverlayTemplate
+        {
+            get
+            {
+                return (EOverlayTemplate)_appConfiguration.SelectedOverlayTemplate;
+            }
+            set
+            {
+                _appConfiguration.SelectedOverlayTemplate = (int)value;
+                RaisePropertyChanged();
+            }
+        }
+
         public bool IsConfig0Checked
         {
             get
@@ -387,17 +407,56 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public string FilterText
+        {
+            get => _filterText;
+            set
+            {
+                _filterText = value;
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(HasActiveFilter));
+                RefreshOverlayEntriesView();
+            }
+        }
+
+        public EOverlayEntryType? SelectedEntryTypeFilter
+        {
+            get => _selectedEntryTypeFilter;
+            set
+            {
+                _selectedEntryTypeFilter = value;
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(HasActiveFilter));
+                RefreshOverlayEntriesView();
+            }
+        }
+
+        public ICollectionView OverlayEntriesView
+        {
+            get => _overlayEntriesView;
+            private set
+            {
+                _overlayEntriesView = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public Array EntryTypeFilterItems => new object[] { null }
+            .Concat(Enum.GetValues(typeof(EOverlayEntryType)).Cast<object>())
+            .ToArray();
+
+        public bool HasActiveFilter
+            => !string.IsNullOrWhiteSpace(_filterText) || _selectedEntryTypeFilter.HasValue;
+
         public string SelectedOverlayItemName
-            => SelectedOverlayEntryIndex > -1 ?
-            OverlayEntries[SelectedOverlayEntryIndex].Description : null;
+            => SelectedOverlayEntry?.Description;
 
         public string SelectedOverlayItemGroupName
-           => SelectedOverlayEntryIndex > -1 ?
-           OverlayEntries[SelectedOverlayEntryIndex].GroupName : null;
+           => SelectedOverlayEntry?.GroupName;
 
         public string SelectedOverlayItemSensorType
-          => SelectedOverlayEntryIndex > -1 ?
-          _sensorService.GetSensorTypeString(OverlayEntries[SelectedOverlayEntryIndex].Identifier) : null;
+          => SelectedOverlayEntry == null ? null
+          : _sensorService.GetSensorTypeString(SelectedOverlayEntry.Identifier);
 
         public ICommand ConfigSwitchCommand { get; }
 
@@ -431,6 +490,14 @@ namespace CapFrameX.ViewModel
 
         public ICommand SortByEntryTypeCommand { get; }
 
+        public ICommand ClearFilterCommand { get; }
+
+        public ICommand LaunchOverlayPreviewAppCommand { get; }
+
+        public ICommand ApplyOverlayTemplateCommand { get; }
+
+        public ICommand RevertOverlayTemplateCommand { get; }
+
         public bool IsRTSSInstalled
             => _rTSSService.IsRTSSInstalled();
 
@@ -459,6 +526,10 @@ namespace CapFrameX.ViewModel
 
         public Array MetricIntervalItemsSource => new[] { 5, 10, 20, 30, 60, 120, 240, 300 };
 
+        public Array OverlayTemplateItems => Enum.GetValues(typeof(EOverlayTemplate))
+            .Cast<EOverlayTemplate>()
+            .ToArray();
+
         public ObservableCollection<IOverlayEntry> OverlayEntries { get; private set; }
             = new ObservableCollection<IOverlayEntry>();
 
@@ -467,19 +538,22 @@ namespace CapFrameX.ViewModel
         public OverlayGroupSeparating OverlaySubModelGroupSeparating { get; }
 
         public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider,
-            IAppConfiguration appConfiguration, IEventAggregator eventAggregator, ISensorService sensorService, IRTSSService rTSSService,
-            IThreadAffinityController threadAffinityController, IOnlineMetricService onlineMetricService)
+            IAppConfiguration appConfiguration, IPathService pathService, IEventAggregator eventAggregator, ISensorService sensorService, IRTSSService rTSSService,
+            IThreadAffinityController threadAffinityController, IOnlineMetricService onlineMetricService, IOverlayTemplateService overlayTemplateService)
         {
             _overlayService = overlayService;
             _overlayEntryProvider = overlayEntryProvider;
             _appConfiguration = appConfiguration;
+            _pathService = pathService;
             _eventAggregator = eventAggregator;
             _sensorService = sensorService;
             _rTSSService = rTSSService;
+            _overlayTemplateService = overlayTemplateService;
             _eventAggregator = eventAggregator;
             _threadAffinityController = threadAffinityController;
             _onlineMetricService = onlineMetricService;
-            _overlayConfigChangedEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.OverlayConfigChanged>>();
+            _overlayConfigChangedEvent = _eventAggregator
+                .GetEvent<PubSubEvent<ViewMessages.OverlayConfigChanged>>();
 
             // define submodels
             OverlaySubModelGroupControl = new OverlayGroupControl(this);
@@ -508,6 +582,7 @@ namespace CapFrameX.ViewModel
 
                     OverlayEntries.Clear();
                     OverlayEntries.AddRange(entries);
+                    SetupOverlayEntriesView();
                     _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
 
                     SetSaveButtonIsEnableAction();
@@ -555,9 +630,16 @@ namespace CapFrameX.ViewModel
 
             OpenConfigFolderCommand = new DelegateCommand(OnOpenConfigFolder);
             SortByEntryTypeCommand = new DelegateCommand(OnSortByEntryType);
+            ClearFilterCommand = new DelegateCommand(OnClearFilter);
+            LaunchOverlayPreviewAppCommand = new DelegateCommand(OnLaunchOverlayPreviewApp);
+            ApplyOverlayTemplateCommand = new DelegateCommand(OnApplyOverlayTemplate);
+            RevertOverlayTemplateCommand = new DelegateCommand(OnRevertOverlayTemplate);
 
             UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
                 "RivaTuner Statistics Server (RTSS)";
+
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.OverlayConfigChanged>>()
+                .Subscribe(message => _overlayEntryProvider.UpdateOverlayEntryFormats());
 
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventOverlayConfigHotkey();
@@ -582,6 +664,7 @@ namespace CapFrameX.ViewModel
             OverlaySubModelGroupSeparating.SetOverlayEntries(overlayEntries);
             OverlayEntries.Clear();
             OverlayEntries.AddRange(overlayEntries);
+            SetupOverlayEntriesView();
             SetSaveButtonIsEnableAction();
             OverlayItemsOptionsEnabled = false;
             _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
@@ -703,9 +786,111 @@ namespace CapFrameX.ViewModel
         {
             try
             {
-                Process.Start(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CapFrameX", "Configuration"));
+                Process.Start(_pathService.ConfigFolder);
             }
             catch { }
+        }
+
+        private void OnLaunchOverlayPreviewApp()
+        {
+            try
+            {
+                var appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                var vkcubePath = Path.Combine(appDirectory, "3d-test-app", "vkcube.exe");
+                if (!File.Exists(vkcubePath))
+                    return;
+
+                // --present_mode 2 = VK_PRESENT_MODE_FIFO_KHR (V-Sync, ~60fps)
+                // --width/--height = window dimensions
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = vkcubePath,
+                    Arguments = "--present_mode 2 --width 520 --height 820",
+                    UseShellExecute = false
+                };
+                Process.Start(startInfo);
+            }
+            catch { }
+        }
+
+        private void OnApplyOverlayTemplate()
+        {
+            // Store current state before applying template
+            _overlayTemplateService.StoreCurrentState(OverlayEntries);
+
+            // Apply the selected template
+            _overlayTemplateService.ApplyTemplate(SelectedOverlayTemplate, OverlayEntries);
+
+            // Sort entries by category order, then by SortKey within each category
+            var sortedEntries = OverlayEntries
+                .OrderBy(entry => GetTemplateSortOrder(entry))
+                .ThenBy(entry => entry.SortKey, AlphanumericComparer.Instance)
+                .ToList();
+
+            // Update OverlayEntryProvider accordingly
+            _overlayEntryProvider.UpdateOverlayEntries(sortedEntries);
+
+            OverlayEntries.Clear();
+            OverlayEntries.AddRange(sortedEntries);
+
+            // Setup view, refresh Separators list, and notify overlay
+            SetupOverlayEntriesView();
+            OverlaySubModelGroupSeparating.SetOverlayEntries(OverlayEntries);
+            _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
+            SetSaveButtonIsEnable();
+        }
+
+        private void OnRevertOverlayTemplate()
+        {
+            // Revert to stored state
+            if (_overlayTemplateService.RevertToStoredState(OverlayEntries))
+            {
+                // Sort entries by category order, then by SortKey within each category
+                var sortedEntries = OverlayEntries
+                    .OrderBy(entry => GetTemplateSortOrder(entry))
+                    .ThenBy(entry => entry.SortKey, AlphanumericComparer.Instance)
+                    .ToList();
+
+                // Update OverlayEntryProvider accordingly
+                _overlayEntryProvider.UpdateOverlayEntries(sortedEntries);
+
+                OverlayEntries.Clear();
+                OverlayEntries.AddRange(sortedEntries);
+
+                // Setup view, refresh Separators list, and notify overlay
+                SetupOverlayEntriesView();
+                OverlaySubModelGroupSeparating.SetOverlayEntries(OverlayEntries);
+                _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
+                SetSaveButtonIsEnable();
+            }
+        }
+
+        private int GetTemplateSortOrder(IOverlayEntry entry)
+        {
+            // Framerate and Frametime always at the end
+            if (entry.Identifier == "Framerate" || entry.Identifier == "Frametime")
+                return 6;
+
+            switch (entry.OverlayEntryType)
+            {
+                case EOverlayEntryType.GPU:
+                    return 1;
+                case EOverlayEntryType.CX:
+                    // CustomCPU and CustomRAM are positioned as section headers in templates
+                    if (entry.Identifier == "CustomCPU")
+                        return 2;
+                    if (entry.Identifier == "CustomRAM")
+                        return 4;
+                    return 5;
+                case EOverlayEntryType.CPU:
+                    return 3;
+                case EOverlayEntryType.RAM:
+                    return 4;
+                case EOverlayEntryType.OnlineMetric:
+                    return 5;
+                default:
+                    return 7;
+            }
         }
 
         private void OnSortByEntryType()
@@ -743,7 +928,49 @@ namespace CapFrameX.ViewModel
 
             OverlayEntries.Clear();
             OverlayEntries.AddRange(sortedEntries);
+            SetupOverlayEntriesView();
             SetSaveButtonIsEnable();
+        }
+
+        private void SetupOverlayEntriesView()
+        {
+            OverlayEntriesView = CollectionViewSource.GetDefaultView(OverlayEntries);
+            OverlayEntriesView.Filter = FilterOverlayEntry;
+        }
+
+        private void RefreshOverlayEntriesView()
+        {
+            OverlayEntriesView?.Refresh();
+        }
+
+        private void OnClearFilter()
+        {
+            FilterText = string.Empty;
+            SelectedEntryTypeFilter = null;
+        }
+
+        private bool FilterOverlayEntry(object item)
+        {
+            if (!(item is IOverlayEntry entry))
+                return false;
+
+            // Filter by entry type
+            if (_selectedEntryTypeFilter.HasValue && entry.OverlayEntryType != _selectedEntryTypeFilter.Value)
+                return false;
+
+            // Filter by search text across all columns
+            if (!string.IsNullOrWhiteSpace(_filterText))
+            {
+                var searchText = _filterText.Trim();
+                bool matchesDescription = entry.Description?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+                bool matchesGroupName = entry.GroupName?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+                bool matchesIdentifier = entry.Identifier?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+
+                if (!matchesDescription && !matchesGroupName && !matchesIdentifier)
+                    return false;
+            }
+
+            return true;
         }
 
         public void UpdateGroupNameEnable()
@@ -787,6 +1014,9 @@ namespace CapFrameX.ViewModel
 
         async void IDropTarget.Drop(IDropInfo dropInfo)
         {
+            if (HasActiveFilter)
+                return;
+
             if (dropInfo != null)
             {
                 if (dropInfo.VisualTarget is FrameworkElement frameworkElement)
@@ -812,6 +1042,7 @@ namespace CapFrameX.ViewModel
 
                             OverlayEntries.Clear();
                             OverlayEntries.AddRange(await _overlayEntryProvider.GetOverlayEntries());
+                            SetupOverlayEntriesView();
                         }
                         else if (dropInfo.Data is IEnumerable<IOverlayEntry> overlayEntries)
                         {
@@ -839,6 +1070,7 @@ namespace CapFrameX.ViewModel
 
                             OverlayEntries.Clear();
                             OverlayEntries.AddRange(await _overlayEntryProvider.GetOverlayEntries());
+                            SetupOverlayEntriesView();
                         }
 
                         SetSaveButtonIsEnable();

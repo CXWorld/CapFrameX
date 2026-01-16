@@ -7,8 +7,11 @@ namespace CapFrameX.App.Views;
 
 public partial class MainWindow : Window
 {
-    public static readonly FuncValueConverter<bool, Color> ConnectionColorConverter =
-        new(connected => connected ? Color.Parse("#4AA3DF") : Color.Parse("#666666"));
+    private static readonly IBrush ConnectedBrush = new SolidColorBrush(Color.Parse("#4AA3DF"));
+    private static readonly IBrush DisconnectedBrush = new SolidColorBrush(Color.Parse("#666666"));
+
+    public static readonly FuncValueConverter<bool?, IBrush> ConnectionBrushConverter =
+        new(connected => connected == true ? ConnectedBrush : DisconnectedBrush);
 
     public static readonly IValueConverter TabIndexConverter = new TabIndexToVisibilityConverter();
 

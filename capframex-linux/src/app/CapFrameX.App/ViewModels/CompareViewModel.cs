@@ -12,13 +12,16 @@ using SkiaSharp;
 
 namespace CapFrameX.App.ViewModels;
 
-public partial class CompareViewModel : ObservableObject
+public partial class CompareViewModel : ObservableObject, IDisposable
 {
     private readonly SessionManager _sessionManager;
     private readonly List<(CaptureSession session, FrametimeAnalyzer analyzer)> _selectedSessions = new();
+    private readonly SynchronizationContext? _syncContext;
 
     [ObservableProperty]
     private ObservableCollection<SessionMetadata> _availableSessions = new();
+
+    private bool _isRefreshing;
 
     [ObservableProperty]
     private ObservableCollection<SessionMetadata> _sessionsToCompare = new();
@@ -49,18 +52,94 @@ public partial class CompareViewModel : ObservableObject
     public CompareViewModel(SessionManager sessionManager)
     {
         _sessionManager = sessionManager;
+        _syncContext = SynchronizationContext.Current;
+
+        // Subscribe to session changes
+        _sessionManager.SessionsChanged += OnSessionsChanged;
+        _sessionManager.SessionAdded += OnSessionAdded;
+        _sessionManager.SessionRemoved += OnSessionRemoved;
+
         _ = LoadSessionsAsync();
+    }
+
+    private void OnSessionsChanged(object? sender, EventArgs e)
+    {
+        // Full refresh for external changes (files added/removed outside the app)
+        if (_syncContext != null)
+        {
+            _syncContext.Post(_ => _ = LoadSessionsAsync(), null);
+        }
+        else
+        {
+            _ = LoadSessionsAsync();
+        }
+    }
+
+    private void OnSessionAdded(object? sender, SessionMetadata metadata)
+    {
+        // Insert at beginning (newest first)
+        void AddSession() => AvailableSessions.Insert(0, metadata);
+
+        if (_syncContext != null)
+            _syncContext.Post(_ => AddSession(), null);
+        else
+            AddSession();
+    }
+
+    private void OnSessionRemoved(object? sender, string filePath)
+    {
+        void RemoveSession()
+        {
+            var session = AvailableSessions.FirstOrDefault(s => s.FilePath == filePath);
+            if (session != null)
+            {
+                AvailableSessions.Remove(session);
+
+                // Also remove from comparison if present
+                var compareSession = SessionsToCompare.FirstOrDefault(s => s.FilePath == filePath);
+                if (compareSession != null)
+                {
+                    var index = SessionsToCompare.IndexOf(compareSession);
+                    SessionsToCompare.RemoveAt(index);
+                    _selectedSessions.RemoveAt(index);
+                    UpdateComparison();
+                }
+            }
+        }
+
+        if (_syncContext != null)
+            _syncContext.Post(_ => RemoveSession(), null);
+        else
+            RemoveSession();
+    }
+
+    public void Dispose()
+    {
+        _sessionManager.SessionsChanged -= OnSessionsChanged;
+        _sessionManager.SessionAdded -= OnSessionAdded;
+        _sessionManager.SessionRemoved -= OnSessionRemoved;
     }
 
     [RelayCommand]
     private async Task LoadSessionsAsync()
     {
-        AvailableSessions.Clear();
+        // Prevent concurrent refreshes
+        if (_isRefreshing) return;
+        _isRefreshing = true;
 
-        var sessions = await _sessionManager.GetSessionsAsync();
-        foreach (var session in sessions)
+        try
         {
-            AvailableSessions.Add(session);
+            AvailableSessions.Clear();
+
+            var sessions = await _sessionManager.GetSessionsAsync();
+            foreach (var session in sessions)
+            {
+                AvailableSessions.Add(session);
+            }
+        }
+        finally
+        {
+            _isRefreshing = false;
         }
     }
 

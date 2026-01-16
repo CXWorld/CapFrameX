@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
@@ -176,7 +177,10 @@ namespace CapFrameX.Sensor
             {
                 try
                 {
-                    _computer = new Computer();
+                    var simulationConfiguration = _appConfiguration.HardwareSimulationConfiguration;
+                    _computer = simulationConfiguration != null
+                        ? new Computer(simulationConfiguration)
+                        : new Computer();
                     _computer.Open();
                     _computer.IsCpuEnabled = true;
                     _computer.IsGpuEnabled = true;
@@ -536,6 +540,69 @@ namespace CapFrameX.Sensor
             else
             {
                 return _appConfiguration.CustomGpuDescription;
+            }
+        }
+
+        public ECpuVendor GetCpuVendor()
+        {
+            lock (_lockComputer)
+            {
+                var cpu = _computer?.Hardware
+                    .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.Cpu);
+                if (cpu == null)
+                    return ECpuVendor.Unknown;
+
+                var identifier = cpu.Identifier.ToString().ToLowerInvariant();
+                if (identifier.Contains("amdcpu"))
+                    return ECpuVendor.Amd;
+                if (identifier.Contains("intelcpu"))
+                    return ECpuVendor.Intel;
+
+                return ECpuVendor.Unknown;
+            }
+        }
+
+        public EGpuVendor GetGpuVendor()
+        {
+            var gpu = GetPrimaryGpuHardware();
+            if (gpu == null)
+                return EGpuVendor.Unknown;
+
+            switch (gpu.HardwareType)
+            {
+                case HardwareType.GpuNvidia:
+                    return EGpuVendor.Nvidia;
+                case HardwareType.GpuAmd:
+                    return EGpuVendor.Amd;
+                case HardwareType.GpuIntel:
+                    return EGpuVendor.Intel;
+                default:
+                    return EGpuVendor.Unknown;
+            }
+        }
+
+        private IHardware GetPrimaryGpuHardware()
+        {
+            lock (_lockComputer)
+            {
+                var gpus = _computer?.Hardware
+                    .Where(hdw => hdw.HardwareType == HardwareType.GpuAmd
+                        || hdw.HardwareType == HardwareType.GpuNvidia
+                        || hdw.HardwareType == HardwareType.GpuIntel)
+                    .ToList();
+
+                if (gpus == null || gpus.Count == 0)
+                    return null;
+
+                var selectedAdapter = _appConfiguration.GraphicsAdapter;
+                if (!string.Equals(selectedAdapter, "Auto", StringComparison.Ordinal))
+                    return gpus.FirstOrDefault(gpu => string.Equals(gpu.Name, selectedAdapter, StringComparison.Ordinal));
+
+                if (gpus.Count == 1)
+                    return gpus[0];
+
+                var discreteGpu = gpus.FirstOrDefault(gpu => (gpu as GenericGpu)?.IsDiscreteGpu ?? true);
+                return discreteGpu ?? gpus[0];
             }
         }
     }

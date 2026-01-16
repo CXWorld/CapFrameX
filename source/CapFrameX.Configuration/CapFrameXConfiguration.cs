@@ -1,8 +1,8 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using LibreHardwareMonitor.Hardware.Simulation;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -180,6 +180,12 @@ namespace CapFrameX.Configuration
         public string PingURL
         {
             get => Get<string>("google.com");
+            set => Set(value);
+        }
+
+        public bool SuppressFrameViewServiceWarning
+        {
+            get => Get<bool>(false);
             set => Set(value);
         }
 
@@ -497,6 +503,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public int SelectedOverlayTemplate
+        {
+            get => Get<int>(0);
+            set => Set(value);
+        }
+
         public string OverlayHotKey
         {
             get => Get<string>("Alt+O");
@@ -712,6 +724,12 @@ namespace CapFrameX.Configuration
         {
             get => Get<bool>(true);
             set => Set(value);
+        }
+
+        public SimulationConfiguration HardwareSimulationConfiguration
+        {
+            get => Get<SimulationConfiguration>(new SimulationConfiguration());
+            set => Set(value ?? new SimulationConfiguration());
         }
 
         public int SensorLoggingRefreshPeriod

@@ -31,24 +31,21 @@ static pthread_mutex_t map_mutex = PTHREAD_MUTEX_INITIALIZER;
 static bool layer_initialized = false;
 
 void layer_init(void) {
-    if (layer_initialized) return;
+    if (layer_initialized) {
+        return;
+    }
 
     timing_init();
     ipc_client_init();
 
     // Try to connect to daemon (will stream frames when connected)
-    fprintf(stderr, "[CapFrameX Layer] Attempting daemon connection...\n");
-    fflush(stderr);
     bool conn_result = ipc_client_connect();
-    fprintf(stderr, "[CapFrameX Layer] Connection result: %d\n", conn_result);
-    fflush(stderr);
 
     if (conn_result) {
         fprintf(stderr, "[CapFrameX Layer] Connected to daemon - streaming enabled\n");
     } else {
         fprintf(stderr, "[CapFrameX Layer] Daemon not available - running standalone\n");
     }
-    fflush(stderr);
 
     layer_initialized = true;
     fprintf(stderr, "[CapFrameX Layer] Initialized for PID %d\n", getpid());
@@ -288,9 +285,62 @@ static VKAPI_ATTR VkResult VKAPI_CALL layer_CreateDevice(
     strncpy(inst_data->gpu_name, props.deviceName, sizeof(inst_data->gpu_name) - 1);
     inst_data->physical_device = physicalDevice;
 
+    // Check for present timing extension support
+    data->present_timing_supported = false;
+    data->present_timing_type = PRESENT_TIMING_NONE;
+    bool has_ext_present_timing = false;
+    bool has_google_display_timing = false;
+
+    uint32_t ext_count = 0;
+    if (inst_data->dispatch.EnumerateDeviceExtensionProperties) {
+        inst_data->dispatch.EnumerateDeviceExtensionProperties(physicalDevice, NULL, &ext_count, NULL);
+        if (ext_count > 0) {
+            VkExtensionProperties* exts = malloc(ext_count * sizeof(VkExtensionProperties));
+            if (exts) {
+                inst_data->dispatch.EnumerateDeviceExtensionProperties(physicalDevice, NULL, &ext_count, exts);
+                for (uint32_t i = 0; i < ext_count; i++) {
+                    if (strcmp(exts[i].extensionName, "VK_EXT_present_timing") == 0) {
+                        has_ext_present_timing = true;
+                    }
+                    if (strcmp(exts[i].extensionName, "VK_GOOGLE_display_timing") == 0) {
+                        has_google_display_timing = true;
+                    }
+                }
+                free(exts);
+            }
+        }
+    }
+
+    // Load present timing functions if extension is enabled by the application
+    // Note: We can't enable extensions ourselves - application must request them
+    // But we can load the functions if they're available
+    if (has_ext_present_timing) {
+        data->dispatch.GetPastPresentationTimingEXT =
+            (PFN_vkGetPastPresentationTimingEXT)fpGetDeviceProcAddr(*pDevice, "vkGetPastPresentationTimingEXT");
+        if (data->dispatch.GetPastPresentationTimingEXT) {
+            data->present_timing_supported = true;
+            data->present_timing_type = PRESENT_TIMING_EXT;
+            fprintf(stderr, "[CapFrameX Layer] VK_EXT_present_timing extension active\n");
+        }
+    }
+
+    if (!data->present_timing_supported && has_google_display_timing) {
+        data->dispatch.GetPastPresentationTimingGOOGLE =
+            (PFN_vkGetPastPresentationTimingGOOGLE)fpGetDeviceProcAddr(*pDevice, "vkGetPastPresentationTimingGOOGLE");
+        if (data->dispatch.GetPastPresentationTimingGOOGLE) {
+            data->present_timing_supported = true;
+            data->present_timing_type = PRESENT_TIMING_GOOGLE;
+            fprintf(stderr, "[CapFrameX Layer] VK_GOOGLE_display_timing extension active\n");
+        }
+    }
+
+    if (!data->present_timing_supported) {
+        fprintf(stderr, "[CapFrameX Layer] No present timing extension available - using CPU timestamps\n");
+    }
+
     // Update IPC with GPU info and send updated hello
     ipc_client_set_gpu_name(inst_data->gpu_name);
-    ipc_client_send_hello(inst_data->gpu_name);
+    ipc_client_send_hello(inst_data->gpu_name, data->present_timing_supported);
 
     layer_store_device_data(*pDevice, data);
 

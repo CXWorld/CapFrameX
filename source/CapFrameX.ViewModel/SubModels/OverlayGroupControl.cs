@@ -131,7 +131,7 @@ namespace CapFrameX.ViewModel.SubModels
             foreach (var entry in _overlayViewModel.OverlayEntries
                    .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.CPU))
             {
-                if (entry.Identifier.Contains("load") && entry.Description.Contains("CPU Core #")
+                if (entry.Identifier.Contains("load") && entry.Description.Contains("Core #")
                     && entry.ShowOnOverlayIsEnabled)
                     entry.ShowOnOverlay = showEntry;
             }
@@ -142,7 +142,7 @@ namespace CapFrameX.ViewModel.SubModels
             foreach (var entry in _overlayViewModel.OverlayEntries
                    .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.CPU))
             {
-                if (entry.Identifier.Contains("clock") && entry.Description.Contains("CPU Core #")
+                if (entry.Identifier.Contains("clock") && entry.Description.Contains("Core #")
                     && entry.ShowOnOverlayIsEnabled)
                     entry.ShowOnOverlay = showEntry;
             }
@@ -153,7 +153,7 @@ namespace CapFrameX.ViewModel.SubModels
             foreach (var entry in _overlayViewModel.OverlayEntries
                    .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.CPU))
             {
-                if (entry.Identifier.Contains("power") && entry.Description.Contains("CPU Core #")
+                if (entry.Identifier.Contains("power") && entry.Description.Contains("Core #")
                     && entry.ShowOnOverlayIsEnabled)
                     entry.ShowOnOverlay = showEntry;
             }
@@ -164,7 +164,7 @@ namespace CapFrameX.ViewModel.SubModels
             foreach (var entry in _overlayViewModel.OverlayEntries
                    .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.CPU))
             {
-                if (entry.Identifier.Contains("temperature") && entry.Description.Contains("CPU Core #")
+                if (entry.Identifier.Contains("temperature") && entry.Description.Contains("Core #")
                     && entry.ShowOnOverlayIsEnabled)
                     entry.ShowOnOverlay = showEntry;
             }
@@ -175,7 +175,7 @@ namespace CapFrameX.ViewModel.SubModels
             foreach (var entry in _overlayViewModel.OverlayEntries
                   .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.CPU))
             {
-                if (entry.Identifier.Contains("voltage") && entry.Description.Contains("CPU Core #")
+                if (entry.Identifier.Contains("voltage") && entry.Description.Contains("Core #")
                     && entry.ShowOnOverlayIsEnabled)
                     entry.ShowOnOverlay = showEntry;
             }

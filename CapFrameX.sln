@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36804.6 d17.14
+VisualStudioVersion = 17.14.36811.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX", "source\CapFrameX\CapFrameX.csproj", "{AAA73D26-5CD6-4066-B84C-5BD34057B346}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -87,6 +87,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Hardware.Controller", "source\CapFrameX.Hardware.Controller\CapFrameX.Hardware.Controller.csproj", "{62E9AEEB-B322-48D0-B69B-FE64E62C461B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibreHardwareMonitorLib", "source\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj", "{51E4211C-F281-11A3-9390-A6B54F703498}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7158F27F-0F57-4216-A6EA-04FA24EFDDDF} = {7158F27F-0F57-4216-A6EA-04FA24EFDDDF}
+		{9746F818-C1B9-461D-BD07-D20A103DC751} = {9746F818-C1B9-461D-BD07-D20A103DC751}
+		{CFA42830-B349-4978-B708-5B1BFA9C579B} = {CFA42830-B349-4978-B708-5B1BFA9C579B}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

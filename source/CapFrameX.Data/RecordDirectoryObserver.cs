@@ -1,26 +1,28 @@
-﻿using System;
+﻿using CapFrameX.Capture.Contracts;
+using CapFrameX.Configuration;
+using CapFrameX.Contracts.Configuration;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Collections.Generic;
-using CapFrameX.Contracts.Configuration;
-using Microsoft.Extensions.Logging;
 using System.Runtime.InteropServices;
-using CapFrameX.Capture.Contracts;
 
 namespace CapFrameX.Data
 {
     public class RecordDirectoryObserver : IRecordDirectoryObserver, IDisposable
     {
         private readonly IAppConfiguration _appConfiguration;
+        private readonly IPathService _pathService;
         private readonly ILogger<RecordDirectoryObserver> _logger;
         private readonly Func<FileInfo, bool> _validFileFilterFunc = (FileInfo fi) => fi.Extension == ".csv" || fi.Extension == ".json";
         private readonly ISubject<FileInfo> _fileCreatedSubject = new ReplaySubject<FileInfo>();
         private readonly ISubject<FileInfo> _fileChangedSubject = new ReplaySubject<FileInfo>();
         private readonly ISubject<FileInfo> _fileDeletedSubject = new ReplaySubject<FileInfo>();
         private readonly ISubject<IEnumerable<FileInfo>> _directoryFilesSubject = new BehaviorSubject<IEnumerable<FileInfo>>(new FileInfo[] { });
-        private readonly ISubject<DirectoryInfo> _observingDirectorySubject = new BehaviorSubject<DirectoryInfo>(null);   
+        private readonly ISubject<DirectoryInfo> _observingDirectorySubject = new BehaviorSubject<DirectoryInfo>(null);
 
         public IObservable<FileInfo> FileCreatedStream => _fileCreatedSubject.AsObservable();
         public IObservable<FileInfo> FileChangedStream => _fileChangedSubject.AsObservable();
@@ -35,11 +37,12 @@ namespace CapFrameX.Data
         private List<FileInfo> _currentFiles = new List<FileInfo>();
         private string _currentDir;
 
-        public RecordDirectoryObserver(IAppConfiguration appConfiguration, ILogger<RecordDirectoryObserver> logger)
+        public RecordDirectoryObserver(IAppConfiguration appConfiguration, IPathService pathService, ILogger<RecordDirectoryObserver> logger)
         {
             _appConfiguration = appConfiguration;
+            _pathService = pathService;
             _logger = logger;
-            ObserveDirectory(GetInitialObservedDirectory(_appConfiguration.ObservedDirectory));
+            ObserveDirectory(_pathService.ResolveDocumentsPlaceholder(_appConfiguration.ObservedDirectory));
         }
 
         public void Dispose()
@@ -65,8 +68,13 @@ namespace CapFrameX.Data
             if (string.IsNullOrWhiteSpace(dir) || dir == _currentDir)
                 return;
 
+            // Update app configuration, if needed
+            if (_pathService.ResolveDocumentsPlaceholder(_appConfiguration.ObservedDirectory) != dir)
+            {
+                _appConfiguration.ObservedDirectory = dir;
+            }
+
             _currentDir = dir;
-            _appConfiguration.ObservedDirectory = dir;
             var directory = new DirectoryInfo(dir);
             if (!directory.Exists)
             {
@@ -156,33 +164,7 @@ namespace CapFrameX.Data
             }
         }
 
-        private bool CheckRelevantFiles(string path) 
+        private bool CheckRelevantFiles(string path)
             => path.EndsWith(".json") || path.EndsWith(".csv");
-
-        private string GetInitialObservedDirectory(string observedDirectory)
-        {
-            var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            string path = observedDirectory;
-
-            // >= V1.3
-            if (observedDirectory.Contains(@"MyDocuments\OCAT\Captures"))
-            {
-                path = Path.Combine(documentFolder, @"OCAT\Captures");
-            }
-
-            // < V1.3
-            else if (observedDirectory.Contains(@"MyDocuments\OCAT\Recordings"))
-            {
-                path = Path.Combine(documentFolder, @"OCAT\Recordings");
-            }
-
-            // CX captures
-            else if (observedDirectory.Contains(@"MyDocuments\CapFrameX\Captures"))
-            {
-                path = Path.Combine(documentFolder, @"CapFrameX\Captures");
-            }
-
-            return path;
-        }
     }
 }

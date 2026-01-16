@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Silk.NET.Vulkan" Version="2.22.0" />
     <PackageReference Include="System.Reactive" Version="6.0.0" />
     <PackageReference Include="SharpHook" Version="5.3.7" />
   </ItemGroup>

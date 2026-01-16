@@ -34,6 +34,10 @@ typedef struct {
     PFN_vkDestroySwapchainKHR DestroySwapchainKHR;
     PFN_vkQueuePresentKHR QueuePresentKHR;
     PFN_vkAcquireNextImageKHR AcquireNextImageKHR;
+    // VK_GOOGLE_display_timing (simpler API, widely supported)
+    PFN_vkGetPastPresentationTimingGOOGLE GetPastPresentationTimingGOOGLE;
+    // VK_EXT_present_timing (newer standardized extension)
+    PFN_vkGetPastPresentationTimingEXT GetPastPresentationTimingEXT;
 } DeviceDispatch;
 
 // Per-instance data
@@ -44,6 +48,13 @@ typedef struct {
     char gpu_name[256];
 } InstanceData;
 
+// Present timing extension type
+typedef enum {
+    PRESENT_TIMING_NONE = 0,
+    PRESENT_TIMING_GOOGLE = 1,  // VK_GOOGLE_display_timing
+    PRESENT_TIMING_EXT = 2,     // VK_EXT_present_timing
+} PresentTimingType;
+
 // Per-device data
 typedef struct {
     VkDevice device;
@@ -51,6 +62,8 @@ typedef struct {
     InstanceData* instance_data;
     VkQueue present_queue;
     uint32_t present_queue_family;
+    bool present_timing_supported;  // Any present timing extension available
+    PresentTimingType present_timing_type;  // Which extension is active
 } DeviceData;
 
 // Layer initialization/cleanup

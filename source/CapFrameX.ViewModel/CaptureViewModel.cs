@@ -572,10 +572,11 @@ namespace CapFrameX.ViewModel
                 _overlayService.SetCaptureServiceStatus("Capture service ready...");
 
 
-            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.OverlayConfigChanged>>().Subscribe(msg =>
-            {
-                OnUseRunHistoryChanged();
-            });
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.OverlayConfigChanged>>()
+                .Subscribe(msg =>
+                {
+                    OnUseRunHistoryChanged();
+                });
 
 
             InitializeFrametimeModel();

@@ -1,3 +1,4 @@
+using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
@@ -217,6 +218,8 @@ namespace CapFrameX.Test.Mocks
         public string GetGpuDriverVersion() => _gpuDriverVersion;
         public string GetCpuName() => _cpuName;
         public string GetGpuName() => _gpuName;
+        public ECpuVendor GetCpuVendor() => DetectCpuVendorFromName(_cpuName);
+        public EGpuVendor GetGpuVendor() => DetectGpuVendorFromName(_gpuName);
 
         public string GetSensorTypeString(string identifier)
         {
@@ -422,6 +425,28 @@ namespace CapFrameX.Test.Mocks
 
             // Clamp to valid range
             return Math.Max(sensor.MinValue, Math.Min(sensor.MaxValue, value));
+        }
+
+        private static ECpuVendor DetectCpuVendorFromName(string cpuName)
+        {
+            var nameLower = cpuName?.ToLowerInvariant() ?? string.Empty;
+            if (nameLower.Contains("intel") || nameLower.Contains("core i"))
+                return ECpuVendor.Intel;
+            if (nameLower.Contains("amd") || nameLower.Contains("ryzen") || nameLower.Contains("threadripper"))
+                return ECpuVendor.Amd;
+            return ECpuVendor.Unknown;
+        }
+
+        private static EGpuVendor DetectGpuVendorFromName(string gpuName)
+        {
+            var nameLower = gpuName?.ToLowerInvariant() ?? string.Empty;
+            if (nameLower.Contains("nvidia") || nameLower.Contains("geforce") || nameLower.Contains("rtx") || nameLower.Contains("gtx"))
+                return EGpuVendor.Nvidia;
+            if (nameLower.Contains("amd") || nameLower.Contains("radeon") || nameLower.Contains("rx "))
+                return EGpuVendor.Amd;
+            if (nameLower.Contains("intel") || nameLower.Contains("arc") || nameLower.Contains("iris") || nameLower.Contains("uhd"))
+                return EGpuVendor.Intel;
+            return EGpuVendor.Unknown;
         }
 
         private void LogSensorData((DateTime, Dictionary<ISensorEntry, float>) snapshot)

@@ -149,6 +149,11 @@ public class GenericCpu : Hardware
     /// </summary>
     public double TimeStampCounterFrequency { get; private set; }
 
+    /// <summary>
+    /// Gets the core string for the specified core index.
+    /// </summary>
+    /// <param name="i"></param>
+    /// <returns></returns>
     protected string CoreString(int i)
     {
         if (_coreCount == 1)
@@ -177,7 +182,7 @@ public class GenericCpu : Hardware
                     {
                         case 0x20: // Efficient core
                                    // Check for L3 cache to distinguish E from LP-E
-                            bool hasL3 = false;
+                            bool hasL3cache = false;
                             for (uint sub = 0; sub < 10; sub++)
                             {
                                 if (OpCode.CpuId(0x4, sub, out uint eax4, out _, out _, out _))
@@ -188,12 +193,12 @@ public class GenericCpu : Hardware
                                     uint cacheLevel = (eax4 >> 5) & 0x7;
                                     if (cacheLevel == 3)
                                     {
-                                        hasL3 = true;
+                                        hasL3cache = true;
                                         break;
                                     }
                                 }
                             }
-                            corelabel = hasL3 ? "E" : "LPE";
+                            corelabel = hasL3cache ? "E" : "LPE";
                             break;
                         case 0x40:
                             corelabel = "P";
