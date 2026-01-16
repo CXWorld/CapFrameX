@@ -124,6 +124,7 @@
     <Compile Include="Sensor\ISensorEntry.cs" />
     <Compile Include="Sensor\ISensorService.cs" />
     <Compile Include="Sensor\ISensorEntryProvider.cs" />
+    <Compile Include="Sensor\IPmcReaderSensorPlugin.cs" />
     <Compile Include="UpdateCheck\IUpdateCheck.cs" />
   </ItemGroup>
   <ItemGroup>

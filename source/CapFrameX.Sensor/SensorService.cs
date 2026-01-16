@@ -12,7 +12,9 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -31,6 +33,7 @@ namespace CapFrameX.Sensor
         private readonly IDisposable _logDisposable;
 
         private Computer _computer;
+        private IPmcReaderSensorPlugin _pmcReaderPlugin;
         private SessionSensorDataLive _sessionSensorDataLive;
         private bool _isLoggingActive = false;
         private bool _isServiceAlive = true;
@@ -91,12 +94,21 @@ namespace CapFrameX.Sensor
                    SensorServiceCompletionSource.SetResult(true);
                });
 
-            SensorSnapshotStream = _sensorUpdateSubject
+            var coreSensorStream = _sensorUpdateSubject
                .Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan)))
                .Switch()
                .Where(_ => _isServiceAlive)
                .Where((_, idx) => idx == 0 || IsOverlayActive || (_isLoggingActive && UseSensorLogging) || IsSensorWebsocketActive())
-               .SelectMany(_ => GetTimeStampedSensorValues())
+               .SelectMany(_ => GetTimeStampedSensorValues());
+
+            var pluginSensorStream = InitializePmcReaderPlugin()
+                .Where(_ => _isServiceAlive)
+                .Where(_ => IsOverlayActive || (_isLoggingActive && UseSensorLogging) || IsSensorWebsocketActive());
+
+            SensorSnapshotStream = coreSensorStream
+               .CombineLatest(
+                    pluginSensorStream.StartWith((DateTime.UtcNow, new Dictionary<ISensorEntry, float>())),
+                    MergeSensorSnapshots)
                .Replay(0)
                .RefCount();
 
@@ -262,6 +274,13 @@ namespace CapFrameX.Sensor
                         }
                     }
                 }
+
+                if (_pmcReaderPlugin != null)
+                {
+                    var pluginEntries = await _pmcReaderPlugin.GetSensorEntriesAsync();
+                    if (pluginEntries != null)
+                        entries.AddRange(pluginEntries);
+                }
             }
             catch
             {
@@ -269,6 +288,25 @@ namespace CapFrameX.Sensor
             }
 
             return entries;
+        }
+
+        private static (DateTime, Dictionary<ISensorEntry, float>) MergeSensorSnapshots(
+            (DateTime Timestamp, Dictionary<ISensorEntry, float> Values) coreSnapshot,
+            (DateTime Timestamp, Dictionary<ISensorEntry, float> Values) pluginSnapshot)
+        {
+            var merged = new Dictionary<string, KeyValuePair<ISensorEntry, float>>(StringComparer.Ordinal);
+
+            foreach (var entry in coreSnapshot.Values)
+                merged[entry.Key.Identifier] = entry;
+
+            foreach (var entry in pluginSnapshot.Values)
+                merged[entry.Key.Identifier] = entry;
+
+            var timestamp = coreSnapshot.Timestamp >= pluginSnapshot.Timestamp
+                ? coreSnapshot.Timestamp
+                : pluginSnapshot.Timestamp;
+
+            return (timestamp, merged.Values.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
         }
 
         private void LogCurrentValues(Dictionary<ISensorEntry, float> currentValues, DateTime timestamp)
@@ -315,6 +353,49 @@ namespace CapFrameX.Sensor
             return (DateTime.UtcNow, dict.ToDictionary(x => x.Key, x => x.Value));
         }
 
+        private IObservable<(DateTime, Dictionary<ISensorEntry, float>)> InitializePmcReaderPlugin()
+        {
+            _pmcReaderPlugin = TryLoadPmcReaderPlugin();
+            if (_pmcReaderPlugin == null)
+                return Observable.Empty<(DateTime, Dictionary<ISensorEntry, float>)>();
+
+            try
+            {
+                _pmcReaderPlugin.InitializeAsync(_sensorUpdateSubject.AsObservable())
+                    .ConfigureAwait(false);
+            }
+            catch
+            {
+                return Observable.Empty<(DateTime, Dictionary<ISensorEntry, float>)>();
+            }
+
+            return _pmcReaderPlugin.SensorSnapshotStream
+                ?? Observable.Empty<(DateTime, Dictionary<ISensorEntry, float>)>();
+        }
+
+        private IPmcReaderSensorPlugin TryLoadPmcReaderPlugin()
+        {
+            try
+            {
+                var baseDir = AppContext.BaseDirectory;
+                var pluginPath = Path.Combine(baseDir, "CapFrameX.PmcReader.Plugin.dll");
+                if (!File.Exists(pluginPath))
+                    return null;
+                var assembly = Assembly.LoadFrom(pluginPath);
+                var pluginType = assembly.GetTypes()
+                    .FirstOrDefault(t => typeof(IPmcReaderSensorPlugin).IsAssignableFrom(t)
+                        && t.IsClass
+                        && !t.IsAbstract);
+
+                return pluginType == null
+                    ? null
+                    : (IPmcReaderSensorPlugin)Activator.CreateInstance(pluginType);
+            }
+            catch
+            {
+                return null;
+            }
+        }
 
         private IEnumerable<ISensor> GetSensors()
         {

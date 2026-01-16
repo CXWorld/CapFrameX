@@ -1,0 +1,149 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E43329E2-1CCB-4276-ADBC-D292EED22170}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>PmcReader</RootNamespace>
+    <AssemblyName>PmcReader</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AMD\Amd10hCpu.cs" />
+    <Compile Include="AMD\Amd16hCpu.cs" />
+    <Compile Include="AMD\Amd15hCpu.cs" />
+    <Compile Include="AMD\Amd19hCpu.cs" />
+    <Compile Include="AMD\Amd17hCpu.cs" />
+    <Compile Include="AMD\JaguarNorthbridge.cs" />
+    <Compile Include="AMD\JaguarL2.cs" />
+    <Compile Include="AMD\Jaguar.cs" />
+    <Compile Include="AMD\K10.cs" />
+    <Compile Include="AMD\Bulldozer.cs" />
+    <Compile Include="AMD\Piledriver.cs" />
+    <Compile Include="AMD\PiledriverNorthbridge.cs" />
+    <Compile Include="AMD\Zen5DataFabric.cs" />
+    <Compile Include="AMD\Zen4DataFabric.cs" />
+    <Compile Include="AMD\Zen4.cs" />
+    <Compile Include="AMD\Zen3L3Cache.cs" />
+    <Compile Include="AMD\Zen3.cs" />
+    <Compile Include="AMD\Zen2.cs" />
+    <Compile Include="AMD\Zen1.cs" />
+    <Compile Include="AMD\Zen2DataFabric.cs" />
+    <Compile Include="AMD\Zen5L3Cache.cs" />
+    <Compile Include="AMD\Zen4L3Cache.cs" />
+    <Compile Include="AMD\Zen5.cs" />
+    <Compile Include="AMD\Zen5L3Cache.cs" />
+    <Compile Include="AMD\ZenL3Cache.cs" />
+    <Compile Include="AMD\Zen2L3Cache.cs" />
+    <Compile Include="Cpu.cs" />
+    <Compile Include="GenericMonitoringArea.cs" />
+    <Compile Include="HaswellForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="HaswellForm.Designer.cs">
+      <DependentUpon>HaswellForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Intel\ArrowLake.cs" />
+    <Compile Include="Intel\MeteorLakeUncore.cs" />
+    <Compile Include="Intel\MeteorLakeL3.cs" />
+    <Compile Include="Intel\MeteorLakeArb.cs" />
+    <Compile Include="Intel\MeteorLake.cs" />
+    <Compile Include="Intel\HaswellEL3.cs" />
+    <Compile Include="Intel\GoldmontPlus.cs" />
+    <Compile Include="Intel\AlderLake.cs" />
+    <Compile Include="Intel\SkylakeClientArb.cs" />
+    <Compile Include="Intel\HaswellClientArb.cs" />
+    <Compile Include="Intel\AlderLakeL3.cs" />
+    <Compile Include="Intel\SkylakeClientL3.cs" />
+    <Compile Include="Intel\HaswellClientL3.cs" />
+    <Compile Include="Intel\AlderLakeUncore.cs" />
+    <Compile Include="Intel\SkylakeClientUncore.cs" />
+    <Compile Include="Intel\HaswellClientUncore.cs" />
+    <Compile Include="Intel\SandyBridgeUncore.cs" />
+    <Compile Include="Intel\SandyBridgeEL3.cs" />
+    <Compile Include="Intel\Skylake.cs" />
+    <Compile Include="Intel\SandyBridge.cs" />
+    <Compile Include="Intel\Haswell.cs" />
+    <Compile Include="Intel\ModernIntelCpu.cs" />
+    <Compile Include="Interop\AdvApi32.cs" />
+    <Compile Include="Interop\Kernel32.cs" />
+    <Compile Include="Interop\KernelDriver.cs" />
+    <Compile Include="Interop\OpCode.cs" />
+    <Compile Include="Interop\Ring0.cs" />
+    <Compile Include="Interop\ThreadAffinity.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="HaswellForm.resx">
+      <DependentUpon>HaswellForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <EmbeddedResource Include="Interop\WinRing0.sys" />
+    <EmbeddedResource Include="Interop\WinRing0x64.sys" />
+    <EmbeddedResource Include="Interop\winpmem_64.sys" />
+    <None Include="app.manifest" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
