@@ -72,6 +72,8 @@ internal sealed class SimulatedAmd17Cpu : SimulatedCpuBase
             AddSimulatedSensor(coreLabel, sensorIndex++, SensorType.Clock, 2800f, 5450f, 0.18f, 35f, false, $"2_1_{core + 1}");
         }
 
+        AddSimulatedSensor("CPU Max", sensorIndex++, SensorType.Clock, 3000f, 5600f, 0.2f, 40f, false, "2_2_1");
+
         AddSimulatedSensor("CPU Package", sensorIndex++, SensorType.Temperature, 32f, 88f, 0.12f, 1.2f, true, "3_1_1");
         AddSimulatedSensor("CPU Package", sensorIndex++, SensorType.Power, 25f, 170f, 0.2f, 2.5f, false, "4_1_1");
         AddSimulatedSensor("CPU Core", sensorIndex, SensorType.Voltage, 0.9f, 1.35f, 0.22f, 0.02f, false, "5_1_1");
@@ -104,6 +106,8 @@ internal sealed class SimulatedIntelCpu : SimulatedCpuBase
             string coreLabel = GetIntelCoreLabel(core);
             AddSimulatedSensor(coreLabel, sensorIndex++, SensorType.Clock, 2400f, 6000f, 0.17f, 40f, false, $"2_1_{core + 1}");
         }
+
+        AddSimulatedSensor("CPU Max", sensorIndex++, SensorType.Clock, 2600f, 6200f, 0.19f, 45f, false, "2_2_1");
 
         AddSimulatedSensor("CPU Package", sensorIndex++, SensorType.Temperature, 30f, 92f, 0.13f, 1.3f, true, "3_1_1");
         AddSimulatedSensor("CPU Package", sensorIndex++, SensorType.Power, 30f, 200f, 0.21f, 3f, false, "4_1_1");

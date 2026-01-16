@@ -130,9 +130,10 @@ namespace CapFrameX.Overlay
 
             // 2. CPU Section - Clock, Total Load, Package Power+Temp
             EnableByGroupName(entries, "CPU Clock", cpuGroupColor, VALUE_YELLOW, 1, TemplateSortKey(20, 1));
-            EnableByDescriptionContains(entries, "CPU Total (%)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Total", TemplateSortKey(20, 2));
-            EnableByDescriptionContains(entries, "CPU Package (W)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(20, 3));
-            EnableByDescriptionContains(entries, "CPU Package", "°C", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(20, 4));
+            EnableByDescriptionContains(entries, "CPU Max", "(MHz)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Max", TemplateSortKey(20, 2));
+            EnableByDescriptionContains(entries, "CPU Total (%)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Total", TemplateSortKey(20, 3));
+            EnableByDescriptionContains(entries, "CPU Package (W)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(20, 4));
+            EnableByDescriptionContains(entries, "CPU Package", "°C", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(20, 5));
 
             // 3. Metrics Section (with blank line)
             EnableByIdentifier(entries, "OnlineAverage", METRIC_COLOR, METRIC_COLOR, 1, null, null, TemplateSortKey(30, 1));
@@ -164,9 +165,10 @@ namespace CapFrameX.Overlay
 
             // 3. CPU entries - Clock, Total, Package
             EnableByGroupName(entries, "CPU Clock", cpuGroupColor, VALUE_YELLOW, 0, TemplateSortKey(30, 1));
-            EnableByDescriptionContains(entries, "CPU Total (%)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Total", TemplateSortKey(30, 2));
-            EnableByDescriptionContains(entries, "CPU Package (W)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(30, 3));
-            EnableByDescriptionContains(entries, "CPU Package", "°C", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(30, 4));
+            EnableByDescriptionContains(entries, "CPU Max", "(MHz)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Max", TemplateSortKey(30, 2));
+            EnableByDescriptionContains(entries, "CPU Total (%)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Total", TemplateSortKey(30, 3));
+            EnableByDescriptionContains(entries, "CPU Package (W)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(30, 4));
+            EnableByDescriptionContains(entries, "CPU Package", "°C", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(30, 5));
 
             // 4. RAM Section (with blank line)
             EnableByIdentifier(entries, "CustomRAM", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 1, null, null, TemplateSortKey(40, 1));
@@ -209,15 +211,17 @@ namespace CapFrameX.Overlay
                 EnableByDescriptionContains(entries, $"Core #{i}", "Thread #2 (%)", cpuGroupColor, VALUE_YELLOW, 0, $"Core #{i}", TemplateSortKey(30, i, 4));
             }
 
+            EnableByDescriptionContains(entries, "CPU Max", "(MHz)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Max", TemplateSortKey(30, 98));
             EnableByDescriptionContains(entries, "CPU Package (W)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(30, 99, 1));
             EnableByDescriptionContains(entries, "CPU Package", "°C", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(30, 99, 2));
 
             // 4. RAM Section (with blank line) - DDR info, DIMM temps, RAM used
             EnableByIdentifier(entries, "CustomRAM", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 1, null, null, TemplateSortKey(40, 1));
-            EnableByDescription(entries, "DIMM #1 (°C)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "DIMM #1", TemplateSortKey(50, 1));
-            EnableByDescription(entries, "DIMM #2 (°C)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "DIMM #2", TemplateSortKey(50, 2));
-            EnableByDescription(entries, "DIMM #3 (°C)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "DIMM #3", TemplateSortKey(50, 3));
-            EnableByDescription(entries, "DIMM #4 (°C)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "DIMM #4", TemplateSortKey(50, 4));
+            EnableByDescription(entries, "DIMM #0 (°C)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "DIMM #0", TemplateSortKey(50, 1));
+            EnableByDescription(entries, "DIMM #1 (°C)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "DIMM #1", TemplateSortKey(50, 2));
+            EnableByDescription(entries, "DIMM #2 (°C)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "DIMM #2", TemplateSortKey(50, 3));
+            EnableByDescription(entries, "DIMM #3 (°C)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "DIMM #3", TemplateSortKey(50, 4));
+            EnableByDescription(entries, "DIMM #4 (°C)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "DIMM #4", TemplateSortKey(50, 5));
             EnableByDescription(entries, "RAM Used (GB)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "RAM Used", TemplateSortKey(50, 99));
 
             // 5. Latency Section (with blank line)
