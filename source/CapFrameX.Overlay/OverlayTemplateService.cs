@@ -203,12 +203,28 @@ namespace CapFrameX.Overlay
             EnableByIdentifier(entries, "CustomCPU", cpuGroupColor, VALUE_WHITE, 1, "CPU Model", null, TemplateSortKey(20, 1));
 
             // 3. CPU entries - all core clocks and loads, Package
-            for (int i = 1; i <= 16; i++)
+            var coreGroups = GetCoreGroups(entries);
+            if (coreGroups.Count > 0)
             {
-                EnableByDescription(entries, $"Core #{i} (MHz)", cpuGroupColor, VALUE_YELLOW, 0, $"Core #{i}", TemplateSortKey(30, i, 1));
-                EnableCpuCoreLoad(entries, i, cpuGroupColor, VALUE_YELLOW, 0, TemplateSortKey(30, i, 2));
-                EnableByDescriptionContains(entries, $"Core #{i}", "Thread #1 (%)", cpuGroupColor, VALUE_YELLOW, 0, $"Core #{i}", TemplateSortKey(30, i, 3));
-                EnableByDescriptionContains(entries, $"Core #{i}", "Thread #2 (%)", cpuGroupColor, VALUE_YELLOW, 0, $"Core #{i}", TemplateSortKey(30, i, 4));
+                for (int i = 0; i < coreGroups.Count; i++)
+                {
+                    var coreGroup = coreGroups[i];
+                    var sortIndex = i + 1;
+                    EnableCoreGroupClock(entries, coreGroup.GroupName, cpuGroupColor, VALUE_YELLOW, 0, TemplateSortKey(30, sortIndex, 1));
+                    EnableCoreGroupLoad(entries, coreGroup.GroupName, cpuGroupColor, VALUE_YELLOW, 0, TemplateSortKey(30, sortIndex, 2));
+                    EnableByGroupNameAndDescriptionContains(entries, coreGroup.GroupName, "Thread #1", cpuGroupColor, VALUE_YELLOW, 0, TemplateSortKey(30, sortIndex, 3));
+                    EnableByGroupNameAndDescriptionContains(entries, coreGroup.GroupName, "Thread #2", cpuGroupColor, VALUE_YELLOW, 0, TemplateSortKey(30, sortIndex, 4));
+                }
+            }
+            else
+            {
+                for (int i = 1; i <= 16; i++)
+                {
+                    EnableByDescription(entries, $"Core #{i} (MHz)", cpuGroupColor, VALUE_YELLOW, 0, $"Core #{i}", TemplateSortKey(30, i, 1));
+                    EnableCpuCoreLoad(entries, i, cpuGroupColor, VALUE_YELLOW, 0, TemplateSortKey(30, i, 2));
+                    EnableByDescriptionContains(entries, $"Core #{i}", "Thread #1 (%)", cpuGroupColor, VALUE_YELLOW, 0, $"Core #{i}", TemplateSortKey(30, i, 3));
+                    EnableByDescriptionContains(entries, $"Core #{i}", "Thread #2 (%)", cpuGroupColor, VALUE_YELLOW, 0, $"Core #{i}", TemplateSortKey(30, i, 4));
+                }
             }
 
             EnableByDescriptionContains(entries, "CPU Max", "(MHz)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Max", TemplateSortKey(30, 98));
@@ -390,6 +406,134 @@ namespace CapFrameX.Overlay
             return true;
         }
 
+        private bool EnableCoreGroupClock(List<IOverlayEntry> entries, string groupName, string groupColor, string valueColor, int separators, string sortKey)
+        {
+            var entry = entries.FirstOrDefault(e =>
+                e.GroupName != null &&
+                e.GroupName.Equals(groupName, StringComparison.OrdinalIgnoreCase) &&
+                e.Description != null &&
+                e.Description.IndexOf("(MHz)", StringComparison.OrdinalIgnoreCase) >= 0);
+
+            if (entry == null)
+                return false;
+
+            entry.ShowOnOverlay = true;
+            entry.GroupColor = groupColor;
+            entry.Color = valueColor;
+            entry.GroupSeparators = separators;
+            entry.SortKey = sortKey;
+            return true;
+        }
+
+        private bool EnableCoreGroupLoad(List<IOverlayEntry> entries, string groupName, string groupColor, string valueColor, int separators, string sortKey)
+        {
+            var entry = entries.FirstOrDefault(e =>
+                e.GroupName != null &&
+                e.GroupName.Equals(groupName, StringComparison.OrdinalIgnoreCase) &&
+                e.Description != null &&
+                e.Description.IndexOf("(%)", StringComparison.OrdinalIgnoreCase) >= 0 &&
+                e.Description.IndexOf("Thread", StringComparison.OrdinalIgnoreCase) < 0);
+
+            if (entry == null)
+                return false;
+
+            entry.ShowOnOverlay = true;
+            entry.GroupColor = groupColor;
+            entry.Color = valueColor;
+            entry.GroupSeparators = separators;
+            entry.SortKey = sortKey;
+            return true;
+        }
+
+        private bool EnableByGroupNameAndDescriptionContains(List<IOverlayEntry> entries, string groupName, string descriptionContains, string groupColor, string valueColor, int separators, string sortKey)
+        {
+            var entry = entries.FirstOrDefault(e =>
+                e.GroupName != null &&
+                e.GroupName.Equals(groupName, StringComparison.OrdinalIgnoreCase) &&
+                e.Description != null &&
+                e.Description.IndexOf(descriptionContains, StringComparison.OrdinalIgnoreCase) >= 0);
+
+            if (entry == null)
+                return false;
+
+            entry.ShowOnOverlay = true;
+            entry.GroupColor = groupColor;
+            entry.Color = valueColor;
+            entry.GroupSeparators = separators;
+            entry.SortKey = sortKey;
+            return true;
+        }
+
+        private List<CoreGroupInfo> GetCoreGroups(List<IOverlayEntry> entries)
+        {
+            return entries
+                .Where(e => !string.IsNullOrWhiteSpace(e.GroupName))
+                .Select(e => e.GroupName.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(groupName =>
+                {
+                    if (!TryParseCoreGroupName(groupName, out var coreIndex, out var coreSuffix))
+                        return null;
+
+                    return new CoreGroupInfo
+                    {
+                        GroupName = groupName,
+                        CoreIndex = coreIndex,
+                        CoreSuffix = coreSuffix,
+                        SuffixOrder = GetCoreSuffixSortOrder(coreSuffix)
+                    };
+                })
+                .Where(coreGroup => coreGroup != null)
+                .OrderBy(coreGroup => coreGroup.CoreIndex)
+                .ThenBy(coreGroup => coreGroup.SuffixOrder)
+                .ThenBy(coreGroup => coreGroup.GroupName, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        private static bool TryParseCoreGroupName(string groupName, out int coreIndex, out string coreSuffix)
+        {
+            coreIndex = 0;
+            coreSuffix = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(groupName))
+                return false;
+
+            var trimmed = groupName.Trim();
+            if (!trimmed.StartsWith("Core #", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            var remainder = trimmed.Substring("Core #".Length).Trim();
+            if (string.IsNullOrWhiteSpace(remainder))
+                return false;
+
+            var parts = remainder.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 0 || !int.TryParse(parts[0], out coreIndex))
+                return false;
+
+            coreSuffix = parts.Length > 1 ? string.Join(" ", parts.Skip(1)) : string.Empty;
+            return true;
+        }
+
+        private static int GetCoreSuffixSortOrder(string coreSuffix)
+        {
+            if (string.IsNullOrWhiteSpace(coreSuffix))
+                return 0;
+
+            switch (coreSuffix.Trim().ToUpperInvariant())
+            {
+                case "P":
+                    return 1;
+                case "E":
+                    return 2;
+                case "LPE":
+                    return 3;
+                case "D":
+                    return 4;
+                default:
+                    return 5;
+            }
+        }
+
         private void EnsureCpuSectionSeparator(List<IOverlayEntry> entries)
         {
             var customCpu = entries.FirstOrDefault(e => e.Identifier == "CustomCPU" && e.ShowOnOverlay);
@@ -457,6 +601,14 @@ namespace CapFrameX.Overlay
                 return $"{section}_{index:D2}_{subIndex:D2}";
 
             return $"{section}_{index:D2}";
+        }
+
+        private class CoreGroupInfo
+        {
+            public string GroupName { get; set; }
+            public int CoreIndex { get; set; }
+            public string CoreSuffix { get; set; }
+            public int SuffixOrder { get; set; }
         }
 
         private class StoredEntryState
