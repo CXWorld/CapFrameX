@@ -3,6 +3,7 @@ using CapFrameX.Contracts.Sensor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace CapFrameX.Overlay
 {
@@ -63,7 +64,7 @@ namespace CapFrameX.Overlay
                 return "GPU";
 
             // Try to extract model name patterns
-            var name = fullGpuName.Trim();
+            var name = RemoveParenthesizedText(fullGpuName).Trim();
 
             // NVIDIA: "NVIDIA GeForce RTX 4090" -> "RTX 4090"
             var rtxIndex = name.IndexOf("RTX", StringComparison.OrdinalIgnoreCase);
@@ -90,6 +91,16 @@ namespace CapFrameX.Overlay
                 return string.Join(" ", parts.Skip(parts.Length - 2));
 
             return name.Length > 20 ? name.Substring(0, 20) : name;
+        }
+
+        private static string RemoveParenthesizedText(string gpuName)
+        {
+            if (string.IsNullOrWhiteSpace(gpuName))
+                return gpuName;
+
+            var cleaned = Regex.Replace(gpuName, "\\s*\\([^)]*\\)", string.Empty);
+            cleaned = Regex.Replace(cleaned, "\\bLaptop\\s+GPU\\b", "Mobile", RegexOptions.IgnoreCase);
+            return Regex.Replace(cleaned, "\\s{2,}", " ").Trim();
         }
 
         public void ApplyTemplate(EOverlayTemplate template, IEnumerable<IOverlayEntry> entries)
@@ -241,8 +252,13 @@ namespace CapFrameX.Overlay
             EnableByDescription(entries, "RAM Used (GB)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "RAM Used", TemplateSortKey(50, 99));
 
             // 5. Latency Section (with blank line)
-            EnableByIdentifier(entries, "OnlinePcLatency", LATENCY_GROUP_COLOR, LATENCY_VALUE_COLOR, 1, null, null, TemplateSortKey(60, 1));
-            EnableByIdentifier(entries, "OnlineAnimationError", LATENCY_GROUP_COLOR, LATENCY_VALUE_COLOR, 0, null, null, TemplateSortKey(60, 2));
+            var pcLatencyEntry = entries.FirstOrDefault(e => e.Identifier == "OnlinePcLatency");
+            var hasPcLatency = pcLatencyEntry != null && pcLatencyEntry.IsEntryEnabled;
+            if (hasPcLatency)
+                EnableByIdentifier(entries, "OnlinePcLatency", LATENCY_GROUP_COLOR, LATENCY_VALUE_COLOR, 1, null, null, TemplateSortKey(60, 1));
+
+            var animationErrorSeparators = hasPcLatency ? 0 : 1;
+            EnableByIdentifier(entries, "OnlineAnimationError", LATENCY_GROUP_COLOR, LATENCY_VALUE_COLOR, animationErrorSeparators, null, null, TemplateSortKey(60, 2));
 
             // 6. Metrics Section (with blank line)
             EnableByIdentifier(entries, "OnlineAverage", METRIC_COLOR, METRIC_COLOR, 1, null, null, TemplateSortKey(70, 1));
