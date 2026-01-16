@@ -484,6 +484,7 @@ namespace CapFrameX.Overlay
         {
             return entries
                 .Where(e => !string.IsNullOrWhiteSpace(e.GroupName))
+                .Where(e => !IsEffectiveCoreGroupName(e.GroupName))
                 .Select(e => e.GroupName.Trim())
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(groupName =>
@@ -504,6 +505,19 @@ namespace CapFrameX.Overlay
                 .ThenBy(coreGroup => coreGroup.SuffixOrder)
                 .ThenBy(coreGroup => coreGroup.GroupName, StringComparer.OrdinalIgnoreCase)
                 .ToList();
+        }
+
+        private static bool IsEffectiveCoreGroupName(string groupName)
+        {
+            if (string.IsNullOrWhiteSpace(groupName))
+                return false;
+
+            var trimmed = groupName.Trim();
+            if (!trimmed.StartsWith("Core #", StringComparison.OrdinalIgnoreCase) &&
+                !trimmed.StartsWith("CPU #", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            return trimmed.IndexOf("(Effective)", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         private static bool TryParseCoreGroupName(string groupName, out int coreIndex, out string coreSuffix)
