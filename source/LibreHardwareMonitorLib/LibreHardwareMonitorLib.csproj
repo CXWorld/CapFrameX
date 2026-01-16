@@ -40,6 +40,11 @@
     <None Remove="PawnIo\PawnIO.sys" />
     <None Remove="PawnIo\PawnIOLib.dll" />
     <None Remove="PawnIo\PawnIOLib.h" />
+    <None Remove="Resources\PawnIO\AMDReset.bin" />
+    <None Remove="Resources\PawnIO\ARMMSR.bin" />
+    <None Remove="Resources\PawnIO\Echo.bin" />
+    <None Remove="Resources\PawnIO\IsaBridgeEC.bin" />
+    <None Remove="Resources\PawnIO\LpcCrOSEC.bin" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="PawnIo\PawnIO.sys">
@@ -53,6 +58,11 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\PawnIO\AMDReset.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\ARMMSR.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\Echo.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\IsaBridgeEC.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\LpcCrOSEC.bin" />
     <EmbeddedResource Include="Resources\PawnIO\LpcIO.bin" />
     <EmbeddedResource Include="Resources\PawnIo\LpcACPIEC.bin" />
     <EmbeddedResource Include="Resources\PawnIo\IntelMSR.bin" />

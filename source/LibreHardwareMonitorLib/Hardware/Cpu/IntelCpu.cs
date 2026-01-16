@@ -19,6 +19,9 @@ internal sealed class IntelCpu : GenericCpu
     private readonly Sensor _busClock;
     private readonly Sensor _coreAvg;
     private readonly Sensor[] _coreClocks;
+    private readonly Sensor _coreEffectiveAvg;
+    private readonly Sensor[] _coreEffectiveClocks;
+    private readonly Sensor _coreEffectiveMax;
     private readonly Sensor _maxClock;
     private readonly Sensor _coreMax;
     private readonly Sensor[] _coreTemperatures;
@@ -36,6 +39,10 @@ internal sealed class IntelCpu : GenericCpu
     private readonly double _timeStampCounterMultiplier;
 
     private readonly IntelMsr _pawnModule;
+    private readonly bool _hasAperfMperf;
+    private readonly ulong[] _lastAperf;
+    private readonly ulong[] _lastMperf;
+    private readonly DateTime[] _lastPerfCounterSampleTime;
 
     public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
     {
@@ -423,7 +430,7 @@ internal sealed class IntelCpu : GenericCpu
         for (int i = 0; i < _coreClocks.Length; i++)
         {
             _coreClocks[i] = new Sensor(CoreString(i), i + 1, SensorType.Clock, this, settings)
-            { IsPresentationDefault = true, PresentationSortKey = $"0_1_{i}" };
+            { IsPresentationDefault = true, PresentationSortKey = $"0_1_0_{i}" };
             if (HasTimeStampCounter && _microArchitecture != MicroArchitecture.Unknown)
                 ActivateSensor(_coreClocks[i]);
         }
@@ -431,6 +438,42 @@ internal sealed class IntelCpu : GenericCpu
         _maxClock = new Sensor("CPU Max", _coreClocks.Length + 1, SensorType.Clock, this, settings)
         { PresentationSortKey = $"0_2" };
         ActivateSensor(_maxClock);
+
+        if (HasModelSpecificRegisters &&
+            TryReadPerfCounters(_cpuId[0][0].Affinity, out _, out _))
+        {
+            _hasAperfMperf = true;
+            _coreEffectiveClocks = new Sensor[_coreCount];
+            _lastAperf = new ulong[_coreCount];
+            _lastMperf = new ulong[_coreCount];
+            _lastPerfCounterSampleTime = new DateTime[_coreCount];
+
+            int effectiveSensorIndex = _coreClocks.Length + 2;
+            for (int i = 0; i < _coreEffectiveClocks.Length; i++)
+            {
+                _coreEffectiveClocks[i] = new Sensor($"{CoreString(i)} (Effective)", effectiveSensorIndex + i, SensorType.Clock, this, settings)
+                { PresentationSortKey = $"0_1_1_{i}" };
+                ActivateSensor(_coreEffectiveClocks[i]);
+            }
+
+            _coreEffectiveAvg = new Sensor("CPU Effective", effectiveSensorIndex + _coreEffectiveClocks.Length, SensorType.Clock, this, settings)
+            { PresentationSortKey = "0_1_2" };
+            _coreEffectiveMax = new Sensor("CPU Max Effective", effectiveSensorIndex + _coreEffectiveClocks.Length + 1, SensorType.Clock, this, settings)
+            { PresentationSortKey = "0_1_3" };
+
+            ActivateSensor(_coreEffectiveAvg);
+            ActivateSensor(_coreEffectiveMax);
+        }
+        else
+        {
+            _hasAperfMperf = false;
+            _coreEffectiveAvg = null;
+            _coreEffectiveMax = null;
+            _coreEffectiveClocks = Array.Empty<Sensor>();
+            _lastAperf = Array.Empty<ulong>();
+            _lastMperf = Array.Empty<ulong>();
+            _lastPerfCounterSampleTime = Array.Empty<DateTime>();
+        }
 
         if (_microArchitecture is MicroArchitecture.Airmont or
             MicroArchitecture.AlderLake or
@@ -541,32 +584,33 @@ internal sealed class IntelCpu : GenericCpu
         return result;
     }
 
-    private void ReportCoreInfo(int coreIndex)
+    private string ReportCoreInfo(int coreIndex)
     {
+        StringBuilder r = new();
         var previousAffinity = ThreadAffinity.Set(_cpuId[coreIndex][0].Affinity);
 
-        Debug.WriteLine($"=== Core {coreIndex} ===");
+        r.AppendLine($"=== Core {coreIndex} ===");
 
         // Leaf 0x1A - Hybrid info
         if (OpCode.CpuId(0x1A, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
         {
-            Console.WriteLine($"Leaf 0x1A: EAX=0x{eax:X8} EBX=0x{ebx:X8} ECX=0x{ecx:X8} EDX=0x{edx:X8}");
+            r.AppendLine($"Leaf 0x1A: EAX=0x{eax:X8} EBX=0x{ebx:X8} ECX=0x{ecx:X8} EDX=0x{edx:X8}");
         }
 
         // Leaf 0x1F - V2 Extended Topology
-        Debug.WriteLine("Leaf 0x1F:");
+        r.AppendLine("Leaf 0x1F:");
         for (uint sub = 0; sub < 10; sub++)
         {
             if (OpCode.CpuId(0x1F, sub, out eax, out ebx, out ecx, out edx))
             {
                 uint levelType = (ecx >> 8) & 0xFF;
-                Debug.WriteLine($"  Sub {sub}: EAX=0x{eax:X8} EBX=0x{ebx:X8} ECX=0x{ecx:X8} EDX=0x{edx:X8} (LevelType={levelType})");
+                r.AppendLine($"  Sub {sub}: EAX=0x{eax:X8} EBX=0x{ebx:X8} ECX=0x{ecx:X8} EDX=0x{edx:X8} (LevelType={levelType})");
                 if (levelType == 0) break;
             }
         }
 
         // Leaf 0x4 - Cache topology
-        Debug.WriteLine("Leaf 0x4:");
+        r.AppendLine("Leaf 0x4:");
         for (uint sub = 0; sub < 6; sub++)
         {
             if (OpCode.CpuId(0x4, sub, out eax, out ebx, out ecx, out edx))
@@ -574,11 +618,12 @@ internal sealed class IntelCpu : GenericCpu
                 uint cacheType = eax & 0x1F;
                 if (cacheType == 0) break;
                 uint cacheLevel = (eax >> 5) & 0x7;
-                Debug.WriteLine($"  Sub {sub}: L{cacheLevel} Type={cacheType} EAX=0x{eax:X8}");
+                r.AppendLine($"  Sub {sub}: L{cacheLevel} Type={cacheType} EAX=0x{eax:X8}");
             }
         }
 
         ThreadAffinity.Set(previousAffinity);
+        return r.ToString();
     }
 
 
@@ -591,6 +636,10 @@ internal sealed class IntelCpu : GenericCpu
         r.Append("Time Stamp Counter Multiplier: ");
         r.AppendLine(_timeStampCounterMultiplier.ToString(CultureInfo.InvariantCulture));
         r.AppendLine();
+        for (int i = 0; i < _coreCount; i++)
+        {
+            r.Append(ReportCoreInfo(i));
+        }
         return r.ToString();
     }
 
@@ -720,6 +769,69 @@ internal sealed class IntelCpu : GenericCpu
             }
         }
 
+        if (_hasAperfMperf)
+        {
+            DateTime sampleTime = DateTime.UtcNow;
+            double effectiveSum = 0;
+            double effectiveMax = 0;
+            int effectiveCount = 0;
+
+            for (int i = 0; i < _coreEffectiveClocks.Length; i++)
+            {
+                if (!TryReadPerfCounters(_cpuId[i][0].Affinity, out ulong aperf, out ulong mperf))
+                {
+                    _coreEffectiveClocks[i].Value = null;
+                    continue;
+                }
+
+                if (_lastPerfCounterSampleTime[i] == default ||
+                    aperf < _lastAperf[i] ||
+                    mperf < _lastMperf[i])
+                {
+                    _lastAperf[i] = aperf;
+                    _lastMperf[i] = mperf;
+                    _lastPerfCounterSampleTime[i] = sampleTime;
+                    _coreEffectiveClocks[i].Value = null;
+                    continue;
+                }
+
+                double seconds = (sampleTime - _lastPerfCounterSampleTime[i]).TotalSeconds;
+                if (seconds <= 0)
+                    continue;
+
+                ulong aperfDelta = aperf - _lastAperf[i];
+                ulong mperfDelta = mperf - _lastMperf[i];
+                _lastAperf[i] = aperf;
+                _lastMperf[i] = mperf;
+                _lastPerfCounterSampleTime[i] = sampleTime;
+
+                if (aperfDelta == 0 || mperfDelta == 0)
+                {
+                    _coreEffectiveClocks[i].Value = null;
+                    continue;
+                }
+
+                double freq = aperfDelta / (seconds * 1_000_000.0);
+                _coreEffectiveClocks[i].Value = (float)Math.Round(freq, 0);
+
+                effectiveSum += freq;
+                effectiveCount++;
+                if (freq > effectiveMax)
+                    effectiveMax = freq;
+            }
+
+            if (effectiveCount > 0)
+            {
+                _coreEffectiveAvg.Value = (float)Math.Round(effectiveSum / effectiveCount, 0);
+                _coreEffectiveMax.Value = (float)Math.Round(effectiveMax, 0);
+            }
+            else
+            {
+                _coreEffectiveAvg.Value = null;
+                _coreEffectiveMax.Value = null;
+            }
+        }
+
         if (_powerSensors != null)
         {
             foreach (Sensor sensor in _powerSensors)
@@ -845,6 +957,8 @@ internal sealed class IntelCpu : GenericCpu
     private const uint IA32_PERF_STATUS = 0x0198;
     private const uint IA32_TEMPERATURE_TARGET = 0x01A2;
     private const uint IA32_THERM_STATUS_MSR = 0x019C;
+    private const uint IA32_MPERF = 0xE7;
+    private const uint IA32_APERF = 0xE8;
 
     private const uint MSR_DRAM_ENERGY_STATUS = 0x619;
     private const uint MSR_PKG_ENERGY_STATUS = 0x611;
@@ -855,4 +969,23 @@ internal sealed class IntelCpu : GenericCpu
 
     private const uint MSR_RAPL_POWER_UNIT = 0x606;
     // ReSharper restore InconsistentNaming
+
+    private bool TryReadPerfCounters(GroupAffinity affinity, out ulong aperf, out ulong mperf)
+    {
+        GroupAffinity previousAffinity = ThreadAffinity.Set(affinity);
+        bool readAperf = _pawnModule.ReadMsr(IA32_APERF, out uint aperfEax, out uint aperfEdx);
+        bool readMperf = _pawnModule.ReadMsr(IA32_MPERF, out uint mperfEax, out uint mperfEdx);
+
+        if (readAperf && readMperf && aperfEax == 0 && aperfEdx == 0 && mperfEax == 0 && mperfEdx == 0)
+        {
+            System.Threading.Thread.SpinWait(10000);
+            readAperf = _pawnModule.ReadMsr(IA32_APERF, out aperfEax, out aperfEdx);
+            readMperf = _pawnModule.ReadMsr(IA32_MPERF, out mperfEax, out mperfEdx);
+        }
+        ThreadAffinity.Set(previousAffinity);
+
+        aperf = ((ulong)aperfEdx << 32) | aperfEax;
+        mperf = ((ulong)mperfEdx << 32) | mperfEax;
+        return readAperf && readMperf && (aperf != 0 || mperf != 0);
+    }
 }

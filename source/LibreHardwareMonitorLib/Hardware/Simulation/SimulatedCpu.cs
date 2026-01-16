@@ -104,10 +104,13 @@ internal sealed class SimulatedIntelCpu : SimulatedCpuBase
         for (int core = 0; core < CoreCount; core++)
         {
             string coreLabel = GetIntelCoreLabel(core);
-            AddSimulatedSensor(coreLabel, sensorIndex++, SensorType.Clock, 2400f, 6000f, 0.17f, 40f, false, $"2_1_{core + 1}");
+            AddSimulatedSensor(coreLabel, sensorIndex++, SensorType.Clock, 2400f, 6000f, 0.17f, 40f, false, $"0_1_0_{core}");
+            AddSimulatedSensor($"{coreLabel} (Effective)", sensorIndex++, SensorType.Clock, 2000f, 6000f, 0.18f, 45f, false, $"0_1_1_{core}");
         }
 
-        AddSimulatedSensor("CPU Max", sensorIndex++, SensorType.Clock, 2600f, 6200f, 0.19f, 45f, false, "2_2_1");
+        AddSimulatedSensor("CPU Effective", sensorIndex++, SensorType.Clock, 2200f, 6000f, 0.19f, 40f, false, "0_1_2");
+        AddSimulatedSensor("CPU Max Effective", sensorIndex++, SensorType.Clock, 2600f, 6200f, 0.2f, 45f, false, "0_1_3");
+        AddSimulatedSensor("CPU Max", sensorIndex++, SensorType.Clock, 2600f, 6200f, 0.19f, 45f, false, "0_2");
 
         AddSimulatedSensor("CPU Package", sensorIndex++, SensorType.Temperature, 30f, 92f, 0.13f, 1.3f, true, "3_1_1");
         AddSimulatedSensor("CPU Package", sensorIndex++, SensorType.Power, 30f, 200f, 0.21f, 3f, false, "4_1_1");

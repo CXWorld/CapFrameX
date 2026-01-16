@@ -141,7 +141,7 @@ namespace CapFrameX.Overlay
 
             // 2. CPU Section - Clock, Total Load, Package Power+Temp
             EnableByGroupName(entries, "CPU Clock", cpuGroupColor, VALUE_YELLOW, 1, TemplateSortKey(20, 1));
-            EnableByDescriptionContains(entries, "CPU Max", "(MHz)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Max", TemplateSortKey(20, 2));
+            EnableByDescription(entries, "CPU Max (MHz)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Max", TemplateSortKey(20, 2));
             EnableByDescriptionContains(entries, "CPU Total (%)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Total", TemplateSortKey(20, 3));
             EnableByDescriptionContains(entries, "CPU Package (W)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(20, 4));
             EnableByDescriptionContains(entries, "CPU Package", "°C", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(20, 5));
@@ -176,7 +176,7 @@ namespace CapFrameX.Overlay
 
             // 3. CPU entries - Clock, Total, Package
             EnableByGroupName(entries, "CPU Clock", cpuGroupColor, VALUE_YELLOW, 0, TemplateSortKey(30, 1));
-            EnableByDescriptionContains(entries, "CPU Max", "(MHz)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Max", TemplateSortKey(30, 2));
+            EnableByDescription(entries, "CPU Max (MHz)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Max", TemplateSortKey(30, 2));
             EnableByDescriptionContains(entries, "CPU Total (%)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Total", TemplateSortKey(30, 3));
             EnableByDescriptionContains(entries, "CPU Package (W)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(30, 4));
             EnableByDescriptionContains(entries, "CPU Package", "°C", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(30, 5));
@@ -238,7 +238,7 @@ namespace CapFrameX.Overlay
                 }
             }
 
-            EnableByDescriptionContains(entries, "CPU Max", "(MHz)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Max", TemplateSortKey(30, 98));
+            EnableByDescription(entries, "CPU Max (MHz)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Max", TemplateSortKey(30, 98));
             EnableByDescriptionContains(entries, "CPU Package (W)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(30, 99, 1));
             EnableByDescriptionContains(entries, "CPU Package", "°C", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(30, 99, 2));
 
