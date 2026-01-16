@@ -265,6 +265,8 @@ namespace CapFrameX.Contracts.Configuration
         List<string> ComparisonLineGraphColors { get; set; }
 
         string PingURL { get; set; }
+
+        bool SuppressFrameViewServiceWarning { get; set; }
     }
 
 	public interface IReportDataGridColumnSettings

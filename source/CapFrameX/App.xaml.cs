@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Capture.Contracts;
 using CapFrameX.Configuration;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
@@ -10,7 +11,6 @@ using CapFrameX.PresentMonInterface;
 using CapFrameX.Remote;
 using DryIoc;
 using EmbedIO;
-using LibreHardwareMonitor.PawnIo;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Formatting.Compact;
@@ -86,7 +86,7 @@ namespace CapFrameX
                             : string.Empty;
 
                         // Show info message to user
-                        MessageBox.Show($"CapFrameX is running in portable mode and requires certain dependencies to be installed on the system.\n\n" +
+                        MessageBox.Show($"CapFrameX requires certain dependencies to be installed on the system.\n\n" +
                             $"The following dependencies are missing:\n" +
                             $"{netFrameWorkMessage}" +
                             $"{vcRedistMessage}" +
@@ -114,6 +114,33 @@ namespace CapFrameX
                 base.OnStartup(e);
                 _bootstrapper = new Bootstrapper();
                 _bootstrapper.Run(true);
+
+                // Check for conflicting ETW sessions (FrameViewService)
+                try
+                {
+                    var appConfiguration = _bootstrapper.Container.Resolve<IAppConfiguration>();
+                    if (!appConfiguration.SuppressFrameViewServiceWarning && EtwServiceChecker.IsFrameViewServiceRunning())
+                    {
+                        var result = MessageBox.Show(
+                            "FrameViewService ETW session detected.\n\n" +
+                            "The NVIDIA FrameView SDK is currently running an ETW trace session that may conflict with PresentMon. " +
+                            "If CapFrameX does not show performance metrics during capture, consider uninstalling the NVIDIA FrameView SDK.\n\n" +
+                            "Click 'Yes' to continue and show this warning again next time.\n" +
+                            "Click 'No' to continue and never show this warning again.",
+                            "ETW Session Conflict Detected",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Warning);
+
+                        if (result == MessageBoxResult.No)
+                        {
+                            appConfiguration.SuppressFrameViewServiceWarning = true;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Logger.Error(ex, "Error checking for ETW services");
+                }
 
                 Task.Run(async () =>
                 {
@@ -191,9 +218,7 @@ namespace CapFrameX
 
                     var content = new StringContent(JsonConvert.SerializeObject(loggerEvents));
                     content.Headers.ContentType.MediaType = "application/json";
-
                     var response = client.PostAsync("crashlogs", content).GetAwaiter().GetResult();
-
                     var reportId = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
                     Log.Logger.Information("Uploading Logs. Report-ID is {reportId}", reportId);

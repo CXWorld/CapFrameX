@@ -183,6 +183,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool SuppressFrameViewServiceWarning
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
         // Record List Settings
 
         public bool FixedExpanderPosition
