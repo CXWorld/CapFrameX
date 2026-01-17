@@ -1,0 +1,8 @@
+exclude_dirs:
+  - 'scripts/unittesting'
+
+skips:
+  # Skip B101:assert_used. This is used for validating event and metric data in create_perf_json.py.
+  # Refer to https://bandit.readthedocs.io/en/latest/plugins/b101_assert_used.html for additional
+  # information. This project does not run scripts with -O.
+  - 'B101'

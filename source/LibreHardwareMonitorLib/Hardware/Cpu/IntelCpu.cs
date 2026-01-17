@@ -345,6 +345,14 @@ internal sealed class IntelCpu : GenericCpu
                 break;
         }
 
+        //Clock 0
+        //Load 1
+        //Power 2
+        //Temperature 3
+        //Voltage 4
+        //Misc 5
+        //PMC 6
+
         int coreSensorId = 0;
 
         //core temp avg and max value

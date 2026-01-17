@@ -18,10 +18,19 @@ namespace PmcReader.AMD
             architectureName = "Zen 5 L3";
             ccxSampleThreads = new Dictionary<int, int>();
             allCcxThreads = new Dictionary<int, List<int>>();
-            ccxSampleThreads[0] = 0;
-            ccxSampleThreads[1] = 12;
-            allCcxThreads[0] = new List<int>() { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
-            allCcxThreads[1] = new List<int>() { 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 };
+            for (int threadIdx = 0; threadIdx < GetThreadCount(); threadIdx++)
+            {
+                int ccxIdx = Get19hCcxId(threadIdx);
+                ccxSampleThreads[ccxIdx] = threadIdx;
+                List<int> ccxThreads;
+                if (! allCcxThreads.TryGetValue(ccxIdx, out ccxThreads))
+                {
+                    ccxThreads = new List<int>();
+                    allCcxThreads.Add(ccxIdx, ccxThreads);
+                }
+
+                ccxThreads.Add(threadIdx);
+            }
 
             monitoringConfigs = new MonitoringConfig[1];
             monitoringConfigs[0] = new HitRateLatencyConfig(this);

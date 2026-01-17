@@ -67,17 +67,17 @@ namespace PmcReader.Intel
         }
 
         public static ulong GetArlPerfEvtSelValue(byte perfEvent,
-                                   byte umask,
-                                   bool usr = true,
-                                   bool os = true,
-                                   bool edge = false,
-                                   bool pc = false,
-                                   bool interrupt = false,
-                                   bool anyThread = false,
-                                   bool enable = true,
-                                   bool invert = false,
-                                   byte cmask = 0,
-                                   byte umaskExt = 0)
+            byte umask,
+            bool usr = true,
+            bool os = true,
+            bool edge = false,
+            bool pc = false,
+            bool interrupt = false,
+            bool anyThread = false,
+            bool enable = true,
+            bool invert = false,
+            byte cmask = 0,
+            byte umaskExt = 0)
         {
             ulong value = (ulong)perfEvent |
                 (ulong)umask << 8 |
@@ -173,22 +173,22 @@ namespace PmcReader.Intel
                 float hitl3 = counterData.pmc[2];
                 float l3miss = counterData.pmc[3];
                 return new string[] { label,
-                        FormatLargeNumber(counterData.activeCycles),
-                        FormatLargeNumber(counterData.instr),
-                        string.Format("{0:F2}", counterData.instr / counterData.activeCycles),
-                        string.Format("{0:F2} W", counterData.packagePower),
-                        FormatLargeNumber(counterData.instr / counterData.packagePower),
-                        FormatPercentage(memUops - l1hitl1 - hitl2 - hitl3 - l3miss, memUops),
-                        string.Format("{0:F2}", 1000 * (l1hitl1 + hitl2 + hitl3+ l3miss) / counterData.instr),
-                        FormatPercentage(l1hitl1, l1hitl1 + hitl2 + hitl3 + l3miss),
-                        string.Format("{0:F2}", 1000 * (hitl2 + hitl3 + l3miss) / counterData.instr),
-                        FormatPercentage(hitl2, hitl2 + hitl3 + l3miss),
-                        string.Format("{0:F2}", 1000 * (hitl3 + l3miss) / counterData.instr),
-                        FormatPercentage(hitl3, l3miss + hitl3),
-                        string.Format("{0:F2}", 1000 * l3miss / counterData.instr),
-                        FormatPercentage(counterData.pmc[6] - counterData.pmc[5], counterData.pmc[6]),
-                        string.Format("{0:F2}", 1000 * counterData.pmc[5] / counterData.instr),
-                        FormatPercentage(counterData.pmc[7], counterData.activeCycles),
+                    FormatLargeNumber(counterData.activeCycles),
+                    FormatLargeNumber(counterData.instr),
+                    string.Format("{0:F2}", counterData.instr / counterData.activeCycles),
+                    string.Format("{0:F2} W", counterData.packagePower),
+                    FormatLargeNumber(counterData.instr / counterData.packagePower),
+                    FormatPercentage(memUops - l1hitl1 - hitl2 - hitl3 - l3miss, memUops),
+                    string.Format("{0:F2}", 1000 * (l1hitl1 + hitl2 + hitl3+ l3miss) / counterData.instr),
+                    FormatPercentage(l1hitl1, l1hitl1 + hitl2 + hitl3 + l3miss),
+                    string.Format("{0:F2}", 1000 * (hitl2 + hitl3 + l3miss) / counterData.instr),
+                    FormatPercentage(hitl2, hitl2 + hitl3 + l3miss),
+                    string.Format("{0:F2}", 1000 * (hitl3 + l3miss) / counterData.instr),
+                    FormatPercentage(hitl3, l3miss + hitl3),
+                    string.Format("{0:F2}", 1000 * l3miss / counterData.instr),
+                    FormatPercentage(counterData.pmc[6] - counterData.pmc[5], counterData.pmc[6]),
+                    string.Format("{0:F2}", 1000 * counterData.pmc[5] / counterData.instr),
+                    FormatPercentage(counterData.pmc[7], counterData.activeCycles),
                 };
             }
         }
@@ -354,19 +354,19 @@ namespace PmcReader.Intel
             private string[] computeMetrics(string label, NormalizedCoreCounterData counterData)
             {
                 return new string[] { label,
-                        FormatLargeNumber(counterData.activeCycles),
-                        FormatLargeNumber(counterData.instr),
-                        string.Format("{0:F2}", counterData.instr / counterData.activeCycles),
-                        string.Format("{0:F2} W", counterData.packagePower),
-                        FormatLargeNumber(counterData.instr / counterData.packagePower),
-                        FormatPercentage(counterData.pmc[0], counterData.activeCycles),
-                        FormatPercentage(counterData.pmc[1], counterData.activeCycles),
-                        FormatPercentage(counterData.pmc[2], counterData.activeCycles),
-                        FormatPercentage(counterData.pmc[3], counterData.activeCycles),
-                        FormatPercentage(counterData.pmc[4], counterData.activeCycles),
-                        FormatPercentage(counterData.pmc[5], counterData.activeCycles),
-                        FormatPercentage(counterData.pmc[6], counterData.activeCycles),
-                        FormatPercentage(counterData.pmc[7], counterData.activeCycles),
+                    FormatLargeNumber(counterData.activeCycles),
+                    FormatLargeNumber(counterData.instr),
+                    string.Format("{0:F2}", counterData.instr / counterData.activeCycles),
+                    string.Format("{0:F2} W", counterData.packagePower),
+                    FormatLargeNumber(counterData.instr / counterData.packagePower),
+                    FormatPercentage(counterData.pmc[0], counterData.activeCycles),
+                    FormatPercentage(counterData.pmc[1], counterData.activeCycles),
+                    FormatPercentage(counterData.pmc[2], counterData.activeCycles),
+                    FormatPercentage(counterData.pmc[3], counterData.activeCycles),
+                    FormatPercentage(counterData.pmc[4], counterData.activeCycles),
+                    FormatPercentage(counterData.pmc[5], counterData.activeCycles),
+                    FormatPercentage(counterData.pmc[6], counterData.activeCycles),
+                    FormatPercentage(counterData.pmc[7], counterData.activeCycles),
                 };
             }
         }
@@ -443,15 +443,15 @@ namespace PmcReader.Intel
             private string[] computeMetrics(string label, NormalizedCoreCounterData counterData)
             {
                 return new string[] { label,
-                        FormatLargeNumber(counterData.activeCycles),
-                        FormatLargeNumber(counterData.instr),
-                        string.Format("{0:F2}", counterData.instr / counterData.activeCycles),
-                        string.Format("{0:F2} W", counterData.packagePower),
-                        FormatLargeNumber(counterData.instr / counterData.packagePower),
-                        FormatPercentage(counterData.pmc[0], counterData.activeCycles),
-                        string.Format("{0:F2} clk", counterData.pmc[0] / counterData.pmc[1]),
-                        FormatPercentage(counterData.pmc[2], counterData.activeCycles),
-                        string.Format("{0:F2} clk", counterData.pmc[2] / counterData.pmc[3])
+                    FormatLargeNumber(counterData.activeCycles),
+                    FormatLargeNumber(counterData.instr),
+                    string.Format("{0:F2}", counterData.instr / counterData.activeCycles),
+                    string.Format("{0:F2} W", counterData.packagePower),
+                    FormatLargeNumber(counterData.instr / counterData.packagePower),
+                    FormatPercentage(counterData.pmc[0], counterData.activeCycles),
+                    string.Format("{0:F2} clk", counterData.pmc[0] / counterData.pmc[1]),
+                    FormatPercentage(counterData.pmc[2], counterData.activeCycles),
+                    string.Format("{0:F2} clk", counterData.pmc[2] / counterData.pmc[3])
                 };
             }
         }
@@ -537,19 +537,19 @@ namespace PmcReader.Intel
             private string[] computeMetrics(string label, NormalizedCoreCounterData counterData)
             {
                 return new string[] { label,
-                        FormatLargeNumber(counterData.activeCycles),
-                        FormatLargeNumber(counterData.instr),
-                        string.Format("{0:F2}", counterData.instr / counterData.activeCycles),
-                        string.Format("{0:F2} W", counterData.packagePower),
-                        string.Format("{0:F2} clk", counterData.pmc[1] / counterData.pmc[2]),
-                        string.Format("{0:F2}", counterData.pmc[1] / counterData.activeCycles),
-                        FormatLargeNumber(counterData.pmc[2] * 64),
-                        FormatPercentage(counterData.pmc[3], counterData.activeCycles),
-                        FormatPercentage(counterData.pmc[4], counterData.activeCycles),
-                        FormatPercentage(counterData.pmc[5], counterData.activeCycles),
-                        FormatPercentage(counterData.pmc[6], counterData.activeCycles),
-                        string.Format("{0:F2}", 1000 * counterData.pmc[7] / counterData.instr),
-                        string.Format("{0:F2} clk", counterData.pmc[5] / counterData.pmc[7])
+                    FormatLargeNumber(counterData.activeCycles),
+                    FormatLargeNumber(counterData.instr),
+                    string.Format("{0:F2}", counterData.instr / counterData.activeCycles),
+                    string.Format("{0:F2} W", counterData.packagePower),
+                    string.Format("{0:F2} clk", counterData.pmc[1] / counterData.pmc[2]),
+                    string.Format("{0:F2}", counterData.pmc[1] / counterData.activeCycles),
+                    FormatLargeNumber(counterData.pmc[2] * 64),
+                    FormatPercentage(counterData.pmc[3], counterData.activeCycles),
+                    FormatPercentage(counterData.pmc[4], counterData.activeCycles),
+                    FormatPercentage(counterData.pmc[5], counterData.activeCycles),
+                    FormatPercentage(counterData.pmc[6], counterData.activeCycles),
+                    string.Format("{0:F2}", 1000 * counterData.pmc[7] / counterData.instr),
+                    string.Format("{0:F2} clk", counterData.pmc[5] / counterData.pmc[7])
                 };
             }
         }
@@ -813,19 +813,19 @@ namespace PmcReader.Intel
             {
                 float feOps = counterData.pmc[0] + counterData.pmc[1] + counterData.pmc[2] + counterData.pmc[4];
                 return new string[] { label,
-                        FormatLargeNumber(counterData.activeCycles),
-                        FormatLargeNumber(counterData.instr),
-                        string.Format("{0:F2}", counterData.instr / counterData.activeCycles),
-                        string.Format("{0:F2} W", counterData.packagePower),
-                        FormatLargeNumber(counterData.instr / counterData.packagePower),
-                        FormatPercentage(counterData.pmc[4] - counterData.pmc[3], counterData.pmc[4]),
-                        string.Format("{0:F2}", 1000 * counterData.pmc[3] / counterData.instr),
-                        string.Format("{0:F2}", 1000 * counterData.pmc[0] / counterData.instr),
-                        FormatPercentage(counterData.pmc[2], counterData.activeCycles),
-                        FormatPercentage(counterData.pmc[3], counterData.activeCycles),
-                        FormatPercentage(counterData.pmc[5], counterData.activeCycles),
-                        FormatPercentage(counterData.pmc[6], counterData.activeCycles),
-                        FormatPercentage(counterData.pmc[6] - counterData.pmc[5], counterData.activeCycles)
+                    FormatLargeNumber(counterData.activeCycles),
+                    FormatLargeNumber(counterData.instr),
+                    string.Format("{0:F2}", counterData.instr / counterData.activeCycles),
+                    string.Format("{0:F2} W", counterData.packagePower),
+                    FormatLargeNumber(counterData.instr / counterData.packagePower),
+                    FormatPercentage(counterData.pmc[4] - counterData.pmc[3], counterData.pmc[4]),
+                    string.Format("{0:F2}", 1000 * counterData.pmc[3] / counterData.instr),
+                    string.Format("{0:F2}", 1000 * counterData.pmc[0] / counterData.instr),
+                    FormatPercentage(counterData.pmc[2], counterData.activeCycles),
+                    FormatPercentage(counterData.pmc[3], counterData.activeCycles),
+                    FormatPercentage(counterData.pmc[5], counterData.activeCycles),
+                    FormatPercentage(counterData.pmc[6], counterData.activeCycles),
+                    FormatPercentage(counterData.pmc[6] - counterData.pmc[5], counterData.activeCycles)
                 };
             }
         }
@@ -893,7 +893,7 @@ namespace PmcReader.Intel
             }
 
             public string[] columns = new string[] { "Item", "Active Cycles", "Instructions", "IPC", "PkgPower", "Instr/Watt",
-                "L2 Hitrate", "L2 MPKI", "L2 Hit BW", "L2 Fill BW", "L2 WB BW", "L2 Code Hitrate", "L2 Code MPKI", "L2 Code Hit BW", 
+                "L2 Hitrate", "L2 MPKI", "L2 Hit BW", "L2 Fill BW", "L2 WB BW", "L2 Code Hitrate", "L2 Code MPKI", "L2 Code Hit BW",
                 "L2 Dmd Data Hitrate", "L2 Dmd Data MPKI", "L2 Dmd Data Hit BW" };
 
             public string GetHelpText()
@@ -904,22 +904,22 @@ namespace PmcReader.Intel
             private string[] computeMetrics(string label, NormalizedCoreCounterData counterData)
             {
                 return new string[] { label,
-                        FormatLargeNumber(counterData.activeCycles),
-                        FormatLargeNumber(counterData.instr),
-                        string.Format("{0:F2}", counterData.instr / counterData.activeCycles),
-                        string.Format("{0:F2} W", counterData.packagePower),
-                        FormatLargeNumber(counterData.instr / counterData.packagePower),
-                        FormatPercentage(counterData.pmc[0] - counterData.pmc[1], counterData.pmc[0]),
-                        string.Format("{0:F2}", 1000 * counterData.pmc[1] / counterData.instr),
-                        FormatLargeNumber((counterData.pmc[0] - counterData.pmc[1]) * 64) + "B/s",
-                        FormatLargeNumber(counterData.pmc[2] * 64) + "B/s",
-                        FormatLargeNumber(counterData.pmc[3] * 64) + "B/s",
-                        FormatPercentage(counterData.pmc[4] - counterData.pmc[5], counterData.pmc[4]),
-                        string.Format("{0:F2}", 1000 * counterData.pmc[5] / counterData.instr),
-                        FormatLargeNumber((counterData.pmc[4] - counterData.pmc[5]) * 64) + "B/s",
-                        FormatPercentage(counterData.pmc[6], counterData.pmc[6] + counterData.pmc[7]),
-                        string.Format("{0:F2}", 1000 * counterData.pmc[7] / counterData.instr),
-                        FormatLargeNumber(counterData.pmc[6] * 64) + "B/s"
+                    FormatLargeNumber(counterData.activeCycles),
+                    FormatLargeNumber(counterData.instr),
+                    string.Format("{0:F2}", counterData.instr / counterData.activeCycles),
+                    string.Format("{0:F2} W", counterData.packagePower),
+                    FormatLargeNumber(counterData.instr / counterData.packagePower),
+                    FormatPercentage(counterData.pmc[0] - counterData.pmc[1], counterData.pmc[0]),
+                    string.Format("{0:F2}", 1000 * counterData.pmc[1] / counterData.instr),
+                    FormatLargeNumber((counterData.pmc[0] - counterData.pmc[1]) * 64) + "B/s",
+                    FormatLargeNumber(counterData.pmc[2] * 64) + "B/s",
+                    FormatLargeNumber(counterData.pmc[3] * 64) + "B/s",
+                    FormatPercentage(counterData.pmc[4] - counterData.pmc[5], counterData.pmc[4]),
+                    string.Format("{0:F2}", 1000 * counterData.pmc[5] / counterData.instr),
+                    FormatLargeNumber((counterData.pmc[4] - counterData.pmc[5]) * 64) + "B/s",
+                    FormatPercentage(counterData.pmc[6], counterData.pmc[6] + counterData.pmc[7]),
+                    string.Format("{0:F2}", 1000 * counterData.pmc[7] / counterData.instr),
+                    FormatLargeNumber(counterData.pmc[6] * 64) + "B/s"
                 };
             }
         }
@@ -998,17 +998,17 @@ namespace PmcReader.Intel
             {
                 float slots = counterData.pmc[6];
                 return new string[] { label,
-                        FormatLargeNumber(counterData.activeCycles),
-                        FormatLargeNumber(counterData.instr),
-                        string.Format("{0:F2}", counterData.instr / counterData.activeCycles),
-                        string.Format("{0:F2}", counterData.pmc[5] / counterData.activeCycles),
-                        string.Format("{0:F2} W", counterData.packagePower),
-                        FormatPercentage(counterData.pmc[0], slots),
-                        FormatPercentage(counterData.pmc[2] * 8, slots), // frontend latency bound slots
-                        FormatPercentage(counterData.pmc[1] - counterData.pmc[2] * 8, slots), // FE BW - FE latency bound
-                        FormatPercentage(counterData.pmc[3] - counterData.pmc[4], slots), // BE bound - BE mem bound
-                        FormatPercentage(counterData.pmc[4], slots), // BE mem bound
-                        FormatPercentage(counterData.pmc[5], slots)
+                    FormatLargeNumber(counterData.activeCycles),
+                    FormatLargeNumber(counterData.instr),
+                    string.Format("{0:F2}", counterData.instr / counterData.activeCycles),
+                    string.Format("{0:F2}", counterData.pmc[5] / counterData.activeCycles),
+                    string.Format("{0:F2} W", counterData.packagePower),
+                    FormatPercentage(counterData.pmc[0], slots),
+                    FormatPercentage(counterData.pmc[2] * 8, slots), // frontend latency bound slots
+                    FormatPercentage(counterData.pmc[1] - counterData.pmc[2] * 8, slots), // FE BW - FE latency bound
+                    FormatPercentage(counterData.pmc[3] - counterData.pmc[4], slots), // BE bound - BE mem bound
+                    FormatPercentage(counterData.pmc[4], slots), // BE mem bound
+                    FormatPercentage(counterData.pmc[5], slots)
                 };
             }
         }
@@ -1357,17 +1357,17 @@ namespace PmcReader.Intel
             {
                 float slots = counterData.activeCycles * 8;
                 return new string[] { label,
-                        FormatLargeNumber(counterData.activeCycles),
-                        FormatLargeNumber(counterData.instr),
-                        string.Format("{0:F2}", counterData.instr / counterData.activeCycles),
-                        string.Format("{0:F2} W", counterData.packagePower),
-                        FormatPercentage(counterData.pmc[0], counterData.pmc[0] + counterData.pmc[1]),
-                        string.Format("{0:F2}", 1000 *counterData.pmc[1] / counterData.instr),
-                        FormatPercentage(counterData.pmc[2], counterData.activeCycles),
-                        FormatPercentage(counterData.pmc[3], counterData.activeCycles),
-                        FormatPercentage(counterData.pmc[4], counterData.activeCycles),
-                        FormatPercentage(counterData.pmc[5], counterData.activeCycles * 8),
-                        FormatPercentage(counterData.pmc[6], counterData.activeCycles * 8)
+                    FormatLargeNumber(counterData.activeCycles),
+                    FormatLargeNumber(counterData.instr),
+                    string.Format("{0:F2}", counterData.instr / counterData.activeCycles),
+                    string.Format("{0:F2} W", counterData.packagePower),
+                    FormatPercentage(counterData.pmc[0], counterData.pmc[0] + counterData.pmc[1]),
+                    string.Format("{0:F2}", 1000 *counterData.pmc[1] / counterData.instr),
+                    FormatPercentage(counterData.pmc[2], counterData.activeCycles),
+                    FormatPercentage(counterData.pmc[3], counterData.activeCycles),
+                    FormatPercentage(counterData.pmc[4], counterData.activeCycles),
+                    FormatPercentage(counterData.pmc[5], counterData.activeCycles * 8),
+                    FormatPercentage(counterData.pmc[6], counterData.activeCycles * 8)
                 };
             }
         }
@@ -1980,14 +1980,14 @@ namespace PmcReader.Intel
             {
                 float slots = counterData.activeCycles * 8;
                 return new string[] { label,
-                        FormatLargeNumber(counterData.activeCycles),
-                        FormatLargeNumber(counterData.instr),
-                        string.Format("{0:F2}", counterData.instr / counterData.activeCycles),
-                        string.Format("{0:F2} W", counterData.packagePower),
-                        FormatPercentage(counterData.pmc[0], slots),
-                        FormatPercentage(counterData.pmc[1], slots),
-                        FormatPercentage(counterData.pmc[2], slots),
-                        FormatPercentage(counterData.pmc[3], counterData.activeCycles)
+                    FormatLargeNumber(counterData.activeCycles),
+                    FormatLargeNumber(counterData.instr),
+                    string.Format("{0:F2}", counterData.instr / counterData.activeCycles),
+                    string.Format("{0:F2} W", counterData.packagePower),
+                    FormatPercentage(counterData.pmc[0], slots),
+                    FormatPercentage(counterData.pmc[1], slots),
+                    FormatPercentage(counterData.pmc[2], slots),
+                    FormatPercentage(counterData.pmc[3], counterData.activeCycles)
                 };
             }
         }

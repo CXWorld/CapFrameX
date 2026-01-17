@@ -63,6 +63,10 @@
       <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
       <Name>CapFrameX.Contracts</Name>
     </ProjectReference>
+    <ProjectReference Include="..\source\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj">
+      <Project>{408c6e18-8ec6-42b2-bba6-c70bf7e5de2b}</Project>
+      <Name>LibreHardwareMonitorLib</Name>
+    </ProjectReference>
     <ProjectReference Include="PmcReader\PmcReader.csproj">
       <Project>{E43329E2-1CCB-4276-ADBC-D292EED22170}</Project>
       <Name>PmcReader</Name>

@@ -1,0 +1,83 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PmcReader.TestApp", "PmcReader.TestApp\PmcReader.TestApp.csproj", "{1B80C64F-16DA-4C79-9B78-2F7A7D167C31}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.PmcReader.Plugin", "CapFrameX.PmcReader.Plugin.csproj", "{B0703A6E-8C9B-4BD1-97E1-C9A64ED0AE34}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Contracts", "..\source\CapFrameX.Contracts\CapFrameX.Contracts.csproj", "{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Capture.Contracts", "..\source\CapFrameX.Capture.Contracts\CapFrameX.Capture.Contracts.csproj", "{5742C860-6313-4477-BF11-839C35AE5588}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Data.Session", "..\source\CapFrameX.Data.Session\CapFrameX.Data.Session.csproj", "{23377394-2809-49A9-BE1D-DBA4924D5DB6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Extensions.NetStandard", "..\source\CapFrameX.Extensions.NetStandard\CapFrameX.Extensions.NetStandard.csproj", "{1BFE8F85-AE96-4BA9-8189-0C7F6B3E58B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Monitoring.Contracts", "..\source\CapFrameX.Monitoring.Contracts\CapFrameX.Monitoring.Contracts.csproj", "{2F0D1227-BE4F-4501-B3A2-66A753ED742C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Statistics.NetStandard", "..\source\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj", "{CDE0DD60-954E-4726-AB7E-7B6BFCB2C383}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Extensions", "..\source\CapFrameX.Extensions\CapFrameX.Extensions.csproj", "{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibreHardwareMonitorLib", "..\source\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj", "{408C6E18-8EC6-42B2-BBA6-C70BF7E5DE2B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PmcReader", "PmcReader\PmcReader.csproj", "{E43329E2-1CCB-4276-ADBC-D292EED22170}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1B80C64F-16DA-4C79-9B78-2F7A7D167C31}.Debug|x64.ActiveCfg = Debug|x64
+		{1B80C64F-16DA-4C79-9B78-2F7A7D167C31}.Debug|x64.Build.0 = Debug|x64
+		{1B80C64F-16DA-4C79-9B78-2F7A7D167C31}.Release|x64.ActiveCfg = Release|x64
+		{1B80C64F-16DA-4C79-9B78-2F7A7D167C31}.Release|x64.Build.0 = Release|x64
+		{B0703A6E-8C9B-4BD1-97E1-C9A64ED0AE34}.Debug|x64.ActiveCfg = Debug|x64
+		{B0703A6E-8C9B-4BD1-97E1-C9A64ED0AE34}.Debug|x64.Build.0 = Debug|x64
+		{B0703A6E-8C9B-4BD1-97E1-C9A64ED0AE34}.Release|x64.ActiveCfg = Release|x64
+		{B0703A6E-8C9B-4BD1-97E1-C9A64ED0AE34}.Release|x64.Build.0 = Release|x64
+		{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}.Debug|x64.ActiveCfg = Debug|x64
+		{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}.Debug|x64.Build.0 = Debug|x64
+		{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}.Release|x64.ActiveCfg = Release|x64
+		{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}.Release|x64.Build.0 = Release|x64
+		{5742C860-6313-4477-BF11-839C35AE5588}.Debug|x64.ActiveCfg = Debug|x64
+		{5742C860-6313-4477-BF11-839C35AE5588}.Debug|x64.Build.0 = Debug|x64
+		{5742C860-6313-4477-BF11-839C35AE5588}.Release|x64.ActiveCfg = Release|x64
+		{5742C860-6313-4477-BF11-839C35AE5588}.Release|x64.Build.0 = Release|x64
+		{23377394-2809-49A9-BE1D-DBA4924D5DB6}.Debug|x64.ActiveCfg = Debug|x64
+		{23377394-2809-49A9-BE1D-DBA4924D5DB6}.Debug|x64.Build.0 = Debug|x64
+		{23377394-2809-49A9-BE1D-DBA4924D5DB6}.Release|x64.ActiveCfg = Release|x64
+		{23377394-2809-49A9-BE1D-DBA4924D5DB6}.Release|x64.Build.0 = Release|x64
+		{1BFE8F85-AE96-4BA9-8189-0C7F6B3E58B5}.Debug|x64.ActiveCfg = Debug|x64
+		{1BFE8F85-AE96-4BA9-8189-0C7F6B3E58B5}.Debug|x64.Build.0 = Debug|x64
+		{1BFE8F85-AE96-4BA9-8189-0C7F6B3E58B5}.Release|x64.ActiveCfg = Release|x64
+		{1BFE8F85-AE96-4BA9-8189-0C7F6B3E58B5}.Release|x64.Build.0 = Release|x64
+		{2F0D1227-BE4F-4501-B3A2-66A753ED742C}.Debug|x64.ActiveCfg = Debug|x64
+		{2F0D1227-BE4F-4501-B3A2-66A753ED742C}.Debug|x64.Build.0 = Debug|x64
+		{2F0D1227-BE4F-4501-B3A2-66A753ED742C}.Release|x64.ActiveCfg = Release|x64
+		{2F0D1227-BE4F-4501-B3A2-66A753ED742C}.Release|x64.Build.0 = Release|x64
+		{CDE0DD60-954E-4726-AB7E-7B6BFCB2C383}.Debug|x64.ActiveCfg = Debug|x64
+		{CDE0DD60-954E-4726-AB7E-7B6BFCB2C383}.Debug|x64.Build.0 = Debug|x64
+		{CDE0DD60-954E-4726-AB7E-7B6BFCB2C383}.Release|x64.ActiveCfg = Release|x64
+		{CDE0DD60-954E-4726-AB7E-7B6BFCB2C383}.Release|x64.Build.0 = Release|x64
+		{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}.Debug|x64.ActiveCfg = Debug|x64
+		{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}.Debug|x64.Build.0 = Debug|x64
+		{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}.Release|x64.ActiveCfg = Release|x64
+		{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}.Release|x64.Build.0 = Release|x64
+		{408C6E18-8EC6-42B2-BBA6-C70BF7E5DE2B}.Debug|x64.ActiveCfg = Debug|x64
+		{408C6E18-8EC6-42B2-BBA6-C70BF7E5DE2B}.Debug|x64.Build.0 = Debug|x64
+		{408C6E18-8EC6-42B2-BBA6-C70BF7E5DE2B}.Release|x64.ActiveCfg = Release|x64
+		{408C6E18-8EC6-42B2-BBA6-C70BF7E5DE2B}.Release|x64.Build.0 = Release|x64
+		{E43329E2-1CCB-4276-ADBC-D292EED22170}.Debug|x64.ActiveCfg = Debug|x64
+		{E43329E2-1CCB-4276-ADBC-D292EED22170}.Debug|x64.Build.0 = Debug|x64
+		{E43329E2-1CCB-4276-ADBC-D292EED22170}.Release|x64.ActiveCfg = Release|x64
+		{E43329E2-1CCB-4276-ADBC-D292EED22170}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
+

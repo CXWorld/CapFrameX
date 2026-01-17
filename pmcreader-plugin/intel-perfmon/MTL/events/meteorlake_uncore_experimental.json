@@ -1,0 +1,44 @@
+{
+  "Header": {
+    "Copyright": "Copyright (c) 2001 - 2025 Intel Corporation. All rights reserved.",
+    "Info": "Performance Monitoring Events for Intel(R) Core(TM) processors based on Meteor Lake performance hybrid architecture - V1.19",
+    "DatePublished": "11/17/2025",
+    "Version": "1.19",
+    "Legend": ""
+  },
+  "Events": [
+    {
+      "Unit": "iMC",
+      "EventCode": "0x19",
+      "UMask": "0x00",
+      "EventName": "UNC_M_DRAM_THERMAL_HOT",
+      "BriefDescription": "Any Rank at Hot state",
+      "PublicDescription": "Any Rank at Hot state",
+      "Counter": "0,1,2,3,4",
+      "Deprecated": "0",
+      "CounterType": "PGMABLE"
+    },
+    {
+      "Unit": "iMC",
+      "EventCode": "0x1A",
+      "UMask": "0x00",
+      "EventName": "UNC_M_DRAM_THERMAL_WARM",
+      "BriefDescription": "Any Rank at Warm state",
+      "PublicDescription": "Any Rank at Warm state",
+      "Counter": "0,1,2,3,4",
+      "Deprecated": "0",
+      "CounterType": "PGMABLE"
+    },
+    {
+      "Unit": "HAC_ARB",
+      "EventCode": "0x84",
+      "UMask": "0x01",
+      "EventName": "UNC_HAC_ARB_COH_TRK_REQUESTS.ALL",
+      "BriefDescription": "Number of entries allocated. Account for Any type: e.g. Snoop,  etc.",
+      "PublicDescription": "Number of entries allocated. Account for Any type: e.g. Snoop,  etc.",
+      "Counter": "0,1",
+      "Deprecated": "0",
+      "CounterType": "PGMABLE"
+    }
+  ]
+}

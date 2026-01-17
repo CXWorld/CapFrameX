@@ -1,0 +1,11 @@
+Family-model,Version,Filename,EventType,Core Type,Native Model ID,Core Role Name
+GenuineIntel-6-8F,V1.14,/SPR/events/sapphirerapids_core.json,core,,,
+GenuineIntel-6-8F,V1.14,/SPR/events/sapphirerapids_uncore.json,uncore,,,
+GenuineIntel-6-8F,V1.14,/SPR/events/sapphirerapids_uncore_experimental.json,uncore experimental,,,
+GenuineIntel-6-CF,V1.14,/SPR/events/sapphirerapids_core.json,core,,,
+GenuineIntel-6-6A,V1.21,/ICX/events/icelakex_core.json,core,,,
+GenuineIntel-6-6A,V1.21,/ICX/events/icelakex_uncore.json,uncore,,,
+GenuineIntel-6-6A,V1.21,/ICX/events/icelakex_uncore_experimental.json,uncore experimental,,,
+GenuineIntel-6-6C,V1.22,/ICX/events/icelakex_core.json,core,,,
+GenuineIntel-6-6C,V1.21,/ICX/events/icelakex_uncore.json,uncore,,,
+GenuineIntel-6-6C,V1.21,/ICX/events/icelakex_uncore_experimental.json,uncore experimental,,,

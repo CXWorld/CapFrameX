@@ -1,0 +1,25 @@
+# Default owner. Later matches take precedence. Refer to the below link for additional details.
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+* @edwarddavidbaker
+
+# TMA and Atom TMA.
+TMA_Metrics* @anton-hanna @vdaneti
+Atom_TMA* @claudiaromo @rpmclaug
+E-core_TMA* @claudiaromo @rpmclaug
+
+# Platform metrics.
+**/metrics @1perrytaylor @calebbiggers @kshiprab
+
+# Platform events.
+**/events @edwarddavidbaker @kshiprab
+
+# Create Perf JSON scripting. 
+scripts/create_perf_json.py @captain5050 @tlfalcon @dapeng-mi
+scripts/metric.py @captain5050 @tlfalcon @dapeng-mi
+scripts/config/perf*.csv @captain5050 @tlfalcon @dapeng-mi
+scripts/unittesting/metric_test.py @captain5050 @tlfalcon @dapeng-mi
+
+# Perf converter scripting.
+scripts/perf_format_converter.py @1perrytaylor @calebbiggers
+scripts/config/replacements_config.json @1perrytaylor @calebbiggers
+scripts/unittesting/test_perf_format_converter.py @1perrytaylor @calebbiggers
