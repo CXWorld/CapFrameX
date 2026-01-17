@@ -26,7 +26,8 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly int _clockVersion;
     private readonly Sensor[] _controls;
     private readonly string _d3dDeviceId;
-    private readonly NvApi.NvDisplayHandle? _displayHandle;
+    private NvApi.NvDisplayHandle? _displayHandle;
+    private readonly IReadOnlyList<NvDisplayHandleInfo> _displayHandleInfos;
     private readonly Control[] _fanControls;
     private readonly Sensor[] _fans;
     private readonly Sensor _gpuDedicatedMemoryUsage;
@@ -51,13 +52,15 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor[] _temperatures;
     private readonly uint _thermalSensorsMask;
     private readonly Sensor _monitorRefreshRate;
+    private string _activeDisplayDeviceName;
 
-    public NvidiaGpu(int adapterIndex, NvApi.NvPhysicalGpuHandle handle, NvApi.NvDisplayHandle? displayHandle, ISettings settings)
+    public NvidiaGpu(int adapterIndex, NvApi.NvPhysicalGpuHandle handle, IReadOnlyList<NvDisplayHandleInfo> displayHandles, ISettings settings)
         : base(GetName(handle), new Identifier("gpu-nvidia", adapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
     {
         _adapterIndex = adapterIndex;
         _handle = handle;
-        _displayHandle = displayHandle;
+        _displayHandleInfos = displayHandles ?? Array.Empty<NvDisplayHandleInfo>();
+        _displayHandle = _displayHandleInfos.Count > 0 ? _displayHandleInfos[0].Handle : null;
         _stopwatch = new Stopwatch();
 
         bool hasBusId = NvApi.NvAPI_GPU_GetBusId(handle, out uint busId) == NvApi.NvStatus.OK;
@@ -350,13 +353,16 @@ internal sealed class NvidiaGpu : GenericGpu
         }
 
         // Monitor Refresh Rate
-        NvApi.NvStatus pCounterStatus = NvApi.NvAPI_GetVBlankCounter(displayHandle.Value, out uint pCounter);
-        if (pCounterStatus == NvApi.NvStatus.OK)
+        if (_displayHandle.HasValue && NvApi.NvAPI_GetVBlankCounter != null)
         {
-            _monitorRefreshRate = new Sensor("Monitor Refresh Rate", 0, SensorType.Frequency, this, settings)
-            { PresentationSortKey = $"{adapterIndex}_9" };
-            _monitorRefreshRate.Value = 0;
-            ActivateSensor(_monitorRefreshRate);
+            NvApi.NvStatus pCounterStatus = NvApi.NvAPI_GetVBlankCounter(_displayHandle.Value, out uint pCounter);
+            if (pCounterStatus == NvApi.NvStatus.OK)
+            {
+                _monitorRefreshRate = new Sensor("Monitor Refresh Rate", 0, SensorType.Frequency, this, settings)
+                { PresentationSortKey = $"{adapterIndex}_9" };
+                _monitorRefreshRate.Value = 0;
+                ActivateSensor(_monitorRefreshRate);
+            }
         }
 
         if (NvidiaML.IsAvailable || NvidiaML.Initialize())
@@ -505,6 +511,8 @@ internal sealed class NvidiaGpu : GenericGpu
 
     public override void Update()
     {
+        UpdateDisplayHandleIfNeeded();
+
         if (_d3dDeviceId != null && D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
         {
             _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024 / 1024;
@@ -708,7 +716,7 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        if (_monitorRefreshRate is not null)
+        if (_monitorRefreshRate is not null && _displayHandle.HasValue)
         {
             NvApi.NvStatus blankCounterStatus = NvApi.NvAPI_GetVBlankCounter(_displayHandle.Value, out uint blankCounter);
             if (blankCounterStatus == NvApi.NvStatus.OK)
@@ -1300,6 +1308,82 @@ internal sealed class NvidiaGpu : GenericGpu
         NvApi.NvUtilizationDomain.BusInterface => "GPU Bus",
         _ => null
     };
+
+    private void UpdateDisplayHandleIfNeeded()
+    {
+        string displayDeviceName;
+        lock (_displayLock)
+        {
+            displayDeviceName = _displayDeviceName;
+        }
+
+        if (string.Equals(displayDeviceName, _activeDisplayDeviceName, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        NvApi.NvDisplayHandle? selectedHandle = SelectDisplayHandle(displayDeviceName);
+
+        lock (_displayLock)
+        {
+            if (string.Equals(displayDeviceName, _activeDisplayDeviceName, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            _activeDisplayDeviceName = displayDeviceName;
+            if (!HandlesEqual(_displayHandle, selectedHandle))
+            {
+                _displayHandle = selectedHandle;
+                _lastBlankCounter = 0;
+                _stopwatch.Reset();
+                _refreshRateBuffer.Clear();
+            }
+        }
+    }
+
+    private NvApi.NvDisplayHandle? SelectDisplayHandle(string displayDeviceName)
+    {
+        if (_displayHandleInfos.Count == 0)
+            return null;
+
+        if (string.IsNullOrWhiteSpace(displayDeviceName))
+            return _displayHandleInfos[0].Handle;
+
+        string normalizedDeviceName = NormalizeDisplayName(displayDeviceName);
+        for (int i = 0; i < _displayHandleInfos.Count; i++)
+        {
+            string normalizedHandleName = NormalizeDisplayName(_displayHandleInfos[i].DisplayName);
+            if (normalizedHandleName != null &&
+                string.Equals(normalizedHandleName, normalizedDeviceName, StringComparison.OrdinalIgnoreCase))
+            {
+                return _displayHandleInfos[i].Handle;
+            }
+        }
+
+        return _displayHandleInfos[0].Handle;
+    }
+
+    private static string NormalizeDisplayName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return null;
+
+        string trimmed = name.Trim();
+        if (!trimmed.StartsWith(@"\\.\", StringComparison.OrdinalIgnoreCase) &&
+            trimmed.StartsWith("DISPLAY", StringComparison.OrdinalIgnoreCase))
+        {
+            trimmed = @"\\.\\" + trimmed;
+        }
+
+        return trimmed.ToUpperInvariant();
+    }
+
+    private static bool HandlesEqual(NvApi.NvDisplayHandle? left, NvApi.NvDisplayHandle? right)
+    {
+        if (!left.HasValue && !right.HasValue)
+            return true;
+        if (!left.HasValue || !right.HasValue)
+            return false;
+
+        return left.Value.Equals(right.Value);
+    }
 
     private void ControlModeChanged(IControl control)
     {

@@ -122,26 +122,13 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             {
                 // Get a monitor handle ("HMONITOR") for the window. 
                 // If the window is straddling more than one monitor, Windows will pick the "best" one.
-                IntPtr hmonitor = MonitorFromWindow(_hwnd, MONITOR_DEFAULTTONEAREST);
-                if (hmonitor == IntPtr.Zero)
-                {
-                    return 0;
-                }
-
-                // Get more information about the monitor.
-                MONITORINFOEXW monitorInfo = new MONITORINFOEXW
-                {
-                    cbSize = (uint)Marshal.SizeOf<MONITORINFOEXW>()
-                };
-
-                bool bResult = GetMonitorInfoW(hmonitor, ref monitorInfo);
-                if (!bResult)
+                if (!TryGetMonitorInfo(out MONITORINFOEXW monitorInfo))
                 {
                     return 0;
                 }
 
                 // Get display settings from Windows API
-                bResult = EnumDisplaySettingsW(monitorInfo.szDevice, ENUM_CURRENT_SETTINGS, out DEVMODEW devMode);
+                bool bResult = EnumDisplaySettingsW(monitorInfo.szDevice, ENUM_CURRENT_SETTINGS, out DEVMODEW devMode);
                 if (!bResult)
                 {
                     return 0;
@@ -155,6 +142,39 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             }
 
             return refreshRate;
+        }
+
+        public string GetDisplayDeviceName()
+        {
+            try
+            {
+                if (TryGetMonitorInfo(out MONITORINFOEXW monitorInfo))
+                {
+                    return monitorInfo.szDevice;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, $"Error while getting monitor device name.");
+            }
+
+            return null;
+        }
+
+        private bool TryGetMonitorInfo(out MONITORINFOEXW monitorInfo)
+        {
+            monitorInfo = new MONITORINFOEXW
+            {
+                cbSize = (uint)Marshal.SizeOf<MONITORINFOEXW>()
+            };
+
+            IntPtr hmonitor = MonitorFromWindow(_hwnd, MONITOR_DEFAULTTONEAREST);
+            if (hmonitor == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            return GetMonitorInfoW(hmonitor, ref monitorInfo);
         }
     }
 }

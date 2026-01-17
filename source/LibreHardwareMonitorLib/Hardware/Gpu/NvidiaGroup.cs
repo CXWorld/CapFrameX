@@ -48,7 +48,7 @@ internal class NvidiaGroup : IGroup
             return;
         }
 
-        IDictionary<NvApi.NvPhysicalGpuHandle, NvApi.NvDisplayHandle> displayHandles = new Dictionary<NvApi.NvPhysicalGpuHandle, NvApi.NvDisplayHandle>();
+        IDictionary<NvApi.NvPhysicalGpuHandle, List<NvDisplayHandleInfo>> displayHandles = new Dictionary<NvApi.NvPhysicalGpuHandle, List<NvDisplayHandleInfo>>();
         if (NvApi.NvAPI_EnumNvidiaDisplayHandle != null && NvApi.NvAPI_GetPhysicalGPUsFromDisplay != null)
         {
             status = NvApi.NvStatus.OK;
@@ -61,13 +61,25 @@ internal class NvidiaGroup : IGroup
 
                 if (status == NvApi.NvStatus.OK)
                 {
+                    string displayName = null;
+                    if (NvApi.NvAPI_GetAssociatedDisplayName != null)
+                    {
+                        if (NvApi.GetAssociatedDisplayName(displayHandle, out string associatedDisplayName) == NvApi.NvStatus.OK)
+                            displayName = associatedDisplayName;
+                    }
+
                     NvApi.NvPhysicalGpuHandle[] handlesFromDisplay = new NvApi.NvPhysicalGpuHandle[NvApi.MAX_PHYSICAL_GPUS];
                     if (NvApi.NvAPI_GetPhysicalGPUsFromDisplay(displayHandle, handlesFromDisplay, out uint countFromDisplay) == NvApi.NvStatus.OK)
                     {
                         for (int j = 0; j < countFromDisplay; j++)
                         {
-                            if (!displayHandles.ContainsKey(handlesFromDisplay[j]))
-                                displayHandles.Add(handlesFromDisplay[j], displayHandle);
+                            if (!displayHandles.TryGetValue(handlesFromDisplay[j], out List<NvDisplayHandleInfo> handlesForGpu))
+                            {
+                                handlesForGpu = new List<NvDisplayHandleInfo>();
+                                displayHandles.Add(handlesFromDisplay[j], handlesForGpu);
+                            }
+
+                            handlesForGpu.Add(new NvDisplayHandleInfo(displayHandle, displayName));
                         }
                     }
                 }
@@ -79,8 +91,8 @@ internal class NvidiaGroup : IGroup
 
         for (int i = 0; i < count; i++)
         {
-            displayHandles.TryGetValue(handles[i], out NvApi.NvDisplayHandle displayHandle);
-            _hardware.Add(new NvidiaGpu(i, handles[i], displayHandle, settings));
+            displayHandles.TryGetValue(handles[i], out List<NvDisplayHandleInfo> displayHandleInfos);
+            _hardware.Add(new NvidiaGpu(i, handles[i], displayHandleInfos, settings));
         }
 
         _report.AppendLine();
