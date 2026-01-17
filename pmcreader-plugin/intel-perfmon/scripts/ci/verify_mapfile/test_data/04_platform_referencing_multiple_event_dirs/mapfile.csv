@@ -1,0 +1,13 @@
+Family-model,Version,Filename,EventType,Core Type,Native Model ID,Core Role Name
+GenuineIntel-6-3C,V33,/HSW/events/haswell_core.json,core,,,
+GenuineIntel-6-45,V33,/HSW/events/haswell_core.json,core,,,
+GenuineIntel-6-46,V33,/HSW/events/haswell_core.json,core,,,
+GenuineIntel-6-3C,V33,/HSW/events/haswell_matrix.json,offcore,,,
+GenuineIntel-6-45,V33,/HSW/events/haswell_matrix.json,offcore,,,
+GenuineIntel-6-46,V33,/HSW/events/haswell_matrix.json,offcore,,,
+GenuineIntel-6-3C,V33,/HSW/events/haswell_uncore.json,uncore,,,
+GenuineIntel-6-45,V33,/HSW/events/haswell_uncore.json,uncore,,,
+GenuineIntel-6-46,V33,/HSW/events/haswell_uncore.json,uncore,,,
+GenuineIntel-6-3F,V27,/HSX/events/haswellx_core.json,core,,,
+GenuineIntel-6-3C,V27,/HSX/events/haswellx_matrix.json,offcore,,,
+GenuineIntel-6-3F,V27,/HSX/events/haswellx_uncore.json,uncore,,,

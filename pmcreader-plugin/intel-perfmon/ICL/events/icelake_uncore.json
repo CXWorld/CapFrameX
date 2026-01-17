@@ -1,0 +1,50 @@
+{
+  "Header": {
+    "Copyright": "Copyright (c) 2001 - 2024 Intel Corporation. All rights reserved.",
+    "Info": "Performance Monitoring Events for 10th Generation Intel(R) Core(TM) Processor - V1.24",
+    "DatePublished": "10/10/2024",
+    "Version": "1.24",
+    "Legend": ""
+  },
+  "Events": [
+    {
+      "Unit": "ARB",
+      "EventCode": "0x81",
+      "UMask": "0x01",
+      "EventName": "UNC_ARB_TRK_REQUESTS.ALL",
+      "BriefDescription": "Total number of all outgoing entries allocated. Accounts for Coherent and non-coherent traffic.",
+      "PublicDescription": "Total number of all outgoing entries allocated. Accounts for Coherent and non-coherent traffic.",
+      "Counter": "1",
+      "CounterMask": "0",
+      "Invert": "0",
+      "EdgeDetect": "0",
+      "Deprecated": "0"
+    },
+    {
+      "Unit": "ARB",
+      "EventCode": "0x84",
+      "UMask": "0x01",
+      "EventName": "UNC_ARB_COH_TRK_REQUESTS.ALL",
+      "BriefDescription": "Number of entries allocated. Account for Any type: e.g. Snoop,  etc.",
+      "PublicDescription": "Number of entries allocated. Account for Any type: e.g. Snoop,  etc.",
+      "Counter": "1",
+      "CounterMask": "0",
+      "Invert": "0",
+      "EdgeDetect": "0",
+      "Deprecated": "0"
+    },
+    {
+      "Unit": "NCU",
+      "EventCode": "0x00",
+      "UMask": "0x01",
+      "EventName": "UNC_CLOCK.SOCKET",
+      "BriefDescription": "This 48-bit fixed counter counts the UCLK cycles.",
+      "PublicDescription": "This 48-bit fixed counter counts the UCLK cycles.",
+      "Counter": "FIXED",
+      "CounterMask": "0",
+      "Invert": "0",
+      "EdgeDetect": "0",
+      "Deprecated": "0"
+    }
+  ]
+}

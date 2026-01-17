@@ -1,0 +1,1 @@
+bandit[sarif]==1.9.2

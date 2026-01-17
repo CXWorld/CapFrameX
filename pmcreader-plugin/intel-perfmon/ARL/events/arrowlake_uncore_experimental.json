@@ -1,0 +1,35 @@
+{
+  "Header": {
+    "Copyright": "Copyright (c) 2001 - 2025 Intel Corporation. All rights reserved.",
+    "Info": "Performance Monitoring Events for Intel(R) Core(TM) processors based on Arrow Lake performance hybrid architecture - V1.15",
+    "DatePublished": "11/20/2025",
+    "Version": "1.15",
+    "Legend": ""
+  },
+  "Events": [
+    {
+      "Unit": "iMC",
+      "EventCode": "0x19",
+      "UMask": "0x00",
+      "UMaskExt": "0x00",
+      "EventName": "UNC_M_DRAM_THERMAL_HOT",
+      "BriefDescription": "Any Rank at Hot state",
+      "PublicDescription": "Any Rank at Hot state",
+      "Counter": "0,1,2,3,4",
+      "Deprecated": "0",
+      "CounterType": "PGMABLE"
+    },
+    {
+      "Unit": "iMC",
+      "EventCode": "0x1A",
+      "UMask": "0x00",
+      "UMaskExt": "0x00",
+      "EventName": "UNC_M_DRAM_THERMAL_WARM",
+      "BriefDescription": "Any Rank at Warm state",
+      "PublicDescription": "Any Rank at Warm state",
+      "Counter": "0,1,2,3,4",
+      "Deprecated": "0",
+      "CounterType": "PGMABLE"
+    }
+  ]
+}

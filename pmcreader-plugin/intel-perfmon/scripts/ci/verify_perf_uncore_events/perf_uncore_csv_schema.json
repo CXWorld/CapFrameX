@@ -1,0 +1,75 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Perfmon Events perf-uncore-events-*.csv Schema",
+    "description": "A schema for validating https://github.com/intel/perfmon/tree/main/scripts/config",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "anyOf": [
+                    {
+                        "pattern": "^[A-Za-z0-9_.]+$"
+                    },
+                    {
+                        "pattern": "^[A-Z0-9_.]+:u0x[0-9A-F]+$"
+                    }
+                ]
+            },
+            "new_name": {
+                "type": "string",
+                "anyOf": [
+                    {
+                        "pattern": "^[A-Z0-9_.]+$"
+                    },
+                    {
+                        "const": ""
+                    }
+                ]
+            },
+            "description": {
+                "type": "string"
+            },
+            "filter": {
+                "type": "string"
+            },
+            "scale": {
+                "type": "string",
+                "anyOf": [
+                    {
+                        "pattern": "^[0-9]+$"
+                    },
+                    {
+                        "pattern": "^[0-9]+\\(ns\\)$"
+                    },
+                    {
+                        "pattern": "^[0-9.]+E-[0-9]+$"
+                    },
+                    {
+                        "pattern": "^[0-9.]+E-[0-9]+\\((MB|MiB)/sec\\)$"
+                    },
+                    {
+                        "const": ""
+                    }
+                ]
+            },
+            "formula": {
+                "type": "string"
+            },
+            "comment": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "name",
+            "new_name",
+            "description",
+            "filter",
+            "scale",
+            "formula",
+            "comment"
+        ],
+        "additionalProperties": false
+    }
+}

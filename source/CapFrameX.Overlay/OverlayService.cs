@@ -151,8 +151,8 @@ namespace CapFrameX.Overlay
                            if (sensorData.Item2.Any())
                                UpdateOverlayEntries(sensorData.Item2);
 
-                               if (_overlayEntryCore.OverlayEntryDict.Values.Any())
-                                   _onDictionaryUpdated.OnNext(_overlayEntryCore.OverlayEntryDict.Values.ToArray());
+                           if (_overlayEntryCore.OverlayEntryDict.Values.Any())
+                               _onDictionaryUpdated.OnNext(_overlayEntryCore.OverlayEntryDict.Values.ToArray());
                        });
                 });
 
@@ -490,6 +490,9 @@ namespace CapFrameX.Overlay
                 case SensorType.Frequency:
                     formatString = "{0,5:F0}";
                     break;
+                case SensorType.Timing:
+                    formatString = "{0,5:F1}";
+                    break;
             }
 
             return formatString;
@@ -542,6 +545,9 @@ namespace CapFrameX.Overlay
                     break;
                 case SensorType.Frequency:
                     formatString = "Hz ";
+                    break;
+                case SensorType.Timing:
+                    formatString = "ns ";
                     break;
             }
 
@@ -698,6 +704,9 @@ namespace CapFrameX.Overlay
                     break;
                 case SensorType.Frequency:
                     description = $"{sensor.Name} (Hz)";
+                    break;
+                case SensorType.Timing:
+                    description = $"{sensor.Name} (ns)";
                     break;
             }
 

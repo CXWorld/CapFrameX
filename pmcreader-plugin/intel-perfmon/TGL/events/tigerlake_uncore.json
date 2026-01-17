@@ -1,0 +1,121 @@
+{
+  "Header": {
+    "Copyright": "Copyright (c) 2001 - 2025 Intel Corporation. All rights reserved.",
+    "Info": "Performance Monitoring Events for 11th Generation Intel(R) Core(TM) Processor - V1.19",
+    "DatePublished": "08/27/2025",
+    "Version": "1.19",
+    "Legend": ""
+  },
+  "Events": [
+    {
+      "Unit": "ARB",
+      "EventCode": "0x81",
+      "UMask": "0x01",
+      "EventName": "UNC_ARB_TRK_REQUESTS.ALL",
+      "BriefDescription": "Total number of all outgoing entries allocated. Accounts for Coherent and non-coherent traffic.",
+      "PublicDescription": "Total number of all outgoing entries allocated. Accounts for Coherent and non-coherent traffic.",
+      "Counter": "0,1",
+      "Deprecated": "0",
+      "CounterType": "PGMABLE"
+    },
+    {
+      "Unit": "ARB",
+      "EventCode": "0x84",
+      "UMask": "0x01",
+      "EventName": "UNC_ARB_COH_TRK_REQUESTS.ALL",
+      "BriefDescription": "Number of entries allocated. Account for Any type: e.g. Snoop,  etc.",
+      "PublicDescription": "Number of entries allocated. Account for Any type: e.g. Snoop,  etc.",
+      "Counter": "0,1",
+      "Deprecated": "0",
+      "CounterType": "PGMABLE"
+    },
+    {
+      "Unit": "NCU",
+      "EventCode": "0x00",
+      "UMask": "0x01",
+      "EventName": "UNC_CLOCK.SOCKET",
+      "BriefDescription": "This 48-bit fixed counter counts the UCLK cycles.",
+      "PublicDescription": "This 48-bit fixed counter counts the UCLK cycles.",
+      "Counter": "FIXED",
+      "Deprecated": "0",
+      "CounterType": "PGMABLE"
+    },
+    {
+      "Unit": "imc",
+      "EventCode": "0x00",
+      "UMask": "0x00",
+      "EventName": "UNC_MC0_TOTAL_REQCOUNT_FREERUN",
+      "BriefDescription": "Counts every 64B read and write request entering the Memory Controller to DRAM (sum of all channels). Each write request counts as a new request incrementing this counter. However, same cache line write requests (both full and partial) are combined to a single 64 byte data transfer to DRAM.",
+      "PublicDescription": "Counts every 64B read and write request entering the Memory Controller to DRAM (sum of all channels). Each write request counts as a new request incrementing this counter. However, same cache line write requests (both full and partial) are combined to a single 64 byte data transfer to DRAM.",
+      "Counter": "0",
+      "Deprecated": "0",
+      "CounterType": "FREERUN"
+    },
+    {
+      "Unit": "imc",
+      "EventCode": "0x00",
+      "UMask": "0x00",
+      "EventName": "UNC_MC0_RDCAS_COUNT_FREERUN",
+      "BriefDescription": "Counts every read (RdCAS) issued by the Memory Controller to DRAM (sum of all channels). All requests result in 64 byte data transfers from DRAM.",
+      "PublicDescription": "Counts every read (RdCAS) issued by the Memory Controller to DRAM (sum of all channels). All requests result in 64 byte data transfers from DRAM.",
+      "Counter": "1",
+      "Deprecated": "0",
+      "CounterType": "FREERUN"
+    },
+    {
+      "Unit": "imc",
+      "EventCode": "0x00",
+      "UMask": "0x00",
+      "EventName": "UNC_MC0_WRCAS_COUNT_FREERUN",
+      "BriefDescription": "Counts every write (WrCAS) issued by the Memory Controller to DRAM (sum of all channels). All requests result in 64 byte data transfers from DRAM.",
+      "PublicDescription": "Counts every write (WrCAS) issued by the Memory Controller to DRAM (sum of all channels). All requests result in 64 byte data transfers from DRAM.",
+      "Counter": "2",
+      "Deprecated": "0",
+      "CounterType": "FREERUN"
+    },
+    {
+      "Unit": "imc",
+      "EventCode": "0x00",
+      "UMask": "0x00",
+      "EventName": "UNC_MC1_TOTAL_REQCOUNT_FREERUN",
+      "BriefDescription": "Counts every 64B read and write request entering the Memory Controller to DRAM (sum of all channels). Each write request counts as a new request incrementing this counter. However, same cache line write requests (both full and partial) are combined to a single 64 byte data transfer to DRAM.",
+      "PublicDescription": "Counts every 64B read and write request entering the Memory Controller to DRAM (sum of all channels). Each write request counts as a new request incrementing this counter. However, same cache line write requests (both full and partial) are combined to a single 64 byte data transfer to DRAM.",
+      "Counter": "3",
+      "Deprecated": "0",
+      "CounterType": "FREERUN"
+    },
+    {
+      "Unit": "imc",
+      "EventCode": "0x00",
+      "UMask": "0x00",
+      "EventName": "UNC_MC1_RDCAS_COUNT_FREERUN",
+      "BriefDescription": "Counts every read (RdCAS) issued by the Memory Controller to DRAM (sum of all channels). All requests result in 64 byte data transfers from DRAM.",
+      "PublicDescription": "Counts every read (RdCAS) issued by the Memory Controller to DRAM (sum of all channels). All requests result in 64 byte data transfers from DRAM.",
+      "Counter": "4",
+      "Deprecated": "0",
+      "CounterType": "FREERUN"
+    },
+    {
+      "Unit": "imc",
+      "EventCode": "0x00",
+      "UMask": "0x00",
+      "EventName": "UNC_MC1_WRCAS_COUNT_FREERUN",
+      "BriefDescription": "Counts every write (WrCAS) issued by the Memory Controller to DRAM (sum of all channels). All requests result in 64 byte data transfers from DRAM.",
+      "PublicDescription": "Counts every write (WrCAS) issued by the Memory Controller to DRAM (sum of all channels). All requests result in 64 byte data transfers from DRAM.",
+      "Counter": "5",
+      "Deprecated": "0",
+      "CounterType": "FREERUN"
+    },
+    {
+      "Unit": "ARB",
+      "EventCode": "0x80",
+      "UMask": "0x01",
+      "EventName": "UNC_ARB_TRK_OCCUPANCY.ALL",
+      "BriefDescription": "Each cycle count number of all outgoing valid entries in ReqTrk. Such entry is defined as valid from it's allocation in ReqTrk till deallocation. Accounts for Coherent and non-coherent traffic.",
+      "PublicDescription": "Each cycle count number of all outgoing valid entries in ReqTrk. Such entry is defined as valid from it's allocation in ReqTrk till deallocation. Accounts for Coherent and non-coherent traffic.",
+      "Counter": "0",
+      "Deprecated": "0",
+      "CounterType": "PGMABLE"
+    }
+  ]
+}

@@ -32,6 +32,25 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
@@ -73,7 +92,6 @@
     <Compile Include="AMD\Zen5L3Cache.cs" />
     <Compile Include="AMD\Zen4L3Cache.cs" />
     <Compile Include="AMD\Zen5.cs" />
-    <Compile Include="AMD\Zen5L3Cache.cs" />
     <Compile Include="AMD\ZenL3Cache.cs" />
     <Compile Include="AMD\Zen2L3Cache.cs" />
     <Compile Include="Cpu.cs" />
@@ -112,6 +130,7 @@
     <Compile Include="Interop\OpCode.cs" />
     <Compile Include="Interop\Ring0.cs" />
     <Compile Include="Interop\ThreadAffinity.cs" />
+    <Compile Include="PmcReaderInterop.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="HaswellForm.resx">
