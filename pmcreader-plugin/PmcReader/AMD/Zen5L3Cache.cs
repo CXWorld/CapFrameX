@@ -18,9 +18,15 @@ namespace PmcReader.AMD
             architectureName = "Zen 5 L3";
             ccxSampleThreads = new Dictionary<int, int>();
             allCcxThreads = new Dictionary<int, List<int>>();
+            Dictionary<int, int> ccxIndexMap = new Dictionary<int, int>();
             for (int threadIdx = 0; threadIdx < GetThreadCount(); threadIdx++)
             {
-                int ccxIdx = Get19hCcxId(threadIdx);
+                int rawCcxIdx = Get1AhCcxId(threadIdx);
+                if (!ccxIndexMap.TryGetValue(rawCcxIdx, out int ccxIdx))
+                {
+                    ccxIdx = ccxIndexMap.Count;
+                    ccxIndexMap.Add(rawCcxIdx, ccxIdx);
+                }
                 ccxSampleThreads[ccxIdx] = threadIdx;
                 List<int> ccxThreads;
                 if (! allCcxThreads.TryGetValue(ccxIdx, out ccxThreads))
@@ -130,12 +136,12 @@ namespace PmcReader.AMD
                 ulong L3MissPerfCtl = Get1AhL3PerfCtlValue(0x4, 1, true, 0, true, true, 0, threadMask: 3);
 
                 // bit 2,3 of unit mask = near,far ccx's cache
-                ulong L3MissLatencyOtherCacheReqs = Get19hL3PerfCtlValue(0xAD, 0b1100, true, 0, true, enableAllSlices: true, sliceId: 0x3, 0b11);
-                ulong L3MissLatencyOtherCache = Get19hL3PerfCtlValue(0xAC, 0b1100, true, 0, true, enableAllSlices: true, sliceId: 0x3, 0b11);
+                ulong L3MissLatencyOtherCacheReqs = Get1AhL3PerfCtlValue(0xAD, 0b1100, true, 0, true, enableAllSources: true, sourceId: 0x3, 0b11);
+                ulong L3MissLatencyOtherCache = Get1AhL3PerfCtlValue(0xAC, 0b1100, true, 0, true, enableAllSources: true, sourceId: 0x3, 0b11);
 
                 // bits 0,1 of unit mask = near,far dram
-                ulong L3MissLatencyDramReqs = Get19hL3PerfCtlValue(0xAD, 0b11, true, 0, true, enableAllSlices: true, sliceId: 0x3, 0b11);
-                ulong L3MissLatencyDram = Get19hL3PerfCtlValue(0xAC, 0b11, true, 0, true, enableAllSlices: true, sliceId: 0x3, 0b11);
+                ulong L3MissLatencyDramReqs = Get1AhL3PerfCtlValue(0xAD, 0b11, true, 0, true, enableAllSources: true, sourceId: 0x3, 0b11);
+                ulong L3MissLatencyDram = Get1AhL3PerfCtlValue(0xAC, 0b11, true, 0, true, enableAllSources: true, sourceId: 0x3, 0b11);
 
                 Ring0.WriteMsr(MSR_L3_PERF_CTL_0, L3AccessPerfCtl);
                 Ring0.WriteMsr(MSR_L3_PERF_CTL_1, L3MissPerfCtl);

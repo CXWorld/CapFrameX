@@ -19,9 +19,15 @@ namespace PmcReader.AMD
             architectureName = "Zen 3 L3";
             ccxSampleThreads = new Dictionary<int, int>();
             allCcxThreads = new Dictionary<int, List<int>>();
+            Dictionary<int, int> ccxIndexMap = new Dictionary<int, int>();
             for (int threadIdx = 0; threadIdx < GetThreadCount(); threadIdx++)
             {
-                int ccxIdx = Get19hCcxId(threadIdx);
+                int rawCcxIdx = Get19hCcxId(threadIdx);
+                if (!ccxIndexMap.TryGetValue(rawCcxIdx, out int ccxIdx))
+                {
+                    ccxIdx = ccxIndexMap.Count;
+                    ccxIndexMap.Add(rawCcxIdx, ccxIdx);
+                }
                 ccxSampleThreads[ccxIdx] = threadIdx;
                 List<int> ccxThreads;
                 if (! allCcxThreads.TryGetValue(ccxIdx, out ccxThreads))

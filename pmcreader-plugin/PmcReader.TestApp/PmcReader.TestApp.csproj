@@ -30,6 +30,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
@@ -66,6 +67,10 @@
     <ProjectReference Include="..\CapFrameX.PmcReader.Plugin.csproj">
       <Project>{B0703A6E-8C9B-4BD1-97E1-C9A64ED0AE34}</Project>
       <Name>CapFrameX.PmcReader.Plugin</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PmcReader\PmcReader.csproj">
+      <Project>{e43329e2-1ccb-4276-adbc-d292eed22170}</Project>
+      <Name>PmcReader</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

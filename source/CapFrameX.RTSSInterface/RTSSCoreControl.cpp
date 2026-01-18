@@ -584,9 +584,11 @@ void RTSSCoreControl::Refresh()
 				{
 					// set graph name
 
-					auto indexStart = OverlayEntries[i].GroupName.Find('C') - 1;
-					auto indexEnd = OverlayEntries[i].GroupName.Find('>', indexStart);
-					CString color = OverlayEntries[i].GroupName.Mid(indexStart, indexEnd + 1 - indexStart);
+					int indexStart = OverlayEntries[i].GroupName.Find('C') - 1;
+					int indexEnd = (indexStart >= 0) ? OverlayEntries[i].GroupName.Find('>', indexStart) : -1;
+					CString color = (indexStart >= 0 && indexEnd > indexStart)
+						? OverlayEntries[i].GroupName.Mid(indexStart, indexEnd + 1 - indexStart)
+						: "<C>";
 					CString string;
 					string.Format("%s<S1>Framerate\n<S><C>", color);
 					strOSD += string;
@@ -596,9 +598,11 @@ void RTSSCoreControl::Refresh()
 
 					if (dwObjectSize)
 					{
-						auto indexStart = OverlayEntries[i].Value.Find('C') - 1;
-						auto indexEnd = OverlayEntries[i].Value.Find('>', indexStart);
-						CString color = OverlayEntries[i].Value.Mid(indexStart, indexEnd + 1 - indexStart);
+						int indexStart = OverlayEntries[i].Value.Find('C') - 1;
+						int indexEnd = (indexStart >= 0) ? OverlayEntries[i].Value.Find('>', indexStart) : -1;
+						CString color = (indexStart >= 0 && indexEnd > indexStart)
+							? OverlayEntries[i].Value.Mid(indexStart, indexEnd + 1 - indexStart)
+							: "<C>";
 
 						strObj.Format("%s<OBJ=%08X><A0><S1><FR><A> FPS<S><C>\n", color, dwObjectOffset);
 						//print embedded object
@@ -611,9 +615,11 @@ void RTSSCoreControl::Refresh()
 				{
 					// set graph name
 
-					auto indexStart = OverlayEntries[i].GroupName.Find('C') - 1;
-					auto indexEnd = OverlayEntries[i].GroupName.Find('>', indexStart);
-					CString color = OverlayEntries[i].GroupName.Mid(indexStart, indexEnd + 1 - indexStart);
+					int indexStart = OverlayEntries[i].GroupName.Find('C') - 1;
+					int indexEnd = (indexStart >= 0) ? OverlayEntries[i].GroupName.Find('>', indexStart) : -1;
+					CString color = (indexStart >= 0 && indexEnd > indexStart)
+						? OverlayEntries[i].GroupName.Mid(indexStart, indexEnd + 1 - indexStart)
+						: "<C>";
 					CString string;
 					string.Format("%s<S1>Frametime\n<S><C>", color);
 					strOSD += string;
@@ -623,9 +629,11 @@ void RTSSCoreControl::Refresh()
 
 					if (dwObjectSize)
 					{
-						auto indexStart = OverlayEntries[i].Value.Find('C') - 1;
-						auto indexEnd = OverlayEntries[i].Value.Find('>', indexStart);
-						CString color = OverlayEntries[i].Value.Mid(indexStart, indexEnd + 1 - indexStart);
+						int indexStart = OverlayEntries[i].Value.Find('C') - 1;
+						int indexEnd = (indexStart >= 0) ? OverlayEntries[i].Value.Find('>', indexStart) : -1;
+						CString color = (indexStart >= 0 && indexEnd > indexStart)
+							? OverlayEntries[i].Value.Mid(indexStart, indexEnd + 1 - indexStart)
+							: "<C>";
 
 						strObj.Format("%s<OBJ=%08X><A0><S1><FT><A> ms<S><C>\n", color, dwObjectOffset);
 						//print embedded object

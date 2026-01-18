@@ -235,9 +235,7 @@ namespace CapFrameX.ViewModel
                 _selectedOverlayEntryIndex = value;
                 OverlayItemsOptionsEnabled = _selectedOverlayEntryIndex > -1 ? true : false;
                 RaisePropertyChanged();
-                RaisePropertyChanged(nameof(SelectedOverlayItemName));
-                RaisePropertyChanged(nameof(SelectedOverlayItemGroupName));
-                RaisePropertyChanged(nameof(SelectedOverlayItemSensorType));
+
             }
         }
 
@@ -251,6 +249,9 @@ namespace CapFrameX.ViewModel
 
                 _selectedOverlayEntry = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(SelectedOverlayItemName));
+                RaisePropertyChanged(nameof(SelectedOverlayItemGroupName));
+                RaisePropertyChanged(nameof(SelectedOverlayItemSensorType));
                 DetermineMultipleGroupEntries(_selectedOverlayEntry);
                 DetermineMultipleSensorTypeEntries(_selectedOverlayEntry);
             }
@@ -660,19 +661,35 @@ namespace CapFrameX.ViewModel
 
         private async Task OnResetDefaults()
         {
-            var overlayEntries = await _overlayEntryProvider.GetDefaultOverlayEntries();
-            OverlaySubModelGroupSeparating.SetOverlayEntries(overlayEntries);
-            OverlayEntries.Clear();
-            OverlayEntries.AddRange(overlayEntries);
-            SetupOverlayEntriesView();
-            SetSaveButtonIsEnableAction();
-            OverlayItemsOptionsEnabled = false;
-            _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
+            bool wasOverlayActive = _appConfiguration.IsOverlayActive;
+            if (wasOverlayActive)
+            {
+                // give overlay management a bit time to disable overlay
+                await Task.Delay(200);
+                IsOverlayActive = false;
+            }
 
-            await _overlayEntryProvider.SaveOverlayEntriesToJson(_appConfiguration.OverlayEntryConfigurationFile);
-            await Task.Run(() => _configSubject.OnNext(_appConfiguration.OverlayEntryConfigurationFile));
-            SaveButtonIsEnable = false;
-            ResetOverlayConfigContentIsOpen = false;
+            try
+            {
+                var overlayEntries = await _overlayEntryProvider.GetDefaultOverlayEntries();
+                OverlaySubModelGroupSeparating.SetOverlayEntries(overlayEntries);
+                OverlayEntries.Clear();
+                OverlayEntries.AddRange(overlayEntries);
+                SetupOverlayEntriesView();
+                SetSaveButtonIsEnableAction();
+                OverlayItemsOptionsEnabled = false;
+                _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
+
+                await _overlayEntryProvider.SaveOverlayEntriesToJson(_appConfiguration.OverlayEntryConfigurationFile);
+                await Task.Run(() => _configSubject.OnNext(_appConfiguration.OverlayEntryConfigurationFile));
+                SaveButtonIsEnable = false;
+                ResetOverlayConfigContentIsOpen = false;
+            }
+            finally
+            {
+                if (wasOverlayActive)
+                    IsOverlayActive = true;
+            }
         }
 
         private void OnSetMinOsd()

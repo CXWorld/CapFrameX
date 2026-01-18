@@ -56,6 +56,8 @@ namespace CapFrameX.PmcReader.Plugin
         private int? _l3HitrateMetricIndex;
         private int? _dramLatencyMetricIndex;
         private MonitoringConfig _dramConfig;
+        private List<ISensorEntry> _ccxL3HitRateEntries;
+        private List<ISensorEntry> _ccxDramLatencyEntries;
         private bool _disposed;
 
         public string Name => "PmcReader";
@@ -87,6 +89,10 @@ namespace CapFrameX.PmcReader.Plugin
                 entries.Add(_dramLatencyEntry);
             if (_dramConfig != null)
                 entries.Add(_dramBandwidthEntry);
+            if (_ccxL3HitRateEntries != null)
+                entries.AddRange(_ccxL3HitRateEntries);
+            if (_ccxDramLatencyEntries != null)
+                entries.AddRange(_ccxDramLatencyEntries);
 
             return Task.FromResult<IEnumerable<ISensorEntry>>(entries);
         }
@@ -126,6 +132,7 @@ namespace CapFrameX.PmcReader.Plugin
                 _l3HitrateMetricIndex = l3ConfigInfo.HitrateMetricIndex;
                 _dramLatencyMetricIndex = TryGetDramLatencyColumnIndex(_l3Config);
                 _l3Config.Initialize();
+                TryInitializeCcxEntries();
             }
 
             _dramConfig = TryCreateDramConfig(manufacturer, family, model);
@@ -283,6 +290,12 @@ namespace CapFrameX.PmcReader.Plugin
                     {
                         result[_dramLatencyEntry] = dramLatency;
                     }
+
+                    if (update?.unitMetrics != null && update.unitMetrics.Length > 0)
+                    {
+                        EnsureCcxEntries(update.unitMetrics.Length);
+                        AddPerCcxMetrics(update.unitMetrics, result);
+                    }
                 }
                 catch
                 {
@@ -306,6 +319,95 @@ namespace CapFrameX.PmcReader.Plugin
             }
 
             return (DateTime.UtcNow, result);
+        }
+
+        private void TryInitializeCcxEntries()
+        {
+            if (_l3Config == null || !_l3HitrateMetricIndex.HasValue)
+                return;
+
+            try
+            {
+                var update = _l3Config.Update();
+                if (update?.unitMetrics != null && update.unitMetrics.Length > 0)
+                    EnsureCcxEntries(update.unitMetrics.Length);
+            }
+            catch
+            {
+            }
+        }
+
+        private void EnsureCcxEntries(int ccxCount)
+        {
+            if (ccxCount <= 0)
+                return;
+
+            bool hasL3Entries = _ccxL3HitRateEntries != null && _ccxL3HitRateEntries.Count == ccxCount;
+            bool hasLatencyEntries = !_dramLatencyMetricIndex.HasValue
+                || (_ccxDramLatencyEntries != null && _ccxDramLatencyEntries.Count == ccxCount);
+
+            if (hasL3Entries && hasLatencyEntries)
+                return;
+
+            var l3Entries = new List<ISensorEntry>(ccxCount);
+            var latencyEntries = _dramLatencyMetricIndex.HasValue ? new List<ISensorEntry>(ccxCount) : null;
+
+            for (int i = 0; i < ccxCount; i++)
+            {
+                l3Entries.Add(new PmcReaderSensorEntry
+                {
+                    Identifier = $"{L3Identifier}/ccx{i}",
+                    SortKey = $"6_0_1_{i}",
+                    Name = $"CPU L3 Hit Rate CCX {i}",
+                    SensorType = SensorType.Load.ToString(),
+                    HardwareType = HardwareType.Cpu.ToString(),
+                    IsPresentationDefault = false
+                });
+
+                if (latencyEntries != null)
+                {
+                    latencyEntries.Add(new PmcReaderSensorEntry
+                    {
+                        Identifier = $"{DramLatencyIdentifier}/ccx{i}",
+                        SortKey = $"6_2_1_{i}",
+                        Name = $"CPU DRAM Latency CCX {i}",
+                        SensorType = SensorType.Timing.ToString(),
+                        HardwareType = HardwareType.Cpu.ToString(),
+                        IsPresentationDefault = false
+                    });
+                }
+            }
+
+            _ccxL3HitRateEntries = l3Entries;
+            _ccxDramLatencyEntries = latencyEntries;
+        }
+
+        private void AddPerCcxMetrics(string[][] unitMetrics, Dictionary<ISensorEntry, float> result)
+        {
+            if (_ccxL3HitRateEntries == null || !_l3HitrateMetricIndex.HasValue)
+                return;
+
+            int hitrateIndex = _l3HitrateMetricIndex.Value;
+            int latencyIndex = _dramLatencyMetricIndex ?? -1;
+
+            for (int i = 0; i < unitMetrics.Length && i < _ccxL3HitRateEntries.Count; i++)
+            {
+                string[] ccxMetrics = unitMetrics[i];
+                if (ccxMetrics == null || ccxMetrics.Length <= hitrateIndex)
+                    continue;
+
+                if (TryParsePercentage(ccxMetrics[hitrateIndex], out float hitRate))
+                    result[_ccxL3HitRateEntries[i]] = hitRate;
+
+                if (_ccxDramLatencyEntries != null
+                    && latencyIndex >= 0
+                    && i < _ccxDramLatencyEntries.Count
+                    && ccxMetrics.Length > latencyIndex
+                    && TryParseLatency(ccxMetrics[latencyIndex], out float latency))
+                {
+                    result[_ccxDramLatencyEntries[i]] = latency;
+                }
+            }
         }
 
         private bool TryGetL3Hitrate(MonitoringUpdateResults update, out float hitRate)

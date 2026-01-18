@@ -257,9 +257,8 @@ namespace PmcReader.AMD
         public int GetCcxId(int threadId)
         {
             // linux arch/x86/kernel/cpu/cacheinfo.c:666 does this and it seems to work?
-            /*uint extendedApicId, ecx, edx, ebx;
-            OpCode.CpuidTx(0x8000001E, 0, out extendedApicId, out ebx, out ecx, out edx, 1UL << threadId);
-            return (int)(extendedApicId >> 3);*/
+            if (TryGetExtendedApicId(threadId, out uint extendedApicId))
+                return (int)(extendedApicId >> 3);
 
             // this is a hack. windows numbers cores/threads like (0,1) = core 1, (2,3) = core 2, etc
             if (coreCount * 2 == threadCount) return threadId / 8;
@@ -273,9 +272,18 @@ namespace PmcReader.AMD
         /// <returns></returns>
         public int Get19hCcxId(int threadId)
         {
+            if (TryGetExtendedApicId(threadId, out uint extendedApicId))
+                return (int)(extendedApicId >> 4);
+
             // placeholder until I figure this out. Again just how windows assigns thread IDs
             if (coreCount * 2 == threadCount) return threadId / 16;
             else return threadId / 8;
+        }
+
+        private static bool TryGetExtendedApicId(int threadId, out uint extendedApicId)
+        {
+            extendedApicId = 0;
+            return OpCode.CpuidTx(0x8000001E, 0, out extendedApicId, out _, out _, out _, 1UL << threadId);
         }
 
         /// <summary>
