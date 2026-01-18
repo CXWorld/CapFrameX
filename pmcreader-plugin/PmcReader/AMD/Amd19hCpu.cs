@@ -338,12 +338,72 @@ namespace PmcReader.AMD
 
         public int Get1AhCcxId(int threadId)
         {
-            if (TryGetExtendedApicId(threadId, out uint extendedApicId))
-                return (int)(extendedApicId >> 4);
+            // For Zen 5, determine CCX based on core count and topology
+            // Single-CCX chips (8 cores or less): all threads belong to CCX 0
+            if (coreCount <= 8)
+                return 0;
 
-            // placeholder until I figure this out. only works on the 9900X
-            if (coreCount * 2 == threadCount) return threadId / 12;
-            else return threadId / 6;
+            // Multi-CCX chips: use APIC ID to determine CCX
+            if (TryGetExtendedApicIdEx(threadId, out uint extendedApicId, out uint coreId, out uint threadsPerCore))
+            {
+                // For Zen 5 multi-CCX:
+                // - 9900X: 12 cores = 2 CCX with 6 cores each
+                // - 9950X: 16 cores = 2 CCX with 8 cores each
+                // The APIC ID encodes: [CCX/CCD bits][Core bits][Thread bit]
+                // Thread bit: 1 bit for SMT (0 or 1)
+                // Core bits: enough bits to address cores within CCX
+                int coresPerCcx = GetCoresPerCcx();
+
+                // Calculate bits needed for core+thread within CCX
+                // Thread bits: 1 if SMT enabled, 0 otherwise
+                int threadBits = (threadCount == coreCount * 2) ? 1 : 0;
+                // Core bits: log2(coresPerCcx), rounded up
+                int coreBits = (int)Math.Ceiling(Math.Log(coresPerCcx, 2));
+                int ccxShift = threadBits + coreBits;
+
+                return (int)(extendedApicId >> ccxShift);
+            }
+
+            // Fallback heuristics based on thread ID
+            int fallbackCoresPerCcx = GetCoresPerCcx();
+            int threadsPerCcx = coreCount * 2 == threadCount ? fallbackCoresPerCcx * 2 : fallbackCoresPerCcx;
+            return threadId / threadsPerCcx;
+        }
+
+        /// <summary>
+        /// Get cores per CCX for Zen 5 based on total core count
+        /// </summary>
+        public int GetCoresPerCcx()
+        {
+            // Zen 5 desktop (Granite Ridge) has up to 8 cores per CCX
+            if (coreCount <= 8) return coreCount; // Single CCX
+            if (coreCount == 12) return 6; // 2 CCX with 6 cores each (9900X)
+            if (coreCount == 16) return 8; // 2 CCX with 8 cores each (9950X)
+            if (coreCount == 24) return 8; // 3 CCX with 8 cores each
+            return 8; // Default assumption
+        }
+
+        /// <summary>
+        /// Get extended APIC ID with topology information from CPUID 0x8000001E
+        /// </summary>
+        /// <param name="threadId">Thread index to query</param>
+        /// <param name="extendedApicId">EAX: Extended APIC ID</param>
+        /// <param name="coreId">EBX[7:0]: Core ID (physical core within processor)</param>
+        /// <param name="threadsPerCore">EBX[15:8] + 1: Threads per core</param>
+        private static bool TryGetExtendedApicIdEx(int threadId, out uint extendedApicId, out uint coreId, out uint threadsPerCore)
+        {
+            extendedApicId = 0;
+            coreId = 0;
+            threadsPerCore = 1;
+
+            if (!OpCode.CpuidTx(0x8000001E, 0, out extendedApicId, out uint ebx, out _, out _, 1UL << threadId))
+                return false;
+
+            // EBX[7:0] = ComputeUnitId / CoreId (physical core ID)
+            // EBX[15:8] = ThreadsPerComputeUnit - 1 (0 means 1 thread, 1 means 2 threads/SMT)
+            coreId = ebx & 0xFF;
+            threadsPerCore = ((ebx >> 8) & 0xFF) + 1;
+            return true;
         }
 
         private static bool TryGetExtendedApicId(int threadId, out uint extendedApicId)

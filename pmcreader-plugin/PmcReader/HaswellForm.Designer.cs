@@ -157,15 +157,15 @@
             this.applyL3ConfigButton.Text = "Apply L3 Config";
             this.applyL3ConfigButton.UseVisualStyleBackColor = true;
             this.applyL3ConfigButton.Click += new System.EventHandler(this.applyL3ConfigButton_Click);
-            // 
+            //
             // L3MonitoringListView
-            // 
-            this.L3MonitoringListView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            //
+            this.L3MonitoringListView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.L3MonitoringListView.HideSelection = false;
             this.L3MonitoringListView.Location = new System.Drawing.Point(12, 557);
             this.L3MonitoringListView.Name = "L3MonitoringListView";
-            this.L3MonitoringListView.Size = new System.Drawing.Size(513, 118);
+            this.L3MonitoringListView.Size = new System.Drawing.Size(513, 360);
             this.L3MonitoringListView.TabIndex = 10;
             this.L3MonitoringListView.UseCompatibleStateImageBehavior = false;
             this.L3MonitoringListView.View = System.Windows.Forms.View.Details;
@@ -202,15 +202,15 @@
             this.applyDfConfigButton.Text = "Apply DF Config";
             this.applyDfConfigButton.UseVisualStyleBackColor = true;
             this.applyDfConfigButton.Click += new System.EventHandler(this.applyDfConfigButton_Click);
-            // 
+            //
             // dfMonitoringListView
-            // 
+            //
             this.dfMonitoringListView.Activation = System.Windows.Forms.ItemActivation.OneClick;
             this.dfMonitoringListView.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.dfMonitoringListView.HideSelection = false;
             this.dfMonitoringListView.Location = new System.Drawing.Point(531, 557);
             this.dfMonitoringListView.Name = "dfMonitoringListView";
-            this.dfMonitoringListView.Size = new System.Drawing.Size(485, 118);
+            this.dfMonitoringListView.Size = new System.Drawing.Size(485, 360);
             this.dfMonitoringListView.TabIndex = 14;
             this.dfMonitoringListView.UseCompatibleStateImageBehavior = false;
             this.dfMonitoringListView.View = System.Windows.Forms.View.Details;
@@ -354,7 +354,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1028, 687);
+            this.ClientSize = new System.Drawing.Size(1028, 930);
             this.Controls.Add(this.RestrictCoreLogLabel);
             this.Controls.Add(this.RestrictCoreLoggingTextBox);
             this.Controls.Add(this.crazyThingsLabel);
