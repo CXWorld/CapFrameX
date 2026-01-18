@@ -1068,7 +1068,6 @@ namespace CapFrameX.ViewModel
 
 
         //Run history and aggregation options
-
         private void OnUseRunHistoryChanged()
         {
             var historyEntry = _overlayEntryProvider.GetOverlayEntry("RunHistory");

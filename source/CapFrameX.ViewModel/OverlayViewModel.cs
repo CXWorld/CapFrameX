@@ -56,7 +56,6 @@ namespace CapFrameX.ViewModel
         private Subject<object> _configSubject = new Subject<object>();
         private ResetOverlayConfigDialog _resetOverlayConfigContent;
         private bool _resetOverlayConfigContentIsOpen;
-        private PubSubEvent<ViewMessages.OverlayConfigChanged> _overlayConfigChangedEvent;
         private string _filterText = string.Empty;
         private EOverlayEntryType? _selectedEntryTypeFilter;
         private ICollectionView _overlayEntriesView;
@@ -553,8 +552,6 @@ namespace CapFrameX.ViewModel
             _eventAggregator = eventAggregator;
             _threadAffinityController = threadAffinityController;
             _onlineMetricService = onlineMetricService;
-            _overlayConfigChangedEvent = _eventAggregator
-                .GetEvent<PubSubEvent<ViewMessages.OverlayConfigChanged>>();
 
             // define submodels
             OverlaySubModelGroupControl = new OverlayGroupControl(this);
@@ -584,7 +581,7 @@ namespace CapFrameX.ViewModel
                     OverlayEntries.Clear();
                     OverlayEntries.AddRange(entries);
                     SetupOverlayEntriesView();
-                    _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
+                    _overlayEntryProvider.UpdateOverlayEntryFormats();
 
                     SetSaveButtonIsEnableAction();
                     SaveButtonIsEnable = _overlayEntryProvider.HasHardwareChanged;
@@ -639,9 +636,6 @@ namespace CapFrameX.ViewModel
             UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
                 "RivaTuner Statistics Server (RTSS)";
 
-            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.OverlayConfigChanged>>()
-                .Subscribe(message => _overlayEntryProvider.UpdateOverlayEntryFormats());
-
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventOverlayConfigHotkey();
             SetGlobalHookEventThreadAffinityHotkey();
@@ -664,9 +658,9 @@ namespace CapFrameX.ViewModel
             bool wasOverlayActive = _appConfiguration.IsOverlayActive;
             if (wasOverlayActive)
             {
+                IsOverlayActive = false;
                 // give overlay management a bit time to disable overlay
                 await Task.Delay(200);
-                IsOverlayActive = false;
             }
 
             try
@@ -678,10 +672,8 @@ namespace CapFrameX.ViewModel
                 SetupOverlayEntriesView();
                 SetSaveButtonIsEnableAction();
                 OverlayItemsOptionsEnabled = false;
-                _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
-
-                await _overlayEntryProvider.SaveOverlayEntriesToJson(_appConfiguration.OverlayEntryConfigurationFile);
-                await Task.Run(() => _configSubject.OnNext(_appConfiguration.OverlayEntryConfigurationFile));
+                _overlayEntryProvider.UpdateOverlayEntryFormats();
+                await _overlayEntryProvider.SaveOverlayEntriesToJson(_appConfiguration.OverlayEntryConfigurationFile);              
                 SaveButtonIsEnable = false;
                 ResetOverlayConfigContentIsOpen = false;
             }
@@ -853,7 +845,7 @@ namespace CapFrameX.ViewModel
             // Setup view, refresh Separators list, and notify overlay
             SetupOverlayEntriesView();
             OverlaySubModelGroupSeparating.SetOverlayEntries(OverlayEntries);
-            _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
+            _overlayEntryProvider.UpdateOverlayEntryFormats();
             SetSaveButtonIsEnable();
         }
 
@@ -877,7 +869,7 @@ namespace CapFrameX.ViewModel
                 // Setup view, refresh Separators list, and notify overlay
                 SetupOverlayEntriesView();
                 OverlaySubModelGroupSeparating.SetOverlayEntries(OverlayEntries);
-                _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
+                _overlayEntryProvider.UpdateOverlayEntryFormats();
                 SetSaveButtonIsEnable();
             }
         }
@@ -886,27 +878,29 @@ namespace CapFrameX.ViewModel
         {
             // Framerate and Frametime always at the end
             if (entry.Identifier == "Framerate" || entry.Identifier == "Frametime")
-                return 6;
+                return 8;
 
             switch (entry.OverlayEntryType)
             {
-                case EOverlayEntryType.GPU:
-                    return 1;
                 case EOverlayEntryType.CX:
                     // CustomCPU and CustomRAM are positioned as section headers in templates
                     if (entry.Identifier == "CustomCPU")
-                        return 2;
+                        return 3;
                     if (entry.Identifier == "CustomRAM")
-                        return 4;
-                    return 5;
+                        return 5;
+                    return 1;
+
+                case EOverlayEntryType.GPU:
+                    return 2;
+               
                 case EOverlayEntryType.CPU:
-                    return 3;
-                case EOverlayEntryType.RAM:
                     return 4;
+                case EOverlayEntryType.RAM:
+                    return 6;
                 case EOverlayEntryType.OnlineMetric:
-                    return 5;
-                default:
                     return 7;
+                default:
+                    return 9;
             }
         }
 
