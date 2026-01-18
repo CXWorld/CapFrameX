@@ -40,10 +40,13 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor[] _loads;
     private readonly Sensor _memoryFree;
     private readonly Sensor _memoryJunctionTemperature;
+    private readonly Sensor _memoryReadBandwidth;
     private readonly Sensor _memoryTotal;
     private readonly Sensor _memoryUsed;
     private readonly Sensor _memoryLoad;
+    private readonly Sensor _memoryWriteBandwidth;
     private readonly NvidiaML.NvmlDevice? _nvmlDevice;
+    private readonly uint? _pciBusId;
     private readonly Sensor _pcieThroughputRx;
     private readonly Sensor _pcieThroughputTx;
     private readonly Sensor[] _powers;
@@ -64,6 +67,7 @@ internal sealed class NvidiaGpu : GenericGpu
         _stopwatch = new Stopwatch();
 
         bool hasBusId = NvApi.NvAPI_GPU_GetBusId(handle, out uint busId) == NvApi.NvStatus.OK;
+        _pciBusId = hasBusId ? busId : null;
 
         // Thermal settings
         NvApi.NvThermalSettings thermalSettings = GetThermalSettings(out NvApi.NvStatus status);
@@ -492,6 +496,14 @@ internal sealed class NvidiaGpu : GenericGpu
         _memoryLoad = new Sensor("GPU Memory", 3, SensorType.Load, this, settings)
         { PresentationSortKey = $"{adapterIndex}_8_5" };
 
+        if (Cupti.IsAvailable || Cupti.Initialize())
+        {
+            _memoryReadBandwidth = new Sensor("GPU Memory Read", 2, SensorType.Throughput, this, settings)
+            { PresentationSortKey = $"{adapterIndex}_8_6" };
+            _memoryWriteBandwidth = new Sensor("GPU Memory Write", 3, SensorType.Throughput, this, settings)
+            { PresentationSortKey = $"{adapterIndex}_8_7" };
+        }
+
         Update();
     }
 
@@ -758,6 +770,32 @@ internal sealed class NvidiaGpu : GenericGpu
             {
                 _pcieThroughputTx.Value = tx / (1024f * 1024f);
                 ActivateSensor(_pcieThroughputTx);
+            }
+        }
+
+        if (Cupti.IsAvailable && (_memoryReadBandwidth is not null || _memoryWriteBandwidth is not null))
+        {
+            if (Cupti.TryGetMemoryThroughput(_pciBusId, _adapterIndex, out float readMiB, out float writeMiB))
+            {
+                if (_memoryReadBandwidth is not null)
+                {
+                    _memoryReadBandwidth.Value = readMiB;
+                    ActivateSensor(_memoryReadBandwidth);
+                }
+
+                if (_memoryWriteBandwidth is not null)
+                {
+                    _memoryWriteBandwidth.Value = writeMiB;
+                    ActivateSensor(_memoryWriteBandwidth);
+                }
+            }
+            else
+            {
+                if (_memoryReadBandwidth is not null)
+                    _memoryReadBandwidth.Value = null;
+
+                if (_memoryWriteBandwidth is not null)
+                    _memoryWriteBandwidth.Value = null;
             }
         }
     }
