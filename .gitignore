@@ -265,3 +265,6 @@ source/publish webservice.ps1
 
 # Ignore nul file created by bash operations
 nul
+
+# Crash reports
+crash-report/

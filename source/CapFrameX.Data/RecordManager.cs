@@ -274,6 +274,14 @@ namespace CapFrameX.Data
                     {
                         JsonSerializer serializer = new JsonSerializer();
                         var session = serializer.Deserialize<Session.Classes.Session>(jsonReader);
+
+                        // Handle corrupt/incomplete JSON files (e.g., from disk full during write)
+                        if (session?.Runs == null)
+                        {
+                            _logger.LogWarning("Failed to load session from {path}: file is corrupt or incomplete", fileInfo.FullName);
+                            return null;
+                        }
+
                         foreach (var sessionrun in session.Runs)
                         {
                             if (sessionrun.SensorData != null && sessionrun.SensorData2 == null)
@@ -285,7 +293,7 @@ namespace CapFrameX.Data
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 throw;
             }
@@ -709,14 +717,44 @@ namespace CapFrameX.Data
 
         private void SaveSessionToFile(string filePath, ISession session)
         {
-            using (var streamWriter = new StreamWriter(filePath))
+            var tempFilePath = filePath + ".tmp";
+            try
             {
-                using (JsonWriter jsonWriter = new JsonTextWriter(streamWriter))
+                // Write to a temp file first to avoid corrupt files on disk full
+                using (var streamWriter = new StreamWriter(tempFilePath))
                 {
-                    var serializer = new JsonSerializer();
-                    serializer.Serialize(jsonWriter, session);
-                    _logger.LogInformation("{filePath} successfully written", filePath);
+                    using (JsonWriter jsonWriter = new JsonTextWriter(streamWriter))
+                    {
+                        var serializer = new JsonSerializer();
+                        serializer.Serialize(jsonWriter, session);
+                    }
                 }
+
+                // Only replace the target file after successful write
+                if (File.Exists(filePath))
+                    File.Delete(filePath);
+                File.Move(tempFilePath, filePath);
+
+                _logger.LogInformation("{filePath} successfully written", filePath);
+            }
+            catch (IOException ex) when (ex.HResult == unchecked((int)0x80070070)) // ERROR_DISK_FULL
+            {
+                _logger.LogError(ex, "Failed to save {filePath}: disk is full", filePath);
+                // Clean up temp file if it exists
+                if (File.Exists(tempFilePath))
+                {
+                    try { File.Delete(tempFilePath); } catch { }
+                }
+                throw;
+            }
+            catch (Exception)
+            {
+                // Clean up temp file on any error
+                if (File.Exists(tempFilePath))
+                {
+                    try { File.Delete(tempFilePath); } catch { }
+                }
+                throw;
             }
         }
 
