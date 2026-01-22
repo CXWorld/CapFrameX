@@ -166,8 +166,7 @@ namespace CapFrameX.SystemInfo.NetStandard
 
         #endregion
 
-        public string GetProcessorName()
-            => _sensorService.GetCpuName();
+        public string GetProcessorName() => _sensorService.GetCpuName();
 
         public string GetGraphicCardName()
         {

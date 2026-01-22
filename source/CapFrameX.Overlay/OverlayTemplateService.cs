@@ -34,12 +34,12 @@ namespace CapFrameX.Overlay
         private const string LATENCY_VALUE_COLOR = "FFFFD700";
 
         private readonly ISensorService _sensorService;
-        private Dictionary<string, StoredEntryState> _storedState;
+        private IOverlayEntry[] _storedOverlayEntries;
 
         public EGpuVendor DetectedGpuVendor { get; private set; }
         public ECpuVendor DetectedCpuVendor { get; private set; }
         public string ShortGpuName { get; private set; }
-        public bool HasStoredState => _storedState != null && _storedState.Count > 0;
+        public bool HasStoredState => _storedOverlayEntries != null && _storedOverlayEntries.Length > 0;
 
         public OverlayTemplateService(ISensorService sensorService)
         {
@@ -151,8 +151,8 @@ namespace CapFrameX.Overlay
             EnableByIdentifier(entries, "Online1PercentLow", METRIC_COLOR, METRIC_COLOR, 0, null, null, TemplateSortKey(30, 2));
 
             // 4. Framerate Section (at the end, with blank line, no graph)
-            EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 1, "<APP>", false, TemplateSortKey(40, 1));
-            EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", null, TemplateSortKey(40, 2));
+            EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", false, TemplateSortKey(40, 1));
+            EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", true, TemplateSortKey(40, 2));
 
             EnsureCpuSectionSeparator(entries);
         }
@@ -189,8 +189,8 @@ namespace CapFrameX.Overlay
             EnableByIdentifier(entries, "Online1PercentLow", METRIC_COLOR, METRIC_COLOR, 0, null, null, TemplateSortKey(50, 2));
 
             // 6. Framerate Section (at the end, with blank line, no graph)
-            EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 1, "<APP>", false, TemplateSortKey(60, 1));
-            EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", null, TemplateSortKey(60, 2));
+            EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", false, TemplateSortKey(60, 1));
+            EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", true, TemplateSortKey(60, 2));
 
             EnsureCpuSectionSeparator(entries);
         }
@@ -266,8 +266,8 @@ namespace CapFrameX.Overlay
             EnableByIdentifier(entries, "Online1PercentLow", METRIC_COLOR, METRIC_COLOR, 0, null, null, TemplateSortKey(70, 2));
 
             // 7. Framerate Section (at the end, with blank line, no graph)
-            EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 1, "<APP>", false, TemplateSortKey(80, 1));
-            EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", null, TemplateSortKey(80, 2));
+            EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", false, TemplateSortKey(80, 1));
+            EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", true, TemplateSortKey(80, 2));
 
             EnsureCpuSectionSeparator(entries);
         }
@@ -588,42 +588,15 @@ namespace CapFrameX.Overlay
 
         public void StoreCurrentState(IEnumerable<IOverlayEntry> entries)
         {
-            _storedState = new Dictionary<string, StoredEntryState>();
-            foreach (var entry in entries)
-            {
-                _storedState[entry.Identifier] = new StoredEntryState
-                {
-                    ShowOnOverlay = entry.ShowOnOverlay,
-                    GroupColor = entry.GroupColor,
-                    Color = entry.Color,
-                    GroupSeparators = entry.GroupSeparators,
-                    GroupName = entry.GroupName,
-                    ShowGraph = entry.ShowGraph,
-                    SortKey = entry.SortKey
-                };
-            }
+            _storedOverlayEntries = entries.Select(entry => entry.Clone()).ToArray();
         }
 
-        public bool RevertToStoredState(IEnumerable<IOverlayEntry> entries)
+        public IEnumerable<IOverlayEntry> GetStoredOverlayEntries()
         {
             if (!HasStoredState)
-                return false;
+                return Enumerable.Empty<IOverlayEntry>();
 
-            foreach (var entry in entries)
-            {
-                if (_storedState.TryGetValue(entry.Identifier, out var storedState))
-                {
-                    entry.ShowOnOverlay = storedState.ShowOnOverlay;
-                    entry.GroupColor = storedState.GroupColor;
-                    entry.Color = storedState.Color;
-                    entry.GroupSeparators = storedState.GroupSeparators;
-                    entry.GroupName = storedState.GroupName;
-                    entry.ShowGraph = storedState.ShowGraph;
-                    entry.SortKey = storedState.SortKey;
-                }
-            }
-
-            return true;
+            return _storedOverlayEntries;
         }
 
         private static string TemplateSortKey(int section, int index, int subIndex = 0)

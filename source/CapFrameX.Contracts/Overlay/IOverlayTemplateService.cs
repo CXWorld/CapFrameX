@@ -44,11 +44,10 @@ namespace CapFrameX.Contracts.Overlay
         void StoreCurrentState(IEnumerable<IOverlayEntry> entries);
 
         /// <summary>
-        /// Reverts overlay entries to the previously stored state.
+        /// Gets the stored overlay entries.
         /// </summary>
-        /// <param name="entries">The overlay entries to revert.</param>
-        /// <returns>True if revert was successful, false if no stored state exists.</returns>
-        bool RevertToStoredState(IEnumerable<IOverlayEntry> entries);
+        /// <returns></returns>
+        IEnumerable<IOverlayEntry> GetStoredOverlayEntries();
 
         /// <summary>
         /// Checks if there is a stored state available for revert.

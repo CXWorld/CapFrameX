@@ -171,17 +171,8 @@ namespace CapFrameX.Overlay
 
         public async Task<IEnumerable<IOverlayEntry>> GetDefaultOverlayEntries()
         {
-            _overlayEntries = await GetOverlayEntryDefaults();
-            _identifierOverlayEntryDict.Clear();
-            _sensorConfig.ResetEvaluate();
-            foreach (var entry in _overlayEntries)
-            {
-                entry.UpdateShowOnOverlay = UpdateSensorIsActive;
-                _sensorConfig.SetSensorEvaluate(entry.Identifier, entry.ShowOnOverlay);
-                _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
-            }
-
-            ManageFormats();
+            _overlayEntries = await CreateDefaultOverlayEntries();
+            UpdateStates(resetEvaluate: true);
             return _overlayEntries.ToList();
         }
 
@@ -318,21 +309,15 @@ namespace CapFrameX.Overlay
         public void UpdateOverlayEntries(IEnumerable<IOverlayEntry> entries)
         {
             _overlayEntries = entries.ToList().ToBlockingCollection();
+            UpdateStates(resetEvaluate: false);
         }
 
-        public async Task LoadOrSetDefault()
+        private void UpdateStates(bool resetEvaluate)
         {
-            try
-            {
-                _overlayEntries = await GetInitializedOverlayEntryDictionary();
-            }
-            catch
-            {
-                _overlayEntries = await GetOverlayEntryDefaults();
-            }
-
             _identifierOverlayEntryDict.Clear();
-            _sensorConfig.IsInitialized = true;
+            if (resetEvaluate)
+                _sensorConfig.ResetEvaluate();
+
             foreach (var entry in _overlayEntries)
             {
                 entry.UpdateShowOnOverlay = UpdateSensorIsActive;
@@ -343,24 +328,34 @@ namespace CapFrameX.Overlay
                     || entry.Identifier == "BatteryLifePercent" || entry.Identifier == "BatteryLifeRemaining"
                     || entry.Identifier == "Ping" || entry.Identifier == "ThreadAffinityState" || entry.Identifier == "PCLatency")
                 {
-                    if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey(entry.Identifier))
-                        _overlayEntryCore.RealtimeMetricEntryDict.TryAdd(entry.Identifier, entry);
-                    else
-                        _overlayEntryCore.RealtimeMetricEntryDict[entry.Identifier] = entry;
+                    _overlayEntryCore.RealtimeMetricEntryDict[entry.Identifier] = entry;
                 }
             }
 
             CheckCustomSystemInfo();
             CheckOSVersion();
             CheckGpuDriver();
-
             ManageFormats();
+        }
+
+        public async Task LoadOrSetDefault()
+        {
+            try
+            {
+                _overlayEntries = await GetInitializedOverlayEntries();
+                UpdateStates(resetEvaluate: false);
+            }
+            catch
+            {
+                _overlayEntries = await CreateDefaultOverlayEntries();
+                UpdateStates(resetEvaluate: true);
+            }
+
         }
 
         private void UpdateSensorIsActive(string identifier, bool isShownOnOverlay)
         {
-            if (identifier == null)
-                return;
+            if (identifier == null) return;
             _sensorConfig.SetSensorEvaluate(identifier, isShownOnOverlay);
         }
 
@@ -388,7 +383,7 @@ namespace CapFrameX.Overlay
             _overlayEntries.ForEach(entry => entry.FormatChanged = true);
         }
 
-        private async Task<BlockingCollection<IOverlayEntry>> GetInitializedOverlayEntryDictionary()
+        private async Task<BlockingCollection<IOverlayEntry>> GetInitializedOverlayEntries()
         {
             await _sensorService.SensorServiceCompletionSource.Task;
             await _overlayEntryCore.OverlayEntryCoreCompletionSource.Task;
@@ -606,7 +601,7 @@ namespace CapFrameX.Overlay
             }
         }
 
-        private async Task<BlockingCollection<IOverlayEntry>> GetOverlayEntryDefaults()
+        private async Task<BlockingCollection<IOverlayEntry>> CreateDefaultOverlayEntries()
         {
             var overlayEntries = OverlayUtils.GetOverlayEntryDefaults(_appConfiguration)
                 .Where(item => item.IsEntryEnabled)
