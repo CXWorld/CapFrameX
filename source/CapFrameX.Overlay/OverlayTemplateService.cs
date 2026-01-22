@@ -168,6 +168,7 @@ namespace CapFrameX.Overlay
             EnableByDescription(entries, "GPU Core (%)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Load", TemplateSortKey(10, 3));
             EnableByDescription(entries, "GPU Core (°C)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Temp", TemplateSortKey(10, 4));
             EnableByDescription(entries, "GPU Power (W)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Power", TemplateSortKey(10, 5));
+            EnableByDescription(entries, "GPU TBP (W)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Power", TemplateSortKey(10, 5));
             EnableByDescription(entries, "GPU Memory Dedicated (GB)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Used", TemplateSortKey(10, 6));
             EnableByDescription(entries, "GPU Memory Shared (GB)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Used", TemplateSortKey(10, 7));
 
@@ -175,7 +176,6 @@ namespace CapFrameX.Overlay
             EnableByIdentifier(entries, "CustomCPU", cpuGroupColor, VALUE_WHITE, 1, "CPU Model", null, TemplateSortKey(20, 1));
 
             // 3. CPU entries - Clock, Total, Package
-            EnableByGroupName(entries, "CPU Clock", cpuGroupColor, VALUE_YELLOW, 0, TemplateSortKey(30, 1));
             EnableByDescription(entries, "CPU Max (MHz)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Max", TemplateSortKey(30, 2));
             EnableByDescriptionContains(entries, "CPU Total (%)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Total", TemplateSortKey(30, 3));
             EnableByDescriptionContains(entries, "CPU Package (W)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(30, 4));
@@ -207,6 +207,7 @@ namespace CapFrameX.Overlay
             EnableByDescription(entries, "GPU Core (°C)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Temp", TemplateSortKey(10, 4));
             EnableByDescription(entries, "GPU Memory Junction (°C)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Hot Spot", TemplateSortKey(10, 5));
             EnableByDescription(entries, "GPU Power (W)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Power", TemplateSortKey(10, 6));
+            EnableByDescription(entries, "GPU TBP (W)", gpuGroupColor, VALUE_YELLOW, 0, "GPU TBP", TemplateSortKey(10, 6));
             EnableByDescription(entries, "GPU Memory Dedicated (GB)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Used", TemplateSortKey(10, 7));
             EnableByDescription(entries, "GPU Memory Shared (GB)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Used", TemplateSortKey(10, 8));
 
