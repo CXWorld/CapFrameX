@@ -46,6 +46,26 @@ typedef struct AdlxTelemetryData
 	// GPU TBP
 	bool gpuTotalBoardPowerSupported = false;
 	double gpuTotalBoardPowerValue;
+
+	// GPU Intake Temperature
+	bool gpuIntakeTemperatureSupported = false;
+	double gpuIntakeTemperatureValue;
+
+	// GPU Memory Temperature (IADLXGPUMetrics1)
+	bool gpuMemoryTemperatureSupported = false;
+	double gpuMemoryTemperatureValue;
+
+	// NPU Frequency (IADLXGPUMetrics1)
+	bool npuFrequencySupported = false;
+	double npuFrequencyValue;
+
+	// NPU Activity Level (IADLXGPUMetrics1)
+	bool npuActivityLevelSupported = false;
+	double npuActivityLevelValue;
+
+	// GPU Shared Memory (IADLXGPUMetrics2)
+	bool gpuSharedMemorySupported = false;
+	double gpuSharedMemoryValue;
 };
 
 typedef struct AdlxDeviceInfo
