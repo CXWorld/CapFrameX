@@ -456,8 +456,7 @@ namespace CapFrameX.Sensor
                 }
 
                 // Fallback (should be rare)
-                var isDiscreteGpu = (s.Hardware as GenericGpu)?.IsDiscreteGpu ?? true;
-                return isDiscreteGpu;
+                return (s.Hardware as GenericGpu)?.IsDiscreteGpu ?? true;
             });
         }
 

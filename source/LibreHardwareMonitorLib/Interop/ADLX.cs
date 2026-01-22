@@ -39,6 +39,45 @@ internal static class ADLX
     }
 
     /// <summary>
+    /// Telemetry support flags structure matching AdlxTelemetrySupport in ADLXManager.h.
+    /// Used to query what metrics are supported before actual data is available.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct AdlxTelemetrySupport
+    {
+        [MarshalAs(UnmanagedType.I1)]
+        public bool GpuUsageSupported;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool GpuClockSpeedSupported;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool GpuVRAMClockSpeedSupported;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool GpuTemperatureSupported;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool GpuHotspotTemperatureSupported;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool GpuPowerSupported;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool GpuFanSpeedSupported;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool GpuVramSupported;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool GpuVoltageSupported;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool GpuTotalBoardPowerSupported;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool GpuIntakeTemperatureSupported;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool GpuMemoryTemperatureSupported;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool NpuFrequencySupported;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool NpuActivityLevelSupported;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool GpuSharedMemorySupported;
+    }
+
+    /// <summary>
     /// Telemetry data structure matching AdlxTelemetryData in ADLXManager.h.
     /// Must match the native struct layout exactly.
     /// </summary>
@@ -154,6 +193,9 @@ internal static class ADLX
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "GetAdlxTelemetry")]
     private static extern bool GetAdlxTelemetry_Native(uint index, uint historyLength, ref AdlxTelemetryData telemetryData);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "GetAdlxTelemetrySupport")]
+    private static extern bool GetAdlxTelemetrySupport_Native(uint index, ref AdlxTelemetrySupport telemetrySupport);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "GetAdlxDeviceInfo")]
     private static extern bool GetAdlxDeviceInfo_Native(uint index, ref AdlxDeviceInfo deviceInfo);
@@ -273,6 +315,29 @@ internal static class ADLX
         try
         {
             return GetAdlxTelemetry_Native(index, historyLength, ref telemetryData);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Gets the supported telemetry metrics for the specified GPU adapter.
+    /// This method queries support flags directly without needing actual telemetry data,
+    /// useful for activating sensors before telemetry history is available.
+    /// </summary>
+    /// <param name="index">Adapter index (0-based).</param>
+    /// <param name="telemetrySupport">Output support flags structure.</param>
+    /// <returns>True if support flags were retrieved successfully, false otherwise.</returns>
+    public static bool GetTelemetrySupport(uint index, ref AdlxTelemetrySupport telemetrySupport)
+    {
+        if (!_dllLoaded)
+            return false;
+
+        try
+        {
+            return GetAdlxTelemetrySupport_Native(index, ref telemetrySupport);
         }
         catch
         {

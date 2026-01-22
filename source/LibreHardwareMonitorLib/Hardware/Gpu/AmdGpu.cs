@@ -188,7 +188,66 @@ internal sealed class AmdGpu : GenericGpu
             }
         }
 
+        // Activate sensors based on support flags BEFORE calling Update()
+        // This ensures sensors are visible in the UI even if the first telemetry call returns no data
+        ActivateSensorsFromSupportFlags();
+
         Update();
+    }
+
+    /// <summary>
+    /// Activates sensors based on what metrics the GPU supports, without needing actual telemetry data.
+    /// This is called in the constructor to ensure sensors are visible even before telemetry history is available.
+    /// </summary>
+    private void ActivateSensorsFromSupportFlags()
+    {
+        ADLX.AdlxTelemetrySupport support = new();
+        if (!ADLX.GetTelemetrySupport(_adapterIndex, ref support))
+            return;
+
+        // Temperature sensors
+        if (support.GpuTemperatureSupported)
+            ActivateSensor(_temperatureCore);
+        if (support.GpuHotspotTemperatureSupported)
+            ActivateSensor(_temperatureHotSpot);
+        if (support.GpuMemoryTemperatureSupported)
+            ActivateSensor(_temperatureMemory);
+        if (support.GpuIntakeTemperatureSupported)
+            ActivateSensor(_temperatureIntake);
+
+        // Clock sensors
+        if (support.GpuClockSpeedSupported)
+            ActivateSensor(_coreClock);
+        if (support.GpuVRAMClockSpeedSupported)
+            ActivateSensor(_memoryClock);
+        if (support.NpuFrequencySupported)
+            ActivateSensor(_npuClock);
+
+        // Fan sensor
+        if (support.GpuFanSpeedSupported)
+            ActivateSensor(_fan);
+
+        // Voltage sensor
+        if (support.GpuVoltageSupported)
+            ActivateSensor(_coreVoltage);
+
+        // Load sensors
+        if (support.GpuUsageSupported)
+            ActivateSensor(_coreLoad);
+        if (support.NpuActivityLevelSupported)
+            ActivateSensor(_npuLoad);
+
+        // Power sensors
+        if (support.GpuPowerSupported)
+            ActivateSensor(_powerTotal);
+        if (support.GpuTotalBoardPowerSupported)
+            ActivateSensor(_powerTotalBoardPower);
+
+        // Memory sensors
+        if (support.GpuVramSupported)
+            ActivateSensor(_memoryUsed);
+        if (support.GpuSharedMemorySupported)
+            ActivateSensor(_adlxSharedMemory);
     }
 
     public override string DeviceId => _deviceInfo.DriverPath ?? string.Empty;
@@ -202,163 +261,35 @@ internal sealed class AmdGpu : GenericGpu
         if (ADLX.GetTelemetry(_adapterIndex, 1000, ref telemetry))
         {
             // Temperature sensors
-            if (telemetry.GpuTemperatureSupported)
-            {
-                _temperatureCore.Value = (float)telemetry.GpuTemperatureValue;
-                ActivateSensor(_temperatureCore);
-            }
-            else
-            {
-                _temperatureCore.Value = null;
-            }
-
-            if (telemetry.GpuHotspotTemperatureSupported)
-            {
-                _temperatureHotSpot.Value = (float)telemetry.GpuHotspotTemperatureValue;
-                ActivateSensor(_temperatureHotSpot);
-            }
-            else
-            {
-                _temperatureHotSpot.Value = null;
-            }
-
-            if (telemetry.GpuMemoryTemperatureSupported)
-            {
-                _temperatureMemory.Value = (float)telemetry.GpuMemoryTemperatureValue;
-                ActivateSensor(_temperatureMemory);
-            }
-            else
-            {
-                _temperatureMemory.Value = null;
-            }
-
-            if (telemetry.GpuIntakeTemperatureSupported)
-            {
-                _temperatureIntake.Value = (float)telemetry.GpuIntakeTemperatureValue;
-                ActivateSensor(_temperatureIntake);
-            }
-            else
-            {
-                _temperatureIntake.Value = null;
-            }
+            _temperatureCore.Value = telemetry.GpuTemperatureSupported ? (float)telemetry.GpuTemperatureValue : null;
+            _temperatureHotSpot.Value = telemetry.GpuHotspotTemperatureSupported ? (float)telemetry.GpuHotspotTemperatureValue : null;
+            _temperatureMemory.Value = telemetry.GpuMemoryTemperatureSupported ? (float)telemetry.GpuMemoryTemperatureValue : null;
+            _temperatureIntake.Value = telemetry.GpuIntakeTemperatureSupported ? (float)telemetry.GpuIntakeTemperatureValue : null;
 
             // Clock sensors
-            if (telemetry.GpuClockSpeedSupported)
-            {
-                _coreClock.Value = (float)telemetry.GpuClockSpeedValue;
-                ActivateSensor(_coreClock);
-            }
-            else
-            {
-                _coreClock.Value = null;
-            }
-
-            if (telemetry.GpuVRAMClockSpeedSupported)
-            {
-                _memoryClock.Value = (float)telemetry.GpuVRAMClockSpeedValue;
-                ActivateSensor(_memoryClock);
-            }
-            else
-            {
-                _memoryClock.Value = null;
-            }
-
-            if (telemetry.NpuFrequencySupported)
-            {
-                _npuClock.Value = (float)telemetry.NpuFrequencyValue;
-                ActivateSensor(_npuClock);
-            }
-            else
-            {
-                _npuClock.Value = null;
-            }
+            _coreClock.Value = telemetry.GpuClockSpeedSupported ? (float)telemetry.GpuClockSpeedValue : null;
+            _memoryClock.Value = telemetry.GpuVRAMClockSpeedSupported ? (float)telemetry.GpuVRAMClockSpeedValue : null;
+            _npuClock.Value = telemetry.NpuFrequencySupported ? (float)telemetry.NpuFrequencyValue : null;
 
             // Fan sensor
-            if (telemetry.GpuFanSpeedSupported)
-            {
-                _fan.Value = (float)telemetry.GpuFanSpeedValue;
-                ActivateSensor(_fan);
-            }
-            else
-            {
-                _fan.Value = null;
-            }
+            _fan.Value = telemetry.GpuFanSpeedSupported ? (float)telemetry.GpuFanSpeedValue : null;
 
-            // Voltage sensor
-            if (telemetry.GpuVoltageSupported)
-            {
-                // ADLX returns voltage in mV, convert to V
-                _coreVoltage.Value = (float)(telemetry.GpuVoltageValue / 1000.0);
-                ActivateSensor(_coreVoltage);
-            }
-            else
-            {
-                _coreVoltage.Value = null;
-            }
+            // Voltage sensor (ADLX returns voltage in mV, convert to V)
+            _coreVoltage.Value = telemetry.GpuVoltageSupported ? (float)(telemetry.GpuVoltageValue / 1000.0) : null;
 
             // Load sensors
-            if (telemetry.GpuUsageSupported)
-            {
-                _coreLoad.Value = (float)Math.Min(telemetry.GpuUsageValue, 100);
-                ActivateSensor(_coreLoad);
-            }
-            else
-            {
-                _coreLoad.Value = null;
-            }
-
-            if (telemetry.NpuActivityLevelSupported)
-            {
-                _npuLoad.Value = (float)Math.Min(telemetry.NpuActivityLevelValue, 100);
-                ActivateSensor(_npuLoad);
-            }
-            else
-            {
-                _npuLoad.Value = null;
-            }
+            _coreLoad.Value = telemetry.GpuUsageSupported ? (float)Math.Min(telemetry.GpuUsageValue, 100) : null;
+            _npuLoad.Value = telemetry.NpuActivityLevelSupported ? (float)Math.Min(telemetry.NpuActivityLevelValue, 100) : null;
 
             // Power sensors
-            if (telemetry.GpuPowerSupported)
-            {
-                _powerTotal.Value = (float)telemetry.GpuPowerValue;
-                ActivateSensor(_powerTotal);
-            }
-            else
-            {
-                _powerTotal.Value = null;
-            }
+            _powerTotal.Value = telemetry.GpuPowerSupported ? (float)telemetry.GpuPowerValue : null;
+            _powerTotalBoardPower.Value = telemetry.GpuTotalBoardPowerSupported ? (float)telemetry.GpuTotalBoardPowerValue : null;
 
-            if (telemetry.GpuTotalBoardPowerSupported)
-            {
-                _powerTotalBoardPower.Value = (float)telemetry.GpuTotalBoardPowerValue;
-                ActivateSensor(_powerTotalBoardPower);
-            }
-            else
-            {
-                _powerTotalBoardPower.Value = null;
-            }
+            // VRAM usage from ADLX (in MB, convert to GB)
+            _memoryUsed.Value = telemetry.GpuVramSupported ? (float)(telemetry.GpuVramValue / 1024.0) : null;
 
-            // VRAM usage from ADLX (in MB)
-            if (telemetry.GpuVramSupported)
-            {
-                _memoryUsed.Value = (float)(telemetry.GpuVramValue / 1024.0); // Convert MB to GB
-                ActivateSensor(_memoryUsed);
-            }
-            else
-            {
-                _memoryUsed.Value = null;
-            }
-
-            // Shared memory from ADLX (in MB)
-            if (telemetry.GpuSharedMemorySupported)
-            {
-                _adlxSharedMemory.Value = (float)(telemetry.GpuSharedMemoryValue / 1024.0); // Convert MB to GB
-                ActivateSensor(_adlxSharedMemory);
-            }
-            else
-            {
-                _adlxSharedMemory.Value = null;
-            }
+            // Shared memory from ADLX (in MB, convert to GB)
+            _adlxSharedMemory.Value = telemetry.GpuSharedMemorySupported ? (float)(telemetry.GpuSharedMemoryValue / 1024.0) : null;
         }
 
         // D3D memory and usage metrics
