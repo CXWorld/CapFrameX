@@ -718,43 +718,65 @@ namespace CapFrameX.Data
         private void SaveSessionToFile(string filePath, ISession session)
         {
             var tempFilePath = filePath + ".tmp";
-            try
+
+            // Serialize to memory first to get exact size
+            using (var memoryStream = new MemoryStream())
             {
-                // Write to a temp file first to avoid corrupt files on disk full
-                using (var streamWriter = new StreamWriter(tempFilePath))
+                using (var streamWriter = new StreamWriter(memoryStream, Encoding.UTF8, 1024, leaveOpen: true))
+                using (var jsonWriter = new JsonTextWriter(streamWriter))
                 {
-                    using (JsonWriter jsonWriter = new JsonTextWriter(streamWriter))
+                    var serializer = new JsonSerializer();
+                    serializer.Serialize(jsonWriter, session);
+                }
+
+                // Check disk space with a safety buffer
+                var requiredBytes = memoryStream.Length;
+                EnsureSufficientDiskSpace(filePath, requiredBytes);
+
+                // Now write to disk
+                try
+                {
+                    memoryStream.Position = 0;
+                    using (var fileStream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write))
                     {
-                        var serializer = new JsonSerializer();
-                        serializer.Serialize(jsonWriter, session);
+                        memoryStream.CopyTo(fileStream);
+                    }
+
+                    // File.Move doesn't have overwrite option in .NET Framework
+                    if (File.Exists(filePath))
+                    {
+                        File.Delete(filePath);
+                    }
+                    File.Move(tempFilePath, filePath);
+
+                    _logger.LogInformation("{FilePath} successfully written", filePath);
+                }
+                finally
+                {
+                    if (File.Exists(tempFilePath))
+                    {
+                        try { File.Delete(tempFilePath); } catch { }
                     }
                 }
-
-                // Only replace the target file after successful write
-                if (File.Exists(filePath))
-                    File.Delete(filePath);
-                File.Move(tempFilePath, filePath);
-
-                _logger.LogInformation("{filePath} successfully written", filePath);
             }
-            catch (IOException ex) when (ex.HResult == unchecked((int)0x80070070)) // ERROR_DISK_FULL
+        }
+
+        private void EnsureSufficientDiskSpace(string filePath, long requiredBytes)
+        {
+            const long MinimumBuffer = 10 * 1024 * 1024; // 10 MB minimum buffer
+
+            var root = Path.GetPathRoot(Path.GetFullPath(filePath));
+            var driveInfo = new DriveInfo(root);
+            var required = requiredBytes + MinimumBuffer;
+
+            if (driveInfo.AvailableFreeSpace < required)
             {
-                _logger.LogError(ex, "Failed to save {filePath}: disk is full", filePath);
-                // Clean up temp file if it exists
-                if (File.Exists(tempFilePath))
-                {
-                    try { File.Delete(tempFilePath); } catch { }
-                }
-                throw;
-            }
-            catch (Exception)
-            {
-                // Clean up temp file on any error
-                if (File.Exists(tempFilePath))
-                {
-                    try { File.Delete(tempFilePath); } catch { }
-                }
-                throw;
+                throw new IOException(
+                    string.Format(
+                        "Insufficient disk space on {0}. Need {1:N0} bytes, have {2:N0} bytes.",
+                        root,
+                        required,
+                        driveInfo.AvailableFreeSpace));
             }
         }
 
