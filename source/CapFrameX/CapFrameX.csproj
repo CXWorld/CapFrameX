@@ -431,4 +431,16 @@
     <PreBuildEvent>
     </PreBuildEvent>
   </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent Condition="'$(Configuration)' == 'Release'">
+if exist "$(ProjectDir)CapFrameX.pfx" (
+  for %%i in ("C:\Program Files (x86)\Windows Kits\10\bin\10.*\x64\signtool.exe") do set "SIGNTOOL=%%i"
+  if defined SIGNTOOL (
+    "%SIGNTOOL%" sign /f "$(ProjectDir)CapFrameX.pfx" /p CapFrameXDev123 /fd sha256 /tr http://timestamp.digicert.com /td sha256 "$(TargetPath)"
+  ) else (
+    echo WARNING: signtool.exe not found. Executable will not be signed.
+  )
+)
+    </PostBuildEvent>
+  </PropertyGroup>
 </Project>
