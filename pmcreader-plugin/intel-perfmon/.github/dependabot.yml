@@ -1,0 +1,27 @@
+# Dependabot version updates for packages used by perfmon tooling.
+
+version: 2
+updates:
+  # Enable version updates for Python packages.
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 1
+    ignore:
+      # Ignore patch updates (major.minor.patch) for all packages. This
+      # does not prevent security updates.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
+
+  # Enable version updates from GitHub Actions.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 1
+    ignore:
+      # Ignore patch updates (major.minor.patch) for all packages. This
+      # does not prevent security updates.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]

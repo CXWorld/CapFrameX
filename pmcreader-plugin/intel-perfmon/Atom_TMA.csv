@@ -1,0 +1,78 @@
+TMA,Version,1.2,,,,,,,,,
+.,,,,,,,,,,,
+Key,Level1,Level2,Level3,Level4,TNT,GLM/GLP,Locate-with,Count Domain,Metric Description,Metric Group,Threshold
+FE,Frontend_Bound,,,,TOPDOWN_FE_BOUND.ALL / SLOTS,UOPS_NOT_DELIVERED.ANY / SLOTS ,,Slots,Counts the number of issue slots  that were not consumed by the backend due to frontend stalls.,,>0.20
+FE,,Fetch_Latency,,,( TOPDOWN_FE_BOUND.ITLB + TOPDOWN_FE_BOUND.ICACHE + TOPDOWN_FE_BOUND.BRANCH_DETECT +  TOPDOWN_FE_BOUND.BRANCH_RESTEER ) / SLOTS,,,Slots,"Counts the number of issue slots  that were not delivered by the frontend due to frontend bandwidth restrictions due to decode, predecode, cisc, and other limitations.",,>0.15
+FE,,,ICache_Misses,,TOPDOWN_FE_BOUND.ICACHE / SLOTS,,,Slots,Counts the number of issue slots  that were not delivered by the frontend due to instruction cache misses.,,>0.05
+FE,,,ITLB_Misses,,TOPDOWN_FE_BOUND.ITLB / SLOTS,,,Slots,Counts the number of issue slots  that were not delivered by the frontend due to Instruction Table Lookaside Buffer (ITLB) misses.,,>0.05
+FE,,,Branch_Detect,,TOPDOWN_FE_BOUND.BRANCH_DETECT / SLOTS,,,Slots,"Counts the number of issue slots  that were not delivered by the frontend due to BACLEARS, which occurs when the Branch Target Buffer (BTB) prediction or lack thereof, was corrected by a later branch predictor in the frontend. Includes BACLEARS due to all branch types including conditional and unconditional jumps, returns, and indirect branches.",,>0.05
+FE,,,Branch_Resteer,,TOPDOWN_FE_BOUND.BRANCH_RESTEER / SLOTS,,,Slots,"Counts the number of issue slots  that were not delivered by the frontend due to BTCLEARS, which occurs when the Branch Target Buffer (BTB) predicts a taken branch.",,>0.05
+FE,,Fetch_Bandwidth,,,( TOPDOWN_FE_BOUND.CISC + TOPDOWN_FE_BOUND.DECODE + TOPDOWN_FE_BOUND.PREDECODE + TOPDOWN_FE_BOUND.OTHER ) / SLOTS,,,Slots,"Counts the number of issue slots  that were not delivered by the frontend due to frontend bandwidth restrictions due to decode, predecode, cisc, and other limitations.",,>0.10
+FE,,,Cisc,,TOPDOWN_FE_BOUND.CISC / SLOTS,,,Slots,Counts the number of issue slots  that were not delivered by the frontend due to the microcode sequencer (MS).,,>0.05
+FE,,,Decode,,TOPDOWN_FE_BOUND.DECODE / SLOTS,,,Slots,Counts the number of issue slots  that were not delivered by the frontend due to decode stalls.,,>0.05
+FE,,,Predecode,,TOPDOWN_FE_BOUND.PREDECODE / SLOTS,,,Slots,Counts the number of issue slots  that were not delivered by the frontend due to wrong predecodes.,,>0.05
+FE,,,Other_FB,,TOPDOWN_FE_BOUND.OTHER / SLOTS,,,Slots,Counts the number of issue slots  that were not delivered by the frontend due to other common frontend stalls not categorized.,,>0.05
+BAD,Bad_Speculation,,,,TOPDOWN_BAD_SPECULATION.ALL / SLOTS,( UOPS_ISSUED.ANY - UOPS_RETIRED.ANY +  ISSUE_SLOTS_NOT_CONSUMED.RECOVERY )  / SLOTS ,,Slots,Counts the total number of issue slots that were not consumed by the backend because allocation is stalled due to a mispredicted jump or a machine clear. Only issue slots wasted due to fast nukes such as memory ordering nukes are counted. Other nukes are not accounted for. Counts all issue slots blocked during this recovery window including relevant microcode flows and while uops are not yet available in the instruction queue (IQ). Also includes the issue slots that were consumed by the backend but were thrown away because they were younger than the mispredict or machine clear.,,>0.15
+BAD,,Branch_Mispredicts,,,TOPDOWN_BAD_SPECULATION.MISPREDICT / SLOTS,,,Slots,Counts the number of issue slots  that were not consumed by the backend due to branch mispredicts.,,>0.05
+BAD,,Machine_Clears,,,( TOPDOWN_BAD_SPECULATION.MONUKE ) / SLOTS,,,Slots,Counts the total number of issue slots that were not consumed by the backend because allocation is stalled due to a machine clear (nuke) of any kind including memory ordering and memory disambiguation.,,>0.05
+BAD,,,Fast_Nuke,,TOPDOWN_BAD_SPECULATION.MONUKE / SLOTS,,,Slots,"Counts the number of issue slots  that were not consumed by the backend due to a machine clear classified as a fast nuke due to memory ordering, memory disambiguation and memory renaming.",,>0.05
+BE,Backend_Bound,,,,TOPDOWN_BE_BOUND.ALL / SLOTS,ISSUE_SLOTS_NOT_CONSUMED.RESOURCE_FULL / SLOTS ,,Slots,"Counts the total number of issue slots  that were not consumed by the backend due to backend stalls.  Note that uops must be available for consumption in order for this event to count.  If a uop is not available (IQ is empty), this event will not count.   The rest of these subevents count backend stalls, in cycles, due to an outstanding request which is memory bound vs core bound.   The subevents are not slot based events and therefore can not be precisely added or subtracted from the Backend_Bound_Aux subevents which are slot based.",,>0.10
+BE,,Core_Bound,,,"max( 0 , Backend_Bound - Memory_Bound )",,,Cycles,Counts the number of cycles due to backend bound stalls that are core execution bound and not attributed to outstanding demand load or store stalls.,,>0.10
+BE,,Memory_Bound,,,( MEM_BOUND_STALLS.LOAD_L2_HIT + MEM_BOUND_STALLS.LOAD_LLC_HIT + MEM_BOUND_STALLS.LOAD_DRAM_HIT+ MEM_BOUND_STALLS.STORE_BUFFER_FULL) / CLKS,,,Cycles,Counts the number of cycles the core is stalled due to stores or loads.,,>0.20
+BE,,,Store_Bound,,MEM_BOUND_STALLS.STORE_BUFFER_FULL / CLKS,,,Cycles,Counts the number of cycles the core is stalled due to store buffer full.,,>0.10
+BE,,,L2_Bound,,MEM_BOUND_STALLS.LOAD_L2_HIT / CLKS,,,Cycles,Counts the number of cycles a core is stalled due to a demand load which hit in the L2 Cache.,,>0.10
+BE,,,L3_Bound,,MEM_BOUND_STALLS.LOAD_LLC_HIT / CLKS,,,Cycles,Counts the number of cycles a core is stalled due to a demand load which hit in the Last Level Cache (LLC) or other core with HITE/F/M.,,>0.10
+BE,,,DRAM_Bound,,MEM_BOUND_STALLS.LOAD_DRAM_HIT / CLKS,,,Cycles,Counts the number of cycles the core is stalled due to a demand load miss which hit in DRAM or MMIO (Non-DRAM).,,>0.10
+BE_aux,Backend_Bound_Aux,,,,Backend_Bound,Backend_Bound,,Slots,"Counts the total number of issue slots  that were not consumed by the backend due to backend stalls.  Note that UOPS must be available for consumption in order for this event to count.  If a uop is not available (IQ is empty), this event will not count.  All of these subevents count backend stalls, in slots, due to a resource limitation.   These are not cycle based events and therefore can not be precisely added or subtracted from the Backend_Bound subevents which are cycle based.  These subevents are supplementary to Backend_Bound and can be used to analyze results from a resource perspective at allocation.",,>0.20
+BE_aux,,Resource_Bound,,,Backend_Bound,,,Slots,"Counts the total number of issue slots  that were not consumed by the backend due to backend stalls.  Note that uops must be available for consumption in order for this event to count.  If a uop is not available (IQ is empty), this event will not count.",,>0.20
+BE_aux,,,Mem_Scheduler,,TOPDOWN_BE_BOUND.MEM_SCHEDULER / SLOTS,,,Slots,Counts the number of issue slots  that were not consumed by the backend due to memory reservation stalls in which a scheduler is not able to accept uops.,,>0.10
+BE_aux,,,Non_Mem_Scheduler,,TOPDOWN_BE_BOUND.NON_MEM_SCHEDULER / SLOTS,,,Slots,"Counts the number of issue slots  that were not consumed by the backend due to IEC or FPC RAT stalls, which can be due to FIQ or IEC reservation stalls in which the integer, floating point or SIMD scheduler is not able to accept uops.",,>0.10
+BE_aux,,,Register,,TOPDOWN_BE_BOUND.REGISTER / SLOTS,,,Slots,Counts the number of issue slots  that were not consumed by the backend due to the physical register file unable to accept an entry (marble stalls).,,>0.10
+BE_aux,,,Reorder_Buffer,,TOPDOWN_BE_BOUND.REORDER_BUFFER / SLOTS,,,Slots,Counts the number of issue slots  that were not consumed by the backend due to the reorder buffer being full (ROB stalls).,,>0.10
+BE_aux,,,Store_Buffer,,TOPDOWN_BE_BOUND.STORE_BUFFER / SLOTS,,,Slots,Counts the number of issue slots  that were not consumed by the backend due to store buffers stalls.,,>0.10
+BE_aux,,,Alloc_Restriction,,TOPDOWN_BE_BOUND.ALLOC_RESTRICTIONS / SLOTS,,,Slots,Counts the number of issue slots  that were not consumed by the backend due to certain allocation restrictions.,,>0.10
+BE_aux,,,Serialization,,TOPDOWN_BE_BOUND.SERIALIZATION / SLOTS,,,Slots,"Counts the number of issue slots  that were not consumed by the backend due to scoreboards from the instruction queue (IQ), jump execution unit (JEU), or microcode sequencer (MS).",,>0.10
+RET,Retiring,,,,TOPDOWN_RETIRING.ALL / SLOTS,UOPS_RETIRED.ANY / SLOTS ,,Slots,Counts the number of issue slots  that result in retirement slots.,,>0.75
+RET,,Base,,,( TOPDOWN_RETIRING.ALL - UOPS_RETIRED.MS ) / SLOTS,,,Slots,Counts the number of uops that are not from the microsequencer.,,>0.60
+RET,,,FPDIV_uops,,UOPS_RETIRED.FPDIV / SLOTS,UOPS_RETIRED.FPDIV / SLOTS,,Slots,Counts the number of floating point divide operations per uop.,,>0.20
+RET,,,Other_Ret,,( TOPDOWN_RETIRING.ALL - UOPS_RETIRED.MS - UOPS_RETIRED.FPDIV ) / SLOTS,,,Slots,Counts the number of uops retired excluding ms and fp div uops.,,>0.30
+RET,,MS_uops,,,UOPS_RETIRED.MS / SLOTS,UOPS_RETIRED.MS / SLOTS,,Slots,"Counts the number of uops that are from the complex flows issued by the micro-sequencer (MS).  This includes uops from flows due to complex instructions, faults, assists, and inserted flows.",,>0.05
+.,metrics,,,,,,,,, ,
+Info.Core,CLKS,,,,CPU_CLK_UNHALTED.CORE,CPU_CLK_UNHALTED.CORE,,Cycles,, ,
+Info.Core,CLKS_P,,,,CPU_CLK_UNHALTED.CORE_P,CPU_CLK_UNHALTED.CORE_P,,Cycles,, ,
+Info.Core,SLOTS,,,,#Pipeline_Width * CLKS,#Pipeline_Width * CLKS,,Cycles,, ,
+Info.Core,IPC,,,,INST_RETIRED.ANY / CLKS,INST_RETIRED.ANY / CLKS,,,Instructions Per Cycle, ,
+Info.Core,CPI,,,,CLKS / INST_RETIRED.ANY,CLKS / INST_RETIRED.ANY,,,Cycles Per Instruction, ,
+Info.Core,UPI,,,,UOPS_RETIRED.ALL / INST_RETIRED.ANY,UOPS_RETIRED.ANY / INST_RETIRED.ANY,,,Uops Per Instruction, ,
+Info.L1_Bound,Store_Fwd_Blocks,,,,100 * LD_BLOCKS.DATA_UNKNOWN / MEM_UOPS_RETIRED.ALL_LOADS,100 * LD_BLOCKS.DATA_UNKNOWN / MEM_UOPS_RETIRED.ALL_LOADS,,,Percentage of total non-speculative loads with a store forward or unknown store address block,,
+Info.L1_Bound,Address_Alias_Blocks,,,,100 * LD_BLOCKS.4K_ALIAS / MEM_UOPS_RETIRED.ALL_LOADS,100 * LD_BLOCKS.4K_ALIAS / MEM_UOPS_RETIRED.ALL_LOADS,,,Percentage of total non-speculative loads with a address aliasing block,,
+Info.L1_Bound,Load_Splits,,,,100 * MEM_UOPS_RETIRED.SPLIT_LOADS / MEM_UOPS_RETIRED.ALL_LOADS,100 * MEM_UOPS_RETIRED.SPLIT_LOADS / MEM_UOPS_RETIRED.ALL_LOADS,,,Percentage of total non-speculative loads that are splits,,
+Info.Inst_Mix,IpBranch,,,,INST_RETIRED.ANY / BR_INST_RETIRED.ALL_BRANCHES,INST_RETIRED.ANY / BR_INST_RETIRED.ALL_BRANCHES,,,Instructions per Branch (lower number means higher occurrence rate), ,
+Info.Inst_Mix,IpCall,,,,INST_RETIRED.ANY / BR_INST_RETIRED.CALL,INST_RETIRED.ANY / BR_INST_RETIRED.CALL,,,Instruction per (near) call (lower number means higher occurrence rate), ,
+Info.Inst_Mix,IpLoad,,,,INST_RETIRED.ANY / MEM_UOPS_RETIRED.ALL_LOADS,INST_RETIRED.ANY / MEM_UOPS_RETIRED.ALL_LOADS,,,Instructions per Load, ,
+Info.Inst_Mix,IpStore,,,,INST_RETIRED.ANY / MEM_UOPS_RETIRED.ALL_STORES,INST_RETIRED.ANY / MEM_UOPS_RETIRED.ALL_STORES,,,Instructions per Store, ,
+Info.Inst_Mix,IpMispredict,,,,INST_RETIRED.ANY / BR_MISP_RETIRED.ALL_BRANCHES,INST_RETIRED.ANY / BR_MISP_RETIRED.ALL_BRANCHES,,,Instructions per retired Branch Misprediction, ,
+Info.Inst_Mix,IpMisp_Cond_Ntaken,,,,INST_RETIRED.ANY / ( BR_MISP_RETIRED.JCC - BR_MISP_RETIRED.TAKEN_JCC),INST_RETIRED.ANY / ( BR_MISP_RETIRED.JCC - BR_MISP_RETIRED.TAKEN_JCC),,,Instructions per retired conditional Branch Misprediction where the branch was not taken,,
+Info.Inst_Mix,IpMisp_Cond_Taken,,,,INST_RETIRED.ANY / BR_MISP_RETIRED.TAKEN_JCC,INST_RETIRED.ANY / BR_MISP_RETIRED.TAKEN_JCC,,,Instructions per retired conditional Branch Misprediction where the branch was taken,,
+Info.Inst_Mix,IpMisp_Ret,,,,INST_RETIRED.ANY / BR_MISP_RETIRED.RETURN,INST_RETIRED.ANY / BR_MISP_RETIRED.RETURN,,,Instructions per retired return Branch Misprediction,,
+Info.Inst_Mix,IpMisp_Indirect,,,,INST_RETIRED.ANY / BR_MISP_RETIRED.NON_RETURN_IND,INST_RETIRED.ANY / BR_MISP_RETIRED.NON_RETURN_IND,,,Instructions per retired indirect call or jump Branch Misprediction,,
+Info.Inst_Mix,IpFarBranch,,,,INST_RETIRED.ANY / ( BR_INST_RETIRED.FAR_BRANCH / 2 ),INST_RETIRED.ANY / ( BR_INST_RETIRED.FAR_BRANCH / 2 ) ,,,Instructions per Far Branch, ,
+Info.Inst_Mix,Branch_Mispredict_Ratio,,,,BR_MISP_RETIRED.ALL_BRANCHES / BR_INST_RETIRED.ALL_BRANCHES,BR_MISP_RETIRED.ALL_BRANCHES / BR_INST_RETIRED.ALL_BRANCHES,,,Ratio of all branches which mispredict, ,
+Info.Inst_Mix,Branch_Mispredict_to_Unknown_Branch_Ratio,,,,BR_MISP_RETIRED.ALL_BRANCHES / BACLEARS.ANY,BR_MISP_RETIRED.ALL_BRANCHES / BACLEARS.ALL,,,Ratio between Mispredicted branches and unknown branches, ,
+Info.Inst_Mix,Microcode_Uop_Ratio,,,,100 * UOPS_RETIRED.MS / UOPS_RETIRED.ALL,100 * UOPS_RETIRED.MS / UOPS_RETIRED.ANY,,,Percentage of all uops which are ucode ops, ,
+Info.Inst_Mix,FPDiv_Uop_Ratio,,,,100 * UOPS_RETIRED.FPDIV / UOPS_RETIRED.ALL,100 * UOPS_RETIRED.FPDIV / UOPS_RETIRED.ANY,,,Percentage of all uops which are FPDiv uops, ,
+Info.Inst_Mix,IDiv_Uop_Ratio,,,,100 * UOPS_RETIRED.IDIV / UOPS_RETIRED.ALL,100 * UOPS_RETIRED.IDIV / UOPS_RETIRED.ANY,,,Percentage of all uops which are IDiv uops, ,
+Info.Inst_Mix,X87_Uop_Ratio,,,,100 * UOPS_RETIRED.X87 / UOPS_RETIRED.ALL,,,,Percentage of all uops which are x87 uops, ,
+Info.System,Turbo_Utilization,,,,CLKS / CPU_CLK_UNHALTED.REF_TSC,CLKS / CPU_CLK_UNHALTED.REF_TSC,,,Average Frequency Utilization relative nominal frequency, ,
+Info.System,Kernel_Utilization,,,,CPU_CLK_UNHALTED.CORE_P:sup / CPU_CLK_UNHALTED.CORE_P,CPU_CLK_UNHALTED.CORE_P:sup / CPU_CLK_UNHALTED.CORE_P,,,Fraction of cycles spent in Kernel mode, ,
+Info.System,CPU_Utilization,,,,CPU_CLK_UNHALTED.REF_TSC / TSC,CPU_CLK_UNHALTED.REF_TSC / TSC,,,Average CPU Utilization, ,
+Info.Memory,Cycles_per_Demand_Load_L2_Hit,,,,MEM_BOUND_STALLS.LOAD_L2_HIT / MEM_LOAD_UOPS_RETIRED.L2_HIT,,,,Cycle cost per L2 hit, ,
+Info.Memory,Cycles_per_Demand_Load_L3_Hit,,,,MEM_BOUND_STALLS.LOAD_LLC_HIT / MEM_LOAD_UOPS_RETIRED.L3_HIT,,,,Cycle cost per LLC hit, ,
+Info.Memory,Cycles_per_Demand_Load_DRAM_Hit,,,,MEM_BOUND_STALLS.LOAD_DRAM_HIT / MEM_LOAD_UOPS_RETIRED.DRAM_HIT,,,,Cycle cost per DRAM hit, ,
+Info.Frontend,Inst_Miss_Cost_L2Hit_Percent,,,,100 * MEM_BOUND_STALLS.IFETCH_L2_HIT / ( MEM_BOUND_STALLS.IFETCH ),,,,Percent of instruction miss cost that hit in the L2, ,
+Info.Frontend,Inst_Miss_Cost_L3Hit_Percent,,,,100 * MEM_BOUND_STALLS.IFETCH_LLC_HIT / ( MEM_BOUND_STALLS.IFETCH ),,,,Percent of instruction miss cost that hit in the L3, ,
+Info.Frontend,Inst_Miss_Cost_DRAMHit_Percent,,,,100 * MEM_BOUND_STALLS.IFETCH_DRAM_HIT / ( MEM_BOUND_STALLS.IFETCH ),,,,Percent of instruction miss cost that hit in DRAM, ,
+Info.Memory,MemLoadPKI,,,,1000 * MEM_UOPS_RETIRED.ALL_LOADS / INST_RETIRED.ANY,1000 * MEM_UOPS_RETIRED.ALL_LOADS / INST_RETIRED.ANY,,,load ops retired per 1000 instruction, ,
+Info.System,MUX,,,,CLKS_P / CLKS,CLKS_P / CLKS,,,PerfMon Event Multiplexing accuracy indicator, ,( > 1.1 | < 0.9 )
+.,,,,,,,,,, ,
+Aux,#Pipeline_Width,,,,4,3,,,pipeline allocation width, ,

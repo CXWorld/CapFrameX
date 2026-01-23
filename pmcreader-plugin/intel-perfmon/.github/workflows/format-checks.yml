@@ -1,0 +1,60 @@
+# This workflow verifies files are properly formatted.
+
+name: Run format checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  # This job validates that mapfile.csv is correctly formatted and configured.
+  verify-mapfile:
+    name: Verify mapfile.csv
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}/scripts/ci/verify_mapfile
+
+    steps:
+    - name: Checkout perfmon
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+    - name: Set up Python 3.x
+      uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+      with:
+        python-version: "3.x"
+
+    - name: Install Python packages
+      run: pip install -r requirements.txt
+
+    - name: Run verify_mapfile self tests
+      run: python -m unittest
+
+    - name: Validate mapfile.csv
+      run: python verify_mapfile.py
+
+  # This job validates that perf-uncore-events-*.csv files.
+  verify-perf-uncore-events:
+    name: Verify perf-uncore-events-*.csv files
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}/scripts/ci/verify_perf_uncore_events
+
+    steps:
+    - name: Checkout perfmon
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+    - name: Install Python packages
+      run: pip install -r requirements.txt
+
+    - name: Run self tests
+      run: python -m unittest
+
+    - name: Validate perf-uncore-events-*.csv files
+      run: python verify_perf_uncore_events.py

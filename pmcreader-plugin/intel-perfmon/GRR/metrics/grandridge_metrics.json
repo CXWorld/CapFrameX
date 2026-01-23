@@ -1,0 +1,2762 @@
+{
+  "Header": {
+    "Copyright": "Copyright (c) 2001 - 2025 Intel Corporation. All rights reserved.",
+    "Info": "Performance Monitoring Metrics for Intel(R) Grand Ridge Base Transceiver Station Family0",
+    "DatePublished": "05/28/2025",
+    "Version": "1.02",
+    "Legend": "",
+    "TmaVersion": "3.6",
+    "TmaFlavor": "Public"
+  },
+  "Metrics": [
+    {
+      "MetricName": "cpu_operating_frequency",
+      "LegacyName": "metric_CPU operating frequency (in GHz)",
+      "Level": 1,
+      "BriefDescription": "CPU operating frequency (in GHz)",
+      "UnitOfMeasure": "GHz",
+      "Events": [
+        {
+          "Name": "CPU_CLK_UNHALTED.THREAD",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.REF_TSC",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [
+        {
+          "Name": "SYSTEM_TSC_FREQ",
+          "Alias": "c"
+        }
+      ],
+      "Formula": "(a / b * c) / 1000000000",
+      "Category": "Freq",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "uncore_frequency",
+      "LegacyName": "metric_uncore frequency GHz",
+      "Level": 1,
+      "BriefDescription": "Uncore operating frequency in GHz",
+      "UnitOfMeasure": "GHz",
+      "Events": [
+        {
+          "Name": "UNC_CHA_CLOCKTICKS",
+          "Alias": "a"
+        }
+      ],
+      "Constants": [
+        {
+          "Name": "CHAS_PER_SOCKET",
+          "Alias": "b"
+        },
+        {
+          "Name": "SOCKET_COUNT",
+          "Alias": "socket_count"
+        }
+      ],
+      "Formula": "(a / (b * socket_count) / 1000000000) / DURATIONTIMEINSECONDS",
+      "Category": "Freq",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "cpu_utilization",
+      "LegacyName": "metric_CPU utilization %",
+      "Level": 1,
+      "BriefDescription": "Percentage of time spent in the active CPU power state C0",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "CPU_CLK_UNHALTED.REF_TSC",
+          "Alias": "a"
+        },
+        {
+          "Name": "TSC",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / b",
+      "Category": "Util",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "cpi",
+      "LegacyName": "metric_CPI",
+      "Level": 1,
+      "BriefDescription": "Cycles per instruction retired; indicating how much time each executed instruction took; in units of cycles.",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "CPU_CLK_UNHALTED.THREAD",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "CPI",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "l2_mpi",
+      "LegacyName": "metric_L2 MPI (includes code+data+rfo w/ prefetches)",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of requests missing L2 cache (includes code+data+rfo w/ prefetches) to the total number of completed instructions",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "LONGEST_LAT_CACHE.REFERENCE",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "MPI",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "memory_bandwidth_read",
+      "LegacyName": "metric_memory bandwidth read (MB/sec)",
+      "Level": 1,
+      "BriefDescription": "DDR memory read bandwidth (MB/sec)",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_M_CAS_COUNT_SCH0.RD",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_M_CAS_COUNT_SCH1.RD",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "((a + b) * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "BW, MC",
+      "ResolutionLevels": "CHANNEL, IMC, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "memory_bandwidth_write",
+      "LegacyName": "metric_memory bandwidth write (MB/sec)",
+      "Level": 1,
+      "BriefDescription": "DDR memory write bandwidth (MB/sec)",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_M_CAS_COUNT_SCH0.WR",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_M_CAS_COUNT_SCH1.WR",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "((a + b) * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "BW, MC",
+      "ResolutionLevels": "CHANNEL, IMC, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "memory_bandwidth_total",
+      "LegacyName": "metric_memory bandwidth total (MB/sec)",
+      "Level": 1,
+      "BriefDescription": "DDR memory bandwidth (MB/sec)",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_M_CAS_COUNT_SCH0.RD",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_M_CAS_COUNT_SCH1.RD",
+          "Alias": "b"
+        },
+        {
+          "Name": "UNC_M_CAS_COUNT_SCH0.WR",
+          "Alias": "c"
+        },
+        {
+          "Name": "UNC_M_CAS_COUNT_SCH1.WR",
+          "Alias": "d"
+        }
+      ],
+      "Constants": [],
+      "Formula": "((a + b + c + d) * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "BW, MC",
+      "ResolutionLevels": "CHANNEL, IMC, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "loads_retired_per_instr",
+      "LegacyName": "metric_loads retired per instr",
+      "Level": 1,
+      "BriefDescription": "Load operations retired per instruction",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "MEM_UOPS_RETIRED.ALL_LOADS",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "stores_retired_per_instr",
+      "LegacyName": "metric_stores retired per instr",
+      "Level": 1,
+      "BriefDescription": "Store operations retired per instruction",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "MEM_UOPS_RETIRED.ALL_STORES",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "l1d_demand_data_read_hits_per_instr",
+      "LegacyName": "metric_L1D demand data read hits per instr",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of demand load requests hitting in L1 data cache to the total number of completed instructions ",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "MEM_LOAD_UOPS_RETIRED.L1_HIT",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "D-side",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "l1_i_code_read_misses_with_prefetches_per_instr",
+      "LegacyName": "metric_L1-I code read misses (w/ prefetches) per instr",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of code read requests missing in L1 instruction cache (includes prefetches) to the total number of completed instructions",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "ICACHE.MISSES",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "MPI, I-side",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "l2_demand_data_read_hits_per_instr",
+      "LegacyName": "metric_L2 demand data read hits per instr",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of completed demand load requests hitting in L2 cache to the total number of completed instructions ",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "MEM_LOAD_UOPS_RETIRED.L2_HIT",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "D-side",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "l2_demand_data_read_mpi",
+      "LegacyName": "metric_L2 demand data read MPI",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of completed data read request missing L2 cache to the total number of completed instructions",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "MEM_LOAD_UOPS_RETIRED.L2_MISS",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "MPI, D-side",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "llc_data_read_mpi_demand_plus_prefetch",
+      "LegacyName": "metric_LLC data read MPI (demand+prefetch)",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of data read requests missing last level core cache (includes demand w/ prefetches) to the total number of completed instructions",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IA_MISS_DRD_OPT",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IA_MISS_DRD_OPT_PREF",
+          "Alias": "b"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IA_MISS_LLCPREFDATA",
+          "Alias": "c"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "d"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a + b + c) / d",
+      "Category": "MPI, D-side",
+      "ResolutionLevels": "SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "llc_code_read_mpi_demand_plus_prefetch",
+      "LegacyName": "metric_LLC code read MPI (demand+prefetch)",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of code read requests missing last level core cache (includes demand w/ prefetches) to the total number of completed instructions",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IA_MISS_CRD",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IA_MISS_CRD_PREF",
+          "Alias": "b"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "d"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a + b) / d",
+      "Category": "MPI, I-side",
+      "ResolutionLevels": "SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "itlb_2nd_level_mpi",
+      "LegacyName": "metric_ITLB (2nd level) MPI",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of completed page walks (for all page sizes) caused by a code fetch to the total number of completed instructions. This implies it missed in the ITLB (Instruction TLB) and further levels of TLB.",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "ITLB_MISSES.WALK_COMPLETED",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "MPI, I-side",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "itlb_2nd_level_large_page_mpi",
+      "LegacyName": "metric_ITLB (2nd level) large page MPI",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of completed page walks (for 2 megabyte and 4 megabyte page sizes) caused by a code fetch to the total number of completed instructions. This implies it missed in the Instruction Translation Lookaside Buffer (ITLB) and further levels of TLB.",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "ITLB_MISSES.WALK_COMPLETED_2M_4M",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "MPI",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "dtlb_2nd_level_load_mpi",
+      "LegacyName": "metric_DTLB (2nd level) load MPI",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of completed page walks (for all page sizes) caused by demand data loads to the total number of completed instructions. This implies it missed in the DTLB and further levels of TLB.",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "DTLB_LOAD_MISSES.WALK_COMPLETED",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "MPI, D-side",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "dtlb_2nd_level_2mb_large_page_load_mpi",
+      "LegacyName": "metric_DTLB (2nd level) 2MB large page load MPI",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of completed page walks (for 2 megabyte page sizes) caused by demand data loads to the total number of completed instructions. This implies it missed in the Data Translation Lookaside Buffer (DTLB) and further levels of TLB.",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "DTLB_LOAD_MISSES.WALK_COMPLETED_2M_4M",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "MPI, D-side",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "dtlb_2nd_level_store_mpi",
+      "LegacyName": "metric_DTLB (2nd level) store MPI",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of completed page walks (for all page sizes) caused by demand data stores to the total number of completed instructions. This implies it missed in the DTLB and further levels of TLB.",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "DTLB_STORE_MISSES.WALK_COMPLETED",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "MPI, D-side",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_bandwidth_read",
+      "LegacyName": "metric_IO_bandwidth_disk_or_network_writes (MB/sec)",
+      "Level": 1,
+      "BriefDescription": "Bandwidth of IO reads that are initiated by end device controllers that are requesting memory from the CPU.",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_PCIRDCUR",
+          "Alias": "a"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "BW, IO",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_bandwidth_write",
+      "LegacyName": "metric_IO_bandwidth_disk_or_network_reads (MB/sec)",
+      "Level": 1,
+      "BriefDescription": "Bandwidth of IO writes that are initiated by end device controllers that are writing memory to the CPU.",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_ITOM",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_ITOMCACHENEAR",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "((a + b) * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "BW, IO",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_read_l3_miss",
+      "LegacyName": "metric_IO % of inbound reads that miss L3",
+      "Level": 1,
+      "BriefDescription": "The percent of inbound reads initiated by IO that miss the L3 cache.",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_MISS_PCIRDCUR",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_PCIRDCUR",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / b",
+      "Category": "IO",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_partial_write_l3_miss",
+      "LegacyName": "metric_IO % of inbound partial writes that miss L3",
+      "Level": 1,
+      "BriefDescription": "The percent of inbound partial writes initiated by IO that miss the L3 cache.",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_ITOMCACHENEAR",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_MISS_ITOMCACHENEAR",
+          "Alias": "b"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_RFO",
+          "Alias": "c"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_MISS_RFO",
+          "Alias": "d"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ((b + d) / (a + c) )",
+      "Category": "IO",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_full_write_l3_miss",
+      "LegacyName": "metric_IO % of inbound full writes that miss L3",
+      "Level": 1,
+      "BriefDescription": "The percent of inbound full cache line writes initiated by IO that miss the L3 cache.",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_ITOM",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_MISS_ITOM",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * (b / a)",
+      "Category": "IO",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_msi",
+      "LegacyName": "metric_IO MSI per sec",
+      "Level": 1,
+      "BriefDescription": "Message Signaled Interrupts (MSI) per second sent by the integrated I/O traffic controller (IIO) to System Configuration Controller (Ubox).",
+      "UnitOfMeasure": "per second",
+      "Events": [
+        {
+          "Name": "UNC_IIO_NUM_REQ_OF_CPU_BY_TGT.UBOX_POSTED",
+          "Alias": "a"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a) / DURATIONTIMEINSECONDS",
+      "Category": "IO",
+      "ResolutionLevels": "IIO, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Frontend_Bound",
+      "LegacyName": "metric_TMA_Frontend_Bound(%)",
+      "Level": 1,
+      "BriefDescription": "Counts the number of issue slots that were not consumed by the backend due to frontend stalls.",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_FE_BOUND.ALL_P",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_fe_bound.all_p / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_Frontend_Bound(%) >0.20"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "IFetch_Latency",
+      "LegacyName": "metric_TMA_..IFetch_Latency(%)",
+      "ParentCategory": "Frontend_Bound",
+      "Level": 2,
+      "BriefDescription": "Counts the number of issue slots that were not delivered by the frontend due to frontend latency restrictions due to icache misses, itlb misses, branch detection, and resteer limitations.",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_FE_BOUND.FRONTEND_LATENCY",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_fe_bound.frontend_latency / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_..IFetch_Latency(%) >0.15 && metric_TMA_Frontend_Bound(%) >0.20"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "ICache_Misses",
+      "LegacyName": "metric_TMA_....ICache_Misses(%)",
+      "ParentCategory": "IFetch_Latency",
+      "Level": 3,
+      "BriefDescription": "Counts the number of issue slots that were not delivered by the frontend due to instruction cache misses.",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_FE_BOUND.ICACHE",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_fe_bound.icache / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_....ICache_Misses(%) >0.05 && metric_TMA_..IFetch_Latency(%) >0.15 && metric_TMA_Frontend_Bound(%) >0.20"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "ITLB_Misses",
+      "LegacyName": "metric_TMA_....ITLB_Misses(%)",
+      "ParentCategory": "IFetch_Latency",
+      "Level": 3,
+      "BriefDescription": "Counts the number of issue slots that were not delivered by the frontend due to Instruction Table Lookaside Buffer (ITLB) misses.",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_FE_BOUND.ITLB_MISS",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_fe_bound.itlb_miss / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_....ITLB_Misses(%) >0.05 && metric_TMA_..IFetch_Latency(%) >0.15 && metric_TMA_Frontend_Bound(%) >0.20"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Branch_Detect",
+      "LegacyName": "metric_TMA_....Branch_Detect(%)",
+      "ParentCategory": "IFetch_Latency",
+      "Level": 3,
+      "BriefDescription": "Counts the number of issue slots that were not delivered by the frontend due to BACLEARS, which occurs when the Branch Target Buffer (BTB) prediction or lack thereof, was corrected by a later branch predictor in the frontend. Includes BACLEARS due to all branch types including conditional and unconditional jumps, returns, and indirect branches.",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_FE_BOUND.BRANCH_DETECT",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_fe_bound.branch_detect / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_....Branch_Detect(%) >0.05 && metric_TMA_..IFetch_Latency(%) >0.15 && metric_TMA_Frontend_Bound(%) >0.20"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Branch_Resteer",
+      "LegacyName": "metric_TMA_....Branch_Resteer(%)",
+      "ParentCategory": "IFetch_Latency",
+      "Level": 3,
+      "BriefDescription": "Counts the number of issue slots that were not delivered by the frontend due to BTCLEARS, which occurs when the Branch Target Buffer (BTB) predicts a taken branch.",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_FE_BOUND.BRANCH_RESTEER",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_fe_bound.branch_resteer / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_....Branch_Resteer(%) >0.05 && metric_TMA_..IFetch_Latency(%) >0.15 && metric_TMA_Frontend_Bound(%) >0.20"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "IFetch_Bandwidth",
+      "LegacyName": "metric_TMA_..IFetch_Bandwidth(%)",
+      "ParentCategory": "Frontend_Bound",
+      "Level": 2,
+      "BriefDescription": "Counts the number of issue slots that were not delivered by the frontend due to frontend bandwidth restrictions due to decode, predecode, cisc, and other limitations.",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_FE_BOUND.FRONTEND_BANDWIDTH",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_fe_bound.frontend_bandwidth / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_..IFetch_Bandwidth(%) >0.10 && metric_TMA_Frontend_Bound(%) >0.20"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Cisc",
+      "LegacyName": "metric_TMA_....Cisc(%)",
+      "ParentCategory": "IFetch_Bandwidth",
+      "Level": 3,
+      "BriefDescription": "Counts the number of issue slots that were not delivered by the frontend due to the microcode sequencer (MS).",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_FE_BOUND.CISC",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_fe_bound.cisc / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_....Cisc(%) >0.05 && metric_TMA_..IFetch_Bandwidth(%) >0.10 && metric_TMA_Frontend_Bound(%) >0.20"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Decode",
+      "LegacyName": "metric_TMA_....Decode(%)",
+      "ParentCategory": "IFetch_Bandwidth",
+      "Level": 3,
+      "BriefDescription": "Counts the number of issue slots that were not delivered by the frontend due to decode stalls.",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_FE_BOUND.DECODE",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_fe_bound.decode / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_....Decode(%) >0.05 && metric_TMA_..IFetch_Bandwidth(%) >0.10 && metric_TMA_Frontend_Bound(%) >0.20"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Predecode",
+      "LegacyName": "metric_TMA_....Predecode(%)",
+      "ParentCategory": "IFetch_Bandwidth",
+      "Level": 3,
+      "BriefDescription": "Counts the number of issue slots that were not delivered by the frontend due to wrong predecodes.",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_FE_BOUND.PREDECODE",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_fe_bound.predecode / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_....Predecode(%) >0.05 && metric_TMA_..IFetch_Bandwidth(%) >0.10 && metric_TMA_Frontend_Bound(%) >0.20"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Other_FB",
+      "LegacyName": "metric_TMA_....Other_FB(%)",
+      "ParentCategory": "IFetch_Bandwidth",
+      "Level": 3,
+      "BriefDescription": "Counts the number of issue slots that were not delivered by the frontend due to other common frontend stalls not categorized.",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_FE_BOUND.OTHER",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_fe_bound.other / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_....Other_FB(%) >0.05 && metric_TMA_..IFetch_Bandwidth(%) >0.10 && metric_TMA_Frontend_Bound(%) >0.20"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Bad_Speculation",
+      "LegacyName": "metric_TMA_Bad_Speculation(%)",
+      "Level": 1,
+      "BriefDescription": "Counts the total number of issue slots that were not consumed by the backend because allocation is stalled due to a mispredicted jump or a machine clear. Only issue slots wasted due to fast nukes such as memory ordering nukes are counted. Other nukes are not accounted for. Counts all issue slots blocked during this recovery window including relevant microcode flows and while uops are not yet available in the instruction queue (IQ). Also includes the issue slots that were consumed by the backend but were thrown away because they were younger than the mispredict or machine clear.",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_BAD_SPECULATION.ALL_P",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_bad_speculation.all_p / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_Bad_Speculation(%) >0.15"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Branch_Mispredicts",
+      "LegacyName": "metric_TMA_..Branch_Mispredicts(%)",
+      "ParentCategory": "Bad_Speculation",
+      "Level": 2,
+      "BriefDescription": "Counts the number of issue slots that were not consumed by the backend due to branch mispredicts",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_BAD_SPECULATION.MISPREDICT",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_bad_speculation.mispredict / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_..Branch_Mispredicts(%) >0.05 && metric_TMA_Bad_Speculation(%) >0.15"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Machine_Clears",
+      "LegacyName": "metric_TMA_..Machine_Clears(%)",
+      "ParentCategory": "Bad_Speculation",
+      "Level": 2,
+      "BriefDescription": "Counts the total number of issue slots that were not consumed by the backend because allocation is stalled due to a machine clear (nuke) of any kind including memory ordering and memory disambiguation",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_BAD_SPECULATION.MACHINE_CLEARS",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_bad_speculation.machine_clears / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_..Machine_Clears(%) >0.05 && metric_TMA_Bad_Speculation(%) >0.15"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Nuke",
+      "LegacyName": "metric_TMA_....Nuke(%)",
+      "ParentCategory": "Machine_Clears",
+      "Level": 3,
+      "BriefDescription": "Counts the number of issue slots that were not consumed by the backend due to a machine clear that requires the use of microcode (slow nuke)",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_BAD_SPECULATION.NUKE",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_bad_speculation.nuke / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_....Nuke(%) >0.05 && metric_TMA_..Machine_Clears(%) >0.05 && metric_TMA_Bad_Speculation(%) >0.15"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Fast_Nuke",
+      "LegacyName": "metric_TMA_....Fast_Nuke(%)",
+      "ParentCategory": "Machine_Clears",
+      "Level": 3,
+      "BriefDescription": "Counts the number of issue slots that were not consumed by the backend due to a machine clear that does not require the use of microcode, classified as a fast nuke, due to memory ordering, memory disambiguation and memory renaming",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_BAD_SPECULATION.FASTNUKE",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_bad_speculation.fastnuke / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_....Fast_Nuke(%) >0.05 && metric_TMA_..Machine_Clears(%) >0.05 && metric_TMA_Bad_Speculation(%) >0.15"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Backend_Bound",
+      "LegacyName": "metric_TMA_Backend_Bound(%)",
+      "Level": 1,
+      "BriefDescription": "Counts the total number of issue slots that were not consumed by the backend due to backend stalls. Note that uops must be available for consumption in order for this event to count. If a uop is not available (IQ is empty), this event will not count",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_BE_BOUND.ALL_P",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_be_bound.all_p / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_Backend_Bound(%) >0.10"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Core_Bound",
+      "LegacyName": "metric_TMA_..Core_Bound(%)",
+      "ParentCategory": "Backend_Bound",
+      "Level": 2,
+      "BriefDescription": "Counts the number of cycles due to backend bound stalls that are bounded by core restrictions and not attributed to an outstanding load or stores, or resource limitation",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_BE_BOUND.ALLOC_RESTRICTIONS",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_be_bound.alloc_restrictions / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_..Core_Bound(%) >0.10 && metric_TMA_Backend_Bound(%) >0.10"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Allocation_Restriction",
+      "LegacyName": "metric_TMA_....Allocation_Restriction(%)",
+      "ParentCategory": "Core_Bound",
+      "Level": 3,
+      "BriefDescription": "Counts the number of issue slots that were not consumed by the backend due to certain allocation restrictions",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_BE_BOUND.ALLOC_RESTRICTIONS",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_be_bound.alloc_restrictions / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_....Allocation_Restriction(%) >0.10 && metric_TMA_..Core_Bound(%) >0.10 && metric_TMA_Backend_Bound(%) >0.10"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Resource_Bound",
+      "LegacyName": "metric_TMA_..Resource_Bound(%)",
+      "ParentCategory": "Backend_Bound",
+      "Level": 2,
+      "BriefDescription": "Counts the number of cycles the core is stalled due to a resource limitation",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_BE_BOUND.ALL_P",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        },
+        {
+          "Name": "TOPDOWN_BE_BOUND.ALLOC_RESTRICTIONS",
+          "Alias": "c"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( ( ( a / ( ( 6 ) * ( b ) ) ) - ( c / ( ( 6 ) * ( b ) ) ) ) )",
+      "BaseFormula": " ( ( topdown_be_bound.all_p / ( ( 6 ) * ( cpu_clk_unhalted.core ) ) ) - tma_core_bound )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_..Resource_Bound(%) >0.20 && metric_TMA_Backend_Bound(%) >0.10"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Mem_Scheduler",
+      "LegacyName": "metric_TMA_....Mem_Scheduler(%)",
+      "ParentCategory": "Resource_Bound",
+      "Level": 3,
+      "BriefDescription": "Counts the number of issue slots that were not consumed by the backend due to memory reservation stalls in which a scheduler is not able to accept uops",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_BE_BOUND.MEM_SCHEDULER",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_be_bound.mem_scheduler / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_....Mem_Scheduler(%) >0.10 && metric_TMA_..Resource_Bound(%) >0.20 && metric_TMA_Backend_Bound(%) >0.10"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Non_Mem_Scheduler",
+      "LegacyName": "metric_TMA_....Non_Mem_Scheduler(%)",
+      "ParentCategory": "Resource_Bound",
+      "Level": 3,
+      "BriefDescription": "Counts the number of issue slots that were not consumed by the backend due to IEC or FPC RAT stalls, which can be due to FIQ or IEC reservation stalls in which the integer, floating point or SIMD scheduler is not able to accept uops",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_BE_BOUND.NON_MEM_SCHEDULER",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_be_bound.non_mem_scheduler / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_....Non_Mem_Scheduler(%) >0.10 && metric_TMA_..Resource_Bound(%) >0.20 && metric_TMA_Backend_Bound(%) >0.10"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Register",
+      "LegacyName": "metric_TMA_....Register(%)",
+      "ParentCategory": "Resource_Bound",
+      "Level": 3,
+      "BriefDescription": "Counts the number of issue slots that were not consumed by the backend due to the physical register file unable to accept an entry (marble stalls)",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_BE_BOUND.REGISTER",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_be_bound.register / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_....Register(%) >0.10 && metric_TMA_..Resource_Bound(%) >0.20 && metric_TMA_Backend_Bound(%) >0.10"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Reorder_Buffer",
+      "LegacyName": "metric_TMA_....Reorder_Buffer(%)",
+      "ParentCategory": "Resource_Bound",
+      "Level": 3,
+      "BriefDescription": "Counts the number of issue slots that were not consumed by the backend due to the reorder buffer being full (ROB stalls)",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_BE_BOUND.REORDER_BUFFER",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_be_bound.reorder_buffer / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_....Reorder_Buffer(%) >0.10 && metric_TMA_..Resource_Bound(%) >0.20 && metric_TMA_Backend_Bound(%) >0.10"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Serialization",
+      "LegacyName": "metric_TMA_....Serialization(%)",
+      "ParentCategory": "Resource_Bound",
+      "Level": 3,
+      "BriefDescription": "Counts the number of issue slots that were not consumed by the backend due to scoreboards from the instruction queue (IQ), jump execution unit (JEU), or microcode sequencer (MS)",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_BE_BOUND.SERIALIZATION",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_be_bound.serialization / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_....Serialization(%) >0.10 && metric_TMA_..Resource_Bound(%) >0.20 && metric_TMA_Backend_Bound(%) >0.10"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Retiring",
+      "LegacyName": "metric_TMA_Retiring(%)",
+      "Level": 1,
+      "BriefDescription": "Counts the number of issue slots that result in retirement slots",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "TOPDOWN_RETIRING.ALL_P",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / ( ( 6 ) * ( b ) ) )",
+      "BaseFormula": " topdown_retiring.all_p / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "Slots",
+      "Threshold": {
+        "Formula": "metric_TMA_Retiring(%) >0.75"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Bottleneck_Mem_Exec_Bound_Cycles",
+      "LegacyName": "metric_TMA_Info_Bottleneck_%_Mem_Exec_Bound_Cycles",
+      "Level": 1,
+      "BriefDescription": "Percentage of time that retirement is stalled by the Memory Cluster due to a pipeline stall. See Info.Mem_Exec_Bound",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "LD_HEAD.ANY_AT_RET",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / ( b )",
+      "BaseFormula": " 100 * ld_head.any_at_ret / ( cpu_clk_unhalted.core )",
+      "Category": "TMA",
+      "CountDomain": "Cycles",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": "Mem_Exec"
+    },
+    {
+      "MetricName": "Info_Bottleneck_Load_Miss_Bound_Cycles",
+      "LegacyName": "metric_TMA_Info_Bottleneck_%_Load_Miss_Bound_Cycles",
+      "Level": 1,
+      "BriefDescription": "Percentage of time that retirement is stalled due to an L1 miss. See Info.Load_Miss_Bound",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "MEM_BOUND_STALLS_LOAD.ALL",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / ( b )",
+      "BaseFormula": " 100 * mem_bound_stalls_load.all / ( cpu_clk_unhalted.core )",
+      "Category": "TMA",
+      "CountDomain": "Cycles",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": "Load_Store_Miss"
+    },
+    {
+      "MetricName": "Info_Bottleneck_DTLB_Miss_Bound_Cycles",
+      "LegacyName": "metric_TMA_Info_Bottleneck_%_DTLB_Miss_Bound_Cycles",
+      "Level": 1,
+      "BriefDescription": "Percentage of time that retirement is stalled due to a first level data TLB miss",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "LD_HEAD.DTLB_MISS_AT_RET",
+          "Alias": "a"
+        },
+        {
+          "Name": "LD_HEAD.PGWALK_AT_RET",
+          "Alias": "b"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "c"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a + b ) / ( c )",
+      "BaseFormula": " 100 * ( ld_head.dtlb_miss_at_ret + ld_head.pgwalk_at_ret ) / ( cpu_clk_unhalted.core )",
+      "Category": "TMA",
+      "CountDomain": "Cycles",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Bottleneck_IFetch_Miss_Bound_Cycles",
+      "LegacyName": "metric_TMA_Info_Bottleneck_%_IFetch_Miss_Bound_Cycles",
+      "Level": 1,
+      "BriefDescription": "Percentage of time that allocation and retirement is stalled by the Frontend Cluster due to an Ifetch Miss, either Icache or ITLB Miss. See Info.Ifetch_Bound",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "MEM_BOUND_STALLS_IFETCH.ALL",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / ( b )",
+      "BaseFormula": " 100 * mem_bound_stalls_ifetch.all / ( cpu_clk_unhalted.core )",
+      "Category": "TMA",
+      "CountDomain": "Cycles",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": "Ifetch"
+    },
+    {
+      "MetricName": "Info_Core_IPC",
+      "LegacyName": "metric_TMA_Info_Core_IPC",
+      "Level": 1,
+      "BriefDescription": "Instructions Per Cycle",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / ( b )",
+      "BaseFormula": " inst_retired.any / ( cpu_clk_unhalted.core )",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Core_CPI",
+      "LegacyName": "metric_TMA_Info_Core_CPI",
+      "Level": 1,
+      "BriefDescription": "Cycles Per Instruction",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "( a ) / b",
+      "BaseFormula": " ( cpu_clk_unhalted.core ) / inst_retired.any",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Core_UPI",
+      "LegacyName": "metric_TMA_Info_Core_UPI",
+      "Level": 1,
+      "BriefDescription": "Uops Per Instruction",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "TOPDOWN_RETIRING.ALL_P",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "BaseFormula": " topdown_retiring.all_p / inst_retired.any",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Core_FLOPc",
+      "LegacyName": "metric_TMA_Info_Core_FLOPc",
+      "Level": 1,
+      "BriefDescription": "Floating Point Operations Per Cycle",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "FP_FLOPS_RETIRED.ALL",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / ( b )",
+      "BaseFormula": " fp_flops_retired.all / ( cpu_clk_unhalted.core )",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": "Flops"
+    },
+    {
+      "MetricName": "Info_Br_Inst_Mix_IpBranch",
+      "LegacyName": "metric_TMA_Info_Br_Inst_Mix_IpBranch",
+      "Level": 1,
+      "BriefDescription": "Instructions per Branch (lower number means higher occurrence rate)",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "a"
+        },
+        {
+          "Name": "BR_INST_RETIRED.ALL_BRANCHES",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "BaseFormula": " inst_retired.any / br_inst_retired.all_branches",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Br_Inst_Mix_IpCall",
+      "LegacyName": "metric_TMA_Info_Br_Inst_Mix_IpCall",
+      "Level": 1,
+      "BriefDescription": "Instruction per (near) call (lower number means higher occurrence rate)",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "a"
+        },
+        {
+          "Name": "BR_INST_RETIRED.NEAR_CALL",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "BaseFormula": " inst_retired.any / br_inst_retired.near_call",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Br_Inst_Mix_IpFarBranch",
+      "LegacyName": "metric_TMA_Info_Br_Inst_Mix_IpFarBranch",
+      "Level": 1,
+      "BriefDescription": "Instructions per Far Branch ( Far Branches apply upon transition from application to operating system, handling interrupts, exceptions) [lower number means higher occurrence rate]",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "a"
+        },
+        {
+          "Name": "BR_INST_RETIRED.FAR_BRANCH:USER",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "BaseFormula": " inst_retired.any / br_inst_retired.far_branch:user",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Br_Inst_Mix_IpMispredict",
+      "LegacyName": "metric_TMA_Info_Br_Inst_Mix_IpMispredict",
+      "Level": 1,
+      "BriefDescription": "Instructions per retired Branch Misprediction",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "a"
+        },
+        {
+          "Name": "BR_MISP_RETIRED.ALL_BRANCHES",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "BaseFormula": " inst_retired.any / br_misp_retired.all_branches",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Br_Inst_Mix_IpMisp_Cond_Ntaken",
+      "LegacyName": "metric_TMA_Info_Br_Inst_Mix_IpMisp_Cond_Ntaken",
+      "Level": 1,
+      "BriefDescription": "Instructions per retired conditional Branch Misprediction where the branch was not taken",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "a"
+        },
+        {
+          "Name": "BR_MISP_RETIRED.COND",
+          "Alias": "b"
+        },
+        {
+          "Name": "BR_MISP_RETIRED.COND_TAKEN",
+          "Alias": "c"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / ( b - c )",
+      "BaseFormula": " inst_retired.any / ( br_misp_retired.cond - br_misp_retired.cond_taken )",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Br_Inst_Mix_IpMisp_Cond_Taken",
+      "LegacyName": "metric_TMA_Info_Br_Inst_Mix_IpMisp_Cond_Taken",
+      "Level": 1,
+      "BriefDescription": "Instructions per retired conditional Branch Misprediction where the branch was taken",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "a"
+        },
+        {
+          "Name": "BR_MISP_RETIRED.COND_TAKEN",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "BaseFormula": " inst_retired.any / br_misp_retired.cond_taken",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Br_Inst_Mix_IpMisp_Ret",
+      "LegacyName": "metric_TMA_Info_Br_Inst_Mix_IpMisp_Ret",
+      "Level": 1,
+      "BriefDescription": "Instructions per retired return Branch Misprediction",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "a"
+        },
+        {
+          "Name": "BR_MISP_RETIRED.RETURN",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "BaseFormula": " inst_retired.any / br_misp_retired.return",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Br_Inst_Mix_IpMisp_Indirect",
+      "LegacyName": "metric_TMA_Info_Br_Inst_Mix_IpMisp_Indirect",
+      "Level": 1,
+      "BriefDescription": "Instructions per retired indirect call or jump Branch Misprediction",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "a"
+        },
+        {
+          "Name": "BR_MISP_RETIRED.INDIRECT",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "BaseFormula": " inst_retired.any / br_misp_retired.indirect",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Arith_Inst_Mix_IpFLOP",
+      "LegacyName": "metric_TMA_Info_Arith_Inst_Mix_IpFLOP",
+      "Level": 1,
+      "BriefDescription": "Instructions per Floating Point (FP) Operation",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "a"
+        },
+        {
+          "Name": "FP_FLOPS_RETIRED.ALL",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "BaseFormula": " inst_retired.any / fp_flops_retired.all",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": "Flops"
+    },
+    {
+      "MetricName": "Info_Arith_Inst_Mix_IpFPArith_Scalar_SP",
+      "LegacyName": "metric_TMA_Info_Arith_Inst_Mix_IpFPArith_Scalar_SP",
+      "Level": 1,
+      "BriefDescription": "Instructions per FP Arithmetic Scalar Single-Precision instruction",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "a"
+        },
+        {
+          "Name": "FP_INST_RETIRED.32B_SP",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "BaseFormula": " inst_retired.any / fp_inst_retired.32b_sp",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": "Flops"
+    },
+    {
+      "MetricName": "Info_Arith_Inst_Mix_IpFPArith_Scalar_DP",
+      "LegacyName": "metric_TMA_Info_Arith_Inst_Mix_IpFPArith_Scalar_DP",
+      "Level": 1,
+      "BriefDescription": "Instructions per FP Arithmetic Scalar Double-Precision instruction",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "a"
+        },
+        {
+          "Name": "FP_INST_RETIRED.64B_DP",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "BaseFormula": " inst_retired.any / fp_inst_retired.64b_dp",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": "Flops"
+    },
+    {
+      "MetricName": "Info_Arith_Inst_Mix_IpFPArith_AVX128",
+      "LegacyName": "metric_TMA_Info_Arith_Inst_Mix_IpFPArith_AVX128",
+      "Level": 1,
+      "BriefDescription": "Instructions per FP Arithmetic AVX/SSE 128-bit instruction",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "a"
+        },
+        {
+          "Name": "FP_INST_RETIRED.128B_DP",
+          "Alias": "b"
+        },
+        {
+          "Name": "FP_INST_RETIRED.128B_SP",
+          "Alias": "c"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / ( b + c )",
+      "BaseFormula": " inst_retired.any / ( fp_inst_retired.128b_dp + fp_inst_retired.128b_sp )",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": "Flops"
+    },
+    {
+      "MetricName": "Info_Uop_Mix_Microcode_Uop_Ratio",
+      "LegacyName": "metric_TMA_Info_Uop_Mix_Microcode_Uop_Ratio",
+      "Level": 1,
+      "BriefDescription": "Percentage of all uops which are microcode ops",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "UOPS_RETIRED.MS",
+          "Alias": "a"
+        },
+        {
+          "Name": "TOPDOWN_RETIRING.ALL_P",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / b",
+      "BaseFormula": " 100 * uops_retired.ms / topdown_retiring.all_p",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Uop_Mix_FPDiv_Uop_Ratio",
+      "LegacyName": "metric_TMA_Info_Uop_Mix_FPDiv_Uop_Ratio",
+      "Level": 1,
+      "BriefDescription": "Percentage of all uops which are FPDiv uops",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "UOPS_RETIRED.FPDIV",
+          "Alias": "a"
+        },
+        {
+          "Name": "TOPDOWN_RETIRING.ALL_P",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / b",
+      "BaseFormula": " 100 * uops_retired.fpdiv / topdown_retiring.all_p",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Uop_Mix_IDiv_Uop_Ratio",
+      "LegacyName": "metric_TMA_Info_Uop_Mix_IDiv_Uop_Ratio",
+      "Level": 1,
+      "BriefDescription": "Percentage of all uops which are IDiv uops",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "UOPS_RETIRED.IDIV",
+          "Alias": "a"
+        },
+        {
+          "Name": "TOPDOWN_RETIRING.ALL_P",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / b",
+      "BaseFormula": " 100 * uops_retired.idiv / topdown_retiring.all_p",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Uop_Mix_X87_Uop_Ratio",
+      "LegacyName": "metric_TMA_Info_Uop_Mix_X87_Uop_Ratio",
+      "Level": 1,
+      "BriefDescription": "Percentage of all uops which are x87 uops",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "UOPS_RETIRED.X87",
+          "Alias": "a"
+        },
+        {
+          "Name": "TOPDOWN_RETIRING.ALL_P",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / b",
+      "BaseFormula": " 100 * uops_retired.x87 / topdown_retiring.all_p",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Mem_Mix_IpLoad",
+      "LegacyName": "metric_TMA_Info_Mem_Mix_IpLoad",
+      "Level": 1,
+      "BriefDescription": "Instructions per Load",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "a"
+        },
+        {
+          "Name": "MEM_UOPS_RETIRED.ALL_LOADS",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "BaseFormula": " inst_retired.any / mem_uops_retired.all_loads",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Mem_Mix_IpStore",
+      "LegacyName": "metric_TMA_Info_Mem_Mix_IpStore",
+      "Level": 1,
+      "BriefDescription": "Instructions per Store",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "a"
+        },
+        {
+          "Name": "MEM_UOPS_RETIRED.ALL_STORES",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "BaseFormula": " inst_retired.any / mem_uops_retired.all_stores",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Mem_Mix_MemLoad_Ratio",
+      "LegacyName": "metric_TMA_Info_Mem_Mix_MemLoad_Ratio",
+      "Level": 1,
+      "BriefDescription": "Ratio of mem load uops to all uops",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "MEM_UOPS_RETIRED.ALL_LOADS",
+          "Alias": "a"
+        },
+        {
+          "Name": "TOPDOWN_RETIRING.ALL_P",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "1000 * a / b",
+      "BaseFormula": " 1000 * mem_uops_retired.all_loads / topdown_retiring.all_p",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Mem_Mix_Load_Splits_Ratio",
+      "LegacyName": "metric_TMA_Info_Mem_Mix_Load_Splits_Ratio",
+      "Level": 1,
+      "BriefDescription": "Percentage of total non-speculative loads that are splits",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "MEM_UOPS_RETIRED.SPLIT_LOADS",
+          "Alias": "a"
+        },
+        {
+          "Name": "MEM_UOPS_RETIRED.ALL_LOADS",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / b",
+      "BaseFormula": " 100 * mem_uops_retired.split_loads / mem_uops_retired.all_loads",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Mem_Mix_Load_Locks_Ratio",
+      "LegacyName": "metric_TMA_Info_Mem_Mix_Load_Locks_Ratio",
+      "Level": 1,
+      "BriefDescription": "Percentage of total non-speculative loads that perform one or more locks",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "MEM_UOPS_RETIRED.LOCK_LOADS",
+          "Alias": "a"
+        },
+        {
+          "Name": "MEM_UOPS_RETIRED.ALL_LOADS",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / b",
+      "BaseFormula": " 100 * mem_uops_retired.lock_loads / mem_uops_retired.all_loads",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Mem_Exec_Blocks_Loads_with_StoreFwdBlk",
+      "LegacyName": "metric_TMA_Info_Mem_Exec_Blocks_%_Loads_with_StoreFwdBlk",
+      "Level": 1,
+      "BriefDescription": "Percentage of total non-speculative loads with a store forward or unknown store address block",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "LD_BLOCKS.DATA_UNKNOWN",
+          "Alias": "a"
+        },
+        {
+          "Name": "MEM_UOPS_RETIRED.ALL_LOADS",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / b",
+      "BaseFormula": " 100 * ld_blocks.data_unknown / mem_uops_retired.all_loads",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Mem_Exec_Blocks_Loads_with_AdressAliasing",
+      "LegacyName": "metric_TMA_Info_Mem_Exec_Blocks_%_Loads_with_AdressAliasing",
+      "Level": 1,
+      "BriefDescription": "Percentage of total non-speculative loads with an address aliasing block",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "LD_BLOCKS.ADDRESS_ALIAS",
+          "Alias": "a"
+        },
+        {
+          "Name": "MEM_UOPS_RETIRED.ALL_LOADS",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / b",
+      "BaseFormula": " 100 * ld_blocks.address_alias / mem_uops_retired.all_loads",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Mem_Exec_Bound_LoadHead_with_STLBHit",
+      "LegacyName": "metric_TMA_Info_Mem_Exec_Bound_%_LoadHead_with_STLBHit",
+      "Level": 1,
+      "BriefDescription": "Percentage of Memory Execution Bound due to a second level TLB miss",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "LD_HEAD.DTLB_MISS_AT_RET",
+          "Alias": "a"
+        },
+        {
+          "Name": "LD_HEAD.ANY_AT_RET",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / b",
+      "BaseFormula": " 100 * ld_head.dtlb_miss_at_ret / ld_head.any_at_ret",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Mem_Exec_Bound_LoadHead_with_Pagewalk",
+      "LegacyName": "metric_TMA_Info_Mem_Exec_Bound_%_LoadHead_with_Pagewalk",
+      "Level": 1,
+      "BriefDescription": "Percentage of Memory Execution Bound due to a pagewalk",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "LD_HEAD.PGWALK_AT_RET",
+          "Alias": "a"
+        },
+        {
+          "Name": "LD_HEAD.ANY_AT_RET",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / b",
+      "BaseFormula": " 100 * ld_head.pgwalk_at_ret / ld_head.any_at_ret",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Mem_Exec_Bound_LoadHead_with_StoreFwding",
+      "LegacyName": "metric_TMA_Info_Mem_Exec_Bound_%_LoadHead_with_StoreFwding",
+      "Level": 1,
+      "BriefDescription": "Percentage of Memory Execution Bound due to a store forward address match",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "LD_HEAD.ST_ADDR_AT_RET",
+          "Alias": "a"
+        },
+        {
+          "Name": "LD_HEAD.ANY_AT_RET",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / b",
+      "BaseFormula": " 100 * ld_head.st_addr_at_ret / ld_head.any_at_ret",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Mem_Exec_Bound_LoadHead_with_OtherPipelineBlks",
+      "LegacyName": "metric_TMA_Info_Mem_Exec_Bound_%_LoadHead_with_OtherPipelineBlks",
+      "Level": 1,
+      "BriefDescription": "Percentage of Memory Execution Bound due to other block cases, such as pipeline conflicts, fences, etc",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "LD_HEAD.OTHER_AT_RET",
+          "Alias": "a"
+        },
+        {
+          "Name": "LD_HEAD.ANY_AT_RET",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / b",
+      "BaseFormula": " 100 * ld_head.other_at_ret / ld_head.any_at_ret",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Mem_Exec_Bound_LoadHead_with_L1miss",
+      "LegacyName": "metric_TMA_Info_Mem_Exec_Bound_%_LoadHead_with_L1miss",
+      "Level": 1,
+      "BriefDescription": "Percentage of Memory Execution Bound due to a first level data cache miss",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "LD_HEAD.L1_MISS_AT_RET",
+          "Alias": "a"
+        },
+        {
+          "Name": "LD_HEAD.ANY_AT_RET",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / b",
+      "BaseFormula": " 100 * ld_head.l1_miss_at_ret / ld_head.any_at_ret",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Load_Store_Bound_Store_Bound",
+      "LegacyName": "metric_TMA_Info_Load_Store_Bound_Store_Bound",
+      "Level": 1,
+      "BriefDescription": "Counts the number of cycles the core is stalled due to store buffer full",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "MEM_SCHEDULER_BLOCK.ST_BUF",
+          "Alias": "a"
+        },
+        {
+          "Name": "MEM_SCHEDULER_BLOCK.ALL",
+          "Alias": "b"
+        },
+        {
+          "Name": "TOPDOWN_BE_BOUND.MEM_SCHEDULER",
+          "Alias": "c"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "d"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a / b ) * ( c / ( ( 6 ) * ( d ) ) )",
+      "BaseFormula": " 100 * ( mem_scheduler_block.st_buf / mem_scheduler_block.all ) * ( topdown_be_bound.mem_scheduler / ( ( 6 ) * ( cpu_clk_unhalted.core ) ) )",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": "load_store_bound"
+    },
+    {
+      "MetricName": "Info_Load_Store_Bound_Load_Bound",
+      "LegacyName": "metric_TMA_Info_Load_Store_Bound_Load_Bound",
+      "Level": 1,
+      "BriefDescription": "Counts the number of cycles that the oldest load of the load buffer is stalled at retirement",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "LD_HEAD.L1_BOUND_AT_RET",
+          "Alias": "a"
+        },
+        {
+          "Name": "MEM_BOUND_STALLS_LOAD.ALL",
+          "Alias": "b"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "c"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ( a + b ) / ( c )",
+      "BaseFormula": " 100 * ( ld_head.l1_bound_at_ret + mem_bound_stalls_load.all ) / ( cpu_clk_unhalted.core )",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": "load_store_bound"
+    },
+    {
+      "MetricName": "Info_Load_Store_Bound_L1_Bound",
+      "LegacyName": "metric_TMA_Info_Load_Store_Bound_L1_Bound",
+      "Level": 1,
+      "BriefDescription": "Counts the number of cycles that the oldest load of the load buffer is stalled at retirement due to a pipeline block",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "LD_HEAD.L1_BOUND_AT_RET",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / ( b )",
+      "BaseFormula": " 100 * ld_head.l1_bound_at_ret / ( cpu_clk_unhalted.core )",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": "load_store_bound"
+    },
+    {
+      "MetricName": "Info_Load_Miss_Bound_LoadMissBound_with_L2Hit",
+      "LegacyName": "metric_TMA_Info_Load_Miss_Bound_%_LoadMissBound_with_L2Hit",
+      "Level": 1,
+      "BriefDescription": "Percentage of memory bound stalls where retirement is stalled due to an L1 miss that hit the L2",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "MEM_BOUND_STALLS_LOAD.L2_HIT",
+          "Alias": "a"
+        },
+        {
+          "Name": "MEM_BOUND_STALLS_LOAD.ALL",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / b",
+      "BaseFormula": " 100 * mem_bound_stalls_load.l2_hit / mem_bound_stalls_load.all",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": "load_store_bound"
+    },
+    {
+      "MetricName": "Info_Load_Miss_Bound_LoadMissBound_with_L3Hit",
+      "LegacyName": "metric_TMA_Info_Load_Miss_Bound_%_LoadMissBound_with_L3Hit",
+      "Level": 1,
+      "BriefDescription": "Percentage of memory bound stalls where retirement is stalled due to an L1 miss that hit the L3",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "MEM_BOUND_STALLS_LOAD.LLC_HIT",
+          "Alias": "a"
+        },
+        {
+          "Name": "MEM_BOUND_STALLS_LOAD.ALL",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / b",
+      "BaseFormula": " 100 * mem_bound_stalls_load.llc_hit / mem_bound_stalls_load.all",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": "load_store_bound"
+    },
+    {
+      "MetricName": "Info_Ifetch_Miss_Bound_IfetchMissBound_with_L2Hit",
+      "LegacyName": "metric_TMA_Info_Ifetch_Miss_Bound_%_IfetchMissBound_with_L2Hit",
+      "Level": 1,
+      "BriefDescription": "Percentage of ifetch miss bound stalls, where the ifetch miss hits in the L2",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "MEM_BOUND_STALLS_IFETCH.L2_HIT",
+          "Alias": "a"
+        },
+        {
+          "Name": "MEM_BOUND_STALLS_IFETCH.ALL",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / ( b )",
+      "BaseFormula": " 100 * mem_bound_stalls_ifetch.l2_hit / ( mem_bound_stalls_ifetch.all )",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Ifetch_Miss_Bound_IfetchMissBound_with_L3Hit",
+      "LegacyName": "metric_TMA_Info_Ifetch_Miss_Bound_%_IfetchMissBound_with_L3Hit",
+      "Level": 1,
+      "BriefDescription": "Percentage of ifetch miss bound stalls, where the ifetch miss hits in the L3",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "MEM_BOUND_STALLS_IFETCH.LLC_HIT",
+          "Alias": "a"
+        },
+        {
+          "Name": "MEM_BOUND_STALLS_IFETCH.ALL",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / ( b )",
+      "BaseFormula": " 100 * mem_bound_stalls_ifetch.llc_hit / ( mem_bound_stalls_ifetch.all )",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Br_Mispredict_Bound_Branch_Mispredict_Ratio",
+      "LegacyName": "metric_TMA_Info_Br_Mispredict_Bound_Branch_Mispredict_Ratio",
+      "Level": 1,
+      "BriefDescription": "Ratio of all branches which mispredict",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "BR_MISP_RETIRED.ALL_BRANCHES",
+          "Alias": "a"
+        },
+        {
+          "Name": "BR_INST_RETIRED.ALL_BRANCHES",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "BaseFormula": " br_misp_retired.all_branches / br_inst_retired.all_branches",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Br_Mispredict_Bound_Branch_Mispredict_to_Unknown_Branch_Ratio",
+      "LegacyName": "metric_TMA_Info_Br_Mispredict_Bound_Branch_Mispredict_to_Unknown_Branch_Ratio",
+      "Level": 1,
+      "BriefDescription": "Ratio between Mispredicted branches and unknown branches",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "BR_MISP_RETIRED.ALL_BRANCHES",
+          "Alias": "a"
+        },
+        {
+          "Name": "BACLEARS.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "BaseFormula": " br_misp_retired.all_branches / baclears.any",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Machine_Clear_Bound_Machine_Clears_FP_Assist_PKI",
+      "LegacyName": "metric_TMA_Info_Machine_Clear_Bound_Machine_Clears_FP_Assist_PKI",
+      "Level": 1,
+      "BriefDescription": "Counts the number of machine clears relative to thousands of instructions retired, due to floating point assists",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "MACHINE_CLEARS.FP_ASSIST",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "1000 * a / b",
+      "BaseFormula": " 1000 * machine_clears.fp_assist / inst_retired.any",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Machine_Clear_Bound_Machine_Clears_Page_Fault_PKI",
+      "LegacyName": "metric_TMA_Info_Machine_Clear_Bound_Machine_Clears_Page_Fault_PKI",
+      "Level": 1,
+      "BriefDescription": "Counts the number of machine clears relative to thousands of instructions retired, due to page faults",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "MACHINE_CLEARS.PAGE_FAULT",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "1000 * a / b",
+      "BaseFormula": " 1000 * machine_clears.page_fault / inst_retired.any",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Machine_Clear_Bound_Machine_Clears_SMC_PKI",
+      "LegacyName": "metric_TMA_Info_Machine_Clear_Bound_Machine_Clears_SMC_PKI",
+      "Level": 1,
+      "BriefDescription": "Counts the number of machine clears relative to thousands of instructions retired, due to self-modifying code",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "MACHINE_CLEARS.SMC",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "1000 * a / b",
+      "BaseFormula": " 1000 * machine_clears.smc / inst_retired.any",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Buffer_Stalls_Store_Buffer_Stall_Cycles",
+      "LegacyName": "metric_TMA_Info_Buffer_Stalls_%_Store_Buffer_Stall_Cycles",
+      "Level": 1,
+      "BriefDescription": "Percentage of time that allocation is stalled due to store buffer full",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "MEM_SCHEDULER_BLOCK.ST_BUF",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / ( b )",
+      "BaseFormula": " 100 * mem_scheduler_block.st_buf / ( cpu_clk_unhalted.core )",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Buffer_Stalls_Load_Buffer_Stall_Cycles",
+      "LegacyName": "metric_TMA_Info_Buffer_Stalls_%_Load_Buffer_Stall_Cycles",
+      "Level": 1,
+      "BriefDescription": "Percentage of time that allocation is stalled due to load buffer full",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "MEM_SCHEDULER_BLOCK.LD_BUF",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / ( b )",
+      "BaseFormula": " 100 * mem_scheduler_block.ld_buf / ( cpu_clk_unhalted.core )",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Buffer_Stalls_Mem_RSV_Stall_Cycles",
+      "LegacyName": "metric_TMA_Info_Buffer_Stalls_%_Mem_RSV_Stall_Cycles",
+      "Level": 1,
+      "BriefDescription": "Percentage of time that allocation is stalled due to memory reservation stations full",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "MEM_SCHEDULER_BLOCK.RSV",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / ( b )",
+      "BaseFormula": " 100 * mem_scheduler_block.rsv / ( cpu_clk_unhalted.core )",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_Serialization_Tpause_Cycles",
+      "LegacyName": "metric_TMA_Info_Serialization _%_Tpause_Cycles",
+      "Level": 1,
+      "BriefDescription": "Percentage of time that the core is stalled due to a TPAUSE or UMWAIT instruction ",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "SERIALIZATION.C01_MS_SCB",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / ( ( 6 ) * ( b ) )",
+      "BaseFormula": " 100 * serialization.c01_ms_scb / ( ( 6 ) * ( cpu_clk_unhalted.core ) )",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_System_Turbo_Utilization",
+      "LegacyName": "metric_TMA_Info_System_Turbo_Utilization",
+      "Level": 1,
+      "BriefDescription": "Average Frequency Utilization relative nominal frequency",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.REF_TSC",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "( a ) / b",
+      "BaseFormula": " ( cpu_clk_unhalted.core ) / cpu_clk_unhalted.ref_tsc",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_System_Kernel_Utilization",
+      "LegacyName": "metric_TMA_Info_System_Kernel_Utilization",
+      "Level": 1,
+      "BriefDescription": "Fraction of cycles spent in Kernel mode",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE_P:sup",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / ( b )",
+      "BaseFormula": " cpu_clk_unhalted.core_p:sup / ( cpu_clk_unhalted.core )",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_System_CPU_Utilization",
+      "LegacyName": "metric_TMA_Info_System_CPU_Utilization",
+      "Level": 1,
+      "BriefDescription": "Average CPU Utilization",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "CPU_CLK_UNHALTED.REF_TSC",
+          "Alias": "a"
+        }
+      ],
+      "Constants": [
+        {
+          "Name": "SYSTEM_TSC_FREQ",
+          "Alias": "b"
+        }
+      ],
+      "Formula": "a / b",
+      "BaseFormula": " cpu_clk_unhalted.ref_tsc / tsc",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_System_MUX",
+      "LegacyName": "metric_TMA_Info_System_MUX",
+      "Level": 1,
+      "BriefDescription": "PerfMon Event Multiplexing accuracy indicator",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE_P",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.CORE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "( a ) / ( b )",
+      "BaseFormula": " ( cpu_clk_unhalted.core_p ) / ( cpu_clk_unhalted.core )",
+      "Category": "TMA",
+      "CountDomain": "",
+      "Threshold": {
+        "Formula": "metric_TMA_Info_System_MUX > 1.1 || metric_TMA_Info_System_MUX < 0.9"
+      },
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "Info_System_GFLOPs",
+      "LegacyName": "metric_TMA_Info_System_GFLOPs",
+      "Level": 1,
+      "BriefDescription": "Giga Floating Point Operations Per Second. Aggregate across all supported options of: FP precisions, scalar and vector instructions, vector-width",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "FP_FLOPS_RETIRED.ALL",
+          "Alias": "a"
+        }
+      ],
+      "Constants": [
+        {
+          "Name": "DURATIONTIMEINMILLISECONDS",
+          "Alias": "durationtimeinmilliseconds"
+        }
+      ],
+      "Formula": "a / ( ( durationtimeinmilliseconds / 1000 ) * 1000000000 )",
+      "BaseFormula": " fp_flops_retired.all / ( ( duration_time ) * 1000000000 )",
+      "Category": "TMA",
+      "CountDomain": "",
+      "ResolutionLevels": "CORE, SOCKET, SYSTEM",
+      "MetricGroup": "Flops"
+    }
+  ]
+}

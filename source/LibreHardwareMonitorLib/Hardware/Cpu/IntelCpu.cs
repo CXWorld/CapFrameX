@@ -42,7 +42,6 @@ internal sealed class IntelCpu : GenericCpu
     private readonly bool _hasAperfMperf;
     private readonly ulong[] _lastAperf;
     private readonly ulong[] _lastMperf;
-    private readonly DateTime[] _lastPerfCounterSampleTime;
 
     public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
     {
@@ -345,6 +344,14 @@ internal sealed class IntelCpu : GenericCpu
                 break;
         }
 
+        //Clock 0
+        //Load 1
+        //Power 2
+        //Temperature 3
+        //Voltage 4
+        //Misc 5
+        //PMC 6
+
         int coreSensorId = 0;
 
         //core temp avg and max value
@@ -446,7 +453,6 @@ internal sealed class IntelCpu : GenericCpu
             _coreEffectiveClocks = new Sensor[_coreCount];
             _lastAperf = new ulong[_coreCount];
             _lastMperf = new ulong[_coreCount];
-            _lastPerfCounterSampleTime = new DateTime[_coreCount];
 
             int effectiveSensorIndex = _coreClocks.Length + 2;
             for (int i = 0; i < _coreEffectiveClocks.Length; i++)
@@ -472,7 +478,6 @@ internal sealed class IntelCpu : GenericCpu
             _coreEffectiveClocks = Array.Empty<Sensor>();
             _lastAperf = Array.Empty<ulong>();
             _lastMperf = Array.Empty<ulong>();
-            _lastPerfCounterSampleTime = Array.Empty<DateTime>();
         }
 
         if (_microArchitecture is MicroArchitecture.Airmont or
@@ -771,7 +776,7 @@ internal sealed class IntelCpu : GenericCpu
 
         if (_hasAperfMperf)
         {
-            DateTime sampleTime = DateTime.UtcNow;
+            long sampleTime = Stopwatch.GetTimestamp();
             double effectiveSum = 0;
             double effectiveMax = 0;
             int effectiveCount = 0;
@@ -784,26 +789,19 @@ internal sealed class IntelCpu : GenericCpu
                     continue;
                 }
 
-                if (_lastPerfCounterSampleTime[i] == default ||
-                    aperf < _lastAperf[i] ||
+                if (aperf < _lastAperf[i] ||
                     mperf < _lastMperf[i])
                 {
                     _lastAperf[i] = aperf;
                     _lastMperf[i] = mperf;
-                    _lastPerfCounterSampleTime[i] = sampleTime;
                     _coreEffectiveClocks[i].Value = null;
                     continue;
                 }
-
-                double seconds = (sampleTime - _lastPerfCounterSampleTime[i]).TotalSeconds;
-                if (seconds <= 0)
-                    continue;
 
                 ulong aperfDelta = aperf - _lastAperf[i];
                 ulong mperfDelta = mperf - _lastMperf[i];
                 _lastAperf[i] = aperf;
                 _lastMperf[i] = mperf;
-                _lastPerfCounterSampleTime[i] = sampleTime;
 
                 if (aperfDelta == 0 || mperfDelta == 0)
                 {
@@ -811,7 +809,8 @@ internal sealed class IntelCpu : GenericCpu
                     continue;
                 }
 
-                double freq = aperfDelta / (seconds * 1_000_000.0);
+                // Actual frequency = (APERF/MPERF ratio) × base frequency
+                double freq = (aperfDelta / (double)mperfDelta) * TimeStampCounterFrequency;
                 _coreEffectiveClocks[i].Value = (float)Math.Round(freq, 0);
 
                 effectiveSum += freq;

@@ -1,5 +1,4 @@
 ﻿using CapFrameX.Capture.Contracts;
-using CapFrameX.Configuration;
 using CapFrameX.Contracts.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
@@ -165,6 +164,7 @@ namespace CapFrameX.Data
         }
 
         private bool CheckRelevantFiles(string path)
-            => path.EndsWith(".json") || path.EndsWith(".csv");
+            => path.EndsWith(".json") || path.EndsWith(".csv") 
+            || path.EndsWith(".json.tmp") || path.EndsWith(".csv.tmp");
     }
 }

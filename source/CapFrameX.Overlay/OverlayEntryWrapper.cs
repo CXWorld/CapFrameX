@@ -9,34 +9,31 @@ namespace CapFrameX.Overlay
     public class OverlayEntryWrapper : BindableBase, IOverlayEntry
     {
         private const int DEFAULT_FONTSIZE = 100;
-        private readonly object _fieldLock = new object();
-        private readonly object _highDynamicFieldLock = new object();
-        private readonly object _valueLock = new object();
-        private readonly object _limitsLock = new object();
 
-        private bool _isEntryEnabled = true;
-        private bool _showOnOverlay;
-        private bool _showOnOverlayIsEnabled;
-        private string _groupName;
-        private bool _showGraph;
-        private bool _showGraphIsEnabled;
-        private string _color;
-        private int _valueFontSize;
-        private string _upperLimitValue = string.Empty;
-        private string _lowerLimitValue = string.Empty;
-        private string _groupColor;
-        private int _groupFontSize;
-        private int _groupSeparators;
-        private string _upperLimitColor;
-        private string _lowerLimitColor;
-        private string _groupNameFormat;
-        private string _valueFormat;
-        private LimitState _lastLimitState = LimitState.Undefined;
-        private string _valueUnitFormat;
-        private string _valueAlignmentAndDigits;
-        private bool _isNumeric;
-        private bool _formatChanged;
-        private object _value;
+        private readonly System.ComponentModel.PropertyChangedEventHandler _propertyChangedHandler;
+        private volatile bool _disposed;
+        private volatile bool _showOnOverlay;
+        private volatile bool _showOnOverlayIsEnabled;
+        private volatile string _groupName;
+        private volatile bool _showGraph;
+        private volatile bool _showGraphIsEnabled;
+        private volatile string _color;
+        private volatile int _valueFontSize;
+        private volatile string _upperLimitValue = string.Empty;
+        private volatile string _lowerLimitValue = string.Empty;
+        private volatile string _groupColor;
+        private volatile int _groupFontSize;
+        private volatile int _groupSeparators;
+        private volatile string _upperLimitColor;
+        private volatile string _lowerLimitColor;
+        private volatile string _groupNameFormat;
+        private volatile string _valueFormat;
+        private volatile LimitState _lastLimitState = LimitState.Undefined;
+        private volatile string _valueUnitFormat;
+        private volatile string _valueAlignmentAndDigits;
+        private volatile bool _isNumeric;
+        private volatile bool _formatChanged;
+        private volatile object _value;
 
         public string Identifier { get; }
 
@@ -55,46 +52,22 @@ namespace CapFrameX.Overlay
         [JsonIgnore]
         public object Value
         {
-            get
-            {
-                lock (_valueLock)
-                    return _value;
-            }
-            set
-            {
-                lock (_valueLock)
-                    _value = value;
-            }
+            get => _value;
+            set => _value = value;
         }
 
         [JsonIgnore]
         public bool FormatChanged
         {
-            get
-            {
-                lock (_highDynamicFieldLock)
-                    return _formatChanged;
-            }
-            set
-            {
-                lock (_highDynamicFieldLock)
-                    _formatChanged = value;
-            }
+            get => _formatChanged;
+            set => _formatChanged = value;
         }
 
         [JsonIgnore]
         public bool IsNumeric
         {
-            get
-            {
-                lock (_fieldLock)
-                    return _isNumeric;
-            }
-            set
-            {
-                lock (_fieldLock)
-                    _isNumeric = value;
-            }
+            get => _isNumeric;
+            set => _isNumeric = value;
         }
 
         [JsonIgnore]
@@ -103,46 +76,22 @@ namespace CapFrameX.Overlay
         [JsonIgnore]
         public string ValueAlignmentAndDigits
         {
-            get
-            {
-                lock (_highDynamicFieldLock)
-                    return _valueAlignmentAndDigits;
-            }
-            set
-            {
-                lock (_highDynamicFieldLock)
-                    _valueAlignmentAndDigits = value;
-            }
+            get => _valueAlignmentAndDigits;
+            set => _valueAlignmentAndDigits = value;
         }
 
         [JsonIgnore]
         public string ValueUnitFormat
         {
-            get
-            {
-                lock (_highDynamicFieldLock)
-                    return _valueUnitFormat;
-            }
-            set
-            {
-                lock (_highDynamicFieldLock)
-                    _valueUnitFormat = value;
-            }
+            get => _valueUnitFormat;
+            set => _valueUnitFormat = value;
         }
 
         [JsonIgnore]
         public LimitState LastLimitState
         {
-            get
-            {
-                lock (_highDynamicFieldLock)
-                    return _lastLimitState;
-            }
-            set
-            {
-                lock (_highDynamicFieldLock)
-                    _lastLimitState = value;
-            }
+            get => _lastLimitState;
+            set => _lastLimitState = value;
         }
 
         [JsonIgnore]
@@ -153,31 +102,18 @@ namespace CapFrameX.Overlay
 
         public string ValueFormat
         {
-            get
-            {
-                lock (_highDynamicFieldLock)
-                    return _valueFormat;
-            }
-            set
-            {
-                lock (_highDynamicFieldLock)
-                    _valueFormat = value;
-            }
+            get => _valueFormat;
+            set => _valueFormat = value;
         }
 
         public bool IsEntryEnabled { get; set; } = true;
 
         public bool ShowOnOverlay
         {
-            get
-            {
-                lock (_fieldLock)
-                    return _showOnOverlay;
-            }
+            get => _showOnOverlay;
             set
             {
-                lock (_fieldLock)
-                    _showOnOverlay = value;
+                _showOnOverlay = value;
                 UpdateShowOnOverlay?.Invoke(Identifier, value);
                 RaisePropertyChanged();
             }
@@ -185,30 +121,20 @@ namespace CapFrameX.Overlay
 
         public bool ShowOnOverlayIsEnabled
         {
-            get
-            {
-                lock (_fieldLock)
-                    return _showOnOverlayIsEnabled;
-            }
+            get => _showOnOverlayIsEnabled;
             set
             {
-                lock (_fieldLock)
-                    _showOnOverlayIsEnabled = value;
+                _showOnOverlayIsEnabled = value;
                 RaisePropertyChanged();
             }
         }
 
         public string GroupName
         {
-            get
-            {
-                lock (_fieldLock)
-                    return _groupName;
-            }
+            get => _groupName;
             set
             {
-                lock (_fieldLock)
-                    _groupName = value;
+                _groupName = value;
                 RaisePropertyChanged();
                 UpdateGroupName?.Invoke(value);
             }
@@ -216,30 +142,20 @@ namespace CapFrameX.Overlay
 
         public bool ShowGraph
         {
-            get
-            {
-                lock (_fieldLock)
-                    return _showGraph;
-            }
+            get => _showGraph;
             set
             {
-                lock (_fieldLock)
-                    _showGraph = value;
+                _showGraph = value;
                 RaisePropertyChanged();
             }
         }
 
         public bool ShowGraphIsEnabled
         {
-            get
-            {
-                lock (_fieldLock)
-                    return _showGraphIsEnabled;
-            }
+            get => _showGraphIsEnabled;
             set
             {
-                lock (_fieldLock)
-                    _showGraphIsEnabled = value;
+                _showGraphIsEnabled = value;
                 RaisePropertyChanged();
             }
         }
@@ -249,48 +165,32 @@ namespace CapFrameX.Overlay
         /// </summary>
         public string Color
         {
-            get
-            {
-                lock (_fieldLock)
-                    return string.IsNullOrWhiteSpace(_color)
-                        ? GetDefaultValueColor() : _color;
-            }
+            get => string.IsNullOrWhiteSpace(_color) ? GetDefaultValueColor() : _color;
             set
             {
                 FormatChanged = _color != value;
-                lock (_fieldLock)
-                    _color = value;
+                _color = value;
                 RaisePropertyChanged();
             }
         }
 
         public int ValueFontSize
         {
-            get
-            {
-                lock (_fieldLock)
-                    return _valueFontSize == 0 ? DEFAULT_FONTSIZE : _valueFontSize;
-            }
+            get => _valueFontSize == 0 ? DEFAULT_FONTSIZE : _valueFontSize;
             set
             {
                 FormatChanged = _valueFontSize != value;
-                lock (_fieldLock)
-                    _valueFontSize = value;
+                _valueFontSize = value;
                 RaisePropertyChanged();
             }
         }
 
         public string GroupNameFormat
         {
-            get
-            {
-                lock (_highDynamicFieldLock)
-                    return _groupNameFormat;
-            }
+            get => _groupNameFormat;
             set
             {
-                lock (_highDynamicFieldLock)
-                    _groupNameFormat = value;
+                _groupNameFormat = value;
                 RaisePropertyChanged();
             }
         }
@@ -303,115 +203,77 @@ namespace CapFrameX.Overlay
 
         public string UpperLimitValue
         {
-            get
-            {
-                lock (_limitsLock)
-                    return _upperLimitValue;
-            }
+            get => _upperLimitValue;
             set
             {
-                FormatChanged = _upperLimitValue != value;               
-                lock (_limitsLock)
-                    _upperLimitValue = value;
+                FormatChanged = _upperLimitValue != value;
+                _upperLimitValue = value;
                 RaisePropertyChanged();
             }
         }
 
         public string LowerLimitValue
         {
-            get
-            {
-                lock (_limitsLock)
-                    return _lowerLimitValue;
-            }
+            get => _lowerLimitValue;
             set
             {
                 FormatChanged = _lowerLimitValue != value;
-                lock (_limitsLock)
-                    _lowerLimitValue = value;                   
+                _lowerLimitValue = value;
                 RaisePropertyChanged();
             }
         }
 
         public string GroupColor
         {
-            get
-            {
-                lock (_fieldLock)
-                    return string.IsNullOrWhiteSpace(_groupColor)
-                        ? GetDefaultGroupColor() : _groupColor;
-            }
+            get => string.IsNullOrWhiteSpace(_groupColor) ? GetDefaultGroupColor() : _groupColor;
             set
             {
                 FormatChanged = _groupColor != value;
-                lock (_fieldLock)
-                    _groupColor = value;
+                _groupColor = value;
                 RaisePropertyChanged();
             }
         }
 
         public int GroupFontSize
         {
-            get
-            {
-                lock (_fieldLock)
-                    return _groupFontSize == 0 ? DEFAULT_FONTSIZE : _groupFontSize;
-            }
+            get => _groupFontSize == 0 ? DEFAULT_FONTSIZE : _groupFontSize;
             set
             {
                 FormatChanged = _groupFontSize != value;
-                lock (_fieldLock)
-                    _groupFontSize = value;
+                _groupFontSize = value;
                 RaisePropertyChanged();
             }
         }
 
         public int GroupSeparators
         {
-            get
-            {
-                lock (_fieldLock)
-                    return _groupSeparators;
-            }
+            get => _groupSeparators;
             set
             {
                 FormatChanged = _groupSeparators != value;
-                lock (_fieldLock)
-                    _groupSeparators = value;
+                _groupSeparators = value;
                 RaisePropertyChanged();
             }
         }
 
         public string UpperLimitColor
         {
-            get
-            {
-                lock (_fieldLock)
-                    return string.IsNullOrWhiteSpace(_upperLimitColor)
-                        ? GetDefaultLimitColor() : _upperLimitColor;
-            }
+            get => string.IsNullOrWhiteSpace(_upperLimitColor) ? GetDefaultLimitColor() : _upperLimitColor;
             set
             {
                 FormatChanged = _upperLimitColor != value;
-                lock (_fieldLock)
-                    _upperLimitColor = value;
+                _upperLimitColor = value;
                 RaisePropertyChanged();
             }
         }
 
         public string LowerLimitColor
         {
-            get
-            {
-                lock (_fieldLock)
-                    return string.IsNullOrWhiteSpace(_lowerLimitColor)
-                      ? GetDefaultLimitColor() : _lowerLimitColor;
-            }
+            get => string.IsNullOrWhiteSpace(_lowerLimitColor) ? GetDefaultLimitColor() : _lowerLimitColor;
             set
             {
                 FormatChanged = _lowerLimitColor != value;
-                lock (_fieldLock)
-                    _lowerLimitColor = value;
+                _lowerLimitColor = value;
                 RaisePropertyChanged();
             }
         }
@@ -419,7 +281,8 @@ namespace CapFrameX.Overlay
         public OverlayEntryWrapper(string identifier)
         {
             Identifier = identifier;
-            PropertyChanged += (s, e) => PropertyChangedAction?.Invoke();
+            _propertyChangedHandler = (s, e) => PropertyChangedAction?.Invoke();
+            PropertyChanged += _propertyChangedHandler;
         }
 
         public IOverlayEntry Clone()
@@ -427,6 +290,7 @@ namespace CapFrameX.Overlay
             return new OverlayEntryWrapper(Identifier)
             {
                 SortKey = SortKey,
+                Value = Value,
                 OverlayEntryType = OverlayEntryType,
                 Description = Description,
                 ValueFormat = ValueFormat,
@@ -445,8 +309,25 @@ namespace CapFrameX.Overlay
                 GroupFontSize = GroupFontSize,
                 GroupSeparators = GroupSeparators,
                 UpperLimitColor = UpperLimitColor,
-                LowerLimitColor = LowerLimitColor
+                LowerLimitColor = LowerLimitColor,
+                IsNumeric = IsNumeric,
+                ValueAlignmentAndDigits = ValueAlignmentAndDigits,
+                ValueUnitFormat = ValueUnitFormat,
+                LastLimitState = LastLimitState
             };
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+                return;
+
+            PropertyChanged -= _propertyChangedHandler;
+            PropertyChangedAction = null;
+            UpdateShowOnOverlay = null;
+            UpdateGroupName = null;
+
+            _disposed = true;
         }
 
         private string GetDefaultValueColor()

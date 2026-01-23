@@ -1,0 +1,59 @@
+{
+  "Header": {
+    "Copyright": "Copyright (c) 2001 - 2025 Intel Corporation. All rights reserved.",
+    "Info": "Performance Monitoring Events for Intel(R) Core(TM) processors based on Lunar Lake performance hybrid architecture - V1.20",
+    "DatePublished": "11/17/2025",
+    "Version": "1.20",
+    "Legend": ""
+  },
+  "Events": [
+    {
+      "Unit": "iMC",
+      "EventCode": "0x22",
+      "UMask": "0x00",
+      "UMaskExt": "0x00",
+      "EventName": "UNC_M_CAS_COUNT_RD",
+      "BriefDescription": "Read CAS command sent to DRAM",
+      "PublicDescription": "Read CAS command sent to DRAM",
+      "Counter": "0,1,2,3,4",
+      "Deprecated": "0",
+      "CounterType": "PGMABLE"
+    },
+    {
+      "Unit": "iMC",
+      "EventCode": "0x23",
+      "UMask": "0x00",
+      "UMaskExt": "0x00",
+      "EventName": "UNC_M_CAS_COUNT_WR",
+      "BriefDescription": "Write CAS command sent to DRAM",
+      "PublicDescription": "Write CAS command sent to DRAM",
+      "Counter": "0,1,2,3,4",
+      "Deprecated": "0",
+      "CounterType": "PGMABLE"
+    },
+    {
+      "Unit": "iMC",
+      "EventCode": "0x3C",
+      "UMask": "0x00",
+      "UMaskExt": "0x00",
+      "EventName": "UNC_M_TOTAL_DATA",
+      "BriefDescription": "Total number of read and write byte transfers to/from DRAM, in 32B chunk, per DDR channel. Counter increments by 1 after sending  or receiving 32B chunk data.",
+      "PublicDescription": "Total number of read and write byte transfers to/from DRAM, in 32B chunk, per DDR channel. Counter increments by 1 after sending  or receiving 32B chunk data.",
+      "Counter": "0,1,2,3,4",
+      "Deprecated": "0",
+      "CounterType": "PGMABLE"
+    },
+    {
+      "Unit": "SANTA",
+      "EventCode": "0x00",
+      "UMask": "0x01",
+      "UMaskExt": "0x00",
+      "EventName": "UNC_CLOCK.SOCKET",
+      "BriefDescription": "This 48-bit fixed counter counts the UCLK cycles.",
+      "PublicDescription": "This 48-bit fixed counter counts the UCLK cycles.",
+      "Counter": "FIXED",
+      "Deprecated": "0",
+      "CounterType": "FIXED"
+    }
+  ]
+}

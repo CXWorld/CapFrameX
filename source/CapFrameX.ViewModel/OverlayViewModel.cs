@@ -12,6 +12,7 @@ using CapFrameX.Overlay;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.ViewModel.SubModels;
+using DynamicData;
 using GongSolutions.Wpf.DragDrop;
 using Prism.Commands;
 using Prism.Events;
@@ -56,7 +57,6 @@ namespace CapFrameX.ViewModel
         private Subject<object> _configSubject = new Subject<object>();
         private ResetOverlayConfigDialog _resetOverlayConfigContent;
         private bool _resetOverlayConfigContentIsOpen;
-        private PubSubEvent<ViewMessages.OverlayConfigChanged> _overlayConfigChangedEvent;
         private string _filterText = string.Empty;
         private EOverlayEntryType? _selectedEntryTypeFilter;
         private ICollectionView _overlayEntriesView;
@@ -235,9 +235,7 @@ namespace CapFrameX.ViewModel
                 _selectedOverlayEntryIndex = value;
                 OverlayItemsOptionsEnabled = _selectedOverlayEntryIndex > -1 ? true : false;
                 RaisePropertyChanged();
-                RaisePropertyChanged(nameof(SelectedOverlayItemName));
-                RaisePropertyChanged(nameof(SelectedOverlayItemGroupName));
-                RaisePropertyChanged(nameof(SelectedOverlayItemSensorType));
+
             }
         }
 
@@ -251,6 +249,9 @@ namespace CapFrameX.ViewModel
 
                 _selectedOverlayEntry = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(SelectedOverlayItemName));
+                RaisePropertyChanged(nameof(SelectedOverlayItemGroupName));
+                RaisePropertyChanged(nameof(SelectedOverlayItemSensorType));
                 DetermineMultipleGroupEntries(_selectedOverlayEntry);
                 DetermineMultipleSensorTypeEntries(_selectedOverlayEntry);
             }
@@ -552,8 +553,6 @@ namespace CapFrameX.ViewModel
             _eventAggregator = eventAggregator;
             _threadAffinityController = threadAffinityController;
             _onlineMetricService = onlineMetricService;
-            _overlayConfigChangedEvent = _eventAggregator
-                .GetEvent<PubSubEvent<ViewMessages.OverlayConfigChanged>>();
 
             // define submodels
             OverlaySubModelGroupControl = new OverlayGroupControl(this);
@@ -583,7 +582,7 @@ namespace CapFrameX.ViewModel
                     OverlayEntries.Clear();
                     OverlayEntries.AddRange(entries);
                     SetupOverlayEntriesView();
-                    _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
+                    _overlayEntryProvider.UpdateOverlayEntryFormats();
 
                     SetSaveButtonIsEnableAction();
                     SaveButtonIsEnable = _overlayEntryProvider.HasHardwareChanged;
@@ -632,14 +631,11 @@ namespace CapFrameX.ViewModel
             SortByEntryTypeCommand = new DelegateCommand(OnSortByEntryType);
             ClearFilterCommand = new DelegateCommand(OnClearFilter);
             LaunchOverlayPreviewAppCommand = new DelegateCommand(OnLaunchOverlayPreviewApp);
-            ApplyOverlayTemplateCommand = new DelegateCommand(OnApplyOverlayTemplate);
-            RevertOverlayTemplateCommand = new DelegateCommand(OnRevertOverlayTemplate);
+            ApplyOverlayTemplateCommand = new DelegateCommand(async () => await OnApplyOverlayTemplate());
+            RevertOverlayTemplateCommand = new DelegateCommand(async () => await OnRevertOverlayTemplate());
 
             UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
                 "RivaTuner Statistics Server (RTSS)";
-
-            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.OverlayConfigChanged>>()
-                .Subscribe(message => _overlayEntryProvider.UpdateOverlayEntryFormats());
 
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventOverlayConfigHotkey();
@@ -660,19 +656,36 @@ namespace CapFrameX.ViewModel
 
         private async Task OnResetDefaults()
         {
-            var overlayEntries = await _overlayEntryProvider.GetDefaultOverlayEntries();
-            OverlaySubModelGroupSeparating.SetOverlayEntries(overlayEntries);
-            OverlayEntries.Clear();
-            OverlayEntries.AddRange(overlayEntries);
-            SetupOverlayEntriesView();
-            SetSaveButtonIsEnableAction();
-            OverlayItemsOptionsEnabled = false;
-            _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
+            bool wasOverlayActive = _appConfiguration.IsOverlayActive;
+            if (wasOverlayActive)
+            {
+                IsOverlayActive = false;
+                // give overlay management a bit time to disable overlay
+                await Task.Delay(200);
+            }
 
-            await _overlayEntryProvider.SaveOverlayEntriesToJson(_appConfiguration.OverlayEntryConfigurationFile);
-            await Task.Run(() => _configSubject.OnNext(_appConfiguration.OverlayEntryConfigurationFile));
-            SaveButtonIsEnable = false;
-            ResetOverlayConfigContentIsOpen = false;
+            try
+            {
+                var overlayEntries = await _overlayEntryProvider.GetDefaultOverlayEntries();
+
+                OverlaySubModelGroupSeparating.SetOverlayEntries(overlayEntries);
+                OverlayEntries.ForEach(entry => entry.Dispose());
+                OverlayEntries.Clear();
+                OverlayEntries.AddRange(overlayEntries);
+                SetupOverlayEntriesView();
+                SetSaveButtonIsEnableAction();
+                OverlayItemsOptionsEnabled = false;
+                _overlayEntryProvider.UpdateOverlayEntryFormats();
+
+                await _overlayEntryProvider.SaveOverlayEntriesToJson(_appConfiguration.OverlayEntryConfigurationFile);
+                SaveButtonIsEnable = false;
+                ResetOverlayConfigContentIsOpen = false;
+            }
+            finally
+            {
+                if (wasOverlayActive)
+                    IsOverlayActive = true;
+            }
         }
 
         private void OnSetMinOsd()
@@ -813,83 +826,103 @@ namespace CapFrameX.ViewModel
             catch { }
         }
 
-        private void OnApplyOverlayTemplate()
+        private async Task OnApplyOverlayTemplate()
         {
+            bool wasOverlayActive = _appConfiguration.IsOverlayActive;
+            if (wasOverlayActive)
+            {
+                IsOverlayActive = false;
+                // give overlay management a bit time to disable overlay
+                await Task.Delay(100);
+            }
+
             // Store current state before applying template
             _overlayTemplateService.StoreCurrentState(OverlayEntries);
+            var clonedEntries = OverlayEntries.Select(entry => entry.Clone()).ToList();
 
             // Apply the selected template
-            _overlayTemplateService.ApplyTemplate(SelectedOverlayTemplate, OverlayEntries);
+            _overlayTemplateService.ApplyTemplate(SelectedOverlayTemplate, clonedEntries);
 
             // Sort entries by category order, then by SortKey within each category
-            var sortedEntries = OverlayEntries
+            var sortedEntries = clonedEntries
                 .OrderBy(entry => GetTemplateSortOrder(entry))
                 .ThenBy(entry => entry.SortKey, AlphanumericComparer.Instance)
                 .ToList();
 
+            // Dispose old entries and replace with sorted and templated entries
+            OverlayEntries.ForEach(entry => entry.Dispose());
+            OverlayEntries.Clear();
+            OverlayEntries.AddRange(sortedEntries);
+
             // Update OverlayEntryProvider accordingly
             _overlayEntryProvider.UpdateOverlayEntries(sortedEntries);
 
+            // Setup view, refresh Separators list, and notify overlay
+            SetupOverlayEntriesView();
+            OverlaySubModelGroupSeparating.SetOverlayEntries(sortedEntries);
+
+            SetSaveButtonIsEnable();
+
+            if (wasOverlayActive)
+                IsOverlayActive = true;
+        }
+
+        private async Task OnRevertOverlayTemplate()
+        {
+            bool wasOverlayActive = _appConfiguration.IsOverlayActive;
+            if (wasOverlayActive)
+            {
+                IsOverlayActive = false;
+                // give overlay management a bit time to disable overlay
+                await Task.Delay(100);
+            }
+
+            var storedOverlayEntries = _overlayTemplateService.GetStoredOverlayEntries();
+
+            OverlayEntries.ForEach(entry => entry.Dispose());
             OverlayEntries.Clear();
-            OverlayEntries.AddRange(sortedEntries);
+            OverlayEntries.AddRange(storedOverlayEntries);
+
+            // Update OverlayEntryProvider accordingly
+            _overlayEntryProvider.UpdateOverlayEntries(OverlayEntries);
 
             // Setup view, refresh Separators list, and notify overlay
             SetupOverlayEntriesView();
             OverlaySubModelGroupSeparating.SetOverlayEntries(OverlayEntries);
-            _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
+
             SetSaveButtonIsEnable();
-        }
 
-        private void OnRevertOverlayTemplate()
-        {
-            // Revert to stored state
-            if (_overlayTemplateService.RevertToStoredState(OverlayEntries))
-            {
-                // Sort entries by category order, then by SortKey within each category
-                var sortedEntries = OverlayEntries
-                    .OrderBy(entry => GetTemplateSortOrder(entry))
-                    .ThenBy(entry => entry.SortKey, AlphanumericComparer.Instance)
-                    .ToList();
-
-                // Update OverlayEntryProvider accordingly
-                _overlayEntryProvider.UpdateOverlayEntries(sortedEntries);
-
-                OverlayEntries.Clear();
-                OverlayEntries.AddRange(sortedEntries);
-
-                // Setup view, refresh Separators list, and notify overlay
-                SetupOverlayEntriesView();
-                OverlaySubModelGroupSeparating.SetOverlayEntries(OverlayEntries);
-                _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
-                SetSaveButtonIsEnable();
-            }
+            if (wasOverlayActive)
+                IsOverlayActive = true;
         }
 
         private int GetTemplateSortOrder(IOverlayEntry entry)
         {
             // Framerate and Frametime always at the end
             if (entry.Identifier == "Framerate" || entry.Identifier == "Frametime")
-                return 6;
+                return 8;
 
             switch (entry.OverlayEntryType)
             {
-                case EOverlayEntryType.GPU:
-                    return 1;
                 case EOverlayEntryType.CX:
                     // CustomCPU and CustomRAM are positioned as section headers in templates
                     if (entry.Identifier == "CustomCPU")
-                        return 2;
+                        return 3;
                     if (entry.Identifier == "CustomRAM")
-                        return 4;
-                    return 5;
+                        return 5;
+                    return 1;
+
+                case EOverlayEntryType.GPU:
+                    return 2;
+
                 case EOverlayEntryType.CPU:
-                    return 3;
-                case EOverlayEntryType.RAM:
                     return 4;
+                case EOverlayEntryType.RAM:
+                    return 6;
                 case EOverlayEntryType.OnlineMetric:
-                    return 5;
-                default:
                     return 7;
+                default:
+                    return 9;
             }
         }
 

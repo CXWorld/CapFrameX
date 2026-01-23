@@ -19,6 +19,7 @@ public abstract class GenericGpu : Hardware
     protected RefreshRateBuffer<float> _refreshRateBuffer;
     protected Display _display;
     protected float _refreshRateCurrentWindowHandle;
+    protected string _displayDeviceName;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GenericGpu" /> class.
@@ -43,6 +44,7 @@ public abstract class GenericGpu : Hardware
                     {
                         _display = null;
                         _refreshRateCurrentWindowHandle = 0;
+                        _displayDeviceName = null;
                     }
                     else
                     {
@@ -51,11 +53,13 @@ public abstract class GenericGpu : Hardware
                             var process = Process.GetProcessById(id);
                             _display = new Display(process.MainWindowHandle);
                             _refreshRateCurrentWindowHandle = _display.GetDisplayRefreshRate();
+                            _displayDeviceName = _display.GetDisplayDeviceName();
                         }
                         catch
                         {
                             _display = null;
                             _refreshRateCurrentWindowHandle = 0;
+                            _displayDeviceName = null;
                         }
                     }
                 }

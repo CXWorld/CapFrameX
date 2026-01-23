@@ -137,6 +137,7 @@ internal sealed class Amd17Cpu : AmdCpu
             //Temperature 3
             //Voltage 4
             //Misc 5
+            //PMC 6
 
             _packagePower = new Sensor("CPU Package", _cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, _cpu, _cpu._settings)
             { IsPresentationDefault = true, PresentationSortKey = "2_1_0" };
@@ -356,7 +357,8 @@ internal sealed class Amd17Cpu : AmdCpu
                                     _cpu._sensorTypeIndex[SensorType.Temperature]++,
                                     SensorType.Temperature,
                                     _cpu,
-                                    _cpu._settings));
+                                    _cpu._settings)
+                                { PresentationSortKey = $"3_2_{i}" });
                             }
 
                             _ccdTemperatures[i].Value = ccdTemp;
@@ -375,7 +377,7 @@ internal sealed class Amd17Cpu : AmdCpu
                                 SensorType.Temperature,
                                 _cpu,
                                 _cpu._settings)
-                            { PresentationSortKey = "3_2_1" });
+                            { PresentationSortKey = "3_3_1" });
                         }
 
                         if (_ccdsAverageTemperature == null)
@@ -385,7 +387,7 @@ internal sealed class Amd17Cpu : AmdCpu
                                 SensorType.Temperature,
                                 _cpu,
                                 _cpu._settings)
-                            { PresentationSortKey = "3_2_2" });
+                            { PresentationSortKey = "3_3_2" });
                         }
 
                         _ccdsMaxTemperature.Value = activeCcds.Max(x => x.Value);

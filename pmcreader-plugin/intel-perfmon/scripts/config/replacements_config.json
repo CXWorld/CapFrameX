@@ -1,0 +1,76 @@
+{
+    "metric_name_replacements":{
+        "example_metric_name1":"example_perf_name1",
+        "example_metric_name2":"example_perf_name2"
+    },
+    "metric_association_replacements":{
+        "PERF_METRICS.RETIRING":"topdown\\-retiring",
+        "PERF_METRICS.FRONTEND_BOUND":"topdown\\-fe\\-bound",
+        "PERF_METRICS.BACKEND_BOUND":"topdown\\-be\\-bound",
+        "PERF_METRICS.BAD_SPECULATION":"topdown\\-bad\\-spec",
+        "PERF_METRICS.HEAVY_OPERATIONS":"topdown\\-heavy\\-ops",
+        "PERF_METRICS.BRANCH_MISPREDICTS":"topdown\\-br\\-mispredict",
+        "PERF_METRICS.FETCH_LATENCY":"topdown\\-fetch\\-lat",
+        "PERF_METRICS.MEMORY_BOUND":"topdown\\-mem\\-bound",
+        "TOPDOWN.SLOTS:PERF_METRICS":"slots",
+        "TOPDOWN.SLOTS:PERCORE":"slots",
+        "SYSTEM_TSC_FREQ":"#SYSTEM_TSC_FREQ",
+        "SLOTS":"slots",
+        "SOCKET_COUNT":"#num_packages",
+        "HYPERTHREADING_ON":"#SMT_on",
+        "SMT_ON":"#SMT_on",
+        "CORES_PER_SOCKET":"#num_cores / #num_packages",
+        "DURATIONTIMEINMILLISECONDS":"( duration_time * 1000 )",
+        "DURATIONTIMEINSECONDS":"duration_time",
+        "DURATION_TIME":"duration_time",
+        "UNC_IIO_PAYLOAD_BYTES_IN.MEM_READ.PART0":"UNC_IIO_DATA_REQ_OF_CPU.MEM_READ.PART0",
+        "UNC_IIO_PAYLOAD_BYTES_IN.MEM_READ.PART1":"UNC_IIO_DATA_REQ_OF_CPU.MEM_READ.PART1",
+        "UNC_IIO_PAYLOAD_BYTES_IN.MEM_READ.PART2":"UNC_IIO_DATA_REQ_OF_CPU.MEM_READ.PART2",
+        "UNC_IIO_PAYLOAD_BYTES_IN.MEM_READ.PART3":"UNC_IIO_DATA_REQ_OF_CPU.MEM_READ.PART3",
+        "UNC_IIO_PAYLOAD_BYTES_IN.MEM_READ.PART4":"UNC_IIO_DATA_REQ_OF_CPU.MEM_READ.PART4",
+        "MSR_EVENT:msr=0x611:type=FREERUN:scope=PACKAGE":"power@energy\\-pkg@",
+        "MSR_EVENT:msr=0x619:type=FREERUN:scope=PACKAGE":"power@energy\\-ram@",
+        "CPU_CLK_UNHALTED.THREAD_P:SUP":"CPU_CLK_UNHALTED.THREAD_P:k",
+        "CPU_CLK_UNHALTED.THREAD:SUP":"CPU_CLK_UNHALTED.THREAD:k",
+        "CPU_CLK_UNHALTED.CORE_P:SUP":"CPU_CLK_UNHALTED.CORE_P:k",
+        "UNC_M_CLOCKTICKS:ONE_UNIT": "imc_0@event\\=0x0@",
+        "UNC_C_CLOCKTICKS:ONE_UNIT": "cbox_0@event\\=0x0@",
+        "UNC_CHA_CLOCKTICKS:ONE_UNIT": "cha_0@event\\=0x0@",
+        "FREERUN_PKG_ENERGY_STATUS":"power@energy\\-pkg@",
+        "FREERUN_DRAM_ENERGY_STATUS":"power@energy\\-ram@",
+        "NUM_CPUS":"#num_cpus_online",
+        "UNC_PKG_ENERGY_STATUS":"power@energy\\-pkg@",
+        "UNC_DRAM_ENERGY_STATUS":"power@energy\\-ram@",
+        "INST_RETIRED.ANY_P:SUP":"INST_RETIRED.ANY_P:k",
+        "BR_INST_RETIRED.FAR_BRANCH:USER":"BR_INST_RETIRED.FAR_BRANCH:u",
+        "OCR.DEMAND_RFO.L3_MISS:OCR_MSR_VAL=0X103B800002":"cpu@OCR.DEMAND_RFO.L3_MISS\\,offcore_rsp\\=0x103b800002@",
+        "UNC_P_CLOCKTICKS[0]":"pcu_0@UNC_P_CLOCKTICKS@"
+    },
+    "metric_source_events":{
+        "CHAS_PER_SOCKET":"UNC_CHA([^\\s]*)",
+        "CORES_PER_SOCKET":"UNC_C_([^\\s]*)"
+    },
+    "scale_unit_replacements": {
+        "per instruction":"per_instr",
+        "per second":"per_sec",
+        "percent":"%",
+        "ns":"ns",
+        "GHz":"GHz",
+        "MB/sec":"MB/s",
+        "GT/sec":"GT/s",
+        "Watts":"Watts"
+    },
+    "core_option_translations": {
+        "c":"cmask",
+        "u":"umask",
+        "i":"inv",
+        "e":"edge",
+        "eq": null
+    },
+    "uncore_option_translations": {
+        "filter1":"config1",
+        "c":"thresh",
+        "opc":"filter_opc",
+        "tid":"filter_tid"
+    }
+}

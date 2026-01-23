@@ -1,0 +1,89 @@
+{
+  "Header": {
+    "Copyright": "Copyright (c) 2001 - 2024 Intel Corporation. All rights reserved.",
+    "Info": "Performance Monitoring Events for 11th Generation Intel(R) Core(TM) Processor - V1.04",
+    "DatePublished": "10/10/2024",
+    "Version": "1.04",
+    "Legend": ""
+  },
+  "Events": [
+    {
+      "Unit": "ARB",
+      "EventCode": "0x80",
+      "UMask": "0x02",
+      "EventName": "UNC_ARB_REQ_TRK_OCCUPANCY.DRD",
+      "BriefDescription": "Each cycle counts number of valid coherent Data Read entries. Such entry is defined as valid when it is allocated until deallocation. Does not include prefetches.",
+      "PublicDescription": "Each cycle counts number of valid coherent Data Read entries. Such entry is defined as valid when it is allocated until deallocation. Does not include prefetches.",
+      "Counter": "0",
+      "CounterMask": "0",
+      "Invert": "0",
+      "EdgeDetect": "0",
+      "Deprecated": "0"
+    },
+    {
+      "Unit": "ARB",
+      "EventCode": "0x85",
+      "UMask": "0x01",
+      "EventName": "UNC_ARB_DAT_OCCUPANCY.ALL",
+      "BriefDescription": "Each cycle counts number of any coherent requests at memory controller that were issued by any core.",
+      "PublicDescription": "Each cycle counts number of any coherent requests at memory controller that were issued by any core.",
+      "Counter": "0",
+      "CounterMask": "0",
+      "Invert": "0",
+      "EdgeDetect": "0",
+      "Deprecated": "0"
+    },
+    {
+      "Unit": "ARB",
+      "EventCode": "0x85",
+      "UMask": "0x02",
+      "EventName": "UNC_ARB_DAT_OCCUPANCY.RD",
+      "BriefDescription": "Each cycle counts number of coherent reads pending on data return from memory controller that were issued by any core.",
+      "PublicDescription": "Each cycle counts number of coherent reads pending on data return from memory controller that were issued by any core.",
+      "Counter": "0",
+      "CounterMask": "0",
+      "Invert": "0",
+      "EdgeDetect": "0",
+      "Deprecated": "0"
+    },
+    {
+      "Unit": "ARB",
+      "EventCode": "0x81",
+      "UMask": "0x02",
+      "EventName": "UNC_ARB_TRK_REQUESTS.RD",
+      "BriefDescription": "Counts number of all coherent Data Read entries. Does not include prefetches.",
+      "PublicDescription": "Counts number of all coherent Data Read entries. Does not include prefetches.",
+      "Counter": "0,1",
+      "CounterMask": "0",
+      "Invert": "0",
+      "EdgeDetect": "0",
+      "Deprecated": "0"
+    },
+    {
+      "Unit": "ARB",
+      "EventCode": "0x80",
+      "UMask": "0x02",
+      "EventName": "UNC_ARB_TRK_OCCUPANCY.RD",
+      "BriefDescription": "Each cycle counts number of valid coherent Data Read entries. Such entry is defined as valid when it is allocated until deallocation. Does not include prefetches.",
+      "PublicDescription": "Each cycle counts number of valid coherent Data Read entries. Such entry is defined as valid when it is allocated until deallocation. Does not include prefetches.",
+      "Counter": "0",
+      "CounterMask": "0",
+      "Invert": "0",
+      "EdgeDetect": "0",
+      "Deprecated": "0"
+    },
+    {
+      "Unit": "ARB",
+      "EventCode": "0x80",
+      "UMask": "0x01",
+      "EventName": "UNC_ARB_TRK_OCCUPANCY.ALL",
+      "BriefDescription": "Each cycle counts number of all outgoing valid entries in ReqTrk. Such entry is defined as valid from its allocation in ReqTrk until deallocation. Accounts for Coherent and non-coherent traffic.",
+      "PublicDescription": "Each cycle counts number of all outgoing valid entries in ReqTrk. Such entry is defined as valid from its allocation in ReqTrk until deallocation. Accounts for Coherent and non-coherent traffic.",
+      "Counter": "0",
+      "CounterMask": "0",
+      "Invert": "0",
+      "EdgeDetect": "0",
+      "Deprecated": "0"
+    }
+  ]
+}

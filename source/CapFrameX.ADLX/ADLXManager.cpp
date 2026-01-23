@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "SDK/ADLXHelper/Windows/Cpp/ADLXHelper.h"
-#include "SDK/Include/IPerformanceMonitoring.h"
+#include "SDK/Include/IPerformanceMonitoring3.h"
 #include "ADLXManager.h"
 #include <exception>
 
@@ -80,7 +80,7 @@ void SetGPUVRAMClockSpeed(IADLXGPUMetricsSupportPtr gpuMetricsSupport, IADLXGPUM
 	}
 }
 
-// Set GPU temperature(in °C)
+// Set GPU temperature(in ï¿½C)
 void SetGPUTemperature(IADLXGPUMetricsSupportPtr gpuMetricsSupport, IADLXGPUMetricsPtr gpuMetrics, AdlxTelemetryData* telemetryData)
 {
 	adlx_bool supported = false;
@@ -100,7 +100,7 @@ void SetGPUTemperature(IADLXGPUMetricsSupportPtr gpuMetricsSupport, IADLXGPUMetr
 	}
 }
 
-// Set GPU hotspot temperature(in °C)
+// Set GPU hotspot temperature(in ï¿½C)
 void SetGPUHotspotTemperature(IADLXGPUMetricsSupportPtr gpuMetricsSupport, IADLXGPUMetricsPtr gpuMetrics, AdlxTelemetryData* telemetryData)
 {
 	adlx_bool supported = false;
@@ -211,6 +211,97 @@ void SetGPUVoltage(IADLXGPUMetricsSupportPtr gpuMetricsSupport, IADLXGPUMetricsP
 			res = gpuMetrics->GPUVoltage(&voltage);
 			if (ADLX_SUCCEEDED(res))
 				telemetryData->gpuVoltageValue = voltage;
+		}
+	}
+}
+
+// Set GPU intake temperature (in Â°C)
+void SetGPUIntakeTemperature(IADLXGPUMetricsSupportPtr gpuMetricsSupport, IADLXGPUMetricsPtr gpuMetrics, AdlxTelemetryData* telemetryData)
+{
+	adlx_bool supported = false;
+	// Display GPU intake temperature support status
+	ADLX_RESULT res = gpuMetricsSupport->IsSupportedGPUIntakeTemperature(&supported);
+	if (ADLX_SUCCEEDED(res))
+	{
+		telemetryData->gpuIntakeTemperatureSupported = supported;
+		if (supported)
+		{
+			adlx_double intakeTemperature = 0;
+			res = gpuMetrics->GPUIntakeTemperature(&intakeTemperature);
+			if (ADLX_SUCCEEDED(res))
+				telemetryData->gpuIntakeTemperatureValue = intakeTemperature;
+		}
+	}
+}
+
+// Set GPU memory temperature (in Â°C) - requires IADLXGPUMetrics1
+void SetGPUMemoryTemperature(IADLXGPUMetricsSupport1Ptr gpuMetricsSupport1, IADLXGPUMetrics1Ptr gpuMetrics1, AdlxTelemetryData* telemetryData)
+{
+	adlx_bool supported = false;
+	ADLX_RESULT res = gpuMetricsSupport1->IsSupportedGPUMemoryTemperature(&supported);
+	if (ADLX_SUCCEEDED(res))
+	{
+		telemetryData->gpuMemoryTemperatureSupported = supported;
+		if (supported)
+		{
+			adlx_double memoryTemperature = 0;
+			res = gpuMetrics1->GPUMemoryTemperature(&memoryTemperature);
+			if (ADLX_SUCCEEDED(res))
+				telemetryData->gpuMemoryTemperatureValue = memoryTemperature;
+		}
+	}
+}
+
+// Set NPU frequency (in MHz) - requires IADLXGPUMetrics1
+void SetNPUFrequency(IADLXGPUMetricsSupport1Ptr gpuMetricsSupport1, IADLXGPUMetrics1Ptr gpuMetrics1, AdlxTelemetryData* telemetryData)
+{
+	adlx_bool supported = false;
+	ADLX_RESULT res = gpuMetricsSupport1->IsSupportedNPUFrequency(&supported);
+	if (ADLX_SUCCEEDED(res))
+	{
+		telemetryData->npuFrequencySupported = supported;
+		if (supported)
+		{
+			adlx_int npuFrequency = 0;
+			res = gpuMetrics1->NPUFrequency(&npuFrequency);
+			if (ADLX_SUCCEEDED(res))
+				telemetryData->npuFrequencyValue = npuFrequency;
+		}
+	}
+}
+
+// Set NPU activity level (in %) - requires IADLXGPUMetrics1
+void SetNPUActivityLevel(IADLXGPUMetricsSupport1Ptr gpuMetricsSupport1, IADLXGPUMetrics1Ptr gpuMetrics1, AdlxTelemetryData* telemetryData)
+{
+	adlx_bool supported = false;
+	ADLX_RESULT res = gpuMetricsSupport1->IsSupportedNPUActivityLevel(&supported);
+	if (ADLX_SUCCEEDED(res))
+	{
+		telemetryData->npuActivityLevelSupported = supported;
+		if (supported)
+		{
+			adlx_int npuActivityLevel = 0;
+			res = gpuMetrics1->NPUActivityLevel(&npuActivityLevel);
+			if (ADLX_SUCCEEDED(res))
+				telemetryData->npuActivityLevelValue = npuActivityLevel;
+		}
+	}
+}
+
+// Set GPU shared memory (in MB) - requires IADLXGPUMetrics2
+void SetGPUSharedMemory(IADLXGPUMetricsSupport2Ptr gpuMetricsSupport2, IADLXGPUMetrics2Ptr gpuMetrics2, AdlxTelemetryData* telemetryData)
+{
+	adlx_bool supported = false;
+	ADLX_RESULT res = gpuMetricsSupport2->IsSupportedGPUSharedMemory(&supported);
+	if (ADLX_SUCCEEDED(res))
+	{
+		telemetryData->gpuSharedMemorySupported = supported;
+		if (supported)
+		{
+			adlx_int sharedMemory = 0;
+			res = gpuMetrics2->GPUSharedMemory(&sharedMemory);
+			if (ADLX_SUCCEEDED(res))
+				telemetryData->gpuSharedMemoryValue = sharedMemory;
 		}
 	}
 }
@@ -334,6 +425,27 @@ bool GetAdlxTelemetry(const adlx_uint index, const adlx_uint historyLength, Adlx
 							SetGPUVRAM(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
 							SetGPUVoltage(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
 							SetGPUTotalBoardPower(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+							SetGPUIntakeTemperature(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
+
+							// Query for IADLXGPUMetricsSupport1 and IADLXGPUMetrics1 interfaces
+							IADLXGPUMetricsSupport1Ptr gpuMetricsSupport1;
+							IADLXGPUMetrics1Ptr gpuMetrics1;
+							if (ADLX_SUCCEEDED(gpuMetricsSupport->QueryInterface(IADLXGPUMetricsSupport1::IID(), reinterpret_cast<void**>(&gpuMetricsSupport1))) &&
+								ADLX_SUCCEEDED(gpuMetrics->QueryInterface(IADLXGPUMetrics1::IID(), reinterpret_cast<void**>(&gpuMetrics1))))
+							{
+								SetGPUMemoryTemperature(gpuMetricsSupport1, gpuMetrics1, adlxTelemetryData);
+								SetNPUFrequency(gpuMetricsSupport1, gpuMetrics1, adlxTelemetryData);
+								SetNPUActivityLevel(gpuMetricsSupport1, gpuMetrics1, adlxTelemetryData);
+
+								// Query for IADLXGPUMetricsSupport2 and IADLXGPUMetrics2 interfaces
+								IADLXGPUMetricsSupport2Ptr gpuMetricsSupport2;
+								IADLXGPUMetrics2Ptr gpuMetrics2;
+								if (ADLX_SUCCEEDED(gpuMetricsSupport1->QueryInterface(IADLXGPUMetricsSupport2::IID(), reinterpret_cast<void**>(&gpuMetricsSupport2))) &&
+									ADLX_SUCCEEDED(gpuMetrics1->QueryInterface(IADLXGPUMetrics2::IID(), reinterpret_cast<void**>(&gpuMetrics2))))
+								{
+									SetGPUSharedMemory(gpuMetricsSupport2, gpuMetrics2, adlxTelemetryData);
+								}
+							}
 
 							check = true;
 						}
@@ -349,6 +461,96 @@ bool GetAdlxTelemetry(const adlx_uint index, const adlx_uint historyLength, Adlx
 	catch (...)
 	{
 		return false; // Return false on any unknown exception
+	}
+
+	return check;
+}
+
+bool GetAdlxTelemetrySupport(const adlx_uint index, AdlxTelemetrySupport* adlxTelemetrySupport)
+{
+	bool check = false;
+
+	try
+	{
+		IADLXGPUPtr gpu;
+		ADLX_RESULT resGetGPU = _gpus->At(index, &gpu);
+
+		if (ADLX_SUCCEEDED(resGetGPU))
+		{
+			IADLXGPUMetricsSupportPtr gpuMetricsSupport;
+			ADLX_RESULT resGetSupportedMetrics = _perfMonitoringService->GetSupportedGPUMetrics(gpu, &gpuMetricsSupport);
+
+			if (ADLX_SUCCEEDED(resGetSupportedMetrics))
+			{
+				adlx_bool supported = false;
+
+				// Query base metrics support
+				if (ADLX_SUCCEEDED(gpuMetricsSupport->IsSupportedGPUUsage(&supported)))
+					adlxTelemetrySupport->gpuUsageSupported = supported;
+
+				if (ADLX_SUCCEEDED(gpuMetricsSupport->IsSupportedGPUClockSpeed(&supported)))
+					adlxTelemetrySupport->gpuClockSpeedSupported = supported;
+
+				if (ADLX_SUCCEEDED(gpuMetricsSupport->IsSupportedGPUVRAMClockSpeed(&supported)))
+					adlxTelemetrySupport->gpuVRAMClockSpeedSupported = supported;
+
+				if (ADLX_SUCCEEDED(gpuMetricsSupport->IsSupportedGPUTemperature(&supported)))
+					adlxTelemetrySupport->gpuTemperatureSupported = supported;
+
+				if (ADLX_SUCCEEDED(gpuMetricsSupport->IsSupportedGPUHotspotTemperature(&supported)))
+					adlxTelemetrySupport->gpuHotspotTemperatureSupported = supported;
+
+				if (ADLX_SUCCEEDED(gpuMetricsSupport->IsSupportedGPUPower(&supported)))
+					adlxTelemetrySupport->gpuPowerSupported = supported;
+
+				if (ADLX_SUCCEEDED(gpuMetricsSupport->IsSupportedGPUFanSpeed(&supported)))
+					adlxTelemetrySupport->gpuFanSpeedSupported = supported;
+
+				if (ADLX_SUCCEEDED(gpuMetricsSupport->IsSupportedGPUVRAM(&supported)))
+					adlxTelemetrySupport->gpuVramSupported = supported;
+
+				if (ADLX_SUCCEEDED(gpuMetricsSupport->IsSupportedGPUVoltage(&supported)))
+					adlxTelemetrySupport->gpuVoltageSupported = supported;
+
+				if (ADLX_SUCCEEDED(gpuMetricsSupport->IsSupportedGPUTotalBoardPower(&supported)))
+					adlxTelemetrySupport->gpuTotalBoardPowerSupported = supported;
+
+				if (ADLX_SUCCEEDED(gpuMetricsSupport->IsSupportedGPUIntakeTemperature(&supported)))
+					adlxTelemetrySupport->gpuIntakeTemperatureSupported = supported;
+
+				// Query IADLXGPUMetricsSupport1 for extended metrics
+				IADLXGPUMetricsSupport1Ptr gpuMetricsSupport1;
+				if (ADLX_SUCCEEDED(gpuMetricsSupport->QueryInterface(IADLXGPUMetricsSupport1::IID(), reinterpret_cast<void**>(&gpuMetricsSupport1))))
+				{
+					if (ADLX_SUCCEEDED(gpuMetricsSupport1->IsSupportedGPUMemoryTemperature(&supported)))
+						adlxTelemetrySupport->gpuMemoryTemperatureSupported = supported;
+
+					if (ADLX_SUCCEEDED(gpuMetricsSupport1->IsSupportedNPUFrequency(&supported)))
+						adlxTelemetrySupport->npuFrequencySupported = supported;
+
+					if (ADLX_SUCCEEDED(gpuMetricsSupport1->IsSupportedNPUActivityLevel(&supported)))
+						adlxTelemetrySupport->npuActivityLevelSupported = supported;
+
+					// Query IADLXGPUMetricsSupport2 for more extended metrics
+					IADLXGPUMetricsSupport2Ptr gpuMetricsSupport2;
+					if (ADLX_SUCCEEDED(gpuMetricsSupport1->QueryInterface(IADLXGPUMetricsSupport2::IID(), reinterpret_cast<void**>(&gpuMetricsSupport2))))
+					{
+						if (ADLX_SUCCEEDED(gpuMetricsSupport2->IsSupportedGPUSharedMemory(&supported)))
+							adlxTelemetrySupport->gpuSharedMemorySupported = supported;
+					}
+				}
+
+				check = true;
+			}
+		}
+	}
+	catch (const std::exception& e)
+	{
+		return false;
+	}
+	catch (...)
+	{
+		return false;
 	}
 
 	return check;

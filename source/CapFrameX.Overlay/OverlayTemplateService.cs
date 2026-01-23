@@ -34,12 +34,12 @@ namespace CapFrameX.Overlay
         private const string LATENCY_VALUE_COLOR = "FFFFD700";
 
         private readonly ISensorService _sensorService;
-        private Dictionary<string, StoredEntryState> _storedState;
+        private IOverlayEntry[] _storedOverlayEntries;
 
         public EGpuVendor DetectedGpuVendor { get; private set; }
         public ECpuVendor DetectedCpuVendor { get; private set; }
         public string ShortGpuName { get; private set; }
-        public bool HasStoredState => _storedState != null && _storedState.Count > 0;
+        public bool HasStoredState => _storedOverlayEntries != null && _storedOverlayEntries.Length > 0;
 
         public OverlayTemplateService(ISensorService sensorService)
         {
@@ -151,8 +151,8 @@ namespace CapFrameX.Overlay
             EnableByIdentifier(entries, "Online1PercentLow", METRIC_COLOR, METRIC_COLOR, 0, null, null, TemplateSortKey(30, 2));
 
             // 4. Framerate Section (at the end, with blank line, no graph)
-            EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 1, "<APP>", false, TemplateSortKey(40, 1));
-            EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", null, TemplateSortKey(40, 2));
+            EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", false, TemplateSortKey(40, 1));
+            EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", true, TemplateSortKey(40, 2));
 
             EnsureCpuSectionSeparator(entries);
         }
@@ -168,6 +168,7 @@ namespace CapFrameX.Overlay
             EnableByDescription(entries, "GPU Core (%)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Load", TemplateSortKey(10, 3));
             EnableByDescription(entries, "GPU Core (°C)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Temp", TemplateSortKey(10, 4));
             EnableByDescription(entries, "GPU Power (W)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Power", TemplateSortKey(10, 5));
+            EnableByDescription(entries, "GPU TBP (W)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Power", TemplateSortKey(10, 5));
             EnableByDescription(entries, "GPU Memory Dedicated (GB)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Used", TemplateSortKey(10, 6));
             EnableByDescription(entries, "GPU Memory Shared (GB)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Used", TemplateSortKey(10, 7));
 
@@ -175,7 +176,6 @@ namespace CapFrameX.Overlay
             EnableByIdentifier(entries, "CustomCPU", cpuGroupColor, VALUE_WHITE, 1, "CPU Model", null, TemplateSortKey(20, 1));
 
             // 3. CPU entries - Clock, Total, Package
-            EnableByGroupName(entries, "CPU Clock", cpuGroupColor, VALUE_YELLOW, 0, TemplateSortKey(30, 1));
             EnableByDescription(entries, "CPU Max (MHz)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Max", TemplateSortKey(30, 2));
             EnableByDescriptionContains(entries, "CPU Total (%)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Total", TemplateSortKey(30, 3));
             EnableByDescriptionContains(entries, "CPU Package (W)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(30, 4));
@@ -189,8 +189,8 @@ namespace CapFrameX.Overlay
             EnableByIdentifier(entries, "Online1PercentLow", METRIC_COLOR, METRIC_COLOR, 0, null, null, TemplateSortKey(50, 2));
 
             // 6. Framerate Section (at the end, with blank line, no graph)
-            EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 1, "<APP>", false, TemplateSortKey(60, 1));
-            EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", null, TemplateSortKey(60, 2));
+            EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", false, TemplateSortKey(60, 1));
+            EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", true, TemplateSortKey(60, 2));
 
             EnsureCpuSectionSeparator(entries);
         }
@@ -207,6 +207,7 @@ namespace CapFrameX.Overlay
             EnableByDescription(entries, "GPU Core (°C)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Temp", TemplateSortKey(10, 4));
             EnableByDescription(entries, "GPU Memory Junction (°C)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Hot Spot", TemplateSortKey(10, 5));
             EnableByDescription(entries, "GPU Power (W)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Power", TemplateSortKey(10, 6));
+            EnableByDescription(entries, "GPU TBP (W)", gpuGroupColor, VALUE_YELLOW, 0, "GPU TBP", TemplateSortKey(10, 6));
             EnableByDescription(entries, "GPU Memory Dedicated (GB)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Used", TemplateSortKey(10, 7));
             EnableByDescription(entries, "GPU Memory Shared (GB)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Used", TemplateSortKey(10, 8));
 
@@ -265,8 +266,8 @@ namespace CapFrameX.Overlay
             EnableByIdentifier(entries, "Online1PercentLow", METRIC_COLOR, METRIC_COLOR, 0, null, null, TemplateSortKey(70, 2));
 
             // 7. Framerate Section (at the end, with blank line, no graph)
-            EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 1, "<APP>", false, TemplateSortKey(80, 1));
-            EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", null, TemplateSortKey(80, 2));
+            EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", false, TemplateSortKey(80, 1));
+            EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", true, TemplateSortKey(80, 2));
 
             EnsureCpuSectionSeparator(entries);
         }
@@ -587,42 +588,15 @@ namespace CapFrameX.Overlay
 
         public void StoreCurrentState(IEnumerable<IOverlayEntry> entries)
         {
-            _storedState = new Dictionary<string, StoredEntryState>();
-            foreach (var entry in entries)
-            {
-                _storedState[entry.Identifier] = new StoredEntryState
-                {
-                    ShowOnOverlay = entry.ShowOnOverlay,
-                    GroupColor = entry.GroupColor,
-                    Color = entry.Color,
-                    GroupSeparators = entry.GroupSeparators,
-                    GroupName = entry.GroupName,
-                    ShowGraph = entry.ShowGraph,
-                    SortKey = entry.SortKey
-                };
-            }
+            _storedOverlayEntries = entries.Select(entry => entry.Clone()).ToArray();
         }
 
-        public bool RevertToStoredState(IEnumerable<IOverlayEntry> entries)
+        public IEnumerable<IOverlayEntry> GetStoredOverlayEntries()
         {
             if (!HasStoredState)
-                return false;
+                return Enumerable.Empty<IOverlayEntry>();
 
-            foreach (var entry in entries)
-            {
-                if (_storedState.TryGetValue(entry.Identifier, out var storedState))
-                {
-                    entry.ShowOnOverlay = storedState.ShowOnOverlay;
-                    entry.GroupColor = storedState.GroupColor;
-                    entry.Color = storedState.Color;
-                    entry.GroupSeparators = storedState.GroupSeparators;
-                    entry.GroupName = storedState.GroupName;
-                    entry.ShowGraph = storedState.ShowGraph;
-                    entry.SortKey = storedState.SortKey;
-                }
-            }
-
-            return true;
+            return _storedOverlayEntries;
         }
 
         private static string TemplateSortKey(int section, int index, int subIndex = 0)

@@ -10,7 +10,7 @@ namespace CapFrameX.Contracts.Overlay
         Undefined
     }
 
-    public interface IOverlayEntry
+    public interface IOverlayEntry : IDisposable
     {
         string Identifier { get; }
 

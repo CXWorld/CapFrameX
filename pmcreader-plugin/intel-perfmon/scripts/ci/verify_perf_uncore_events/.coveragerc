@@ -1,0 +1,9 @@
+[run]
+branch = True
+
+[report]
+include =
+    verify_perf_uncore_events.py
+
+exclude_lines =
+    if __name__ == '__main__':

@@ -1,0 +1,44 @@
+# This workflow will setup Python, run create_perf_json.py, and archive
+# perf JSON files.
+
+name: Create perf json
+
+on:
+  push:
+  pull_request:
+  schedule:
+    # Tuesdays at 9AM PST
+    - cron: '0 16 * * 2'
+
+permissions:
+  contents: read
+
+jobs:
+  create-perf-json:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout perfmon
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+    - name: Set up Python 3.x
+      uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+      with:
+        python-version: "3.x"
+
+    - name: Run unittests
+      working-directory: ./scripts/unittesting
+      run: python -m unittest metric_test.py test_create_perf_json.py
+
+    - name: Create perf json files
+      working-directory: ./scripts
+      run: python create_perf_json.py -v
+
+    - name: Archive perf json files
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      with:
+        name: perf-json
+        path: scripts/perf
+        retention-days: 10
+        if-no-files-found: error

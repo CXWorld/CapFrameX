@@ -1,0 +1,49 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Perfmon Events mapfile.csv Schema",
+    "description": "A schema for validating https://github.com/intel/perfmon/blob/main/mapfile.csv",
+    "type": "array",
+    "items": {
+        "type" : "object",
+        "properties" : {
+            "Family-model" : {
+                "type": "string",
+                "pattern": "^GenuineIntel-6-[A-F0-9]{2}(-\\[[A-F0-9]+\\])?$"
+            },
+            "Version" : {
+                "type": "string",
+                "pattern": "^V\\d+(\\.\\d+)?$"
+            },
+            "Filename" : {
+                "type": "string",
+                "pattern": "^/[A-Z-]+/(events|metrics)/[a-z_DEJNPSWX-]+\\.json$"
+            },
+            "EventType" : {
+                "type": "string",
+                "pattern": "^(core|fp_arith_inst|hybridcore|metrics|offcore|uncore|uncore experimental|retire latency)$"
+            },
+            "Core Type" : {
+                "type": "string",
+                "pattern": "^(0x[A-F0-9]{2})?$"
+            },
+            "Native Model ID" : {
+                "type": "string",
+                "pattern": "^(0x[A-F0-9]{6})?$"
+            },
+            "Core Role Name" : {
+                "type": "string",
+                "pattern": "^(Core|Atom|LowPower_Atom)?$"
+            }
+        },
+        "required" : [
+            "Family-model",
+            "Version",
+            "Filename",
+            "EventType",
+            "Core Type",
+            "Native Model ID",
+            "Core Role Name"
+        ],
+        "additionalProperties": false
+    }
+}
