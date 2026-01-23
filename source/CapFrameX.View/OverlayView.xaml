@@ -683,7 +683,7 @@
 						</Grid.RowDefinitions>
 						<StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
 							<TextBlock VerticalAlignment="Center" Text="Overlay Template" FontSize="16" Margin="5 0 15 0"/>
-							<ComboBox materialDesign:ComboBoxAssist.ClassicMode="True" Margin="10 0 0 0"
+							<ComboBox materialDesign:ComboBoxAssist.ClassicMode="True" Margin="5 0 0 0" Padding="0 10 0 0"
 								Width="140" Height="35"
 								FontSize="14"
 								Foreground="{DynamicResource MaterialDesignBody}"
