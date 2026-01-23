@@ -838,16 +838,16 @@ namespace CapFrameX.ViewModel
 
             // Store current state before applying template
             _overlayTemplateService.StoreCurrentState(OverlayEntries);
-
-            // Sort entries by category order, then by SortKey within each category
-            var sortedEntries = OverlayEntries
-                .OrderBy(entry => GetTemplateSortOrder(entry))
-                .ThenBy(entry => entry.SortKey, AlphanumericComparer.Instance)
-                .Select(entry => entry.Clone())
-                .ToList();
+            var clonedEntries = OverlayEntries.Select(entry => entry.Clone()).ToList();
 
             // Apply the selected template
-            _overlayTemplateService.ApplyTemplate(SelectedOverlayTemplate, sortedEntries);
+            _overlayTemplateService.ApplyTemplate(SelectedOverlayTemplate, clonedEntries);
+
+            // Sort entries by category order, then by SortKey within each category
+            var sortedEntries = clonedEntries
+                .OrderBy(entry => GetTemplateSortOrder(entry))
+                .ThenBy(entry => entry.SortKey, AlphanumericComparer.Instance)
+                .ToList();
 
             // Dispose old entries and replace with sorted and templated entries
             OverlayEntries.ForEach(entry => entry.Dispose());
