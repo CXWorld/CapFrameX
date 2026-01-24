@@ -765,7 +765,15 @@ namespace CapFrameX.Data
         {
             const long MinimumBuffer = 10 * 1024 * 1024; // 10 MB minimum buffer
 
-            var root = Path.GetPathRoot(Path.GetFullPath(filePath));
+            var fullPath = Path.GetFullPath(filePath);
+
+            // DriveInfo does not support UNC paths (network shares)
+            if (fullPath.StartsWith(@"\\"))
+            {
+                return;
+            }
+
+            var root = Path.GetPathRoot(fullPath);
             var driveInfo = new DriveInfo(root);
             var required = requiredBytes + MinimumBuffer;
 
