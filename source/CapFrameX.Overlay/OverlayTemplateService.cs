@@ -44,7 +44,6 @@ namespace CapFrameX.Overlay
         public OverlayTemplateService(ISensorService sensorService)
         {
             _sensorService = sensorService;
-            DetectHardware();
         }
 
         private void DetectHardware()
@@ -54,7 +53,6 @@ namespace CapFrameX.Overlay
 
             // Create short GPU name (e.g., "RTX 4090", "RX 7900 XTX", "Arc A770")
             ShortGpuName = CreateShortGpuName(gpuName);
-
             DetectedCpuVendor = _sensorService.GetCpuVendor();
         }
 
@@ -105,6 +103,7 @@ namespace CapFrameX.Overlay
 
         public void ApplyTemplate(EOverlayTemplate template, IEnumerable<IOverlayEntry> entries)
         {
+            DetectHardware();
             var entryList = entries.ToList();
 
             // First, disable all entries and reset separators

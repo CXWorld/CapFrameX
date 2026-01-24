@@ -19,10 +19,10 @@ namespace CapFrameX.Sensor
 
         private Dictionary<string, bool> _activeSensorsDict;
 
+        private Dictionary<string, bool> _defaultSensorsDict;
+
         private Dictionary<string, bool> _evalSensorsDict
             = new Dictionary<string, bool>();
-
-        public bool IsInitialized { get; set; } = false;
 
         public bool IsCapturing { get; set; } = false;
 
@@ -41,14 +41,12 @@ namespace CapFrameX.Sensor
         public SensorConfig(string sensorConfigFolder)
         {
             _sensorConfigFolder = sensorConfigFolder;
+            _defaultSensorsDict = GetSensorEntryDefaults();
             Task.Run(async () => await LoadOrSetDefault()).Wait();
         }
 
         public bool GetSensorIsActive(string identifier)
         {
-            if (!IsInitialized)
-                return true;
-
             bool isActive = false;
             if (_activeSensorsDict.ContainsKey(identifier))
                 isActive = _activeSensorsDict[identifier];
@@ -58,7 +56,6 @@ namespace CapFrameX.Sensor
 
         public void SetSensorIsActive(string identifier, bool isActive)
         {
-            isActive = !IsInitialized || isActive;
 
             if (_activeSensorsDict.ContainsKey(identifier))
                 _activeSensorsDict[identifier] = isActive;
@@ -68,9 +65,6 @@ namespace CapFrameX.Sensor
 
         public bool GetSensorEvaluate(string identifier)
         {
-            if (!IsInitialized)
-                return true;
-
             bool isActive = false;
             if (_activeSensorsDict.ContainsKey(identifier))
                 isActive = _activeSensorsDict[identifier];
@@ -84,8 +78,6 @@ namespace CapFrameX.Sensor
 
         public void SetSensorEvaluate(string identifier, bool evaluate)
         {
-            evaluate = !IsInitialized || evaluate;
-
             if (_evalSensorsDict.ContainsKey(identifier))
                 _evalSensorsDict[identifier] = evaluate;
             else
@@ -127,18 +119,18 @@ namespace CapFrameX.Sensor
                 // Load default as fallback
                 if (_activeSensorsDict == null || !_activeSensorsDict.Values.Any())
                 {
-                    _activeSensorsDict = await GetSensorEntryDefaults();
+                    _activeSensorsDict = new Dictionary<string, bool>(_defaultSensorsDict);
                 }
             }
             catch (Exception ex)
             {
-                _activeSensorsDict = await GetSensorEntryDefaults();
+                _activeSensorsDict = new Dictionary<string, bool>(_defaultSensorsDict);
                 Log.Logger.Error(ex, "Error while loading sensor config. Default config loading instead...");
             }
         }
 
-        private async Task<Dictionary<string, bool>> GetSensorEntryDefaults()
-            => await Task.FromResult(new Dictionary<string, bool>());
+        private Dictionary<string, bool> GetSensorEntryDefaults()
+            => new Dictionary<string, bool>();
 
         private async Task<Dictionary<string, bool>> GetInitializedSensorEntryDictionary()
         {

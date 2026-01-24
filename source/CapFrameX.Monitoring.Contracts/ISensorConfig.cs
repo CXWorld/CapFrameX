@@ -5,8 +5,6 @@ namespace CapFrameX.Monitoring.Contracts
 {
     public interface ISensorConfig
     {
-        bool IsInitialized { get; set; }
-
         bool IsCapturing { get; set; }
 
         bool HasConfigFile { get; }

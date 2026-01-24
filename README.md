@@ -13,7 +13,7 @@ Download link: https://github.com/DevTechProfile/CapFrameX/releases
 The following tips address the most common issues reported by users and can help resolve stability, overlay, and capture-related problems efficiently. We recommend working through them in order if you encounter unexpected behavior.
 
 1. **Ensure you are running the latest version**  
-   If you experience application crashes or unstable behavior, verify that you have installed **CapFrameX v1.7.8 Patch 1** or newer. Many known issues have been resolved in this patch.
+   If you experience application crashes or unstable behavior, verify that you have installed **CapFrameX v1.7.8 Patch 1** or newer. Many known issues have been resolved in this patch. If you were previously using version 1.7.7, we recommend uninstalling CapFrameX before installing the new version.
 
 2. **Reset application settings**  
    In some cases, corrupted or outdated configuration files may cause problems. Deleting  
