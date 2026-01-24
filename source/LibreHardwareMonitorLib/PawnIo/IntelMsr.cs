@@ -2,11 +2,20 @@
 
 namespace LibreHardwareMonitor.PawnIo;
 
+/// <summary>
+/// Provides methods to read Intel Model-Specific Registers (MSRs) using PawnIo.
+/// </summary>
 public class IntelMsr
 {
     private readonly long[] _inArray = new long[1];
     private readonly PawnIo _pawnIO = PawnIo.LoadModuleFromResource(typeof(IntelMsr).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIo.IntelMSR.bin");
 
+    /// <summary>
+    /// Reads the value of a specified MSR.
+    /// </summary>
+    /// <param name="index"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
     public bool ReadMsr(uint index, out ulong value)
     {
         _inArray[0] = index;
@@ -24,6 +33,13 @@ public class IntelMsr
         return true;
     }
 
+    /// <summary>
+    /// Reads the value of a specified MSR.
+    /// </summary>
+    /// <param name="index"></param>
+    /// <param name="eax"></param>
+    /// <param name="edx"></param>
+    /// <returns></returns>
     public bool ReadMsr(uint index, out uint eax, out uint edx)
     {
         _inArray[0] = index;
@@ -43,6 +59,14 @@ public class IntelMsr
         return true;
     }
 
+    /// <summary>
+    /// Reads the value of a specified MSR on a specific processor group and index.
+    /// </summary>
+    /// <param name="index"></param>
+    /// <param name="eax"></param>
+    /// <param name="edx"></param>
+    /// <param name="affinity"></param>
+    /// <returns></returns>
     public bool ReadMsr(uint index, out uint eax, out uint edx, GroupAffinity affinity)
     {
         GroupAffinity previousAffinity = ThreadAffinity.Set(affinity);
@@ -51,5 +75,8 @@ public class IntelMsr
         return result;
     }
 
+    /// <summary>
+    /// Closes the PawnIo module.
+    /// </summary>
     public void Close() => _pawnIO.Close();
 }

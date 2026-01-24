@@ -28,6 +28,6 @@ namespace CapFrameX.Contracts.Sensor
         void SetLoggingInterval(TimeSpan timeSpan);
         void SetOSDInterval(TimeSpan timeSpan);
         Task<IEnumerable<ISensorEntry>> GetSensorEntries();
-        IEnumerable<IHardware> GetDetectedGpus();
+        IEnumerable<string> GetDetectedGpus();
     }
 }

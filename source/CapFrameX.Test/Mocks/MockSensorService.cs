@@ -2,7 +2,6 @@ using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
-using LibreHardwareMonitor.Hardware;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -249,10 +248,10 @@ namespace CapFrameX.Test.Mocks
             }
         }
 
-        public IEnumerable<IHardware> GetDetectedGpus()
+        public IEnumerable<string> GetDetectedGpus()
         {
             // Return empty - hardware mocking would require LibreHardwareMonitor mocking
-            return Enumerable.Empty<IHardware>();
+            return Enumerable.Empty<string>();
         }
 
         #endregion

@@ -211,7 +211,7 @@ namespace CapFrameX.Sensor
             _sensorUpdateSubject.OnNext(CurrentSensorTimespan);
         }
 
-        public IEnumerable<IHardware> GetDetectedGpus()
+        public IEnumerable<string> GetDetectedGpus()
         {
             IEnumerable<IHardware> gpus = null;
             lock (_lockComputer)
@@ -221,7 +221,8 @@ namespace CapFrameX.Sensor
                    || hdw.HardwareType == HardwareType.GpuNvidia
                    || hdw.HardwareType == HardwareType.GpuIntel);
             }
-            return gpus;
+
+            return gpus.Select(gpu => gpu.Name);
         }
 
         public ISessionSensorData2 GetSensorSessionData()

@@ -320,10 +320,6 @@
       <Project>{69d694a6-b029-4fe8-8429-f4e70db8b5e1}</Project>
       <Name>CapFrameX.Webservice.Data</Name>
     </ProjectReference>
-    <ProjectReference Include="..\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj">
-      <Project>{51E4211C-F281-11A3-9390-A6B54F703498}</Project>
-      <Name>LibreHardwareMonitorLib</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="stdole">

@@ -583,7 +583,6 @@ namespace CapFrameX.ViewModel
                 await sensorService.SensorServiceCompletionSource.Task;
 
                 GraphicsAdapters = sensorService.GetDetectedGpus()
-                    .Select(g => g.Name)
                     .Distinct()
                     .Prepend("Auto")
                     .ToArray();
