@@ -214,36 +214,70 @@ internal sealed class AmdGpu : GenericGpu
 
     public override string GetDriverVersion()
     {
-        string GetDriverStringFromPath(string path)
+        // First, try to get Radeon Software version from AMD's standard registry location
+        try
+        {
+            using RegistryKey amdKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\AMD\CN");
+            if (amdKey != null)
+            {
+                var sv = amdKey.GetValue("RadeonSoftwareVersion");
+                if (sv != null && !string.IsNullOrEmpty(sv.ToString()))
+                {
+                    return $"Adrenalin {sv}";
+                }
+            }
+        }
+        catch
+        {
+            // Ignore registry access errors
+        }
+
+        // Fall back to getting driver version from device class registry key
+        if (!string.IsNullOrEmpty(_deviceInfo.DriverPath))
         {
             try
             {
-                using RegistryKey key = Registry.LocalMachine.OpenSubKey(path);
-                if (key != null)
+                // DriverPath is typically "{GUID}\NNNN" - prepend the Control\Class path
+                string driverPath = _deviceInfo.DriverPath;
+
+                // Remove any "\Registry\Machine\" prefix if present
+                const string registryPrefix = @"\Registry\Machine\";
+                if (driverPath.StartsWith(registryPrefix, StringComparison.OrdinalIgnoreCase))
                 {
-                    var sv = key.GetValue("RadeonSoftwareVersion");
-                    var radeonSoftwareVersion = sv == null ? string.Empty : sv.ToString();
-                    return $"Adrenalin {radeonSoftwareVersion}";
+                    driverPath = driverPath.Substring(registryPrefix.Length);
+                }
+
+                // If it starts with a GUID brace, prepend the Control\Class path
+                if (driverPath.StartsWith("{", StringComparison.Ordinal))
+                {
+                    driverPath = @"SYSTEM\CurrentControlSet\Control\Class\" + driverPath;
+                }
+
+                using RegistryKey deviceKey = Registry.LocalMachine.OpenSubKey(driverPath);
+                if (deviceKey != null)
+                {
+                    // Try RadeonSoftwareVersion first (in case it's stored here)
+                    var radeonVersion = deviceKey.GetValue("RadeonSoftwareVersion");
+                    if (radeonVersion != null && !string.IsNullOrEmpty(radeonVersion.ToString()))
+                    {
+                        return $"Adrenalin {radeonVersion}";
+                    }
+
+                    // Fall back to Windows driver version
+                    var driverVersion = deviceKey.GetValue("DriverVersion");
+                    if (driverVersion != null && !string.IsNullOrEmpty(driverVersion.ToString()))
+                    {
+                        return driverVersion.ToString();
+                    }
                 }
             }
             catch
             {
                 // Ignore registry access errors
             }
-
-            return null;
         }
 
-        const string prefix = @"\Registry\Machine\";
-
-        if (string.IsNullOrEmpty(_deviceInfo.DriverPath))
-            return null;
-
-        string subPath = _deviceInfo.DriverPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
-            ? _deviceInfo.DriverPath.Substring(prefix.Length)
-            : _deviceInfo.DriverPath;
-
-        return GetDriverStringFromPath(subPath);
+        return null;
     }
 
     public override string GetReport()
