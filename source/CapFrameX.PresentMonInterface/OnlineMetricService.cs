@@ -18,8 +18,8 @@ namespace CapFrameX.PresentMonInterface
 {
     public class OnlineMetricService : IOnlineMetricService
     {
-        private const int LIST_CAPACITY = 20000;
-        private const int PMD_BUFFER_CAPACITY = 2200;
+        private const int LIST_CAPACITY = 30000;
+        private const int PMD_BUFFER_CAPACITY = 3000;
         private const double FIVE_SECONDS_INTERVAL_LENGTH = 5.0;
         private const double ANIMATION_ERROR_INTERVAL_LENGTH = 0.5;
 
@@ -584,6 +584,12 @@ namespace CapFrameX.PresentMonInterface
                         maxAbsValue = absValue;
                         resultValue = sample;
                     }
+                }
+
+                // Clamp to ±1000ms (1 second) to avoid extreme outliers
+                if (!double.IsNaN(resultValue))
+                {
+                    resultValue = Math.Max(-1000d, Math.Min(1000d, resultValue));
                 }
 
                 return resultValue;
