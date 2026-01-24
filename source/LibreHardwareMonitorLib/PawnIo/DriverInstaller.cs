@@ -445,19 +445,9 @@ public static class DriverInstaller
 
     /// <summary>
     /// Gets the file path of the PawnIO driver.
-    /// First checks if the official PawnIO installation exists, otherwise uses the local copy.
     /// </summary>
     public static string GetPawnIODriverPath()
     {
-        // Prefer official PawnIO installation path if it exists
-        string officialPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "PawnIO", $"{PAWNIO_SERVICE_NAME}.sys");
-        if (File.Exists(officialPath))
-        {
-            Log.Information("Using official PawnIO driver at: {Path}", officialPath);
-            return officialPath;
-        }
-
-        // Fall back to local copy
         string baseDir = AppContext.BaseDirectory;
         string driverDir = Path.Combine(baseDir, "PawnIo");
         return Path.Combine(driverDir, $"{PAWNIO_SERVICE_NAME}.sys");
