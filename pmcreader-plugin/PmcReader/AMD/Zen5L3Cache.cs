@@ -78,6 +78,11 @@ namespace PmcReader.AMD
             ccxCounterData = new L3CounterData[ccxSampleThreads.Count()];
             ccxTotals = new L3CounterData();
 
+            // Reset thread affinity after constructor's CPUID operations
+            // On multi-CCX systems, Get1AhCcxId calls OpCode.CpuidTx which changes
+            // thread affinity. Reset to thread 0 to ensure clean state.
+            ThreadAffinity.Set(1UL << 0);
+
             Zen5Diagnostics.Log($"Zen5L3Cache constructor complete. CCX count: {ccxSampleThreads.Count}");
         }
 
@@ -189,8 +194,8 @@ namespace PmcReader.AMD
             public string[] GetColumns() { return columns; }
             public void Initialize()
             {
-                Zen5Diagnostics.LogSection("L3 HITRATE/LATENCY CONFIG INITIALIZATION");
 
+                // Then program L3 counters on each CCX sample thread
                 foreach (KeyValuePair<int, int> ccxThread in l3Cache.ccxSampleThreads)
                 {
                     Zen5Diagnostics.Log($"Initializing L3 counters for CCX {ccxThread.Key} via thread {ccxThread.Value}");
