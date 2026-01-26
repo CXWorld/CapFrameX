@@ -89,6 +89,7 @@
     <Compile Include="AMD\Zen2.cs" />
     <Compile Include="AMD\Zen1.cs" />
     <Compile Include="AMD\Zen2DataFabric.cs" />
+    <Compile Include="AMD\Zen5Diagnostics.cs" />
     <Compile Include="AMD\Zen5L3Cache.cs" />
     <Compile Include="AMD\Zen4L3Cache.cs" />
     <Compile Include="AMD\Zen5.cs" />
