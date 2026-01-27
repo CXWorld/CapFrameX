@@ -1,7 +1,6 @@
+using PmcReader.Interop;
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using PmcReader.Interop;
 
 namespace PmcReader.AMD
 {
@@ -15,6 +14,10 @@ namespace PmcReader.AMD
         public Zen5DataFabric(DfType dfType)
         {
             architectureName = "Zen 5 UMC";
+
+#if DEBUG
+            Zen5Diagnostics.Enabled = true;
+#endif
 
             // Initialize diagnostics if not already done
             Zen5Diagnostics.Initialize();

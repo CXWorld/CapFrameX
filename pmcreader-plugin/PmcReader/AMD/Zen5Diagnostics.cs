@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace PmcReader.AMD
 {
@@ -13,15 +12,23 @@ namespace PmcReader.AMD
     {
         private static readonly object _lock = new object();
         private static string _logPath;
-        private static bool _enabled = true;
+        private static bool _enabled = false;
         private static int _updateCounter = 0;
         private static DateTime _startTime;
+
+        public static bool Enabled
+        {
+            get { return _enabled; }
+            set { _enabled = value; }
+        }
 
         /// <summary>
         /// Initialize the diagnostic logger
         /// </summary>
         public static void Initialize()
         {
+            if (!_enabled) return;
+
             try
             {
                 string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -68,6 +75,7 @@ namespace PmcReader.AMD
                 {
                     Initialize();
                 }
+
                 if (!_enabled || string.IsNullOrEmpty(_logPath)) return;
             }
 

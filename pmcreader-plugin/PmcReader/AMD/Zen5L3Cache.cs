@@ -12,15 +12,17 @@ namespace PmcReader.AMD
         protected Dictionary<int, List<int>> allCcxThreads;
         public L3CounterData[] ccxCounterData;
         public L3CounterData ccxTotals;
-        private bool _diagnosticsInitialized = false;
 
         public Zen5L3Cache()
         {
             architectureName = "Zen 5 L3";
 
+#if DEBUG
+            Zen5Diagnostics.Enabled = true;
+#endif
+
             // Initialize diagnostics
             Zen5Diagnostics.Initialize();
-            _diagnosticsInitialized = true;
             Zen5Diagnostics.Log($"Zen5L3Cache constructor starting - coreCount={coreCount}, threadCount={GetThreadCount()}");
 
             ccxSampleThreads = new Dictionary<int, int>();
@@ -313,7 +315,7 @@ namespace PmcReader.AMD
                             InitializeThread(ccxThread.Key, ccxThread.Value); // somehow these get cleared every once in a while?
 
                             string threadInfo = ccxThreadInfo.ContainsKey(ccxThread.Key) ? ccxThreadInfo[ccxThread.Key] : "";
-                            results.unitMetrics[ccxThread.Key] = computeMetrics("CCX " + ccxThread.Key, threadInfo, l3Cache.ccxCounterData[ccxThread.Key], ccxClocks[ccxThread.Key]);
+                            results.unitMetrics[ccxThread.Key] = ComputeMetrics("CCX " + ccxThread.Key, threadInfo, l3Cache.ccxCounterData[ccxThread.Key], ccxClocks[ccxThread.Key]);
                             overallCounterValues.Add(new Tuple<string, float>("CCX" + ccxThread.Key + " L3 Access", l3Cache.ccxCounterData[ccxThread.Key].ctr0));
                             overallCounterValues.Add(new Tuple<string, float>("CCX" + ccxThread.Key + " L3 Miss", l3Cache.ccxCounterData[ccxThread.Key].ctr1));
                             overallCounterValues.Add(new Tuple<string, float>("CCX" + ccxThread.Key + " Other CCX Sampled Reqs", l3Cache.ccxCounterData[ccxThread.Key].ctr2));
@@ -337,7 +339,7 @@ namespace PmcReader.AMD
                 foreach (float ccxClock in ccxClocks) avgClk += ccxClock;
                 avgClk /= l3Cache.allCcxThreads.Count();
                 string totalThreadInfo = string.Format("{0}c/{1}t", l3Cache.coreCount, l3Cache.GetThreadCount());
-                results.overallMetrics = computeMetrics("Overall", totalThreadInfo, l3Cache.ccxTotals, avgClk);
+                results.overallMetrics = ComputeMetrics("Overall", totalThreadInfo, l3Cache.ccxTotals, avgClk);
                 results.overallCounterValues = overallCounterValues.ToArray();
 
                 Zen5Diagnostics.LogUpdateEnd();
@@ -348,7 +350,7 @@ namespace PmcReader.AMD
 
             public string GetHelpText() { return ""; }
 
-            private string[] computeMetrics(string label, string threadsInfo, L3CounterData counterData, float clk)
+            private string[] ComputeMetrics(string label, string threadsInfo, L3CounterData counterData, float clk)
             {
                 // Check for division by zero issues
                 Zen5Diagnostics.LogDivisionCheck($"{label} CCX Latency", counterData.ctr3, counterData.ctr2);
