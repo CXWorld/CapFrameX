@@ -85,6 +85,7 @@ namespace CapFrameX.Sensor
                 case "CPU Max Clock" when sensorType == SensorType.Clock:
                 case "CPU Package" when sensorType == SensorType.Power:
                 case "CPU Package" when sensorType == SensorType.Temperature:
+                case "CPU Package (Tctl/Tdie)" when sensorType == SensorType.Temperature:
                 case "GPU Core" when sensorType == SensorType.Load:
                 case "GPU Core" when sensorType == SensorType.Temperature:
                 case "GPU Core" when sensorType == SensorType.Clock:

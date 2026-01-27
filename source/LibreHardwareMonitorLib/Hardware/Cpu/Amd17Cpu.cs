@@ -146,7 +146,7 @@ internal sealed class Amd17Cpu : AmdCpu
             _coreTemperatureTdie = new Sensor("CPU (Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings)
             { PresentationSortKey = "3_1_1" };
             _coreTemperatureTctlTdie = new Sensor("CPU Package (Tctl/Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings)
-            { PresentationSortKey = "3_1_2" };
+            { IsPresentationDefault = true, PresentationSortKey = "3_1_2" };
             _ccdTemperatures = new Sensor[8]; // Hardcoded until there's a way to get max CCDs.
             _coreVoltage = new Sensor("CPU Core (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings)
             { PresentationSortKey = "4_1_0" };
