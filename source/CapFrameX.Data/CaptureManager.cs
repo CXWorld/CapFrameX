@@ -597,6 +597,9 @@ namespace CapFrameX.Data
             if (uniqueProcessIdDict.Any(dict => dict.Value.Count() > 1))
                 _logEntryManager.AddLogEntry($"Multi instances detected. Capture data will be filtered.", ELogMessageType.BasicInfo, false);
 
+            _logEntryManager.AddLogEntry($"Raw data counts - Archive: {_captureDataArchive.Count} frames, Capture: {_captureData.Count} frames",
+                ELogMessageType.AdvancedInfo, false);
+
             var filteredArchive = _captureDataArchive.Where(line =>
             {
                 var currentProcess = GetProcessNameFromDataLine(line);
@@ -608,6 +611,10 @@ namespace CapFrameX.Data
                 var currentProcess = GetProcessNameFromDataLine(line);
                 return currentProcess == _currentCaptureOptions.ProcessInfo.Item1 && uniqueProcessIdDict[currentProcess].Count() == 1;
             }).ToList();
+
+            _logEntryManager.AddLogEntry($"After process filter - Archive: {filteredArchive.Count} frames, Capture: {filteredCaptureData.Count} frames " +
+                $"(target process: '{_currentCaptureOptions.ProcessInfo.Item1}')",
+                ELogMessageType.AdvancedInfo, false);
 
             // Filter by dominant SwapChainAddress to handle mixed swap chain scenarios (e.g., CS2 with DXGI + Vulkan)
             var allProcessFilteredData = filteredArchive.Concat(filteredCaptureData).ToList();
@@ -622,13 +629,34 @@ namespace CapFrameX.Data
                     var dominantSwapChain = swapChainCounts.OrderByDescending(kvp => kvp.Value).First();
                     var filteredOutCount = allProcessFilteredData.Count - dominantSwapChain.Value;
 
+                    // Log swap chain distribution in archive vs capture data for debugging
+                    var archiveSwapChainCounts = filteredArchive
+                        .GroupBy(line => GetSwapChainAddressFromDataLine(line))
+                        .ToDictionary(g => g.Key, g => g.Count());
+                    var captureSwapChainCounts = filteredCaptureData
+                        .GroupBy(line => GetSwapChainAddressFromDataLine(line))
+                        .ToDictionary(g => g.Key, g => g.Count());
+
+                    var archiveSwapChainInfo = string.Join(", ", archiveSwapChainCounts.Select(kvp => $"'{kvp.Key}': {kvp.Value}"));
+                    var captureSwapChainInfo = string.Join(", ", captureSwapChainCounts.Select(kvp => $"'{kvp.Key}': {kvp.Value}"));
+
                     _logEntryManager.AddLogEntry($"Multiple SwapChains detected. Using dominant SwapChain '{dominantSwapChain.Key}' " +
-                        $"({dominantSwapChain.Value} frames). Filtered out {filteredOutCount} frames from {swapChainCounts.Count - 1} other SwapChain(s).",
+                        $"({dominantSwapChain.Value} frames). Filtered out {filteredOutCount} frames from {swapChainCounts.Count - 1} other SwapChain(s)." +
+                        Environment.NewLine + $"Archive SwapChains: [{archiveSwapChainInfo}]" +
+                        Environment.NewLine + $"Capture SwapChains: [{captureSwapChainInfo}]",
                         ELogMessageType.BasicInfo, false);
 
+                    var archiveCountBeforeFilter = filteredArchive.Count;
                     filteredArchive = filteredArchive
                         .Where(line => GetSwapChainAddressFromDataLine(line) == dominantSwapChain.Key)
                         .ToList();
+
+                    if (!filteredArchive.Any() && archiveCountBeforeFilter > 0)
+                    {
+                        _logEntryManager.AddLogEntry($"Archive emptied by SwapChain filter: archive had {archiveCountBeforeFilter} frames but none from dominant SwapChain '{dominantSwapChain.Key}'. " +
+                            $"Archive contained only: [{archiveSwapChainInfo}]",
+                            ELogMessageType.Error, false);
+                    }
 
                     filteredCaptureData = filteredCaptureData
                         .Where(line => GetSwapChainAddressFromDataLine(line) == dominantSwapChain.Key)
