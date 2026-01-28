@@ -717,8 +717,6 @@ namespace CapFrameX.Data
 
         private void SaveSessionToFile(string filePath, ISession session)
         {
-            var tempFilePath = filePath + ".tmp";
-
             // Serialize to memory first to get exact size
             using (var memoryStream = new MemoryStream())
             {
@@ -737,26 +735,17 @@ namespace CapFrameX.Data
                 try
                 {
                     memoryStream.Position = 0;
-                    using (var fileStream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write))
+                    using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
                     {
                         memoryStream.CopyTo(fileStream);
                     }
 
-                    // File.Move doesn't have overwrite option in .NET Framework
-                    if (File.Exists(filePath))
-                    {
-                        File.Delete(filePath);
-                    }
-                    File.Move(tempFilePath, filePath);
-
                     _logger.LogInformation("{FilePath} successfully written", filePath);
                 }
-                finally
+                catch (Exception ex)
                 {
-                    if (File.Exists(tempFilePath))
-                    {
-                        try { File.Delete(tempFilePath); } catch { }
-                    }
+                    _logger.LogError(ex, "Error writing session to file {FilePath}", filePath);
+                    throw;
                 }
             }
         }

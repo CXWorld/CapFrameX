@@ -535,11 +535,13 @@ namespace CapFrameX.Data
 
                 bool checkSave = await _recordManager.SaveSessionRunsToFile(new ISessionRun[] { sessionRun }, _currentCaptureOptions.ProcessInfo.Item1, _currentCaptureOptions.Comment, _currentCaptureOptions.RecordDirectory, null);
 
+                var roundedCaptureTimeInSec = Math.Round(finalCaptureTime * 1E-3, 2, MidpointRounding.AwayFromZero);
+
                 if (!checkSave)
                     _logEntryManager.AddLogEntry("Error while saving capture data.", ELogMessageType.Error, false);
                 else
                     _logEntryManager.AddLogEntry("Capture file successfully written into directory." +
-                        Environment.NewLine + $"Length in sec: {finalCaptureTime.ToString(CultureInfo.InvariantCulture)}", ELogMessageType.BasicInfo, false);
+                        Environment.NewLine + $"Length in sec: {roundedCaptureTimeInSec.ToString(CultureInfo.InvariantCulture)}", ELogMessageType.BasicInfo, false);
 
                 LockCaptureService = false;
             }
