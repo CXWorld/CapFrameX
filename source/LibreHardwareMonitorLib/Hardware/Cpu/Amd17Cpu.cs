@@ -44,17 +44,15 @@ internal sealed class Amd17Cpu : AmdCpu
         // So start at 1 and count upwards when the read core changes.
         foreach (CpuId[] cpu in cpuId.OrderBy(x => x[0].ExtData[0x1e, 1] & 0xFF))
         {
-            CpuId thread = cpu[0];
-
             // CPUID_Fn8000001E_EBX, Register ..1E_1, [7:0]
             // threads per core =  CPUID_Fn8000001E_EBX[15:8] + 1
             // CoreId: core ID =  CPUID_Fn8000001E_EBX[7:0]
-            int coreIdRead = (int)(thread.ExtData[0x1e, 1] & 0xff);
+            int coreIdRead = (int)(cpu[0].ExtData[0x1e, 1] & 0xff);
 
             // CPUID_Fn8000001E_ECX, Node Identifiers, Register ..1E_2
             // NodesPerProcessor =  CPUID_Fn8000001E_ECX[10:8]
             // nodeID =  CPUID_Fn8000001E_ECX[7:0]
-            int nodeId = (int)(thread.ExtData[0x1e, 2] & 0xff);
+            int nodeId = (int)(cpu[0].ExtData[0x1e, 2] & 0xff);
 
             if (coreIdRead != lastCoreId)
             {
@@ -63,7 +61,11 @@ internal sealed class Amd17Cpu : AmdCpu
 
             lastCoreId = coreIdRead;
 
-            _processor.AppendThread(thread, nodeId, coreId);
+            // Add all threads (1 if SMT disabled, 2 if SMT enabled)
+            for (int i = 0; i < cpu.Length; i++)
+            {
+                _processor.AppendThread(cpu[i], nodeId, coreId);
+            }
         }
 
         Update();
@@ -462,10 +464,10 @@ internal sealed class Amd17Cpu : AmdCpu
             _maxClock.Value = (float)Math.Round(clock, 0);
 
             // Average and max effective clock
-            clock = Nodes.Average(x => x.EffectiveClock);
+            clock = Nodes.SelectMany(x => x.EffectiveClocks).DefaultIfEmpty(0).Average();
             _avgClockEffcetive.Value = (float)Math.Round(clock, 0);
 
-            clock = Nodes.SelectMany(x => x.Cores).Max(c => c.EffectiveClock);
+            clock = Nodes.SelectMany(x => x.EffectiveClocks).DefaultIfEmpty(0).Max();
             _maxEffectiveClock.Value = (float)Math.Round(clock, 0);
         }
 
@@ -536,14 +538,14 @@ internal sealed class Amd17Cpu : AmdCpu
             }
         }
 
-        public double EffectiveClock
+        public double[] EffectiveClocks
         {
             get
             {
                 if (Cores == null)
-                    return 0;
+                    return Array.Empty<double>();
 
-                return Cores.Average(x => x.EffectiveClock);
+                return Cores.SelectMany(x => x.EffectiveClocks).ToArray();
             }
         }
 
@@ -564,7 +566,7 @@ internal sealed class Amd17Cpu : AmdCpu
             }
 
             if (thread != null)
-                core.AppedThread(thread);
+                core.AppendThread(thread);
         }
 
         public static void UpdateSensors() { }
@@ -665,7 +667,7 @@ internal sealed class Amd17Cpu : AmdCpu
     private class Core
     {
         private readonly Sensor _clock;
-        private readonly Sensor _clockEffective;
+        private readonly List<Sensor> _clocksEffective = new List<Sensor>();
         private readonly Amd17Cpu _cpu;
         // private readonly Sensor _multiplier;
         private readonly Sensor _power;
@@ -675,7 +677,7 @@ internal sealed class Amd17Cpu : AmdCpu
         private uint _lastPwrValue = 0;
 
         public double CoreClock { get; set; } = 0;
-        public double EffectiveClock { get; set; } = 0;
+        public double[] EffectiveClocks { get; set; } = Array.Empty<double>();
 
         public Core(Amd17Cpu cpu, int id)
         {
@@ -683,8 +685,6 @@ internal sealed class Amd17Cpu : AmdCpu
             CoreId = id;
             _clock = new Sensor("Core #" + CoreId, _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu._settings)
             { IsPresentationDefault = true, PresentationSortKey = $"0_0_0_{id}" };
-            _clockEffective = new Sensor("Core #" + CoreId + " (Effective)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu._settings)
-            { PresentationSortKey = $"0_0_1_{id}" };
             // _multiplier = new Sensor("Core #" + CoreId, cpu._sensorTypeIndex[SensorType.Factor]++, SensorType.Factor, cpu, cpu._settings);
             _power = new Sensor("Core #" + CoreId + " (SMU)", cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, cpu, cpu._settings)
             { PresentationSortKey = $"2_0_{id}" };
@@ -692,7 +692,6 @@ internal sealed class Amd17Cpu : AmdCpu
             { PresentationSortKey = $"3_0_{id}" };
 
             cpu.ActivateSensor(_clock);
-            cpu.ActivateSensor(_clockEffective);
             // cpu.ActivateSensor(_multiplier);
             cpu.ActivateSensor(_power);
             cpu.ActivateSensor(_vcore);
@@ -700,12 +699,19 @@ internal sealed class Amd17Cpu : AmdCpu
 
         public int CoreId { get; }
 
-        public List<CpuThread> Threads { get; } = new List<CpuThread>();
+        public List<CpuThread> Threads { get; } = [];
 
-        public void AppedThread(CpuId cpuId)
+        public void AppendThread(CpuId cpuId)
         {
+            int threadIndex = Threads.Count;
             CpuThread t = new CpuThread(_cpu, cpuId);
             Threads.Add(t);
+
+            // Create effective clock sensor for this thread
+            var sensor = new Sensor($"Core #{CoreId} Thread #{threadIndex + 1} (Effective)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings)
+            { PresentationSortKey = $"0_0_1_{CoreId}_{threadIndex}" };
+            _clocksEffective.Add(sensor);
+            _cpu.ActivateSensor(sensor);
         }
 
         public void UpdateSensors()
@@ -763,10 +769,13 @@ internal sealed class Amd17Cpu : AmdCpu
 
             ThreadAffinity.Set(previousAffinity);
 
-            // Update clock counter and cffective clock calculation
+            // Update clock counter and effective clock calculation
             Threads.ForEach(t => t.UpdateMeasurements());
-            EffectiveClock = Threads.Average(x => x.EffectiveClock);
-            _clockEffective.Value = (float)EffectiveClock;
+            EffectiveClocks = Threads.Select(x => x.EffectiveClock).ToArray();
+            for (int i = 0; i < _clocksEffective.Count && i < EffectiveClocks.Length; i++)
+            {
+                _clocksEffective[i].Value = (float)EffectiveClocks[i];
+            }
 
             if (thread.HasValidCounters())
             {
