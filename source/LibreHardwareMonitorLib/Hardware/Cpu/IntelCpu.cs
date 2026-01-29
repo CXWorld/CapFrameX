@@ -468,7 +468,7 @@ internal sealed class IntelCpu : GenericCpu
 
                 for (int j = 0; j < threadCount; j++)
                 {
-                    _threadEffectiveClocks[i][j] = new Sensor($"Core #{i} Thread #{j + 1} (Effective)", effectiveSensorIndex + totalThreadSensors, SensorType.Clock, this, settings)
+                    _threadEffectiveClocks[i][j] = new Sensor($"Core #{i + 1} Thread #{j + 1} (Effective)", effectiveSensorIndex + totalThreadSensors, SensorType.Clock, this, settings)
                     { PresentationSortKey = $"0_1_1_{i}_{j}" };
                     ActivateSensor(_threadEffectiveClocks[i][j]);
                     totalThreadSensors++;
