@@ -26,40 +26,57 @@ A Linux-native solution for frametime capture and analysis, conceptually based o
 
 ## Requirements
 
-### Build Dependencies
+### Build Dependencies (Debian/Ubuntu)
 
 ```bash
-# Daemon and Layer (Debian/Ubuntu)
+# Daemon and Layer
 sudo apt install build-essential cmake libvulkan-dev
 
 # .NET 8 SDK
 # See https://docs.microsoft.com/dotnet/core/install/linux
 ```
 
+### Build Dependencies (Gentoo)
+```bash
+# Vulkan Essentials
+emerge --ask dev-util/vulkan-headers dev-util/vulkan-utility-libraries
+
+# .NET 10 SDK
+emerge --ask dev-dotnet/dotnet-sdk-bin
+```
+
 ### Runtime Dependencies
 
 - Vulkan-capable GPU with appropriate drivers
-- .NET 8 Runtime
+- .NET 8+ Runtime
 
 ## Building
-
-### Quick Build (All Components)
-
-```bash
-./scripts/build.sh
-```
 
 ### Individual Components
 
 ```bash
 # Daemon and Layer
-mkdir build && cd build
-cmake ..
-make
+cmake -S . -B build
+cmake --build build
 
-# Avalonia App
-cd src/app
-dotnet build
+# Avalonia App (Self-contained)
+dotnet publish src/app/CapFrameX.App/CapFrameX.App.csproj -r linux-x64 --self-contained -o build/publish
+```
+
+### Runing Components
+
+```bash
+# Run Daemon on background
+./build/bin/capframex-daemon &
+
+# Avalonia App (Self-contained)
+./build/publish/CapFrameX.App
+```
+
+### Quick Build (All Components)
+
+```bash
+./scripts/build.sh
 ```
 
 ## Installation
