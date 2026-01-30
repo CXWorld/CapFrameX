@@ -102,6 +102,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj" />
+    <ProjectReference Include="..\CapFrameX.Hwinfo\CapFrameX.Hwinfo.vcxproj" />
     <ProjectReference Include="..\CapFrameX.Monitoring.Contracts\CapFrameX.Monitoring.Contracts.csproj" />
   </ItemGroup>
   <Import Project="main.nuget.target" Condition="'$(PackMainNuget)' == 'true'" />
