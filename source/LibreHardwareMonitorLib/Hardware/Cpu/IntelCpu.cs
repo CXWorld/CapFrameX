@@ -835,7 +835,9 @@ internal sealed class IntelCpu : GenericCpu
 
                     // Clamp effective clock between 0 and core clock
                     float maxClock = _coreClocks[i].Value ?? (float)TimeStampCounterFrequency;
-                    freq = Math.Max(0, Math.Min(freq, maxClock));
+
+                    // Clamping must consider BCLK oc (max 10%) and Spread Spectrum Clocking (SSC) (1-2%)
+                    freq = Math.Max(0, Math.Min(freq, maxClock * 1.12));
                     _threadEffectiveClocks[i][j].Value = (float)Math.Round(freq, 0);
 
                     effectiveSum += freq;

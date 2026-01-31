@@ -667,7 +667,7 @@ internal sealed class Amd17Cpu : AmdCpu
     private class Core
     {
         private readonly Sensor _clock;
-        private readonly List<Sensor> _clocksEffective = new List<Sensor>();
+        private readonly List<Sensor> _clocksEffective = [];
         private readonly Amd17Cpu _cpu;
         // private readonly Sensor _multiplier;
         private readonly Sensor _power;
@@ -677,7 +677,7 @@ internal sealed class Amd17Cpu : AmdCpu
         private uint _lastPwrValue = 0;
 
         public double CoreClock { get; set; } = 0;
-        public double[] EffectiveClocks { get; set; } = Array.Empty<double>();
+        public double[] EffectiveClocks { get; set; } = [];
 
         public Core(Amd17Cpu cpu, int id)
         {
@@ -704,7 +704,7 @@ internal sealed class Amd17Cpu : AmdCpu
         public void AppendThread(CpuId cpuId)
         {
             int threadIndex = Threads.Count;
-            CpuThread t = new CpuThread(_cpu, cpuId);
+            CpuThread t = new(_cpu, cpuId);
             Threads.Add(t);
 
             // Create effective clock sensor for this thread
@@ -771,11 +771,6 @@ internal sealed class Amd17Cpu : AmdCpu
 
             // Update clock counter and effective clock calculation
             Threads.ForEach(t => t.UpdateMeasurements());
-            EffectiveClocks = Threads.Select(x => x.EffectiveClock).ToArray();
-            for (int i = 0; i < _clocksEffective.Count && i < EffectiveClocks.Length; i++)
-            {
-                _clocksEffective[i].Value = (float)EffectiveClocks[i];
-            }
 
             if (thread.HasValidCounters())
             {
@@ -820,6 +815,14 @@ internal sealed class Amd17Cpu : AmdCpu
 
                 CoreClock = Math.Round(coreClock);
                 _clock.Value = (float)CoreClock;
+
+                EffectiveClocks = [.. Threads.Select(x => x.EffectiveClock)];
+                for (int i = 0; i < _clocksEffective.Count && i < EffectiveClocks.Length; i++)
+                {
+                    // Clamping must consider BCLK oc (max 10%) and Spread Spectrum Clocking (SSC) (1-2%)
+                    var effectiveClock = (float)Math.Max(0, Math.Min(EffectiveClocks[i], CoreClock * 1.12));
+                    _clocksEffective[i].Value = effectiveClock;
+                }
             }
 
             // Vcore voltage
