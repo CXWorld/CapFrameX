@@ -21,14 +21,28 @@ using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace CapFrameX.Overlay
 {
     public class OverlayEntryProvider : IOverlayEntryProvider
     {
+        [StructLayout(LayoutKind.Sequential)]
+        private struct SystemPowerStatus
+        {
+            public byte ACLineStatus;
+            public byte BatteryFlag;
+            public byte BatteryLifePercent;
+            public byte Reserved;
+            public int BatteryLifeTime;
+            public int BatteryFullLifeTime;
+        }
+
+        [DllImport("kernel32.dll")]
+        private static extern bool GetSystemPowerStatus(out SystemPowerStatus status);
+
         private readonly string _overlayConfigFolder;
 
         private static readonly HashSet<string> ONLINE_METRIC_NAMES = new HashSet<string>()
@@ -665,10 +679,16 @@ namespace CapFrameX.Overlay
                         entry.Value = ShowSystemTimeSeconds ? DateTime.Now.ToString("HH:mm:ss") : DateTime.Now.ToString("HH:mm");
                         break;
                     case EOverlayEntryType.CX when entry.Identifier == "BatteryLifePercent":
-                        entry.Value = SystemInformation.PowerStatus.BatteryLifePercent * 100d;
+                        {
+                            GetSystemPowerStatus(out var powerStatus);
+                            entry.Value = powerStatus.BatteryLifePercent == 255 ? double.NaN : (double)powerStatus.BatteryLifePercent;
+                        }
                         break;
                     case EOverlayEntryType.CX when entry.Identifier == "BatteryLifeRemaining":
-                        entry.Value = SystemInformation.PowerStatus.BatteryLifeRemaining / 60d;
+                        {
+                            GetSystemPowerStatus(out var powerStatus);
+                            entry.Value = powerStatus.BatteryLifeTime == -1 ? double.NaN : powerStatus.BatteryLifeTime / 60d;
+                        }
                         break;
                     default:
                         break;
