@@ -773,8 +773,7 @@ internal sealed class NvidiaGpu : GenericGpu
                 Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvDisplayDriverVersion>(1)
             };
 
-            if (NvApi.NvAPI_GetDisplayDriverVersion(_displayHandle.Value,
-              ref driverVersion) == NvStatus.OK)
+            if (NvApi.NvAPI_GetDisplayDriverVersion(_displayHandle.Value, ref driverVersion) == NvStatus.OK)
             {
                 r.Append(driverVersion.DriverVersion / 100);
                 r.Append(".");
