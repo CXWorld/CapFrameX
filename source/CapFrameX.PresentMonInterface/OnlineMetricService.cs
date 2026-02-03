@@ -548,9 +548,10 @@ namespace CapFrameX.PresentMonInterface
                 if (_pcLatency1Second == null || _pcLatency1Second.Count == 0)
                     return double.NaN;
 
-                // Allow 50% of NaN values before returning NaN
-                var validSamples = _pcLatency1Second.Where(s => !double.IsNaN(s)).ToList();
-                if (validSamples.Count < _pcLatency1Second.Count / 2)
+                var validSamples = _pcLatency1Second.Where(s => !double.IsNaN(s) && s > 0).ToList();
+
+                // Allow 60% invalid values before returning NaN
+                if (validSamples.Count < _pcLatency1Second.Count * 0.4)
                     return double.NaN;
 
                 return _frametimeStatisticProvider

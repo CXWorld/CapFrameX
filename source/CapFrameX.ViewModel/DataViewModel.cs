@@ -1319,8 +1319,7 @@ namespace CapFrameX.ViewModel
                 // Update PC latency
                 IsPcLatencyAvailable = _session.Runs.All(run => !run.CaptureData.PcLatency.IsNullOrEmpty()) && _session.Runs.All(run =>
                 {
-                    // Allow 50% NaN values
-                    var filteredValues = run.CaptureData.PcLatency.Where(x => !double.IsNaN(x));
+                    var filteredValues = run.CaptureData.PcLatency.Where(x => !double.IsNaN(x) && x > 0);
 
                     if (!filteredValues.Any())
                     {
@@ -1330,7 +1329,8 @@ namespace CapFrameX.ViewModel
                     var validValueCount = filteredValues.Count();
                     var totalValueCount = run.CaptureData.PcLatency.Length;
 
-                    if (validValueCount < totalValueCount * 0.5f)
+                    // Allow 60% invalid values
+                    if (validValueCount < totalValueCount * 0.4f)
                     {
                         return false;
                     }
