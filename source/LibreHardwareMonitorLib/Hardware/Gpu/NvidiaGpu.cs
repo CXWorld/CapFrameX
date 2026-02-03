@@ -26,7 +26,7 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly int _clockVersion;
     private readonly Sensor[] _controls;
     private readonly string _d3dDeviceId;
-    private NvApi.NvDisplayHandle? _displayHandle;
+    private NvDisplayHandle? _displayHandle;
     private readonly IReadOnlyList<NvDisplayHandleInfo> _displayHandleInfos;
     private readonly Control[] _fanControls;
     private readonly Sensor[] _fans;
@@ -729,7 +729,7 @@ internal sealed class NvidiaGpu : GenericGpu
                     var currentRefreshRate = (float)(blankCounter - _lastBlankCounter) / deltaTicks * Stopwatch.Frequency;
                     _refreshRateBuffer.Add(currentRefreshRate);
                     var refreshRateFiltered = (float)Math.Ceiling(_refreshRateBuffer.RefreshRates.Average());
-                    _monitorRefreshRate.Value = refreshRateFiltered > _refreshRateCurrentWindowHandle ? _refreshRateCurrentWindowHandle : refreshRateFiltered;
+                    _monitorRefreshRate.Value = refreshRateFiltered > _refreshRateCurrentDisplay ? _refreshRateCurrentDisplay : refreshRateFiltered;
                 }
 
                 _lastBlankCounter = blankCounter;
@@ -1314,19 +1314,13 @@ internal sealed class NvidiaGpu : GenericGpu
         lock (_displayLock)
         {
             displayDeviceName = _displayDeviceName;
-        }
 
-        if (string.Equals(displayDeviceName, _activeDisplayDeviceName, StringComparison.OrdinalIgnoreCase))
-            return;
-
-        NvApi.NvDisplayHandle? selectedHandle = SelectDisplayHandle(displayDeviceName);
-
-        lock (_displayLock)
-        {
             if (string.Equals(displayDeviceName, _activeDisplayDeviceName, StringComparison.OrdinalIgnoreCase))
                 return;
 
             _activeDisplayDeviceName = displayDeviceName;
+            NvDisplayHandle? selectedHandle = SelectDisplayHandle(displayDeviceName);
+
             if (!HandlesEqual(_displayHandle, selectedHandle))
             {
                 _displayHandle = selectedHandle;
@@ -1368,7 +1362,7 @@ internal sealed class NvidiaGpu : GenericGpu
         if (!trimmed.StartsWith(@"\\.\", StringComparison.OrdinalIgnoreCase) &&
             trimmed.StartsWith("DISPLAY", StringComparison.OrdinalIgnoreCase))
         {
-            trimmed = @"\\.\\" + trimmed;
+            trimmed = @"\\.\" + trimmed;
         }
 
         return trimmed.ToUpperInvariant();

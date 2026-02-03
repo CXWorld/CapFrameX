@@ -32,7 +32,7 @@ public abstract class GenericGpu : Hardware
     /// <summary>
     /// Current refresh rate of the window handle.
     /// </summary>
-    protected float _refreshRateCurrentWindowHandle;
+    protected float _refreshRateCurrentDisplay;
     /// <summary>
     /// Name of the display device. 
     /// </summary>
@@ -78,7 +78,7 @@ public abstract class GenericGpu : Hardware
                         }
 
                         _display = null;
-                        _refreshRateCurrentWindowHandle = 0;
+                        _refreshRateCurrentDisplay = 0;
                         _displayDeviceName = null;
                     }
                     else
@@ -96,7 +96,7 @@ public abstract class GenericGpu : Hardware
                             }
 
                             _display = newDisplay;
-                            _refreshRateCurrentWindowHandle = _display.GetDisplayRefreshRate();
+                            _refreshRateCurrentDisplay = _display.GetDisplayRefreshRate();
                         }
                         catch
                         {
@@ -106,7 +106,7 @@ public abstract class GenericGpu : Hardware
                             }
 
                             _display = null;
-                            _refreshRateCurrentWindowHandle = 0;
+                            _refreshRateCurrentDisplay = 0;
                             _displayDeviceName = null;
                         }
                     }
