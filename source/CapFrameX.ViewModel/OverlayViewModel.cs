@@ -59,6 +59,7 @@ namespace CapFrameX.ViewModel
         private string _filterText = string.Empty;
         private EOverlayEntryType? _selectedEntryTypeFilter;
         private ICollectionView _overlayEntriesView;
+        private readonly object _overlayEntriesViewLock = new object();
 
         public bool OverlayItemsOptionsEnabled
         {
@@ -966,13 +967,35 @@ namespace CapFrameX.ViewModel
 
         private void SetupOverlayEntriesView()
         {
-            OverlayEntriesView = CollectionViewSource.GetDefaultView(OverlayEntries);
-            OverlayEntriesView.Filter = FilterOverlayEntry;
+            lock (_overlayEntriesViewLock)
+            {
+                OverlayEntriesView = CollectionViewSource.GetDefaultView(OverlayEntries);
+                OverlayEntriesView.Filter = FilterOverlayEntry;
+            }
         }
 
         private void RefreshOverlayEntriesView()
         {
-            OverlayEntriesView?.Refresh();
+            lock (_overlayEntriesViewLock)
+            {
+                if (OverlayEntriesView == null)
+                    return;
+
+                if (OverlayEntriesView is IEditableCollectionView editableView)
+                {
+                    if (editableView.IsAddingNew)
+                        editableView.CommitNew();
+                    if (editableView.IsEditingItem)
+                    {
+                        if (editableView.CanCancelEdit)
+                            editableView.CancelEdit();
+                        else
+                            editableView.CommitEdit();
+                    }
+                }
+
+                OverlayEntriesView.Refresh();
+            }
         }
 
         private void OnClearFilter()
