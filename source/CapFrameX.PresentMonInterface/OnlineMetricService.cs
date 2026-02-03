@@ -300,7 +300,7 @@ namespace CapFrameX.PresentMonInterface
                             _frametimesRealtimeSeconds.RemoveFirst();
                             _displayedtimesRealtimeSeconds.RemoveFirst();
                             _gpuActiveTimesRealtimeSeconds.RemoveFirst();
-                            _cpuActiveTimesRealtimeSeconds.RemoveFirst();;
+                            _cpuActiveTimesRealtimeSeconds.RemoveFirst(); ;
                         }
                     }
                 }
@@ -548,17 +548,13 @@ namespace CapFrameX.PresentMonInterface
                 if (_pcLatency1Second == null || _pcLatency1Second.Count == 0)
                     return double.NaN;
 
-                var samples = _pcLatency1Second.ToList(_reusableListBufferA);
-
-                // Check for NaN values
-                foreach (var sample in samples)
-                {
-                    if (double.IsNaN(sample))
-                        return double.NaN;
-                }
+                // Allow 50% of NaN values before returning NaN
+                var validSamples = _pcLatency1Second.Where(s => !double.IsNaN(s)).ToList();
+                if (validSamples.Count < _pcLatency1Second.Count / 2)
+                    return double.NaN;
 
                 return _frametimeStatisticProvider
-                    .GetFrametimeMetricValue(samples, EMetric.Average);
+                    .GetFrametimeMetricValue(validSamples, EMetric.Average);
             }
         }
 
