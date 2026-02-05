@@ -104,6 +104,7 @@
       <DependentUpon>HaswellForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Intel\ArrowLake.cs" />
+    <Compile Include="Intel\ArrowLakeL3.cs" />
     <Compile Include="Intel\MeteorLakeUncore.cs" />
     <Compile Include="Intel\MeteorLakeL3.cs" />
     <Compile Include="Intel\MeteorLakeArb.cs" />

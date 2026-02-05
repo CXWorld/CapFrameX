@@ -92,7 +92,7 @@ namespace PmcReader
                     else if (cpuModel == 0xC6)
                     {
                         coreMonitoring.monitoringArea = new Intel.ArrowLake();
-                        l3Monitoring.monitoringArea = new Intel.MeteorLakeL3();
+                        l3Monitoring.monitoringArea = new Intel.ArrowLakeL3();
                         dfMonitoring.monitoringArea = new Intel.MeteorLakeArb();
                     }
                     else
