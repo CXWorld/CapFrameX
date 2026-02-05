@@ -111,6 +111,20 @@ namespace LiveCharts.Wpf
         }
 
         /// <summary>
+        /// The corner radius property
+        /// </summary>
+        public static readonly DependencyProperty CornerRadiusProperty = DependencyProperty.Register(
+            "CornerRadius", typeof(double), typeof(StackedRowSeries), new PropertyMetadata(6d));
+        /// <summary>
+        /// Gets or sets the corner radius for the bar rectangles
+        /// </summary>
+        public double CornerRadius
+        {
+            get { return (double)GetValue(CornerRadiusProperty); }
+            set { SetValue(CornerRadiusProperty, value); }
+        }
+
+        /// <summary>
         /// The labels position property
         /// </summary>
         public static readonly DependencyProperty LabelsPositionProperty = DependencyProperty.Register(
@@ -179,6 +193,8 @@ namespace LiveCharts.Wpf
             pbv.Rectangle.StrokeThickness = StrokeThickness;
             pbv.Rectangle.Stroke = Stroke;
             pbv.Rectangle.StrokeDashArray = StrokeDashArray;
+            pbv.Rectangle.RadiusX = CornerRadius;
+            pbv.Rectangle.RadiusY = CornerRadius;
             pbv.Rectangle.Visibility = Visibility;
             Panel.SetZIndex(pbv.Rectangle, Panel.GetZIndex(this));
 
@@ -230,6 +246,7 @@ namespace LiveCharts.Wpf
             SetCurrentValue(MaxRowHeightProperty, 35d);
             SetCurrentValue(RowPaddingProperty, 2d);
             SetCurrentValue(ForegroundProperty, Brushes.White);
+            SetCurrentValue(PointGeometryProperty, DefaultGeometries.RoundedSquare);
 
             Func<ChartPoint, string> defaultLabel = x =>  Model.CurrentXAxis.GetFormatter()(x.X);
             SetCurrentValue(LabelPointProperty, defaultLabel);
