@@ -1706,7 +1706,7 @@ namespace CapFrameX.ViewModel
                     new RowSeries
                     {
                         Title = RecordInfo.GameName,
-                        Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
+                        Fill = new SolidColorBrush(Color.FromRgb(0xFB, 0xBF, 0x24)),
                         Values = values,
                         DataLabels = true,
                         FontSize = 12,
