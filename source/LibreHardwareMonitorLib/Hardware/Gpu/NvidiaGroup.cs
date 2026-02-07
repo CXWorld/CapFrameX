@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using CapFrameX.Monitoring.Contracts;
 using LibreHardwareMonitor.Interop;
 using Serilog;
 
@@ -18,7 +19,7 @@ internal class NvidiaGroup : IGroup
     private readonly List<Hardware> _hardware = new();
     private readonly StringBuilder _report = new();
 
-    public NvidiaGroup(ISettings settings)
+    public NvidiaGroup(ISettings settings, ISensorConfig sensorConfig = null)
     {
         NvApi.Initialize();
 
@@ -143,7 +144,7 @@ internal class NvidiaGroup : IGroup
             {
                 Log.Logger.Warning("NvidiaGroup: GPU {GpuIndex} has no display handles associated", i);
             }
-            _hardware.Add(new NvidiaGpu(i, handles[i], displayHandleInfos, settings));
+            _hardware.Add(new NvidiaGpu(i, handles[i], displayHandleInfos, settings, sensorConfig));
         }
 
         _report.AppendLine();

@@ -335,7 +335,7 @@ namespace CapFrameX.Overlay
             foreach (var entry in _overlayEntries)
             {
                 entry.UpdateShowOnOverlay = UpdateSensorIsActive;
-                _sensorConfig.SetSensorEvaluate(entry.Identifier, entry.ShowOnOverlay);
+                _sensorConfig.SelectForOverlay(entry.Identifier, entry.ShowOnOverlay);
                 _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
 
                 if (ONLINE_METRIC_NAMES.Contains(entry.Identifier) || entry.Identifier == "SystemTime"
@@ -370,7 +370,7 @@ namespace CapFrameX.Overlay
         private void UpdateSensorIsActive(string identifier, bool isShownOnOverlay)
         {
             if (identifier == null) return;
-            _sensorConfig.SetSensorEvaluate(identifier, isShownOnOverlay);
+            _sensorConfig.SelectForOverlay(identifier, isShownOnOverlay);
         }
 
         private void ManageFormats()

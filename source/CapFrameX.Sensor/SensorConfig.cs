@@ -17,11 +17,11 @@ namespace CapFrameX.Sensor
 
         private readonly string _sensorConfigFolder;
 
-        private Dictionary<string, bool> _activeSensorsDict;
+        private Dictionary<string, bool> _loggingSelectionDict;
 
-        private Dictionary<string, bool> _defaultSensorsDict;
+        private Dictionary<string, bool> _defaultLoggingSelectionDict;
 
-        private Dictionary<string, bool> _evalSensorsDict
+        private Dictionary<string, bool> _overlaySelectionDict
             = new Dictionary<string, bool>();
 
         public bool IsCapturing { get; set; } = false;
@@ -30,7 +30,7 @@ namespace CapFrameX.Sensor
             => File.Exists(Path.Combine(_sensorConfigFolder, CONFIG_FILENAME));
 
         public int SensorEntryCount
-            => _activeSensorsDict == null ? 0 : _activeSensorsDict.Count;
+            => _loggingSelectionDict == null ? 0 : _loggingSelectionDict.Count;
 
         public bool WsSensorsEnabled { get; set; }
 
@@ -41,54 +41,55 @@ namespace CapFrameX.Sensor
         public SensorConfig(string sensorConfigFolder)
         {
             _sensorConfigFolder = sensorConfigFolder;
-            _defaultSensorsDict = GetSensorEntryDefaults();
+            _defaultLoggingSelectionDict = GetSensorEntryDefaults();
             Task.Run(async () => await LoadOrSetDefault()).Wait();
         }
 
-        public bool GetSensorIsActive(string identifier)
+        public bool IsSelectedForLogging(string identifier)
         {
             bool isActive = false;
-            if (_activeSensorsDict.ContainsKey(identifier))
-                isActive = _activeSensorsDict[identifier];
+            if (_loggingSelectionDict.ContainsKey(identifier))
+                isActive = _loggingSelectionDict[identifier];
 
             return isActive;
         }
 
-        public void SetSensorIsActive(string identifier, bool isActive)
+        public void SelectForLogging(string identifier, bool isActive)
         {
 
-            if (_activeSensorsDict.ContainsKey(identifier))
-                _activeSensorsDict[identifier] = isActive;
+            if (_loggingSelectionDict.ContainsKey(identifier))
+                _loggingSelectionDict[identifier] = isActive;
             else
-                _activeSensorsDict.Add(identifier, isActive);
+                _loggingSelectionDict.Add(identifier, isActive);
+        }
+
+        public bool IsSelectedForOverlay(string identifier)
+        {
+            bool isSelected = false;
+            if (_overlaySelectionDict.ContainsKey(identifier))
+                isSelected = _overlaySelectionDict[identifier];
+
+            return isSelected;
+        }
+
+        public void SelectForOverlay(string identifier, bool evaluate)
+        {
+            if (_overlaySelectionDict.ContainsKey(identifier))
+                _overlaySelectionDict[identifier] = evaluate;
+            else
+                _overlaySelectionDict.Add(identifier, evaluate);
         }
 
         public bool GetSensorEvaluate(string identifier)
         {
-            bool isActive = false;
-            if (_activeSensorsDict.ContainsKey(identifier))
-                isActive = _activeSensorsDict[identifier];
-
-            bool evaluate = false;
-            if (_evalSensorsDict.ContainsKey(identifier))
-                evaluate = _evalSensorsDict[identifier];
-
-            return (isActive && (IsCapturing || WsActiveSensorsEnabled)) || evaluate || WsSensorsEnabled;
-        }
-
-        public void SetSensorEvaluate(string identifier, bool evaluate)
-        {
-            if (_evalSensorsDict.ContainsKey(identifier))
-                _evalSensorsDict[identifier] = evaluate;
-            else
-                _evalSensorsDict.Add(identifier, evaluate);
+            return IsSelectedForLogging(identifier) || IsSelectedForOverlay(identifier);
         }
 
         public async Task Save()
         {
             try
             {
-                var json = JsonConvert.SerializeObject(_activeSensorsDict);
+                var json = JsonConvert.SerializeObject(_loggingSelectionDict);
 
                 if (!Directory.Exists(_sensorConfigFolder))
                     Directory.CreateDirectory(_sensorConfigFolder);
@@ -105,26 +106,26 @@ namespace CapFrameX.Sensor
         }
 
         public void ResetConfig()
-            => _activeSensorsDict?.Clear();
+            => _loggingSelectionDict?.Clear();
 
         public void ResetEvaluate()
-            => _evalSensorsDict?.Clear();
+            => _overlaySelectionDict?.Clear();
 
         private async Task LoadOrSetDefault()
         {
             try
             {
-                _activeSensorsDict = await GetInitializedSensorEntryDictionary();
+                _loggingSelectionDict = await GetInitializedSensorEntryDictionary();
 
                 // Load default as fallback
-                if (_activeSensorsDict == null || !_activeSensorsDict.Values.Any())
+                if (_loggingSelectionDict == null || !_loggingSelectionDict.Values.Any())
                 {
-                    _activeSensorsDict = new Dictionary<string, bool>(_defaultSensorsDict);
+                    _loggingSelectionDict = new Dictionary<string, bool>(_defaultLoggingSelectionDict);
                 }
             }
             catch (Exception ex)
             {
-                _activeSensorsDict = new Dictionary<string, bool>(_defaultSensorsDict);
+                _loggingSelectionDict = new Dictionary<string, bool>(_defaultLoggingSelectionDict);
                 Log.Logger.Error(ex, "Error while loading sensor config. Default config loading instead...");
             }
         }
@@ -156,11 +157,11 @@ namespace CapFrameX.Sensor
 
         public Dictionary<string, bool> GetSensorConfigCopy()
         {
-            // _activeSensorsDict is null return empty dict
-            if (_activeSensorsDict == null) return new Dictionary<string, bool>();
+            // _loggingSelectionDict is null return empty dict
+            if (_loggingSelectionDict == null) return new Dictionary<string, bool>();
 
             var copy = new Dictionary<string, bool>();
-            foreach (var item in _activeSensorsDict)
+            foreach (var item in _loggingSelectionDict)
             {
                 copy.Add(item.Key, item.Value);
             }
