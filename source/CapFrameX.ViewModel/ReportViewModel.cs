@@ -18,6 +18,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -468,7 +469,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        void IDropTarget.Drop(IDropInfo dropInfo)
+        async void IDropTarget.Drop(IDropInfo dropInfo)
         {
             if (dropInfo != null)
             {
@@ -476,21 +477,146 @@ namespace CapFrameX.ViewModel
                 {
                     if (frameworkElement.Name == "ReportDataGrid")
                     {
-                        if (dropInfo.Data is IFileRecordInfo recordInfo)
+                        foreach (IFileRecordInfo recordInfo in await GetDroppedRecordInfosAsync(dropInfo.Data))
                         {
                             ReportInfo reportInfo = GetReportInfoFromRecordInfo(recordInfo);
                             AddReportRecord(reportInfo);
                         }
-                        else if (dropInfo.Data is IEnumerable<IFileRecordInfo> recordInfos)
-                        {
-                            foreach (var item in recordInfos)
-                            {
-                                ReportInfo reportInfo = GetReportInfoFromRecordInfo(item);
-                                AddReportRecord(reportInfo);
-                            }
-                        }
                     }
                 }
+            }
+        }
+
+        private async System.Threading.Tasks.Task<List<IFileRecordInfo>> GetDroppedRecordInfosAsync(object droppedData)
+        {
+            if (droppedData is IFileRecordInfo recordInfo)
+            {
+                return new List<IFileRecordInfo> { recordInfo };
+            }
+
+            if (droppedData is IEnumerable<IFileRecordInfo> recordInfos)
+            {
+                return recordInfos.Where(info => info != null).ToList();
+            }
+
+            if (droppedData is TreeViewItem treeViewItem)
+            {
+                if (treeViewItem.Tag is DirectoryInfo directoryInfo)
+                {
+                    return await GetRecordInfosByPathAsync(directoryInfo.FullName);
+                }
+
+                if (treeViewItem.Tag is FileInfo fileInfo)
+                {
+                    return await GetRecordInfosByPathAsync(fileInfo.FullName);
+                }
+            }
+
+            if (droppedData is DirectoryInfo droppedDirectory)
+            {
+                return await GetRecordInfosByPathAsync(droppedDirectory.FullName);
+            }
+
+            if (droppedData is FileInfo droppedFile)
+            {
+                return await GetRecordInfosByPathAsync(droppedFile.FullName);
+            }
+
+            if (droppedData is string droppedPath)
+            {
+                return await GetRecordInfosByPathAsync(droppedPath);
+            }
+
+            if (droppedData is string[] droppedPaths)
+            {
+                return await GetRecordInfosByPathsAsync(droppedPaths);
+            }
+
+            if (droppedData is System.Windows.IDataObject dataObject && dataObject.GetDataPresent(System.Windows.DataFormats.FileDrop))
+            {
+                if (dataObject.GetData(System.Windows.DataFormats.FileDrop) is string[] fileDropPaths)
+                {
+                    return await GetRecordInfosByPathsAsync(fileDropPaths);
+                }
+            }
+
+            return new List<IFileRecordInfo>();
+        }
+
+        private async System.Threading.Tasks.Task<List<IFileRecordInfo>> GetRecordInfosByPathAsync(string path)
+            => await GetRecordInfosByPathsAsync(new[] { path });
+
+        private async System.Threading.Tasks.Task<List<IFileRecordInfo>> GetRecordInfosByPathsAsync(IEnumerable<string> paths)
+        {
+            if (paths == null)
+            {
+                return new List<IFileRecordInfo>();
+            }
+
+            var collectedPaths = new List<string>();
+            foreach (string path in paths.Where(path => !string.IsNullOrWhiteSpace(path)))
+            {
+                try
+                {
+                    if (Directory.Exists(path))
+                    {
+                        collectedPaths.AddRange(Directory.EnumerateFiles(path, "*.*", SearchOption.AllDirectories));
+                    }
+                    else if (File.Exists(path))
+                    {
+                        collectedPaths.Add(path);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error while enumerating dropped path {path}", path);
+                }
+            }
+
+            List<string> filePathList = collectedPaths
+                .Where(filePath =>
+                {
+                    string extension = Path.GetExtension(filePath);
+                    return extension.Equals(".json", StringComparison.OrdinalIgnoreCase)
+                        || extension.Equals(".csv", StringComparison.OrdinalIgnoreCase);
+                })
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (filePathList.Count == 0)
+            {
+                return new List<IFileRecordInfo>();
+            }
+
+            int maxParallelism = Math.Min(Environment.ProcessorCount, 8);
+            var semaphore = new System.Threading.SemaphoreSlim(maxParallelism, maxParallelism);
+
+            var loadingTasks = filePathList.Select(async filePath =>
+            {
+                await semaphore.WaitAsync();
+                try
+                {
+                    return await _recordManager.GetFileRecordInfo(new FileInfo(filePath));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error while processing dropped path {path}", filePath);
+                    return null;
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            }).ToList();
+
+            try
+            {
+                IFileRecordInfo[] results = await System.Threading.Tasks.Task.WhenAll(loadingTasks);
+                return results.Where(info => info != null).ToList();
+            }
+            finally
+            {
+                semaphore.Dispose();
             }
         }
     }
