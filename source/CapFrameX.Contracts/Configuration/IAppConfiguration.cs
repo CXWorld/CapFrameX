@@ -250,6 +250,12 @@ namespace CapFrameX.Contracts.Configuration
 		/// </summary>
 		bool UseTBPSim { get; set; }
 
+		bool BenchlabUpdateCharts { get; set; }
+
+		bool PoweneticsUpdateCharts { get; set; }
+
+		bool BenchlabAutoStartService { get; set; }
+
 		bool UseDisplayChangeMetrics { get; set; }
 
 		bool UsePcLatency { get; set; }

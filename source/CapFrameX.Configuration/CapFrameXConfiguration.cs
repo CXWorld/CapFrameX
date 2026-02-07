@@ -158,6 +158,24 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool BenchlabUpdateCharts
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool PoweneticsUpdateCharts
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool BenchlabAutoStartService
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
         public bool UseDisplayChangeMetrics
         {
             get => Get<bool>(false);
