@@ -448,6 +448,9 @@ namespace CapFrameX.Overlay
             Enum.TryParse(sensorTypeString, out SensorType sensorType);
             switch (sensorType)
             {
+                case SensorType.Current:
+                    formatString = "{0,5:F1}";
+                    break;
                 case SensorType.Voltage:
                     formatString = "{0,5:F2}";
                     break;
@@ -504,6 +507,9 @@ namespace CapFrameX.Overlay
             Enum.TryParse(sensorTypeString, out SensorType sensorType);
             switch (sensorType)
             {
+                case SensorType.Current:
+                    formatString = "A  ";
+                    break;  
                 case SensorType.Voltage:
                     formatString = "V  ";
                     break;
@@ -663,6 +669,9 @@ namespace CapFrameX.Overlay
             Enum.TryParse(sensor.SensorType, out SensorType sensorType);
             switch (sensorType)
             {
+                case SensorType.Current:
+                    description = $"{sensor.Name} (A)";
+                    break;
                 case SensorType.Voltage:
                     description = $"{sensor.Name} (V)";
                     break;

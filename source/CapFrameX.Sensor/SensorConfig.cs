@@ -23,6 +23,8 @@ namespace CapFrameX.Sensor
 
         private Dictionary<string, bool> _overlaySelectionDict
             = new Dictionary<string, bool>();
+        private readonly HashSet<string> _sensorEvaluateFirstCallSeen
+            = new HashSet<string>();
 
         public bool IsCapturing { get; set; } = false;
 
@@ -82,6 +84,12 @@ namespace CapFrameX.Sensor
 
         public bool GetSensorEvaluate(string identifier)
         {
+            if (!_sensorEvaluateFirstCallSeen.Contains(identifier))
+            {
+                _sensorEvaluateFirstCallSeen.Add(identifier);
+                return true;
+            }
+
             return IsSelectedForLogging(identifier) || IsSelectedForOverlay(identifier);
         }
 
@@ -109,7 +117,10 @@ namespace CapFrameX.Sensor
             => _loggingSelectionDict?.Clear();
 
         public void ResetEvaluate()
-            => _overlaySelectionDict?.Clear();
+        {
+            _overlaySelectionDict?.Clear();
+            _sensorEvaluateFirstCallSeen.Clear();
+        }
 
         private async Task LoadOrSetDefault()
         {

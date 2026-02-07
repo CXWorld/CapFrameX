@@ -24,7 +24,7 @@ internal sealed class NvidiaGpu : GenericGpu
     private const int LoadIndexPowerBase = 100;
     private const int LoadIndexD3DNodeBase = 200;
     private const int LoadIndexMemory = 300;
-    private const int LoadIndexWddmVrTest = 301;
+    private const int LoadIndexWddmVr = 301;
 
     private uint _lastBlankCounter;
 
@@ -39,9 +39,9 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Control[] _fanControls;
     private readonly Sensor[] _fans;
     private readonly Sensor _gpuDedicatedMemoryUsage;
-    private readonly Sensor[] _gpuNodeUsage;
-    private readonly DateTime[] _gpuNodeUsagePrevTick;
-    private readonly long[] _gpuNodeUsagePrevValue;
+    //private readonly Sensor[] _gpuNodeUsage;
+    //private readonly DateTime[] _gpuNodeUsagePrevTick;
+    //private readonly long[] _gpuNodeUsagePrevValue;
     private readonly Sensor _gpuSharedMemoryUsage;
     private readonly NvApi.NvPhysicalGpuHandle _handle;
     private readonly Sensor _hotSpotTemperature;
@@ -408,12 +408,12 @@ internal sealed class NvidiaGpu : GenericGpu
                         string[] deviceIds = D3DDisplayDevice.GetDeviceIdentifiers();
                         if (deviceIds != null)
                         {
-                            bool d3dDeviceInitialized = false;
+                            //bool d3dDeviceInitialized = false;
 
                             foreach (string deviceId in deviceIds)
                             {
-                                if (d3dDeviceInitialized)
-                                    break;
+                                //if (d3dDeviceInitialized)
+                                //    break;
 
                                 if (deviceId.IndexOf("VEN_" + pci.pciVendorId.ToString("X"), StringComparison.OrdinalIgnoreCase) != -1 &&
                                     deviceId.IndexOf("DEV_" + pci.pciDeviceId.ToString("X"), StringComparison.OrdinalIgnoreCase) != -1 &&
@@ -483,20 +483,20 @@ internal sealed class NvidiaGpu : GenericGpu
                                         _gpuSharedMemoryUsage = new Sensor("GPU Memory Shared", smallDataSensorIndex, SensorType.Data, this, settings)
                                         { PresentationSortKey = $"{adapterIndex}_8_1" };
 
-                                        _gpuNodeUsage = new Sensor[deviceInfo.Nodes.Length];
-                                        _gpuNodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
-                                        _gpuNodeUsagePrevTick = new DateTime[deviceInfo.Nodes.Length];
+                                        //_gpuNodeUsage = new Sensor[deviceInfo.Nodes.Length];
+                                        //_gpuNodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
+                                        //_gpuNodeUsagePrevTick = new DateTime[deviceInfo.Nodes.Length];
 
-                                        foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
-                                        {
-                                            int nodeSensorIndex = LoadIndexD3DNodeBase + (int)node.Id;
-                                            _gpuNodeUsage[node.Id] = new Sensor(node.Name, nodeSensorIndex, SensorType.Load, this, settings)
-                                            { PresentationSortKey = $"{adapterIndex}_10_{node.Id}" };
-                                            _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
-                                            _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
-                                        }
+                                        //foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
+                                        //{
+                                        //    int nodeSensorIndex = LoadIndexD3DNodeBase + (int)node.Id;
+                                        //    _gpuNodeUsage[node.Id] = new Sensor(node.Name, nodeSensorIndex, SensorType.Load, this, settings)
+                                        //    { PresentationSortKey = $"{adapterIndex}_10_{node.Id}" };
+                                        //    _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
+                                        //    _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
+                                        //}
 
-                                        d3dDeviceInitialized = true;
+                                        //d3dDeviceInitialized = true;
                                     }
                                 }
                             }
@@ -517,7 +517,7 @@ internal sealed class NvidiaGpu : GenericGpu
 
         if (!Software.OperatingSystem.IsUnix)
         {
-            _wddmVrLoadTest = new Sensor("WDDM VR (Test)", LoadIndexWddmVrTest, SensorType.Load, this, settings)
+            _wddmVrLoadTest = new Sensor("WDDM VR", LoadIndexWddmVr, SensorType.Load, this, settings)
             { PresentationSortKey = $"{adapterIndex}_11_0" };
         }
 
@@ -550,16 +550,16 @@ internal sealed class NvidiaGpu : GenericGpu
             ActivateSensor(_gpuDedicatedMemoryUsage);
             ActivateSensor(_gpuSharedMemoryUsage);
 
-            foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
-            {
-                long runningTimeDiff = node.RunningTime - _gpuNodeUsagePrevValue[node.Id];
-                long timeDiff = node.QueryTime.Ticks - _gpuNodeUsagePrevTick[node.Id].Ticks;
+            //foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
+            //{
+            //    long runningTimeDiff = node.RunningTime - _gpuNodeUsagePrevValue[node.Id];
+            //    long timeDiff = node.QueryTime.Ticks - _gpuNodeUsagePrevTick[node.Id].Ticks;
 
-                _gpuNodeUsage[node.Id].Value = 100f * runningTimeDiff / timeDiff;
-                _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
-                _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
-                ActivateSensor(_gpuNodeUsage[node.Id]);
-            }
+            //    _gpuNodeUsage[node.Id].Value = 100f * runningTimeDiff / timeDiff;
+            //    _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
+            //    _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
+            //    ActivateSensor(_gpuNodeUsage[node.Id]);
+            //}
         }
 
         UpdateWddmVrLoad();
@@ -845,14 +845,14 @@ internal sealed class NvidiaGpu : GenericGpu
         if (_gpuSharedMemoryUsage != null && _sensorConfig.GetSensorEvaluate(_gpuSharedMemoryUsage.Identifier.ToString()))
             return true;
 
-        if (_gpuNodeUsage is { Length: > 0 })
-        {
-            foreach (Sensor sensor in _gpuNodeUsage)
-            {
-                if (sensor != null && _sensorConfig.GetSensorEvaluate(sensor.Identifier.ToString()))
-                    return true;
-            }
-        }
+        //if (_gpuNodeUsage is { Length: > 0 })
+        //{
+        //    foreach (Sensor sensor in _gpuNodeUsage)
+        //    {
+        //        if (sensor != null && _sensorConfig.GetSensorEvaluate(sensor.Identifier.ToString()))
+        //            return true;
+        //    }
+        //}
 
         return false;
     }
