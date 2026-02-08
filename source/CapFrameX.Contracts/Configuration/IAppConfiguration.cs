@@ -254,7 +254,7 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool PoweneticsUpdateCharts { get; set; }
 
-		bool BenchlabAutoStartService { get; set; }
+		bool BenchlabAutoStartPmd { get; set; }
 
 		bool UseDisplayChangeMetrics { get; set; }
 

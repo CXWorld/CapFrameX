@@ -170,7 +170,7 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
-        public bool BenchlabAutoStartService
+        public bool BenchlabAutoStartPmd
         {
             get => Get<bool>(false);
             set => Set(value);

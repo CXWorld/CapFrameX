@@ -533,7 +533,7 @@
 								<CheckBox Margin="5 0 0 0" FontSize="13" Content="Show Charts" IsChecked="{Binding BenchlabViewModel.UpdateCharts}"></CheckBox>
 							</Border>
 							<Border Height="45" Margin="5 10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch">
-								<CheckBox Margin="5 0 0 0" FontSize="13" Content="Auto Start Service" IsChecked="{Binding BenchlabViewModel.AutoStartService}"></CheckBox>
+								<CheckBox Margin="5 0 0 0" FontSize="13" Content="Auto Start PMD" IsChecked="{Binding BenchlabViewModel.AutoStartPmd}"></CheckBox>
 							</Border>
 						</StackPanel>
 					</Grid>

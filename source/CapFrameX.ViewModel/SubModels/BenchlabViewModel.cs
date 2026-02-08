@@ -107,12 +107,12 @@ namespace CapFrameX.ViewModel.SubModels
             }
         }
 
-        public bool AutoStartService
+        public bool AutoStartPmd
         {
-            get => _appConfiguration.BenchlabAutoStartService;
+            get => _appConfiguration.BenchlabAutoStartPmd;
             set
             {
-                _appConfiguration.BenchlabAutoStartService = value;
+                _appConfiguration.BenchlabAutoStartPmd = value;
                 RaisePropertyChanged();
             }
         }
@@ -281,7 +281,7 @@ namespace CapFrameX.ViewModel.SubModels
 
         internal void AutoStartPmdService()
         {
-            if (!AutoStartService || UsePmdService || PmdServiceStatus == EPmdServiceStatus.Running)
+            if (!AutoStartPmd || UsePmdService || PmdServiceStatus == EPmdServiceStatus.Running)
             {
                 return;
             }
