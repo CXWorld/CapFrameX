@@ -49,7 +49,7 @@ internal class RyzenSMU
             }
         },
         {
-            // Zen 2.
+            // Zen 2
             0x00240903, new Dictionary<uint, SmuSensorType>
             {
                 { 15, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
@@ -68,7 +68,7 @@ internal class RyzenSMU
             }
         },
         {
-            // Zen 3.
+            // Zen 3
             0x00380805, new Dictionary<uint, SmuSensorType>
             {
                 { 3, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
@@ -82,7 +82,7 @@ internal class RyzenSMU
             }
         },
         {
-            // Zen 4.
+            // Zen 4
             0x00540004, new Dictionary<uint, SmuSensorType>
             {
                 { 3, new SmuSensorType { Name = "CPU PPT", Type = SensorType.Power, Scale = 1 } },
@@ -106,27 +106,25 @@ internal class RyzenSMU
             }
         },
         {
-            // Zen 4 / Zen 5 variant.
-            0x00540104, new Dictionary<uint, SmuSensorType>
+            // Zen 5
+            0x00620105, new Dictionary<uint, SmuSensorType>
             {
+                // Empirical mapping from synchronized HWiNFO + SMU raw logs (Granite Ridge, PM table 0x00620105).
                 { 3, new SmuSensorType { Name = "CPU PPT", Type = SensorType.Power, Scale = 1 } },
                 { 11, new SmuSensorType { Name = "Package", Type = SensorType.Temperature, Scale = 1 } },
                 { 20, new SmuSensorType { Name = "Core Power", Type = SensorType.Power, Scale = 1 } },
                 { 21, new SmuSensorType { Name = "SOC Power", Type = SensorType.Power, Scale = 1 } },
-                { 22, new SmuSensorType { Name = "Misc Power", Type = SensorType.Power, Scale = 1 } },
                 { 26, new SmuSensorType { Name = "Total Power", Type = SensorType.Power, Scale = 1 } },
-                { 47, new SmuSensorType { Name = "VDDCR", Type = SensorType.Voltage, Scale = 1 } },
-                { 48, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
-                { 49, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
-                { 52, new SmuSensorType { Name = "VDDCR SoC", Type = SensorType.Voltage, Scale = 1 } },
-                { 57, new SmuSensorType { Name = "VDD Misc", Type = SensorType.Voltage, Scale = 1 } },
-                { 70, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
-                { 74, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
-                { 78, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
-                { 211, new SmuSensorType { Name = "IOD Hotspot", Type = SensorType.Temperature, Scale = 1 } },
-                { 539, new SmuSensorType { Name = "L3 (CCD1)", Type = SensorType.Temperature, Scale = 1 } },
-                { 540, new SmuSensorType { Name = "L3 (CCD2)", Type = SensorType.Temperature, Scale = 1 } },
-                { 268, new SmuSensorType { Name = "LDO VDD", Type = SensorType.Voltage, Scale = 1 } }
+                { 49, new SmuSensorType { Name = "VDDCR", Type = SensorType.Voltage, Scale = 1 } },
+                { 59, new SmuSensorType { Name = "VDD Misc", Type = SensorType.Voltage, Scale = 1 } },
+                { 55, new SmuSensorType { Name = "SOC Current", Type = SensorType.Current, Scale = 1 } },
+                { 60, new SmuSensorType { Name = "Misc Current", Type = SensorType.Current, Scale = 1 } },
+                { 71, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
+                { 75, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
+                { 79, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
+                { 278, new SmuSensorType { Name = "IOD Hotspot", Type = SensorType.Temperature, Scale = 1 } },
+                { 448, new SmuSensorType { Name = "L3 (CCD1)", Type = SensorType.Temperature, Scale = 1 } },
+                { 449, new SmuSensorType { Name = "L3 (CCD2)", Type = SensorType.Temperature, Scale = 1 } }
             }
         }
     };
@@ -356,17 +354,33 @@ internal class RyzenSMU
                         break;
 
                     case 0x00540104:
+                    case 0x00620105:
                         _pmTableSize = 0x950;
                         break;
 
                     default:
-                        return;
+                        break;
                 }
 
                 break;
 
             default:
-                return;
+                break;
+        }
+
+        // Fallback for newer/renamed codenames when PM table version is known.
+        if (_pmTableSize != 0)
+            return;
+
+        switch (_pmTableVersion)
+        {
+            case 0x00540004:
+                _pmTableSize = 0x948;
+                break;
+            case 0x00540104:
+            case 0x00620105:
+                _pmTableSize = 0x950;
+                break;
         }
     }
 

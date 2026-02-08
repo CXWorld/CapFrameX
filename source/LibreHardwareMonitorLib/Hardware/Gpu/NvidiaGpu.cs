@@ -4,6 +4,7 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using CapFrameX.Monitoring.Contracts;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32;
 using System;
@@ -11,9 +12,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Management;
 using System.Text;
-using CapFrameX.Monitoring.Contracts;
 using static LibreHardwareMonitor.Interop.NvApi;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
@@ -24,7 +23,6 @@ internal sealed class NvidiaGpu : GenericGpu
     private const int LoadIndexPowerBase = 100;
     private const int LoadIndexD3DNodeBase = 200;
     private const int LoadIndexMemory = 300;
-    private const int LoadIndexWddmVr = 301;
 
     private uint _lastBlankCounter;
 
@@ -60,7 +58,6 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor[] _temperatures;
     private readonly uint _thermalSensorsMask;
     private readonly Sensor _monitorRefreshRate;
-    private readonly Sensor _wddmVrLoadTest;
     private readonly ISensorConfig _sensorConfig;
     private string _activeDisplayDeviceName;
 
@@ -515,12 +512,6 @@ internal sealed class NvidiaGpu : GenericGpu
         _memoryLoad = new Sensor("GPU Memory", LoadIndexMemory, SensorType.Load, this, settings)
         { PresentationSortKey = $"{adapterIndex}_8_5" };
 
-        if (!Software.OperatingSystem.IsUnix)
-        {
-            _wddmVrLoadTest = new Sensor("WDDM VR", LoadIndexWddmVr, SensorType.Load, this, settings)
-            { PresentationSortKey = $"{adapterIndex}_11_0" };
-        }
-
         Update();
     }
 
@@ -561,8 +552,6 @@ internal sealed class NvidiaGpu : GenericGpu
             //    ActivateSensor(_gpuNodeUsage[node.Id]);
             //}
         }
-
-        UpdateWddmVrLoad();
 
         NvApi.NvStatus status;
 
@@ -913,60 +902,6 @@ internal sealed class NvidiaGpu : GenericGpu
             return true;
 
         return _sensorConfig.GetSensorEvaluate(_monitorRefreshRate.Identifier.ToString());
-    }
-
-    private void UpdateWddmVrLoad()
-    {
-        if (_wddmVrLoadTest == null || Software.OperatingSystem.IsUnix)
-            return;
-
-        if (_sensorConfig != null && !_sensorConfig.GetSensorEvaluate(_wddmVrLoadTest.Identifier.ToString()))
-            return;
-
-        try
-        {
-            float utilization = 0f;
-            bool hasVrEngine = false;
-
-            using var searcher = new ManagementObjectSearcher(
-                @"root\CIMV2",
-                "SELECT Name,UtilizationPercentage FROM Win32_PerfFormattedData_GPUPerformanceCounters_GPUEngine");
-
-            foreach (ManagementObject obj in searcher.Get())
-            {
-                string instanceName = obj["Name"] as string;
-                if (string.IsNullOrEmpty(instanceName) ||
-                    instanceName.IndexOf("engtype_VR", StringComparison.OrdinalIgnoreCase) == -1)
-                {
-                    continue;
-                }
-
-                object utilizationRaw = obj["UtilizationPercentage"];
-                if (utilizationRaw == null)
-                    continue;
-
-                float value = utilizationRaw switch
-                {
-                    uint u32 => u32,
-                    ulong u64 => u64,
-                    int i32 => i32,
-                    long i64 => i64,
-                    float f32 => f32,
-                    double f64 => (float)f64,
-                    _ => 0f
-                };
-
-                utilization += value;
-                hasVrEngine = true;
-            }
-
-            _wddmVrLoadTest.Value = hasVrEngine ? Math.Min(100f, utilization) : 0f;
-            ActivateSensor(_wddmVrLoadTest);
-        }
-        catch
-        {
-            _wddmVrLoadTest.Value = null;
-        }
     }
 
     public override string GetReport()

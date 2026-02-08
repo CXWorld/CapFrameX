@@ -6,17 +6,29 @@
 using LibreHardwareMonitor.PawnIo;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
 internal sealed class Amd17Cpu : AmdCpu
 {
+    // Keep raw SMU dump code available for diagnostics, but disabled by default.
+    private const bool EnableSmuRawDump = false;
+
     private readonly Processor _processor;
     private readonly Dictionary<SensorType, int> _sensorTypeIndex;
     private readonly RyzenSMU _smu;
     private readonly AmdFamily17 _pawnModule;
+    private readonly object _smuDumpLock = new();
+    private StreamWriter _smuDumpWriter;
+    private int _smuDumpColumnCount;
+    private long _smuDumpSampleId;
+
+    private static readonly Func<bool> _isCaptureActive = CreateCaptureStateAccessor();
 
     public Amd17Cpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
     {
@@ -83,6 +95,7 @@ internal sealed class Amd17Cpu : AmdCpu
     public override void Close()
     {
         base.Close();
+        StopSmuDump();
         _pawnModule.Close();
         _smu.Close();
     }
@@ -104,6 +117,120 @@ internal sealed class Amd17Cpu : AmdCpu
         }
 
         _processor.UpdateVirtualSensor();
+    }
+
+    private static Func<bool> CreateCaptureStateAccessor()
+    {
+        try
+        {
+            Type captureManagerType = Type.GetType("CapFrameX.Data.CaptureManager, CapFrameX.Data", false);
+            if (captureManagerType == null)
+                return () => false;
+
+            PropertyInfo isCapturingProperty = captureManagerType.GetProperty("IsCapturingStatic", BindingFlags.Public | BindingFlags.Static);
+            if (isCapturingProperty?.PropertyType == typeof(bool))
+                return () => (bool)isCapturingProperty.GetValue(null);
+        }
+        catch
+        {
+            // ignored
+        }
+
+        return () => false;
+    }
+
+    private void LogSmuDataIfCapturing(float[] smuData)
+    {
+        if (!EnableSmuRawDump) return;
+
+        bool isCapturing = _isCaptureActive();
+
+        lock (_smuDumpLock)
+        {
+            if (!isCapturing)
+            {
+                StopSmuDumpNoLock();
+                return;
+            }
+
+            if (_smuDumpWriter == null)
+                StartSmuDumpNoLock();
+
+            if (_smuDumpWriter == null || smuData == null || smuData.Length == 0)
+                return;
+
+            if (_smuDumpColumnCount != smuData.Length)
+            {
+                WriteSmuDumpHeaderNoLock(smuData.Length);
+                _smuDumpColumnCount = smuData.Length;
+                _smuDumpSampleId = 0;
+            }
+
+            StringBuilder line = new();
+            line.Append(DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+            line.Append(',');
+            line.Append((++_smuDumpSampleId).ToString(CultureInfo.InvariantCulture));
+            for (int i = 0; i < smuData.Length; i++)
+            {
+                line.Append(',');
+                line.Append(smuData[i].ToString("R", CultureInfo.InvariantCulture));
+            }
+
+            _smuDumpWriter.WriteLine(line.ToString());
+        }
+    }
+
+    private void StartSmuDumpNoLock()
+    {
+        try
+        {
+            string dumpDirectory = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "CapFrameX",
+                "Logs");
+            Directory.CreateDirectory(dumpDirectory);
+            string dumpPath = Path.Combine(dumpDirectory, $"RyzenSmuRaw_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv");
+
+            _smuDumpWriter = new StreamWriter(dumpPath, false, new UTF8Encoding(false))
+            {
+                AutoFlush = true
+            };
+            _smuDumpColumnCount = 0;
+            _smuDumpSampleId = 0;
+        }
+        catch
+        {
+            _smuDumpWriter = null;
+        }
+    }
+
+    private void StopSmuDump()
+    {
+        lock (_smuDumpLock)
+        {
+            StopSmuDumpNoLock();
+        }
+    }
+
+    private void StopSmuDumpNoLock()
+    {
+        _smuDumpWriter?.Dispose();
+        _smuDumpWriter = null;
+        _smuDumpColumnCount = 0;
+        _smuDumpSampleId = 0;
+    }
+
+    private void WriteSmuDumpHeaderNoLock(int columnCount)
+    {
+        if (_smuDumpWriter == null)
+            return;
+
+        StringBuilder header = new();
+        header.Append("timestamp_utc,sample_id");
+        for (int i = 0; i < columnCount; i++)
+            header.Append($",idx_{i}");
+
+        _smuDumpWriter.WriteLine(header.ToString());
     }
 
     private class Processor
@@ -213,6 +340,7 @@ internal sealed class Amd17Cpu : AmdCpu
             uint smuSvi0Tfn = 0;
             uint smuSvi0TelPlane0 = 0;
             uint smuSvi0TelPlane1 = 0;
+            int? detectedCcdCount = null;
 
             if (Mutexes.WaitPciBus(10))
             {
@@ -368,6 +496,7 @@ internal sealed class Amd17Cpu : AmdCpu
                     }
 
                     Sensor[] activeCcds = _ccdTemperatures.Where(x => x != null).ToArray();
+                    detectedCcdCount = activeCcds.Length;
                     if (activeCcds.Length > 1)
                     {
                         // No need to get the max / average ccds temp if there is only one CCD.
@@ -438,9 +567,13 @@ internal sealed class Amd17Cpu : AmdCpu
             if (_cpu._smu.IsPmTableLayoutDefined())
             {
                 float[] smuData = _cpu._smu.GetPmTable();
+                _cpu.LogSmuDataIfCapturing(smuData);
 
                 foreach (KeyValuePair<KeyValuePair<uint, RyzenSMU.SmuSensorType>, Sensor> sensor in _smuSensors)
                 {
+                    if (detectedCcdCount == 1 && sensor.Key.Value.Name == "L3 (CCD2)")
+                        continue;
+
                     if (smuData.Length > sensor.Key.Key)
                     {
                         sensor.Value.Value = smuData[sensor.Key.Key] * sensor.Key.Value.Scale;

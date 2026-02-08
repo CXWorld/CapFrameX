@@ -97,12 +97,17 @@ namespace CapFrameX.Data
 
         public bool OSDAutoDisabled { get; set; } = false;
 
+        /// <summary>
+        /// Indicates whether a capture is currently active. For external components to check capture status.
+        public static bool IsCapturingStatus { get; private set; } = false;
+
         public bool IsCapturing
         {
             get { return _isCapturing; }
             set
             {
                 _isCapturing = value;
+                IsCapturingStatus = value;
                 _captureService.IsCaptureModeActiveStream.OnNext(value);
                 _sensorConfig.IsCapturing = value;
                 if (!value)
@@ -144,6 +149,7 @@ namespace CapFrameX.Data
             _poweneticsService = poweneticsService;
             _benchlabService = benchlabService;
             _logEntryManager = logEntryManager;
+            IsCapturingStatus = false;
             _captureService.IsCaptureModeActiveStream.OnNext(false);
         }
 
