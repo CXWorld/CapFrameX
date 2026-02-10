@@ -19,14 +19,14 @@ namespace CapFrameX.PmcReader.Plugin
         private const string DramIdentifier = "pmcreader/cpu/dram-bandwidth";
         private const string DramLatencyIdentifier = "pmcreader/cpu/dram-latency";
 
-        // Arrow Lake Gaming config identifiers - P-Cores
+        // Gaming config identifiers - P-Cores
         private const string GamingPCoreIpcIdentifier = "pmcreader/cpu/gaming-pcore-ipc";
         private const string GamingPCoreL3HitrateIdentifier = "pmcreader/cpu/gaming-pcore-l3-hitrate";
         private const string GamingPCoreL3BoundIdentifier = "pmcreader/cpu/gaming-pcore-l3-bound";
         private const string GamingPCoreMemBoundIdentifier = "pmcreader/cpu/gaming-pcore-mem-bound";
         private const string GamingPCoreOffcoreBwIdentifier = "pmcreader/cpu/gaming-pcore-offcore-bw";
 
-        // Arrow Lake Gaming config identifiers - E-Cores
+        // Gaming config identifiers - E-Cores
         private const string GamingECoreIpcIdentifier = "pmcreader/cpu/gaming-ecore-ipc";
         private const string GamingECoreL3HitrateIdentifier = "pmcreader/cpu/gaming-ecore-l3-hitrate";
         private const string GamingECoreL3BoundIdentifier = "pmcreader/cpu/gaming-ecore-l3-bound";
@@ -63,7 +63,7 @@ namespace CapFrameX.PmcReader.Plugin
             IsPresentationDefault = false
         };
 
-        // Arrow Lake Gaming config sensor entries - P-Cores
+        // Gaming config sensor entries - P-Cores
         private readonly ISensorEntry _gamingPCoreIpcEntry = new PmcReaderSensorEntry
         {
             Identifier = GamingPCoreIpcIdentifier,
@@ -114,7 +114,7 @@ namespace CapFrameX.PmcReader.Plugin
             IsPresentationDefault = false
         };
 
-        // Arrow Lake Gaming config sensor entries - E-Cores
+        // Gaming config sensor entries - E-Cores
         private readonly ISensorEntry _gamingECoreIpcEntry = new PmcReaderSensorEntry
         {
             Identifier = GamingECoreIpcIdentifier,
@@ -176,7 +176,7 @@ namespace CapFrameX.PmcReader.Plugin
         private List<ISensorEntry> _ccxDramLatencyEntries;
         private bool _disposed;
 
-        // Arrow Lake Gaming config
+        // Gaming config (Arrow Lake, Alder Lake, Raptor Lake)
         private MonitoringConfig _gamingConfig;
         private GamingConfigIndices _gamingIndices;
 
@@ -214,7 +214,7 @@ namespace CapFrameX.PmcReader.Plugin
             if (_ccxDramLatencyEntries != null)
                 entries.AddRange(_ccxDramLatencyEntries);
 
-            // Arrow Lake Gaming config entries - P-Cores and E-Cores
+            // Gaming config entries - P-Cores and E-Cores
             if (_gamingConfig != null && _gamingIndices != null)
             {
                 // P-Core entries
@@ -277,10 +277,10 @@ namespace CapFrameX.PmcReader.Plugin
             if (_dramConfig != null)
                 _dramConfig.Initialize();
 
-            // Arrow Lake Gaming config (model 0xC6)
-            if (string.Equals(manufacturer, "GenuineIntel", StringComparison.Ordinal) && model == 0xC6)
+            // Gaming config (Arrow Lake, Alder Lake, Raptor Lake)
+            if (string.Equals(manufacturer, "GenuineIntel", StringComparison.Ordinal) && IsGamingConfigSupported(model))
             {
-                var gamingConfigInfo = TryCreateGamingConfig();
+                var gamingConfigInfo = TryCreateGamingConfig(model);
                 if (gamingConfigInfo != null)
                 {
                     _gamingConfig = gamingConfigInfo.Config;
@@ -296,16 +296,14 @@ namespace CapFrameX.PmcReader.Plugin
 
             if (string.Equals(manufacturer, "GenuineIntel", StringComparison.Ordinal))
             {
-                // Arrow Lake (0xC6) uses Gaming config instead
-                if (model == 0xC6)
+                // Arrow Lake, Alder Lake, Raptor Lake use Gaming config instead
+                if (IsGamingConfigSupported(model))
                     return null;
 
                 if (model == 0x46 || model == 0x45 || model == 0x3C || model == 0x3D)
                     area = new HaswellClientL3();
                 else if ((model & 0xF) == 0xE || model == 0xA5)
                     area = new SkylakeClientL3();
-                else if (model == 0x97 || model == 0x9A || model == 0xB7 || model == 0xBA || model == 0xBF || model == 0xBE)
-                    area = new AlderLakeL3();
                 else if (model == 0xAA)
                     area = new MeteorLakeL3();
 
@@ -347,8 +345,8 @@ namespace CapFrameX.PmcReader.Plugin
         {
             if (string.Equals(manufacturer, "GenuineIntel", StringComparison.Ordinal))
             {
-                // Arrow Lake (0xC6) uses Gaming config instead
-                if (model == 0xC6)
+                // Arrow Lake, Alder Lake, Raptor Lake use Gaming config instead
+                if (IsGamingConfigSupported(model))
                     return null;
 
                 if (!IsSkylakeOrNewer(model))
@@ -401,14 +399,8 @@ namespace CapFrameX.PmcReader.Plugin
                 return true;
 
             return model == 0xA5
-                || model == 0x97
-                || model == 0x9A
-                || model == 0xB7
-                || model == 0xBA
-                || model == 0xBF
-                || model == 0xBE
                 || model == 0xAA;
-            // Note: Arrow Lake (0xC6) excluded - uses Gaming config instead
+            // Note: ADL/RPL/ARL excluded - use Gaming config via IsGamingConfigSupported
         }
 
         private static MonitoringConfig FindMonitoringConfig(MonitoringArea area, params string[] names)
@@ -476,7 +468,7 @@ namespace CapFrameX.PmcReader.Plugin
                 }
             }
 
-            // Arrow Lake Gaming config - P-Cores and E-Cores
+            // Gaming config - P-Cores and E-Cores
             if (_gamingConfig != null && _gamingIndices != null)
             {
                 try
@@ -821,9 +813,22 @@ namespace CapFrameX.PmcReader.Plugin
             public int HitrateMetricIndex { get; }
         }
 
-        private static GamingConfigInfo TryCreateGamingConfig()
+        private static bool IsGamingConfigSupported(byte model)
         {
-            var area = new ArrowLake();
+            return model == 0xC6                                  // Arrow Lake
+                || model == 0x97 || model == 0x9A                 // Alder Lake (S, P)
+                || model == 0xB7 || model == 0xBA                 // Raptor Lake, RPL-H
+                || model == 0xBF || model == 0xBE;                // RPL-HX, RPL-U
+        }
+
+        private static GamingConfigInfo TryCreateGamingConfig(byte model)
+        {
+            MonitoringArea area;
+            if (model == 0xC6)
+                area = new ArrowLake();
+            else
+                area = new AlderLake();
+
             var config = FindMonitoringConfig(area, "All Cores: Gaming Performance");
             if (config == null)
                 return null;
