@@ -93,6 +93,7 @@
     <Compile Include="Statistics\FrametimeStatisticProviderTest.cs" />
     <Compile Include="TestHelper.cs" />
     <Compile Include="Updater\UpdateCheckTest.cs" />
+    <Compile Include="ViewModel\CaptureViewModelTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="TestRecordFiles\CustomFilenameWithoutComment.csv">
