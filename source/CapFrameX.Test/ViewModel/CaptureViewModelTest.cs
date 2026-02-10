@@ -126,8 +126,8 @@ namespace CapFrameX.Test.ViewModel
             var sut = CreateSut();
 
             Assert.IsNotNull(sut.FrametimeModel);
-            Assert.IsTrue(sut.CaptureStateInfo.Contains("Service ready", StringComparison.Ordinal));
-            Assert.IsTrue(sut.CaptureStateInfo.Contains(_appConfigurationMock.Object.CaptureHotKey, StringComparison.Ordinal));
+            Assert.IsTrue(sut.CaptureStateInfo.IndexOf("Service ready", StringComparison.Ordinal) >= 0);
+            Assert.IsTrue(sut.CaptureStateInfo.IndexOf(_appConfigurationMock.Object.CaptureHotKey, StringComparison.Ordinal) >= 0);
             Assert.AreEqual(_appConfigurationMock.Object.CaptureTime.ToString(CultureInfo.InvariantCulture), sut.CaptureTimeString);
 
             DisposeHeartbeat(sut);
@@ -146,8 +146,8 @@ namespace CapFrameX.Test.ViewModel
 
             InvokePrivate(sut, "UpdateProcessToCaptureList");
 
-            Assert.IsTrue(sut.ProcessesToCapture.Contains(VkcubeProcess));
-            Assert.IsTrue(sut.CaptureStateInfo.Contains("\"vkcube\" auto-detected", StringComparison.Ordinal));
+            Assert.IsTrue(sut.ProcessesToCapture.Any(p => p == VkcubeProcess));
+            Assert.IsTrue(sut.CaptureStateInfo.IndexOf("\"vkcube\" auto-detected", StringComparison.Ordinal) >= 0);
             Assert.IsNotNull(published);
             Assert.AreEqual(VkcubeProcess, published.Process);
             Assert.AreEqual(VkcubeProcessId, published.ProcessId);
@@ -164,7 +164,7 @@ namespace CapFrameX.Test.ViewModel
 
             InvokePrivate(sut, "UpdateProcessToCaptureList");
 
-            Assert.IsTrue(sut.CaptureStateInfo.Contains("Multiple processes detected", StringComparison.Ordinal));
+            Assert.IsTrue(sut.CaptureStateInfo.IndexOf("Multiple processes detected", StringComparison.Ordinal) >= 0);
             _overlayServiceMock.Verify(x => x.SetCaptureServiceStatus("Multiple processes detected"), Times.AtLeastOnce);
 
             DisposeHeartbeat(sut);
@@ -265,7 +265,11 @@ namespace CapFrameX.Test.ViewModel
         {
             _appConfigurationMock.SetupAllProperties();
             _appConfigurationMock.Object.CaptureHotKey = "F11";
+            _appConfigurationMock.Object.OverlayHotKey = "Alt+O";
+            _appConfigurationMock.Object.OverlayConfigHotKey = "Alt+C";
             _appConfigurationMock.Object.ResetHistoryHotkey = "F10";
+            _appConfigurationMock.Object.ThreadAffinityHotkey = "Control+A";
+            _appConfigurationMock.Object.ResetMetricsHotkey = "Alt+M";
             _appConfigurationMock.Object.HotkeySoundMode = "None";
             _appConfigurationMock.Object.CaptureTime = 30d;
             _appConfigurationMock.Object.CaptureDelay = 0d;
