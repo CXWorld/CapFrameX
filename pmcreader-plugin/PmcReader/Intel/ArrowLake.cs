@@ -334,17 +334,14 @@ namespace PmcReader.Intel
                     pCorePmc[1] = GetPerfEvtSelRegisterValue(0xD1, 0x20); // MEM_LOAD_RETIRED.L3_MISS
                     pCorePmc[2] = GetPerfEvtSelRegisterValue(0x46, 0x04); // MEMORY_STALLS.L3
                     pCorePmc[3] = GetPerfEvtSelRegisterValue(0x46, 0x08); // MEMORY_STALLS.MEM (DRAM bound)
-                    pCorePmc[4] = GetPerfEvtSelRegisterValue(0x21, 0x01); // OFFCORE_REQUESTS.DEMAND_DATA_RD
-                    pCorePmc[5] = 0;
-                    pCorePmc[6] = 0;
-                    pCorePmc[7] = 0;
+                    // DRAM BW derived from MEM_LOAD_RETIRED.L3_MISS (pmc[1]) * 64B
                     cpu.ProgramPerfCounters(pCorePmc, ADL_P_CORE_TYPE);
                 }
 
                 // E-core events (Crestmont/Skymont) - different event encodings
-                // Note: E-cores don't have L3_MISS event or OFFCORE_REQUESTS
                 // Use L2_MISS (0x80) as denominator for L3 hitrate: L3_HIT / L2_MISS
                 // L3 miss count = L2_MISS - L3_HIT (calculated in computeMetrics)
+                // DRAM BW derived from (L2_MISS - L3_HIT) * 64B
                 if (hasECores)
                 {
                     ulong[] eCorePmc = new ulong[8];
@@ -352,10 +349,6 @@ namespace PmcReader.Intel
                     eCorePmc[1] = GetPerfEvtSelRegisterValue(0xD1, 0x80); // MEM_LOAD_UOPS_RETIRED.L2_MISS (L3_HIT + L3_MISS)
                     eCorePmc[2] = GetPerfEvtSelRegisterValue(0x34, 0x06); // MEM_BOUND_STALLS_LOAD.LLC_HIT (L3 bound stalls)
                     eCorePmc[3] = GetPerfEvtSelRegisterValue(0x34, 0x78); // MEM_BOUND_STALLS_LOAD.LLC_MISS (DRAM bound)
-                    eCorePmc[4] = GetPerfEvtSelRegisterValue(0xD1, 0x80); // L2_MISS for BW (L3 miss = L2_MISS - L3_HIT)
-                    eCorePmc[5] = 0;
-                    eCorePmc[6] = 0;
-                    eCorePmc[7] = 0;
                     cpu.ProgramPerfCounters(eCorePmc, ADL_E_CORE_TYPE);
                 }
             }
@@ -420,8 +413,7 @@ namespace PmcReader.Intel
                 // Combined overall - need special handling for BW columns
                 results.overallMetrics = computeCombinedMetrics("Overall", pCoreTotals, eCoreTotals);
                 results.overallCounterValues = cpu.GetOverallCounterValues(new string[] {
-                    "L3 Hit", "L3 Miss", "L3 Stall Cycles", "Mem Stall Cycles",
-                    "Offcore Req (P)", "L3 Miss (E)" });
+                    "L3 Hit", "L3 Miss", "L3 Stall Cycles", "Mem Stall Cycles" });
                 return results;
             }
 
@@ -431,22 +423,20 @@ namespace PmcReader.Intel
                 totals.pmc[1] += source.pmc[1];
                 totals.pmc[2] += source.pmc[2];
                 totals.pmc[3] += source.pmc[3];
-                totals.pmc[4] += source.pmc[4];
                 totals.activeCycles += source.activeCycles;
                 totals.instr += source.instr;
             }
 
             public string[] columns = new string[] {
                 "Item", "IPC", "L3 Hitrate", "L3 Bound %", "Mem Bound %",
-                "Offcore BW", "L3 Miss BW"
+                "L3 Miss BW"
             };
 
             public string GetHelpText()
             {
                 return "Gaming metrics for P and E cores.\n" +
                        "L3 Bound % = % of cycles stalled waiting for L3.\n" +
-                       "P-cores: Offcore BW = OFFCORE_REQUESTS * 64B (L3 + DRAM traffic)\n" +
-                       "E-cores: L3 Miss BW = L3_MISS * 64B (DRAM traffic only)";
+                       "L3 Miss BW = L3_MISS * 64B (demand load L3 miss traffic)";
             }
 
             private string[] computeMetrics(string label, NormalizedCoreCounterData counterData, bool isPCore)
@@ -455,21 +445,17 @@ namespace PmcReader.Intel
                 float l3Stalls = counterData.pmc[2];
                 float memStalls = counterData.pmc[3];
 
-                // For P-cores: pmc[1] = L3_MISS, pmc[4] = OFFCORE_REQUESTS
-                // For E-cores: pmc[1] = L2_MISS (no L3_MISS event), pmc[4] = L2_MISS
-                float l3Miss, bwCounter;
+                float l3Miss;
                 if (isPCore)
                 {
-                    l3Miss = counterData.pmc[1];
-                    bwCounter = counterData.pmc[4]; // OFFCORE_REQUESTS
+                    l3Miss = counterData.pmc[1]; // MEM_LOAD_RETIRED.L3_MISS
                 }
                 else
                 {
                     // E-cores: L2_MISS = L3_HIT + L3_MISS, so L3_MISS = L2_MISS - L3_HIT
                     float l2Miss = counterData.pmc[1];
                     l3Miss = l2Miss - l3Hit;
-                    if (l3Miss < 0) l3Miss = 0; // Handle potential counter wrap/timing issues
-                    bwCounter = l3Miss; // Use calculated L3 miss for BW
+                    if (l3Miss < 0) l3Miss = 0;
                 }
 
                 // IPC
@@ -480,12 +466,8 @@ namespace PmcReader.Intel
                 float l3BoundPct = counterData.activeCycles > 0 ? 100 * l3Stalls / counterData.activeCycles : 0;
                 // Memory bound % (cycles waiting for DRAM)
                 float memBoundPct = counterData.activeCycles > 0 ? 100 * memStalls / counterData.activeCycles : 0;
-                // Bandwidth (requests * 64 bytes per cacheline)
-                float bw = bwCounter * 64;
-
-                // Offcore BW for P-cores, L3 Miss BW for E-cores
-                string offcoreBwStr = isPCore ? FormatLargeNumber(bw) + "B/s" : "-";
-                string l3MissBwStr = isPCore ? "-" : FormatLargeNumber(bw) + "B/s";
+                // DRAM BW = L3_MISS * 64 bytes per cacheline
+                float dramBw = l3Miss * 64;
 
                 return new string[] {
                     label,
@@ -493,12 +475,10 @@ namespace PmcReader.Intel
                     string.Format("{0:F2}%", l3HitRate),
                     string.Format("{0:F2}%", l3BoundPct),
                     string.Format("{0:F2}%", memBoundPct),
-                    offcoreBwStr,
-                    l3MissBwStr
+                    FormatLargeNumber(dramBw) + "B/s"
                 };
             }
 
-            // For combined overall - shows both Offcore BW (P-cores) and L3 Miss BW (E-cores)
             private string[] computeCombinedMetrics(string label, NormalizedCoreCounterData pCoreTotals, NormalizedCoreCounterData eCoreTotals)
             {
                 // P-cores: pmc[1] = L3_MISS directly
@@ -517,9 +497,8 @@ namespace PmcReader.Intel
                 float activeCycles = pCoreTotals.activeCycles + eCoreTotals.activeCycles;
                 float instr = pCoreTotals.instr + eCoreTotals.instr;
 
-                // Separate BW values
-                float pCoreOffcoreBw = pCoreTotals.pmc[4] * 64; // OFFCORE_REQUESTS
-                float eCoreL3MissBw = eCoreL3Miss * 64;  // Calculated L3_MISS
+                // Combined DRAM BW = total L3_MISS * 64B
+                float dramBw = (pCoreL3Miss + eCoreL3Miss) * 64;
 
                 // IPC
                 float ipc = activeCycles > 0 ? instr / activeCycles : 0;
@@ -536,8 +515,7 @@ namespace PmcReader.Intel
                     string.Format("{0:F2}%", l3HitRate),
                     string.Format("{0:F2}%", l3BoundPct),
                     string.Format("{0:F2}%", memBoundPct),
-                    FormatLargeNumber(pCoreOffcoreBw) + "B/s",
-                    FormatLargeNumber(eCoreL3MissBw) + "B/s"
+                    FormatLargeNumber(dramBw) + "B/s"
                 };
             }
         }

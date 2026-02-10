@@ -132,6 +132,7 @@
     <Compile Include="Interop\OpCode.cs" />
     <Compile Include="Interop\Ring0.cs" />
     <Compile Include="Interop\ThreadAffinity.cs" />
+    <Compile Include="PmcDiagnostics.cs" />
     <Compile Include="PmcReaderInterop.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -24,7 +24,7 @@ namespace CapFrameX.PmcReader.Plugin
         private const string GamingPCoreL3HitrateIdentifier = "pmcreader/cpu/gaming-pcore-l3-hitrate";
         private const string GamingPCoreL3BoundIdentifier = "pmcreader/cpu/gaming-pcore-l3-bound";
         private const string GamingPCoreMemBoundIdentifier = "pmcreader/cpu/gaming-pcore-mem-bound";
-        private const string GamingPCoreOffcoreBwIdentifier = "pmcreader/cpu/gaming-pcore-offcore-bw";
+        private const string GamingPCoreL3MissBwIdentifier = "pmcreader/cpu/gaming-pcore-l3miss-bw";
 
         // Gaming config identifiers - E-Cores
         private const string GamingECoreIpcIdentifier = "pmcreader/cpu/gaming-ecore-ipc";
@@ -104,11 +104,11 @@ namespace CapFrameX.PmcReader.Plugin
             IsPresentationDefault = false
         };
 
-        private readonly ISensorEntry _gamingPCoreOffcoreBwEntry = new PmcReaderSensorEntry
+        private readonly ISensorEntry _gamingPCoreL3MissBwEntry = new PmcReaderSensorEntry
         {
-            Identifier = GamingPCoreOffcoreBwIdentifier,
+            Identifier = GamingPCoreL3MissBwIdentifier,
             SortKey = "6_14",
-            Name = "CPU P-Core Offcore BW",
+            Name = "CPU P-Core L3 Miss BW",
             SensorType = SensorType.Throughput.ToString(),
             HardwareType = HardwareType.Cpu.ToString(),
             IsPresentationDefault = false
@@ -179,6 +179,8 @@ namespace CapFrameX.PmcReader.Plugin
         // Gaming config (Arrow Lake, Alder Lake, Raptor Lake)
         private MonitoringConfig _gamingConfig;
         private GamingConfigIndices _gamingIndices;
+        private bool _gamingHasPCores;
+        private bool _gamingHasECores;
 
         public string Name => "PmcReader";
 
@@ -214,22 +216,26 @@ namespace CapFrameX.PmcReader.Plugin
             if (_ccxDramLatencyEntries != null)
                 entries.AddRange(_ccxDramLatencyEntries);
 
-            // Gaming config entries - P-Cores and E-Cores
+            // Gaming config entries - only for detected core types
             if (_gamingConfig != null && _gamingIndices != null)
             {
-                // P-Core entries
-                entries.Add(_gamingPCoreIpcEntry);
-                entries.Add(_gamingPCoreL3HitrateEntry);
-                entries.Add(_gamingPCoreL3BoundEntry);
-                entries.Add(_gamingPCoreMemBoundEntry);
-                entries.Add(_gamingPCoreOffcoreBwEntry);
+                if (_gamingHasPCores)
+                {
+                    entries.Add(_gamingPCoreIpcEntry);
+                    entries.Add(_gamingPCoreL3HitrateEntry);
+                    entries.Add(_gamingPCoreL3BoundEntry);
+                    entries.Add(_gamingPCoreMemBoundEntry);
+                    entries.Add(_gamingPCoreL3MissBwEntry);
+                }
 
-                // E-Core entries
-                entries.Add(_gamingECoreIpcEntry);
-                entries.Add(_gamingECoreL3HitrateEntry);
-                entries.Add(_gamingECoreL3BoundEntry);
-                entries.Add(_gamingECoreMemBoundEntry);
-                entries.Add(_gamingECoreL3MissBwEntry);
+                if (_gamingHasECores)
+                {
+                    entries.Add(_gamingECoreIpcEntry);
+                    entries.Add(_gamingECoreL3HitrateEntry);
+                    entries.Add(_gamingECoreL3BoundEntry);
+                    entries.Add(_gamingECoreMemBoundEntry);
+                    entries.Add(_gamingECoreL3MissBwEntry);
+                }
             }
 
             return Task.FromResult<IEnumerable<ISensorEntry>>(entries);
@@ -285,6 +291,8 @@ namespace CapFrameX.PmcReader.Plugin
                 {
                     _gamingConfig = gamingConfigInfo.Config;
                     _gamingIndices = gamingConfigInfo.Indices;
+                    _gamingHasPCores = gamingConfigInfo.HasPCores;
+                    _gamingHasECores = gamingConfigInfo.HasECores;
                     _gamingConfig.Initialize();
                 }
             }
@@ -508,8 +516,8 @@ namespace CapFrameX.PmcReader.Plugin
                             if (idx.MemBoundIndex < pCoreMetrics.Length && TryParsePercentage(pCoreMetrics[idx.MemBoundIndex], out float memBound))
                                 result[_gamingPCoreMemBoundEntry] = memBound;
 
-                            if (idx.OffcoreBwIndex < pCoreMetrics.Length && TryParseBandwidth(pCoreMetrics[idx.OffcoreBwIndex], out float offcoreBw))
-                                result[_gamingPCoreOffcoreBwEntry] = offcoreBw / 1_073_741_824f;
+                            if (idx.L3MissBwIndex < pCoreMetrics.Length && TryParseBandwidth(pCoreMetrics[idx.L3MissBwIndex], out float dramBw))
+                                result[_gamingPCoreL3MissBwEntry] = dramBw / 1_073_741_824f;
                         }
 
                         // Parse E-Core metrics
@@ -527,8 +535,8 @@ namespace CapFrameX.PmcReader.Plugin
                             if (idx.MemBoundIndex < eCoreMetrics.Length && TryParsePercentage(eCoreMetrics[idx.MemBoundIndex], out float memBound))
                                 result[_gamingECoreMemBoundEntry] = memBound;
 
-                            if (idx.L3MissBwIndex < eCoreMetrics.Length && TryParseBandwidth(eCoreMetrics[idx.L3MissBwIndex], out float l3MissBw))
-                                result[_gamingECoreL3MissBwEntry] = l3MissBw / 1_073_741_824f;
+                            if (idx.L3MissBwIndex < eCoreMetrics.Length && TryParseBandwidth(eCoreMetrics[idx.L3MissBwIndex], out float dramBw))
+                                result[_gamingECoreL3MissBwEntry] = dramBw / 1_073_741_824f;
                         }
                     }
                 }
@@ -823,13 +831,13 @@ namespace CapFrameX.PmcReader.Plugin
 
         private static GamingConfigInfo TryCreateGamingConfig(byte model)
         {
-            MonitoringArea area;
+            ModernIntelCpu cpu;
             if (model == 0xC6)
-                area = new ArrowLake();
+                cpu = new ArrowLake();
             else
-                area = new AlderLake();
+                cpu = new AlderLake();
 
-            var config = FindMonitoringConfig(area, "All Cores: Gaming Performance");
+            var config = FindMonitoringConfig(cpu, "All Cores: Gaming Performance");
             if (config == null)
                 return null;
 
@@ -837,7 +845,15 @@ namespace CapFrameX.PmcReader.Plugin
             if (indices == null)
                 return null;
 
-            return new GamingConfigInfo(config, indices);
+            bool hasPCores = false;
+            bool hasECores = false;
+            foreach (var ct in cpu.coreTypes)
+            {
+                if (ct.Type == 0x40) hasPCores = true;
+                if (ct.Type == 0x20) hasECores = true;
+            }
+
+            return new GamingConfigInfo(config, indices, hasPCores, hasECores);
         }
 
         private static GamingConfigIndices TryGetGamingConfigIndices(MonitoringConfig config)
@@ -850,11 +866,10 @@ namespace CapFrameX.PmcReader.Plugin
             int? l3HitrateIndex = FindColumnIndex(columns, "L3 Hitrate");
             int? l3BoundIndex = FindColumnIndex(columns, "L3 Bound %");
             int? memBoundIndex = FindColumnIndex(columns, "Mem Bound %");
-            int? offcoreBwIndex = FindColumnIndex(columns, "Offcore BW");
             int? l3MissBwIndex = FindColumnIndex(columns, "L3 Miss BW");
 
             if (!ipcIndex.HasValue || !l3HitrateIndex.HasValue || !l3BoundIndex.HasValue
-                || !memBoundIndex.HasValue || !offcoreBwIndex.HasValue || !l3MissBwIndex.HasValue)
+                || !memBoundIndex.HasValue || !l3MissBwIndex.HasValue)
                 return null;
 
             return new GamingConfigIndices(
@@ -862,7 +877,6 @@ namespace CapFrameX.PmcReader.Plugin
                 l3HitrateIndex.Value,
                 l3BoundIndex.Value,
                 memBoundIndex.Value,
-                offcoreBwIndex.Value,
                 l3MissBwIndex.Value);
         }
 
@@ -887,26 +901,29 @@ namespace CapFrameX.PmcReader.Plugin
 
         private sealed class GamingConfigInfo
         {
-            public GamingConfigInfo(MonitoringConfig config, GamingConfigIndices indices)
+            public GamingConfigInfo(MonitoringConfig config, GamingConfigIndices indices, bool hasPCores, bool hasECores)
             {
                 Config = config;
                 Indices = indices;
+                HasPCores = hasPCores;
+                HasECores = hasECores;
             }
 
             public MonitoringConfig Config { get; }
             public GamingConfigIndices Indices { get; }
+            public bool HasPCores { get; }
+            public bool HasECores { get; }
         }
 
         private sealed class GamingConfigIndices
         {
             public GamingConfigIndices(int ipcIndex, int l3HitrateIndex, int l3BoundIndex,
-                int memBoundIndex, int offcoreBwIndex, int l3MissBwIndex)
+                int memBoundIndex, int l3MissBwIndex)
             {
                 IpcIndex = ipcIndex;
                 L3HitrateIndex = l3HitrateIndex;
                 L3BoundIndex = l3BoundIndex;
                 MemBoundIndex = memBoundIndex;
-                OffcoreBwIndex = offcoreBwIndex;
                 L3MissBwIndex = l3MissBwIndex;
             }
 
@@ -914,7 +931,6 @@ namespace CapFrameX.PmcReader.Plugin
             public int L3HitrateIndex { get; }
             public int L3BoundIndex { get; }
             public int MemBoundIndex { get; }
-            public int OffcoreBwIndex { get; }
             public int L3MissBwIndex { get; }
         }
     }
