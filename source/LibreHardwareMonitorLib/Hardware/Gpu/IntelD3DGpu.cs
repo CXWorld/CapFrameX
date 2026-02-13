@@ -15,9 +15,9 @@ internal class IntelD3dGpu : GenericGpu
     private readonly Sensor _sharedMemoryFree;
     private readonly string _deviceId;
     private readonly float _energyUnitMultiplier;
-    private readonly Sensor[] _nodeUsage;
-    private readonly DateTime[] _nodeUsagePrevTick;
-    private readonly long[] _nodeUsagePrevValue;
+    //private readonly Sensor[] _nodeUsage;
+    //private readonly DateTime[] _nodeUsagePrevTick;
+    //private readonly long[] _nodeUsagePrevValue;
     private readonly Sensor _powerSensor;
     private readonly Sensor _sharedMemoryUsage;
 
@@ -68,18 +68,18 @@ internal class IntelD3dGpu : GenericGpu
             }
         }
 
-        _nodeUsage = new Sensor[deviceInfo.Nodes.Length];
-        _nodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
-        _nodeUsagePrevTick = new DateTime[deviceInfo.Nodes.Length];
+        //_nodeUsage = new Sensor[deviceInfo.Nodes.Length];
+        //_nodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
+        //_nodeUsagePrevTick = new DateTime[deviceInfo.Nodes.Length];
 
-        int nodeSensorIndex = 0;
-        foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
-        {
-            _nodeUsage[node.Id] = new Sensor(node.Name, nodeSensorIndex++, SensorType.Load, this, settings)
-            { PresentationSortKey = $"{index}_4_{nodeSensorIndex}" };
-            _nodeUsagePrevValue[node.Id] = node.RunningTime;
-            _nodeUsagePrevTick[node.Id] = node.QueryTime;
-        }
+        //int nodeSensorIndex = 0;
+        //foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
+        //{
+        //    _nodeUsage[node.Id] = new Sensor(node.Name, nodeSensorIndex++, SensorType.Load, this, settings)
+        //    { PresentationSortKey = $"{index}_4_{nodeSensorIndex}" };
+        //    _nodeUsagePrevValue[node.Id] = node.RunningTime;
+        //    _nodeUsagePrevTick[node.Id] = node.QueryTime;
+        //}
     }
 
     /// <inheritdoc />
@@ -123,19 +123,19 @@ internal class IntelD3dGpu : GenericGpu
                 }
             }
 
-            if (_nodeUsage.Length == deviceInfo.Nodes.Length)
-            {
-                foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
-                {
-                    long runningTimeDiff = node.RunningTime - _nodeUsagePrevValue[node.Id];
-                    long timeDiff = node.QueryTime.Ticks - _nodeUsagePrevTick[node.Id].Ticks;
+            //if (_nodeUsage.Length == deviceInfo.Nodes.Length)
+            //{
+            //    foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
+            //    {
+            //        long runningTimeDiff = node.RunningTime - _nodeUsagePrevValue[node.Id];
+            //        long timeDiff = node.QueryTime.Ticks - _nodeUsagePrevTick[node.Id].Ticks;
 
-                    _nodeUsage[node.Id].Value = 100f * runningTimeDiff / timeDiff;
-                    _nodeUsagePrevValue[node.Id] = node.RunningTime;
-                    _nodeUsagePrevTick[node.Id] = node.QueryTime;
-                    ActivateSensor(_nodeUsage[node.Id]);
-                }
-            }
+            //        _nodeUsage[node.Id].Value = 100f * runningTimeDiff / timeDiff;
+            //        _nodeUsagePrevValue[node.Id] = node.RunningTime;
+            //        _nodeUsagePrevTick[node.Id] = node.QueryTime;
+            //        ActivateSensor(_nodeUsage[node.Id]);
+            //    }
+            //}
         }
     }
 
