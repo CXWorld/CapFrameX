@@ -4,13 +4,12 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using LibreHardwareMonitor.PawnIo;
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using LibreHardwareMonitor.PawnIo;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 

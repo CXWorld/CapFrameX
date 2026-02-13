@@ -843,7 +843,7 @@ namespace CapFrameX.ViewModel
             // Apply the selected template
             _overlayTemplateService.ApplyTemplate(SelectedOverlayTemplate, clonedEntries);
 
-            // Sort entries by category order, then by SortKey within each category
+            // Sort entries by group, then by SortKey within each group
             var sortedEntries = clonedEntries
                 .OrderBy(entry => GetTemplateSortOrder(entry))
                 .ThenBy(entry => entry.SortKey, AlphanumericComparer.Instance)
@@ -900,29 +900,37 @@ namespace CapFrameX.ViewModel
         {
             // Framerate and Frametime always at the end
             if (entry.Identifier == "Framerate" || entry.Identifier == "Frametime")
-                return 8;
+                return 80;
+
+            // Template-enabled entries and non-template entries form separate groups
+            // so that sort keys from different namespaces never mix within a group.
+            // ApplyTemplate resets all ShowOnOverlay to false before enabling template entries,
+            // so ShowOnOverlay reliably identifies template-modified entries.
 
             switch (entry.OverlayEntryType)
             {
                 case EOverlayEntryType.CX:
-                    // CustomCPU and CustomRAM are positioned as section headers in templates
+                    // CustomCPU/CustomRAM act as section headers when template-enabled
                     if (entry.Identifier == "CustomCPU")
-                        return 3;
+                        return entry.ShowOnOverlay ? 30 : 10;
                     if (entry.Identifier == "CustomRAM")
-                        return 5;
-                    return 1;
+                        return entry.ShowOnOverlay ? 50 : 10;
+                    return 10;
 
                 case EOverlayEntryType.GPU:
-                    return 2;
+                    return entry.ShowOnOverlay ? 20 : 25;
 
                 case EOverlayEntryType.CPU:
-                    return 4;
+                    return entry.ShowOnOverlay ? 40 : 45;
+
                 case EOverlayEntryType.RAM:
-                    return 6;
+                    return entry.ShowOnOverlay ? 60 : 65;
+
                 case EOverlayEntryType.OnlineMetric:
-                    return 7;
+                    return entry.ShowOnOverlay ? 70 : 75;
+
                 default:
-                    return 9;
+                    return 90;
             }
         }
 

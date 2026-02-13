@@ -219,199 +219,6 @@ namespace CapFrameX.Overlay
                         IsEntryEnabled = true
                     },
 
-                    // Online metrics
-                    // Average
-                    new OverlayEntryWrapper("OnlineAverage")
-                    {
-                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
-                        ShowOnOverlay = true,
-                        ShowOnOverlayIsEnabled = true,
-                        Description = "Real-time average FPS",
-                        GroupName = "Average",
-                        Value = "0",
-                        ValueFormat = default,
-                        ShowGraph = false,
-                        ShowGraphIsEnabled = false,
-                        Color = string.Empty,
-                        IsEntryEnabled = true
-                    },
-
-                    // P1
-                    new OverlayEntryWrapper("OnlineP1")
-                    {
-                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
-                        ShowOnOverlay = false,
-                        ShowOnOverlayIsEnabled = true,
-                        Description = "Real-time P1 FPS",
-                        GroupName = "P1%",
-                        Value = "0",
-                        ValueFormat = default,
-                        ShowGraph = false,
-                        ShowGraphIsEnabled = false,
-                        Color = string.Empty,
-                        IsEntryEnabled = true
-                    },
-
-                    // P0.1
-                    new OverlayEntryWrapper("OnlineP0dot1")
-                    {
-                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
-                        ShowOnOverlay = false,
-                        ShowOnOverlayIsEnabled = true,
-                        Description = "Real-time P0.1 FPS",
-                        GroupName = "P0.1%",
-                        Value = "0",
-                        ValueFormat = default,
-                        ShowGraph = false,
-                        ShowGraphIsEnabled = false,
-                        Color = string.Empty,
-                        IsEntryEnabled = true
-                    },
-
-                    // P0.2
-                    new OverlayEntryWrapper("OnlineP0dot2")
-                    {
-                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
-                        ShowOnOverlay = false,
-                        ShowOnOverlayIsEnabled = true,
-                        Description = "Real-time P0.2 FPS",
-                        GroupName = "P0.2%",
-                        Value = "0",
-                        ValueFormat = default,
-                        ShowGraph = false,
-                        ShowGraphIsEnabled = false,
-                        Color = string.Empty,
-                        IsEntryEnabled = true
-                    },
-
-                    // 1% Low
-                    new OverlayEntryWrapper("Online1PercentLow")
-					{
-						OverlayEntryType = EOverlayEntryType.OnlineMetric,
-						ShowOnOverlay = true,
-						ShowOnOverlayIsEnabled = true,
-						Description = "Real-time 1% Low FPS",
-						GroupName = "1% Low",
-						Value = "0",
-						ValueFormat = default,
-						ShowGraph = false,
-						ShowGraphIsEnabled = false,
-						Color = string.Empty,
-                        IsEntryEnabled = true
-					},
-
-                     // 0.1% Low
-                    new OverlayEntryWrapper("Online0dot1PercentLow")
-                    {
-                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
-                        ShowOnOverlay = false,
-                        ShowOnOverlayIsEnabled = true,
-                        Description = "Real-time 0.1% Low FPS",
-                        GroupName = "0.1% Low",
-                        Value = "0",
-                        ValueFormat = default,
-                        ShowGraph = false,
-                        ShowGraphIsEnabled = false,
-                        Color = string.Empty,
-                        IsEntryEnabled = true
-                    },
-
-                    // 0.2% Low
-                    new OverlayEntryWrapper("Online0dot2PercentLow")
-					{
-						OverlayEntryType = EOverlayEntryType.OnlineMetric,
-						ShowOnOverlay = false,
-						ShowOnOverlayIsEnabled = true,
-						Description = "Real-time 0.2% Low FPS",
-						GroupName = "0.2% Low",
-						Value = "0",
-						ValueFormat = default,
-						ShowGraph = false,
-						ShowGraphIsEnabled = false,
-						Color = string.Empty,
-                        IsEntryEnabled = true
-					},
-
-                    // GPU Active Time Average
-                    new OverlayEntryWrapper("OnlineGpuActiveTimeAverage")
-					{
-						OverlayEntryType = EOverlayEntryType.OnlineMetric,
-						ShowOnOverlay = false,
-						ShowOnOverlayIsEnabled = true,
-						Description = "GPU Active Time Average (ms)",
-						GroupName = "GPUBusy Avg",
-						Value = "0",
-						ValueFormat = default,
-						ShowGraph = false,
-						ShowGraphIsEnabled = false,
-						Color = string.Empty,
-                        IsEntryEnabled = true
-					},
-
-                    // CPU Active Time Average
-                    new OverlayEntryWrapper("OnlineCpuActiveTimeAverage")
-                    {
-                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
-                        ShowOnOverlay = false,
-                        ShowOnOverlayIsEnabled = true,
-                        Description = "CPU Active Time Average (ms)",
-                        GroupName = "CPUBusy Avg",
-                        Value = "0",
-                        ValueFormat = default,
-                        ShowGraph = false,
-                        ShowGraphIsEnabled = false,
-                        Color = string.Empty,
-                        IsEntryEnabled = true
-                    },
-
-                    // Frame Time Average
-                    new OverlayEntryWrapper("OnlineFrameTimeAverage")
-					{
-						OverlayEntryType = EOverlayEntryType.OnlineMetric,
-						ShowOnOverlay = false,
-						ShowOnOverlayIsEnabled = true,
-						Description = "Frame Time Average (ms)",
-						GroupName = "Frametime Avg",
-						Value = "0",
-						ValueFormat = default,
-						ShowGraph = false,
-						ShowGraphIsEnabled = false,
-						Color = string.Empty,
-                        IsEntryEnabled = true
-					},
-
-                    // GPU Active Time Deviation
-                    new OverlayEntryWrapper("OnlineGpuActiveTimePercentageDeviation")
-					{
-						OverlayEntryType = EOverlayEntryType.OnlineMetric,
-						ShowOnOverlay = false,
-						ShowOnOverlayIsEnabled = true,
-						Description = "GPU Active Time Deviation (%)",
-						GroupName = "GPUBusy Deviation",
-						Value = "0",
-						ValueFormat = default,
-						ShowGraph = false,
-						ShowGraphIsEnabled = false,
-						Color = string.Empty,
-                        IsEntryEnabled = true
-					},
-
-                    // Stuttering percentage
-                    new OverlayEntryWrapper("OnlineStutteringPercentage")
-                    {
-                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
-                        ShowOnOverlay = false,
-                        ShowOnOverlayIsEnabled = true,
-                        Description = "Stuttering Time (%)",
-                        GroupName = "Stuttering",
-                        Value = "0",
-                        ValueFormat = default,
-                        ShowGraph = false,
-                        ShowGraphIsEnabled = false,
-                        Color = string.Empty,
-                        IsEntryEnabled = true
-                    },
-
                     // PC Latency
                     new OverlayEntryWrapper("OnlinePcLatency")
                     {
@@ -425,7 +232,8 @@ namespace CapFrameX.Overlay
                         ShowGraph = false,
                         ShowGraphIsEnabled = false,
                         Color = string.Empty,
-                        IsEntryEnabled = appConfiguration.UsePcLatency
+                        IsEntryEnabled = appConfiguration.UsePcLatency,
+                        SortKey = "1_1"
                     },
 
                     // Animation Error
@@ -441,7 +249,213 @@ namespace CapFrameX.Overlay
                         ShowGraph = false,
                         ShowGraphIsEnabled = false,
                         Color = string.Empty,
-                        IsEntryEnabled = true
+                        IsEntryEnabled = true,
+                        SortKey = "1_2"
+                    },
+
+                    // Online metrics
+                    // Average
+                    new OverlayEntryWrapper("OnlineAverage")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = true,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Real-time average FPS",
+                        GroupName = "Average",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = true,
+                        SortKey = "1_3"
+                    },
+
+                    // P1
+                    new OverlayEntryWrapper("OnlineP1")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Real-time P1 FPS",
+                        GroupName = "P1%",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = true,
+                        SortKey = "1_4"
+                    },
+
+                    // P0.1
+                    new OverlayEntryWrapper("OnlineP0dot1")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Real-time P0.1 FPS",
+                        GroupName = "P0.1%",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = true,
+                        SortKey = "1_5"
+                    },
+
+                    // P0.2
+                    new OverlayEntryWrapper("OnlineP0dot2")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Real-time P0.2 FPS",
+                        GroupName = "P0.2%",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = true,
+                        SortKey = "1_6"
+                    },
+
+                    // 1% Low
+                    new OverlayEntryWrapper("Online1PercentLow")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = true,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Real-time 1% Low FPS",
+                        GroupName = "1% Low",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = true,
+                        SortKey = "1_7"
+                    },
+
+                     // 0.1% Low
+                    new OverlayEntryWrapper("Online0dot1PercentLow")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Real-time 0.1% Low FPS",
+                        GroupName = "0.1% Low",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = true,
+                        SortKey = "1_8"
+                    },
+
+                    // 0.2% Low
+                    new OverlayEntryWrapper("Online0dot2PercentLow")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Real-time 0.2% Low FPS",
+                        GroupName = "0.2% Low",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = true,
+                        SortKey = "1_9"
+                    },
+
+                    // GPU Active Time Average
+                    new OverlayEntryWrapper("OnlineGpuActiveTimeAverage")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "GPU Active Time Average (ms)",
+                        GroupName = "GPUBusy Avg",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = true,
+                        SortKey = "1_10"
+                    },
+
+                    // CPU Active Time Average
+                    new OverlayEntryWrapper("OnlineCpuActiveTimeAverage")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "CPU Active Time Average (ms)",
+                        GroupName = "CPUBusy Avg",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = true,
+                        SortKey = "1_11"
+                    },
+
+                    // Frame Time Average
+                    new OverlayEntryWrapper("OnlineFrameTimeAverage")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Frame Time Average (ms)",
+                        GroupName = "Frametime Avg",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = true,
+                        SortKey = "1_12"
+                    },
+
+                    // GPU Active Time Deviation
+                    new OverlayEntryWrapper("OnlineGpuActiveTimePercentageDeviation")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "GPU Active Time Deviation (%)",
+                        GroupName = "GPUBusy Deviation",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = true,
+                        SortKey = "1_13"
+                    },
+
+                    // Stuttering percentage
+                    new OverlayEntryWrapper("OnlineStutteringPercentage")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Stuttering Time (%)",
+                        GroupName = "Stuttering",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = true,
+                        SortKey = "1_14"
                     },
 
                     // PMD
@@ -457,7 +471,8 @@ namespace CapFrameX.Overlay
                         ShowGraph = false,
                         ShowGraphIsEnabled = false,
                         Color = string.Empty,
-                        IsEntryEnabled = true
+                        IsEntryEnabled = true,
+                        SortKey = "1_15"
                     },
                     new OverlayEntryWrapper("PmdCpuPowerCurrent")
                     {
@@ -471,7 +486,8 @@ namespace CapFrameX.Overlay
                         ShowGraph = false,
                         ShowGraphIsEnabled = false,
                         Color = string.Empty,
-                        IsEntryEnabled = true
+                        IsEntryEnabled = true,
+                        SortKey = "1_16"
                     },
                     new OverlayEntryWrapper("PmdSystemPowerCurrent")
                     {
@@ -485,7 +501,8 @@ namespace CapFrameX.Overlay
                         ShowGraph = false,
                         ShowGraphIsEnabled = false,
                         Color = string.Empty,
-                        IsEntryEnabled = true
+                        IsEntryEnabled = true,
+                        SortKey = "1_17"
                     },
                      new OverlayEntryWrapper("BatteryLifePercent")
                     {
