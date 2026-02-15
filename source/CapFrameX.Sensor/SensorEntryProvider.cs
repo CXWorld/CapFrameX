@@ -28,9 +28,19 @@ namespace CapFrameX.Sensor
             var sensorEntries = await _sensorService.GetSensorEntries();
             var wrappedEntries = sensorEntries.Select(WrapSensorEntry);
 
-            if (!_sensorConfig.HasConfigFile
-              // reset config when hardware has changed
-              || _sensorConfig.SensorEntryCount != sensorEntries.Count())
+            // Detect hardware/library changes by comparing identifier sets,
+            // not just counts. This catches cases where sensor indices shifted
+            // between versions while the total number of sensors stayed the same.
+            bool needsReset = !_sensorConfig.HasConfigFile;
+
+            if (!needsReset)
+            {
+                var configCopy = _sensorConfig.GetSensorConfigCopy();
+                var currentIdentifiers = new HashSet<string>(sensorEntries.Select(e => e.Identifier));
+                needsReset = currentIdentifiers.Any(id => !configCopy.ContainsKey(id));
+            }
+
+            if (needsReset)
             {
                 var backupSensorConfig = _sensorConfig.GetSensorConfigCopy();
                 _sensorConfig.ResetConfig();
