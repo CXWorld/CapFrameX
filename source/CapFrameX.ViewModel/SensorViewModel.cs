@@ -296,7 +296,6 @@ namespace CapFrameX.ViewModel
             {
                 SensorReportItems.Add(item);
             }
-            ;
         }
 
         private void AggregateSensorDataOfSessions(IEnumerable<ISession> sessions)
