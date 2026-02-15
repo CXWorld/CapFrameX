@@ -822,7 +822,7 @@ internal sealed class Amd17Cpu : AmdCpu
             _power = new Sensor("Core #" + CoreId + " (SMU)", cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, cpu, cpu._settings)
             { PresentationSortKey = $"2_0_{id}" };
             _vcore = new Sensor("Core #" + CoreId + " VID", cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, cpu, cpu._settings)
-            { PresentationSortKey = $"3_0_{id}" };
+            { PresentationSortKey = $"4_0_{id}" };
 
             cpu.ActivateSensor(_clock);
             // cpu.ActivateSensor(_multiplier);

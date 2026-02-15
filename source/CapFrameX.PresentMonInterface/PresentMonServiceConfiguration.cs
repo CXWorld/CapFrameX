@@ -26,8 +26,8 @@ namespace CapFrameX.PresentMonInterface
             var arguments = string.Empty;
             if (RedirectOutputStream)
             {
-                arguments += "--restart_as_admin";
-                arguments += PARAMETER_SEPARATOR;
+                //arguments += "--restart_as_admin";
+                //arguments += PARAMETER_SEPARATOR;
                 arguments += "--stop_existing_session";
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--output_stdout";
@@ -64,8 +64,8 @@ namespace CapFrameX.PresentMonInterface
                     throw new ArgumentException("Process name must be set!");
                 }
 
-                arguments += "--restart_as_admin";
-                arguments += PARAMETER_SEPARATOR;
+                //arguments += "--restart_as_admin";
+                //arguments += PARAMETER_SEPARATOR;
                 arguments += "--stop_existing_session";
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--process_name";

@@ -240,10 +240,15 @@ namespace CapFrameX.ViewModel
                     }
                 });
             });
-            _sensorEntryProvider.ConfigChanged = () => SaveButtonIsEnable = true;
 
-            Task.Run(async () => await SetWrappedSensorEntries());
+            _sensorEntryProvider.ConfigChanged = () => SaveButtonIsEnable = true;
             SubscribeToUpdateSession();
+
+            Task.Run(async () =>
+            {
+                await _sensorService.SensorServiceCompletionSource.Task;
+                await SetWrappedSensorEntries();
+            });
         }
 
         private void OnResetToDefault()
@@ -290,7 +295,8 @@ namespace CapFrameX.ViewModel
             foreach (var item in items)
             {
                 SensorReportItems.Add(item);
-            };
+            }
+            ;
         }
 
         private void AggregateSensorDataOfSessions(IEnumerable<ISession> sessions)
@@ -306,7 +312,8 @@ namespace CapFrameX.ViewModel
                     foreach (var item in items)
                     {
                         SensorReportItems.Add(item);
-                    };
+                    }
+                    ;
                 });
             }
         }

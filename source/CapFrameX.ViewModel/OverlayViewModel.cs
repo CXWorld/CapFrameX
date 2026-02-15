@@ -11,10 +11,8 @@ using CapFrameX.Overlay;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.ViewModel.SubModels;
-using DynamicData;
 using GongSolutions.Wpf.DragDrop;
 using Prism.Commands;
-using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using System;
@@ -39,7 +37,6 @@ namespace CapFrameX.ViewModel
         private readonly IOverlayEntryProvider _overlayEntryProvider;
         private readonly IAppConfiguration _appConfiguration;
         private readonly IPathService _pathService;
-        private readonly IEventAggregator _eventAggregator;
         private readonly ISensorService _sensorService;
         private readonly IRTSSService _rTSSService;
         private readonly IThreadAffinityController _threadAffinityController;
@@ -538,23 +535,21 @@ namespace CapFrameX.ViewModel
 
         public OverlayGroupSeparating OverlaySubModelGroupSeparating { get; }
 
-        public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider,
-            IAppConfiguration appConfiguration, IPathService pathService, IEventAggregator eventAggregator, ISensorService sensorService, IRTSSService rTSSService,
-            IThreadAffinityController threadAffinityController, IOnlineMetricService onlineMetricService, IOverlayTemplateService overlayTemplateService)
+        public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider, IAppConfiguration appConfiguration,
+            IPathService pathService, ISensorService sensorService, IRTSSService rTSSService, IThreadAffinityController threadAffinityController, 
+            IOnlineMetricService onlineMetricService, IOverlayTemplateService overlayTemplateService)
         {
             _overlayService = overlayService;
             _overlayEntryProvider = overlayEntryProvider;
             _appConfiguration = appConfiguration;
             _pathService = pathService;
-            _eventAggregator = eventAggregator;
             _sensorService = sensorService;
             _rTSSService = rTSSService;
             _overlayTemplateService = overlayTemplateService;
-            _eventAggregator = eventAggregator;
             _threadAffinityController = threadAffinityController;
             _onlineMetricService = onlineMetricService;
 
-            // define submodels
+            // Define submodels
             OverlaySubModelGroupControl = new OverlayGroupControl(this);
             OverlaySubModelGroupSeparating = new OverlayGroupSeparating(this);
 
@@ -843,10 +838,12 @@ namespace CapFrameX.ViewModel
             // Apply the selected template
             _overlayTemplateService.ApplyTemplate(SelectedOverlayTemplate, clonedEntries);
 
-            // Sort entries by group, then by SortKey within each group
+            // Group entries by template section, sort groups by section order,
+            // then sort elements within each group by SortKey.
             var sortedEntries = clonedEntries
-                .OrderBy(entry => GetTemplateSortOrder(entry))
-                .ThenBy(entry => entry.SortKey, AlphanumericComparer.Instance)
+                .GroupBy(entry => GetTemplateSortOrder(entry))
+                .OrderBy(group => group.Key)
+                .SelectMany(group => group.OrderBy(entry => entry.SortKey, AlphanumericComparer.Instance))
                 .ToList();
 
             // Dispose old entries and replace with sorted and templated entries
@@ -902,10 +899,10 @@ namespace CapFrameX.ViewModel
             if (entry.Identifier == "Framerate" || entry.Identifier == "Frametime")
                 return 80;
 
-            // Template-enabled entries and non-template entries form separate groups
-            // so that sort keys from different namespaces never mix within a group.
-            // ApplyTemplate resets all ShowOnOverlay to false before enabling template entries,
-            // so ShowOnOverlay reliably identifies template-modified entries.
+            // Group entries by type so that sort keys from different hardware
+            // namespaces never mix. Within each type group the SortKey (derived
+            // from PresentationSortKey) controls the order, regardless of
+            // whether the entry is enabled or disabled.
 
             switch (entry.OverlayEntryType)
             {
@@ -918,16 +915,16 @@ namespace CapFrameX.ViewModel
                     return 10;
 
                 case EOverlayEntryType.GPU:
-                    return entry.ShowOnOverlay ? 20 : 25;
+                    return 20;
 
                 case EOverlayEntryType.CPU:
-                    return entry.ShowOnOverlay ? 40 : 45;
+                    return 40;
 
                 case EOverlayEntryType.RAM:
-                    return entry.ShowOnOverlay ? 60 : 65;
+                    return 60;
 
                 case EOverlayEntryType.OnlineMetric:
-                    return entry.ShowOnOverlay ? 70 : 75;
+                    return 70;
 
                 default:
                     return 90;

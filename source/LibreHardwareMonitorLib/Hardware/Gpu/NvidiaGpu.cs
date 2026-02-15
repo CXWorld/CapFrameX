@@ -21,7 +21,6 @@ internal sealed class NvidiaGpu : GenericGpu
 {
     private const int LoadIndexNvApiBase = 0;
     private const int LoadIndexPowerBase = 100;
-    private const int LoadIndexD3DNodeBase = 200;
     private const int LoadIndexMemory = 300;
 
     private uint _lastBlankCounter;
