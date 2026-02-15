@@ -1,4 +1,4 @@
-﻿using CapFrameX.Contracts.Sensor;
+using CapFrameX.Contracts.Sensor;
 using CapFrameX.Extensions;
 using CapFrameX.Monitoring.Contracts;
 using LibreHardwareMonitor.Hardware;
@@ -64,21 +64,43 @@ namespace CapFrameX.Sensor
                 Name = entry.Name,
                 SensorType = entry.SensorType,
                 HardwareType = entry.HardwareType,
+                HardwareName = entry.HardwareName,
                 UseForLogging = _sensorConfig.IsSelectedForLogging(entry.Identifier),
                 UpdateLogState = UpdateLogState
             };
         }
 
-        private void UpdateLogState(string identifier, bool useForLogging)
+        private void UpdateLogState(string identifier, string stableIdentifier, bool useForLogging)
         {
             ConfigChanged?.Invoke();
             _sensorConfig.SelectForLogging(identifier, useForLogging);
+            _sensorConfig.SelectStableForLogging(stableIdentifier, useForLogging);
         }
 
         private void SetIsActiveDefault(ISensorEntry sensor, Dictionary<string, bool> configCopy)
         {
-            var oldConfigStatus = configCopy.ContainsKey(sensor.Identifier) && configCopy[sensor.Identifier];
-            _sensorConfig.SelectForLogging(sensor.Identifier, oldConfigStatus || GetIsDefaultActiveSensor(sensor));
+            bool oldConfigStatus = false;
+
+            if (configCopy.ContainsKey(sensor.Identifier))
+            {
+                // Exact identifier match (same library version)
+                oldConfigStatus = configCopy[sensor.Identifier];
+            }
+            else
+            {
+                // Fallback: try stable identifier match from persisted stable config
+                var stableId = SensorIdentifierHelper.BuildStableIdentifier(sensor);
+                if (stableId != null)
+                {
+                    oldConfigStatus = _sensorConfig.IsSelectedForLoggingByStableId(stableId);
+                }
+            }
+
+            bool isActive = oldConfigStatus || GetIsDefaultActiveSensor(sensor);
+            _sensorConfig.SelectForLogging(sensor.Identifier, isActive);
+
+            var stableIdentifier = SensorIdentifierHelper.BuildStableIdentifier(sensor);
+            _sensorConfig.SelectStableForLogging(stableIdentifier, isActive);
         }
 
         public bool GetIsDefaultActiveSensor(ISensorEntry sensor)

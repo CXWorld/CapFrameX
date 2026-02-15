@@ -37,6 +37,8 @@ namespace CapFrameX.Overlay
 
         public string Identifier { get; }
 
+        public string StableIdentifier { get; set; }
+
         public string SortKey { get; set; } = "0_0_0_0_0";
 
         public EOverlayEntryType OverlayEntryType { get; set; }
@@ -289,6 +291,7 @@ namespace CapFrameX.Overlay
         {
             return new OverlayEntryWrapper(Identifier)
             {
+                StableIdentifier = StableIdentifier,
                 SortKey = SortKey,
                 Value = Value,
                 OverlayEntryType = OverlayEntryType,

@@ -17,5 +17,7 @@ namespace CapFrameX.PmcReader.Plugin
         public string SensorType { get; set; }
 
         public bool IsPresentationDefault { get; set; }
+
+        public string HardwareName { get; set; }
     }
 }

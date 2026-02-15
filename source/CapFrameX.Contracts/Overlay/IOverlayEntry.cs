@@ -14,6 +14,8 @@ namespace CapFrameX.Contracts.Overlay
     {
         string Identifier { get; }
 
+        string StableIdentifier { get; set; }
+
         EOverlayEntryType OverlayEntryType { get; }
 
         string Description { get; }
