@@ -312,8 +312,7 @@ namespace CapFrameX.ViewModel
                     foreach (var item in items)
                     {
                         SensorReportItems.Add(item);
-                    }
-                    ;
+                    }                   
                 });
             }
         }
