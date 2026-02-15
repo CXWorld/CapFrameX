@@ -499,6 +499,7 @@ namespace CapFrameX.Test.Mocks
         public string HardwareType { get; set; }
         public string SensorType { get; set; }
         public bool IsPresentationDefault { get; set; }
+        public string HardwareName { get; set; }
 
         // Value generation parameters
         public float BaseValue { get; set; }

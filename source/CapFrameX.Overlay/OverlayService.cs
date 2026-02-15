@@ -428,6 +428,7 @@ namespace CapFrameX.Overlay
         {
             return new OverlayEntryWrapper(sensor.Identifier.ToString())
             {
+                StableIdentifier = SensorIdentifierHelper.BuildStableIdentifier(sensor),
                 SortKey = sensor.SortKey,
                 Description = GetDescription(sensor),
                 OverlayEntryType = MapType(sensor.HardwareType),

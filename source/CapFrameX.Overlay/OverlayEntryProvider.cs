@@ -416,6 +416,23 @@ namespace CapFrameX.Overlay
             var sensorById = sensorOverlayEntryClones.ToDictionary(e => e.Identifier);
             var matchedSensorIds = new HashSet<string>();
 
+            // Build fallback lookup by (Description, OverlayEntryType) for migrating
+            // configs from older versions where sensor indices may have shifted.
+            // Only include entries with unique (Description, Type) combinations to avoid
+            // ambiguous matches (e.g. identical GPUs in multi-GPU setups).
+            var sensorByDescriptionAndType = sensorOverlayEntryClones
+                .GroupBy(e => (e.Description, e.OverlayEntryType))
+                .Where(g => g.Count() == 1)
+                .ToDictionary(g => g.Key, g => g.Single());
+
+            // Build lookup by StableIdentifier for version-stable config migration.
+            // Only include unique StableIdentifiers to avoid ambiguous matches (multi-GPU).
+            var sensorByStableId = sensorOverlayEntryClones
+                .Where(e => !string.IsNullOrEmpty(e.StableIdentifier))
+                .GroupBy(e => e.StableIdentifier)
+                .Where(g => g.Count() == 1)
+                .ToDictionary(g => g.Key, g => g.Single());
+
             var configOverlayEntries = new List<IOverlayEntry>();
             bool hasChanges = false;
 
@@ -474,11 +491,58 @@ namespace CapFrameX.Overlay
                 }
                 else
                 {
-                    // Sensor no longer exists in current hardware — removed
-                    hasChanges = true;
-                    _logger.LogInformation(
-                        "Sensor '{identifier}' ('{description}') no longer available. Removing from overlay config.",
-                        configEntry.Identifier, configEntry.Description);
+                    // Identifier not found in current hardware.
+                    // Try migration in order: StableIdentifier → Description+Type → remove.
+                    bool matched = false;
+
+                    // 1. Try StableIdentifier match (highest confidence after exact ID)
+                    if (isSensorType
+                        && !string.IsNullOrEmpty(configEntry.StableIdentifier)
+                        && sensorByStableId.TryGetValue(configEntry.StableIdentifier, out var stableMatchSensor)
+                        && !matchedSensorIds.Contains(stableMatchSensor.Identifier))
+                    {
+                        matchedSensorIds.Add(stableMatchSensor.Identifier);
+                        CopyUserConfig(configEntry, stableMatchSensor);
+                        stableMatchSensor.GroupName = configEntry.GroupName;
+                        configOverlayEntries.Add(stableMatchSensor);
+                        hasChanges = true;
+                        matched = true;
+
+                        _logger.LogInformation(
+                            "Sensor '{oldIdentifier}' migrated to '{newIdentifier}' via StableIdentifier '{stableId}'.",
+                            configEntry.Identifier, stableMatchSensor.Identifier, configEntry.StableIdentifier);
+                    }
+
+                    // 2. Try Description + OverlayEntryType fallback (for old configs without StableIdentifier)
+                    if (!matched)
+                    {
+                        var fallbackKey = (configEntry.Description, configEntry.OverlayEntryType);
+
+                        if (isSensorType
+                            && sensorByDescriptionAndType.TryGetValue(fallbackKey, out var fallbackSensor)
+                            && !matchedSensorIds.Contains(fallbackSensor.Identifier))
+                        {
+                            matchedSensorIds.Add(fallbackSensor.Identifier);
+                            CopyUserConfig(configEntry, fallbackSensor);
+                            fallbackSensor.GroupName = configEntry.GroupName;
+                            configOverlayEntries.Add(fallbackSensor);
+                            hasChanges = true;
+                            matched = true;
+
+                            _logger.LogInformation(
+                                "Sensor '{oldIdentifier}' migrated to '{newIdentifier}' via description match '{description}'.",
+                                configEntry.Identifier, fallbackSensor.Identifier, configEntry.Description);
+                        }
+                    }
+
+                    // 3. No match — sensor truly removed
+                    if (!matched)
+                    {
+                        hasChanges = true;
+                        _logger.LogInformation(
+                            "Sensor '{identifier}' ('{description}') no longer available. Removing from overlay config.",
+                            configEntry.Identifier, configEntry.Description);
+                    }
                 }
             }
 

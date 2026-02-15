@@ -34,5 +34,11 @@ namespace CapFrameX.Monitoring.Contracts
         void ResetEvaluate();
 
         Dictionary<string, bool> GetSensorConfigCopy();
+
+        bool IsSelectedForLoggingByStableId(string stableIdentifier);
+
+        void SelectStableForLogging(string stableIdentifier, bool isActive);
+
+        Dictionary<string, bool> GetStableSensorConfigCopy();
     }
 }

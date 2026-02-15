@@ -1,4 +1,4 @@
-﻿using CapFrameX.Monitoring.Contracts;
+using CapFrameX.Monitoring.Contracts;
 using Newtonsoft.Json;
 using Serilog;
 using System;
@@ -15,11 +15,16 @@ namespace CapFrameX.Sensor
         private static readonly string CONFIG_FILENAME =
             "SensorEntryConfiguration.json";
 
+        private static readonly string STABLE_CONFIG_FILENAME =
+            "SensorEntryConfigurationStable.json";
+
         private readonly string _sensorConfigFolder;
 
         private Dictionary<string, bool> _loggingSelectionDict;
 
         private Dictionary<string, bool> _defaultLoggingSelectionDict;
+
+        private Dictionary<string, bool> _stableLoggingSelectionDict;
 
         private Dictionary<string, bool> _overlaySelectionDict
             = new Dictionary<string, bool>();
@@ -65,6 +70,34 @@ namespace CapFrameX.Sensor
                 _loggingSelectionDict.Add(identifier, isActive);
         }
 
+        public bool IsSelectedForLoggingByStableId(string stableIdentifier)
+        {
+            if (stableIdentifier == null || _stableLoggingSelectionDict == null)
+                return false;
+
+            return _stableLoggingSelectionDict.TryGetValue(stableIdentifier, out bool isActive) && isActive;
+        }
+
+        public void SelectStableForLogging(string stableIdentifier, bool isActive)
+        {
+            if (stableIdentifier == null) return;
+
+            if (_stableLoggingSelectionDict == null)
+                _stableLoggingSelectionDict = new Dictionary<string, bool>();
+
+            if (_stableLoggingSelectionDict.ContainsKey(stableIdentifier))
+                _stableLoggingSelectionDict[stableIdentifier] = isActive;
+            else
+                _stableLoggingSelectionDict.Add(stableIdentifier, isActive);
+        }
+
+        public Dictionary<string, bool> GetStableSensorConfigCopy()
+        {
+            if (_stableLoggingSelectionDict == null) return new Dictionary<string, bool>();
+
+            return new Dictionary<string, bool>(_stableLoggingSelectionDict);
+        }
+
         public bool IsSelectedForOverlay(string identifier)
         {
             bool isSelected = false;
@@ -106,6 +139,16 @@ namespace CapFrameX.Sensor
                 {
                     await outputFile.WriteAsync(json);
                 }
+
+                // Save stable config alongside the main config
+                if (_stableLoggingSelectionDict != null && _stableLoggingSelectionDict.Any())
+                {
+                    var stableJson = JsonConvert.SerializeObject(_stableLoggingSelectionDict);
+                    using (StreamWriter outputFile = new StreamWriter(Path.Combine(_sensorConfigFolder, STABLE_CONFIG_FILENAME)))
+                    {
+                        await outputFile.WriteAsync(stableJson);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -114,7 +157,10 @@ namespace CapFrameX.Sensor
         }
 
         public void ResetConfig()
-            => _loggingSelectionDict?.Clear();
+        {
+            _loggingSelectionDict?.Clear();
+            _stableLoggingSelectionDict?.Clear();
+        }
 
         public void ResetEvaluate()
         {
@@ -133,10 +179,14 @@ namespace CapFrameX.Sensor
                 {
                     _loggingSelectionDict = new Dictionary<string, bool>(_defaultLoggingSelectionDict);
                 }
+
+                // Load stable config (non-fatal if missing)
+                _stableLoggingSelectionDict = await LoadStableConfig();
             }
             catch (Exception ex)
             {
                 _loggingSelectionDict = new Dictionary<string, bool>(_defaultLoggingSelectionDict);
+                _stableLoggingSelectionDict = new Dictionary<string, bool>();
                 Log.Logger.Error(ex, "Error while loading sensor config. Default config loading instead...");
             }
         }
@@ -148,6 +198,24 @@ namespace CapFrameX.Sensor
         {
             string json = await ReadAllTextAsync(Path.Combine(_sensorConfigFolder, CONFIG_FILENAME));
             return JsonConvert.DeserializeObject<Dictionary<string, bool>>(json);
+        }
+
+        private async Task<Dictionary<string, bool>> LoadStableConfig()
+        {
+            try
+            {
+                var path = Path.Combine(_sensorConfigFolder, STABLE_CONFIG_FILENAME);
+                if (!File.Exists(path))
+                    return new Dictionary<string, bool>();
+
+                string json = await ReadAllTextAsync(path);
+                return JsonConvert.DeserializeObject<Dictionary<string, bool>>(json)
+                    ?? new Dictionary<string, bool>();
+            }
+            catch
+            {
+                return new Dictionary<string, bool>();
+            }
         }
 
         private async Task<string> ReadAllTextAsync(string filePath)
