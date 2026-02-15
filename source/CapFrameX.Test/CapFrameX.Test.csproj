@@ -76,6 +76,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Data\CaptureManagerTest.cs" />
+    <Compile Include="Integration\PresentMonIntegrationTest.cs" />
     <Compile Include="Data\FileRecordInfoTest.cs" />
     <Compile Include="Extensions\ObservableExtensionsTest.cs" />
     <Compile Include="Extensions\StringExtensionsTest.cs" />
@@ -93,6 +94,7 @@
     <Compile Include="Statistics\FrametimeStatisticProviderTest.cs" />
     <Compile Include="TestHelper.cs" />
     <Compile Include="Updater\UpdateCheckTest.cs" />
+    <Compile Include="ViewModel\CaptureViewModelTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="TestRecordFiles\CustomFilenameWithoutComment.csv">
@@ -138,6 +140,10 @@
       <Project>{D328B391-432C-4A0E-9A7E-57A58AA592D4}</Project>
       <Name>CapFrameX.Data</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.EventAggregation\CapFrameX.EventAggregation.csproj">
+      <Project>{C3D082AE-BF05-4C83-B414-33CF7C420D4A}</Project>
+      <Name>CapFrameX.EventAggregation</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj">
       <Project>{a4559b99-7fcb-40ef-bf97-d293a2b7d6d3}</Project>
       <Name>CapFrameX.Extensions</Name>
@@ -170,6 +176,10 @@
       <Project>{5d12aa37-cc30-4476-94ad-11c15dc65518}</Project>
       <Name>CapFrameX.Updater</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.ViewModel\CapFrameX.ViewModel.csproj">
+      <Project>{AD4536B2-C977-4CB8-8540-866928671C2D}</Project>
+      <Name>CapFrameX.ViewModel</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX\CapFrameX.csproj">
       <Project>{aaa73d26-5cd6-4066-b84c-5bd34057b346}</Project>
       <Name>CapFrameX</Name>
@@ -201,6 +211,12 @@
     </Reference>
     <Reference Include="Moq, Version=4.13.0.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Moq.4.13.1\lib\net45\Moq.dll</HintPath>
+    </Reference>
+    <Reference Include="OxyPlot, Version=2.1.0.0, Culture=neutral, PublicKeyToken=638079a8f0bd61e9, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\OxyPlot.Core.2.1.0\lib\net45\OxyPlot.dll</HintPath>
+    </Reference>
+    <Reference Include="ParallelExtensionsExtras, Version=1.2.3.0, Culture=neutral, PublicKeyToken=665f4d61f853b5a9, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\ParallelExtensionsExtras.1.2.0.0\lib\net40\ParallelExtensionsExtras.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>

@@ -4,13 +4,12 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using LibreHardwareMonitor.PawnIo;
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using LibreHardwareMonitor.PawnIo;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
@@ -20,7 +19,7 @@ internal sealed class IntelCpu : GenericCpu
     private readonly Sensor _coreAvg;
     private readonly Sensor[] _coreClocks;
     private readonly Sensor _coreEffectiveAvg;
-    private readonly Sensor[] _coreEffectiveClocks;
+    private readonly Sensor[][] _threadEffectiveClocks;
     private readonly Sensor _coreEffectiveMax;
     private readonly Sensor _maxClock;
     private readonly Sensor _coreMax;
@@ -40,8 +39,9 @@ internal sealed class IntelCpu : GenericCpu
 
     private readonly IntelMsr _pawnModule;
     private readonly bool _hasAperfMperf;
-    private readonly ulong[] _lastAperf;
-    private readonly ulong[] _lastMperf;
+    private readonly ulong[][] _lastAperf;
+    private readonly ulong[][] _lastMperf;
+    private readonly DateTime[][] _lastSampleTime;
 
     public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
     {
@@ -450,21 +450,33 @@ internal sealed class IntelCpu : GenericCpu
             TryReadPerfCounters(_cpuId[0][0].Affinity, out _, out _))
         {
             _hasAperfMperf = true;
-            _coreEffectiveClocks = new Sensor[_coreCount];
-            _lastAperf = new ulong[_coreCount];
-            _lastMperf = new ulong[_coreCount];
+            _threadEffectiveClocks = new Sensor[_coreCount][];
+            _lastAperf = new ulong[_coreCount][];
+            _lastMperf = new ulong[_coreCount][];
+            _lastSampleTime = new DateTime[_coreCount][];
 
             int effectiveSensorIndex = _coreClocks.Length + 2;
-            for (int i = 0; i < _coreEffectiveClocks.Length; i++)
+            int totalThreadSensors = 0;
+            for (int i = 0; i < _coreCount; i++)
             {
-                _coreEffectiveClocks[i] = new Sensor($"{CoreString(i)} (Effective)", effectiveSensorIndex + i, SensorType.Clock, this, settings)
-                { PresentationSortKey = $"0_1_1_{i}" };
-                ActivateSensor(_coreEffectiveClocks[i]);
+                int threadCount = _cpuId[i].Length;
+                _threadEffectiveClocks[i] = new Sensor[threadCount];
+                _lastAperf[i] = new ulong[threadCount];
+                _lastMperf[i] = new ulong[threadCount];
+                _lastSampleTime[i] = new DateTime[threadCount];
+
+                for (int j = 0; j < threadCount; j++)
+                {
+                    _threadEffectiveClocks[i][j] = new Sensor($"Core #{i + 1} Thread #{j + 1} (Effective)", effectiveSensorIndex + totalThreadSensors, SensorType.Clock, this, settings)
+                    { PresentationSortKey = $"0_1_1_{i}_{j}" };
+                    ActivateSensor(_threadEffectiveClocks[i][j]);
+                    totalThreadSensors++;
+                }
             }
 
-            _coreEffectiveAvg = new Sensor("CPU Effective", effectiveSensorIndex + _coreEffectiveClocks.Length, SensorType.Clock, this, settings)
+            _coreEffectiveAvg = new Sensor("CPU Effective", effectiveSensorIndex + totalThreadSensors, SensorType.Clock, this, settings)
             { PresentationSortKey = "0_1_2" };
-            _coreEffectiveMax = new Sensor("CPU Max Effective", effectiveSensorIndex + _coreEffectiveClocks.Length + 1, SensorType.Clock, this, settings)
+            _coreEffectiveMax = new Sensor("CPU Max Effective", effectiveSensorIndex + totalThreadSensors + 1, SensorType.Clock, this, settings)
             { PresentationSortKey = "0_1_3" };
 
             ActivateSensor(_coreEffectiveAvg);
@@ -475,9 +487,10 @@ internal sealed class IntelCpu : GenericCpu
             _hasAperfMperf = false;
             _coreEffectiveAvg = null;
             _coreEffectiveMax = null;
-            _coreEffectiveClocks = Array.Empty<Sensor>();
-            _lastAperf = Array.Empty<ulong>();
-            _lastMperf = Array.Empty<ulong>();
+            _threadEffectiveClocks = Array.Empty<Sensor[]>();
+            _lastAperf = Array.Empty<ulong[]>();
+            _lastMperf = Array.Empty<ulong[]>();
+            _lastSampleTime = Array.Empty<DateTime[]>();
         }
 
         if (_microArchitecture is MicroArchitecture.Airmont or
@@ -776,47 +789,61 @@ internal sealed class IntelCpu : GenericCpu
 
         if (_hasAperfMperf)
         {
-            long sampleTime = Stopwatch.GetTimestamp();
             double effectiveSum = 0;
             double effectiveMax = 0;
             int effectiveCount = 0;
 
-            for (int i = 0; i < _coreEffectiveClocks.Length; i++)
+            for (int i = 0; i < _threadEffectiveClocks.Length; i++)
             {
-                if (!TryReadPerfCounters(_cpuId[i][0].Affinity, out ulong aperf, out ulong mperf))
+                for (int j = 0; j < _threadEffectiveClocks[i].Length; j++)
                 {
-                    _coreEffectiveClocks[i].Value = null;
-                    continue;
+                    DateTime sampleTime = DateTime.UtcNow;
+
+                    if (!TryReadPerfCounters(_cpuId[i][j].Affinity, out ulong aperf, out ulong mperf))
+                    {
+                        _threadEffectiveClocks[i][j].Value = null;
+                        continue;
+                    }
+
+                    if (aperf < _lastAperf[i][j] ||
+                        mperf < _lastMperf[i][j])
+                    {
+                        // Counter overflow - reset
+                        _lastAperf[i][j] = aperf;
+                        _lastMperf[i][j] = mperf;
+                        _lastSampleTime[i][j] = sampleTime;
+                        _threadEffectiveClocks[i][j].Value = null;
+                        continue;
+                    }
+
+                    TimeSpan sampleDuration = sampleTime - _lastSampleTime[i][j];
+                    ulong aperfDelta = aperf - _lastAperf[i][j];
+                    ulong mperfDelta = mperf - _lastMperf[i][j];
+                    _lastAperf[i][j] = aperf;
+                    _lastMperf[i][j] = mperf;
+                    _lastSampleTime[i][j] = sampleTime;
+
+                    if (aperfDelta == 0 || mperfDelta == 0 || sampleDuration.Ticks == 0)
+                    {
+                        _threadEffectiveClocks[i][j].Value = null;
+                        continue;
+                    }
+
+                    // Effective clock = APERF cycles / elapsed time (same approach as AMD)
+                    double freq = aperfDelta / (sampleDuration.TotalMilliseconds * 1000.0);
+
+                    // Clamp effective clock between 0 and core clock
+                    float maxClock = _coreClocks[i].Value ?? (float)TimeStampCounterFrequency;
+
+                    // Clamping must consider BCLK oc (max 10%) and Spread Spectrum Clocking (SSC) (1-2%)
+                    freq = Math.Max(0, Math.Min(freq, maxClock * 1.12));
+                    _threadEffectiveClocks[i][j].Value = (float)Math.Round(freq, 0);
+
+                    effectiveSum += freq;
+                    effectiveCount++;
+                    if (freq > effectiveMax)
+                        effectiveMax = freq;
                 }
-
-                if (aperf < _lastAperf[i] ||
-                    mperf < _lastMperf[i])
-                {
-                    _lastAperf[i] = aperf;
-                    _lastMperf[i] = mperf;
-                    _coreEffectiveClocks[i].Value = null;
-                    continue;
-                }
-
-                ulong aperfDelta = aperf - _lastAperf[i];
-                ulong mperfDelta = mperf - _lastMperf[i];
-                _lastAperf[i] = aperf;
-                _lastMperf[i] = mperf;
-
-                if (aperfDelta == 0 || mperfDelta == 0)
-                {
-                    _coreEffectiveClocks[i].Value = null;
-                    continue;
-                }
-
-                // Actual frequency = (APERF/MPERF ratio) × base frequency
-                double freq = (aperfDelta / (double)mperfDelta) * TimeStampCounterFrequency;
-                _coreEffectiveClocks[i].Value = (float)Math.Round(freq, 0);
-
-                effectiveSum += freq;
-                effectiveCount++;
-                if (freq > effectiveMax)
-                    effectiveMax = freq;
             }
 
             if (effectiveCount > 0)

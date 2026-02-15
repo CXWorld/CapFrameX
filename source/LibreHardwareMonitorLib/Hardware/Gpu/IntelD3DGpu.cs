@@ -15,9 +15,9 @@ internal class IntelD3dGpu : GenericGpu
     private readonly Sensor _sharedMemoryFree;
     private readonly string _deviceId;
     private readonly float _energyUnitMultiplier;
-    private readonly Sensor[] _nodeUsage;
-    private readonly DateTime[] _nodeUsagePrevTick;
-    private readonly long[] _nodeUsagePrevValue;
+    //private readonly Sensor[] _nodeUsage;
+    //private readonly DateTime[] _nodeUsagePrevTick;
+    //private readonly long[] _nodeUsagePrevValue;
     private readonly Sensor _powerSensor;
     private readonly Sensor _sharedMemoryUsage;
 
@@ -37,18 +37,18 @@ internal class IntelD3dGpu : GenericGpu
 
         if (deviceInfo.GpuDedicatedLimit > 0 || IsDiscreteGpu)
         {
-            _dedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings)
+            _dedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.Data, this, settings)
             { IsPresentationDefault = true, PresentationSortKey = $"{index}_1" };
         }
 
-        _sharedMemoryUsage = new Sensor("D3D Shared Memory Used", memorySensorIndex++, SensorType.SmallData, this, settings)
+        _sharedMemoryUsage = new Sensor("D3D Shared Memory Used", memorySensorIndex++, SensorType.Data, this, settings)
         { PresentationSortKey = $"{index}_2_0" };
 
         if (deviceInfo.GpuSharedLimit > 0)
         {
-            _sharedMemoryFree = new Sensor("D3D Shared Memory Free", memorySensorIndex++, SensorType.SmallData, this, settings)
+            _sharedMemoryFree = new Sensor("D3D Shared Memory Free", memorySensorIndex++, SensorType.Data, this, settings)
             { PresentationSortKey = $"{index}_3_1" };
-            _sharedMemoryLimit = new Sensor("D3D Shared Memory Total", memorySensorIndex++, SensorType.SmallData, this, settings)
+            _sharedMemoryLimit = new Sensor("D3D Shared Memory Total", memorySensorIndex++, SensorType.Data, this, settings)
             { PresentationSortKey = $"{index}_3_2" };
         }
 
@@ -68,18 +68,18 @@ internal class IntelD3dGpu : GenericGpu
             }
         }
 
-        _nodeUsage = new Sensor[deviceInfo.Nodes.Length];
-        _nodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
-        _nodeUsagePrevTick = new DateTime[deviceInfo.Nodes.Length];
+        //_nodeUsage = new Sensor[deviceInfo.Nodes.Length];
+        //_nodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
+        //_nodeUsagePrevTick = new DateTime[deviceInfo.Nodes.Length];
 
-        int nodeSensorIndex = 0;
-        foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
-        {
-            _nodeUsage[node.Id] = new Sensor(node.Name, nodeSensorIndex++, SensorType.Load, this, settings)
-            { PresentationSortKey = $"{index}_4_{nodeSensorIndex}" };
-            _nodeUsagePrevValue[node.Id] = node.RunningTime;
-            _nodeUsagePrevTick[node.Id] = node.QueryTime;
-        }
+        //int nodeSensorIndex = 0;
+        //foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
+        //{
+        //    _nodeUsage[node.Id] = new Sensor(node.Name, nodeSensorIndex++, SensorType.Load, this, settings)
+        //    { PresentationSortKey = $"{index}_4_{nodeSensorIndex}" };
+        //    _nodeUsagePrevValue[node.Id] = node.RunningTime;
+        //    _nodeUsagePrevTick[node.Id] = node.QueryTime;
+        //}
     }
 
     /// <inheritdoc />
@@ -93,13 +93,13 @@ internal class IntelD3dGpu : GenericGpu
         {
             if (_dedicatedMemoryUsage != null)
             {
-                _dedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024;
+                _dedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024 / 1024;
                 ActivateSensor(_dedicatedMemoryUsage);
             }
 
             if (_sharedMemoryLimit != null)
             {
-                _sharedMemoryLimit.Value = 1f * deviceInfo.GpuSharedLimit / 1024 / 1024;
+                _sharedMemoryLimit.Value = 1f * deviceInfo.GpuSharedLimit / 1024 / 1024 / 1024;
                 ActivateSensor(_sharedMemoryLimit);
                 if (_sharedMemoryUsage != null)
                 {
@@ -108,7 +108,7 @@ internal class IntelD3dGpu : GenericGpu
                 }
             }
 
-            _sharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024;
+            _sharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024 / 1024;
             ActivateSensor(_sharedMemoryUsage);
 
             if (_powerSensor != null && _pawnModule.ReadMsr(MSR_PP1_ENERGY_STATUS, out uint eax, out uint _))
@@ -123,19 +123,19 @@ internal class IntelD3dGpu : GenericGpu
                 }
             }
 
-            if (_nodeUsage.Length == deviceInfo.Nodes.Length)
-            {
-                foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
-                {
-                    long runningTimeDiff = node.RunningTime - _nodeUsagePrevValue[node.Id];
-                    long timeDiff = node.QueryTime.Ticks - _nodeUsagePrevTick[node.Id].Ticks;
+            //if (_nodeUsage.Length == deviceInfo.Nodes.Length)
+            //{
+            //    foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
+            //    {
+            //        long runningTimeDiff = node.RunningTime - _nodeUsagePrevValue[node.Id];
+            //        long timeDiff = node.QueryTime.Ticks - _nodeUsagePrevTick[node.Id].Ticks;
 
-                    _nodeUsage[node.Id].Value = 100f * runningTimeDiff / timeDiff;
-                    _nodeUsagePrevValue[node.Id] = node.RunningTime;
-                    _nodeUsagePrevTick[node.Id] = node.QueryTime;
-                    ActivateSensor(_nodeUsage[node.Id]);
-                }
-            }
+            //        _nodeUsage[node.Id].Value = 100f * runningTimeDiff / timeDiff;
+            //        _nodeUsagePrevValue[node.Id] = node.RunningTime;
+            //        _nodeUsagePrevTick[node.Id] = node.QueryTime;
+            //        ActivateSensor(_nodeUsage[node.Id]);
+            //    }
+            //}
         }
     }
 

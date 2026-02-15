@@ -200,6 +200,15 @@ namespace CapFrameX.ViewModel
                     GpuName = _systemInfo.GetGraphicCardName();
                 });
             });
+
+            Task.Factory.StartNew(async () =>
+            {
+                await Task.Delay(1000);
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    BenchlabViewModel.AutoStartPmdService();
+                });
+            });        
         }
 
         private void SubscribeToAggregatorEvents()

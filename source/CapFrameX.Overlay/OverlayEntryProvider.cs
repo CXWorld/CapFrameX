@@ -21,14 +21,28 @@ using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace CapFrameX.Overlay
 {
     public class OverlayEntryProvider : IOverlayEntryProvider
     {
+        [StructLayout(LayoutKind.Sequential)]
+        private struct SystemPowerStatus
+        {
+            public byte ACLineStatus;
+            public byte BatteryFlag;
+            public byte BatteryLifePercent;
+            public byte Reserved;
+            public int BatteryLifeTime;
+            public int BatteryFullLifeTime;
+        }
+
+        [DllImport("kernel32.dll")]
+        private static extern bool GetSystemPowerStatus(out SystemPowerStatus status);
+
         private readonly string _overlayConfigFolder;
 
         private static readonly HashSet<string> ONLINE_METRIC_NAMES = new HashSet<string>()
@@ -321,7 +335,7 @@ namespace CapFrameX.Overlay
             foreach (var entry in _overlayEntries)
             {
                 entry.UpdateShowOnOverlay = UpdateSensorIsActive;
-                _sensorConfig.SetSensorEvaluate(entry.Identifier, entry.ShowOnOverlay);
+                _sensorConfig.SelectForOverlay(entry.Identifier, entry.ShowOnOverlay);
                 _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
 
                 if (ONLINE_METRIC_NAMES.Contains(entry.Identifier) || entry.Identifier == "SystemTime"
@@ -356,7 +370,7 @@ namespace CapFrameX.Overlay
         private void UpdateSensorIsActive(string identifier, bool isShownOnOverlay)
         {
             if (identifier == null) return;
-            _sensorConfig.SetSensorEvaluate(identifier, isShownOnOverlay);
+            _sensorConfig.SelectForOverlay(identifier, isShownOnOverlay);
         }
 
         private void ManageFormats()
@@ -392,104 +406,114 @@ namespace CapFrameX.Overlay
             var overlayEntriesFromJson = JsonConvert.DeserializeObject<OverlayEntryPersistence>(json)
                 .OverlayEntries
                 .Where(entry => GetIsEntryEnabled(entry))
-                .ToBlockingCollection<IOverlayEntry>();
-
-            var sensorOverlayEntryClones = _overlayEntryCore.OverlayEntryDict.Values.Select(entry => entry.Clone()).ToList();
-            var sensorOverlayEntryDescriptions = sensorOverlayEntryClones
-                .Select(entry => entry.Description)
+                .Cast<IOverlayEntry>()
                 .ToList();
-            var sensorGpuOverlayEntryDescriptions = GetOverlayentries(sensorOverlayEntryClones, EOverlayEntryType.GPU);
-            var sensorCpuOverlayEntryDescriptions = GetOverlayentries(sensorOverlayEntryClones, EOverlayEntryType.CPU);
-            var sensorRamOverlayEntryDescriptions = GetOverlayentries(sensorOverlayEntryClones, EOverlayEntryType.RAM);
 
-
-            var configOverlayEntries = new List<IOverlayEntry>(overlayEntriesFromJson);
-
-            var configOverlayEntryDescriptions = configOverlayEntries
-                .Select(entry => entry.Description)
+            // Build lookup of current sensor entries by Identifier
+            var sensorOverlayEntryClones = _overlayEntryCore.OverlayEntryDict.Values
+                .Select(entry => entry.Clone())
                 .ToList();
-            var configGpuOverlayEntryDescriptions = GetOverlayentries(configOverlayEntries, EOverlayEntryType.GPU);
-            var configCpuOverlayEntryDescriptions = GetOverlayentries(configOverlayEntries, EOverlayEntryType.CPU);
-            var configRamOverlayEntryDescriptions = GetOverlayentries(configOverlayEntries, EOverlayEntryType.RAM);
+            var sensorById = sensorOverlayEntryClones.ToDictionary(e => e.Identifier);
+            var matchedSensorIds = new HashSet<string>();
 
+            var configOverlayEntries = new List<IOverlayEntry>();
+            bool hasChanges = false;
 
-            List<string> GetOverlayentries(List<IOverlayEntry> Clones, EOverlayEntryType type)
+            // Phase 1: Process loaded config entries in order, reconciling sensor entries
+            // by matching on both Identifier and Description for 100% certainty.
+            foreach (var configEntry in overlayEntriesFromJson)
             {
-                return Clones
-                .Where(entry => entry.OverlayEntryType == type)
-                .Select(entry => entry.Description)
-                .ToList();
-            }
+                bool isSensorType = configEntry.OverlayEntryType == EOverlayEntryType.GPU
+                    || configEntry.OverlayEntryType == EOverlayEntryType.CPU
+                    || configEntry.OverlayEntryType == EOverlayEntryType.RAM;
 
-            bool hasGpuChanged = !sensorGpuOverlayEntryDescriptions.IsEquivalent(configGpuOverlayEntryDescriptions);
-            bool hasCpuChanged = !sensorCpuOverlayEntryDescriptions.IsEquivalent(configCpuOverlayEntryDescriptions);
-            bool hasRamChanged = !sensorRamOverlayEntryDescriptions.IsEquivalent(configRamOverlayEntryDescriptions);
-            HasHardwareChanged = hasGpuChanged || hasCpuChanged || hasRamChanged;
-
-            if (HasHardwareChanged)
-            {
-                for (int i = 0; i < sensorOverlayEntryDescriptions.Count; i++)
+                if (!isSensorType)
                 {
-                    if (configOverlayEntryDescriptions.Contains(sensorOverlayEntryDescriptions[i]))
+                    // Non-sensor entries (CX, OnlineMetric, etc.): keep as-is from config
+                    configOverlayEntries.Add(configEntry);
+                    continue;
+                }
+
+                if (sensorById.TryGetValue(configEntry.Identifier, out var sensorEntry))
+                {
+                    // Sensor with matching ID exists in current hardware
+                    matchedSensorIds.Add(configEntry.Identifier);
+
+                    bool descriptionMatches = configEntry.Description == sensorEntry.Description;
+                    bool typeMatches = configEntry.OverlayEntryType == sensorEntry.OverlayEntryType;
+                    bool sortKeyMatches = configEntry.SortKey == sensorEntry.SortKey;
+
+                    // Transfer user configuration to the current sensor clone
+                    CopyUserConfig(configEntry, sensorEntry);
+
+                    if (!descriptionMatches)
                     {
-                        var configEntry = configOverlayEntries
-                            .Find(entry => entry.Description == sensorOverlayEntryDescriptions[i]);
-
-                        if (configEntry != null)
+                        if (typeMatches && sortKeyMatches)
                         {
-                            sensorOverlayEntryClones[i].ShowOnOverlay = configEntry.ShowOnOverlay;
-                            sensorOverlayEntryClones[i].ShowGraph = configEntry.ShowGraph;
-                            sensorOverlayEntryClones[i].Color = configEntry.Color;
-                            sensorOverlayEntryClones[i].ValueFontSize = configEntry.ValueFontSize;
-                            sensorOverlayEntryClones[i].UpperLimitValue = configEntry.UpperLimitValue;
-                            sensorOverlayEntryClones[i].LowerLimitValue = configEntry.LowerLimitValue;
-                            sensorOverlayEntryClones[i].GroupColor = configEntry.GroupColor;
-                            sensorOverlayEntryClones[i].GroupFontSize = configEntry.GroupFontSize;
-                            sensorOverlayEntryClones[i].GroupSeparators = configEntry.GroupSeparators;
-                            sensorOverlayEntryClones[i].UpperLimitColor = configEntry.UpperLimitColor;
-                            sensorOverlayEntryClones[i].LowerLimitColor = configEntry.LowerLimitColor;
+                            // ID, type and sort key all match — high confidence it's the same sensor
+                            // with a renamed description. Take over the saved group name for consistency.
+                            sensorEntry.GroupName = configEntry.GroupName;
 
-                            if (!sensorOverlayEntryClones[i].Description.Contains("Core"))
-                                sensorOverlayEntryClones[i].GroupName = configEntry.GroupName;
+                            _logger.LogInformation(
+                                "Sensor '{identifier}' description changed but ID/Type/SortKey match. Keeping saved group name '{groupName}'.",
+                                configEntry.Identifier, configEntry.GroupName);
+                        }
+                        else
+                        {
+                            // ID matches but type or sort key differ — uncertain match,
+                            // hide from overlay so user can verify and reactivate
+                            sensorEntry.ShowOnOverlay = false;
+                            hasChanges = true;
+                            _logger.LogInformation(
+                                "Sensor '{identifier}' changed (description: '{oldDescription}' -> '{newDescription}', type/sortKey mismatch). Disabling overlay display.",
+                                configEntry.Identifier, configEntry.Description, sensorEntry.Description);
                         }
                     }
+
+                    configOverlayEntries.Add(sensorEntry);
+                }
+                else
+                {
+                    // Sensor no longer exists in current hardware — removed
+                    hasChanges = true;
+                    _logger.LogInformation(
+                        "Sensor '{identifier}' ('{description}') no longer available. Removing from overlay config.",
+                        configEntry.Identifier, configEntry.Description);
                 }
             }
 
-            // check GPU changed 
-            if (hasGpuChanged)
+            // Phase 2: Add new sensors that weren't in the loaded config.
+            // Insert after the last entry of the same type to maintain grouping.
+            foreach (var sensorEntry in sensorOverlayEntryClones)
             {
-                _logger.LogInformation("GPU changed. Config has to be updated.");
-                InsertSensorEntries(EOverlayEntryType.GPU);
+                if (matchedSensorIds.Contains(sensorEntry.Identifier))
+                    continue;
+
+                // New sensor not present in saved config — add but don't show on overlay
+                sensorEntry.ShowOnOverlay = false;
+                hasChanges = true;
+
+                int insertIndex = -1;
+                for (int i = configOverlayEntries.Count - 1; i >= 0; i--)
+                {
+                    if (configOverlayEntries[i].OverlayEntryType == sensorEntry.OverlayEntryType)
+                    {
+                        insertIndex = i + 1;
+                        break;
+                    }
+                }
+
+                if (insertIndex >= 0)
+                    configOverlayEntries.Insert(insertIndex, sensorEntry);
+                else
+                    configOverlayEntries.Add(sensorEntry);
+
+                _logger.LogInformation(
+                    "New sensor '{identifier}' ('{description}') detected. Added to overlay config (hidden).",
+                    sensorEntry.Identifier, sensorEntry.Description);
             }
 
-            // check CPU changed 
-            if (hasCpuChanged)
-            {
-                _logger.LogInformation("CPU changed. Config has to be updated.");
-                InsertSensorEntries(EOverlayEntryType.CPU);
-            }
-
-            // check RAM changed
-            if (hasRamChanged)
-            {
-                _logger.LogInformation("RAM. Config has to be updated.");
-                InsertSensorEntries(EOverlayEntryType.RAM);
-            }
-
-            void InsertSensorEntries(EOverlayEntryType type)
-            {
-                var index = configOverlayEntries
-                    .TakeWhile(entry => entry.OverlayEntryType != type)
-                    .Count();
-
-                configOverlayEntries = configOverlayEntries
-                    .Where(entry => entry.OverlayEntryType != type)
-                    .ToList();
-
-                configOverlayEntries
-                    .InsertRange(index, sensorOverlayEntryClones.Where(entry => entry.OverlayEntryType == type));
-            }
+            HasHardwareChanged = hasChanges;
 
             // check separators
             var separatorDict = new Dictionary<string, int>();
@@ -529,6 +553,26 @@ namespace CapFrameX.Overlay
             }
 
             return configOverlayEntries.ToBlockingCollection();
+        }
+
+        /// <summary>
+        /// Copies user-configured display settings from a saved config entry to a current sensor entry.
+        /// </summary>
+        private static void CopyUserConfig(IOverlayEntry source, IOverlayEntry target)
+        {
+            target.ShowOnOverlay = source.ShowOnOverlay;
+            target.ShowGraph = source.ShowGraph;
+            target.Color = source.Color;
+            target.ValueFontSize = source.ValueFontSize;
+            target.UpperLimitValue = source.UpperLimitValue;
+            target.LowerLimitValue = source.LowerLimitValue;
+            target.GroupColor = source.GroupColor;
+            target.GroupFontSize = source.GroupFontSize;
+            target.GroupSeparators = source.GroupSeparators;
+            target.UpperLimitColor = source.UpperLimitColor;
+            target.LowerLimitColor = source.LowerLimitColor;
+
+            target.GroupName = source.GroupName;
         }
 
         private bool GetIsEntryEnabled(OverlayEntryWrapper entry)
@@ -665,10 +709,16 @@ namespace CapFrameX.Overlay
                         entry.Value = ShowSystemTimeSeconds ? DateTime.Now.ToString("HH:mm:ss") : DateTime.Now.ToString("HH:mm");
                         break;
                     case EOverlayEntryType.CX when entry.Identifier == "BatteryLifePercent":
-                        entry.Value = SystemInformation.PowerStatus.BatteryLifePercent * 100d;
+                        {
+                            GetSystemPowerStatus(out var powerStatus);
+                            entry.Value = powerStatus.BatteryLifePercent == 255 ? double.NaN : (double)powerStatus.BatteryLifePercent;
+                        }
                         break;
                     case EOverlayEntryType.CX when entry.Identifier == "BatteryLifeRemaining":
-                        entry.Value = SystemInformation.PowerStatus.BatteryLifeRemaining / 60d;
+                        {
+                            GetSystemPowerStatus(out var powerStatus);
+                            entry.Value = powerStatus.BatteryLifeTime == -1 ? double.NaN : powerStatus.BatteryLifeTime / 60d;
+                        }
                         break;
                     default:
                         break;

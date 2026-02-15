@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using CapFrameX.Monitoring.Contracts;
 using LibreHardwareMonitor.Hardware.Battery;
 using LibreHardwareMonitor.Hardware.Controller.AeroCool;
 using LibreHardwareMonitor.Hardware.Controller.AquaComputer;
@@ -37,6 +38,7 @@ public class Computer : IComputer
     private readonly object _lock = new();
     private readonly ISettings _settings;
     private readonly SimulationConfiguration _simulationConfiguration;
+    private readonly ISensorConfig _sensorConfig;
 
     private bool _batteryEnabled;
     private bool _controllerEnabled;
@@ -55,7 +57,7 @@ public class Computer : IComputer
     /// Creates a new <see cref="IComputer" /> instance with basic initial <see cref="Settings" />.
     /// </summary>
     public Computer()
-        : this(new Settings(), null)
+        : this(new Settings(), null, null)
     { }
 
     /// <summary>
@@ -63,7 +65,7 @@ public class Computer : IComputer
     /// </summary>
     /// <param name="settings">Computer settings that will be transferred to each <see cref="IHardware" />.</param>
     public Computer(ISettings settings)
-        : this(settings, null)
+        : this(settings, null, null)
     { }
 
     /// <summary>
@@ -71,7 +73,24 @@ public class Computer : IComputer
     /// </summary>
     /// <param name="simulationConfiguration">Simulation settings for CPU/GPU hardware.</param>
     public Computer(SimulationConfiguration simulationConfiguration)
-        : this(new Settings(), simulationConfiguration)
+        : this(new Settings(), simulationConfiguration, null)
+    { }
+
+    /// <summary>
+    /// Creates a new <see cref="IComputer" /> instance with simulation configuration and sensor config.
+    /// </summary>
+    /// <param name="simulationConfiguration">Simulation settings for CPU/GPU hardware.</param>
+    /// <param name="sensorConfig">Application sensor configuration.</param>
+    public Computer(SimulationConfiguration simulationConfiguration, ISensorConfig sensorConfig)
+        : this(new Settings(), simulationConfiguration, sensorConfig)
+    { }
+
+    /// <summary>
+    /// Creates a new <see cref="IComputer" /> instance with sensor config.
+    /// </summary>
+    /// <param name="sensorConfig">Application sensor configuration.</param>
+    public Computer(ISensorConfig sensorConfig)
+        : this(new Settings(), null, sensorConfig)
     { }
 
     /// <summary>
@@ -80,9 +99,20 @@ public class Computer : IComputer
     /// <param name="settings">Computer settings that will be transferred to each <see cref="IHardware" />.</param>
     /// <param name="simulationConfiguration">Simulation settings for CPU/GPU hardware.</param>
     public Computer(ISettings settings, SimulationConfiguration simulationConfiguration)
+        : this(settings, simulationConfiguration, null)
+    { }
+
+    /// <summary>
+    /// Creates a new <see cref="IComputer" /> instance with additional <see cref="ISettings" />, simulation configuration and sensor config.
+    /// </summary>
+    /// <param name="settings">Computer settings that will be transferred to each <see cref="IHardware" />.</param>
+    /// <param name="simulationConfiguration">Simulation settings for CPU/GPU hardware.</param>
+    /// <param name="sensorConfig">Application sensor configuration.</param>
+    public Computer(ISettings settings, SimulationConfiguration simulationConfiguration, ISensorConfig sensorConfig)
     {
         _settings = settings ?? new Settings();
         _simulationConfiguration = simulationConfiguration;
+        _sensorConfig = sensorConfig;
     }
 
     /// <inheritdoc />
@@ -204,7 +234,7 @@ public class Computer : IComputer
                     }
                     else
                     {
-                        Add(new NvidiaGroup(_settings));
+                        Add(new NvidiaGroup(_settings, _sensorConfig));
                         Add(new AmdGpuGroup(_settings));
                         Add(new IntelGpuGroup(GetIntelCpus(), _settings));
                     }
@@ -552,7 +582,7 @@ public class Computer : IComputer
             }
             else
             {
-                Add(new NvidiaGroup(_settings));
+                Add(new NvidiaGroup(_settings, _sensorConfig));
                 Add(new AmdGpuGroup(_settings));
                 Add(new IntelGpuGroup(GetIntelCpus(), _settings));
             }

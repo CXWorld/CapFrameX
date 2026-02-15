@@ -15,11 +15,30 @@ namespace LibreHardwareMonitor.Hardware.Gpu;
 /// </summary>
 public abstract class GenericGpu : Hardware
 {
+    private const int DISPLAY_CHECK_INTERVAL_MS = 2000;
+
+    /// <summary>
+    /// Lock object for display-related operations.
+    /// </summary>
     protected readonly object _displayLock = new();
+    /// <summary>
+    /// Buffer to store refresh rate values.
+    /// </summary>
     protected RefreshRateBuffer<float> _refreshRateBuffer;
+    /// <summary>
+    /// Current display associated with the GPU.
+    /// </summary>
     protected Display _display;
-    protected float _refreshRateCurrentWindowHandle;
+    /// <summary>
+    /// Current refresh rate of the window handle.
+    /// </summary>
+    protected float _refreshRateCurrentDisplay;
+    /// <summary>
+    /// Name of the display device. 
+    /// </summary>
     protected string _displayDeviceName;
+
+    private int _currentProcessId;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GenericGpu" /> class.
@@ -31,34 +50,63 @@ public abstract class GenericGpu : Hardware
     {
         _refreshRateBuffer = new RefreshRateBuffer<float>(2);
 
-        ProcessServiceProvider.ProcessService
+        var processChangeStream = ProcessServiceProvider.ProcessService
             .ProcessIdStream
             .DistinctUntilChanged()
-            .Subscribe(id =>
+            .Select(id => (ProcessId: id, IsProcessChange: true));
+
+        var periodicCheckStream = Observable
+            .Interval(TimeSpan.FromMilliseconds(DISPLAY_CHECK_INTERVAL_MS))
+            .Select(_ => (ProcessId: _currentProcessId, IsProcessChange: false));
+
+        processChangeStream
+            .Merge(periodicCheckStream)
+            .Subscribe(args =>
             {
                 lock (_displayLock)
                 {
-                    _refreshRateBuffer.Clear();
-
-                    if (id == 0)
+                    if (args.IsProcessChange)
                     {
+                        _currentProcessId = args.ProcessId;
+                    }
+
+                    if (args.ProcessId == 0)
+                    {
+                        if (_display != null)
+                        {
+                            _refreshRateBuffer.Clear();
+                        }
+
                         _display = null;
-                        _refreshRateCurrentWindowHandle = 0;
+                        _refreshRateCurrentDisplay = 0;
                         _displayDeviceName = null;
                     }
                     else
                     {
                         try
                         {
-                            var process = Process.GetProcessById(id);
-                            _display = new Display(process.MainWindowHandle);
-                            _refreshRateCurrentWindowHandle = _display.GetDisplayRefreshRate();
-                            _displayDeviceName = _display.GetDisplayDeviceName();
+                            var process = Process.GetProcessById(args.ProcessId);
+                            var newDisplay = new Display(process.MainWindowHandle);
+                            var newDisplayDeviceName = newDisplay.GetDisplayDeviceName();
+
+                            if (_displayDeviceName != newDisplayDeviceName)
+                            {
+                                _refreshRateBuffer.Clear();
+                                _displayDeviceName = newDisplayDeviceName;
+                            }
+
+                            _display = newDisplay;
+                            _refreshRateCurrentDisplay = _display.GetDisplayRefreshRate();
                         }
                         catch
                         {
+                            if (_display != null)
+                            {
+                                _refreshRateBuffer.Clear();
+                            }
+
                             _display = null;
-                            _refreshRateCurrentWindowHandle = 0;
+                            _refreshRateCurrentDisplay = 0;
                             _displayDeviceName = null;
                         }
                     }

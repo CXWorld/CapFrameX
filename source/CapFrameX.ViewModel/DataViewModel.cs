@@ -1319,9 +1319,18 @@ namespace CapFrameX.ViewModel
                 // Update PC latency
                 IsPcLatencyAvailable = _session.Runs.All(run => !run.CaptureData.PcLatency.IsNullOrEmpty()) && _session.Runs.All(run =>
                 {
-                    var filteredValues = run.CaptureData.PcLatency.Where(x => !double.IsNaN(x));
+                    var filteredValues = run.CaptureData.PcLatency.Where(x => !double.IsNaN(x) && x > 0);
 
                     if (!filteredValues.Any())
+                    {
+                        return false;
+                    }
+
+                    var validValueCount = filteredValues.Count();
+                    var totalValueCount = run.CaptureData.PcLatency.Length;
+
+                    // Allow 60% invalid values
+                    if (validValueCount < totalValueCount * 0.4f)
                     {
                         return false;
                     }
@@ -1342,8 +1351,8 @@ namespace CapFrameX.ViewModel
 
                 if (IsPcLatencyAvailable)
                 {
-                    var pcLatency = _session.Runs.Average(run => run.CaptureData.PcLatency.Where(x => !double.IsNaN(x)).Average());
-                    AvgPcLatency = $"PC Latency: {Math.Round(pcLatency, 1, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture)}ms";
+                    var averagePcLatency = _session.Runs.Average(run => run.CaptureData.PcLatency.Where(x => !double.IsNaN(x)).Average());
+                    AvgPcLatency = $"PC Latency: {Math.Round(averagePcLatency, 1, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture)}ms";
                 }
 
                 // Update Animation Error
@@ -1697,7 +1706,7 @@ namespace CapFrameX.ViewModel
                     new RowSeries
                     {
                         Title = RecordInfo.GameName,
-                        Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
+                        Fill = new SolidColorBrush(Color.FromRgb(0xFB, 0xBF, 0x24)),
                         Values = values,
                         DataLabels = true,
                         FontSize = 12,

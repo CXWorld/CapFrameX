@@ -4,6 +4,7 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using CapFrameX.Monitoring.Contracts;
 using LibreHardwareMonitor.Interop;
 using Microsoft.Win32;
 using System;
@@ -18,6 +19,11 @@ namespace LibreHardwareMonitor.Hardware.Gpu;
 
 internal sealed class NvidiaGpu : GenericGpu
 {
+    private const int LoadIndexNvApiBase = 0;
+    private const int LoadIndexPowerBase = 100;
+    private const int LoadIndexD3DNodeBase = 200;
+    private const int LoadIndexMemory = 300;
+
     private uint _lastBlankCounter;
 
     private readonly Stopwatch _stopwatch;
@@ -26,14 +32,14 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly int _clockVersion;
     private readonly Sensor[] _controls;
     private readonly string _d3dDeviceId;
-    private NvApi.NvDisplayHandle? _displayHandle;
+    private NvDisplayHandle? _displayHandle;
     private readonly IReadOnlyList<NvDisplayHandleInfo> _displayHandleInfos;
     private readonly Control[] _fanControls;
     private readonly Sensor[] _fans;
     private readonly Sensor _gpuDedicatedMemoryUsage;
-    private readonly Sensor[] _gpuNodeUsage;
-    private readonly DateTime[] _gpuNodeUsagePrevTick;
-    private readonly long[] _gpuNodeUsagePrevValue;
+    //private readonly Sensor[] _gpuNodeUsage;
+    //private readonly DateTime[] _gpuNodeUsagePrevTick;
+    //private readonly long[] _gpuNodeUsagePrevValue;
     private readonly Sensor _gpuSharedMemoryUsage;
     private readonly NvApi.NvPhysicalGpuHandle _handle;
     private readonly Sensor _hotSpotTemperature;
@@ -52,13 +58,15 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor[] _temperatures;
     private readonly uint _thermalSensorsMask;
     private readonly Sensor _monitorRefreshRate;
+    private readonly ISensorConfig _sensorConfig;
     private string _activeDisplayDeviceName;
 
-    public NvidiaGpu(int adapterIndex, NvApi.NvPhysicalGpuHandle handle, IReadOnlyList<NvDisplayHandleInfo> displayHandles, ISettings settings)
+    public NvidiaGpu(int adapterIndex, NvApi.NvPhysicalGpuHandle handle, IReadOnlyList<NvDisplayHandleInfo> displayHandles, ISettings settings, ISensorConfig sensorConfig = null)
         : base(GetName(handle), new Identifier("gpu-nvidia", adapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
     {
         _adapterIndex = adapterIndex;
         _handle = handle;
+        _sensorConfig = sensorConfig;
         _displayHandleInfos = displayHandles ?? Array.Empty<NvDisplayHandleInfo>();
         _displayHandle = _displayHandleInfos.Count > 0 ? _displayHandleInfos[0].Handle : null;
         _stopwatch = new Stopwatch();
@@ -259,7 +267,7 @@ internal sealed class NvidiaGpu : GenericGpu
         NvApi.NvDynamicPStatesInfo pStatesInfo = GetDynamicPstatesInfoEx(out status);
         if (status == NvApi.NvStatus.OK)
         {
-            var loads = new List<Sensor>();
+            Sensor[] loads = new Sensor[NvApi.MAX_GPU_UTILIZATIONS];
             for (int index = 0; index < pStatesInfo.Utilizations.Length; index++)
             {
                 NvApi.NvDynamicPState load = pStatesInfo.Utilizations[index];
@@ -270,18 +278,21 @@ internal sealed class NvidiaGpu : GenericGpu
 
                     if (name != null)
                     {
-                        loads.Add(new Sensor(name, index, SensorType.Load, this, settings)
-                        { IsPresentationDefault = name == "GPU Core", PresentationSortKey = $"{adapterIndex}_1_{index}" });
+                        loads[index] = new Sensor(name, LoadIndexNvApiBase + index, SensorType.Load, this, settings)
+                        { IsPresentationDefault = name == "GPU Core", PresentationSortKey = $"{adapterIndex}_1_{index}" };
                     }
                 }
             }
 
-            if (loads.Count > 0)
+            if (loads.Any(sensor => sensor != null))
             {
-                _loads = loads.ToArray();
+                _loads = loads;
 
                 foreach (Sensor sensor in loads)
-                    ActivateSensor(sensor);
+                {
+                    if (sensor != null)
+                        ActivateSensor(sensor);
+                }
             }
         }
         else
@@ -289,7 +300,7 @@ internal sealed class NvidiaGpu : GenericGpu
             NvApi.NvUsages usages = GetUsages(out status);
             if (status == NvApi.NvStatus.OK)
             {
-                var loads = new List<Sensor>();
+                Sensor[] loads = new Sensor[usages.Entries.Length];
                 for (int index = 0; index < usages.Entries.Length; index++)
                 {
                     NvApi.NvUsagesEntry load = usages.Entries[index];
@@ -300,18 +311,21 @@ internal sealed class NvidiaGpu : GenericGpu
 
                         if (name != null)
                         {
-                            loads.Add(new Sensor(name, index, SensorType.Load, this, settings)
-                            { PresentationSortKey = $"{adapterIndex}_1_{index}" });
+                            loads[index] = new Sensor(name, LoadIndexNvApiBase + index, SensorType.Load, this, settings)
+                            { PresentationSortKey = $"{adapterIndex}_1_{index}" };
                         }
                     }
                 }
 
-                if (loads.Count > 0)
+                if (loads.Any(sensor => sensor != null))
                 {
-                    _loads = loads.ToArray();
+                    _loads = loads;
 
                     foreach (Sensor sensor in loads)
-                        ActivateSensor(sensor);
+                    {
+                        if (sensor != null)
+                            ActivateSensor(sensor);
+                    }
                 }
             }
         }
@@ -333,7 +347,7 @@ internal sealed class NvidiaGpu : GenericGpu
 
                 if (name != null)
                 {
-                    _powers[i] = new Sensor(name, i + (_loads?.Length ?? 0), SensorType.Load, this, settings)
+                    _powers[i] = new Sensor(name, LoadIndexPowerBase + i, SensorType.Load, this, settings)
                     {
                         PresentationSortKey = $"{adapterIndex}_3_1_{i}"
                     };
@@ -391,8 +405,13 @@ internal sealed class NvidiaGpu : GenericGpu
                         string[] deviceIds = D3DDisplayDevice.GetDeviceIdentifiers();
                         if (deviceIds != null)
                         {
+                            //bool d3dDeviceInitialized = false;
+
                             foreach (string deviceId in deviceIds)
                             {
+                                //if (d3dDeviceInitialized)
+                                //    break;
+
                                 if (deviceId.IndexOf("VEN_" + pci.pciVendorId.ToString("X"), StringComparison.OrdinalIgnoreCase) != -1 &&
                                     deviceId.IndexOf("DEV_" + pci.pciDeviceId.ToString("X"), StringComparison.OrdinalIgnoreCase) != -1 &&
                                     deviceId.IndexOf("SUBSYS_" + pci.pciSubSystemId.ToString("X"), StringComparison.OrdinalIgnoreCase) != -1)
@@ -452,8 +471,6 @@ internal sealed class NvidiaGpu : GenericGpu
 
                                     if (isMatch && D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
                                     {
-                                        int sensorCount = (_loads?.Length ?? 0) + (_powers?.Length ?? 0);
-                                        int loadSensorIndex = sensorCount > 0 ? sensorCount + 1 : 0;
                                         int smallDataSensorIndex = 3; // There are three normal GPU memory sensors.
 
                                         _d3dDeviceId = deviceId;
@@ -463,17 +480,20 @@ internal sealed class NvidiaGpu : GenericGpu
                                         _gpuSharedMemoryUsage = new Sensor("GPU Memory Shared", smallDataSensorIndex, SensorType.Data, this, settings)
                                         { PresentationSortKey = $"{adapterIndex}_8_1" };
 
-                                        _gpuNodeUsage = new Sensor[deviceInfo.Nodes.Length];
-                                        _gpuNodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
-                                        _gpuNodeUsagePrevTick = new DateTime[deviceInfo.Nodes.Length];
+                                        //_gpuNodeUsage = new Sensor[deviceInfo.Nodes.Length];
+                                        //_gpuNodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
+                                        //_gpuNodeUsagePrevTick = new DateTime[deviceInfo.Nodes.Length];
 
-                                        foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
-                                        {
-                                            _gpuNodeUsage[node.Id] = new Sensor(node.Name, loadSensorIndex++, SensorType.Load, this, settings)
-                                            { PresentationSortKey = $"{adapterIndex}_10_{loadSensorIndex}" };
-                                            _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
-                                            _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
-                                        }
+                                        //foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
+                                        //{
+                                        //    int nodeSensorIndex = LoadIndexD3DNodeBase + (int)node.Id;
+                                        //    _gpuNodeUsage[node.Id] = new Sensor(node.Name, nodeSensorIndex, SensorType.Load, this, settings)
+                                        //    { PresentationSortKey = $"{adapterIndex}_10_{node.Id}" };
+                                        //    _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
+                                        //    _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
+                                        //}
+
+                                        //d3dDeviceInitialized = true;
                                     }
                                 }
                             }
@@ -489,7 +509,7 @@ internal sealed class NvidiaGpu : GenericGpu
         { PresentationSortKey = $"{adapterIndex}_8_3" };
         _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.Data, this, settings)
         { PresentationSortKey = $"{adapterIndex}_8_4" };
-        _memoryLoad = new Sensor("GPU Memory", 3, SensorType.Load, this, settings)
+        _memoryLoad = new Sensor("GPU Memory", LoadIndexMemory, SensorType.Load, this, settings)
         { PresentationSortKey = $"{adapterIndex}_8_5" };
 
         Update();
@@ -513,23 +533,24 @@ internal sealed class NvidiaGpu : GenericGpu
     {
         UpdateDisplayHandleIfNeeded();
 
-        if (_d3dDeviceId != null && D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+        if (_d3dDeviceId != null && ShouldEvaluateAnyD3DSensor() &&
+            D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
         {
             _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024 / 1024;
             _gpuSharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024 / 1024;
             ActivateSensor(_gpuDedicatedMemoryUsage);
             ActivateSensor(_gpuSharedMemoryUsage);
 
-            foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
-            {
-                long runningTimeDiff = node.RunningTime - _gpuNodeUsagePrevValue[node.Id];
-                long timeDiff = node.QueryTime.Ticks - _gpuNodeUsagePrevTick[node.Id].Ticks;
+            //foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
+            //{
+            //    long runningTimeDiff = node.RunningTime - _gpuNodeUsagePrevValue[node.Id];
+            //    long timeDiff = node.QueryTime.Ticks - _gpuNodeUsagePrevTick[node.Id].Ticks;
 
-                _gpuNodeUsage[node.Id].Value = 100f * runningTimeDiff / timeDiff;
-                _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
-                _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
-                ActivateSensor(_gpuNodeUsage[node.Id]);
-            }
+            //    _gpuNodeUsage[node.Id].Value = 100f * runningTimeDiff / timeDiff;
+            //    _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
+            //    _gpuNodeUsagePrevTick[node.Id] = node.QueryTime;
+            //    ActivateSensor(_gpuNodeUsage[node.Id]);
+            //}
         }
 
         NvApi.NvStatus status;
@@ -653,7 +674,10 @@ internal sealed class NvidiaGpu : GenericGpu
                 {
                     NvApi.NvDynamicPState load = pStatesInfo.Utilizations[index];
                     if (load.IsPresent && Enum.IsDefined(typeof(NvApi.NvUtilizationDomain), index))
-                        _loads[index].Value = load.Percentage;
+                    {
+                        if (index < _loads.Length && _loads[index] != null)
+                            _loads[index].Value = load.Percentage;
+                    }
                 }
             }
             else
@@ -665,13 +689,16 @@ internal sealed class NvidiaGpu : GenericGpu
                     {
                         NvApi.NvUsagesEntry load = usages.Entries[index];
                         if (load.IsPresent > 0 && Enum.IsDefined(typeof(NvApi.NvUtilizationDomain), index))
-                            _loads[index].Value = load.Percentage;
+                        {
+                            if (index < _loads.Length && _loads[index] != null)
+                                _loads[index].Value = load.Percentage;
+                        }
                     }
                 }
             }
         }
 
-        if (_powers is { Length: > 0 })
+        if (_powers is { Length: > 0 } && ShouldEvaluateAnyPowerSensor())
         {
             NvApi.NvPowerTopology powerTopology = GetPowerTopology(out status);
             if (status == NvApi.NvStatus.OK && powerTopology.Count > 0)
@@ -716,7 +743,7 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        if (_monitorRefreshRate is not null && _displayHandle.HasValue)
+        if (_monitorRefreshRate is not null && _displayHandle.HasValue && ShouldEvaluateMonitorRefreshRateSensor())
         {
             NvApi.NvStatus blankCounterStatus = NvApi.NvAPI_GetVBlankCounter(_displayHandle.Value, out uint blankCounter);
             if (blankCounterStatus == NvApi.NvStatus.OK)
@@ -729,7 +756,7 @@ internal sealed class NvidiaGpu : GenericGpu
                     var currentRefreshRate = (float)(blankCounter - _lastBlankCounter) / deltaTicks * Stopwatch.Frequency;
                     _refreshRateBuffer.Add(currentRefreshRate);
                     var refreshRateFiltered = (float)Math.Ceiling(_refreshRateBuffer.RefreshRates.Average());
-                    _monitorRefreshRate.Value = refreshRateFiltered > _refreshRateCurrentWindowHandle ? _refreshRateCurrentWindowHandle : refreshRateFiltered;
+                    _monitorRefreshRate.Value = refreshRateFiltered > _refreshRateCurrentDisplay ? _refreshRateCurrentDisplay : refreshRateFiltered;
                 }
 
                 _lastBlankCounter = blankCounter;
@@ -738,26 +765,35 @@ internal sealed class NvidiaGpu : GenericGpu
 
         if (NvidiaML.IsAvailable && _nvmlDevice.HasValue)
         {
-            int? result = NvidiaML.NvmlDeviceGetPowerUsage(_nvmlDevice.Value);
-            if (result.HasValue)
+            if (ShouldEvaluatePowerUsageSensor())
             {
-                _powerUsage.Value = result.Value / 1000f;
-                ActivateSensor(_powerUsage);
+                int? result = NvidiaML.NvmlDeviceGetPowerUsage(_nvmlDevice.Value);
+                if (result.HasValue)
+                {
+                    _powerUsage.Value = result.Value / 1000f;
+                    ActivateSensor(_powerUsage);
+                }
             }
 
             // In MB/s, throughput sensors are passed as in KB/s.
-            uint? rx = NvidiaML.NvmlDeviceGetPcieThroughput(_nvmlDevice.Value, NvidiaML.NvmlPcieUtilCounter.RxBytes);
-            if (rx.HasValue)
+            if (ShouldEvaluatePcieRxSensor())
             {
-                _pcieThroughputRx.Value = rx / (1024f * 1024f);
-                ActivateSensor(_pcieThroughputRx);
+                uint? rx = NvidiaML.NvmlDeviceGetPcieThroughput(_nvmlDevice.Value, NvidiaML.NvmlPcieUtilCounter.RxBytes);
+                if (rx.HasValue)
+                {
+                    _pcieThroughputRx.Value = rx / (1024f * 1024f);
+                    ActivateSensor(_pcieThroughputRx);
+                }
             }
 
-            uint? tx = NvidiaML.NvmlDeviceGetPcieThroughput(_nvmlDevice.Value, NvidiaML.NvmlPcieUtilCounter.TxBytes);
-            if (tx.HasValue)
+            if (ShouldEvaluatePcieTxSensor())
             {
-                _pcieThroughputTx.Value = tx / (1024f * 1024f);
-                ActivateSensor(_pcieThroughputTx);
+                uint? tx = NvidiaML.NvmlDeviceGetPcieThroughput(_nvmlDevice.Value, NvidiaML.NvmlPcieUtilCounter.TxBytes);
+                if (tx.HasValue)
+                {
+                    _pcieThroughputTx.Value = tx / (1024f * 1024f);
+                    ActivateSensor(_pcieThroughputTx);
+                }
             }
         }
     }
@@ -773,8 +809,7 @@ internal sealed class NvidiaGpu : GenericGpu
                 Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvDisplayDriverVersion>(1)
             };
 
-            if (NvApi.NvAPI_GetDisplayDriverVersion(_displayHandle.Value,
-              ref driverVersion) == NvStatus.OK)
+            if (NvApi.NvAPI_GetDisplayDriverVersion(_displayHandle.Value, ref driverVersion) == NvStatus.OK)
             {
                 r.Append(driverVersion.DriverVersion / 100);
                 r.Append(".");
@@ -786,6 +821,87 @@ internal sealed class NvidiaGpu : GenericGpu
             return base.GetDriverVersion();
 
         return r.ToString();
+    }
+
+    private bool ShouldEvaluateAnyD3DSensor()
+    {
+        if (_sensorConfig == null)
+            return true;
+
+        if (_gpuDedicatedMemoryUsage != null && _sensorConfig.GetSensorEvaluate(_gpuDedicatedMemoryUsage.Identifier.ToString()))
+            return true;
+
+        if (_gpuSharedMemoryUsage != null && _sensorConfig.GetSensorEvaluate(_gpuSharedMemoryUsage.Identifier.ToString()))
+            return true;
+
+        //if (_gpuNodeUsage is { Length: > 0 })
+        //{
+        //    foreach (Sensor sensor in _gpuNodeUsage)
+        //    {
+        //        if (sensor != null && _sensorConfig.GetSensorEvaluate(sensor.Identifier.ToString()))
+        //            return true;
+        //    }
+        //}
+
+        return false;
+    }
+
+    private bool ShouldEvaluateAnyPowerSensor()
+    {
+        if (_sensorConfig == null)
+            return true;
+
+        foreach (Sensor sensor in _powers)
+        {
+            if (sensor != null && _sensorConfig.GetSensorEvaluate(sensor.Identifier.ToString()))
+                return true;
+        }
+
+        return false;
+    }
+
+    private bool ShouldEvaluatePowerUsageSensor()
+    {
+        if (_powerUsage == null)
+            return false;
+
+        if (_sensorConfig == null)
+            return true;
+
+        return _sensorConfig.GetSensorEvaluate(_powerUsage.Identifier.ToString());
+    }
+
+    private bool ShouldEvaluatePcieRxSensor()
+    {
+        if (_pcieThroughputRx == null)
+            return false;
+
+        if (_sensorConfig == null)
+            return true;
+
+        return _sensorConfig.GetSensorEvaluate(_pcieThroughputRx.Identifier.ToString());
+    }
+
+    private bool ShouldEvaluatePcieTxSensor()
+    {
+        if (_pcieThroughputTx == null)
+            return false;
+
+        if (_sensorConfig == null)
+            return true;
+
+        return _sensorConfig.GetSensorEvaluate(_pcieThroughputTx.Identifier.ToString());
+    }
+
+    private bool ShouldEvaluateMonitorRefreshRateSensor()
+    {
+        if (_monitorRefreshRate == null)
+            return false;
+
+        if (_sensorConfig == null)
+            return true;
+
+        return _sensorConfig.GetSensorEvaluate(_monitorRefreshRate.Identifier.ToString());
     }
 
     public override string GetReport()
@@ -1315,19 +1431,13 @@ internal sealed class NvidiaGpu : GenericGpu
         lock (_displayLock)
         {
             displayDeviceName = _displayDeviceName;
-        }
 
-        if (string.Equals(displayDeviceName, _activeDisplayDeviceName, StringComparison.OrdinalIgnoreCase))
-            return;
-
-        NvApi.NvDisplayHandle? selectedHandle = SelectDisplayHandle(displayDeviceName);
-
-        lock (_displayLock)
-        {
             if (string.Equals(displayDeviceName, _activeDisplayDeviceName, StringComparison.OrdinalIgnoreCase))
                 return;
 
             _activeDisplayDeviceName = displayDeviceName;
+            NvDisplayHandle? selectedHandle = SelectDisplayHandle(displayDeviceName);
+
             if (!HandlesEqual(_displayHandle, selectedHandle))
             {
                 _displayHandle = selectedHandle;
@@ -1369,7 +1479,7 @@ internal sealed class NvidiaGpu : GenericGpu
         if (!trimmed.StartsWith(@"\\.\", StringComparison.OrdinalIgnoreCase) &&
             trimmed.StartsWith("DISPLAY", StringComparison.OrdinalIgnoreCase))
         {
-            trimmed = @"\\.\\" + trimmed;
+            trimmed = @"\\.\" + trimmed;
         }
 
         return trimmed.ToUpperInvariant();

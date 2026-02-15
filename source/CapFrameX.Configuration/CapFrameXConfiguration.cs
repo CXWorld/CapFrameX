@@ -158,6 +158,24 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool BenchlabUpdateCharts
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool PoweneticsUpdateCharts
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool BenchlabAutoStartPmd
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
         public bool UseDisplayChangeMetrics
         {
             get => Get<bool>(false);
@@ -689,17 +707,17 @@ namespace CapFrameX.Configuration
 
         public string FirstMetricBarColor
         {
-            get => Get<string>("#2297F3");
+            get => Get<string>("#3AA0FF");
             set => Set(value);
         }
         public string SecondMetricBarColor
         {
-            get => Get<string>("#F17D20");
+            get => Get<string>("#E879F9");
             set => Set(value);
         }
         public string ThirdMetricBarColor
         {
-            get => Get<string>("#FFB400");
+            get => Get<string>("#FBBF24");
             set => Set(value);
         }
         public bool ComparisonRangeSliderRealTime

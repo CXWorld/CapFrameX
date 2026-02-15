@@ -15,7 +15,6 @@ namespace CapFrameX.ViewModel.SubModels
 {
     public class PoweneticsViewModel : PmdViewModelBase
     {
-        private bool _updateCharts = true;
         private bool _updateMetrics = true;
         private bool _usePmdService;
         private string _sampleRate = "0 [1/s]";
@@ -85,10 +84,10 @@ namespace CapFrameX.ViewModel.SubModels
 
         public bool UpdateCharts
         {
-            get => _updateCharts;
+            get => _appConfiguration.PoweneticsUpdateCharts;
             set
             {
-                _updateCharts = value;
+                _appConfiguration.PoweneticsUpdateCharts = value;
                 ManageChartsUpdate();
                 RaisePropertyChanged();
             }
@@ -222,7 +221,7 @@ namespace CapFrameX.ViewModel.SubModels
 
         internal void ManageChartsUpdate()
         {
-            if (!_updateCharts)
+            if (!UpdateCharts)
             {
                 _pmdDataChartManager.ResetRealTimePlotModels();
                 _chartaDataBuffer.Clear();

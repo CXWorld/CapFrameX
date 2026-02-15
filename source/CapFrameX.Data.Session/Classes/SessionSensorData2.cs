@@ -32,7 +32,7 @@ namespace CapFrameX.Data.Session.Classes
         [JsonIgnore]
         public int[] CpuMaxThreadUsage { get => Values.FirstOrDefault(c => c.Name.Contains("CPU Max") && c.Type == "Load")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
         [JsonIgnore]
-        public int[] CpuMaxClock { get => Values.FirstOrDefault(c => c.Name.Contains("CPU Max") && c.Type == "Clock")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
+        public int[] CpuMaxClock { get => Values.FirstOrDefault(c => c.Name.Equals("CPU Max") && c.Type == "Clock")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
         [JsonIgnore]
         public int[] CpuPower { get => Values.FirstOrDefault(c => c.Name.Contains("CPU Package") && c.Type == "Power")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
         [JsonIgnore]

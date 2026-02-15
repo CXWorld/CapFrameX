@@ -64,10 +64,11 @@
             // configSelect
             // 
             this.configSelect.HideSelection = false;
-            this.configSelect.Location = new System.Drawing.Point(12, 34);
+            this.configSelect.Location = new System.Drawing.Point(16, 42);
+            this.configSelect.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.configSelect.MultiSelect = false;
             this.configSelect.Name = "configSelect";
-            this.configSelect.Size = new System.Drawing.Size(682, 85);
+            this.configSelect.Size = new System.Drawing.Size(908, 104);
             this.configSelect.TabIndex = 1;
             this.configSelect.UseCompatibleStateImageBehavior = false;
             this.configSelect.View = System.Windows.Forms.View.List;
@@ -75,9 +76,10 @@
             // 
             // applyConfigButton
             // 
-            this.applyConfigButton.Location = new System.Drawing.Point(12, 125);
+            this.applyConfigButton.Location = new System.Drawing.Point(16, 154);
+            this.applyConfigButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.applyConfigButton.Name = "applyConfigButton";
-            this.applyConfigButton.Size = new System.Drawing.Size(75, 23);
+            this.applyConfigButton.Size = new System.Drawing.Size(100, 28);
             this.applyConfigButton.TabIndex = 2;
             this.applyConfigButton.Text = "Apply Config";
             this.applyConfigButton.UseVisualStyleBackColor = true;
@@ -89,9 +91,10 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.monitoringListView.HideSelection = false;
-            this.monitoringListView.Location = new System.Drawing.Point(12, 154);
+            this.monitoringListView.Location = new System.Drawing.Point(16, 190);
+            this.monitoringListView.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.monitoringListView.Name = "monitoringListView";
-            this.monitoringListView.Size = new System.Drawing.Size(1004, 284);
+            this.monitoringListView.Size = new System.Drawing.Size(1337, 349);
             this.monitoringListView.TabIndex = 3;
             this.monitoringListView.UseCompatibleStateImageBehavior = false;
             this.monitoringListView.View = System.Windows.Forms.View.Details;
@@ -99,27 +102,30 @@
             // cpuidLabel
             // 
             this.cpuidLabel.AutoSize = true;
-            this.cpuidLabel.Location = new System.Drawing.Point(9, 5);
+            this.cpuidLabel.Location = new System.Drawing.Point(12, 6);
+            this.cpuidLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.cpuidLabel.Name = "cpuidLabel";
-            this.cpuidLabel.Size = new System.Drawing.Size(35, 13);
+            this.cpuidLabel.Size = new System.Drawing.Size(44, 16);
             this.cpuidLabel.TabIndex = 4;
             this.cpuidLabel.Text = "label1";
             // 
             // configListLabel
             // 
             this.configListLabel.AutoSize = true;
-            this.configListLabel.Location = new System.Drawing.Point(9, 18);
+            this.configListLabel.Location = new System.Drawing.Point(12, 22);
+            this.configListLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.configListLabel.Name = "configListLabel";
-            this.configListLabel.Size = new System.Drawing.Size(178, 13);
+            this.configListLabel.Size = new System.Drawing.Size(221, 16);
             this.configListLabel.TabIndex = 5;
             this.configListLabel.Text = "Core PMC Configurations (pick one):";
             // 
             // errorLabel
             // 
             this.errorLabel.AutoSize = true;
-            this.errorLabel.Location = new System.Drawing.Point(193, 18);
+            this.errorLabel.Location = new System.Drawing.Point(257, 22);
+            this.errorLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.errorLabel.Name = "errorLabel";
-            this.errorLabel.Size = new System.Drawing.Size(34, 13);
+            this.errorLabel.Size = new System.Drawing.Size(43, 16);
             this.errorLabel.TabIndex = 6;
             this.errorLabel.Text = "(error)";
             // 
@@ -128,10 +134,11 @@
             this.L3ConfigSelect.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.L3ConfigSelect.HideSelection = false;
-            this.L3ConfigSelect.Location = new System.Drawing.Point(13, 457);
+            this.L3ConfigSelect.Location = new System.Drawing.Point(17, 562);
+            this.L3ConfigSelect.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.L3ConfigSelect.MultiSelect = false;
             this.L3ConfigSelect.Name = "L3ConfigSelect";
-            this.L3ConfigSelect.Size = new System.Drawing.Size(512, 63);
+            this.L3ConfigSelect.Size = new System.Drawing.Size(681, 77);
             this.L3ConfigSelect.TabIndex = 7;
             this.L3ConfigSelect.UseCompatibleStateImageBehavior = false;
             this.L3ConfigSelect.View = System.Windows.Forms.View.List;
@@ -141,31 +148,33 @@
             this.L3CacheConfigLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.L3CacheConfigLabel.AutoSize = true;
-            this.L3CacheConfigLabel.Location = new System.Drawing.Point(10, 441);
+            this.L3CacheConfigLabel.Location = new System.Drawing.Point(13, 543);
+            this.L3CacheConfigLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.L3CacheConfigLabel.Name = "L3CacheConfigLabel";
-            this.L3CacheConfigLabel.Size = new System.Drawing.Size(202, 13);
+            this.L3CacheConfigLabel.Size = new System.Drawing.Size(248, 16);
             this.L3CacheConfigLabel.TabIndex = 8;
             this.L3CacheConfigLabel.Text = "L3 Cache PMC Configurations (pick one):";
             // 
             // applyL3ConfigButton
             // 
             this.applyL3ConfigButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.applyL3ConfigButton.Location = new System.Drawing.Point(13, 527);
+            this.applyL3ConfigButton.Location = new System.Drawing.Point(17, 649);
+            this.applyL3ConfigButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.applyL3ConfigButton.Name = "applyL3ConfigButton";
-            this.applyL3ConfigButton.Size = new System.Drawing.Size(94, 23);
+            this.applyL3ConfigButton.Size = new System.Drawing.Size(125, 28);
             this.applyL3ConfigButton.TabIndex = 9;
             this.applyL3ConfigButton.Text = "Apply L3 Config";
             this.applyL3ConfigButton.UseVisualStyleBackColor = true;
             this.applyL3ConfigButton.Click += new System.EventHandler(this.applyL3ConfigButton_Click);
-            //
+            // 
             // L3MonitoringListView
-            //
-            this.L3MonitoringListView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
+            // 
+            this.L3MonitoringListView.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.L3MonitoringListView.HideSelection = false;
-            this.L3MonitoringListView.Location = new System.Drawing.Point(12, 557);
+            this.L3MonitoringListView.Location = new System.Drawing.Point(16, 686);
+            this.L3MonitoringListView.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.L3MonitoringListView.Name = "L3MonitoringListView";
-            this.L3MonitoringListView.Size = new System.Drawing.Size(513, 360);
+            this.L3MonitoringListView.Size = new System.Drawing.Size(683, 442);
             this.L3MonitoringListView.TabIndex = 10;
             this.L3MonitoringListView.UseCompatibleStateImageBehavior = false;
             this.L3MonitoringListView.View = System.Windows.Forms.View.Details;
@@ -174,10 +183,11 @@
             // 
             this.dfConfigSelect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.dfConfigSelect.HideSelection = false;
-            this.dfConfigSelect.Location = new System.Drawing.Point(531, 457);
+            this.dfConfigSelect.Location = new System.Drawing.Point(708, 562);
+            this.dfConfigSelect.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.dfConfigSelect.MultiSelect = false;
             this.dfConfigSelect.Name = "dfConfigSelect";
-            this.dfConfigSelect.Size = new System.Drawing.Size(485, 63);
+            this.dfConfigSelect.Size = new System.Drawing.Size(645, 77);
             this.dfConfigSelect.TabIndex = 11;
             this.dfConfigSelect.UseCompatibleStateImageBehavior = false;
             this.dfConfigSelect.View = System.Windows.Forms.View.List;
@@ -186,31 +196,34 @@
             // 
             this.DataFabricConfigLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.DataFabricConfigLabel.AutoSize = true;
-            this.DataFabricConfigLabel.Location = new System.Drawing.Point(528, 441);
+            this.DataFabricConfigLabel.Location = new System.Drawing.Point(704, 543);
+            this.DataFabricConfigLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.DataFabricConfigLabel.Name = "DataFabricConfigLabel";
-            this.DataFabricConfigLabel.Size = new System.Drawing.Size(211, 13);
+            this.DataFabricConfigLabel.Size = new System.Drawing.Size(262, 16);
             this.DataFabricConfigLabel.TabIndex = 12;
             this.DataFabricConfigLabel.Text = "Data Fabric PMC Configurations (pick one):";
             // 
             // applyDfConfigButton
             // 
             this.applyDfConfigButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.applyDfConfigButton.Location = new System.Drawing.Point(531, 528);
+            this.applyDfConfigButton.Location = new System.Drawing.Point(708, 650);
+            this.applyDfConfigButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.applyDfConfigButton.Name = "applyDfConfigButton";
-            this.applyDfConfigButton.Size = new System.Drawing.Size(102, 23);
+            this.applyDfConfigButton.Size = new System.Drawing.Size(136, 28);
             this.applyDfConfigButton.TabIndex = 13;
             this.applyDfConfigButton.Text = "Apply DF Config";
             this.applyDfConfigButton.UseVisualStyleBackColor = true;
             this.applyDfConfigButton.Click += new System.EventHandler(this.applyDfConfigButton_Click);
-            //
+            // 
             // dfMonitoringListView
-            //
+            // 
             this.dfMonitoringListView.Activation = System.Windows.Forms.ItemActivation.OneClick;
             this.dfMonitoringListView.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.dfMonitoringListView.HideSelection = false;
-            this.dfMonitoringListView.Location = new System.Drawing.Point(531, 557);
+            this.dfMonitoringListView.Location = new System.Drawing.Point(708, 686);
+            this.dfMonitoringListView.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.dfMonitoringListView.Name = "dfMonitoringListView";
-            this.dfMonitoringListView.Size = new System.Drawing.Size(485, 360);
+            this.dfMonitoringListView.Size = new System.Drawing.Size(645, 442);
             this.dfMonitoringListView.TabIndex = 14;
             this.dfMonitoringListView.UseCompatibleStateImageBehavior = false;
             this.dfMonitoringListView.View = System.Windows.Forms.View.Details;
@@ -218,16 +231,18 @@
             // l3ErrorMessage
             // 
             this.l3ErrorMessage.AutoSize = true;
-            this.l3ErrorMessage.Location = new System.Drawing.Point(114, 536);
+            this.l3ErrorMessage.Location = new System.Drawing.Point(152, 660);
+            this.l3ErrorMessage.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.l3ErrorMessage.Name = "l3ErrorMessage";
-            this.l3ErrorMessage.Size = new System.Drawing.Size(0, 13);
+            this.l3ErrorMessage.Size = new System.Drawing.Size(0, 16);
             this.l3ErrorMessage.TabIndex = 15;
             // 
             // logButton
             // 
-            this.logButton.Location = new System.Drawing.Point(402, 125);
+            this.logButton.Location = new System.Drawing.Point(536, 154);
+            this.logButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.logButton.Name = "logButton";
-            this.logButton.Size = new System.Drawing.Size(75, 23);
+            this.logButton.Size = new System.Drawing.Size(100, 28);
             this.logButton.TabIndex = 17;
             this.logButton.Text = "Log To File";
             this.logButton.UseVisualStyleBackColor = true;
@@ -235,16 +250,18 @@
             // 
             // logFilePathTextBox
             // 
-            this.logFilePathTextBox.Location = new System.Drawing.Point(178, 127);
+            this.logFilePathTextBox.Location = new System.Drawing.Point(237, 156);
+            this.logFilePathTextBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.logFilePathTextBox.Name = "logFilePathTextBox";
-            this.logFilePathTextBox.Size = new System.Drawing.Size(218, 20);
+            this.logFilePathTextBox.Size = new System.Drawing.Size(289, 22);
             this.logFilePathTextBox.TabIndex = 18;
             // 
             // stopLoggingButton
             // 
-            this.stopLoggingButton.Location = new System.Drawing.Point(483, 125);
+            this.stopLoggingButton.Location = new System.Drawing.Point(644, 154);
+            this.stopLoggingButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.stopLoggingButton.Name = "stopLoggingButton";
-            this.stopLoggingButton.Size = new System.Drawing.Size(87, 23);
+            this.stopLoggingButton.Size = new System.Drawing.Size(116, 28);
             this.stopLoggingButton.TabIndex = 19;
             this.stopLoggingButton.Text = "Stop Logging";
             this.stopLoggingButton.UseVisualStyleBackColor = true;
@@ -253,18 +270,20 @@
             // logFilePathLabel
             // 
             this.logFilePathLabel.AutoSize = true;
-            this.logFilePathLabel.Location = new System.Drawing.Point(103, 130);
+            this.logFilePathLabel.Location = new System.Drawing.Point(137, 160);
+            this.logFilePathLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.logFilePathLabel.Name = "logFilePathLabel";
-            this.logFilePathLabel.Size = new System.Drawing.Size(69, 13);
+            this.logFilePathLabel.Size = new System.Drawing.Size(85, 16);
             this.logFilePathLabel.TabIndex = 20;
             this.logFilePathLabel.Text = "Log File Path";
             // 
             // L3LogToFileButton
             // 
             this.L3LogToFileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.L3LogToFileButton.Location = new System.Drawing.Point(527, 528);
+            this.L3LogToFileButton.Location = new System.Drawing.Point(434, 650);
+            this.L3LogToFileButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.L3LogToFileButton.Name = "L3LogToFileButton";
-            this.L3LogToFileButton.Size = new System.Drawing.Size(75, 23);
+            this.L3LogToFileButton.Size = new System.Drawing.Size(100, 28);
             this.L3LogToFileButton.TabIndex = 21;
             this.L3LogToFileButton.Text = "Log To File";
             this.L3LogToFileButton.UseVisualStyleBackColor = true;
@@ -273,17 +292,19 @@
             // L3LogToFileTextBox
             // 
             this.L3LogToFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.L3LogToFileTextBox.Location = new System.Drawing.Point(313, 530);
+            this.L3LogToFileTextBox.Location = new System.Drawing.Point(150, 653);
+            this.L3LogToFileTextBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.L3LogToFileTextBox.Name = "L3LogToFileTextBox";
-            this.L3LogToFileTextBox.Size = new System.Drawing.Size(208, 20);
+            this.L3LogToFileTextBox.Size = new System.Drawing.Size(276, 22);
             this.L3LogToFileTextBox.TabIndex = 22;
             // 
             // L3StopLoggingButton
             // 
             this.L3StopLoggingButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.L3StopLoggingButton.Location = new System.Drawing.Point(608, 528);
+            this.L3StopLoggingButton.Location = new System.Drawing.Point(542, 650);
+            this.L3StopLoggingButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.L3StopLoggingButton.Name = "L3StopLoggingButton";
-            this.L3StopLoggingButton.Size = new System.Drawing.Size(86, 23);
+            this.L3StopLoggingButton.Size = new System.Drawing.Size(115, 28);
             this.L3StopLoggingButton.TabIndex = 23;
             this.L3StopLoggingButton.Text = "Stop Logging";
             this.L3StopLoggingButton.UseVisualStyleBackColor = true;
@@ -292,9 +313,10 @@
             // DfStopLoggingButton
             // 
             this.DfStopLoggingButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.DfStopLoggingButton.Location = new System.Drawing.Point(930, 528);
+            this.DfStopLoggingButton.Location = new System.Drawing.Point(1225, 650);
+            this.DfStopLoggingButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.DfStopLoggingButton.Name = "DfStopLoggingButton";
-            this.DfStopLoggingButton.Size = new System.Drawing.Size(86, 23);
+            this.DfStopLoggingButton.Size = new System.Drawing.Size(115, 28);
             this.DfStopLoggingButton.TabIndex = 24;
             this.DfStopLoggingButton.Text = "Stop Logging";
             this.DfStopLoggingButton.UseVisualStyleBackColor = true;
@@ -303,9 +325,10 @@
             // DfLogToFileButton
             // 
             this.DfLogToFileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.DfLogToFileButton.Location = new System.Drawing.Point(849, 528);
+            this.DfLogToFileButton.Location = new System.Drawing.Point(1117, 650);
+            this.DfLogToFileButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.DfLogToFileButton.Name = "DfLogToFileButton";
-            this.DfLogToFileButton.Size = new System.Drawing.Size(75, 23);
+            this.DfLogToFileButton.Size = new System.Drawing.Size(100, 28);
             this.DfLogToFileButton.TabIndex = 25;
             this.DfLogToFileButton.Text = "Log To File";
             this.DfLogToFileButton.UseVisualStyleBackColor = true;
@@ -314,47 +337,52 @@
             // DfLogToFileTextBox
             // 
             this.DfLogToFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.DfLogToFileTextBox.Location = new System.Drawing.Point(649, 530);
+            this.DfLogToFileTextBox.Location = new System.Drawing.Point(852, 653);
+            this.DfLogToFileTextBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.DfLogToFileTextBox.Name = "DfLogToFileTextBox";
-            this.DfLogToFileTextBox.Size = new System.Drawing.Size(194, 20);
+            this.DfLogToFileTextBox.Size = new System.Drawing.Size(257, 22);
             this.DfLogToFileTextBox.TabIndex = 26;
             // 
             // crazyThingsPanel
             // 
-            this.crazyThingsPanel.Location = new System.Drawing.Point(700, 34);
+            this.crazyThingsPanel.Location = new System.Drawing.Point(933, 42);
+            this.crazyThingsPanel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.crazyThingsPanel.Name = "crazyThingsPanel";
-            this.crazyThingsPanel.Size = new System.Drawing.Size(485, 114);
+            this.crazyThingsPanel.Size = new System.Drawing.Size(647, 140);
             this.crazyThingsPanel.TabIndex = 27;
             // 
             // crazyThingsLabel
             // 
             this.crazyThingsLabel.AutoSize = true;
-            this.crazyThingsLabel.Location = new System.Drawing.Point(697, 18);
+            this.crazyThingsLabel.Location = new System.Drawing.Point(929, 22);
+            this.crazyThingsLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.crazyThingsLabel.Name = "crazyThingsLabel";
-            this.crazyThingsLabel.Size = new System.Drawing.Size(0, 13);
+            this.crazyThingsLabel.Size = new System.Drawing.Size(0, 16);
             this.crazyThingsLabel.TabIndex = 28;
             // 
             // RestrictCoreLoggingTextBox
             // 
-            this.RestrictCoreLoggingTextBox.Location = new System.Drawing.Point(655, 127);
+            this.RestrictCoreLoggingTextBox.Location = new System.Drawing.Point(873, 156);
+            this.RestrictCoreLoggingTextBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.RestrictCoreLoggingTextBox.Name = "RestrictCoreLoggingTextBox";
-            this.RestrictCoreLoggingTextBox.Size = new System.Drawing.Size(39, 20);
+            this.RestrictCoreLoggingTextBox.Size = new System.Drawing.Size(51, 22);
             this.RestrictCoreLoggingTextBox.TabIndex = 29;
             // 
             // RestrictCoreLogLabel
             // 
             this.RestrictCoreLogLabel.AutoSize = true;
-            this.RestrictCoreLogLabel.Location = new System.Drawing.Point(576, 130);
+            this.RestrictCoreLogLabel.Location = new System.Drawing.Point(768, 160);
+            this.RestrictCoreLogLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.RestrictCoreLogLabel.Name = "RestrictCoreLogLabel";
-            this.RestrictCoreLogLabel.Size = new System.Drawing.Size(72, 13);
+            this.RestrictCoreLogLabel.Size = new System.Drawing.Size(89, 16);
             this.RestrictCoreLogLabel.TabIndex = 30;
             this.RestrictCoreLogLabel.Text = "Only log core:";
             // 
             // HaswellForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1028, 930);
+            this.ClientSize = new System.Drawing.Size(1371, 1145);
             this.Controls.Add(this.RestrictCoreLogLabel);
             this.Controls.Add(this.RestrictCoreLoggingTextBox);
             this.Controls.Add(this.crazyThingsLabel);
@@ -384,7 +412,8 @@
             this.Controls.Add(this.monitoringListView);
             this.Controls.Add(this.applyConfigButton);
             this.Controls.Add(this.configSelect);
-            this.MinimumSize = new System.Drawing.Size(1022, 500);
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.MinimumSize = new System.Drawing.Size(1357, 605);
             this.Name = "HaswellForm";
             this.Text = "Clam CPU Performance Monitoring (WIP)";
             this.Load += new System.EventHandler(this.HaswellForm_Load);

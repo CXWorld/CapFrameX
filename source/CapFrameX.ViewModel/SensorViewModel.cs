@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -268,15 +267,15 @@ namespace CapFrameX.ViewModel
         private void SubscribeToUpdateSession()
         {
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
-                            .Subscribe(msg =>
-                            {
-                                _session = msg.CurrentSession;
-                                RecordInfo = msg.RecordInfo;
-                                UpdateSensorSessionReport(msg.CurrentSession);
-                                CopyRawSensorsEnable = true;
-                                _selectedRecordChanged = true;
-                                SensorStatisticsText = "Sensor statistics for selected record";
-                            });
+                .Subscribe(msg =>
+                {
+                    _session = msg.CurrentSession;
+                    RecordInfo = msg.RecordInfo;
+                    UpdateSensorSessionReport(msg.CurrentSession);
+                    CopyRawSensorsEnable = true;
+                    _selectedRecordChanged = true;
+                    SensorStatisticsText = "Sensor statistics for selected record";
+                });
         }
 
         private void UpdateSensorSessionReport(ISession session)

@@ -14,12 +14,51 @@ namespace CapFrameX.Sensor.Reporting
 
         public static Dictionary<string, int> roundingDictionary = new Dictionary<string, int>()
         {
+			//Voltage, // V
+            //Current, // A
+            //Power, // W
+            //Clock, // MHz
+            //Temperature, // °C
+            //Load, // %
+            //Frequency, // Hz
+            //Fan, // RPM
+            //Flow, // L/h
+            //Control, // %
+            //Level, // %
+            //Factor, // 1
+            //Data, // GB = 2^30 Bytes
+            //SmallData, // MB = 2^20 Bytes
+            //Throughput, // B/s
+            //TimeSpan, // Seconds
+            //Timing, // ns
+            //Energy, // milliwatt-hour (mWh)
+            //Noise, // dBA
+            //Conductivity, // µS/cm
+            //Humidity // %
+
+            ["Voltage"] = 3,
+            ["Current"] = 1,
+            ["Clock"] = 0,
+            ["Temperature"] = 0,
+            ["Load"] = 0,
+            ["Frequency"] = 0,
+            ["Fan"] = 0,
+            ["Flow"] = 1,
+            ["Control"] = 0,
+            ["Level"] = 0,
             ["Power"] = 1,
             ["Data"] = 2,
-            ["Factor"] = 2,
-            ["Voltage"] = 3,
+            ["SmallData"] = 0,
+            ["Throughput"] = 1,
             ["Time"] = 3,
-            ["Throughput"] = 1
+            ["TimeSpan"] = 3,
+            ["Timing"] = 1,
+            ["Factor"] = 2,
+            ["Energy"] = 1,
+            ["Noise"] = 1,
+            ["Conductivity"] = 1,
+            ["Humidity"] = 0,
+            ["LoadLimit"] = 0
         };
 
         public static IEnumerable<ISensorReportItem> GetReportFromSessionSensorData(IEnumerable<ISessionSensorData> sessionsSensorData, double startTime = 0, double endTime = double.PositiveInfinity)
@@ -160,25 +199,54 @@ namespace CapFrameX.Sensor.Reporting
 
         public static IEnumerable<SensorDictEntry> GetSensorReportEntries(IEnumerable<ISessionSensorData2> sessionsSensorData, double startTime = 0, double endTime = double.PositiveInfinity)
         {
-            var measureTimes = sessionsSensorData.SelectMany(x => x.MeasureTime.Values).ToArray();
             var sensorDict = new Dictionary<string, List<double>>();
+            var sensorMeasureTimes = new Dictionary<string, List<double>>();
+            var sensorMetadata = new Dictionary<string, (string Name, string Type)>();
+            var sensorSessionCount = new Dictionary<string, int>();
+            int totalSessionCount = 0;
+
             foreach (var sensorData in sessionsSensorData)
             {
+                if (!sensorData.ContainsKey("MeasureTime"))
+                    continue;
+
+                totalSessionCount++;
+                var sessionMeasureTimeValues = sensorData.MeasureTime.Values.ToList();
+
                 foreach (var sensor in sensorData)
                 {
-                    var sensorDictKey = $"{sensor.Value.Name}/{sensor.Value.Type}";
-                    if (!sensorDict.TryGetValue(sensorDictKey, out var sensorValues))
+                    var key = sensor.Key;
+                    if (!sensorDict.TryGetValue(key, out var sensorValues))
                     {
                         sensorValues = new List<double>();
-                        sensorDict.Add(sensorDictKey, sensorValues);
+                        sensorDict.Add(key, sensorValues);
+                        sensorMeasureTimes[key] = new List<double>();
+                        sensorMetadata[key] = (sensor.Value.Name, sensor.Value.Type);
+                        sensorSessionCount[key] = 0;
                     }
                     sensorValues.AddRange(sensor.Value.Values);
+                    sensorMeasureTimes[key].AddRange(sessionMeasureTimeValues);
+                    sensorSessionCount[key]++;
                 }
+            }
+
+            // Remove sensors not present in all sessions
+            var keysToRemove = sensorSessionCount
+                .Where(kv => kv.Value < totalSessionCount)
+                .Select(kv => kv.Key)
+                .ToList();
+
+            foreach (var key in keysToRemove)
+            {
+                sensorDict.Remove(key);
+                sensorMeasureTimes.Remove(key);
+                sensorMetadata.Remove(key);
             }
 
             foreach (var sensor in sensorDict)
             {
-                if (sensor.Value.Count != measureTimes.Length)
+                if (!sensorMeasureTimes.TryGetValue(sensor.Key, out var measureTimes)
+                    || sensor.Value.Count != measureTimes.Count)
                     continue;
 
                 var filteredValueList = new List<double>();
@@ -200,12 +268,16 @@ namespace CapFrameX.Sensor.Reporting
                 {
                     case "Voltage":
                         return "(V)";
+                    case "Current":
+                        return "(A)";
                     case "Clock":
                         return "(MHz)";
                     case "Temperature":
                         return "(°C)";
                     case "Load":
                         return "(%)";
+                    case "Frequency":
+                        return "(Hz)";
                     case "Fan":
                         return "(RPM)";
                     case "Flow":
@@ -224,6 +296,18 @@ namespace CapFrameX.Sensor.Reporting
                         return "(GB/s)";
                     case "Time":
                         return "(s)";
+                    case "TimeSpan":
+                        return "(s)";
+                    case "Timing":
+                        return "(ns)";
+                    case "Energy":
+                        return "(mWh)";
+                    case "Noise":
+                        return "(dBA)";
+                    case "Conductivity":
+                        return "(µS/cm)";
+                    case "Humidity":
+                        return "(%)";
                     case "LoadLimit":
                         return "(%)";
                     default:
@@ -231,21 +315,26 @@ namespace CapFrameX.Sensor.Reporting
                 }
             }
 
-            if (sensorDict.TryGetValue("GPU Core/Load", out var gpuCoreLoadValues))
+            var gpuLoadKey = sensorMetadata.FirstOrDefault(kv => kv.Value.Name == "GPU Core" && kv.Value.Type == "Load").Key;
+            if (gpuLoadKey != null && sensorDict.TryGetValue(gpuLoadKey, out var gpuCoreLoadValues))
             {
-                sensorDict.Add("GPU Limit Time/LoadLimit", Enumerable.Repeat(GetPercentageInGpuLoadLimit(gpuCoreLoadValues.Select(Convert.ToInt32)), gpuCoreLoadValues.Count()).ToList());
+                var gpuLimitKey = "__GPULimitTime__";
+                sensorDict.Add(gpuLimitKey, Enumerable.Repeat(GetPercentageInGpuLoadLimit(gpuCoreLoadValues.Select(Convert.ToInt32)), gpuCoreLoadValues.Count()).ToList());
+                sensorMetadata[gpuLimitKey] = ("GPU Limit Time", "LoadLimit");
             }
 
             var order = new string[] { "measuretime", "gpu", "cpu" }.ToList();
-            var sensorDictOrdered = sensorDict.Select(x =>
+            var sensorDictOrdered = sensorDict
+                .Where(x => sensorMetadata.ContainsKey(x.Key))
+                .Select(x =>
             {
-                var nameSplitted = x.Key.Split('/');
+                var meta = sensorMetadata[x.Key];
                 return new SensorDictEntry()
                 {
-                    Name = nameSplitted[0],
-                    Type = nameSplitted[1],
+                    Name = meta.Name,
+                    Type = meta.Type,
                     Values = x.Value.ToArray(),
-                    DisplayName = $"{nameSplitted[0]} {GetSensorNameSuffix(nameSplitted[1])}"
+                    DisplayName = $"{meta.Name} {GetSensorNameSuffix(meta.Type)}"
                 };
             }).OrderBy(entry => entry.Name, Comparer<string>.Create((a, b) =>
             {

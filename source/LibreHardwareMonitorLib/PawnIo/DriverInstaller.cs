@@ -206,8 +206,30 @@ public static class DriverInstaller
 
     /// <summary>
     /// Checks if the driver device is available.
+    /// Prefers global driver installation via PawnIO installer.
     /// </summary>
     private static bool IsDriverDeviceAvailable()
+    {
+        // First, check for global PawnIO service installation (preferred)
+        // This ensures we use the globally installed driver if available
+        if (TryStartGlobalPawnIOService())
+        {
+            // Global service is running, verify device is accessible
+            if (TryOpenDriverDevice())
+            {
+                return true;
+            }
+        }
+
+        // Fallback: check if the device is accessible from any other source
+        // (e.g., another application started it, or a local installation)
+        return TryOpenDriverDevice();
+    }
+
+    /// <summary>
+    /// Attempts to open the driver device handle.
+    /// </summary>
+    private static bool TryOpenDriverDevice()
     {
         using SafeFileHandle handle = PInvoke.CreateFile(
             PAWNIO_DEVICE_PATH,
@@ -219,6 +241,74 @@ public static class DriverInstaller
             null);
 
         return !handle.IsInvalid;
+    }
+
+    /// <summary>
+    /// Checks for a global PawnIO driver installation and attempts to start it.
+    /// Global installation is typically done via the PawnIO installer and places
+    /// the driver in System32\drivers with a persistent service registration.
+    /// </summary>
+    private static bool TryStartGlobalPawnIOService()
+    {
+        try
+        {
+            using var scm = OpenSCManager(null, null, SC_MANAGER_CONNECT);
+            if (scm.IsInvalid)
+            {
+                return false;
+            }
+
+            using var service = OpenService(scm, PAWNIO_SERVICE_NAME, SERVICE_QUERY_STATUS | SERVICE_START);
+            if (service.IsInvalid)
+            {
+                // Service does not exist - no global installation
+                return false;
+            }
+
+            // Service exists - check if it's a global installation by verifying it's running
+            // or can be started
+            if (!QueryServiceStatus(service, out var status))
+            {
+                return false;
+            }
+
+            if (status.dwCurrentState == SERVICE_RUNNING)
+            {
+                Log.Information("Global PawnIO driver service is already running.");
+                return true;
+            }
+
+            if (status.dwCurrentState == SERVICE_STOPPED)
+            {
+                Log.Information("Found global PawnIO driver installation. Attempting to start service.");
+
+                if (StartService(service, 0, IntPtr.Zero))
+                {
+                    // Wait for service to reach running state
+                    if (WaitForState(service, SERVICE_RUNNING, TimeSpan.FromSeconds(10)))
+                    {
+                        Log.Information("Global PawnIO driver service started successfully.");
+                        return true;
+                    }
+                }
+                else
+                {
+                    int err = Marshal.GetLastWin32Error();
+                    if (err == ERROR_SERVICE_ALREADY_RUNNING)
+                    {
+                        return true;
+                    }
+                    Log.Warning("Failed to start global PawnIO service. Win32Error={Win32Error}", err);
+                }
+            }
+
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "Error checking for global PawnIO installation.");
+            return false;
+        }
     }
 
     private static bool TryOpenService(SafeHandle scm, string serviceName, out SafeServiceHandle service)

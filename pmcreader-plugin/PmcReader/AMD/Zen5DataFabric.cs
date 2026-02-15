@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Security.Cryptography;
 using PmcReader.Interop;
+using System;
+using System.Collections.Generic;
 
 namespace PmcReader.AMD
 {
@@ -15,12 +14,24 @@ namespace PmcReader.AMD
         public Zen5DataFabric(DfType dfType)
         {
             architectureName = "Zen 5 UMC";
+
+#if DEBUG
+            Zen5Diagnostics.Enabled = true;
+#endif
+
+            // Initialize diagnostics if not already done
+            Zen5Diagnostics.Initialize();
+            Zen5Diagnostics.LogSection("ZEN 5 DATA FABRIC INITIALIZATION");
+            Zen5Diagnostics.Log($"DfType: {dfType}, coreCount={coreCount}, threadCount={GetThreadCount()}");
+
             List<MonitoringConfig> monitoringConfigList = new List<MonitoringConfig>();
             monitoringConfigList.Add(new UMCConfig(this));
             monitoringConfigList.Add(new UMCSubtimingsConfig(this));
             monitoringConfigList.Add(new CSConfig(this));
             monitoringConfigList.Add(new CMConfig(this));
             monitoringConfigs = monitoringConfigList.ToArray();
+
+            Zen5Diagnostics.Log($"Zen5DataFabric initialized with {monitoringConfigs.Length} configs");
         }
 
         public class CMConfig : MonitoringConfig
@@ -41,11 +52,21 @@ namespace PmcReader.AMD
             public string[] GetColumns() { return columns; }
             public void Initialize()
             {
+                Zen5Diagnostics.LogSection("CCM CONFIG INITIALIZATION");
                 ThreadAffinity.Set(1UL << monitoringThread);
+                Zen5Diagnostics.Log($"Set affinity to thread {monitoringThread}");
+
                 ulong evt0 = GetDFBandwidthPerfCtlValue(2, true);
                 ulong evt1 = GetDFBandwidthPerfCtlValue(3, true);
                 ulong evt2 = GetDFBandwidthPerfCtlValue(4, true);
                 ulong evt3 = GetDFBandwidthPerfCtlValue(5, true);
+
+                Zen5Diagnostics.Log($"CCM perf ctl values:");
+                Zen5Diagnostics.Log($"  evt0 (CCM0 Read, instanceId=2): 0x{evt0:X16}");
+                Zen5Diagnostics.Log($"  evt1 (CCM0 Write, instanceId=3): 0x{evt1:X16}");
+                Zen5Diagnostics.Log($"  evt2 (CCM1 Read, instanceId=4): 0x{evt2:X16}");
+                Zen5Diagnostics.Log($"  evt3 (CCM1 Write, instanceId=5): 0x{evt3:X16}");
+
                 Ring0.WriteMsr(MSR_DF_PERF_CTL_0, evt0);
                 Ring0.WriteMsr(MSR_DF_PERF_CTL_1, evt1);
                 Ring0.WriteMsr(MSR_DF_PERF_CTL_2, evt2);
@@ -53,17 +74,23 @@ namespace PmcReader.AMD
 
                 dataFabric.InitializeCoreTotals();
                 lastUpdateTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                Zen5Diagnostics.Log("CCM config initialization complete");
             }
 
             public MonitoringUpdateResults Update()
             {
+                Zen5Diagnostics.LogUpdateStart("CMConfig (CCM)");
+
                 float normalizationFactor = dataFabric.GetNormalizationFactor(ref lastUpdateTime);
                 MonitoringUpdateResults results = new MonitoringUpdateResults();
                 ThreadAffinity.Set(1UL << monitoringThread);
+
                 ulong ctr0 = ReadAndClearMsr(MSR_DF_PERF_CTR_0);
                 ulong ctr1 = ReadAndClearMsr(MSR_DF_PERF_CTR_1);
                 ulong ctr2 = ReadAndClearMsr(MSR_DF_PERF_CTR_2);
                 ulong ctr3 = ReadAndClearMsr(MSR_DF_PERF_CTR_3);
+
+                Zen5Diagnostics.LogDFCounters("CCM", new ulong[] { ctr0, ctr1, ctr2, ctr3 }, normalizationFactor);
 
                 dataFabric.ReadPackagePowerCounter();
                 results.unitMetrics = new string[4][];
@@ -85,6 +112,9 @@ namespace PmcReader.AMD
                 results.overallCounterValues[2] = new Tuple<string, float>("Ch 0 Write?", ctr1);
                 results.overallCounterValues[3] = new Tuple<string, float>("Ch 1 Read?", ctr2);
                 results.overallCounterValues[4] = new Tuple<string, float>("Ch 1 Write?", ctr3);
+
+                Zen5Diagnostics.Log($"CCM Total BW: {FormatLargeNumber(total * normalizationFactor * 64)}B/s");
+                Zen5Diagnostics.LogUpdateEnd();
                 return results;
             }
         }
@@ -107,11 +137,21 @@ namespace PmcReader.AMD
             public string[] GetColumns() { return columns; }
             public void Initialize()
             {
+                Zen5Diagnostics.LogSection("CS CONFIG INITIALIZATION");
                 ThreadAffinity.Set(1UL << monitoringThread);
+                Zen5Diagnostics.Log($"Set affinity to thread {monitoringThread}");
+
                 ulong cs0Read = GetDFBandwidthPerfCtlValue(0, true);
                 ulong cs0Write = GetDFBandwidthPerfCtlValue(0, false);
                 ulong cs1Read = GetDFBandwidthPerfCtlValue(1, true);
                 ulong cs1Write = GetDFBandwidthPerfCtlValue(1, false);
+
+                Zen5Diagnostics.Log($"CS perf ctl values:");
+                Zen5Diagnostics.Log($"  CS0 Read (instanceId=0, read=true): 0x{cs0Read:X16}");
+                Zen5Diagnostics.Log($"  CS0 Write (instanceId=0, read=false): 0x{cs0Write:X16}");
+                Zen5Diagnostics.Log($"  CS1 Read (instanceId=1, read=true): 0x{cs1Read:X16}");
+                Zen5Diagnostics.Log($"  CS1 Write (instanceId=1, read=false): 0x{cs1Write:X16}");
+
                 Ring0.WriteMsr(MSR_DF_PERF_CTL_0, cs0Read);
                 Ring0.WriteMsr(MSR_DF_PERF_CTL_1, cs0Write);
                 Ring0.WriteMsr(MSR_DF_PERF_CTL_2, cs1Read);
@@ -119,17 +159,23 @@ namespace PmcReader.AMD
 
                 dataFabric.InitializeCoreTotals();
                 lastUpdateTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                Zen5Diagnostics.Log("CS config initialization complete");
             }
 
             public MonitoringUpdateResults Update()
             {
+                Zen5Diagnostics.LogUpdateStart("CSConfig");
+
                 float normalizationFactor = dataFabric.GetNormalizationFactor(ref lastUpdateTime);
                 MonitoringUpdateResults results = new MonitoringUpdateResults();
                 ThreadAffinity.Set(1UL << monitoringThread);
+
                 ulong ctr0 = ReadAndClearMsr(MSR_DF_PERF_CTR_0);
                 ulong ctr1 = ReadAndClearMsr(MSR_DF_PERF_CTR_1);
                 ulong ctr2 = ReadAndClearMsr(MSR_DF_PERF_CTR_2);
                 ulong ctr3 = ReadAndClearMsr(MSR_DF_PERF_CTR_3);
+
+                Zen5Diagnostics.LogDFCounters("CS", new ulong[] { ctr0, ctr1, ctr2, ctr3 }, normalizationFactor);
 
                 dataFabric.ReadPackagePowerCounter();
                 results.unitMetrics = new string[4][];
@@ -151,6 +197,9 @@ namespace PmcReader.AMD
                 results.overallCounterValues[2] = new Tuple<string, float>("Ch 0 Write?", ctr1);
                 results.overallCounterValues[3] = new Tuple<string, float>("Ch 1 Read?", ctr2);
                 results.overallCounterValues[4] = new Tuple<string, float>("Ch 1 Write?", ctr3);
+
+                Zen5Diagnostics.Log($"CS Total BW: {FormatLargeNumber(total * normalizationFactor * 64)}B/s");
+                Zen5Diagnostics.LogUpdateEnd();
                 return results;
             }
         }
@@ -173,33 +222,31 @@ namespace PmcReader.AMD
             public string[] GetColumns() { return columns; }
             public void Initialize()
             {
+                Zen5Diagnostics.LogSection("UMC CONFIG INITIALIZATION");
                 ThreadAffinity.Set(1UL << monitoringThread);
+                Zen5Diagnostics.Log($"Set affinity to thread {monitoringThread}");
 
                 ulong hwcrValue;
                 Ring0.ReadMsr(HWCR, out hwcrValue);
+                Zen5Diagnostics.Log($"HWCR before: 0x{hwcrValue:X16}");
+
                 hwcrValue |= 1UL << 30; // instructions retired counter
                 hwcrValue |= 1UL << 31; // enable UMC counters
                 Ring0.WriteMsr(HWCR, hwcrValue);
                 Ring0.ReadMsr(HWCR, out hwcrValue);
+                Zen5Diagnostics.Log($"HWCR after: 0x{hwcrValue:X16}");
 
                 ulong clkEvt = GetUmcPerfCtlValue(0, false, false); // clk
-                /*OpCode.CpuidTx(0x80000022, 0, out uint extPerfMonAndDbgEax, out uint extPerfMonAndDbgEbx, out uint extPerfMonAndDbgEcx, out uint _, 1);
-
-                // does not work, everything returns 0
-                uint umcPerfCtrCount = (extPerfMonAndDbgEbx >> 16) & 0xFF;
-                uint umcPerfCtrMask = extPerfMonAndDbgEcx;
-                Console.WriteLine(string.Format("{0} UMC PMCs, active mask {1:X}", umcPerfCtrCount, umcPerfCtrMask));
-                // From brute force experimentation, the 9900X has eight usable UMC perf counters
-                // likely split 4+4
-
-                for (uint i = 0; i < 16; i++)
-                {
-                    Ring0.WriteMsr(MSR_UMC_PERF_CTL_base + MSR_UMC_PERF_increment * i, clkEvt);
-                }*/
-                
                 ulong casReads = GetUmcPerfCtlValue(0xa, maskReads: false, maskWrites: true); // cas, exclude writes
                 ulong casWrites = GetUmcPerfCtlValue(0xa, maskReads: true, maskWrites: false);
                 ulong busUtil = GetUmcPerfCtlValue(0x14, maskReads: false, maskWrites: false);
+
+                Zen5Diagnostics.Log($"UMC perf ctl values:");
+                Zen5Diagnostics.Log($"  clkEvt: 0x{clkEvt:X16}");
+                Zen5Diagnostics.Log($"  casReads: 0x{casReads:X16}");
+                Zen5Diagnostics.Log($"  casWrites: 0x{casWrites:X16}");
+                Zen5Diagnostics.Log($"  busUtil: 0x{busUtil:X16}");
+
                 Ring0.WriteMsr(MSR_UMC_PERF_CTL_base, casReads);
                 Ring0.WriteMsr(MSR_UMC_PERF_CTL_base + MSR_UMC_PERF_increment, casWrites);
                 Ring0.WriteMsr(MSR_UMC_PERF_CTL_base + MSR_UMC_PERF_increment * 2, clkEvt);
@@ -214,13 +261,17 @@ namespace PmcReader.AMD
                 dataFabric.InitializeCoreTotals();
                 totals = new ulong[4];
                 lastUpdateTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                Zen5Diagnostics.Log("UMC config initialization complete");
             }
 
             public MonitoringUpdateResults Update()
             {
+                Zen5Diagnostics.LogUpdateStart("UMCConfig");
+
                 float normalizationFactor = dataFabric.GetNormalizationFactor(ref lastUpdateTime);
                 MonitoringUpdateResults results = new MonitoringUpdateResults();
                 ThreadAffinity.Set(1UL << monitoringThread);
+
                 ulong ch0Read = ReadAndClearMsr(MSR_UMC_PERF_CTR_base);
                 ulong ch0Write = ReadAndClearMsr(MSR_UMC_PERF_CTR_base + MSR_UMC_PERF_increment);
                 ulong ch0Clk = ReadAndClearMsr(MSR_UMC_PERF_CTR_base + MSR_UMC_PERF_increment * 2);
@@ -229,6 +280,11 @@ namespace PmcReader.AMD
                 ulong ch1Write = ReadAndClearMsr(MSR_UMC_PERF_CTR_base + MSR_UMC_PERF_increment * 5);
                 ulong ch1Clk = ReadAndClearMsr(MSR_UMC_PERF_CTR_base + MSR_UMC_PERF_increment * 6);
                 ulong ch1BusUtil = ReadAndClearMsr(MSR_UMC_PERF_CTR_base + MSR_UMC_PERF_increment * 7);
+
+                Zen5Diagnostics.Log($"UMC raw counters:");
+                Zen5Diagnostics.Log($"  Ch0: Read={ch0Read}, Write={ch0Write}, Clk={ch0Clk}, BusUtil={ch0BusUtil}");
+                Zen5Diagnostics.Log($"  Ch1: Read={ch1Read}, Write={ch1Write}, Clk={ch1Clk}, BusUtil={ch1BusUtil}");
+                Zen5Diagnostics.Log($"  Normalization factor: {normalizationFactor:F6}");
 
                 totals[0] += ch0Read;
                 totals[1] += ch0Write;
@@ -264,6 +320,9 @@ namespace PmcReader.AMD
                 overallCounterList.Add(new Tuple<string, float>("UMC1 Clk", ch1Clk));
                 overallCounterList.Add(new Tuple<string, float>("UMC1 Data Bus Utilized Clk", ch1BusUtil));
                 results.overallCounterValues = overallCounterList.ToArray();
+
+                Zen5Diagnostics.Log($"UMC Total BW: {FormatLargeNumber(totalCas * normalizationFactor * 64)}B/s");
+                Zen5Diagnostics.LogUpdateEnd();
                 return results;
             }
         }
@@ -286,6 +345,7 @@ namespace PmcReader.AMD
             public string[] GetColumns() { return columns; }
             public void Initialize()
             {
+                Zen5Diagnostics.LogSection("UMC SUBTIMINGS CONFIG INITIALIZATION");
                 ThreadAffinity.Set(1UL << monitoringThread);
 
                 ulong hwcrValue;
@@ -296,24 +356,17 @@ namespace PmcReader.AMD
                 Ring0.ReadMsr(HWCR, out hwcrValue);
 
                 ulong clkEvt = GetUmcPerfCtlValue(0, false, false); // clk
-                /*OpCode.CpuidTx(0x80000022, 0, out uint extPerfMonAndDbgEax, out uint extPerfMonAndDbgEbx, out uint extPerfMonAndDbgEcx, out uint _, 1);
-
-                // does not work, everything returns 0
-                uint umcPerfCtrCount = (extPerfMonAndDbgEbx >> 16) & 0xFF;
-                uint umcPerfCtrMask = extPerfMonAndDbgEcx;
-                Console.WriteLine(string.Format("{0} UMC PMCs, active mask {1:X}", umcPerfCtrCount, umcPerfCtrMask));
-                // From brute force experimentation, the 9900X has eight usable UMC perf counters
-                // likely split 4+4
-
-                for (uint i = 0; i < 16; i++)
-                {
-                    Ring0.WriteMsr(MSR_UMC_PERF_CTL_base + MSR_UMC_PERF_increment * i, clkEvt);
-                }*/
-
                 ulong cas = GetUmcPerfCtlValue(0xa, maskReads: false, maskWrites: false);
                 ulong activate = GetUmcPerfCtlValue(5, maskReads: false, maskWrites: false);
                 ulong precharge = GetUmcPerfCtlValue(0x6, maskReads: false, maskWrites: false);
                 ulong busUtil = GetUmcPerfCtlValue(0x14, maskReads: false, maskWrites: false);
+
+                Zen5Diagnostics.Log($"UMC Subtimings perf ctl values:");
+                Zen5Diagnostics.Log($"  cas: 0x{cas:X16}");
+                Zen5Diagnostics.Log($"  activate: 0x{activate:X16}");
+                Zen5Diagnostics.Log($"  precharge: 0x{precharge:X16}");
+                Zen5Diagnostics.Log($"  busUtil: 0x{busUtil:X16}");
+
                 Ring0.WriteMsr(MSR_UMC_PERF_CTL_base, cas);
                 Ring0.WriteMsr(MSR_UMC_PERF_CTL_base + MSR_UMC_PERF_increment, activate);
                 Ring0.WriteMsr(MSR_UMC_PERF_CTL_base + MSR_UMC_PERF_increment * 2, precharge);
@@ -328,13 +381,17 @@ namespace PmcReader.AMD
                 dataFabric.InitializeCoreTotals();
                 totals = new ulong[4];
                 lastUpdateTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                Zen5Diagnostics.Log("UMC Subtimings config initialization complete");
             }
 
             public MonitoringUpdateResults Update()
             {
+                Zen5Diagnostics.LogUpdateStart("UMCSubtimingsConfig");
+
                 float normalizationFactor = dataFabric.GetNormalizationFactor(ref lastUpdateTime);
                 MonitoringUpdateResults results = new MonitoringUpdateResults();
                 ThreadAffinity.Set(1UL << monitoringThread);
+
                 ulong ch0Cas = ReadAndClearMsr(MSR_UMC_PERF_CTR_base);
                 ulong ch0Activate = ReadAndClearMsr(MSR_UMC_PERF_CTR_base + MSR_UMC_PERF_increment);
                 ulong ch0Precharge = ReadAndClearMsr(MSR_UMC_PERF_CTR_base + MSR_UMC_PERF_increment * 2);
@@ -343,6 +400,10 @@ namespace PmcReader.AMD
                 ulong ch1Activate = ReadAndClearMsr(MSR_UMC_PERF_CTR_base + MSR_UMC_PERF_increment * 5);
                 ulong ch1Precharge = ReadAndClearMsr(MSR_UMC_PERF_CTR_base + MSR_UMC_PERF_increment * 6);
                 ulong ch1BusUtil = ReadAndClearMsr(MSR_UMC_PERF_CTR_base + MSR_UMC_PERF_increment * 7);
+
+                Zen5Diagnostics.Log($"UMC Subtimings raw counters:");
+                Zen5Diagnostics.Log($"  Ch0: CAS={ch0Cas}, ACT={ch0Activate}, PRE={ch0Precharge}, BusUtil={ch0BusUtil}");
+                Zen5Diagnostics.Log($"  Ch1: CAS={ch1Cas}, ACT={ch1Activate}, PRE={ch1Precharge}, BusUtil={ch1BusUtil}");
 
                 totals[0] += ch0Cas;
                 totals[1] += ch0Activate;
@@ -377,6 +438,8 @@ namespace PmcReader.AMD
                 overallCounterList.Add(new Tuple<string, float>("UMC1 Precharge", ch1Precharge));
                 overallCounterList.Add(new Tuple<string, float>("UMC1 Data Bus Utilized Clk", ch1BusUtil));
                 results.overallCounterValues = overallCounterList.ToArray();
+
+                Zen5Diagnostics.LogUpdateEnd();
                 return results;
             }
         }

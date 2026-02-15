@@ -90,6 +90,19 @@ namespace LiveCharts.Wpf
         }
 
         /// <summary>
+        /// Returns a rounded square geometry
+        /// </summary>
+        public static Geometry RoundedSquare
+        {
+            get
+            {
+                var g = Geometry.Parse("M 0.2,0 L 0.8,0 Q 1,0 1,0.2 L 1,0.8 Q 1,1 0.8,1 L 0.2,1 Q 0,1 0,0.8 L 0,0.2 Q 0,0 0.2,0 Z");
+                g.Freeze();
+                return g;
+            }
+        }
+
+        /// <summary>
         /// Returns a cross geometry
         /// </summary>
         public static Geometry Cross

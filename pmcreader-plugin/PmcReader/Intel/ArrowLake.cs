@@ -33,6 +33,7 @@ namespace PmcReader.Intel
             // Create supported configs
             configs.Add(new ArchitecturalCounters(this));
             configs.Add(new RetireHistogram(this));
+            configs.Add(new PCoreGaming(this));  // Combined gaming metrics for all cores
             for (byte coreIdx = 0; coreIdx < coreTypes.Length; coreIdx++)
             {
                 if (coreTypes[coreIdx].Type == ADL_P_CORE_TYPE)
@@ -279,6 +280,242 @@ namespace PmcReader.Intel
                         string.Format("{0:F2} clks", counterData.pmc[0] / counterData.pmc[1]),
                         FormatLargeNumber(counterData.pmc[3] * 64) + "B/s",
                         string.Format("{0:F2} clks", counterData.pmc[2] / counterData.pmc[3])
+                };
+            }
+        }
+
+        /// <summary>
+        /// Combined gaming performance config for both P-cores and E-cores.
+        /// Provides L3 hit rate, L3 latency, memory bound %, and offcore bandwidth.
+        /// Shows separate overall metrics for P-cores and E-cores.
+        /// </summary>
+        public class PCoreGaming : MonitoringConfig
+        {
+            private ArrowLake cpu;
+            private CoreType pCoreType;
+            private CoreType eCoreType;
+            private bool hasPCores = false;
+            private bool hasECores = false;
+
+            public string GetConfigName() { return "All Cores: Gaming Performance"; }
+
+            public PCoreGaming(ArrowLake intelCpu)
+            {
+                cpu = intelCpu;
+                foreach (CoreType type in cpu.coreTypes)
+                {
+                    if (type.Type == ADL_P_CORE_TYPE)
+                    {
+                        pCoreType = type;
+                        hasPCores = true;
+                    }
+                    if (type.Type == ADL_E_CORE_TYPE)
+                    {
+                        eCoreType = type;
+                        hasECores = true;
+                    }
+                }
+            }
+
+            public string[] GetColumns()
+            {
+                return columns;
+            }
+
+            public void Initialize()
+            {
+                cpu.DisablePerformanceCounters();
+
+                // P-core events (Lion Cove)
+                if (hasPCores)
+                {
+                    ulong[] pCorePmc = new ulong[8];
+                    pCorePmc[0] = GetPerfEvtSelRegisterValue(0xD1, 0x04); // MEM_LOAD_RETIRED.L3_HIT
+                    pCorePmc[1] = GetPerfEvtSelRegisterValue(0xD1, 0x20); // MEM_LOAD_RETIRED.L3_MISS
+                    pCorePmc[2] = GetPerfEvtSelRegisterValue(0x46, 0x04); // MEMORY_STALLS.L3
+                    pCorePmc[3] = GetPerfEvtSelRegisterValue(0x46, 0x08); // MEMORY_STALLS.MEM (DRAM bound)
+                    // DRAM BW derived from MEM_LOAD_RETIRED.L3_MISS (pmc[1]) * 64B
+                    cpu.ProgramPerfCounters(pCorePmc, ADL_P_CORE_TYPE);
+                }
+
+                // E-core events (Crestmont/Skymont) - different event encodings
+                // Use L2_MISS (0x80) as denominator for L3 hitrate: L3_HIT / L2_MISS
+                // L3 miss count = L2_MISS - L3_HIT (calculated in computeMetrics)
+                // DRAM BW derived from (L2_MISS - L3_HIT) * 64B
+                if (hasECores)
+                {
+                    ulong[] eCorePmc = new ulong[8];
+                    eCorePmc[0] = GetPerfEvtSelRegisterValue(0xD1, 0x1C); // MEM_LOAD_UOPS_RETIRED.L3_HIT
+                    eCorePmc[1] = GetPerfEvtSelRegisterValue(0xD1, 0x80); // MEM_LOAD_UOPS_RETIRED.L2_MISS (L3_HIT + L3_MISS)
+                    eCorePmc[2] = GetPerfEvtSelRegisterValue(0x34, 0x06); // MEM_BOUND_STALLS_LOAD.LLC_HIT (L3 bound stalls)
+                    eCorePmc[3] = GetPerfEvtSelRegisterValue(0x34, 0x78); // MEM_BOUND_STALLS_LOAD.LLC_MISS (DRAM bound)
+                    cpu.ProgramPerfCounters(eCorePmc, ADL_E_CORE_TYPE);
+                }
+            }
+
+            public MonitoringUpdateResults Update()
+            {
+                MonitoringUpdateResults results = new MonitoringUpdateResults();
+                cpu.InitializeCoreTotals();
+
+                // Count cores for each type
+                int pCoreCount = hasPCores ? pCoreType.CoreCount : 0;
+                int eCoreCount = hasECores ? eCoreType.CoreCount : 0;
+
+                // Allocate: P-cores + P-overall + E-cores + E-overall
+                int totalRows = pCoreCount + (pCoreCount > 0 ? 1 : 0) + eCoreCount + (eCoreCount > 0 ? 1 : 0);
+                results.unitMetrics = new string[totalRows][];
+
+                // Accumulators for P-core and E-core totals
+                NormalizedCoreCounterData pCoreTotals = new NormalizedCoreCounterData();
+                NormalizedCoreCounterData eCoreTotals = new NormalizedCoreCounterData();
+
+                int rowIdx = 0;
+
+                // Process P-cores first
+                if (hasPCores && pCoreCount > 0)
+                {
+                    for (int threadIdx = 0; threadIdx < cpu.GetThreadCount(); threadIdx++)
+                    {
+                        if (((pCoreType.CoreMask >> threadIdx) & 0x1) != 0x1)
+                            continue;
+
+                        cpu.UpdateThreadCoreCounterData(threadIdx);
+                        var threadData = cpu.NormalizedThreadCounts[threadIdx];
+                        results.unitMetrics[rowIdx] = computeMetrics("P-Core " + threadIdx, threadData, true);
+                        AccumulateCounters(pCoreTotals, threadData);
+                        rowIdx++;
+                    }
+                    // P-core overall
+                    results.unitMetrics[rowIdx] = computeMetrics(">> P-Cores Overall", pCoreTotals, true);
+                    rowIdx++;
+                }
+
+                // Process E-cores
+                if (hasECores && eCoreCount > 0)
+                {
+                    for (int threadIdx = 0; threadIdx < cpu.GetThreadCount(); threadIdx++)
+                    {
+                        if (((eCoreType.CoreMask >> threadIdx) & 0x1) != 0x1)
+                            continue;
+
+                        cpu.UpdateThreadCoreCounterData(threadIdx);
+                        var threadData = cpu.NormalizedThreadCounts[threadIdx];
+                        results.unitMetrics[rowIdx] = computeMetrics("E-Core " + threadIdx, threadData, false);
+                        AccumulateCounters(eCoreTotals, threadData);
+                        rowIdx++;
+                    }
+                    // E-core overall
+                    results.unitMetrics[rowIdx] = computeMetrics(">> E-Cores Overall", eCoreTotals, false);
+                    rowIdx++;
+                }
+
+                // Combined overall - need special handling for BW columns
+                results.overallMetrics = computeCombinedMetrics("Overall", pCoreTotals, eCoreTotals);
+                results.overallCounterValues = cpu.GetOverallCounterValues(new string[] {
+                    "L3 Hit", "L3 Miss", "L3 Stall Cycles", "Mem Stall Cycles" });
+                return results;
+            }
+
+            private void AccumulateCounters(NormalizedCoreCounterData totals, NormalizedCoreCounterData source)
+            {
+                totals.pmc[0] += source.pmc[0];
+                totals.pmc[1] += source.pmc[1];
+                totals.pmc[2] += source.pmc[2];
+                totals.pmc[3] += source.pmc[3];
+                totals.activeCycles += source.activeCycles;
+                totals.instr += source.instr;
+            }
+
+            public string[] columns = new string[] {
+                "Item", "IPC", "L3 Hitrate", "L3 Bound %", "Mem Bound %",
+                "L3 Miss BW"
+            };
+
+            public string GetHelpText()
+            {
+                return "Gaming metrics for P and E cores.\n" +
+                       "L3 Bound % = % of cycles stalled waiting for L3.\n" +
+                       "L3 Miss BW = L3_MISS * 64B (demand load L3 miss traffic)";
+            }
+
+            private string[] computeMetrics(string label, NormalizedCoreCounterData counterData, bool isPCore)
+            {
+                float l3Hit = counterData.pmc[0];
+                float l3Stalls = counterData.pmc[2];
+                float memStalls = counterData.pmc[3];
+
+                float l3Miss;
+                if (isPCore)
+                {
+                    l3Miss = counterData.pmc[1]; // MEM_LOAD_RETIRED.L3_MISS
+                }
+                else
+                {
+                    // E-cores: L2_MISS = L3_HIT + L3_MISS, so L3_MISS = L2_MISS - L3_HIT
+                    float l2Miss = counterData.pmc[1];
+                    l3Miss = l2Miss - l3Hit;
+                    if (l3Miss < 0) l3Miss = 0;
+                }
+
+                // IPC
+                float ipc = counterData.activeCycles > 0 ? counterData.instr / counterData.activeCycles : 0;
+                // L3 hit rate
+                float l3HitRate = (l3Hit + l3Miss) > 0 ? 100 * l3Hit / (l3Hit + l3Miss) : 0;
+                // L3 bound % (cycles stalled waiting for L3)
+                float l3BoundPct = counterData.activeCycles > 0 ? 100 * l3Stalls / counterData.activeCycles : 0;
+                // Memory bound % (cycles waiting for DRAM)
+                float memBoundPct = counterData.activeCycles > 0 ? 100 * memStalls / counterData.activeCycles : 0;
+                // DRAM BW = L3_MISS * 64 bytes per cacheline
+                float dramBw = l3Miss * 64;
+
+                return new string[] {
+                    label,
+                    string.Format("{0:F2}", ipc),
+                    string.Format("{0:F2}%", l3HitRate),
+                    string.Format("{0:F2}%", l3BoundPct),
+                    string.Format("{0:F2}%", memBoundPct),
+                    FormatLargeNumber(dramBw) + "B/s"
+                };
+            }
+
+            private string[] computeCombinedMetrics(string label, NormalizedCoreCounterData pCoreTotals, NormalizedCoreCounterData eCoreTotals)
+            {
+                // P-cores: pmc[1] = L3_MISS directly
+                // E-cores: pmc[1] = L2_MISS, so L3_MISS = L2_MISS - L3_HIT
+                float pCoreL3Hit = pCoreTotals.pmc[0];
+                float pCoreL3Miss = pCoreTotals.pmc[1];
+                float eCoreL3Hit = eCoreTotals.pmc[0];
+                float eCoreL2Miss = eCoreTotals.pmc[1];
+                float eCoreL3Miss = eCoreL2Miss - eCoreL3Hit;
+                if (eCoreL3Miss < 0) eCoreL3Miss = 0;
+
+                float l3Hit = pCoreL3Hit + eCoreL3Hit;
+                float l3Miss = pCoreL3Miss + eCoreL3Miss;
+                float l3Stalls = pCoreTotals.pmc[2] + eCoreTotals.pmc[2];
+                float memStalls = pCoreTotals.pmc[3] + eCoreTotals.pmc[3];
+                float activeCycles = pCoreTotals.activeCycles + eCoreTotals.activeCycles;
+                float instr = pCoreTotals.instr + eCoreTotals.instr;
+
+                // Combined DRAM BW = total L3_MISS * 64B
+                float dramBw = (pCoreL3Miss + eCoreL3Miss) * 64;
+
+                // IPC
+                float ipc = activeCycles > 0 ? instr / activeCycles : 0;
+                // L3 hit rate
+                float l3HitRate = (l3Hit + l3Miss) > 0 ? 100 * l3Hit / (l3Hit + l3Miss) : 0;
+                // L3 bound % (cycles stalled waiting for L3)
+                float l3BoundPct = activeCycles > 0 ? 100 * l3Stalls / activeCycles : 0;
+                // Memory bound % (cycles waiting for DRAM)
+                float memBoundPct = activeCycles > 0 ? 100 * memStalls / activeCycles : 0;
+
+                return new string[] {
+                    label,
+                    string.Format("{0:F2}", ipc),
+                    string.Format("{0:F2}%", l3HitRate),
+                    string.Format("{0:F2}%", l3BoundPct),
+                    string.Format("{0:F2}%", memBoundPct),
+                    FormatLargeNumber(dramBw) + "B/s"
                 };
             }
         }
@@ -1697,12 +1934,12 @@ namespace PmcReader.Intel
                 cpu.ReadPackagePowerCounter();
                 results.overallMetrics = computeMetrics("Overall", cpu.NormalizedTotalCounts);
                 results.overallCounterValues = cpu.GetOverallCounterValues(new String[] {
-                   "All L1D Demand Miss Bound Clks", "L2 Hit Bound", "LLC Hit Bound", "LLC Miss Bound", "Store Buffer Full", "L2 Hit Bound Edge", "LLC Hit Bound Edge", "LLC Miss Bound Edge"});
+                   "All L1D Demand Miss Bound Clks", "L2 Hit Bound", "L3 Hit Bound", "L3 Miss Bound", "Store Buffer Full", "L2 Hit Bound Edge", "L3 Hit Bound Edge", "L3 Miss Bound Edge"});
                 return results;
             }
 
             public string[] columns = new string[] { "Item", "Active Cycles", "Instructions", "IPC", "PkgPower",
-                "L1D Miss", "L2", "L3", "L3 Miss", "L2 Bound Duration", "L3 Bound Duration", "L3 Miss Bound Duration" };
+                "L1D Miss", "L2 Bound %", "L3 Bound %", "Mem Bound %", "L2 Bound Duration", "L3 Bound Duration", "Mem Bound Duration" };
 
             public string GetHelpText()
             {

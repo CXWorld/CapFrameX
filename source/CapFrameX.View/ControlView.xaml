@@ -86,6 +86,10 @@
                                   AllowDrop="True" 
                                   DragOver="TrvStructure_DragOver" 
                                   MouseEnter="TrvStructure_MouseEnter"
+                                  dragdrop:DragDrop.IsDragSource="True"
+                                  dragdrop:DragDrop.UseDefaultDragAdorner="True"
+                                  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+                                  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
                                   Drop="TrvStructure_Drop">
                             <TreeView.ContextMenu>
                                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">

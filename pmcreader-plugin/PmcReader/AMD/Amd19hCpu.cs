@@ -361,13 +361,25 @@ namespace PmcReader.AMD
                 int coreBits = (int)Math.Ceiling(Math.Log(coresPerCcx, 2));
                 int ccxShift = threadBits + coreBits;
 
-                return (int)(extendedApicId >> ccxShift);
+                int resultCcxId = (int)(extendedApicId >> ccxShift);
+
+                // Log CCX calculation details for debugging multi-CCX issues
+                Zen5Diagnostics.LogCcxCalculation(threadId, coreCount, threadCount, coresPerCcx,
+                    extendedApicId, threadBits, coreBits, ccxShift, resultCcxId);
+
+                return resultCcxId;
             }
 
             // Fallback heuristics based on thread ID
             int fallbackCoresPerCcx = GetCoresPerCcx();
             int threadsPerCcx = coreCount * 2 == threadCount ? fallbackCoresPerCcx * 2 : fallbackCoresPerCcx;
-            return threadId / threadsPerCcx;
+            int fallbackCcxId = threadId / threadsPerCcx;
+            // Only log fallback warning once per thread
+            if (threadId == 0)
+            {
+                Zen5Diagnostics.LogWarning($"Get1AhCcxId using fallback heuristics (CPUID failed). threadsPerCcx={threadsPerCcx}");
+            }
+            return fallbackCcxId;
         }
 
         /// <summary>

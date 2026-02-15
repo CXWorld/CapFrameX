@@ -89,6 +89,7 @@
     <Compile Include="AMD\Zen2.cs" />
     <Compile Include="AMD\Zen1.cs" />
     <Compile Include="AMD\Zen2DataFabric.cs" />
+    <Compile Include="AMD\Zen5Diagnostics.cs" />
     <Compile Include="AMD\Zen5L3Cache.cs" />
     <Compile Include="AMD\Zen4L3Cache.cs" />
     <Compile Include="AMD\Zen5.cs" />
@@ -103,6 +104,7 @@
       <DependentUpon>HaswellForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Intel\ArrowLake.cs" />
+    <Compile Include="Intel\ArrowLakeL3.cs" />
     <Compile Include="Intel\MeteorLakeUncore.cs" />
     <Compile Include="Intel\MeteorLakeL3.cs" />
     <Compile Include="Intel\MeteorLakeArb.cs" />
@@ -130,6 +132,7 @@
     <Compile Include="Interop\OpCode.cs" />
     <Compile Include="Interop\Ring0.cs" />
     <Compile Include="Interop\ThreadAffinity.cs" />
+    <Compile Include="PmcDiagnostics.cs" />
     <Compile Include="PmcReaderInterop.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

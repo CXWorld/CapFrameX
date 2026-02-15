@@ -54,7 +54,7 @@ namespace CapFrameX.Sensor
                 Name = entry.Name,
                 SensorType = entry.SensorType,
                 HardwareType = entry.HardwareType,
-                UseForLogging = _sensorConfig.GetSensorIsActive(entry.Identifier),
+                UseForLogging = _sensorConfig.IsSelectedForLogging(entry.Identifier),
                 UpdateLogState = UpdateLogState
             };
         }
@@ -62,13 +62,13 @@ namespace CapFrameX.Sensor
         private void UpdateLogState(string identifier, bool useForLogging)
         {
             ConfigChanged?.Invoke();
-            _sensorConfig.SetSensorIsActive(identifier, useForLogging);
+            _sensorConfig.SelectForLogging(identifier, useForLogging);
         }
 
         private void SetIsActiveDefault(ISensorEntry sensor, Dictionary<string, bool> configCopy)
         {
             var oldConfigStatus = configCopy.ContainsKey(sensor.Identifier) && configCopy[sensor.Identifier];
-            _sensorConfig.SetSensorIsActive(sensor.Identifier, oldConfigStatus || GetIsDefaultActiveSensor(sensor));
+            _sensorConfig.SelectForLogging(sensor.Identifier, oldConfigStatus || GetIsDefaultActiveSensor(sensor));
         }
 
         public bool GetIsDefaultActiveSensor(ISensorEntry sensor)
@@ -85,6 +85,7 @@ namespace CapFrameX.Sensor
                 case "CPU Max Clock" when sensorType == SensorType.Clock:
                 case "CPU Package" when sensorType == SensorType.Power:
                 case "CPU Package" when sensorType == SensorType.Temperature:
+                case "CPU Package (Tctl/Tdie)" when sensorType == SensorType.Temperature:
                 case "GPU Core" when sensorType == SensorType.Load:
                 case "GPU Core" when sensorType == SensorType.Temperature:
                 case "GPU Core" when sensorType == SensorType.Clock:

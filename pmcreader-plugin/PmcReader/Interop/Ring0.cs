@@ -181,8 +181,10 @@ namespace PmcReader.Interop
             // clear the current report
             Report.Length = 0;
 
+            PmcDiagnostics.Log("Ring0.Open: Attempting to open WinRing0 driver...");
             _driver = new KernelDriver("WinRing0_1_2_0");
             _driver.Open();
+            PmcDiagnostics.Log("Ring0.Open: First open attempt IsOpen={0}", _driver.IsOpen);
 
             if (!_driver.IsOpen)
             {
@@ -248,8 +250,14 @@ namespace PmcReader.Interop
             }
 
             if (!_driver.IsOpen)
+            {
+                PmcDiagnostics.Log("Ring0.Open: FAILED - driver not open, setting _driver=null. Report: {0}", Report.ToString());
                 _driver = null;
-
+            }
+            else
+            {
+                PmcDiagnostics.Log("Ring0.Open: SUCCESS - driver is open");
+            }
 
             const string isaMutexName = "Global\\Access_ISABUS.HTP.Method";
             TryCreateOrOpenExistingMutex(isaMutexName, out _isaBusMutex);
@@ -450,13 +458,28 @@ namespace PmcReader.Interop
             return result;
         }
 
+        private static bool _writeMsrDiagLogged;
+
         public static bool WriteMsr(uint index, ulong value)
         {
             if (_driver == null)
+            {
+                if (!_writeMsrDiagLogged)
+                {
+                    PmcDiagnostics.Log("WriteMsr: _driver is NULL - Ring0 driver not loaded!");
+                    _writeMsrDiagLogged = true;
+                }
                 return false;
+            }
 
             WriteMsrInput input = new WriteMsrInput { Register = index, Value = value };
-            return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_MSR, input);
+            bool result = _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_MSR, input);
+            if (!result && !_writeMsrDiagLogged)
+            {
+                PmcDiagnostics.Log("WriteMsr: IOCTL FAILED for MSR 0x{0:X} (driver IS open, IOCTL returned false)", index);
+                _writeMsrDiagLogged = true;
+            }
+            return result;
         }
 
         public static byte ReadIoPort(uint port)

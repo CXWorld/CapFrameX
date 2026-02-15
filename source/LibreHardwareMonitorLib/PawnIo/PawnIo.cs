@@ -13,7 +13,7 @@ namespace LibreHardwareMonitor.PawnIo;
 /// <summary>
 /// Provides functionality to interact with the PawnIO driver for executing functions in loaded PawnIO modules.
 /// </summary>
-public class PawnIo
+internal class PawnIo
 {
     private const uint DEVICE_TYPE = 41394u << 16;
     private const int FN_NAME_LENGTH = 32;
@@ -37,17 +37,17 @@ public class PawnIo
     /// <summary>
     /// Gets a value indicating whether PawnIO is installed on the system.
     /// </summary>
-    public static bool IsInstalled => Version is not null;
+    internal static bool IsInstalled => Version is not null;
 
     /// <summary>
     /// Retrieves the version information for the installed PawnIO.
     /// </summary>
-    public static Version Version { get; }
+    internal static Version Version { get; }
 
     /// <summary>
     /// Gets a value indicating whether the underlying handle is currently valid and open.
     /// </summary>
-    public bool IsLoaded => _handle is
+    internal bool IsLoaded => _handle is
     {
         IsInvalid: false,
         IsClosed: false
@@ -83,7 +83,7 @@ public class PawnIo
     /// <summary>
     /// Closes the underlying handle to the PawnIO driver.
     /// </summary>
-    public void Close()
+    internal void Close()
     {
         if (IsLoaded)
             _handle.Close();
@@ -96,7 +96,7 @@ public class PawnIo
     /// <param name="input"></param>
     /// <param name="outLength"></param>
     /// <returns></returns>
-    public unsafe long[] Execute(string name, long[] input, int outLength)
+    internal unsafe long[] Execute(string name, long[] input, int outLength)
     {
         if (IsLoaded)
         {
@@ -132,7 +132,7 @@ public class PawnIo
     /// <param name="returnSize"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public unsafe int ExecuteHr(string name, long[] inBuffer, uint inSize, long[] outBuffer, uint outSize, out uint returnSize)
+    internal unsafe int ExecuteHr(string name, long[] inBuffer, uint inSize, long[] outBuffer, uint outSize, out uint returnSize)
     {
         if (inBuffer.Length < inSize)
             throw new ArgumentOutOfRangeException(nameof(inSize));

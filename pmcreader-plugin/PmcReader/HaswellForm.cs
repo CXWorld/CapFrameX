@@ -75,8 +75,10 @@ namespace PmcReader
                         dfLabelOverride = "Unused";
                         l3LabelOverride = "Unused";
                     }
-                    // wikichip says these are for ADL-S and ADL-P, respectively
-                    else if (cpuModel == 0x97 || cpuModel == 0x9A)
+                    // ADL-S (0x97), ADL-P (0x9A), RPL (0xB7), RPL-H (0xBA), RPL-HX (0xBF), RPL-U (0xBE)
+                    else if (cpuModel == 0x97 || cpuModel == 0x9A
+                        || cpuModel == 0xB7 || cpuModel == 0xBA
+                        || cpuModel == 0xBF || cpuModel == 0xBE)
                     {
                         coreMonitoring.monitoringArea = new Intel.AlderLake();
                         l3Monitoring.monitoringArea = new Intel.AlderLakeL3();
@@ -92,7 +94,7 @@ namespace PmcReader
                     else if (cpuModel == 0xC6)
                     {
                         coreMonitoring.monitoringArea = new Intel.ArrowLake();
-                        l3Monitoring.monitoringArea = new Intel.MeteorLakeL3();
+                        l3Monitoring.monitoringArea = new Intel.ArrowLakeL3();
                         dfMonitoring.monitoringArea = new Intel.MeteorLakeArb();
                     }
                     else

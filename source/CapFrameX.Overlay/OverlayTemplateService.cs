@@ -133,25 +133,25 @@ namespace CapFrameX.Overlay
             var cpuGroupColor = GetCpuGroupColor();
 
             // 1. GPU Section - clocks with short GPU name, load, temp
-            EnableByDescription(entries, "GPU Core (MHz)", gpuGroupColor, VALUE_YELLOW, 0, ShortGpuName, TemplateSortKey(10, 1));
-            EnableByDescription(entries, "GPU Memory (MHz)", gpuGroupColor, VALUE_YELLOW, 0, ShortGpuName, TemplateSortKey(10, 2));
-            EnableByDescription(entries, "GPU Core (%)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Load", TemplateSortKey(10, 3));
-            EnableByDescription(entries, "GPU Core (°C)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Temp", TemplateSortKey(10, 4));
+            EnableByDescription(entries, "GPU Core (MHz)", gpuGroupColor, VALUE_YELLOW, 0, ShortGpuName);
+            EnableByDescription(entries, "GPU Memory (MHz)", gpuGroupColor, VALUE_YELLOW, 0, ShortGpuName);
+            EnableByDescription(entries, "GPU Core (%)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Load");
+            EnableByDescription(entries, "GPU Core (°C)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Temp");
 
             // 2. CPU Section - Clock, Total Load, Package Power+Temp
-            EnableByGroupName(entries, "CPU Clock", cpuGroupColor, VALUE_YELLOW, 1, TemplateSortKey(20, 1));
-            EnableByDescription(entries, "CPU Max (MHz)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Max", TemplateSortKey(20, 2));
-            EnableByDescriptionContains(entries, "CPU Total (%)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Total", TemplateSortKey(20, 3));
-            EnableByDescriptionContains(entries, "CPU Package (W)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(20, 4));
-            EnableByDescriptionContains(entries, "CPU Package", "°C", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(20, 5));
+            EnableByGroupName(entries, "CPU Clock", cpuGroupColor, VALUE_YELLOW, 1);
+            EnableByDescription(entries, "CPU Max (MHz)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Max");
+            EnableByDescriptionContains(entries, "CPU Total (%)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Total");
+            EnableByDescriptionContains(entries, "CPU Package (W)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package");
+            EnableByDescriptionContains(entries, "CPU Package", "°C", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package");
 
             // 3. Metrics Section (with blank line)
-            EnableByIdentifier(entries, "OnlineAverage", METRIC_COLOR, METRIC_COLOR, 1, null, null, TemplateSortKey(30, 1));
-            EnableByIdentifier(entries, "Online1PercentLow", METRIC_COLOR, METRIC_COLOR, 0, null, null, TemplateSortKey(30, 2));
+            EnableByIdentifier(entries, "OnlineAverage", METRIC_COLOR, METRIC_COLOR, 1);
+            EnableByIdentifier(entries, "Online1PercentLow", METRIC_COLOR, METRIC_COLOR, 0);
 
             // 4. Framerate Section (at the end, with blank line, no graph)
-            EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", false, TemplateSortKey(40, 1));
-            EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", true, TemplateSortKey(40, 2));
+            EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", false);
+            EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", true);
 
             EnsureCpuSectionSeparator(entries);
         }
@@ -162,34 +162,34 @@ namespace CapFrameX.Overlay
             var cpuGroupColor = GetCpuGroupColor();
 
             // 1. GPU Section - clocks with short GPU name, load, temp, power, VRAM
-            EnableByDescription(entries, "GPU Core (MHz)", gpuGroupColor, VALUE_YELLOW, 0, ShortGpuName, TemplateSortKey(10, 1));
-            EnableByDescription(entries, "GPU Memory (MHz)", gpuGroupColor, VALUE_YELLOW, 0, ShortGpuName, TemplateSortKey(10, 2));
-            EnableByDescription(entries, "GPU Core (%)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Load", TemplateSortKey(10, 3));
-            EnableByDescription(entries, "GPU Core (°C)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Temp", TemplateSortKey(10, 4));
-            EnableByDescription(entries, "GPU Power (W)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Power", TemplateSortKey(10, 5));
-            EnableByDescription(entries, "GPU TBP (W)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Power", TemplateSortKey(10, 5));
-            EnableByDescription(entries, "GPU Memory Dedicated (GB)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Used", TemplateSortKey(10, 6));
-            EnableByDescription(entries, "GPU Memory Shared (GB)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Used", TemplateSortKey(10, 7));
+            EnableByDescription(entries, "GPU Core (MHz)", gpuGroupColor, VALUE_YELLOW, 0, ShortGpuName);
+            EnableByDescription(entries, "GPU Memory (MHz)", gpuGroupColor, VALUE_YELLOW, 0, ShortGpuName);
+            EnableByDescription(entries, "GPU Core (%)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Load");
+            EnableByDescription(entries, "GPU Core (°C)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Temp");
+            EnableByDescription(entries, "GPU Power (W)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Power");
+            EnableByDescription(entries, "GPU TBP (W)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Power");
+            EnableByDescription(entries, "GPU Memory Dedicated (GB)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Used");
+            EnableByDescription(entries, "GPU Memory Shared (GB)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Used");
 
             // 2. CPU Info (with blank line)
-            EnableByIdentifier(entries, "CustomCPU", cpuGroupColor, VALUE_WHITE, 1, "CPU Model", null, TemplateSortKey(20, 1));
+            EnableByIdentifier(entries, "CustomCPU", cpuGroupColor, VALUE_WHITE, 1, "CPU Model");
 
             // 3. CPU entries - Clock, Total, Package
-            EnableByDescription(entries, "CPU Max (MHz)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Max", TemplateSortKey(30, 2));
-            EnableByDescriptionContains(entries, "CPU Total (%)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Total", TemplateSortKey(30, 3));
-            EnableByDescriptionContains(entries, "CPU Package (W)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(30, 4));
-            EnableByDescriptionContains(entries, "CPU Package", "°C", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(30, 5));
+            EnableByDescription(entries, "CPU Max (MHz)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Max");
+            EnableByDescriptionContains(entries, "CPU Total (%)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Total");
+            EnableByDescriptionContains(entries, "CPU Package (W)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package");
+            EnableByDescriptionContains(entries, "CPU Package", "°C", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package");
 
             // 4. RAM Section (with blank line)
-            EnableByIdentifier(entries, "CustomRAM", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 1, null, null, TemplateSortKey(40, 1));
+            EnableByIdentifier(entries, "CustomRAM", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 1);
 
             // 5. Metrics Section (with blank line)
-            EnableByIdentifier(entries, "OnlineAverage", METRIC_COLOR, METRIC_COLOR, 1, null, null, TemplateSortKey(50, 1));
-            EnableByIdentifier(entries, "Online1PercentLow", METRIC_COLOR, METRIC_COLOR, 0, null, null, TemplateSortKey(50, 2));
+            EnableByIdentifier(entries, "OnlineAverage", METRIC_COLOR, METRIC_COLOR, 1);
+            EnableByIdentifier(entries, "Online1PercentLow", METRIC_COLOR, METRIC_COLOR, 0);
 
             // 6. Framerate Section (at the end, with blank line, no graph)
-            EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", false, TemplateSortKey(60, 1));
-            EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", true, TemplateSortKey(60, 2));
+            EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", false);
+            EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", true);
 
             EnsureCpuSectionSeparator(entries);
         }
@@ -200,18 +200,18 @@ namespace CapFrameX.Overlay
             var cpuGroupColor = GetCpuGroupColor();
 
             // 1. GPU Section - clocks with short GPU name, load, temp, hot spot, power, VRAM
-            EnableByDescription(entries, "GPU Core (MHz)", gpuGroupColor, VALUE_YELLOW, 0, ShortGpuName, TemplateSortKey(10, 1));
-            EnableByDescription(entries, "GPU Memory (MHz)", gpuGroupColor, VALUE_YELLOW, 0, ShortGpuName, TemplateSortKey(10, 2));
-            EnableByDescription(entries, "GPU Core (%)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Load", TemplateSortKey(10, 3));
-            EnableByDescription(entries, "GPU Core (°C)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Temp", TemplateSortKey(10, 4));
-            EnableByDescription(entries, "GPU Memory Junction (°C)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Hot Spot", TemplateSortKey(10, 5));
-            EnableByDescription(entries, "GPU Power (W)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Power", TemplateSortKey(10, 6));
-            EnableByDescription(entries, "GPU TBP (W)", gpuGroupColor, VALUE_YELLOW, 0, "GPU TBP", TemplateSortKey(10, 6));
-            EnableByDescription(entries, "GPU Memory Dedicated (GB)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Used", TemplateSortKey(10, 7));
-            EnableByDescription(entries, "GPU Memory Shared (GB)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Used", TemplateSortKey(10, 8));
+            EnableByDescription(entries, "GPU Core (MHz)", gpuGroupColor, VALUE_YELLOW, 0, ShortGpuName);
+            EnableByDescription(entries, "GPU Memory (MHz)", gpuGroupColor, VALUE_YELLOW, 0, ShortGpuName);
+            EnableByDescription(entries, "GPU Core (%)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Load");
+            EnableByDescription(entries, "GPU Core (°C)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Temp");
+            EnableByDescription(entries, "GPU Memory Junction (°C)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Hot Spot");
+            EnableByDescription(entries, "GPU Power (W)", gpuGroupColor, VALUE_YELLOW, 0, "GPU Power");
+            EnableByDescription(entries, "GPU TBP (W)", gpuGroupColor, VALUE_YELLOW, 0, "GPU TBP");
+            EnableByDescription(entries, "GPU Memory Dedicated (GB)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Used");
+            EnableByDescription(entries, "GPU Memory Shared (GB)", gpuGroupColor, VALUE_YELLOW, 0, "VRAM Used");
 
             // 2. CPU Info (with blank line)
-            EnableByIdentifier(entries, "CustomCPU", cpuGroupColor, VALUE_WHITE, 1, "CPU Model", null, TemplateSortKey(20, 1));
+            EnableByIdentifier(entries, "CustomCPU", cpuGroupColor, VALUE_WHITE, 1, "CPU Model");
 
             // 3. CPU entries - all core clocks and loads, Package
             var coreGroups = GetCoreGroups(entries);
@@ -220,53 +220,52 @@ namespace CapFrameX.Overlay
                 for (int i = 0; i < coreGroups.Count; i++)
                 {
                     var coreGroup = coreGroups[i];
-                    var sortIndex = i + 1;
-                    EnableCoreGroupClock(entries, coreGroup.GroupName, cpuGroupColor, VALUE_YELLOW, 0, TemplateSortKey(30, sortIndex, 1));
-                    EnableCoreGroupLoad(entries, coreGroup.GroupName, cpuGroupColor, VALUE_YELLOW, 0, TemplateSortKey(30, sortIndex, 2));
-                    EnableByGroupNameAndDescriptionContains(entries, coreGroup.GroupName, "Thread #1", cpuGroupColor, VALUE_YELLOW, 0, TemplateSortKey(30, sortIndex, 3));
-                    EnableByGroupNameAndDescriptionContains(entries, coreGroup.GroupName, "Thread #2", cpuGroupColor, VALUE_YELLOW, 0, TemplateSortKey(30, sortIndex, 4));
+                    EnableCoreGroupClock(entries, coreGroup.GroupName, cpuGroupColor, VALUE_YELLOW, 0);
+                    EnableCoreGroupLoad(entries, coreGroup.GroupName, cpuGroupColor, VALUE_YELLOW, 0);
+                    EnableByGroupNameAndDescriptionContains(entries, coreGroup.GroupName, "Thread #1", cpuGroupColor, VALUE_YELLOW, 0);
+                    EnableByGroupNameAndDescriptionContains(entries, coreGroup.GroupName, "Thread #2", cpuGroupColor, VALUE_YELLOW, 0);
                 }
             }
             else
             {
                 for (int i = 1; i <= 16; i++)
                 {
-                    EnableByDescription(entries, $"Core #{i} (MHz)", cpuGroupColor, VALUE_YELLOW, 0, $"Core #{i}", TemplateSortKey(30, i, 1));
-                    EnableCpuCoreLoad(entries, i, cpuGroupColor, VALUE_YELLOW, 0, TemplateSortKey(30, i, 2));
-                    EnableByDescriptionContains(entries, $"Core #{i}", "Thread #1 (%)", cpuGroupColor, VALUE_YELLOW, 0, $"Core #{i}", TemplateSortKey(30, i, 3));
-                    EnableByDescriptionContains(entries, $"Core #{i}", "Thread #2 (%)", cpuGroupColor, VALUE_YELLOW, 0, $"Core #{i}", TemplateSortKey(30, i, 4));
+                    EnableByDescription(entries, $"Core #{i} (MHz)", cpuGroupColor, VALUE_YELLOW, 0, $"Core #{i}");
+                    EnableCpuCoreLoad(entries, i, cpuGroupColor, VALUE_YELLOW, 0);
+                    EnableByDescriptionContains(entries, $"Core #{i}", "Thread #1 (%)", cpuGroupColor, VALUE_YELLOW, 0, $"Core #{i}");
+                    EnableByDescriptionContains(entries, $"Core #{i}", "Thread #2 (%)", cpuGroupColor, VALUE_YELLOW, 0, $"Core #{i}");
                 }
             }
 
-            EnableByDescription(entries, "CPU Max (MHz)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Max", TemplateSortKey(30, 98));
-            EnableByDescriptionContains(entries, "CPU Package (W)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(30, 99, 1));
-            EnableByDescriptionContains(entries, "CPU Package", "°C", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package", TemplateSortKey(30, 99, 2));
+            EnableByDescription(entries, "CPU Max (MHz)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Max");
+            EnableByDescriptionContains(entries, "CPU Package (W)", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package");
+            EnableByDescriptionContains(entries, "CPU Package", "°C", cpuGroupColor, VALUE_YELLOW, 0, "CPU Package");
 
             // 4. RAM Section (with blank line) - DDR info, DIMM temps, RAM used
-            EnableByIdentifier(entries, "CustomRAM", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 1, null, null, TemplateSortKey(40, 1));
-            EnableByDescription(entries, "DIMM #0 (°C)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "DIMM #0", TemplateSortKey(50, 1));
-            EnableByDescription(entries, "DIMM #1 (°C)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "DIMM #1", TemplateSortKey(50, 2));
-            EnableByDescription(entries, "DIMM #2 (°C)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "DIMM #2", TemplateSortKey(50, 3));
-            EnableByDescription(entries, "DIMM #3 (°C)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "DIMM #3", TemplateSortKey(50, 4));
-            EnableByDescription(entries, "DIMM #4 (°C)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "DIMM #4", TemplateSortKey(50, 5));
-            EnableByDescription(entries, "RAM Used (GB)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "RAM Used", TemplateSortKey(50, 99));
+            EnableByIdentifier(entries, "CustomRAM", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 1);
+            EnableByDescription(entries, "DIMM #0 (°C)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "DIMM #0");
+            EnableByDescription(entries, "DIMM #1 (°C)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "DIMM #1");
+            EnableByDescription(entries, "DIMM #2 (°C)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "DIMM #2");
+            EnableByDescription(entries, "DIMM #3 (°C)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "DIMM #3");
+            EnableByDescription(entries, "DIMM #4 (°C)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "DIMM #4");
+            EnableByDescription(entries, "RAM Used (GB)", RAM_GROUP_COLOR, RAM_VALUE_COLOR, 0, "RAM Used");
 
             // 5. Latency Section (with blank line)
             var pcLatencyEntry = entries.FirstOrDefault(e => e.Identifier == "OnlinePcLatency");
             var hasPcLatency = pcLatencyEntry != null && pcLatencyEntry.IsEntryEnabled;
             if (hasPcLatency)
-                EnableByIdentifier(entries, "OnlinePcLatency", LATENCY_GROUP_COLOR, LATENCY_VALUE_COLOR, 1, null, null, TemplateSortKey(60, 1));
+                EnableByIdentifier(entries, "OnlinePcLatency", LATENCY_GROUP_COLOR, LATENCY_VALUE_COLOR, 1);
 
             var animationErrorSeparators = hasPcLatency ? 0 : 1;
-            EnableByIdentifier(entries, "OnlineAnimationError", LATENCY_GROUP_COLOR, LATENCY_VALUE_COLOR, animationErrorSeparators, null, null, TemplateSortKey(60, 2));
+            EnableByIdentifier(entries, "OnlineAnimationError", LATENCY_GROUP_COLOR, LATENCY_VALUE_COLOR, animationErrorSeparators);
 
             // 6. Metrics Section (with blank line)
-            EnableByIdentifier(entries, "OnlineAverage", METRIC_COLOR, METRIC_COLOR, 1, null, null, TemplateSortKey(70, 1));
-            EnableByIdentifier(entries, "Online1PercentLow", METRIC_COLOR, METRIC_COLOR, 0, null, null, TemplateSortKey(70, 2));
+            EnableByIdentifier(entries, "OnlineAverage", METRIC_COLOR, METRIC_COLOR, 1);
+            EnableByIdentifier(entries, "Online1PercentLow", METRIC_COLOR, METRIC_COLOR, 0);
 
             // 7. Framerate Section (at the end, with blank line, no graph)
-            EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", false, TemplateSortKey(80, 1));
-            EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", true, TemplateSortKey(80, 2));
+            EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", false);
+            EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", true);
 
             EnsureCpuSectionSeparator(entries);
         }
@@ -299,7 +298,7 @@ namespace CapFrameX.Overlay
             }
         }
 
-        private bool EnableByIdentifier(List<IOverlayEntry> entries, string identifier, string groupColor, string valueColor, int separators, string groupName = null, bool? showGraph = null, string sortKey = null)
+        private bool EnableByIdentifier(List<IOverlayEntry> entries, string identifier, string groupColor, string valueColor, int separators, string groupName = null, bool? showGraph = null)
         {
             var entry = entries.FirstOrDefault(e => e.Identifier == identifier);
             if (entry != null)
@@ -312,15 +311,13 @@ namespace CapFrameX.Overlay
                 entry.GroupSeparators = separators;
                 if (showGraph.HasValue)
                     entry.ShowGraph = showGraph.Value;
-                if (sortKey != null)
-                    entry.SortKey = sortKey;
                 return true;
             }
 
             return false;
         }
 
-        private void EnableByDescription(List<IOverlayEntry> entries, string description, string groupColor, string valueColor, int separators, string groupName = null, string sortKey = null)
+        private void EnableByDescription(List<IOverlayEntry> entries, string description, string groupColor, string valueColor, int separators, string groupName = null)
         {
             var entry = entries.FirstOrDefault(e =>
                 e.Description != null &&
@@ -334,12 +331,10 @@ namespace CapFrameX.Overlay
                 if (groupName != null)
                     entry.GroupName = groupName;
                 entry.GroupSeparators = separators;
-                if (sortKey != null)
-                    entry.SortKey = sortKey;
             }
         }
 
-        private void EnableByDescriptionContains(List<IOverlayEntry> entries, string contains, string groupColor, string valueColor, int separators, string groupName = null, string sortKey = null)
+        private void EnableByDescriptionContains(List<IOverlayEntry> entries, string contains, string groupColor, string valueColor, int separators, string groupName = null)
         {
             var entry = entries.FirstOrDefault(e =>
                 e.Description != null &&
@@ -353,12 +348,10 @@ namespace CapFrameX.Overlay
                 if (groupName != null)
                     entry.GroupName = groupName;
                 entry.GroupSeparators = separators;
-                if (sortKey != null)
-                    entry.SortKey = sortKey;
             }
         }
 
-        private void EnableByDescriptionContains(List<IOverlayEntry> entries, string contains1, string contains2, string groupColor, string valueColor, int separators, string groupName = null, string sortKey = null)
+        private void EnableByDescriptionContains(List<IOverlayEntry> entries, string contains1, string contains2, string groupColor, string valueColor, int separators, string groupName = null)
         {
             var entry = entries.FirstOrDefault(e =>
                 e.Description != null &&
@@ -373,12 +366,10 @@ namespace CapFrameX.Overlay
                 entry.GroupSeparators = separators;
                 if (groupName != null)
                     entry.GroupName = groupName;
-                if (sortKey != null)
-                    entry.SortKey = sortKey;
             }
         }
 
-        private void EnableByGroupName(List<IOverlayEntry> entries, string groupName, string groupColor, string valueColor, int separators, string sortKey = null)
+        private void EnableByGroupName(List<IOverlayEntry> entries, string groupName, string groupColor, string valueColor, int separators)
         {
             var matchingEntries = entries.Where(e =>
                 e.GroupName != null &&
@@ -388,8 +379,6 @@ namespace CapFrameX.Overlay
             foreach (var entry in matchingEntries)
             {
                 entry.GroupSeparators = separators;
-                if (sortKey != null)
-                    entry.SortKey = sortKey;
             }
 
             // Enable only the first entry
@@ -402,7 +391,7 @@ namespace CapFrameX.Overlay
             }
         }
 
-        private bool EnableCpuCoreLoad(List<IOverlayEntry> entries, int coreIndex, string groupColor, string valueColor, int separators, string sortKey)
+        private bool EnableCpuCoreLoad(List<IOverlayEntry> entries, int coreIndex, string groupColor, string valueColor, int separators)
         {
             var entry = entries.FirstOrDefault(e =>
                 e.Description != null &&
@@ -418,11 +407,10 @@ namespace CapFrameX.Overlay
             entry.Color = valueColor;
             entry.GroupName = $"Core #{coreIndex}";
             entry.GroupSeparators = separators;
-            entry.SortKey = sortKey;
             return true;
         }
 
-        private bool EnableCoreGroupClock(List<IOverlayEntry> entries, string groupName, string groupColor, string valueColor, int separators, string sortKey)
+        private bool EnableCoreGroupClock(List<IOverlayEntry> entries, string groupName, string groupColor, string valueColor, int separators)
         {
             var entry = entries.FirstOrDefault(e =>
                 e.GroupName != null &&
@@ -437,11 +425,10 @@ namespace CapFrameX.Overlay
             entry.GroupColor = groupColor;
             entry.Color = valueColor;
             entry.GroupSeparators = separators;
-            entry.SortKey = sortKey;
             return true;
         }
 
-        private bool EnableCoreGroupLoad(List<IOverlayEntry> entries, string groupName, string groupColor, string valueColor, int separators, string sortKey)
+        private bool EnableCoreGroupLoad(List<IOverlayEntry> entries, string groupName, string groupColor, string valueColor, int separators)
         {
             var entry = entries.FirstOrDefault(e =>
                 e.GroupName != null &&
@@ -457,11 +444,10 @@ namespace CapFrameX.Overlay
             entry.GroupColor = groupColor;
             entry.Color = valueColor;
             entry.GroupSeparators = separators;
-            entry.SortKey = sortKey;
             return true;
         }
 
-        private bool EnableByGroupNameAndDescriptionContains(List<IOverlayEntry> entries, string groupName, string descriptionContains, string groupColor, string valueColor, int separators, string sortKey)
+        private bool EnableByGroupNameAndDescriptionContains(List<IOverlayEntry> entries, string groupName, string descriptionContains, string groupColor, string valueColor, int separators)
         {
             var entry = entries.FirstOrDefault(e =>
                 e.GroupName != null &&
@@ -476,7 +462,6 @@ namespace CapFrameX.Overlay
             entry.GroupColor = groupColor;
             entry.Color = valueColor;
             entry.GroupSeparators = separators;
-            entry.SortKey = sortKey;
             return true;
         }
 
@@ -598,14 +583,6 @@ namespace CapFrameX.Overlay
             return _storedOverlayEntries;
         }
 
-        private static string TemplateSortKey(int section, int index, int subIndex = 0)
-        {
-            if (subIndex > 0)
-                return $"{section}_{index:D2}_{subIndex:D2}";
-
-            return $"{section}_{index:D2}";
-        }
-
         private class CoreGroupInfo
         {
             public string GroupName { get; set; }
@@ -614,15 +591,5 @@ namespace CapFrameX.Overlay
             public int SuffixOrder { get; set; }
         }
 
-        private class StoredEntryState
-        {
-            public bool ShowOnOverlay { get; set; }
-            public string GroupColor { get; set; }
-            public string Color { get; set; }
-            public int GroupSeparators { get; set; }
-            public string GroupName { get; set; }
-            public bool ShowGraph { get; set; }
-            public string SortKey { get; set; }
-        }
     }
 }

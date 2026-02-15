@@ -191,8 +191,8 @@ namespace CapFrameX.Sensor
                 {
                     var simulationConfiguration = _appConfiguration.HardwareSimulationConfiguration;
                     _computer = simulationConfiguration != null
-                        ? new Computer(simulationConfiguration)
-                        : new Computer();
+                        ? new Computer(simulationConfiguration, _sensorConfig)
+                        : new Computer(_sensorConfig);
                     _computer.Open();
                     _computer.IsCpuEnabled = true;
                     _computer.IsGpuEnabled = true;
@@ -315,7 +315,7 @@ namespace CapFrameX.Sensor
             _sessionSensorDataLive.AddMeasureTime(timestamp);
             foreach (var sensorPair in currentValues)
             {
-                if (_sensorConfig.GetSensorIsActive(sensorPair.Key.Identifier))
+                if (_sensorConfig.IsSelectedForLogging(sensorPair.Key.Identifier))
                 {
                     _sessionSensorDataLive.AddSensorValue(sensorPair.Key, sensorPair.Value);
                 }
