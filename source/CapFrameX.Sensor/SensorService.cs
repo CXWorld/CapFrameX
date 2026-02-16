@@ -136,51 +136,47 @@ namespace CapFrameX.Sensor
             _osdUpdateSubject.OnNext(timeSpan);
         }
 
-        public string GetSensorTypeString(string identifier)
+        public string GetSensorTypeString(EOverlayEntryType entryType, string stableIdentifier)
         {
-            if (identifier == null)
+            if (stableIdentifier == null)
                 return string.Empty;
 
-            string SensorType;
+            // StableIdentifier format: "{HardwareName}/{sensorTypeLowercase}/{sensorName}"
+            var parts = stableIdentifier.Split('/');
+            if (parts.Length < 2)
+                return string.Empty;
 
-            if (identifier.Contains("cpu"))
+            string prefix;
+            switch (entryType)
             {
-                if (identifier.Contains("load"))
-                    SensorType = "CPU Load";
-                else if (identifier.Contains("clock"))
-                    SensorType = "CPU Clock";
-                else if (identifier.Contains("power"))
-                    SensorType = "CPU Power";
-                else if (identifier.Contains("temperature"))
-                    SensorType = "CPU Temperature";
-                else if (identifier.Contains("voltage"))
-                    SensorType = "CPU Voltage";
-                else
-                    SensorType = string.Empty;
+                case EOverlayEntryType.CPU:
+                    prefix = "CPU";
+                    break;
+                case EOverlayEntryType.GPU:
+                    prefix = "GPU";
+                    break;
+                default:
+                    return string.Empty;
             }
 
-            else if (identifier.Contains("gpu"))
+            var sensorSubtype = parts[1];
+            switch (sensorSubtype)
             {
-                if (identifier.Contains("load"))
-                    SensorType = "GPU Load";
-                else if (identifier.Contains("clock"))
-                    SensorType = "GPU Clock";
-                else if (identifier.Contains("power"))
-                    SensorType = "GPU Power";
-                else if (identifier.Contains("temperature"))
-                    SensorType = "GPU Temperature";
-                else if (identifier.Contains("voltage"))
-                    SensorType = "GPU Voltage";
-                else if (identifier.Contains("factor"))
-                    SensorType = "GPU Limits";
-                else
-                    SensorType = string.Empty;
+                case "load":
+                    return $"{prefix} Load";
+                case "clock":
+                    return $"{prefix} Clock";
+                case "power":
+                    return $"{prefix} Power";
+                case "temperature":
+                    return $"{prefix} Temperature";
+                case "voltage":
+                    return $"{prefix} Voltage";
+                case "factor":
+                    return prefix == "GPU" ? "GPU Limits" : string.Empty;
+                default:
+                    return string.Empty;
             }
-
-            else
-                SensorType = string.Empty;
-
-            return SensorType;
         }
 
         private Task StartOpenHardwareMonitor()

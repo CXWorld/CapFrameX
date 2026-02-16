@@ -220,12 +220,38 @@ namespace CapFrameX.Test.Mocks
         public ECpuVendor GetCpuVendor() => DetectCpuVendorFromName(_cpuName);
         public EGpuVendor GetGpuVendor() => DetectGpuVendorFromName(_gpuName);
 
-        public string GetSensorTypeString(string identifier)
+        public string GetSensorTypeString(EOverlayEntryType entryType, string stableIdentifier)
         {
-            lock (_lock)
+            if (stableIdentifier == null)
+                return string.Empty;
+
+            var parts = stableIdentifier.Split('/');
+            if (parts.Length < 2)
+                return string.Empty;
+
+            string prefix;
+            switch (entryType)
             {
-                var sensor = _sensorEntries.FirstOrDefault(s => s.Identifier == identifier);
-                return sensor?.SensorType ?? "Unknown";
+                case EOverlayEntryType.CPU:
+                    prefix = "CPU";
+                    break;
+                case EOverlayEntryType.GPU:
+                    prefix = "GPU";
+                    break;
+                default:
+                    return string.Empty;
+            }
+
+            var sensorSubtype = parts[1];
+            switch (sensorSubtype)
+            {
+                case "load": return $"{prefix} Load";
+                case "clock": return $"{prefix} Clock";
+                case "power": return $"{prefix} Power";
+                case "temperature": return $"{prefix} Temperature";
+                case "voltage": return $"{prefix} Voltage";
+                case "factor": return prefix == "GPU" ? "GPU Limits" : string.Empty;
+                default: return string.Empty;
             }
         }
 

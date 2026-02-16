@@ -24,7 +24,7 @@ namespace CapFrameX.Contracts.Sensor
         string GetGpuName();
         ECpuVendor GetCpuVendor();
         EGpuVendor GetGpuVendor();
-        string GetSensorTypeString(string identifier);
+        string GetSensorTypeString(EOverlayEntryType entryType, string stableIdentifier);
         void SetLoggingInterval(TimeSpan timeSpan);
         void SetOSDInterval(TimeSpan timeSpan);
         Task<IEnumerable<ISensorEntry>> GetSensorEntries();

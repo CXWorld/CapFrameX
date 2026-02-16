@@ -199,6 +199,36 @@ namespace CapFrameX.Sensor.Reporting
 
         public static IEnumerable<SensorDictEntry> GetSensorReportEntries(IEnumerable<ISessionSensorData2> sessionsSensorData, double startTime = 0, double endTime = double.PositiveInfinity)
         {
+            string GetMatchKey(ISessionSensorEntry entry)
+            {
+                var typeLower = entry.Type?.ToLowerInvariant() ?? string.Empty;
+                return $"{typeLower}/{entry.Name}";
+            }
+
+            // Detect ambiguous canonical keys (e.g. dual identical GPUs)
+            var ambiguousMatchKeys = new HashSet<string>();
+            foreach (var sensorData in sessionsSensorData)
+            {
+                var matchKeyCount = new Dictionary<string, int>();
+                foreach (var sensor in sensorData)
+                {
+                    var mkey = GetMatchKey(sensor.Value);
+                    if (!matchKeyCount.ContainsKey(mkey))
+                        matchKeyCount[mkey] = 0;
+                    matchKeyCount[mkey]++;
+                }
+                foreach (var kv in matchKeyCount.Where(k => k.Value > 1))
+                    ambiguousMatchKeys.Add(kv.Key);
+            }
+
+            string GetMergeKey(string dictKey, ISessionSensorEntry entry)
+            {
+                var mkey = GetMatchKey(entry);
+                if (!ambiguousMatchKeys.Contains(mkey))
+                    return mkey;
+                return dictKey;
+            }
+
             var sensorDict = new Dictionary<string, List<double>>();
             var sensorMeasureTimes = new Dictionary<string, List<double>>();
             var sensorMetadata = new Dictionary<string, (string Name, string Type)>();
@@ -215,7 +245,7 @@ namespace CapFrameX.Sensor.Reporting
 
                 foreach (var sensor in sensorData)
                 {
-                    var key = sensor.Key;
+                    var key = GetMergeKey(sensor.Key, sensor.Value);
                     if (!sensorDict.TryGetValue(key, out var sensorValues))
                     {
                         sensorValues = new List<double>();

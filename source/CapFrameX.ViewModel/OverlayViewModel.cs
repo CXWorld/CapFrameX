@@ -454,7 +454,7 @@ namespace CapFrameX.ViewModel
 
         public string SelectedOverlayItemSensorType
           => SelectedOverlayEntry == null ? null
-          : _sensorService.GetSensorTypeString(SelectedOverlayEntry.Identifier);
+          : _sensorService.GetSensorTypeString(SelectedOverlayEntry.OverlayEntryType, SelectedOverlayEntry.StableIdentifier);
 
         public ICommand ConfigSwitchCommand { get; }
 
@@ -605,7 +605,7 @@ namespace CapFrameX.ViewModel
                () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry, Checkboxes));
 
             SetFormatForSensorTypeCommand = new DelegateCommand(
-               () => _overlayEntryProvider.SetFormatForSensorType(_sensorService.GetSensorTypeString(SelectedOverlayEntry.Identifier), SelectedOverlayEntry, Checkboxes));
+               () => _overlayEntryProvider.SetFormatForSensorType(_sensorService.GetSensorTypeString(SelectedOverlayEntry.OverlayEntryType, SelectedOverlayEntry.StableIdentifier), SelectedOverlayEntry, Checkboxes));
 
             ResetColorAndLimitDefaultsCommand = new DelegateCommand(
                 () => _overlayEntryProvider.ResetColorAndLimits(SelectedOverlayEntry));
@@ -1024,9 +1024,9 @@ namespace CapFrameX.ViewModel
                 var searchText = _filterText.Trim();
                 bool matchesDescription = entry.Description?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
                 bool matchesGroupName = entry.GroupName?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
-                bool matchesIdentifier = entry.Identifier?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+                bool matchesStableId = entry.StableIdentifier?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
 
-                if (!matchesDescription && !matchesGroupName && !matchesIdentifier)
+                if (!matchesDescription && !matchesGroupName && !matchesStableId)
                     return false;
             }
 
@@ -1053,9 +1053,9 @@ namespace CapFrameX.ViewModel
             if (selectedEntry == null)
                 return;
 
-            string selectedSensorType = _sensorService.GetSensorTypeString(selectedEntry.Identifier);
+            string selectedSensorType = _sensorService.GetSensorTypeString(selectedEntry.OverlayEntryType, selectedEntry.StableIdentifier);
             SetSensorTypeButtonEnabled = selectedSensorType != string.Empty &&
-                OverlayEntries.Count((entry => _sensorService.GetSensorTypeString(entry.Identifier) == selectedSensorType)) > 1;
+                OverlayEntries.Count((entry => _sensorService.GetSensorTypeString(entry.OverlayEntryType, entry.StableIdentifier) == selectedSensorType)) > 1;
         }
 
 

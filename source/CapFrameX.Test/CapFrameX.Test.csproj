@@ -89,6 +89,9 @@
     <Compile Include="PresentMonInterface\SystemInfoTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sensor\ComputerTest.cs" />
+    <Compile Include="Sensor\OverlayConfigMigrationTest.cs" />
+    <Compile Include="Sensor\SensorAggregationStableIdTest.cs" />
+    <Compile Include="Sensor\StableIdMigrationTest.cs" />
     <Compile Include="Sensor\PantherLakeVoltageTest.cs" />
     <Compile Include="Statistics\CircularBufferTest.cs" />
     <Compile Include="Statistics\FrametimeStatisticProviderTest.cs" />
@@ -148,6 +151,10 @@
       <Project>{a4559b99-7fcb-40ef-bf97-d293a2b7d6d3}</Project>
       <Name>CapFrameX.Extensions</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Hardware.Controller\CapFrameX.Hardware.Controller.csproj">
+      <Project>{62E9AEEB-B322-48D0-B69B-FE64E62C461B}</Project>
+      <Name>CapFrameX.Hardware.Controller</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Monitoring.Contracts\CapFrameX.Monitoring.Contracts.csproj">
       <Project>{2F0D1227-BE4F-4501-B3A2-66A753ED742C}</Project>
       <Name>CapFrameX.Monitoring.Contracts</Name>
@@ -167,6 +174,10 @@
     <ProjectReference Include="..\CapFrameX.Sensor\CapFrameX.Sensor.csproj">
       <Project>{b1b0e5f1-942a-476c-bea4-8b9ffbca04c6}</Project>
       <Name>CapFrameX.Sensor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Sensor.Reporting\CapFrameX.Sensor.Reporting.csproj">
+      <Project>{FF04AB3E-E8C3-4452-9861-ED5DEE4181FC}</Project>
+      <Name>CapFrameX.Sensor.Reporting</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
       <Project>{dc30f7f7-5725-4de9-b271-0d621b559cd5}</Project>
@@ -192,7 +203,9 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
-    <Resource Include="Sensor\OverlayConfigNvAmd.json" />
+    <Content Include="Sensor\OverlayConfigNvAmd.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Castle.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">

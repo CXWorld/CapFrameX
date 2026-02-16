@@ -10,6 +10,7 @@ namespace CapFrameX.Data.Session.Classes
     {
         public string Name { get; }
         public string Type { get; }
+        public string StableIdentifier { get; set; }
         public LinkedList<double> Values { get; } = new LinkedList<double>();
 
         public SessionSensorEntry(string name, string type)

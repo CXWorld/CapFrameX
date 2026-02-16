@@ -8,6 +8,7 @@ namespace CapFrameX.Data.Session.Contracts
     {
         string Name { get; }
         string Type { get; }
+        string StableIdentifier { get; }
         LinkedList<double> Values { get; }
     }
 }

@@ -219,7 +219,7 @@ namespace CapFrameX.Overlay
         public void SetFormatForSensorType(string sensorType, IOverlayEntry selectedEntry, IOverlayEntryFormatChange checkboxes)
         {
             foreach (var entry in _overlayEntries
-                    .Where(x => _sensorService.GetSensorTypeString(x.Identifier) == sensorType))
+                    .Where(x => _sensorService.GetSensorTypeString(x.OverlayEntryType, x.StableIdentifier) == sensorType))
             {
                 if (checkboxes.Colors)
                 {
