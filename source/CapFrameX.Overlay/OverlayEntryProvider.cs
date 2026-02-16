@@ -451,47 +451,51 @@ namespace CapFrameX.Overlay
                     continue;
                 }
 
+                bool exactMatchHandled = false;
+
                 if (sensorById.TryGetValue(configEntry.Identifier, out var sensorEntry))
                 {
                     // Sensor with matching ID exists in current hardware
-                    matchedSensorIds.Add(configEntry.Identifier);
-
                     bool descriptionMatches = configEntry.Description == sensorEntry.Description;
                     bool typeMatches = configEntry.OverlayEntryType == sensorEntry.OverlayEntryType;
                     bool sortKeyMatches = configEntry.SortKey == sensorEntry.SortKey;
 
-                    // Transfer user configuration to the current sensor clone
-                    CopyUserConfig(configEntry, sensorEntry);
-
-                    if (!descriptionMatches)
+                    if (descriptionMatches)
                     {
-                        if (typeMatches && sortKeyMatches)
-                        {
-                            // ID, type and sort key all match — high confidence it's the same sensor
-                            // with a renamed description. Take over the saved group name for consistency.
-                            sensorEntry.GroupName = configEntry.GroupName;
-
-                            _logger.LogInformation(
-                                "Sensor '{identifier}' description changed but ID/Type/SortKey match. Keeping saved group name '{groupName}'.",
-                                configEntry.Identifier, configEntry.GroupName);
-                        }
-                        else
-                        {
-                            // ID matches but type or sort key differ — uncertain match,
-                            // hide from overlay so user can verify and reactivate
-                            sensorEntry.ShowOnOverlay = false;
-                            hasChanges = true;
-                            _logger.LogInformation(
-                                "Sensor '{identifier}' changed (description: '{oldDescription}' -> '{newDescription}', type/sortKey mismatch). Disabling overlay display.",
-                                configEntry.Identifier, configEntry.Description, sensorEntry.Description);
-                        }
+                        // Perfect match — same ID and description
+                        matchedSensorIds.Add(configEntry.Identifier);
+                        CopyUserConfig(configEntry, sensorEntry);
+                        configOverlayEntries.Add(sensorEntry);
+                        exactMatchHandled = true;
                     }
+                    else if (typeMatches && sortKeyMatches)
+                    {
+                        // ID, type and sort key all match — high confidence it's the same sensor
+                        // with a renamed description. Take over the saved group name for consistency.
+                        matchedSensorIds.Add(configEntry.Identifier);
+                        CopyUserConfig(configEntry, sensorEntry);
+                        sensorEntry.GroupName = configEntry.GroupName;
+                        configOverlayEntries.Add(sensorEntry);
+                        exactMatchHandled = true;
 
-                    configOverlayEntries.Add(sensorEntry);
+                        _logger.LogInformation(
+                            "Sensor '{identifier}' description changed but ID/Type/SortKey match. Keeping saved group name '{groupName}'.",
+                            configEntry.Identifier, configEntry.GroupName);
+                    }
+                    else
+                    {
+                        // ID matches but description AND (type or sort key) differ —
+                        // sensor indices likely shifted. Don't claim this ID so fallback
+                        // paths (StableIdentifier / Description+Type) can find the correct sensor.
+                        _logger.LogInformation(
+                            "Sensor '{identifier}' ID match rejected (description: '{oldDescription}' -> '{newDescription}', type/sortKey mismatch). Trying fallback paths.",
+                            configEntry.Identifier, configEntry.Description, sensorEntry.Description);
+                    }
                 }
-                else
+
+                if (!exactMatchHandled)
                 {
-                    // Identifier not found in current hardware.
+                    // Identifier not found or match quality too low.
                     // Try migration in order: StableIdentifier → Description+Type → remove.
                     bool matched = false;
 

@@ -5,12 +5,11 @@ using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
+using CapFrameX.Hardware.Controller;
 using CapFrameX.Monitoring.Contracts;
 using CapFrameX.Overlay;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Sensor;
-using CapFrameX.Statistics.NetStandard.Contracts;
-using CapFrameX.Hardware.Controller;
 using CapFrameX.Test.Mocks;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -18,7 +17,6 @@ using Moq;
 using Newtonsoft.Json;
 using Prism.Events;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -859,6 +857,117 @@ namespace CapFrameX.Test.Sensor
 
             var stableId = SensorIdentifierHelper.BuildStableIdentifier(entry);
             Assert.IsNull(stableId, "Should return null when entry has no HardwareName.");
+        }
+
+        /// <summary>
+        /// Simulate the scenario where sensor indices shift by +1 within the same ID range
+        /// (e.g. after a PawnIO update). The IDs stay the same but the sensor at each ID
+        /// has a different description and sort key. CPU Core Clock entries that had
+        /// ShowOnOverlay=true must be matched via the Description+Type fallback and preserve
+        /// their ShowOnOverlay flag.
+        /// </summary>
+        private void PopulateOverlayEntryCoreWithShiftedIndicesWithinSameIds()
+        {
+            var sensorTypes = new HashSet<EOverlayEntryType>
+            {
+                EOverlayEntryType.GPU, EOverlayEntryType.CPU, EOverlayEntryType.RAM
+            };
+
+            // Build a list of all sensor config entries sorted by identifier
+            var sensorConfigEntries = _loadedConfigEntries
+                .Where(e => sensorTypes.Contains(e.OverlayEntryType))
+                .ToList();
+
+            // Group CPU clock entries by their base path to simulate index shift
+            var cpuClockEntries = sensorConfigEntries
+                .Where(e => e.Identifier.Contains("/amdcpu/") && e.Identifier.Contains("/clock/"))
+                .OrderBy(e => e.Identifier)
+                .ToList();
+
+            var otherEntries = sensorConfigEntries
+                .Where(e => !(e.Identifier.Contains("/amdcpu/") && e.Identifier.Contains("/clock/")))
+                .ToList();
+
+            // For CPU clock entries: shift descriptions by +1 position
+            // This simulates a library update where indices shift
+            // E.g., /amdcpu/0/clock/5 used to be "Core #1 (MHz)" but now is "Core #1 (Effective) (MHz)"
+            for (int i = 0; i < cpuClockEntries.Count; i++)
+            {
+                var configEntry = cpuClockEntries[i];
+                // Use the description from the next entry (wrap around)
+                var shiftedEntry = cpuClockEntries[(i + 1) % cpuClockEntries.Count];
+
+                var entry = new OverlayEntryWrapper(configEntry.Identifier)
+                {
+                    StableIdentifier = null, // Old configs don't have stable IDs
+                    SortKey = shiftedEntry.SortKey,
+                    Description = shiftedEntry.Description,
+                    OverlayEntryType = configEntry.OverlayEntryType,
+                    GroupName = shiftedEntry.Description,
+                    ShowOnOverlay = false,
+                    ShowOnOverlayIsEnabled = true,
+                    ShowGraph = false,
+                    ShowGraphIsEnabled = false,
+                    Value = 0
+                };
+
+                _overlayEntryCore.OverlayEntryDict.TryAdd(configEntry.Identifier, entry);
+            }
+
+            // Non-clock entries: keep identical (unchanged hardware)
+            foreach (var configEntry in otherEntries)
+            {
+                var entry = new OverlayEntryWrapper(configEntry.Identifier)
+                {
+                    StableIdentifier = configEntry.StableIdentifier,
+                    SortKey = configEntry.SortKey,
+                    Description = configEntry.Description,
+                    OverlayEntryType = configEntry.OverlayEntryType,
+                    GroupName = configEntry.GroupName,
+                    ShowOnOverlay = false,
+                    ShowOnOverlayIsEnabled = true,
+                    ShowGraph = false,
+                    ShowGraphIsEnabled = false,
+                    Value = 0
+                };
+
+                _overlayEntryCore.OverlayEntryDict.TryAdd(configEntry.Identifier, entry);
+            }
+
+            _overlayEntryCore.OverlayEntryCoreCompletionSource.SetResult(true);
+        }
+
+        [TestMethod]
+        public async Task ShiftedIndicesSameIds_CpuCoreClockShowOnOverlay_Preserved()
+        {
+            PopulateOverlayEntryCoreWithShiftedIndicesWithinSameIds();
+
+            var provider = CreateProvider();
+            await Task.Delay(500);
+
+            var entries = await provider.GetOverlayEntries(updateFormats: false);
+
+            // The 8 CPU Core Clock entries (e.g. "Core #1 (MHz)") had ShowOnOverlay=true in config.
+            // After index shift, exact ID match finds wrong sensor → should fall through to
+            // Description+Type fallback and preserve ShowOnOverlay=true.
+            var cpuCoreClockDescriptions = new HashSet<string>
+            {
+                "Core #1 (MHz)", "Core #2 (MHz)", "Core #3 (MHz)", "Core #4 (MHz)",
+                "Core #5 (MHz)", "Core #6 (MHz)", "Core #7 (MHz)", "Core #8 (MHz)"
+            };
+
+            var matchedEntries = entries
+                .Where(e => cpuCoreClockDescriptions.Contains(e.Description))
+                .ToList();
+
+            Assert.AreEqual(cpuCoreClockDescriptions.Count, matchedEntries.Count,
+                $"All {cpuCoreClockDescriptions.Count} CPU Core Clock entries should be present after migration.");
+
+            foreach (var entry in matchedEntries)
+            {
+                Assert.IsTrue(entry.ShowOnOverlay,
+                    $"CPU Core Clock '{entry.Description}' (ID: {entry.Identifier}) should have ShowOnOverlay=true after index shift migration.");
+            }
         }
 
         [TestMethod]
