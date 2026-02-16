@@ -55,7 +55,7 @@ internal class PawnIo
 
     internal static unsafe PawnIo LoadModuleFromResource(Assembly assembly, string resourceName)
     {
-        SafeFileHandle handle = PInvoke.CreateFile(@"\\.\PawnIO",
+        SafeFileHandle handle = PInvoke.CreateFile(@"\\?\GLOBALROOT\Device\PawnIO",
             (uint)FileAccess.ReadWrite,
             FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE,
             null,

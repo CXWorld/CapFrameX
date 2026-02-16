@@ -40,7 +40,7 @@ public static class DriverInstaller
     /// Default Windows service name for the PawnIO driver.
     /// </summary>
     public const string PAWNIO_SERVICE_NAME = "PawnIO";
-    private const string PAWNIO_DEVICE_PATH = @"\\.\PawnIO";
+    private const string PAWNIO_DEVICE_PATH = @"\\?\GLOBALROOT\Device\PawnIO";
 
     // SCM access
     private const uint SC_MANAGER_CONNECT = 0x0001;
