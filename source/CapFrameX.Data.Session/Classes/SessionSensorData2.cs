@@ -49,7 +49,7 @@ namespace CapFrameX.Data.Session.Classes
         [JsonIgnore]
         public int[] GpuTemp { get => Values.FirstOrDefault(c => c.Name.Contains("GPU Core") && c.Type == "Temperature")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
         [JsonIgnore]
-        public double[] RamUsage { get => Values.FirstOrDefault(c => c.Name.Contains("Used Memory Game") && c.Type == "Data")?.Values.ToArray() ?? Array.Empty<double>(); set => throw new NotImplementedException(); }
+        public double[] RamUsage { get => Values.FirstOrDefault(c => c.Name.Contains("RAM Game Used") && c.Type == "Data")?.Values.ToArray() ?? Array.Empty<double>(); set => throw new NotImplementedException(); }
         [JsonIgnore]
         public int[] VRamUsage { get => Values.FirstOrDefault(c => c.Name.Contains("Dedicated") && !c.Name.Contains("Game") && c.Type == "SmallData")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
         [JsonIgnore]
