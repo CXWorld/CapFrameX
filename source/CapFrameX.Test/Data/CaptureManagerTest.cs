@@ -17,6 +17,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
@@ -104,7 +105,9 @@ namespace CapFrameX.Test.Data
 
             // Register concrete dependencies
             _container.Register<SoundManager>(Reuse.Singleton);
-            _container.Register<ProcessList>(Reuse.Singleton);
+            _container.RegisterInstance<ProcessList>(
+                ProcessList.Create("Processes.json", Path.Combine(Path.GetTempPath(), "CapFrameXTest"),
+                    _appConfigurationMock.Object, _processListLoggerMock.Object));
             _container.Register<CaptureManager>(Reuse.Singleton);
 
             _captureManager = _container.Resolve<CaptureManager>();
