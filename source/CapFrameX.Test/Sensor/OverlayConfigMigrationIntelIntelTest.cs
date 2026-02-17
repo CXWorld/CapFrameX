@@ -28,7 +28,7 @@ using System.Threading.Tasks;
 namespace CapFrameX.Test.Sensor
 {
     [TestClass]
-    public class OverlayConfigMigrationNvAmdTest
+    public class OverlayConfigMigrationIntelIntelTest
     {
         private string _testConfigFolder;
         private MockSensorService _mockSensorService;
@@ -53,7 +53,7 @@ namespace CapFrameX.Test.Sensor
 
             // Load test JSON from output directory
             var testAssemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var jsonPath = Path.Combine(testAssemblyDir, "Sensor", "OverlayConfigNvAmd.json");
+            var jsonPath = Path.Combine(testAssemblyDir, "Sensor", "OverlayConfigIntelIntel.json");
             var json = File.ReadAllText(jsonPath);
             var persistence = JsonConvert.DeserializeObject<OverlayEntryPersistence>(json);
             _loadedConfigEntries = persistence.OverlayEntries;
@@ -107,14 +107,8 @@ namespace CapFrameX.Test.Sensor
             catch { }
         }
 
-        /// <summary>
-        /// Populate the OverlayEntryCore with sensor entries that match
-        /// the sensors found in the config JSON, simulating "same hardware" scenario.
-        /// </summary>
         private void PopulateOverlayEntryCoreFromConfig()
         {
-            // Build sensor entries from the config file — each sensor-type entry
-            // needs a matching entry in the OverlayEntryDict
             var sensorTypes = new HashSet<EOverlayEntryType>
             {
                 EOverlayEntryType.GPU, EOverlayEntryType.CPU, EOverlayEntryType.RAM
@@ -125,7 +119,6 @@ namespace CapFrameX.Test.Sensor
                 if (!sensorTypes.Contains(configEntry.OverlayEntryType))
                     continue;
 
-                // Create a matching overlay entry in the core dict (as OverlayService would)
                 var entry = new OverlayEntryWrapper(configEntry.Identifier)
                 {
                     StableIdentifier = configEntry.StableIdentifier,
@@ -133,7 +126,7 @@ namespace CapFrameX.Test.Sensor
                     Description = configEntry.Description,
                     OverlayEntryType = configEntry.OverlayEntryType,
                     GroupName = configEntry.GroupName,
-                    ShowOnOverlay = false, // Defaults from hardware scan
+                    ShowOnOverlay = false,
                     ShowOnOverlayIsEnabled = true,
                     ShowGraph = false,
                     ShowGraphIsEnabled = false,
@@ -146,10 +139,6 @@ namespace CapFrameX.Test.Sensor
             _overlayEntryCore.OverlayEntryCoreCompletionSource.SetResult(true);
         }
 
-        /// <summary>
-        /// Populate the OverlayEntryCore with sensor entries where the identifiers
-        /// have shifted (simulating a library version change), but Description stays the same.
-        /// </summary>
         private void PopulateOverlayEntryCoreWithShiftedIds()
         {
             var sensorTypes = new HashSet<EOverlayEntryType>
@@ -162,7 +151,6 @@ namespace CapFrameX.Test.Sensor
                 if (!sensorTypes.Contains(configEntry.OverlayEntryType))
                     continue;
 
-                // Shift indices in identifiers: /gpu-nvidia/0/load/1 → /gpu-nvidia/0/load/101
                 string shiftedId = ShiftIdentifier(configEntry.Identifier);
 
                 var entry = new OverlayEntryWrapper(shiftedId)
@@ -185,9 +173,6 @@ namespace CapFrameX.Test.Sensor
             _overlayEntryCore.OverlayEntryCoreCompletionSource.SetResult(true);
         }
 
-        /// <summary>
-        /// Populate with shifted IDs but only Description-based fallback (no StableIdentifier).
-        /// </summary>
         private void PopulateOverlayEntryCoreWithShiftedIdsNoStableId()
         {
             var sensorTypes = new HashSet<EOverlayEntryType>
@@ -204,7 +189,7 @@ namespace CapFrameX.Test.Sensor
 
                 var entry = new OverlayEntryWrapper(shiftedId)
                 {
-                    StableIdentifier = null, // No stable ID — forces Description fallback
+                    StableIdentifier = null,
                     SortKey = configEntry.SortKey,
                     Description = configEntry.Description,
                     OverlayEntryType = configEntry.OverlayEntryType,
@@ -224,11 +209,9 @@ namespace CapFrameX.Test.Sensor
 
         private string ShiftIdentifier(string identifier)
         {
-            // /gpu-nvidia/0/load/1 → /gpu-nvidia/0/load/101
             var parts = identifier.Split('/');
             if (parts.Length >= 4)
             {
-                // Shift the last numeric index by +100
                 if (int.TryParse(parts[parts.Length - 1], out int lastIndex))
                 {
                     parts[parts.Length - 1] = (lastIndex + 100).ToString();
@@ -254,17 +237,84 @@ namespace CapFrameX.Test.Sensor
                 _loggerMock.Object);
         }
 
+        /// <summary>
+        /// Simulate sensor indices shifting within the same ID range for Intel CPU clock entries.
+        /// </summary>
+        private void PopulateOverlayEntryCoreWithShiftedIndicesWithinSameIds()
+        {
+            var sensorTypes = new HashSet<EOverlayEntryType>
+            {
+                EOverlayEntryType.GPU, EOverlayEntryType.CPU, EOverlayEntryType.RAM
+            };
+
+            var sensorConfigEntries = _loadedConfigEntries
+                .Where(e => sensorTypes.Contains(e.OverlayEntryType))
+                .ToList();
+
+            var cpuClockEntries = sensorConfigEntries
+                .Where(e => e.Identifier.Contains("/intelcpu/") && e.Identifier.Contains("/clock/"))
+                .OrderBy(e => e.Identifier)
+                .ToList();
+
+            var otherEntries = sensorConfigEntries
+                .Where(e => !(e.Identifier.Contains("/intelcpu/") && e.Identifier.Contains("/clock/")))
+                .ToList();
+
+            for (int i = 0; i < cpuClockEntries.Count; i++)
+            {
+                var configEntry = cpuClockEntries[i];
+                var shiftedEntry = cpuClockEntries[(i + 1) % cpuClockEntries.Count];
+
+                var entry = new OverlayEntryWrapper(configEntry.Identifier)
+                {
+                    StableIdentifier = null,
+                    SortKey = shiftedEntry.SortKey,
+                    Description = shiftedEntry.Description,
+                    OverlayEntryType = configEntry.OverlayEntryType,
+                    GroupName = shiftedEntry.Description,
+                    ShowOnOverlay = false,
+                    ShowOnOverlayIsEnabled = true,
+                    ShowGraph = false,
+                    ShowGraphIsEnabled = false,
+                    Value = 0
+                };
+
+                _overlayEntryCore.OverlayEntryDict.TryAdd(configEntry.Identifier, entry);
+            }
+
+            foreach (var configEntry in otherEntries)
+            {
+                var entry = new OverlayEntryWrapper(configEntry.Identifier)
+                {
+                    StableIdentifier = configEntry.StableIdentifier,
+                    SortKey = configEntry.SortKey,
+                    Description = configEntry.Description,
+                    OverlayEntryType = configEntry.OverlayEntryType,
+                    GroupName = configEntry.GroupName,
+                    ShowOnOverlay = false,
+                    ShowOnOverlayIsEnabled = true,
+                    ShowGraph = false,
+                    ShowGraphIsEnabled = false,
+                    Value = 0
+                };
+
+                _overlayEntryCore.OverlayEntryDict.TryAdd(configEntry.Identifier, entry);
+            }
+
+            _overlayEntryCore.OverlayEntryCoreCompletionSource.SetResult(true);
+        }
+
         // ==================== TESTS ====================
 
         [TestMethod]
-        public void LoadedConfig_HasExpected137Entries()
+        public void LoadedConfig_IntelIntel_HasExpected171Entries()
         {
-            Assert.AreEqual(137, _loadedConfigEntries.Count,
-                "OverlayConfigNvAmd.json should contain exactly 137 entries.");
+            Assert.AreEqual(171, _loadedConfigEntries.Count,
+                "OverlayConfigIntelIntel.json should contain exactly 171 entries.");
         }
 
         [TestMethod]
-        public void LoadedConfig_ContainsAllOverlayEntryTypes()
+        public void LoadedConfig_IntelIntel_ContainsAllOverlayEntryTypes()
         {
             var types = _loadedConfigEntries.Select(e => e.OverlayEntryType).Distinct().OrderBy(t => t).ToList();
 
@@ -276,22 +326,18 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
-        public void LoadedConfig_ShowOnOverlayFlags_ArePreserved()
+        public void LoadedConfig_IntelIntel_ShowOnOverlayFlags_ArePreserved()
         {
             var shownEntries = _loadedConfigEntries.Where(e => e.ShowOnOverlay).ToList();
-
-            // Verify specific visible entries from the config
             var shownIds = shownEntries.Select(e => e.Identifier).ToHashSet();
 
             // GPU entries that are shown
-            Assert.IsTrue(shownIds.Contains("/gpu-nvidia/0/clock/0"), "GPU Core Clock should be shown.");
-            Assert.IsTrue(shownIds.Contains("/gpu-nvidia/0/load/0"), "GPU Core Load should be shown.");
-            Assert.IsTrue(shownIds.Contains("/gpu-nvidia/0/temperature/0"), "GPU Core Temp should be shown.");
-            Assert.IsTrue(shownIds.Contains("/gpu-nvidia/0/power/0"), "GPU Power should be shown.");
+            Assert.IsTrue(shownIds.Contains("/gpu-intel/0/clock/0"), "GPU Core Clock should be shown.");
+            Assert.IsTrue(shownIds.Contains("/gpu-intel/0/load/0"), "GPU Core Load should be shown.");
 
             // CPU entries that are shown
-            Assert.IsTrue(shownIds.Contains("/amdcpu/0/clock/3"), "CPU Max Clock should be shown.");
-            Assert.IsTrue(shownIds.Contains("/amdcpu/0/power/0"), "CPU Package Power should be shown.");
+            Assert.IsTrue(shownIds.Contains("/intelcpu/0/clock/17"), "CPU Max Clock should be shown.");
+            Assert.IsTrue(shownIds.Contains("/intelcpu/0/power/0"), "CPU Package Power should be shown.");
 
             // Framerate/Frametime
             Assert.IsTrue(shownIds.Contains("Framerate"), "Framerate should be shown.");
@@ -299,9 +345,8 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
-        public void LoadedConfig_SortKeyOrder_IsCorrect()
+        public void LoadedConfig_IntelIntel_SortKeyOrder_IsCorrect()
         {
-            // Entries with ShowOnOverlay=true should be in ascending SortKey order
             var shownEntries = _loadedConfigEntries
                 .Where(e => e.ShowOnOverlay)
                 .ToList();
@@ -320,26 +365,24 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
-        public void LoadedConfig_GroupNames_ArePreserved()
+        public void LoadedConfig_IntelIntel_GroupNames_ArePreserved()
         {
             var entryById = _loadedConfigEntries.ToDictionary(e => e.Identifier);
 
-            Assert.AreEqual("RTX 5090", entryById["/gpu-nvidia/0/clock/0"].GroupName, "GPU Clock group name.");
-            Assert.AreEqual("GPU Load", entryById["/gpu-nvidia/0/load/0"].GroupName, "GPU Load group name.");
-            Assert.AreEqual("GPU Temp", entryById["/gpu-nvidia/0/temperature/0"].GroupName, "GPU Temp group name.");
-            Assert.AreEqual("VRAM Hot Spot", entryById["/gpu-nvidia/0/temperature/3"].GroupName, "VRAM Hot Spot group name.");
+            Assert.AreEqual("Arc B390 GPU", entryById["/gpu-intel/0/clock/0"].GroupName, "GPU Clock group name.");
+            Assert.AreEqual("GPU Load", entryById["/gpu-intel/0/load/0"].GroupName, "GPU Load group name.");
+            Assert.AreEqual("CPU Max", entryById["/intelcpu/0/clock/17"].GroupName, "CPU Max Clock group name.");
+            Assert.AreEqual("CPU Package", entryById["/intelcpu/0/power/0"].GroupName, "CPU Package Power group name.");
             Assert.AreEqual("CPU Model", entryById["CustomCPU"].GroupName, "CustomCPU group name.");
             Assert.AreEqual("RAM Info", entryById["CustomRAM"].GroupName, "CustomRAM group name.");
         }
 
         [TestMethod]
-        public async Task IdenticalHardware_AllEntriesLoaded_OrderPreserved()
+        public async Task IdenticalHardware_IntelIntel_AllEntriesLoaded_OrderPreserved()
         {
             PopulateOverlayEntryCoreFromConfig();
 
             var provider = CreateProvider();
-
-            // Wait for initialization to complete
             await Task.Delay(500);
 
             var entries = await provider.GetOverlayEntries(updateFormats: false);
@@ -347,7 +390,6 @@ namespace CapFrameX.Test.Sensor
             Assert.IsNotNull(entries, "Entries should not be null.");
             Assert.IsTrue(entries.Length > 0, "Should have loaded entries.");
 
-            // All config entries should be present
             var entryIds = new HashSet<string>(entries.Select(e => e.Identifier));
             foreach (var configEntry in _loadedConfigEntries)
             {
@@ -357,7 +399,7 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
-        public async Task IdenticalHardware_ShowOnOverlay_Preserved()
+        public async Task IdenticalHardware_IntelIntel_ShowOnOverlay_Preserved()
         {
             PopulateOverlayEntryCoreFromConfig();
 
@@ -367,7 +409,6 @@ namespace CapFrameX.Test.Sensor
             var entries = await provider.GetOverlayEntries(updateFormats: false);
             var entryById = entries.ToDictionary(e => e.Identifier);
 
-            // Verify ShowOnOverlay flags are transferred from saved config
             foreach (var configEntry in _loadedConfigEntries)
             {
                 if (entryById.TryGetValue(configEntry.Identifier, out var loaded))
@@ -379,7 +420,7 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
-        public async Task IdenticalHardware_GroupNames_Preserved()
+        public async Task IdenticalHardware_IntelIntel_GroupNames_Preserved()
         {
             PopulateOverlayEntryCoreFromConfig();
 
@@ -389,7 +430,6 @@ namespace CapFrameX.Test.Sensor
             var entries = await provider.GetOverlayEntries(updateFormats: false);
             var entryById = entries.ToDictionary(e => e.Identifier);
 
-            // Verify user-customized group names are preserved
             var customGroupEntries = _loadedConfigEntries
                 .Where(e => e.OverlayEntryType == EOverlayEntryType.GPU
                          || e.OverlayEntryType == EOverlayEntryType.CPU
@@ -408,7 +448,7 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
-        public async Task IdenticalHardware_Colors_Preserved()
+        public async Task IdenticalHardware_IntelIntel_Colors_Preserved()
         {
             PopulateOverlayEntryCoreFromConfig();
 
@@ -418,7 +458,6 @@ namespace CapFrameX.Test.Sensor
             var entries = await provider.GetOverlayEntries(updateFormats: false);
             var entryById = entries.ToDictionary(e => e.Identifier);
 
-            // Check colors on sensor entries
             var sensorEntries = _loadedConfigEntries
                 .Where(e => e.OverlayEntryType == EOverlayEntryType.GPU
                          || e.OverlayEntryType == EOverlayEntryType.CPU
@@ -437,7 +476,7 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
-        public async Task IdenticalHardware_EntryOrder_MatchesConfig()
+        public async Task IdenticalHardware_IntelIntel_EntryOrder_MatchesConfig()
         {
             PopulateOverlayEntryCoreFromConfig();
 
@@ -446,11 +485,9 @@ namespace CapFrameX.Test.Sensor
 
             var entries = await provider.GetOverlayEntries(updateFormats: false);
 
-            // Config entries should maintain their relative order
             var configIds = _loadedConfigEntries.Select(e => e.Identifier).ToList();
             var loadedIds = entries.Select(e => e.Identifier).ToList();
 
-            // Filter to only IDs that appear in both (some defaults may be inserted)
             var commonIds = configIds.Where(id => loadedIds.Contains(id)).ToList();
             var commonIdsInLoaded = loadedIds.Where(id => configIds.Contains(id)).ToList();
 
@@ -459,7 +496,7 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
-        public async Task ShiftedIds_StableIdMigration_AllSensorEntriesPreserved()
+        public async Task ShiftedIds_IntelIntel_StableIdMigration_AllSensorEntriesPreserved()
         {
             PopulateOverlayEntryCoreWithShiftedIds();
 
@@ -468,13 +505,11 @@ namespace CapFrameX.Test.Sensor
 
             var entries = await provider.GetOverlayEntries(updateFormats: false);
 
-            // Count sensor entries in config
             var configSensorCount = _loadedConfigEntries
                 .Count(e => e.OverlayEntryType == EOverlayEntryType.GPU
                          || e.OverlayEntryType == EOverlayEntryType.CPU
                          || e.OverlayEntryType == EOverlayEntryType.RAM);
 
-            // All sensor entries should have been migrated (via StableIdentifier)
             var sensorEntriesInResult = entries
                 .Where(e => e.OverlayEntryType == EOverlayEntryType.GPU
                           || e.OverlayEntryType == EOverlayEntryType.CPU
@@ -486,7 +521,7 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
-        public async Task ShiftedIds_StableIdMigration_ShowOnOverlayPreserved()
+        public async Task ShiftedIds_IntelIntel_StableIdMigration_ShowOnOverlayPreserved()
         {
             PopulateOverlayEntryCoreWithShiftedIds();
 
@@ -495,14 +530,12 @@ namespace CapFrameX.Test.Sensor
 
             var entries = await provider.GetOverlayEntries(updateFormats: false);
 
-            // Build lookup by StableIdentifier
             var resultByStableId = entries
                 .Where(e => !string.IsNullOrEmpty(e.StableIdentifier))
                 .GroupBy(e => e.StableIdentifier)
                 .Where(g => g.Count() == 1)
                 .ToDictionary(g => g.Key, g => g.Single());
 
-            // Verify that entries with ShowOnOverlay=true in config are still shown
             var shownConfigEntries = _loadedConfigEntries
                 .Where(e => e.ShowOnOverlay && !string.IsNullOrEmpty(e.StableIdentifier))
                 .ToList();
@@ -518,7 +551,7 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
-        public async Task ShiftedIds_StableIdMigration_GroupNamesPreserved()
+        public async Task ShiftedIds_IntelIntel_StableIdMigration_GroupNamesPreserved()
         {
             PopulateOverlayEntryCoreWithShiftedIds();
 
@@ -553,11 +586,10 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
-        public async Task ShiftedIds_DescriptionFallback_AllSensorEntriesPreserved()
+        public async Task ShiftedIds_IntelIntel_DescriptionFallback_AllSensorEntriesPreserved()
         {
             PopulateOverlayEntryCoreWithShiftedIdsNoStableId();
 
-            // Clear StableIdentifier from config entries to simulate old config
             var json = File.ReadAllText(Path.Combine(_testConfigFolder, "OverlayEntryConfiguration_0.json"));
             var persistence = JsonConvert.DeserializeObject<OverlayEntryPersistence>(json);
             foreach (var entry in persistence.OverlayEntries)
@@ -583,14 +615,12 @@ namespace CapFrameX.Test.Sensor
                           || e.OverlayEntryType == EOverlayEntryType.RAM)
                 .ToList();
 
-            // With unique descriptions, all entries should migrate via Description fallback
-            // Some may not migrate if descriptions are ambiguous (duplicate Description+Type combos)
             Assert.IsTrue(sensorEntriesInResult.Count >= configSensorCount,
                 $"Should have at least {configSensorCount} sensor entries after Description fallback migration, got {sensorEntriesInResult.Count}.");
         }
 
         [TestMethod]
-        public async Task ShiftedIds_DescriptionFallback_ShowOnOverlayPreserved()
+        public async Task ShiftedIds_IntelIntel_DescriptionFallback_ShowOnOverlayPreserved()
         {
             PopulateOverlayEntryCoreWithShiftedIdsNoStableId();
 
@@ -608,7 +638,6 @@ namespace CapFrameX.Test.Sensor
 
             var entries = await provider.GetOverlayEntries(updateFormats: false);
 
-            // Build lookup by Description+Type for verification
             var resultByDescType = entries
                 .Where(e => e.OverlayEntryType == EOverlayEntryType.GPU
                           || e.OverlayEntryType == EOverlayEntryType.CPU
@@ -617,7 +646,6 @@ namespace CapFrameX.Test.Sensor
                 .Where(g => g.Count() == 1)
                 .ToDictionary(g => g.Key, g => g.Single());
 
-            // Check that unique Description+Type entries with ShowOnOverlay=true are preserved
             var shownConfigEntries = _loadedConfigEntries
                 .Where(e => e.ShowOnOverlay
                     && (e.OverlayEntryType == EOverlayEntryType.GPU
@@ -637,7 +665,7 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
-        public void LoadedConfig_NvidiaGpuEntries_AreCorrectlyTyped()
+        public void LoadedConfig_IntelGpuEntries_AreCorrectlyTyped()
         {
             var gpuEntries = _loadedConfigEntries
                 .Where(e => e.OverlayEntryType == EOverlayEntryType.GPU)
@@ -647,13 +675,15 @@ namespace CapFrameX.Test.Sensor
 
             foreach (var entry in gpuEntries)
             {
-                Assert.IsTrue(entry.Identifier.StartsWith("/gpu-nvidia/"),
-                    $"GPU entry '{entry.Identifier}' should start with '/gpu-nvidia/'.");
+                Assert.IsTrue(
+                    entry.Identifier.StartsWith("/gpu-intel/")
+                    || entry.Identifier.StartsWith("/gpu-intel-integrated/"),
+                    $"GPU entry '{entry.Identifier}' should start with '/gpu-intel/' or '/gpu-intel-integrated/'.");
             }
         }
 
         [TestMethod]
-        public void LoadedConfig_AmdCpuEntries_AreCorrectlyTyped()
+        public void LoadedConfig_IntelCpuEntries_AreCorrectlyTyped()
         {
             var cpuEntries = _loadedConfigEntries
                 .Where(e => e.OverlayEntryType == EOverlayEntryType.CPU)
@@ -663,13 +693,13 @@ namespace CapFrameX.Test.Sensor
 
             foreach (var entry in cpuEntries)
             {
-                Assert.IsTrue(entry.Identifier.StartsWith("/amdcpu/"),
-                    $"CPU entry '{entry.Identifier}' should start with '/amdcpu/'.");
+                Assert.IsTrue(entry.Identifier.StartsWith("/intelcpu/"),
+                    $"CPU entry '{entry.Identifier}' should start with '/intelcpu/'.");
             }
         }
 
         [TestMethod]
-        public void LoadedConfig_RamEntries_AreCorrectlyTyped()
+        public void LoadedConfig_IntelIntel_RamEntries_AreCorrectlyTyped()
         {
             var ramEntries = _loadedConfigEntries
                 .Where(e => e.OverlayEntryType == EOverlayEntryType.RAM)
@@ -688,7 +718,7 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
-        public void LoadedConfig_OnlineMetricEntries_ArePresent()
+        public void LoadedConfig_IntelIntel_OnlineMetricEntries_ArePresent()
         {
             var onlineMetrics = _loadedConfigEntries
                 .Where(e => e.OverlayEntryType == EOverlayEntryType.OnlineMetric)
@@ -702,243 +732,37 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
-        public void LoadedConfig_ShownEntries_OrderedBySortKey()
+        public void LoadedConfig_IntelIntel_ShownEntries_OrderedBySortKey()
         {
-            // Get entries that are shown on overlay, verify they follow the expected display order
             var shownEntries = _loadedConfigEntries.Where(e => e.ShowOnOverlay).ToList();
             Assert.IsTrue(shownEntries.Count > 10, "Should have more than 10 shown entries.");
 
-            // Verify GPU entries (SortKey 10_xx) come before CPU entries (SortKey 30_xx)
-            var firstGpuShown = shownEntries.First(e => e.OverlayEntryType == EOverlayEntryType.GPU);
-            var firstCpuShown = shownEntries.First(e => e.OverlayEntryType == EOverlayEntryType.CPU);
-            int gpuIndex = shownEntries.IndexOf(firstGpuShown);
-            int cpuIndex = shownEntries.IndexOf(firstCpuShown);
+            // Verify GPU entries come before CPU entries
+            var firstGpuShown = shownEntries.FirstOrDefault(e => e.OverlayEntryType == EOverlayEntryType.GPU);
+            var firstCpuShown = shownEntries.FirstOrDefault(e => e.OverlayEntryType == EOverlayEntryType.CPU);
 
-            Assert.IsTrue(gpuIndex < cpuIndex,
-                "GPU entries should appear before CPU entries in overlay order.");
+            if (firstGpuShown != null && firstCpuShown != null)
+            {
+                int gpuIndex = shownEntries.IndexOf(firstGpuShown);
+                int cpuIndex = shownEntries.IndexOf(firstCpuShown);
+
+                Assert.IsTrue(gpuIndex < cpuIndex,
+                    "GPU entries should appear before CPU entries in overlay order.");
+            }
 
             // Verify CPU entries come before RAM entries
             var firstRamShown = shownEntries.FirstOrDefault(e => e.OverlayEntryType == EOverlayEntryType.RAM);
-            if (firstRamShown != null)
+            if (firstCpuShown != null && firstRamShown != null)
             {
+                int cpuIndex = shownEntries.IndexOf(firstCpuShown);
                 int ramIndex = shownEntries.IndexOf(firstRamShown);
                 Assert.IsTrue(cpuIndex < ramIndex,
                     "CPU entries should appear before RAM entries in overlay order.");
             }
         }
 
-        // ==================== SENSOR CONFIG TESTS ====================
-
         [TestMethod]
-        public void SensorEntryProvider_DefaultActiveSensors_IncludeCpuTotal()
-        {
-            var sensorEntryProvider = new SensorEntryProvider(_mockSensorService, _sensorConfigMock.Object);
-
-            var sensor = new MockSensorEntry("/cpu/0/load/total", "CPU Total", "Cpu", "Load");
-            Assert.IsTrue(sensorEntryProvider.GetIsDefaultActiveSensor(sensor),
-                "CPU Total should be a default active sensor.");
-        }
-
-        [TestMethod]
-        public void SensorEntryProvider_DefaultActiveSensors_IncludeGpuCore()
-        {
-            var sensorEntryProvider = new SensorEntryProvider(_mockSensorService, _sensorConfigMock.Object);
-
-            var sensor = new MockSensorEntry("/gpu/0/load/core", "GPU Core", "GpuNvidia", "Load");
-            Assert.IsTrue(sensorEntryProvider.GetIsDefaultActiveSensor(sensor),
-                "GPU Core Load should be a default active sensor.");
-        }
-
-        [TestMethod]
-        public void SensorEntryProvider_DefaultActiveSensors_IncludeCpuPackagePower()
-        {
-            var sensorEntryProvider = new SensorEntryProvider(_mockSensorService, _sensorConfigMock.Object);
-
-            var sensor = new MockSensorEntry("/cpu/0/power/package", "CPU Package", "Cpu", "Power");
-            Assert.IsTrue(sensorEntryProvider.GetIsDefaultActiveSensor(sensor),
-                "CPU Package Power should be a default active sensor.");
-        }
-
-        [TestMethod]
-        public void SensorEntryProvider_NonDefaultSensor_IsNotActive()
-        {
-            var sensorEntryProvider = new SensorEntryProvider(_mockSensorService, _sensorConfigMock.Object);
-
-            var sensor = new MockSensorEntry("/gpu/0/load/3", "GPU Bus", "GpuNvidia", "Load");
-            Assert.IsFalse(sensorEntryProvider.GetIsDefaultActiveSensor(sensor),
-                "GPU Bus should not be a default active sensor.");
-        }
-
-        [TestMethod]
-        public async Task SensorEntryProvider_GetWrappedSensorEntries_ReturnsAllSensors()
-        {
-            _sensorConfigMock.Setup(x => x.HasConfigFile).Returns(false);
-            _sensorConfigMock.Setup(x => x.GetSensorConfigCopy())
-                .Returns(new Dictionary<string, bool>());
-
-            var sensorEntryProvider = new SensorEntryProvider(_mockSensorService, _sensorConfigMock.Object);
-
-            var entries = await sensorEntryProvider.GetWrappedSensorEntries();
-            var entryList = entries.ToList();
-
-            Assert.IsTrue(entryList.Count > 0, "Should return sensor entries.");
-
-            // All entries should have a non-empty Identifier
-            foreach (var entry in entryList)
-            {
-                Assert.IsFalse(string.IsNullOrEmpty(entry.Identifier),
-                    "Each sensor entry should have a non-empty Identifier.");
-            }
-        }
-
-        [TestMethod]
-        public async Task SensorEntryProvider_GetWrappedSensorEntries_HasHardwareName()
-        {
-            _sensorConfigMock.Setup(x => x.HasConfigFile).Returns(false);
-            _sensorConfigMock.Setup(x => x.GetSensorConfigCopy())
-                .Returns(new Dictionary<string, bool>());
-
-            var sensorEntryProvider = new SensorEntryProvider(_mockSensorService, _sensorConfigMock.Object);
-
-            var entries = await sensorEntryProvider.GetWrappedSensorEntries();
-            var entryList = entries.ToList();
-
-            // MockSensorService entries don't set HardwareName by default.
-            // Just verify the property exists and doesn't throw.
-            foreach (var entry in entryList)
-            {
-                // HardwareName can be null for mock entries — just verify access works
-                var _ = entry.HardwareName;
-            }
-        }
-
-        [TestMethod]
-        public void SensorIdentifierHelper_BuildsCorrectStableId()
-        {
-            var stableId = SensorIdentifierHelper.BuildStableIdentifier(
-                "NVIDIA GeForce RTX 4090", "Temperature", "GPU Core");
-
-            Assert.AreEqual("NVIDIA GeForce RTX 4090/temperature/GPU Core", stableId);
-        }
-
-        [TestMethod]
-        public void SensorIdentifierHelper_NullHardwareName_ReturnsNull()
-        {
-            var stableId = SensorIdentifierHelper.BuildStableIdentifier(null, "Temperature", "GPU Core");
-            Assert.IsNull(stableId, "Should return null for null hardware name.");
-        }
-
-        [TestMethod]
-        public void SensorIdentifierHelper_EmptyHardwareName_ReturnsNull()
-        {
-            var stableId = SensorIdentifierHelper.BuildStableIdentifier("", "Temperature", "GPU Core");
-            Assert.IsNull(stableId, "Should return null for empty hardware name.");
-        }
-
-        [TestMethod]
-        public void SensorIdentifierHelper_FromEntry_BuildsCorrectStableId()
-        {
-            var entry = new MockSensorEntry("/gpu-nvidia/0/temperature/0", "GPU Core", "GpuNvidia", "Temperature")
-            {
-                HardwareName = "NVIDIA GeForce RTX 5090"
-            };
-
-            var stableId = SensorIdentifierHelper.BuildStableIdentifier(entry);
-            Assert.AreEqual("NVIDIA GeForce RTX 5090/temperature/GPU Core", stableId);
-        }
-
-        [TestMethod]
-        public void SensorIdentifierHelper_FromEntry_NoHardwareName_ReturnsNull()
-        {
-            var entry = new MockSensorEntry("/gpu-nvidia/0/temperature/0", "GPU Core", "GpuNvidia", "Temperature")
-            {
-                HardwareName = null
-            };
-
-            var stableId = SensorIdentifierHelper.BuildStableIdentifier(entry);
-            Assert.IsNull(stableId, "Should return null when entry has no HardwareName.");
-        }
-
-        /// <summary>
-        /// Simulate the scenario where sensor indices shift by +1 within the same ID range
-        /// (e.g. after a PawnIO update). The IDs stay the same but the sensor at each ID
-        /// has a different description and sort key. CPU Core Clock entries that had
-        /// ShowOnOverlay=true must be matched via the Description+Type fallback and preserve
-        /// their ShowOnOverlay flag.
-        /// </summary>
-        private void PopulateOverlayEntryCoreWithShiftedIndicesWithinSameIds()
-        {
-            var sensorTypes = new HashSet<EOverlayEntryType>
-            {
-                EOverlayEntryType.GPU, EOverlayEntryType.CPU, EOverlayEntryType.RAM
-            };
-
-            // Build a list of all sensor config entries sorted by identifier
-            var sensorConfigEntries = _loadedConfigEntries
-                .Where(e => sensorTypes.Contains(e.OverlayEntryType))
-                .ToList();
-
-            // Group CPU clock entries by their base path to simulate index shift
-            var cpuClockEntries = sensorConfigEntries
-                .Where(e => e.Identifier.Contains("/amdcpu/") && e.Identifier.Contains("/clock/"))
-                .OrderBy(e => e.Identifier)
-                .ToList();
-
-            var otherEntries = sensorConfigEntries
-                .Where(e => !(e.Identifier.Contains("/amdcpu/") && e.Identifier.Contains("/clock/")))
-                .ToList();
-
-            // For CPU clock entries: shift descriptions by +1 position
-            // This simulates a library update where indices shift
-            // E.g., /amdcpu/0/clock/5 used to be "Core #1 (MHz)" but now is "Core #1 (Effective) (MHz)"
-            for (int i = 0; i < cpuClockEntries.Count; i++)
-            {
-                var configEntry = cpuClockEntries[i];
-                // Use the description from the next entry (wrap around)
-                var shiftedEntry = cpuClockEntries[(i + 1) % cpuClockEntries.Count];
-
-                var entry = new OverlayEntryWrapper(configEntry.Identifier)
-                {
-                    StableIdentifier = null, // Old configs don't have stable IDs
-                    SortKey = shiftedEntry.SortKey,
-                    Description = shiftedEntry.Description,
-                    OverlayEntryType = configEntry.OverlayEntryType,
-                    GroupName = shiftedEntry.Description,
-                    ShowOnOverlay = false,
-                    ShowOnOverlayIsEnabled = true,
-                    ShowGraph = false,
-                    ShowGraphIsEnabled = false,
-                    Value = 0
-                };
-
-                _overlayEntryCore.OverlayEntryDict.TryAdd(configEntry.Identifier, entry);
-            }
-
-            // Non-clock entries: keep identical (unchanged hardware)
-            foreach (var configEntry in otherEntries)
-            {
-                var entry = new OverlayEntryWrapper(configEntry.Identifier)
-                {
-                    StableIdentifier = configEntry.StableIdentifier,
-                    SortKey = configEntry.SortKey,
-                    Description = configEntry.Description,
-                    OverlayEntryType = configEntry.OverlayEntryType,
-                    GroupName = configEntry.GroupName,
-                    ShowOnOverlay = false,
-                    ShowOnOverlayIsEnabled = true,
-                    ShowGraph = false,
-                    ShowGraphIsEnabled = false,
-                    Value = 0
-                };
-
-                _overlayEntryCore.OverlayEntryDict.TryAdd(configEntry.Identifier, entry);
-            }
-
-            _overlayEntryCore.OverlayEntryCoreCompletionSource.SetResult(true);
-        }
-
-        [TestMethod]
-        public async Task ShiftedIndicesSameIds_CpuCoreClockShowOnOverlay_Preserved()
+        public async Task ShiftedIndicesSameIds_IntelIntel_CpuCoreClockShowOnOverlay_Preserved()
         {
             PopulateOverlayEntryCoreWithShiftedIndicesWithinSameIds();
 
@@ -947,13 +771,16 @@ namespace CapFrameX.Test.Sensor
 
             var entries = await provider.GetOverlayEntries(updateFormats: false);
 
-            // The 8 CPU Core Clock entries (e.g. "Core #1 (MHz)") had ShowOnOverlay=true in config.
-            // After index shift, exact ID match finds wrong sensor → should fall through to
+            // The Intel CPU Core Clock entries had ShowOnOverlay=true in config.
+            // After index shift, exact ID match finds wrong sensor -> should fall through to
             // Description+Type fallback and preserve ShowOnOverlay=true.
             var cpuCoreClockDescriptions = new HashSet<string>
             {
-                "Core #1 (MHz)", "Core #2 (MHz)", "Core #3 (MHz)", "Core #4 (MHz)",
-                "Core #5 (MHz)", "Core #6 (MHz)", "Core #7 (MHz)", "Core #8 (MHz)"
+                "Core #1 P (MHz)", "Core #2 P (MHz)", "Core #3 P (MHz)", "Core #4 P (MHz)",
+                "Core #5 E (MHz)", "Core #6 E (MHz)", "Core #7 E (MHz)", "Core #8 E (MHz)",
+                "Core #9 E (MHz)", "Core #10 E (MHz)", "Core #11 E (MHz)", "Core #12 E (MHz)",
+                "Core #13 LPE (MHz)", "Core #14 LPE (MHz)", "Core #15 LPE (MHz)", "Core #16 LPE (MHz)",
+                "CPU Max (MHz)"
             };
 
             var matchedEntries = entries
@@ -971,7 +798,7 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
-        public async Task IdenticalHardware_LimitValues_Preserved()
+        public async Task IdenticalHardware_IntelIntel_LimitValues_Preserved()
         {
             PopulateOverlayEntryCoreFromConfig();
 
@@ -981,7 +808,6 @@ namespace CapFrameX.Test.Sensor
             var entries = await provider.GetOverlayEntries(updateFormats: false);
             var entryById = entries.ToDictionary(e => e.Identifier);
 
-            // Check limits on sensor entries that have configured limits
             var configEntriesWithLimits = _loadedConfigEntries
                 .Where(e => !string.IsNullOrEmpty(e.UpperLimitValue) || !string.IsNullOrEmpty(e.LowerLimitValue))
                 .Where(e => e.OverlayEntryType == EOverlayEntryType.GPU
