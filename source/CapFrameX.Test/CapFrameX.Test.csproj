@@ -88,7 +88,8 @@
     <Compile Include="PMD\OfflineDataProcessingTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sensor\ComputerTest.cs" />
-    <Compile Include="Sensor\OverlayConfigMigrationTest.cs" />
+    <Compile Include="Sensor\OverlayConfigMigrationNvAmdTest.cs" />
+    <Compile Include="Sensor\OverlayConfigMigrationIntelIntelTest.cs" />
     <Compile Include="Sensor\SensorAggregationStableIdTest.cs" />
     <Compile Include="Sensor\StableIdMigrationTest.cs" />
     <Compile Include="Sensor\PantherLakeVoltageTest.cs" />
@@ -203,6 +204,9 @@
     <None Include="app.config" />
     <None Include="packages.config" />
     <Content Include="Sensor\OverlayConfigNvAmd.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Sensor\OverlayConfigIntelIntel.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Sensor\OverlayConfigIntelIntel.json">
