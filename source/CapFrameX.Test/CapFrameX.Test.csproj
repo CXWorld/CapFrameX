@@ -90,6 +90,7 @@
     <Compile Include="Sensor\ComputerTest.cs" />
     <Compile Include="Sensor\OverlayConfigMigrationNvAmdTest.cs" />
     <Compile Include="Sensor\OverlayConfigMigrationIntelIntelTest.cs" />
+    <Compile Include="Sensor\OverlayConfigMigrationNvMobileIntelTest.cs" />
     <Compile Include="Sensor\SensorAggregationStableIdTest.cs" />
     <Compile Include="Sensor\StableIdMigrationTest.cs" />
     <Compile Include="Sensor\PantherLakeVoltageTest.cs" />
@@ -210,6 +211,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Sensor\OverlayConfigIntelIntel.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Sensor\OverlayConfigMigrationNvMobileIntelTest.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
