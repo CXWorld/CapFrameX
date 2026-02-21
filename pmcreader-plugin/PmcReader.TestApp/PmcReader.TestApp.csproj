@@ -64,13 +64,9 @@
       <Project>{4c3b8b5c-54d7-46a1-91a1-32bf82fd42cd}</Project>
       <Name>CapFrameX.Contracts</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.PmcReader.Plugin.csproj">
-      <Project>{B0703A6E-8C9B-4BD1-97E1-C9A64ED0AE34}</Project>
-      <Name>CapFrameX.PmcReader.Plugin</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PmcReader\PmcReader.csproj">
-      <Project>{e43329e2-1ccb-4276-adbc-d292eed22170}</Project>
-      <Name>PmcReader</Name>
+    <ProjectReference Include="..\CapFrameX.PmcReader.Merged.csproj">
+      <Project>{D8F1A2B3-4C5D-6E7F-8A9B-0C1D2E3F4A5B}</Project>
+      <Name>CapFrameX.PmcReader.Merged</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
