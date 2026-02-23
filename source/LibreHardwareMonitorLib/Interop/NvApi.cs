@@ -20,6 +20,8 @@ internal static class NvApi
     public const int MAX_USAGES_PER_GPU = 8;
 
     public const int SHORT_STRING_MAX = 64;
+    public const int PERFORMANCE_STATUS_TIMER_COUNT = 3;
+    public const int PERFORMANCE_STATUS_UNKNOWN_COUNT = 326;
     public const int THERMAL_SENSOR_RESERVED_COUNT = 8;
     public const int THERMAL_SENSOR_TEMPERATURE_COUNT = 32;
 
@@ -52,6 +54,7 @@ internal static class NvApi
     public static NvAPI_GPU_GetThermalSensorsDelegate NvAPI_GPU_GetThermalSensors { get; internal set; }
     public static NvAPI_GPU_GetCurrentVoltageDelegate NvAPI_GPU_GetCurrentVoltage { get; internal set; }
     public static NvAPI_GetVBlankCounterDelegate NvAPI_GetVBlankCounter { get; internal set; }
+    public static NvAPI_GPU_PerfGetStatusDelegate NvAPI_GPU_PerfGetStatus { get; internal set; }
 
     public static void Initialize()
     {
@@ -96,6 +99,7 @@ internal static class NvApi
             NvAPI_GPU_GetThermalSensors = GetDelegate<NvAPI_GPU_GetThermalSensorsDelegate>(0x65FE3AAD);
             NvAPI_GPU_GetCurrentVoltage = GetDelegate<NvAPI_GPU_GetCurrentVoltageDelegate>(0x465f9bcf);
             NvAPI_GetVBlankCounter = GetDelegate<NvAPI_GetVBlankCounterDelegate>(0x67B5DB55);
+            NvAPI_GPU_PerfGetStatus = GetDelegate<NvAPI_GPU_PerfGetStatusDelegate>(0x3d358a0c);
 
             IsAvailable = true;
         }
@@ -172,6 +176,36 @@ internal static class NvApi
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate NvStatus NvAPI_GetVBlankCounterDelegate(NvDisplayHandle displayHandle, out uint pCounter);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate NvStatus NvAPI_GPU_PerfGetStatusDelegate(NvPhysicalGpuHandle gpuHandle, ref NvPerformanceStatus performanceStatus);
+
+    [Flags]
+    internal enum NvPerformanceLimit : uint
+    {
+        None = 0,
+        PowerLimit = 0b1,
+        TemperatureLimit = 0b10,
+        VoltageLimit = 0b100,
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
+    internal struct NvPerformanceStatus
+    {
+        internal uint Version;
+        internal uint Unknown1;
+        internal ulong TimerInNanoSecond;
+        internal NvPerformanceLimit PerformanceLimit;
+        internal uint Unknown2;
+        internal uint Unknown3;
+        internal uint Unknown4;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = PERFORMANCE_STATUS_TIMER_COUNT)]
+        internal ulong[] TimersInNanoSecond;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = PERFORMANCE_STATUS_UNKNOWN_COUNT)]
+        internal uint[] Unknown5;
+    }
 
     public enum NvFanControlMode : uint
     {

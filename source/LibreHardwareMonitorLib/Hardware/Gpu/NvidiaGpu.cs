@@ -57,6 +57,9 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor[] _temperatures;
     private readonly uint _thermalSensorsMask;
     private readonly Sensor _monitorRefreshRate;
+    private readonly Sensor _powerLimit;
+    private readonly Sensor _temperatureLimit;
+    private readonly Sensor _voltageLimit;
     private readonly ISensorConfig _sensorConfig;
     private string _activeDisplayDeviceName;
 
@@ -375,6 +378,24 @@ internal sealed class NvidiaGpu : GenericGpu
                 { PresentationSortKey = $"{adapterIndex}_9" };
                 _monitorRefreshRate.Value = 0;
                 ActivateSensor(_monitorRefreshRate);
+            }
+        }
+
+        // Performance Limits
+        if (NvApi.NvAPI_GPU_PerfGetStatus != null)
+        {
+            NvApi.NvPerformanceStatus perfStatus = GetPerformanceStatus(out status);
+            if (status == NvApi.NvStatus.OK)
+            {
+                _powerLimit = new Sensor("GPU Power Limit", 0, SensorType.Factor, this, settings)
+                { PresentationSortKey = $"{adapterIndex}_10_0" };
+                _temperatureLimit = new Sensor("GPU Thermal Limit", 1, SensorType.Factor, this, settings)
+                { PresentationSortKey = $"{adapterIndex}_10_1" };
+                _voltageLimit = new Sensor("GPU Voltage Limit", 2, SensorType.Factor, this, settings)
+                { PresentationSortKey = $"{adapterIndex}_10_2" };
+                ActivateSensor(_powerLimit);
+                ActivateSensor(_temperatureLimit);
+                ActivateSensor(_voltageLimit);
             }
         }
 
@@ -795,6 +816,28 @@ internal sealed class NvidiaGpu : GenericGpu
                 }
             }
         }
+
+        // Performance limits
+        if (_powerLimit != null && _temperatureLimit != null && _voltageLimit != null && ShouldEvaluateAnyLimitSensor())
+        {
+            NvApi.NvPerformanceStatus perfStatus = GetPerformanceStatus(out status);
+            if (status == NvApi.NvStatus.OK)
+            {
+                var currentActiveLimit = perfStatus.PerformanceLimit;
+                _powerLimit.Value = (currentActiveLimit & NvApi.NvPerformanceLimit.PowerLimit) == NvApi.NvPerformanceLimit.PowerLimit ? 1 : 0;
+                ActivateSensor(_powerLimit);
+                _temperatureLimit.Value = (currentActiveLimit & NvApi.NvPerformanceLimit.TemperatureLimit) == NvApi.NvPerformanceLimit.TemperatureLimit ? 1 : 0;
+                ActivateSensor(_temperatureLimit);
+                _voltageLimit.Value = (currentActiveLimit & NvApi.NvPerformanceLimit.VoltageLimit) == NvApi.NvPerformanceLimit.VoltageLimit ? 1 : 0;
+                ActivateSensor(_voltageLimit);
+            }
+        }
+        else if (_powerLimit != null && _temperatureLimit != null && _voltageLimit != null)
+        {
+            _powerLimit.Value = null;
+            _temperatureLimit.Value = null;
+            _voltageLimit.Value = null;
+        }
     }
 
     public override string GetDriverVersion()
@@ -890,6 +933,23 @@ internal sealed class NvidiaGpu : GenericGpu
             return true;
 
         return _sensorConfig.GetSensorEvaluate(_pcieThroughputTx.Identifier.ToString());
+    }
+
+    private bool ShouldEvaluateAnyLimitSensor()
+    {
+        if (_sensorConfig == null)
+            return true;
+
+        if (_powerLimit != null && _sensorConfig.GetSensorEvaluate(_powerLimit.Identifier.ToString()))
+            return true;
+
+        if (_temperatureLimit != null && _sensorConfig.GetSensorEvaluate(_temperatureLimit.Identifier.ToString()))
+            return true;
+
+        if (_voltageLimit != null && _sensorConfig.GetSensorEvaluate(_voltageLimit.Identifier.ToString()))
+            return true;
+
+        return false;
     }
 
     private bool ShouldEvaluateMonitorRefreshRateSensor()
@@ -1386,6 +1446,25 @@ internal sealed class NvidiaGpu : GenericGpu
 
         status = NvApi.NvAPI_GPU_ClientPowerTopologyGetStatus(_handle, ref powerTopology);
         return status == NvApi.NvStatus.OK ? powerTopology : default;
+    }
+
+    private NvApi.NvPerformanceStatus GetPerformanceStatus(out NvApi.NvStatus status)
+    {
+        if (NvApi.NvAPI_GPU_PerfGetStatus == null)
+        {
+            status = NvApi.NvStatus.Error;
+            return default;
+        }
+
+        NvApi.NvPerformanceStatus perfStatus = new()
+        {
+            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvPerformanceStatus>(1),
+            TimersInNanoSecond = new ulong[NvApi.PERFORMANCE_STATUS_TIMER_COUNT],
+            Unknown5 = new uint[NvApi.PERFORMANCE_STATUS_UNKNOWN_COUNT]
+        };
+
+        status = NvApi.NvAPI_GPU_PerfGetStatus(_handle, ref perfStatus);
+        return status == NvApi.NvStatus.OK ? perfStatus : default;
     }
 
     private NvApi.NvGpuVoltageStatus GetVoltageStatus(out NvApi.NvStatus voltageStatus)
