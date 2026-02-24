@@ -67,6 +67,12 @@ pipeline {
 				branch = getBranch()
 			}
             stages {
+                stage('Prepare Portable') {
+                    steps {
+                        bat "copy portable.json.sample source\\CapFrameX\\bin\\x64\\Release\\portable.json"
+                    }
+                }
+
                 stage('Create Archive') {
                     steps {
                         zip archive: false, dir: 'source/CapFrameXBootstrapper/bin/x64/Release', glob: 'CapFrameXBootstrapper.exe', zipFile: "${filename}_installer.zip"
