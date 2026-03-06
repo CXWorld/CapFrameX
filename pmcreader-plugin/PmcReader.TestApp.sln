@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibreHardwareMonitorLib", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PmcReader", "PmcReader\PmcReader.csproj", "{E43329E2-1CCB-4276-ADBC-D292EED22170}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.PmcReader.Merged", "CapFrameX.PmcReader.Merged.csproj", "{D8F1A2B3-4C5D-6E7F-8A9B-0C1D2E3F4A5B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -75,6 +77,10 @@ Global
 		{E43329E2-1CCB-4276-ADBC-D292EED22170}.Debug|x64.Build.0 = Debug|x64
 		{E43329E2-1CCB-4276-ADBC-D292EED22170}.Release|x64.ActiveCfg = Release|x64
 		{E43329E2-1CCB-4276-ADBC-D292EED22170}.Release|x64.Build.0 = Release|x64
+		{D8F1A2B3-4C5D-6E7F-8A9B-0C1D2E3F4A5B}.Debug|x64.ActiveCfg = Debug|x64
+		{D8F1A2B3-4C5D-6E7F-8A9B-0C1D2E3F4A5B}.Debug|x64.Build.0 = Debug|x64
+		{D8F1A2B3-4C5D-6E7F-8A9B-0C1D2E3F4A5B}.Release|x64.ActiveCfg = Release|x64
+		{D8F1A2B3-4C5D-6E7F-8A9B-0C1D2E3F4A5B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

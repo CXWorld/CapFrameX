@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D8F1A2B3-4C5D-6E7F-8A9B-0C1D2E3F4A5B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>CapFrameX.PmcReader.Plugin</RootNamespace>
+    <AssemblyName>CapFrameX.PmcReader.Plugin</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <!-- Framework references (union of both projects) -->
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Reactive, Version=6.1.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Reactive.6.1.0\lib\net472\System.Reactive.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <!-- Plugin source files -->
+  <ItemGroup>
+    <Compile Include="PmcReaderSensorEntry.cs" />
+    <Compile Include="PmcReaderSensorPlugin.cs" />
+  </ItemGroup>
+  <!-- PmcReader source files -->
+  <ItemGroup>
+    <Compile Include="PmcReader\AMD\Amd10hCpu.cs" />
+    <Compile Include="PmcReader\AMD\Amd15hCpu.cs" />
+    <Compile Include="PmcReader\AMD\Amd16hCpu.cs" />
+    <Compile Include="PmcReader\AMD\Amd17hCpu.cs" />
+    <Compile Include="PmcReader\AMD\Amd19hCpu.cs" />
+    <Compile Include="PmcReader\AMD\Bulldozer.cs" />
+    <Compile Include="PmcReader\AMD\Jaguar.cs" />
+    <Compile Include="PmcReader\AMD\JaguarL2.cs" />
+    <Compile Include="PmcReader\AMD\JaguarNorthbridge.cs" />
+    <Compile Include="PmcReader\AMD\K10.cs" />
+    <Compile Include="PmcReader\AMD\Piledriver.cs" />
+    <Compile Include="PmcReader\AMD\PiledriverNorthbridge.cs" />
+    <Compile Include="PmcReader\AMD\Zen1.cs" />
+    <Compile Include="PmcReader\AMD\Zen2.cs" />
+    <Compile Include="PmcReader\AMD\Zen2DataFabric.cs" />
+    <Compile Include="PmcReader\AMD\Zen2L3Cache.cs" />
+    <Compile Include="PmcReader\AMD\Zen3.cs" />
+    <Compile Include="PmcReader\AMD\Zen3L3Cache.cs" />
+    <Compile Include="PmcReader\AMD\Zen4.cs" />
+    <Compile Include="PmcReader\AMD\Zen4DataFabric.cs" />
+    <Compile Include="PmcReader\AMD\Zen4L3Cache.cs" />
+    <Compile Include="PmcReader\AMD\Zen5.cs" />
+    <Compile Include="PmcReader\AMD\Zen5DataFabric.cs" />
+    <Compile Include="PmcReader\AMD\Zen5Diagnostics.cs" />
+    <Compile Include="PmcReader\AMD\Zen5L3Cache.cs" />
+    <Compile Include="PmcReader\AMD\ZenL3Cache.cs" />
+    <Compile Include="PmcReader\Cpu.cs" />
+    <Compile Include="PmcReader\GenericMonitoringArea.cs" />
+    <Compile Include="PmcReader\HaswellForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PmcReader\HaswellForm.Designer.cs">
+      <DependentUpon>HaswellForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PmcReader\Intel\AlderLake.cs" />
+    <Compile Include="PmcReader\Intel\AlderLakeL3.cs" />
+    <Compile Include="PmcReader\Intel\AlderLakeUncore.cs" />
+    <Compile Include="PmcReader\Intel\ArrowLake.cs" />
+    <Compile Include="PmcReader\Intel\ArrowLakeL3.cs" />
+    <Compile Include="PmcReader\Intel\GoldmontPlus.cs" />
+    <Compile Include="PmcReader\Intel\Haswell.cs" />
+    <Compile Include="PmcReader\Intel\HaswellClientArb.cs" />
+    <Compile Include="PmcReader\Intel\HaswellClientL3.cs" />
+    <Compile Include="PmcReader\Intel\HaswellClientUncore.cs" />
+    <Compile Include="PmcReader\Intel\HaswellEL3.cs" />
+    <Compile Include="PmcReader\Intel\MeteorLake.cs" />
+    <Compile Include="PmcReader\Intel\MeteorLakeArb.cs" />
+    <Compile Include="PmcReader\Intel\MeteorLakeL3.cs" />
+    <Compile Include="PmcReader\Intel\MeteorLakeUncore.cs" />
+    <Compile Include="PmcReader\Intel\ModernIntelCpu.cs" />
+    <Compile Include="PmcReader\Intel\SandyBridge.cs" />
+    <Compile Include="PmcReader\Intel\SandyBridgeEL3.cs" />
+    <Compile Include="PmcReader\Intel\SandyBridgeUncore.cs" />
+    <Compile Include="PmcReader\Intel\Skylake.cs" />
+    <Compile Include="PmcReader\Intel\SkylakeClientArb.cs" />
+    <Compile Include="PmcReader\Intel\SkylakeClientL3.cs" />
+    <Compile Include="PmcReader\Intel\SkylakeClientUncore.cs" />
+    <Compile Include="PmcReader\Interop\AdvApi32.cs" />
+    <Compile Include="PmcReader\Interop\Kernel32.cs" />
+    <Compile Include="PmcReader\Interop\KernelDriver.cs" />
+    <Compile Include="PmcReader\Interop\OpCode.cs" />
+    <Compile Include="PmcReader\Interop\Ring0.cs" />
+    <Compile Include="PmcReader\Interop\ThreadAffinity.cs" />
+    <Compile Include="PmcReader\PmcDiagnostics.cs" />
+    <Compile Include="PmcReader\PmcReaderInterop.cs" />
+    <Compile Include="PmcReader\Program.cs" />
+    <Compile Include="PmcReader\Properties\AssemblyInfo.cs" />
+    <Compile Include="PmcReader\Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="PmcReader\Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <!-- Embedded resources from PmcReader -->
+  <ItemGroup>
+    <EmbeddedResource Include="PmcReader\HaswellForm.resx">
+      <DependentUpon>HaswellForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmcReader\Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmcReader\Interop\WinRing0.sys">
+      <LogicalName>PmcReader.Interop.WinRing0.sys</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmcReader\Interop\WinRing0x64.sys">
+      <LogicalName>PmcReader.Interop.WinRing0x64.sys</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PmcReader\Interop\winpmem_64.sys">
+      <LogicalName>PmcReader.Interop.winpmem_64.sys</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <!-- Project references (CapFrameX dependencies only, no PmcReader) -->
+  <ItemGroup>
+    <ProjectReference Include="..\source\CapFrameX.Contracts\CapFrameX.Contracts.csproj">
+      <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
+      <Name>CapFrameX.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\source\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj">
+      <Project>{408c6e18-8ec6-42b2-bba6-c70bf7e5de2b}</Project>
+      <Name>LibreHardwareMonitorLib</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="PmcReader\Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

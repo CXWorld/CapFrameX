@@ -121,7 +121,7 @@ namespace CapFrameX.Sensor
                 case "GPU Core" when sensorType == SensorType.Load:
                 case "GPU Core" when sensorType == SensorType.Temperature:
                 case "GPU Core" when sensorType == SensorType.Clock:
-                case "GPU Power" when hardwareType == HardwareType.GpuNvidia:
+                case "GPU Power" when hardwareType == HardwareType.GpuNvidia && sensorType == SensorType.Power:
                 case "GPU Power Limit" when hardwareType == HardwareType.GpuNvidia:
                 case "GPU Total" when hardwareType == HardwareType.GpuAmd:
 				case "GPU TBP" when hardwareType == HardwareType.GpuAmd:
