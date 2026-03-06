@@ -796,7 +796,7 @@ namespace CapFrameX.PmcReader.Plugin
             if (columns == null || columns.Length == 0)
                 return null;
 
-            string[] preferredNames = new[] { "Latency, DRAM", "Mem Latency?" };
+            string[] preferredNames = new[] { "Latency, DRAM", "Mem Latency?", "Lat DRAM" };
             foreach (string preferredName in preferredNames)
             {
                 for (int i = 0; i < columns.Length; i++)
