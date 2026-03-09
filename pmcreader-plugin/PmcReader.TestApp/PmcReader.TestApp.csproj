@@ -65,7 +65,7 @@
       <Name>CapFrameX.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.PmcReader.Merged.csproj">
-      <Project>{D8F1A2B3-4C5D-6E7F-8A9B-0C1D2E3F4A5B}</Project>
+      <Project>{d8f1a2b3-4c5d-6e7f-8a9b-0c1d2e3f4a5b}</Project>
       <Name>CapFrameX.PmcReader.Merged</Name>
     </ProjectReference>
   </ItemGroup>
