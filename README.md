@@ -239,12 +239,9 @@ Potential conflicts with the Nuget packages can be solved via Package Manger Con
 * WiX Toolset Visual Studio 2022 Extension
 * WiX Toolset and VS Extension: http://wixtoolset.org/releases/
 * C++ MFC build tools
-* FrameView SDK (can be found in: `installers/FVSDKSetup.exe`)
 
 # Build settings
 * Solution Platform x64
 
 # Dev roadmap
 * CapFrameX 2.0 with service-client architecture
-
-

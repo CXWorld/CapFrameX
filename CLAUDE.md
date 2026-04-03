@@ -12,7 +12,6 @@ CapFrameX is a Windows desktop application for frametime capture and analysis, b
 - Visual Studio 2022
 - WiX Toolset v3.14.1 with VS 2022 Extension
 - C++ MFC build tools
-- FrameView SDK (installer at `installers/FVSDKSetup.exe`)
 
 ### Build the Main Application
 ```bash
@@ -72,7 +71,6 @@ The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (.NET Framework 4
 - `CapFrameX.Hwinfo` - HWInfo64 sensor integration
 - `CapFrameX.IGCL` - Intel Graphics Control Library
 - `CapFrameX.ADLX` - AMD Display Library
-- `CapFrameX.FrameView` - Intel FrameView SDK
 
 **Webservice (ASP.NET Core 3.1)**
 - `CapFrameX.Webservice.Host` - API host
