@@ -100,6 +100,8 @@ internal sealed class IntelGclGpu : GenericGpu
 
     public override void Update()
     {
+        UpdateProcessMemorySensors();
+
         // Get telemetry data from IGCL
         var igclTelemetryData = new IgclTelemetryData();
         try

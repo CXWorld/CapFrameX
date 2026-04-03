@@ -32,6 +32,7 @@ internal class IntelD3dGpu : GenericGpu
         _pawnModule = new IntelMsr();
         _deviceId = deviceId;
         IsDiscreteGpu = !deviceInfo.Integrated;
+        SetProcessMemoryInstanceFilter(deviceInfo.AdapterLuidInstanceName);
 
         int memorySensorIndex = 0;
 
@@ -89,6 +90,8 @@ internal class IntelD3dGpu : GenericGpu
 
     public override void Update()
     {
+        UpdateProcessMemorySensors();
+
         if (D3DDisplayDevice.GetDeviceInfoByIdentifier(_deviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
         {
             if (_dedicatedMemoryUsage != null)

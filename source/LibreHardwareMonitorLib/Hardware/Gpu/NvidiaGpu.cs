@@ -494,6 +494,7 @@ internal sealed class NvidiaGpu : GenericGpu
                                         int smallDataSensorIndex = 3; // There are three normal GPU memory sensors.
 
                                         _d3dDeviceId = deviceId;
+                                        SetProcessMemoryInstanceFilter(deviceInfo.AdapterLuidInstanceName);
 
                                         _gpuDedicatedMemoryUsage = new Sensor("GPU Memory Dedicated", smallDataSensorIndex++, SensorType.Data, this, settings)
                                         { PresentationSortKey = $"{adapterIndex}_8_0" };
@@ -551,6 +552,7 @@ internal sealed class NvidiaGpu : GenericGpu
 
     public override void Update()
     {
+        UpdateProcessMemorySensors();
         UpdateDisplayHandleIfNeeded();
 
         if (_d3dDeviceId != null && ShouldEvaluateAnyD3DSensor() &&

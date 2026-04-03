@@ -65,6 +65,8 @@ internal static class D3DDisplayDevice
         if (status != NTSTATUS.STATUS_SUCCESS)
             return false;
 
+        deviceInfo.AdapterLuidInstanceName = GetAdapterLuidInstanceName(adapter.AdapterLuid);
+
         GetAdapterType(out status, adapter, out D3DKMT_ADAPTERTYPE adapterType);
         if (status != NTSTATUS.STATUS_SUCCESS)
             return false;
@@ -270,6 +272,11 @@ internal static class D3DDisplayDevice
         status = Windows.Wdk.PInvoke.D3DKMTCloseAdapter(closeAdapter);
     }
 
+    private static string GetAdapterLuidInstanceName(LUID luid)
+    {
+        return $"luid_0x{unchecked((uint)luid.HighPart):X8}_0x{luid.LowPart:X8}";
+    }
+
     public struct D3DDeviceNodeInfo
     {
         public ulong Id;
@@ -280,6 +287,8 @@ internal static class D3DDisplayDevice
 
     public struct D3DDeviceInfo
     {
+        public string AdapterLuidInstanceName;
+
         public ulong GpuSharedLimit;
         public ulong GpuDedicatedLimit;
         public ulong GpuVideoMemoryLimit;

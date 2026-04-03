@@ -13,7 +13,7 @@ internal abstract class SimulatedGpuBase : GenericGpu
     private readonly string _deviceId;
 
     protected SimulatedGpuBase(string name, Identifier identifier, string deviceId, ISettings settings)
-        : base(name, identifier, settings)
+        : base(name, identifier, settings, enableProcessMemorySensors: false)
     {
         _deviceId = deviceId;
         _random = new Random(identifier.ToString().GetHashCode());

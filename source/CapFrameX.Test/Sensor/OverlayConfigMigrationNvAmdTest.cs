@@ -760,6 +760,16 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
+        public void SensorEntryProvider_DefaultActiveSensors_IncludeGpuProcessMemoryDedicated()
+        {
+            var sensorEntryProvider = new SensorEntryProvider(_mockSensorService, _sensorConfigMock.Object);
+
+            var sensor = new MockSensorEntry("/gpu/0/data/processdedicated", "GPU Process Memory Dedicated", "GpuNvidia", "Data");
+            Assert.IsTrue(sensorEntryProvider.GetIsDefaultActiveSensor(sensor),
+                "GPU Process Memory Dedicated should be a default active sensor.");
+        }
+
+        [TestMethod]
         public void SensorEntryProvider_NonDefaultSensor_IsNotActive()
         {
             var sensorEntryProvider = new SensorEntryProvider(_mockSensorService, _sensorConfigMock.Object);

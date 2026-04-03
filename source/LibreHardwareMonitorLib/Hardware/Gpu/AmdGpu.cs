@@ -164,6 +164,8 @@ internal sealed class AmdGpu : GenericGpu
 
     public override void Update()
     {
+        UpdateProcessMemorySensors();
+
         // Get ADLX telemetry data
         ADLX.AdlxTelemetryData telemetry = new();
         if (ADLX.GetTelemetry(_adapterIndex, 1000, ref telemetry))
