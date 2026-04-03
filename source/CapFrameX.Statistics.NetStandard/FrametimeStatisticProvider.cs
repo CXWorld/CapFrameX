@@ -698,10 +698,8 @@ namespace CapFrameX.Statistics.NetStandard
 
         public IList<double> GetFrametimeVariancePercentages(ISession session)
         {
-
             if (!session.Runs.Any())
                 return new List<double>();
-
 
             // Create bins for variance thresholds
             int threshold2Count = 0;
@@ -734,6 +732,55 @@ namespace CapFrameX.Statistics.NetStandard
                 }
             }
 
+
+            // Add percentage of variance bins to List
+            IList<double> variancePercentages = new List<double>
+            {
+                Math.Round(threshold2Count / varianceCount, 4, MidpointRounding.AwayFromZero),
+                Math.Round(threshold4Count / varianceCount, 4, MidpointRounding.AwayFromZero),
+                Math.Round(threshold8Count / varianceCount, 4, MidpointRounding.AwayFromZero),
+                Math.Round(threshold12Count / varianceCount, 4, MidpointRounding.AwayFromZero),
+                Math.Round(thresholdOver12Count / varianceCount, 4, MidpointRounding.AwayFromZero)
+            };
+
+            return variancePercentages;
+        }
+
+        public IList<double> GetDisplayTimeVariancePercentages(ISession session)
+        {
+            if (!session.Runs.Any())
+                return new List<double>();
+
+            // Create bins for variance thresholds
+            int threshold2Count = 0;
+            int threshold4Count = 0;
+            int threshold8Count = 0;
+            int threshold12Count = 0;
+            int thresholdOver12Count = 0;
+
+            // Get frametime variances
+            double varianceCount = 0.0;
+            foreach (var run in session.Runs)
+            {
+                var displayTimes = run.CaptureData.MsBetweenDisplayChange.ToArray();
+                for (int i = 1; i < displayTimes.Count(); i++)
+                {
+                    double variance = Math.Abs(displayTimes[i] - displayTimes[i - 1]);
+
+                    if (variance < 2)
+                        threshold2Count++;
+                    else if (variance < 4)
+                        threshold4Count++;
+                    else if (variance < 8)
+                        threshold8Count++;
+                    else if (variance < 12)
+                        threshold12Count++;
+                    else
+                        thresholdOver12Count++;
+
+                    varianceCount++;
+                }
+            }
 
             // Add percentage of variance bins to List
             IList<double> variancePercentages = new List<double>

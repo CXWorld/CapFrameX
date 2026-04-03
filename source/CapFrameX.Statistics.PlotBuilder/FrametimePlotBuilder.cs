@@ -29,8 +29,8 @@ namespace CapFrameX.Statistics.PlotBuilder
             var frametimepoints = session.GetFrametimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
             var displaytimespoints = session.GetDisplayChangeTimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
 
-            IList<Point> GpuActiveTimePoints  = new List<Point>();
-            IList<Point> CpuActiveTimePoints  = new List<Point>();
+            IList<Point> GpuActiveTimePoints = new List<Point>();
+            IList<Point> CpuActiveTimePoints = new List<Point>();
 
             if (plotSettings.ShowGpuActiveCharts)
                 GpuActiveTimePoints = session.GetGpuActiveTimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
@@ -38,9 +38,9 @@ namespace CapFrameX.Statistics.PlotBuilder
             if (plotSettings.ShowCpuActiveCharts)
                 CpuActiveTimePoints = session.GetCpuActiveTimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
 
-            var frametimes = session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);;
+            var frametimes = session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod); ;
 
-            SetFrametimeChart(plotModel, frametimepoints, GpuActiveTimePoints, CpuActiveTimePoints, plotSettings);
+            SetFrametimeChart(plotModel, frametimepoints, displaytimespoints, GpuActiveTimePoints, CpuActiveTimePoints, plotSettings);
 
             if (plotSettings.IsAnyPercentageGraphVisible && session.HasValidSensorData())
             {
@@ -74,32 +74,39 @@ namespace CapFrameX.Statistics.PlotBuilder
                 SetAnimationErrorChart(plotModel, session.GetAnimationErrorPointTimeWindow());
             }
 
-            var stutteringValue = frametimes.Average() * plotSettings.StutteringFactor;
-            var lowFPSValue = 1000 / plotSettings.LowFPSThreshold;
-
             SetAggregationSeparators(session, plotModel, plotSettings.ShowAggregationSeparators);
 
             onFinishAction?.Invoke(plotModel);
             plotModel.InvalidatePlot(true);
         }
 
-        private void SetFrametimeChart(PlotModel plotModel, IList<Point> frametimePoints, IList<Point> GpuActiveTimePoints, IList<Point> CpuActiveTimePoints, IPlotSettings plotSettings)
+        private void SetFrametimeChart(PlotModel plotModel, IList<Point> frametimePoints, IList<Point> displaytimespoints,
+            IList<Point> GpuActiveTimePoints, IList<Point> CpuActiveTimePoints, IPlotSettings plotSettings)
         {
-            if (frametimePoints == null || !frametimePoints.Any())
-                return;
+            if (frametimePoints == null || !frametimePoints.Any()) return;
 
             int count = frametimePoints.Count;
             var frametimeDataPoints = frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
             var GpuActiveTimeDataPoints = GpuActiveTimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
             var CpuActiveTimeDataPoints = CpuActiveTimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
-            var movingAverage = _frametimesStatisticProvider.GetMovingAverage(frametimePoints.Select(pnt => pnt.Y).ToList());
+
+            IList<double> movingAverageValues;
+
+            if (plotSettings.ShowDisplayTimes)
+            {
+                movingAverageValues = _frametimesStatisticProvider.GetMovingAverage(displaytimespoints.Select(pnt => pnt.Y).ToList());
+            }
+            else
+            {
+                movingAverageValues = _frametimesStatisticProvider.GetMovingAverage(frametimePoints.Select(pnt => pnt.Y).ToList());
+            }
 
             var stuttering = new List<double>();
             var lowFPS = new List<double>();
 
             for (int i = 0; i < count; i++)
             {
-                stuttering.Add(movingAverage[i] * plotSettings.StutteringFactor);
+                stuttering.Add(movingAverageValues[i] * plotSettings.StutteringFactor);
                 lowFPS.Add(1000 / plotSettings.LowFPSThreshold);
             }
 
@@ -162,7 +169,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             };
 
             frametimeSeries.Points.AddRange(frametimeDataPoints);
-            movingAverageSeries.Points.AddRange(movingAverage.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
+            movingAverageSeries.Points.AddRange(movingAverageValues.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
 
             if (plotSettings.ShowGpuActiveCharts)
                 GpuActiveTimeSeries.Points.AddRange(GpuActiveTimeDataPoints);

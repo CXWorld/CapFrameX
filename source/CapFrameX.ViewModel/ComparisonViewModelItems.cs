@@ -63,8 +63,7 @@ namespace CapFrameX.ViewModel
             var gpuActiveTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetGpuActiveTimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
 
             double GeMetricValue(IList<double> sequence, EMetric metric) =>
-                    _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
-            var variances = _frametimeStatisticProvider.GetFrametimeVariancePercentages(wrappedComparisonRecordInfo.WrappedRecordInfo.Session);
+                    _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);          
 
             if (SelectedFirstMetric == EMetric.CpuFpsPerWatt)
             {
@@ -175,6 +174,17 @@ namespace CapFrameX.ViewModel
                     wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric =
                         GeMetricValue(samples, SelectedThirdMetric);
                 }
+            }
+
+            IList<double> variances;
+
+            if (_appConfiguration.UseDisplayChangeMetrics)
+            {
+                variances = _frametimeStatisticProvider.GetDisplayTimeVariancePercentages(wrappedComparisonRecordInfo.WrappedRecordInfo.Session);
+            }
+            else
+            {
+                variances = _frametimeStatisticProvider.GetFrametimeVariancePercentages(wrappedComparisonRecordInfo.WrappedRecordInfo.Session);
             }
 
             wrappedComparisonRecordInfo.WrappedRecordInfo.SortingVariances

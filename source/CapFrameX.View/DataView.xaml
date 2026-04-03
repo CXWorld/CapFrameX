@@ -293,7 +293,7 @@
                                 </TabItem.Header>
                                 <Grid>
                                     <lvc:PieChart Margin="10 5 200 5" MaxHeight="250" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
-								                  LegendLocation="Left" DataClick="Chart_OnDataClick" DataTooltip="{x:Null}" StartingRotationAngle="0">
+								        LegendLocation="Left" DataClick="Chart_OnDataClick" DataTooltip="{x:Null}" StartingRotationAngle="0">
                                         <lvc:PieChart.ChartLegend>
                                             <lvc:DefaultLegend FontSize="14" FontWeight="Medium"/>
                                         </lvc:PieChart.ChartLegend>
@@ -306,7 +306,7 @@
                                             <materialDesign:PopupBox.ToolTip>
                                                 <ToolTip MaxWidth="275" Placement="Top">
                                                     <TextBlock Text="Options for the stutter and low FPS values of the pie chart" 
-										                        TextWrapping="Wrap"/>
+										                TextWrapping="Wrap"/>
                                                 </ToolTip>
                                             </materialDesign:PopupBox.ToolTip>
                                             <Grid Margin="5" Width="110">
@@ -316,8 +316,8 @@
                                                     <RowDefinition Height="*" />
                                                 </Grid.RowDefinitions>
                                                 <TextBox Grid.Row="0" materialDesign:HintAssist.Hint="Low FPS threshold" materialDesign:HintAssist.IsFloating="True" Width="100"
-                                                         HorizontalContentAlignment="Center" Text="{Binding StutteringLowFPSThreshold}" materialDesign:HintAssist.HintOpacity=".8"
-                                                 PreviewKeyDown="StutteringThreshold_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" ToolTipService.ShowDuration="25000">
+                                                    HorizontalContentAlignment="Center" Text="{Binding StutteringLowFPSThreshold}" materialDesign:HintAssist.HintOpacity=".8"
+                                                    PreviewKeyDown="StutteringThreshold_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" ToolTipService.ShowDuration="25000">
                                                     <TextBox.ToolTip>
                                                         <ToolTip Width="300">
                                                             <TextBlock Text="FPS threshold for the low FPS time.&#xA;Every frametime that isn't already counted as stutter and for which the converted FPS are lower than this threshold, is added to the low FPS time."
@@ -326,8 +326,8 @@
                                                     </TextBox.ToolTip>
                                                 </TextBox>
                                                 <TextBox Grid.Row="1" Margin="0 20 0 0" materialDesign:HintAssist.Hint="Stuttering factor" materialDesign:HintAssist.IsFloating="True" Width="100"
-                                                 HorizontalContentAlignment="Center" Text="{Binding StutteringFactor}" materialDesign:HintAssist.HintOpacity=".8" 
-                                                 PreviewKeyDown="StutteringFactor_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" ToolTipService.ShowDuration="25000">
+                                                     HorizontalContentAlignment="Center" Text="{Binding StutteringFactor}" materialDesign:HintAssist.HintOpacity=".8" 
+                                                     PreviewKeyDown="StutteringFactor_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" ToolTipService.ShowDuration="25000">
                                                     <TextBox.ToolTip>
                                                         <ToolTip Width="300">
                                                             <TextBlock Text="Factor for the stuttering time.&#xA;Every frametime that is higher than the corresponding moving average frametime x factor is added to the stuttering time."
@@ -338,14 +338,14 @@
                                                 <StackPanel Grid.Row="2" Margin="0 10 0 0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Vertical">
                                                     <TextBlock Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Show in charts"/></TextBlock>
                                                     <ToggleButton VerticalAlignment="Center" Margin="0 8 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsChecked="{Binding ShowStutteringThresholds}"
-								                                    ToolTip="Show threshold lines for stuttering and low FPS in the frametime and FPS charts"/>
+								                        ToolTip="Show threshold lines for stuttering and low FPS in the frametime and FPS charts"/>
                                                 </StackPanel>
                                             </Grid>
                                         </materialDesign:PopupBox>
                                         <TextBlock VerticalAlignment="Center" Text="Options" FontSize="14"/>
                                     </StackPanel>
                                     <Border Margin="12 0 0 15" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Bottom" BorderBrush="{DynamicResource MaterialDesignBody}" BorderThickness="1"
-                                            Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource TrueToVisibleConverter}}">
+                                        Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource TrueToVisibleConverter}}">
                                         <Label Margin="2 0 2 0" FontSize="14" Content="{Binding AvgPcLatency}" Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource TrueToVisibleConverter}}"/>
                                     </Border>
                                 </Grid>
