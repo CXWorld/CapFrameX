@@ -238,12 +238,12 @@ public abstract class GenericGpu : Hardware
 
             _gpuProcessMemoryCategory = new PerformanceCounterCategory(GPU_PROCESS_MEMORY_CATEGORY_NAME);
 
-            _processMemoryUsageDedicated = new Sensor("GPU Process Memory Dedicated", PROCESS_MEMORY_DEDICATED_SENSOR_INDEX, SensorType.Data, this, _settings)
+            _processMemoryUsageDedicated = new Sensor("GPU Memory Dedicated Game", PROCESS_MEMORY_DEDICATED_SENSOR_INDEX, SensorType.Data, this, _settings)
             {
                 PresentationSortKey = "99_0",
                 Value = 0f
             };
-            _processMemoryUsageShared = new Sensor("GPU Process Memory Shared", PROCESS_MEMORY_SHARED_SENSOR_INDEX, SensorType.Data, this, _settings)
+            _processMemoryUsageShared = new Sensor("GPU Memory Shared Game", PROCESS_MEMORY_SHARED_SENSOR_INDEX, SensorType.Data, this, _settings)
             {
                 PresentationSortKey = "99_1",
                 Value = 0f
@@ -279,11 +279,10 @@ public abstract class GenericGpu : Hardware
             try
             {
                 string idString = $"pid_{processId}_luid";
-                string[] instances = _gpuProcessMemoryCategory
+                string[] instances = [.. _gpuProcessMemoryCategory
                     .GetInstanceNames()
                     .Where(instance => !string.IsNullOrWhiteSpace(instance) &&
-                        instance.IndexOf(idString, StringComparison.OrdinalIgnoreCase) >= 0)
-                    .ToArray();
+                        instance.IndexOf(idString, StringComparison.OrdinalIgnoreCase) >= 0)];
 
                 if (instances.Length == 0)
                     return;
