@@ -719,13 +719,15 @@ internal sealed class NvidiaGpu : GenericGpu
                 uint total = memoryInfo.DedicatedVideoMemory;
                 float used = Math.Max(total - free, 0);
 
-                _memoryTotal.Value = total / 1024 / 1024;
+                const float kilobytesPerGigabyte = 1024f * 1024f;
+
+                _memoryTotal.Value = total / kilobytesPerGigabyte;
                 ActivateSensor(_memoryTotal);
 
-                _memoryFree.Value = free / 1024 / 1024;
+                _memoryFree.Value = free / kilobytesPerGigabyte;
                 ActivateSensor(_memoryFree);
 
-                _memoryUsed.Value = used / 1024 / 1024;
+                _memoryUsed.Value = used / kilobytesPerGigabyte;
                 ActivateSensor(_memoryUsed);
 
                 _memoryLoad.Value = ((float)(total - free) / total) * 100;
