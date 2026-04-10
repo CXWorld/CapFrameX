@@ -24,7 +24,6 @@ msbuild source\CapFrameX\CapFrameX.csproj /p:Configuration=Release /p:Platform=x
 msbuild source\CapFrameX.Hwinfo\CapFrameX.Hwinfo.vcxproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=17.0
 msbuild source\CapFrameX.IGCL\CapFrameX.IGCL.vcxproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=17.0
 msbuild source\CapFrameX.ADLX\CapFrameX.ADLX.vcxproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=17.0
-msbuild source\CapFrameX.FrameView\CapFrameX.FrameView.vcxproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=17.0
 ```
 
 ### Build Installer
@@ -92,7 +91,7 @@ The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (.NET Framework 4
 - Serilog (logging)
 
 ### Build Output
-- Platform: x64 (primary), x86 supported
+- Platform: x64
 - Main output: `source\CapFrameX\bin\x64\Release\`
 - Installer output: `source\CapFrameXBootstrapper\bin\x64\Release\CapFrameXBootstrapper.exe`
 
