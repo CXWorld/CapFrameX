@@ -23,6 +23,9 @@ internal sealed class NvidiaGpu : GenericGpu
     private const int LoadIndexPowerBase = 100;
     private const int LoadIndexMemory = 300;
 
+    private const float MiB = 1024f * 1024f;
+    private const float GiB = 1024f * 1024f * 1024f;
+
     private uint _lastBlankCounter;
 
     private readonly Stopwatch _stopwatch;
@@ -558,8 +561,8 @@ internal sealed class NvidiaGpu : GenericGpu
         if (_d3dDeviceId != null && ShouldEvaluateAnyD3DSensor() &&
             D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
         {
-            _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024 / 1024;
-            _gpuSharedMemoryUsage.Value = 1f * deviceInfo.GpuSharedUsed / 1024 / 1024 / 1024;
+            _gpuDedicatedMemoryUsage.Value = deviceInfo.GpuDedicatedUsed / GiB;
+            _gpuSharedMemoryUsage.Value = deviceInfo.GpuSharedUsed / GiB;
             ActivateSensor(_gpuDedicatedMemoryUsage);
             ActivateSensor(_gpuSharedMemoryUsage);
 
@@ -742,13 +745,13 @@ internal sealed class NvidiaGpu : GenericGpu
                 uint total = memoryInfo.DedicatedVideoMemory;
                 float used = Math.Max(total - free, 0);
 
-                _memoryTotal.Value = total / 1024 / 1024;
+                _memoryTotal.Value = total / MiB;
                 ActivateSensor(_memoryTotal);
 
-                _memoryFree.Value = free / 1024 / 1024;
+                _memoryFree.Value = free / MiB;
                 ActivateSensor(_memoryFree);
 
-                _memoryUsed.Value = used / 1024 / 1024;
+                _memoryUsed.Value = used / MiB;
                 ActivateSensor(_memoryUsed);
 
                 _memoryLoad.Value = ((float)(total - free) / total) * 100;
@@ -803,7 +806,7 @@ internal sealed class NvidiaGpu : GenericGpu
                 uint? rx = NvidiaML.NvmlDeviceGetPcieThroughput(_nvmlDevice.Value, NvidiaML.NvmlPcieUtilCounter.RxBytes);
                 if (rx.HasValue)
                 {
-                    _pcieThroughputRx.Value = rx / (1024f * 1024f);
+                    _pcieThroughputRx.Value = rx / MiB;
                     ActivateSensor(_pcieThroughputRx);
                 }
             }
@@ -813,7 +816,7 @@ internal sealed class NvidiaGpu : GenericGpu
                 uint? tx = NvidiaML.NvmlDeviceGetPcieThroughput(_nvmlDevice.Value, NvidiaML.NvmlPcieUtilCounter.TxBytes);
                 if (tx.HasValue)
                 {
-                    _pcieThroughputTx.Value = tx / (1024f * 1024f);
+                    _pcieThroughputTx.Value = tx / MiB;
                     ActivateSensor(_pcieThroughputTx);
                 }
             }
