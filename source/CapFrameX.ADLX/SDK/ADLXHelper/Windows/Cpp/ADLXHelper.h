@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -339,6 +339,12 @@ protected:
 
     //ADLX function - initialize
     ADLXInitialize_Fn m_initFn = nullptr;
+
+    //ADLX function - initialize with incompatible driver
+    ADLXInitialize2_Fn m_init2FnEx = nullptr;
+
+    //ADLX function - initialize
+    ADLXInitialize2_Fn m_init2Fn = nullptr;
 
     //ADLX function - terminate
     ADLXTerminate_Fn m_terminateFn = nullptr;

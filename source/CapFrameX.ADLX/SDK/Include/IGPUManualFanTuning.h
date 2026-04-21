@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -164,6 +164,7 @@ namespace adlx
         //Lists must declare the type of items it holds - what was passed as ADLX_DECLARE_IID() in that interface
         ADLX_DECLARE_ITEM_IID (IADLXManualFanTuningState::IID ())
 
+        ADLX_DECLARE_LIST_METHODS
         /**
         * @page DOX_IADLXManualFanTuningStateList_At At
         * @ENG_START_DOX
@@ -394,6 +395,8 @@ namespace adlx
         *
         *@retvalues
 		*@ENG_START_DOX  If the GPU fan tuning states are successfully set, __ADLX_OK__ is returned.<br>
+        * If the one click auto tuning feature is enabled, __ADLX_RESET_NEEDED__ is returned.<br>
+        * In this case, the overdrive feature must be reset to factory setting using @ref DOX_IADLXGPUTuningServices_ResetToFactory.<Br>
         * If the GPU fan tuning states are not successfully set, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
@@ -470,6 +473,8 @@ namespace adlx
         *
         *@retvalues
         *@ENG_START_DOX  If the state of zero RPM is successfully set, __ADLX_OK__ is returned.<br>
+        * If the one click auto tuning feature is enabled, __ADLX_RESET_NEEDED__ is returned.<br>
+        * In this case, the overdrive feature must be reset to factory setting using @ref DOX_IADLXGPUTuningServices_ResetToFactory.<Br>
         * If the state of zero RPM is not successfully set, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
@@ -578,6 +583,8 @@ namespace adlx
         *
         *@retvalues
         *@ENG_START_DOX  If the min acoustic limit value is successfully set, __ADLX_OK__ is returned.<br>
+        * If the one click auto tuning feature is enabled, __ADLX_RESET_NEEDED__ is returned.<br>
+        * In this case, the overdrive feature must be reset to factory setting using @ref DOX_IADLXGPUTuningServices_ResetToFactory.<Br>
         * If the min acoustic limit value is not successfully set, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
@@ -678,6 +685,8 @@ namespace adlx
         *
         *@retvalues
         *@ENG_START_DOX  If the minimum fan speed value is successfully set, __ADLX_OK__ is returned.<br>
+        * If the one click auto tuning feature is enabled, __ADLX_RESET_NEEDED__ is returned.<br>
+        * In this case, the overdrive feature must be reset to factory setting using @ref DOX_IADLXGPUTuningServices_ResetToFactory.<Br>
         * If the minimum fan speed value is not successfully set, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
@@ -766,6 +775,8 @@ namespace adlx
         *
         *@retvalues
         *@ENG_START_DOX  If the target fan speed value is successfully set, __ADLX_OK__ is returned.<br>
+        * If the one click auto tuning feature is enabled, __ADLX_RESET_NEEDED__ is returned.<br>
+        * In this case, the overdrive feature must be reset to factory setting using @ref DOX_IADLXGPUTuningServices_ResetToFactory.<Br>
         * If the target fan speed value is not successfully set, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
@@ -863,11 +874,11 @@ namespace adlx
         *@codeEnd
         *
         *@params
-        *@paramrow{1.,[out],defaultVal,adlx_int*,@ENG_START_DOX The pointer to a variable where the min acoustic limit default value (in MHz) is returned. @ENG_END_DOX}
+        *@paramrow{1.,[out],defaultVal,adlx_int*,@ENG_START_DOX The pointer to a variable where the minimum acoustic limit default value (in MHz) is returned. @ENG_END_DOX}
         *
         *@retvalues
-        *@ENG_START_DOX  If the min acoustic limit default value is successfully returned, __ADLX_OK__ is returned.<br>
-        * If the min acoustic limit default value is not successfully returned, an error code is returned.<br>
+        *@ENG_START_DOX  If the minimum acoustic limit default value is successfully returned, __ADLX_OK__ is returned.<br>
+        * If the minimum acoustic limit default value is not successfully returned, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
         * @addinfo
@@ -931,7 +942,7 @@ namespace adlx
 
         /**
         *@page DOX_IADLXManualFanTuning1_GetDefaultZeroRPMState GetDefaultZeroRPMState
-        *@ENG_START_DOX @brief Gets the default zero RPM is state on a GPU. @ENG_END_DOX
+        *@ENG_START_DOX @brief Gets the default zero RPM state of a GPU. @ENG_END_DOX
         *
         *@syntax
         *@codeStart
@@ -948,7 +959,7 @@ namespace adlx
         *
         * @addinfo
         * @ENG_START_DOX
-        * Zero RPM enables quiet operation when the GPU is under a light load and speeds up the fans when the GPU load and temperature increases.
+        * Zero RPM enables quiet operation when the GPU is under a light load, and speeds up the fans when the GPU load and temperature increases.
         * @ENG_END_DOX
         *
         *@copydoc IADLXManualFanTuning1_REQ_TABLE

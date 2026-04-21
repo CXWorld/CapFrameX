@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -305,6 +305,8 @@ namespace adlx
         *
         *@retvalues
         *@ENG_START_DOX  If the power saver is successfully applied, __ADLX_OK__ is returned.<br>
+        * If the one click auto tuning feature is enabled, __ADLX_RESET_NEEDED__ is returned.<br>
+        * In this case, the overdrive feature must be reset to factory setting using @ref DOX_IADLXGPUTuningServices_ResetToFactory.<Br>
         * If the power saver is not successfully applied, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
@@ -332,6 +334,8 @@ namespace adlx
         *
         *@retvalues
         *@ENG_START_DOX  If the quiet is successfully applied, __ADLX_OK__ is returned.<br>
+        * If the one click auto tuning feature is enabled, __ADLX_RESET_NEEDED__ is returned.<br>
+        * In this case, the overdrive feature must be reset to factory setting using @ref DOX_IADLXGPUTuningServices_ResetToFactory.<Br>
         * If the quiet is not successfully applied, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
@@ -359,6 +363,7 @@ namespace adlx
         *
         *@retvalues
         *@ENG_START_DOX  If the balanced is successfully applied, __ADLX_OK__ is returned.<br>
+        * If the one click auto tuning feature is enabled, __ADLX_RESET_NEEDED__ is returned.<br>
         * If the balanced is not successfully applied, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
@@ -386,6 +391,8 @@ namespace adlx
         *
         *@retvalues
         *@ENG_START_DOX  If the turbo is successfully applied, __ADLX_OK__ is returned.<br>
+        * If the one click auto tuning feature is enabled, __ADLX_RESET_NEEDED__ is returned.<br>
+        * In this case, the overdrive feature must be reset to factory setting using @ref DOX_IADLXGPUTuningServices_ResetToFactory.<Br>
         * If the turbo is not successfully applied, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
@@ -413,6 +420,8 @@ namespace adlx
         *
         *@retvalues
         *@ENG_START_DOX  If the rage is successfully applied, __ADLX_OK__ is returned.<br>
+        * If the one click auto tuning feature is enabled, __ADLX_RESET_NEEDED__ is returned.<br>
+        * In this case, the overdrive feature must be reset to factory setting using @ref DOX_IADLXGPUTuningServices_ResetToFactory.<Br>
         * If the rage is not successfully applied, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *

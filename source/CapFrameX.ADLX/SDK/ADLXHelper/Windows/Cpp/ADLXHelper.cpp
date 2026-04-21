@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -107,13 +107,19 @@ ADLX_RESULT ADLXHelper::LoadADLXDll()
             m_fullVersionFn = (ADLXQueryFullVersion_Fn)adlx_get_proc_address (m_hDLLHandle, ADLX_QUERY_FULL_VERSION_FUNCTION_NAME);
             m_versionFn = (ADLXQueryVersion_Fn)adlx_get_proc_address (m_hDLLHandle, ADLX_QUERY_VERSION_FUNCTION_NAME);
             m_initWithADLFn = (ADLXInitializeWithCallerAdl_Fn)adlx_get_proc_address (m_hDLLHandle, ADLX_INIT_WITH_CALLER_ADL_FUNCTION_NAME);
-            m_initFnEx = (ADLXInitialize_Fn)adlx_get_proc_address (m_hDLLHandle, ADLX_INIT_WITH_INCOMPATIBLE_DRIVER_FUNCTION_NAME);
-            m_initFn = (ADLXInitialize_Fn)adlx_get_proc_address (m_hDLLHandle, ADLX_INIT_FUNCTION_NAME);
+            m_init2FnEx = (ADLXInitialize2_Fn)adlx_get_proc_address (m_hDLLHandle, ADLX_INIT2_WITH_INCOMPATIBLE_DRIVER_FUNCTION_NAME);
+            m_init2Fn = (ADLXInitialize2_Fn)adlx_get_proc_address (m_hDLLHandle, ADLX_INIT2_FUNCTION_NAME);
+            if (m_init2FnEx == nullptr)
+            {
+                //try to get the ADLXInitialize function pointers if ADLXInitialize2 is not found
+                m_initFnEx = (ADLXInitialize_Fn)adlx_get_proc_address (m_hDLLHandle, ADLX_INIT_WITH_INCOMPATIBLE_DRIVER_FUNCTION_NAME);
+                m_initFn = (ADLXInitialize_Fn)adlx_get_proc_address (m_hDLLHandle, ADLX_INIT_FUNCTION_NAME);
+            }
             m_terminateFn = (ADLXTerminate_Fn)adlx_get_proc_address (m_hDLLHandle, ADLX_TERMINATE_FUNCTION_NAME);
         }
     }
 
-    if (m_fullVersionFn && m_versionFn && m_initWithADLFn && m_initFnEx && m_initFn && m_terminateFn)
+    if (m_fullVersionFn && m_versionFn && m_initWithADLFn && ((m_init2FnEx && m_init2Fn) || (m_initFnEx && m_initFn)) && m_terminateFn)
     {
         return ADLX_OK;
     }
@@ -138,11 +144,17 @@ ADLX_RESULT ADLXHelper::InitializePrivate(adlx_handle  adlContext, ADLX_ADL_Main
         {
             if (useIncompatibleDriver)
             {
-                res = m_initFnEx (ADLX_FULL_VERSION, &m_pSystemServices);
+                if (m_init2FnEx)
+                    res = m_init2FnEx (ADLX_FULL_VERSION, &m_pSystemServices, &m_pAdlMapping);
+                else
+                    res = m_initFnEx (ADLX_FULL_VERSION, &m_pSystemServices);
             }
             else
             {
-                res = m_initFn (ADLX_FULL_VERSION, &m_pSystemServices);
+                if (m_init2Fn)
+                    res = m_init2Fn (ADLX_FULL_VERSION, &m_pSystemServices, &m_pAdlMapping);
+                else
+                    res = m_initFn (ADLX_FULL_VERSION, &m_pSystemServices);
             }
         }
         return res;

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -17,7 +17,6 @@
 #if defined (__cplusplus)
 namespace adlx
 {
-    class ADLX_NO_VTABLE IADLXDisplayConnectivityExperience;
     class ADLX_NO_VTABLE IADLXDisplayBlanking;
     class ADLX_NO_VTABLE IADLXDisplayServices1 : public IADLXDisplayServices
     {

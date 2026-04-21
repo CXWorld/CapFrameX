@@ -1,5 +1,5 @@
 // 
-// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -388,6 +388,7 @@ namespace adlx
         ADLX_DECLARE_IID (L"IADLXDesktopList")
         //Lists must declare the type of items it holds - what was passed as ADLX_DECLARE_IID() in that interface
         ADLX_DECLARE_ITEM_IID (IADLXDesktop::IID ())
+        ADLX_DECLARE_LIST_METHODS
         /**
         * @page DOX_IADLXDesktopList_At At
         * @ENG_START_DOX

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -13,6 +13,16 @@
 //ICollections.h - Interfaces for ADLX collections
 
 // These interfaces are used when ADLX returns or receives many-of collections
+
+// The following macro is used to declare At() and Add_Back() methods from IADLXList in its derived interfaces to avoid clang warning.
+// Add this macro for all derived interfaces of IADLXList
+#if defined(__clang__)
+#define ADLX_DECLARE_LIST_METHODS \
+    using IADLXList::At; \
+    using IADLXList::Add_Back;
+#else
+#define ADLX_DECLARE_LIST_METHODS
+#endif
 
 //IADLXList allows iterating forward in a collection of objects, similar with an stl vector
 #pragma region IADLXList interface

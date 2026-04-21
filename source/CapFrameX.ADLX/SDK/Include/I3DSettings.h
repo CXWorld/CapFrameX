@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -884,6 +884,15 @@ namespace adlx
         * On some AMD GPUs, AMD Radeon 3D Image Sharpening cannot be simultaneously enabled with @ref DOX_IADLX3DRadeonSuperResolution "Radeon Super Resolution".<br>
         *
         * When AMD Radeon 3D Image Sharpening is enabled, the mutually exclusive features are automatically disabled. If a mutually exclusive feature is re-enabled, its previous configuration settings are restored.<br>
+        * 
+        * @ref DOX_IADLX3DImageSharpenDesktop "Sharpen Desktop" requires AMD Radeon™ Image Sharpening.<br>
+
+        * If AMD Radeon Image Sharpening is not enabled, the sharpening effect will not be applied to either windowed applications or to applications that run in fullscreen exclusive mode. Sharpen Desktop can remain enabled, but specified values will not be considered.<br>
+        *
+        * When AMD Radeon Image Sharpening and Sharpen Desktop are enabled, sharpening is applied for windowed applications, and for applications that run in fullscreen exclusive mode.<br>
+        *
+        * When AMD Radeon Image Sharpening is enabled, but Sharpen Desktop is disabled, the sharpening is only applied to applications that run in fullscreen exclusive mode.<br>
+        * 
         * @ENG_END_DOX
         *
         *@copydoc IADLX3DImageSharpening_REQ_TABLE

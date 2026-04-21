@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -221,9 +221,85 @@ namespace adlx
     public:
         ADLX_DECLARE_IID(L"IADLXVideoSuperResolution")
 
-
+            /**
+            *@page DOX_IADLXVideoSuperResolution_IsSupported IsSupported
+            *@ENG_START_DOX @brief Checks if video super resolution is supported on a GPU. @ENG_END_DOX
+            *
+            *@syntax
+            *@codeStart
+            * @ref ADLX_RESULT    IsSupported (adlx_bool* supported)
+            *@codeEnd
+            *
+            *@params
+            * @paramrow{1.,[out],supported,adlx_bool*,@ENG_START_DOX The pointer to a variable where the state of video super resolution is returned. The variable is __true__ if video super resolution is supported. The variable is __false__ if video super resolution is not supported. @ENG_END_DOX}
+            *
+            *@retvalues
+            *@ENG_START_DOX  If the state of video super resolution is successfully returned, __ADLX_OK__ is returned.<br>
+            * If the state of video super resolution is not successfully returned, an error code is returned.<br>
+            * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
+            *
+            *@addinfo
+            *@ENG_START_DOX
+            *Video super resolution quadruples the video playback resolution on supported applications.
+            *@ENG_END_DOX
+            *
+            *@copydoc IADLXVideoSuperResolution_REQ_TABLE
+            *
+            */
             virtual ADLX_RESULT         ADLX_STD_CALL IsSupported(adlx_bool* supported) = 0;
+
+            /**
+            *@page DOX_IADLXVideoSuperResolution_IsEnabled IsEnabled
+            *@ENG_START_DOX @brief Checks if video super resolution is enabled on a GPU. @ENG_END_DOX
+            *
+            *@syntax
+            *@codeStart
+            * @ref ADLX_RESULT    IsEnabled (adlx_bool* enabled)
+            *@codeEnd
+            *
+            *@params
+            * @paramrow{1.,[out],enabled,adlx_bool*,@ENG_START_DOX The pointer to a variable where the state of video super resolution is returned. The variable is __true__ if video super resolution is enabled. The variable is __false__ if video super resolution is not enabled. @ENG_END_DOX}
+            *
+            *@retvalues
+            *@ENG_START_DOX  If the state of video super resolution is successfully returned, __ADLX_OK__ is returned.<br>
+            * If the state of video super resolution is not successfully returned, an error code is returned.<br>
+            * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
+            *
+            * @addinfo
+            *@ENG_START_DOX
+            *Video super resolution quadruples the video playback resolution on supported applications.
+            *@ENG_END_DOX
+            *
+            *@copydoc IADLXVideoSuperResolution_REQ_TABLE
+            *
+            */
             virtual ADLX_RESULT         ADLX_STD_CALL IsEnabled(adlx_bool* isEnabled) = 0;
+
+            /**
+             *@page DOX_IADLXVideoSuperResolution_SetEnabled SetEnabled
+             *@ENG_START_DOX @brief Sets video super resolution to enabled or disabled on a GPU. @ENG_END_DOX
+             *
+             *@syntax
+             *@codeStart
+             * @ref ADLX_RESULT    SetEnabled (adlx_bool enable)
+             *@codeEnd
+             *
+             *@params
+             * @paramrow{1.,[in],enable,adlx_bool,@ENG_START_DOX The new video super resolution state. Set __true__ to enable video super resolution. Set __false__ to disable video super resolution. @ENG_END_DOX}
+             *
+             *@retvalues
+             *@ENG_START_DOX  If the state of video super resolution is successfully set, __ADLX_OK__ is returned.<br>
+             * If the state of video super resolution is not successfully set, an error code is returned.<br>
+             * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
+             *
+             * @addinfo
+            *@ENG_START_DOX
+            *Video super resolution quadruples the video playback resolution on supported applications.
+            *@ENG_END_DOX
+            *
+            *@copydoc IADLXVideoSuperResolution_REQ_TABLE
+             *
+             */
             virtual ADLX_RESULT         ADLX_STD_CALL SetEnabled(adlx_bool enable) = 0;
 
     };  //IADLXVideoSuperResolution
@@ -297,7 +373,7 @@ namespace adlx
 
         /**
         *@page DOX_IADLXMultimediaChangedEvent_IsVideoUpscaleChanged IsVideoUpscaleChanged
-        *@ENG_START_DOX @brief Checks for changes to the video upscale settings. @ENG_END_DOX
+        *@ENG_START_DOX @brief Checks for changes to video upscale settings. @ENG_END_DOX
         *
         *@syntax
         *@codeStart
@@ -313,7 +389,7 @@ namespace adlx
         *
         *@addinfo
         *@ENG_START_DOX
-        * __Note:__ To obtain the GPU, use @ref DOX_IADLXMultimediaChangedEvent_GetGPU.
+        * __Note:__ Use @ref DOX_IADLXMultimediaChangedEvent_GetGPU to retrieve the GPU.
         * @ENG_END_DOX
         * 
         *@copydoc IADLXMultimediaChangedEvent_REQ_TABLE
@@ -321,7 +397,30 @@ namespace adlx
         */
         virtual adlx_bool       ADLX_STD_CALL IsVideoUpscaleChanged() = 0;
 
-
+        /**
+        *@page DOX_IADLXMultimediaChangedEvent_IsVideoSuperResolutionChanged IsVideoSuperResolutionChanged
+        *@ENG_START_DOX @brief Checks for changes to video super resolution settings. @ENG_END_DOX
+        *
+        *@syntax
+        *@codeStart
+        * adlx_bool    IsVideoSuperResolutionChanged ()
+        *@codeEnd
+        *
+        *@params
+        *N/A
+        *
+        *@retvalues
+        *@ENG_START_DOX  If there are any changes to the video super resolution settings, __true__ is returned.<br>
+        * If there are no changes to the video super resolution settings, __false__ is returned.<br> @ENG_END_DOX
+        *
+        *@addinfo
+        *@ENG_START_DOX
+        * __Note:__ Use @ref DOX_IADLXMultimediaChangedEvent_GetGPU to retrieve the GPU.
+        * @ENG_END_DOX
+        *
+        *@copydoc IADLXMultimediaChangedEvent_REQ_TABLE
+        *
+        */
         virtual adlx_bool       ADLX_STD_CALL IsVideoSuperResolutionChanged() = 0;
 
     }; //IADLXMultimediaChangedEvent
@@ -360,7 +459,7 @@ namespace adlx
     public:
         /**
         *@page DOX_IADLXMultimediaChangedEventListener_OnMultimediaChanged OnMultimediaChanged
-        *@ENG_START_DOX @brief __OnMultimediaChanged__ is called by ADLX when multimedia settings change. @ENG_END_DOX
+        *@ENG_START_DOX @brief __OnMultimediaChanged__ is called by ADLX when multimedia settings are changed. @ENG_END_DOX
         *
         *@syntax
         *@codeStart
@@ -375,9 +474,11 @@ namespace adlx
         * If the application requires ADLX to stop notifying the next listener, __false__ must be returned.<br> @ENG_END_DOX
         *
         *@detaileddesc
-        *@ENG_START_DOX  Once the application registers to the notifications with @ref DOX_IADLXMultimediaChangedHandling_AddMultimediaEventListener, ADLX will call this method until the application unregisters from the notifications with @ref DOX_IADLXMultimediaChangedHandling_RemoveMultimediaEventListener.
-        * The method should return quickly to not block the execution path in ADLX. If the method requires a long processing of the event notification, the application must hold onto a reference to the multimedia settings change event with @ref DOX_IADLXInterface_Acquire and make it available on an asynchronous thread and return immediately. When the asynchronous thread is done processing it must discard the multimedia settings change event with @ref DOX_IADLXInterface_Release. @ENG_END_DOX
+        *@ENG_START_DOX  Once the application registers to the notifications with @ref DOX_IADLXMultimediaChangedHandling_AddMultimediaEventListener, ADLX will call this method until the application unregisters from the notifications with @ref DOX_IADLXMultimediaChangedHandling_RemoveMultimediaEventListener.<br/>
         *
+        * The method should return quickly to not block the execution path in ADLX. If the method requires a long processing of the event notification, the application must hold onto a reference to the multimedia settings change event with @ref DOX_IADLXInterface_Acquire and make it available on an asynchronous thread and return immediately.<br/>
+        *
+        * When the asynchronous thread is done processing it must discard the multimedia settings change event with @ref DOX_IADLXInterface_Release. @ENG_END_DOX
         *@copydoc IADLXMultimediaChangedEventListener_REQ_TABLE
         *
         */
@@ -405,7 +506,7 @@ namespace adlx
 
         /**
         *@page DOX_IADLXMultimediaChangedHandling_AddMultimediaEventListener AddMultimediaEventListener
-        *@ENG_START_DOX @brief Registers an event listener for notifications whenever multimedia settings are changed. @ENG_END_DOX
+        *@ENG_START_DOX @brief Registers an event listener for notifications when multimedia settings are changed. @ENG_END_DOX
         *
         *@syntax
         *@codeStart
@@ -544,7 +645,33 @@ namespace adlx
             */
             virtual ADLX_RESULT   ADLX_STD_CALL GetVideoUpscale(IADLXGPU* pGPU, IADLXVideoUpscale** ppVideoupscale) = 0;
 
-
+            /**
+            *@page DOX_IADLXMultimediaServices_GetVideoSuperResolution GetVideoSuperResolution
+            *@ENG_START_DOX @brief Gets the reference-counted video super resolution interface of a GPU. @ENG_END_DOX
+            *
+            *@syntax
+            *@codeStart
+            * @ref ADLX_RESULT    GetVideoSuperResolution (@ref DOX_IADLXGPU* pGPU, @ref DOX_IADLXVideoSuperResolution** ppVideoSuperResolution)
+            *@codeEnd
+            *
+            *@params
+            *@paramrow{1.,[in] ,pGPU,@ref DOX_IADLXGPU* ,@ENG_START_DOX The pointer to the GPU interface. @ENG_END_DOX}
+            *@paramrow{2.,[out] ,ppVideoSuperResolution,@ref DOX_IADLXVideoSuperResolution** ,@ENG_START_DOX The address of a pointer to the returned interface. If the interface is not successfully returned\, the method sets the dereferenced address __*ppVideoSuperResolution__ to __nullptr__. @ENG_END_DOX}
+            *
+            *@retvalues
+            *@ENG_START_DOX  If the interface is successfully returned, __ADLX_OK__ is returned.<br>
+            * If the interface is not successfully returned, an error code is returned.<br>
+            * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
+            *
+            *@detaileddesc
+            *@ENG_START_DOX @details The returned interface must be discarded with @ref DOX_IADLXInterface_Release when it is no longer needed. @ENG_END_DOX
+            *
+            *@addinfo
+            *@ENG_START_DOX  In C++, when using ADLX interfaces as smart pointers, there is no need to call @ref DOX_IADLXInterface_Release because smart pointers call it in their internal implementation. @ENG_END_DOX
+            *
+            *@copydoc IADLXMultimediaServices_REQ_TABLE
+            *
+            */
             virtual ADLX_RESULT   ADLX_STD_CALL GetVideoSuperResolution(IADLXGPU* pGPU, IADLXVideoSuperResolution** ppVideoSuperResolution) = 0;
 
     };  //IADLXPowerTuningServices

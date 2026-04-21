@@ -306,6 +306,24 @@ void SetGPUSharedMemory(IADLXGPUMetricsSupport2Ptr gpuMetricsSupport2, IADLXGPUM
 	}
 }
 
+// Set GPU fan duty (in %) - requires IADLXGPUMetrics3
+void SetGPUFanDuty(IADLXGPUMetricsSupport3Ptr gpuMetricsSupport3, IADLXGPUMetrics3Ptr gpuMetrics3, AdlxTelemetryData* telemetryData)
+{
+	adlx_bool supported = false;
+	ADLX_RESULT res = gpuMetricsSupport3->IsSupportedGPUFanDuty(&supported);
+	if (ADLX_SUCCEEDED(res))
+	{
+		telemetryData->gpuFanDutySupported = supported;
+		if (supported)
+		{
+			adlx_int fanDuty = 0;
+			res = gpuMetrics3->GPUFanDuty(&fanDuty);
+			if (ADLX_SUCCEEDED(res))
+				telemetryData->gpuFanDutyValue = fanDuty;
+		}
+	}
+}
+
 bool IntializeAdlx()
 {
 	ADLX_RESULT res = ADLX_FAIL;
@@ -444,6 +462,15 @@ bool GetAdlxTelemetry(const adlx_uint index, const adlx_uint historyLength, Adlx
 									ADLX_SUCCEEDED(gpuMetrics1->QueryInterface(IADLXGPUMetrics2::IID(), reinterpret_cast<void**>(&gpuMetrics2))))
 								{
 									SetGPUSharedMemory(gpuMetricsSupport2, gpuMetrics2, adlxTelemetryData);
+
+									// Query for IADLXGPUMetricsSupport3 and IADLXGPUMetrics3 interfaces
+									IADLXGPUMetricsSupport3Ptr gpuMetricsSupport3;
+									IADLXGPUMetrics3Ptr gpuMetrics3;
+									if (ADLX_SUCCEEDED(gpuMetricsSupport2->QueryInterface(IADLXGPUMetricsSupport3::IID(), reinterpret_cast<void**>(&gpuMetricsSupport3))) &&
+										ADLX_SUCCEEDED(gpuMetrics2->QueryInterface(IADLXGPUMetrics3::IID(), reinterpret_cast<void**>(&gpuMetrics3))))
+									{
+										SetGPUFanDuty(gpuMetricsSupport3, gpuMetrics3, adlxTelemetryData);
+									}
 								}
 							}
 
@@ -537,6 +564,14 @@ bool GetAdlxTelemetrySupport(const adlx_uint index, AdlxTelemetrySupport* adlxTe
 					{
 						if (ADLX_SUCCEEDED(gpuMetricsSupport2->IsSupportedGPUSharedMemory(&supported)))
 							adlxTelemetrySupport->gpuSharedMemorySupported = supported;
+
+						// Query IADLXGPUMetricsSupport3 for more extended metrics
+						IADLXGPUMetricsSupport3Ptr gpuMetricsSupport3;
+						if (ADLX_SUCCEEDED(gpuMetricsSupport2->QueryInterface(IADLXGPUMetricsSupport3::IID(), reinterpret_cast<void**>(&gpuMetricsSupport3))))
+						{
+							if (ADLX_SUCCEEDED(gpuMetricsSupport3->IsSupportedGPUFanDuty(&supported)))
+								adlxTelemetrySupport->gpuFanDutySupported = supported;
+						}
 					}
 				}
 

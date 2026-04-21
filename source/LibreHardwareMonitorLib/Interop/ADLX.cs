@@ -75,6 +75,8 @@ internal static class ADLX
         public bool NpuActivityLevelSupported;
         [MarshalAs(UnmanagedType.I1)]
         public bool GpuSharedMemorySupported;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool GpuFanDutySupported;
     }
 
     /// <summary>
@@ -158,6 +160,11 @@ internal static class ADLX
         [MarshalAs(UnmanagedType.I1)]
         public bool GpuSharedMemorySupported;
         public double GpuSharedMemoryValue;
+
+        // GPU Fan Duty (IADLXGPUMetrics3)
+        [MarshalAs(UnmanagedType.I1)]
+        public bool GpuFanDutySupported;
+        public double GpuFanDutyValue;
     }
 
     /// <summary>

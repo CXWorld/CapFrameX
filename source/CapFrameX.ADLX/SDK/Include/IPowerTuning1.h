@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -65,7 +65,7 @@ namespace adlx
 
         /**
         *@page DOX_IADLXSmartShiftEco_SetEnabled SetEnabled
-        *@ENG_START_DOX @brief Sets AMD Smartshift Eco to enabled or disabled. @ENG_END_DOX
+        *@ENG_START_DOX @brief Sets the activation status of AMD Smartshift Eco. @ENG_END_DOX
         *
         *@syntax
         *@codeStart
@@ -109,7 +109,7 @@ namespace adlx
 
         /**
         *@page DOX_IADLXSmartShiftEco_GetInactiveReason GetInactiveReason
-        *@ENG_START_DOX @brief Gets the reason why AMD SmartShift Eco is inactive. @ENG_END_DOX
+        *@ENG_START_DOX @brief Gets the reason as to why AMD SmartShift Eco is inactive. @ENG_END_DOX
         *
         *@syntax
         *@codeStart
@@ -354,7 +354,7 @@ namespace adlx
 
         /**
         *@page DOX_IADLXPowerTuningChangedEvent1_IsSmartShiftEcoChanged IsSmartShiftEcoChanged
-        *@ENG_START_DOX @brief Checks for changes to the AMD SmartShift Eco enable/disable and active/inactive state. @ENG_END_DOX
+        *@ENG_START_DOX @brief Checks for changes to AMD SmartShift Eco settings. @ENG_END_DOX
         *
         *@syntax
         *@codeStart
@@ -438,7 +438,7 @@ namespace adlx
 
         /**
         *@page DOX_IADLXPowerTuningServices1_IsGPUConnectSupported IsGPUConnectSupported
-        *@ENG_START_DOX @brief Checks if AMD GPUConnect is supported on this system. @ENG_END_DOX
+        *@ENG_START_DOX @brief Checks if AMD GPUConnect is supported on the system. @ENG_END_DOX
         *
         *@syntax
         *@codeStart
@@ -460,7 +460,7 @@ namespace adlx
         
         /**
         *@page DOX_IADLXPowerTuningServices1_GetGPUConnectGPUs GetGPUConnectGPUs
-        *@ENG_START_DOX @brief Gets the reference counted list of all the GPUs which support AMD GPUConnect. @ENG_END_DOX
+        *@ENG_START_DOX @brief Gets the reference counted list of all the GPUs that support AMD GPUConnect. @ENG_END_DOX
         *@syntax
         *@codeStart
         * @ref ADLX_RESULT    GetGPUConnectGPUs (@ref DOX_IADLXGPU2List** ppGPUs)

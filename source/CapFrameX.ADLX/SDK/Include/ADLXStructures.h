@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -7,6 +7,10 @@
 #define ADLX_STRUCTURES_H
 #pragma once
 #include "ADLXDefines.h"
+
+#if defined (__cplusplus)
+using namespace adlx;
+#endif
 
 /**   @file */
 //-------------------------------------------------------------------------------------------------

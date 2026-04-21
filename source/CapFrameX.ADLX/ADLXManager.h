@@ -24,6 +24,7 @@ typedef struct AdlxTelemetrySupport
 	bool npuFrequencySupported = false;
 	bool npuActivityLevelSupported = false;
 	bool gpuSharedMemorySupported = false;
+	bool gpuFanDutySupported = false;
 };
 
 typedef struct AdlxTelemetryData
@@ -87,6 +88,10 @@ typedef struct AdlxTelemetryData
 	// GPU Shared Memory (IADLXGPUMetrics2)
 	bool gpuSharedMemorySupported = false;
 	double gpuSharedMemoryValue;
+
+	// GPU Fan Duty (IADLXGPUMetrics3)
+	bool gpuFanDutySupported = false;
+	double gpuFanDutyValue;
 };
 
 typedef struct AdlxDeviceInfo

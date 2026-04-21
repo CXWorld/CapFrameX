@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -84,6 +84,8 @@ namespace adlx
         *
         *@retvalues
         *@ENG_START_DOX  If the power limit value is successfully set, __ADLX_OK__ is returned.<br>
+        * If the one click auto tuning feature is enabled, __ADLX_RESET_NEEDED__ is returned.<br>
+        * In this case, the overdrive feature must be reset to factory setting using @ref DOX_IADLXGPUTuningServices_ResetToFactory.<Br>
         * If the power limit value is not successfully set, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
@@ -206,6 +208,8 @@ namespace adlx
         *@retvalues
         *@ENG_START_DOX
         * If the TDC limit value is successfully set, __ADLX_OK__ is returned.<br>
+        * If the one click auto tuning feature is enabled, __ADLX_RESET_NEEDED__ is returned.<br>
+        * In this case, the overdrive feature must be reset to factory setting using @ref DOX_IADLXGPUTuningServices_ResetToFactory.<Br>
         * If the TDC limit value is not successfully set, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
         *@ENG_END_DOX

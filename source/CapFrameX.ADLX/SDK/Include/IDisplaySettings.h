@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -22,7 +22,7 @@ namespace adlx
         ADLX_DECLARE_IID (L"IADLXDisplayFreeSync")
         /**
         *@page DOX_IADLXDisplayFreeSync_IsSupported IsSupported
-        *@ENG_START_DOX @brief Checks if the AMD FreeSync™ is supported on a display. @ENG_END_DOX
+        *@ENG_START_DOX @brief Checks if AMD FreeSync™ is supported on a display. @ENG_END_DOX
         *
         *@syntax
         *@codeStart
@@ -1853,10 +1853,11 @@ namespace adlx
     public:
         ADLX_DECLARE_IID (L"IADLXDisplayResolutionList")
         ADLX_DECLARE_ITEM_IID (IADLXDisplayResolution::IID ())
+        ADLX_DECLARE_LIST_METHODS
         /**
         * @page DOX_IADLXDisplayResolutionList_At At
         * @ENG_START_DOX
-        * @brief Returns the item at the asked location.
+        * @brief Returns the reference counted interface at the requested location.
         * @ENG_END_DOX
         * @syntax
         * @codeStart
@@ -1864,12 +1865,14 @@ namespace adlx
         * @codeEnd
         *
         * @params
-        * @paramrow{1.,[in] ,location,const adlx_uint ,@ENG_START_DOX Location index to retrieve the resolution item from the list.  @ENG_END_DOX}
-        * @paramrow{2.,[out] ,ppItem,@ref DOX_IADLXDisplayResolution** ,@ENG_START_DOX The address of a pointer variable that receives a pointer to the @ref DOX_IADLXDisplayResolution interface.  @ENG_END_DOX}
+        * @paramrow{1.,[in] ,location,const adlx_uint ,@ENG_START_DOX The location of the requested interface.  @ENG_END_DOX}
+        * @paramrow{2.,[out] ,ppItem,@ref DOX_IADLXDisplayResolution** ,@ENG_START_DOX The address of a pointer to the returned interface. If the interface is not successfully returned then the method sets the dereferenced address __*ppItem__ to __nullptr__.  @ENG_END_DOX}
         *
         * @retvalues
         * @ENG_START_DOX
-        * Returns __ADLX_OK__ for success and ADLX error code @ref ADLX_RESULT for failure.
+        * If the location is within the list bounds, __ADLX_OK__ is returned.<br>
+        * If the location is not within the list bounds, an error code is returned.<br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
         * @ENG_END_DOX
         *
         * @detaileddesc
@@ -1887,34 +1890,29 @@ namespace adlx
         */
         virtual ADLX_RESULT         ADLX_STD_CALL At (const adlx_uint location, IADLXDisplayResolution** ppItem) = 0;
         /**
-         * @page DOX_IADLXDisplayResolutionList_Add_Back Add_Back
-         * @ENG_START_DOX
-         * @brief Adds an element to the back.
-         * @ENG_END_DOX
-         * @syntax
-         * @codeStart
-         *  @ref ADLX_RESULT    Add_Back (@ref DOX_IADLXDisplayResolution* pItem)
-         * @codeEnd
-         *
-         * @params
-         * @paramrow{1.,[in] ,pItem,@ref DOX_IADLXDisplayResolution* ,@ENG_START_DOX The address of a pointer variable that receives the @ref DOX_IADLXDisplayResolution interface.  @ENG_END_DOX}
-         *
-         * @retvalues
-         * @ENG_START_DOX
-         * Returns __ADLX_OK__ for success and ADLX error code @ref ADLX_RESULT for failure.
-         * @ENG_END_DOX
-         *
-         * @detaileddesc
-         * @ENG_START_DOX
-         * @details Adds an element to the back.
-         *
-         * You should call this method whenever you need to add the resolution item to the end of the list.
-         * @ENG_END_DOX
-         *
-         *
-         * @copydoc IADLXDisplayResolutionList_REQ_TABLE
-         *
-         */
+        * @page DOX_IADLXDisplayResolutionList_Add_Back Add_Back
+        * @ENG_START_DOX
+        * @brief Adds an interface to the end of a list.
+        * @ENG_END_DOX
+        * @syntax
+        * @codeStart
+        *  @ref ADLX_RESULT    Add_Back (@ref DOX_IADLXDisplayResolution* pItem)
+        * @codeEnd
+        *
+        * @params
+        * @paramrow{1.,[in] ,pItem,@ref DOX_IADLXDisplayResolution* ,@ENG_START_DOX  The pointer to the interface to be added to the list.  @ENG_END_DOX}
+        *
+        * @retvalues
+        * @ENG_START_DOX
+        * If the interface is added successfully to the end of the list, __ADLX_OK__ is returned.<br>
+        * If the interface is not added to the end of the list, an error code is returned.<br>
+        * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
+        * @ENG_END_DOX
+        *
+        *
+        * @copydoc IADLXDisplayResolutionList_REQ_TABLE
+        *
+        */
         virtual ADLX_RESULT         ADLX_STD_CALL Add_Back (IADLXDisplayResolution* pItem) = 0;
     };  //IADLXDisplayResolutionList
     //----------------------------------------------------------------------------------------------
@@ -3366,7 +3364,7 @@ namespace adlx
 
         /**
         *@page DOX_IADLXDisplayFreeSyncColorAccuracy_IsSupported IsSupported
-        *@ENG_START_DOX @brief Checks if configuring FreeSync color accuracy is supported on a display. @ENG_END_DOX
+        *@ENG_START_DOX @brief Checks if FreeSync color accuracy configuration is supported on a display. @ENG_END_DOX
         *
         *@syntax
         *@codeStart
@@ -3382,7 +3380,9 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *@addinfo
-        *@ENG_START_DOX  When enabled, the FreeSync color accuracy activates the AMD FreeSync(TM) Premium Pro HDR media profile for the display for optimal color accuracy when viewing HDR content.When disabled, it activates the HDR10 media profile for the display.
+        *@ENG_START_DOX  When enabled, FreeSync color accuracy activates the AMD FreeSync™ Premium Pro HDR media profile for optimal color accuracy when viewing HDR content.<br/>
+        *
+        * When disabled, it switches to the HDR10 media profile for the display. @ENG_END_DOX
         *
         *@ENG_END_DOX
         *
@@ -3392,7 +3392,7 @@ namespace adlx
         virtual ADLX_RESULT         ADLX_STD_CALL IsSupported(adlx_bool* supported) = 0;
         /**
         *@page DOX_IADLXDisplayFreeSyncColorAccuracy_IsEnabled IsEnabled
-        *@ENG_START_DOX @brief Checks if AMD FreeSync(TM) Premium Pro HDR media profile is activated on a display. @ENG_END_DOX
+        *@ENG_START_DOX @brief Checks if AMD FreeSync™ Premium Pro HDR media profile is activated on a display. @ENG_END_DOX
         *
         *@syntax
         *@codeStart
@@ -3400,7 +3400,7 @@ namespace adlx
         *@codeEnd
         *
         *@params
-        * @paramrow{1.,[out],enabled,adlx_bool*,@ENG_START_DOX The pointer to a variable where the state of FreeSync color accuracy is returned. The variable is __true__ if AMD FreeSync(TM) Premium Pro HDR media profile is activated. The variable is __false__ if the HDR10 media profile is activated. @ENG_END_DOX}
+        * @paramrow{1.,[out],enabled,adlx_bool*,@ENG_START_DOX The pointer to a variable where the state of FreeSync color accuracy is returned. The variable is __true__ if AMD FreeSync Premium Pro HDR media profile is activated. The variable is __false__ if the HDR10 media profile is activated. @ENG_END_DOX}
         *
         *@retvalues
         *@ENG_START_DOX  If the state of FreeSync color accuracy is successfully returned, __ADLX_OK__ is returned. <br>
@@ -3408,7 +3408,9 @@ namespace adlx
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *@addinfo
-        *@ENG_START_DOX  When enabled, the FreeSync color accuracy activates the AMD FreeSync(TM) Premium Pro HDR media profile for the display for optimal color accuracy when viewing HDR content.When disabled, it activates the HDR10 media profile for the display.
+        *@ENG_START_DOX  When enabled, FreeSync color accuracy activates the AMD FreeSync Premium Pro HDR media profile for optimal color accuracy when viewing HDR content.<br/>
+        *
+        * When disabled, it switches to the HDR10 media profile for the display.
         *
         *@ENG_END_DOX
         *
@@ -3418,7 +3420,7 @@ namespace adlx
         virtual ADLX_RESULT         ADLX_STD_CALL IsEnabled(adlx_bool* enabled) = 0;
         /**
         *@page DOX_IADLXDisplayFreeSyncColorAccuracy_SetEnabled SetEnabled
-        *@ENG_START_DOX @brief Activates or deactivates the AMD FreeSync(TM) Premium Pro HDR media profile on a display. @ENG_END_DOX
+        *@ENG_START_DOX @brief Activates or deactivates the AMD FreeSync™ Premium Pro HDR media profile on a display. @ENG_END_DOX
         *
         *@syntax
         *@codeStart
@@ -3426,15 +3428,17 @@ namespace adlx
         *@codeEnd
         *
         *@params
-        * @paramrow{1.,[in],enable,adlx_bool,@ENG_START_DOX The new FreeSync color accuracy state. Set __true__ to activate the AMD FreeSync(TM) Premium Pro HDR media profile. Set __false__ to activate the HDR10 media profile. @ENG_END_DOX}
+        * @paramrow{1.,[in],enable,adlx_bool,@ENG_START_DOX The new FreeSync color accuracy state. Set __true__ to activate the AMD FreeSync Premium Pro HDR media profile. Set __false__ to activate the HDR10 media profile. @ENG_END_DOX}
         *
         *@retvalues
-        *@ENG_START_DOX  If the FreeSync color accuracy enabled status is successfully set, __ADLX_OK__ is returned. <br>
-        * If the FreeSync color accuracy enabled status is not successfully set, an error code is returned. <br>
+        *@ENG_START_DOX  If the state of FreeSync color accuracy is successfully set, __ADLX_OK__ is returned. <br>
+        * If the state of FreeSync color accuracy is not successfully set, an error code is returned. <br>
         * Refer to @ref ADLX_RESULT for success codes and error codes. @ENG_END_DOX
         *
         *@addinfo
-        *@ENG_START_DOX  When enabled, the FreeSync color accuracy activates the AMD FreeSync(TM) Premium Pro HDR media profile for the display for optimal color accuracy when viewing HDR content.When disabled, it activates the HDR10 media profile for the display.
+        *@ENG_START_DOX  When enabled, FreeSync color accuracy activates the AMD FreeSync Premium Pro HDR media profile for optimal color accuracy when viewing HDR content.<br/>
+        *
+        * When disabled, it switches to the HDR10 media profile for the display. @ENG_END_DOX
         *
         *@ENG_END_DOX
         *
@@ -3472,5 +3476,6 @@ struct IADLXDisplayFreeSyncColorAccuracy
 #endif
 
 #pragma endregion IADLXDisplayFreeSyncColorAccuracy interface
+
 
 #endif // ADLX_IDISPLAYSETTING_H

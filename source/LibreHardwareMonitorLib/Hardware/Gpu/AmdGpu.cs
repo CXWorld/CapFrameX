@@ -32,6 +32,7 @@ internal sealed class AmdGpu : GenericGpu
 
     // Fan sensor
     private readonly Sensor _fan;
+    private readonly Sensor _fanDuty;
 
     // Power sensors
     private readonly Sensor _powerTotal;
@@ -75,6 +76,8 @@ internal sealed class AmdGpu : GenericGpu
         // Fan sensor
         _fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings)
         { PresentationSortKey = $"{index}_5_0" };
+        _fanDuty = new Sensor("GPU Fan", 0, SensorType.Control, this, settings)
+        { PresentationSortKey = $"{index}_5_1" };
 
         // Voltage sensor
         _coreVoltage = new Sensor("GPU Core", 0, SensorType.Voltage, this, settings)
@@ -134,6 +137,8 @@ internal sealed class AmdGpu : GenericGpu
         // Fan sensor
         if (support.GpuFanSpeedSupported)
             ActivateSensor(_fan);
+        if (support.GpuFanDutySupported)
+            ActivateSensor(_fanDuty);
 
         // Voltage sensor
         if (support.GpuVoltageSupported)
@@ -183,6 +188,7 @@ internal sealed class AmdGpu : GenericGpu
 
             // Fan sensor
             _fan.Value = telemetry.GpuFanSpeedSupported ? (float)telemetry.GpuFanSpeedValue : null;
+            _fanDuty.Value = telemetry.GpuFanDutySupported ? (float)telemetry.GpuFanDutyValue : null;
 
             // Voltage sensor (ADLX returns voltage in mV, convert to V)
             _coreVoltage.Value = telemetry.GpuVoltageSupported ? (float)(telemetry.GpuVoltageValue / 1000.0) : null;
@@ -318,6 +324,7 @@ internal sealed class AmdGpu : GenericGpu
             r.AppendFormat(" NPU Frequency: Supported={0}, Value={1} MHz{2}", telemetry.NpuFrequencySupported, telemetry.NpuFrequencyValue, Environment.NewLine);
             r.AppendFormat(" NPU Activity Level: Supported={0}, Value={1}%{2}", telemetry.NpuActivityLevelSupported, telemetry.NpuActivityLevelValue, Environment.NewLine);
             r.AppendFormat(" GPU Shared Memory: Supported={0}, Value={1} MB{2}", telemetry.GpuSharedMemorySupported, telemetry.GpuSharedMemoryValue, Environment.NewLine);
+            r.AppendFormat(" GPU Fan Duty: Supported={0}, Value={1}%{2}", telemetry.GpuFanDutySupported, telemetry.GpuFanDutyValue, Environment.NewLine);
         }
         else
         {
