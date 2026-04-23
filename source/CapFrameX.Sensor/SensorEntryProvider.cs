@@ -129,6 +129,7 @@ namespace CapFrameX.Sensor
                 case "GPU TDP" when hardwareType == HardwareType.GpuIntel:
                 case "RAM Game Used" when hardwareType == HardwareType.Memory:
                 case "GPU Memory Dedicated" when sensorType == SensorType.Data:
+                case "GPU Process Memory Dedicated" when sensorType == SensorType.Data:
                     isDefault = true;
                     break;
             }

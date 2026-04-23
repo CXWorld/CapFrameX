@@ -471,16 +471,17 @@ namespace CapFrameX.Overlay
                     else if (typeMatches && sortKeyMatches)
                     {
                         // ID, type and sort key all match — high confidence it's the same sensor
-                        // with a renamed description. Take over the saved group name for consistency.
+                        // with a renamed description. CopyUserConfig keeps the saved group
+                        // name only if it is still compatible with the new description;
+                        // otherwise the current sensor's group name is preserved.
                         matchedSensorIds.Add(configEntry.Identifier);
                         CopyUserConfig(configEntry, sensorEntry);
-                        sensorEntry.GroupName = configEntry.GroupName;
                         configOverlayEntries.Add(sensorEntry);
                         exactMatchHandled = true;
 
                         _logger.LogInformation(
-                            "Sensor '{identifier}' description changed but ID/Type/SortKey match. Keeping saved group name '{groupName}'.",
-                            configEntry.Identifier, configEntry.GroupName);
+                            "Sensor '{identifier}' description changed but ID/Type/SortKey match. Reusing sensor; group name resolved to '{groupName}'.",
+                            configEntry.Identifier, sensorEntry.GroupName);
                     }
                     else
                     {
@@ -507,7 +508,6 @@ namespace CapFrameX.Overlay
                     {
                         matchedSensorIds.Add(stableMatchSensor.Identifier);
                         CopyUserConfig(configEntry, stableMatchSensor);
-                        stableMatchSensor.GroupName = configEntry.GroupName;
                         configOverlayEntries.Add(stableMatchSensor);
                         hasChanges = true;
                         matched = true;
@@ -528,7 +528,6 @@ namespace CapFrameX.Overlay
                         {
                             matchedSensorIds.Add(fallbackSensor.Identifier);
                             CopyUserConfig(configEntry, fallbackSensor);
-                            fallbackSensor.GroupName = configEntry.GroupName;
                             configOverlayEntries.Add(fallbackSensor);
                             hasChanges = true;
                             matched = true;
@@ -640,7 +639,28 @@ namespace CapFrameX.Overlay
             target.UpperLimitColor = source.UpperLimitColor;
             target.LowerLimitColor = source.LowerLimitColor;
 
-            target.GroupName = source.GroupName;
+            if (IsGroupNameCompatible(source.GroupName, target.Description))
+            {
+                target.GroupName = source.GroupName;
+            }
+        }
+
+        /// <summary>
+        /// Decides whether a saved group name from an older config is still semantically
+        /// compatible with the current sensor's description. Guards against stale
+        /// "Thread #N" labels carried over from previous CX versions landing on sensors
+        /// that the current version no longer exposes as SMT threads (e.g. Intel hybrid
+        /// E-cores renamed from "Core #N Thread #1" to "Core #N E" between versions).
+        /// </summary>
+        private static bool IsGroupNameCompatible(string oldGroupName, string currentDescription)
+        {
+            if (string.IsNullOrEmpty(oldGroupName) || string.IsNullOrEmpty(currentDescription))
+                return true;
+
+            bool oldHasThreadMarker = oldGroupName.IndexOf("Thread #", StringComparison.OrdinalIgnoreCase) >= 0;
+            bool currentHasThreadMarker = currentDescription.IndexOf("Thread #", StringComparison.OrdinalIgnoreCase) >= 0;
+
+            return !(oldHasThreadMarker && !currentHasThreadMarker);
         }
 
         private bool GetIsEntryEnabled(OverlayEntryWrapper entry)
