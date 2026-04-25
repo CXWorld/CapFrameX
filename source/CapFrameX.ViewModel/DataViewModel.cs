@@ -2082,33 +2082,49 @@ namespace CapFrameX.ViewModel
                         double maxMedian = Math.Max(Math.Max(median, gpuActiveMedian), cpuActiveMedian);
                         double maxIqr = Math.Max(Math.Max(iqr, gpuActiveIqr), cpuActiveIqr);
 
-                        setting = new Tuple<double, double>(maxMedian - 4 * maxIqr, maxMedian + 6 * maxIqr);
+                        var animBounds = GetAnimationErrorBounds();
+                        double yMin = Math.Min(maxMedian - 4 * maxIqr, animBounds.Min);
+                        double yMax = Math.Max(maxMedian + 6 * maxIqr, animBounds.Max);
+                        setting = new Tuple<double, double>(yMin, yMax);
                     }
                     break;
                 case EChartYAxisSetting.Zero_Ten:
-                    setting = new Tuple<double, double>(0, 10);
+                    setting = new Tuple<double, double>(Math.Min(0, GetAnimationErrorBounds().Min), 10);
                     break;
                 case EChartYAxisSetting.Zero_Twenty:
-                    setting = new Tuple<double, double>(0, 20);
+                    setting = new Tuple<double, double>(Math.Min(0, GetAnimationErrorBounds().Min), 20);
                     break;
                 case EChartYAxisSetting.Zero_Thirty:
-                    setting = new Tuple<double, double>(0, 30);
+                    setting = new Tuple<double, double>(Math.Min(0, GetAnimationErrorBounds().Min), 30);
                     break;
                 case EChartYAxisSetting.Zero_Forty:
-                    setting = new Tuple<double, double>(0, 40);
+                    setting = new Tuple<double, double>(Math.Min(0, GetAnimationErrorBounds().Min), 40);
                     break;
                 case EChartYAxisSetting.Zero_Sixty:
-                    setting = new Tuple<double, double>(0, 60);
+                    setting = new Tuple<double, double>(Math.Min(0, GetAnimationErrorBounds().Min), 60);
                     break;
                 case EChartYAxisSetting.Zero_Eighty:
-                    setting = new Tuple<double, double>(0, 80);
+                    setting = new Tuple<double, double>(Math.Min(0, GetAnimationErrorBounds().Min), 80);
                     break;
                 case EChartYAxisSetting.Zero_Hundred:
-                    setting = new Tuple<double, double>(0, 100);
+                    setting = new Tuple<double, double>(Math.Min(0, GetAnimationErrorBounds().Min), 100);
                     break;
             }
 
             return setting;
+        }
+
+        private (double Min, double Max) GetAnimationErrorBounds()
+        {
+            if (!IsAnimationErrorAvailable || !ShowAnimationError
+                || _localRecordDataServer?.CurrentSession == null)
+                return (double.PositiveInfinity, double.NegativeInfinity);
+
+            var min = _localRecordDataServer.CurrentSession.Runs.Min(run =>
+                run.CaptureData.AnimationError.Where(x => !double.IsNaN(x)).DefaultIfEmpty(0).Min());
+            var max = _localRecordDataServer.CurrentSession.Runs.Max(run =>
+                run.CaptureData.AnimationError.Where(x => !double.IsNaN(x)).DefaultIfEmpty(0).Max());
+            return (min, max);
         }
 
         private void SetChartUpdateFlags(bool frametimes = true, bool fps = true, bool distribution = true)
