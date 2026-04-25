@@ -37,12 +37,6 @@ pipeline {
 								bat "msbuild source\\CapFrameX.ADLX\\CapFrameX.ADLX.vcxproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
 							}
 						}
-						
-						stage('Build FrameView') {
-							steps {
-								bat "msbuild source\\CapFrameX.FrameView\\CapFrameX.FrameView.vcxproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
-							}
-						}
 
                         stage('Build Installer') {
                             steps {
