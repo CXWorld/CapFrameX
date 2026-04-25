@@ -35,7 +35,7 @@ internal sealed class IntelGclGpu : GenericGpu
     private readonly Sensor _speedFan;
 
     public IntelGclGpu(uint index, IgclDeviceInfo deviceInfo, ISettings settings)
-        : base(deviceInfo.DeviceName, new Identifier("gpu-intel", index.ToString()), settings)
+        : base(deviceInfo.DeviceName, new Identifier("gpu-intel", index.ToString()), settings, enableProcessMemorySensors: false)
     {
         _index = index;
 
