@@ -273,6 +273,8 @@ namespace CapFrameX.Contracts.Configuration
         string PingURL { get; set; }
 
         bool SuppressFrameViewServiceWarning { get; set; }
+
+        bool McpEnabled { get; set; }
     }
 
 	public interface IReportDataGridColumnSettings

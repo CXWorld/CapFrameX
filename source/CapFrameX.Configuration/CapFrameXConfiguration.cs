@@ -207,6 +207,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool McpEnabled
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
         // Record List Settings
 
         public bool FixedExpanderPosition

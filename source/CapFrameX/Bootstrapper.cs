@@ -13,6 +13,7 @@ using CapFrameX.Data.Logging;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.Hardware.Controller;
+using CapFrameX.Mcp.Tools;
 using CapFrameX.Monitoring.Contracts;
 using CapFrameX.Overlay;
 using CapFrameX.PMD.Benchlab;
@@ -130,6 +131,19 @@ namespace CapFrameX
             Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
             Container.Register<IOverlayTemplateService, OverlayTemplateService>(Reuse.Singleton);
             Container.Register<IRecordManager, RecordManager>(Reuse.Singleton);
+
+            // MCP tools (resolved by McpToolRegistry via reflection-based discovery)
+            Container.Register<RecordTools>(Reuse.Singleton);
+            Container.Register<MetricsTools>(Reuse.Singleton);
+            Container.Register<SensorTools>(Reuse.Singleton);
+            Container.Register<ComparisonTools>(Reuse.Singleton);
+            Container.Register<SearchTools>(Reuse.Singleton);
+            Container.Register<BottleneckTools>(Reuse.Singleton);
+            Container.Register<DiagnosticsTools>(Reuse.Singleton);
+            Container.Register<CaptureTimelineTools>(Reuse.Singleton);
+            Container.Register<SystemInfoTools>(Reuse.Singleton);
+            Container.Register<CaptureStatusTools>(Reuse.Singleton);
+
             Container.Register<ISystemInfo, SystemInfo.NetStandard.SystemInfo>(Reuse.Singleton);
             Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
             Container.RegisterInstance<IWebVersionProvider>(new WebVersionProvider(), Reuse.Singleton);

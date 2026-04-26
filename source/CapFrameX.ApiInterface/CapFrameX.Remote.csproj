@@ -166,6 +166,10 @@
       <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>
       <Name>CapFrameX.Statistics.NetStandard</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Mcp\CapFrameX.Mcp.csproj">
+      <Project>{AAE73890-13EE-43C3-AC76-444B8F4E6EC2}</Project>
+      <Name>CapFrameX.Mcp</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

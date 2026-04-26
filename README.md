@@ -62,6 +62,101 @@ The following tips address the most common issues reported by users and can help
 # Cloud
 ![Screenshot](images/12_cloud.png)
 
+# MCP Server (AI integration)
+
+CapFrameX ships an in-process MCP server that lets AI clients (Claude Code, Claude Desktop, MCP Inspector) read recorded captures, compute statistics, diagnose issues, and query the live system. The server runs only while CapFrameX is running and is reachable on `http://localhost:<WebservicePort>/mcp` (default port `1337`; if taken, CapFrameX falls back to a free port and persists the choice in `AppSettings.json`).
+
+No additional install. The MCP server is part of `CapFrameX.exe`.
+
+## Setup with Claude Code
+
+1. Make sure CapFrameX is running.
+2. Look up the active port in `%appdata%/CapFrameX/Logs/CapFrameX.log` (search for the line `MCP endpoint available at http://localhost:<port>/mcp`) or open `%appdata%/CapFrameX/Configuration/AppSettings.json` and read `WebservicePort`.
+3. Register the server with Claude Code (one-time):
+
+   ```bash
+   claude mcp add -s user capframex --transport http http://localhost:<port>/mcp
+   ```
+
+4. Verify:
+
+   ```bash
+   claude mcp list
+   ```
+
+   Expected:
+
+   ```
+   capframex: http://localhost:<port>/mcp (HTTP) - ✓ Connected
+   ```
+
+5. In any new Claude Code session, type `/mcp` to see the server in the active connection list. The tools become available to the model.
+
+If CapFrameX is not running, the connection appears as **disconnected**. Start CapFrameX and the connection comes back live.
+
+## Setup with Claude Desktop
+
+Add this to your `claude_desktop_config.json` (Settings → Developer → Edit Config):
+
+```json
+{
+  "mcpServers": {
+    "capframex": {
+      "url": "http://localhost:<port>/mcp"
+    }
+  }
+}
+```
+
+Restart Claude Desktop. The CapFrameX tools appear in the MCP picker.
+
+## Available tools
+
+| Tool | Purpose |
+| --- | --- |
+| `cfx_ping` | Connectivity check (returns `pong`). |
+| `cfx_list_records` | Lists capture records from the configured directory; optional substring filter on game/process. |
+| `cfx_get_record` | Full metadata of a record (system info, run count, settings). |
+| `cfx_search_records` | Free-text search across game/comment/CPU/GPU/OS/RAM. |
+| `cfx_get_metrics` | FPS metrics (Average, P1, P0.2, Min, Max, AdaptiveStd, …) — single run or all runs. |
+| `cfx_compare_records` | Side-by-side metric table across multiple records with absolute and percentage deltas. |
+| `cfx_get_sensor_summary` | Per-sensor avg/min/max for CPU/GPU/RAM/VRAM channels. |
+| `cfx_analyze_bottleneck` | Classifies a run as cpu-bound, gpu-bound, balanced, thermal-throttling, or power-limited (with confidence + reasoning). |
+| `cfx_diagnose_capture` | Scans recent log entries for capture-related failures. Pattern library: ETW conflicts, anti-cheat, permissions, PresentMon errors, blacklisted processes, etc. |
+| `cfx_diagnose_general` | Same as above but with focus area (`capture` / `sensors` / `overlay` / `all`). |
+| `cfx_get_capture_timeline` | Chronological capture-related events from the log (hotkey, PresentMon start/stop, session save, errors). |
+| `cfx_get_current_system` | Live system info: CPU, GPU, RAM, OS, motherboard, Resizable BAR (HW + D3D + Vulkan), HAGS, GameMode, PCI BAR sizes. |
+| `cfx_get_capture_status` | Read-only capture state: isCapturing, isLocked, current state (Started, Processing, Stopped, …). |
+
+All tools are read-only. They do not start or stop captures and do not modify settings.
+
+## Example interactions
+
+Ask Claude in natural language. Below are three concrete examples that exercise multiple tools.
+
+### 1. "Compare my last three Cyberpunk records"
+
+Claude internally calls `cfx_search_records` with `"Cyberpunk"`, takes the three most recent ids, then calls `cfx_compare_records` with default metrics (Average, P1, P0.2, Min, Max). Output: a tabular comparison with deltas highlighting which run was best/worst.
+
+### 2. "Why is the latest Spider-Man 2 capture only at 80 fps?"
+
+Claude calls `cfx_list_records` filtered by Spider-Man, picks the newest, then calls `cfx_get_metrics` to confirm the average, `cfx_get_sensor_summary` to see CPU/GPU load, and `cfx_analyze_bottleneck` to get a verdict. Typical answer: *"GPU load averaged 74 %, CPU max-thread load 82 % — the run is CPU-bound; this is consistent with Spider-Man 2's known DX12 main-thread bottleneck."*
+
+### 3. "My benchmark didn't get recorded. Why?"
+
+Claude calls `cfx_diagnose_capture` (default 30-min lookback) and `cfx_get_capture_timeline`. Typical findings: an ETW session conflict (FrameView SDK still installed), a blacklisted process, missing administrator rights, or an anti-cheat that blocked PresentMon — each with a concrete suggested fix.
+
+## Configuration
+
+In `%appdata%/CapFrameX/Configuration/AppSettings.json`:
+
+| Key | Default | Effect |
+| --- | --- | --- |
+| `McpEnabled` | `true` | Toggle the MCP module on/off. When `false`, the rest of the local API still runs. |
+| `WebservicePort` | `"1337"` | Shared with the existing local API. The MCP endpoint lives at `/mcp` on that same port. |
+
+To disable MCP: set `McpEnabled` to `false` and restart CapFrameX. Logs related to the MCP server appear in the standard CapFrameX log file (`%appdata%/CapFrameX/Logs/CapFrameX.log`).
+
 # Instruction manual
 Learn how to use CapFrameX.
 
