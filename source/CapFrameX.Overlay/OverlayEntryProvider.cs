@@ -307,12 +307,14 @@ namespace CapFrameX.Overlay
                             return 3;
                         case EOverlayEntryType.RAM:
                             return 4;
-                        case EOverlayEntryType.OnlineMetric:
+                        case EOverlayEntryType.HDD:
                             return 5;
-                        case EOverlayEntryType.Undefined:
+                        case EOverlayEntryType.OnlineMetric:
                             return 6;
-                        default:
+                        case EOverlayEntryType.Undefined:
                             return 7;
+                        default:
+                            return 8;
                     }
                 }).ThenBy(entry => entry.SortKey, new SortKeyComparer())
                 .ToList();
@@ -442,7 +444,8 @@ namespace CapFrameX.Overlay
             {
                 bool isSensorType = configEntry.OverlayEntryType == EOverlayEntryType.GPU
                     || configEntry.OverlayEntryType == EOverlayEntryType.CPU
-                    || configEntry.OverlayEntryType == EOverlayEntryType.RAM;
+                    || configEntry.OverlayEntryType == EOverlayEntryType.RAM
+                    || configEntry.OverlayEntryType == EOverlayEntryType.HDD;
 
                 if (!isSensorType)
                 {
@@ -763,12 +766,14 @@ namespace CapFrameX.Overlay
                             return 3;
                         case EOverlayEntryType.RAM:
                             return 4;
-                        case EOverlayEntryType.OnlineMetric:
+                        case EOverlayEntryType.HDD:
                             return 5;
-                        case EOverlayEntryType.Undefined:
+                        case EOverlayEntryType.OnlineMetric:
                             return 6;
-                        default:
+                        case EOverlayEntryType.Undefined:
                             return 7;
+                        default:
+                            return 8;
                     }
                 }).ThenBy(entry => entry.SortKey, new SortKeyComparer())
                 .ToBlockingCollection());
@@ -785,6 +790,7 @@ namespace CapFrameX.Overlay
                     case EOverlayEntryType.GPU:
                     case EOverlayEntryType.CPU:
                     case EOverlayEntryType.RAM:
+                    case EOverlayEntryType.HDD:
                         entry.Value = GetSensorOverlayEntry(entry.Identifier)?.Value;
                         break;
                     case EOverlayEntryType.CX when entry.Identifier == "Framerate":
@@ -1223,7 +1229,8 @@ namespace CapFrameX.Overlay
             foreach (var entry in _overlayEntries.Where(x =>
                x.OverlayEntryType == EOverlayEntryType.GPU
                 || x.OverlayEntryType == EOverlayEntryType.CPU
-                || x.OverlayEntryType == EOverlayEntryType.RAM))
+                || x.OverlayEntryType == EOverlayEntryType.RAM
+                || x.OverlayEntryType == EOverlayEntryType.HDD))
             {
                 entry.IsNumeric = true;
             }

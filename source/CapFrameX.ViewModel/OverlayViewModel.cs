@@ -923,6 +923,9 @@ namespace CapFrameX.ViewModel
                 case EOverlayEntryType.RAM:
                     return 60;
 
+                case EOverlayEntryType.HDD:
+                    return 65;
+
                 case EOverlayEntryType.OnlineMetric:
                     return 70;
 
@@ -938,8 +941,9 @@ namespace CapFrameX.ViewModel
             // 2. GPU
             // 3. CPU
             // 4. RAM
-            // 5. OnlineMetric
-            // 6. Undefined
+            // 5. HDD (Storage)
+            // 6. OnlineMetric
+            // 7. Undefined
             var sortedEntries = OverlayEntries.OrderBy(entry =>
             {
                 switch (entry.OverlayEntryType)
@@ -952,12 +956,14 @@ namespace CapFrameX.ViewModel
                         return 3;
                     case EOverlayEntryType.RAM:
                         return 4;
-                    case EOverlayEntryType.OnlineMetric:
+                    case EOverlayEntryType.HDD:
                         return 5;
-                    case EOverlayEntryType.Undefined:
+                    case EOverlayEntryType.OnlineMetric:
                         return 6;
-                    default:
+                    case EOverlayEntryType.Undefined:
                         return 7;
+                    default:
+                        return 8;
                 }
             }).ThenBy(entry => entry.SortKey, new SortKeyComparer()).ToList();
 

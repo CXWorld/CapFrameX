@@ -18,6 +18,8 @@ namespace LibreHardwareMonitor.Hardware.Storage;
 
 public abstract class AbstractStorage : Hardware
 {
+    private const double BytesPerGigabyte = 1_000_000_000d;
+
     private readonly PerformanceValue _perfRead = new();
     private readonly PerformanceValue _perfTotal = new();
     private readonly PerformanceValue _perfWrite = new();
@@ -112,23 +114,29 @@ public abstract class AbstractStorage : Hardware
     {
         if (DriveInfos.Length > 0)
         {
-            _usageSensor = new Sensor("Used Space", 0, SensorType.Load, this, _settings);
+            _usageSensor = new Sensor("Used Space", 0, SensorType.Load, this, _settings)
+            { PresentationSortKey = $"{Index}_3_0" };
             ActivateSensor(_usageSensor);
         }
 
-        _sensorDiskReadActivity = new Sensor("Read Activity", 31, SensorType.Load, this, _settings);
+        _sensorDiskReadActivity = new Sensor("Read Activity", 31, SensorType.Load, this, _settings)
+        { PresentationSortKey = $"{Index}_2_0" };
         ActivateSensor(_sensorDiskReadActivity);
 
-        _sensorDiskWriteActivity = new Sensor("Write Activity", 32, SensorType.Load, this, _settings);
+        _sensorDiskWriteActivity = new Sensor("Write Activity", 32, SensorType.Load, this, _settings)
+        { PresentationSortKey = $"{Index}_2_1" };
         ActivateSensor(_sensorDiskWriteActivity);
 
-        _sensorDiskTotalActivity = new Sensor("Total Activity", 33, SensorType.Load, this, _settings);
+        _sensorDiskTotalActivity = new Sensor("Total Activity", 33, SensorType.Load, this, _settings)
+        { PresentationSortKey = $"{Index}_2_2" };
         ActivateSensor(_sensorDiskTotalActivity);
 
-        _sensorDiskReadRate = new Sensor("Read Rate", 34, SensorType.Throughput, this, _settings);
+        _sensorDiskReadRate = new Sensor("Read Rate", 34, SensorType.Throughput, this, _settings)
+        { PresentationSortKey = $"{Index}_0_0" };
         ActivateSensor(_sensorDiskReadRate);
 
-        _sensorDiskWriteRate = new Sensor("Write Rate", 35, SensorType.Throughput, this, _settings);
+        _sensorDiskWriteRate = new Sensor("Write Rate", 35, SensorType.Throughput, this, _settings)
+        { PresentationSortKey = $"{Index}_0_1" };
         ActivateSensor(_sensorDiskWriteRate);
     }
 
@@ -211,10 +219,11 @@ public abstract class AbstractStorage : Hardware
         {
             double timeDeltaSeconds = TimeSpan.FromTicks(currentTime - _lastTime).TotalSeconds;
 
-            double writeSpeed = writeDiff * (1 / timeDeltaSeconds);
+            // Convert bytes/s to GB/s (decimal, matching the GB convention used elsewhere in this codebase).
+            double writeSpeed = writeDiff / timeDeltaSeconds / BytesPerGigabyte;
             _sensorDiskWriteRate.Value = (float)writeSpeed;
 
-            double readSpeed = readDiff * (1 / timeDeltaSeconds);
+            double readSpeed = readDiff / timeDeltaSeconds / BytesPerGigabyte;
             _sensorDiskReadRate.Value = (float)readSpeed;
         }
 

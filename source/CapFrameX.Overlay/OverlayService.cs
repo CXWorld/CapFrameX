@@ -750,15 +750,9 @@ namespace CapFrameX.Overlay
                 case HardwareType.GpuIntel:
                     type = EOverlayEntryType.GPU;
                     break;
-                    //case HardwareType.TBalancer:
-                    //    type = EOverlayEntryType.Undefined;
-                    //    break;
-                    //case HardwareType.Heatmaster:
-                    //    type = EOverlayEntryType.Undefined;
-                    //    break;
-                    //case HardwareType.HDD:
-                    //    type = EOverlayEntryType.HDD;
-                    //    break;
+                case HardwareType.Storage:
+                    type = EOverlayEntryType.HDD;
+                    break;
             }
 
             return type;

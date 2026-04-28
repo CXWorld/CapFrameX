@@ -155,6 +155,9 @@ namespace CapFrameX.Sensor
                 case EOverlayEntryType.GPU:
                     prefix = "GPU";
                     break;
+                case EOverlayEntryType.HDD:
+                    prefix = "Storage";
+                    break;
                 default:
                     return string.Empty;
             }
@@ -172,6 +175,8 @@ namespace CapFrameX.Sensor
                     return $"{prefix} Temperature";
                 case "voltage":
                     return $"{prefix} Voltage";
+                case "throughput":
+                    return $"{prefix} Throughput";
                 case "factor":
                     return prefix == "GPU" ? "GPU Limits" : string.Empty;
                 default:
@@ -193,6 +198,7 @@ namespace CapFrameX.Sensor
                     _computer.IsCpuEnabled = true;
                     _computer.IsGpuEnabled = true;
                     _computer.IsMemoryEnabled = true;
+                    _computer.IsStorageEnabled = true;
                 }
                 catch (Exception ex)
                 {
