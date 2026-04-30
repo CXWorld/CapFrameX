@@ -43,6 +43,9 @@ internal sealed class IntelCpu : GenericCpu
     private readonly ulong[][] _lastMperf;
     private readonly DateTime[][] _lastSampleTime;
 
+    private readonly Sensor _memorySpeed;
+    private readonly bool _hasMemorySpeed;
+
     public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
     {
         _pawnModule = new IntelMsr();
@@ -493,6 +496,20 @@ internal sealed class IntelCpu : GenericCpu
             _lastSampleTime = Array.Empty<DateTime[]>();
         }
 
+        if (SupportsUncoreMemorySpeed(_microArchitecture, _model) &&
+            _pawnModule.ReadMsr(MSR_UNCORE_PERF_STATUS, out uint uncoreEax, out uint _) &&
+            (uncoreEax & 0x7F) > 0)
+        {
+            int memorySpeedIndex = _hasAperfMperf
+                ? _coreClocks.Length + 2 + _threadEffectiveClocks.Sum(t => t.Length) + 2
+                : _coreClocks.Length + 2;
+
+            _memorySpeed = new Sensor("Memory", memorySpeedIndex, SensorType.Clock, this, settings)
+            { PresentationSortKey = "0_3" };
+            ActivateSensor(_memorySpeed);
+            _hasMemorySpeed = true;
+        }
+
         if (_microArchitecture is MicroArchitecture.Airmont or
             MicroArchitecture.AlderLake or
             MicroArchitecture.ArrowLake or
@@ -586,6 +603,47 @@ internal sealed class IntelCpu : GenericCpu
             result[i] = f;
 
         return result;
+    }
+
+    // MSR_UNCORE_PERF_STATUS (0x621) carries the current uncore ratio in bits [6:0]
+    // only on Intel client microarchitectures from Sandy Bridge onward. On server
+    // uncore PMUs (Sky-X, CLX, ICX, SPR, the Xeon E5/E7 server siblings of HSW/BDW,
+    // Ivy Town etc.) the same address is the U_PMON_GLOBAL_STATUS performance-monitor
+    // register and decoding it as a ratio yields nonsense. The ancient Atom families
+    // (Silvermont/Airmont/Goldmont/GoldmontPlus, including Denverton/Tremont) and
+    // anything older than Sandy Bridge do not document MSR 0x621 as readable, so we
+    // skip them too.
+    private static bool SupportsUncoreMemorySpeed(MicroArchitecture arch, uint model)
+    {
+        switch (arch)
+        {
+            case MicroArchitecture.SandyBridge:
+                return model == 0x2A; // exclude SNB-EP/EX (0x2D)
+            case MicroArchitecture.IvyBridge:
+                return model == 0x3A; // exclude Ivy Town (0x3E)
+            case MicroArchitecture.Haswell:
+                return model is 0x3C or 0x45 or 0x46; // exclude HSX (0x3F)
+            case MicroArchitecture.Broadwell:
+                return model is 0x3D or 0x47; // exclude BDX (0x4F) and BDW-DE (0x56)
+            case MicroArchitecture.Skylake:
+                return model is 0x4E or 0x5E; // exclude SKX (0x55)
+            case MicroArchitecture.IceLake:
+                return model is 0x7D or 0x7E; // exclude ICX (0x6A, 0x6C)
+            case MicroArchitecture.KabyLake:
+            case MicroArchitecture.CometLake:
+            case MicroArchitecture.RocketLake:
+            case MicroArchitecture.CannonLake:
+            case MicroArchitecture.TigerLake:
+            case MicroArchitecture.AlderLake:
+            case MicroArchitecture.RaptorLake:
+            case MicroArchitecture.MeteorLake:
+            case MicroArchitecture.LunarLake:
+            case MicroArchitecture.ArrowLake:
+            case MicroArchitecture.PantherLake:
+                return true;
+            default:
+                return false;
+        }
     }
 
     private float[] GetTjMaxFromMsr()
@@ -784,6 +842,19 @@ internal sealed class IntelCpu : GenericCpu
             {
                 _busClock.Value = (float)newBusClock;
                 ActivateSensor(_busClock);
+            }
+
+            if (_hasMemorySpeed && newBusClock > 0 &&
+                _pawnModule.ReadMsr(MSR_UNCORE_PERF_STATUS, out uint uncoreEax, out _))
+            {
+                // CUR_RATIO (bits [6:0]) × BCLK gives the uncore (and on SNB+ client
+                // chips, the IMC) clock in MHz. Doubling it yields the per-channel
+                // data-rate figure conventionally reported in MT/s.
+                uint curRatio = uncoreEax & 0x7F;
+                if (curRatio > 0)
+                    _memorySpeed.Value = (float)(curRatio * newBusClock * 2.0);
+                else
+                    _memorySpeed.Value = null;
             }
         }
 
@@ -994,6 +1065,13 @@ internal sealed class IntelCpu : GenericCpu
     private const uint MSR_PLATFORM_ENERGY_STATUS = 0x64D;
 
     private const uint MSR_RAPL_POWER_UNIT = 0x606;
+
+    // MSR_UNCORE_PERF_STATUS (Intel client, Sandy Bridge and later) — bits [6:0] hold
+    // CUR_RATIO, the current uncore ratio in 100 MHz units. PawnIO's IntelMSR module
+    // exposes it under the alternative name MSR_UNC_PERF_GLOBAL_STATUS at the same
+    // address (0x621). On server uncore PMUs the same address has a different
+    // meaning, so callers must restrict use to client microarchitectures.
+    private const uint MSR_UNCORE_PERF_STATUS = 0x621;
     // ReSharper restore InconsistentNaming
 
     private bool TryReadPerfCounters(GroupAffinity affinity, out ulong aperf, out ulong mperf)

@@ -71,8 +71,10 @@
     <EmbeddedResource Include="Resources\PawnIo\AMDFamily10.bin" />
     <EmbeddedResource Include="Resources\PawnIo\AMDFamily17.bin" />
     <EmbeddedResource Include="Resources\PawnIO\SmbusI801.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\SmbusIntelSkylakeIMC.bin" />
     <EmbeddedResource Include="Resources\PawnIO\SmbusNCT6793.bin" />
     <EmbeddedResource Include="Resources\PawnIO\SmbusPIIX4.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\DellSMM.bin" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
