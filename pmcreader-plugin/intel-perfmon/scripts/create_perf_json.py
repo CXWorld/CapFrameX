@@ -611,7 +611,7 @@ class Model:
             (['KBL'], [3, 6, 7], [2, 3, 6, 7]),
             (['CNL'], [1, 3, 6, 7], [2, 3, 6, 7, 8, 9, 10]),
             (['ICL', 'TGL', 'RKL'], [6, 7], [2, 3, 6, 7, 8, 9, 10]),
-            (['ICX', 'SPR', 'EMR', 'GNR'], [1, 6], [2, 6]),
+            (['CWF', 'ICX', 'SPR', 'EMR', 'GNR'], [1, 6], [2, 6]),
             (['ADL', 'GRT', 'ADLN', 'GRR', 'SRF', 'MTL', 'ARL'], [1, 6, 7], [2, 3, 6, 8, 10]),
             (['LNL'], [1, 6, 7], [2, 6, 10]),
             (['SLM'], [1, 6], [6]),
@@ -1032,6 +1032,7 @@ class Model:
             'GRR': alderlake_constraints,
             'GNR': alderlake_constraints,
             'SRF': alderlake_constraints,
+            'CWF': alderlake_constraints,
             'ARL': alderlake_constraints,
             'LNL': alderlake_constraints,
         }

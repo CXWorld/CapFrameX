@@ -256,6 +256,7 @@ internal sealed class IntelCpu : GenericCpu
                         case 0xCD: // Intel Core Ultra X5/7/9 PantherLake Reserved
                         case 0xCE: // Intel Core Ultra X5/7/9 PantherLake Reserved
                         case 0xCF: // Intel Core Ultra X5/7/9 PantherLake Reserved
+                        case 0xD5: // Intel Core Ultra X5/7/9 PantherLake
                             _microArchitecture = MicroArchitecture.PantherLake;
                             tjMax = GetTjMaxFromMsr();
                             break;

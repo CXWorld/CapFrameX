@@ -1,9 +1,9 @@
 {
   "Header": {
-    "Copyright": "Copyright (c) 2001 - 2025 Intel Corporation. All rights reserved.",
-    "Info": "Performance Monitoring Events for Intel(R) Grand Ridge Base Transceiver Station Family - V1.10",
-    "DatePublished": "08/28/2025",
-    "Version": "1.10",
+    "Copyright": "Copyright (c) 2001 - 2026 Intel Corporation. All rights reserved.",
+    "Info": "Performance Monitoring Events for Intel(R) Grand Ridge Base Transceiver Station Family - V1.12",
+    "DatePublished": "02/26/2026",
+    "Version": "1.12",
     "Legend": ""
   },
   "Events": [
@@ -4498,7 +4498,7 @@
       "UMaskExt": "0x00010FF0",
       "EventName": "UNC_IIO_NUM_REQ_OF_CPU_BY_TGT.UBOX_POSTED",
       "BriefDescription": "Posted requests sent by the integrated IO (IIO) controller to the Ubox, useful for counting message signaled interrupts (MSI).",
-      "PublicDescription": "-",
+      "PublicDescription": "Posted requests sent by the integrated IO (IIO) controller to the Ubox, useful for counting message signaled interrupts (MSI).",
       "Counter": "0,1,2,3",
       "ELLC": "0",
       "Filter": "na",

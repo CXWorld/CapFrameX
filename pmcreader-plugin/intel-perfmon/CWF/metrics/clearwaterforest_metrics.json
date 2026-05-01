@@ -1,0 +1,1010 @@
+{
+  "Header": {
+    "Copyright": "Copyright (c) 2001 - 2026 Intel Corporation. All rights reserved.",
+    "Info": "Performance Monitoring Metrics for Intel(R) Xeon(R) 6+ (codenamed Clearwater Forest)",
+    "DatePublished": "03/31/2026",
+    "Version": "1.0",
+    "Legend": "",
+    "TmaVersion": "",
+    "TmaFlavor": ""
+  },
+  "Metrics": [
+    {
+      "MetricName": "cpu_operating_frequency",
+      "LegacyName": "metric_CPU operating frequency (in GHz)",
+      "Level": 1,
+      "BriefDescription": "CPU operating frequency (in GHz)",
+      "UnitOfMeasure": "GHz",
+      "Events": [
+        {
+          "Name": "CPU_CLK_UNHALTED.THREAD",
+          "Alias": "a"
+        },
+        {
+          "Name": "CPU_CLK_UNHALTED.REF_TSC",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [
+        {
+          "Name": "SYSTEM_TSC_FREQ",
+          "Alias": "c"
+        }
+      ],
+      "Formula": "(a / b * c) / 1000000000",
+      "Category": "Freq",
+      "ResolutionLevels": "THREAD, CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "uncore_frequency",
+      "LegacyName": "metric_uncore frequency GHz",
+      "Level": 1,
+      "BriefDescription": "Uncore operating frequency in GHz",
+      "UnitOfMeasure": "GHz",
+      "Events": [
+        {
+          "Name": "UNC_CHA_CLOCKTICKS",
+          "Alias": "a"
+        }
+      ],
+      "Constants": [
+        {
+          "Name": "CHAS_PER_SOCKET",
+          "Alias": "b"
+        },
+        {
+          "Name": "SOCKET_COUNT",
+          "Alias": "socket_count"
+        }
+      ],
+      "Formula": "(a / (b * socket_count) / 1000000000) / DURATIONTIMEINSECONDS",
+      "Category": "Freq",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "cpu_utilization",
+      "LegacyName": "metric_CPU utilization %",
+      "Level": 1,
+      "BriefDescription": "Percentage of time spent in the active CPU power state C0",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "CPU_CLK_UNHALTED.REF_TSC",
+          "Alias": "a"
+        },
+        {
+          "Name": "TSC",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / b",
+      "Category": "Util",
+      "ResolutionLevels": "THREAD, CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "cpi",
+      "LegacyName": "metric_CPI",
+      "Level": 1,
+      "BriefDescription": "Cycles per instruction retired; indicating how much time each executed instruction took; in units of cycles.",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "CPU_CLK_UNHALTED.THREAD",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "CPI",
+      "ResolutionLevels": "THREAD, CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "numa_reads_addressed_to_local_dram",
+      "LegacyName": "metric_NUMA %_Reads addressed to local DRAM",
+      "Level": 1,
+      "BriefDescription": "Memory read that miss the last level cache (LLC) addressed to local DRAM as a percentage of total memory read accesses, does not include LLC prefetches.",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IA_MISS_DRD_OPT_LOCAL",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IA_MISS_DRD_OPT_PREF_LOCAL",
+          "Alias": "b"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IA_MISS_DRD_OPT_REMOTE",
+          "Alias": "c"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IA_MISS_DRD_OPT_PREF_REMOTE",
+          "Alias": "d"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * (a + b) / (a + b + c + d)",
+      "Category": "NUMA",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "numa_reads_addressed_to_remote_dram",
+      "LegacyName": "metric_NUMA %_Reads addressed to remote DRAM",
+      "Level": 1,
+      "BriefDescription": "Memory reads that miss the last level cache (LLC) addressed to remote DRAM as a percentage of total memory read accesses, does not include LLC prefetches.",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IA_MISS_DRD_OPT_LOCAL",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IA_MISS_DRD_OPT_PREF_LOCAL",
+          "Alias": "b"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IA_MISS_DRD_OPT_REMOTE",
+          "Alias": "c"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IA_MISS_DRD_OPT_PREF_REMOTE",
+          "Alias": "d"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * (c + d) / (a + b + c + d)",
+      "Category": "NUMA",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "memory_bandwidth_read",
+      "LegacyName": "metric_memory bandwidth read (MB/sec)",
+      "Level": 1,
+      "BriefDescription": "DDR memory read bandwidth (MB/sec)",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_M_CAS_COUNT_SCH0.RD",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_M_CAS_COUNT_SCH1.RD",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "((a + b) * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "BW, MC",
+      "ResolutionLevels": "CHANNEL, IMC, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "memory_bandwidth_write",
+      "LegacyName": "metric_memory bandwidth write (MB/sec)",
+      "Level": 1,
+      "BriefDescription": "DDR memory write bandwidth (MB/sec)",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_M_CAS_COUNT_SCH0.WR",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_M_CAS_COUNT_SCH1.WR",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "((a + b) * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "BW, MC",
+      "ResolutionLevels": "CHANNEL, IMC, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "memory_bandwidth_total",
+      "LegacyName": "metric_memory bandwidth total (MB/sec)",
+      "Level": 1,
+      "BriefDescription": "DDR memory bandwidth (MB/sec)",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_M_CAS_COUNT_SCH0.RD",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_M_CAS_COUNT_SCH1.RD",
+          "Alias": "b"
+        },
+        {
+          "Name": "UNC_M_CAS_COUNT_SCH0.WR",
+          "Alias": "c"
+        },
+        {
+          "Name": "UNC_M_CAS_COUNT_SCH1.WR",
+          "Alias": "d"
+        }
+      ],
+      "Constants": [],
+      "Formula": "((a + b + c + d) * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "BW, MC",
+      "ResolutionLevels": "CHANNEL, IMC, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "upi_data_transmit_bw",
+      "LegacyName": "metric_UPI Data transmit BW (MB/sec) (only data)",
+      "Level": 1,
+      "BriefDescription": "Intel(R) Ultra Path Interconnect (UPI) data transmit bandwidth (MB/sec)",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_UPI_TxL_FLITS.ALL_DATA",
+          "Alias": "a"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a * (64 / 9.0) / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "BW",
+      "ResolutionLevels": "UPI, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "loads_retired_per_instr",
+      "LegacyName": "metric_loads retired per instr",
+      "Level": 1,
+      "BriefDescription": "",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "MEM_UOPS_RETIRED.ALL_LOADS",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "",
+      "ResolutionLevels": "THREAD, CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "stores_retired_per_instr",
+      "LegacyName": "metric_stores retired per instr",
+      "Level": 1,
+      "BriefDescription": "",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "MEM_UOPS_RETIRED.ALL_STORES",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "",
+      "ResolutionLevels": "THREAD, CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "l1d_demand_data_read_hits_per_instr",
+      "LegacyName": "metric_L1D demand data read hits per instr",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of demand load requests hitting in L1 data cache to the total number of completed instructions ",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "MEM_LOAD_UOPS_RETIRED.L1_HIT",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "D-side",
+      "ResolutionLevels": "THREAD, CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "l1_i_code_read_misses_with_prefetches_per_instr",
+      "LegacyName": "metric_L1-I code read misses (w/ prefetches) per instr",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of code read requests missing in L1 instruction cache (includes prefetches) to the total number of completed instructions",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "ICACHE.MISSES",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "MPI, I-side",
+      "ResolutionLevels": "THREAD, CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "l2_demand_data_read_hits_per_instr",
+      "LegacyName": "metric_L2 demand data read hits per instr",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of completed demand load requests hitting in L2 cache to the total number of completed instructions ",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "MEM_LOAD_UOPS_RETIRED.L2_HIT",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "D-side",
+      "ResolutionLevels": "THREAD, CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "l2_demand_data_read_mpi",
+      "LegacyName": "metric_L2 demand data read MPI",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of completed data read request missing L2 cache to the total number of completed instructions",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "MEM_LOAD_UOPS_RETIRED.L2_MISS",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "MPI, D-side",
+      "ResolutionLevels": "THREAD, CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "llc_data_read_mpi_demand_plus_prefetch",
+      "LegacyName": "metric_LLC data read MPI (demand+prefetch)",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of data read requests missing last level core cache (includes demand w/ prefetches) to the total number of completed instructions",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IA_MISS_DRD_OPT",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IA_MISS_DRD_OPT_PREF",
+          "Alias": "b"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IA_MISS_LLCPREFDATA",
+          "Alias": "c"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "d"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a + b + c) / d",
+      "Category": "MPI, D-side",
+      "ResolutionLevels": "SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "llc_code_read_mpi_demand_plus_prefetch",
+      "LegacyName": "metric_LLC code read MPI (demand+prefetch)",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of code read requests missing last level core cache (includes demand w/ prefetches) to the total number of completed instructions",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IA_MISS_CRD",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IA_MISS_CRD_PREF",
+          "Alias": "b"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "d"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a + b) / d",
+      "Category": "MPI, I-side",
+      "ResolutionLevels": "SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "llc_demand_data_read_miss_latency",
+      "LegacyName": "metric_Average LLC demand data read miss latency (in ns)",
+      "Level": 1,
+      "BriefDescription": "Average latency of a last level cache (LLC) demand data read miss (read memory access) in nano seconds",
+      "UnitOfMeasure": "ns",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_OCCUPANCY.IA_MISS_DRD_OPT",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IA_MISS_DRD_OPT",
+          "Alias": "b"
+        },
+        {
+          "Name": "UNC_CHA_CLOCKTICKS",
+          "Alias": "c"
+        }
+      ],
+      "Constants": [
+        {
+          "Name": "CHAS_PER_SOCKET",
+          "Alias": "d"
+        },
+        {
+          "Name": "SOCKET_COUNT",
+          "Alias": "socket_count"
+        }
+      ],
+      "Formula": "( 1000000000 * (a / b) / (c / (d * socket_count) ) ) * DURATIONTIMEINSECONDS",
+      "Category": "Latency",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "itlb_2nd_level_mpi",
+      "LegacyName": "metric_ITLB (2nd level) MPI",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of completed page walks (for all page sizes) caused by a code fetch to the total number of completed instructions. This implies it missed in the ITLB (Instruction TLB) and further levels of TLB.",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "ITLB_MISSES.WALK_COMPLETED",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "MPI, I-side",
+      "ResolutionLevels": "THREAD, CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "dtlb_2nd_level_load_mpi",
+      "LegacyName": "metric_DTLB (2nd level) load MPI",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of completed page walks (for all page sizes) caused by demand data loads to the total number of completed instructions. This implies it missed in the DTLB and further levels of TLB.",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "DTLB_LOAD_MISSES.WALK_COMPLETED",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "MPI, D-side",
+      "ResolutionLevels": "THREAD, CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "dtlb_2nd_level_store_mpi",
+      "LegacyName": "metric_DTLB (2nd level) store MPI",
+      "Level": 1,
+      "BriefDescription": "Ratio of number of completed page walks (for all page sizes) caused by demand data stores to the total number of completed instructions. This implies it missed in the DTLB and further levels of TLB.",
+      "UnitOfMeasure": "per instruction",
+      "Events": [
+        {
+          "Name": "DTLB_STORE_MISSES.WALK_COMPLETED",
+          "Alias": "a"
+        },
+        {
+          "Name": "INST_RETIRED.ANY",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "a / b",
+      "Category": "MPI, D-side",
+      "ResolutionLevels": "THREAD, CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_bandwidth_read",
+      "LegacyName": "metric_IO_bandwidth_disk_or_network_writes (MB/sec)",
+      "Level": 1,
+      "BriefDescription": "Bandwidth of IO reads that are initiated by end device controllers that are requesting memory from the CPU.",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_PCIRDCUR",
+          "Alias": "a"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "BW, IO",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_bandwidth_write",
+      "LegacyName": "metric_IO_bandwidth_disk_or_network_reads (MB/sec)",
+      "Level": 1,
+      "BriefDescription": "Bandwidth of IO writes that are initiated by end device controllers that are writing memory to the CPU.",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_ITOM",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_ITOMCACHENEAR",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "((a + b) * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "BW, IO",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_number_of_partial_pci_writes",
+      "LegacyName": "metric_IO_number of partial PCI writes per sec",
+      "Level": 1,
+      "BriefDescription": "",
+      "UnitOfMeasure": "per second",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_ITOMCACHENEAR",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_RFO",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a + b) / DURATIONTIMEINSECONDS",
+      "Category": "IO",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_read_l3_miss",
+      "LegacyName": "metric_IO % of inbound reads that miss L3",
+      "Level": 1,
+      "BriefDescription": "The percent of inbound reads initiated by IO that miss the L3 cache.",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_MISS_PCIRDCUR",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_PCIRDCUR",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * a / b",
+      "Category": "IO",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_partial_write_l3_miss",
+      "LegacyName": "metric_IO % of inbound partial writes that miss L3",
+      "Level": 1,
+      "BriefDescription": "The percent of inbound partial writes initiated by IO that miss the L3 cache.",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_ITOMCACHENEAR",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_MISS_ITOMCACHENEAR",
+          "Alias": "b"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_RFO",
+          "Alias": "c"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_MISS_RFO",
+          "Alias": "d"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ((b + d) / (a + c) )",
+      "Category": "IO",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_full_write_l3_miss",
+      "LegacyName": "metric_IO % of inbound full writes that miss L3",
+      "Level": 1,
+      "BriefDescription": "The percent of inbound full cache line writes initiated by IO that miss the L3 cache.",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_ITOM",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_MISS_ITOM",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * (b / a)",
+      "Category": "IO",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_bandwidth_read_local",
+      "LegacyName": "metric_IO bandwidth read local (MB/sec)",
+      "Level": 1,
+      "BriefDescription": "Bandwidth of IO reads that are initiated by end device controllers that are requesting memory from the local CPU socket.",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_PCIRDCUR_LOCAL",
+          "Alias": "a"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "BW, IO",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_bandwidth_read_remote",
+      "LegacyName": "metric_IO bandwidth read remote (MB/sec)",
+      "Level": 1,
+      "BriefDescription": "Bandwidth of IO reads that are initiated by end device controllers that are requesting memory from a remote CPU socket.",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_PCIRDCUR_REMOTE",
+          "Alias": "a"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "BW, IO",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_bandwidth_write_local",
+      "LegacyName": "metric_IO bandwidth write local (MB/sec)",
+      "Level": 1,
+      "BriefDescription": "Bandwidth of IO writes that are initiated by end device controllers that are writing memory to the local CPU socket.",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_ITOM_LOCAL",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_ITOMCACHENEAR_LOCAL",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "((a + b) * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "BW, IO",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_bandwidth_write_remote",
+      "LegacyName": "metric_IO bandwidth write remote (MB/sec)",
+      "Level": 1,
+      "BriefDescription": "Bandwidth of IO writes that are initiated by end device controllers that are writing memory to a remote CPU socket.",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_ITOM_REMOTE",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_ITOMCACHENEAR_REMOTE",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "((a + b) * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "BW, IO",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_msi",
+      "LegacyName": "metric_IO MSI per sec",
+      "Level": 1,
+      "BriefDescription": "Message Signaled Interrupts (MSI) per second sent by the integrated I/O traffic controller (IIO) to System Configuration Controller (Ubox).",
+      "UnitOfMeasure": "per second",
+      "Events": [
+        {
+          "Name": "UNC_IIO_NUM_REQ_OF_CPU_BY_TGT.UBOX_POSTED",
+          "Alias": "a"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a) / DURATIONTIMEINSECONDS",
+      "Category": "IO",
+      "ResolutionLevels": "IIO, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_lost_fwd",
+      "LegacyName": "metric_IO lost fwd per sec",
+      "Level": 1,
+      "BriefDescription": "The number of times per second that ownership of a cacheline was stolen from the integrated IO controller before it was able to write back the modified line.",
+      "UnitOfMeasure": "per second",
+      "Events": [
+        {
+          "Name": "UNC_I_MISC1.LOST_FWD",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_I_MISC1.SEC_RCVD_INVLD",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a + b) / DURATIONTIMEINSECONDS",
+      "Category": "IO",
+      "ResolutionLevels": "IRP, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "llc_miss_local_memory_bandwidth_read",
+      "LegacyName": "metric_llc_miss_local_memory_bandwidth_read_MB/s",
+      "Level": 1,
+      "BriefDescription": "Bandwidth (MB/sec) of read requests that miss the last level cache (LLC) and go to local memory.",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_CHA_REQUESTS.READS_LOCAL",
+          "Alias": "a"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "llc_miss_local_memory_bandwidth_write",
+      "LegacyName": "metric_llc_miss_local_memory_bandwidth_write_MB/s",
+      "Level": 1,
+      "BriefDescription": "Bandwidth (MB/sec) of write requests that miss the last level cache (LLC) and go to local memory.",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_CHA_REQUESTS.WRITES_LOCAL",
+          "Alias": "a"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "llc_miss_remote_memory_bandwidth_read",
+      "LegacyName": "metric_llc_miss_remote_memory_bandwidth_read_MB/s",
+      "Level": 1,
+      "BriefDescription": "Bandwidth (MB/sec) of read requests that miss the last level cache (LLC) and go to remote memory.",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_CHA_REQUESTS.READS_REMOTE",
+          "Alias": "a"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "llc_miss_remote_memory_bandwidth_write",
+      "LegacyName": "metric_llc_miss_remote_memory_bandwidth_write_MB/s",
+      "Level": 1,
+      "BriefDescription": "Bandwidth (MB/sec) of write requests that miss the last level cache (LLC) and go to remote memory.",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_CHA_REQUESTS.WRITES_REMOTE",
+          "Alias": "a"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "iio_bandwidth_read",
+      "LegacyName": "metric_IIO_bandwidth_read (MB/sec)",
+      "Level": 1,
+      "BriefDescription": "Bandwidth observed by the integrated I/O traffic controller (IIO) of IO reads that are initiated by end device controllers that are requesting memory from the CPU.",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_IIO_DATA_REQ_OF_CPU.MEM_READ.ALL_PARTS",
+          "Alias": "a"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a * 4 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "",
+      "ResolutionLevels": "IIO, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "iio_bandwidth_write",
+      "LegacyName": "metric_IIO_bandwidth_write (MB/sec)",
+      "Level": 1,
+      "BriefDescription": "Bandwidth observed by the integrated I/O traffic controller (IIO) of IO writes that are initiated by end device controllers that are writing memory to the CPU.",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_IIO_DATA_REQ_OF_CPU.MEM_WRITE.ALL_PARTS",
+          "Alias": "a"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a * 4 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "",
+      "ResolutionLevels": "IIO, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "cpu_cstate_c0",
+      "LegacyName": "metric_CPU_cstate_C0",
+      "Level": 1,
+      "BriefDescription": "The average number of cores that are in cstate C0 as observed by the power control unit (PCU).",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "UNC_P_CLOCKTICKS",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_P_POWER_STATE_OCCUPANCY_CORES_C0",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [
+        {
+          "Name": "SOCKET_COUNT",
+          "Alias": "socket_count"
+        }
+      ],
+      "Formula": "(b / a[0]) * socket_count",
+      "Category": "",
+      "ResolutionLevels": "SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "cpu_cstate_c6",
+      "LegacyName": "metric_CPU_cstate_C6",
+      "Level": 1,
+      "BriefDescription": "The average number of cores are in cstate C6 as observed by the power control unit (PCU).",
+      "UnitOfMeasure": "",
+      "Events": [
+        {
+          "Name": "UNC_P_CLOCKTICKS",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_P_POWER_STATE_OCCUPANCY_CORES_C6",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [
+        {
+          "Name": "SOCKET_COUNT",
+          "Alias": "socket_count"
+        }
+      ],
+      "Formula": "(b / a[0]) * socket_count",
+      "Category": "",
+      "ResolutionLevels": "SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_bandwidth_read_l3_miss",
+      "LegacyName": "metric_IO_bandwidth_read_L3_miss (MB/sec)",
+      "Level": 1,
+      "BriefDescription": "Bandwidth of inbound IO reads that are initiated by end device controllers that are requesting memory from the CPU and miss the L3 cache.",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_MISS_PCIRDCUR",
+          "Alias": "a"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "IO",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_bandwidth_write_l3_miss",
+      "LegacyName": "metric_IO_bandwidth_write_L3_miss (MB/sec)",
+      "Level": 1,
+      "BriefDescription": "Bandwidth of inbound IO writes that are initiated by end device controllers that are writing memory to the CPU.",
+      "UnitOfMeasure": "MB/sec",
+      "Events": [
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_MISS_ITOM",
+          "Alias": "a"
+        },
+        {
+          "Name": "UNC_CHA_TOR_INSERTS.IO_MISS_ITOMCACHENEAR",
+          "Alias": "b"
+        }
+      ],
+      "Constants": [],
+      "Formula": "((a + b) * 64 / 1000000) / DURATIONTIMEINSECONDS",
+      "Category": "IO",
+      "ResolutionLevels": "CHA, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    }
+  ]
+}

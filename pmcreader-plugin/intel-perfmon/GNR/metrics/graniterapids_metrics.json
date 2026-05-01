@@ -2,8 +2,8 @@
   "Header": {
     "Copyright": "Copyright (c) 2001 - 2025 Intel Corporation. All rights reserved.",
     "Info": "Performance Monitoring Metrics for Intel(R) Xeon(R) 6 Processor with P-cores0",
-    "DatePublished": "06/17/2025",
-    "Version": "1.1",
+    "DatePublished": "02/23/2026",
+    "Version": "1.2",
     "Legend": "",
     "TmaVersion": "5.1",
     "TmaFlavor": "Full"
@@ -1000,6 +1000,92 @@
       "MetricGroup": ""
     },
     {
+      "MetricName": "numa_percent_all_reads_to_local_cluster_memory",
+      "LegacyName": "metric_NUMA % all reads to local cluster memory",
+      "Level": 1,
+      "BriefDescription": "All reads to the local sub-numa cluster memory as a percentage of total memory read accesses. Includes demand and prefetch requests for data reads, code reads, read for ownerships (RFO), does not include LLC prefetches. ",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "OCR.READS_TO_CORE.L3_MISS_LOCAL",
+          "Alias": "a"
+        },
+        {
+          "Name": "L2_LINES_IN.ALL",
+          "Alias": "c"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * (a / c)",
+      "Category": "NUMA",
+      "ResolutionLevels": "THREAD, CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "numa_percent_all_reads_to_remote_cluster_cache",
+      "LegacyName": "metric_NUMA % all reads to remote cluster cache",
+      "Level": 1,
+      "BriefDescription": "All reads to a remote sub-numa cluster cache as a percentage of total memory read accesses. Includes demand and prefetch requests for data reads, code reads, read for ownerships (RFO), does not include LLC prefetches. ",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "OCR.READS_TO_CORE.SNC_CACHE.HITM",
+          "Alias": "a"
+        },
+        {
+          "Name": "OCR.READS_TO_CORE.SNC_CACHE.HIT_WITH_FWD",
+          "Alias": "b"
+        },
+        {
+          "Name": "L2_LINES_IN.ALL",
+          "Alias": "c"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * ((b + a) / c)",
+      "Category": "NUMA",
+      "ResolutionLevels": "THREAD, CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "numa_percent_all_reads_to_local_cluster_cache",
+      "LegacyName": "metric_NUMA % all reads to local cluster cache",
+      "Level": 1,
+      "BriefDescription": "All reads to the local sub-numa cluster cache as a percentage of total memory read accesses. Includes demand and prefetch requests for data reads, code reads, read for ownerships (RFO), does not include LLC prefetches. ",
+      "UnitOfMeasure": "percent",
+      "Events": [
+        {
+          "Name": "OCR.READS_TO_CORE.SNC_CACHE.HITM",
+          "Alias": "a"
+        },
+        {
+          "Name": "OCR.READS_TO_CORE.SNC_CACHE.HIT_WITH_FWD",
+          "Alias": "b"
+        },
+        {
+          "Name": "OCR.READS_TO_CORE.REMOTE_CACHE.SNOOP_FWD",
+          "Alias": "d"
+        },
+        {
+          "Name": "OCR.READS_TO_CORE.REMOTE_MEMORY",
+          "Alias": "e"
+        },
+        {
+          "Name": "OCR.READS_TO_CORE.L3_MISS_LOCAL",
+          "Alias": "f"
+        },
+        {
+          "Name": "L2_LINES_IN.ALL",
+          "Alias": "g"
+        }
+      ],
+      "Constants": [],
+      "Formula": "100 * (g - (a + b + d + e + f) ) / g",
+      "Category": "NUMA",
+      "ResolutionLevels": "THREAD, CORE, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
       "MetricName": "io_msi",
       "LegacyName": "metric_IO MSI per sec",
       "Level": 1,
@@ -1015,6 +1101,28 @@
       "Formula": "(a) / DURATIONTIMEINSECONDS",
       "Category": "IO",
       "ResolutionLevels": "IIO, SOCKET, SYSTEM",
+      "MetricGroup": ""
+    },
+    {
+      "MetricName": "io_lost_fwd",
+      "LegacyName": "metric_IO lost fwd per sec",
+      "Level": 1,
+      "BriefDescription": "The number of times per second that ownership of a cacheline was stolen from the integrated IO controller before it was able to write back the modified line.",
+      "UnitOfMeasure": "per second",
+      "Events": [
+        {
+          "Name": "UNC_I_MISC1.SEC_RCVD_INVLD",
+          "Alias": "b"
+        },
+        {
+          "Name": "UNC_I_MISC1.LOST_FWD",
+          "Alias": "a"
+        }
+      ],
+      "Constants": [],
+      "Formula": "(a + b) / DURATIONTIMEINSECONDS",
+      "Category": "IO",
+      "ResolutionLevels": "IRP, SOCKET, SYSTEM",
       "MetricGroup": ""
     },
     {

@@ -241,5 +241,14 @@
         "CoreType": "P-core",
         "IsHybrid": false,
         "DefaultLevel": 2
-    }
+    },
+	{
+      "Name": "Clearwater Forest Server",
+      "ShortName": "CWF",
+      "FileName": "ClearwaterForest",
+      "Core": "Darkmont",
+      "CoreType": "E-core",
+      "IsHybrid": false,
+      "DefaultLevel": 2
+	}
 ]
