@@ -43,8 +43,8 @@ internal sealed class IntelCpu : GenericCpu
     private readonly ulong[][] _lastMperf;
     private readonly DateTime[][] _lastSampleTime;
 
-    private readonly Sensor _memoryClock;
-    private readonly bool _hasMemoryClock;
+    private readonly Sensor _uncoreClock;
+    private readonly bool _hasUncoreClock;
 
     public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
     {
@@ -497,18 +497,18 @@ internal sealed class IntelCpu : GenericCpu
             _lastSampleTime = Array.Empty<DateTime[]>();
         }
 
-        if (SupportsUncoreMemoryClock(_microArchitecture, _model) &&
+        if (SupportsUncoreClock(_microArchitecture, _model) &&
             _pawnModule.ReadMsr(MSR_UNCORE_PERF_STATUS, out uint uncoreEax, out uint _) &&
             (uncoreEax & 0x7F) > 0)
         {
-            int memoryClockIndex = _hasAperfMperf
+            int uncoreClockIndex = _hasAperfMperf
                 ? _coreClocks.Length + 2 + _threadEffectiveClocks.Sum(t => t.Length) + 2
                 : _coreClocks.Length + 2;
 
-            _memoryClock = new Sensor("Memory Clock", memoryClockIndex, SensorType.Clock, this, settings)
+            _uncoreClock = new Sensor("Uncore Ring Clock", uncoreClockIndex, SensorType.Clock, this, settings)
             { PresentationSortKey = "0_3" };
-            ActivateSensor(_memoryClock);
-            _hasMemoryClock = true;
+            ActivateSensor(_uncoreClock);
+            _hasUncoreClock = true;
         }
 
         if (_microArchitecture is MicroArchitecture.Airmont or
@@ -607,32 +607,14 @@ internal sealed class IntelCpu : GenericCpu
     }
 
     // MSR_UNCORE_PERF_STATUS (0x621) carries the current uncore ratio in bits [6:0]
-    // only on Intel client microarchitectures from Sandy Bridge onward. On server
-    // uncore PMUs (Sky-X, CLX, ICX, SPR, the Xeon E5/E7 server siblings of HSW/BDW,
-    // Ivy Town etc.) the same address is the U_PMON_GLOBAL_STATUS performance-monitor
-    // register and decoding it as a ratio yields nonsense. The ancient Atom families
-    // (Silvermont/Airmont/Goldmont/GoldmontPlus, including Denverton/Tremont) and
-    // anything older than Sandy Bridge do not document MSR 0x621 as readable, so we
-    // skip them too.
+    // on Intel client platforms where the local intel-perfmon data also documents
+    // an uncore clock source (UNC_CLOCK.SOCKET / Info_System_Uncore_Frequency).
+    // CUR_RATIO * BCLK is exposed as the instantaneous Uncore/Ring clock.
     //
-    // CUR_RATIO × BCLK is the uncore (NGU/Ring) clock. Only on SNB-through-Comet-Lake
-    // client parts is the IMC tied to the same ratio, so the value also reflects the
-    // memory I/O clock there. Starting with Sunny Cove (Cannon/Ice/Tiger/Rocket Lake)
-    // and on every hybrid client since (Alder/Raptor/Meteor/Lunar/Arrow/Panther Lake)
-    // the IMC ratio is decoupled — MSR 0x621 then only reports the ringbus clock and
-    // is unrelated to the DRAM I/O clock that HWInfo shows. We deliberately gate the
-    // sensor off on those parts rather than publishing a misleading value.
-    //
-    // TODO: read the actual memory clock on Sunny Cove and later by counting iMC PMU
-    // UNC_M_CLOCKTICKS (Unit "iMC", EventCode 0x01, UMask 0x00 — see
-    // pmcreader-plugin/intel-perfmon/{ADL,MTL,ARL,LNL,PTL}/events/*_uncore.json).
-    // The iMC PMU lives in MCHBAR (PCI B0:D0:F0 offset 0x48 → MCHBAR base; iMC PMON
-    // box at a per-platform offset) and requires MMIO + PCI-config access, neither
-    // of which the current PawnIO IntelMSR module exposes. The pmcreader-plugin's
-    // SkylakeClientArb shows the MCHBAR access pattern but only carries Skylake-era
-    // offsets — Alder-Lake+ iMC PMU offsets need to be added before this sensor can
-    // report a real memory clock on Panther Lake.
-    private static bool SupportsUncoreMemoryClock(MicroArchitecture arch, uint model)
+    // This is intentionally not a memory-clock sensor. Newer client platforms have
+    // a decoupled IMC clock, and server uncore PMUs expose their clocks through
+    // different PMU domains/counters rather than this simple MSR-ratio path.
+    private static bool SupportsUncoreClock(MicroArchitecture arch, uint model)
     {
         switch (arch)
         {
@@ -649,9 +631,22 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.KabyLake:
             case MicroArchitecture.CometLake:
                 return true;
-            // IceLake, RocketLake, CannonLake, TigerLake, AlderLake, RaptorLake,
-            // MeteorLake, LunarLake, ArrowLake, PantherLake: IMC ratio decoupled
-            // from uncore ratio — see the TODO above.
+            case MicroArchitecture.IceLake:
+                return model is 0x7D or 0x7E; // exclude Ice Lake server (0x6A/0x6C)
+            case MicroArchitecture.RocketLake:
+                return model == 0xA7;
+            case MicroArchitecture.TigerLake:
+                return model is 0x8C or 0x8D;
+            case MicroArchitecture.AlderLake:
+                return model is 0x97 or 0x9A or 0xBE;
+            case MicroArchitecture.RaptorLake:
+                return model is 0xB7 or 0xBA or 0xBF;
+            case MicroArchitecture.MeteorLake:
+                return model is 0xAA or 0xAC;
+            case MicroArchitecture.LunarLake:
+                return model == 0xBD;
+            case MicroArchitecture.ArrowLake:
+                return model is 0xC5 or 0xC6; // exclude reserved 0xC7/0xC8
             default:
                 return false;
         }
@@ -855,19 +850,16 @@ internal sealed class IntelCpu : GenericCpu
                 ActivateSensor(_busClock);
             }
 
-            if (_hasMemoryClock && newBusClock > 0 &&
+            if (_hasUncoreClock && newBusClock > 0 &&
                 _pawnModule.ReadMsr(MSR_UNCORE_PERF_STATUS, out uint uncoreEax, out _))
             {
-                // CUR_RATIO (bits [6:0]) × BCLK is the uncore clock in MHz. On
-                // SNB-through-Comet-Lake clients the IMC is tied to the same
-                // ratio, so the value also matches the memory I/O clock there;
-                // SupportsUncoreMemoryClock keeps us off the post-Skylake parts
-                // where uncore and IMC are decoupled.
+                // CUR_RATIO (bits [6:0]) * BCLK is the instantaneous uncore/ring
+                // clock in MHz.
                 uint curRatio = uncoreEax & 0x7F;
                 if (curRatio > 0)
-                    _memoryClock.Value = (float)(curRatio * newBusClock);
+                    _uncoreClock.Value = (float)(curRatio * newBusClock);
                 else
-                    _memoryClock.Value = null;
+                    _uncoreClock.Value = null;
             }
         }
 
@@ -1079,7 +1071,7 @@ internal sealed class IntelCpu : GenericCpu
 
     private const uint MSR_RAPL_POWER_UNIT = 0x606;
 
-    // MSR_UNCORE_PERF_STATUS (Intel client, Sandy Bridge and later) — bits [6:0] hold
+    // MSR_UNCORE_PERF_STATUS (Intel client, Sandy Bridge and later) - bits [6:0] hold
     // CUR_RATIO, the current uncore ratio in 100 MHz units. PawnIO's IntelMSR module
     // exposes it under the alternative name MSR_UNC_PERF_GLOBAL_STATUS at the same
     // address (0x621). On server uncore PMUs the same address has a different
