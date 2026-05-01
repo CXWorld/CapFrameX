@@ -43,8 +43,8 @@ internal sealed class IntelCpu : GenericCpu
     private readonly ulong[][] _lastMperf;
     private readonly DateTime[][] _lastSampleTime;
 
-    private readonly Sensor _memorySpeed;
-    private readonly bool _hasMemorySpeed;
+    private readonly Sensor _memoryClock;
+    private readonly bool _hasMemoryClock;
 
     public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
     {
@@ -496,18 +496,18 @@ internal sealed class IntelCpu : GenericCpu
             _lastSampleTime = Array.Empty<DateTime[]>();
         }
 
-        if (SupportsUncoreMemorySpeed(_microArchitecture, _model) &&
+        if (SupportsUncoreMemoryClock(_microArchitecture, _model) &&
             _pawnModule.ReadMsr(MSR_UNCORE_PERF_STATUS, out uint uncoreEax, out uint _) &&
             (uncoreEax & 0x7F) > 0)
         {
-            int memorySpeedIndex = _hasAperfMperf
+            int memoryClockIndex = _hasAperfMperf
                 ? _coreClocks.Length + 2 + _threadEffectiveClocks.Sum(t => t.Length) + 2
                 : _coreClocks.Length + 2;
 
-            _memorySpeed = new Sensor("Memory", memorySpeedIndex, SensorType.Clock, this, settings)
+            _memoryClock = new Sensor("Memory Clock", memoryClockIndex, SensorType.Clock, this, settings)
             { PresentationSortKey = "0_3" };
-            ActivateSensor(_memorySpeed);
-            _hasMemorySpeed = true;
+            ActivateSensor(_memoryClock);
+            _hasMemoryClock = true;
         }
 
         if (_microArchitecture is MicroArchitecture.Airmont or
@@ -613,7 +613,25 @@ internal sealed class IntelCpu : GenericCpu
     // (Silvermont/Airmont/Goldmont/GoldmontPlus, including Denverton/Tremont) and
     // anything older than Sandy Bridge do not document MSR 0x621 as readable, so we
     // skip them too.
-    private static bool SupportsUncoreMemorySpeed(MicroArchitecture arch, uint model)
+    //
+    // CUR_RATIO × BCLK is the uncore (NGU/Ring) clock. Only on SNB-through-Comet-Lake
+    // client parts is the IMC tied to the same ratio, so the value also reflects the
+    // memory I/O clock there. Starting with Sunny Cove (Cannon/Ice/Tiger/Rocket Lake)
+    // and on every hybrid client since (Alder/Raptor/Meteor/Lunar/Arrow/Panther Lake)
+    // the IMC ratio is decoupled — MSR 0x621 then only reports the ringbus clock and
+    // is unrelated to the DRAM I/O clock that HWInfo shows. We deliberately gate the
+    // sensor off on those parts rather than publishing a misleading value.
+    //
+    // TODO: read the actual memory clock on Sunny Cove and later by counting iMC PMU
+    // UNC_M_CLOCKTICKS (Unit "iMC", EventCode 0x01, UMask 0x00 — see
+    // pmcreader-plugin/intel-perfmon/{ADL,MTL,ARL,LNL,PTL}/events/*_uncore.json).
+    // The iMC PMU lives in MCHBAR (PCI B0:D0:F0 offset 0x48 → MCHBAR base; iMC PMON
+    // box at a per-platform offset) and requires MMIO + PCI-config access, neither
+    // of which the current PawnIO IntelMSR module exposes. The pmcreader-plugin's
+    // SkylakeClientArb shows the MCHBAR access pattern but only carries Skylake-era
+    // offsets — Alder-Lake+ iMC PMU offsets need to be added before this sensor can
+    // report a real memory clock on Panther Lake.
+    private static bool SupportsUncoreMemoryClock(MicroArchitecture arch, uint model)
     {
         switch (arch)
         {
@@ -627,20 +645,12 @@ internal sealed class IntelCpu : GenericCpu
                 return model is 0x3D or 0x47; // exclude BDX (0x4F) and BDW-DE (0x56)
             case MicroArchitecture.Skylake:
                 return model is 0x4E or 0x5E; // exclude SKX (0x55)
-            case MicroArchitecture.IceLake:
-                return model is 0x7D or 0x7E; // exclude ICX (0x6A, 0x6C)
             case MicroArchitecture.KabyLake:
             case MicroArchitecture.CometLake:
-            case MicroArchitecture.RocketLake:
-            case MicroArchitecture.CannonLake:
-            case MicroArchitecture.TigerLake:
-            case MicroArchitecture.AlderLake:
-            case MicroArchitecture.RaptorLake:
-            case MicroArchitecture.MeteorLake:
-            case MicroArchitecture.LunarLake:
-            case MicroArchitecture.ArrowLake:
-            case MicroArchitecture.PantherLake:
                 return true;
+            // IceLake, RocketLake, CannonLake, TigerLake, AlderLake, RaptorLake,
+            // MeteorLake, LunarLake, ArrowLake, PantherLake: IMC ratio decoupled
+            // from uncore ratio — see the TODO above.
             default:
                 return false;
         }
@@ -844,17 +854,19 @@ internal sealed class IntelCpu : GenericCpu
                 ActivateSensor(_busClock);
             }
 
-            if (_hasMemorySpeed && newBusClock > 0 &&
+            if (_hasMemoryClock && newBusClock > 0 &&
                 _pawnModule.ReadMsr(MSR_UNCORE_PERF_STATUS, out uint uncoreEax, out _))
             {
-                // CUR_RATIO (bits [6:0]) × BCLK gives the uncore (and on SNB+ client
-                // chips, the IMC) clock in MHz. Doubling it yields the per-channel
-                // data-rate figure conventionally reported in MT/s.
+                // CUR_RATIO (bits [6:0]) × BCLK is the uncore clock in MHz. On
+                // SNB-through-Comet-Lake clients the IMC is tied to the same
+                // ratio, so the value also matches the memory I/O clock there;
+                // SupportsUncoreMemoryClock keeps us off the post-Skylake parts
+                // where uncore and IMC are decoupled.
                 uint curRatio = uncoreEax & 0x7F;
                 if (curRatio > 0)
-                    _memorySpeed.Value = (float)(curRatio * newBusClock * 2.0);
+                    _memoryClock.Value = (float)(curRatio * newBusClock);
                 else
-                    _memorySpeed.Value = null;
+                    _memoryClock.Value = null;
             }
         }
 
