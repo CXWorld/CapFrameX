@@ -25,6 +25,8 @@ public class IntelImc
         MchbarSaPerf = 2,
         /// <inheritdoc />
         PmtQclkStatus = 3,
+        /// <inheritdoc />
+        MchbarLiveGvArl = 4,
     }
 
     /// <summary>What the ratio is multiplied with on this hardware.</summary>
@@ -133,8 +135,9 @@ public class IntelImc
 
     /// <summary>
     /// Reads the static (locked-max on Core Ultra, live on Alder/Raptor Lake)
-    /// IMC clock ratio. Returns <c>false</c> if the running CPU is outside the
-    /// module allowlist or any consistency check fails inside the driver.
+    /// IMC clock ratio. Allowlist: ADL/RPL/MTL/ARL/LNL/PTL plus Nova Lake
+    /// (experimental). Returns <c>false</c> if the running CPU is outside
+    /// the allowlist or any consistency check fails inside the driver.
     /// </summary>
     public bool ReadClock(out ImcClock clock)
     {
@@ -142,10 +145,10 @@ public class IntelImc
     }
 
     /// <summary>
-    /// Reads the live IMC workpoint via SA_PERF_STATUS on Core Ultra
-    /// (Meteor / Lunar / Panther Lake). Returns <c>false</c> on Alder/Raptor
-    /// Lake (where the static IOCTL is already live), on Arrow Lake (where the
-    /// register reads as zero — see VALIDATION-ARL.md), and on unknown CPUs.
+    /// Reads the live IMC workpoint on Core Ultra: SA_PERF_STATUS @ 0x5918
+    /// for MTL/LNL/PTL (and NVL, experimental), IMC_LIVE_GV_STATUS_ARL @
+    /// 0xE448 for ARL. Returns <c>false</c> on ADL/RPL (use the static IOCTL
+    /// — already live there) and on unknown CPUs.
     /// </summary>
     public bool ReadLiveClock(out ImcClock clock)
     {
