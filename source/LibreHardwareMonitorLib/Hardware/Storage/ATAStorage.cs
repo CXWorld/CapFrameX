@@ -175,7 +175,7 @@ public abstract class AtaStorage : AbstractStorage
                                                          .Select(x => x.First());
 
             _sensors = smartAttributes.ToDictionary(attribute => attribute,
-                                                    attribute => new Sensor(attribute.SensorName,
+                                                    attribute => new Sensor(WithDrivePrefix(attribute.SensorName),
                                                                             attribute.SensorChannel,
                                                                             attribute.DefaultHiddenSensor,
                                                                             attribute.SensorType.GetValueOrDefault(),

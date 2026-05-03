@@ -49,7 +49,7 @@ public sealed class NVMeGeneric : AbstractStorage
             AddSensor("Temperature", 0, false, SensorType.Temperature, health => health.Temperature, $"{Index}_1_0");
             AddSensor("Available Spare", 1, false, SensorType.Level, health => health.AvailableSpare, $"{Index}_3_1");
             AddSensor("Available Spare Threshold", 2, false, SensorType.Level, health => health.AvailableSpareThreshold, $"{Index}_3_2");
-            AddSensor("Percentage Used", 3, false, SensorType.Level, health => health.PercentageUsed, $"{Index}_3_3");
+            AddSensor("Lifetime Used", 3, false, SensorType.Level, health => health.PercentageUsed, $"{Index}_3_3");
             AddSensor("Data Read", 4, false, SensorType.Data, health => UnitsToData(health.DataUnitRead), $"{Index}_3_4");
             AddSensor("Data Written", 5, false, SensorType.Data, health => UnitsToData(health.DataUnitWritten), $"{Index}_3_5");
 
@@ -70,7 +70,7 @@ public sealed class NVMeGeneric : AbstractStorage
 
     private void AddSensor(string name, int index, bool defaultHidden, SensorType sensorType, GetSensorValue getValue, string presentationSortKey)
     {
-        var sensor = new NVMeSensor(name, index, defaultHidden, sensorType, this, _settings, getValue)
+        var sensor = new NVMeSensor(WithDrivePrefix(name), index, defaultHidden, sensorType, this, _settings, getValue)
         {
             Value = 0,
             PresentationSortKey = presentationSortKey

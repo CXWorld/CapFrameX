@@ -37,7 +37,7 @@ internal sealed class IntelCpu : GenericCpu
     private readonly Sensor[] _powerSensors;
     private readonly double _timeStampCounterMultiplier;
 
-    private readonly IntelMsr _pawnModule;
+    private readonly IntelMsr _msrModule;
     private readonly bool _hasAperfMperf;
     private readonly ulong[][] _lastAperf;
     private readonly ulong[][] _lastMperf;
@@ -46,9 +46,18 @@ internal sealed class IntelCpu : GenericCpu
     private readonly Sensor _uncoreClock;
     private readonly bool _hasUncoreClock;
 
+    private readonly IntelImc _imcModule;
+    private readonly Sensor _imcClock;
+    private readonly Sensor _memoryDataRate;
+    private readonly Sensor _dramFrequency;
+    private readonly Sensor _memoryGear;
+    private readonly bool _hasImc;
+    private readonly bool _hasImcLive;
+
     public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
     {
-        _pawnModule = new IntelMsr();
+        _msrModule = new IntelMsr();
+        _imcModule = new IntelImc();
 
         uint eax;
 
@@ -310,7 +319,7 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.Atom:
             case MicroArchitecture.Core:
             case MicroArchitecture.NetBurst:
-                if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out uint _, out uint edx))
+                if (_msrModule.ReadMsr(IA32_PERF_STATUS, out uint _, out uint edx))
                     _timeStampCounterMultiplier = ((edx >> 8) & 0x1f) + (0.5 * ((edx >> 14) & 1));
                 break;
             case MicroArchitecture.Airmont:
@@ -339,7 +348,7 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.SapphireRapids:
             case MicroArchitecture.ElkhartLake:
             case MicroArchitecture.Tremont:
-                if (_pawnModule.ReadMsr(MSR_PLATFORM_INFO, out eax, out uint _))
+                if (_msrModule.ReadMsr(MSR_PLATFORM_INFO, out eax, out uint _))
                     _timeStampCounterMultiplier = (eax >> 8) & 0xff;
 
                 break;
@@ -498,7 +507,7 @@ internal sealed class IntelCpu : GenericCpu
         }
 
         if (SupportsUncoreClock(_microArchitecture, _model) &&
-            _pawnModule.ReadMsr(MSR_UNCORE_PERF_STATUS, out uint uncoreEax, out uint _) &&
+            _msrModule.ReadMsr(MSR_UNCORE_PERF_STATUS, out uint uncoreEax, out uint _) &&
             (uncoreEax & 0x7F) > 0)
         {
             int uncoreClockIndex = _hasAperfMperf
@@ -509,6 +518,30 @@ internal sealed class IntelCpu : GenericCpu
             { PresentationSortKey = "0_3" };
             ActivateSensor(_uncoreClock);
             _hasUncoreClock = true;
+        }
+
+        if (SupportsIntelImc(_microArchitecture) && _imcModule.ReadClock(out _))
+        {
+            int imcSensorBaseIndex = _hasAperfMperf
+                ? _coreClocks.Length + 2 + _threadEffectiveClocks.Sum(t => t.Length) + 2
+                : _coreClocks.Length + 2;
+            if (_hasUncoreClock)
+                imcSensorBaseIndex++;
+
+            _imcClock = new Sensor("IMC Clock (QCLK)", imcSensorBaseIndex, SensorType.Clock, this, settings)
+            { PresentationSortKey = "0_4_0" };
+            _memoryDataRate = new Sensor("Memory Data Rate", imcSensorBaseIndex + 1, SensorType.Frequency, this, settings)
+            { PresentationSortKey = "0_4_1" };
+            _dramFrequency = new Sensor("DRAM Frequency", imcSensorBaseIndex + 2, SensorType.Clock, this, settings)
+            { PresentationSortKey = "0_4_2" };
+            _memoryGear = new Sensor("Memory Gear", imcSensorBaseIndex + 3, SensorType.Factor, this, settings)
+            { PresentationSortKey = "0_4_3" };
+            ActivateSensor(_imcClock);
+            ActivateSensor(_memoryDataRate);
+            ActivateSensor(_dramFrequency);
+            ActivateSensor(_memoryGear);
+            _hasImc = true;
+            _hasImcLive = _imcModule.ReadLiveClock(out _);
         }
 
         if (_microArchitecture is MicroArchitecture.Airmont or
@@ -541,7 +574,7 @@ internal sealed class IntelCpu : GenericCpu
             _lastEnergyTime = new DateTime[_energyStatusMsrs.Length];
             _lastEnergyConsumed = new uint[_energyStatusMsrs.Length];
 
-            if (_pawnModule.ReadMsr(MSR_RAPL_POWER_UNIT, out eax, out uint _))
+            if (_msrModule.ReadMsr(MSR_RAPL_POWER_UNIT, out eax, out uint _))
             {
                 EnergyUnitsMultiplier = _microArchitecture switch
                 {
@@ -556,7 +589,7 @@ internal sealed class IntelCpu : GenericCpu
 
                 for (int i = 0; i < _energyStatusMsrs.Length; i++)
                 {
-                    if (!_pawnModule.ReadMsr(_energyStatusMsrs[i], out eax, out uint _))
+                    if (!_msrModule.ReadMsr(_energyStatusMsrs[i], out eax, out uint _))
                         continue;
 
                     // Don't show the "GPU Graphics" sensor on windows, it will show up under the GPU instead.
@@ -577,7 +610,7 @@ internal sealed class IntelCpu : GenericCpu
             }
         }
 
-        if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out eax, out uint _) && ((eax >> 32) & 0xFFFF) > 0)
+        if (_msrModule.ReadMsr(IA32_PERF_STATUS, out eax, out uint _) && ((eax >> 32) & 0xFFFF) > 0)
         {
             _coreVoltage = new Sensor("CPU Core", 0, SensorType.Voltage, this, settings)
             { PresentationSortKey = $"4_0" };
@@ -652,12 +685,33 @@ internal sealed class IntelCpu : GenericCpu
         }
     }
 
+    // Architectures whose IMC clock is exposed by the IntelIMC PawnIO module.
+    // The kernel module enforces its own per-CPUID allowlist (MTL/ARL/LNL/PTL
+    // via MEMSS_PMA, ADL/RPL via SA_PERF_STATUS), so this gate only filters
+    // out the broad architecture buckets the module never targets. The
+    // sensor registration site additionally probes the static IOCTL once
+    // and only activates the sensors when the kernel actually returns data.
+    // Validation status (per IntelIMC.p): ARL/LNL/PTL are validated end-to-end;
+    // MTL/ADL/RPL are accepted by the module but flagged EXPERIMENTAL until
+    // hardware cross-validation lands. The sensors are exposed for all six
+    // and hidden from the default presentation (IsPresentationDefault stays
+    // false) so consumers opt in explicitly.
+    private static bool SupportsIntelImc(MicroArchitecture arch)
+    {
+        return arch is MicroArchitecture.AlderLake or
+            MicroArchitecture.RaptorLake or
+            MicroArchitecture.MeteorLake or
+            MicroArchitecture.ArrowLake or
+            MicroArchitecture.LunarLake or
+            MicroArchitecture.PantherLake;
+    }
+
     private float[] GetTjMaxFromMsr()
     {
         float[] result = new float[_coreCount];
         for (int i = 0; i < _coreCount; i++)
         {
-            if (_pawnModule.ReadMsr(IA32_TEMPERATURE_TARGET, out uint eax, out uint _, _cpuId[i][0].Affinity))
+            if (_msrModule.ReadMsr(IA32_TEMPERATURE_TARGET, out uint eax, out uint _, _cpuId[i][0].Affinity))
                 result[i] = (eax >> 16) & 0xFF;
             else
                 result[i] = 100;
@@ -729,7 +783,8 @@ internal sealed class IntelCpu : GenericCpu
     public override void Close()
     {
         base.Close();
-        _pawnModule.Close();
+        _msrModule.Close();
+        _imcModule.Close();
     }
 
     public override void Update()
@@ -743,7 +798,7 @@ internal sealed class IntelCpu : GenericCpu
         for (int i = 0; i < _coreTemperatures.Length; i++)
         {
             // if reading is valid
-            if (_pawnModule.ReadMsr(IA32_THERM_STATUS_MSR, out eax, out _, _cpuId[i][0].Affinity) && (eax & 0x80000000) != 0)
+            if (_msrModule.ReadMsr(IA32_THERM_STATUS_MSR, out eax, out _, _cpuId[i][0].Affinity) && (eax & 0x80000000) != 0)
             {
                 // get the dist from tjMax from bits 22:16
                 float deltaT = (eax & 0x007F0000) >> 16;
@@ -775,7 +830,7 @@ internal sealed class IntelCpu : GenericCpu
         if (_packageTemperature != null)
         {
             // if reading is valid
-            if (_pawnModule.ReadMsr(IA32_PACKAGE_THERM_STATUS, out eax, out _, _cpuId[0][0].Affinity) && (eax & 0x80000000) != 0)
+            if (_msrModule.ReadMsr(IA32_PACKAGE_THERM_STATUS, out eax, out _, _cpuId[0][0].Affinity) && (eax & 0x80000000) != 0)
             {
                 // get the dist from tjMax from bits 22:16
                 float deltaT = (eax & 0x007F0000) >> 16;
@@ -795,7 +850,7 @@ internal sealed class IntelCpu : GenericCpu
             for (int i = 0; i < _coreClocks.Length; i++)
             {
                 System.Threading.Thread.Sleep(1);
-                if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out eax, out _, _cpuId[i][0].Affinity))
+                if (_msrModule.ReadMsr(IA32_PERF_STATUS, out eax, out _, _cpuId[i][0].Affinity))
                 {
                     newBusClock = TimeStampCounterFrequency / _timeStampCounterMultiplier;
                     switch (_microArchitecture)
@@ -851,7 +906,7 @@ internal sealed class IntelCpu : GenericCpu
             }
 
             if (_hasUncoreClock && newBusClock > 0 &&
-                _pawnModule.ReadMsr(MSR_UNCORE_PERF_STATUS, out uint uncoreEax, out _))
+                _msrModule.ReadMsr(MSR_UNCORE_PERF_STATUS, out uint uncoreEax, out _))
             {
                 // CUR_RATIO (bits [6:0]) * BCLK is the instantaneous uncore/ring
                 // clock in MHz.
@@ -860,6 +915,67 @@ internal sealed class IntelCpu : GenericCpu
                     _uncoreClock.Value = (float)(curRatio * newBusClock);
                 else
                     _uncoreClock.Value = null;
+            }
+
+            if (_hasImc && newBusClock > 0)
+            {
+                // Prefer the live SA_PERF workpoint where the kernel module
+                // exposes one (Core Ultra MTL/LNL/PTL). On Arrow Lake the live
+                // IOCTL is short-circuited (SA_PERF reads as zero, see
+                // Deploy/VALIDATION-ARL.md) and on Alder/Raptor Lake the
+                // static IOCTL already returns a live value via SA_PERF, so
+                // we fall back to the static read in both cases.
+                bool gotImc = _hasImcLive
+                    ? _imcModule.ReadLiveClock(out IntelImc.ImcClock imcClock)
+                    : _imcModule.ReadClock(out imcClock);
+                if (!gotImc && _hasImcLive)
+                    gotImc = _imcModule.ReadClock(out imcClock);
+
+                if (gotImc)
+                {
+                    double refMHz = IntelImc.GetReferenceMHz(imcClock.ReferenceClock, newBusClock);
+                    if (refMHz > 0 && imcClock.Ratio > 0)
+                    {
+                        // QCLK = ratio * reference. The data rate (MT/s) and
+                        // IO clock (MHz) follow the IntelIMC.p computation but
+                        // require a known gear. SA_PERF_STATUS does not encode
+                        // gear on ADL/RPL, and on Core Ultra the live IOCTL
+                        // can return Gear=Unknown when MEMSS_PMA's strict
+                        // reserved-bits check rejects on a future stepping;
+                        // in those cases we still surface QCLK but suppress
+                        // the dependent sensors rather than report a wrong
+                        // (typically half-rate) data rate.
+                        double qclk = imcClock.Ratio * refMHz;
+                        _imcClock.Value = (float)qclk;
+                        if (imcClock.Gear != IntelImc.ImcGear.Unknown)
+                        {
+                            double dataRate = qclk * (int)imcClock.Gear;
+                            _memoryDataRate.Value = (float)dataRate;
+                            _dramFrequency.Value = (float)(dataRate / 2.0);
+                            _memoryGear.Value = (int)imcClock.Gear;
+                        }
+                        else
+                        {
+                            _memoryDataRate.Value = null;
+                            _dramFrequency.Value = null;
+                            _memoryGear.Value = null;
+                        }
+                    }
+                    else
+                    {
+                        _imcClock.Value = null;
+                        _memoryDataRate.Value = null;
+                        _dramFrequency.Value = null;
+                        _memoryGear.Value = null;
+                    }
+                }
+                else
+                {
+                    _imcClock.Value = null;
+                    _memoryDataRate.Value = null;
+                    _dramFrequency.Value = null;
+                    _memoryGear.Value = null;
+                }
             }
         }
 
@@ -941,7 +1057,7 @@ internal sealed class IntelCpu : GenericCpu
                 if (sensor == null)
                     continue;
 
-                if (!_pawnModule.ReadMsr(_energyStatusMsrs[sensor.Index], out eax, out _))
+                if (!_msrModule.ReadMsr(_energyStatusMsrs[sensor.Index], out eax, out _))
                     continue;
 
                 DateTime time = DateTime.UtcNow;
@@ -957,7 +1073,7 @@ internal sealed class IntelCpu : GenericCpu
         }
 
         // Read package-level core voltage
-        if (_coreVoltage != null && _pawnModule.ReadMsr(IA32_PERF_STATUS, out eax, out uint edx))
+        if (_coreVoltage != null && _msrModule.ReadMsr(IA32_PERF_STATUS, out eax, out uint edx))
         {
             // Voltage is in bits 47:32 of the 64-bit MSR (IA32_PERF_STATUS)
             // ReadMsr returns: eax = bits 31:0, edx = bits 63:32
@@ -989,7 +1105,7 @@ internal sealed class IntelCpu : GenericCpu
         // Read per-core VIDs
         for (int i = 0; i < _coreVIDs.Length; i++)
         {
-            if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out eax, out edx, _cpuId[i][0].Affinity))
+            if (_msrModule.ReadMsr(IA32_PERF_STATUS, out eax, out edx, _cpuId[i][0].Affinity))
             {
                 uint vid = edx & 0xFFFF;
 
@@ -1082,14 +1198,14 @@ internal sealed class IntelCpu : GenericCpu
     private bool TryReadPerfCounters(GroupAffinity affinity, out ulong aperf, out ulong mperf)
     {
         GroupAffinity previousAffinity = ThreadAffinity.Set(affinity);
-        bool readAperf = _pawnModule.ReadMsr(IA32_APERF, out uint aperfEax, out uint aperfEdx);
-        bool readMperf = _pawnModule.ReadMsr(IA32_MPERF, out uint mperfEax, out uint mperfEdx);
+        bool readAperf = _msrModule.ReadMsr(IA32_APERF, out uint aperfEax, out uint aperfEdx);
+        bool readMperf = _msrModule.ReadMsr(IA32_MPERF, out uint mperfEax, out uint mperfEdx);
 
         if (readAperf && readMperf && aperfEax == 0 && aperfEdx == 0 && mperfEax == 0 && mperfEdx == 0)
         {
             System.Threading.Thread.SpinWait(10000);
-            readAperf = _pawnModule.ReadMsr(IA32_APERF, out aperfEax, out aperfEdx);
-            readMperf = _pawnModule.ReadMsr(IA32_MPERF, out mperfEax, out mperfEdx);
+            readAperf = _msrModule.ReadMsr(IA32_APERF, out aperfEax, out aperfEdx);
+            readMperf = _msrModule.ReadMsr(IA32_MPERF, out mperfEax, out mperfEdx);
         }
         ThreadAffinity.Set(previousAffinity);
 

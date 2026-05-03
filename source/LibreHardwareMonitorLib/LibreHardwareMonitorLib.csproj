@@ -75,6 +75,7 @@
     <EmbeddedResource Include="Resources\PawnIO\SmbusNCT6793.bin" />
     <EmbeddedResource Include="Resources\PawnIO\SmbusPIIX4.bin" />
     <EmbeddedResource Include="Resources\PawnIO\DellSMM.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\IntelIMC.bin" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
