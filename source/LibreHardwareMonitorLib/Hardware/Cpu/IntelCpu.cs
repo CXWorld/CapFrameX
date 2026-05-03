@@ -248,8 +248,9 @@ internal sealed class IntelCpu : GenericCpu
                             tjMax = GetTjMaxFromMsr();
                             break;
 
-                        case 0xC5: // Intel Core Ultra 200 Series Arrow Lake-H/U
-                        case 0xC6: // Intel Core Ultra 200 Series Arrow Lake-S
+                        case 0xB5: // Arrow Lake-U (Linux: INTEL_ARROWLAKE_U)
+                        case 0xC5: // Arrow Lake-H (Linux: INTEL_ARROWLAKE_H)
+                        case 0xC6: // Arrow Lake (Linux: INTEL_ARROWLAKE)
                         case 0xC7: // Intel Core Ultra 200 Series Arrow Lake-S Refresh Reserved
                         case 0xC8: // Intel Core Ultra 200 Series Arrow Lake-S Refresh Reserved
                             _microArchitecture = MicroArchitecture.ArrowLake;
@@ -261,16 +262,27 @@ internal sealed class IntelCpu : GenericCpu
                             tjMax = GetTjMaxFromMsr();
                             break;
 
-                        case 0xCC: // Intel Core Ultra X5/7/9 PantherLake
-                        case 0xCD: // Intel Core Ultra X5/7/9 PantherLake Reserved
-                        case 0xCE: // Intel Core Ultra X5/7/9 PantherLake Reserved
-                        case 0xCF: // Intel Core Ultra X5/7/9 PantherLake Reserved
-                        case 0xD5: // Intel Core Ultra X5/7/9 PantherLake
+                        case 0xCC: // PantherLake-L (Linux: INTEL_PANTHERLAKE_L)
                             _microArchitecture = MicroArchitecture.PantherLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
 
-                        case 0x8F: // Intel Xeon W5-3435X SapphireRapids 
+                        case 0xCF: // Emerald Rapids-X server (Linux: INTEL_EMERALDRAPIDS_X, Raptor Cove)
+                            _microArchitecture = MicroArchitecture.EmeraldRapids;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+
+                        case 0xD5: // Wildcat Lake-L (Linux: INTEL_WILDCATLAKE_L)
+                            _microArchitecture = MicroArchitecture.WildcatLake;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+
+                        case 0xD7: // Bartlett Lake-S (Linux: INTEL_BARTLETTLAKE, Raptor Cove)
+                            _microArchitecture = MicroArchitecture.BartlettLake;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+
+                        case 0x8F: // Intel Xeon W5-3435X SapphireRapids
                             _microArchitecture = MicroArchitecture.SapphireRapids;
                             tjMax = GetTjMaxFromMsr();
                             break;
@@ -286,6 +298,21 @@ internal sealed class IntelCpu : GenericCpu
                     }
                 }
 
+                break;
+            case 0x12:
+                // Nova Lake introduces a new CPUID display family (Family 18 / 0x12).
+                // Per Linux kernel arch/x86/include/asm/intel-family.h the assigned
+                // models are:
+                //   INTEL_NOVALAKE   = IFM(18, 0x01) // desktop / mainstream
+                //   INTEL_NOVALAKE_L = IFM(18, 0x03) // low-power / mobile
+                // We accept any other Family 18 model (ES) as NovaLake too: Family 18 is
+                // the new-generation envelope for the Coyote Cove / Arctic Wolf core
+                // (no other architecture is expected to share it), and unassigned
+                // models inside it are most likely future steppings or SKU variants.
+                // Failing closed to Unknown would silently regress detection on
+                // late-stepping silicon.
+                _microArchitecture = MicroArchitecture.NovaLake;
+                tjMax = GetTjMaxFromMsr();
                 break;
             case 0x0F:
                 switch (_model)
@@ -325,9 +352,11 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.Airmont:
             case MicroArchitecture.AlderLake:
             case MicroArchitecture.ArrowLake:
+            case MicroArchitecture.BartlettLake:
             case MicroArchitecture.Broadwell:
             case MicroArchitecture.CannonLake:
             case MicroArchitecture.CometLake:
+            case MicroArchitecture.EmeraldRapids:
             case MicroArchitecture.Goldmont:
             case MicroArchitecture.GoldmontPlus:
             case MicroArchitecture.Haswell:
@@ -337,6 +366,8 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.KabyLake:
             case MicroArchitecture.LunarLake:
             case MicroArchitecture.PantherLake:
+            case MicroArchitecture.NovaLake:
+            case MicroArchitecture.WildcatLake:
             case MicroArchitecture.Nehalem:
             case MicroArchitecture.MeteorLake:
             case MicroArchitecture.RaptorLake:
@@ -547,9 +578,11 @@ internal sealed class IntelCpu : GenericCpu
         if (_microArchitecture is MicroArchitecture.Airmont or
             MicroArchitecture.AlderLake or
             MicroArchitecture.ArrowLake or
+            MicroArchitecture.BartlettLake or
             MicroArchitecture.Broadwell or
             MicroArchitecture.CannonLake or
             MicroArchitecture.CometLake or
+            MicroArchitecture.EmeraldRapids or
             MicroArchitecture.Goldmont or
             MicroArchitecture.GoldmontPlus or
             MicroArchitecture.Haswell or
@@ -559,6 +592,8 @@ internal sealed class IntelCpu : GenericCpu
             MicroArchitecture.KabyLake or
             MicroArchitecture.LunarLake or
             MicroArchitecture.PantherLake or
+            MicroArchitecture.NovaLake or
+            MicroArchitecture.WildcatLake or
             MicroArchitecture.MeteorLake or
             MicroArchitecture.RaptorLake or
             MicroArchitecture.RocketLake or
@@ -679,7 +714,22 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.LunarLake:
                 return model == 0xBD;
             case MicroArchitecture.ArrowLake:
-                return model is 0xC5 or 0xC6; // exclude reserved 0xC7/0xC8
+                return model is 0xB5 or 0xC5 or 0xC6; // exclude reserved 0xC7/0xC8
+            case MicroArchitecture.BartlettLake:
+                return model == 0xD7; // Linux: INTEL_BARTLETTLAKE (Raptor Cove core, client)
+            case MicroArchitecture.PantherLake:
+                return model == 0xCC; // Linux: INTEL_PANTHERLAKE_L
+            case MicroArchitecture.NovaLake:
+                // Family 18 (0x12). Linux: INTEL_NOVALAKE = IFM(18, 0x01),
+                // INTEL_NOVALAKE_L = IFM(18, 0x03). MicroArchitecture.NovaLake is
+                // only assigned for Family 18 (see family-switch above), so any
+                // model that reaches here is a NovaLake variant — accept all.
+                return true;
+            case MicroArchitecture.WildcatLake:
+                return model == 0xD5; // Linux: INTEL_WILDCATLAKE_L
+            // EmeraldRapids (0xCF) is server silicon and uses the server uncore PMU
+            // path, not the client MSR_UNCORE_RATIO_LIMIT ratio — intentionally not
+            // listed here.
             default:
                 return false;
         }
@@ -698,12 +748,24 @@ internal sealed class IntelCpu : GenericCpu
     // false) so consumers opt in explicitly.
     private static bool SupportsIntelImc(MicroArchitecture arch)
     {
+        // NovaLake is included on the speculative assumption that it inherits the
+        // Core-Ultra MEMSS_PMA / SA_PERF_STATUS register layout from PTL/ARL/LNL.
+        // BartlettLake is included because it shares the Raptor Cove core with RPL
+        // and is expected to follow the same SA_PERF_STATUS path; the kernel
+        // module still gates on its own CPUID allowlist.
+        // WildcatLake is intentionally not listed — its IMC topology (low-power
+        // consumer SoC) is unknown and may not follow the MEMSS_PMA pattern.
+        // EmeraldRapids is intentionally not listed — it is server silicon and
+        // exposes memory controller telemetry through the server uncore PMU,
+        // not the client MCHBAR path the module targets.
         return arch is MicroArchitecture.AlderLake or
             MicroArchitecture.RaptorLake or
             MicroArchitecture.MeteorLake or
             MicroArchitecture.ArrowLake or
             MicroArchitecture.LunarLake or
-            MicroArchitecture.PantherLake;
+            MicroArchitecture.PantherLake or
+            MicroArchitecture.NovaLake or
+            MicroArchitecture.BartlettLake;
     }
 
     private float[] GetTjMaxFromMsr()
@@ -861,9 +923,11 @@ internal sealed class IntelCpu : GenericCpu
                         case MicroArchitecture.Airmont:
                         case MicroArchitecture.AlderLake:
                         case MicroArchitecture.ArrowLake:
+                        case MicroArchitecture.BartlettLake:
                         case MicroArchitecture.Broadwell:
                         case MicroArchitecture.CannonLake:
                         case MicroArchitecture.CometLake:
+                        case MicroArchitecture.EmeraldRapids:
                         case MicroArchitecture.Goldmont:
                         case MicroArchitecture.GoldmontPlus:
                         case MicroArchitecture.Haswell:
@@ -873,6 +937,8 @@ internal sealed class IntelCpu : GenericCpu
                         case MicroArchitecture.KabyLake:
                         case MicroArchitecture.LunarLake:
                         case MicroArchitecture.PantherLake:
+                        case MicroArchitecture.NovaLake:
+                        case MicroArchitecture.WildcatLake:
                         case MicroArchitecture.MeteorLake:
                         case MicroArchitecture.RaptorLake:
                         case MicroArchitecture.RocketLake:
@@ -1141,11 +1207,13 @@ internal sealed class IntelCpu : GenericCpu
         Airmont,
         AlderLake,
         Atom,
-        ArrowLake, // Gen. 15 (0xC6, -H = 0xC5)
+        ArrowLake,     // Family 6 model 0xC5 (-H), 0xC6 (vanilla), 0xB5 (-U)
+        BartlettLake,  // Family 6 model 0xD7 (Raptor Cove core)
         Broadwell,
         CannonLake,
         CometLake,
         Core,
+        EmeraldRapids, // Family 6 model 0xCF (server, Raptor Cove core)
         Goldmont,
         GoldmontPlus,
         Haswell,
@@ -1153,8 +1221,11 @@ internal sealed class IntelCpu : GenericCpu
         IvyBridge,
         JasperLake,
         KabyLake,
-        LunarLake,
-        PantherLake,
+        LunarLake,     // Family 6 model 0xBD (Lion Cove / Skymont)
+        PantherLake,   // Family 6 model 0xCC (Cougar Cove / Darkmont)
+        NovaLake,      // Family 18 model 0x01 (vanilla) and 0x03 (-L mobile),
+                       // Coyote Cove / Arctic Wolf cores
+        WildcatLake,   // Family 6 model 0xD5 (-L)
         Nehalem,
         NetBurst,
         MeteorLake,
