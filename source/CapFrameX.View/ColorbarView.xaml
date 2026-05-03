@@ -430,8 +430,8 @@
 											<TextBlock Text="Dark mode"/>
 											<ToggleButton Margin="68 0 0 0" Click="MenuDarkModeButton_Click" IsChecked="{Binding IsDarkModeToggleChecked}"/>
 										</StackPanel>
-										<StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5" ToolTip="Allow to recieve important messages from CX Team on app start">
-											<TextBlock Text="Recieve notifications"/>
+										<StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5" ToolTip="Allows you to receive important messages from the CX Team on app start">
+											<TextBlock Text="Receive notifications"/>
 											<ToggleButton Margin="15 0 0 0" IsChecked="{Binding AppNotificationsActive, Mode=TwoWay}"/>
 										</StackPanel>
 										<StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Margin="20 5 0 5" IsEnabled="{Binding AutoStartIsEnabeld}">
