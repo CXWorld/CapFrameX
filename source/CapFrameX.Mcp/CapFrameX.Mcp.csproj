@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj" />
+    <ProjectReference Include="..\CapFrameX.Monitoring.Contracts\CapFrameX.Monitoring.Contracts.csproj" />
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj" />
     <ProjectReference Include="..\CapFrameX.Data.Session\CapFrameX.Data.Session.csproj" />
     <ProjectReference Include="..\CapFrameX.Data\CapFrameX.Data.csproj" />

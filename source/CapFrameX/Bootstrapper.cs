@@ -143,6 +143,8 @@ namespace CapFrameX
             Container.Register<CaptureTimelineTools>(Reuse.Singleton);
             Container.Register<SystemInfoTools>(Reuse.Singleton);
             Container.Register<CaptureStatusTools>(Reuse.Singleton);
+            Container.Register<SensorConfigTools>(Reuse.Singleton);
+            Container.Register<OverlayConfigTools>(Reuse.Singleton);
 
             Container.Register<ISystemInfo, SystemInfo.NetStandard.SystemInfo>(Reuse.Singleton);
             Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);

@@ -221,4 +221,49 @@ namespace CapFrameX.Mcp.Tools
         [JsonProperty("vramUsageMaxGB", NullValueHandling = NullValueHandling.Ignore)]
         public double? VramUsageMaxGB { get; set; }
     }
+
+    public class LoggedSensorsResult
+    {
+        [JsonProperty("refreshPeriodMs")] public int RefreshPeriodMs { get; set; }
+        [JsonProperty("sensorEntryCount")] public int SensorEntryCount { get; set; }
+        [JsonProperty("selectedCount")] public int SelectedCount { get; set; }
+        [JsonProperty("sensors")] public List<LoggedSensorEntry> Sensors { get; set; } = new List<LoggedSensorEntry>();
+    }
+
+    public class LoggedSensorEntry
+    {
+        [JsonProperty("identifier")] public string Identifier { get; set; }
+        [JsonProperty("name")] public string Name { get; set; }
+        [JsonProperty("sensorType", NullValueHandling = NullValueHandling.Ignore)] public string SensorType { get; set; }
+        [JsonProperty("hardwareType", NullValueHandling = NullValueHandling.Ignore)] public string HardwareType { get; set; }
+        [JsonProperty("hardwareName", NullValueHandling = NullValueHandling.Ignore)] public string HardwareName { get; set; }
+        [JsonProperty("selectedForLogging")] public bool SelectedForLogging { get; set; }
+        [JsonProperty("isPresentationDefault")] public bool IsPresentationDefault { get; set; }
+    }
+
+    public class OverlayEntriesResult
+    {
+        [JsonProperty("entryCount")] public int EntryCount { get; set; }
+        [JsonProperty("shownCount")] public int ShownCount { get; set; }
+        [JsonProperty("entries")] public List<OverlayEntryInfo> Entries { get; set; } = new List<OverlayEntryInfo>();
+    }
+
+    public class OverlayEntryInfo
+    {
+        [JsonProperty("identifier")] public string Identifier { get; set; }
+        [JsonProperty("stableIdentifier", NullValueHandling = NullValueHandling.Ignore)] public string StableIdentifier { get; set; }
+        [JsonProperty("description", NullValueHandling = NullValueHandling.Ignore)] public string Description { get; set; }
+        [JsonProperty("groupName", NullValueHandling = NullValueHandling.Ignore)] public string GroupName { get; set; }
+        [JsonProperty("overlayEntryType", NullValueHandling = NullValueHandling.Ignore)] public string OverlayEntryType { get; set; }
+        [JsonProperty("isEntryEnabled")] public bool IsEntryEnabled { get; set; }
+        [JsonProperty("showOnOverlay")] public bool ShowOnOverlay { get; set; }
+        [JsonProperty("showGraph")] public bool ShowGraph { get; set; }
+        [JsonProperty("value", NullValueHandling = NullValueHandling.Ignore)] public string Value { get; set; }
+        [JsonProperty("valueUnitFormat", NullValueHandling = NullValueHandling.Ignore)] public string ValueUnitFormat { get; set; }
+        [JsonProperty("valueAlignmentAndDigits", NullValueHandling = NullValueHandling.Ignore)] public string ValueAlignmentAndDigits { get; set; }
+        [JsonProperty("color", NullValueHandling = NullValueHandling.Ignore)] public string Color { get; set; }
+        [JsonProperty("upperLimitValue", NullValueHandling = NullValueHandling.Ignore)] public string UpperLimitValue { get; set; }
+        [JsonProperty("lowerLimitValue", NullValueHandling = NullValueHandling.Ignore)] public string LowerLimitValue { get; set; }
+        [JsonProperty("sortKey", NullValueHandling = NullValueHandling.Ignore)] public string SortKey { get; set; }
+    }
 }
