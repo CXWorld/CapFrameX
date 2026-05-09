@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.ServiceProcess;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -64,21 +65,35 @@ namespace CapFrameX.PMD.Benchlab
 
         public IObservable<EPmdServiceStatus> PmdServiceStatusStream => _pmdServiceStatusStream.AsObservable();
 
-        private async Task<IList<Sensor>> GetUpdatedSensorListAsync()
+        private async Task<IList<Sensor>> GetUpdatedSensorListAsync(CancellationToken cancellationToken = default)
         {
-            var json = string.Empty;
+            string json;
             using (var client = new NamedPipeClientStream(".", "BenchlabSensorPipe", PipeDirection.InOut))
             {
-                await client.ConnectAsync();
+                await client.ConnectAsync(cancellationToken);
 
                 var writer = new StreamWriter(client) { AutoFlush = true };
                 var reader = new StreamReader(client);
 
-                await writer.WriteLineAsync("GetUpdatedSensorList");
-                json = await reader.ReadLineAsync();
-
-                // Do not dispose writer/reader separately — they share the pipe stream.
-                // The client.Dispose() at the end will clean them up safely.
+#if NET9_0_OR_GREATER
+                await writer.WriteLineAsync("GetUpdatedSensorList".AsMemory(), cancellationToken);
+                json = await reader.ReadLineAsync(cancellationToken);
+#else
+                // .NET Framework: StreamReader.ReadLineAsync has no CancellationToken overload.
+                // Disposing the pipe stream forces pending reads to fail, which we translate into OperationCanceledException.
+                using (cancellationToken.Register(() => { try { client.Dispose(); } catch { } }))
+                {
+                    try
+                    {
+                        await writer.WriteLineAsync("GetUpdatedSensorList");
+                        json = await reader.ReadLineAsync();
+                    }
+                    catch when (cancellationToken.IsCancellationRequested)
+                    {
+                        throw new OperationCanceledException(cancellationToken);
+                    }
+                }
+#endif
             }
             var sensorList = JsonConvert.DeserializeObject<List<Sensor>>(json);
             return sensorList ?? new List<Sensor>();
@@ -98,22 +113,17 @@ namespace CapFrameX.PMD.Benchlab
                     }
                 }
 
-                // Start both the fetch and a 2-second delay
-                var fetchTask = GetUpdatedSensorListAsync();
-                var timeoutTask = Task.Delay(TimeSpan.FromSeconds(2));
-
-                // Wait for whichever completes first
-                var completed = await Task.WhenAny(fetchTask, timeoutTask);
-
-                if (completed == fetchTask)
+                using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2)))
                 {
-                    // Fetch finished within 2 seconds
-                    initialSensorList = await fetchTask;
-                }
-                else
-                {
-                    _pmdServiceStatusStream.OnNext(EPmdServiceStatus.Error);
-                    return;
+                    try
+                    {
+                        initialSensorList = await GetUpdatedSensorListAsync(cts.Token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        _pmdServiceStatusStream.OnNext(EPmdServiceStatus.Error);
+                        return;
+                    }
                 }
 
                 _isServiceRunning = true;
@@ -160,7 +170,7 @@ namespace CapFrameX.PMD.Benchlab
         {
             try
             {
-                using (ServiceController sc = new ServiceController(serviceName))
+                using (var sc = new ServiceController(serviceName))
                 {
                     return sc.Status == ServiceControllerStatus.Running;
                 }
