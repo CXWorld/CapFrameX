@@ -76,6 +76,8 @@ namespace CapFrameX.Mcp.Tools
     {
         [JsonProperty("recordId")] public string RecordId { get; set; }
         [JsonProperty("game")] public string Game { get; set; }
+        [JsonProperty("metricSource", NullValueHandling = NullValueHandling.Ignore)] public string MetricSource { get; set; }
+        [JsonProperty("metricSourceWarning", NullValueHandling = NullValueHandling.Ignore)] public string MetricSourceWarning { get; set; }
         [JsonProperty("runs")] public List<RunMetrics> Runs { get; set; } = new List<RunMetrics>();
     }
 
@@ -105,6 +107,8 @@ namespace CapFrameX.Mcp.Tools
     public class ComparisonResult
     {
         [JsonProperty("baseline")] public string BaselineId { get; set; }
+        [JsonProperty("metricSource", NullValueHandling = NullValueHandling.Ignore)] public string MetricSource { get; set; }
+        [JsonProperty("metricSourceWarning", NullValueHandling = NullValueHandling.Ignore)] public string MetricSourceWarning { get; set; }
         [JsonProperty("rows")] public List<ComparisonRow> Rows { get; set; } = new List<ComparisonRow>();
     }
 

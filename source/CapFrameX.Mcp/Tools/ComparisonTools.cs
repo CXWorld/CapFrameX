@@ -30,6 +30,9 @@ namespace CapFrameX.Mcp.Tools
 
             // Collect single-run metric results per record.
             var perRecord = new List<(string id, RunMetrics run)>(ids.Length);
+            string source = null;
+            string firstWarning = null;
+            int warningCount = 0;
             foreach (var id in ids)
             {
                 var rec = _metricsTools.GetMetrics(id, metrics, runIndex);
@@ -37,11 +40,25 @@ namespace CapFrameX.Mcp.Tools
                 if (run == null)
                     throw new InvalidOperationException($"Record has no metrics for runIndex {runIndex}: {id}");
                 perRecord.Add((rec.RecordId, run));
+                if (source == null) source = rec.MetricSource;
+                if (!string.IsNullOrEmpty(rec.MetricSourceWarning))
+                {
+                    if (firstWarning == null) firstWarning = rec.MetricSourceWarning;
+                    warningCount++;
+                }
             }
 
             // Use the metric names from the baseline (first record) for row order.
             var (baselineId, baselineRun) = perRecord[0];
-            var result = new ComparisonResult { BaselineId = baselineId };
+            var aggregatedWarning = firstWarning;
+            if (firstWarning != null && warningCount > 1)
+                aggregatedWarning = $"{warningCount} of {ids.Length} compared records trigger this warning. Sample: {firstWarning}";
+            var result = new ComparisonResult
+            {
+                BaselineId = baselineId,
+                MetricSource = source,
+                MetricSourceWarning = aggregatedWarning,
+            };
 
             foreach (var baselineMetric in baselineRun.Metrics)
             {

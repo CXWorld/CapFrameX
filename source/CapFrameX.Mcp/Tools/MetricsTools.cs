@@ -13,7 +13,8 @@ namespace CapFrameX.Mcp.Tools
     public class MetricsTools
     {
         private static readonly string[] DefaultMetrics =
-            { "Average", "P1", "P0dot2", "Min", "Max", "AdaptiveStd" };
+            { "Average", "P1", "P0dot2", "Min", "Max", "AdaptiveStd",
+              "OnePercentLowAverage", "ZerodotOnePercentLowAverage" };
 
         private readonly RecordTools _recordTools;
         private readonly IStatisticProvider _stats;
@@ -32,11 +33,14 @@ namespace CapFrameX.Mcp.Tools
                 "OnePercentLowAverage, ZerodotOnePercentLowAverage, ZerodotTwoPercentLowAverage, " +
                 "OnePercentLowIntegral, ZerodotOnePercentLowIntegral, ZerodotTwoPercentLowIntegral. " +
                 "If 'metrics' is omitted, a sensible default set is returned. " +
-                "If 'runIndex' is omitted, metrics for ALL runs in the record are returned.")]
+                "If 'runIndex' is omitted, metrics for ALL runs in the record are returned. " +
+                "By default the FPS source follows AppSettings.UseDisplayChangeMetrics (matches the Analysis tab); " +
+                "set 'useDisplayChangeMetrics' to override (true = MsBetweenDisplayChange, false = MsBetweenPresents).")]
         public RecordMetricsResult GetMetrics(
             [Description("Record id (absolute file path) from cfx_list_records")] string id,
             [Description("Metric names to compute. Omit for the default set.")] string[] metrics = null,
-            [Description("Run index within the record (0-based). Omit to get metrics for all runs.")] int? runIndex = null)
+            [Description("Run index within the record (0-based). Omit to get metrics for all runs.")] int? runIndex = null,
+            [Description("Override the FPS source. true = display-change times, false = present times, omit = follow AppSettings.UseDisplayChangeMetrics.")] bool? useDisplayChangeMetrics = null)
         {
             if (string.IsNullOrWhiteSpace(id))
                 throw new ArgumentException("id must be provided", nameof(id));
@@ -51,24 +55,29 @@ namespace CapFrameX.Mcp.Tools
                     $"runIndex {runIndex} out of range; record has {session.Runs.Count} run(s)");
 
             var requested = (metrics == null || metrics.Length == 0) ? DefaultMetrics : metrics;
+            bool useDisplay = useDisplayChangeMetrics ?? _config.UseDisplayChangeMetrics;
+
             var result = new RecordMetricsResult
             {
                 RecordId = id,
                 Game = session.Info?.GameName,
+                MetricSource = FrametimeSequenceHelper.SourceLabel(useDisplay),
             };
 
             int rounding = _config.FpsValuesRoundingDigits > 0 ? _config.FpsValuesRoundingDigits : 2;
 
             int from = runIndex ?? 0;
             int to = runIndex ?? session.Runs.Count - 1;
+            // Surface a source-fit warning based on the first analyzed run (settings apply per record).
+            result.MetricSourceWarning = FrametimeSequenceHelper.GetSourceWarning(
+                session.Runs[from], _stats, useDisplay);
             for (int i = from; i <= to; i++)
             {
                 var run = session.Runs[i];
-                var frametimes = run.CaptureData?.MsBetweenPresents;
-                if (frametimes == null || frametimes.Length == 0) continue;
+                var sequence = FrametimeSequenceHelper.ResolveSequence(run, useDisplay);
+                if (sequence == null || sequence.Count == 0) continue;
 
                 var runMetrics = new RunMetrics { RunIndex = i };
-                var sequence = frametimes.ToList();
 
                 foreach (var name in requested)
                 {

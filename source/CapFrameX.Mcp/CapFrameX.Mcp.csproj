@@ -31,6 +31,8 @@
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj" />
     <ProjectReference Include="..\CapFrameX.Data.Session\CapFrameX.Data.Session.csproj" />
     <ProjectReference Include="..\CapFrameX.Data\CapFrameX.Data.csproj" />
+    <ProjectReference Include="..\CapFrameX.Capture.Contracts\CapFrameX.Capture.Contracts.csproj" />
+    <ProjectReference Include="..\CapFrameX.Configuration\CapFrameX.Configuration.csproj" />
   </ItemGroup>
 
 </Project>
