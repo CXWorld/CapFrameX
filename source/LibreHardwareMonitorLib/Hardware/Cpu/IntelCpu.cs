@@ -54,10 +54,18 @@ internal sealed class IntelCpu : GenericCpu
     private readonly bool _hasImc;
     private readonly bool _hasImcLive;
 
+    private readonly IntelOobmsm _oobmsmModule;
+    private readonly IntelOobmsmClocks _oobmsmClocks;
+    private readonly Sensor _nguClock;
+    private readonly Sensor _d2dClock;
+    private readonly bool _hasOobmsmClocks;
+
     public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
     {
         _msrModule = new IntelMsr();
         _imcModule = new IntelImc();
+        _oobmsmModule = new IntelOobmsm();
+        _oobmsmClocks = new IntelOobmsmClocks(_oobmsmModule);
 
         uint eax;
 
@@ -575,6 +583,31 @@ internal sealed class IntelCpu : GenericCpu
             _hasImcLive = _imcModule.ReadLiveClock(out _);
         }
 
+        if (SupportsOobmsmClocks(_microArchitecture) && _oobmsmClocks.IsReady)
+        {
+            int oobmsmSensorBaseIndex = _hasAperfMperf
+                ? _coreClocks.Length + 2 + _threadEffectiveClocks.Sum(t => t.Length) + 2
+                : _coreClocks.Length + 2;
+            if (_hasUncoreClock)
+                oobmsmSensorBaseIndex++;
+            if (_hasImc)
+                oobmsmSensorBaseIndex += 4;
+
+            if (_oobmsmClocks.HasNgu)
+            {
+                _nguClock = new Sensor("NGU/NCLK Clock", oobmsmSensorBaseIndex, SensorType.Clock, this, settings)
+                { PresentationSortKey = "0_5_0" };
+                ActivateSensor(_nguClock);
+            }
+            if (_oobmsmClocks.HasD2d)
+            {
+                _d2dClock = new Sensor("D2D Clock", oobmsmSensorBaseIndex + 1, SensorType.Clock, this, settings)
+                { PresentationSortKey = "0_5_1" };
+                ActivateSensor(_d2dClock);
+            }
+            _hasOobmsmClocks = _nguClock != null || _d2dClock != null;
+        }
+
         if (_microArchitecture is MicroArchitecture.Airmont or
             MicroArchitecture.AlderLake or
             MicroArchitecture.ArrowLake or
@@ -768,6 +801,28 @@ internal sealed class IntelCpu : GenericCpu
             MicroArchitecture.BartlettLake;
     }
 
+    // Architectures whose SoC-fabric clocks (NGU, D2D) are exposed by the
+    // IntelOOBMSM PawnIO module via PMT Telemetry. NGU and D2D as discrete
+    // clock domains exist only on tile-based Core Ultra parts — monolithic
+    // CPUs (ADL/RPL/Bartlett) keep the role unified under the existing
+    // MSR_UNCORE_PERF_STATUS "Uncore Ring Clock". Server uncore (EMR/SPR)
+    // routes its fabric telemetry through a different PMU path and is
+    // intentionally out of scope.
+    //
+    // Validation status: this is a fresh integration; until the per-platform
+    // PMT register offsets are populated in IntelOobmsmClocks.GetPlatformOffsets
+    // (or supplied via env-var overrides), IntelOobmsmClocks.IsReady stays
+    // false and no sensors register here.
+    private static bool SupportsOobmsmClocks(MicroArchitecture arch)
+    {
+        return arch is MicroArchitecture.MeteorLake or
+            MicroArchitecture.ArrowLake or
+            MicroArchitecture.LunarLake or
+            MicroArchitecture.PantherLake or
+            MicroArchitecture.WildcatLake or
+            MicroArchitecture.NovaLake;
+    }
+
     private float[] GetTjMaxFromMsr()
     {
         float[] result = new float[_coreCount];
@@ -847,6 +902,7 @@ internal sealed class IntelCpu : GenericCpu
         base.Close();
         _msrModule.Close();
         _imcModule.Close();
+        _oobmsmModule.Close();
     }
 
     public override void Update()
@@ -1041,6 +1097,27 @@ internal sealed class IntelCpu : GenericCpu
                     _memoryDataRate.Value = null;
                     _dramFrequency.Value = null;
                     _memoryGear.Value = null;
+                }
+            }
+
+            if (_hasOobmsmClocks)
+            {
+                // PMT NGU/D2D fields use absolute MHz multipliers
+                // baked into the platform table (e.g. ratio × 50 MHz on
+                // LNL/PTL D2D, ratio × 100 MHz on MTL NGU). No BCLK
+                // scaling is involved, so the IMC reference-clock path
+                // doesn't apply here.
+                if (_oobmsmClocks.TryRead(out IntelOobmsmClocks.Sample oobmsmSample))
+                {
+                    if (_nguClock != null)
+                        _nguClock.Value = oobmsmSample.HasNgu ? (float?)oobmsmSample.NguMhz : null;
+                    if (_d2dClock != null)
+                        _d2dClock.Value = oobmsmSample.HasD2d ? (float?)oobmsmSample.D2dMhz : null;
+                }
+                else
+                {
+                    if (_nguClock != null) _nguClock.Value = null;
+                    if (_d2dClock != null) _d2dClock.Value = null;
                 }
             }
         }
