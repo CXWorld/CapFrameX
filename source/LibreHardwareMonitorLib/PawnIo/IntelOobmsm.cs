@@ -41,8 +41,9 @@ public class IntelOobmsm
 
     /// <summary>
     /// Register-layout family the running CPU belongs to. Mirrors the
-    /// kernel-side <c>get_code_name</c> allowlist; CPUs outside the
-    /// allowlist resolve to <see cref="None"/>.
+    /// OOBMSM telemetry layouts that are useful from this wrapper;
+    /// CPUs without a known OOBMSM entry point resolve to
+    /// <see cref="None"/>.
     /// </summary>
     public enum Platform
     {
@@ -50,7 +51,7 @@ public class IntelOobmsm
         None = 0,
         /// <summary>Meteor Lake (Family 6, models 0xAC/0xAA).</summary>
         Mtl,
-        /// <summary>Arrow Lake (Family 6, models 0xC5/0xC6/0xB5).</summary>
+        /// <summary>Arrow Lake mobile (Family 6, models 0xB5/0xC5).</summary>
         Arl,
         /// <summary>Lunar Lake (Family 6, model 0xBD).</summary>
         Lnl,
@@ -116,7 +117,7 @@ public class IntelOobmsm
     private readonly long[] _out2 = new long[2];
     private readonly long[] _out4 = new long[4];
 
-    private readonly PawnIo _pawnIO = PawnIo.LoadModuleFromResource(typeof(IntelOobmsm).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIO.IntelOOBMSM.bin");
+    private readonly PawnIo _pawnIO;
 
     private readonly Platform _platform;
     private readonly bool _validated;
@@ -131,10 +132,12 @@ public class IntelOobmsm
     {
         _platform = ResolvePlatform();
         _validated = IsPlatformValidated(_platform);
+        if (ShouldLoadModule(_platform))
+            _pawnIO = PawnIo.LoadModuleFromResource(typeof(IntelOobmsm).Assembly, $"{nameof(LibreHardwareMonitor)}.Resources.PawnIO.IntelOOBMSM.bin");
     }
 
     /// <summary><c>true</c> when the kernel module loaded and the running CPU is in the allowlist.</summary>
-    public bool IsLoaded => _pawnIO.IsLoaded && _platform != Platform.None;
+    public bool IsLoaded => _pawnIO != null && _pawnIO.IsLoaded && _platform != Platform.None;
 
     /// <summary>Detected register-layout family.</summary>
     public Platform DetectedPlatform => _platform;
@@ -143,7 +146,7 @@ public class IntelOobmsm
     public bool IsValidated => _validated;
 
     /// <summary>Closes the underlying PawnIO module handle.</summary>
-    public void Close() => _pawnIO.Close();
+    public void Close() => _pawnIO?.Close();
 
     /// <summary>
     /// Reads OOBMSM identity (PCI VID/DID + bus/dev/fn) and the
@@ -316,7 +319,7 @@ public class IntelOobmsm
 
     private bool Execute(string name, long[] inBuf, int inSize, long[] outBuf, int outSize)
     {
-        if (!_pawnIO.IsLoaded)
+        if (_pawnIO == null || !_pawnIO.IsLoaded)
             return false;
         try
         {
@@ -350,10 +353,13 @@ public class IntelOobmsm
                 case 0xAC:
                 case 0xAA:
                     return Platform.Mtl;
-                case 0xC5:
-                case 0xC6:
                 case 0xB5:
+                case 0xC5:
                     return Platform.Arl;
+                case 0xC6:
+                    // ARL-S desktop does not expose the OOBMSM/PMT
+                    // TPMI/VSEC entry point used by this wrapper.
+                    return Platform.None;
                 case 0xBD:
                     return Platform.Lnl;
                 case 0xCC:
@@ -376,6 +382,11 @@ public class IntelOobmsm
 
     private static bool IsPlatformValidated(Platform platform)
     {
-        return platform is Platform.Arl or Platform.Ptl or Platform.Lnl;
+        return platform is Platform.Ptl;
+    }
+
+    private static bool ShouldLoadModule(Platform platform)
+    {
+        return platform is Platform.Mtl or Platform.Arl or Platform.Lnl or Platform.Ptl;
     }
 }

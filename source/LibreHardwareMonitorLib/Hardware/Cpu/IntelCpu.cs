@@ -56,9 +56,11 @@ internal sealed class IntelCpu : GenericCpu
 
     private readonly IntelOobmsm _oobmsmModule;
     private readonly IntelOobmsmClocks _oobmsmClocks;
+    private readonly IntelOcMailbox _ocMailbox;
     private readonly Sensor _nguClock;
     private readonly Sensor _d2dClock;
     private readonly bool _hasOobmsmClocks;
+    private readonly bool _hasOcMailboxClocks;
 
     public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
     {
@@ -607,6 +609,31 @@ internal sealed class IntelCpu : GenericCpu
             }
             _hasOobmsmClocks = _nguClock != null || _d2dClock != null;
         }
+        else if (SupportsOcMailbox(_microArchitecture))
+        {
+            // ARL-S relocated the OC Mailbox to MSR 0x607/0x608. OOBMSM PMT
+            // doesn't expose D2D/NGU on ARL-S, so when the PMT path failed
+            // above, try the MSR-mailbox path. (See IntelOcMailbox.cs.)
+            _ocMailbox = new IntelOcMailbox(_msrModule);
+            if (_ocMailbox.IsReady)
+            {
+                int sensorBaseIndex = _hasAperfMperf
+                    ? _coreClocks.Length + 2 + _threadEffectiveClocks.Sum(t => t.Length) + 2
+                    : _coreClocks.Length + 2;
+                if (_hasUncoreClock)
+                    sensorBaseIndex++;
+                if (_hasImc)
+                    sensorBaseIndex += 4;
+
+                _nguClock = new Sensor("NGU/NCLK Clock", sensorBaseIndex, SensorType.Clock, this, settings)
+                { PresentationSortKey = "0_5_0" };
+                ActivateSensor(_nguClock);
+                _d2dClock = new Sensor("D2D Clock", sensorBaseIndex + 1, SensorType.Clock, this, settings)
+                { PresentationSortKey = "0_5_1" };
+                ActivateSensor(_d2dClock);
+                _hasOcMailboxClocks = true;
+            }
+        }
 
         if (_microArchitecture is MicroArchitecture.Airmont or
             MicroArchitecture.AlderLake or
@@ -820,6 +847,18 @@ internal sealed class IntelCpu : GenericCpu
             MicroArchitecture.LunarLake or
             MicroArchitecture.PantherLake or
             MicroArchitecture.WildcatLake or
+            MicroArchitecture.NovaLake;
+    }
+
+    // Architectures whose fabric clocks (NGU, D2D) are exposed via the
+    // new OC Mailbox MSR pair (0x607 interface + 0x608 data) rather
+    // than the OOBMSM PMT Telemetry container. ARL-S desktop is the
+    // first known case; later monolithic Core Ultra Series 3+ desktop
+    // parts are speculative additions that will fall back gracefully
+    // if the MSRs return #GP at probe time (IntelOcMailbox.IsReady).
+    private static bool SupportsOcMailbox(MicroArchitecture arch)
+    {
+        return arch is MicroArchitecture.ArrowLake or
             MicroArchitecture.NovaLake;
     }
 
@@ -1113,6 +1152,24 @@ internal sealed class IntelCpu : GenericCpu
                         _nguClock.Value = oobmsmSample.HasNgu ? (float?)oobmsmSample.NguMhz : null;
                     if (_d2dClock != null)
                         _d2dClock.Value = oobmsmSample.HasD2d ? (float?)oobmsmSample.D2dMhz : null;
+                }
+                else
+                {
+                    if (_nguClock != null) _nguClock.Value = null;
+                    if (_d2dClock != null) _d2dClock.Value = null;
+                }
+            }
+            else if (_hasOcMailboxClocks)
+            {
+                // ARL-S path: D2D/NGU come from OC Mailbox on MSR 0x607/0x608.
+                // Both ratios decode to MHz with a × 100 MHz multiplier baked
+                // into IntelOcMailbox.
+                if (_ocMailbox.TryRead(out IntelOcMailbox.Sample mboxSample))
+                {
+                    if (_nguClock != null)
+                        _nguClock.Value = mboxSample.HasNgu ? (float?)mboxSample.NguMhz : null;
+                    if (_d2dClock != null)
+                        _d2dClock.Value = mboxSample.HasD2d ? (float?)mboxSample.D2dMhz : null;
                 }
                 else
                 {

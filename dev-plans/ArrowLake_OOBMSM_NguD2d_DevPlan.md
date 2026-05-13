@@ -37,7 +37,7 @@ These are the open questions Phase 1 must answer:
 
 - Whether ARL exposes Punit telemetry through TPMI (cap_id `0x0023`, like PTL/LNL) or VSEC (cap_id `0x000B`, like MTL) — possibly both, since ARL straddles the MTL-style desktop fabric and the LNL-style mobile fabric.
 - The OOBMSM Punit-telemetry GUID(s). PTL uses `0x03086000` (normal) and `0x03086100` (fixed). ARL is almost certainly different.
-- The container byte offsets and bit positions for NGU and D2D. Intel's public `intel/Intel-PMT/xml` directory contains MTL, LNL, PTL, GNR, BMG, CWF, SPR — but **no ARL**. We have to reverse-engineer the layout.
+- The container byte offsets and bit positions for NGU and D2D. Intel's public `intel/Intel-PMT/xml` directory contains MTL, LNL, PTL, GNR, BMG, CWF, SPR — but **no ARL**. The layout must be derived empirically from the live hardware.
 - Whether ARL Desktop exposes multiple OOBMSM instances (multi-tile). Current kernel module only probes the single canonical slot.
 
 ## 4. What's already in place
@@ -93,11 +93,11 @@ Capture this output verbatim into the next section of this doc before proceeding
 1. Add a separate `WalkVsec` discovery path in the ctor: iterate VSEC caps, identify the OOBMSM telemetry VSEC by its `vsec_id` (needs Phase 1 data), use its `disc` offset directly as the sub-aperture base — no PFS walk.
 2. Keep the TPMI path for PTL/LNL untouched; dispatch by platform.
 
-### Phase 3 — Container reverse-engineering
+### Phase 3 — Container layout determination
 
 Three complementary strategies, in order of cheapness:
 
-**(A) Layout inheritance probe.** Before reverse-engineering, try the two known layouts as decoder candidates:
+**(A) Layout inheritance probe.** Before deriving a new layout, try the two known layouts as decoder candidates:
 
 - LNL Container_2 layout: `0x82F8` bits[34..41] / [50..57] × 50 MHz
 - MTL layout: `0x6348` bits[48..55] × 100 MHz
@@ -144,11 +144,129 @@ case IntelOobmsm.Platform.Arl:
 
 Until Phase 1 data lands, no code edit is justified — both Phase 2 directions diverge significantly and committing speculatively risks regressing PTL.
 
-## 9. Phase 1 raw output
+## 9. Phase 1 raw output — ARL-S desktop (Core Ultra 9 285K)
 
-(to be filled in after running the diagnostic on ARL)
+Run on 2026-05-10 against a Core Ultra 9 285K (family 6, model 0xC6, "Arrowlake-S"). PawnIO unrestricted driver loaded, testsigning ON.
 
-## 10. References
+### 9.1 `Test-IntelOobmsm.ps1` — kernel-module load fails
+
+```
+[1] Constructing IntelOobmsm (kernel module load)...
+    IsLoaded         : False
+    DetectedPlatform : Arl
+    IsValidated      : True            (← anticipatory allow-list, misleading on ARL-S)
+    PawnIO module    : NOT loaded (main() returned error)
+STOP: kernel module did not load.
+```
+
+CPUID resolution to `Platform.Arl` works. The kernel module's `oobmsm_init()` fails because the canonical `00:0A.0` slot does not respond.
+
+### 9.2 Full PCI sweep — no Intel function at 00:0A.0 or 00:0B.0
+
+A throwaway scanner walks bus 0..0xFF reading vendor/device + class code via `HalGetBusDataByOffset` (same path the production module uses).
+
+Intel functions found:
+
+| BDF      | DID    | Class    | What                                       |
+|---       |---     |---       |---                                         |
+| 00:00.0  | 0x7D1A | 0x0600   | Host bridge                                |
+| 00:01.0  | 0x7ECC | 0x0604   | PCIe RP                                    |
+| 00:04.0  | 0xAD03 | **0x1180** | Innovation Platform Framework Processor Participant |
+| 00:06.0  | 0xAE4D | 0x0604   | PCIe RP                                    |
+| 00:07.0/1| 0x7EC4/5| 0x0604  | PCIe RP                                    |
+| 00:08.0  | 0xAE4C | **0x0880** | GNA Scoring Accelerator (per PnP label)  |
+| 00:0D.0/2| 0x7EC0/2| 0x0C03  | xHCI                                       |
+| 00:0E.0  | 0xAD0B | 0x0104   | VMD                                        |
+| 00:14.0  | 0xAE7F | 0x0500   | RAM controller (IMC)                       |
+| 00:1F.0/5| 0xAE0D / 0xAE23 | 0x0601 / 0x0C80 | ISA bridge / SMBus            |
+| 80:14.0  | 0x7F6E | 0x0C03   | xHCI (PCH)                                 |
+| 80:14.5  | 0x7F2F | **0x0000** | Error Aggregation Handler (EAH)          |
+| 80:15.0/2| 0x7F4C/E | 0x0C80 | I2C                                        |
+| 80:16.0  | 0x7F68 | 0x0780   | Management Engine                          |
+| 80:1C.0..3| 0x7F38..3B | 0x0604 | PCIe RPs                              |
+| 80:1F.0/3/4/5 | 0x7F04 / 0x7F50 / 0x7F23 / 0x7F24 | 0x0601 / 0x0403 / 0x0C05 / 0x0C80 | LPC / HDA / SMBus / SPI |
+
+**There is no Intel function at bus 0 device 0x0A or 0x0B, nor anywhere on bus 80.** The compute tile (bus 0) and PCH (bus 80) are the only Intel-populated SoC segments.
+
+### 9.3 Ext-cap chain inspection on every plausible candidate
+
+Walked `>= 0x100` ext-cap chain on the OOBMSM-shaped candidates:
+
+| Candidate | Class | BAR0 phys           | Ext-cap chain |
+|---        |---    |---                  |---            |
+| 00:04.0   | 0x1180 (Signal Processing)   | 0x000003FF_BFFC0000 | reads as 0xFFFFFFFF — no ECAM |
+| 00:08.0   | 0x0880 (System peripheral)   | 0x000003FF_BFFFF000 | empty (header dword = 0)       |
+| 80:14.5   | 0x0000 (EAH)                 | none                | empty                          |
+| 00:14.0   | 0x0500 (RAM ctrl / IMC)      | 0x000000B4_13070000 | empty                          |
+| 80:16.0   | 0x0780 (Management Engine)   | 0x00000080_00215000 | empty                          |
+
+**No Intel function on ARL-S desktop carries a TPMI (`0x0023`) or VSEC (`0x000B`) extended capability.** The OOBMSM mechanism — TPMI cap → PFS table → GUID-matched discovery aperture inside BAR0 — has no entry point on this SKU.
+
+### 9.4 Conclusion
+
+ARL-S desktop **cannot** reuse the OOBMSM pipeline. The premise in section 2 ("OOBMSM still sits at 00:0A.0 on ARL — not changed since MTL") was extrapolated from mobile parts and does not hold for the desktop tile architecture. Phase 2 (TPMI vs VSEC discovery) is moot on this platform — both alternatives require a TPMI/VSEC-bearing endpoint that isn't there.
+
+ARL-H (mobile, 0xC5) and ARL-U (mobile low-power, 0xB5) remain **untested**. They share more SoC structure with LNL/PTL than with the desktop die and may still expose OOBMSM at 00:0A.0 normally. Don't commit code yet that gates ARL-S out of the platform table — keep the platform offsets entry empty until -H or -U is on the bench, then validate per-SKU.
+
+## 10. Action items — revised after Phase 1
+
+1. **Don't** add an ARL platform-offsets entry yet. The `default → empty` fallback in `IntelOobmsmClocks.GetPlatformOffsets` already does the right thing on ARL-S (no sensors surface).
+2. **Soft-fail the kernel module on missing 00:0A.0** so other CapFrameX pipelines don't see an unrelated PawnIO load error in the log on ARL-S. Either:
+   - Make `oobmsm_init` return `STATUS_SUCCESS` when the canonical slot is empty (leave `g_bar_va = NULL`; gate IOCTLs on `g_bar_va != NULL`), or
+   - Lift the probe to the C# side and only attempt `LoadModuleFromResource` when the platform's canonical slot has been pre-confirmed.
+
+   The first option is cheaper and matches the existing IntelMCHBAR pattern; the second avoids loading a useless kernel module at all. Pick one when ARL-H/-U data lands so the same change covers both.
+3. **ARL-S desktop NGU/D2D resolved separately** via the Intel OC Mailbox relocated to MSR 0x607/0x608 — see §11. SkatterBencher's NGU/D2D OC method on ARL-S goes through BIOS variables; that's a configuration path, not a runtime read (different mechanism).
+4. **Phase 2 deferred** until ARL-H or ARL-U hardware is available.
+
+## 11. ARL-S desktop outcome — OC Mailbox on MSR 0x607 / 0x608
+
+Phase 1 (§ 9) established that ARL-S desktop has no PCI-exposed OOBMSM endpoint at `00:0A.0`, so the OOBMSM/TPMI pipeline used for PTL/LNL does not apply on this SKU. ARL-H and ARL-U mobile remain untested and are still expected to go through OOBMSM.
+
+The mechanism that actually surfaces NGU and D2D on ARL-S desktop is the **Intel OC Mailbox relocated from the legacy `MSR 0x150` onto a new MSR pair**:
+
+- **MSR `0x607`** — interface register (command word, bit 31 = run bit)
+- **MSR `0x608`** — data register (input/output word)
+
+Verified on a Core Ultra 9 285K (family 6, model 0xC6) on 2026-05-12.
+
+### 11.1 Protocol
+
+```
+WrMSR 0x607  ←  (command | 0x80000000)        // bit 31 = run bit
+poll RdMSR 0x607 until bit 31 clears          // ~999 retries
+read RdMSR 0x608                              // result word
+```
+
+### 11.2 Commands
+
+| Command   | Result mask    | Scale     | Meaning                       |
+|---        |---             |---        |---                            |
+| `0x1237`  | `& 0x7FFF`     | × 100 MHz | D2D ratio (boot-fixed)        |
+| `0x0022`  | `(>>8) & 0xFF` | × 100 MHz | NGU ratio (runtime variable)  |
+
+For BIOS-set 2800 MHz both commands return ratio `0x1C`; for 3200 MHz both return `0x20`.
+
+### 11.3 Integration
+
+| File | Change |
+|---|---|
+| `CX.PawnIO.Modules/IntelMSR.p` | Added `MSR_OC_MAILBOX_IF` (0x607) and `MSR_OC_MAILBOX_DATA` (0x608) to both `is_allowed_msr_read` and `is_allowed_msr_write`. |
+| `source/LibreHardwareMonitorLib/Resources/PawnIO/IntelMSR.bin` | Rebuilt unsigned `.amx` + 4-byte zero header (loads via unrestricted PawnIO driver). Original signed `.bin` archived as `.signed.bak` next to it. |
+| `source/LibreHardwareMonitorLib/PawnIo/IntelMsr.cs` | Added `WriteMsr(uint index, ulong value)` and affinity overload. |
+| `source/LibreHardwareMonitorLib/PawnIo/IntelOcMailbox.cs` (new) | Wraps the mailbox protocol; exposes `IsReady`, `TryRead(out Sample)` with `HasNgu`/`HasD2d`/`NguMhz`/`D2dMhz`. |
+| `source/LibreHardwareMonitorLib/Hardware/Cpu/IntelCpu.cs` | Added `SupportsOcMailbox(arch)` predicate (ArrowLake, NovaLake) and an `else if` branch that activates the mailbox sensors when `IntelOobmsmClocks` isn't ready. Refresh loop reads `IntelOcMailbox.Sample` into the existing `_nguClock`/`_d2dClock` sensor slots. |
+
+Smoke-test (`Test-LibIntelOcMailbox.ps1` against the compiled DLL) and the live CapFrameX UI both confirm D2D Clock and NGU Clock sensors register and display the BIOS-set ratio × 100 MHz on Core Ultra 9 285K.
+
+### 11.4 Open follow-ups
+
+- **Upstream PR** to `namazso/PawnIO-Modules` adding 0x607/0x608 to `IntelMSR.p`, then drop the signed `IntelMSR.bin` back into CapFrameX. Until merged the local build runs on the unrestricted PawnIO driver.
+- **Mobile ARL-H / ARL-U**: untested. Likely the same 0x607/0x608 channel; `SupportsOcMailbox` doesn't restrict by sub-family, so `IsReady` probes gracefully no-op if the channel is absent.
+- **Affinity pinning** during the mailbox protocol: not needed on single-socket desktop; revisit if multi-socket ARL successors arrive.
+- **Per-D2D-stack commands** and finer per-component telemetry remain unmapped — could light up granular "Die-to-Die stack" sensors in the future, not part of the v1 ship.
+
+## 12. References
 
 - SkatterBencher — Arrow Lake NGU Overclocking: https://skatterbencher.com/2024/10/24/arrow-lake-ngu-overclocking/
 - SkatterBencher — Arrow Lake D2D Overclocking: https://skatterbencher.com/2024/10/24/arrow-lake-d2d-overclocking/
@@ -156,4 +274,5 @@ Until Phase 1 data lands, no code edit is justified — both Phase 2 directions 
 - HWiNFO version-history (NGU/D2D fix in v8.46): https://www.hwinfo.com/version-history/
 - Existing PTL implementation: `source/LibreHardwareMonitorLib/PawnIo/IntelOobmsmClocks.cs`
 - Existing kernel module: `CX.PawnIO.Modules/IntelOOBMSM.p`
+- ARL-S OC Mailbox wrapper: `source/LibreHardwareMonitorLib/PawnIo/IntelOcMailbox.cs`
 - Diagnostic harness: `Test-IntelOobmsm.ps1`
