@@ -28,7 +28,12 @@ internal sealed class IntelCpu : GenericCpu
     private readonly Sensor _coreVoltage;
     private readonly Sensor[] _distToTjMaxTemperatures;
 
-    private readonly uint[] _energyStatusMsrs = { MSR_PKG_ENERGY_STATUS, MSR_PP0_ENERGY_STATUS, MSR_PP1_ENERGY_STATUS, MSR_DRAM_ENERGY_STATUS, MSR_PLATFORM_ENERGY_STATUS };
+    private readonly uint[] _energyStatusMsrs = 
+    { 
+        MSR_PKG_ENERGY_STATUS, MSR_PP0_ENERGY_STATUS, 
+        MSR_PP1_ENERGY_STATUS, MSR_DRAM_ENERGY_STATUS, 
+        MSR_PLATFORM_ENERGY_STATUS 
+    };
     private readonly uint[] _lastEnergyConsumed;
     private readonly DateTime[] _lastEnergyTime;
 
@@ -62,7 +67,8 @@ internal sealed class IntelCpu : GenericCpu
     private readonly bool _hasOobmsmClocks;
     private readonly bool _hasOcMailboxClocks;
 
-    public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
+    public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) 
+        : base(processorIndex, cpuId, settings)
     {
         _msrModule = new IntelMsr();
         _imcModule = new IntelImc();
