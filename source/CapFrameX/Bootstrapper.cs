@@ -136,6 +136,7 @@ namespace CapFrameX
             Container.Register<RecordTools>(Reuse.Singleton);
             Container.Register<MetricsTools>(Reuse.Singleton);
             Container.Register<SensorTools>(Reuse.Singleton);
+            Container.Register<PmdTools>(Reuse.Singleton);
             Container.Register<ComparisonTools>(Reuse.Singleton);
             Container.Register<SearchTools>(Reuse.Singleton);
             Container.Register<BottleneckTools>(Reuse.Singleton);

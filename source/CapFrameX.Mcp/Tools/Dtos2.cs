@@ -237,6 +237,52 @@ namespace CapFrameX.Mcp.Tools
         [JsonProperty("hardwareNames")] public List<string> HardwareNames { get; set; } = new List<string>();
     }
 
+    // ─── PMD power analysis ─────────────────────────────────────────────────
+
+    public class PmdChannelAggregate
+    {
+        [JsonProperty("channel")] public string Channel { get; set; }
+        [JsonProperty("unit")] public string Unit { get; set; }
+        [JsonProperty("avg")] public double Average { get; set; }
+        [JsonProperty("min")] public double Min { get; set; }
+        [JsonProperty("max")] public double Max { get; set; }
+        [JsonProperty("sampleCount")] public int SampleCount { get; set; }
+    }
+
+    public class PmdSummaryResult
+    {
+        [JsonProperty("recordId")] public string RecordId { get; set; }
+        [JsonProperty("runIndex")] public int RunIndex { get; set; }
+        [JsonProperty("sampleTimeMs")] public int SampleTimeMs { get; set; }
+        [JsonProperty("durationSec")] public double DurationSec { get; set; }
+        [JsonProperty("hasPmdData")] public bool HasPmdData { get; set; }
+        [JsonProperty("channels")] public List<PmdChannelAggregate> Channels { get; set; } = new List<PmdChannelAggregate>();
+    }
+
+    public class PmdTimePoint
+    {
+        [JsonProperty("tSec")] public double TSec { get; set; }
+        [JsonProperty("value")] public double Value { get; set; }
+    }
+
+    public class PmdChannelSeries
+    {
+        [JsonProperty("channel")] public string Channel { get; set; }
+        [JsonProperty("unit")] public string Unit { get; set; }
+        [JsonProperty("sampleCount")] public int SampleCount { get; set; }
+        [JsonProperty("points")] public List<PmdTimePoint> Points { get; set; } = new List<PmdTimePoint>();
+    }
+
+    public class PmdTimeSeriesResult
+    {
+        [JsonProperty("recordId")] public string RecordId { get; set; }
+        [JsonProperty("runIndex")] public int RunIndex { get; set; }
+        [JsonProperty("sampleTimeMs")] public int SampleTimeMs { get; set; }
+        [JsonProperty("downsampleHz")] public double DownsampleHz { get; set; }
+        [JsonProperty("hasPmdData")] public bool HasPmdData { get; set; }
+        [JsonProperty("channels")] public List<PmdChannelSeries> Channels { get; set; } = new List<PmdChannelSeries>();
+    }
+
     // ─── Config writes ──────────────────────────────────────────────────────
 
     public class ConfigGetResult
