@@ -1,4 +1,4 @@
-﻿using Windows.Win32;
+using Windows.Win32;
 
 namespace CapFrameX.Service.Monitoring.Interop;
 

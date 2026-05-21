@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) CapFrameX.Service.Monitoring and Contributors.
 // All Rights Reserved.
@@ -18,6 +18,8 @@ namespace CapFrameX.Service.Monitoring.Hardware.Storage;
 
 public abstract class AbstractStorage : Hardware
 {
+    private const double BytesPerGigabyte = 1_000_000_000d;
+
     private readonly PerformanceValue _perfRead = new();
     private readonly PerformanceValue _perfTotal = new();
     private readonly PerformanceValue _perfWrite = new();
@@ -112,27 +114,50 @@ public abstract class AbstractStorage : Hardware
     {
         if (DriveInfos.Length > 0)
         {
-            _usageSensor = new Sensor("Used Space", 0, SensorType.Load, this, _settings);
+            _usageSensor = new Sensor("Drive Used Space", 0, SensorType.Load, this, _settings)
+            { PresentationSortKey = $"{Index}_3_0" };
             ActivateSensor(_usageSensor);
         }
 
-        _sensorDiskReadActivity = new Sensor("Read Activity", 31, SensorType.Load, this, _settings);
+        _sensorDiskReadActivity = new Sensor("Drive Read Activity", 31, SensorType.Load, this, _settings)
+        { PresentationSortKey = $"{Index}_2_0" };
         ActivateSensor(_sensorDiskReadActivity);
 
-        _sensorDiskWriteActivity = new Sensor("Write Activity", 32, SensorType.Load, this, _settings);
+        _sensorDiskWriteActivity = new Sensor("Drive Write Activity", 32, SensorType.Load, this, _settings)
+        { PresentationSortKey = $"{Index}_2_1" };
         ActivateSensor(_sensorDiskWriteActivity);
 
-        _sensorDiskTotalActivity = new Sensor("Total Activity", 33, SensorType.Load, this, _settings);
+        _sensorDiskTotalActivity = new Sensor("Drive Total Activity", 33, SensorType.Load, this, _settings)
+        { PresentationSortKey = $"{Index}_2_2" };
         ActivateSensor(_sensorDiskTotalActivity);
 
-        _sensorDiskReadRate = new Sensor("Read Rate", 34, SensorType.Throughput, this, _settings);
+        _sensorDiskReadRate = new Sensor("Drive Read Rate", 34, SensorType.Throughput, this, _settings)
+        { PresentationSortKey = $"{Index}_0_0" };
         ActivateSensor(_sensorDiskReadRate);
 
-        _sensorDiskWriteRate = new Sensor("Write Rate", 35, SensorType.Throughput, this, _settings);
+        _sensorDiskWriteRate = new Sensor("Drive Write Rate", 35, SensorType.Throughput, this, _settings)
+        { PresentationSortKey = $"{Index}_0_1" };
         ActivateSensor(_sensorDiskWriteRate);
     }
 
     protected abstract void UpdateSensors();
+
+    // Normalises any storage sensor label so the entire Storage subsystem
+    // surfaces sensors with a uniform "Drive " prefix. Used by both the SMART
+    // attribute path (ATAStorage) and the NVMe AddSensor helper (NVMeGeneric).
+    // Names that already start with "Drive " are passed through unchanged;
+    // any "Disk " prefix (from SmartNames.DiskShift etc.) is rewritten to
+    // "Drive " so flat OSD lists use one consistent vocabulary.
+    protected static string WithDrivePrefix(string sensorName)
+    {
+        if (string.IsNullOrEmpty(sensorName))
+            return sensorName;
+        if (sensorName.StartsWith("Drive ", StringComparison.Ordinal))
+            return sensorName;
+        if (sensorName.StartsWith("Disk ", StringComparison.Ordinal))
+            return "Drive " + sensorName.Substring("Disk ".Length);
+        return "Drive " + sensorName;
+    }
 
     public override void Update()
     {
@@ -211,10 +236,11 @@ public abstract class AbstractStorage : Hardware
         {
             double timeDeltaSeconds = TimeSpan.FromTicks(currentTime - _lastTime).TotalSeconds;
 
-            double writeSpeed = writeDiff * (1 / timeDeltaSeconds);
+            // Convert bytes/s to GB/s (decimal, matching the GB convention used elsewhere in this codebase).
+            double writeSpeed = writeDiff / timeDeltaSeconds / BytesPerGigabyte;
             _sensorDiskWriteRate.Value = (float)writeSpeed;
 
-            double readSpeed = readDiff * (1 / timeDeltaSeconds);
+            double readSpeed = readDiff / timeDeltaSeconds / BytesPerGigabyte;
             _sensorDiskReadRate.Value = (float)readSpeed;
         }
 

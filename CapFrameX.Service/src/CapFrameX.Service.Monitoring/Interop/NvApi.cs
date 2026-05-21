@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.Text;
 using Windows.Win32;
@@ -20,6 +20,8 @@ internal static class NvApi
     public const int MAX_USAGES_PER_GPU = 8;
 
     public const int SHORT_STRING_MAX = 64;
+    public const int PERFORMANCE_STATUS_TIMER_COUNT = 3;
+    public const int PERFORMANCE_STATUS_UNKNOWN_COUNT = 326;
     public const int THERMAL_SENSOR_RESERVED_COUNT = 8;
     public const int THERMAL_SENSOR_TEMPERATURE_COUNT = 32;
 
@@ -31,6 +33,7 @@ internal static class NvApi
 
     public static NvAPI_EnumNvidiaDisplayHandleDelegate NvAPI_EnumNvidiaDisplayHandle { get; internal set; }
     public static NvAPI_EnumPhysicalGPUsDelegate NvAPI_EnumPhysicalGPUs { get; internal set; }
+    public static NvAPI_GetAssociatedDisplayNameDelegate NvAPI_GetAssociatedDisplayName { get; internal set; }
     public static NvAPI_GetDisplayDriverVersionDelegate NvAPI_GetDisplayDriverVersion { get; internal set; }
     public static NvAPI_GetPhysicalGPUsFromDisplayDelegate NvAPI_GetPhysicalGPUsFromDisplay { get; internal set; }
     public static NvAPI_GPU_ClientFanCoolersGetControlDelegate NvAPI_GPU_ClientFanCoolersGetControl { get; internal set; }
@@ -51,6 +54,7 @@ internal static class NvApi
     public static NvAPI_GPU_GetThermalSensorsDelegate NvAPI_GPU_GetThermalSensors { get; internal set; }
     public static NvAPI_GPU_GetCurrentVoltageDelegate NvAPI_GPU_GetCurrentVoltage { get; internal set; }
     public static NvAPI_GetVBlankCounterDelegate NvAPI_GetVBlankCounter { get; internal set; }
+    public static NvAPI_GPU_PerfGetStatusDelegate NvAPI_GPU_PerfGetStatus { get; internal set; }
 
     public static void Initialize()
     {
@@ -73,6 +77,7 @@ internal static class NvApi
             NvAPI_GPU_GetThermalSettings = GetDelegate<NvAPI_GPU_GetThermalSettingsDelegate>(0xE3640A56);
             _nvAPI_GPU_GetFullName = GetDelegate<NvAPI_GPU_GetFullNameDelegate>(0xCEEE8E9F);
             NvAPI_EnumNvidiaDisplayHandle = GetDelegate<NvAPI_EnumNvidiaDisplayHandleDelegate>(0x9ABDD40D);
+            NvAPI_GetAssociatedDisplayName = GetDelegate<NvAPI_GetAssociatedDisplayNameDelegate>(0x22A78B05);
             NvAPI_GetPhysicalGPUsFromDisplay = GetDelegate<NvAPI_GetPhysicalGPUsFromDisplayDelegate>(0x34EF9506);
             NvAPI_EnumPhysicalGPUs = GetDelegate<NvAPI_EnumPhysicalGPUsDelegate>(0xE5AC921F);
             NvAPI_GPU_GetTachReading = GetDelegate<NvAPI_GPU_GetTachReadingDelegate>(0x5F608315);
@@ -94,6 +99,7 @@ internal static class NvApi
             NvAPI_GPU_GetThermalSensors = GetDelegate<NvAPI_GPU_GetThermalSensorsDelegate>(0x65FE3AAD);
             NvAPI_GPU_GetCurrentVoltage = GetDelegate<NvAPI_GPU_GetCurrentVoltageDelegate>(0x465f9bcf);
             NvAPI_GetVBlankCounter = GetDelegate<NvAPI_GetVBlankCounterDelegate>(0x67B5DB55);
+            NvAPI_GPU_PerfGetStatus = GetDelegate<NvAPI_GPU_PerfGetStatusDelegate>(0x3d358a0c);
 
             IsAvailable = true;
         }
@@ -104,6 +110,9 @@ internal static class NvApi
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate NvStatus NvAPI_EnumPhysicalGPUsDelegate([Out] NvPhysicalGpuHandle[] gpuHandles, out int gpuCount);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate NvStatus NvAPI_GetAssociatedDisplayNameDelegate(NvDisplayHandle displayHandle, StringBuilder name);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate NvStatus NvAPI_GetDisplayDriverVersionDelegate(NvDisplayHandle displayHandle, [In, Out] ref NvDisplayDriverVersion nvDisplayDriverVersion);
@@ -168,6 +177,36 @@ internal static class NvApi
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate NvStatus NvAPI_GetVBlankCounterDelegate(NvDisplayHandle displayHandle, out uint pCounter);
 
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate NvStatus NvAPI_GPU_PerfGetStatusDelegate(NvPhysicalGpuHandle gpuHandle, ref NvPerformanceStatus performanceStatus);
+
+    [Flags]
+    internal enum NvPerformanceLimit : uint
+    {
+        None = 0,
+        PowerLimit = 0b1,
+        TemperatureLimit = 0b10,
+        VoltageLimit = 0b100,
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
+    internal struct NvPerformanceStatus
+    {
+        internal uint Version;
+        internal uint Unknown1;
+        internal ulong TimerInNanoSecond;
+        internal NvPerformanceLimit PerformanceLimit;
+        internal uint Unknown2;
+        internal uint Unknown3;
+        internal uint Unknown4;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = PERFORMANCE_STATUS_TIMER_COUNT)]
+        internal ulong[] TimersInNanoSecond;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = PERFORMANCE_STATUS_UNKNOWN_COUNT)]
+        internal uint[] Unknown5;
+    }
+
     public enum NvFanControlMode : uint
     {
         Auto = 0,
@@ -224,6 +263,15 @@ internal static class NvApi
         NvStatus status = _nvAPI_GetInterfaceVersionString?.Invoke(builder) ?? NvStatus.FunctionNotFound;
 
         version = builder.ToString();
+        return status;
+    }
+
+    public static NvStatus GetAssociatedDisplayName(NvDisplayHandle displayHandle, out string name)
+    {
+        StringBuilder builder = new(SHORT_STRING_MAX);
+        NvStatus status = NvAPI_GetAssociatedDisplayName?.Invoke(displayHandle, builder) ?? NvStatus.FunctionNotFound;
+
+        name = builder.ToString();
         return status;
     }
 

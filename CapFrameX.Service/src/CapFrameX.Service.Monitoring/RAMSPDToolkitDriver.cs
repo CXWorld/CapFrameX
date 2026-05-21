@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using RAMSPDToolkit.I2CSMBus.Interop.PawnIO;
 using RAMSPDToolkit.Windows.Driver.Interfaces;

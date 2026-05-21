@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Threading;

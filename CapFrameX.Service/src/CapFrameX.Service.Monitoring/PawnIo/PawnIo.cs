@@ -1,4 +1,6 @@
-﻿using Microsoft.Win32.SafeHandles;
+using Microsoft.Win32.SafeHandles;
+using System;
+using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -11,7 +13,7 @@ namespace CapFrameX.Service.Monitoring.PawnIo;
 /// <summary>
 /// Provides functionality to interact with the PawnIO driver for executing functions in loaded PawnIO modules.
 /// </summary>
-public class PawnIo
+internal class PawnIo
 {
     private const uint DEVICE_TYPE = 41394u << 16;
     private const int FN_NAME_LENGTH = 32;
@@ -25,7 +27,7 @@ public class PawnIo
         var driverPath = DriverInstaller.GetPawnIODriverPath();
 
         // Install and start the PawnIO driver
-        DriverInstaller.InstallAndStartDriver(
+        DriverInstaller.EnsureDriverReady(
          serviceName: DriverInstaller.PAWNIO_SERVICE_NAME,
          sysFilePath: driverPath);
     }
@@ -35,17 +37,17 @@ public class PawnIo
     /// <summary>
     /// Gets a value indicating whether PawnIO is installed on the system.
     /// </summary>
-    public static bool IsInstalled => Version is not null;
+    internal static bool IsInstalled => Version is not null;
 
     /// <summary>
     /// Retrieves the version information for the installed PawnIO.
     /// </summary>
-    public static Version Version { get; }
+    internal static Version Version { get; }
 
     /// <summary>
     /// Gets a value indicating whether the underlying handle is currently valid and open.
     /// </summary>
-    public bool IsLoaded => _handle is
+    internal bool IsLoaded => _handle is
     {
         IsInvalid: false,
         IsClosed: false
@@ -53,7 +55,7 @@ public class PawnIo
 
     internal static unsafe PawnIo LoadModuleFromResource(Assembly assembly, string resourceName)
     {
-        SafeFileHandle handle = PInvoke.CreateFile(@"\\.\PawnIO",
+        SafeFileHandle handle = PInvoke.CreateFile(@"\\?\GLOBALROOT\Device\PawnIO",
             (uint)FileAccess.ReadWrite,
             FILE_SHARE_MODE.FILE_SHARE_READ | FILE_SHARE_MODE.FILE_SHARE_WRITE,
             null,
@@ -65,6 +67,12 @@ public class PawnIo
             return new PawnIo(null);
 
         using Stream stream = assembly.GetManifestResourceStream(resourceName);
+        if (stream == null)
+        {
+            handle.Dispose();
+            return new PawnIo(null);
+        }
+
         using MemoryStream memory = new();
         stream.CopyTo(memory);
         byte[] bin = memory.ToArray();
@@ -75,13 +83,14 @@ public class PawnIo
                 return new PawnIo(handle);
         }
 
+        handle.Dispose();
         return new PawnIo(null);
     }
 
     /// <summary>
     /// Closes the underlying handle to the PawnIO driver.
     /// </summary>
-    public void Close()
+    internal void Close()
     {
         if (IsLoaded)
             _handle.Close();
@@ -94,7 +103,7 @@ public class PawnIo
     /// <param name="input"></param>
     /// <param name="outLength"></param>
     /// <returns></returns>
-    public unsafe long[] Execute(string name, long[] input, int outLength)
+    internal unsafe long[] Execute(string name, long[] input, int outLength)
     {
         if (IsLoaded)
         {
@@ -130,7 +139,7 @@ public class PawnIo
     /// <param name="returnSize"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public unsafe int ExecuteHr(string name, long[] inBuffer, uint inSize, long[] outBuffer, uint outSize, out uint returnSize)
+    internal unsafe int ExecuteHr(string name, long[] inBuffer, uint inSize, long[] outBuffer, uint outSize, out uint returnSize)
     {
         if (inBuffer.Length < inSize)
             throw new ArgumentOutOfRangeException(nameof(inSize));

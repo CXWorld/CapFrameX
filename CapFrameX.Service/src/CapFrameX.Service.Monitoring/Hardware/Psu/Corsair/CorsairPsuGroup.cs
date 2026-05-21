@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the GNU Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the GNU Public License, v. 2.0.
 // Copyright(C) 2020 Wilken Gottwalt<wilken.gottwalt@posteo.net>
 // Copyright (C) CapFrameX.Service.Monitoring and Contributors.
 // All Rights Reserved.

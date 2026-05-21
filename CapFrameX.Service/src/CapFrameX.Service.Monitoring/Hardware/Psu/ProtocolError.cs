@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using HidSharp;
 
 namespace CapFrameX.Service.Monitoring.Hardware.Psu;

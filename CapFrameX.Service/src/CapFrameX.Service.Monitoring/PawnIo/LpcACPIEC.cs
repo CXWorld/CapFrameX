@@ -1,8 +1,8 @@
-﻿namespace CapFrameX.Service.Monitoring.PawnIo;
+namespace CapFrameX.Service.Monitoring.PawnIo;
 
 public class LpcAcpiEc
 {
-    private readonly PawnIo _pawnIO = PawnIo. LoadModuleFromResource(typeof(AmdFamily0F).Assembly, $"CapFrameX.Service.Monitoring.Resources.PawnIo.LpcACPIEC.bin");
+    private readonly PawnIo _pawnIO = PawnIo. LoadModuleFromResource(typeof(AmdFamily0F).Assembly, "CapFrameX.Service.Monitoring.Resources.PawnIo.LpcACPIEC.bin");
 
     public byte ReadPort(byte port)
     {

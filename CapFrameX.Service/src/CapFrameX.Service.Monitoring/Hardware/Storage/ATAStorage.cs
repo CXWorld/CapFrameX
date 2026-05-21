@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) CapFrameX.Service.Monitoring and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -175,7 +175,7 @@ public abstract class AtaStorage : AbstractStorage
                                                          .Select(x => x.First());
 
             _sensors = smartAttributes.ToDictionary(attribute => attribute,
-                                                    attribute => new Sensor(attribute.SensorName,
+                                                    attribute => new Sensor(WithDrivePrefix(attribute.SensorName),
                                                                             attribute.SensorChannel,
                                                                             attribute.DefaultHiddenSensor,
                                                                             attribute.SensorType.GetValueOrDefault(),
@@ -183,8 +183,16 @@ public abstract class AtaStorage : AbstractStorage
                                                                             attribute.ParameterDescriptions,
                                                                             _settings));
 
+            var groupCounters = new Dictionary<int, int>();
             foreach (KeyValuePair<SmartAttribute, Sensor> sensor in _sensors)
+            {
+                int group = SortGroupForSensorType(sensor.Key.SensorType.GetValueOrDefault());
+                if (!groupCounters.TryGetValue(group, out int position))
+                    position = 0;
+                groupCounters[group] = position + 1;
+                sensor.Value.PresentationSortKey = $"{Index}_{group}_{position}";
                 ActivateSensor(sensor.Value);
+            }
         }
 
         base.CreateSensors();
@@ -305,6 +313,19 @@ public abstract class AtaStorage : AbstractStorage
     protected static float RawToInt(byte[] raw, byte value, IReadOnlyList<IParameter> parameters)
     {
         return (raw[3] << 24) | (raw[2] << 16) | (raw[1] << 8) | raw[0];
+    }
+
+    private static int SortGroupForSensorType(SensorType sensorType)
+    {
+        switch (sensorType)
+        {
+            case SensorType.Throughput: return 0;
+            case SensorType.Temperature: return 1;
+            case SensorType.Load: return 2;
+            case SensorType.Level: return 3;
+            case SensorType.Data: return 4;
+            default: return 9;
+        }
     }
 
     public override void Close()

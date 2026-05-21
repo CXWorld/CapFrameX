@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) CapFrameX.Service.Monitoring and Contributors.
 // All Rights Reserved.
@@ -64,6 +64,8 @@ internal static class D3DDisplayDevice
         OpenAdapterFromDeviceName(out NTSTATUS status, deviceIdentifier, out D3DKMT_OPENADAPTERFROMDEVICENAME adapter);
         if (status != NTSTATUS.STATUS_SUCCESS)
             return false;
+
+        deviceInfo.AdapterLuidInstanceName = GetAdapterLuidInstanceName(adapter.AdapterLuid);
 
         GetAdapterType(out status, adapter, out D3DKMT_ADAPTERTYPE adapterType);
         if (status != NTSTATUS.STATUS_SUCCESS)
@@ -270,6 +272,11 @@ internal static class D3DDisplayDevice
         status = Windows.Wdk.PInvoke.D3DKMTCloseAdapter(closeAdapter);
     }
 
+    private static string GetAdapterLuidInstanceName(LUID luid)
+    {
+        return $"luid_0x{unchecked((uint)luid.HighPart):X8}_0x{luid.LowPart:X8}";
+    }
+
     public struct D3DDeviceNodeInfo
     {
         public ulong Id;
@@ -280,6 +287,8 @@ internal static class D3DDisplayDevice
 
     public struct D3DDeviceInfo
     {
+        public string AdapterLuidInstanceName;
+
         public ulong GpuSharedLimit;
         public ulong GpuDedicatedLimit;
         public ulong GpuVideoMemoryLimit;

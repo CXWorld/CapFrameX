@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using CapFrameX.Service.Contracts.App;
 
 namespace CapFrameX.Service.Api.Controllers;
 
@@ -7,13 +8,11 @@ namespace CapFrameX.Service.Api.Controllers;
 public class HealthController : ControllerBase
 {
     [HttpGet]
-    public IActionResult Get()
+    public ActionResult<ServiceHealthDto> Get()
     {
-        return Ok(new
-        {
-            Status = "Healthy",
-            Service = "CapFrameX.Service",
-            Timestamp = DateTime.UtcNow
-        });
+        return Ok(new ServiceHealthDto(
+            "Healthy",
+            "CapFrameX.Service",
+            DateTimeOffset.UtcNow));
     }
 }

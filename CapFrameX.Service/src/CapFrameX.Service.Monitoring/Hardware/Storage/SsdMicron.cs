@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) CapFrameX.Service.Monitoring and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -61,7 +61,7 @@ internal class SsdMicron : AtaStorage
     public SsdMicron(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
         : base(storageInfo, smart, name, firmwareRevision, "ssd", index, _smartAttributes, settings)
     {
-        _temperature = new Sensor("Temperature",
+        _temperature = new Sensor("Drive Temperature",
                                   0,
                                   false,
                                   SensorType.Temperature,
@@ -75,7 +75,7 @@ internal class SsdMicron : AtaStorage
                                   },
                                   settings);
 
-        _writeAmplification = new Sensor("Write Amplification",
+        _writeAmplification = new Sensor("Drive Write Amplification",
                                          0,
                                          SensorType.Factor,
                                          this,

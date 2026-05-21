@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) CapFrameX.Service.Monitoring and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using CapFrameX.Service.Monitoring.Contracts;
 using CapFrameX.Service.Monitoring.Hardware.Battery;
 using CapFrameX.Service.Monitoring.Hardware.Controller.AeroCool;
 using CapFrameX.Service.Monitoring.Hardware.Controller.AquaComputer;
@@ -23,6 +24,7 @@ using CapFrameX.Service.Monitoring.Hardware.Motherboard;
 using CapFrameX.Service.Monitoring.Hardware.Network;
 using CapFrameX.Service.Monitoring.Hardware.Psu.Corsair;
 using CapFrameX.Service.Monitoring.Hardware.Psu.Msi;
+using CapFrameX.Service.Monitoring.Hardware.Simulation;
 using CapFrameX.Service.Monitoring.Hardware.Storage;
 
 namespace CapFrameX.Service.Monitoring.Hardware;
@@ -35,6 +37,8 @@ public class Computer : IComputer
     private readonly List<IGroup> _groups = new();
     private readonly object _lock = new();
     private readonly ISettings _settings;
+    private readonly SimulationConfiguration _simulationConfiguration;
+    private readonly ISensorConfig _sensorConfig;
 
     private bool _batteryEnabled;
     private bool _controllerEnabled;
@@ -47,22 +51,68 @@ public class Computer : IComputer
     private bool _psuEnabled;
     private SMBios _smbios;
     private bool _storageEnabled;
+    private bool IsSimulationEnabled => _simulationConfiguration?.Mode == SimulationMode.Enabled;
 
     /// <summary>
     /// Creates a new <see cref="IComputer" /> instance with basic initial <see cref="Settings" />.
     /// </summary>
     public Computer()
-    {
-        _settings = new Settings();
-    }
+        : this(new Settings(), null, null)
+    { }
 
     /// <summary>
     /// Creates a new <see cref="IComputer" /> instance with additional <see cref="ISettings" />.
     /// </summary>
     /// <param name="settings">Computer settings that will be transferred to each <see cref="IHardware" />.</param>
     public Computer(ISettings settings)
+        : this(settings, null, null)
+    { }
+
+    /// <summary>
+    /// Creates a new <see cref="IComputer" /> instance with simulation configuration.
+    /// </summary>
+    /// <param name="simulationConfiguration">Simulation settings for CPU/GPU hardware.</param>
+    public Computer(SimulationConfiguration simulationConfiguration)
+        : this(new Settings(), simulationConfiguration, null)
+    { }
+
+    /// <summary>
+    /// Creates a new <see cref="IComputer" /> instance with simulation configuration and sensor config.
+    /// </summary>
+    /// <param name="simulationConfiguration">Simulation settings for CPU/GPU hardware.</param>
+    /// <param name="sensorConfig">Application sensor configuration.</param>
+    public Computer(SimulationConfiguration simulationConfiguration, ISensorConfig sensorConfig)
+        : this(new Settings(), simulationConfiguration, sensorConfig)
+    { }
+
+    /// <summary>
+    /// Creates a new <see cref="IComputer" /> instance with sensor config.
+    /// </summary>
+    /// <param name="sensorConfig">Application sensor configuration.</param>
+    public Computer(ISensorConfig sensorConfig)
+        : this(new Settings(), null, sensorConfig)
+    { }
+
+    /// <summary>
+    /// Creates a new <see cref="IComputer" /> instance with additional <see cref="ISettings" /> and simulation configuration.
+    /// </summary>
+    /// <param name="settings">Computer settings that will be transferred to each <see cref="IHardware" />.</param>
+    /// <param name="simulationConfiguration">Simulation settings for CPU/GPU hardware.</param>
+    public Computer(ISettings settings, SimulationConfiguration simulationConfiguration)
+        : this(settings, simulationConfiguration, null)
+    { }
+
+    /// <summary>
+    /// Creates a new <see cref="IComputer" /> instance with additional <see cref="ISettings" />, simulation configuration and sensor config.
+    /// </summary>
+    /// <param name="settings">Computer settings that will be transferred to each <see cref="IHardware" />.</param>
+    /// <param name="simulationConfiguration">Simulation settings for CPU/GPU hardware.</param>
+    /// <param name="sensorConfig">Application sensor configuration.</param>
+    public Computer(ISettings settings, SimulationConfiguration simulationConfiguration, ISensorConfig sensorConfig)
     {
         _settings = settings ?? new Settings();
+        _simulationConfiguration = simulationConfiguration;
+        _sensorConfig = sensorConfig;
     }
 
     /// <inheritdoc />
@@ -151,9 +201,17 @@ public class Computer : IComputer
             if (_open && value != _cpuEnabled)
             {
                 if (value)
-                    Add(new CpuGroup(_settings));
+                {
+                    if (IsSimulationEnabled)
+                        Add(new SimulatedCpuGroup(_simulationConfiguration, _settings));
+                    else
+                        Add(new CpuGroup(_settings));
+                }
                 else
+                {
                     RemoveType<CpuGroup>();
+                    RemoveType<SimulatedCpuGroup>();
+                }
             }
 
             _cpuEnabled = value;
@@ -170,15 +228,23 @@ public class Computer : IComputer
             {
                 if (value)
                 {
-                    Add(new NvidiaGroup(_settings));
-                    Add(new AmdGpuGroup(_settings));                
-                    Add(new IntelGpuGroup(GetIntelCpus(), _settings));
+                    if (IsSimulationEnabled)
+                    {
+                        Add(new SimulatedGpuGroup(_simulationConfiguration, _settings));
+                    }
+                    else
+                    {
+                        Add(new NvidiaGroup(_settings, _sensorConfig));
+                        Add(new AmdGpuGroup(_settings));
+                        Add(new IntelGpuGroup(GetIntelCpus(), _settings));
+                    }
                 }
                 else
                 {
                     RemoveType<AmdGpuGroup>();
                     RemoveType<NvidiaGroup>();
                     RemoveType<IntelGpuGroup>();
+                    RemoveType<SimulatedGpuGroup>();
                 }
             }
 
@@ -304,7 +370,7 @@ public class Computer : IComputer
             using StringWriter w = new(CultureInfo.InvariantCulture);
 
             w.WriteLine();
-            w.WriteLine(nameof(CapFrameX.Service.Monitoring) + " Report");
+            w.WriteLine("CapFrameX.Service.Monitoring" + " Report");
             w.WriteLine();
 
             Version version = typeof(Computer).Assembly.GetName().Version;
@@ -498,16 +564,28 @@ public class Computer : IComputer
             Add(new MotherboardGroup(_smbios, _settings));
 
         if (_cpuEnabled)
-            Add(new CpuGroup(_settings));
+        {
+            if (IsSimulationEnabled)
+                Add(new SimulatedCpuGroup(_simulationConfiguration, _settings));
+            else
+                Add(new CpuGroup(_settings));
+        }
 
         if (_memoryEnabled)
             Add(new MemoryGroup(_settings));
 
         if (_gpuEnabled)
         {
-            Add(new NvidiaGroup(_settings));
-            Add(new AmdGpuGroup(_settings));
-            Add(new IntelGpuGroup(GetIntelCpus(), _settings));
+            if (IsSimulationEnabled)
+            {
+                Add(new SimulatedGpuGroup(_simulationConfiguration, _settings));
+            }
+            else
+            {
+                Add(new NvidiaGroup(_settings, _sensorConfig));
+                Add(new AmdGpuGroup(_settings));
+                Add(new IntelGpuGroup(GetIntelCpus(), _settings));
+            }
         }
 
         if (_controllerEnabled)

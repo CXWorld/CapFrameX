@@ -1,7 +1,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) CapFrameX.Service.Monitoring and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// Partial Copyright (C) Michael MÃ¶ller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
 using System;
@@ -52,7 +52,8 @@ internal class CpuGroup : IGroup
                             break;
                         case 0x17:
                         case 0x19:
-                        case 0x1A:
+                        case 0x1A: // Zen 5 + Zen 6 mainstream (Olympic Ridge, Medusa Point 1/2, Weisshorn)
+                        case 0x1B: // Zen 6 Medusa Point 3 + Zen 7 Rosenhorn
                             _hardware.Add(new Amd17Cpu(index, coreThreads, settings));
                             break;
                         default:
