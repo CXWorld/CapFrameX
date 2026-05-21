@@ -9,12 +9,20 @@ namespace CapFrameX.Configuration
     public static class EtwServiceChecker
     {
         private const string FrameViewServiceName = "FrameViewService";
+        private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(2);
 
         /// <summary>
         /// Checks if FrameViewService ETW session is running.
         /// </summary>
         /// <returns>True if FrameViewService is detected, false otherwise.</returns>
         public static bool IsFrameViewServiceRunning()
+            => IsFrameViewServiceRunning(DefaultTimeout);
+
+        /// <summary>
+        /// Checks if FrameViewService ETW session is running.
+        /// </summary>
+        /// <returns>True if FrameViewService is detected, false otherwise.</returns>
+        public static bool IsFrameViewServiceRunning(TimeSpan timeout)
         {
             try
             {
@@ -33,8 +41,22 @@ namespace CapFrameX.Configuration
                     if (process == null)
                         return false;
 
+                    var timeoutMilliseconds = (int)Math.Min(
+                        Math.Max(timeout.TotalMilliseconds, 1),
+                        int.MaxValue);
+
+                    if (!process.WaitForExit(timeoutMilliseconds))
+                    {
+                        try
+                        {
+                            process.Kill();
+                        }
+                        catch { }
+
+                        return false;
+                    }
+
                     string output = process.StandardOutput.ReadToEnd();
-                    process.WaitForExit();
 
                     return output.IndexOf(FrameViewServiceName, StringComparison.OrdinalIgnoreCase) >= 0;
                 }

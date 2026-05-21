@@ -23,6 +23,8 @@ namespace CapFrameX.ViewModel
 {
 	public partial class StateViewModel : BindableBase
 	{
+		private const int SystemInfoStatusTimeoutMilliseconds = 5000;
+
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ICaptureService _captureService;
@@ -34,6 +36,7 @@ namespace CapFrameX.ViewModel
 
 		private bool _isCaptureModeActive;
 		private bool _isOverlayActive;
+		private Task _systemInfoStatusUpdateTask;
 		private string _updateHyperlinkText;
 
 		private bool IsBeta => GetBetaState();
@@ -166,6 +169,10 @@ namespace CapFrameX.ViewModel
 					RaisePropertyChanged(nameof(IsUpdateAvailable));
 				});
 			});
+
+			Dispatcher.CurrentDispatcher.BeginInvoke(
+				new Action(RefreshSystemInfo),
+				DispatcherPriority.ApplicationIdle);
 		}
 
 		private Assembly GetAssemblyByName(string name)
@@ -174,10 +181,48 @@ namespace CapFrameX.ViewModel
 				   SingleOrDefault(assembly => assembly.GetName().Name == name);
 		}
 
-		public void RefreshSystemInfo()
+		public async void RefreshSystemInfo()
 		{
-			_systemInfo.SetSystemInfosStatus();
-			UpdateSystemInfoStatus();
+			await RefreshSystemInfoAsync();
+		}
+
+		private async Task RefreshSystemInfoAsync()
+		{
+			if (_systemInfoStatusUpdateTask != null && !_systemInfoStatusUpdateTask.IsCompleted)
+				return;
+
+			var refreshTask = Task.Run(() => _systemInfo.SetSystemInfosStatus());
+			_systemInfoStatusUpdateTask = refreshTask;
+
+			try
+			{
+				var timeoutTask = Task.Delay(SystemInfoStatusTimeoutMilliseconds);
+				var completedTask = await Task.WhenAny(refreshTask, timeoutTask);
+
+				if (completedTask != refreshTask)
+				{
+					_logger.LogWarning("System info status update timed out after {timeoutMilliseconds} ms.", SystemInfoStatusTimeoutMilliseconds);
+					_ = refreshTask.ContinueWith(task =>
+					{
+						_logger.LogError(task.Exception.Flatten(), "Error while updating system info status after timeout.");
+					}, TaskContinuationOptions.OnlyOnFaulted);
+					return;
+				}
+
+				await refreshTask;
+				UpdateSystemInfoStatus();
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error while updating system info status.");
+			}
+			finally
+			{
+				if (ReferenceEquals(_systemInfoStatusUpdateTask, refreshTask) && refreshTask.IsCompleted)
+				{
+					_systemInfoStatusUpdateTask = null;
+				}
+			}
 		}
 
 		private string GetInfoText()

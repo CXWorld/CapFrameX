@@ -67,6 +67,12 @@ internal class PawnIo
             return new PawnIo(null);
 
         using Stream stream = assembly.GetManifestResourceStream(resourceName);
+        if (stream == null)
+        {
+            handle.Dispose();
+            return new PawnIo(null);
+        }
+
         using MemoryStream memory = new();
         stream.CopyTo(memory);
         byte[] bin = memory.ToArray();
@@ -77,6 +83,7 @@ internal class PawnIo
                 return new PawnIo(handle);
         }
 
+        handle.Dispose();
         return new PawnIo(null);
     }
 

@@ -209,7 +209,7 @@ namespace CapFrameX.Configuration
 
         public bool McpEnabled
         {
-            get => Get<bool>(true);
+            get => Get<bool>(false);
             set => Set(value);
         }
 

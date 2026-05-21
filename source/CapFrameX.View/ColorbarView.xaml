@@ -508,6 +508,16 @@
 												</CheckBox.ToolTip>
 											</CheckBox>
 										</StackPanel>
+										<StackPanel Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" Margin="15 5 0 5" VerticalAlignment="Center" Orientation="Horizontal">
+											<TextBlock Text="Enable MCP server"></TextBlock>
+											<CheckBox IsChecked="{Binding McpEnabled, Mode=TwoWay}" Margin="10 -3 0 0">
+												<CheckBox.ToolTip>
+													<ToolTip StaysOpen="True" MaxWidth="275">
+														<TextBlock Text="Enables the local MCP endpoint for tool integrations. Restart CapFrameX after changing this setting." TextWrapping="Wrap"/>
+													</ToolTip>
+												</CheckBox.ToolTip>
+											</CheckBox>
+										</StackPanel>
 									</Grid>
 								</DataTemplate>
 								<DataTemplate x:Key="HelpContent">
