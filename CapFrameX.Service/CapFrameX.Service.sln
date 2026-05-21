@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 18
-VisualStudioVersion = 18.1.11312.151
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.37203.1 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Service.Api", "src\CapFrameX.Service.Api\CapFrameX.Service.Api.csproj", "{681CDB99-66AE-429F-9637-7B771AE12E0D}"
 EndProject
@@ -19,8 +21,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Service.Monitorin
 		{9746F818-C1B9-461D-BD07-D20A103DC751} = {9746F818-C1B9-461D-BD07-D20A103DC751}
 		{CFA42830-B349-4978-B708-5B1BFA9C579B} = {CFA42830-B349-4978-B708-5B1BFA9C579B}
 	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Service.Monitoring.Tests", "tests\CapFrameX.Service.Monitoring.Tests\CapFrameX.Service.Monitoring.Tests.csproj", "{A8052087-7771-43E1-B2EC-0A285BBD5ADD}"
 	ProjectSection(ProjectDependencies) = postProject
