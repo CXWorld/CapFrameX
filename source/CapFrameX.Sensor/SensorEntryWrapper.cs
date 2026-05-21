@@ -22,17 +22,20 @@ namespace CapFrameX.Sensor
 
         public bool IsPresentationDefault { get; set; }
 
+        public string HardwareName { get; set; }
+
         public bool UseForLogging
         {
             get => _useForLogging;
             set
             {
                 _useForLogging = value;
-                UpdateLogState?.Invoke(Identifier, value);
+                var stableId = SensorIdentifierHelper.BuildStableIdentifier(this);
+                UpdateLogState?.Invoke(Identifier, stableId, value);
                 RaisePropertyChanged();
             }
         }
 
-        public Action<string, bool> UpdateLogState { get; set; }
+        public Action<string, string, bool> UpdateLogState { get; set; }
     }
 }

@@ -1,0 +1,146 @@
+{
+  "Platform": {
+    "Model name": "GENUINE INTEL(R) XEON(R)",
+    "CPU family": "6",
+    "Model": "173",
+    "Thread(s) per core": "1",
+    "Core(s) per socket": "64",
+    "Socket(s)": "2",
+    "Stepping": "0",
+    "L3 cache": "576 MiB (2 instances)",
+    "NUMA node(s)": "2",
+    "TMA version": "5.01-full-perf"
+  },
+  "Data": {
+    "BR_MISP_RETIRED.COND_NTAKEN_COST": {
+      "MIN": 0,
+      "MAX": 888,
+      "MEAN": 6.11
+    },
+    "BR_MISP_RETIRED.COND_TAKEN_COST": {
+      "MIN": 0,
+      "MAX": 2750,
+      "MEAN": 5.09
+    },
+    "BR_MISP_RETIRED.INDIRECT_CALL_COST": {
+      "MIN": 0,
+      "MAX": 703,
+      "MEAN": 15.56
+    },
+    "BR_MISP_RETIRED.INDIRECT_COST": {
+      "MIN": 0,
+      "MAX": 1562,
+      "MEAN": 11.07
+    },
+    "BR_MISP_RETIRED.RET_COST": {
+      "MIN": 9,
+      "MAX": 1082,
+      "MEAN": 32.37
+    },
+    "FRONTEND_RETIRED.ANY_DSB_MISS": {
+      "MIN": 0,
+      "MAX": 65535,
+      "MEAN": 2.46
+    },
+    "FRONTEND_RETIRED.ITLB_MISS": {
+      "MIN": 0,
+      "MAX": 980,
+      "MEAN": 41.96
+    },
+    "FRONTEND_RETIRED.L1I_MISS": {
+      "MIN": 0,
+      "MAX": 1785,
+      "MEAN": 9.83
+    },
+    "FRONTEND_RETIRED.L2_MISS": {
+      "MIN": 0,
+      "MAX": 2854,
+      "MEAN": 137.41
+    },
+    "FRONTEND_RETIRED.MS_FLOWS": {
+      "MIN": 0,
+      "MAX": 65535,
+      "MEAN": 77.14
+    },
+    "FRONTEND_RETIRED.STLB_MISS": {
+      "MIN": 0,
+      "MAX": 754,
+      "MEAN": 206.85
+    },
+    "FRONTEND_RETIRED.UNKNOWN_BRANCH": {
+      "MIN": 0,
+      "MAX": 532,
+      "MEAN": 3.85
+    },
+    "MEM_INST_RETIRED.LOCK_LOADS": {
+      "MIN": 15,
+      "MAX": 5156,
+      "MEAN": 63.76
+    },
+    "MEM_INST_RETIRED.SPLIT_LOADS": {
+      "MIN": 0,
+      "MAX": 4704,
+      "MEAN": 3.97
+    },
+    "MEM_INST_RETIRED.SPLIT_STORES": {
+      "MIN": 0,
+      "MAX": 65535,
+      "MEAN": 19.0
+    },
+    "MEM_INST_RETIRED.STLB_HIT_LOADS": {
+      "MIN": 0,
+      "MAX": 3424,
+      "MEAN": 1.57
+    },
+    "MEM_INST_RETIRED.STLB_HIT_STORES": {
+      "MIN": 0,
+      "MAX": 65535,
+      "MEAN": 5.24
+    },
+    "MEM_LOAD_L3_HIT_RETIRED.XSNP_FWD": {
+      "MIN": 0,
+      "MAX": 4472,
+      "MEAN": 353.04
+    },
+    "MEM_LOAD_L3_HIT_RETIRED.XSNP_MISS": {
+      "MIN": 0,
+      "MAX": 830,
+      "MEAN": 125.27
+    },
+    "MEM_LOAD_L3_HIT_RETIRED.XSNP_NO_FWD": {
+      "MIN": 0,
+      "MAX": 3939,
+      "MEAN": 289.9
+    },
+    "MEM_LOAD_L3_MISS_RETIRED.LOCAL_DRAM": {
+      "MIN": 0,
+      "MAX": 4146,
+      "MEAN": 115.83
+    },
+    "MEM_LOAD_L3_MISS_RETIRED.REMOTE_DRAM": {
+      "MIN": 0,
+      "MAX": 3572,
+      "MEAN": 430.22
+    },
+    "MEM_LOAD_L3_MISS_RETIRED.REMOTE_FWD": {
+      "MIN": 0,
+      "MAX": 8552,
+      "MEAN": 125.36
+    },
+    "MEM_LOAD_L3_MISS_RETIRED.REMOTE_HITM": {
+      "MIN": 0,
+      "MAX": 2580,
+      "MEAN": 135.29
+    },
+    "MEM_LOAD_RETIRED.L2_HIT": {
+      "MIN": 0,
+      "MAX": 7140,
+      "MEAN": 5.71
+    },
+    "MEM_LOAD_RETIRED.L3_HIT": {
+      "MIN": 0,
+      "MAX": 5630,
+      "MEAN": 57.64
+    }
+  }
+}

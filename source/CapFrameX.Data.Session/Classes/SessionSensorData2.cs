@@ -10,6 +10,7 @@ namespace CapFrameX.Data.Session.Classes
     {
         public string Name { get; }
         public string Type { get; }
+        public string StableIdentifier { get; set; }
         public LinkedList<double> Values { get; } = new LinkedList<double>();
 
         public SessionSensorEntry(string name, string type)
@@ -32,7 +33,7 @@ namespace CapFrameX.Data.Session.Classes
         [JsonIgnore]
         public int[] CpuMaxThreadUsage { get => Values.FirstOrDefault(c => c.Name.Contains("CPU Max") && c.Type == "Load")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
         [JsonIgnore]
-        public int[] CpuMaxClock { get => Values.FirstOrDefault(c => c.Name.Contains("CPU Max") && c.Type == "Clock")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
+        public int[] CpuMaxClock { get => Values.FirstOrDefault(c => c.Name.Equals("CPU Max") && c.Type == "Clock")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
         [JsonIgnore]
         public int[] CpuPower { get => Values.FirstOrDefault(c => c.Name.Contains("CPU Package") && c.Type == "Power")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
         [JsonIgnore]
@@ -42,13 +43,15 @@ namespace CapFrameX.Data.Session.Classes
         [JsonIgnore]
         public int[] GpuClock { get => Values.FirstOrDefault(c => c.Name.Contains("GPU Core") && c.Type == "Clock")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
         [JsonIgnore]
-        public int[] GpuPower { get => Values.FirstOrDefault(c => (c.Name.Contains("GPU Power") || c.Name.Contains("GPU Total") || c.Name.Contains("GPU TBP") || c.Name.Contains("GPU TDP")) && c.Type == "Power")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
+        // Prefer total/board power sensors over Intel's core-only "GPU TDP" so the analysis metric reflects TBP when both are enabled.
+        public int[] GpuPower { get => (Values.FirstOrDefault(c => (c.Name.Contains("GPU Power") || c.Name.Contains("GPU Total") || c.Name.Contains("GPU TBP")) && c.Type == "Power") 
+            ?? Values.FirstOrDefault(c => c.Name.Contains("GPU TDP") && c.Type == "Power"))?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
         [JsonIgnore]
         public int[] GpuTBPSim { get => Values.FirstOrDefault(c => c.Name.Contains("GPU TBP Sim") && c.Type == "Power")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
         [JsonIgnore]
         public int[] GpuTemp { get => Values.FirstOrDefault(c => c.Name.Contains("GPU Core") && c.Type == "Temperature")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
         [JsonIgnore]
-        public double[] RamUsage { get => Values.FirstOrDefault(c => c.Name.Contains("Used Memory Game") && c.Type == "Data")?.Values.ToArray() ?? Array.Empty<double>(); set => throw new NotImplementedException(); }
+        public double[] RamUsage { get => Values.FirstOrDefault(c => c.Name.Contains("RAM Game Used") && c.Type == "Data")?.Values.ToArray() ?? Array.Empty<double>(); set => throw new NotImplementedException(); }
         [JsonIgnore]
         public int[] VRamUsage { get => Values.FirstOrDefault(c => c.Name.Contains("Dedicated") && !c.Name.Contains("Game") && c.Type == "SmallData")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
         [JsonIgnore]

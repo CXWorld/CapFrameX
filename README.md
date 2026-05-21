@@ -44,6 +44,34 @@ If you want to use images of the CapFrameX analysis, you could use the built in 
 # Release
 Download link: https://github.com/DevTechProfile/CapFrameX/releases
 
+# Troubleshooting & Known Issues
+The following tips address the most common issues reported by users and can help resolve stability, overlay, and capture-related problems efficiently. We recommend working through them in order if you encounter unexpected behavior.
+
+1. **Ensure you are running the latest version**  
+   If you experience application crashes or unstable behavior, verify that you have installed **CapFrameX v1.7.8 Patch 1** or newer. Many known issues have been resolved in this patch. If you were previously using version 1.7.7, we recommend uninstalling CapFrameX before installing the new version.
+
+2. **Reset application settings**  
+   In some cases, corrupted or outdated configuration files may cause problems. Deleting  
+   `%appdata%/CapFrameX/Configuration/AppSettings.json`  
+   will reset CapFrameX to its default settings and often resolves startup or UI-related issues.
+
+3. **Reset overlay configuration files**  
+   If overlay-related problems persist, try deleting the overlay configuration files located at  
+   `%appdata%/CapFrameX/Configuration/OverlayEntryConfiguration_(0/1/2).json`.  
+   These files will be recreated automatically on the next application start.
+
+4. **Restore missing or zero-value overlay entries**  
+   When overlay entries are missing or display constant zero values, open the **Overlay** tab and use the **Reset** button to restore all overlay entries to a valid default state.
+
+5. **Fix incorrect overlay entry order**  
+   If the order of overlay entries appears inconsistent or unintentionally rearranged, use the **Sort** button in the **Overlay** tab to restore a clean and logical ordering.
+
+6. **Resolve frametime anomalies after updates**  
+   In rare cases, existing background capture processes can interfere with CapFrameX after an update. If you encounter frametime issues, close all running **PresentMon** processes before installing or launching CapFrameX v1.7.8.
+
+7. **Avoid conflicts with other monitoring tools**  
+   Applications such as **HWiNFO** or **AIDA64** that implement their own FPS or frametime metrics may conflict with CapFrameX’s capture service, as they also rely on PresentMon-based mechanisms. Disabling overlapping FPS or frametime monitoring features in those tools is strongly recommended when using CapFrameX.
+
 # Capture frametimes
 ![Screenshot](images/02_capture.png)
 
@@ -63,15 +91,106 @@ Download link: https://github.com/DevTechProfile/CapFrameX/releases
 # Sensor
 ![Screenshot](images/08b_sensor.png)
 
-# Synchronization (Input lag)
-![Screenshot](images/10_sync_IL.png)
-![Screenshot](images/11_sync_DT.png)
-
 # Report table (Excel)
 ![Screenshot](images/09_report.png)
 
 # Cloud
 ![Screenshot](images/12_cloud.png)
+
+# MCP Server (AI integration)
+
+CapFrameX ships an in-process MCP server that lets AI clients (Claude Code, Claude Desktop, MCP Inspector) read recorded captures, compute statistics, diagnose issues, and query the live system. The server runs only while CapFrameX is running and is reachable on `http://localhost:<WebservicePort>/mcp` (default port `1337`; if taken, CapFrameX falls back to a free port and persists the choice in `AppSettings.json`).
+
+No additional install. The MCP server is part of `CapFrameX.exe`.
+
+## Setup with Claude Code
+
+1. Make sure CapFrameX is running.
+2. Look up the active port in `%appdata%/CapFrameX/Logs/CapFrameX.log` (search for the line `MCP endpoint available at http://localhost:<port>/mcp`) or open `%appdata%/CapFrameX/Configuration/AppSettings.json` and read `WebservicePort`.
+3. Register the server with Claude Code (one-time):
+
+   ```bash
+   claude mcp add -s user capframex --transport http http://localhost:<port>/mcp
+   ```
+
+4. Verify:
+
+   ```bash
+   claude mcp list
+   ```
+
+   Expected:
+
+   ```
+   capframex: http://localhost:<port>/mcp (HTTP) - ✓ Connected
+   ```
+
+5. In any new Claude Code session, type `/mcp` to see the server in the active connection list. The tools become available to the model.
+
+If CapFrameX is not running, the connection appears as **disconnected**. Start CapFrameX and the connection comes back live.
+
+## Setup with Claude Desktop
+
+Add this to your `claude_desktop_config.json` (Settings → Developer → Edit Config):
+
+```json
+{
+  "mcpServers": {
+    "capframex": {
+      "url": "http://localhost:<port>/mcp"
+    }
+  }
+}
+```
+
+Restart Claude Desktop. The CapFrameX tools appear in the MCP picker.
+
+## Available tools
+
+| Tool | Purpose |
+| --- | --- |
+| `cfx_ping` | Connectivity check (returns `pong`). |
+| `cfx_list_records` | Lists capture records from the configured directory; optional substring filter on game/process. |
+| `cfx_get_record` | Full metadata of a record (system info, run count, settings). |
+| `cfx_search_records` | Free-text search across game/comment/CPU/GPU/OS/RAM. |
+| `cfx_get_metrics` | FPS metrics (Average, P1, P0.2, Min, Max, AdaptiveStd, …) — single run or all runs. |
+| `cfx_compare_records` | Side-by-side metric table across multiple records with absolute and percentage deltas. |
+| `cfx_get_sensor_summary` | Per-sensor avg/min/max for CPU/GPU/RAM/VRAM channels. |
+| `cfx_analyze_bottleneck` | Classifies a run as cpu-bound, gpu-bound, balanced, thermal-throttling, or power-limited (with confidence + reasoning). |
+| `cfx_diagnose_capture` | Scans recent log entries for capture-related failures. Pattern library: ETW conflicts, anti-cheat, permissions, PresentMon errors, blacklisted processes, etc. |
+| `cfx_diagnose_general` | Same as above but with focus area (`capture` / `sensors` / `overlay` / `all`). |
+| `cfx_get_capture_timeline` | Chronological capture-related events from the log (hotkey, PresentMon start/stop, session save, errors). |
+| `cfx_get_current_system` | Live system info: CPU, GPU, RAM, OS, motherboard, Resizable BAR (HW + D3D + Vulkan), HAGS, GameMode, PCI BAR sizes. |
+| `cfx_get_capture_status` | Read-only capture state: isCapturing, isLocked, current state (Started, Processing, Stopped, …). |
+
+All tools are read-only. They do not start or stop captures and do not modify settings.
+
+## Example interactions
+
+Ask Claude in natural language. Below are three concrete examples that exercise multiple tools.
+
+### 1. "Compare my last three Cyberpunk records"
+
+Claude internally calls `cfx_search_records` with `"Cyberpunk"`, takes the three most recent ids, then calls `cfx_compare_records` with default metrics (Average, P1, P0.2, Min, Max). Output: a tabular comparison with deltas highlighting which run was best/worst.
+
+### 2. "Why is the latest Spider-Man 2 capture only at 80 fps?"
+
+Claude calls `cfx_list_records` filtered by Spider-Man, picks the newest, then calls `cfx_get_metrics` to confirm the average, `cfx_get_sensor_summary` to see CPU/GPU load, and `cfx_analyze_bottleneck` to get a verdict. Typical answer: *"GPU load averaged 74 %, CPU max-thread load 82 % — the run is CPU-bound; this is consistent with Spider-Man 2's known DX12 main-thread bottleneck."*
+
+### 3. "My benchmark didn't get recorded. Why?"
+
+Claude calls `cfx_diagnose_capture` (default 30-min lookback) and `cfx_get_capture_timeline`. Typical findings: an ETW session conflict (FrameView SDK still installed), a blacklisted process, missing administrator rights, or an anti-cheat that blocked PresentMon — each with a concrete suggested fix.
+
+## Configuration
+
+In `%appdata%/CapFrameX/Configuration/AppSettings.json`:
+
+| Key | Default | Effect |
+| --- | --- | --- |
+| `McpEnabled` | `true` | Toggle the MCP module on/off. When `false`, the rest of the local API still runs. |
+| `WebservicePort` | `"1337"` | Shared with the existing local API. The MCP endpoint lives at `/mcp` on that same port. |
+
+To disable MCP: set `McpEnabled` to `false` and restart CapFrameX. Logs related to the MCP server appear in the standard CapFrameX log file (`%appdata%/CapFrameX/Logs/CapFrameX.log`).
 
 # Instruction manual
 Learn how to use CapFrameX.
@@ -96,20 +215,26 @@ Located at the top
 Contains all the different views, a screenshot button, a login button (for additional cloud services), a direct link to the CX website and an options menu. 
 The screenshot button takes a screenshot of the current view excluding the record list.
 
-## Options (Options tab)
+## Settings (Options)
 ![Screenshot](images/01_global_options.png)
 * Graph filter window size = The time period in which the filtered FPS graphs are being averaged (Analysis & Comparison View)
 * FPS values decimals = The number of decimals for the FPS values
-* Use "TBP Sim" sensor values (AMD graphics cards) if available
-* Screenshot directory = The directory in which your screenshots are saved.
-* Hardware info source = What will be written into the capture file as your CPU, GPU and RAM config.  
-  Automatic detection: What's delivered by the system  
-  Custom description: What you write into the text boxes below  
+* Screenshot directory = The directory in which your screenshots are saved. 
+* Use "MsBetweenDisplayChange" metrics. Uses diplay times for metric calculation. Enble this option when using Frame Generation.
+* Use PC Latency. Still beta state. Disable if you encounter frame time issues. Restart CapFameX after changing the option.
 * Capture file mode = How capture files are saved  
   JSON: Standard JSON file  
   JSON + CSV: Additional CSV file that won't be used by CX but can be opened to get a better view on the raw PresentMon data  
 
-## Options (App tab)
+## Settings (Hardware)
+![Screenshot](images/01_global_options_hardware.png)
+* Primary Graphics Adapter. Select the primary graphics adapter for sensor and overlay management. Auto (default) removes iGPU when it least one dGPU is detected.
+* Hardware info source = What will be written into the capture file as your CPU, GPU and RAM config.  
+  Automatic detection: What's delivered by the system  
+  Custom description: What you write into the text boxes below
+* Use "TBP Sim" sensor values (AMD graphics cards) if available
+
+## Settings (App)
 ![Screenshot](images/01_global_options_app.png)
 * Start with windows & Start minimized = Autostart option and starting in tray
 * "Dark Mode" UI color mode
@@ -214,19 +339,6 @@ These values can be copied to clipboard via context menu, either as min/avg/max 
 ## Report view
 This is a simple view where you can add your records to see all the relevant parameters all at once. You can also just copy them with a right-click to add them into any other program. This is also possible for the graphs and performance parameters in the single record view.
 
-## Synchronization view
-This view shows you an approximated input lag analysis as well as some other synchronization details. 
-
-Tab "Approximated input lag"
-Using various data from PresentMon, we can give a fairly accurate approximation on the input lag. Note that this doesn't include the additional latency from your mouse/keyboard or your monitor.
-For that we've included an offset that you can set yourself depending on your hardware.
-This input lag is shown in the graph and in the distribution below as well as a small bar chart for the upper and lower bounds as well as the expected input lag. 
-
-Tab "Until displayed times" 
-The chart shows the times when a frame was successfully sent to the monitor and being displayed.
-Below the Graph you can see the amount of frames within the valid sync range of your monitor (that you can enter next to it).  
-At the bottom you can see the distribution of the until displayed times and beside it another pie chart which shows the number of dropped frames.
-
 ## Cloud view
 In this view you can upload and download records to easily share them with others.
 
@@ -244,34 +356,12 @@ This doesn't affect any processes you already have on your list. If our online l
 * Report: parameter table
 * Synchronization: display changed times(dc), histogram data
 
-# Using CX monitoring library in your own projects
-The hardware monitoring library is based on [Open Hardware Monitor](https://github.com/openhardwaremonitor/openhardwaremonitor). It is customized and extended with many additional sensors. If you want to use it in your own projects note the following points.
-* Import the projects "OpenHardwareMonitorLib" and "CapFrameX.Monitoring.Contracts"
-* Allow unsafe code in the build options of the project "OpenHardwareMonitorLib"
-* Implement "IProcessService" (see sample code)
-* Install all necessary Nuget packages: 
-
-```packages.config
-<packages>
-  <package id="Microsoft.Extensions.Logging.Abstractions" version="5.0.0" targetFramework="net472" />
-  <package id="Newtonsoft.Json" version="12.0.1" targetFramework="net472" />
-  <package id="Serilog" version="2.9.0" targetFramework="net472" />
-  <package id="System.Buffers" version="4.5.1" targetFramework="net472" />
-  <package id="System.ComponentModel.Annotations" version="4.7.0" targetFramework="net472" />
-  <package id="System.Memory" version="4.5.4" targetFramework="net472" />
-  <package id="System.Numerics.Vectors" version="4.5.0" targetFramework="net472" />
-  <package id="System.Reactive" version="4.3.2" targetFramework="net472" />
-  <package id="System.Runtime.CompilerServices.Unsafe" version="5.0.0" targetFramework="net472" />
-  <package id="System.Threading.Tasks.Extensions" version="4.5.4" targetFramework="net472" />
-  <package id="System.ValueTuple" version="4.5.0" targetFramework="net472" />
-</packages>
-```
-
 Potential conflicts with the Nuget packages can be solved via Package Manger Console. Just type "Update-Package -reinstall". The calling application must run as administrator. See "MonitoringLibTestApp" example code how to integrate the customized library.
 
 # Requirements
-* .NET 4.7.2
-* Microsoft Visual C++ Redistributable Package
+* .NET 9.0 (no installer check, must be installed manually)
+* .NET 4.7.2 (installer check)
+* Microsoft Visual C++ Redistributable Package (installer check)
 
 # Build requirements
 * MS Visual Studio 2022
@@ -279,12 +369,9 @@ Potential conflicts with the Nuget packages can be solved via Package Manger Con
 * WiX Toolset Visual Studio 2022 Extension
 * WiX Toolset and VS Extension: http://wixtoolset.org/releases/
 * C++ MFC build tools
-* FrameView SDK (can be found in: `installers/FVSDKSetup.exe`)
 
 # Build settings
 * Solution Platform x64
 
 # Dev roadmap
-* Enhancements
-
-
+* CapFrameX 2.0 with service-client architecture

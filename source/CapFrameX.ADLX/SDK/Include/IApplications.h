@@ -1,5 +1,5 @@
 // 
-// Copyright (c) 2023 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -161,6 +161,7 @@ namespace adlx
         //Lists must declare the type of items it holds - what was passed as ADLX_DECLARE_IID() in that interface
         ADLX_DECLARE_ITEM_IID(IADLXApplication::IID())
 
+        ADLX_DECLARE_LIST_METHODS
         /**
         * @page DOX_IADLXApplicationList_At At
         * @ENG_START_DOX
@@ -215,11 +216,6 @@ namespace adlx
          * If the interface is added successfully to the end of the list, __ADLX_OK__ is returned.<br>
          * If the interface is not added to the end of the list, an error code is returned.<br>
          * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
-         * @ENG_END_DOX
-         *
-         * @detaileddesc
-         * @ENG_START_DOX
-         * @details
          * @ENG_END_DOX
          *
          *

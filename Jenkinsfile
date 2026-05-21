@@ -19,7 +19,7 @@ pipeline {
                                 bat "msbuild source\\CapFrameX\\CapFrameX.csproj /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
                             }
                         }
-						
+
 						stage('Build HWInfo') {
 							steps {
 								bat "msbuild source\\CapFrameX.Hwinfo\\CapFrameX.Hwinfo.vcxproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
@@ -35,12 +35,6 @@ pipeline {
 			    		stage('Build ADLX') {
 							steps {
 								bat "msbuild source\\CapFrameX.ADLX\\CapFrameX.ADLX.vcxproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
-							}
-						}
-						
-						stage('Build FrameView') {
-							steps {
-								bat "msbuild source\\CapFrameX.FrameView\\CapFrameX.FrameView.vcxproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
 							}
 						}
 
@@ -67,6 +61,12 @@ pipeline {
 				branch = getBranch()
 			}
             stages {
+                stage('Prepare Portable') {
+                    steps {
+                        bat "copy portable.json.sample source\\CapFrameX\\bin\\x64\\Release\\portable.json"
+                    }
+                }
+
                 stage('Create Archive') {
                     steps {
                         zip archive: false, dir: 'source/CapFrameXBootstrapper/bin/x64/Release', glob: 'CapFrameXBootstrapper.exe', zipFile: "${filename}_installer.zip"

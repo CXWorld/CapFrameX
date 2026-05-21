@@ -1,7 +1,6 @@
 ﻿using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Statistics.NetStandard.Contracts;
-using CapFrameX.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,6 +74,17 @@ namespace CapFrameX.Statistics.NetStandard
             return FilterDataWithinTimeWindow(frameStartTimes, cpuActiveTimes, startTime, endTime);
         }
 
+        public static IList<double> GetAnimationErrorTimeWindow(this ISession session, double startTime, double endTime)
+        {
+            var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
+            var animationErrors = session.Runs.SelectMany(r => r.CaptureData.AnimationError).ToArray();
+
+            return frameStartTimes.Zip(animationErrors, (t, y) => new { t, y })
+                .Where(pair => pair.t >= startTime && pair.t <= endTime && !double.IsNaN(pair.y))
+                .Select(pair => pair.y)
+                .ToList();
+        }
+
         public static IList<Point> GetFrametimePointsTimeWindow(this ISession session, double startTime, double endTime,
             IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
         {
@@ -112,6 +122,19 @@ namespace CapFrameX.Statistics.NetStandard
 			return FilterDataPointsWithinTimeWindow(frameStartTimes, gpuActiveTimes, startTime, endTime);
 		}
 
+        public static IList<Point> GetCpuActiveTimePointsTimeWindow(this ISession session, double startTime, double endTime,
+            IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
+        {
+            var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
+            var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
+
+            var cpuActiveTimes = frametimeStatisticProvider?
+                .GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.CpuActive).ToArray(), eRemoveOutlierMethod)
+                ?? Enumerable.Empty<double>().ToList();
+
+            return FilterDataPointsWithinTimeWindow(frameStartTimes, cpuActiveTimes, startTime, endTime);
+        }
+
 		public static IList<Point> GetFrametimePoints(this ISession session)
         {
             if (!session.Runs.Any())
@@ -140,9 +163,9 @@ namespace CapFrameX.Statistics.NetStandard
             IEnumerable<ISessionRun> powerValuesFiltered = null;
 
             if (hardware == "CPU")
-                powerValuesFiltered = session.Runs.Where(r => !r.PmdCpuPower.IsNullOrEmpty());
+                powerValuesFiltered = session.Runs.Where(r => r.PmdCpuPower != null && r.PmdCpuPower.Length > 0);
             else if (hardware == "GPU")
-                powerValuesFiltered = session.Runs.Where(r => !r.PmdGpuPower.IsNullOrEmpty());
+                powerValuesFiltered = session.Runs.Where(r => r.PmdGpuPower != null && r.PmdGpuPower.Length > 0);
 
             if (powerValuesFiltered == null || !powerValuesFiltered.Any())
                 return null;
@@ -179,9 +202,9 @@ namespace CapFrameX.Statistics.NetStandard
             IEnumerable<ISessionRun> powerValuesFiltered = null;
 
             if (hardware == "CPU")
-                powerValuesFiltered = session.Runs.Where(r => !r.PmdCpuPower.IsNullOrEmpty());
+                powerValuesFiltered = session.Runs.Where(r => r.PmdCpuPower != null && r.PmdCpuPower.Length > 0);
             else if (hardware == "GPU")
-                powerValuesFiltered = session.Runs.Where(r => !r.PmdGpuPower.IsNullOrEmpty());
+                powerValuesFiltered = session.Runs.Where(r => r.PmdGpuPower != null && r.PmdGpuPower.Length > 0);
 
 
             if (powerValuesFiltered == null || !powerValuesFiltered.Any())
@@ -221,7 +244,7 @@ namespace CapFrameX.Statistics.NetStandard
             var list = new List<Point>();
 
             // Search for Measure Times
-            var filteredTimes = session.Runs.Where(r => !r.SensorData2.MeasureTime.Values.IsNullOrEmpty());
+            var filteredTimes = session.Runs.Where(r => r.SensorData2.MeasureTime.Values != null && r.SensorData2.MeasureTime.Values.Count > 0);
             if (filteredTimes == null || !filteredTimes.Any())
                 return null;
 
@@ -231,18 +254,18 @@ namespace CapFrameX.Statistics.NetStandard
             // Search for Power Values
             IEnumerable<ISessionRun> powerValuesFiltered = null;
             if (hardware == "CPU")
-                powerValuesFiltered = session.Runs.Where(r => !r.SensorData2.CpuPower.IsNullOrEmpty());
+                powerValuesFiltered = session.Runs.Where(r => r.SensorData2.CpuPower != null && r.SensorData2.CpuPower.Length > 0);
             else if (hardware == "GPU")
             {
                 if (useTBP)
                 {
-                    powerValuesFiltered = session.Runs.Where(r => !r.SensorData2.GpuTBPSim.IsNullOrEmpty());
+                    powerValuesFiltered = session.Runs.Where(r => r.SensorData2.GpuTBPSim != null && r.SensorData2.GpuTBPSim.Length > 0);
 
                     if (powerValuesFiltered == null || !powerValuesFiltered.Any())
-                        powerValuesFiltered = session.Runs.Where(r => !r.SensorData2.GpuPower.IsNullOrEmpty());
+                        powerValuesFiltered = session.Runs.Where(r => r.SensorData2.GpuPower != null && r.SensorData2.GpuPower.Length > 0);
                 }
                 else
-                    powerValuesFiltered = session.Runs.Where(r => !r.SensorData2.GpuPower.IsNullOrEmpty());
+                    powerValuesFiltered = session.Runs.Where(r => r.SensorData2.GpuPower != null && r.SensorData2.GpuPower.Length > 0);
             }
 
 
@@ -461,6 +484,25 @@ namespace CapFrameX.Statistics.NetStandard
                 for (int i = 0; i < count; i++)
                 {
                     list.Add(new Point(times[i], latencies[i]));
+                }
+            }
+
+            return list;
+        }
+
+        public static IList<Point> GetAnimationErrorPointTimeWindow(this ISession session)
+        {
+            var list = new List<Point>();
+
+            var times = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
+            var animationErrors = session.Runs.SelectMany(r => r.CaptureData.AnimationError).ToArray();
+            int count = Math.Min(times.Count(), animationErrors.Count());
+
+            if (animationErrors.Any())
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    list.Add(new Point(times[i], animationErrors[i]));
                 }
             }
 

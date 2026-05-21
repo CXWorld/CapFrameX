@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -132,16 +132,38 @@ typedef void (ADLX_STD_CALL* ADLX_ADL_Main_Memory_Free)(void** buffer);
   */
 #define ADLX_INIT_FUNCTION_NAME                             "ADLXInitialize"
 
-  /**
-   * @def ADLX_INIT_WITH_INCOMPATIBLE_DRIVER_FUNCTION_NAME
-   * @ingroup ADLXMacro
-   * @ENG_START_DOX The function name of ADLXInitializeWithIncompatibleDriver @ENG_END_DOX
-   * @definition
-   *  @codeStart
-   *   \#define ADLX_INIT_WITH_INCOMPATIBLE_DRIVER_FUNCTION_NAME          "ADLXInitializeWithIncompatibleDriver"
-   *  @codeEnd
-   */
+/**
+ * @def ADLX_INIT_WITH_INCOMPATIBLE_DRIVER_FUNCTION_NAME
+ * @ingroup ADLXMacro
+ * @ENG_START_DOX The function name of ADLXInitializeWithIncompatibleDriver @ENG_END_DOX
+ * @definition
+ *  @codeStart
+ *   \#define ADLX_INIT_WITH_INCOMPATIBLE_DRIVER_FUNCTION_NAME          "ADLXInitializeWithIncompatibleDriver"
+ *  @codeEnd
+ */
 #define ADLX_INIT_WITH_INCOMPATIBLE_DRIVER_FUNCTION_NAME          "ADLXInitializeWithIncompatibleDriver"
+
+ /**
+  * @def ADLX_INIT2_FUNCTION_NAME
+  * @ingroup ADLXMacro
+  * @ENG_START_DOX The function name of ADLXInitialize2 @ENG_END_DOX
+  * @definition
+  *  @codeStart
+  *   \#define ADLX_INIT2_FUNCTION_NAME                             "ADLXInitialize2"
+  *  @codeEnd
+  */
+#define ADLX_INIT2_FUNCTION_NAME                             "ADLXInitialize2"
+
+/**
+ * @def ADLX_INIT_WITH_INCOMPATIBLE_DRIVER_FUNCTION_NAME
+ * @ingroup ADLXMacro
+ * @ENG_START_DOX The function name of ADLXInitializeWithIncompatibleDriver @ENG_END_DOX
+ * @definition
+ *  @codeStart
+ *   \#define ADLX_INIT2_WITH_INCOMPATIBLE_DRIVER_FUNCTION_NAME          "ADLXInitializeWithIncompatibleDriver2"
+ *  @codeEnd
+ */
+#define ADLX_INIT2_WITH_INCOMPATIBLE_DRIVER_FUNCTION_NAME          "ADLXInitializeWithIncompatibleDriver2"
 
 /**
 * @def ADLX_INIT_WITH_CALLER_ADL_FUNCTION_NAME
@@ -279,6 +301,44 @@ extern "C"
     typedef ADLX_RESULT (ADLX_CDECL_CALL *ADLXInitialize_Fn)(adlx_uint64 version, adlx::IADLXSystem** ppSystem);
 
     /**
+    * @page page_ADLXInitialize2_Fn ADLXInitialize2_Fn
+    * @ENG_START_DOX
+    * @brief A pointer to the function to initialize ADLX with default parameters or a pointer to the function to initialize ADLX with a legacy driver.
+    * @ENG_END_DOX
+    *
+    * @syntax
+    * @codeStart
+    *  typedef @ref ADLX_RESULT (ADLX_CDECL_CALL *ADLXInitialize2_Fn)(adlx_uint64 version, @ref DOX_IADLXSystem** ppSystem, @ref DOX_IADLMapping** ppAdlMapping)
+    * @codeEnd
+    * @params
+    * @paramrow{1.,[in],version,adlx_uint64,@ENG_START_DOX The version of ADLX. @ENG_END_DOX}
+    * @paramrow{1.,[out],ppSystem,@ref DOX_IADLXSystem**,@ENG_START_DOX The address of a pointer to the ADLX system interface. If ADLX initialization failed\, the method sets the dereferenced address __*ppSystem__ to __nullptr__. @ENG_END_DOX}
+    * @paramrow{3.,[out],ppAdlMapping,@ref DOX_IADLMapping**,@ENG_START_DOX The address of a pointer to the ADLX mapping interface. If ADLX initialization failed\, the method sets the dereferenced address __*ppAdlMapping__ to __nullptr__. @ENG_END_DOX}    
+    *
+    * @retvalues
+    * @ENG_START_DOX
+    * If ADLX was successfully initialized, __ADLX_OK__ is returned.<br>
+    * If ADLX was not successfully initialized, an error code is returned.<br>
+    * Refer to @ref ADLX_RESULT for success codes and error codes.<br>
+    * @detaileddesc
+    * The pointer of the function is returned by the @ref adlx_get_proc_address using the @ref ADLX_INIT_FUNCTION_NAME or @ref ADLX_INIT_WITH_INCOMPATIBLE_DRIVER_FUNCTION_NAME as the function name.
+    * @ENG_END_DOX
+    * @requirements
+    * @DetailsTable{#include "ADLX.h", @ADLX_1_5_Ver}
+    */
+
+    /**
+    * @typedef ADLXInitialize2_Fn
+    * @ingroup ADLXDefs
+    * @ENG_START_DOX The typedef of ADLXInitialize function. @ENG_END_DOX
+    * @definition
+    *  @codeStart
+    *  typedef @ref ADLX_RESULT (ADLX_CDECL_CALL *ADLXInitialize2_Fn)(adlx_uint64 version, @ref DOX_IADLXSystem** ppSystem, @ref DOX_IADLMapping** ppAdlMapping)
+    *  @codeEnd
+    */
+    typedef ADLX_RESULT (ADLX_CDECL_CALL *ADLXInitialize2_Fn)(adlx_uint64 version, adlx::IADLXSystem** ppSystem, adlx::IADLMapping** ppAdlMapping);
+
+    /**
     * @page page_ADLXInitializeWithCallerAdl_Fn ADLXInitializeWithCallerAdl_Fn
     * @ENG_START_DOX
     * @brief A pointer to the function to initialize ADLX with an ADL context.
@@ -358,6 +418,7 @@ extern "C"
 typedef ADLX_RESULT (ADLX_CDECL_CALL *ADLXQueryFullVersion_Fn)(adlx_uint64* fullVersion);
 typedef ADLX_RESULT (ADLX_CDECL_CALL *ADLXQueryVersion_Fn)(const char** version);
 typedef ADLX_RESULT (ADLX_CDECL_CALL *ADLXInitialize_Fn)(adlx_uint64 version, IADLXSystem** ppSystem);
+typedef ADLX_RESULT (ADLX_CDECL_CALL *ADLXInitialize2_Fn)(adlx_uint64 version, IADLXSystem** ppSystem, IADLMapping** ppAdlMapping);
 typedef ADLX_RESULT (ADLX_CDECL_CALL *ADLXInitializeWithCallerAdl_Fn)(adlx_uint64 version, IADLXSystem** ppSystem, IADLMapping** ppAdlMapping, adlx_handle adlContext, ADLX_ADL_Main_Memory_Free adlMainMemoryFree);
 typedef ADLX_RESULT (ADLX_CDECL_CALL *ADLXTerminate_Fn)();
 #endif

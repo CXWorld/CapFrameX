@@ -104,6 +104,7 @@ namespace CapFrameX.ViewModel.SubModels
                        || item.Identifier == "OnlineGpuActiveTimePercentageDeviation"
                        || item.Identifier == "OnlineStutteringPercentage"
                        || item.Identifier == "OnlinePcLatency"
+                       || item.Identifier == "OnlineAnimationError"
                        || item.Identifier == "PmdGpuPowerCurrent"
                        || item.Identifier == "PmdCpuPowerCurrent"
                        || item.Identifier == "PmdSystemPowerCurrent"))
@@ -130,8 +131,8 @@ namespace CapFrameX.ViewModel.SubModels
             foreach (var entry in _overlayViewModel.OverlayEntries
                    .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.CPU))
             {
-                if (entry.Identifier.Contains("load") && entry.Description.Contains("CPU Core #")
-                    && entry.ShowOnOverlayIsEnabled)
+                if (entry.StableIdentifier != null && entry.StableIdentifier.Contains("/load/")
+                    && entry.Description.Contains("Core #") && entry.ShowOnOverlayIsEnabled)
                     entry.ShowOnOverlay = showEntry;
             }
         }
@@ -141,8 +142,8 @@ namespace CapFrameX.ViewModel.SubModels
             foreach (var entry in _overlayViewModel.OverlayEntries
                    .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.CPU))
             {
-                if (entry.Identifier.Contains("clock") && entry.Description.Contains("CPU Core #")
-                    && entry.ShowOnOverlayIsEnabled)
+                if (entry.StableIdentifier != null && entry.StableIdentifier.Contains("/clock/")
+                    && entry.Description.Contains("Core #") && entry.ShowOnOverlayIsEnabled)
                     entry.ShowOnOverlay = showEntry;
             }
         }
@@ -152,8 +153,8 @@ namespace CapFrameX.ViewModel.SubModels
             foreach (var entry in _overlayViewModel.OverlayEntries
                    .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.CPU))
             {
-                if (entry.Identifier.Contains("power") && entry.Description.Contains("CPU Core #")
-                    && entry.ShowOnOverlayIsEnabled)
+                if (entry.StableIdentifier != null && entry.StableIdentifier.Contains("/power/")
+                    && entry.Description.Contains("Core #") && entry.ShowOnOverlayIsEnabled)
                     entry.ShowOnOverlay = showEntry;
             }
         }
@@ -163,8 +164,8 @@ namespace CapFrameX.ViewModel.SubModels
             foreach (var entry in _overlayViewModel.OverlayEntries
                    .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.CPU))
             {
-                if (entry.Identifier.Contains("temperature") && entry.Description.Contains("CPU Core #")
-                    && entry.ShowOnOverlayIsEnabled)
+                if (entry.StableIdentifier != null && entry.StableIdentifier.Contains("/temperature/")
+                    && entry.Description.Contains("Core #") && entry.ShowOnOverlayIsEnabled)
                     entry.ShowOnOverlay = showEntry;
             }
         }
@@ -174,8 +175,8 @@ namespace CapFrameX.ViewModel.SubModels
             foreach (var entry in _overlayViewModel.OverlayEntries
                   .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.CPU))
             {
-                if (entry.Identifier.Contains("voltage") && entry.Description.Contains("CPU Core #")
-                    && entry.ShowOnOverlayIsEnabled)
+                if (entry.StableIdentifier != null && entry.StableIdentifier.Contains("/voltage/")
+                    && entry.Description.Contains("Core #") && entry.ShowOnOverlayIsEnabled)
                     entry.ShowOnOverlay = showEntry;
             }
         }

@@ -1,0 +1,11 @@
+{
+  "Header": {
+    "Copyright": "Copyright (c) 2001 - 2022 Intel Corporation. All rights reserved.",
+    "Info": "Performance Monitoring Events for Intel(R) Atom(TM) Processors Based on the Goldmont Microarchitecture - V13",
+    "DatePublished": "03/02/2018",
+    "Version": "13",
+    "Legend": ""
+  },
+  "Events": [
+  ]
+}

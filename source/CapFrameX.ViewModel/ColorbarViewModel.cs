@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.Configuration;
+﻿using CapFrameX.Configuration;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.MVVM;
 using CapFrameX.Contracts.Sensor;
@@ -35,6 +36,7 @@ namespace CapFrameX.ViewModel
         private readonly IRegionManager _regionManager;
         private readonly IEventAggregator _eventAggregator;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly IPathService _pathService;
         private readonly ISensorService _sensorService;
         private readonly ILogger<ColorbarViewModel> _logger;
         private readonly IShell _shell;
@@ -414,6 +416,8 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool AutoStartIsEnabeld => !PortableModeDetector.IsPortableMode;
+
         public bool IsDarkModeToggleChecked
         {
             get { return _appConfiguration.UseDarkMode; }
@@ -454,6 +458,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool McpEnabled
+        {
+            get { return _appConfiguration.McpEnabled; }
+            set
+            {
+                _appConfiguration.McpEnabled = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public string WebservicePort
         {
             get { return _appConfiguration.WebservicePort; }
@@ -480,6 +494,16 @@ namespace CapFrameX.ViewModel
             set
             {
                 _appConfiguration.UseDisplayChangeMetrics = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool UsePcLatency
+        {
+            get { return _appConfiguration.UsePcLatency; }
+            set
+            {
+                _appConfiguration.UsePcLatency = value;
                 RaisePropertyChanged();
             }
         }
@@ -532,9 +556,12 @@ namespace CapFrameX.ViewModel
 
         public ISensorService SensorService => _sensorService;
 
+        public string ResolveDocumentsPath(string path) => _pathService.ResolveDocumentsPlaceholder(path);
+
         public ColorbarViewModel(IRegionManager regionManager,
             IEventAggregator eventAggregator,
             IAppConfiguration appConfiguration,
+            IPathService pathService,
             ISensorService sensorService,
             ILogger<ColorbarViewModel> logger,
             IShell shell,
@@ -544,6 +571,7 @@ namespace CapFrameX.ViewModel
             _regionManager = regionManager;
             _eventAggregator = eventAggregator;
             _appConfiguration = appConfiguration;
+            _pathService = pathService;
             _sensorService = sensorService;
             _logger = logger;
             _shell = shell;
@@ -565,7 +593,6 @@ namespace CapFrameX.ViewModel
                 await sensorService.SensorServiceCompletionSource.Task;
 
                 GraphicsAdapters = sensorService.GetDetectedGpus()
-                    .Select(g => g.Name)
                     .Distinct()
                     .Prepend("Auto")
                     .ToArray();
@@ -577,7 +604,17 @@ namespace CapFrameX.ViewModel
             SubscribeToAggregatorEvents();
             SetHardwareInfoDefaultsFromConfig();
 
-            OnAutostartChanged(true);
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                try
+                {
+                    OnAutostartChanged(true);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Unable to clean autostart configuration.");
+                }
+            });
 
             if (AppNotificationsActive)
             {
@@ -627,12 +664,7 @@ namespace CapFrameX.ViewModel
         {
             try
             {
-                var path = _appConfiguration.ScreenshotDirectory;
-                if (path.Contains(@"MyDocuments\CapFrameX\Screenshots"))
-                {
-                    var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                    path = Path.Combine(documentFolder, @"CapFrameX\Screenshots");
-                }
+                var path = _pathService.ResolveDocumentsPlaceholder(_appConfiguration.ScreenshotDirectory);
                 Process.Start(path);
             }
             catch { _logger.LogError("Error while opening screenshot folder."); }
@@ -741,9 +773,9 @@ namespace CapFrameX.ViewModel
         {
             const string appName = "CapFrameX";
 
-            using (TaskService ts = new TaskService())
+            try
             {
-                try
+                using (TaskService ts = new TaskService())
                 {
                     var taskExists = ts.RootFolder.GetTasks().Any(t => t.Name == appName);
 
@@ -777,10 +809,10 @@ namespace CapFrameX.ViewModel
                         ts.RootFolder.DeleteTask(appName);
                     }
                 }
-                catch (Exception e)
-                {
-                    _logger.LogError("Unable to perform autostart task", e);
-                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Unable to perform autostart task");
             }
 
             if (cleanup)

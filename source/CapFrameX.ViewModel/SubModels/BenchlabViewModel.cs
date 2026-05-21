@@ -17,7 +17,6 @@ namespace CapFrameX.ViewModel.SubModels
 {
     public class BenchlabViewModel : PmdViewModelBase
     {
-        private bool _updateCharts = true;
         private bool _updateMetrics = true;
         private bool _usePmdService;
         private int _pmdDataWindowSeconds = 10;
@@ -53,6 +52,11 @@ namespace CapFrameX.ViewModel.SubModels
             get => _usePmdService;
             set
             {
+                if (_usePmdService == value)
+                {
+                    return;
+                }
+
                 _usePmdService = value;
                 RaisePropertyChanged();
                 ManagePmdService(value);
@@ -84,10 +88,10 @@ namespace CapFrameX.ViewModel.SubModels
 
         public bool UpdateCharts
         {
-            get => _updateCharts;
+            get => _appConfiguration.BenchlabUpdateCharts;
             set
             {
-                _updateCharts = value;
+                _appConfiguration.BenchlabUpdateCharts = value;
                 ManageChartsUpdate();
                 RaisePropertyChanged();
             }
@@ -99,6 +103,16 @@ namespace CapFrameX.ViewModel.SubModels
             set
             {
                 _updateMetrics = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool AutoStartPmd
+        {
+            get => _appConfiguration.BenchlabAutoStartPmd;
+            set
+            {
+                _appConfiguration.BenchlabAutoStartPmd = value;
                 RaisePropertyChanged();
             }
         }
@@ -248,7 +262,7 @@ namespace CapFrameX.ViewModel.SubModels
 
         internal void ManageChartsUpdate()
         {
-            if (!_updateCharts)
+            if (!UpdateCharts)
             {
                 _pmdDataChartManager.ResetRealTimePlotModels();
                 _chartaDataBuffer.Clear();
@@ -263,6 +277,16 @@ namespace CapFrameX.ViewModel.SubModels
             {
                 _chartaDataBuffer = new List<SensorSample>(pmdDataWindowSeconds * 1000);
             }
+        }
+
+        internal void AutoStartPmdService()
+        {
+            if (!AutoStartPmd || UsePmdService || PmdServiceStatus == EPmdServiceStatus.Running)
+            {
+                return;
+            }
+
+            UsePmdService = true;
         }
     }
 }

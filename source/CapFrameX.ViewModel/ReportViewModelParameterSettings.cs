@@ -290,6 +290,30 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool ShowAnimationErrorP99
+        {
+            get { return _settings.ReportShowAnimationErrorP99; }
+            set
+            {
+                _settings.ReportShowAnimationErrorP99 = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
+
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowAnimationErrorAverage
+        {
+            get { return _settings.ReportShowAnimationErrorAverage; }
+            set
+            {
+                _settings.ReportShowAnimationErrorAverage = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
+
+                RaisePropertyChanged();
+            }
+        }
+
         public bool ShowCpuFpsPerWatt
         {
             get { return _settings.ReportShowCpuFpsPerWatt; }

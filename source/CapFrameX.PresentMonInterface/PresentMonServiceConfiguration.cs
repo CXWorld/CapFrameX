@@ -19,13 +19,15 @@ namespace CapFrameX.PresentMonInterface
 
         public List<string> ExcludeProcesses { get; set; }
 
+        public bool TrackPcLatency { get; set; } = true;
+
         public string ConfigParameterToArguments()
         {
             var arguments = string.Empty;
             if (RedirectOutputStream)
             {
-                arguments += "--restart_as_admin";
-                arguments += PARAMETER_SEPARATOR;
+                //arguments += "--restart_as_admin";
+                //arguments += PARAMETER_SEPARATOR;
                 arguments += "--stop_existing_session";
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--output_stdout";
@@ -36,8 +38,13 @@ namespace CapFrameX.PresentMonInterface
                 // w/o FrameType, it's flawed when using XeFG
                 //arguments += PARAMETER_SEPARATOR;
                 //arguments += "--track_frame_type";
+                if (TrackPcLatency)
+                {
+                    arguments += PARAMETER_SEPARATOR;
+                    arguments += "--track_pc_latency";
+                }
                 arguments += PARAMETER_SEPARATOR;
-                arguments += "--track_pc_latency";
+                arguments += "--track_etw_status";
 
                 if (ExcludeProcesses != null && ExcludeProcesses.Any())
                 {
@@ -57,8 +64,8 @@ namespace CapFrameX.PresentMonInterface
                     throw new ArgumentException("Process name must be set!");
                 }
 
-                arguments += "--restart_as_admin";
-                arguments += PARAMETER_SEPARATOR;
+                //arguments += "--restart_as_admin";
+                //arguments += PARAMETER_SEPARATOR;
                 arguments += "--stop_existing_session";
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--process_name";
@@ -75,8 +82,13 @@ namespace CapFrameX.PresentMonInterface
                 // w/o FrameType, it's flawed when using XeFG
                 //arguments += PARAMETER_SEPARATOR;
                 //arguments += "--track_frame_type";
+                if (TrackPcLatency)
+                {
+                    arguments += PARAMETER_SEPARATOR;
+                    arguments += "--track_pc_latency";
+                }
                 arguments += PARAMETER_SEPARATOR;
-                arguments += "--track_pc_latency";
+                arguments += "--track_etw_status";
             }
 
             return arguments;

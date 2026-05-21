@@ -1,25 +1,12 @@
 ﻿using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
 using System.Collections.Generic;
+using LibreHardwareMonitor.Hardware.Simulation;
 
 namespace CapFrameX.Contracts.Configuration
 {
     public interface IAppConfiguration : IFrametimeStatisticProviderOptions, IPmdServiceConfiguration
 	{
-		/// <summary>
-		/// Emits an events when a configuration entry has been changes
-		/// </summary>
-		// Example code to add in constructor
-		/*
-            _appConfiguration.OnValueChanged
-                .Where(x => x.key == nameof(IAppConfiguration.*key*))
-                .Select(x => (*type*)x.value)
-                .Subscribe(value =>
-                {
-                    do stuff();
-
-                });
-		*/
 		IObservable<(string key, object value)> OnValueChanged { get; }
 
 		double StutteringFactor { get; set; }
@@ -35,6 +22,10 @@ namespace CapFrameX.Contracts.Configuration
 		bool UseSingleRecord99QuantileStatisticParameter { get; set; }
 
 		bool UseSingleRecordP95QuantileStatisticParameter { get; set; }
+
+		bool UseSingleRecordFrametimeP1QuantileStatisticParameter { get; set; }
+
+		bool UseSingleRecordFrametimeP5QuantileStatisticParameter { get; set; }
 
 		bool UseSingleRecordAverageStatisticParameter { get; set; }
 
@@ -69,6 +60,10 @@ namespace CapFrameX.Contracts.Configuration
 		bool UseSingleRecordCpuFpsPerWattParameter { get; set; }
 
 		bool UseSingleRecordGpuFpsPerWattParameter { get; set; }
+
+		bool UseSingleRecordAnimationErrorAverageStatisticParameter { get; set; }
+
+		bool UseSingleRecordAnimationErrorP99StatisticParameter { get; set; }
 
 		string CaptureHotKey { get; set; }
 
@@ -186,6 +181,9 @@ namespace CapFrameX.Contracts.Configuration
 		bool AutoUpdateProcessList { get; set; }
 
 		bool UseSensorLogging { get; set; }
+
+		SimulationConfiguration HardwareSimulationConfiguration { get; set; }
+
 		/// <summary>
 		/// Toggle between absolute and percentage values for threshold bar charts
 		/// </summary>
@@ -196,6 +194,8 @@ namespace CapFrameX.Contracts.Configuration
         bool ComparisonRangeSliderRealTime { get; set; }
 
         int OverlayEntryConfigurationFile { get; set; }
+
+        int SelectedOverlayTemplate { get; set; }
 
 		int SensorLoggingRefreshPeriod { get; set; }
 
@@ -258,7 +258,16 @@ namespace CapFrameX.Contracts.Configuration
 		/// </summary>
 		bool UseTBPSim { get; set; }
 
+		bool BenchlabUpdateCharts { get; set; }
+
+		bool PoweneticsUpdateCharts { get; set; }
+
+		bool BenchlabAutoStartPmd { get; set; }
+
 		bool UseDisplayChangeMetrics { get; set; }
+
+		bool UsePcLatency { get; set; }
+
         bool UseAdlFallback { get; set; }
 
 		string FirstMetricBarColor { get; set; }
@@ -270,6 +279,10 @@ namespace CapFrameX.Contracts.Configuration
         List<string> ComparisonLineGraphColors { get; set; }
 
         string PingURL { get; set; }
+
+        bool SuppressFrameViewServiceWarning { get; set; }
+
+        bool McpEnabled { get; set; }
     }
 
 	public interface IReportDataGridColumnSettings
@@ -319,6 +332,10 @@ namespace CapFrameX.Contracts.Configuration
         bool ReportShowP0Dot1LowIntegralFPS { get; set; }
 
         bool ReportShowMinFPS { get; set; }
+
+        bool ReportShowAnimationErrorP99 { get; set; }
+
+        bool ReportShowAnimationErrorAverage { get; set; }
 
 		bool ReportShowAdaptiveSTD { get; set; }
 

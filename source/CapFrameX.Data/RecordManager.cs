@@ -53,6 +53,7 @@ namespace CapFrameX.Data
         private readonly ProcessList _processList;
         private readonly IRTSSService _rTSSService;
         private readonly IEventAggregator _eventAggregator;
+        private readonly ICaptureService _captureService;
         private PubSubEvent<ViewMessages.UpdateSystemInfo> _updateSystemInfoEvent;
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -66,7 +67,8 @@ namespace CapFrameX.Data
             ISystemInfo systemInfo,
             ProcessList processList,
             IRTSSService rTSSService,
-            IEventAggregator eventAggregator)
+            IEventAggregator eventAggregator,
+            ICaptureService captureService)
         {
             _logger = logger;
             _appConfiguration = appConfiguration;
@@ -77,6 +79,7 @@ namespace CapFrameX.Data
             _processList = processList;
             _rTSSService = rTSSService;
             _eventAggregator = eventAggregator;
+            _captureService = captureService;
             _updateSystemInfoEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSystemInfo>>();
         }
 
@@ -263,21 +266,36 @@ namespace CapFrameX.Data
 
         private ISession LoadSessionFromJSON(FileInfo fileInfo)
         {
-            using (var stream = new StreamReader(fileInfo.FullName))
+            try
             {
-                using (JsonReader jsonReader = new JsonTextReader(stream))
+                using (var stream = new StreamReader(fileInfo.FullName))
                 {
-                    JsonSerializer serializer = new JsonSerializer();
-                    var session = serializer.Deserialize<Session.Classes.Session>(jsonReader);
-                    foreach (var sessionrun in session.Runs)
+                    using (JsonReader jsonReader = new JsonTextReader(stream))
                     {
-                        if (sessionrun.SensorData != null && sessionrun.SensorData2 == null)
+                        JsonSerializer serializer = new JsonSerializer();
+                        var session = serializer.Deserialize<Session.Classes.Session>(jsonReader);
+
+                        // Handle corrupt/incomplete JSON files (e.g., from disk full during write)
+                        if (session?.Runs == null)
                         {
-                            SessionSensorDataConverter.ConvertToSensorData2(sessionrun);
+                            _logger.LogWarning("Failed to load session from {path}: file is corrupt or incomplete", fileInfo.FullName);
+                            return null;
                         }
+
+                        foreach (var sessionrun in session.Runs)
+                        {
+                            if (sessionrun.SensorData != null && sessionrun.SensorData2 == null)
+                            {
+                                SessionSensorDataConverter.ConvertToSensorData2(sessionrun);
+                            }
+                        }
+                        return session;
                     }
-                    return session;
                 }
+            }
+            catch (Exception ex)
+            {
+                throw;
             }
         }
 
@@ -425,7 +443,7 @@ namespace CapFrameX.Data
             try
             {
                 var filePath = await GetOutputFilename(process, recordDirectory);
-                lines = new string[] { IGNOREFLAGMARKER, PresentMonCaptureService.COLUMN_HEADER }.Concat(lines);
+                lines = new string[] { IGNOREFLAGMARKER, _captureService.ColumnHeader }.Concat(lines);
                 File.WriteAllLines(filePath + ".csv", lines);
             }
             catch (Exception ex)
@@ -699,14 +717,63 @@ namespace CapFrameX.Data
 
         private void SaveSessionToFile(string filePath, ISession session)
         {
-            using (var streamWriter = new StreamWriter(filePath))
+            // Serialize to memory first to get exact size
+            using (var memoryStream = new MemoryStream())
             {
-                using (JsonWriter jsonWriter = new JsonTextWriter(streamWriter))
+                using (var streamWriter = new StreamWriter(memoryStream, Encoding.UTF8, 1024, leaveOpen: true))
+                using (var jsonWriter = new JsonTextWriter(streamWriter))
                 {
                     var serializer = new JsonSerializer();
                     serializer.Serialize(jsonWriter, session);
-                    _logger.LogInformation("{filePath} successfully written", filePath);
                 }
+
+                // Check disk space with a safety buffer
+                var requiredBytes = memoryStream.Length;
+                EnsureSufficientDiskSpace(filePath, requiredBytes);
+
+                // Now write to disk
+                try
+                {
+                    memoryStream.Position = 0;
+                    using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                    {
+                        memoryStream.CopyTo(fileStream);
+                    }
+
+                    _logger.LogInformation("{FilePath} successfully written", filePath);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error writing session to file {FilePath}", filePath);
+                    throw;
+                }
+            }
+        }
+
+        private void EnsureSufficientDiskSpace(string filePath, long requiredBytes)
+        {
+            const long MinimumBuffer = 10 * 1024 * 1024; // 10 MB minimum buffer
+
+            var fullPath = Path.GetFullPath(filePath);
+
+            // DriveInfo does not support UNC paths (network shares)
+            if (fullPath.StartsWith(@"\\"))
+            {
+                return;
+            }
+
+            var root = Path.GetPathRoot(fullPath);
+            var driveInfo = new DriveInfo(root);
+            var required = requiredBytes + MinimumBuffer;
+
+            if (driveInfo.AvailableFreeSpace < required)
+            {
+                throw new IOException(
+                    string.Format(
+                        "Insufficient disk space on {0}. Need {1:N0} bytes, have {2:N0} bytes.",
+                        root,
+                        required,
+                        driveInfo.AvailableFreeSpace));
             }
         }
 
@@ -794,6 +861,7 @@ namespace CapFrameX.Data
                 int indexAllowsTearing = -1;
                 int indexSyncInterval = -1;
                 int indexPcLatency = -1;
+                int indexMsAnimationError = -1;
                 int indexmsGPUActive = -1;
                 int indexmsCPUActive = -1;
                 int indexCPUStartQPCTime = -1;
@@ -809,8 +877,11 @@ namespace CapFrameX.Data
                 }
                 else
                 {
-                    headerLine = PresentMonCaptureService.COLUMN_HEADER;
+                    headerLine = _captureService.ColumnHeader;
                 }
+
+                // Filter lines by dominant process and SwapChainAddress
+                presentLines = FilterByDominantSwapChain(presentLines, headerLine);
 
                 var sessionRun = new SessionRun()
                 {
@@ -887,6 +958,10 @@ namespace CapFrameX.Data
                     {
                         indexPcLatency = i;
                     }
+                    if (string.Compare(metrics[i], "MsAnimationError") == 0)
+                    {
+                        indexMsAnimationError = i;
+                    }
                     if (string.Compare(metrics[i], "msGPUActive") == 0 || string.Compare(metrics[i], "GPUBusy") == 0 || string.Compare(metrics[i], "MsGPUBusy") == 0)
                     {
                         indexmsGPUActive = i;
@@ -902,7 +977,7 @@ namespace CapFrameX.Data
                     if (string.Compare(metrics[i], "CPUStartQPCTimeInMs") == 0 || (string.Compare(metrics[i], "CPUStartTimeInMs") == 0))
                     {
                         indexCPUStartQPCTimeInMs = i;
-                    }         
+                    }
                 }
 
                 var captureData = new SessionCaptureData(presentLines.Count());
@@ -978,7 +1053,7 @@ namespace CapFrameX.Data
                     {
                         if (double.TryParse(GetStringFromArray(values, indexCPUStartQPCTimeInMs), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart))
                         {
-                            captureData.TimeInSeconds[lineIndex] = frameStart;
+                            captureData.TimeInSeconds[lineIndex] = frameStart * 1E-03; ;
                         }
                     }
 
@@ -1067,6 +1142,13 @@ namespace CapFrameX.Data
                             captureData.PcLatency[lineIndex] = double.NaN;
                         }
                     }
+                    if (indexMsAnimationError > -1)
+                    {
+                        if (double.TryParse(GetStringFromArray(values, indexMsAnimationError), NumberStyles.Any, CultureInfo.InvariantCulture, out var animationError))
+                        {
+                            captureData.AnimationError[lineIndex] = animationError;
+                        }
+                    }
                     if (indexmsGPUActive > -1)
                     {
                         if (double.TryParse(GetStringFromArray(values, indexmsGPUActive), NumberStyles.Any, CultureInfo.InvariantCulture, out var gpuActive))
@@ -1119,6 +1201,105 @@ namespace CapFrameX.Data
                 _logger.LogError(e, "Error converting PresentData");
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Filters present data lines to include only the dominant process and its dominant SwapChainAddress.
+        /// This handles scenarios where multiple processes or multiple swap chains per process are present.
+        /// </summary>
+        private IEnumerable<string> FilterByDominantSwapChain(IEnumerable<string> presentLines, string headerLine)
+        {
+            var linesList = presentLines.ToList();
+            if (!linesList.Any())
+                return linesList;
+
+            // Find SwapChainAddress index from header
+            var metrics = Array.ConvertAll(headerLine.Split(','), p => p.Trim());
+            int swapChainIndex = -1;
+            int processNameIndex = -1;
+
+            for (int i = 0; i < metrics.Length; i++)
+            {
+                if (string.Compare(metrics[i], "SwapChainAddress", true) == 0)
+                    swapChainIndex = i;
+                if (string.Compare(metrics[i], "Application", true) == 0)
+                    processNameIndex = i;
+            }
+
+            // If SwapChainAddress column not found, return lines as-is
+            if (swapChainIndex < 0 || processNameIndex < 0)
+                return linesList;
+
+            // Parse all lines to extract (ProcessName, SwapChainAddress) pairs and count occurrences
+            var processSwapChainCounts = new Dictionary<(string ProcessName, string SwapChain), int>();
+            var lineData = new List<(string Line, string ProcessName, string SwapChain)>();
+
+            foreach (var line in linesList)
+            {
+                var values = line.Split(',');
+                if (values.Length <= Math.Max(swapChainIndex, processNameIndex))
+                    continue;
+
+                var processName = values[processNameIndex];
+                var swapChain = values[swapChainIndex];
+                var key = (processName, swapChain);
+
+                if (!processSwapChainCounts.ContainsKey(key))
+                    processSwapChainCounts[key] = 0;
+                processSwapChainCounts[key]++;
+
+                lineData.Add((line, processName, swapChain));
+            }
+
+            if (!processSwapChainCounts.Any())
+                return linesList;
+
+            // Group by process and find the dominant SwapChain for each process
+            var processCounts = processSwapChainCounts
+                .GroupBy(kvp => kvp.Key.ProcessName)
+                .ToDictionary(
+                    g => g.Key,
+                    g => new
+                    {
+                        TotalFrames = g.Sum(x => x.Value),
+                        DominantSwapChain = g.OrderByDescending(x => x.Value).First().Key.SwapChain,
+                        DominantSwapChainCount = g.OrderByDescending(x => x.Value).First().Value
+                    });
+
+            // Select the dominant process (the one with the most frames from its dominant SwapChain)
+            var dominantProcess = processCounts
+                .OrderByDescending(p => p.Value.DominantSwapChainCount)
+                .First();
+
+            var selectedProcessName = dominantProcess.Key;
+            var selectedSwapChain = dominantProcess.Value.DominantSwapChain;
+
+            _logger.LogInformation($"SwapChain filtering: Selected process '{selectedProcessName}' with SwapChain '{selectedSwapChain}' " +
+                $"({dominantProcess.Value.DominantSwapChainCount} frames out of {dominantProcess.Value.TotalFrames} total for this process)");
+
+            // Log if we're filtering out other processes or swap chains
+            if (processCounts.Count > 1)
+            {
+                _logger.LogInformation($"SwapChain filtering: Filtered out {processCounts.Count - 1} other process(es)");
+            }
+
+            var otherSwapChainsForProcess = processSwapChainCounts
+                .Where(kvp => kvp.Key.ProcessName == selectedProcessName && kvp.Key.SwapChain != selectedSwapChain)
+                .ToList();
+
+            if (otherSwapChainsForProcess.Any())
+            {
+                var filteredCount = otherSwapChainsForProcess.Sum(x => x.Value);
+                _logger.LogInformation($"SwapChain filtering: Filtered out {filteredCount} frames from {otherSwapChainsForProcess.Count} other SwapChain(s) for process '{selectedProcessName}'");
+            }
+
+            // Filter lines to only include the selected process and SwapChain
+            var filteredLines = lineData
+                .Where(ld => ld.ProcessName == selectedProcessName && ld.SwapChain == selectedSwapChain)
+                .Select(ld => ld.Line)
+                .ToList();
+
+            return filteredLines;
         }
 
         public void NormalizeStartTimesOfSessionRuns(IEnumerable<ISessionRun> sessionRuns)

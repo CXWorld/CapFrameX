@@ -1,4 +1,5 @@
-﻿using CapFrameX.View.UITracker;
+﻿using CapFrameX.Configuration;
+using CapFrameX.View.UITracker;
 using CapFrameX.ViewModel;
 using LiveCharts;
 using LiveCharts.Wpf;
@@ -29,8 +30,9 @@ namespace CapFrameX.View
                 .SubscribeOn(context)
                 .Subscribe(dummy => ResetLShapeChart());
 
-            var rowAWidthTracker = new RowHeightTracker(Application.Current.MainWindow);
-            var rowBWidthTracker = new RowHeightTracker(Application.Current.MainWindow);
+            var configFolder = PathServiceProvider.PathService.ConfigFolder;
+            var rowAWidthTracker = new RowHeightTracker(Application.Current.MainWindow, configFolder);
+            var rowBWidthTracker = new RowHeightTracker(Application.Current.MainWindow, configFolder);
 
             rowAWidthTracker.Tracker.Track(UpperRow);
             rowBWidthTracker.Tracker.Track(LowerRow);

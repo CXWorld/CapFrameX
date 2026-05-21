@@ -112,11 +112,13 @@ namespace CapFrameX.ViewModel
 
         private void OnCopyFPSThresholdData()
         {
-            var subset = GetFrametimesSubset();
+            var frametimeSubset = GetFrametimesSubset();
+            var sampleSubset = _appConfiguration.UseDisplayChangeMetrics
+                ? GetDisplayChangeTimesSubset() : frametimeSubset;
 
-            if (subset != null)
+            if (sampleSubset != null)
             {
-                var thresholdCounts = _frametimeStatisticProvider.GetFpsThresholdCounts(subset, ThresholdToggleButtonIsChecked);
+                var thresholdCounts = _frametimeStatisticProvider.GetFpsThresholdCounts(sampleSubset, ThresholdToggleButtonIsChecked);
                 StringBuilder builder = new StringBuilder();
 
                 for (int i = 0; i < FPSThresholdLabels.Length; i++)
@@ -130,11 +132,13 @@ namespace CapFrameX.ViewModel
 
         private void OnThresholdValuesChanged()
         {
-            var subset = GetFrametimesSubset();
+            var frametimeSubset = GetFrametimesSubset();
+            var sampleSubset = _appConfiguration.UseDisplayChangeMetrics
+                ? GetDisplayChangeTimesSubset() : frametimeSubset;
 
-            if (subset != null)
+            if (sampleSubset != null)
             {
-                Task.Factory.StartNew(() => SetFpsThresholdChart(subset));
+                Task.Factory.StartNew(() => SetFpsThresholdChart(sampleSubset));
                 SetThresholdLabels();
             }
         }
@@ -155,8 +159,7 @@ namespace CapFrameX.ViewModel
 
         private void SetFpsThresholdChart(IList<double> samples)
         {
-            if (samples == null || !samples.Any())
-                return;
+            if (samples == null || !samples.Any()) return;
 
             var thresholdCounts = _frametimeStatisticProvider.GetFpsThresholdCounts(samples, ThresholdToggleButtonIsChecked);
             var thresholdCountValues = new ChartValues<double>();

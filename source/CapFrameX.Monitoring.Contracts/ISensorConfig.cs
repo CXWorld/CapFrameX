@@ -5,8 +5,6 @@ namespace CapFrameX.Monitoring.Contracts
 {
     public interface ISensorConfig
     {
-        bool IsInitialized { get; set; }
-
         bool IsCapturing { get; set; }
 
         bool HasConfigFile { get; }
@@ -19,13 +17,15 @@ namespace CapFrameX.Monitoring.Contracts
 
         int SensorLoggingRefreshPeriod { get; set; }
 
-        bool GetSensorIsActive(string identifier);
+        bool IsSelectedForLogging(string identifier);
 
-        void SetSensorIsActive(string identifier, bool isActive);
+        void SelectForLogging(string identifier, bool isActive);
+
+        bool IsSelectedForOverlay(string identifier);
+
+        void SelectForOverlay(string identifier, bool isActive);
 
         bool GetSensorEvaluate(string identifier);
-
-        void SetSensorEvaluate(string identifier, bool isActive);
 
         Task Save();
 
@@ -34,5 +34,11 @@ namespace CapFrameX.Monitoring.Contracts
         void ResetEvaluate();
 
         Dictionary<string, bool> GetSensorConfigCopy();
+
+        bool IsSelectedForLoggingByStableId(string stableIdentifier);
+
+        void SelectStableForLogging(string stableIdentifier, bool isActive);
+
+        Dictionary<string, bool> GetStableSensorConfigCopy();
     }
 }

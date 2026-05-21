@@ -1,8 +1,8 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using LibreHardwareMonitor.Hardware.Simulation;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -158,9 +158,33 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool BenchlabUpdateCharts
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool PoweneticsUpdateCharts
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool BenchlabAutoStartPmd
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
         public bool UseDisplayChangeMetrics
         {
             get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool UsePcLatency
+        {
+            get => Get<bool>(true);
             set => Set(value);
         }
 
@@ -174,6 +198,18 @@ namespace CapFrameX.Configuration
         public string PingURL
         {
             get => Get<string>("google.com");
+            set => Set(value);
+        }
+
+        public bool SuppressFrameViewServiceWarning
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool McpEnabled
+        {
+            get => Get<bool>(false);
             set => Set(value);
         }
 
@@ -326,6 +362,18 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool UseSingleRecordFrametimeP1QuantileStatisticParameter
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
+        public bool UseSingleRecordFrametimeP5QuantileStatisticParameter
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
         public bool UseSingleRecordAverageStatisticParameter
         {
             get => Get<bool>(true);
@@ -428,6 +476,18 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool UseSingleRecordAnimationErrorAverageStatisticParameter
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool UseSingleRecordAnimationErrorP99StatisticParameter
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
         public bool ShowOutlierWarning
         {
             get => Get<bool>(true);
@@ -486,6 +546,12 @@ namespace CapFrameX.Configuration
 
         // Overlay Settings
         public int OverlayEntryConfigurationFile
+        {
+            get => Get<int>(0);
+            set => Set(value);
+        }
+
+        public int SelectedOverlayTemplate
         {
             get => Get<int>(0);
             set => Set(value);
@@ -671,17 +737,17 @@ namespace CapFrameX.Configuration
 
         public string FirstMetricBarColor
         {
-            get => Get<string>("#2297F3");
+            get => Get<string>("#3AA0FF");
             set => Set(value);
         }
         public string SecondMetricBarColor
         {
-            get => Get<string>("#F17D20");
+            get => Get<string>("#E879F9");
             set => Set(value);
         }
         public string ThirdMetricBarColor
         {
-            get => Get<string>("#FFB400");
+            get => Get<string>("#FBBF24");
             set => Set(value);
         }
         public bool ComparisonRangeSliderRealTime
@@ -706,6 +772,12 @@ namespace CapFrameX.Configuration
         {
             get => Get<bool>(true);
             set => Set(value);
+        }
+
+        public SimulationConfiguration HardwareSimulationConfiguration
+        {
+            get => Get<SimulationConfiguration>(new SimulationConfiguration());
+            set => Set(value ?? new SimulationConfiguration());
         }
 
         public int SensorLoggingRefreshPeriod
@@ -898,6 +970,8 @@ namespace CapFrameX.Configuration
         public bool ReportShowP1LowIntegralFPS { get; set; } = true;
         public bool ReportShowP0Dot1LowIntegralFPS { get; set; } = true;
         public bool ReportShowMinFPS { get; set; } = true;
+        public bool ReportShowAnimationErrorP99 { get; set; } = true;
+        public bool ReportShowAnimationErrorAverage { get; set; } = false;
         public bool ReportShowAdaptiveSTD { get; set; } = true;
         public bool ReportShowCpuFpsPerWatt { get; set; } = true;
         public bool ReportShowGpuFpsPerWatt { get; set; } = true;

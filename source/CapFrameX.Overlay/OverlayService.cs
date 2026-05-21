@@ -151,8 +151,8 @@ namespace CapFrameX.Overlay
                            if (sensorData.Item2.Any())
                                UpdateOverlayEntries(sensorData.Item2);
 
-                               if (_overlayEntryCore.OverlayEntryDict.Values.Any())
-                                   _onDictionaryUpdated.OnNext(_overlayEntryCore.OverlayEntryDict.Values.ToArray());
+                           if (_overlayEntryCore.OverlayEntryDict.Values.Any())
+                               _onDictionaryUpdated.OnNext(_overlayEntryCore.OverlayEntryDict.Values.ToArray());
                        });
                 });
 
@@ -428,6 +428,7 @@ namespace CapFrameX.Overlay
         {
             return new OverlayEntryWrapper(sensor.Identifier.ToString())
             {
+                StableIdentifier = SensorIdentifierHelper.BuildStableIdentifier(sensor),
                 SortKey = sensor.SortKey,
                 Description = GetDescription(sensor),
                 OverlayEntryType = MapType(sensor.HardwareType),
@@ -448,6 +449,9 @@ namespace CapFrameX.Overlay
             Enum.TryParse(sensorTypeString, out SensorType sensorType);
             switch (sensorType)
             {
+                case SensorType.Current:
+                    formatString = "{0,5:F1}";
+                    break;
                 case SensorType.Voltage:
                     formatString = "{0,5:F2}";
                     break;
@@ -490,6 +494,9 @@ namespace CapFrameX.Overlay
                 case SensorType.Frequency:
                     formatString = "{0,5:F0}";
                     break;
+                case SensorType.Timing:
+                    formatString = "{0,5:F1}";
+                    break;
             }
 
             return formatString;
@@ -501,6 +508,9 @@ namespace CapFrameX.Overlay
             Enum.TryParse(sensorTypeString, out SensorType sensorType);
             switch (sensorType)
             {
+                case SensorType.Current:
+                    formatString = "A  ";
+                    break;  
                 case SensorType.Voltage:
                     formatString = "V  ";
                     break;
@@ -542,6 +552,9 @@ namespace CapFrameX.Overlay
                     break;
                 case SensorType.Frequency:
                     formatString = "Hz ";
+                    break;
+                case SensorType.Timing:
+                    formatString = "ns ";
                     break;
             }
 
@@ -657,6 +670,9 @@ namespace CapFrameX.Overlay
             Enum.TryParse(sensor.SensorType, out SensorType sensorType);
             switch (sensorType)
             {
+                case SensorType.Current:
+                    description = $"{sensor.Name} (A)";
+                    break;
                 case SensorType.Voltage:
                     description = $"{sensor.Name} (V)";
                     break;
@@ -699,6 +715,9 @@ namespace CapFrameX.Overlay
                 case SensorType.Frequency:
                     description = $"{sensor.Name} (Hz)";
                     break;
+                case SensorType.Timing:
+                    description = $"{sensor.Name} (ns)";
+                    break;
             }
 
             return description;
@@ -731,15 +750,9 @@ namespace CapFrameX.Overlay
                 case HardwareType.GpuIntel:
                     type = EOverlayEntryType.GPU;
                     break;
-                    //case HardwareType.TBalancer:
-                    //    type = EOverlayEntryType.Undefined;
-                    //    break;
-                    //case HardwareType.Heatmaster:
-                    //    type = EOverlayEntryType.Undefined;
-                    //    break;
-                    //case HardwareType.HDD:
-                    //    type = EOverlayEntryType.HDD;
-                    //    break;
+                case HardwareType.Storage:
+                    type = EOverlayEntryType.HDD;
+                    break;
             }
 
             return type;

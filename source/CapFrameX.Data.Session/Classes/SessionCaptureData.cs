@@ -18,6 +18,7 @@ namespace CapFrameX.Data.Session.Classes
         public int[] SyncInterval { get; set; }
         public bool[] Dropped { get; set; }
         public double[] PcLatency { get; set; }
+        public double[] AnimationError { get; set; }
         public double[] GpuActive { get; set; }
         public double[] CpuActive { get; set; }
 
@@ -35,6 +36,7 @@ namespace CapFrameX.Data.Session.Classes
             SyncInterval = new int[numberOfCapturePoints];
             Dropped = new bool[numberOfCapturePoints];
             PcLatency = new double[numberOfCapturePoints];
+            AnimationError = new double[numberOfCapturePoints];
             GpuActive = new double[numberOfCapturePoints];
             CpuActive = new double[numberOfCapturePoints];
         }
@@ -57,6 +59,7 @@ namespace CapFrameX.Data.Session.Classes
                     SyncInterval = SyncInterval[i],
                     Dropped = Dropped[i],
                     PcLatency = PcLatency != null ? PcLatency[i] : double.NaN,
+                    AnimationError = AnimationError[i],
                     GpuActive = GpuActive[i],
                     CpuActive = CpuActive[i]
                 };
@@ -78,6 +81,7 @@ namespace CapFrameX.Data.Session.Classes
         public int SyncInterval { get; set; }
         public bool Dropped { get; set; }
         public double PcLatency { get; set; }
+        public double AnimationError { get; set; }
         public double GpuActive { get; set; }
         public double CpuActive { get; set; }
     }

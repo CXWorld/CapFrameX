@@ -139,7 +139,7 @@ namespace MonitoringLibTestApp
                     foreach (var sensor in hardware.Sensors)
                     {
                         // activate sensor
-                        _sensorConfig.SetSensorIsActive(sensor.IdentifierString, true);
+                        _sensorConfig.SelectForLogging(sensor.IdentifierString, true);
                     }
                 }
             }

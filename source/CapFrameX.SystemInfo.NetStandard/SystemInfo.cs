@@ -54,8 +54,6 @@ namespace CapFrameX.SystemInfo.NetStandard
             _cxProcess = Process.GetProcessesByName("CapFrameX").FirstOrDefault();
             _lastTime = DateTime.UtcNow;
             _lastTotalProcessorTime = _cxProcess == null ? new TimeSpan() : _cxProcess.TotalProcessorTime;
-
-            SetSystemInfosStatus();
         }
 
         #region System Info
@@ -166,8 +164,7 @@ namespace CapFrameX.SystemInfo.NetStandard
 
         #endregion
 
-        public string GetProcessorName()
-            => _sensorService.GetCpuName();
+        public string GetProcessorName() => _sensorService.GetCpuName();
 
         public string GetGraphicCardName()
         {

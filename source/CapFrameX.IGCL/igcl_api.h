@@ -120,6 +120,9 @@ typedef enum _ctl_init_flag_t
 {
     CTL_INIT_FLAG_USE_LEVEL_ZERO = CTL_BIT(0),      ///< Use Level0 or not. This is usually required for telemetry,
                                                     ///< performance, frequency related APIs
+    CTL_INIT_FLAG_IGSC_FUL = CTL_BIT(1),            ///< Enable IGSC(Intel Graphics System Firmware Update Library) full
+                                                    ///< functionality mode, which may include advanced graphics and compute
+                                                    ///< capabilities
     CTL_INIT_FLAG_MAX = 0x80000000
 
 } ctl_init_flag_t;
@@ -392,6 +395,7 @@ typedef enum _ctl_result_t
     CTL_RESULT_ERROR_UNKNOWN = 0x4000FFFF,          ///< Unknown or internal error
     CTL_RESULT_ERROR_RETRY_OPERATION = 0x40010000,  ///< Operation failed, retry previous operation again
     CTL_RESULT_ERROR_IGSC_LOADER = 0x40010001,      ///< IGSC library loader not found
+    CTL_RESULT_ERROR_RESTRICTED_APPLICATION = 0x40010002,   ///< Unsupported application
     CTL_RESULT_ERROR_GENERIC_END = 0x4000FFFF,      ///< "Generic error code end value, not to be used
                                                     ///< "
     CTL_RESULT_ERROR_CORE_START = 0x44000000,       ///< Core error code starting value, not to be used
@@ -1192,10 +1196,6 @@ typedef struct _ctl_sw_psr_settings_t ctl_sw_psr_settings_t;
 typedef struct _ctl_intel_arc_sync_monitor_params_t ctl_intel_arc_sync_monitor_params_t;
 
 ///////////////////////////////////////////////////////////////////////////////
-/// @brief Forward-declare ctl_mux_properties_t
-typedef struct _ctl_mux_properties_t ctl_mux_properties_t;
-
-///////////////////////////////////////////////////////////////////////////////
 /// @brief Forward-declare ctl_intel_arc_sync_profile_params_t
 typedef struct _ctl_intel_arc_sync_profile_params_t ctl_intel_arc_sync_profile_params_t;
 
@@ -1513,6 +1513,7 @@ typedef enum _ctl_3d_feature_t
     CTL_3D_FEATURE_GLOBAL_OR_PER_APP = 15,          ///< Set global settings or per application settings
     CTL_3D_FEATURE_LOW_LATENCY = 16,                ///< Low latency mode. Contains generic enum type fields
     CTL_3D_FEATURE_FRAME_GENERATION = 17,           ///< Frame Generation
+    CTL_3D_FEATURE_PREBUILT_SHADER_DOWNLOAD = 18,   ///< Download prebuilt shaders. Contains generic bool type fields
     CTL_3D_FEATURE_MAX
 
 } ctl_3d_feature_t;
@@ -1651,11 +1652,14 @@ typedef uint32_t ctl_gaming_flip_mode_flags_t;
 typedef enum _ctl_gaming_flip_mode_flag_t
 {
     CTL_GAMING_FLIP_MODE_FLAG_APPLICATION_DEFAULT = CTL_BIT(0), ///< Application Default
-    CTL_GAMING_FLIP_MODE_FLAG_VSYNC_OFF = CTL_BIT(1),   ///< Convert all sync flips to async on the next possible scanline.
+    CTL_GAMING_FLIP_MODE_FLAG_VSYNC_OFF = CTL_BIT(1),   ///< Convert all sync flips to async on the next possible scanline for
+                                                    ///< Intel Verified application profile.
     CTL_GAMING_FLIP_MODE_FLAG_VSYNC_ON = CTL_BIT(2),///< Convert all async flips to sync flips.
     CTL_GAMING_FLIP_MODE_FLAG_SMOOTH_SYNC = CTL_BIT(3), ///< Reduce tearing effect with async flips
     CTL_GAMING_FLIP_MODE_FLAG_SPEED_FRAME = CTL_BIT(4), ///< Application unaware triple buffering
     CTL_GAMING_FLIP_MODE_FLAG_CAPPED_FPS = CTL_BIT(5),  ///< Limit the game FPS to panel RR
+    CTL_GAMING_FLIP_MODE_FLAG_VSYNC_OFF_IGNORE_ALLOW_LIST = CTL_BIT(6), ///< Convert all sync flips to async on the next possible scanline without
+                                                    ///< application filtering.
     CTL_GAMING_FLIP_MODE_FLAG_MAX = 0x80000000
 
 } ctl_gaming_flip_mode_flag_t;
@@ -2535,6 +2539,10 @@ typedef enum _ctl_i2c_flag_t
     CTL_I2C_FLAG_SPEED_FAST = CTL_BIT(5),           ///< If no Speed Flag is set, defaults to Best Option possible.
     CTL_I2C_FLAG_SPEED_BIT_BASH = CTL_BIT(6),       ///< Uses Slower access using SW bit bashing method. If no Speed Flag is
                                                     ///< set, defaults to Best Option possible.
+    CTL_I2C_FLAG_DRIVER_OVERRIDE = CTL_BIT(7),      ///< If set, overrides the driver I2C flags with those provided by IGCL
+    CTL_I2C_FLAG_START = CTL_BIT(8),                ///< I2C Start driver override flag
+    CTL_I2C_FLAG_STOP = CTL_BIT(9),                 ///< I2C Stop driver override flags
+    CTL_I2C_FLAG_RESTART = CTL_BIT(10),             ///< I2C Restart driver override flag
     CTL_I2C_FLAG_MAX = 0x80000000
 
 } ctl_i2c_flag_t;
@@ -2561,7 +2569,8 @@ typedef struct _ctl_i2c_access_args_t
 /// @brief I2C Access
 /// 
 /// @details
-///     - Interface to access I2C using display handle as identifier.
+///     - Interface to access I2C using display handle as identifier.  I2C
+///       driver override flags are supported only for HDMI displays.
 /// 
 /// @returns
 ///     - CTL_RESULT_SUCCESS
@@ -2735,6 +2744,7 @@ typedef enum _ctl_power_optimization_flag_t
                                                     ///< NDA clients. UBZRR and UBLRR both can not be enabled at the same time,
                                                     ///< only one can be enabled at a given time
     CTL_POWER_OPTIMIZATION_FLAG_LACE = CTL_BIT(4),  ///< Lighting Aware Contrast Enhancement
+    CTL_POWER_OPTIMIZATION_FLAG_SPH = CTL_BIT(5),   ///< Smart Power HDR, This flag is Applicable for only API version > 0
     CTL_POWER_OPTIMIZATION_FLAG_MAX = 0x80000000
 
 } ctl_power_optimization_flag_t;
@@ -3769,105 +3779,6 @@ ctlGetIntelArcSyncInfoForMonitor(
     );
 
 ///////////////////////////////////////////////////////////////////////////////
-/// @brief Handle of a MUX output instance
-typedef struct _ctl_mux_output_handle_t *ctl_mux_output_handle_t;
-
-///////////////////////////////////////////////////////////////////////////////
-/// @brief Enumerate Display MUX Devices on this system across adapters
-/// 
-/// @details
-///     - The application enumerates all MUX devices in the system
-/// 
-/// @returns
-///     - CTL_RESULT_SUCCESS
-///     - CTL_RESULT_ERROR_UNINITIALIZED
-///     - CTL_RESULT_ERROR_DEVICE_LOST
-///     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
-///         + `nullptr == hAPIHandle`
-///     - CTL_RESULT_ERROR_INVALID_NULL_POINTER
-///         + `nullptr == pCount`
-///         + `nullptr == phMuxDevices`
-///     - ::CTL_RESULT_ERROR_UNSUPPORTED_VERSION - "Unsupported version"
-CTL_APIEXPORT ctl_result_t CTL_APICALL
-ctlEnumerateMuxDevices(
-    ctl_api_handle_t hAPIHandle,                    ///< [in][release] Applications should pass the Control API handle returned
-                                                    ///< by the CtlInit function 
-    uint32_t* pCount,                               ///< [in,out][release] pointer to the number of MUX device instances. If
-                                                    ///< input count is zero, then the api will update the value with the total
-                                                    ///< number of MUX devices available and return the Count value. If input
-                                                    ///< count is non-zero, then the api will only retrieve the number of MUX Devices.
-                                                    ///< If count is larger than the number of MUX devices available, then the
-                                                    ///< api will update the value with the correct number of MUX devices available.
-    ctl_mux_output_handle_t* phMuxDevices           ///< [out][range(0, *pCount)] array of MUX device instance handles
-    );
-
-///////////////////////////////////////////////////////////////////////////////
-/// @brief Display MUX device properties
-typedef struct _ctl_mux_properties_t
-{
-    uint32_t Size;                                  ///< [in] size of this structure
-    uint8_t Version;                                ///< [in] version of this structure
-    uint8_t MuxId;                                  ///< [out] MUX ID of this MUX device enumerated
-    uint32_t Count;                                 ///< [in,out] Pointer to the number of display output instances this MUX
-                                                    ///< object can drive. If count is zero, then the api will update the value
-                                                    ///< with the total
-                                                    ///< number of outputs available. If count is non-zero, then the api will
-                                                    ///< only retrieve the number of outputs.
-                                                    ///< If count is larger than the number of display outputs MUX can drive,
-                                                    ///< then the api will update the value with the correct number of display
-                                                    ///< outputs MUX can driver.
-    ctl_display_output_handle_t* phDisplayOutputs;  ///< [in,out][range(0, *pCount)] Array of display output instance handles
-                                                    ///< this MUX device can drive
-    uint8_t IndexOfDisplayOutputOwningMux;          ///< [out] [range(0, (Count-1))] This is the index into the
-                                                    ///< phDisplayOutputs list to the display output which currently owns the
-                                                    ///< MUX output. This doesn't mean display is active
-
-} ctl_mux_properties_t;
-
-///////////////////////////////////////////////////////////////////////////////
-/// @brief Get Display Mux properties
-/// 
-/// @details
-///     - Get the propeties of the Mux device
-/// 
-/// @returns
-///     - CTL_RESULT_SUCCESS
-///     - CTL_RESULT_ERROR_UNINITIALIZED
-///     - CTL_RESULT_ERROR_DEVICE_LOST
-///     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
-///         + `nullptr == hMuxDevice`
-///     - CTL_RESULT_ERROR_INVALID_NULL_POINTER
-///         + `nullptr == pMuxProperties`
-///     - ::CTL_RESULT_ERROR_UNSUPPORTED_VERSION - "Unsupported version"
-CTL_APIEXPORT ctl_result_t CTL_APICALL
-ctlGetMuxProperties(
-    ctl_mux_output_handle_t hMuxDevice,             ///< [in] MUX device instance handle
-    ctl_mux_properties_t* pMuxProperties            ///< [in,out] MUX device properties
-    );
-
-///////////////////////////////////////////////////////////////////////////////
-/// @brief Switch Mux output
-/// 
-/// @details
-///     - Switches the MUX output
-/// 
-/// @returns
-///     - CTL_RESULT_SUCCESS
-///     - CTL_RESULT_ERROR_UNINITIALIZED
-///     - CTL_RESULT_ERROR_DEVICE_LOST
-///     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
-///         + `nullptr == hMuxDevice`
-///         + `nullptr == hInactiveDisplayOutput`
-///     - ::CTL_RESULT_ERROR_UNSUPPORTED_VERSION - "Unsupported version"
-CTL_APIEXPORT ctl_result_t CTL_APICALL
-ctlSwitchMux(
-    ctl_mux_output_handle_t hMuxDevice,             ///< [in] MUX device instance handle
-    ctl_display_output_handle_t hInactiveDisplayOutput  ///< [out] Input selection for this MUX, which if active will drive the
-                                                    ///< output of this MUX device. This should be one of the display output
-                                                    ///< handles reported under this MUX device's properties.
-    );
-
-///////////////////////////////////////////////////////////////////////////////
 /// @brief Intel Arc Sync profile
 typedef enum _ctl_intel_arc_sync_profile_t
 {
@@ -4463,7 +4374,10 @@ typedef struct _ctl_dce_args_t
 /// 
 /// @details
 ///     - To get the DCE feature status and, if feature is enabled, returns the
-///       current histogram, or to set the brightness at the phase-in speed
+///       current histogram, or to set the brightness at the phase-in speed.
+///       This is a reserved capability. By default, DCE is not supported/will
+///       not be enabled, need application to activate it, please contact Intel
+///       for activation.
 /// 
 /// @returns
 ///     - CTL_RESULT_SUCCESS
@@ -8347,31 +8261,6 @@ typedef ctl_result_t (CTL_APICALL *ctl_pfnSoftwarePSR_t)(
 typedef ctl_result_t (CTL_APICALL *ctl_pfnGetIntelArcSyncInfoForMonitor_t)(
     ctl_display_output_handle_t,
     ctl_intel_arc_sync_monitor_params_t*
-    );
-
-
-///////////////////////////////////////////////////////////////////////////////
-/// @brief Function-pointer for ctlEnumerateMuxDevices 
-typedef ctl_result_t (CTL_APICALL *ctl_pfnEnumerateMuxDevices_t)(
-    ctl_api_handle_t,
-    uint32_t*,
-    ctl_mux_output_handle_t*
-    );
-
-
-///////////////////////////////////////////////////////////////////////////////
-/// @brief Function-pointer for ctlGetMuxProperties 
-typedef ctl_result_t (CTL_APICALL *ctl_pfnGetMuxProperties_t)(
-    ctl_mux_output_handle_t,
-    ctl_mux_properties_t*
-    );
-
-
-///////////////////////////////////////////////////////////////////////////////
-/// @brief Function-pointer for ctlSwitchMux 
-typedef ctl_result_t (CTL_APICALL *ctl_pfnSwitchMux_t)(
-    ctl_mux_output_handle_t,
-    ctl_display_output_handle_t
     );
 
 

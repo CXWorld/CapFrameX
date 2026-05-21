@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ namespace adlx
 
         /**
         *@page DOX_IADLXDisplayServices3_GetDynamicRefreshRateControl GetDynamicRefreshRateControl
-        *@ENG_START_DOX @brief Gets the reference counted Dynamic Refresh Rate Control interface for a display. @ENG_END_DOX
+        *@ENG_START_DOX @brief Gets the reference counted dynamic refresh rate Control interface for a display. @ENG_END_DOX
         *
         *@syntax
         *@codeStart
@@ -150,7 +150,7 @@ namespace adlx
 
         /**
         *@page DOX_IADLXDisplaySettingsChangedEvent3_IsDisplayDynamicRefreshRateControlChanged  IsDisplayDynamicRefreshRateControlChanged
-        *@ENG_START_DOX @brief Checks if the dynamic refresh rate control settings of the display are changed. @ENG_END_DOX
+        *@ENG_START_DOX @brief Checks if the dynamic refresh rate Control settings of the display are changed. @ENG_END_DOX
         *
         *@syntax
         *@codeStart
@@ -162,8 +162,8 @@ namespace adlx
         *
         *@retvalues
         *@ENG_START_DOX
-        * If the Dynamic Refresh Rate Control settings are changed, __true__ is returned. <br>
-        * If the Dynamic Refresh Rate Control settings are not changed, __false__ is returned. @ENG_END_DOX
+        * If the dynamic refresh rate Control settings are changed, __true__ is returned. <br>
+        * If the dynamic refresh rate Control settings are not changed, __false__ is returned. @ENG_END_DOX
         *
         *
         *@addinfo
@@ -177,7 +177,7 @@ namespace adlx
 
         /**
         *@page DOX_IADLXDisplaySettingsChangedEvent3_IsFreeSyncColorAccuracyChanged  IsFreeSyncColorAccuracyChanged
-        *@ENG_START_DOX @brief Checks for changes to the configuration of the HDR media profile on a display. @ENG_END_DOX
+        *@ENG_START_DOX @brief Checks for changes to the HDR media profile configuration on a display. @ENG_END_DOX
         *
         *@syntax
         *@codeStart
@@ -195,7 +195,7 @@ namespace adlx
         *
         *@addinfo
         *@ENG_START_DOX
-        * __Note:__ To obtain the display, use @ref DOX_IADLXDisplaySettingsChangedEvent_GetDisplay.
+        * __Note:__  To obtain the display, use @ref DOX_IADLXDisplaySettingsChangedEvent_GetDisplay.
         *@ENG_END_DOX
         *
         *@copydoc IADLXDisplaySettingsChangedEvent3_REQ_TABLE

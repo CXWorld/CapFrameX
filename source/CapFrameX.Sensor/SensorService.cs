@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
@@ -11,10 +12,12 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Sensor
@@ -30,6 +33,7 @@ namespace CapFrameX.Sensor
         private readonly IDisposable _logDisposable;
 
         private Computer _computer;
+        private IPmcReaderSensorPlugin _pmcReaderPlugin;
         private SessionSensorDataLive _sessionSensorDataLive;
         private bool _isLoggingActive = false;
         private bool _isServiceAlive = true;
@@ -90,12 +94,21 @@ namespace CapFrameX.Sensor
                    SensorServiceCompletionSource.SetResult(true);
                });
 
-            SensorSnapshotStream = _sensorUpdateSubject
+            var coreSensorStream = _sensorUpdateSubject
                .Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan)))
                .Switch()
                .Where(_ => _isServiceAlive)
                .Where((_, idx) => idx == 0 || IsOverlayActive || (_isLoggingActive && UseSensorLogging) || IsSensorWebsocketActive())
-               .SelectMany(_ => GetTimeStampedSensorValues())
+               .SelectMany(_ => GetTimeStampedSensorValues());
+
+            var pluginSensorStream = InitializePmcReaderPlugin()
+                .Where(_ => _isServiceAlive)
+                .Where(_ => IsOverlayActive || (_isLoggingActive && UseSensorLogging) || IsSensorWebsocketActive());
+
+            SensorSnapshotStream = coreSensorStream
+               .CombineLatest(
+                    pluginSensorStream.StartWith((DateTime.UtcNow, new Dictionary<ISensorEntry, float>())),
+                    MergeSensorSnapshots)
                .Replay(0)
                .RefCount();
 
@@ -123,51 +136,52 @@ namespace CapFrameX.Sensor
             _osdUpdateSubject.OnNext(timeSpan);
         }
 
-        public string GetSensorTypeString(string identifier)
+        public string GetSensorTypeString(EOverlayEntryType entryType, string stableIdentifier)
         {
-            if (identifier == null)
+            if (stableIdentifier == null)
                 return string.Empty;
 
-            string SensorType;
+            // StableIdentifier format: "{HardwareName}/{sensorTypeLowercase}/{sensorName}"
+            var parts = stableIdentifier.Split('/');
+            if (parts.Length < 2)
+                return string.Empty;
 
-            if (identifier.Contains("cpu"))
+            string prefix;
+            switch (entryType)
             {
-                if (identifier.Contains("load"))
-                    SensorType = "CPU Load";
-                else if (identifier.Contains("clock"))
-                    SensorType = "CPU Clock";
-                else if (identifier.Contains("power"))
-                    SensorType = "CPU Power";
-                else if (identifier.Contains("temperature"))
-                    SensorType = "CPU Temperature";
-                else if (identifier.Contains("voltage"))
-                    SensorType = "CPU Voltage";
-                else
-                    SensorType = string.Empty;
+                case EOverlayEntryType.CPU:
+                    prefix = "CPU";
+                    break;
+                case EOverlayEntryType.GPU:
+                    prefix = "GPU";
+                    break;
+                case EOverlayEntryType.HDD:
+                    prefix = "Storage";
+                    break;
+                default:
+                    return string.Empty;
             }
 
-            else if (identifier.Contains("gpu"))
+            var sensorSubtype = parts[1];
+            switch (sensorSubtype)
             {
-                if (identifier.Contains("load"))
-                    SensorType = "GPU Load";
-                else if (identifier.Contains("clock"))
-                    SensorType = "GPU Clock";
-                else if (identifier.Contains("power"))
-                    SensorType = "GPU Power";
-                else if (identifier.Contains("temperature"))
-                    SensorType = "GPU Temperature";
-                else if (identifier.Contains("voltage"))
-                    SensorType = "GPU Voltage";
-                else if (identifier.Contains("factor"))
-                    SensorType = "GPU Limits";
-                else
-                    SensorType = string.Empty;
+                case "load":
+                    return $"{prefix} Load";
+                case "clock":
+                    return $"{prefix} Clock";
+                case "power":
+                    return $"{prefix} Power";
+                case "temperature":
+                    return $"{prefix} Temperature";
+                case "voltage":
+                    return $"{prefix} Voltage";
+                case "throughput":
+                    return $"{prefix} Throughput";
+                case "factor":
+                    return prefix == "GPU" ? "GPU Limits" : string.Empty;
+                default:
+                    return string.Empty;
             }
-
-            else
-                SensorType = string.Empty;
-
-            return SensorType;
         }
 
         private Task StartOpenHardwareMonitor()
@@ -176,11 +190,15 @@ namespace CapFrameX.Sensor
             {
                 try
                 {
-                    _computer = new Computer();
+                    var simulationConfiguration = _appConfiguration.HardwareSimulationConfiguration;
+                    _computer = simulationConfiguration != null
+                        ? new Computer(simulationConfiguration, _sensorConfig)
+                        : new Computer(_sensorConfig);
                     _computer.Open();
                     _computer.IsCpuEnabled = true;
                     _computer.IsGpuEnabled = true;
                     _computer.IsMemoryEnabled = true;
+                    _computer.IsStorageEnabled = true;
                 }
                 catch (Exception ex)
                 {
@@ -195,7 +213,7 @@ namespace CapFrameX.Sensor
             _sensorUpdateSubject.OnNext(CurrentSensorTimespan);
         }
 
-        public IEnumerable<IHardware> GetDetectedGpus()
+        public IEnumerable<string> GetDetectedGpus()
         {
             IEnumerable<IHardware> gpus = null;
             lock (_lockComputer)
@@ -205,7 +223,8 @@ namespace CapFrameX.Sensor
                    || hdw.HardwareType == HardwareType.GpuNvidia
                    || hdw.HardwareType == HardwareType.GpuIntel);
             }
-            return gpus;
+
+            return gpus.Select(gpu => gpu.Name);
         }
 
         public ISessionSensorData2 GetSensorSessionData()
@@ -253,10 +272,18 @@ namespace CapFrameX.Sensor
                                 Name = sensor.Name,
                                 SensorType = sensor.SensorType.ToString(),
                                 HardwareType = sensor.Hardware.HardwareType.ToString(),
+                                HardwareName = sensor.Hardware.Name,
                                 IsPresentationDefault = sensor.IsPresentationDefault
                             });
                         }
                     }
+                }
+
+                if (_pmcReaderPlugin != null)
+                {
+                    var pluginEntries = await _pmcReaderPlugin.GetSensorEntriesAsync();
+                    if (pluginEntries != null)
+                        entries.AddRange(pluginEntries);
                 }
             }
             catch
@@ -267,12 +294,31 @@ namespace CapFrameX.Sensor
             return entries;
         }
 
+        private static (DateTime, Dictionary<ISensorEntry, float>) MergeSensorSnapshots(
+            (DateTime Timestamp, Dictionary<ISensorEntry, float> Values) coreSnapshot,
+            (DateTime Timestamp, Dictionary<ISensorEntry, float> Values) pluginSnapshot)
+        {
+            var merged = new Dictionary<string, KeyValuePair<ISensorEntry, float>>(StringComparer.Ordinal);
+
+            foreach (var entry in coreSnapshot.Values)
+                merged[entry.Key.Identifier] = entry;
+
+            foreach (var entry in pluginSnapshot.Values)
+                merged[entry.Key.Identifier] = entry;
+
+            var timestamp = coreSnapshot.Timestamp >= pluginSnapshot.Timestamp
+                ? coreSnapshot.Timestamp
+                : pluginSnapshot.Timestamp;
+
+            return (timestamp, merged.Values.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
+        }
+
         private void LogCurrentValues(Dictionary<ISensorEntry, float> currentValues, DateTime timestamp)
         {
             _sessionSensorDataLive.AddMeasureTime(timestamp);
             foreach (var sensorPair in currentValues)
             {
-                if (_sensorConfig.GetSensorIsActive(sensorPair.Key.Identifier))
+                if (_sensorConfig.IsSelectedForLogging(sensorPair.Key.Identifier))
                 {
                     _sessionSensorDataLive.AddSensorValue(sensorPair.Key, sensorPair.Value);
                 }
@@ -297,7 +343,8 @@ namespace CapFrameX.Sensor
                                 Value = sensor.Value,
                                 Name = sensor.Name,
                                 SensorType = sensor.SensorType.ToString(),
-                                HardwareType = sensor.Hardware.HardwareType.ToString()
+                                HardwareType = sensor.Hardware.HardwareType.ToString(),
+                                HardwareName = sensor.Hardware.Name
                             },
                             sensor.Value.Value);
                     }
@@ -311,6 +358,49 @@ namespace CapFrameX.Sensor
             return (DateTime.UtcNow, dict.ToDictionary(x => x.Key, x => x.Value));
         }
 
+        private IObservable<(DateTime, Dictionary<ISensorEntry, float>)> InitializePmcReaderPlugin()
+        {
+            _pmcReaderPlugin = TryLoadPmcReaderPlugin();
+            if (_pmcReaderPlugin == null)
+                return Observable.Empty<(DateTime, Dictionary<ISensorEntry, float>)>();
+
+            try
+            {
+                _pmcReaderPlugin.InitializeAsync(_sensorUpdateSubject.AsObservable())
+                    .ConfigureAwait(false);
+            }
+            catch
+            {
+                return Observable.Empty<(DateTime, Dictionary<ISensorEntry, float>)>();
+            }
+
+            return _pmcReaderPlugin.SensorSnapshotStream
+                ?? Observable.Empty<(DateTime, Dictionary<ISensorEntry, float>)>();
+        }
+
+        private IPmcReaderSensorPlugin TryLoadPmcReaderPlugin()
+        {
+            try
+            {
+                var baseDir = AppContext.BaseDirectory;
+                var pluginPath = Path.Combine(baseDir, "CapFrameX.PmcReader.Plugin.dll");
+                if (!File.Exists(pluginPath))
+                    return null;
+                var assembly = Assembly.LoadFrom(pluginPath);
+                var pluginType = assembly.GetTypes()
+                    .FirstOrDefault(t => typeof(IPmcReaderSensorPlugin).IsAssignableFrom(t)
+                        && t.IsClass
+                        && !t.IsAbstract);
+
+                return pluginType == null
+                    ? null
+                    : (IPmcReaderSensorPlugin)Activator.CreateInstance(pluginType);
+            }
+            catch
+            {
+                return null;
+            }
+        }
 
         private IEnumerable<ISensor> GetSensors()
         {
@@ -371,8 +461,7 @@ namespace CapFrameX.Sensor
                 }
 
                 // Fallback (should be rare)
-                var isDiscreteGpu = (s.Hardware as GenericGpu)?.IsDiscreteGpu ?? true;
-                return isDiscreteGpu;
+                return (s.Hardware as GenericGpu)?.IsDiscreteGpu ?? true;
             });
         }
 
@@ -536,6 +625,69 @@ namespace CapFrameX.Sensor
             else
             {
                 return _appConfiguration.CustomGpuDescription;
+            }
+        }
+
+        public ECpuVendor GetCpuVendor()
+        {
+            lock (_lockComputer)
+            {
+                var cpu = _computer?.Hardware
+                    .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.Cpu);
+                if (cpu == null)
+                    return ECpuVendor.Unknown;
+
+                var identifier = cpu.Identifier.ToString().ToLowerInvariant();
+                if (identifier.Contains("amdcpu"))
+                    return ECpuVendor.Amd;
+                if (identifier.Contains("intelcpu"))
+                    return ECpuVendor.Intel;
+
+                return ECpuVendor.Unknown;
+            }
+        }
+
+        public EGpuVendor GetGpuVendor()
+        {
+            var gpu = GetPrimaryGpuHardware();
+            if (gpu == null)
+                return EGpuVendor.Unknown;
+
+            switch (gpu.HardwareType)
+            {
+                case HardwareType.GpuNvidia:
+                    return EGpuVendor.Nvidia;
+                case HardwareType.GpuAmd:
+                    return EGpuVendor.Amd;
+                case HardwareType.GpuIntel:
+                    return EGpuVendor.Intel;
+                default:
+                    return EGpuVendor.Unknown;
+            }
+        }
+
+        private IHardware GetPrimaryGpuHardware()
+        {
+            lock (_lockComputer)
+            {
+                var gpus = _computer?.Hardware
+                    .Where(hdw => hdw.HardwareType == HardwareType.GpuAmd
+                        || hdw.HardwareType == HardwareType.GpuNvidia
+                        || hdw.HardwareType == HardwareType.GpuIntel)
+                    .ToList();
+
+                if (gpus == null || gpus.Count == 0)
+                    return null;
+
+                var selectedAdapter = _appConfiguration.GraphicsAdapter;
+                if (!string.Equals(selectedAdapter, "Auto", StringComparison.Ordinal))
+                    return gpus.FirstOrDefault(gpu => string.Equals(gpu.Name, selectedAdapter, StringComparison.Ordinal));
+
+                if (gpus.Count == 1)
+                    return gpus[0];
+
+                var discreteGpu = gpus.FirstOrDefault(gpu => (gpu as GenericGpu)?.IsDiscreteGpu ?? true);
+                return discreteGpu ?? gpus[0];
             }
         }
     }

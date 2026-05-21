@@ -10,9 +10,11 @@ namespace CapFrameX.Contracts.Overlay
         Undefined
     }
 
-    public interface IOverlayEntry
+    public interface IOverlayEntry : IDisposable
     {
         string Identifier { get; }
+
+        string StableIdentifier { get; set; }
 
         EOverlayEntryType OverlayEntryType { get; }
 
@@ -29,6 +31,10 @@ namespace CapFrameX.Contracts.Overlay
         /// Formatted value including color, text size, decimal points and alignment
         /// </summary>
         string FormattedValue { get; }
+        /// <summary>
+        /// Determines if the entry is enabled and available for use
+        /// </summary>
+        bool IsEntryEnabled { get; set; }
         /// <summary>
         /// Determines if the entry is shown on the overlay
         /// </summary>

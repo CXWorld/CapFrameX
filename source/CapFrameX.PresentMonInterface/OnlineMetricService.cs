@@ -4,8 +4,8 @@ using CapFrameX.Contracts.Overlay;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
+using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
-using Microsoft.Extensions.Logging;
 using Prism.Events;
 using System;
 using System.Collections.Generic;
@@ -18,10 +18,10 @@ namespace CapFrameX.PresentMonInterface
 {
     public class OnlineMetricService : IOnlineMetricService
     {
-        private const double STUTTERING_THRESHOLD = 2d;
-        private const int LIST_CAPACITY = 20000;
-        private const int PMD_BUFFER_CAPACITY = 2200;
+        private const int LIST_CAPACITY = 30000;
+        private const int PMD_BUFFER_CAPACITY = 3000;
         private const double FIVE_SECONDS_INTERVAL_LENGTH = 5.0;
+        private const double ANIMATION_ERROR_INTERVAL_LENGTH = 0.5;
 
         private readonly object _currentProcessLock = new object();
 
@@ -31,24 +31,51 @@ namespace CapFrameX.PresentMonInterface
         private readonly IOverlayEntryCore _overlayEntryCore;
         private readonly IPoweneticsService _poweneticsService;
         private readonly IBenchlabService _benchlabService;
-        private readonly ILogger<OnlineMetricService> _logger;
         private readonly IAppConfiguration _appConfiguration;
 
         private readonly object _lockRealtimeMetric = new object();
         private readonly object _lock5SecondsMetric = new object();
+        private readonly object _lock1SecondMetric = new object();
+        private readonly object _lockAnimationErrorMetric = new object();
         private readonly object _lockPmdMetrics = new object();
 
-        private List<double> _frametimesRealtimeSeconds = new List<double>(LIST_CAPACITY);
-        private List<double> _displayedtimesRealtimeSeconds = new List<double>(LIST_CAPACITY);
-        private List<double> _gpuActiveTimesRealtimeSeconds = new List<double>(LIST_CAPACITY);
-        private List<double> _cpuActiveTimesRealtimeSeconds = new List<double>(LIST_CAPACITY);
-        private List<double> _frametimes5Seconds = new List<double>(LIST_CAPACITY / 4);
-        private List<double> _pcLatency5Seconds = new List<double>(LIST_CAPACITY / 4);
-        private List<double> _displaytimes5Seconds = new List<double>(LIST_CAPACITY / 4);
-        private List<double> _measuretimesRealtimeSeconds = new List<double>(LIST_CAPACITY);
-        private List<double> _measuretimes5Seconds = new List<double>(LIST_CAPACITY / 4);
+        // Circular buffers for realtime metrics (avoid RemoveRange memory shifting)
+        private CircularBuffer<double> _frametimesRealtimeSeconds;
+        private CircularBuffer<double> _displayedtimesRealtimeSeconds;
+        private CircularBuffer<double> _gpuActiveTimesRealtimeSeconds;
+        private CircularBuffer<double> _cpuActiveTimesRealtimeSeconds;
+        private CircularBuffer<double> _measuretimesRealtimeSeconds;
+
+        // Circular buffers for 5-second window metrics
+        private CircularBuffer<double> _frametimes5Seconds;
+        private CircularBuffer<double> _displaytimes5Seconds;
+        private CircularBuffer<double> _measuretimes5Seconds;
+
+        // Circular buffers for 1-second window metrics
+        private CircularBuffer<double> _pcLatency1Second;
+        private CircularBuffer<double> _measuretimes1Second;
+
+        // Circular buffers for 250ms animation error window metrics
+        private CircularBuffer<double> _animationError500Ms;
+        private CircularBuffer<double> _measuretimes500Ms;
+
+        // PMD buffers (kept as lists since they're cleared after consumption)
         private List<PoweneticsChannel[]> _channelDataBuffer = new List<PoweneticsChannel[]>(PMD_BUFFER_CAPACITY);
         private List<SensorSample> _sensorDataBuffer = new List<SensorSample>(PMD_BUFFER_CAPACITY);
+
+        // Reusable list buffers to avoid allocations during metric calculations
+        private List<double> _reusableListBufferA;
+        private List<double> _reusableListBufferB;
+
+        // Disposable resources
+        private IDisposable _frameDataSubscription;
+        private IDisposable _poweneticsSubscription;
+        private IDisposable _benchlabSubscription;
+        private EventLoopScheduler _frameDataScheduler;
+        private EventLoopScheduler _poweneticsScheduler;
+        private EventLoopScheduler _benchlabScheduler;
+        private bool _disposed;
+
         private string _currentProcess;
         private int _currentProcessId;
 
@@ -60,7 +87,6 @@ namespace CapFrameX.PresentMonInterface
             IOverlayEntryCore oerlayEntryCore,
             IPoweneticsService poweneticsService,
             IBenchlabService benchlabService,
-            ILogger<OnlineMetricService> logger,
             IAppConfiguration appConfiguration)
         {
             _captureService = captureServive;
@@ -68,10 +94,13 @@ namespace CapFrameX.PresentMonInterface
             _overlayEntryCore = oerlayEntryCore;
             _poweneticsService = poweneticsService;
             _benchlabService = benchlabService;
-            _logger = logger;
             _appConfiguration = appConfiguration;
 
             _frametimeStatisticProvider = frametimeStatisticProvider;
+
+            // Initialize reusable buffers
+            _reusableListBufferA = new List<double>(LIST_CAPACITY);
+            _reusableListBufferB = new List<double>(LIST_CAPACITY);
 
             SubscribeToUpdateSession();
             ConnectOnlineMetricDataStream();
@@ -86,8 +115,7 @@ namespace CapFrameX.PresentMonInterface
                 {
                     lock (_currentProcessLock)
                     {
-                        if (_currentProcess == null
-                        || _currentProcess != msg.Process)
+                        if (_currentProcess != msg.Process)
                         {
                             ResetMetrics();
                         }
@@ -100,21 +128,26 @@ namespace CapFrameX.PresentMonInterface
 
         private void ConnectOnlineMetricDataStream()
         {
-            _captureService
+            // Create schedulers that we can dispose later
+            _frameDataScheduler = new EventLoopScheduler();
+            _poweneticsScheduler = new EventLoopScheduler();
+            _benchlabScheduler = new EventLoopScheduler();
+
+            _frameDataSubscription = _captureService
                 .FrameDataStream
                 .Skip(1)
-                .ObserveOn(new EventLoopScheduler())
+                .ObserveOn(_frameDataScheduler)
                 .Where(x => EvaluateRealtimeMetrics())
                 .Subscribe(UpdateOnlineMetrics);
 
-            _poweneticsService.PmdChannelStream
-                .ObserveOn(new EventLoopScheduler())
+            _poweneticsSubscription = _poweneticsService.PmdChannelStream
+                .ObserveOn(_poweneticsScheduler)
                 .Where(_ => EvaluatePmdMetrics())
                 .Buffer(TimeSpan.FromMilliseconds(50))
                 .Subscribe(metricsData => UpdatePmdMetrics(metricsData));
 
-            _benchlabService.PmdSensorStream
-                .ObserveOn(new EventLoopScheduler())
+            _benchlabSubscription = _benchlabService.PmdSensorStream
+                .ObserveOn(_benchlabScheduler)
                 .Where(_ => EvaluatePmdMetrics())
                 .Buffer(TimeSpan.FromMilliseconds(50))
                 .Subscribe(metricsData => UpdatePmdMetrics(metricsData));
@@ -136,7 +169,8 @@ namespace CapFrameX.PresentMonInterface
                     || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineCpuActiveTimeAverage")?.ShowOnOverlay ?? false)
                     || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineFrameTimeAverage")?.ShowOnOverlay ?? false)
                     || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineGpuActiveTimePercentageDeviation")?.ShowOnOverlay ?? false)
-                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlinePcLatency")?.ShowOnOverlay ?? false);
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlinePcLatency")?.ShowOnOverlay ?? false)
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineAnimationError")?.ShowOnOverlay ?? false);
             }
             catch { return true; }
         }
@@ -180,7 +214,12 @@ namespace CapFrameX.PresentMonInterface
                     return;
             }
 
-            if (!double.TryParse(lineSplit[PresentMonCaptureService.StartTimeInSeconds_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double startTime))
+            // Get dynamic indices based on configuration
+            int startTimeIndex = _captureService.CPUStartQPCTimeInMs_Index;
+            int gpuBusyIndex = _captureService.GpuBusy_Index;
+            int cpuBusyIndex = _captureService.CpuBusy_Index;
+
+            if (!double.TryParse(lineSplit[startTimeIndex], NumberStyles.Any, CultureInfo.InvariantCulture, out double startTime))
             {
                 ResetMetrics();
                 return;
@@ -201,86 +240,126 @@ namespace CapFrameX.PresentMonInterface
             {
                 if (!double.TryParse(lineSplit[PresentMonCaptureService.MsBetweenDisplayChange_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out displayedTime))
                 {
-                    ResetMetrics();
-                    return;
+                    // Don't reset metrics if display change time is not available
+                    displayedTime = double.NaN;
                 }
             }
 
-            if (!double.TryParse(lineSplit[PresentMonCaptureService.GpuBusy_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double gpuActiveTime))
+            if (!double.TryParse(lineSplit[gpuBusyIndex], NumberStyles.Any, CultureInfo.InvariantCulture, out double gpuActiveTime))
             {
                 ResetMetrics();
                 return;
             }
 
-            if (!double.TryParse(lineSplit[PresentMonCaptureService.CpuBusy_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double cpuActiveTime))
+            if (!double.TryParse(lineSplit[cpuBusyIndex], NumberStyles.Any, CultureInfo.InvariantCulture, out double cpuActiveTime))
             {
                 ResetMetrics();
                 return;
             }
 
             double pcLatency = double.NaN;
-            if (!double.TryParse(lineSplit[PresentMonCaptureService.MsPCLatency_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out pcLatency))
+            if (_appConfiguration.UsePcLatency)
             {
-                pcLatency = double.NaN;
+                if (!double.TryParse(lineSplit[PresentMonCaptureService.MsPCLatency_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out pcLatency))
+                {
+                    // Don't reset metrics if PC latency if not available
+                    pcLatency = double.NaN;
+                }
             }
 
-
-            // it makes no sense to calculate fps metrics with
-            // frame times above the stuttering threshold
-            // filtering high frame times caused by focus lost for example
-            if (frameTime > STUTTERING_THRESHOLD * 1E03 && !_overlayEntryCore.RealtimeMetricEntryDict["OnlineStutteringPercentage"].ShowOnOverlay)
-                return;
+            double animationError = double.NaN;
+            int animationErrorIndex = _captureService.AnimationError_Index;
+            if (animationErrorIndex >= 0 && animationErrorIndex < lineSplit.Length)
+            {
+                if (!double.TryParse(lineSplit[animationErrorIndex], NumberStyles.Any, CultureInfo.InvariantCulture, out animationError))
+                {
+                    // Don't reset metrics if animation error is not available
+                    animationError = double.NaN;
+                }
+            }
 
             try
             {
                 lock (_lockRealtimeMetric)
                 {
-                    // n sceconds window
+                    // n seconds window - using circular buffer for O(1) add and efficient removal
+                    _measuretimesRealtimeSeconds.Add(startTime);
                     _frametimesRealtimeSeconds.Add(frameTime);
                     _displayedtimesRealtimeSeconds.Add(displayedTime);
                     _gpuActiveTimesRealtimeSeconds.Add(gpuActiveTime);
                     _cpuActiveTimesRealtimeSeconds.Add(cpuActiveTime);
-                    _measuretimesRealtimeSeconds.Add(startTime);
 
-                    if (startTime - _measuretimesRealtimeSeconds.First() > MetricInterval)
+                    // Remove old entries that exceed the metric interval
+                    if (_measuretimesRealtimeSeconds.Any() &&
+                        startTime - _measuretimesRealtimeSeconds.PeekFirst() > MetricInterval)
                     {
-                        int position = 0;
-                        while (position < _measuretimesRealtimeSeconds.Count &&
-                            startTime - _measuretimesRealtimeSeconds[position] > MetricInterval)
-                            position++;
-
-                        if (position > 0)
+                        while (_measuretimesRealtimeSeconds.Count > 0 &&
+                            startTime - _measuretimesRealtimeSeconds.PeekFirst() > MetricInterval)
                         {
-                            _frametimesRealtimeSeconds.RemoveRange(0, position);
-                            _displayedtimesRealtimeSeconds.RemoveRange(0, position);
-                            _gpuActiveTimesRealtimeSeconds.RemoveRange(0, position);
-                            _cpuActiveTimesRealtimeSeconds.RemoveRange(0, position);
-                            _measuretimesRealtimeSeconds.RemoveRange(0, position);
+                            _measuretimesRealtimeSeconds.RemoveFirst();
+                            _frametimesRealtimeSeconds.RemoveFirst();
+                            _displayedtimesRealtimeSeconds.RemoveFirst();
+                            _gpuActiveTimesRealtimeSeconds.RemoveFirst();
+                            _cpuActiveTimesRealtimeSeconds.RemoveFirst(); ;
+                        }
+                    }
+                }
+
+                lock (_lock1SecondMetric)
+                {
+                    // 1 second window - using circular buffer for O(1) add and efficient removal
+                    _measuretimes1Second.Add(startTime);
+                    _pcLatency1Second.Add(pcLatency);
+
+                    // Remove old entries that exceed the 1 second interval
+                    if (_measuretimes1Second.Any() &&
+                        startTime - _measuretimes1Second.PeekFirst() > 1.0)
+                    {
+                        while (_measuretimes1Second.Count > 0 &&
+                            startTime - _measuretimes1Second.PeekFirst() > 1.0)
+                        {
+                            _measuretimes1Second.RemoveFirst();
+                            _pcLatency1Second.RemoveFirst();
                         }
                     }
                 }
 
                 lock (_lock5SecondsMetric)
                 {
-                    // 5 sceconds window
+                    // 5 seconds window - using circular buffer for O(1) add and efficient removal
                     _measuretimes5Seconds.Add(startTime);
                     _frametimes5Seconds.Add(frameTime);
                     _displaytimes5Seconds.Add(displayedTime);
-                    _pcLatency5Seconds.Add(pcLatency);
 
-                    if (startTime - _measuretimes5Seconds.First() > FIVE_SECONDS_INTERVAL_LENGTH)
+                    // Remove old entries that exceed the 5 second interval
+                    if (_measuretimes5Seconds.Any() &&
+                        startTime - _measuretimes5Seconds.PeekFirst() > FIVE_SECONDS_INTERVAL_LENGTH)
                     {
-                        int position = 0;
-                        while (position < _measuretimes5Seconds.Count &&
-                            startTime - _measuretimes5Seconds[position] > FIVE_SECONDS_INTERVAL_LENGTH)
-                            position++;
-
-                        if (position > 0)
+                        while (_measuretimes5Seconds.Count > 0 &&
+                            startTime - _measuretimes5Seconds.PeekFirst() > FIVE_SECONDS_INTERVAL_LENGTH)
                         {
-                            _frametimes5Seconds.RemoveRange(0, position);
-                            _displaytimes5Seconds.RemoveRange(0, position);
-                            _measuretimes5Seconds.RemoveRange(0, position);
-                            _pcLatency5Seconds.RemoveRange(0, position);
+                            _measuretimes5Seconds.RemoveFirst();
+                            _frametimes5Seconds.RemoveFirst();
+                            _displaytimes5Seconds.RemoveFirst();
+                        }
+                    }
+                }
+
+                lock (_lockAnimationErrorMetric)
+                {
+                    // 250ms window - using circular buffer for O(1) add and efficient removal
+                    _measuretimes500Ms.Add(startTime);
+                    _animationError500Ms.Add(animationError);
+
+                    // Remove old entries that exceed the 250ms interval
+                    if (_measuretimes500Ms.Any() &&
+                        startTime - _measuretimes500Ms.PeekFirst() > ANIMATION_ERROR_INTERVAL_LENGTH)
+                    {
+                        while (_measuretimes500Ms.Count > 0 &&
+                            startTime - _measuretimes500Ms.PeekFirst() > ANIMATION_ERROR_INTERVAL_LENGTH)
+                        {
+                            _measuretimes500Ms.RemoveFirst();
+                            _animationError500Ms.RemoveFirst();
                         }
                     }
                 }
@@ -292,6 +371,13 @@ namespace CapFrameX.PresentMonInterface
         {
             lock (_lockPmdMetrics)
             {
+                // check for max capacity to avoid memory issues
+                if (_channelDataBuffer.Count + metricsData.Count > PMD_BUFFER_CAPACITY)
+                {
+                    int itemsToRemove = (_channelDataBuffer.Count + metricsData.Count) - PMD_BUFFER_CAPACITY;
+                    _channelDataBuffer.RemoveRange(0, itemsToRemove);
+                }
+
                 _channelDataBuffer.AddRange(metricsData);
             }
         }
@@ -300,6 +386,13 @@ namespace CapFrameX.PresentMonInterface
         {
             lock (_lockPmdMetrics)
             {
+                // check for max capacity to avoid memory issues
+                if (_sensorDataBuffer.Count + metricsData.Count > PMD_BUFFER_CAPACITY)
+                {
+                    int itemsToRemove = (_sensorDataBuffer.Count + metricsData.Count) - PMD_BUFFER_CAPACITY;
+                    _sensorDataBuffer.RemoveRange(0, itemsToRemove);
+                }
+
                 _sensorDataBuffer.AddRange(metricsData);
             }
         }
@@ -310,11 +403,36 @@ namespace CapFrameX.PresentMonInterface
             {
                 int capacity = (int)(LIST_CAPACITY * MetricInterval / 20d);
 
-                _frametimesRealtimeSeconds = new List<double>(capacity);
-                _displayedtimesRealtimeSeconds = new List<double>(capacity);
-                _measuretimesRealtimeSeconds = new List<double>(capacity);
-                _gpuActiveTimesRealtimeSeconds = new List<double>(capacity);
-                _cpuActiveTimesRealtimeSeconds = new List<double>(capacity);
+                _frametimesRealtimeSeconds = new CircularBuffer<double>(capacity);
+                _displayedtimesRealtimeSeconds = new CircularBuffer<double>(capacity);
+                _measuretimesRealtimeSeconds = new CircularBuffer<double>(capacity);
+                _gpuActiveTimesRealtimeSeconds = new CircularBuffer<double>(capacity);
+                _cpuActiveTimesRealtimeSeconds = new CircularBuffer<double>(capacity);
+            }
+
+            lock (_lock1SecondMetric)
+            {
+                int capacity1Second = LIST_CAPACITY / 20;
+                _measuretimes1Second = new CircularBuffer<double>(capacity1Second);
+                _pcLatency1Second = new CircularBuffer<double>(capacity1Second);
+            }
+
+            lock (_lock5SecondsMetric)
+            {
+                int capacity5Seconds = LIST_CAPACITY / 4;
+
+                _frametimes5Seconds = new CircularBuffer<double>(capacity5Seconds);
+                _displaytimes5Seconds = new CircularBuffer<double>(capacity5Seconds);
+                _measuretimes5Seconds = new CircularBuffer<double>(capacity5Seconds);
+            }
+
+            lock (_lockAnimationErrorMetric)
+            {
+                // 500ms at high framerate (e.g., 500fps = 250 frames per 500ms)
+                int capacity500Ms = 600;
+
+                _animationError500Ms = new CircularBuffer<double>(capacity500Ms);
+                _measuretimes500Ms = new CircularBuffer<double>(capacity500Ms);
             }
         }
 
@@ -322,8 +440,15 @@ namespace CapFrameX.PresentMonInterface
         {
             lock (_lockRealtimeMetric)
             {
-                var samples = _appConfiguration.UseDisplayChangeMetrics
+                // Use frame times when calculating average fps
+                var buffer = (_appConfiguration.UseDisplayChangeMetrics && metric != EMetric.Average)
                     ? _displayedtimesRealtimeSeconds : _frametimesRealtimeSeconds;
+
+                if (buffer == null || buffer.Count == 0)
+                    return double.NaN;
+
+                // Reuse list buffer to avoid allocations
+                var samples = buffer.ToList(_reusableListBufferA);
 
                 return _frametimeStatisticProvider
                     .GetFpsMetricValue(samples, metric);
@@ -334,8 +459,13 @@ namespace CapFrameX.PresentMonInterface
         {
             lock (_lockRealtimeMetric)
             {
+                if (_frametimesRealtimeSeconds == null || _frametimesRealtimeSeconds.Count == 0)
+                    return double.NaN;
+
+                var samples = _frametimesRealtimeSeconds.ToList(_reusableListBufferA);
+
                 return _frametimeStatisticProvider
-                    .GetFrametimeMetricValue(_frametimesRealtimeSeconds, metric);
+                    .GetFrametimeMetricValue(samples, metric);
             }
         }
 
@@ -343,8 +473,13 @@ namespace CapFrameX.PresentMonInterface
         {
             lock (_lockRealtimeMetric)
             {
+                if (_gpuActiveTimesRealtimeSeconds == null || _gpuActiveTimesRealtimeSeconds.Count == 0)
+                    return double.NaN;
+
+                var samples = _gpuActiveTimesRealtimeSeconds.ToList(_reusableListBufferA);
+
                 return _frametimeStatisticProvider
-                    .GetFrametimeMetricValue(_gpuActiveTimesRealtimeSeconds, metric);
+                    .GetFrametimeMetricValue(samples, metric);
             }
         }
 
@@ -352,8 +487,13 @@ namespace CapFrameX.PresentMonInterface
         {
             lock (_lockRealtimeMetric)
             {
+                if (_cpuActiveTimesRealtimeSeconds == null || _cpuActiveTimesRealtimeSeconds.Count == 0)
+                    return double.NaN;
+
+                var samples = _cpuActiveTimesRealtimeSeconds.ToList(_reusableListBufferA);
+
                 return _frametimeStatisticProvider
-                    .GetFrametimeMetricValue(_cpuActiveTimesRealtimeSeconds, metric);
+                    .GetFrametimeMetricValue(samples, metric);
             }
         }
 
@@ -361,10 +501,17 @@ namespace CapFrameX.PresentMonInterface
         {
             lock (_lockRealtimeMetric)
             {
+                if (_frametimesRealtimeSeconds == null || _frametimesRealtimeSeconds.Count == 0 ||
+                    _gpuActiveTimesRealtimeSeconds == null || _gpuActiveTimesRealtimeSeconds.Count == 0)
+                    return double.NaN;
+
+                var frametimeSamples = _frametimesRealtimeSeconds.ToList(_reusableListBufferA);
+                var gpuActiveSamples = _gpuActiveTimesRealtimeSeconds.ToList(_reusableListBufferB);
+
                 var frameTimeAverage = _frametimeStatisticProvider
-                    .GetFrametimeMetricValue(_frametimesRealtimeSeconds, EMetric.Average);
+                    .GetFrametimeMetricValue(frametimeSamples, EMetric.Average);
                 var gpuActiveTimeAverage = _frametimeStatisticProvider
-                    .GetFrametimeMetricValue(_gpuActiveTimesRealtimeSeconds, EMetric.GpuActiveAverage);
+                    .GetFrametimeMetricValue(gpuActiveSamples, EMetric.GpuActiveAverage);
 
                 return Math.Round(Math.Abs((gpuActiveTimeAverage - frameTimeAverage) / frameTimeAverage * 100), MidpointRounding.AwayFromZero);
             }
@@ -374,13 +521,19 @@ namespace CapFrameX.PresentMonInterface
         {
             lock (_lock5SecondsMetric)
             {
-                if (!_frametimes5Seconds.Any() && !_appConfiguration.UseDisplayChangeMetrics)
-                    return 0;
+                var buffer = _appConfiguration.UseDisplayChangeMetrics ? _displaytimes5Seconds : _frametimes5Seconds;
 
-                if (!_displaytimes5Seconds.Any() && _appConfiguration.UseDisplayChangeMetrics)
-                    return 0;
+                if (buffer == null || buffer.Count == 0)
+                    return double.NaN;
 
-                var samples = _appConfiguration.UseDisplayChangeMetrics ? _displaytimes5Seconds : _frametimes5Seconds;
+                // Check for NaN values
+                foreach (var sample in buffer)
+                {
+                    if (double.IsNaN(sample))
+                        return double.NaN;
+                }
+
+                var samples = buffer.ToList(_reusableListBufferA);
 
                 return _frametimeStatisticProvider
                     .GetOnlineStutteringTimePercentage(samples, _appConfiguration.StutteringFactor);
@@ -389,14 +542,54 @@ namespace CapFrameX.PresentMonInterface
 
         public double GetOnlinePcLatencyAverageValue()
         {
-            lock (_lock5SecondsMetric)
+            lock (_lock1SecondMetric)
             {
                 // Return NaN if no valid pc latency samples are available
-                if (!_pcLatency5Seconds.Any() || _pcLatency5Seconds.Any(x => double.IsNaN(x)))
+                if (_pcLatency1Second == null || _pcLatency1Second.Count == 0)
+                    return double.NaN;
+
+                var validSamples = _pcLatency1Second.Where(s => !double.IsNaN(s) && s > 0).ToList();
+
+                // Allow 60% invalid values before returning NaN
+                if (validSamples.Count < _pcLatency1Second.Count * 0.4)
                     return double.NaN;
 
                 return _frametimeStatisticProvider
-                    .GetFrametimeMetricValue(_pcLatency5Seconds, EMetric.Average);
+                    .GetFrametimeMetricValue(validSamples, EMetric.Average);
+            }
+        }
+
+        public double GetOnlineAnimationErrorValue()
+        {
+            lock (_lockAnimationErrorMetric)
+            {
+                // Return NaN if no valid animation error samples are available
+                if (_animationError500Ms == null || _animationError500Ms.Count == 0)
+                    return double.NaN;
+
+                double maxAbsValue = 0d;
+                double resultValue = double.NaN;
+
+                foreach (var sample in _animationError500Ms)
+                {
+                    if (double.IsNaN(sample))
+                        continue;
+
+                    double absValue = Math.Abs(sample);
+                    if (absValue >= maxAbsValue)
+                    {
+                        maxAbsValue = absValue;
+                        resultValue = sample;
+                    }
+                }
+
+                // Clamp to ±1000ms (1 second) to avoid extreme outliers
+                if (!double.IsNaN(resultValue))
+                {
+                    resultValue = Math.Max(-1000d, Math.Min(1000d, resultValue));
+                }
+
+                return resultValue;
             }
         }
 
@@ -462,5 +655,70 @@ namespace CapFrameX.PresentMonInterface
         public void ResetRealtimeMetrics() => ResetMetrics();
 
         public void SetMetricInterval() => ResetMetrics();
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
+            if (disposing)
+            {
+                // Dispose subscriptions
+                _frameDataSubscription?.Dispose();
+                _poweneticsSubscription?.Dispose();
+                _benchlabSubscription?.Dispose();
+
+                // Dispose schedulers (EventLoopScheduler implements IDisposable)
+                _frameDataScheduler?.Dispose();
+                _poweneticsScheduler?.Dispose();
+                _benchlabScheduler?.Dispose();
+
+                // Clear buffers
+                lock (_lockRealtimeMetric)
+                {
+                    _frametimesRealtimeSeconds?.Clear();
+                    _displayedtimesRealtimeSeconds?.Clear();
+                    _gpuActiveTimesRealtimeSeconds?.Clear();
+                    _cpuActiveTimesRealtimeSeconds?.Clear();
+                    _measuretimesRealtimeSeconds?.Clear();
+                }
+
+                lock (_lock5SecondsMetric)
+                {
+                    _frametimes5Seconds?.Clear();
+                    _displaytimes5Seconds?.Clear();
+                    _measuretimes5Seconds?.Clear();
+                }
+
+                lock (_lock1SecondMetric)
+                {
+                    _pcLatency1Second?.Clear();
+                    _measuretimes1Second?.Clear();
+                }
+
+                lock (_lockAnimationErrorMetric)
+                {
+                    _animationError500Ms?.Clear();
+                    _measuretimes500Ms?.Clear();
+                }
+
+                lock (_lockPmdMetrics)
+                {
+                    _channelDataBuffer?.Clear();
+                    _sensorDataBuffer?.Clear();
+                }
+
+                _reusableListBufferA?.Clear();
+                _reusableListBufferB?.Clear();
+            }
+
+            _disposed = true;
+        }
     }
 }

@@ -1,0 +1,196 @@
+<Project>
+  <ItemGroup>
+    <Content Include="..\\..\\benchlab-service\\appsettings.Development.json">
+      <Link>benchlab-service\\appsettings.Development.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\appsettings.json">
+      <Link>benchlab-service\\appsettings.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\BENCHLAB_Core.dll">
+      <Link>benchlab-service\\BENCHLAB_Core.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Configuration.Abstractions.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Configuration.Abstractions.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Configuration.Binder.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Configuration.Binder.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Configuration.CommandLine.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Configuration.CommandLine.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Configuration.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Configuration.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Configuration.EnvironmentVariables.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Configuration.EnvironmentVariables.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Configuration.FileExtensions.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Configuration.FileExtensions.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Configuration.Json.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Configuration.Json.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Configuration.UserSecrets.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Configuration.UserSecrets.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.DependencyInjection.Abstractions.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.DependencyInjection.Abstractions.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.DependencyInjection.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.DependencyInjection.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Diagnostics.Abstractions.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Diagnostics.Abstractions.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Diagnostics.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Diagnostics.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.FileProviders.Abstractions.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.FileProviders.Abstractions.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.FileProviders.Physical.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.FileProviders.Physical.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.FileSystemGlobbing.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.FileSystemGlobbing.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Hosting.Abstractions.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Hosting.Abstractions.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Hosting.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Hosting.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Hosting.WindowsServices.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Hosting.WindowsServices.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Logging.Abstractions.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Logging.Abstractions.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Logging.Configuration.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Logging.Configuration.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Logging.Console.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Logging.Console.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Logging.Debug.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Logging.Debug.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Logging.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Logging.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Logging.EventLog.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Logging.EventLog.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Logging.EventSource.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Logging.EventSource.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Options.ConfigurationExtensions.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Options.ConfigurationExtensions.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Options.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Options.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\Microsoft.Extensions.Primitives.dll">
+      <Link>benchlab-service\\Microsoft.Extensions.Primitives.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\PMD_Service.deps.json">
+      <Link>benchlab-service\\PMD_Service.deps.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\PMD_Service.dll">
+      <Link>benchlab-service\\PMD_Service.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\PMD_Service.exe">
+      <Link>benchlab-service\\PMD_Service.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\PMD_Service.runtimeconfig.json">
+      <Link>benchlab-service\\PMD_Service.runtimeconfig.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\runtimes\linux-arm\native\libSystem.IO.Ports.Native.so">
+      <Link>benchlab-service\\runtimes\linux-arm\native\libSystem.IO.Ports.Native.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\runtimes\linux-arm64\native\libSystem.IO.Ports.Native.so">
+      <Link>benchlab-service\\runtimes\linux-arm64\native\libSystem.IO.Ports.Native.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\runtimes\linux-x64\native\libSystem.IO.Ports.Native.so">
+      <Link>benchlab-service\\runtimes\linux-x64\native\libSystem.IO.Ports.Native.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\runtimes\osx-arm64\native\libSystem.IO.Ports.Native.dylib">
+      <Link>benchlab-service\\runtimes\osx-arm64\native\libSystem.IO.Ports.Native.dylib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\runtimes\osx-x64\native\libSystem.IO.Ports.Native.dylib">
+      <Link>benchlab-service\\runtimes\osx-x64\native\libSystem.IO.Ports.Native.dylib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\runtimes\unix\lib\net7.0\System.IO.Ports.dll">
+      <Link>benchlab-service\\runtimes\unix\lib\net7.0\System.IO.Ports.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\runtimes\win\lib\net7.0\System.IO.Ports.dll">
+      <Link>benchlab-service\\runtimes\win\lib\net7.0\System.IO.Ports.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\runtimes\win\lib\net9.0\System.Diagnostics.EventLog.dll">
+      <Link>benchlab-service\\runtimes\win\lib\net9.0\System.Diagnostics.EventLog.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\runtimes\win\lib\net9.0\System.Diagnostics.EventLog.Messages.dll">
+      <Link>benchlab-service\\runtimes\win\lib\net9.0\System.Diagnostics.EventLog.Messages.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\runtimes\win\lib\net9.0\System.ServiceProcess.ServiceController.dll">
+      <Link>benchlab-service\\runtimes\win\lib\net9.0\System.ServiceProcess.ServiceController.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\System.Diagnostics.EventLog.dll">
+      <Link>benchlab-service\\System.Diagnostics.EventLog.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\System.IO.Ports.dll">
+      <Link>benchlab-service\\System.IO.Ports.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\\..\\benchlab-service\\System.ServiceProcess.ServiceController.dll">
+      <Link>benchlab-service\\System.ServiceProcess.ServiceController.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

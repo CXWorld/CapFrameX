@@ -25,10 +25,13 @@ namespace CapFrameX.Data
 
 		IList<double> GetGpuActiveTimeTimeWindow();
 
+		IList<double> GetAnimationErrorTimeWindow();
+
 		IList<Point> GetFrametimePointTimeWindow();
 
 		IList<Point> GetGpuActiveTimePointTimeWindow();
 
+		IList<Point> GetCpuActiveTimePointTimeWindow();
 
         IList<double> GetFpsTimeWindow();
 

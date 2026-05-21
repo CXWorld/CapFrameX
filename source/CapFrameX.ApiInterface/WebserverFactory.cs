@@ -4,6 +4,7 @@ using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
+using CapFrameX.Mcp;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Monitoring.Contracts;
 using DryIoc;
@@ -46,16 +47,32 @@ namespace CapFrameX.Remote
                     m.WithController(() => new MetricsController(iocContainer.Resolve<IOnlineMetricService>()));
                     m.WithController(() => new VersionController(iocContainer.Resolve<IAppVersionProvider>()));
                     m.WithController(() => new OSDController(iocContainer.Resolve<IOverlayService>()));
-                })
+                });
+
+            if (config.McpEnabled)
+            {
+                server = server.WithModule(new McpModule("/mcp", iocContainer, typeof(McpModule).Assembly));
+            }
+
+            server = server
                 .WithModule(new OSDWebsocketModule("/ws/osd", iocContainer.Resolve<IOverlayService>()))
                 .WithModule(new SensorWebsocketModule("/ws/sensors", iocContainer.Resolve<ISensorService>(), iocContainer.Resolve<ISensorConfig>(), (_, __) => true, (sensorConfig, isActive) => sensorConfig.WsSensorsEnabled = isActive))
-                .WithModule(new SensorWebsocketModule("/ws/activesensors", iocContainer.Resolve<ISensorService>(), iocContainer.Resolve<ISensorConfig>(), (sensor, sensorConfig) => sensorConfig.GetSensorIsActive(sensor.Key.Identifier), (sensorConfig, isActive) => sensorConfig.WsActiveSensorsEnabled = isActive))
+                .WithModule(new SensorWebsocketModule("/ws/activesensors", iocContainer.Resolve<ISensorService>(), iocContainer.Resolve<ISensorConfig>(), (sensor, sensorConfig) =>
+                {
+                    var stableId = SensorIdentifierHelper.BuildStableIdentifier(sensor.Key);
+                    return stableId != null
+                        ? sensorConfig.IsSelectedForLoggingByStableId(stableId)
+                        : sensorConfig.IsSelectedForLogging(sensor.Key.Identifier);
+                }, (sensorConfig, isActive) => sensorConfig.WsActiveSensorsEnabled = isActive))
                 .WithModule(new ActionModule("/", HttpVerbs.Any, ctx => ctx.SendDataAsync(new { Message = "Error" })));
 
             OsdHttpUrl = "http://localhost:" + port + "/api/osd";
             OsdWSUrl = "ws://localhost:" + port + "/ws/osd";
             SensorsWSUrl = "ws://localhost:" + port + "/ws/sensors";
             ActiveSensorsWSUrl = "ws://localhost:" + port + "/ws/activesensors";
+
+            if (config.McpEnabled)
+                Log.Logger.Information("MCP endpoint available at http://localhost:{port}/mcp", port);
 
             // Listen for state changes.
             server.StateChanged += (s, e) => Log.Logger.Information($"WebServer ({string.Join(",", options.UrlPrefixes)}) State - {e.NewState}");

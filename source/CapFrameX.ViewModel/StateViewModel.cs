@@ -7,7 +7,6 @@ using CapFrameX.Contracts.Sensor;
 using CapFrameX.Contracts.UpdateCheck;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
-using CapFrameX.Sensor;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -24,6 +23,8 @@ namespace CapFrameX.ViewModel
 {
 	public partial class StateViewModel : BindableBase
 	{
+		private const int SystemInfoStatusTimeoutMilliseconds = 5000;
+
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ICaptureService _captureService;
@@ -35,8 +36,8 @@ namespace CapFrameX.ViewModel
 
 		private bool _isCaptureModeActive;
 		private bool _isOverlayActive;
+		private Task _systemInfoStatusUpdateTask;
 		private string _updateHyperlinkText;
-		private bool _isFrameViewAvailable;
 
 		private bool IsBeta => GetBetaState();
 
@@ -91,16 +92,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool IsFrameViewAvailable
-		{
-			get { return _isFrameViewAvailable; }
-			set
-			{
-				_isFrameViewAvailable = value;
-				RaisePropertyChanged();
-			}
-		}
-
 		public string VersionString
 		{
 			get
@@ -121,17 +112,16 @@ namespace CapFrameX.ViewModel
 		public ICommand UpdateStatusInfoCommand { get; }
 
 		public StateViewModel(IEventAggregator eventAggregator,
-							  IAppConfiguration appConfiguration,
-							  ICaptureService captureService,
-							  IOverlayService overlayService,
-							  IUpdateCheck updateCheck,
-							  IAppVersionProvider appVersionProvider,
-							  LoginManager loginManager,
-							  IRTSSService rTSSService,
-							  ISystemInfo systemInfo,
-							  ISensorService sensorService,
-							  IFrameViewService frameViewService,
-							  ILogger<StateViewModel> logger)
+			IAppConfiguration appConfiguration,
+			ICaptureService captureService,
+			IOverlayService overlayService,
+			IUpdateCheck updateCheck,
+			IAppVersionProvider appVersionProvider,
+			LoginManager loginManager,
+			IRTSSService rTSSService,
+			ISystemInfo systemInfo,
+			ISensorService sensorService,
+			ILogger<StateViewModel> logger)
 		{
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
@@ -180,9 +170,9 @@ namespace CapFrameX.ViewModel
 				});
 			});
 
-			Task.Run(async () => await frameViewService.IntializeFrameViewService())
-				.ContinueWith(_ => IsFrameViewAvailable = frameViewService.IsFrameViewAvailable, 
-				TaskScheduler.FromCurrentSynchronizationContext());
+			Dispatcher.CurrentDispatcher.BeginInvoke(
+				new Action(RefreshSystemInfo),
+				DispatcherPriority.ApplicationIdle);
 		}
 
 		private Assembly GetAssemblyByName(string name)
@@ -191,10 +181,48 @@ namespace CapFrameX.ViewModel
 				   SingleOrDefault(assembly => assembly.GetName().Name == name);
 		}
 
-		public void RefreshSystemInfo()
+		public async void RefreshSystemInfo()
 		{
-			_systemInfo.SetSystemInfosStatus();
-			UpdateSystemInfoStatus();
+			await RefreshSystemInfoAsync();
+		}
+
+		private async Task RefreshSystemInfoAsync()
+		{
+			if (_systemInfoStatusUpdateTask != null && !_systemInfoStatusUpdateTask.IsCompleted)
+				return;
+
+			var refreshTask = Task.Run(() => _systemInfo.SetSystemInfosStatus());
+			_systemInfoStatusUpdateTask = refreshTask;
+
+			try
+			{
+				var timeoutTask = Task.Delay(SystemInfoStatusTimeoutMilliseconds);
+				var completedTask = await Task.WhenAny(refreshTask, timeoutTask);
+
+				if (completedTask != refreshTask)
+				{
+					_logger.LogWarning("System info status update timed out after {timeoutMilliseconds} ms.", SystemInfoStatusTimeoutMilliseconds);
+					_ = refreshTask.ContinueWith(task =>
+					{
+						_logger.LogError(task.Exception.Flatten(), "Error while updating system info status after timeout.");
+					}, TaskContinuationOptions.OnlyOnFaulted);
+					return;
+				}
+
+				await refreshTask;
+				UpdateSystemInfoStatus();
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error while updating system info status.");
+			}
+			finally
+			{
+				if (ReferenceEquals(_systemInfoStatusUpdateTask, refreshTask) && refreshTask.IsCompleted)
+				{
+					_systemInfoStatusUpdateTask = null;
+				}
+			}
 		}
 
 		private string GetInfoText()

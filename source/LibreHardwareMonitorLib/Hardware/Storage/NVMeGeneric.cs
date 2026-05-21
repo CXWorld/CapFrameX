@@ -46,12 +46,12 @@ public sealed class NVMeGeneric : AbstractStorage
         NVMeHealthInfo log = Smart.GetHealthInfo();
         if (log != null)
         {
-            AddSensor("Temperature", 0, false, SensorType.Temperature, health => health.Temperature);
-            AddSensor("Available Spare", 1, false, SensorType.Level, health => health.AvailableSpare);
-            AddSensor("Available Spare Threshold", 2, false, SensorType.Level, health => health.AvailableSpareThreshold);
-            AddSensor("Percentage Used", 3, false, SensorType.Level, health => health.PercentageUsed);
-            AddSensor("Data Read", 4, false, SensorType.Data, health => UnitsToData(health.DataUnitRead));
-            AddSensor("Data Written", 5, false, SensorType.Data, health => UnitsToData(health.DataUnitWritten));
+            AddSensor("Temperature", 0, false, SensorType.Temperature, health => health.Temperature, $"{Index}_1_0");
+            AddSensor("Available Spare", 1, false, SensorType.Level, health => health.AvailableSpare, $"{Index}_3_1");
+            AddSensor("Available Spare Threshold", 2, false, SensorType.Level, health => health.AvailableSpareThreshold, $"{Index}_3_2");
+            AddSensor("Lifetime Used", 3, false, SensorType.Level, health => health.PercentageUsed, $"{Index}_3_3");
+            AddSensor("Data Read", 4, false, SensorType.Data, health => UnitsToData(health.DataUnitRead), $"{Index}_3_4");
+            AddSensor("Data Written", 5, false, SensorType.Data, health => UnitsToData(health.DataUnitWritten), $"{Index}_3_5");
 
             int sensorIdx = 6;
             for (int i = 0; i < log.TemperatureSensors.Length; i++)
@@ -59,7 +59,7 @@ public sealed class NVMeGeneric : AbstractStorage
                 int idx = i;
                 if (log.TemperatureSensors[idx] > short.MinValue)
                 {
-                    AddSensor("Temperature " + (idx + 1), sensorIdx, false, SensorType.Temperature, health => health.TemperatureSensors[idx]);
+                    AddSensor("Temperature " + (idx + 1), sensorIdx, false, SensorType.Temperature, health => health.TemperatureSensors[idx], $"{Index}_1_{idx + 1}");
                     sensorIdx++;
                 }
             }
@@ -68,11 +68,12 @@ public sealed class NVMeGeneric : AbstractStorage
         base.CreateSensors();
     }
 
-    private void AddSensor(string name, int index, bool defaultHidden, SensorType sensorType, GetSensorValue getValue)
+    private void AddSensor(string name, int index, bool defaultHidden, SensorType sensorType, GetSensorValue getValue, string presentationSortKey)
     {
-        var sensor = new NVMeSensor(name, index, defaultHidden, sensorType, this, _settings, getValue)
+        var sensor = new NVMeSensor(WithDrivePrefix(name), index, defaultHidden, sensorType, this, _settings, getValue)
         {
-            Value = 0
+            Value = 0,
+            PresentationSortKey = presentationSortKey
         };
         ActivateSensor(sensor);
         _sensors.Add(sensor);

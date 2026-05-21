@@ -4,12 +4,12 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using LibreHardwareMonitor.PawnIo;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using LibreHardwareMonitor.PawnIo;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
@@ -18,6 +18,9 @@ internal sealed class IntelCpu : GenericCpu
     private readonly Sensor _busClock;
     private readonly Sensor _coreAvg;
     private readonly Sensor[] _coreClocks;
+    private readonly Sensor _coreEffectiveAvg;
+    private readonly Sensor[][] _threadEffectiveClocks;
+    private readonly Sensor _coreEffectiveMax;
     private readonly Sensor _maxClock;
     private readonly Sensor _coreMax;
     private readonly Sensor[] _coreTemperatures;
@@ -25,7 +28,12 @@ internal sealed class IntelCpu : GenericCpu
     private readonly Sensor _coreVoltage;
     private readonly Sensor[] _distToTjMaxTemperatures;
 
-    private readonly uint[] _energyStatusMsrs = { MSR_PKG_ENERGY_STATUS, MSR_PP0_ENERGY_STATUS, MSR_PP1_ENERGY_STATUS, MSR_DRAM_ENERGY_STATUS, MSR_PLATFORM_ENERGY_STATUS };
+    private readonly uint[] _energyStatusMsrs = 
+    { 
+        MSR_PKG_ENERGY_STATUS, MSR_PP0_ENERGY_STATUS, 
+        MSR_PP1_ENERGY_STATUS, MSR_DRAM_ENERGY_STATUS, 
+        MSR_PLATFORM_ENERGY_STATUS 
+    };
     private readonly uint[] _lastEnergyConsumed;
     private readonly DateTime[] _lastEnergyTime;
 
@@ -34,11 +42,38 @@ internal sealed class IntelCpu : GenericCpu
     private readonly Sensor[] _powerSensors;
     private readonly double _timeStampCounterMultiplier;
 
-    private readonly IntelMsr _pawnModule;
+    private readonly IntelMsr _msrModule;
+    private readonly bool _hasAperfMperf;
+    private readonly ulong[][] _lastAperf;
+    private readonly ulong[][] _lastMperf;
+    private readonly DateTime[][] _lastSampleTime;
 
-    public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
+    private readonly Sensor _uncoreClock;
+    private readonly bool _hasUncoreClock;
+
+    private readonly IntelImc _imcModule;
+    private readonly Sensor _imcClock;
+    private readonly Sensor _memoryDataRate;
+    private readonly Sensor _dramFrequency;
+    private readonly Sensor _memoryGear;
+    private readonly bool _hasImc;
+    private readonly bool _hasImcLive;
+
+    private readonly IntelOobmsm _oobmsmModule;
+    private readonly IntelOobmsmClocks _oobmsmClocks;
+    private readonly IntelOcMailbox _ocMailbox;
+    private readonly Sensor _nguClock;
+    private readonly Sensor _d2dClock;
+    private readonly bool _hasOobmsmClocks;
+    private readonly bool _hasOcMailboxClocks;
+
+    public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) 
+        : base(processorIndex, cpuId, settings)
     {
-        _pawnModule = new IntelMsr();
+        _msrModule = new IntelMsr();
+        _imcModule = new IntelImc();
+        _oobmsmModule = new IntelOobmsm();
+        _oobmsmClocks = new IntelOobmsmClocks(_oobmsmModule);
 
         uint eax;
 
@@ -229,8 +264,11 @@ internal sealed class IntelCpu : GenericCpu
                             tjMax = GetTjMaxFromMsr();
                             break;
 
-                        case 0xC5: // Intel Core Ultra 9 200 Series ArrowLake
-                        case 0xC6: // Intel Core Ultra 7 200 Series ArrowLake
+                        case 0xB5: // Arrow Lake-U (Linux: INTEL_ARROWLAKE_U)
+                        case 0xC5: // Arrow Lake-H (Linux: INTEL_ARROWLAKE_H)
+                        case 0xC6: // Arrow Lake (Linux: INTEL_ARROWLAKE)
+                        case 0xC7: // Intel Core Ultra 200 Series Arrow Lake-S Refresh Reserved
+                        case 0xC8: // Intel Core Ultra 200 Series Arrow Lake-S Refresh Reserved
                             _microArchitecture = MicroArchitecture.ArrowLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
@@ -239,7 +277,28 @@ internal sealed class IntelCpu : GenericCpu
                             _microArchitecture = MicroArchitecture.LunarLake;
                             tjMax = GetTjMaxFromMsr();
                             break;
-                        case 0x8F: // Intel Xeon W5-3435X // SapphireRapids 
+
+                        case 0xCC: // PantherLake-L (Linux: INTEL_PANTHERLAKE_L)
+                            _microArchitecture = MicroArchitecture.PantherLake;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+
+                        case 0xCF: // Emerald Rapids-X server (Linux: INTEL_EMERALDRAPIDS_X, Raptor Cove)
+                            _microArchitecture = MicroArchitecture.EmeraldRapids;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+
+                        case 0xD5: // Wildcat Lake-L (Linux: INTEL_WILDCATLAKE_L)
+                            _microArchitecture = MicroArchitecture.WildcatLake;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+
+                        case 0xD7: // Bartlett Lake-S (Linux: INTEL_BARTLETTLAKE, Raptor Cove)
+                            _microArchitecture = MicroArchitecture.BartlettLake;
+                            tjMax = GetTjMaxFromMsr();
+                            break;
+
+                        case 0x8F: // Intel Xeon W5-3435X SapphireRapids
                             _microArchitecture = MicroArchitecture.SapphireRapids;
                             tjMax = GetTjMaxFromMsr();
                             break;
@@ -255,6 +314,21 @@ internal sealed class IntelCpu : GenericCpu
                     }
                 }
 
+                break;
+            case 0x12:
+                // Nova Lake introduces a new CPUID display family (Family 18 / 0x12).
+                // Per Linux kernel arch/x86/include/asm/intel-family.h the assigned
+                // models are:
+                //   INTEL_NOVALAKE   = IFM(18, 0x01) // desktop / mainstream
+                //   INTEL_NOVALAKE_L = IFM(18, 0x03) // low-power / mobile
+                // We accept any other Family 18 model (ES) as NovaLake too: Family 18 is
+                // the new-generation envelope for the Coyote Cove / Arctic Wolf core
+                // (no other architecture is expected to share it), and unassigned
+                // models inside it are most likely future steppings or SKU variants.
+                // Failing closed to Unknown would silently regress detection on
+                // late-stepping silicon.
+                _microArchitecture = MicroArchitecture.NovaLake;
+                tjMax = GetTjMaxFromMsr();
                 break;
             case 0x0F:
                 switch (_model)
@@ -288,15 +362,17 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.Atom:
             case MicroArchitecture.Core:
             case MicroArchitecture.NetBurst:
-                if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out uint _, out uint edx))
+                if (_msrModule.ReadMsr(IA32_PERF_STATUS, out uint _, out uint edx))
                     _timeStampCounterMultiplier = ((edx >> 8) & 0x1f) + (0.5 * ((edx >> 14) & 1));
                 break;
             case MicroArchitecture.Airmont:
             case MicroArchitecture.AlderLake:
             case MicroArchitecture.ArrowLake:
+            case MicroArchitecture.BartlettLake:
             case MicroArchitecture.Broadwell:
             case MicroArchitecture.CannonLake:
             case MicroArchitecture.CometLake:
+            case MicroArchitecture.EmeraldRapids:
             case MicroArchitecture.Goldmont:
             case MicroArchitecture.GoldmontPlus:
             case MicroArchitecture.Haswell:
@@ -305,6 +381,9 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.JasperLake:
             case MicroArchitecture.KabyLake:
             case MicroArchitecture.LunarLake:
+            case MicroArchitecture.PantherLake:
+            case MicroArchitecture.NovaLake:
+            case MicroArchitecture.WildcatLake:
             case MicroArchitecture.Nehalem:
             case MicroArchitecture.MeteorLake:
             case MicroArchitecture.RaptorLake:
@@ -316,7 +395,7 @@ internal sealed class IntelCpu : GenericCpu
             case MicroArchitecture.SapphireRapids:
             case MicroArchitecture.ElkhartLake:
             case MicroArchitecture.Tremont:
-                if (_pawnModule.ReadMsr(MSR_PLATFORM_INFO, out eax, out uint _))
+                if (_msrModule.ReadMsr(MSR_PLATFORM_INFO, out eax, out uint _))
                     _timeStampCounterMultiplier = (eax >> 8) & 0xff;
 
                 break;
@@ -324,6 +403,14 @@ internal sealed class IntelCpu : GenericCpu
                 _timeStampCounterMultiplier = 0;
                 break;
         }
+
+        //Clock 0
+        //Load 1
+        //Power 2
+        //Temperature 3
+        //Voltage 4
+        //Misc 5
+        //PMC 6
 
         int coreSensorId = 0;
 
@@ -410,7 +497,7 @@ internal sealed class IntelCpu : GenericCpu
         for (int i = 0; i < _coreClocks.Length; i++)
         {
             _coreClocks[i] = new Sensor(CoreString(i), i + 1, SensorType.Clock, this, settings)
-            { IsPresentationDefault = true, PresentationSortKey = $"0_1_{i}" };
+            { IsPresentationDefault = true, PresentationSortKey = $"0_1_0_{i}" };
             if (HasTimeStampCounter && _microArchitecture != MicroArchitecture.Unknown)
                 ActivateSensor(_coreClocks[i]);
         }
@@ -419,12 +506,149 @@ internal sealed class IntelCpu : GenericCpu
         { PresentationSortKey = $"0_2" };
         ActivateSensor(_maxClock);
 
+        if (HasModelSpecificRegisters &&
+            TryReadPerfCounters(_cpuId[0][0].Affinity, out _, out _))
+        {
+            _hasAperfMperf = true;
+            _threadEffectiveClocks = new Sensor[_coreCount][];
+            _lastAperf = new ulong[_coreCount][];
+            _lastMperf = new ulong[_coreCount][];
+            _lastSampleTime = new DateTime[_coreCount][];
+
+            int effectiveSensorIndex = _coreClocks.Length + 2;
+            int totalThreadSensors = 0;
+            for (int i = 0; i < _coreCount; i++)
+            {
+                int threadCount = _cpuId[i].Length;
+                _threadEffectiveClocks[i] = new Sensor[threadCount];
+                _lastAperf[i] = new ulong[threadCount];
+                _lastMperf[i] = new ulong[threadCount];
+                _lastSampleTime[i] = new DateTime[threadCount];
+
+                for (int j = 0; j < threadCount; j++)
+                {
+                    _threadEffectiveClocks[i][j] = new Sensor($"Core #{i + 1} Thread #{j + 1} (Effective)", effectiveSensorIndex + totalThreadSensors, SensorType.Clock, this, settings)
+                    { PresentationSortKey = $"0_1_1_{i}_{j}" };
+                    ActivateSensor(_threadEffectiveClocks[i][j]);
+                    totalThreadSensors++;
+                }
+            }
+
+            _coreEffectiveAvg = new Sensor("CPU Effective", effectiveSensorIndex + totalThreadSensors, SensorType.Clock, this, settings)
+            { PresentationSortKey = "0_1_2" };
+            _coreEffectiveMax = new Sensor("CPU Max Effective", effectiveSensorIndex + totalThreadSensors + 1, SensorType.Clock, this, settings)
+            { PresentationSortKey = "0_1_3" };
+
+            ActivateSensor(_coreEffectiveAvg);
+            ActivateSensor(_coreEffectiveMax);
+        }
+        else
+        {
+            _hasAperfMperf = false;
+            _coreEffectiveAvg = null;
+            _coreEffectiveMax = null;
+            _threadEffectiveClocks = Array.Empty<Sensor[]>();
+            _lastAperf = Array.Empty<ulong[]>();
+            _lastMperf = Array.Empty<ulong[]>();
+            _lastSampleTime = Array.Empty<DateTime[]>();
+        }
+
+        if (SupportsUncoreClock(_microArchitecture, _model) &&
+            _msrModule.ReadMsr(MSR_UNCORE_PERF_STATUS, out uint uncoreEax, out uint _) &&
+            (uncoreEax & 0x7F) > 0)
+        {
+            int uncoreClockIndex = _hasAperfMperf
+                ? _coreClocks.Length + 2 + _threadEffectiveClocks.Sum(t => t.Length) + 2
+                : _coreClocks.Length + 2;
+
+            _uncoreClock = new Sensor("Uncore Ring Clock", uncoreClockIndex, SensorType.Clock, this, settings)
+            { PresentationSortKey = "0_3" };
+            ActivateSensor(_uncoreClock);
+            _hasUncoreClock = true;
+        }
+
+        if (SupportsIntelImc(_microArchitecture) && _imcModule.ReadClock(out _))
+        {
+            int imcSensorBaseIndex = _hasAperfMperf
+                ? _coreClocks.Length + 2 + _threadEffectiveClocks.Sum(t => t.Length) + 2
+                : _coreClocks.Length + 2;
+            if (_hasUncoreClock)
+                imcSensorBaseIndex++;
+
+            _imcClock = new Sensor("IMC Clock (QCLK)", imcSensorBaseIndex, SensorType.Clock, this, settings)
+            { PresentationSortKey = "0_4_0" };
+            _memoryDataRate = new Sensor("Memory Data Rate", imcSensorBaseIndex + 1, SensorType.Frequency, this, settings)
+            { PresentationSortKey = "0_4_1" };
+            _dramFrequency = new Sensor("DRAM Frequency", imcSensorBaseIndex + 2, SensorType.Clock, this, settings)
+            { PresentationSortKey = "0_4_2" };
+            _memoryGear = new Sensor("Memory Gear", imcSensorBaseIndex + 3, SensorType.Factor, this, settings)
+            { PresentationSortKey = "0_4_3" };
+            ActivateSensor(_imcClock);
+            ActivateSensor(_memoryDataRate);
+            ActivateSensor(_dramFrequency);
+            ActivateSensor(_memoryGear);
+            _hasImc = true;
+            _hasImcLive = _imcModule.ReadLiveClock(out _);
+        }
+
+        if (SupportsOobmsmClocks(_microArchitecture) && _oobmsmClocks.IsReady)
+        {
+            int oobmsmSensorBaseIndex = _hasAperfMperf
+                ? _coreClocks.Length + 2 + _threadEffectiveClocks.Sum(t => t.Length) + 2
+                : _coreClocks.Length + 2;
+            if (_hasUncoreClock)
+                oobmsmSensorBaseIndex++;
+            if (_hasImc)
+                oobmsmSensorBaseIndex += 4;
+
+            if (_oobmsmClocks.HasNgu)
+            {
+                _nguClock = new Sensor("NGU/NCLK Clock", oobmsmSensorBaseIndex, SensorType.Clock, this, settings)
+                { PresentationSortKey = "0_5_0" };
+                ActivateSensor(_nguClock);
+            }
+            if (_oobmsmClocks.HasD2d)
+            {
+                _d2dClock = new Sensor("D2D Clock", oobmsmSensorBaseIndex + 1, SensorType.Clock, this, settings)
+                { PresentationSortKey = "0_5_1" };
+                ActivateSensor(_d2dClock);
+            }
+            _hasOobmsmClocks = _nguClock != null || _d2dClock != null;
+        }
+        else if (SupportsOcMailbox(_microArchitecture))
+        {
+            // ARL-S relocated the OC Mailbox to MSR 0x607/0x608. OOBMSM PMT
+            // doesn't expose D2D/NGU on ARL-S, so when the PMT path failed
+            // above, try the MSR-mailbox path. (See IntelOcMailbox.cs.)
+            _ocMailbox = new IntelOcMailbox(_msrModule);
+            if (_ocMailbox.IsReady)
+            {
+                int sensorBaseIndex = _hasAperfMperf
+                    ? _coreClocks.Length + 2 + _threadEffectiveClocks.Sum(t => t.Length) + 2
+                    : _coreClocks.Length + 2;
+                if (_hasUncoreClock)
+                    sensorBaseIndex++;
+                if (_hasImc)
+                    sensorBaseIndex += 4;
+
+                _nguClock = new Sensor("NGU/NCLK Clock", sensorBaseIndex, SensorType.Clock, this, settings)
+                { PresentationSortKey = "0_5_0" };
+                ActivateSensor(_nguClock);
+                _d2dClock = new Sensor("D2D Clock", sensorBaseIndex + 1, SensorType.Clock, this, settings)
+                { PresentationSortKey = "0_5_1" };
+                ActivateSensor(_d2dClock);
+                _hasOcMailboxClocks = true;
+            }
+        }
+
         if (_microArchitecture is MicroArchitecture.Airmont or
             MicroArchitecture.AlderLake or
             MicroArchitecture.ArrowLake or
+            MicroArchitecture.BartlettLake or
             MicroArchitecture.Broadwell or
             MicroArchitecture.CannonLake or
             MicroArchitecture.CometLake or
+            MicroArchitecture.EmeraldRapids or
             MicroArchitecture.Goldmont or
             MicroArchitecture.GoldmontPlus or
             MicroArchitecture.Haswell or
@@ -433,6 +657,9 @@ internal sealed class IntelCpu : GenericCpu
             MicroArchitecture.JasperLake or
             MicroArchitecture.KabyLake or
             MicroArchitecture.LunarLake or
+            MicroArchitecture.PantherLake or
+            MicroArchitecture.NovaLake or
+            MicroArchitecture.WildcatLake or
             MicroArchitecture.MeteorLake or
             MicroArchitecture.RaptorLake or
             MicroArchitecture.RocketLake or
@@ -448,7 +675,7 @@ internal sealed class IntelCpu : GenericCpu
             _lastEnergyTime = new DateTime[_energyStatusMsrs.Length];
             _lastEnergyConsumed = new uint[_energyStatusMsrs.Length];
 
-            if (_pawnModule.ReadMsr(MSR_RAPL_POWER_UNIT, out eax, out uint _))
+            if (_msrModule.ReadMsr(MSR_RAPL_POWER_UNIT, out eax, out uint _))
             {
                 EnergyUnitsMultiplier = _microArchitecture switch
                 {
@@ -463,7 +690,7 @@ internal sealed class IntelCpu : GenericCpu
 
                 for (int i = 0; i < _energyStatusMsrs.Length; i++)
                 {
-                    if (!_pawnModule.ReadMsr(_energyStatusMsrs[i], out eax, out uint _))
+                    if (!_msrModule.ReadMsr(_energyStatusMsrs[i], out eax, out uint _))
                         continue;
 
                     // Don't show the "GPU Graphics" sensor on windows, it will show up under the GPU instead.
@@ -484,7 +711,7 @@ internal sealed class IntelCpu : GenericCpu
             }
         }
 
-        if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out eax, out uint _) && ((eax >> 32) & 0xFFFF) > 0)
+        if (_msrModule.ReadMsr(IA32_PERF_STATUS, out eax, out uint _) && ((eax >> 32) & 0xFFFF) > 0)
         {
             _coreVoltage = new Sensor("CPU Core", 0, SensorType.Voltage, this, settings)
             { PresentationSortKey = $"4_0" };
@@ -513,12 +740,140 @@ internal sealed class IntelCpu : GenericCpu
         return result;
     }
 
+    // MSR_UNCORE_PERF_STATUS (0x621) carries the current uncore ratio in bits [6:0]
+    // on Intel client platforms where the local intel-perfmon data also documents
+    // an uncore clock source (UNC_CLOCK.SOCKET / Info_System_Uncore_Frequency).
+    // CUR_RATIO * BCLK is exposed as the instantaneous Uncore/Ring clock.
+    //
+    // This is intentionally not a memory-clock sensor. Newer client platforms have
+    // a decoupled IMC clock, and server uncore PMUs expose their clocks through
+    // different PMU domains/counters rather than this simple MSR-ratio path.
+    private static bool SupportsUncoreClock(MicroArchitecture arch, uint model)
+    {
+        switch (arch)
+        {
+            case MicroArchitecture.SandyBridge:
+                return model == 0x2A; // exclude SNB-EP/EX (0x2D)
+            case MicroArchitecture.IvyBridge:
+                return model == 0x3A; // exclude Ivy Town (0x3E)
+            case MicroArchitecture.Haswell:
+                return model is 0x3C or 0x45 or 0x46; // exclude HSX (0x3F)
+            case MicroArchitecture.Broadwell:
+                return model is 0x3D or 0x47; // exclude BDX (0x4F) and BDW-DE (0x56)
+            case MicroArchitecture.Skylake:
+                return model is 0x4E or 0x5E; // exclude SKX (0x55)
+            case MicroArchitecture.KabyLake:
+            case MicroArchitecture.CometLake:
+                return true;
+            case MicroArchitecture.IceLake:
+                return model is 0x7D or 0x7E; // exclude Ice Lake server (0x6A/0x6C)
+            case MicroArchitecture.RocketLake:
+                return model == 0xA7;
+            case MicroArchitecture.TigerLake:
+                return model is 0x8C or 0x8D;
+            case MicroArchitecture.AlderLake:
+                return model is 0x97 or 0x9A or 0xBE;
+            case MicroArchitecture.RaptorLake:
+                return model is 0xB7 or 0xBA or 0xBF;
+            case MicroArchitecture.MeteorLake:
+                return model is 0xAA or 0xAC;
+            case MicroArchitecture.LunarLake:
+                return model == 0xBD;
+            case MicroArchitecture.ArrowLake:
+                return model is 0xB5 or 0xC5 or 0xC6; // exclude reserved 0xC7/0xC8
+            case MicroArchitecture.BartlettLake:
+                return model == 0xD7; // Linux: INTEL_BARTLETTLAKE (Raptor Cove core, client)
+            case MicroArchitecture.PantherLake:
+                return model == 0xCC; // Linux: INTEL_PANTHERLAKE_L
+            case MicroArchitecture.NovaLake:
+                // Family 18 (0x12). Linux: INTEL_NOVALAKE = IFM(18, 0x01),
+                // INTEL_NOVALAKE_L = IFM(18, 0x03). MicroArchitecture.NovaLake is
+                // only assigned for Family 18 (see family-switch above), so any
+                // model that reaches here is a NovaLake variant — accept all.
+                return true;
+            case MicroArchitecture.WildcatLake:
+                return model == 0xD5; // Linux: INTEL_WILDCATLAKE_L
+            // EmeraldRapids (0xCF) is server silicon and uses the server uncore PMU
+            // path, not the client MSR_UNCORE_RATIO_LIMIT ratio — intentionally not
+            // listed here.
+            default:
+                return false;
+        }
+    }
+
+    // Architectures whose IMC clock is exposed by the IntelIMC PawnIO module.
+    // The kernel module enforces its own per-CPUID allowlist (MTL/ARL/LNL/PTL
+    // via MEMSS_PMA, ADL/RPL via SA_PERF_STATUS), so this gate only filters
+    // out the broad architecture buckets the module never targets. The
+    // sensor registration site additionally probes the static IOCTL once
+    // and only activates the sensors when the kernel actually returns data.
+    // Validation status (per IntelIMC.p): ARL/LNL/PTL are validated end-to-end;
+    // MTL/ADL/RPL are accepted by the module but flagged EXPERIMENTAL until
+    // hardware cross-validation lands. The sensors are exposed for all six
+    // and hidden from the default presentation (IsPresentationDefault stays
+    // false) so consumers opt in explicitly.
+    private static bool SupportsIntelImc(MicroArchitecture arch)
+    {
+        // NovaLake is included on the speculative assumption that it inherits the
+        // Core-Ultra MEMSS_PMA / SA_PERF_STATUS register layout from PTL/ARL/LNL.
+        // BartlettLake is included because it shares the Raptor Cove core with RPL
+        // and is expected to follow the same SA_PERF_STATUS path; the kernel
+        // module still gates on its own CPUID allowlist.
+        // WildcatLake is intentionally not listed — its IMC topology (low-power
+        // consumer SoC) is unknown and may not follow the MEMSS_PMA pattern.
+        // EmeraldRapids is intentionally not listed — it is server silicon and
+        // exposes memory controller telemetry through the server uncore PMU,
+        // not the client MCHBAR path the module targets.
+        return arch is MicroArchitecture.AlderLake or
+            MicroArchitecture.RaptorLake or
+            MicroArchitecture.MeteorLake or
+            MicroArchitecture.ArrowLake or
+            MicroArchitecture.LunarLake or
+            MicroArchitecture.PantherLake or
+            MicroArchitecture.NovaLake or
+            MicroArchitecture.BartlettLake;
+    }
+
+    // Architectures whose SoC-fabric clocks (NGU, D2D) are exposed by the
+    // IntelOOBMSM PawnIO module via PMT Telemetry. NGU and D2D as discrete
+    // clock domains exist only on tile-based Core Ultra parts — monolithic
+    // CPUs (ADL/RPL/Bartlett) keep the role unified under the existing
+    // MSR_UNCORE_PERF_STATUS "Uncore Ring Clock". Server uncore (EMR/SPR)
+    // routes its fabric telemetry through a different PMU path and is
+    // intentionally out of scope.
+    //
+    // Validation status: this is a fresh integration; until the per-platform
+    // PMT register offsets are populated in IntelOobmsmClocks.GetPlatformOffsets
+    // (or supplied via env-var overrides), IntelOobmsmClocks.IsReady stays
+    // false and no sensors register here.
+    private static bool SupportsOobmsmClocks(MicroArchitecture arch)
+    {
+        return arch is MicroArchitecture.MeteorLake or
+            MicroArchitecture.ArrowLake or
+            MicroArchitecture.LunarLake or
+            MicroArchitecture.PantherLake or
+            MicroArchitecture.WildcatLake or
+            MicroArchitecture.NovaLake;
+    }
+
+    // Architectures whose fabric clocks (NGU, D2D) are exposed via the
+    // new OC Mailbox MSR pair (0x607 interface + 0x608 data) rather
+    // than the OOBMSM PMT Telemetry container. ARL-S desktop is the
+    // first known case; later monolithic Core Ultra Series 3+ desktop
+    // parts are speculative additions that will fall back gracefully
+    // if the MSRs return #GP at probe time (IntelOcMailbox.IsReady).
+    private static bool SupportsOcMailbox(MicroArchitecture arch)
+    {
+        return arch is MicroArchitecture.ArrowLake or
+            MicroArchitecture.NovaLake;
+    }
+
     private float[] GetTjMaxFromMsr()
     {
         float[] result = new float[_coreCount];
         for (int i = 0; i < _coreCount; i++)
         {
-            if (_pawnModule.ReadMsr(IA32_TEMPERATURE_TARGET, out uint eax, out uint _, _cpuId[i][0].Affinity))
+            if (_msrModule.ReadMsr(IA32_TEMPERATURE_TARGET, out uint eax, out uint _, _cpuId[i][0].Affinity))
                 result[i] = (eax >> 16) & 0xFF;
             else
                 result[i] = 100;
@@ -526,6 +881,49 @@ internal sealed class IntelCpu : GenericCpu
 
         return result;
     }
+
+    private string ReportCoreInfo(int coreIndex)
+    {
+        StringBuilder r = new();
+        var previousAffinity = ThreadAffinity.Set(_cpuId[coreIndex][0].Affinity);
+
+        r.AppendLine($"=== Core {coreIndex} ===");
+
+        // Leaf 0x1A - Hybrid info
+        if (OpCode.CpuId(0x1A, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
+        {
+            r.AppendLine($"Leaf 0x1A: EAX=0x{eax:X8} EBX=0x{ebx:X8} ECX=0x{ecx:X8} EDX=0x{edx:X8}");
+        }
+
+        // Leaf 0x1F - V2 Extended Topology
+        r.AppendLine("Leaf 0x1F:");
+        for (uint sub = 0; sub < 10; sub++)
+        {
+            if (OpCode.CpuId(0x1F, sub, out eax, out ebx, out ecx, out edx))
+            {
+                uint levelType = (ecx >> 8) & 0xFF;
+                r.AppendLine($"  Sub {sub}: EAX=0x{eax:X8} EBX=0x{ebx:X8} ECX=0x{ecx:X8} EDX=0x{edx:X8} (LevelType={levelType})");
+                if (levelType == 0) break;
+            }
+        }
+
+        // Leaf 0x4 - Cache topology
+        r.AppendLine("Leaf 0x4:");
+        for (uint sub = 0; sub < 6; sub++)
+        {
+            if (OpCode.CpuId(0x4, sub, out eax, out ebx, out ecx, out edx))
+            {
+                uint cacheType = eax & 0x1F;
+                if (cacheType == 0) break;
+                uint cacheLevel = (eax >> 5) & 0x7;
+                r.AppendLine($"  Sub {sub}: L{cacheLevel} Type={cacheType} EAX=0x{eax:X8}");
+            }
+        }
+
+        ThreadAffinity.Set(previousAffinity);
+        return r.ToString();
+    }
+
 
     public override string GetReport()
     {
@@ -536,6 +934,10 @@ internal sealed class IntelCpu : GenericCpu
         r.Append("Time Stamp Counter Multiplier: ");
         r.AppendLine(_timeStampCounterMultiplier.ToString(CultureInfo.InvariantCulture));
         r.AppendLine();
+        for (int i = 0; i < _coreCount; i++)
+        {
+            r.Append(ReportCoreInfo(i));
+        }
         return r.ToString();
     }
 
@@ -543,7 +945,9 @@ internal sealed class IntelCpu : GenericCpu
     public override void Close()
     {
         base.Close();
-        _pawnModule.Close();
+        _msrModule.Close();
+        _imcModule.Close();
+        _oobmsmModule.Close();
     }
 
     public override void Update()
@@ -557,7 +961,7 @@ internal sealed class IntelCpu : GenericCpu
         for (int i = 0; i < _coreTemperatures.Length; i++)
         {
             // if reading is valid
-            if (_pawnModule.ReadMsr(IA32_THERM_STATUS_MSR, out eax, out _, _cpuId[i][0].Affinity) && (eax & 0x80000000) != 0)
+            if (_msrModule.ReadMsr(IA32_THERM_STATUS_MSR, out eax, out _, _cpuId[i][0].Affinity) && (eax & 0x80000000) != 0)
             {
                 // get the dist from tjMax from bits 22:16
                 float deltaT = (eax & 0x007F0000) >> 16;
@@ -589,7 +993,7 @@ internal sealed class IntelCpu : GenericCpu
         if (_packageTemperature != null)
         {
             // if reading is valid
-            if (_pawnModule.ReadMsr(IA32_PACKAGE_THERM_STATUS, out eax, out _, _cpuId[0][0].Affinity) && (eax & 0x80000000) != 0)
+            if (_msrModule.ReadMsr(IA32_PACKAGE_THERM_STATUS, out eax, out _, _cpuId[0][0].Affinity) && (eax & 0x80000000) != 0)
             {
                 // get the dist from tjMax from bits 22:16
                 float deltaT = (eax & 0x007F0000) >> 16;
@@ -609,7 +1013,7 @@ internal sealed class IntelCpu : GenericCpu
             for (int i = 0; i < _coreClocks.Length; i++)
             {
                 System.Threading.Thread.Sleep(1);
-                if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out eax, out _, _cpuId[i][0].Affinity))
+                if (_msrModule.ReadMsr(IA32_PERF_STATUS, out eax, out _, _cpuId[i][0].Affinity))
                 {
                     newBusClock = TimeStampCounterFrequency / _timeStampCounterMultiplier;
                     switch (_microArchitecture)
@@ -620,9 +1024,11 @@ internal sealed class IntelCpu : GenericCpu
                         case MicroArchitecture.Airmont:
                         case MicroArchitecture.AlderLake:
                         case MicroArchitecture.ArrowLake:
+                        case MicroArchitecture.BartlettLake:
                         case MicroArchitecture.Broadwell:
                         case MicroArchitecture.CannonLake:
                         case MicroArchitecture.CometLake:
+                        case MicroArchitecture.EmeraldRapids:
                         case MicroArchitecture.Goldmont:
                         case MicroArchitecture.GoldmontPlus:
                         case MicroArchitecture.Haswell:
@@ -631,6 +1037,9 @@ internal sealed class IntelCpu : GenericCpu
                         case MicroArchitecture.JasperLake:
                         case MicroArchitecture.KabyLake:
                         case MicroArchitecture.LunarLake:
+                        case MicroArchitecture.PantherLake:
+                        case MicroArchitecture.NovaLake:
+                        case MicroArchitecture.WildcatLake:
                         case MicroArchitecture.MeteorLake:
                         case MicroArchitecture.RaptorLake:
                         case MicroArchitecture.RocketLake:
@@ -662,6 +1071,189 @@ internal sealed class IntelCpu : GenericCpu
                 _busClock.Value = (float)newBusClock;
                 ActivateSensor(_busClock);
             }
+
+            if (_hasUncoreClock && newBusClock > 0 &&
+                _msrModule.ReadMsr(MSR_UNCORE_PERF_STATUS, out uint uncoreEax, out _))
+            {
+                // CUR_RATIO (bits [6:0]) * BCLK is the instantaneous uncore/ring
+                // clock in MHz.
+                uint curRatio = uncoreEax & 0x7F;
+                if (curRatio > 0)
+                    _uncoreClock.Value = (float)(curRatio * newBusClock);
+                else
+                    _uncoreClock.Value = null;
+            }
+
+            if (_hasImc && newBusClock > 0)
+            {
+                // Prefer the live SA_PERF workpoint where the kernel module
+                // exposes one (Core Ultra MTL/LNL/PTL). On Arrow Lake the live
+                // IOCTL is short-circuited (SA_PERF reads as zero, see
+                // Deploy/VALIDATION-ARL.md) and on Alder/Raptor Lake the
+                // static IOCTL already returns a live value via SA_PERF, so
+                // we fall back to the static read in both cases.
+                bool gotImc = _hasImcLive
+                    ? _imcModule.ReadLiveClock(out IntelImc.ImcClock imcClock)
+                    : _imcModule.ReadClock(out imcClock);
+                if (!gotImc && _hasImcLive)
+                    gotImc = _imcModule.ReadClock(out imcClock);
+
+                if (gotImc)
+                {
+                    double refMHz = IntelImc.GetReferenceMHz(imcClock.ReferenceClock, newBusClock);
+                    if (refMHz > 0 && imcClock.Ratio > 0)
+                    {
+                        // QCLK = ratio * reference. The data rate (MT/s) and
+                        // IO clock (MHz) follow the IntelIMC.p computation but
+                        // require a known gear. SA_PERF_STATUS does not encode
+                        // gear on ADL/RPL, and on Core Ultra the live IOCTL
+                        // can return Gear=Unknown when MEMSS_PMA's strict
+                        // reserved-bits check rejects on a future stepping;
+                        // in those cases we still surface QCLK but suppress
+                        // the dependent sensors rather than report a wrong
+                        // (typically half-rate) data rate.
+                        double qclk = imcClock.Ratio * refMHz;
+                        _imcClock.Value = (float)qclk;
+                        if (imcClock.Gear != IntelImc.ImcGear.Unknown)
+                        {
+                            double dataRate = qclk * (int)imcClock.Gear;
+                            _memoryDataRate.Value = (float)dataRate;
+                            _dramFrequency.Value = (float)(dataRate / 2.0);
+                            _memoryGear.Value = (int)imcClock.Gear;
+                        }
+                        else
+                        {
+                            _memoryDataRate.Value = null;
+                            _dramFrequency.Value = null;
+                            _memoryGear.Value = null;
+                        }
+                    }
+                    else
+                    {
+                        _imcClock.Value = null;
+                        _memoryDataRate.Value = null;
+                        _dramFrequency.Value = null;
+                        _memoryGear.Value = null;
+                    }
+                }
+                else
+                {
+                    _imcClock.Value = null;
+                    _memoryDataRate.Value = null;
+                    _dramFrequency.Value = null;
+                    _memoryGear.Value = null;
+                }
+            }
+
+            if (_hasOobmsmClocks)
+            {
+                // PMT NGU/D2D fields use absolute MHz multipliers
+                // baked into the platform table (e.g. ratio × 50 MHz on
+                // LNL/PTL D2D, ratio × 100 MHz on MTL NGU). No BCLK
+                // scaling is involved, so the IMC reference-clock path
+                // doesn't apply here.
+                if (_oobmsmClocks.TryRead(out IntelOobmsmClocks.Sample oobmsmSample))
+                {
+                    if (_nguClock != null)
+                        _nguClock.Value = oobmsmSample.HasNgu ? (float?)oobmsmSample.NguMhz : null;
+                    if (_d2dClock != null)
+                        _d2dClock.Value = oobmsmSample.HasD2d ? (float?)oobmsmSample.D2dMhz : null;
+                }
+                else
+                {
+                    if (_nguClock != null) _nguClock.Value = null;
+                    if (_d2dClock != null) _d2dClock.Value = null;
+                }
+            }
+            else if (_hasOcMailboxClocks)
+            {
+                // ARL-S path: D2D/NGU come from OC Mailbox on MSR 0x607/0x608.
+                // Both ratios decode to MHz with a × 100 MHz multiplier baked
+                // into IntelOcMailbox.
+                if (_ocMailbox.TryRead(out IntelOcMailbox.Sample mboxSample))
+                {
+                    if (_nguClock != null)
+                        _nguClock.Value = mboxSample.HasNgu ? (float?)mboxSample.NguMhz : null;
+                    if (_d2dClock != null)
+                        _d2dClock.Value = mboxSample.HasD2d ? (float?)mboxSample.D2dMhz : null;
+                }
+                else
+                {
+                    if (_nguClock != null) _nguClock.Value = null;
+                    if (_d2dClock != null) _d2dClock.Value = null;
+                }
+            }
+        }
+
+        if (_hasAperfMperf)
+        {
+            double effectiveSum = 0;
+            double effectiveMax = 0;
+            int effectiveCount = 0;
+
+            for (int i = 0; i < _threadEffectiveClocks.Length; i++)
+            {
+                for (int j = 0; j < _threadEffectiveClocks[i].Length; j++)
+                {
+                    DateTime sampleTime = DateTime.UtcNow;
+
+                    if (!TryReadPerfCounters(_cpuId[i][j].Affinity, out ulong aperf, out ulong mperf))
+                    {
+                        _threadEffectiveClocks[i][j].Value = null;
+                        continue;
+                    }
+
+                    if (aperf < _lastAperf[i][j] ||
+                        mperf < _lastMperf[i][j])
+                    {
+                        // Counter overflow - reset
+                        _lastAperf[i][j] = aperf;
+                        _lastMperf[i][j] = mperf;
+                        _lastSampleTime[i][j] = sampleTime;
+                        _threadEffectiveClocks[i][j].Value = null;
+                        continue;
+                    }
+
+                    TimeSpan sampleDuration = sampleTime - _lastSampleTime[i][j];
+                    ulong aperfDelta = aperf - _lastAperf[i][j];
+                    ulong mperfDelta = mperf - _lastMperf[i][j];
+                    _lastAperf[i][j] = aperf;
+                    _lastMperf[i][j] = mperf;
+                    _lastSampleTime[i][j] = sampleTime;
+
+                    if (aperfDelta == 0 || mperfDelta == 0 || sampleDuration.Ticks == 0)
+                    {
+                        _threadEffectiveClocks[i][j].Value = null;
+                        continue;
+                    }
+
+                    // Effective clock = APERF cycles / elapsed time (same approach as AMD)
+                    double freq = aperfDelta / (sampleDuration.TotalMilliseconds * 1000.0);
+
+                    // Clamp effective clock between 0 and core clock
+                    float maxClock = _coreClocks[i].Value ?? (float)TimeStampCounterFrequency;
+
+                    // Clamping must consider BCLK oc (max 10%) and Spread Spectrum Clocking (SSC) (1-2%)
+                    freq = Math.Max(0, Math.Min(freq, maxClock * 1.12));
+                    _threadEffectiveClocks[i][j].Value = (float)Math.Round(freq, 0);
+
+                    effectiveSum += freq;
+                    effectiveCount++;
+                    if (freq > effectiveMax)
+                        effectiveMax = freq;
+                }
+            }
+
+            if (effectiveCount > 0)
+            {
+                _coreEffectiveAvg.Value = (float)Math.Round(effectiveSum / effectiveCount, 0);
+                _coreEffectiveMax.Value = (float)Math.Round(effectiveMax, 0);
+            }
+            else
+            {
+                _coreEffectiveAvg.Value = null;
+                _coreEffectiveMax.Value = null;
+            }
         }
 
         if (_powerSensors != null)
@@ -671,7 +1263,7 @@ internal sealed class IntelCpu : GenericCpu
                 if (sensor == null)
                     continue;
 
-                if (!_pawnModule.ReadMsr(_energyStatusMsrs[sensor.Index], out eax, out _))
+                if (!_msrModule.ReadMsr(_energyStatusMsrs[sensor.Index], out eax, out _))
                     continue;
 
                 DateTime time = DateTime.UtcNow;
@@ -686,17 +1278,61 @@ internal sealed class IntelCpu : GenericCpu
             }
         }
 
-        if (_coreVoltage != null && _pawnModule.ReadMsr(IA32_PERF_STATUS, out _, out uint edx))
+        // Read package-level core voltage
+        if (_coreVoltage != null && _msrModule.ReadMsr(IA32_PERF_STATUS, out eax, out uint edx))
         {
-            _coreVoltage.Value = ((edx >> 32) & 0xFFFF) / (float)(1 << 13);
+            // Voltage is in bits 47:32 of the 64-bit MSR (IA32_PERF_STATUS)
+            // ReadMsr returns: eax = bits 31:0, edx = bits 63:32
+            // Therefore, voltage (bits 47:32) is in bits 15:0 of edx
+            uint vid = edx & 0xFFFF;
+
+            if (vid > 0)
+            {
+                // Voltage formula: VID / 2^13 (documented for Sandy Bridge and some later CPUs)
+                _coreVoltage.Value = vid / (float)(1 << 13);
+            }
+            else
+            {
+                float voltageEax = (eax & 0xFFFF) / (float)(1 << 13);
+
+                if (voltageEax > 0)
+                {
+                    _coreVoltage.Value = voltageEax;
+                }
+                else
+                {
+                    // VID field is 0 on modern HWP-enabled CPUs (Skylake and newer)
+                    // Voltage is managed internally by hardware and not exposed via this MSR
+                    DeactivateSensor(_coreVoltage);
+                }
+            }
         }
 
+        // Read per-core VIDs
         for (int i = 0; i < _coreVIDs.Length; i++)
         {
-            if (_pawnModule.ReadMsr(IA32_PERF_STATUS, out _, out edx, _cpuId[i][0].Affinity) && ((edx >> 32) & 0xFFFF) > 0)
+            if (_msrModule.ReadMsr(IA32_PERF_STATUS, out eax, out edx, _cpuId[i][0].Affinity))
             {
-                _coreVIDs[i].Value = ((edx >> 32) & 0xFFFF) / (float)(1 << 13);
-                ActivateSensor(_coreVIDs[i]);
+                uint vid = edx & 0xFFFF;
+
+                if (vid > 0)
+                {
+                    _coreVIDs[i].Value = vid / (float)(1 << 13);
+                    ActivateSensor(_coreVIDs[i]);
+                }
+                else
+                {
+                    float voltageEax = (eax & 0xFFFF) / (float)(1 << 13);
+                    if (voltageEax > 0)
+                    {
+                        _coreVIDs[i].Value = voltageEax;
+                        ActivateSensor(_coreVIDs[i]);
+                    }
+                    else
+                    {
+                        DeactivateSensor(_coreVIDs[i]);
+                    }
+                }
             }
             else
             {
@@ -711,11 +1347,13 @@ internal sealed class IntelCpu : GenericCpu
         Airmont,
         AlderLake,
         Atom,
-        ArrowLake, // Gen. 15 (0xC6, -H = 0xC5)
+        ArrowLake,     // Family 6 model 0xC5 (-H), 0xC6 (vanilla), 0xB5 (-U)
+        BartlettLake,  // Family 6 model 0xD7 (Raptor Cove core)
         Broadwell,
         CannonLake,
         CometLake,
         Core,
+        EmeraldRapids, // Family 6 model 0xCF (server, Raptor Cove core)
         Goldmont,
         GoldmontPlus,
         Haswell,
@@ -723,7 +1361,11 @@ internal sealed class IntelCpu : GenericCpu
         IvyBridge,
         JasperLake,
         KabyLake,
-        LunarLake,
+        LunarLake,     // Family 6 model 0xBD (Lion Cove / Skymont)
+        PantherLake,   // Family 6 model 0xCC (Cougar Cove / Darkmont)
+        NovaLake,      // Family 18 model 0x01 (vanilla) and 0x03 (-L mobile),
+                       // Coyote Cove / Arctic Wolf cores
+        WildcatLake,   // Family 6 model 0xD5 (-L)
         Nehalem,
         NetBurst,
         MeteorLake,
@@ -744,6 +1386,8 @@ internal sealed class IntelCpu : GenericCpu
     private const uint IA32_PERF_STATUS = 0x0198;
     private const uint IA32_TEMPERATURE_TARGET = 0x01A2;
     private const uint IA32_THERM_STATUS_MSR = 0x019C;
+    private const uint IA32_MPERF = 0xE7;
+    private const uint IA32_APERF = 0xE8;
 
     private const uint MSR_DRAM_ENERGY_STATUS = 0x619;
     private const uint MSR_PKG_ENERGY_STATUS = 0x611;
@@ -753,5 +1397,31 @@ internal sealed class IntelCpu : GenericCpu
     private const uint MSR_PLATFORM_ENERGY_STATUS = 0x64D;
 
     private const uint MSR_RAPL_POWER_UNIT = 0x606;
+
+    // MSR_UNCORE_PERF_STATUS (Intel client, Sandy Bridge and later) - bits [6:0] hold
+    // CUR_RATIO, the current uncore ratio in 100 MHz units. PawnIO's IntelMSR module
+    // exposes it under the alternative name MSR_UNC_PERF_GLOBAL_STATUS at the same
+    // address (0x621). On server uncore PMUs the same address has a different
+    // meaning, so callers must restrict use to client microarchitectures.
+    private const uint MSR_UNCORE_PERF_STATUS = 0x621;
     // ReSharper restore InconsistentNaming
+
+    private bool TryReadPerfCounters(GroupAffinity affinity, out ulong aperf, out ulong mperf)
+    {
+        GroupAffinity previousAffinity = ThreadAffinity.Set(affinity);
+        bool readAperf = _msrModule.ReadMsr(IA32_APERF, out uint aperfEax, out uint aperfEdx);
+        bool readMperf = _msrModule.ReadMsr(IA32_MPERF, out uint mperfEax, out uint mperfEdx);
+
+        if (readAperf && readMperf && aperfEax == 0 && aperfEdx == 0 && mperfEax == 0 && mperfEdx == 0)
+        {
+            System.Threading.Thread.SpinWait(10000);
+            readAperf = _msrModule.ReadMsr(IA32_APERF, out aperfEax, out aperfEdx);
+            readMperf = _msrModule.ReadMsr(IA32_MPERF, out mperfEax, out mperfEdx);
+        }
+        ThreadAffinity.Set(previousAffinity);
+
+        aperf = ((ulong)aperfEdx << 32) | aperfEax;
+        mperf = ((ulong)mperfEdx << 32) | mperfEax;
+        return readAperf && readMperf && (aperf != 0 || mperf != 0);
+    }
 }

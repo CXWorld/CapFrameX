@@ -1,4 +1,5 @@
-﻿using CapFrameX.Data.Session.Contracts;
+﻿using CapFrameX.Contracts.Overlay;
+using CapFrameX.Data.Session.Contracts;
 using LibreHardwareMonitor.Hardware;
 using System;
 using System.Collections.Generic;
@@ -21,10 +22,12 @@ namespace CapFrameX.Contracts.Sensor
         string GetGpuDriverVersion();
         string GetCpuName();
         string GetGpuName();
-        string GetSensorTypeString(string identifier);
+        ECpuVendor GetCpuVendor();
+        EGpuVendor GetGpuVendor();
+        string GetSensorTypeString(EOverlayEntryType entryType, string stableIdentifier);
         void SetLoggingInterval(TimeSpan timeSpan);
         void SetOSDInterval(TimeSpan timeSpan);
         Task<IEnumerable<ISensorEntry>> GetSensorEntries();
-        IEnumerable<IHardware> GetDetectedGpus();
+        IEnumerable<string> GetDetectedGpus();
     }
 }

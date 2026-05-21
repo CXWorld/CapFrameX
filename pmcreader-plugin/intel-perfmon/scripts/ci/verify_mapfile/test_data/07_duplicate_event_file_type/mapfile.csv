@@ -1,0 +1,25 @@
+Family-model,Version,Filename,EventType,Core Type,Native Model ID,Core Role Name
+GenuineIntel-6-97,V1.21,/ADL/events/alderlake_gracemont_core.json,hybridcore,0x20,0x000001,Atom
+GenuineIntel-6-97,V1.21,/ADL/events/alderlake_goldencove_core.json,hybridcore,0x40,0x000001,Core
+GenuineIntel-6-97,V1.21,/ADL/events/alderlake_uncore.json,uncore,,,
+GenuineIntel-6-97,V1.21,/ADL/events/alderlake_uncore_experimental.json,uncore experimental,,,
+GenuineIntel-6-9A,V1.21,/ADL/events/alderlake_gracemont_core.json,hybridcore,0x20,0x000001,Atom
+GenuineIntel-6-9A,V1.21,/ADL/events/alderlake_goldencove_core.json,hybridcore,0x40,0x000001,Core
+GenuineIntel-6-9A,V1.21,/ADL/events/alderlake_uncore.json,uncore,,,
+GenuineIntel-6-9A,V1.21,/ADL/events/alderlake_uncore_experimental.json,uncore experimental,,,
+GenuineIntel-6-B7,V1.21,/ADL/events/alderlake_gracemont_core.json,hybridcore,0x20,0x000001,Atom
+GenuineIntel-6-B7,V1.21,/ADL/events/alderlake_goldencove_core.json,hybridcore,0x40,0x000001,Core
+GenuineIntel-6-B7,V1.21,/ADL/events/alderlake_uncore.json,uncore,,,
+GenuineIntel-6-B7,V1.21,/ADL/events/alderlake_uncore_experimental.json,uncore experimental,,,
+GenuineIntel-6-BA,V1.21,/ADL/events/alderlake_gracemont_core.json,hybridcore,0x20,0x000001,Atom
+GenuineIntel-6-BA,V1.21,/ADL/events/alderlake_goldencove_core.json,hybridcore,0x40,0x000001,Core
+GenuineIntel-6-BA,V1.21,/ADL/events/alderlake_goldencove_core.json,hybridcore,0x40,0x000001,Core
+GenuineIntel-6-BA,V1.21,/ADL/events/alderlake_uncore.json,uncore,,,
+GenuineIntel-6-BA,V1.21,/ADL/events/alderlake_uncore_experimental.json,uncore experimental,,,
+GenuineIntel-6-BF,V1.21,/ADL/events/alderlake_gracemont_core.json,hybridcore,0x20,0x000001,Atom
+GenuineIntel-6-BF,V1.21,/ADL/events/alderlake_goldencove_core.json,hybridcore,0x40,0x000001,Core
+GenuineIntel-6-BF,V1.21,/ADL/events/alderlake_uncore.json,uncore,,,
+GenuineIntel-6-BF,V1.21,/ADL/events/alderlake_uncore_experimental.json,uncore experimental,,,
+GenuineIntel-6-BE,V1.21,/ADL/events/alderlake_gracemont_core.json,core,,,
+GenuineIntel-6-BE,V1.21,/ADL/events/alderlake_uncore.json,uncore,,,
+GenuineIntel-6-BE,V1.21,/ADL/events/alderlake_uncore_experimental.json,uncore experimental,,,

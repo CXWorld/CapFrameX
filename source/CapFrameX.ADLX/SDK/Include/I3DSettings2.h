@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -78,11 +78,11 @@ namespace adlx
         * 
         * Sharpen Desktop requires @ref DOX_IADLX3DImageSharpening "AMD Radeon™ Image Sharpening".<br>
 
-        * When AMD Radeon Image sharpening is enabled and Sharpen Desktop is enabled, the sharpening is applied for both windowed applications and for applications that run in fullscreen exclusive mode.<br>
+        * If AMD Radeon Image Sharpening is not enabled, the sharpening effect will not be applied to either windowed applications or to applications that run in fullscreen exclusive mode. Sharpen Desktop can remain enabled, but specified values will not be considered.<br>
 
-        * When AMD Radeon Image sharpening is enabled and Sharpen Desktop is disabled, the sharpening is only applied to applications that run in fullscreen exclusive mode.<br>
+        * When AMD Radeon Image Sharpening and Sharpen Desktop are enabled, sharpening is applied for windowed applications, and for applications that run in fullscreen exclusive mode.<br>
 
-        * When AMD Radeon™ Image sharpening is disabled and Sharpen Desktop is enabled, Sharpen Desktop remains in enabled state, but the value is ignored.<br>
+        * When AMD Radeon Image Sharpening is enabled, but Sharpen Desktop is disabled, the sharpening is only applied to applications that run in fullscreen exclusive mode.<br>
 
         * @ENG_END_DOX
         *
@@ -117,11 +117,12 @@ namespace adlx
         * 
         * Sharpen Desktop requires @ref DOX_IADLX3DImageSharpening "AMD Radeon™ Image Sharpening".<br>
 
-        * When AMD Radeon Image sharpening is enabled and Sharpen Desktop is enabled, the sharpening is applied for both windowed applications and for applications that run in fullscreen exclusive mode.<br>
+        * If AMD Radeon Image Sharpening is not enabled, the sharpening effect will not be applied to either windowed applications or to applications that run in fullscreen exclusive mode. Sharpen Desktop can remain enabled, but specified values will not be considered.<br>
 
-        * When AMD Radeon Image sharpening is enabled and Sharpen Desktop is disabled, the sharpening is only applied to applications that run in fullscreen exclusive mode.<br>
+        * When AMD Radeon Image Sharpening and Sharpen Desktop are enabled, sharpening is applied for windowed applications, and for applications that run in fullscreen exclusive mode.<br>
 
-        * When AMD Radeon™ Image sharpening is disabled and Sharpen Desktop is enabled, Sharpen Desktop remains in enabled state, but the value is ignored.<br>
+        * When AMD Radeon Image Sharpening is enabled, but Sharpen Desktop is disabled, the sharpening is only applied to applications that run in fullscreen exclusive mode.<br>
+
         * 
         * @ENG_END_DOX
         *

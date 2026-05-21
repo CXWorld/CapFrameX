@@ -77,6 +77,16 @@ namespace CapFrameX.Data
             return CurrentSession.GetGpuActiveTimeTimeWindow(startTime, endTime, _appConfiguration, RemoveOutlierMethod);
         }
 
+        public IList<double> GetAnimationErrorTimeWindow()
+        {
+            if (CurrentSession == null)
+                return null;
+
+            double startTime = CurrentTime;
+            double endTime = startTime + WindowLength;
+            return CurrentSession.GetAnimationErrorTimeWindow(startTime, endTime);
+        }
+
         public IList<Point> GetFrametimePointTimeWindow()
         {
             if (CurrentSession == null)
@@ -97,6 +107,16 @@ namespace CapFrameX.Data
             return CurrentSession.GetGpuActiveTimePointsTimeWindow(startTime, endTime, _appConfiguration, RemoveOutlierMethod);
         }
 
+        public IList<Point> GetCpuActiveTimePointTimeWindow()
+        {
+            if (CurrentSession == null)
+                return null;
+
+            double startTime = CurrentTime;
+            double endTime = startTime + WindowLength;
+            return CurrentSession.GetCpuActiveTimePointsTimeWindow(startTime, endTime, _appConfiguration, RemoveOutlierMethod);
+        }
+
         public IList<Point> GetFrametimeDistributionPointTimeWindow()
         {
             if (CurrentSession == null)
@@ -109,7 +129,14 @@ namespace CapFrameX.Data
 
         public IList<double> GetFpsTimeWindow()
         {
-            return GetFrametimeTimeWindow()?.Select(ft => 1000 / ft).ToList();
+            if (_appConfiguration.UseDisplayChangeMetrics)
+            {
+                return GetDisplayChangeTimeWindow()?.Select(dt => 1000 / dt).ToList();
+            }
+            else
+            {
+                return GetFrametimeTimeWindow()?.Select(ft => 1000 / ft).ToList();
+            }
         }
 
         public IList<double> GetGpuActiveFpsTimeWindow()

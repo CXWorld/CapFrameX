@@ -3,21 +3,32 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
-using LibreHardwareMonitor.Hardware.Motherboard;
 using LibreHardwareMonitor.PawnIo;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
 internal sealed class Amd17Cpu : AmdCpu
 {
+    // Keep raw SMU dump code available for diagnostics, but disabled by default.
+    private const bool EnableSmuRawDump = false;
+
     private readonly Processor _processor;
     private readonly Dictionary<SensorType, int> _sensorTypeIndex;
     private readonly RyzenSMU _smu;
     private readonly AmdFamily17 _pawnModule;
+    private readonly object _smuDumpLock = new();
+    private StreamWriter _smuDumpWriter;
+    private int _smuDumpColumnCount;
+    private long _smuDumpSampleId;
+
+    private static readonly Func<bool> _isCaptureActive = CreateCaptureStateAccessor();
 
     public Amd17Cpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
     {
@@ -45,17 +56,15 @@ internal sealed class Amd17Cpu : AmdCpu
         // So start at 1 and count upwards when the read core changes.
         foreach (CpuId[] cpu in cpuId.OrderBy(x => x[0].ExtData[0x1e, 1] & 0xFF))
         {
-            CpuId thread = cpu[0];
-
             // CPUID_Fn8000001E_EBX, Register ..1E_1, [7:0]
             // threads per core =  CPUID_Fn8000001E_EBX[15:8] + 1
             // CoreId: core ID =  CPUID_Fn8000001E_EBX[7:0]
-            int coreIdRead = (int)(thread.ExtData[0x1e, 1] & 0xff);
+            int coreIdRead = (int)(cpu[0].ExtData[0x1e, 1] & 0xff);
 
             // CPUID_Fn8000001E_ECX, Node Identifiers, Register ..1E_2
             // NodesPerProcessor =  CPUID_Fn8000001E_ECX[10:8]
             // nodeID =  CPUID_Fn8000001E_ECX[7:0]
-            int nodeId = (int)(thread.ExtData[0x1e, 2] & 0xff);
+            int nodeId = (int)(cpu[0].ExtData[0x1e, 2] & 0xff);
 
             if (coreIdRead != lastCoreId)
             {
@@ -64,7 +73,11 @@ internal sealed class Amd17Cpu : AmdCpu
 
             lastCoreId = coreIdRead;
 
-            _processor.AppendThread(thread, nodeId, coreId);
+            // Add all threads (1 if SMT disabled, 2 if SMT enabled)
+            for (int i = 0; i < cpu.Length; i++)
+            {
+                _processor.AppendThread(cpu[i], nodeId, coreId);
+            }
         }
 
         Update();
@@ -82,6 +95,7 @@ internal sealed class Amd17Cpu : AmdCpu
     public override void Close()
     {
         base.Close();
+        StopSmuDump();
         _pawnModule.Close();
         _smu.Close();
     }
@@ -103,6 +117,120 @@ internal sealed class Amd17Cpu : AmdCpu
         }
 
         _processor.UpdateVirtualSensor();
+    }
+
+    private static Func<bool> CreateCaptureStateAccessor()
+    {
+        try
+        {
+            Type captureManagerType = Type.GetType("CapFrameX.Data.CaptureManager, CapFrameX.Data", false);
+            if (captureManagerType == null)
+                return () => false;
+
+            PropertyInfo isCapturingProperty = captureManagerType.GetProperty("IsCapturingStatic", BindingFlags.Public | BindingFlags.Static);
+            if (isCapturingProperty?.PropertyType == typeof(bool))
+                return () => (bool)isCapturingProperty.GetValue(null);
+        }
+        catch
+        {
+            // ignored
+        }
+
+        return () => false;
+    }
+
+    private void LogSmuDataIfCapturing(float[] smuData)
+    {
+        if (!EnableSmuRawDump) return;
+
+        bool isCapturing = _isCaptureActive();
+
+        lock (_smuDumpLock)
+        {
+            if (!isCapturing)
+            {
+                StopSmuDumpNoLock();
+                return;
+            }
+
+            if (_smuDumpWriter == null)
+                StartSmuDumpNoLock();
+
+            if (_smuDumpWriter == null || smuData == null || smuData.Length == 0)
+                return;
+
+            if (_smuDumpColumnCount != smuData.Length)
+            {
+                WriteSmuDumpHeaderNoLock(smuData.Length);
+                _smuDumpColumnCount = smuData.Length;
+                _smuDumpSampleId = 0;
+            }
+
+            StringBuilder line = new();
+            line.Append(DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+            line.Append(',');
+            line.Append((++_smuDumpSampleId).ToString(CultureInfo.InvariantCulture));
+            for (int i = 0; i < smuData.Length; i++)
+            {
+                line.Append(',');
+                line.Append(smuData[i].ToString("R", CultureInfo.InvariantCulture));
+            }
+
+            _smuDumpWriter.WriteLine(line.ToString());
+        }
+    }
+
+    private void StartSmuDumpNoLock()
+    {
+        try
+        {
+            string dumpDirectory = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "CapFrameX",
+                "Logs");
+            Directory.CreateDirectory(dumpDirectory);
+            string dumpPath = Path.Combine(dumpDirectory, $"RyzenSmuRaw_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv");
+
+            _smuDumpWriter = new StreamWriter(dumpPath, false, new UTF8Encoding(false))
+            {
+                AutoFlush = true
+            };
+            _smuDumpColumnCount = 0;
+            _smuDumpSampleId = 0;
+        }
+        catch
+        {
+            _smuDumpWriter = null;
+        }
+    }
+
+    private void StopSmuDump()
+    {
+        lock (_smuDumpLock)
+        {
+            StopSmuDumpNoLock();
+        }
+    }
+
+    private void StopSmuDumpNoLock()
+    {
+        _smuDumpWriter?.Dispose();
+        _smuDumpWriter = null;
+        _smuDumpColumnCount = 0;
+        _smuDumpSampleId = 0;
+    }
+
+    private void WriteSmuDumpHeaderNoLock(int columnCount)
+    {
+        if (_smuDumpWriter == null)
+            return;
+
+        StringBuilder header = new();
+        header.Append("timestamp_utc,sample_id");
+        for (int i = 0; i < columnCount; i++)
+            header.Append($",idx_{i}");
+
+        _smuDumpWriter.WriteLine(header.ToString());
     }
 
     private class Processor
@@ -138,6 +266,7 @@ internal sealed class Amd17Cpu : AmdCpu
             //Temperature 3
             //Voltage 4
             //Misc 5
+            //PMC 6
 
             _packagePower = new Sensor("CPU Package", _cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, _cpu, _cpu._settings)
             { IsPresentationDefault = true, PresentationSortKey = "2_1_0" };
@@ -146,7 +275,7 @@ internal sealed class Amd17Cpu : AmdCpu
             _coreTemperatureTdie = new Sensor("CPU (Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings)
             { PresentationSortKey = "3_1_1" };
             _coreTemperatureTctlTdie = new Sensor("CPU Package (Tctl/Tdie)", _cpu._sensorTypeIndex[SensorType.Temperature]++, SensorType.Temperature, _cpu, _cpu._settings)
-            { PresentationSortKey = "3_1_2" };
+            { IsPresentationDefault = true, PresentationSortKey = "3_1_2" };
             _ccdTemperatures = new Sensor[8]; // Hardcoded until there's a way to get max CCDs.
             _coreVoltage = new Sensor("CPU Core (SVI2 TFN)", _cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, _cpu, _cpu._settings)
             { PresentationSortKey = "4_1_0" };
@@ -211,6 +340,7 @@ internal sealed class Amd17Cpu : AmdCpu
             uint smuSvi0Tfn = 0;
             uint smuSvi0TelPlane0 = 0;
             uint smuSvi0TelPlane1 = 0;
+            int? detectedCcdCount = null;
 
             if (Mutexes.WaitPciBus(10))
             {
@@ -245,6 +375,8 @@ internal sealed class Amd17Cpu : AmdCpu
 
                     case 0x61: //Zen 4
                     case 0x44: //Zen 5
+                    case 0xE0: //Zen 6 Olympic Ridge (Desktop). Mobile MP1/MP2 (0x88/0xE4) and
+                               //Family 0x1B parts (Medusa Point 3, Rosenhorn) untested — leave on default.
                         sviPlane0Offset = F17H_M01H_SVI + 0x10;
                         sviPlane1Offset = F17H_M01H_SVI + 0xC;
                         supportsPerCcdTemperatures = true;
@@ -341,7 +473,7 @@ internal sealed class Amd17Cpu : AmdCpu
                     for (uint i = 0; i < _ccdTemperatures.Length; i++)
                     {
                         uint ccd1Offset = 0;
-                        if (cpuId.Model is 0x61 or 0x44) // Raphael or GraniteRidge
+                        if (cpuId.Model is 0x61 or 0x44 or 0xE0) // Raphael, GraniteRidge or OlympicRidge
                             ccd1Offset = F17H_M61H_CCD1_TEMP + i * 0x4;
                         else
                             ccd1Offset = F17H_M70H_CCD1_TEMP + i * 0x4;
@@ -357,7 +489,8 @@ internal sealed class Amd17Cpu : AmdCpu
                                     _cpu._sensorTypeIndex[SensorType.Temperature]++,
                                     SensorType.Temperature,
                                     _cpu,
-                                    _cpu._settings));
+                                    _cpu._settings)
+                                { PresentationSortKey = $"3_2_{i}" });
                             }
 
                             _ccdTemperatures[i].Value = ccdTemp;
@@ -365,6 +498,7 @@ internal sealed class Amd17Cpu : AmdCpu
                     }
 
                     Sensor[] activeCcds = _ccdTemperatures.Where(x => x != null).ToArray();
+                    detectedCcdCount = activeCcds.Length;
                     if (activeCcds.Length > 1)
                     {
                         // No need to get the max / average ccds temp if there is only one CCD.
@@ -376,7 +510,7 @@ internal sealed class Amd17Cpu : AmdCpu
                                 SensorType.Temperature,
                                 _cpu,
                                 _cpu._settings)
-                            { PresentationSortKey = "3_2_1" });
+                            { PresentationSortKey = "3_3_1" });
                         }
 
                         if (_ccdsAverageTemperature == null)
@@ -386,7 +520,7 @@ internal sealed class Amd17Cpu : AmdCpu
                                 SensorType.Temperature,
                                 _cpu,
                                 _cpu._settings)
-                            { PresentationSortKey = "3_2_2" });
+                            { PresentationSortKey = "3_3_2" });
                         }
 
                         _ccdsMaxTemperature.Value = activeCcds.Max(x => x.Value);
@@ -402,7 +536,7 @@ internal sealed class Amd17Cpu : AmdCpu
             double vcc;
             uint svi0PlaneXVddCor;
 
-            if (cpuId.Model is 0x61 or 0x44) // Readout not working for Ryzen 7000/9000.
+            if (cpuId.Model is 0x61 or 0x44 or 0xE0) // Readout not working for Ryzen 7000/9000; assumed same for Olympic Ridge (Zen 6 Desktop).
                 smuSvi0Tfn |= 0x01 | 0x02;
 
             // Core (0x01).
@@ -435,9 +569,13 @@ internal sealed class Amd17Cpu : AmdCpu
             if (_cpu._smu.IsPmTableLayoutDefined())
             {
                 float[] smuData = _cpu._smu.GetPmTable();
+                _cpu.LogSmuDataIfCapturing(smuData);
 
                 foreach (KeyValuePair<KeyValuePair<uint, RyzenSMU.SmuSensorType>, Sensor> sensor in _smuSensors)
                 {
+                    if (detectedCcdCount == 1 && sensor.Key.Value.Name == "L3 (CCD2)")
+                        continue;
+
                     if (smuData.Length > sensor.Key.Key)
                     {
                         sensor.Value.Value = smuData[sensor.Key.Key] * sensor.Key.Value.Scale;
@@ -461,10 +599,10 @@ internal sealed class Amd17Cpu : AmdCpu
             _maxClock.Value = (float)Math.Round(clock, 0);
 
             // Average and max effective clock
-            clock = Nodes.Average(x => x.EffectiveClock);
+            clock = Nodes.SelectMany(x => x.EffectiveClocks).DefaultIfEmpty(0).Average();
             _avgClockEffcetive.Value = (float)Math.Round(clock, 0);
 
-            clock = Nodes.SelectMany(x => x.Cores).Max(c => c.EffectiveClock);
+            clock = Nodes.SelectMany(x => x.EffectiveClocks).DefaultIfEmpty(0).Max();
             _maxEffectiveClock.Value = (float)Math.Round(clock, 0);
         }
 
@@ -535,14 +673,14 @@ internal sealed class Amd17Cpu : AmdCpu
             }
         }
 
-        public double EffectiveClock
+        public double[] EffectiveClocks
         {
             get
             {
                 if (Cores == null)
-                    return 0;
+                    return Array.Empty<double>();
 
-                return Cores.Average(x => x.EffectiveClock);
+                return Cores.SelectMany(x => x.EffectiveClocks).ToArray();
             }
         }
 
@@ -563,7 +701,7 @@ internal sealed class Amd17Cpu : AmdCpu
             }
 
             if (thread != null)
-                core.AppedThread(thread);
+                core.AppendThread(thread);
         }
 
         public static void UpdateSensors() { }
@@ -664,17 +802,17 @@ internal sealed class Amd17Cpu : AmdCpu
     private class Core
     {
         private readonly Sensor _clock;
-        private readonly Sensor _clockEffective;
+        private readonly List<Sensor> _clocksEffective = [];
         private readonly Amd17Cpu _cpu;
         // private readonly Sensor _multiplier;
         private readonly Sensor _power;
         private readonly Sensor _vcore;
-        private ISensor _busSpeed;
+        private ISensor _busClock;
         private DateTime _lastSampleTime = new(0);
         private uint _lastPwrValue = 0;
 
         public double CoreClock { get; set; } = 0;
-        public double EffectiveClock { get; set; } = 0;
+        public double[] EffectiveClocks { get; set; } = [];
 
         public Core(Amd17Cpu cpu, int id)
         {
@@ -682,16 +820,13 @@ internal sealed class Amd17Cpu : AmdCpu
             CoreId = id;
             _clock = new Sensor("Core #" + CoreId, _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu._settings)
             { IsPresentationDefault = true, PresentationSortKey = $"0_0_0_{id}" };
-            _clockEffective = new Sensor("Core #" + CoreId + " (Effective)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu._settings)
-            { PresentationSortKey = $"0_0_1_{id}" };
             // _multiplier = new Sensor("Core #" + CoreId, cpu._sensorTypeIndex[SensorType.Factor]++, SensorType.Factor, cpu, cpu._settings);
             _power = new Sensor("Core #" + CoreId + " (SMU)", cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, cpu, cpu._settings)
             { PresentationSortKey = $"2_0_{id}" };
             _vcore = new Sensor("Core #" + CoreId + " VID", cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, cpu, cpu._settings)
-            { PresentationSortKey = $"3_0_{id}" };
+            { PresentationSortKey = $"4_0_{id}" };
 
             cpu.ActivateSensor(_clock);
-            cpu.ActivateSensor(_clockEffective);
             // cpu.ActivateSensor(_multiplier);
             cpu.ActivateSensor(_power);
             cpu.ActivateSensor(_vcore);
@@ -699,12 +834,19 @@ internal sealed class Amd17Cpu : AmdCpu
 
         public int CoreId { get; }
 
-        public List<CpuThread> Threads { get; } = new List<CpuThread>();
+        public List<CpuThread> Threads { get; } = [];
 
-        public void AppedThread(CpuId cpuId)
+        public void AppendThread(CpuId cpuId)
         {
-            CpuThread t = new CpuThread(_cpu, cpuId);
+            int threadIndex = Threads.Count;
+            CpuThread t = new(_cpu, cpuId);
             Threads.Add(t);
+
+            // Create effective clock sensor for this thread
+            var sensor = new Sensor($"Core #{CoreId} Thread #{threadIndex + 1} (Effective)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings)
+            { PresentationSortKey = $"0_0_1_{CoreId}_{threadIndex}" };
+            _clocksEffective.Add(sensor);
+            _cpu.ActivateSensor(sensor);
         }
 
         public void UpdateSensors()
@@ -762,28 +904,26 @@ internal sealed class Amd17Cpu : AmdCpu
 
             ThreadAffinity.Set(previousAffinity);
 
-            // Update clock counter and cffective clock calculation
+            // Update clock counter and effective clock calculation
             Threads.ForEach(t => t.UpdateMeasurements());
-            EffectiveClock = Threads.Average(x => x.EffectiveClock);
-            _clockEffective.Value = (float)EffectiveClock;
 
             if (thread.HasValidCounters())
             {
                 double coreClock = 0;
                 double busClock = 100.0; //bus speed in MHz
-                _busSpeed ??= _cpu.Sensors.FirstOrDefault(x => x.Name == "Bus Speed");
-                if (_busSpeed?.Value.HasValue == true && _busSpeed.Value > 0)
-                    busClock = (double)_busSpeed.Value;
+                _busClock ??= _cpu.Sensors.FirstOrDefault(x => x.Name == "CPU Bus");
+                if (_busClock?.Value.HasValue == true && _busClock.Value > 0)
+                    busClock = (double)_busClock.Value;
 
-                if (thread.Cpu.Family == 0x1A)
+                if (thread.Cpu.Family == 0x1A || thread.Cpu.Family == 0x1B)
                 {
-                    // zen5 (0x1A)
+                    // zen5 (0x1A) + zen6 MP3 / zen7 (0x1B) — inherit CpuFid[11:0] layout
                     // 57896-B0-PUB_3.00.pdf, CoreCOF
                     // CoreCOF is Core current operating frequency in MHz.CoreCOF = Core::X86::Msr::PStateDef[CpuFid[11:0]] * 5MHz
                     // CpuFid[11:0]: core frequency ID.Read - write.Reset: XXXh.Specifies the core frequency multiplier.The core
                     // COF is a function of CpuFid and CpuDid, and defined by CoreCOF.
                     int curCpuFid = (int)(msrPstate & 0xfff);
-                    coreClock = curCpuFid * 5;
+                    coreClock = curCpuFid * 5d * busClock / 100d;
 
                     // multiplier, clock speed with 100Mhz as Multiplier Reference
                     // _multiplier.Value = (float)((curCpuFid * 5) / busClock);
@@ -810,6 +950,14 @@ internal sealed class Amd17Cpu : AmdCpu
 
                 CoreClock = Math.Round(coreClock);
                 _clock.Value = (float)CoreClock;
+
+                EffectiveClocks = [.. Threads.Select(x => x.EffectiveClock)];
+                for (int i = 0; i < _clocksEffective.Count && i < EffectiveClocks.Length; i++)
+                {
+                    // Clamping must consider BCLK oc (max 10%) and Spread Spectrum Clocking (SSC) (1-2%)
+                    var effectiveClock = (float)Math.Max(0, Math.Min(EffectiveClocks[i], CoreClock * 1.12));
+                    _clocksEffective[i].Value = effectiveClock;
+                }
             }
 
             // Vcore voltage

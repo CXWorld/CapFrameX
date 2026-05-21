@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Configuration;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.MVVM;
 using CapFrameX.MVVM;
 using CapFrameX.View.UITracker;
@@ -44,23 +45,31 @@ namespace CapFrameX
         private bool _isReadyToClose = false;
 
         private readonly ISettingsStorage _settingsStorage;
+        private readonly IPathService _pathService;
 
 
         private GridLength ColumnAWidthSaved { get; set; }
 
-        public Shell(ISettingsStorage settingsStorage)
+        public Shell(ISettingsStorage settingsStorage, IPathService pathService)
         {
             InitializeComponent();
             _settingsStorage = settingsStorage;
+            _pathService = pathService;
             Closing += Shell_Closing;
 
+            if (PortableModeDetector.IsPortableMode)
+            {
+                Title = "CapFrameX Portable";
+            }
+
             // Start tracking the Window instance.
-            WindowStatServices.Tracker.Track(this);
-            this.StateChanged += Resize;
+            var windowStateTracker = new WindowStateTracker(_pathService.ConfigFolder);
+            windowStateTracker.Tracker.Track(this);
+            StateChanged += Resize;
 
             // Start tracking column width
-            var columnAWidthTracker = new ColumnWidthTracker(this);
-            var columnBWidthTracker = new ColumnWidthTracker(this);
+            var columnAWidthTracker = new ColumnWidthTracker(this, _pathService.ConfigFolder);
+            var columnBWidthTracker = new ColumnWidthTracker(this, _pathService.ConfigFolder);
 
             columnAWidthTracker.Tracker.Track(LeftColumn);
             columnBWidthTracker.Tracker.Track(RightColumn);

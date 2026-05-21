@@ -109,7 +109,7 @@ namespace CapFrameX.Data
             var currentSoundMode = SoundMode;
             double currentVolume = Volume;
 
-            Application.Current.Dispatcher.Invoke(() =>
+            Application.Current?.Dispatcher?.Invoke(() =>
             {
                 try
                 {

@@ -1,0 +1,16 @@
+{
+  "Platform": {
+    "Model name": "Placeholder model",
+    "CPU family": "",
+    "Model": "",
+    "Thread(s) per core": "",
+    "Core(s) per socket": "",
+    "Socket(s)": "",
+    "Stepping": "",
+    "L3 cache": "",
+    "NUMA node(s)": "",
+    "TMA version": ""
+  },
+  "Data": {
+  }
+}

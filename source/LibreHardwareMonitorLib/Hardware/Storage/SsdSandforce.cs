@@ -48,7 +48,7 @@ internal class SsdSandforce : AtaStorage
     public SsdSandforce(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
         : base(storageInfo, smart, name, firmwareRevision, "ssd", index, _smartAttributes, settings)
     {
-        _writeAmplification = new Sensor("Write Amplification", 1, SensorType.Factor, this, settings);
+        _writeAmplification = new Sensor("Drive Write Amplification", 1, SensorType.Factor, this, settings);
     }
 
     protected override unsafe void UpdateAdditionalSensors(AtaSmart.SMART_ATTRIBUTE[] values)

@@ -120,7 +120,7 @@
 				<Button.ToolTip>
 					<ToolTip MaxWidth="200">
 						<TextBlock
-                             Text="Upload your records to our server and recieve an ID to share them" 
+                             Text="Upload your records to our server and receive an ID to share them"
                              TextWrapping="Wrap"/>
 					</ToolTip>
 				</Button.ToolTip>

@@ -27,7 +27,6 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -39,8 +38,6 @@ namespace CapFrameX.ViewModel
 {
     public partial class DataViewModel : BindableBase, INavigationAware
     {
-        private const double MinIntervalSeconds = 0.2;
-
         private readonly IStatisticProvider _frametimeStatisticProvider;
         private readonly IFrametimeAnalyzer _frametimeAnalyzer;
         private readonly IEventAggregator _eventAggregator;
@@ -80,16 +77,20 @@ namespace CapFrameX.ViewModel
         private bool _showCpuMaxThreadLoad;
         private bool _showGpuPowerLimit;
         private bool _showPcLatency;
+        private bool _showAnimationError;
         private bool _aggregationSeparators;
         private bool _showStutteringThresholds;
         private string _avgPcLatency;
         private bool _isPcLatencyAvailable;
+        private bool _isAnimationErrorAvailable;
         private bool _isCpuLoadAvailable;
         private bool _isCpuMaxLoadAvailable;
         private bool _isGpuLoadAvailable;
         private bool _isGpuPowerLimitAvailable;
         private bool _isGpuActiveChartAvailable;
         private bool _showGpuActiveChart;
+        private bool _isCpuActiveChartAvailable;
+        private bool _showCpuActiveChart;
         private bool _useFrametimeStatisticParameters;
         private EFilterMode _selectedFilterMode = EFilterMode.None;
         private ELShapeMetrics _lShapeMetric = ELShapeMetrics.Frametimes;
@@ -453,6 +454,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool IsAnimationErrorAvailable
+        {
+            get { return _isAnimationErrorAvailable; }
+            set
+            {
+                _isAnimationErrorAvailable = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public bool IsCpuLoadAvailable
         {
             get { return _isCpuLoadAvailable; }
@@ -499,6 +510,16 @@ namespace CapFrameX.ViewModel
             set
             {
                 _isGpuActiveChartAvailable = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool IsCpuActiveChartAvailable
+        {
+            get { return _isCpuActiveChartAvailable; }
+            set
+            {
+                _isCpuActiveChartAvailable = value;
                 RaisePropertyChanged();
             }
         }
@@ -552,7 +573,8 @@ namespace CapFrameX.ViewModel
             get => _session == null ? false
                 : _session.Runs.Any(r => r.SensorData != null
                 || r.SensorData2 != null
-                || _session.Runs.All(run => !run.CaptureData.PcLatency.IsNullOrEmpty()));
+                || _session.Runs.All(run => !run.CaptureData.PcLatency.IsNullOrEmpty())
+                || _session.Runs.All(run => !run.CaptureData.AnimationError.IsNullOrEmpty()));
         }
 
         public ICommand CopyStatisticalParameterCommand { get; }
@@ -624,6 +646,19 @@ namespace CapFrameX.ViewModel
             {
                 _showPcLatency = value;
                 RaisePropertyChanged();
+                SetChartUpdateFlags(true, true, false);
+                _onUpdateChart.OnNext(default);
+            }
+        }
+
+        public bool ShowAnimationError
+        {
+            get => _showAnimationError;
+            set
+            {
+                _showAnimationError = value;
+                RaisePropertyChanged();
+                SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
             }
         }
@@ -634,6 +669,18 @@ namespace CapFrameX.ViewModel
             set
             {
                 _showGpuActiveChart = value;
+                RaisePropertyChanged();
+                SetChartUpdateFlags(true, true, false);
+                _onUpdateChart.OnNext(default);
+            }
+        }
+
+        public bool ShowCpuActiveChart
+        {
+            get => _showCpuActiveChart;
+            set
+            {
+                _showCpuActiveChart = value;
                 RaisePropertyChanged();
                 SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
@@ -806,18 +853,20 @@ namespace CapFrameX.ViewModel
         }
 
         private VisibleGraphs GetVisibleGraphs() =>
-        new VisibleGraphs(
-            ShowGpuLoad,
-            ShowCpuLoad,
-            ShowCpuMaxThreadLoad,
-            ShowGpuPowerLimit,
-            ShowPcLatency,
-            ShowAggregationSeparators,
-            ShowStutteringThresholds,
-            StutteringFactor,
-            StutteringLowFPSThreshold,
-            ShowGpuActiveChart,
-            _appConfiguration.UseDisplayChangeMetrics);
+            new VisibleGraphs(
+                ShowGpuLoad,
+                ShowCpuLoad,
+                ShowCpuMaxThreadLoad,
+                ShowGpuPowerLimit,
+                ShowPcLatency,
+                ShowAnimationError,
+                ShowAggregationSeparators,
+                ShowStutteringThresholds,
+                StutteringFactor,
+                StutteringLowFPSThreshold,
+                ShowGpuActiveChart,
+                ShowCpuActiveChart,
+                _appConfiguration.UseDisplayChangeMetrics);
 
         private void Setup()
         {
@@ -831,14 +880,14 @@ namespace CapFrameX.ViewModel
                 }
                     
 
-                if (SelectedChartHeader.Contains("FPS")&& _isFpsChartDirty)
+                if (SelectedChartHeader.Contains("FPS") && _isFpsChartDirty)
                 {
                     FpsGraphDataContext.BuildPlotmodel(GetVisibleGraphs());
                     _isFpsChartDirty = false;
                 }
                    
 
-                if (SelectedChartHeader.Contains("Times")&& _isFrametimeChartDirty)
+                if (SelectedChartHeader.Contains("Times") && _isFrametimeChartDirty)
                 {
                     FrametimeGraphDataContext.BuildPlotmodel(GetVisibleGraphs(), plotModel =>
                     {
@@ -861,10 +910,10 @@ namespace CapFrameX.ViewModel
             Task.Factory.StartNew(() =>
             {
                 var frametimeSubset = GetFrametimesSubset();
-                var displayChangeTimesSubset = _appConfiguration.UseDisplayChangeMetrics
+                var sampleSubset = _appConfiguration.UseDisplayChangeMetrics
                     ? GetDisplayChangeTimesSubset() : frametimeSubset;
 
-                SetStaticChart(frametimeSubset, displayChangeTimesSubset, GetGpuActiveTimesSubset());
+                SetStaticChart(frametimeSubset, sampleSubset, GetGpuActiveTimesSubset());
             });
         }
 
@@ -901,11 +950,15 @@ namespace CapFrameX.ViewModel
 
             var gpuActiveTimes = GetGpuActiveTimesSubset();
             var frametimes = GetFrametimesSubset();
-            var displayChangeTimes = _appConfiguration.UseDisplayChangeMetrics
+            var sampleSubset = _appConfiguration.UseDisplayChangeMetrics
                 ? GetDisplayChangeTimesSubset() : frametimes;
+            var animationErrorsAbs = GetAnimationErrorsSubset()?.Select(error => Math.Abs(error)).ToList();
 
             double GetFrametimeMetricValue(IList<double> sequence, EMetric metric) =>
               Math.Round(_frametimeStatisticProvider.GetFrametimeMetricValue(sequence, metric), 2);
+
+            double GetP99MetricValue(IList<double> sequence) =>
+                Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(sequence, 0.99), 2);
 
             double GetMetricValue(IList<double> sequence, EMetric metric) =>
                 Math.Round(_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric), 2);
@@ -930,48 +983,56 @@ namespace CapFrameX.ViewModel
             var adaptiveStandardDeviation = double.NaN;
             var cpuFpsPerWatt = double.NaN;
             var gpuFpsPerWatt = double.NaN;
+            var animationErrorAverage = double.NaN;
+            var animationErrorP99 = double.NaN;
 
             if (UseFrametimeStatisticParameters)
             {
-                max = GetFrametimeMetricValue(displayChangeTimes, EMetric.Max);
-                p99_quantile = GetFrametimeMetricValue(displayChangeTimes, EMetric.P99);
-                p95_quantile = GetFrametimeMetricValue(displayChangeTimes, EMetric.P95);
-                median = GetFrametimeMetricValue(displayChangeTimes, EMetric.Median);
+                max = GetFrametimeMetricValue(sampleSubset, EMetric.Max);
+                p99_quantile = GetFrametimeMetricValue(sampleSubset, EMetric.P99);
+                p95_quantile = GetFrametimeMetricValue(sampleSubset, EMetric.P95);
+                median = GetFrametimeMetricValue(sampleSubset, EMetric.Median);
                 average = GetFrametimeMetricValue(frametimes, EMetric.Average);
                 gpuActiveAverage = GetFrametimeMetricValue(gpuActiveTimes, EMetric.GpuActiveAverage);
-                p0dot1_quantile = GetFrametimeMetricValue(displayChangeTimes, EMetric.P0dot1);
-                p0dot2_quantile = GetFrametimeMetricValue(displayChangeTimes, EMetric.P0dot2);
-                p1_quantile = GetFrametimeMetricValue(displayChangeTimes, EMetric.P1);
+                p0dot1_quantile = GetFrametimeMetricValue(sampleSubset, EMetric.P0dot1);
+                p0dot2_quantile = GetFrametimeMetricValue(sampleSubset, EMetric.P0dot2);
+                p1_quantile = GetFrametimeMetricValue(sampleSubset, EMetric.P1);
                 gpuActiveP1_quantile = GetFrametimeMetricValue(gpuActiveTimes, EMetric.GpuActiveP1);
-                p5_quantile = GetFrametimeMetricValue(displayChangeTimes, EMetric.P5);
-                p1_LowAverage = GetFrametimeMetricValue(displayChangeTimes, EMetric.OnePercentLowAverage);
+                p5_quantile = GetFrametimeMetricValue(sampleSubset, EMetric.P5);
+                p1_LowAverage = GetFrametimeMetricValue(sampleSubset, EMetric.OnePercentLowAverage);
                 gpuActiveP1_LowAverage = GetFrametimeMetricValue(gpuActiveTimes, EMetric.GpuActiveOnePercentLowAverage);
-                p0dot1_LowAverage = GetFrametimeMetricValue(displayChangeTimes, EMetric.ZerodotOnePercentLowAverage);
-                p1_LowIntegral = GetFrametimeMetricValue(displayChangeTimes, EMetric.OnePercentLowIntegral);
-                p0dot1_LowIntegral = GetFrametimeMetricValue(displayChangeTimes, EMetric.ZerodotOnePercentLowIntegral);
-                min = GetFrametimeMetricValue(displayChangeTimes, EMetric.Min);
-                adaptiveStandardDeviation = GetFrametimeMetricValue(displayChangeTimes, EMetric.AdaptiveStd);
+                p0dot1_LowAverage = GetFrametimeMetricValue(sampleSubset, EMetric.ZerodotOnePercentLowAverage);
+                p1_LowIntegral = GetFrametimeMetricValue(sampleSubset, EMetric.OnePercentLowIntegral);
+                p0dot1_LowIntegral = GetFrametimeMetricValue(sampleSubset, EMetric.ZerodotOnePercentLowIntegral);
+                min = GetFrametimeMetricValue(sampleSubset, EMetric.Min);
+                adaptiveStandardDeviation = GetFrametimeMetricValue(sampleSubset, EMetric.AdaptiveStd);
+
+                if (!animationErrorsAbs.IsNullOrEmpty())
+                {
+                    animationErrorAverage = GetFrametimeMetricValue(animationErrorsAbs, EMetric.Average);
+                    animationErrorP99 = GetP99MetricValue(animationErrorsAbs);
+                }
             }
             else
             {
-                max = GetMetricValue(displayChangeTimes, EMetric.Max);
-                p99_quantile = GetMetricValue(displayChangeTimes, EMetric.P99);
-                p95_quantile = GetMetricValue(displayChangeTimes, EMetric.P95);
-                median = GetMetricValue(displayChangeTimes, EMetric.Median);
+                max = GetMetricValue(sampleSubset, EMetric.Max);
+                p99_quantile = GetMetricValue(sampleSubset, EMetric.P99);
+                p95_quantile = GetMetricValue(sampleSubset, EMetric.P95);
+                median = GetMetricValue(sampleSubset, EMetric.Median);
                 average = GetMetricValue(frametimes, EMetric.Average);
                 //gpuActiveAverage = GetMetricValue(gpuActiveTimes, EMetric.GpuActiveAverage);
-                p0dot1_quantile = GetMetricValue(displayChangeTimes, EMetric.P0dot1);
-                p0dot2_quantile = GetMetricValue(displayChangeTimes, EMetric.P0dot2);
-                p1_quantile = GetMetricValue(displayChangeTimes, EMetric.P1);
+                p0dot1_quantile = GetMetricValue(sampleSubset, EMetric.P0dot1);
+                p0dot2_quantile = GetMetricValue(sampleSubset, EMetric.P0dot2);
+                p1_quantile = GetMetricValue(sampleSubset, EMetric.P1);
                 //gpuActiveP1_quantile = GetMetricValue(gpuActiveTimes, EMetric.GpuActiveP1);
-                p5_quantile = GetMetricValue(displayChangeTimes, EMetric.P5);
-                p1_LowAverage = GetMetricValue(displayChangeTimes, EMetric.OnePercentLowAverage);
+                p5_quantile = GetMetricValue(sampleSubset, EMetric.P5);
+                p1_LowAverage = GetMetricValue(sampleSubset, EMetric.OnePercentLowAverage);
                 //gpuActiveP1_LowAverage = GetMetricValue(gpuActiveTimes, EMetric.GpuActiveOnePercentLowAverage);
-                p0dot1_LowAverage = GetMetricValue(displayChangeTimes, EMetric.ZerodotOnePercentLowAverage);
-                p1_LowIntegral = GetMetricValue(displayChangeTimes, EMetric.OnePercentLowIntegral);
-                p0dot1_LowIntegral = GetMetricValue(displayChangeTimes, EMetric.ZerodotOnePercentLowIntegral);
-                min = GetMetricValue(displayChangeTimes, EMetric.Min);
-                adaptiveStandardDeviation = GetMetricValue(displayChangeTimes, EMetric.AdaptiveStd);
+                p0dot1_LowAverage = GetMetricValue(sampleSubset, EMetric.ZerodotOnePercentLowAverage);
+                p1_LowIntegral = GetMetricValue(sampleSubset, EMetric.OnePercentLowIntegral);
+                p0dot1_LowIntegral = GetMetricValue(sampleSubset, EMetric.ZerodotOnePercentLowIntegral);
+                min = GetMetricValue(sampleSubset, EMetric.Min);
+                adaptiveStandardDeviation = GetMetricValue(sampleSubset, EMetric.AdaptiveStd);
                 cpuFpsPerWatt = _frametimeStatisticProvider
                      .GetPhysicalMetricValue(frametimes, EMetric.CpuFpsPerWatt,
                      SensorReport.GetAverageSensorValues(_session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuPower,
@@ -989,9 +1050,9 @@ namespace CapFrameX.ViewModel
             {
                 if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
                     builder.Append("Min" + "\t" + min.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-                if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
+                if (_appConfiguration.UseSingleRecordFrametimeP1QuantileStatisticParameter)
                     builder.Append("P1" + "\t" + p99_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-                if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
+                if (_appConfiguration.UseSingleRecordFrametimeP5QuantileStatisticParameter)
                     builder.Append("P5" + "\t" + p95_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
                 if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
                     builder.Append("Median" + "\t" + median.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
@@ -1021,6 +1082,10 @@ namespace CapFrameX.ViewModel
                     builder.Append("0.1% High Integral" + "\t" + p0dot1_LowIntegral.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
                 if (_appConfiguration.UseSingleRecordMinStatisticParameter)
                     builder.Append("Max" + "\t" + max.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordAnimationErrorP99StatisticParameter && !double.IsNaN(animationErrorP99))
+                    builder.Append("P99 |Animation Error|" + "\t" + animationErrorP99.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordAnimationErrorAverageStatisticParameter && !double.IsNaN(animationErrorAverage))
+                    builder.Append("Average |Animation Error|" + "\t" + animationErrorAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
                 if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter)
                     builder.Append("Adaptive STDEV" + "\t" + adaptiveStandardDeviation.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             }
@@ -1268,9 +1333,18 @@ namespace CapFrameX.ViewModel
                 // Update PC latency
                 IsPcLatencyAvailable = _session.Runs.All(run => !run.CaptureData.PcLatency.IsNullOrEmpty()) && _session.Runs.All(run =>
                 {
-                    var filteredValues = run.CaptureData.PcLatency.Where(x => !double.IsNaN(x));
+                    var filteredValues = run.CaptureData.PcLatency.Where(x => !double.IsNaN(x) && x > 0);
 
                     if (!filteredValues.Any())
+                    {
+                        return false;
+                    }
+
+                    var validValueCount = filteredValues.Count();
+                    var totalValueCount = run.CaptureData.PcLatency.Length;
+
+                    // Allow 60% invalid values
+                    if (validValueCount < totalValueCount * 0.4f)
                     {
                         return false;
                     }
@@ -1291,8 +1365,21 @@ namespace CapFrameX.ViewModel
 
                 if (IsPcLatencyAvailable)
                 {
-                    var pcLatency = _session.Runs.Average(run => run.CaptureData.PcLatency.Where(x => !double.IsNaN(x)).Average());
-                    AvgPcLatency = $"PC Latency: {Math.Round(pcLatency, 1, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture)}ms";
+                    var averagePcLatency = _session.Runs.Average(run => run.CaptureData.PcLatency.Where(x => !double.IsNaN(x)).Average());
+                    AvgPcLatency = $"PC Latency: {Math.Round(averagePcLatency, 1, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture)}ms";
+                }
+
+                // Update Animation Error
+                IsAnimationErrorAvailable = _session.Runs.All(run => !run.CaptureData.AnimationError.IsNullOrEmpty()) && _session.Runs.All(run =>
+                {
+                    var filteredValues = run.CaptureData.AnimationError.Where(x => !double.IsNaN(x));
+                    return filteredValues.Any();
+                });
+
+                if (!IsAnimationErrorAvailable)
+                {
+                    _showAnimationError = false;
+                    RaisePropertyChanged(nameof(ShowAnimationError));
                 }
 
                 // Check load metrics
@@ -1332,6 +1419,14 @@ namespace CapFrameX.ViewModel
                     RaisePropertyChanged(nameof(ShowGpuActiveChart));
                 }
 
+                //Check CPU Active metric
+                IsCpuActiveChartAvailable = GetIsCpuActiveChartAvailable();
+                if (!IsCpuActiveChartAvailable)
+                {
+                    _showCpuActiveChart = false;
+                    RaisePropertyChanged(nameof(ShowCpuActiveChart));
+                }
+
                 // Do update actions
                 FrametimeGraphDataContext.RecordSession = _session;
                 FpsGraphDataContext.RecordSession = _session;
@@ -1362,32 +1457,25 @@ namespace CapFrameX.ViewModel
                 return;
 
             var frametimeSubset = GetFrametimesSubset();
-            var displayChangeTimesSubset = _appConfiguration.UseDisplayChangeMetrics
+            var sampleSubset = _appConfiguration.UseDisplayChangeMetrics
                 ? GetDisplayChangeTimesSubset() : frametimeSubset;
             var gpuActiveSubset = GetGpuActiveTimesSubset();
 
-            if (frametimeSubset != null && displayChangeTimesSubset != null)
+            if (frametimeSubset != null && sampleSubset != null)
             {
                 _onUpdateChart.OnNext(default);
 
-                Task.Factory.StartNew(() => SetStaticChart(frametimeSubset, displayChangeTimesSubset, gpuActiveSubset));
-                Task.Factory.StartNew(() => SetStutteringChart(displayChangeTimesSubset));
+                Task.Factory.StartNew(() => SetStaticChart(frametimeSubset, sampleSubset, gpuActiveSubset));
+                Task.Factory.StartNew(() => SetStutteringChart(sampleSubset));
                 Task.Factory.StartNew(() => SetVarianceChart());
-                Task.Factory.StartNew(() => SetFpsThresholdChart(frametimeSubset));
+                Task.Factory.StartNew(() => SetFpsThresholdChart(sampleSubset));
             }
         }
 
         private void RealTimeUpdateCharts()
         {
-            if (!_doUpdateCharts)
-                return;
-
-            var subset = GetFrametimesSubset();
-
-            if (subset != null)
-            {
-                _onUpdateChart.OnNext(default);
-            }
+            if (!_doUpdateCharts) return;
+            _onUpdateChart.OnNext(default);
         }
 
         private void DemandUpdateCharts()
@@ -1396,16 +1484,16 @@ namespace CapFrameX.ViewModel
                 return;
 
             var frametimeSubset = GetFrametimesSubset();
-            var displayChangeTimesSubset = _appConfiguration.UseDisplayChangeMetrics
+            var sampleSubset = _appConfiguration.UseDisplayChangeMetrics
                 ? GetDisplayChangeTimesSubset() : frametimeSubset;
             var gpuActiveSubset = GetGpuActiveTimesSubset();
 
-            if (frametimeSubset != null && displayChangeTimesSubset != null)
+            if (frametimeSubset != null && sampleSubset != null)
             {
-                Task.Factory.StartNew(() => SetStaticChart(frametimeSubset, displayChangeTimesSubset, gpuActiveSubset));
-                Task.Factory.StartNew(() => SetStutteringChart(displayChangeTimesSubset));
+                Task.Factory.StartNew(() => SetStaticChart(frametimeSubset, sampleSubset, gpuActiveSubset));
+                Task.Factory.StartNew(() => SetStutteringChart(sampleSubset));
                 Task.Factory.StartNew(() => SetVarianceChart());
-                Task.Factory.StartNew(() => SetFpsThresholdChart(frametimeSubset));
+                Task.Factory.StartNew(() => SetFpsThresholdChart(sampleSubset));
                 UpdateSensorSessionReport();
             }
         }
@@ -1417,14 +1505,16 @@ namespace CapFrameX.ViewModel
 
             var headerName = SelectedChartItem.Header.ToString();
             var frametimeSubset = GetFrametimesSubset();
+            var sampleSubset = _appConfiguration.UseDisplayChangeMetrics
+               ? GetDisplayChangeTimesSubset() : frametimeSubset;
             var fpsSubset = GetFPSSubset();
 
-            if (frametimeSubset == null || fpsSubset == null)
+            if (sampleSubset == null || fpsSubset == null)
                 return;
 
             if (headerName.Contains("L-shape"))
             {
-                Task.Factory.StartNew(() => SetLShapeChart(frametimeSubset, fpsSubset));
+                Task.Factory.StartNew(() => SetLShapeChart(sampleSubset, fpsSubset));
             }
         }
 
@@ -1440,6 +1530,9 @@ namespace CapFrameX.ViewModel
         private IList<double> GetGpuActiveTimesSubset()
             => _localRecordDataServer?.GetGpuActiveTimeTimeWindow();
 
+        private IList<double> GetAnimationErrorsSubset()
+            => _localRecordDataServer?.GetAnimationErrorTimeWindow();
+
         private IList<double> GetGpuActiveFPSSubset()
             => _localRecordDataServer?.GetGpuActiveFpsTimeWindow();
 
@@ -1451,8 +1544,14 @@ namespace CapFrameX.ViewModel
             if (displayChangeTimes == null || !displayChangeTimes.Any())
                 return;
 
+            var animationErrorsAbs = GetAnimationErrorsSubset()?.Select(error => Math.Abs(error)).ToList();
+
             double GetFrametimeMetricValue(IList<double> sequence, EMetric metric) =>
                 _frametimeStatisticProvider.GetFrametimeMetricValue(sequence, metric);
+
+            double GetP99MetricValue(IList<double> sequence) =>
+                Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(sequence, 0.99),
+                    _appConfiguration.FpsValuesRoundingDigits, MidpointRounding.AwayFromZero);
 
             double GetMetricValue(IList<double> sequence, EMetric metric) =>
                 _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
@@ -1477,6 +1576,8 @@ namespace CapFrameX.ViewModel
             var adaptiveStandardDeviation = double.NaN;
             var cpuFpsPerWatt = double.NaN;
             var gpuFpsPerWatt = double.NaN;
+            var animationErrorAverage = double.NaN;
+            var animationErrorP99 = double.NaN;
 
             if (UseFrametimeStatisticParameters)
             {
@@ -1498,6 +1599,12 @@ namespace CapFrameX.ViewModel
                 p0dot1_LowIntegral = GetFrametimeMetricValue(displayChangeTimes, EMetric.ZerodotOnePercentLowIntegral);
                 min = GetFrametimeMetricValue(displayChangeTimes, EMetric.Min);
                 adaptiveStandardDeviation = GetFrametimeMetricValue(displayChangeTimes, EMetric.AdaptiveStd);
+
+                if (!animationErrorsAbs.IsNullOrEmpty())
+                {
+                    animationErrorAverage = GetFrametimeMetricValue(animationErrorsAbs, EMetric.Average);
+                    animationErrorP99 = GetP99MetricValue(animationErrorsAbs);
+                }
             }
             else
             {
@@ -1541,6 +1648,10 @@ namespace CapFrameX.ViewModel
                         values.Add(cpuFpsPerWatt);
                     if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
                         values.Add(adaptiveStandardDeviation);
+                    if (_appConfiguration.UseSingleRecordAnimationErrorP99StatisticParameter && !double.IsNaN(animationErrorP99))
+                        values.Add(animationErrorP99);
+                    if (_appConfiguration.UseSingleRecordAnimationErrorAverageStatisticParameter && !double.IsNaN(animationErrorAverage))
+                        values.Add(animationErrorAverage);
                     if (_appConfiguration.UseSingleRecordMinStatisticParameter && !double.IsNaN(max))
                         values.Add(max);
                     if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
@@ -1569,9 +1680,9 @@ namespace CapFrameX.ViewModel
                         values.Add(gpuActiveAverage);
                     if (_appConfiguration.UseSingleRecordAverageStatisticParameter && !double.IsNaN(average))
                         values.Add(average);
-                    if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter && !double.IsNaN(p95_quantile))
+                    if (_appConfiguration.UseSingleRecordFrametimeP5QuantileStatisticParameter && !double.IsNaN(p95_quantile))
                         values.Add(p95_quantile);
-                    if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter && !double.IsNaN(p99_quantile))
+                    if (_appConfiguration.UseSingleRecordFrametimeP1QuantileStatisticParameter && !double.IsNaN(p99_quantile))
                         values.Add(p99_quantile);
                     if (_appConfiguration.UseSingleRecordMaxStatisticParameter && !double.IsNaN(min))
                         values.Add(min);
@@ -1625,7 +1736,7 @@ namespace CapFrameX.ViewModel
                     new RowSeries
                     {
                         Title = RecordInfo.GameName,
-                        Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
+                        Fill = new SolidColorBrush(Color.FromRgb(0xFB, 0xBF, 0x24)),
                         Values = values,
                         DataLabels = true,
                         FontSize = 12,
@@ -1648,6 +1759,10 @@ namespace CapFrameX.ViewModel
                         parameterLabelList.Add("CPU FPS/10W");
                     if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
                         parameterLabelList.Add("Adaptive STDEV");
+                    if (_appConfiguration.UseSingleRecordAnimationErrorP99StatisticParameter && !double.IsNaN(animationErrorP99))
+                        parameterLabelList.Add("P99 |Animation Error|");
+                    if (_appConfiguration.UseSingleRecordAnimationErrorAverageStatisticParameter && !double.IsNaN(animationErrorAverage))
+                        parameterLabelList.Add("Average |Animation Error|");
                     if (_appConfiguration.UseSingleRecordMinStatisticParameter && !double.IsNaN(max))
                         parameterLabelList.Add("Max");
                     if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
@@ -1676,9 +1791,9 @@ namespace CapFrameX.ViewModel
                         parameterLabelList.Add("GPU-Busy Average");
                     if (_appConfiguration.UseSingleRecordAverageStatisticParameter && !double.IsNaN(average))
                         parameterLabelList.Add("Average");
-                    if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter && !double.IsNaN(p95_quantile))
+                    if (_appConfiguration.UseSingleRecordFrametimeP5QuantileStatisticParameter && !double.IsNaN(p95_quantile))
                         parameterLabelList.Add("P5");
-                    if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter && !double.IsNaN(p99_quantile))
+                    if (_appConfiguration.UseSingleRecordFrametimeP1QuantileStatisticParameter && !double.IsNaN(p99_quantile))
                         parameterLabelList.Add("P1");
                     if (_appConfiguration.UseSingleRecordMaxStatisticParameter && !double.IsNaN(min))
                         parameterLabelList.Add("Min");
@@ -1780,11 +1895,18 @@ namespace CapFrameX.ViewModel
 
         private void SetVarianceChart()
         {
-            if (_session == null)
-                return;
+            if (_session == null) return;
 
-            var variances = _frametimeStatisticProvider.GetFrametimeVariancePercentages(_session);
+            IList<double> variances;
 
+            if (_appConfiguration.UseDisplayChangeMetrics)
+            {
+                variances = _frametimeStatisticProvider.GetDisplayTimeVariancePercentages(_session);
+            }
+            else
+            {
+                variances = _frametimeStatisticProvider.GetFrametimeVariancePercentages(_session);
+            }
 
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -1921,16 +2043,26 @@ namespace CapFrameX.ViewModel
                             var gpuActiveTimes = _localRecordDataServer?
                             .GetGpuActiveTimePointTimeWindow().Select(pnt => pnt.Y);
 
-                            yMin = Math.Min(frametimes.Min(), gpuActiveTimes.Min());
-                            yMax = Math.Max(frametimes.Max(), gpuActiveTimes.Max());
+                            yMin = Math.Min(yMin, gpuActiveTimes.Min());
+                            yMax = Math.Max(yMax, gpuActiveTimes.Max());
                         }
 
+                        if (GetIsCpuActiveChartAvailable() && ShowCpuActiveChart)
+                        {
+                            var cpuActiveTimes = _localRecordDataServer?
+                            .GetCpuActiveTimePointTimeWindow().Select(pnt => pnt.Y);
 
+                            yMin = Math.Min(yMin, cpuActiveTimes.Min());
+                            yMax = Math.Max(yMax, cpuActiveTimes.Max());
+                        }
 
                         if (ShowStutteringThresholds)
                         {
                             var frametimeStatisticProvider = new FrametimeStatisticProvider(null);
-                            var movingAverage = frametimeStatisticProvider.GetMovingAverage(frametimes.ToList());
+                            var sampleSubset = _appConfiguration.UseDisplayChangeMetrics
+                                ? GetDisplayChangeTimesSubset() : frametimes;
+
+                            var movingAverage = frametimeStatisticProvider.GetMovingAverage(sampleSubset.ToList());
 
                             yMax = Math.Max(Math.Max(movingAverage.Max() * _appConfiguration.StutteringFactor, yMax), 1000 / _appConfiguration.StutteringThreshold);
                         }
@@ -1939,6 +2071,16 @@ namespace CapFrameX.ViewModel
                         {
                             var maxLatency = _localRecordDataServer.CurrentSession.Runs.Max(run => run.CaptureData.PcLatency.Max());
                             yMax = Math.Max(yMax, maxLatency);
+                        }
+
+                        if (IsAnimationErrorAvailable && ShowAnimationError)
+                        {
+                            var minAnimationError = _localRecordDataServer.CurrentSession.Runs.Max(run =>
+                                run.CaptureData.AnimationError.Where(x => !double.IsNaN(x)).DefaultIfEmpty(0).Min());
+                            var maxAnimationError = _localRecordDataServer.CurrentSession.Runs.Max(run =>
+                                run.CaptureData.AnimationError.Where(x => !double.IsNaN(x)).DefaultIfEmpty(0).Max());
+                            yMin = Math.Min(yMin, minAnimationError);
+                            yMax = Math.Max(yMax, maxAnimationError);
                         }
 
                         setting = new Tuple<double, double>(yMin - (yMax - yMin) / 6, yMax + (yMax - yMin) / 6);
@@ -1955,6 +2097,8 @@ namespace CapFrameX.ViewModel
 
                         double gpuActiveIqr = double.MinValue;
                         double gpuActiveMedian = double.MinValue;
+                        double cpuActiveIqr = double.MinValue;
+                        double cpuActiveMedian = double.MinValue;
 
                         if (GetIsGpuActiveChartAvailable() && ShowGpuActiveChart)
                         {
@@ -1964,39 +2108,64 @@ namespace CapFrameX.ViewModel
                             gpuActiveMedian = MathNet.Numerics.Statistics.Statistics
                                 .Median(_localRecordDataServer?
                                 .GetGpuActiveTimePointTimeWindow().Select(pnt => pnt.Y));
-
                         }
 
-                        double maxMedian = Math.Max(median, gpuActiveMedian);
-                        double maxIqr = Math.Max(iqr, gpuActiveIqr);
+                        if (GetIsCpuActiveChartAvailable() && ShowCpuActiveChart)
+                        {
+                            cpuActiveIqr = MathNet.Numerics.Statistics.Statistics
+                                .InterquartileRange(_localRecordDataServer?
+                                .GetCpuActiveTimePointTimeWindow().Select(pnt => pnt.Y));
+                            cpuActiveMedian = MathNet.Numerics.Statistics.Statistics
+                                .Median(_localRecordDataServer?
+                                .GetCpuActiveTimePointTimeWindow().Select(pnt => pnt.Y));
+                        }
 
-                        setting = new Tuple<double, double>(maxMedian - 4 * maxIqr, maxMedian + 6 * maxIqr);
+                        double maxMedian = Math.Max(Math.Max(median, gpuActiveMedian), cpuActiveMedian);
+                        double maxIqr = Math.Max(Math.Max(iqr, gpuActiveIqr), cpuActiveIqr);
+
+                        var animBounds = GetAnimationErrorBounds();
+                        double yMin = Math.Min(maxMedian - 4 * maxIqr, animBounds.Min);
+                        double yMax = Math.Max(maxMedian + 6 * maxIqr, animBounds.Max);
+                        setting = new Tuple<double, double>(yMin, yMax);
                     }
                     break;
                 case EChartYAxisSetting.Zero_Ten:
-                    setting = new Tuple<double, double>(0, 10);
+                    setting = new Tuple<double, double>(Math.Min(0, GetAnimationErrorBounds().Min), 10);
                     break;
                 case EChartYAxisSetting.Zero_Twenty:
-                    setting = new Tuple<double, double>(0, 20);
+                    setting = new Tuple<double, double>(Math.Min(0, GetAnimationErrorBounds().Min), 20);
                     break;
                 case EChartYAxisSetting.Zero_Thirty:
-                    setting = new Tuple<double, double>(0, 30);
+                    setting = new Tuple<double, double>(Math.Min(0, GetAnimationErrorBounds().Min), 30);
                     break;
                 case EChartYAxisSetting.Zero_Forty:
-                    setting = new Tuple<double, double>(0, 40);
+                    setting = new Tuple<double, double>(Math.Min(0, GetAnimationErrorBounds().Min), 40);
                     break;
                 case EChartYAxisSetting.Zero_Sixty:
-                    setting = new Tuple<double, double>(0, 60);
+                    setting = new Tuple<double, double>(Math.Min(0, GetAnimationErrorBounds().Min), 60);
                     break;
                 case EChartYAxisSetting.Zero_Eighty:
-                    setting = new Tuple<double, double>(0, 80);
+                    setting = new Tuple<double, double>(Math.Min(0, GetAnimationErrorBounds().Min), 80);
                     break;
                 case EChartYAxisSetting.Zero_Hundred:
-                    setting = new Tuple<double, double>(0, 100);
+                    setting = new Tuple<double, double>(Math.Min(0, GetAnimationErrorBounds().Min), 100);
                     break;
             }
 
             return setting;
+        }
+
+        private (double Min, double Max) GetAnimationErrorBounds()
+        {
+            if (!IsAnimationErrorAvailable || !ShowAnimationError
+                || _localRecordDataServer?.CurrentSession == null)
+                return (double.PositiveInfinity, double.NegativeInfinity);
+
+            var min = _localRecordDataServer.CurrentSession.Runs.Min(run =>
+                run.CaptureData.AnimationError.Where(x => !double.IsNaN(x)).DefaultIfEmpty(0).Min());
+            var max = _localRecordDataServer.CurrentSession.Runs.Max(run =>
+                run.CaptureData.AnimationError.Where(x => !double.IsNaN(x)).DefaultIfEmpty(0).Max());
+            return (min, max);
         }
 
         private void SetChartUpdateFlags(bool frametimes = true, bool fps = true, bool distribution = true)

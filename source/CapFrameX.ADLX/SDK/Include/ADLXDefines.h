@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 
@@ -248,6 +248,7 @@ int         ADLX_CDECL_CALL adlx_free_library (adlx_handle module);
  * @ref ADLX_QUERY_FULL_VERSION_FUNCTION_NAME | The function to query the full version of ADLX. | @ref page_ADLXQueryFullVersion_Fn|
  * @ref ADLX_QUERY_VERSION_FUNCTION_NAME | The function to query the version of ADLX. | @ref page_ADLXQueryVersion_Fn|
  * @ref ADLX_INIT_FUNCTION_NAME | The function to initialize ADLX with default parameters. | @ref page_ADLXInitialize_Fn |
+ * @ref ADLX_INIT2_FUNCTION_NAME | The function to initialize ADLX with default parameters. | @ref page_ADLXInitialize2_Fn |
  * @ref ADLX_INIT_WITH_INCOMPATIBLE_DRIVER_FUNCTION_NAME | The function to initialize ADLX with a legacy driver. | @ref page_ADLXInitialize_Fn |
  * @ref ADLX_INIT_WITH_CALLER_ADL_FUNCTION_NAME |  The function to initialize ADLX with an ADL context. | @ref page_ADLXInitializeWithCallerAdl_Fn|
  * @ref ADLX_TERMINATE_FUNCTION_NAME | The function to terminate ADLX. | @ref page_ADLXTerminate_Fn |
@@ -293,7 +294,8 @@ typedef enum
     ADLX_GPU_INACTIVE,              /**< @ENG_START_DOX This result indicates that the GPU is inactive. @ENG_END_DOX */
     ADLX_GPU_IN_USE,                /**< @ENG_START_DOX This result indicates that the GPU is in used by applications. @ENG_END_DOX */
     ADLX_TIMEOUT_OPERATION,         /**< @ENG_START_DOX This result indicates that the operation is timeout. @ENG_END_DOX */
-    ADLX_NOT_ACTIVE                 /**< @ENG_START_DOX This result indicates that the asked feature is inactive. @ENG_END_DOX */
+    ADLX_NOT_ACTIVE,                /**< @ENG_START_DOX This result indicates that the asked feature is inactive. @ENG_END_DOX */
+    ADLX_RESET_NEEDED               /**< @ENG_START_DOX This result indicates that the specified feature needs to be reset to factory settings. @ENG_END_DOX */
 } ADLX_RESULT;
 
 /**
@@ -319,6 +321,11 @@ typedef enum
 #define ADLX_FAILED(x) (ADLX_OK != (x)  && ADLX_ALREADY_ENABLED != (x) && ADLX_ALREADY_INITIALIZED != (x))
 
 #pragma endregion ADLX_RESULT
+
+#if defined (__cplusplus)
+namespace adlx
+{
+#endif
 
 #pragma region ADLX_HG_TYPE
 /**
@@ -372,7 +379,8 @@ typedef enum
     PCIE,                       /**< @ENG_START_DOX The PCI bus type is PCI Express bus. @ENG_END_DOX */
     PCIE_2_0,                   /**< @ENG_START_DOX The PCI bus type is PCI Express 2nd generation bus. @ENG_END_DOX */
     PCIE_3_0,                   /**< @ENG_START_DOX The PCI bus type is PCI Express 3rd generation bus. @ENG_END_DOX */
-    PCIE_4_0                    /**< @ENG_START_DOX The PCI bus type is PCI Express 4th generation bus. @ENG_END_DOX */
+    PCIE_4_0,                   /**< @ENG_START_DOX The PCI bus type is PCI Express 4th generation bus. @ENG_END_DOX */
+    PCIE_5_0                    /**< @ENG_START_DOX The PCI bus type is PCI Express 5th generation bus. @ENG_END_DOX */
 } ADLX_PCI_BUS_TYPE;
 #pragma endregion ADLX_PCI_BUS_TYPE
 
@@ -952,7 +960,7 @@ typedef enum
 /** @enum ADLX_SMARTSHIFT_ECO_INACTIVE_REASON
  *  @ingroup enumerations
  * @ENG_START_DOX
- *  @brief Indicates the type of SmartShift Eco inactive state reason.
+ *  @brief Indicates the reason as to why SmartShift Eco is inactive.
  * @ENG_END_DOX
  */
 typedef enum
@@ -1013,8 +1021,112 @@ typedef enum
 
 #pragma endregion ADLX_APP_GPU_DEPENDENCY
 
-#pragma endregion ADLX data types
+#pragma region ADLX_GFX_IP_VERSION
+/**
+ * @enum ADLX_GFX_IP_VERSION
+ * @ingroup enumerations
+ * @ENG_START_DOX
+ * @brief Indicates the GFX IP Version.
+ * @ENG_END_DOX
+ */
+typedef enum
+{
+    GFX_IP_VERSION_UNKNOWN = 0, /**< @ENG_START_DOX The GFX IP Version is not defined. @ENG_END_DOX */
+    GFX_IP_VERSION_4,           /**< @ENG_START_DOX The GFX IP Version is 4. @ENG_END_DOX */
+    GFX_IP_VERSION_5,           /**< @ENG_START_DOX The GFX IP Version is 5. @ENG_END_DOX */
+    GFX_IP_VERSION_6,           /**< @ENG_START_DOX The GFX IP Version is 6. @ENG_END_DOX */
+    GFX_IP_VERSION_7,           /**< @ENG_START_DOX The GFX IP Version is 7. @ENG_END_DOX */
+    GFX_IP_VERSION_8,           /**< @ENG_START_DOX The GFX IP Version is 8. @ENG_END_DOX */
+    GFX_IP_VERSION_9,           /**< @ENG_START_DOX The GFX IP Version is 9. @ENG_END_DOX */
+    GFX_IP_VERSION_10_1,        /**< @ENG_START_DOX The GFX IP Version is 10.1. @ENG_END_DOX */
+    GFX_IP_VERSION_10_2,        /**< @ENG_START_DOX The GFX IP Version is 10.2. @ENG_END_DOX */
+    GFX_IP_VERSION_10_3,        /**< @ENG_START_DOX The GFX IP Version is 10.3. @ENG_END_DOX */
+    GFX_IP_VERSION_11_0,        /**< @ENG_START_DOX The GFX IP Version is 11. @ENG_END_DOX */
+    GFX_IP_VERSION_12_0,        /**< @ENG_START_DOX The GFX IP Version is 12. @ENG_END_DOX */
+} ADLX_GFX_IP_VERSION;
+#pragma endregion ADLX_GFX_IP_VERSION
 
+#pragma region ADLX_AFMF_SEARCH_MODE_TYPE
+/**
+ * @enum ADLX_AFMF_SEARCH_MODE_TYPE
+ * @ingroup enumerations
+ * @ENG_START_DOX
+ * @brief Indicates the AMD Fluid Motion Frames search mode.
+ * @ENG_END_DOX
+ */
+typedef enum
+{
+    AFMF_SEARCH_MODE_AUTO = 0,               /**< @ENG_START_DOX The AMD Fluid Motion Frames search mode is auto. @ENG_END_DOX */
+    AFMF_SEARCH_MODE_STANDARD,               /**< @ENG_START_DOX The AMD Fluid Motion Frames search mode is standard. @ENG_END_DOX */
+    AFMF_SEARCH_MODE_HIGH                    /**< @ENG_START_DOX The AMD Fluid Motion Frames search mode is high. @ENG_END_DOX */
+} ADLX_AFMF_SEARCH_MODE_TYPE;
+#pragma endregion ADLX_AFMF_SEARCH_MODE_TYPE
+
+#pragma region ADLX_AFMF_PERFORMANCE_MODE_TYPE
+/**
+ * @enum ADLX_AFMF_PERFORMANCE_MODE_TYPE
+ * @ingroup enumerations
+ * @ENG_START_DOX
+ * @brief Indicates the AMD Fluid Motion Frames performance mode.
+ * @ENG_END_DOX
+ */
+typedef enum
+{
+    AFMF_PERFORMANCE_MODE_AUTO = 0,             /**< @ENG_START_DOX The AMD Fluid Motion Frames performance mode is auto. @ENG_END_DOX */
+    AFMF_PERFORMANCE_MODE_QUALITY,              /**< @ENG_START_DOX The AMD Fluid Motion Frames performance mode is quality. @ENG_END_DOX */
+    AFMF_PERFORMANCE_MODE_PERFORMANCE           /**< @ENG_START_DOX The AMD Fluid Motion Frames performance mode is performance. @ENG_END_DOX */
+} ADLX_AFMF_PERFORMANCE_MODE_TYPE;
+#pragma endregion ADLX_AFMF_PERFORMANCE_MODE_TYPE
+/**
+* @enum ADLX_AFMF_ALGORITHM
+* @ingroup enumerations
+* @ENG_START_DOX
+* @brief Indicates the algorithm used by AMD Fluid Motion Frames.
+* @ENG_END_DOX
+*/
+typedef enum
+{
+    AFMF_ALGORITHM_AUTO = 0,         /**< @ENG_START_DOX The algorithm used by AMD Fluid Motion Frames is auto. @ENG_END_DOX */
+    AFMF_ALGORITHM_ENHANCED,         /**< @ENG_START_DOX The algorithm used by AMD Fluid Motion Frames is enhanced mode. @ENG_END_DOX */
+    AFMF_ALGORITHM_STANDARD,         /**< @ENG_START_DOX The algorithm used by AMD Fluid Motion Frames is standard mode. @ENG_END_DOX */
+} ADLX_AFMF_ALGORITHM;
+/**
+* @enum ADLX_AFMF_FAST_MOTION_RESP
+* @ingroup enumerations
+* @ENG_START_DOX
+* @brief Indicates the AMD Fluid Motion Frames approach to fast-motion content.
+* @ENG_END_DOX
+*/
+typedef enum
+{
+    AFMF_RESP_REPEAT_FRAMES = 0,         /**< @ENG_START_DOX The AMD Fluid Motion Frames approach to fast-motion content is to repeat the frames. @ENG_END_DOX */
+    AFMF_RESP_BLENDED_FRAMES = 1,        /**< @ENG_START_DOX The AMD Fluid Motion Frames approach to fast-motion content is to blend the frames. @ENG_END_DOX */
+} ADLX_AFMF_FAST_MOTION_RESP;
+/**
+ * @enum ADLX_VARIABLE_GRAPHICS_MEMORY_MODE
+ * @ingroup enumerations
+ * @ENG_START_DOX
+ * @brief Indicates the Variable Graphics Memory mode.
+ * @ENG_END_DOX
+ */
+typedef enum
+{
+    VARIABLE_GRAPHICS_MEMORY_MODE_AUTO = 0,     /**< @ENG_START_DOX The Variable Graphics Memory mode is set to auto @ENG_END_DOX */
+    VARIABLE_GRAPHICS_MEMORY_MODE_CUSTOM = 1,   /**< @ENG_START_DOX The Variable Graphics Memory mode is set to custom @ENG_END_DOX */
+} ADLX_VARIABLE_GRAPHICS_MEMORY_MODE;
+
+typedef enum
+{
+    FFX_FRAME_GEN_UNKNOWN = 0,       /**< @ENG_START_DOX The frame generation ratio is unknown. @ENG_END_DOX */
+    FFX_FRAME_GEN_2X = 1,            /**< @ENG_START_DOX The frame generation ratio is 2X. @ENG_END_DOX */
+} ADLX_FFX_FRAME_GEN_RATIO;
+
+#pragma endregion ADLX data types
+#if defined (__cplusplus)
+
+} //namespace adlx
+
+#endif
 //-------------------------------------------------------------------------------------------------
 //definitions for IADLXInterface
 #pragma region ADLX_DECLARE_IID

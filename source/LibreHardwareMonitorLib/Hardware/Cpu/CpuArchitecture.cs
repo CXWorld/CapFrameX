@@ -24,6 +24,8 @@
             // Lunar Lake (TSMC 3nm): 0xBD
             // Arrow Lake (TSMC 3nm): 0xC6
             // Arrow Lake-H (TSMC 3nm): 0xC5
+            // Nova Lake-S/Sx (Intel 18A): family 0x12 model 0x03 (new family ID, CPUID 0x00300F30)
+            // Nova Lake-U/P/H/HX (Intel 18A): family 0x06 model 0x55 (CPUID 0x00050650)
             if (vendor == Vendor.Intel)
             {
                 bool isHybrid = false;
@@ -50,8 +52,12 @@
                 return isHybrid;
 
             }
-            // Zen 5c Strix Point
-            // Zen 4c Phoenix 2
+            // AMD hybrid (standard + dense "c" cores on same package):
+            //   Zen 4c: Phoenix 2
+            //   Zen 5c: Strix Point (also Strix Halo)
+            //   Zen 6c: Medusa Point 1/2 (Family 0x1A model 0x88/0xE4),
+            //           Medusa Point 3 (Family 0x1B model 0x00)
+            // Server dense-only parts (Rushmore EB Dense, Weisshorn SP8D) are not hybrid.
             else if (vendor == Vendor.AMD)
             {
                 bool isHybrid = false;

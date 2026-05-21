@@ -1,0 +1,29 @@
+[
+  {
+    "Name": "test_metric_1",
+    "Level": 1,
+    "MetricType": "EDP",
+    "BriefDescription": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean pellentesque feugiat urna, quis bibendum tellus convallis a. Phasellus condimentum, lectus eu viverra aliquet, tellus tellus scelerisque sem, sit amet elementum ligula velit blandit libero.",
+    "UnitOfMeasure": "Units",
+    "Events": [
+      {
+        "Name": "EVENT_A",
+        "Alias": "a"
+      },
+      {
+        "Name": "EVENT_B",
+        "Alias": "b"
+      }
+    ],
+    "Constants": [
+      {
+        "Name": "CONSTANT_C",
+        "Alias": "c"
+      }
+    ],
+    "Formula": "(a/b*c)/1000000000",
+    "Category": "Category1, Category2",
+    "Threshold": ">Thresh",
+    "MetricGroup":"Group1, Group2"
+  }
+]

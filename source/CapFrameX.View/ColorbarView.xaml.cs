@@ -52,18 +52,14 @@ namespace CapFrameX.View
         /// <param name="e"></param>
         private void SaveScreenShotButton_Click(object sender, RoutedEventArgs e)
         {
-            string path = (DataContext as ColorbarViewModel).AppConfiguration.ScreenshotDirectory;
+            var viewModel = DataContext as ColorbarViewModel;
+            string path = viewModel.ResolveDocumentsPath(viewModel.AppConfiguration.ScreenshotDirectory);
             var filename = string.Empty;
-            var currentPageName = (DataContext as ColorbarViewModel).CurrentPageName;
-            var currentRecordInfo = (DataContext as ColorbarViewModel).RecordInfo;
+            var currentPageName = viewModel.CurrentPageName;
+            var currentRecordInfo = viewModel.RecordInfo;
 
             try
             {
-                if (path.Contains(@"MyDocuments\CapFrameX\Screenshots"))
-                {
-                    var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                    path = Path.Combine(documentFolder, @"CapFrameX\Screenshots");
-                }
 
                 if (currentPageName == "Analysis")
                 {

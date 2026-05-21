@@ -27,8 +27,8 @@
 		</Grid.RowDefinitions>
 		<Grid Grid.Row="0">
             <controls:PlotViewCustomZoom Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="FrametimePlotView" 
-                                         Model="{Binding FrametimeModel}" Tag="{Binding ElementName=FrametimeGraphControlName, Path=DataContext}"
-										 MouseDoubleClick="ResetChart_MouseDoubleClick">
+                Model="{Binding FrametimeModel}" Tag="{Binding ElementName=FrametimeGraphControlName, Path=DataContext}"
+			    MouseDoubleClick="ResetChart_MouseDoubleClick">
                 <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                     <ControlTemplate>
                         <oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">

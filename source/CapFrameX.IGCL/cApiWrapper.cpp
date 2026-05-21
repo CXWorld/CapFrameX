@@ -890,7 +890,8 @@ ctlSetCurrentSharpness(
 * @brief I2C Access
 * 
 * @details
-*     - Interface to access I2C using display handle as identifier.
+*     - Interface to access I2C using display handle as identifier.  I2C
+*       driver override flags are supported only for HDMI displays.
 * 
 * @returns
 *     - CTL_RESULT_SUCCESS
@@ -1771,135 +1772,6 @@ ctlGetIntelArcSyncInfoForMonitor(
 
 
 /**
-* @brief Enumerate Display MUX Devices on this system across adapters
-* 
-* @details
-*     - The application enumerates all MUX devices in the system
-* 
-* @returns
-*     - CTL_RESULT_SUCCESS
-*     - CTL_RESULT_ERROR_UNINITIALIZED
-*     - CTL_RESULT_ERROR_DEVICE_LOST
-*     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
-*         + `nullptr == hAPIHandle`
-*     - CTL_RESULT_ERROR_INVALID_NULL_POINTER
-*         + `nullptr == pCount`
-*         + `nullptr == phMuxDevices`
-*     - ::CTL_RESULT_ERROR_UNSUPPORTED_VERSION - "Unsupported version"
-*/
-ctl_result_t CTL_APICALL
-ctlEnumerateMuxDevices(
-    ctl_api_handle_t hAPIHandle,                    ///< [in][release] Applications should pass the Control API handle returned
-                                                    ///< by the CtlInit function 
-    uint32_t* pCount,                               ///< [in,out][release] pointer to the number of MUX device instances. If
-                                                    ///< input count is zero, then the api will update the value with the total
-                                                    ///< number of MUX devices available and return the Count value. If input
-                                                    ///< count is non-zero, then the api will only retrieve the number of MUX Devices.
-                                                    ///< If count is larger than the number of MUX devices available, then the
-                                                    ///< api will update the value with the correct number of MUX devices available.
-    ctl_mux_output_handle_t* phMuxDevices           ///< [out][range(0, *pCount)] array of MUX device instance handles
-    )
-{
-    ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
-    
-
-    HINSTANCE hinstLibPtr = GetLoaderHandle();
-
-    if (NULL != hinstLibPtr)
-    {
-        ctl_pfnEnumerateMuxDevices_t pfnEnumerateMuxDevices = (ctl_pfnEnumerateMuxDevices_t)GetProcAddress(hinstLibPtr, "ctlEnumerateMuxDevices");
-        if (pfnEnumerateMuxDevices)
-        {
-            result = pfnEnumerateMuxDevices(hAPIHandle, pCount, phMuxDevices);
-        }
-    }
-
-    return result;
-}
-
-
-/**
-* @brief Get Display Mux properties
-* 
-* @details
-*     - Get the propeties of the Mux device
-* 
-* @returns
-*     - CTL_RESULT_SUCCESS
-*     - CTL_RESULT_ERROR_UNINITIALIZED
-*     - CTL_RESULT_ERROR_DEVICE_LOST
-*     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
-*         + `nullptr == hMuxDevice`
-*     - CTL_RESULT_ERROR_INVALID_NULL_POINTER
-*         + `nullptr == pMuxProperties`
-*     - ::CTL_RESULT_ERROR_UNSUPPORTED_VERSION - "Unsupported version"
-*/
-ctl_result_t CTL_APICALL
-ctlGetMuxProperties(
-    ctl_mux_output_handle_t hMuxDevice,             ///< [in] MUX device instance handle
-    ctl_mux_properties_t* pMuxProperties            ///< [in,out] MUX device properties
-    )
-{
-    ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
-    
-
-    HINSTANCE hinstLibPtr = GetLoaderHandle();
-
-    if (NULL != hinstLibPtr)
-    {
-        ctl_pfnGetMuxProperties_t pfnGetMuxProperties = (ctl_pfnGetMuxProperties_t)GetProcAddress(hinstLibPtr, "ctlGetMuxProperties");
-        if (pfnGetMuxProperties)
-        {
-            result = pfnGetMuxProperties(hMuxDevice, pMuxProperties);
-        }
-    }
-
-    return result;
-}
-
-
-/**
-* @brief Switch Mux output
-* 
-* @details
-*     - Switches the MUX output
-* 
-* @returns
-*     - CTL_RESULT_SUCCESS
-*     - CTL_RESULT_ERROR_UNINITIALIZED
-*     - CTL_RESULT_ERROR_DEVICE_LOST
-*     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
-*         + `nullptr == hMuxDevice`
-*         + `nullptr == hInactiveDisplayOutput`
-*     - ::CTL_RESULT_ERROR_UNSUPPORTED_VERSION - "Unsupported version"
-*/
-ctl_result_t CTL_APICALL
-ctlSwitchMux(
-    ctl_mux_output_handle_t hMuxDevice,             ///< [in] MUX device instance handle
-    ctl_display_output_handle_t hInactiveDisplayOutput  ///< [out] Input selection for this MUX, which if active will drive the
-                                                    ///< output of this MUX device. This should be one of the display output
-                                                    ///< handles reported under this MUX device's properties.
-    )
-{
-    ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
-    
-
-    HINSTANCE hinstLibPtr = GetLoaderHandle();
-
-    if (NULL != hinstLibPtr)
-    {
-        ctl_pfnSwitchMux_t pfnSwitchMux = (ctl_pfnSwitchMux_t)GetProcAddress(hinstLibPtr, "ctlSwitchMux");
-        if (pfnSwitchMux)
-        {
-            result = pfnSwitchMux(hMuxDevice, hInactiveDisplayOutput);
-        }
-    }
-
-    return result;
-}
-
-
-/**
 * @brief Get Intel Arc Sync profile
 * 
 * @details
@@ -2374,7 +2246,10 @@ ctlGetLinkedDisplayAdapters(
 * 
 * @details
 *     - To get the DCE feature status and, if feature is enabled, returns the
-*       current histogram, or to set the brightness at the phase-in speed
+*       current histogram, or to set the brightness at the phase-in speed.
+*       This is a reserved capability. By default, DCE is not supported/will
+*       not be enabled, need application to activate it, please contact Intel
+*       for activation.
 * 
 * @returns
 *     - CTL_RESULT_SUCCESS

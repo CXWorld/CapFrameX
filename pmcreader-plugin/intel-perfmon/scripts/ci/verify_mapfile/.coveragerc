@@ -1,0 +1,9 @@
+[run]
+branch = True
+
+[report]
+include =
+    verify_mapfile.py
+
+exclude_lines =
+    if __name__ == '__main__':

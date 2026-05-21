@@ -1,5 +1,6 @@
 ﻿using RJCP.IO.Ports;
 using System;
+using System.Buffers;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Microsoft.Extensions.Logging;
@@ -10,11 +11,16 @@ namespace CapFrameX.PMD.Powenetics
 {
     public class PoweneticsUSBDriver : IPoweneticsDriver
     {
-        const char SEPERATOR = '-';
+        private const byte HeaderByteA = 0xCA;
+        private const byte HeaderByteB = 0xAC;
+        private const int PacketFrameLength = 69;
 
         private SerialPortStream _pmd;
         private long _sampleTimeStamp = 0;
         private int _lostPacketsCounter = 0;
+        private readonly object _bufferLock = new object();
+        private byte[] _receiveBuffer = new byte[4096];
+        private int _receiveBufferCount = 0;
 
         private readonly ILogger<PoweneticsUSBDriver> _logger;
         private readonly ISubject<PoweneticsChannel[]> _pmdChannelStream = new Subject<PoweneticsChannel[]>();
@@ -81,24 +87,33 @@ namespace CapFrameX.PMD.Powenetics
         {
             try
             {
-                int ibtr = _pmd.BytesToRead;
-                byte[] bget = new byte[ibtr];
-                _pmd.Read(bget, 0, ibtr);
-
-                //Read data
-                //Every 207 characters there is a new feed
-                //CA-AC-F8-1B-00-00-00-00-00-13-BB-00-00-09-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-42-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-
-                var curPmdReading = BitConverter.ToString(bget);
-
-                //process data async
-                Task.Run(() =>
+                int bytesToRead = _pmd.BytesToRead;
+                if (bytesToRead <= 0)
                 {
-                    string resultStringStepA = curPmdReading.Replace(SEPERATOR.ToString(), string.Empty);
-                    string resultStringStepB = resultStringStepA.Replace("CAAC", SEPERATOR.ToString());
-                    string[] resultSplit = resultStringStepB.Split(SEPERATOR);
-                    ProcessData(resultSplit);
-                });
+                    return;
+                }
 
+                var tempBuffer = ArrayPool<byte>.Shared.Rent(bytesToRead);
+                try
+                {
+                    int bytesRead = _pmd.Read(tempBuffer, 0, bytesToRead);
+                    if (bytesRead <= 0)
+                    {
+                        return;
+                    }
+
+                    lock (_bufferLock)
+                    {
+                        EnsureReceiveBufferCapacity(_receiveBufferCount + bytesRead);
+                        Buffer.BlockCopy(tempBuffer, 0, _receiveBuffer, _receiveBufferCount, bytesRead);
+                        _receiveBufferCount += bytesRead;
+                        ProcessReceiveBuffer();
+                    }
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(tempBuffer);
+                }
             }
             catch { throw; }
         }
@@ -107,618 +122,560 @@ namespace CapFrameX.PMD.Powenetics
         private int _previousPacketNumber = 0;
         private int _currentPacketNumber = 0;
 
-        private int ExtractPacketNumber(string data)
+        private int ExtractPacketNumber(byte[] data, int offset)
         {
-            string Packet_Numbera = data.Substring(0, 2);
-            string Packet_Numberb = data.Substring(2, 2);
-            int Packet_Numbera1 = HexToInt(Packet_Numbera);
-            int Packet_Numberb1 = HexToInt(Packet_Numberb);
-            int Packet_Number = Packet_Numbera1 * 256 + Packet_Numberb1;
-
-            return (Packet_Number);
+            return ReadUInt16(data, offset);
         }
 
-        private void ProcessData(string[] currentReading)
+        private void ProcessReceiveBuffer()
+        {
+            int readIndex = 0;
+            while (true)
+            {
+                int headerIndex = FindHeaderIndex(_receiveBuffer, readIndex, _receiveBufferCount);
+                if (headerIndex < 0)
+                {
+                    if (_receiveBufferCount > 0 && _receiveBuffer[_receiveBufferCount - 1] == HeaderByteA)
+                    {
+                        _receiveBuffer[0] = HeaderByteA;
+                        _receiveBufferCount = 1;
+                    }
+                    else
+                    {
+                        _receiveBufferCount = 0;
+                    }
+                    return;
+                }
+
+                if (_receiveBufferCount - headerIndex < PacketFrameLength)
+                {
+                    if (headerIndex > 0)
+                    {
+                        Buffer.BlockCopy(_receiveBuffer, headerIndex, _receiveBuffer, 0, _receiveBufferCount - headerIndex);
+                        _receiveBufferCount -= headerIndex;
+                    }
+                    return;
+                }
+
+                int payloadOffset = headerIndex + 2;
+                ProcessData(_receiveBuffer, payloadOffset);
+                readIndex = headerIndex + PacketFrameLength;
+
+                if (readIndex >= _receiveBufferCount)
+                {
+                    _receiveBufferCount = 0;
+                    return;
+                }
+            }
+        }
+
+        private static int FindHeaderIndex(byte[] buffer, int startIndex, int count)
+        {
+            for (int i = startIndex; i < count - 1; i++)
+            {
+                if (buffer[i] == HeaderByteA && buffer[i + 1] == HeaderByteB)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private void EnsureReceiveBufferCapacity(int requiredSize)
+        {
+            if (_receiveBuffer.Length >= requiredSize)
+            {
+                return;
+            }
+
+            int newSize = _receiveBuffer.Length * 2;
+            while (newSize < requiredSize)
+            {
+                newSize *= 2;
+            }
+
+            var newBuffer = new byte[newSize];
+            Buffer.BlockCopy(_receiveBuffer, 0, newBuffer, 0, _receiveBufferCount);
+            _receiveBuffer = newBuffer;
+        }
+
+        private static int ReadUInt16(byte[] data, int offset)
+        {
+            return data[offset] * 256 + data[offset + 1];
+        }
+
+        private static int ReadUInt24(byte[] data, int offset)
+        {
+            return data[offset] * 65536 + data[offset + 1] * 256 + data[offset + 2];
+        }
+
+        private static float ReadVoltage(byte[] data, int offset)
+        {
+            return ReadUInt16(data, offset) / 1000f;
+        }
+
+        private static float ReadCurrent(byte[] data, int offset)
+        {
+            return ReadUInt24(data, offset) / 1000f;
+        }
+        private void ProcessData(byte[] data, int offset)
         {
             try
             {
-                //Process each element of results_split if it has 67 bytes
-                //I don't take into account the first 2 bytes because they are the sequence number
-                foreach (var subset in currentReading)
+                _previousPacketNumber = _currentPacketNumber;
+                _currentPacketNumber = ExtractPacketNumber(data, offset);
+
+                if (_previousPacketNumber > 0)
                 {
-                    if (subset.Length == 134)
+                    if (_currentPacketNumber - _previousPacketNumber != 1
+                        && _currentPacketNumber > _previousPacketNumber)
                     {
-                        _previousPacketNumber = _currentPacketNumber;
-                        _currentPacketNumber = ExtractPacketNumber(subset);
-
-                        if (_previousPacketNumber > 0)
-                        {
-                            if (_currentPacketNumber - _previousPacketNumber != 1
-                                && _currentPacketNumber > _previousPacketNumber)
-                            {
-                                _lostPacketsCounter += _currentPacketNumber - _previousPacketNumber - 1;
-                                _lostPacketsCounterStream.OnNext(_lostPacketsCounter);
-                            }
-                        }
-
-                        var pmdChannels = new PoweneticsChannel[PoweneticsChannelExtensions.PmdChannelIndexMapping.Length];
-
-                        //Channel 1: 3.3V        - 24pin ATX
-                        string voltATX33Va = subset.Substring(4, 2);
-                        string voltATX33Vb = subset.Substring(6, 2);
-                        float voltATX33Va1 = HexToInt(voltATX33Va);
-                        float voltATX33Vb1 = HexToInt(voltATX33Vb);
-                        float voltATX33V_Final = (voltATX33Va1 * 256 + voltATX33Vb1) / 1000f;
-
-                        string currentATX33Va = subset.Substring(8, 2);
-                        string currentATX33Vb = subset.Substring(10, 2);
-                        string currentATX33Vc = subset.Substring(12, 2);
-                        float currentATX33Va1 = HexToInt(currentATX33Va);
-                        float currentATX33Vb1 = HexToInt(currentATX33Vb);
-                        float currentATX33Vc1 = HexToInt(currentATX33Vc);
-                        float currentATX33V_Final = (currentATX33Va1 * 65536 + currentATX33Vb1 * 256 + currentATX33Vc1) / 1000f;
-
-                        pmdChannels[36] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Voltage,
-                            Name = "ATX_33V_Voltage",
-                            PmdChannelType = PoweneticsChannelType.ATX,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltATX33V_Final
-                        };
-
-                        pmdChannels[37] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Current,
-                            Name = "ATX_33V_Current",
-                            PmdChannelType = PoweneticsChannelType.ATX,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = currentATX33V_Final
-                        };
-
-                        pmdChannels[38] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Power,
-                            Name = "ATX_33V_Power",
-                            PmdChannelType = PoweneticsChannelType.ATX,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltATX33V_Final * currentATX33V_Final
-                        };
-
-                        //Channel 2: 5Vsb        - 24pin ATX
-                        //Only if I have a 24 pin connector installed
-                        if (voltATX33V_Final > 1)
-                        {
-                            string volt5VSBa = subset.Substring(14, 2);
-                            string volt5VSBb = subset.Substring(16, 2);
-                            float volt5VSBa1 = HexToInt(volt5VSBa);
-                            float volt5VSBb1 = HexToInt(volt5VSBb);
-                            float volt5VSB_Final = (volt5VSBa1 * 256 + volt5VSBb1) / 1000f;
-
-                            string current5VSBa = subset.Substring(18, 2);
-                            string current5VSBb = subset.Substring(20, 2);
-                            string current5VSBc = subset.Substring(22, 2);
-                            float current5VSBa1 = HexToInt(current5VSBa);
-                            float current5VSBb1 = HexToInt(current5VSBb);
-                            float current5VSBc1 = HexToInt(current5VSBc);
-                            float current5VSB_Final = (current5VSBa1 * 65536 + current5VSBb1 * 256 + current5VSBc1) / 1000f;
-
-                            pmdChannels[39] = new PoweneticsChannel()
-                            {
-                                Measurand = PoweneticsMeasurand.Voltage,
-                                Name = "ATX_STB_Voltage",
-                                PmdChannelType = PoweneticsChannelType.ATX,
-                                TimeStamp = _sampleTimeStamp,
-                                Value = volt5VSB_Final
-                            };
-
-                            pmdChannels[40] = new PoweneticsChannel()
-                            {
-                                Measurand = PoweneticsMeasurand.Current,
-                                Name = "ATX_STB_Current",
-                                PmdChannelType = PoweneticsChannelType.ATX,
-                                TimeStamp = _sampleTimeStamp,
-                                Value = current5VSB_Final
-                            };
-
-                            pmdChannels[41] = new PoweneticsChannel()
-                            {
-                                Measurand = PoweneticsMeasurand.Power,
-                                Name = "ATX_STB_Power",
-                                PmdChannelType = PoweneticsChannelType.ATX,
-                                TimeStamp = _sampleTimeStamp,
-                                Value = volt5VSB_Final * current5VSB_Final
-                            };
-                        }
-
-                        //Channel 3: 12V         - 24pin ATX & 10pin ATX
-                        string voltATX12Va = subset.Substring(24, 2);
-                        string voltATX12Vb = subset.Substring(26, 2);
-                        float voltATX12Va1 = HexToInt(voltATX12Va);
-                        float voltATX12Vb1 = HexToInt(voltATX12Vb);
-                        float voltATX12V_Final = (voltATX12Va1 * 256 + voltATX12Vb1) / 1000f;
-
-                        string currentATX12Va = subset.Substring(28, 2);
-                        string currentATX12Vb = subset.Substring(30, 2);
-                        string currentATX12Vc = subset.Substring(32, 2);
-                        float currentATX12Va1 = HexToInt(currentATX12Va);
-                        float currentATX12Vb1 = HexToInt(currentATX12Vb);
-                        float currentATX12Vc1 = HexToInt(currentATX12Vc);
-                        float currentATX12V_Final = (currentATX12Va1 * 65536 + currentATX12Vb1 * 256 + currentATX12Vc1) / 1000f;
-
-                        pmdChannels[30] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Voltage,
-                            Name = "ATX_12V_Voltage",
-                            PmdChannelType = PoweneticsChannelType.ATX,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltATX12V_Final
-                        };
-
-                        pmdChannels[31] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Current,
-                            Name = "ATX_12V_Current",
-                            PmdChannelType = PoweneticsChannelType.ATX,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = currentATX12V_Final
-                        };
-
-                        pmdChannels[32] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Power,
-                            Name = "ATX_12V_Power",
-                            PmdChannelType = PoweneticsChannelType.ATX,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltATX12V_Final * currentATX12V_Final
-                        };
-
-                        //Channel 4: 5V          - 24pin ATX
-                        string voltATX5Va = subset.Substring(34, 2);
-                        string voltATX5Vb = subset.Substring(36, 2);
-                        float voltATX5Va1 = HexToInt(voltATX5Va);
-                        float voltATX5Vb1 = HexToInt(voltATX5Vb);
-                        float voltATX5V_Final = (voltATX5Va1 * 256 + voltATX5Vb1) / 1000f;
-
-                        string currentATX5Va = subset.Substring(38, 2);
-                        string currentATX5Vb = subset.Substring(40, 2);
-                        string currentATX5Vc = subset.Substring(42, 2);
-                        float currentATX5Va1 = HexToInt(currentATX5Va);
-                        float currentATX5Vb1 = HexToInt(currentATX5Vb);
-                        float currentATX5Vc1 = HexToInt(currentATX5Vc);
-                        float currentATX5V_Final = (currentATX5Va1 * 65536 + currentATX5Vb1 * 256 + currentATX5Vc1) / 1000f;
-
-                        pmdChannels[33] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Voltage,
-                            Name = "ATX_5V_Voltage",
-                            PmdChannelType = PoweneticsChannelType.ATX,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltATX5V_Final
-                        };
-
-                        pmdChannels[34] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Current,
-                            Name = "ATX_5V_Current",
-                            PmdChannelType = PoweneticsChannelType.ATX,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = currentATX5V_Final
-                        };
-
-                        pmdChannels[35] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Power,
-                            Name = "ATX_5V_Power",
-                            PmdChannelType = PoweneticsChannelType.ATX,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltATX5V_Final * currentATX5V_Final
-                        };
-
-                        //Channel 5: 12V1        - EPS #1
-                        string voltEPS12V1a = subset.Substring(44, 2);
-                        string voltEPS12V1b = subset.Substring(46, 2);
-                        float voltEPS12V1a1 = HexToInt(voltEPS12V1a);
-                        float voltEPS12V1b1 = HexToInt(voltEPS12V1b);
-                        float voltEPS12V1_Final = (voltEPS12V1a1 * 256 + voltEPS12V1b1) / 1000f;
-
-                        string currentEPS12V1a = subset.Substring(48, 2);
-                        string currentEPS12V1b = subset.Substring(50, 2);
-                        string currentEPS12V1c = subset.Substring(52, 2);
-                        float currentEPS12V1a1 = HexToInt(currentEPS12V1a);
-                        float currentEPS12V1b1 = HexToInt(currentEPS12V1b);
-                        float currentEPS12V1c1 = HexToInt(currentEPS12V1c);
-                        float currentEPS12V1_Final = (currentEPS12V1a1 * 65536 + currentEPS12V1b1 * 256 + currentEPS12V1c1) / 1000f;
-
-                        pmdChannels[21] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Voltage,
-                            Name = "EPS_Voltage1",
-                            PmdChannelType = PoweneticsChannelType.EPS,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltEPS12V1_Final
-                        };
-
-                        pmdChannels[24] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Current,
-                            Name = "EPS_Current1",
-                            PmdChannelType = PoweneticsChannelType.EPS,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = currentEPS12V1_Final
-                        };
-
-                        pmdChannels[27] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Power,
-                            Name = "EPS_Power1",
-                            PmdChannelType = PoweneticsChannelType.EPS,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltEPS12V1_Final * currentEPS12V1_Final
-                        };
-
-                        //Channel 8: 12V2        - EPS #2
-                        string voltEPS12V2a = subset.Substring(74, 2);
-                        string voltEPS12V2b = subset.Substring(76, 2);
-                        float voltEPS12V2a1 = HexToInt(voltEPS12V2a);
-                        float voltEPS12V2b1 = HexToInt(voltEPS12V2b);
-                        float voltEPS12V2_Final = (voltEPS12V2a1 * 256 + voltEPS12V2b1) / 1000f;
-
-                        string currentEPS12V2a = subset.Substring(78, 2);
-                        string currentEPS12V2b = subset.Substring(80, 2);
-                        string currentEPS12V2c = subset.Substring(82, 2);
-                        float currentEPS12V2a1 = HexToInt(currentEPS12V2a);
-                        float currentEPS12V2b1 = HexToInt(currentEPS12V2b);
-                        float currentEPS12V2c1 = HexToInt(currentEPS12V2c);
-                        float currentEPS12V2_Final = (currentEPS12V2a1 * 65536 + currentEPS12V2b1 * 256 + currentEPS12V2c1) / 1000f;
-
-                        pmdChannels[22] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Voltage,
-                            Name = "EPS_Voltage2",
-                            PmdChannelType = PoweneticsChannelType.EPS,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltEPS12V2_Final
-                        };
-
-                        pmdChannels[25] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Current,
-                            Name = "EPS_Current2",
-                            PmdChannelType = PoweneticsChannelType.EPS,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = currentEPS12V2_Final
-                        };
-
-                        pmdChannels[28] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Power,
-                            Name = "EPS_Power2",
-                            PmdChannelType = PoweneticsChannelType.EPS,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltEPS12V2_Final * currentEPS12V2_Final
-                        };
-
-                        //Channel 7: 12V3        - EPS #3
-                        string voltEPS12V3a = subset.Substring(64, 2);
-                        string voltEPS12V3b = subset.Substring(66, 2);
-                        float voltEPS12V3a1 = HexToInt(voltEPS12V3a);
-                        float voltEPS12V3b1 = HexToInt(voltEPS12V3b);
-                        float voltEPS12V3_Final = (voltEPS12V3a1 * 256 + voltEPS12V3b1) / 1000f;
-
-                        string currentEPS12V3a = subset.Substring(68, 2);
-                        string currentEPS12V3b = subset.Substring(70, 2);
-                        string currentEPS12V3c = subset.Substring(72, 2);
-                        float currentEPS12V3a1 = HexToInt(currentEPS12V3a);
-                        float currentEPS12V3b1 = HexToInt(currentEPS12V3b);
-                        float currentEPS12V3c1 = HexToInt(currentEPS12V3c);
-                        float currentEPS12V3_Final = (currentEPS12V3a1 * 65536 + currentEPS12V3b1 * 256 + currentEPS12V3c1) / 1000f;
-
-                        pmdChannels[23] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Voltage,
-                            Name = "EPS_Voltage3",
-                            PmdChannelType = PoweneticsChannelType.EPS,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltEPS12V3_Final
-                        };
-
-                        pmdChannels[26] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Current,
-                            Name = "EPS_Current3",
-                            PmdChannelType = PoweneticsChannelType.EPS,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = currentEPS12V3_Final
-                        };
-
-                        pmdChannels[29] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Power,
-                            Name = "EPS_Power3",
-                            PmdChannelType = PoweneticsChannelType.EPS,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltEPS12V3_Final * currentEPS12V3_Final
-                        };
-
-                        //Channel 13: 12V4       - PCIe 6+2 pin #1 & PCIe 12+4 pin #1 
-                        string voltPCIe1a = subset.Substring(124, 2);
-                        string voltPCIe1b = subset.Substring(126, 2);
-                        float voltPCIe1a1 = HexToInt(voltPCIe1a);
-                        float voltPCIe1b1 = HexToInt(voltPCIe1b);
-                        float voltPCIe1_Final = (voltPCIe1a1 * 256 + voltPCIe1b1) / 1000f;
-
-                        string currentPCIe1a = subset.Substring(128, 2);
-                        string currentPCIe1b = subset.Substring(130, 2);
-                        string currentPCIe1c = subset.Substring(132, 2);
-                        float currentPCIe1a1 = HexToInt(currentPCIe1a);
-                        float currentPCIe1b1 = HexToInt(currentPCIe1b);
-                        float currentPCIe1c1 = HexToInt(currentPCIe1c);
-                        float currentPCIe1_Final = (currentPCIe1a1 * 65536 + currentPCIe1b1 * 256 + currentPCIe1c1) / 1000f;
-
-                        pmdChannels[6] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Voltage,
-                            Name = "PCIe_12V_Voltage1",
-                            PmdChannelType = PoweneticsChannelType.PCIe,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltPCIe1_Final
-                        };
-
-                        pmdChannels[11] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Current,
-                            Name = "PCIe_12V_Current1",
-                            PmdChannelType = PoweneticsChannelType.PCIe,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = currentPCIe1_Final
-                        };
-
-                        pmdChannels[16] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Power,
-                            Name = "PCIe_12V_Power1",
-                            PmdChannelType = PoweneticsChannelType.PCIe,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltPCIe1_Final * currentPCIe1_Final
-                        };
-
-                        //Channel 10: 12V5       - PCIe 6+2 pin #2 & PCIe 12+4 pin #2 
-                        string voltPCIe2a = subset.Substring(94, 2);
-                        string voltPCIe2b = subset.Substring(96, 2);
-                        float voltPCIe2a1 = HexToInt(voltPCIe2a);
-                        float voltPCIe2b1 = HexToInt(voltPCIe2b);
-                        float voltPCIe2_Final = (voltPCIe2a1 * 256 + voltPCIe2b1) / 1000f;
-
-                        string currentPCIe2a = subset.Substring(98, 2);
-                        string currentPCIe2b = subset.Substring(100, 2);
-                        string currentPCIe2c = subset.Substring(102, 2);
-                        float currentPCIe2a1 = HexToInt(currentPCIe2a);
-                        float currentPCIe2b1 = HexToInt(currentPCIe2b);
-                        float currentPCIe2c1 = HexToInt(currentPCIe2c);
-                        float currentPCIe2_Final = (currentPCIe2a1 * 65536 + currentPCIe2b1 * 256 + currentPCIe2c1) / 1000f;
-
-                        pmdChannels[7] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Voltage,
-                            Name = "PCIe_12V_Voltage2",
-                            PmdChannelType = PoweneticsChannelType.PCIe,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltPCIe2_Final
-                        };
-
-                        pmdChannels[12] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Current,
-                            Name = "PCIe_12V_Current2",
-                            PmdChannelType = PoweneticsChannelType.PCIe,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = currentPCIe2_Final
-                        };
-
-                        pmdChannels[17] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Power,
-                            Name = "PCIe_12V_Power2",
-                            PmdChannelType = PoweneticsChannelType.PCIe,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltPCIe2_Final * currentPCIe2_Final
-                        };
-
-                        //Channel 9: 12V6        - PCIe 6+2 pin #3  
-                        string voltPCIe3a = subset.Substring(84, 2);
-                        string voltPCIe3b = subset.Substring(86, 2);
-                        float voltPCIe3a1 = HexToInt(voltPCIe3a);
-                        float voltPCIe3b1 = HexToInt(voltPCIe3b);
-                        float voltPCIe3_Final = (voltPCIe3a1 * 256 + voltPCIe3b1) / 1000f;
-
-                        string currentPCIe3a = subset.Substring(88, 2);
-                        string currentPCIe3b = subset.Substring(90, 2);
-                        string currentPCIe3c = subset.Substring(92, 2);
-                        float currentPCIe3a1 = HexToInt(currentPCIe3a);
-                        float currentPCIe3b1 = HexToInt(currentPCIe3b);
-                        float currentPCIe3c1 = HexToInt(currentPCIe3c);
-                        float currentPCIe3_Final = (currentPCIe3a1 * 65536 + currentPCIe3b1 * 256 + currentPCIe3c1) / 1000f;
-
-                        pmdChannels[8] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Voltage,
-                            Name = "PCIe_12V_Voltage3",
-                            PmdChannelType = PoweneticsChannelType.PCIe,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltPCIe3_Final
-                        };
-
-                        pmdChannels[13] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Current,
-                            Name = "PCIe_12V_Current3",
-                            PmdChannelType = PoweneticsChannelType.PCIe,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = currentPCIe3_Final
-                        };
-
-                        pmdChannels[18] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Power,
-                            Name = "PCIe_12V_Power3",
-                            PmdChannelType = PoweneticsChannelType.PCIe,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltPCIe3_Final * currentPCIe3_Final
-                        };
-
-                        // Dummy set PCIe_12V_4
-                        pmdChannels[9] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Voltage,
-                            Name = "PCIe_12V_Voltage4",
-                            PmdChannelType = PoweneticsChannelType.PCIe,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = 0
-                        };
-
-                        pmdChannels[14] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Current,
-                            Name = "PCIe_12V_Current4",
-                            PmdChannelType = PoweneticsChannelType.PCIe,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = 0
-                        };
-
-                        pmdChannels[19] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Power,
-                            Name = "PCIe_12V_Power4",
-                            PmdChannelType = PoweneticsChannelType.PCIe,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = 0
-                        };
-
-                        // Dummy set PCIe_12V_5
-                        pmdChannels[10] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Voltage,
-                            Name = "PCIe_12V_Voltage5",
-                            PmdChannelType = PoweneticsChannelType.PCIe,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = 0
-                        };
-
-                        pmdChannels[15] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Current,
-                            Name = "PCIe_12V_Current5",
-                            PmdChannelType = PoweneticsChannelType.PCIe,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = 0
-                        };
-
-                        pmdChannels[20] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Power,
-                            Name = "PCIe_12V_Power5",
-                            PmdChannelType = PoweneticsChannelType.PCIe,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = 0
-                        };
-
-                        //Channel 11: 3.3V OPTI  - PCIe Expansion Board
-                        string voltPCIe_Slot_33a = subset.Substring(104, 2);
-                        string voltPCIe_Slot_33b = subset.Substring(106, 2);
-                        float voltPCIe_Slot_33a1 = HexToInt(voltPCIe_Slot_33a);
-                        float voltPCIe_Slot_33b2 = HexToInt(voltPCIe_Slot_33b);
-                        float voltPCIe_Slot_33_Final = (voltPCIe_Slot_33a1 * 256 + voltPCIe_Slot_33b2) / 1000f;
-
-                        string currentPCIe_Slot_33a = subset.Substring(108, 2);
-                        string currentPCIe_Slot_33b = subset.Substring(110, 2);
-                        string currentPCIe_Slot_33c = subset.Substring(112, 2);
-                        float currentPCIe_Slot_33a1 = HexToInt(currentPCIe_Slot_33a);
-                        float currentPCIe_Slot_33b1 = HexToInt(currentPCIe_Slot_33b);
-                        float currentPCIe_Slot_33c1 = HexToInt(currentPCIe_Slot_33c);
-                        float currentPCIe_Slot_33_Final = (currentPCIe_Slot_33a1 * 65536 + currentPCIe_Slot_33b1 * 256 + currentPCIe_Slot_33c1) / 1000f;
-
-                        pmdChannels[3] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Voltage,
-                            Name = "PCIe_Slot_33V_Voltage",
-                            PmdChannelType = PoweneticsChannelType.PCIeSlot,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltPCIe_Slot_33_Final
-                        };
-
-                        pmdChannels[4] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Current,
-                            Name = "PCIe_Slot_33V_Current",
-                            PmdChannelType = PoweneticsChannelType.PCIeSlot,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = currentPCIe_Slot_33_Final
-                        };
-
-                        pmdChannels[5] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Power,
-                            Name = "PCIe_Slot_33V_Power",
-                            PmdChannelType = PoweneticsChannelType.PCIeSlot,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltPCIe_Slot_33_Final * currentPCIe_Slot_33_Final
-                        };
-
-                        //Channel 12: 12V OPTI   - PCIe Expansion Board
-                        string voltPCIe_Slot_12a = subset.Substring(114, 2);
-                        string voltPCIe_Slot_12b = subset.Substring(116, 2);
-                        float voltPCIe_Slot_12a1 = HexToInt(voltPCIe_Slot_12a);
-                        float voltPCIe_Slot_12b2 = HexToInt(voltPCIe_Slot_12b);
-                        float voltPCIe_Slot_12_Final = (voltPCIe_Slot_12a1 * 256 + voltPCIe_Slot_12b2) / 1000f;
-
-                        string currentPCIe_Slot_12a = subset.Substring(118, 2);
-                        string currentPCIe_Slot_12b = subset.Substring(120, 2);
-                        string currentPCIe_Slot_12c = subset.Substring(122, 2);
-                        float currentPCIe_Slot_12a1 = HexToInt(currentPCIe_Slot_12a);
-                        float currentPCIe_Slot_12b1 = HexToInt(currentPCIe_Slot_12b);
-                        float currentPCIe_Slot_12c1 = HexToInt(currentPCIe_Slot_12c);
-                        float currentPCIe_Slot_12_Final = (currentPCIe_Slot_12a1 * 65536 + currentPCIe_Slot_12b1 * 256 + currentPCIe_Slot_12c1) / 1000f;
-
-                        pmdChannels[0] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Voltage,
-                            Name = "PCIe_Slot_12V_Voltage",
-                            PmdChannelType = PoweneticsChannelType.PCIeSlot,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltPCIe_Slot_12_Final
-                        };
-
-                        pmdChannels[1] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Current,
-                            Name = "PCIe_Slot_12V_Current",
-                            PmdChannelType = PoweneticsChannelType.PCIeSlot,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = currentPCIe_Slot_12_Final
-                        };
-
-                        pmdChannels[2] = new PoweneticsChannel()
-                        {
-                            Measurand = PoweneticsMeasurand.Power,
-                            Name = "PCIe_Slot_12V_Power",
-                            PmdChannelType = PoweneticsChannelType.PCIeSlot,
-                            TimeStamp = _sampleTimeStamp,
-                            Value = voltPCIe_Slot_12_Final * currentPCIe_Slot_12_Final
-                        };
-
-                        _pmdChannelStream.OnNext(pmdChannels);
-                        _sampleTimeStamp++;
+                        _lostPacketsCounter += _currentPacketNumber - _previousPacketNumber - 1;
+                        _lostPacketsCounterStream.OnNext(_lostPacketsCounter);
                     }
                 }
+
+                var pmdChannels = new PoweneticsChannel[PoweneticsChannelExtensions.PmdChannelIndexMapping.Length];
+
+                //Channel 1: 3.3V        - 24pin ATX
+                float voltATX33V_Final = ReadVoltage(data, offset + 2);
+                float currentATX33V_Final = ReadCurrent(data, offset + 4);
+
+                pmdChannels[36] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Voltage,
+                    Name = "ATX_33V_Voltage",
+                    PmdChannelType = PoweneticsChannelType.ATX,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltATX33V_Final
+                };
+
+                pmdChannels[37] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Current,
+                    Name = "ATX_33V_Current",
+                    PmdChannelType = PoweneticsChannelType.ATX,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = currentATX33V_Final
+                };
+
+                pmdChannels[38] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Power,
+                    Name = "ATX_33V_Power",
+                    PmdChannelType = PoweneticsChannelType.ATX,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltATX33V_Final * currentATX33V_Final
+                };
+
+                //Channel 2: 5Vsb        - 24pin ATX
+                //Only if I have a 24 pin connector installed
+                if (voltATX33V_Final > 1)
+                {
+                    float volt5VSB_Final = ReadVoltage(data, offset + 7);
+                    float current5VSB_Final = ReadCurrent(data, offset + 9);
+
+                    pmdChannels[39] = new PoweneticsChannel()
+                    {
+                        Measurand = PoweneticsMeasurand.Voltage,
+                        Name = "ATX_STB_Voltage",
+                        PmdChannelType = PoweneticsChannelType.ATX,
+                        TimeStamp = _sampleTimeStamp,
+                        Value = volt5VSB_Final
+                    };
+
+                    pmdChannels[40] = new PoweneticsChannel()
+                    {
+                        Measurand = PoweneticsMeasurand.Current,
+                        Name = "ATX_STB_Current",
+                        PmdChannelType = PoweneticsChannelType.ATX,
+                        TimeStamp = _sampleTimeStamp,
+                        Value = current5VSB_Final
+                    };
+
+                    pmdChannels[41] = new PoweneticsChannel()
+                    {
+                        Measurand = PoweneticsMeasurand.Power,
+                        Name = "ATX_STB_Power",
+                        PmdChannelType = PoweneticsChannelType.ATX,
+                        TimeStamp = _sampleTimeStamp,
+                        Value = volt5VSB_Final * current5VSB_Final
+                    };
+                }
+
+                //Channel 3: 12V         - 24pin ATX & 10pin ATX
+                float voltATX12V_Final = ReadVoltage(data, offset + 12);
+                float currentATX12V_Final = ReadCurrent(data, offset + 14);
+
+                pmdChannels[30] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Voltage,
+                    Name = "ATX_12V_Voltage",
+                    PmdChannelType = PoweneticsChannelType.ATX,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltATX12V_Final
+                };
+
+                pmdChannels[31] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Current,
+                    Name = "ATX_12V_Current",
+                    PmdChannelType = PoweneticsChannelType.ATX,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = currentATX12V_Final
+                };
+
+                pmdChannels[32] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Power,
+                    Name = "ATX_12V_Power",
+                    PmdChannelType = PoweneticsChannelType.ATX,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltATX12V_Final * currentATX12V_Final
+                };
+
+                //Channel 4: 5V          - 24pin ATX
+                float voltATX5V_Final = ReadVoltage(data, offset + 17);
+                float currentATX5V_Final = ReadCurrent(data, offset + 19);
+
+                pmdChannels[33] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Voltage,
+                    Name = "ATX_5V_Voltage",
+                    PmdChannelType = PoweneticsChannelType.ATX,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltATX5V_Final
+                };
+
+                pmdChannels[34] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Current,
+                    Name = "ATX_5V_Current",
+                    PmdChannelType = PoweneticsChannelType.ATX,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = currentATX5V_Final
+                };
+
+                pmdChannels[35] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Power,
+                    Name = "ATX_5V_Power",
+                    PmdChannelType = PoweneticsChannelType.ATX,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltATX5V_Final * currentATX5V_Final
+                };
+
+                //Channel 5: 12V1        - EPS #1
+                float voltEPS12V1_Final = ReadVoltage(data, offset + 22);
+                float currentEPS12V1_Final = ReadCurrent(data, offset + 24);
+
+                pmdChannels[21] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Voltage,
+                    Name = "EPS_Voltage1",
+                    PmdChannelType = PoweneticsChannelType.EPS,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltEPS12V1_Final
+                };
+
+                pmdChannels[24] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Current,
+                    Name = "EPS_Current1",
+                    PmdChannelType = PoweneticsChannelType.EPS,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = currentEPS12V1_Final
+                };
+
+                pmdChannels[27] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Power,
+                    Name = "EPS_Power1",
+                    PmdChannelType = PoweneticsChannelType.EPS,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltEPS12V1_Final * currentEPS12V1_Final
+                };
+
+                //Channel 7: 12V3        - EPS #3
+                float voltEPS12V3_Final = ReadVoltage(data, offset + 32);
+                float currentEPS12V3_Final = ReadCurrent(data, offset + 34);
+
+                pmdChannels[23] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Voltage,
+                    Name = "EPS_Voltage3",
+                    PmdChannelType = PoweneticsChannelType.EPS,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltEPS12V3_Final
+                };
+
+                pmdChannels[26] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Current,
+                    Name = "EPS_Current3",
+                    PmdChannelType = PoweneticsChannelType.EPS,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = currentEPS12V3_Final
+                };
+
+                pmdChannels[29] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Power,
+                    Name = "EPS_Power3",
+                    PmdChannelType = PoweneticsChannelType.EPS,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltEPS12V3_Final * currentEPS12V3_Final
+                };
+
+                //Channel 8: 12V2        - EPS #2
+                float voltEPS12V2_Final = ReadVoltage(data, offset + 37);
+                float currentEPS12V2_Final = ReadCurrent(data, offset + 39);
+
+                pmdChannels[22] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Voltage,
+                    Name = "EPS_Voltage2",
+                    PmdChannelType = PoweneticsChannelType.EPS,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltEPS12V2_Final
+                };
+
+                pmdChannels[25] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Current,
+                    Name = "EPS_Current2",
+                    PmdChannelType = PoweneticsChannelType.EPS,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = currentEPS12V2_Final
+                };
+
+                pmdChannels[28] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Power,
+                    Name = "EPS_Power2",
+                    PmdChannelType = PoweneticsChannelType.EPS,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltEPS12V2_Final * currentEPS12V2_Final
+                };
+
+                //Channel 9: 12V6        - PCIe 6+2 pin #3
+                float voltPCIe3_Final = ReadVoltage(data, offset + 42);
+                float currentPCIe3_Final = ReadCurrent(data, offset + 44);
+
+                pmdChannels[8] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Voltage,
+                    Name = "PCIe_12V_Voltage3",
+                    PmdChannelType = PoweneticsChannelType.PCIe,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltPCIe3_Final
+                };
+
+                pmdChannels[13] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Current,
+                    Name = "PCIe_12V_Current3",
+                    PmdChannelType = PoweneticsChannelType.PCIe,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = currentPCIe3_Final
+                };
+
+                pmdChannels[18] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Power,
+                    Name = "PCIe_12V_Power3",
+                    PmdChannelType = PoweneticsChannelType.PCIe,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltPCIe3_Final * currentPCIe3_Final
+                };
+
+                //Channel 10: 12V5       - PCIe 6+2 pin #2 & PCIe 12+4 pin #2
+                float voltPCIe2_Final = ReadVoltage(data, offset + 47);
+                float currentPCIe2_Final = ReadCurrent(data, offset + 49);
+
+                pmdChannels[7] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Voltage,
+                    Name = "PCIe_12V_Voltage2",
+                    PmdChannelType = PoweneticsChannelType.PCIe,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltPCIe2_Final
+                };
+
+                pmdChannels[12] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Current,
+                    Name = "PCIe_12V_Current2",
+                    PmdChannelType = PoweneticsChannelType.PCIe,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = currentPCIe2_Final
+                };
+
+                pmdChannels[17] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Power,
+                    Name = "PCIe_12V_Power2",
+                    PmdChannelType = PoweneticsChannelType.PCIe,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltPCIe2_Final * currentPCIe2_Final
+                };
+
+                //Channel 11: 3.3V OPTI  - PCIe Expansion Board
+                float voltPCIe_Slot_33_Final = ReadVoltage(data, offset + 52);
+                float currentPCIe_Slot_33_Final = ReadCurrent(data, offset + 54);
+
+                pmdChannels[3] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Voltage,
+                    Name = "PCIe_Slot_33V_Voltage",
+                    PmdChannelType = PoweneticsChannelType.PCIeSlot,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltPCIe_Slot_33_Final
+                };
+
+                pmdChannels[4] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Current,
+                    Name = "PCIe_Slot_33V_Current",
+                    PmdChannelType = PoweneticsChannelType.PCIeSlot,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = currentPCIe_Slot_33_Final
+                };
+
+                pmdChannels[5] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Power,
+                    Name = "PCIe_Slot_33V_Power",
+                    PmdChannelType = PoweneticsChannelType.PCIeSlot,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltPCIe_Slot_33_Final * currentPCIe_Slot_33_Final
+                };
+
+                //Channel 12: 12V OPTI   - PCIe Expansion Board
+                float voltPCIe_Slot_12_Final = ReadVoltage(data, offset + 57);
+                float currentPCIe_Slot_12_Final = ReadCurrent(data, offset + 59);
+
+                pmdChannels[0] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Voltage,
+                    Name = "PCIe_Slot_12V_Voltage",
+                    PmdChannelType = PoweneticsChannelType.PCIeSlot,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltPCIe_Slot_12_Final
+                };
+
+                pmdChannels[1] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Current,
+                    Name = "PCIe_Slot_12V_Current",
+                    PmdChannelType = PoweneticsChannelType.PCIeSlot,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = currentPCIe_Slot_12_Final
+                };
+
+                pmdChannels[2] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Power,
+                    Name = "PCIe_Slot_12V_Power",
+                    PmdChannelType = PoweneticsChannelType.PCIeSlot,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltPCIe_Slot_12_Final * currentPCIe_Slot_12_Final
+                };
+
+                //Channel 13: 12V4       - PCIe 6+2 pin #1 & PCIe 12+4 pin #1
+                float voltPCIe1_Final = ReadVoltage(data, offset + 62);
+                float currentPCIe1_Final = ReadCurrent(data, offset + 64);
+
+                pmdChannels[6] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Voltage,
+                    Name = "PCIe_12V_Voltage1",
+                    PmdChannelType = PoweneticsChannelType.PCIe,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltPCIe1_Final
+                };
+
+                pmdChannels[11] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Current,
+                    Name = "PCIe_12V_Current1",
+                    PmdChannelType = PoweneticsChannelType.PCIe,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = currentPCIe1_Final
+                };
+
+                pmdChannels[16] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Power,
+                    Name = "PCIe_12V_Power1",
+                    PmdChannelType = PoweneticsChannelType.PCIe,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = voltPCIe1_Final * currentPCIe1_Final
+                };
+
+                // Dummy set PCIe_12V_4
+                pmdChannels[9] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Voltage,
+                    Name = "PCIe_12V_Voltage4",
+                    PmdChannelType = PoweneticsChannelType.PCIe,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = 0
+                };
+
+                pmdChannels[14] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Current,
+                    Name = "PCIe_12V_Current4",
+                    PmdChannelType = PoweneticsChannelType.PCIe,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = 0
+                };
+
+                pmdChannels[19] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Power,
+                    Name = "PCIe_12V_Power4",
+                    PmdChannelType = PoweneticsChannelType.PCIe,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = 0
+                };
+
+                // Dummy set PCIe_12V_5
+                pmdChannels[10] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Voltage,
+                    Name = "PCIe_12V_Voltage5",
+                    PmdChannelType = PoweneticsChannelType.PCIe,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = 0
+                };
+
+                pmdChannels[15] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Current,
+                    Name = "PCIe_12V_Current5",
+                    PmdChannelType = PoweneticsChannelType.PCIe,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = 0
+                };
+
+                pmdChannels[20] = new PoweneticsChannel()
+                {
+                    Measurand = PoweneticsMeasurand.Power,
+                    Name = "PCIe_12V_Power5",
+                    PmdChannelType = PoweneticsChannelType.PCIe,
+                    TimeStamp = _sampleTimeStamp,
+                    Value = 0
+                };
+
+                _pmdChannelStream.OnNext(pmdChannels);
+                _sampleTimeStamp++;
             }
             catch { throw; }
         }
 
-        private int HexToInt(string value)
-        {
-            return int.Parse(value, System.Globalization.NumberStyles.HexNumber);
-        }
 
         private async Task ConfigurePMD()
         {

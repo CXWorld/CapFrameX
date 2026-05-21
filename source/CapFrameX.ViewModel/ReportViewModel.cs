@@ -18,6 +18,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -151,6 +152,8 @@ namespace CapFrameX.ViewModel
             var displayNameZeroDotOnePercentLowAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotOnePercentLowAverageFps);
             var displayNameZeroDotOnePercentLowIntegralFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotOnePercentLowIntegralFps);
             var displayNameMinFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.MinFps);
+            var displayNameAnimationErrorP99 = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AnimationErrorP99);
+            var displayNameAnimationErrorAverage = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AnimationErrorAverage);
             var displayNameAdaptiveSTDFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AdaptiveSTDFps);
             var displayNameCpuFpsPerWatt = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CpuFpsPerWatt);
             var displayNameGpuFpsPerWatt = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuFpsPerWatt);
@@ -191,6 +194,8 @@ namespace CapFrameX.ViewModel
                 (ShowP0Dot1LowAverageFPS ? "\t" + displayNameZeroDotOnePercentLowAverageFps : "") +
                 (ShowP0Dot1LowIntegralFPS ? "\t" + displayNameZeroDotOnePercentLowIntegralFps : "") +
                 (ShowMinFPS ? "\t" + displayNameMinFps : "") +
+                (ShowAnimationErrorP99 ? "\t" + displayNameAnimationErrorP99 : "") +
+                (ShowAnimationErrorAverage ? "\t" + displayNameAnimationErrorAverage : "") +
                 (ShowAdaptiveSTD ? "\t" + displayNameAdaptiveSTDFps : "") +
                 (ShowCpuFpsPerWatt ? "\t" + displayNameCpuFpsPerWatt : "") +
                 (ShowGpuFpsPerWatt ? "\t" + displayNameGpuFpsPerWatt : "") +
@@ -235,6 +240,8 @@ namespace CapFrameX.ViewModel
                     (ShowP0Dot1LowAverageFPS ? "\t" + reportInfo.ZeroDotOnePercentLowAverageFps.ToString(cultureInfo) : "") +
                     (ShowP0Dot1LowIntegralFPS ? "\t" + reportInfo.ZeroDotOnePercentLowIntegralFps.ToString(cultureInfo) : "") +
                     (ShowMinFPS ? "\t" + reportInfo.MinFps.ToString(cultureInfo) : "") +
+                    (ShowAnimationErrorP99 ? "\t" + reportInfo.AnimationErrorP99.ToString(cultureInfo) : "") +
+                    (ShowAnimationErrorAverage ? "\t" + reportInfo.AnimationErrorAverage.ToString(cultureInfo) : "") +
                     (ShowAdaptiveSTD ? "\t" + reportInfo.AdaptiveSTDFps.ToString(cultureInfo) : "") +
                     (ShowCpuFpsPerWatt ? "\t" + reportInfo.CpuFpsPerWatt.ToString(cultureInfo) : "") +
                     (ShowGpuFpsPerWatt ? "\t" + reportInfo.GpuFpsPerWatt.ToString(cultureInfo) : "") +
@@ -289,11 +296,26 @@ namespace CapFrameX.ViewModel
 
             double GeMetricValue(IList<double> sequence, EMetric metric) =>
                 _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
+            double GetAnimationErrorP99MetricValue(IList<double> sequence) =>
+                sequence.Any()
+                    ? Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(sequence, 0.99),
+                        _appConfiguration.FpsValuesRoundingDigits, MidpointRounding.AwayFromZero)
+                    : double.NaN;
+            double GetAnimationErrorAverageMetricValue(IList<double> sequence) =>
+                sequence.Any()
+                    ? Math.Round(sequence.Average(), _appConfiguration.FpsValuesRoundingDigits, MidpointRounding.AwayFromZero)
+                    : double.NaN;
             var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
             var displayTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToList();
             var samples = _appConfiguration.UseDisplayChangeMetrics ? displayTimes : frameTimes;
 
             var GpuActiveTimes = session.Runs.SelectMany(r => r.CaptureData.GpuActive).ToList();
+            var animationErrorsAbs = session.Runs
+                .Where(run => !run.CaptureData.AnimationError.IsNullOrEmpty())
+                .SelectMany(run => run.CaptureData.AnimationError)
+                .Where(animationError => !double.IsNaN(animationError))
+                .Select(animationError => Math.Abs(animationError))
+                .ToList();
             var recordTime = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
             var inputLagTimes = session.CalculateInputLagTimes(EInputLagType.Expected).Where(t => !double.IsNaN(t));
 
@@ -312,6 +334,8 @@ namespace CapFrameX.ViewModel
             var p1_averageLowIntegral = GeMetricValue(samples, EMetric.OnePercentLowIntegral);
             var p0dot1_averageLowIntegral = GeMetricValue(samples, EMetric.ZerodotOnePercentLowIntegral);
             var min = GeMetricValue(samples, EMetric.Min);
+            var animationErrorP99 = GetAnimationErrorP99MetricValue(animationErrorsAbs);
+            var animationErrorAverage = GetAnimationErrorAverageMetricValue(animationErrorsAbs);
             var adaptiveStandardDeviation = GeMetricValue(samples, EMetric.AdaptiveStd);
 
             var cpuFpsPerWatt = ReportUsePMDValues ? _frametimeStatisticProvider
@@ -361,6 +385,8 @@ namespace CapFrameX.ViewModel
                 ZeroDotOnePercentLowAverageFps = p0dot1_averageLowAverage,
                 ZeroDotOnePercentLowIntegralFps = p0dot1_averageLowIntegral,
                 MinFps = min,
+                AnimationErrorP99 = animationErrorP99,
+                AnimationErrorAverage = animationErrorAverage,
                 AdaptiveSTDFps = adaptiveStandardDeviation,
                 CpuFpsPerWatt = cpuFpsPerWatt,
                 GpuFpsPerWatt = gpuFpsPerWatt,
@@ -468,7 +494,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        void IDropTarget.Drop(IDropInfo dropInfo)
+        async void IDropTarget.Drop(IDropInfo dropInfo)
         {
             if (dropInfo != null)
             {
@@ -476,21 +502,146 @@ namespace CapFrameX.ViewModel
                 {
                     if (frameworkElement.Name == "ReportDataGrid")
                     {
-                        if (dropInfo.Data is IFileRecordInfo recordInfo)
+                        foreach (IFileRecordInfo recordInfo in await GetDroppedRecordInfosAsync(dropInfo.Data))
                         {
                             ReportInfo reportInfo = GetReportInfoFromRecordInfo(recordInfo);
                             AddReportRecord(reportInfo);
                         }
-                        else if (dropInfo.Data is IEnumerable<IFileRecordInfo> recordInfos)
-                        {
-                            foreach (var item in recordInfos)
-                            {
-                                ReportInfo reportInfo = GetReportInfoFromRecordInfo(item);
-                                AddReportRecord(reportInfo);
-                            }
-                        }
                     }
                 }
+            }
+        }
+
+        private async System.Threading.Tasks.Task<List<IFileRecordInfo>> GetDroppedRecordInfosAsync(object droppedData)
+        {
+            if (droppedData is IFileRecordInfo recordInfo)
+            {
+                return new List<IFileRecordInfo> { recordInfo };
+            }
+
+            if (droppedData is IEnumerable<IFileRecordInfo> recordInfos)
+            {
+                return recordInfos.Where(info => info != null).ToList();
+            }
+
+            if (droppedData is TreeViewItem treeViewItem)
+            {
+                if (treeViewItem.Tag is DirectoryInfo directoryInfo)
+                {
+                    return await GetRecordInfosByPathAsync(directoryInfo.FullName);
+                }
+
+                if (treeViewItem.Tag is FileInfo fileInfo)
+                {
+                    return await GetRecordInfosByPathAsync(fileInfo.FullName);
+                }
+            }
+
+            if (droppedData is DirectoryInfo droppedDirectory)
+            {
+                return await GetRecordInfosByPathAsync(droppedDirectory.FullName);
+            }
+
+            if (droppedData is FileInfo droppedFile)
+            {
+                return await GetRecordInfosByPathAsync(droppedFile.FullName);
+            }
+
+            if (droppedData is string droppedPath)
+            {
+                return await GetRecordInfosByPathAsync(droppedPath);
+            }
+
+            if (droppedData is string[] droppedPaths)
+            {
+                return await GetRecordInfosByPathsAsync(droppedPaths);
+            }
+
+            if (droppedData is System.Windows.IDataObject dataObject && dataObject.GetDataPresent(System.Windows.DataFormats.FileDrop))
+            {
+                if (dataObject.GetData(System.Windows.DataFormats.FileDrop) is string[] fileDropPaths)
+                {
+                    return await GetRecordInfosByPathsAsync(fileDropPaths);
+                }
+            }
+
+            return new List<IFileRecordInfo>();
+        }
+
+        private async System.Threading.Tasks.Task<List<IFileRecordInfo>> GetRecordInfosByPathAsync(string path)
+            => await GetRecordInfosByPathsAsync(new[] { path });
+
+        private async System.Threading.Tasks.Task<List<IFileRecordInfo>> GetRecordInfosByPathsAsync(IEnumerable<string> paths)
+        {
+            if (paths == null)
+            {
+                return new List<IFileRecordInfo>();
+            }
+
+            var collectedPaths = new List<string>();
+            foreach (string path in paths.Where(path => !string.IsNullOrWhiteSpace(path)))
+            {
+                try
+                {
+                    if (Directory.Exists(path))
+                    {
+                        collectedPaths.AddRange(Directory.EnumerateFiles(path, "*.*", SearchOption.AllDirectories));
+                    }
+                    else if (File.Exists(path))
+                    {
+                        collectedPaths.Add(path);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error while enumerating dropped path {path}", path);
+                }
+            }
+
+            List<string> filePathList = collectedPaths
+                .Where(filePath =>
+                {
+                    string extension = Path.GetExtension(filePath);
+                    return extension.Equals(".json", StringComparison.OrdinalIgnoreCase)
+                        || extension.Equals(".csv", StringComparison.OrdinalIgnoreCase);
+                })
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (filePathList.Count == 0)
+            {
+                return new List<IFileRecordInfo>();
+            }
+
+            int maxParallelism = Math.Min(Environment.ProcessorCount, 8);
+            var semaphore = new System.Threading.SemaphoreSlim(maxParallelism, maxParallelism);
+
+            var loadingTasks = filePathList.Select(async filePath =>
+            {
+                await semaphore.WaitAsync();
+                try
+                {
+                    return await _recordManager.GetFileRecordInfo(new FileInfo(filePath));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error while processing dropped path {path}", filePath);
+                    return null;
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            }).ToList();
+
+            try
+            {
+                IFileRecordInfo[] results = await System.Threading.Tasks.Task.WhenAll(loadingTasks);
+                return results.Where(info => info != null).ToList();
+            }
+            finally
+            {
+                semaphore.Dispose();
             }
         }
     }

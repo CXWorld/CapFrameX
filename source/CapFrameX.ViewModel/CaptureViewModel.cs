@@ -462,6 +462,8 @@ namespace CapFrameX.ViewModel
 
         public ICommand SaveCaptureTimeCommand { get; }
 
+        public ICommand ShowProcessDetailsCommand { get; }
+
         public Array LoggingPeriodItemsSource => new[] { 250, 500 };
 
         public CaptureViewModel(IAppConfiguration appConfiguration,
@@ -499,6 +501,7 @@ namespace CapFrameX.ViewModel
             AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
             AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
             ResetPresentMonCommand = new DelegateCommand(OnResetCaptureProcess);
+            ShowProcessDetailsCommand = new DelegateCommand(ShowProcessDetails);
             UpdateLogCommand = new DelegateCommand(() => _logEntryManager?.UpdateFilter());
             ClearLogCommand = new DelegateCommand(() => _logEntryManager?.ClearLog());
             SaveCaptureTimeCommand = new DelegateCommand(() => OnSaveCaptureTime(CaptureTimeString, _currentProcessToCapture));
@@ -572,10 +575,11 @@ namespace CapFrameX.ViewModel
                 _overlayService.SetCaptureServiceStatus("Capture service ready...");
 
 
-            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.OverlayConfigChanged>>().Subscribe(msg =>
-            {
-                OnUseRunHistoryChanged();
-            });
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.OverlayConfigChanged>>()
+                .Subscribe(msg =>
+                {
+                    OnUseRunHistoryChanged();
+                });
 
 
             InitializeFrametimeModel();
@@ -726,7 +730,8 @@ namespace CapFrameX.ViewModel
             return new PresentMonServiceConfiguration
             {
                 RedirectOutputStream = true,
-                ExcludeProcesses = _processList.GetIgnoredProcessNames().ToList()
+                ExcludeProcesses = _processList.GetIgnoredProcessNames().ToList(),
+                TrackPcLatency = _appConfiguration.UsePcLatency
             };
         }
 
@@ -906,6 +911,22 @@ namespace CapFrameX.ViewModel
             _updateCurrentProcess?.Publish(new ViewMessages.CurrentProcessToCapture(currentProcess, processId));
         }
 
+        private void ShowProcessDetails()
+        {
+            if (!string.IsNullOrEmpty(SelectedProcessToCapture))
+            {
+                var info = ProcessesInfo.FirstOrDefault(x => x.Item1 == SelectedProcessToCapture);
+                if (info.Item1 != null)
+                {
+                    System.Windows.MessageBox.Show(
+                        $"Name: {info.Item1}\nProcess-ID (PID): {info.Item2}",
+                        "Process details",
+                        System.Windows.MessageBoxButton.OK,
+                        System.Windows.MessageBoxImage.Information);
+                }
+            }
+        }
+
         private void UdateCustomCaptureTime(string currentProcess)
         {
             if (currentProcess != null)
@@ -1066,7 +1087,6 @@ namespace CapFrameX.ViewModel
 
 
         //Run history and aggregation options
-
         private void OnUseRunHistoryChanged()
         {
             var historyEntry = _overlayEntryProvider.GetOverlayEntry("RunHistory");

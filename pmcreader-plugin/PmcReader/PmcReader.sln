@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30011.22
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PmcReader", "PmcReader.csproj", "{E43329E2-1CCB-4276-ADBC-D292EED22170}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E43329E2-1CCB-4276-ADBC-D292EED22170}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E43329E2-1CCB-4276-ADBC-D292EED22170}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E43329E2-1CCB-4276-ADBC-D292EED22170}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E43329E2-1CCB-4276-ADBC-D292EED22170}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C6109254-7E89-4EA3-865F-09E37919EA09}
+	EndGlobalSection
+EndGlobal

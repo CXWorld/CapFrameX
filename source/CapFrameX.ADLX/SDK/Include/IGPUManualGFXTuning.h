@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 #ifndef ADLX_IGPUMANUALGFXTUNING_H
@@ -161,6 +161,8 @@ namespace adlx
         *
         *@retvalues
         *@ENG_START_DOX  If the GPU tuning states are successfully set, __ADLX_OK__ is returned.<br>
+        * If the one click auto tuning feature is enabled, __ADLX_RESET_NEEDED__ is returned.<br>
+        * In this case, the overdrive feature must be reset to factory setting using @ref DOX_IADLXGPUTuningServices_ResetToFactory.<Br>
         * If the GPU tuning states are not successfully set, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
@@ -279,6 +281,8 @@ namespace adlx
         *
         *@retvalues
         *@ENG_START_DOX  If the minimum frequency value is successfully set, __ADLX_OK__ is returned.<br>
+        * If the one click auto tuning feature is enabled, __ADLX_RESET_NEEDED__ is returned.<br>
+        * In this case, the overdrive feature must be reset to factory setting using @ref DOX_IADLXGPUTuningServices_ResetToFactory.<Br>
         * If the minimum frequency value is not successfully set, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
@@ -358,10 +362,12 @@ namespace adlx
         *@codeEnd
         *
         *@params
-        *@paramrow{1.,[in],maxFreq,adlx_int,@ENG_START_DOX The new maximum frequency (offset) value (in MHz). @ENG_END_DOX}
+        *@paramrow{1.,[in],maxFreq,adlx_int,@ENG_START_DOX The new maximum frequency (in MHz) value. @ENG_END_DOX}
         *
         *@retvalues
         *@ENG_START_DOX  If the maximum frequency (offset) value is successfully set, __ADLX_OK__ is returned.<br>
+        * If the one click auto tuning feature is enabled, __ADLX_RESET_NEEDED__ is returned.<br>
+        * In this case, the overdrive feature must be reset to factory setting using @ref DOX_IADLXGPUTuningServices_ResetToFactory.<Br>
         * If the maximum frequency (offset) value is not successfully set, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
@@ -395,7 +401,7 @@ namespace adlx
         *
         * @addinfo
         * @ENG_START_DOX
-        * Some GPUs support GPU voltage (offset) adjustment within a range.
+        * Some GPUs support GPU voltage adjustment within a range.
         * Start from Navi4+, the GPU voltage is an offset from the base voltage.
         * @ENG_END_DOX
         *
@@ -414,7 +420,7 @@ namespace adlx
         *@codeEnd
         *
         *@params
-        *@paramrow{1.,[out],volt,adlx_int*,@ENG_START_DOX The pointer to a variable where the GPU voltage (offset) value (in mV) is returned. @ENG_END_DOX}
+        *@paramrow{1.,[out],volt,adlx_int*,@ENG_START_DOX The pointer to a variable where the GPU voltage (in mV) is returned. @ENG_END_DOX}
         *
         *@retvalues
         *@ENG_START_DOX  If the clock voltage (offset) value is successfully returned, __ADLX_OK__ is returned.<br>
@@ -423,7 +429,7 @@ namespace adlx
         *
         * @addinfo
         * @ENG_START_DOX
-        * Some GPUs support GPU voltage (offset) adjustment within a range.
+        * Some GPUs support GPU voltage adjustment within a range.
         * Start from Navi4+, the GPU voltage is an offset from the base voltage.
         * @ENG_END_DOX
         *
@@ -438,20 +444,22 @@ namespace adlx
         *
         *@syntax
         *@codeStart
-        * @ref ADLX_RESULT    SetGPUVoltage (offset) (adlx_int volt)
+        * @ref ADLX_RESULT    SetGPUVoltage (adlx_int volt)
         *@codeEnd
         *
         *@params
-        *@paramrow{1.,[in],volt,adlx_int,@ENG_START_DOX The new GPU voltage  (offset) value (in mV). @ENG_END_DOX}
+        *@paramrow{1.,[in],volt,adlx_int,@ENG_START_DOX The new GPU voltage (in mV). @ENG_END_DOX}
         *
         *@retvalues
         *@ENG_START_DOX  If the clock voltage (offset) value is successfully set, __ADLX_OK__ is returned.<br>
+        * If the one click auto tuning feature is enabled, __ADLX_RESET_NEEDED__ is returned.<br>
+        * In this case, the overdrive feature must be reset to factory setting using @ref DOX_IADLXGPUTuningServices_ResetToFactory.<Br>
         * If the clock voltage (offset) value is not successfully set, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         *
         * @addinfo
         * @ENG_START_DOX
-        * Some GPUs support GPU voltage (offset) adjustment within a range.
+        * Some GPUs support GPU voltage adjustment within a range.
         * Start from Navi4+, the GPU voltage is an offset from the base voltage.
         * @ENG_END_DOX
         *
@@ -504,7 +512,7 @@ namespace adlx
 
         /**
         *@page DOX_IADLXManualGraphicsTuning2_1_GetGPUMinFrequencyDefault GetGPUMinFrequencyDefault
-        *@ENG_START_DOX @brief Gets the default minimum frequency on a GPU. @ENG_END_DOX
+        *@ENG_START_DOX @brief Gets the default minimum frequency of a GPU. @ENG_END_DOX
         *
         *@syntax
         *@codeStart
@@ -526,7 +534,7 @@ namespace adlx
 
         /**
         *@page DOX_IADLXManualGraphicsTuning2_1_GetGPUMaxFrequencyDefault GetGPUMaxFrequencyDefault
-        * @ENG_START_DOX @brief Gets the default maximum frequency (offset) on a GPU. @ENG_END_DOX
+        * @ENG_START_DOX @brief Gets the default maximum frequency of a GPU. @ENG_END_DOX
         * 
         * @syntax
         * @codeStart
@@ -534,11 +542,11 @@ namespace adlx
         * @codeEnd
         * 
         * @params
-        * @paramrow{1.,[out],defaultVal,adlx_int*,@ENG_START_DOX The pointer to a variable where the default maximum frequency (offset) value (in MHz) is returned. @ENG_END_DOX}
+        * @paramrow{1.,[out],defaultVal,adlx_int*,@ENG_START_DOX The pointer to a variable where the default maximum frequency (in MHz) is returned. @ENG_END_DOX}
         * 
         * @retvalues
-        * @ENG_START_DOX  If the default maximum frequency  (offset) is successfully returned, __ADLX_OK__ is returned.<br>
-        * If the default maximum frequency  (offset) is not successfully returned, an error code is returned.<br>
+        * @ENG_START_DOX  If the default maximum frequency is successfully returned, __ADLX_OK__ is returned.<br>
+        * If the default maximum frequency is not successfully returned, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         * 
         * @copydoc IADLXManualGraphicsTuning2_1_REQ_TABLE
@@ -548,7 +556,7 @@ namespace adlx
 
         /**
         *@page DOX_IADLXManualGraphicsTuning2_1_GetGPUVoltageDefault GetGPUVoltageDefault
-        * @ENG_START_DOX @brief Gets the default voltage (offset) on a GPU. @ENG_END_DOX
+        * @ENG_START_DOX @brief Gets the default voltage on a GPU. @ENG_END_DOX
         * 
         * @syntax
         * @codeStart
@@ -556,11 +564,11 @@ namespace adlx
         * @codeEnd
         * 
         * @params
-        * @paramrow{1.,[out],defaultVal,adlx_int*,@ENG_START_DOX The pointer to a variable where the default voltage (offset) value (in mV) is returned. @ENG_END_DOX}
+        * @paramrow{1.,[out],defaultVal,adlx_int*,@ENG_START_DOX The pointer to a variable where the default voltage (in mV) is returned. @ENG_END_DOX}
         * 
         * @retvalues
-        * @ENG_START_DOX  If the default voltage (offset) is successfully returned, __ADLX_OK__ is returned.<br>
-        * If the default voltage (offset) is not successfully returned, an error code is returned.<br>
+        * @ENG_START_DOX  If the default voltage is successfully returned, __ADLX_OK__ is returned.<br>
+        * If the default voltage is not successfully returned, an error code is returned.<br>
         * Refer to @ref ADLX_RESULT for success codes and error codes.<br> @ENG_END_DOX
         * 
         * @copydoc IADLXManualGraphicsTuning2_1_REQ_TABLE

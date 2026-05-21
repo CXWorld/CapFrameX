@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright Advanced Micro Devices, Inc. All rights reserved.
 //
 //-------------------------------------------------------------------------------------------------
 #include "ADLXHelper.h"
@@ -35,6 +35,12 @@ typedef struct ADLXHelper
 
 	//ADLX function - initialize
 	ADLXInitialize_Fn m_initFn;
+
+	//ADLX function - initialize with incompatible driver
+	ADLXInitialize2_Fn m_init2FnEx;
+
+	//ADLX function - initialize
+	ADLXInitialize2_Fn m_init2Fn;
 
 	//ADLX function - terminate
 	ADLXTerminate_Fn m_terminateFn;
@@ -132,12 +138,18 @@ ADLX_RESULT LoadADLXDll()
 			g_ADLX.m_fullVersionFn = (ADLXQueryFullVersion_Fn)adlx_get_proc_address(g_ADLX.m_hDLLHandle, ADLX_QUERY_FULL_VERSION_FUNCTION_NAME);
 			g_ADLX.m_versionFn = (ADLXQueryVersion_Fn)adlx_get_proc_address(g_ADLX.m_hDLLHandle, ADLX_QUERY_VERSION_FUNCTION_NAME);
 			g_ADLX.m_initWithADLFn = (ADLXInitializeWithCallerAdl_Fn)adlx_get_proc_address(g_ADLX.m_hDLLHandle, ADLX_INIT_WITH_CALLER_ADL_FUNCTION_NAME);
-			g_ADLX.m_initFnEx = (ADLXInitialize_Fn)adlx_get_proc_address(g_ADLX.m_hDLLHandle, ADLX_INIT_WITH_INCOMPATIBLE_DRIVER_FUNCTION_NAME);
-			g_ADLX.m_initFn = (ADLXInitialize_Fn)adlx_get_proc_address(g_ADLX.m_hDLLHandle, ADLX_INIT_FUNCTION_NAME);
+			g_ADLX.m_init2FnEx = (ADLXInitialize2_Fn)adlx_get_proc_address(g_ADLX.m_hDLLHandle, ADLX_INIT2_WITH_INCOMPATIBLE_DRIVER_FUNCTION_NAME);
+			g_ADLX.m_init2Fn = (ADLXInitialize2_Fn)adlx_get_proc_address(g_ADLX.m_hDLLHandle, ADLX_INIT2_FUNCTION_NAME);
+			if (g_ADLX.m_init2FnEx == NULL)
+			{
+				//try to get the ADLXInitialize function pointers if ADLXInitialize2 is not found
+				g_ADLX.m_initFnEx = (ADLXInitialize_Fn)adlx_get_proc_address(g_ADLX.m_hDLLHandle, ADLX_INIT_WITH_INCOMPATIBLE_DRIVER_FUNCTION_NAME);
+				g_ADLX.m_initFn = (ADLXInitialize_Fn)adlx_get_proc_address(g_ADLX.m_hDLLHandle, ADLX_INIT_FUNCTION_NAME);
+			}
 			g_ADLX.m_terminateFn = (ADLXTerminate_Fn)adlx_get_proc_address(g_ADLX.m_hDLLHandle, ADLX_TERMINATE_FUNCTION_NAME);
 		}
 	}
-	if (g_ADLX.m_fullVersionFn && g_ADLX.m_versionFn && g_ADLX.m_initWithADLFn && g_ADLX.m_initFnEx && g_ADLX.m_initFn && g_ADLX.m_terminateFn)
+	if (g_ADLX.m_fullVersionFn && g_ADLX.m_versionFn && g_ADLX.m_initWithADLFn && ((g_ADLX.m_init2FnEx && g_ADLX.m_init2Fn) || (g_ADLX.m_initFnEx && g_ADLX.m_initFn)) && g_ADLX.m_terminateFn)
 	{
 		return ADLX_OK;
 	}
@@ -161,11 +173,17 @@ ADLX_RESULT InitializePrivate (adlx_handle  adlContext, ADLX_ADL_Main_Memory_Fre
 		{
 			if (useIncompatibleDriver)
 			{
-				res = g_ADLX.m_initFnEx(ADLX_FULL_VERSION, &g_ADLX.m_pSystemServices);
+				if (g_ADLX.m_init2FnEx)
+					res = g_ADLX.m_init2FnEx(ADLX_FULL_VERSION, &g_ADLX.m_pSystemServices, &g_ADLX.m_pAdlMapping);
+				else
+					res = g_ADLX.m_initFnEx(ADLX_FULL_VERSION, &g_ADLX.m_pSystemServices);
 			}
 			else
 			{
-				res = g_ADLX.m_initFn(ADLX_FULL_VERSION, &g_ADLX.m_pSystemServices);
+				if (g_ADLX.m_init2Fn)
+					res = g_ADLX.m_init2Fn(ADLX_FULL_VERSION, &g_ADLX.m_pSystemServices, &g_ADLX.m_pAdlMapping);
+				else
+					res = g_ADLX.m_initFn(ADLX_FULL_VERSION, &g_ADLX.m_pSystemServices);
 			}
 		}
 		return res;

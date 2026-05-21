@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -33,6 +32,7 @@ namespace CapFrameX.ViewModel
         private readonly ISensorService _sensorService;
         private readonly IEventAggregator _eventAggregator;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly IPathService _pathService;
         private readonly ISensorEntryProvider _sensorEntryProvider;
         private readonly IRecordDataServer _localRecordDataServer;
         private readonly ILogger<SensorViewModel> _logger;
@@ -182,6 +182,7 @@ namespace CapFrameX.ViewModel
         public SensorViewModel(IAppConfiguration appConfiguration,
             IEventAggregator eventAggregator,
             ISensorService sensorService,
+            IPathService pathService,
             ISensorEntryProvider sensorEntryProvider,
             ILogger<SensorViewModel> logger,
             CaptureManager captureManager,
@@ -191,6 +192,7 @@ namespace CapFrameX.ViewModel
             _appConfiguration = appConfiguration;
             _eventAggregator = eventAggregator;
             _sensorService = sensorService;
+            _pathService = pathService;
             _sensorEntryProvider = sensorEntryProvider;
             _logger = logger;
             _captureManager = captureManager;
@@ -238,10 +240,15 @@ namespace CapFrameX.ViewModel
                     }
                 });
             });
-            _sensorEntryProvider.ConfigChanged = () => SaveButtonIsEnable = true;
 
-            Task.Run(async () => await SetWrappedSensorEntries());
+            _sensorEntryProvider.ConfigChanged = () => SaveButtonIsEnable = true;
             SubscribeToUpdateSession();
+
+            Task.Run(async () =>
+            {
+                await _sensorService.SensorServiceCompletionSource.Task;
+                await SetWrappedSensorEntries();
+            });
         }
 
         private void OnResetToDefault()
@@ -265,15 +272,15 @@ namespace CapFrameX.ViewModel
         private void SubscribeToUpdateSession()
         {
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
-                            .Subscribe(msg =>
-                            {
-                                _session = msg.CurrentSession;
-                                RecordInfo = msg.RecordInfo;
-                                UpdateSensorSessionReport(msg.CurrentSession);
-                                CopyRawSensorsEnable = true;
-                                _selectedRecordChanged = true;
-                                SensorStatisticsText = "Sensor statistics for selected record";
-                            });
+                .Subscribe(msg =>
+                {
+                    _session = msg.CurrentSession;
+                    RecordInfo = msg.RecordInfo;
+                    UpdateSensorSessionReport(msg.CurrentSession);
+                    CopyRawSensorsEnable = true;
+                    _selectedRecordChanged = true;
+                    SensorStatisticsText = "Sensor statistics for selected record";
+                });
         }
 
         private void UpdateSensorSessionReport(ISession session)
@@ -288,7 +295,7 @@ namespace CapFrameX.ViewModel
             foreach (var item in items)
             {
                 SensorReportItems.Add(item);
-            };
+            }
         }
 
         private void AggregateSensorDataOfSessions(IEnumerable<ISession> sessions)
@@ -304,7 +311,7 @@ namespace CapFrameX.ViewModel
                     foreach (var item in items)
                     {
                         SensorReportItems.Add(item);
-                    };
+                    }                   
                 });
             }
         }
@@ -379,7 +386,7 @@ namespace CapFrameX.ViewModel
         {
             try
             {
-                Process.Start(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CapFrameX", "Configuration"));
+                Process.Start(_pathService.ConfigFolder);
             }
             catch { }
         }

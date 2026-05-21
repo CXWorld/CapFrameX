@@ -1,0 +1,82 @@
+<Window x:Class="PmcReader.TestApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="PmcReader Plugin Test"
+        Height="720"
+        Width="760"
+        Loaded="Window_OnLoaded"
+        Closed="Window_OnClosed">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="PmcReader Plugin Test App"
+                   FontSize="20"
+                   FontWeight="SemiBold" />
+        <StackPanel Grid.Row="1"
+                    Orientation="Horizontal"
+                    Margin="0,10,0,10">
+            <TextBlock Text="Update interval:"
+                       VerticalAlignment="Center" />
+            <ComboBox x:Name="IntervalComboBox"
+                      Width="100"
+                      Margin="8,0,0,0"
+                      SelectionChanged="IntervalComboBox_OnSelectionChanged">
+                <ComboBoxItem Content="250 ms" Tag="00:00:00.250" />
+                <ComboBoxItem Content="500 ms" Tag="00:00:00.500" />
+                <ComboBoxItem Content="1 s" Tag="00:00:01" IsSelected="True" />
+                <ComboBoxItem Content="2 s" Tag="00:00:02" />
+                <ComboBoxItem Content="5 s" Tag="00:00:05" />
+            </ComboBox>
+            <Button x:Name="RefreshButton"
+                    Content="Refresh now"
+                    Margin="12,0,0,0"
+                    Click="RefreshButton_OnClick" />
+        </StackPanel>
+        <DataGrid Grid.Row="2"
+                  ItemsSource="{Binding Sensors}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  HeadersVisibility="Column"
+                  GridLinesVisibility="Horizontal">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Sensor" Binding="{Binding Name}" Width="*" />
+                <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="150" />
+                <DataGridTextColumn Header="Unit" Binding="{Binding Unit}" Width="90" />
+            </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel Grid.Row="3"
+                    Orientation="Vertical"
+                    Margin="0,10,0,0">
+            <TextBlock Text="Diagnostics"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,6" />
+            <TextBox x:Name="DiagnosticsTextBox"
+                     Height="280"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Auto"
+                     IsReadOnly="True" />
+        </StackPanel>
+        <StackPanel Grid.Row="4"
+                    Orientation="Horizontal"
+                    Margin="0,10,0,0">
+            <TextBlock Text="Last update:"
+                       VerticalAlignment="Center" />
+            <TextBlock x:Name="LastUpdateText"
+                       Margin="6,0,0,0"
+                       VerticalAlignment="Center" />
+            <TextBlock x:Name="StatusText"
+                       Margin="16,0,0,0"
+                       Foreground="DarkSlateGray"
+                       VerticalAlignment="Center" />
+        </StackPanel>
+    </Grid>
+</Window>
