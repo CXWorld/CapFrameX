@@ -4,6 +4,20 @@
 
 > **Decision:** CapFrameX should not move to Electron. Electron would duplicate Chromium plus Node.js and increase runtime size and attack surface without solving the hard parts of CapFrameX: capture orchestration, native sensor integrations, overlay control, driver/tool interop, and low-overhead real-time data streaming. Use CEF for the UI runtime and keep performance-critical and privileged work in .NET/native components.
 
+## Implementation Status
+
+Last updated: 2026-05-21
+
+The first backend/frontend bridge slice is implemented in `CapFrameX.Service` and `CapFrameX.UI`:
+
+- `CapFrameX.Service.Contracts` contains shared DTOs for app metadata, health, capabilities, capture status, records, and bridge events.
+- `CapFrameX.Service.Api` exposes typed localhost HTTP endpoints and `/api/events` as a server-sent event stream.
+- The Angular app consumes the service through a typed API service and an `EventSource` bridge client.
+- The bridge currently covers health/version/capabilities/status/records placeholders plus heartbeat events.
+- High-frequency capture and sensor streaming is not implemented yet and should be designed before wiring live frametime or sensor data to Angular.
+
+Detailed progress is tracked in `dev-plans/CapFrameX_Service_Redesign_Development_Log.md`.
+
 ## 1. Target Architecture
 
 ```
