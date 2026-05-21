@@ -50,6 +50,10 @@ namespace CapFrameX.Data
         public double ZeroDotOnePercentLowIntegralFps { get; set; }
         [DisplayName("Min FPS")]
 		public double MinFps { get; set; }
+        [DisplayName("P99 |Animation Error| (ms)")]
+        public double AnimationErrorP99 { get; set; }
+        [DisplayName("Average |Animation Error| (ms)")]
+        public double AnimationErrorAverage { get; set; }
 		[DisplayName("Adaptive STDEV")]
 		public double AdaptiveSTDFps { get; set; }
 		[DisplayName("CPU FPS / 10W")]

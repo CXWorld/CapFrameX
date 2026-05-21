@@ -74,6 +74,17 @@ namespace CapFrameX.Statistics.NetStandard
             return FilterDataWithinTimeWindow(frameStartTimes, cpuActiveTimes, startTime, endTime);
         }
 
+        public static IList<double> GetAnimationErrorTimeWindow(this ISession session, double startTime, double endTime)
+        {
+            var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
+            var animationErrors = session.Runs.SelectMany(r => r.CaptureData.AnimationError).ToArray();
+
+            return frameStartTimes.Zip(animationErrors, (t, y) => new { t, y })
+                .Where(pair => pair.t >= startTime && pair.t <= endTime && !double.IsNaN(pair.y))
+                .Select(pair => pair.y)
+                .ToList();
+        }
+
         public static IList<Point> GetFrametimePointsTimeWindow(this ISession session, double startTime, double endTime,
             IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
         {

@@ -152,6 +152,8 @@ namespace CapFrameX.ViewModel
             var displayNameZeroDotOnePercentLowAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotOnePercentLowAverageFps);
             var displayNameZeroDotOnePercentLowIntegralFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotOnePercentLowIntegralFps);
             var displayNameMinFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.MinFps);
+            var displayNameAnimationErrorP99 = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AnimationErrorP99);
+            var displayNameAnimationErrorAverage = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AnimationErrorAverage);
             var displayNameAdaptiveSTDFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AdaptiveSTDFps);
             var displayNameCpuFpsPerWatt = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CpuFpsPerWatt);
             var displayNameGpuFpsPerWatt = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuFpsPerWatt);
@@ -192,6 +194,8 @@ namespace CapFrameX.ViewModel
                 (ShowP0Dot1LowAverageFPS ? "\t" + displayNameZeroDotOnePercentLowAverageFps : "") +
                 (ShowP0Dot1LowIntegralFPS ? "\t" + displayNameZeroDotOnePercentLowIntegralFps : "") +
                 (ShowMinFPS ? "\t" + displayNameMinFps : "") +
+                (ShowAnimationErrorP99 ? "\t" + displayNameAnimationErrorP99 : "") +
+                (ShowAnimationErrorAverage ? "\t" + displayNameAnimationErrorAverage : "") +
                 (ShowAdaptiveSTD ? "\t" + displayNameAdaptiveSTDFps : "") +
                 (ShowCpuFpsPerWatt ? "\t" + displayNameCpuFpsPerWatt : "") +
                 (ShowGpuFpsPerWatt ? "\t" + displayNameGpuFpsPerWatt : "") +
@@ -236,6 +240,8 @@ namespace CapFrameX.ViewModel
                     (ShowP0Dot1LowAverageFPS ? "\t" + reportInfo.ZeroDotOnePercentLowAverageFps.ToString(cultureInfo) : "") +
                     (ShowP0Dot1LowIntegralFPS ? "\t" + reportInfo.ZeroDotOnePercentLowIntegralFps.ToString(cultureInfo) : "") +
                     (ShowMinFPS ? "\t" + reportInfo.MinFps.ToString(cultureInfo) : "") +
+                    (ShowAnimationErrorP99 ? "\t" + reportInfo.AnimationErrorP99.ToString(cultureInfo) : "") +
+                    (ShowAnimationErrorAverage ? "\t" + reportInfo.AnimationErrorAverage.ToString(cultureInfo) : "") +
                     (ShowAdaptiveSTD ? "\t" + reportInfo.AdaptiveSTDFps.ToString(cultureInfo) : "") +
                     (ShowCpuFpsPerWatt ? "\t" + reportInfo.CpuFpsPerWatt.ToString(cultureInfo) : "") +
                     (ShowGpuFpsPerWatt ? "\t" + reportInfo.GpuFpsPerWatt.ToString(cultureInfo) : "") +
@@ -290,11 +296,26 @@ namespace CapFrameX.ViewModel
 
             double GeMetricValue(IList<double> sequence, EMetric metric) =>
                 _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
+            double GetAnimationErrorP99MetricValue(IList<double> sequence) =>
+                sequence.Any()
+                    ? Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(sequence, 0.99),
+                        _appConfiguration.FpsValuesRoundingDigits, MidpointRounding.AwayFromZero)
+                    : double.NaN;
+            double GetAnimationErrorAverageMetricValue(IList<double> sequence) =>
+                sequence.Any()
+                    ? Math.Round(sequence.Average(), _appConfiguration.FpsValuesRoundingDigits, MidpointRounding.AwayFromZero)
+                    : double.NaN;
             var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
             var displayTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToList();
             var samples = _appConfiguration.UseDisplayChangeMetrics ? displayTimes : frameTimes;
 
             var GpuActiveTimes = session.Runs.SelectMany(r => r.CaptureData.GpuActive).ToList();
+            var animationErrorsAbs = session.Runs
+                .Where(run => !run.CaptureData.AnimationError.IsNullOrEmpty())
+                .SelectMany(run => run.CaptureData.AnimationError)
+                .Where(animationError => !double.IsNaN(animationError))
+                .Select(animationError => Math.Abs(animationError))
+                .ToList();
             var recordTime = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
             var inputLagTimes = session.CalculateInputLagTimes(EInputLagType.Expected).Where(t => !double.IsNaN(t));
 
@@ -313,6 +334,8 @@ namespace CapFrameX.ViewModel
             var p1_averageLowIntegral = GeMetricValue(samples, EMetric.OnePercentLowIntegral);
             var p0dot1_averageLowIntegral = GeMetricValue(samples, EMetric.ZerodotOnePercentLowIntegral);
             var min = GeMetricValue(samples, EMetric.Min);
+            var animationErrorP99 = GetAnimationErrorP99MetricValue(animationErrorsAbs);
+            var animationErrorAverage = GetAnimationErrorAverageMetricValue(animationErrorsAbs);
             var adaptiveStandardDeviation = GeMetricValue(samples, EMetric.AdaptiveStd);
 
             var cpuFpsPerWatt = ReportUsePMDValues ? _frametimeStatisticProvider
@@ -362,6 +385,8 @@ namespace CapFrameX.ViewModel
                 ZeroDotOnePercentLowAverageFps = p0dot1_averageLowAverage,
                 ZeroDotOnePercentLowIntegralFps = p0dot1_averageLowIntegral,
                 MinFps = min,
+                AnimationErrorP99 = animationErrorP99,
+                AnimationErrorAverage = animationErrorAverage,
                 AdaptiveSTDFps = adaptiveStandardDeviation,
                 CpuFpsPerWatt = cpuFpsPerWatt,
                 GpuFpsPerWatt = gpuFpsPerWatt,

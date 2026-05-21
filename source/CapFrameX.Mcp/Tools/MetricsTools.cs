@@ -1,4 +1,5 @@
 using CapFrameX.Contracts.Configuration;
+using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Mcp.Attributes;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
@@ -12,8 +13,12 @@ namespace CapFrameX.Mcp.Tools
     [McpServerToolType]
     public class MetricsTools
     {
+        private const string AnimationErrorP99Metric = "AnimationErrorP99";
+        private const string AnimationErrorAverageMetric = "AnimationErrorAverage";
+
         private static readonly string[] DefaultMetrics =
-            { "Average", "P1", "P0dot2", "Min", "Max", "AdaptiveStd",
+            { "Average", "P1", "P0dot2", "Min", "Max",
+              AnimationErrorP99Metric, AnimationErrorAverageMetric, "AdaptiveStd",
               "OnePercentLowAverage", "ZerodotOnePercentLowAverage" };
 
         private readonly RecordTools _recordTools;
@@ -28,10 +33,11 @@ namespace CapFrameX.Mcp.Tools
         }
 
         [McpServerTool(Name = "cfx_get_metrics",
-            Description = "Computes FPS-based statistical metrics for a record. " +
+            Description = "Computes FPS-based statistical metrics and Animation Error metrics for a record. " +
                 "Available metric names: Average, P99, P95, P5, P1, P0dot2, P0dot1, Median, Min, Max, AdaptiveStd, " +
                 "OnePercentLowAverage, ZerodotOnePercentLowAverage, ZerodotTwoPercentLowAverage, " +
-                "OnePercentLowIntegral, ZerodotOnePercentLowIntegral, ZerodotTwoPercentLowIntegral. " +
+                "OnePercentLowIntegral, ZerodotOnePercentLowIntegral, ZerodotTwoPercentLowIntegral, " +
+                "AnimationErrorP99, AnimationErrorAverage. Animation Error metrics use absolute values and are returned in ms. " +
                 "If 'metrics' is omitted, a sensible default set is returned. " +
                 "If 'runIndex' is omitted, metrics for ALL runs in the record are returned. " +
                 "By default the FPS source follows AppSettings.UseDisplayChangeMetrics (matches the Analysis tab); " +
@@ -81,6 +87,12 @@ namespace CapFrameX.Mcp.Tools
 
                 foreach (var name in requested)
                 {
+                    if (TryGetAnimationErrorMetricName(name, out var animationErrorMetricName))
+                    {
+                        runMetrics.Metrics.Add(GetAnimationErrorMetricResult(run, animationErrorMetricName, rounding));
+                        continue;
+                    }
+
                     if (!Enum.TryParse(name, ignoreCase: true, out EMetric metric) || metric == EMetric.None)
                     {
                         runMetrics.Metrics.Add(new MetricResult { Metric = name, Value = double.NaN, Unit = "unsupported" });
@@ -102,6 +114,58 @@ namespace CapFrameX.Mcp.Tools
             }
 
             return result;
+        }
+
+        private MetricResult GetAnimationErrorMetricResult(ISessionRun run, string metricName, int rounding)
+        {
+            var animationErrors = run.CaptureData?.AnimationError?
+                .Where(animationError => !double.IsNaN(animationError))
+                .Select(animationError => Math.Abs(animationError))
+                .ToList();
+
+            if (animationErrors == null || animationErrors.Count == 0)
+            {
+                return new MetricResult
+                {
+                    Metric = metricName,
+                    Value = double.NaN,
+                    Unit = "ms",
+                };
+            }
+
+            double metricValue = string.Equals(metricName, AnimationErrorP99Metric, StringComparison.OrdinalIgnoreCase)
+                ? _stats.GetPQuantileSequence(animationErrors, 0.99)
+                : animationErrors.Average();
+
+            return new MetricResult
+            {
+                Metric = metricName,
+                Value = double.IsNaN(metricValue) ? metricValue : Math.Round(metricValue, rounding),
+                Unit = "ms",
+            };
+        }
+
+        private static bool TryGetAnimationErrorMetricName(string metricName, out string canonicalMetricName)
+        {
+            canonicalMetricName = null;
+
+            if (string.Equals(metricName, AnimationErrorP99Metric, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(metricName, "P99AnimationError", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(metricName, "MsAnimationErrorP99", StringComparison.OrdinalIgnoreCase))
+            {
+                canonicalMetricName = AnimationErrorP99Metric;
+                return true;
+            }
+
+            if (string.Equals(metricName, AnimationErrorAverageMetric, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(metricName, "AverageAnimationError", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(metricName, "MsAnimationErrorAverage", StringComparison.OrdinalIgnoreCase))
+            {
+                canonicalMetricName = AnimationErrorAverageMetric;
+                return true;
+            }
+
+            return false;
         }
     }
 }

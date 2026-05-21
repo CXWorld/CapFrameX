@@ -362,6 +362,18 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool UseSingleRecordFrametimeP1QuantileStatisticParameter
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
+        public bool UseSingleRecordFrametimeP5QuantileStatisticParameter
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
         public bool UseSingleRecordAverageStatisticParameter
         {
             get => Get<bool>(true);
@@ -461,6 +473,18 @@ namespace CapFrameX.Configuration
         public bool UseSingleRecordGpuFpsPerWattParameter
         {
             get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool UseSingleRecordAnimationErrorAverageStatisticParameter
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool UseSingleRecordAnimationErrorP99StatisticParameter
+        {
+            get => Get<bool>(true);
             set => Set(value);
         }
 
@@ -946,6 +970,8 @@ namespace CapFrameX.Configuration
         public bool ReportShowP1LowIntegralFPS { get; set; } = true;
         public bool ReportShowP0Dot1LowIntegralFPS { get; set; } = true;
         public bool ReportShowMinFPS { get; set; } = true;
+        public bool ReportShowAnimationErrorP99 { get; set; } = true;
+        public bool ReportShowAnimationErrorAverage { get; set; } = false;
         public bool ReportShowAdaptiveSTD { get; set; } = true;
         public bool ReportShowCpuFpsPerWatt { get; set; } = true;
         public bool ReportShowGpuFpsPerWatt { get; set; } = true;

@@ -819,6 +819,8 @@
                                     <RowDefinition Height="*" />
                                     <RowDefinition Height="*" />
                                     <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -856,17 +858,25 @@
                                 <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="Median" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="3" Grid.Column="4" IsChecked="{Binding UseMedianStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="4" Grid.Column="3" Text="5% percentile" VerticalAlignment="Center"/>
-                                <ToggleButton Margin="5" Grid.Row="4" Grid.Column="4" IsChecked="{Binding UseP95QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <ToggleButton Margin="5" Grid.Row="4" Grid.Column="4" IsChecked="{Binding UseFrametimeP5QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="5" Grid.Column="3" Text="1% percentile" VerticalAlignment="Center"/>
-                                <ToggleButton Margin="5" Grid.Row="5" Grid.Column="4" IsChecked="{Binding UseP99QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <ToggleButton Margin="5" Grid.Row="5" Grid.Column="4" IsChecked="{Binding UseFrametimeP1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="6" Grid.Column="3" Text="Maximum" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="6" Grid.Column="4" IsChecked="{Binding UseMinStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                <TextBlock Margin="5" Grid.Row="7" Grid.Column="3" Text="Adaptive STDEV" VerticalAlignment="Center"/>
-                                <ToggleButton Margin="5" Grid.Row="7" Grid.Column="4" IsChecked="{Binding UseAdaptiveSTDStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                <TextBlock Margin="5" Grid.Row="8" Grid.Column="3" Text="CPU FPS/10W" VerticalAlignment="Center"/>
-                                <ToggleButton Margin="5" Grid.Row="8" Grid.Column="4" IsChecked="{Binding UseCpuFpsPerWattParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                <TextBlock Margin="5" Grid.Row="9" Grid.Column="3" Text="GPU FPS/10W" VerticalAlignment="Center"/>
-                                <ToggleButton Margin="5" Grid.Row="9" Grid.Column="4" IsChecked="{Binding UseGpuFpsPerWattParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="7" Grid.Column="3" Text="P99 |Animation Error| (only ms)" VerticalAlignment="Center"
+                                           Visibility="{Binding IsAnimationErrorAvailable, Converter={StaticResource TrueToVisibleConverter}}"/>
+                                <ToggleButton Margin="5" Grid.Row="7" Grid.Column="4" IsChecked="{Binding UseAnimationErrorP99StatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                              Visibility="{Binding IsAnimationErrorAvailable, Converter={StaticResource TrueToVisibleConverter}}"/>
+                                <TextBlock Margin="5" Grid.Row="8" Grid.Column="3" Text="Average |Animation Error| (only ms)" VerticalAlignment="Center"
+                                           Visibility="{Binding IsAnimationErrorAvailable, Converter={StaticResource TrueToVisibleConverter}}"/>
+                                <ToggleButton Margin="5" Grid.Row="8" Grid.Column="4" IsChecked="{Binding UseAnimationErrorAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                              Visibility="{Binding IsAnimationErrorAvailable, Converter={StaticResource TrueToVisibleConverter}}"/>
+                                <TextBlock Margin="5" Grid.Row="9" Grid.Column="3" Text="Adaptive STDEV" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="9" Grid.Column="4" IsChecked="{Binding UseAdaptiveSTDStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="10" Grid.Column="3" Text="CPU FPS/10W" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="10" Grid.Column="4" IsChecked="{Binding UseCpuFpsPerWattParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="11" Grid.Column="3" Text="GPU FPS/10W" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="11" Grid.Column="4" IsChecked="{Binding UseGpuFpsPerWattParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                             </Grid>
                         </materialDesign:Card>
                     </materialDesign:PopupBox>
