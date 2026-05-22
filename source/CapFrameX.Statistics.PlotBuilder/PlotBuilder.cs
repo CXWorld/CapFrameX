@@ -320,6 +320,16 @@ namespace CapFrameX.Statistics.PlotBuilder
 
         protected void SetAnimationErrorChart(PlotModel plotModel, IList<Point> points)
         {
+            var validPoints = points?
+                .Where(p => !double.IsNaN(p.X) && !double.IsInfinity(p.X)
+                    && !double.IsNaN(p.Y) && !double.IsInfinity(p.Y))
+                .ToList();
+
+            if (validPoints == null || !validPoints.Any())
+            {
+                return;
+            }
+
             var series = new LineSeries
             {
                 Title = "Animation Error",
@@ -329,7 +339,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 YAxisKey = EPlotAxis.YAXISFRAMETIMES.GetDescription()
             };
 
-            series.Points.AddRange(points.Select(p => new DataPoint(p.X, p.Y)));
+            series.Points.AddRange(validPoints.Select(p => new DataPoint(p.X, p.Y)));
             plotModel.Series.Add(series);
         }
 
