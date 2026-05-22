@@ -35,9 +35,10 @@ namespace CapFrameX.PresentMonInterface
                 arguments += "--no_track_input";
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--qpc_time_ms";
-                // w/o FrameType, it's flawed when using XeFG
-                //arguments += PARAMETER_SEPARATOR;
-                //arguments += "--track_frame_type";
+                arguments += PARAMETER_SEPARATOR;
+                arguments += "--track_frame_type";
+                arguments += PARAMETER_SEPARATOR;
+                arguments += "--track_app_timing";
                 if (TrackPcLatency)
                 {
                     arguments += PARAMETER_SEPARATOR;
@@ -79,9 +80,10 @@ namespace CapFrameX.PresentMonInterface
                 arguments += "--no_track_input";
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--qpc_time_ms";
-                // w/o FrameType, it's flawed when using XeFG
-                //arguments += PARAMETER_SEPARATOR;
-                //arguments += "--track_frame_type";
+                arguments += PARAMETER_SEPARATOR;
+                arguments += "--track_frame_type";
+                arguments += PARAMETER_SEPARATOR;
+                arguments += "--track_app_timing";
                 if (TrackPcLatency)
                 {
                     arguments += PARAMETER_SEPARATOR;

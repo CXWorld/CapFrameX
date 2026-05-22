@@ -860,6 +860,7 @@ namespace CapFrameX.Data
                 int indexRuntime = -1;
                 int indexAllowsTearing = -1;
                 int indexSyncInterval = -1;
+                int indexFrameType = -1;
                 int indexPcLatency = -1;
                 int indexMsAnimationError = -1;
                 int indexmsGPUActive = -1;
@@ -889,11 +890,11 @@ namespace CapFrameX.Data
                     PresentMonRuntime = "unknown"
                 };
 
-                // w/o FrameType
+                // With FrameType and app timing enabled
                 // Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,
-                // TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency,#
+                // FrameType,TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency,
                 // MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy,
-                // MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay
+                // MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,MsInstrumentedLatency
 
                 string frameStartUnit = "s";
                 var metrics = Array.ConvertAll(headerLine.Split(','), p => p.Trim());
@@ -954,11 +955,15 @@ namespace CapFrameX.Data
                     {
                         indexSyncInterval = i;
                     }
+                    if (string.Compare(metrics[i], "FrameType", true) == 0)
+                    {
+                        indexFrameType = i;
+                    }
                     if (string.Compare(metrics[i], "MsPCLatency") == 0)
                     {
                         indexPcLatency = i;
                     }
-                    if (string.Compare(metrics[i], "MsAnimationError") == 0)
+                    if (string.Compare(metrics[i], "MsAnimationError") == 0 || string.Compare(metrics[i], "AnimationError") == 0)
                     {
                         indexMsAnimationError = i;
                     }
@@ -980,12 +985,16 @@ namespace CapFrameX.Data
                     }
                 }
 
-                var captureData = new SessionCaptureData(presentLines.Count());
+                var presentLineCount = presentLines.Count();
+                var captureData = new SessionCaptureData(presentLineCount)
+                {
+                    AnimationError = Enumerable.Repeat(double.NaN, presentLineCount).ToArray()
+                };
 
                 // When latency data is available initialize array
                 if (indexPcLatency > 0)
                 {
-                    captureData.PcLatency = new double[presentLines.Count()];
+                    captureData.PcLatency = new double[presentLineCount];
                 }
 
                 var dataLines = presentLines.ToArray();
@@ -1130,6 +1139,10 @@ namespace CapFrameX.Data
                         {
                             captureData.SyncInterval[lineIndex] = syncInterval;
                         }
+                    }
+                    if (indexFrameType > -1)
+                    {
+                        captureData.FrameType[lineIndex] = GetStringFromArray(values, indexFrameType);
                     }
                     if (indexPcLatency > -1)
                     {

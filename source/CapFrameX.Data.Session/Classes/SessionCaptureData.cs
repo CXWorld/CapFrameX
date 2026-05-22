@@ -17,6 +17,7 @@ namespace CapFrameX.Data.Session.Classes
         public int[] AllowsTearing { get; set; }
         public int[] SyncInterval { get; set; }
         public bool[] Dropped { get; set; }
+        public string[] FrameType { get; set; }
         public double[] PcLatency { get; set; }
         public double[] AnimationError { get; set; }
         public double[] GpuActive { get; set; }
@@ -35,6 +36,7 @@ namespace CapFrameX.Data.Session.Classes
             AllowsTearing = new int[numberOfCapturePoints];
             SyncInterval = new int[numberOfCapturePoints];
             Dropped = new bool[numberOfCapturePoints];
+            FrameType = new string[numberOfCapturePoints];
             PcLatency = new double[numberOfCapturePoints];
             AnimationError = new double[numberOfCapturePoints];
             GpuActive = new double[numberOfCapturePoints];
@@ -58,6 +60,7 @@ namespace CapFrameX.Data.Session.Classes
                     AllowsTearing = AllowsTearing[i],
                     SyncInterval = SyncInterval[i],
                     Dropped = Dropped[i],
+                    FrameType = FrameType != null && i < FrameType.Length ? FrameType[i] : string.Empty,
                     PcLatency = PcLatency != null ? PcLatency[i] : double.NaN,
                     AnimationError = AnimationError[i],
                     GpuActive = GpuActive[i],
@@ -80,6 +83,7 @@ namespace CapFrameX.Data.Session.Classes
         public int AllowsTearing { get; set; }
         public int SyncInterval { get; set; }
         public bool Dropped { get; set; }
+        public string FrameType { get; set; }
         public double PcLatency { get; set; }
         public double AnimationError { get; set; }
         public double GpuActive { get; set; }
