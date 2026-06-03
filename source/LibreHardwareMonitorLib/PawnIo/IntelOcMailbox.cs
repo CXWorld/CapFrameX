@@ -2,12 +2,12 @@ namespace LibreHardwareMonitor.PawnIo;
 
 /// <summary>
 /// Reads fabric-clock telemetry (D2D, NGU) on Arrow Lake-S and later
-/// Intel CPUs via the OC Mailbox protocol on the new MSR pair
+/// Intel CPUs via the VR Mailbox protocol on the new MSR pair
 /// 0x607 (interface) + 0x608 (data).
 /// </summary>
 /// <remarks>
 /// <para>
-/// On Arrow Lake-S desktop the OC Mailbox moved off the legacy
+/// On Arrow Lake-S desktop the VR Mailbox moved off the legacy
 /// MSR 0x150 to a new pair. This class implements the protocol
 /// HWiNFO64 v8.32 also uses (RE-confirmed 2026-05-12):
 /// </para>
@@ -26,13 +26,13 @@ namespace LibreHardwareMonitor.PawnIo;
 /// <see cref="IntelMsr"/>. All transport happens through that
 /// class's <c>ReadMsr</c>/<c>WriteMsr</c> primitives, which gate
 /// the two MSR addresses through the PawnIo IntelMSR module's
-/// allow-list (extended for 0x607 / 0x608 in this CapFrameX
-/// build, pending upstream PR to namazso/PawnIO-Modules).
+/// allow-list (<c>MSR_VR_MAILBOX_INTERFACE</c> /
+/// <c>MSR_VR_MAILBOX_DATA</c>).
 /// </para>
 /// </remarks>
 public class IntelOcMailbox
 {
-    /// <summary>One sample of the SoC-fabric clocks read via OC Mailbox.</summary>
+    /// <summary>One sample of the SoC-fabric clocks read via VR Mailbox.</summary>
     public readonly struct Sample
     {
         /// <summary><c>true</c> when <see cref="NguMhz"/> is populated.</summary>
@@ -60,8 +60,8 @@ public class IntelOcMailbox
         }
     }
 
-    private const uint MsrInterface = 0x607;
-    private const uint MsrData = 0x608;
+    private const uint MSR_VR_MAILBOX_INTERFACE = 0x00000607;
+    private const uint MSR_VR_MAILBOX_DATA = 0x00000608;
     private const ulong RunBit = 0x80000000UL;
 
     private const uint CmdD2d = 0x1237;
@@ -94,8 +94,8 @@ public class IntelOcMailbox
         // that implement this channel. Treat readability as the
         // presence test — wrong MSR returns #GP which surfaces as
         // ReadMsr=false.
-        bool ifOk = msr.ReadMsr(MsrInterface, out _);
-        bool dataOk = msr.ReadMsr(MsrData, out _);
+        bool ifOk = msr.ReadMsr(MSR_VR_MAILBOX_INTERFACE, out _);
+        bool dataOk = msr.ReadMsr(MSR_VR_MAILBOX_DATA, out _);
         _isReady = ifOk && dataOk;
     }
 
@@ -142,7 +142,7 @@ public class IntelOcMailbox
     }
 
     /// <summary>
-    /// Execute one OC Mailbox command. The protocol is non-atomic
+    /// Execute one VR Mailbox command. The protocol is non-atomic
     /// at the kernel boundary (three separate IOCTLs), so a
     /// concurrent writer can race us. In practice this manifests
     /// only as a one-cycle stale value before the next refresh
@@ -151,15 +151,15 @@ public class IntelOcMailbox
     private bool TryExecute(uint command, out ulong data)
     {
         data = 0;
-        if (!_msr.WriteMsr(MsrInterface, command | RunBit))
+        if (!_msr.WriteMsr(MSR_VR_MAILBOX_INTERFACE, command | RunBit))
             return false;
 
         for (int i = 0; i < PollMax; i++)
         {
-            if (!_msr.ReadMsr(MsrInterface, out ulong status))
+            if (!_msr.ReadMsr(MSR_VR_MAILBOX_INTERFACE, out ulong status))
                 return false;
             if ((status & RunBit) == 0)
-                return _msr.ReadMsr(MsrData, out data);
+                return _msr.ReadMsr(MSR_VR_MAILBOX_DATA, out data);
         }
         return false;
     }

@@ -617,7 +617,7 @@ internal sealed class IntelCpu : GenericCpu
         }
         else if (SupportsOcMailbox(_microArchitecture))
         {
-            // ARL-S relocated the OC Mailbox to MSR 0x607/0x608. OOBMSM PMT
+            // ARL-S relocated the VR Mailbox to MSR 0x607/0x608. OOBMSM PMT
             // doesn't expose D2D/NGU on ARL-S, so when the PMT path failed
             // above, try the MSR-mailbox path. (See IntelOcMailbox.cs.)
             _ocMailbox = new IntelOcMailbox(_msrModule);
@@ -857,7 +857,7 @@ internal sealed class IntelCpu : GenericCpu
     }
 
     // Architectures whose fabric clocks (NGU, D2D) are exposed via the
-    // new OC Mailbox MSR pair (0x607 interface + 0x608 data) rather
+    // new VR Mailbox MSR pair (0x607 interface + 0x608 data) rather
     // than the OOBMSM PMT Telemetry container. ARL-S desktop is the
     // first known case; later monolithic Core Ultra Series 3+ desktop
     // parts are speculative additions that will fall back gracefully
@@ -1167,7 +1167,7 @@ internal sealed class IntelCpu : GenericCpu
             }
             else if (_hasOcMailboxClocks)
             {
-                // ARL-S path: D2D/NGU come from OC Mailbox on MSR 0x607/0x608.
+                // ARL-S path: D2D/NGU come from VR Mailbox on MSR 0x607/0x608.
                 // Both ratios decode to MHz with a × 100 MHz multiplier baked
                 // into IntelOcMailbox.
                 if (_ocMailbox.TryRead(out IntelOcMailbox.Sample mboxSample))
