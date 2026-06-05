@@ -44,8 +44,8 @@ namespace CapFrameX.PresentMonInterface
                     arguments += PARAMETER_SEPARATOR;
                     arguments += "--track_pc_latency";
                 }
-                arguments += PARAMETER_SEPARATOR;
-                arguments += "--track_etw_status";
+                //arguments += PARAMETER_SEPARATOR;
+                //arguments += "--track_etw_status";
 
                 if (ExcludeProcesses != null && ExcludeProcesses.Any())
                 {
@@ -89,8 +89,8 @@ namespace CapFrameX.PresentMonInterface
                     arguments += PARAMETER_SEPARATOR;
                     arguments += "--track_pc_latency";
                 }
-                arguments += PARAMETER_SEPARATOR;
-                arguments += "--track_etw_status";
+                //arguments += PARAMETER_SEPARATOR;
+                //arguments += "--track_etw_status";
             }
 
             return arguments;

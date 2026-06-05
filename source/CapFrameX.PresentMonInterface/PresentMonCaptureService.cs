@@ -16,17 +16,20 @@ namespace CapFrameX.PresentMonInterface
 {
     public class PresentMonCaptureService : ICaptureService
     {
+        // Temporary disabled ETW tracking
+        // EtwBufferFillPct,EtwBuffersInUse,EtwTotalBuffers,EtwEventsLost,EtwBuffersLost
+
         public static readonly string COLUMN_HEADER_WITH_PC_LATENCY =
             "Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
             "FrameType,TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency," +
             "MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy," +
-            "MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,MsInstrumentedLatency,EtwBufferFillPct,EtwBuffersInUse,EtwTotalBuffers,EtwEventsLost,EtwBuffersLost";
+            "MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,MsInstrumentedLatency";
 
         public static readonly string COLUMN_HEADER_WITHOUT_PC_LATENCY =
             "Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
             "FrameType,TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency," +
             "MsUntilDisplayed,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy," +
-            "MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,MsInstrumentedLatency,EtwBufferFillPct,EtwBuffersInUse,EtwTotalBuffers,EtwEventsLost,EtwBuffersLost";
+            "MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,MsInstrumentedLatency";
 
         private static readonly PresentMonColumnLayout ColumnLayoutWithPcLatency =
             new PresentMonColumnLayout(COLUMN_HEADER_WITH_PC_LATENCY, true);
@@ -131,10 +134,6 @@ namespace CapFrameX.PresentMonInterface
                                 _outputDataStream.OnNext(lineSplit);
                             }
                         }
-                        else
-                        {
-                            LogInvalidLineLength(lineSplit.Length, captureColumnLayout, e.Data);
-                        }
                     }
                 };
 
@@ -227,19 +226,9 @@ namespace CapFrameX.PresentMonInterface
                             hasInitialData = true;
                         }
 
-                        string processName = string.Empty;
-                        int processId = 0;
-                        var currentColumnLayout = CurrentColumnLayout;
+                        string processName = lineSplit[ApplicationName_INDEX].Replace(".exe", "");
 
-                        if (!HasValidLineLength(lineSplit, currentColumnLayout))
-                        {
-                            LogInvalidLineLength(lineSplit.Length, currentColumnLayout, string.Join(",", lineSplit));
-                            return;
-                        }
-
-                        processName = lineSplit[ApplicationName_INDEX].Replace(".exe", "");
-
-                        if (!int.TryParse(lineSplit[ProcessID_INDEX], out processId))
+                        if (!int.TryParse(lineSplit[ProcessID_INDEX], out int processId))
                         {
                             _logger.LogError("Failed to parse process ID from line split. {lineSplit}", string.Join(",", lineSplit));
                             return;
