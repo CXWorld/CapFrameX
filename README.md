@@ -223,14 +223,6 @@ In case a process wasn't detected correctly you can try to rescan processes with
 
 The ignore list entries are drawn from the same process list that contains your game names, which gets updated with our own list on every new Version of CapFrameX.
 
-## Overlay view
-Contains the settings for the items displayed in the OSD as well as the settings for a run history and the aggregation function.  
-
-Left side  
-Overlay items list where you can set the items you want to see in the OSD and change their order by drag and drop. Items with the same group name will be displayed within a single line.
-Three profiles to save different overlay configurations.
-Overlay hotkey to show or hide CX items in OSD. This doesn't hide RTSS completely like the Afterburner hotkey does. If you have AB or any other App that uses RTSS running together with CX, only CX items will disappear.
-Right side  
 Run history and aggregation options  
 Run history to set a number of runs for which you get a simple analysis directly in the OSD. If the history is full, any additional run will replace the oldest one.    
 Aggregation to combine the runs in the history to a single record file once the history is full, while marking outliers within the history.  
@@ -239,6 +231,15 @@ Aggregation outlier handling: A full history is checked for outliers using the m
 	"Mark & use": Outliers are marked, but all runs will be used for the aggregation.
 	"Mark & replace": If outliers exist, you have to do additional runs to replace them. Aggregation triggers when you have a full history without outliers.  
 
+## Overlay view
+Contains the settings for the items displayed in the OSD as well as the settings for a run history and the aggregation function.  
+
+Left side  
+Overlay items list where you can set the items you want to see in the OSD and change their order by drag and drop. Items with the same group name will be displayed within a single line.
+Three profiles to save different overlay configurations.
+Overlay hotkey to show or hide CX items in OSD. This doesn't hide RTSS completely like the Afterburner hotkey does. If you have AB or any other App that uses RTSS running together with CX, only CX items will disappear.
+
+Right side  
 Overlay items options  
 Here you can set colors, limits and font sizes for each individual overlay entry. The currently selected entry is always displayed at the top.  
 If you want to apply one or more of these settings to multiple entries, e.g. red color above a limit of 95 for all CPU thread loads, you can set them for one entry and then click on the "Sensor type" button at the bottom right side.
