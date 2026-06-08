@@ -208,7 +208,18 @@ The screenshot button takes a screenshot of the current view excluding the recor
 ## Capture view
 Here you can set your capture hotkey, the capture time (0=unlimited), choose if and how precisely you want to log sensor data (like CPU/GPU load and power) and set the hotkey response sounds.  
 An info text always informs you what's going on with the capture service and also tells you what to do in certain situations.
-For more detailed information about the capture events, you can take a look at the infobox which can be expanded from the top.
+For more detailed information about the capture events, you can take a look at the capture logger on the right side.
+
+Run history and aggregation options  
+Run history to set a number of runs for which you get a simple analysis directly in the OSD. If the history is full, any additional run will replace the oldest one.   
+
+Aggregation to combine the runs in the history to a single record file once the history is full, while marking outliers within the history.  
+This doesn't take the calculated performance parameters of each record file and calculates an average out of them. It takes the raw frametimes of each record file and puts them into a new file, calculating every parameter based on that set of frametimes.  
+Aggregation outlier handling: A full history is checked for outliers using the median of a selectable metric and an also selectable percentage value.
+	"Mark & use": Outliers are marked, but all runs will be used for the aggregation.
+	"Mark & replace": If outliers exist, you have to do additional runs to replace them. Aggregation triggers when you have a full history without outliers.  
+"Save ggregated results only" to only keep the final aggregated file on your drive. If unchecked, every single capture will be saved alongside the aggregated one.
+
 
 ## How to make a capture
 The process you want to capture has to be present in the "Running processes" list. This list automatically lists all running processes from which frametimes can be captured.
@@ -223,13 +234,6 @@ In case a process wasn't detected correctly you can try to rescan processes with
 
 The ignore list entries are drawn from the same process list that contains your game names, which gets updated with our own list on every new Version of CapFrameX.
 
-Run history and aggregation options  
-Run history to set a number of runs for which you get a simple analysis directly in the OSD. If the history is full, any additional run will replace the oldest one.    
-Aggregation to combine the runs in the history to a single record file once the history is full, while marking outliers within the history.  
-This doesn't take the calculated performance parameters of each record file and calculates an average out of them. It takes the raw frametimes of each record file and puts them into a new file, calculating every parameter based on that set of frametimes.  
-Aggregation outlier handling: A full history is checked for outliers using the median of a selectable metric and an also selectable percentage value.
-	"Mark & use": Outliers are marked, but all runs will be used for the aggregation.
-	"Mark & replace": If outliers exist, you have to do additional runs to replace them. Aggregation triggers when you have a full history without outliers.  
 
 ## Overlay view
 Contains the settings for the items displayed in the OSD as well as the settings for a run history and the aggregation function.  
