@@ -216,8 +216,11 @@ Run history to set a number of runs for which you get a simple analysis directly
 Aggregation to combine the runs in the history to a single record file once the history is full, while marking outliers within the history.  
 This doesn't take the calculated performance parameters of each record file and calculates an average out of them. It takes the raw frametimes of each record file and puts them into a new file, calculating every parameter based on that set of frametimes.  
 Aggregation outlier handling: A full history is checked for outliers using the median of a selectable metric and an also selectable percentage value.
-	"Mark & use": Outliers are marked, but all runs will be used for the aggregation.
-	"Mark & replace": If outliers exist, you have to do additional runs to replace them. Aggregation triggers when you have a full history without outliers.  
+
+"Mark & use": Outliers are marked, but all runs will be used for the aggregation.
+	
+"Mark & replace": If outliers exist, you have to do additional runs to replace them. Aggregation triggers when you have a full history without outliers.  
+	
 "Save ggregated results only" to only keep the final aggregated file on your drive. If unchecked, every single capture will be saved alongside the aggregated one.
 
 
