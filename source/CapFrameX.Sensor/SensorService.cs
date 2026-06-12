@@ -369,8 +369,9 @@ namespace CapFrameX.Sensor
                 _pmcReaderPlugin.InitializeAsync(_sensorUpdateSubject.AsObservable())
                     .ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Failed to initialize PmcReader plugin.");
                 return Observable.Empty<(DateTime, Dictionary<ISensorEntry, float>)>();
             }
 
@@ -385,19 +386,28 @@ namespace CapFrameX.Sensor
                 var baseDir = AppContext.BaseDirectory;
                 var pluginPath = Path.Combine(baseDir, "CapFrameX.PmcReader.Plugin.dll");
                 if (!File.Exists(pluginPath))
+                {
+                    _logger.LogInformation("PmcReader plugin not present ({pluginPath}); PMC sensors disabled.", pluginPath);
                     return null;
+                }
                 var assembly = Assembly.LoadFrom(pluginPath);
                 var pluginType = assembly.GetTypes()
                     .FirstOrDefault(t => typeof(IPmcReaderSensorPlugin).IsAssignableFrom(t)
                         && t.IsClass
                         && !t.IsAbstract);
 
-                return pluginType == null
-                    ? null
-                    : (IPmcReaderSensorPlugin)Activator.CreateInstance(pluginType);
+                if (pluginType == null)
+                {
+                    _logger.LogWarning("PmcReader plugin assembly loaded but no IPmcReaderSensorPlugin implementation was found.");
+                    return null;
+                }
+
+                _logger.LogInformation("PmcReader plugin loaded.");
+                return (IPmcReaderSensorPlugin)Activator.CreateInstance(pluginType);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Failed to load PmcReader plugin.");
                 return null;
             }
         }

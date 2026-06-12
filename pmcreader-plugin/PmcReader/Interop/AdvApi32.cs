@@ -54,6 +54,10 @@ namespace PmcReader.Interop
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool ControlService(IntPtr hService, SERVICE_CONTROL dwControl, ref SERVICE_STATUS lpServiceStatus);
 
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool QueryServiceStatus(IntPtr hService, ref SERVICE_STATUS lpServiceStatus);
+
         [Flags]
         internal enum SC_MANAGER_ACCESS_MASK : uint
         {

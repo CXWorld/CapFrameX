@@ -184,6 +184,12 @@ namespace CapFrameX.PmcReader.Plugin
 
         public string Name => "PmcReader";
 
+        public PmcReaderSensorPlugin()
+        {
+            // Route PmcReader diagnostics into the CapFrameX application log (Serilog).
+            PmcReaderLogging.Initialize();
+        }
+
         public IObservable<(DateTime, Dictionary<ISensorEntry, float>)> SensorSnapshotStream { get; private set; }
 
         public async Task InitializeAsync(IObservable<TimeSpan> updateIntervalStream)
@@ -257,8 +263,19 @@ namespace CapFrameX.PmcReader.Plugin
             {
                 PmcReaderInterop.Open();
             }
-            catch
+            catch (Exception ex)
             {
+                PmcDiagnostics.Error("PmcReader: failed to open the kernel interface.", ex);
+                return;
+            }
+
+            if (!PmcReaderInterop.IsKernelDriverOpen())
+            {
+                string report = PmcReaderInterop.GetKernelDriverReport();
+                PmcDiagnostics.Warning("PmcReader: PMC sensors disabled - WinRing0 kernel driver unavailable."
+                    + (string.IsNullOrEmpty(report)
+                        ? string.Empty
+                        : " " + report.Replace(Environment.NewLine, " ").Trim()));
                 return;
             }
 

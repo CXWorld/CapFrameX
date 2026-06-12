@@ -5,6 +5,7 @@
 // All Rights Reserved
 
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -18,8 +19,13 @@ namespace PmcReader.Interop
 {
     internal static class Ring0
     {
+        // Device/service name the classic WinRing0 1.2.0 driver exposes. The device
+        // symbolic link is fixed inside the driver binary, so we use the same name for
+        // both the service and the \\.\ device path.
+        private const string ServiceName = "WinRing0_1_2_0";
+
         private static KernelDriver _driver;
-        private static string _fileName;
+        private static bool _installedByUs;
         private static Mutex _isaBusMutex;
         private static Mutex _pciBusMutex;
 
@@ -73,104 +79,89 @@ namespace PmcReader.Interop
             return typeof(Ring0).Assembly;
         }
 
-        private static string GetTempFileName()
+        /// <summary>
+        /// Looks for a WinRing0 driver the user has explicitly provided (opt-in). The
+        /// bundled driver is on Microsoft's vulnerable-driver blocklist and is never
+        /// dropped/installed automatically; only a path the user points us at is used,
+        /// at the user's own risk. Resolution order:
+        ///   1. environment variable CX_PMC_WINRING0_PATH
+        ///   2. a "winring0path.txt" sidecar file next to the plugin assembly, whose
+        ///      single line is the full path to the .sys file.
+        /// </summary>
+        private static bool TryGetUserProvidedDriver(out string path)
         {
-            // try to create one in the application folder
-            string location = GetAssembly().Location;
-            if (!string.IsNullOrEmpty(location))
-            {
-                try
-                {
-                    string fileName = Path.ChangeExtension(location, ".sys");
+            path = null;
 
-                    using (File.Create(fileName))
-                        return fileName;
-                }
-                catch (Exception)
-                { }
-            }
-
-            // if this failed, try to get a file in the temporary folder
             try
             {
-                return Path.GetTempFileName();
-            }
-            catch (IOException)
-            {
-                // some I/O exception
-            }
-            catch (UnauthorizedAccessException)
-            {
-                // we do not have the right to create a file in the temp folder
-            }
-            catch (NotSupportedException)
-            {
-                // invalid path format of the TMP system environment variable
-            }
-
-            return null;
-        }
-
-        private static bool ExtractDriver(string fileName)
-        {
-            string resourceName = nameof(PmcReader) + "." + nameof(Interop) + "." + "WinRing0x64.sys";
-
-            string[] names = GetAssembly().GetManifestResourceNames();
-            byte[] buffer = null;
-            for (int i = 0; i < names.Length; i++)
-            {
-                if (names[i].Replace('\\', '.') == resourceName)
+                string fromEnv = Environment.GetEnvironmentVariable("CX_PMC_WINRING0_PATH");
+                if (!string.IsNullOrWhiteSpace(fromEnv) && File.Exists(fromEnv.Trim()))
                 {
-                    using (Stream stream = GetAssembly().GetManifestResourceStream(names[i]))
+                    path = fromEnv.Trim();
+                    return true;
+                }
+
+                string location = GetAssembly().Location;
+                if (!string.IsNullOrEmpty(location))
+                {
+                    string dir = Path.GetDirectoryName(location);
+                    if (dir != null)
                     {
-                        if (stream != null)
+                        string sidecar = Path.Combine(dir, "winring0path.txt");
+                        if (File.Exists(sidecar))
                         {
-                            buffer = new byte[stream.Length];
-                            stream.Read(buffer, 0, buffer.Length);
+                            string configured = File.ReadAllText(sidecar).Trim();
+                            if (!string.IsNullOrEmpty(configured) && File.Exists(configured))
+                            {
+                                path = configured;
+                                return true;
+                            }
                         }
                     }
                 }
             }
-
-            if (buffer == null)
-                return false;
-
-
-            try
+            catch
             {
-                using (FileStream target = new FileStream(fileName, FileMode.Create))
-                {
-                    target.Write(buffer, 0, buffer.Length);
-                    target.Flush();
-                }
-            }
-            catch (IOException)
-            {
-                // for example there is not enough space on the disk
-                return false;
             }
 
-            // make sure the file is actually written to the file system
-            for (int i = 0; i < 20; i++)
-            {
-                try
-                {
-                    if (File.Exists(fileName) &&
-                        new FileInfo(fileName).Length == buffer.Length)
-                    {
-                        return true;
-                    }
-
-                    Thread.Sleep(100);
-                }
-                catch (IOException)
-                {
-                    Thread.Sleep(10);
-                }
-            }
-
-            // file still has not the right size, something is wrong
             return false;
+        }
+
+        private static string DescribeWin32Error(int error)
+        {
+            if (error == 0)
+                return string.Empty;
+
+            string meaning;
+            switch (error)
+            {
+                case 2:
+                    meaning = "driver file not found (a registered service points at a missing .sys, or it was removed by security software)";
+                    break;
+                case 5:
+                    meaning = "access denied (CapFrameX must run elevated)";
+                    break;
+                case 577:
+                    meaning = "driver signature/image hash rejected (likely blocklisted or Memory Integrity/HVCI enforced)";
+                    break;
+                case 1058:
+                    meaning = "service is disabled";
+                    break;
+                case 1060:
+                    meaning = "service is not installed";
+                    break;
+                case 1072:
+                    meaning = "service is marked for deletion";
+                    break;
+                case 1275:
+                    meaning = "driver blocked by Windows (vulnerable-driver blocklist / Memory Integrity / HVCI)";
+                    break;
+                default:
+                    meaning = new Win32Exception(error).Message;
+                    break;
+            }
+
+            return "Win32 error " + error + ": " + meaning;
         }
 
         public static void Open()
@@ -180,85 +171,78 @@ namespace PmcReader.Interop
 
             // clear the current report
             Report.Length = 0;
+            _installedByUs = false;
 
-            PmcDiagnostics.Log("Ring0.Open: Attempting to open WinRing0 driver...");
-            _driver = new KernelDriver("WinRing0_1_2_0");
-            _driver.Open();
-            PmcDiagnostics.Log("Ring0.Open: First open attempt IsOpen={0}", _driver.IsOpen);
+            PmcDiagnostics.Info("Ring0.Open: locating WinRing0 device...");
+            _driver = new KernelDriver(ServiceName);
 
-            if (!_driver.IsOpen)
+            // 1) Device already present: a previous run, or a third-party tool such as
+            //    ZenTimings / HWiNFO, registered WinRing0. As an elevated process we may
+            //    open it regardless of who created it - and we must not tear it down.
+            if (_driver.Open())
             {
-                // driver is not loaded, try to install and open
-                _fileName = GetTempFileName();
-                if (_fileName != null && ExtractDriver(_fileName))
+                PmcDiagnostics.Info("Ring0.Open: using existing WinRing0 device (not owned by CapFrameX).");
+                FinishOpen();
+                return;
+            }
+
+            // 2) Service is registered but not running (e.g. a persistent user install).
+            //    Start it - this loads the on-disk driver without us dropping any binary.
+            if (_driver.TryStartExistingService(out string startError))
+            {
+                if (_driver.Open())
                 {
-                    if (_driver.Install(_fileName, out string installError))
+                    PmcDiagnostics.Info("Ring0.Open: started existing WinRing0 service and opened device.");
+                    FinishOpen();
+                    return;
+                }
+
+                PmcDiagnostics.Warning("Ring0.Open: WinRing0 service started but device could not be opened. " + DescribeWin32Error(_driver.lastError));
+            }
+            else if (startError != null)
+            {
+                PmcDiagnostics.Warning("Ring0.Open: could not start existing WinRing0 service. " + startError);
+            }
+
+            // 3) Opt-in only: install a user-provided WinRing0 driver (own risk). The
+            //    bundled blocklisted driver is never used here.
+            if (TryGetUserProvidedDriver(out string userDriverPath))
+            {
+                PmcDiagnostics.Info("Ring0.Open: installing user-provided WinRing0 driver \"" + userDriverPath + "\" (at user's own risk).");
+                if (_driver.Install(userDriverPath, out string installError))
+                {
+                    _installedByUs = true;
+                    if (_driver.Open())
                     {
-                        _driver.Open();
-
-                        if (!_driver.IsOpen)
-                        {
-                            _driver.Delete();
-                            Report.AppendLine("Status: Opening driver failed after install");
-                        }
+                        PmcDiagnostics.Info("Ring0.Open: user-provided WinRing0 driver installed and opened.");
+                        FinishOpen();
+                        return;
                     }
-                    else
-                    {
-                        string errorFirstInstall = installError;
 
-                        // install failed, try to delete and reinstall
-                        _driver.Delete();
-
-                        // wait a short moment to give the OS a chance to remove the driver
-                        Thread.Sleep(2000);
-
-                        if (_driver.Install(_fileName, out string errorSecondInstall))
-                        {
-                            _driver.Open();
-
-                            if (!_driver.IsOpen)
-                            {
-                                _driver.Delete();
-                                Report.AppendLine("Status: Opening driver failed after reinstall");
-                            }
-                        }
-                        else
-                        {
-                            Report.AppendLine("Status: Installing driver \"" + _fileName + "\" failed" + (File.Exists(_fileName) ? " and file exists" : string.Empty));
-                            Report.AppendLine("First Exception: " + errorFirstInstall);
-                            Report.AppendLine("Second Exception: " + errorSecondInstall);
-                        }
-                    }
+                    PmcDiagnostics.Warning("Ring0.Open: user-provided driver installed but device not openable. " + DescribeWin32Error(_driver.lastError));
                 }
                 else
                 {
-                    Report.AppendLine("Status: Extracting driver failed");
+                    PmcDiagnostics.Warning("Ring0.Open: install of user-provided WinRing0 driver failed. " + installError + " " + DescribeWin32Error(_driver.lastError));
                 }
-
-                try
-                {
-                    // try to delete the driver file
-                    if (File.Exists(_fileName) && _fileName != null)
-                        File.Delete(_fileName);
-
-                    _fileName = null;
-                }
-                catch (IOException)
-                { }
-                catch (UnauthorizedAccessException)
-                { }
             }
 
-            if (!_driver.IsOpen)
-            {
-                PmcDiagnostics.Log("Ring0.Open: FAILED - driver not open, setting _driver=null. Report: {0}", Report.ToString());
-                _driver = null;
-            }
-            else
-            {
-                PmcDiagnostics.Log("Ring0.Open: SUCCESS - driver is open");
-            }
+            // Nothing worked: WinRing0 is unavailable, PMC sensors stay disabled.
+            const string guidance = "WinRing0 kernel driver is not available. The driver is on Microsoft's "
+                + "vulnerable-driver blocklist and is therefore not shipped or auto-installed by CapFrameX. "
+                + "Install WinRing0 yourself (at your own risk) to enable PMC sensors.";
+            Report.AppendLine("Status: " + guidance);
+            string lastErrorText = DescribeWin32Error(_driver.lastError);
+            if (lastErrorText.Length > 0)
+                Report.AppendLine("Detail: " + lastErrorText);
 
+            PmcDiagnostics.Warning("Ring0.Open: " + guidance + (lastErrorText.Length > 0 ? " (" + lastErrorText + ")" : string.Empty));
+
+            _driver = null;
+        }
+
+        private static void FinishOpen()
+        {
             const string isaMutexName = "Global\\Access_ISABUS.HTP.Method";
             TryCreateOrOpenExistingMutex(isaMutexName, out _isaBusMutex);
 
@@ -315,14 +299,26 @@ namespace PmcReader.Interop
         {
             if (_driver != null)
             {
-                uint refCount = 0;
-                _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_GET_REFCOUNT, null, ref refCount);
-                _driver.Close();
+                if (_installedByUs)
+                {
+                    // We created the service: honour the WinRing0 refcount and remove it
+                    // only when we are the last user.
+                    uint refCount = 0;
+                    _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_GET_REFCOUNT, null, ref refCount);
+                    _driver.Close();
 
-                if (refCount <= 1)
-                    _driver.Delete();
+                    if (refCount <= 1)
+                        _driver.Delete();
+                }
+                else
+                {
+                    // Third-party or persistent user installation: just release our handle,
+                    // never delete a service we did not create (avoids racing ZenTimings etc.).
+                    _driver.Close();
+                }
 
                 _driver = null;
+                _installedByUs = false;
             }
 
             if (_isaBusMutex != null)
@@ -335,20 +331,6 @@ namespace PmcReader.Interop
             {
                 _pciBusMutex.Close();
                 _pciBusMutex = null;
-            }
-
-            // try to delete temporary driver file again if failed during open
-            if (_fileName != null && File.Exists(_fileName))
-            {
-                try
-                {
-                    File.Delete(_fileName);
-                    _fileName = null;
-                }
-                catch (IOException)
-                { }
-                catch (UnauthorizedAccessException)
-                { }
             }
         }
 
