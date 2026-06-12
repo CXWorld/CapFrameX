@@ -60,9 +60,24 @@ namespace CapFrameX.ViewModel
 
 		public void UpdateSystemInfoStatus()
         {
+            RaisePropertyChanged(nameof(IsResizableBarD3DEnabled));
+            RaisePropertyChanged(nameof(IsResizableBarD3DStatusValid));
+            RaisePropertyChanged(nameof(IsResizableBarVulkanEnabled));
+            RaisePropertyChanged(nameof(IsResizableBarVulkanStatusValid));
+            RaisePropertyChanged(nameof(IsResizableBarHardwareEnabled));
+            RaisePropertyChanged(nameof(IsResizableBarHardwareStatusValid));
+            RaisePropertyChanged(nameof(ResizableBarD3DSize));
+            RaisePropertyChanged(nameof(ResizableBarHardwareSize));
+            RaisePropertyChanged(nameof(ResizableBarVulkanSize));
             RaisePropertyChanged(nameof(IsResizableBarEnabled));
+            RaisePropertyChanged(nameof(ResizableBarStatus));
+            RaisePropertyChanged(nameof(ResizableBarStatusColor));
+            RaisePropertyChanged(nameof(IsResizableBarAnyStatusValid));
             RaisePropertyChanged(nameof(IsGameModeEnabled));
+            RaisePropertyChanged(nameof(IsGameModeStatusValid));
             RaisePropertyChanged(nameof(IsHAGSEnabled));
+            RaisePropertyChanged(nameof(IsHAGSStatusValid));
+            RaisePropertyChanged(nameof(IsWindowsAnyStatusValid));
 		}
     }
 }

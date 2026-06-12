@@ -136,6 +136,7 @@ namespace CapFrameX
             Container.Register<RecordTools>(Reuse.Singleton);
             Container.Register<MetricsTools>(Reuse.Singleton);
             Container.Register<SensorTools>(Reuse.Singleton);
+            Container.Register<PmdTools>(Reuse.Singleton);
             Container.Register<ComparisonTools>(Reuse.Singleton);
             Container.Register<SearchTools>(Reuse.Singleton);
             Container.Register<BottleneckTools>(Reuse.Singleton);
@@ -143,6 +144,8 @@ namespace CapFrameX
             Container.Register<CaptureTimelineTools>(Reuse.Singleton);
             Container.Register<SystemInfoTools>(Reuse.Singleton);
             Container.Register<CaptureStatusTools>(Reuse.Singleton);
+            Container.Register<SensorConfigTools>(Reuse.Singleton);
+            Container.Register<OverlayConfigTools>(Reuse.Singleton);
 
             Container.Register<ISystemInfo, SystemInfo.NetStandard.SystemInfo>(Reuse.Singleton);
             Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);

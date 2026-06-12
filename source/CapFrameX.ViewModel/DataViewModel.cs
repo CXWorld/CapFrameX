@@ -952,9 +952,13 @@ namespace CapFrameX.ViewModel
             var frametimes = GetFrametimesSubset();
             var sampleSubset = _appConfiguration.UseDisplayChangeMetrics
                 ? GetDisplayChangeTimesSubset() : frametimes;
+            var animationErrorsAbs = GetAnimationErrorsSubset()?.Select(error => Math.Abs(error)).ToList();
 
             double GetFrametimeMetricValue(IList<double> sequence, EMetric metric) =>
               Math.Round(_frametimeStatisticProvider.GetFrametimeMetricValue(sequence, metric), 2);
+
+            double GetP99MetricValue(IList<double> sequence) =>
+                Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(sequence, 0.99), 2);
 
             double GetMetricValue(IList<double> sequence, EMetric metric) =>
                 Math.Round(_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric), 2);
@@ -979,6 +983,8 @@ namespace CapFrameX.ViewModel
             var adaptiveStandardDeviation = double.NaN;
             var cpuFpsPerWatt = double.NaN;
             var gpuFpsPerWatt = double.NaN;
+            var animationErrorAverage = double.NaN;
+            var animationErrorP99 = double.NaN;
 
             if (UseFrametimeStatisticParameters)
             {
@@ -1000,6 +1006,12 @@ namespace CapFrameX.ViewModel
                 p0dot1_LowIntegral = GetFrametimeMetricValue(sampleSubset, EMetric.ZerodotOnePercentLowIntegral);
                 min = GetFrametimeMetricValue(sampleSubset, EMetric.Min);
                 adaptiveStandardDeviation = GetFrametimeMetricValue(sampleSubset, EMetric.AdaptiveStd);
+
+                if (!animationErrorsAbs.IsNullOrEmpty())
+                {
+                    animationErrorAverage = GetFrametimeMetricValue(animationErrorsAbs, EMetric.Average);
+                    animationErrorP99 = GetP99MetricValue(animationErrorsAbs);
+                }
             }
             else
             {
@@ -1038,9 +1050,9 @@ namespace CapFrameX.ViewModel
             {
                 if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
                     builder.Append("Min" + "\t" + min.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-                if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
+                if (_appConfiguration.UseSingleRecordFrametimeP1QuantileStatisticParameter)
                     builder.Append("P1" + "\t" + p99_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-                if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
+                if (_appConfiguration.UseSingleRecordFrametimeP5QuantileStatisticParameter)
                     builder.Append("P5" + "\t" + p95_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
                 if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
                     builder.Append("Median" + "\t" + median.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
@@ -1070,6 +1082,10 @@ namespace CapFrameX.ViewModel
                     builder.Append("0.1% High Integral" + "\t" + p0dot1_LowIntegral.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
                 if (_appConfiguration.UseSingleRecordMinStatisticParameter)
                     builder.Append("Max" + "\t" + max.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordAnimationErrorP99StatisticParameter && !double.IsNaN(animationErrorP99))
+                    builder.Append("P99 |Animation Error|" + "\t" + animationErrorP99.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                if (_appConfiguration.UseSingleRecordAnimationErrorAverageStatisticParameter && !double.IsNaN(animationErrorAverage))
+                    builder.Append("Average |Animation Error|" + "\t" + animationErrorAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
                 if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter)
                     builder.Append("Adaptive STDEV" + "\t" + adaptiveStandardDeviation.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             }
@@ -1514,6 +1530,9 @@ namespace CapFrameX.ViewModel
         private IList<double> GetGpuActiveTimesSubset()
             => _localRecordDataServer?.GetGpuActiveTimeTimeWindow();
 
+        private IList<double> GetAnimationErrorsSubset()
+            => _localRecordDataServer?.GetAnimationErrorTimeWindow();
+
         private IList<double> GetGpuActiveFPSSubset()
             => _localRecordDataServer?.GetGpuActiveFpsTimeWindow();
 
@@ -1525,8 +1544,14 @@ namespace CapFrameX.ViewModel
             if (displayChangeTimes == null || !displayChangeTimes.Any())
                 return;
 
+            var animationErrorsAbs = GetAnimationErrorsSubset()?.Select(error => Math.Abs(error)).ToList();
+
             double GetFrametimeMetricValue(IList<double> sequence, EMetric metric) =>
                 _frametimeStatisticProvider.GetFrametimeMetricValue(sequence, metric);
+
+            double GetP99MetricValue(IList<double> sequence) =>
+                Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(sequence, 0.99),
+                    _appConfiguration.FpsValuesRoundingDigits, MidpointRounding.AwayFromZero);
 
             double GetMetricValue(IList<double> sequence, EMetric metric) =>
                 _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
@@ -1551,6 +1576,8 @@ namespace CapFrameX.ViewModel
             var adaptiveStandardDeviation = double.NaN;
             var cpuFpsPerWatt = double.NaN;
             var gpuFpsPerWatt = double.NaN;
+            var animationErrorAverage = double.NaN;
+            var animationErrorP99 = double.NaN;
 
             if (UseFrametimeStatisticParameters)
             {
@@ -1572,6 +1599,12 @@ namespace CapFrameX.ViewModel
                 p0dot1_LowIntegral = GetFrametimeMetricValue(displayChangeTimes, EMetric.ZerodotOnePercentLowIntegral);
                 min = GetFrametimeMetricValue(displayChangeTimes, EMetric.Min);
                 adaptiveStandardDeviation = GetFrametimeMetricValue(displayChangeTimes, EMetric.AdaptiveStd);
+
+                if (!animationErrorsAbs.IsNullOrEmpty())
+                {
+                    animationErrorAverage = GetFrametimeMetricValue(animationErrorsAbs, EMetric.Average);
+                    animationErrorP99 = GetP99MetricValue(animationErrorsAbs);
+                }
             }
             else
             {
@@ -1615,6 +1648,10 @@ namespace CapFrameX.ViewModel
                         values.Add(cpuFpsPerWatt);
                     if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
                         values.Add(adaptiveStandardDeviation);
+                    if (_appConfiguration.UseSingleRecordAnimationErrorP99StatisticParameter && !double.IsNaN(animationErrorP99))
+                        values.Add(animationErrorP99);
+                    if (_appConfiguration.UseSingleRecordAnimationErrorAverageStatisticParameter && !double.IsNaN(animationErrorAverage))
+                        values.Add(animationErrorAverage);
                     if (_appConfiguration.UseSingleRecordMinStatisticParameter && !double.IsNaN(max))
                         values.Add(max);
                     if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
@@ -1643,9 +1680,9 @@ namespace CapFrameX.ViewModel
                         values.Add(gpuActiveAverage);
                     if (_appConfiguration.UseSingleRecordAverageStatisticParameter && !double.IsNaN(average))
                         values.Add(average);
-                    if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter && !double.IsNaN(p95_quantile))
+                    if (_appConfiguration.UseSingleRecordFrametimeP5QuantileStatisticParameter && !double.IsNaN(p95_quantile))
                         values.Add(p95_quantile);
-                    if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter && !double.IsNaN(p99_quantile))
+                    if (_appConfiguration.UseSingleRecordFrametimeP1QuantileStatisticParameter && !double.IsNaN(p99_quantile))
                         values.Add(p99_quantile);
                     if (_appConfiguration.UseSingleRecordMaxStatisticParameter && !double.IsNaN(min))
                         values.Add(min);
@@ -1722,6 +1759,10 @@ namespace CapFrameX.ViewModel
                         parameterLabelList.Add("CPU FPS/10W");
                     if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
                         parameterLabelList.Add("Adaptive STDEV");
+                    if (_appConfiguration.UseSingleRecordAnimationErrorP99StatisticParameter && !double.IsNaN(animationErrorP99))
+                        parameterLabelList.Add("P99 |Animation Error|");
+                    if (_appConfiguration.UseSingleRecordAnimationErrorAverageStatisticParameter && !double.IsNaN(animationErrorAverage))
+                        parameterLabelList.Add("Average |Animation Error|");
                     if (_appConfiguration.UseSingleRecordMinStatisticParameter && !double.IsNaN(max))
                         parameterLabelList.Add("Max");
                     if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
@@ -1750,9 +1791,9 @@ namespace CapFrameX.ViewModel
                         parameterLabelList.Add("GPU-Busy Average");
                     if (_appConfiguration.UseSingleRecordAverageStatisticParameter && !double.IsNaN(average))
                         parameterLabelList.Add("Average");
-                    if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter && !double.IsNaN(p95_quantile))
+                    if (_appConfiguration.UseSingleRecordFrametimeP5QuantileStatisticParameter && !double.IsNaN(p95_quantile))
                         parameterLabelList.Add("P5");
-                    if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter && !double.IsNaN(p99_quantile))
+                    if (_appConfiguration.UseSingleRecordFrametimeP1QuantileStatisticParameter && !double.IsNaN(p99_quantile))
                         parameterLabelList.Add("P1");
                     if (_appConfiguration.UseSingleRecordMaxStatisticParameter && !double.IsNaN(min))
                         parameterLabelList.Add("Min");

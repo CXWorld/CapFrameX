@@ -375,6 +375,8 @@ internal sealed class Amd17Cpu : AmdCpu
 
                     case 0x61: //Zen 4
                     case 0x44: //Zen 5
+                    case 0xE0: //Zen 6 Olympic Ridge (Desktop). Mobile MP1/MP2 (0x88/0xE4) and
+                               //Family 0x1B parts (Medusa Point 3, Rosenhorn) untested — leave on default.
                         sviPlane0Offset = F17H_M01H_SVI + 0x10;
                         sviPlane1Offset = F17H_M01H_SVI + 0xC;
                         supportsPerCcdTemperatures = true;
@@ -471,7 +473,7 @@ internal sealed class Amd17Cpu : AmdCpu
                     for (uint i = 0; i < _ccdTemperatures.Length; i++)
                     {
                         uint ccd1Offset = 0;
-                        if (cpuId.Model is 0x61 or 0x44) // Raphael or GraniteRidge
+                        if (cpuId.Model is 0x61 or 0x44 or 0xE0) // Raphael, GraniteRidge or OlympicRidge
                             ccd1Offset = F17H_M61H_CCD1_TEMP + i * 0x4;
                         else
                             ccd1Offset = F17H_M70H_CCD1_TEMP + i * 0x4;
@@ -534,7 +536,7 @@ internal sealed class Amd17Cpu : AmdCpu
             double vcc;
             uint svi0PlaneXVddCor;
 
-            if (cpuId.Model is 0x61 or 0x44) // Readout not working for Ryzen 7000/9000.
+            if (cpuId.Model is 0x61 or 0x44 or 0xE0) // Readout not working for Ryzen 7000/9000; assumed same for Olympic Ridge (Zen 6 Desktop).
                 smuSvi0Tfn |= 0x01 | 0x02;
 
             // Core (0x01).
@@ -913,9 +915,9 @@ internal sealed class Amd17Cpu : AmdCpu
                 if (_busClock?.Value.HasValue == true && _busClock.Value > 0)
                     busClock = (double)_busClock.Value;
 
-                if (thread.Cpu.Family == 0x1A)
+                if (thread.Cpu.Family == 0x1A || thread.Cpu.Family == 0x1B)
                 {
-                    // zen5 (0x1A)
+                    // zen5 (0x1A) + zen6 MP3 / zen7 (0x1B) — inherit CpuFid[11:0] layout
                     // 57896-B0-PUB_3.00.pdf, CoreCOF
                     // CoreCOF is Core current operating frequency in MHz.CoreCOF = Core::X86::Msr::PStateDef[CpuFid[11:0]] * 5MHz
                     // CpuFid[11:0]: core frequency ID.Read - write.Reset: XXXh.Specifies the core frequency multiplier.The core

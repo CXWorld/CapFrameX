@@ -16,54 +16,58 @@ namespace CapFrameX.PresentMonInterface
 {
     public class PresentMonCaptureService : ICaptureService
     {
-        // Column header with PC latency tracking (32 columns)
+        // Temporary disabled ETW tracking
+        // EtwBufferFillPct,EtwBuffersInUse,EtwTotalBuffers,EtwEventsLost,EtwBuffersLost
+
         public static readonly string COLUMN_HEADER_WITH_PC_LATENCY =
             "Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
-            "TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency," +
+            "FrameType,TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency," +
             "MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy," +
-            "MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,EtwBufferFillPct,EtwBuffersInUse,EtwTotalBuffers,EtwEventsLost,EtwBuffersLost";
+            "MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,MsInstrumentedLatency";
 
-        // Column header without PC latency tracking (31 columns)
         public static readonly string COLUMN_HEADER_WITHOUT_PC_LATENCY =
             "Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
-            "TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency," +
+            "FrameType,TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency," +
             "MsUntilDisplayed,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy," +
-            "MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,EtwBufferFillPct,EtwBuffersInUse,EtwTotalBuffers,EtwEventsLost,EtwBuffersLost";
+            "MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,MsInstrumentedLatency";
 
-        // Parsed column arrays for index lookup
-        private static readonly string[] ColumnsWithPcLatency = COLUMN_HEADER_WITH_PC_LATENCY.Split(',');
-        private static readonly string[] ColumnsWithoutPcLatency = COLUMN_HEADER_WITHOUT_PC_LATENCY.Split(',');
+        private static readonly PresentMonColumnLayout ColumnLayoutWithPcLatency =
+            new PresentMonColumnLayout(COLUMN_HEADER_WITH_PC_LATENCY, true);
 
-        // Fixed indices (same in both headers)
-        public static readonly int ApplicationName_INDEX = Array.IndexOf(ColumnsWithPcLatency, "Application");
-        public static readonly int ProcessID_INDEX = Array.IndexOf(ColumnsWithPcLatency, "ProcessID");
-        public static readonly int SwapChainAddress_INDEX = Array.IndexOf(ColumnsWithPcLatency, "SwapChainAddress");
-        public static readonly int MsBetweenPresents_INDEX = Array.IndexOf(ColumnsWithPcLatency, "MsBetweenPresents");
-        public static readonly int MsBetweenDisplayChange_INDEX = Array.IndexOf(ColumnsWithPcLatency, "MsBetweenDisplayChange");
-        public static readonly int MsPCLatency_INDEX = Array.IndexOf(ColumnsWithPcLatency, "MsPCLatency");
+        private static readonly PresentMonColumnLayout ColumnLayoutWithoutPcLatency =
+            new PresentMonColumnLayout(COLUMN_HEADER_WITHOUT_PC_LATENCY, false);
+
+        // Fixed indices before the optional PC latency column. MsPCLatency is only available in the PC latency layout.
+        public static readonly int ApplicationName_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "Application");
+        public static readonly int ProcessID_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "ProcessID");
+        public static readonly int SwapChainAddress_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "SwapChainAddress");
+        public static readonly int MsBetweenPresents_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "MsBetweenPresents");
+        public static readonly int MsBetweenDisplayChange_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "MsBetweenDisplayChange");
+        public static readonly int MsPCLatency_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "MsPCLatency");
 
         private readonly IAppConfiguration _appConfiguration;
 
-        // Dynamic indices - derived from the appropriate column header based on UsePcLatency setting
-        private string[] CurrentColumns => _appConfiguration.UsePcLatency ? ColumnsWithPcLatency : ColumnsWithoutPcLatency;
+        private PresentMonColumnLayout _activeColumnLayout;
 
-        public int CPUStartQPCTimeInMs_Index => Array.IndexOf(CurrentColumns, "CPUStartQPCTimeInMs");
-        public int StartTimeInMs_INDEX => Array.IndexOf(CurrentColumns, "CPUStartQPCTimeInMs");
-        public int CpuBusy_Index => Array.IndexOf(CurrentColumns, "MsCPUBusy");
-        public int GpuBusy_Index => Array.IndexOf(CurrentColumns, "MsGPUBusy");
-        public int AnimationError_Index => Array.IndexOf(CurrentColumns, "MsAnimationError");
+        // Dynamic indices - derived from the active capture layout or current configuration.
+        private PresentMonColumnLayout CurrentColumnLayout =>
+            _activeColumnLayout ?? GetColumnLayout(_appConfiguration.UsePcLatency);
+
+        public int CPUStartQPCTimeInMs_Index => Array.IndexOf(CurrentColumnLayout.Columns, "CPUStartQPCTimeInMs");
+        public int StartTimeInMs_INDEX => Array.IndexOf(CurrentColumnLayout.Columns, "CPUStartQPCTimeInMs");
+        public int CpuBusy_Index => Array.IndexOf(CurrentColumnLayout.Columns, "MsCPUBusy");
+        public int GpuBusy_Index => Array.IndexOf(CurrentColumnLayout.Columns, "MsGPUBusy");
+        public int AnimationError_Index => Array.IndexOf(CurrentColumnLayout.Columns, "MsAnimationError");
 
         // Custom PresentMon build - ETW tracking columns
-        public int EtwBufferFillPct_Index => Array.IndexOf(CurrentColumns, "EtwBufferFillPct");
-        public int EtwBuffersInUse_Index => Array.IndexOf(CurrentColumns, "EtwBuffersInUse");
-        public int EtwTotalBuffers_Index => Array.IndexOf(CurrentColumns, "EtwTotalBuffers");
-        public int EtwEventsLost_Index => Array.IndexOf(CurrentColumns, "EtwEventsLost");
-        public int EtwBuffersLost_Index => Array.IndexOf(CurrentColumns, "EtwBuffersLost");
-        public int ValidLineLength => CurrentColumns.Length;
+        public int EtwBufferFillPct_Index => Array.IndexOf(CurrentColumnLayout.Columns, "EtwBufferFillPct");
+        public int EtwBuffersInUse_Index => Array.IndexOf(CurrentColumnLayout.Columns, "EtwBuffersInUse");
+        public int EtwTotalBuffers_Index => Array.IndexOf(CurrentColumnLayout.Columns, "EtwTotalBuffers");
+        public int EtwEventsLost_Index => Array.IndexOf(CurrentColumnLayout.Columns, "EtwEventsLost");
+        public int EtwBuffersLost_Index => Array.IndexOf(CurrentColumnLayout.Columns, "EtwBuffersLost");
+        public int ValidLineLength => CurrentColumnLayout.ValidLineLength;
 
-        public string ColumnHeader => _appConfiguration.UsePcLatency
-            ? COLUMN_HEADER_WITH_PC_LATENCY
-            : COLUMN_HEADER_WITHOUT_PC_LATENCY;
+        public string ColumnHeader => CurrentColumnLayout.ColumnHeader;
 
         private readonly ISubject<string[]> _outputDataStream;
         private readonly object _listLock = new object();
@@ -99,6 +103,8 @@ namespace CapFrameX.PresentMonInterface
             {
                 TryKillPresentMon();
                 SubscribeToPresentMonCapturedProcesses();
+                var captureColumnLayout = GetColumnLayout(IsPcLatencyTrackingEnabled(startinfo));
+                _activeColumnLayout = captureColumnLayout;
 
                 Process process = new Process
                 {
@@ -121,7 +127,7 @@ namespace CapFrameX.PresentMonInterface
                     if (!string.IsNullOrWhiteSpace(e.Data))
                     {
                         var lineSplit = e.Data.Split(',');
-                        if (lineSplit.Length == ValidLineLength)
+                        if (HasValidLineLength(lineSplit, captureColumnLayout))
                         {
                             if (lineSplit[ApplicationName_INDEX] != "<error>")
                             {
@@ -140,6 +146,7 @@ namespace CapFrameX.PresentMonInterface
             }
             catch (Exception e)
             {
+                _activeColumnLayout = null;
                 _logger.LogError(e, "Failed to start CaptureService");
                 return false;
             }
@@ -149,6 +156,7 @@ namespace CapFrameX.PresentMonInterface
         {
             _hearBeatDisposable?.Dispose();
             _processNameDisposable?.Dispose();
+            _activeColumnLayout = null;
 
             try
             {
@@ -218,22 +226,11 @@ namespace CapFrameX.PresentMonInterface
                             hasInitialData = true;
                         }
 
-                        string processName = string.Empty;
-                        int processId = 0;
+                        string processName = lineSplit[ApplicationName_INDEX].Replace(".exe", "");
 
-                        if (lineSplit.Length > Math.Max(ApplicationName_INDEX, ProcessID_INDEX))
+                        if (!int.TryParse(lineSplit[ProcessID_INDEX], out int processId))
                         {
-                            processName = lineSplit[ApplicationName_INDEX].Replace(".exe", "");
-
-                            if (!int.TryParse(lineSplit[ProcessID_INDEX], out processId))
-                            {
-                                _logger.LogError("Failed to parse process ID from line split. {lineSplit}", string.Join(",", lineSplit));
-                                return;
-                            }
-                        }
-                        else
-                        {
-                            _logger.LogError("Invalid line split array length. {lineSplit}", string.Join(",", lineSplit));
+                            _logger.LogError("Failed to parse process ID from line split. {lineSplit}", string.Join(",", lineSplit));
                             return;
                         }
 
@@ -279,6 +276,50 @@ namespace CapFrameX.PresentMonInterface
             }
 
             _isUpdating = false;
+        }
+
+        private static PresentMonColumnLayout GetColumnLayout(bool usePcLatency)
+        {
+            return usePcLatency ? ColumnLayoutWithPcLatency : ColumnLayoutWithoutPcLatency;
+        }
+
+        private static bool IsPcLatencyTrackingEnabled(IServiceStartInfo startinfo)
+        {
+            return (startinfo?.Arguments?.IndexOf("--track_pc_latency", StringComparison.OrdinalIgnoreCase) ?? -1) >= 0;
+        }
+
+        private static bool HasValidLineLength(string[] lineSplit, PresentMonColumnLayout columnLayout)
+        {
+            return lineSplit?.Length == columnLayout.ValidLineLength;
+        }
+
+        private void LogInvalidLineLength(int actualLineLength, PresentMonColumnLayout columnLayout, string line)
+        {
+            _logger.LogError(
+                "Received PresentMon output line with invalid column count. Expected {ExpectedLineLength}, actual {ActualLineLength}, UsePcLatency {UsePcLatency}. Line: {Line}",
+                columnLayout.ValidLineLength,
+                actualLineLength,
+                columnLayout.UsePcLatency,
+                line);
+        }
+
+        private sealed class PresentMonColumnLayout
+        {
+            public PresentMonColumnLayout(string columnHeader, bool usePcLatency)
+            {
+                ColumnHeader = columnHeader;
+                Columns = columnHeader.Split(',');
+                ValidLineLength = Columns.Length;
+                UsePcLatency = usePcLatency;
+            }
+
+            public string ColumnHeader { get; }
+
+            public string[] Columns { get; }
+
+            public int ValidLineLength { get; }
+
+            public bool UsePcLatency { get; }
         }
     }
 }

@@ -5,6 +5,8 @@
 		private bool _useMaxStatisticParameter;
 		private bool _useP99QuantileStatisticParameter;
 		private bool _useP95QuantileStatisticParameter;
+		private bool _useFrametimeP1QuantileStatisticParameter;
+		private bool _useFrametimeP5QuantileStatisticParameter;
 		private bool _useMedianStatisticParameter;
 		private bool _useAverageStatisticParameter;
 		private bool _useGpuActiveAverageStatisticParameter;
@@ -24,12 +26,16 @@
 		private bool _useAdaptiveSTDStatisticParameter;
 		private bool _useSingleRecordCpuFpsPerWattParameter;
 		private bool _useSingleRecordGpuFpsPerWattParameter;
+		private bool _useAnimationErrorAverageStatisticParameter;
+		private bool _useAnimationErrorP99StatisticParameter;
 
 		partial void InitializeStatisticParameter()
 		{
 			UseMaxStatisticParameter = _appConfiguration.UseSingleRecordMaxStatisticParameter;
 			UseP99QuantileStatisticParameter = _appConfiguration.UseSingleRecord99QuantileStatisticParameter;
 			UseP95QuantileStatisticParameter = _appConfiguration.UseSingleRecordP95QuantileStatisticParameter;
+			UseFrametimeP1QuantileStatisticParameter = _appConfiguration.UseSingleRecordFrametimeP1QuantileStatisticParameter;
+			UseFrametimeP5QuantileStatisticParameter = _appConfiguration.UseSingleRecordFrametimeP5QuantileStatisticParameter;
 			UseMedianStatisticParameter = _appConfiguration.UseSingleRecordMedianStatisticParameter;
 			UseAverageStatisticParameter = _appConfiguration.UseSingleRecordAverageStatisticParameter;
 			UseGpuActiveAverageStatisticParameter = _appConfiguration.UseSingleRecordGpuActiveAverageStatisticParameter;
@@ -49,6 +55,8 @@
 			UseAdaptiveSTDStatisticParameter = _appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter;
 			UseCpuFpsPerWattParameter = _appConfiguration.UseSingleRecordCpuFpsPerWattParameter;
 			UseGpuFpsPerWattParameter = _appConfiguration.UseSingleRecordGpuFpsPerWattParameter;
+			UseAnimationErrorAverageStatisticParameter = _appConfiguration.UseSingleRecordAnimationErrorAverageStatisticParameter;
+			UseAnimationErrorP99StatisticParameter = _appConfiguration.UseSingleRecordAnimationErrorP99StatisticParameter;
 		}
 
 		public bool UseMaxStatisticParameter
@@ -86,6 +94,30 @@
 				RaisePropertyChanged();
 			}
 		}
+		public bool UseFrametimeP1QuantileStatisticParameter
+		{
+			get { return _useFrametimeP1QuantileStatisticParameter; }
+			set
+			{
+				_useFrametimeP1QuantileStatisticParameter = value;
+				_appConfiguration.UseSingleRecordFrametimeP1QuantileStatisticParameter = value;
+				OnAcceptParameterSettings();
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool UseFrametimeP5QuantileStatisticParameter
+		{
+			get { return _useFrametimeP5QuantileStatisticParameter; }
+			set
+			{
+				_useFrametimeP5QuantileStatisticParameter = value;
+				_appConfiguration.UseSingleRecordFrametimeP5QuantileStatisticParameter = value;
+				OnAcceptParameterSettings();
+				RaisePropertyChanged();
+			}
+		}
+
 		public bool UseMedianStatisticParameter
 		{
 			get { return _useMedianStatisticParameter; }
@@ -284,6 +316,29 @@
 			{
 				_useSingleRecordGpuFpsPerWattParameter = value;
 				_appConfiguration.UseSingleRecordGpuFpsPerWattParameter = value;
+				OnAcceptParameterSettings();
+				RaisePropertyChanged();
+			}
+		}
+		public bool UseAnimationErrorAverageStatisticParameter
+		{
+			get { return _useAnimationErrorAverageStatisticParameter; }
+			set
+			{
+				_useAnimationErrorAverageStatisticParameter = value;
+				_appConfiguration.UseSingleRecordAnimationErrorAverageStatisticParameter = value;
+				OnAcceptParameterSettings();
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool UseAnimationErrorP99StatisticParameter
+		{
+			get { return _useAnimationErrorP99StatisticParameter; }
+			set
+			{
+				_useAnimationErrorP99StatisticParameter = value;
+				_appConfiguration.UseSingleRecordAnimationErrorP99StatisticParameter = value;
 				OnAcceptParameterSettings();
 				RaisePropertyChanged();
 			}

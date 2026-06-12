@@ -458,6 +458,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool McpEnabled
+        {
+            get { return _appConfiguration.McpEnabled; }
+            set
+            {
+                _appConfiguration.McpEnabled = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public string WebservicePort
         {
             get { return _appConfiguration.WebservicePort; }
@@ -594,7 +604,17 @@ namespace CapFrameX.ViewModel
             SubscribeToAggregatorEvents();
             SetHardwareInfoDefaultsFromConfig();
 
-            OnAutostartChanged(true);
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                try
+                {
+                    OnAutostartChanged(true);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Unable to clean autostart configuration.");
+                }
+            });
 
             if (AppNotificationsActive)
             {
@@ -753,9 +773,9 @@ namespace CapFrameX.ViewModel
         {
             const string appName = "CapFrameX";
 
-            using (TaskService ts = new TaskService())
+            try
             {
-                try
+                using (TaskService ts = new TaskService())
                 {
                     var taskExists = ts.RootFolder.GetTasks().Any(t => t.Name == appName);
 
@@ -789,10 +809,10 @@ namespace CapFrameX.ViewModel
                         ts.RootFolder.DeleteTask(appName);
                     }
                 }
-                catch (Exception e)
-                {
-                    _logger.LogError("Unable to perform autostart task", e);
-                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Unable to perform autostart task");
             }
 
             if (cleanup)

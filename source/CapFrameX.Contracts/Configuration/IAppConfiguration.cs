@@ -23,6 +23,10 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool UseSingleRecordP95QuantileStatisticParameter { get; set; }
 
+		bool UseSingleRecordFrametimeP1QuantileStatisticParameter { get; set; }
+
+		bool UseSingleRecordFrametimeP5QuantileStatisticParameter { get; set; }
+
 		bool UseSingleRecordAverageStatisticParameter { get; set; }
 
         bool UseSingleRecordGpuActiveAverageStatisticParameter { get; set; }
@@ -56,6 +60,10 @@ namespace CapFrameX.Contracts.Configuration
 		bool UseSingleRecordCpuFpsPerWattParameter { get; set; }
 
 		bool UseSingleRecordGpuFpsPerWattParameter { get; set; }
+
+		bool UseSingleRecordAnimationErrorAverageStatisticParameter { get; set; }
+
+		bool UseSingleRecordAnimationErrorP99StatisticParameter { get; set; }
 
 		string CaptureHotKey { get; set; }
 
@@ -324,6 +332,10 @@ namespace CapFrameX.Contracts.Configuration
         bool ReportShowP0Dot1LowIntegralFPS { get; set; }
 
         bool ReportShowMinFPS { get; set; }
+
+        bool ReportShowAnimationErrorP99 { get; set; }
+
+        bool ReportShowAnimationErrorAverage { get; set; }
 
 		bool ReportShowAdaptiveSTD { get; set; }
 

@@ -1191,7 +1191,8 @@ namespace CapFrameX.ViewModel
                         Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)), // blue
                         StrokeThickness = 0,
                         StackMode = StackMode.Percentage,
-                        MaxRowHeight = 50
+                        MaxRowHeight = 50,
+                        CornerRadius = 0
                     },
 
                     new StackedRowSeries
@@ -1202,7 +1203,8 @@ namespace CapFrameX.ViewModel
                         Fill = new SolidColorBrush(Color.FromRgb(15, 120, 180)), // dark blue
                         StrokeThickness = 0,
                         StackMode = StackMode.Percentage,
-                        MaxRowHeight = 50
+                        MaxRowHeight = 50,
+                        CornerRadius = 0
                     },
 
                     new StackedRowSeries
@@ -1214,6 +1216,7 @@ namespace CapFrameX.ViewModel
                         StrokeThickness = 0,
                         StackMode = StackMode.Percentage,
                         MaxRowHeight = 50,
+                        CornerRadius = 0
                     },
 
                     new StackedRowSeries
@@ -1224,7 +1227,8 @@ namespace CapFrameX.ViewModel
                         Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)), // orange
                         StrokeThickness = 0,
                         StackMode = StackMode.Percentage,
-                        MaxRowHeight = 50
+                        MaxRowHeight = 50,
+                        CornerRadius = 0
                     },
 
                     new StackedRowSeries
@@ -1235,7 +1239,8 @@ namespace CapFrameX.ViewModel
                         Fill = new SolidColorBrush(Color.FromRgb(200, 0, 0)), // red
                         StrokeThickness = 0,
                         StackMode = StackMode.Percentage,
-                        MaxRowHeight = 50
+                        MaxRowHeight = 50,
+                        CornerRadius = 0
                     }
                 };
         }

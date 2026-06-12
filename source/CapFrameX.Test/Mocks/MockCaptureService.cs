@@ -1,4 +1,4 @@
-using CapFrameX.Capture.Contracts;
+﻿using CapFrameX.Capture.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,34 +23,39 @@ namespace CapFrameX.Test.Mocks
         public const int PresentFlags_INDEX = 5;
         public const int AllowsTearing_INDEX = 6;
         public const int PresentMode_INDEX = 7;
-        public const int TimeInSeconds_INDEX = 8;
-        public const int MsBetweenSimulationStart_INDEX = 9;
-        public const int MsBetweenPresents_INDEX = 10;
-        public const int MsBetweenDisplayChange_INDEX = 11;
-        public const int MsInPresentAPI_INDEX = 12;
-        public const int MsRenderPresentLatency_INDEX = 13;
-        public const int MsUntilDisplayed_INDEX = 14;
-        public const int MsPCLatency_INDEX = 15;
-        public const int StartTimeInMs_INDEX = 16;
-        public const int MsBetweenAppStart_INDEX = 17;
-        public const int CpuBusy_INDEX = 18;
-        public const int MsCpuWait_INDEX = 19;
-        public const int MsGpuLatency_INDEX = 20;
-        public const int MsGpuTime_INDEX = 21;
-        public const int GpuBusy_INDEX = 22;
-        public const int MsGpuWait_INDEX = 23;
-        public const int MsAnimationError_INDEX = 24;
-        public const int AnimationTime_INDEX = 25;
-        public const int MsFlipDelay_INDEX = 26;
-        public const int EtwBufferFillPct_INDEX = 27;
-        public const int EtwBuffersInUse_INDEX = 28;
-        public const int EtwTotalBuffers_INDEX = 29;
-        public const int EtwEventsLost_INDEX = 30;
-        public const int EtwBuffersLost_INDEX = 31;
-        public const int VALID_LINE_LENGTH = 32;
+        public const int FrameType_INDEX = 8;
+        public const int TimeInSeconds_INDEX = 9;
+        public const int MsBetweenSimulationStart_INDEX = 10;
+        public const int MsBetweenPresents_INDEX = 11;
+        public const int MsBetweenDisplayChange_INDEX = 12;
+        public const int MsInPresentAPI_INDEX = 13;
+        public const int MsRenderPresentLatency_INDEX = 14;
+        public const int MsUntilDisplayed_INDEX = 15;
+        public const int MsPCLatency_INDEX = 16;
+        public const int StartTimeInMs_INDEX = 17;
+        public const int MsBetweenAppStart_INDEX = 18;
+        public const int CpuBusy_INDEX = 19;
+        public const int MsCpuWait_INDEX = 20;
+        public const int MsGpuLatency_INDEX = 21;
+        public const int MsGpuTime_INDEX = 22;
+        public const int GpuBusy_INDEX = 23;
+        public const int MsGpuWait_INDEX = 24;
+        public const int MsAnimationError_INDEX = 25;
+        public const int AnimationTime_INDEX = 26;
+        public const int MsFlipDelay_INDEX = 27;
+        public const int MsInstrumentedLatency_INDEX = 28;
+        public const int EtwBufferFillPct_INDEX = 29;
+        public const int EtwBuffersInUse_INDEX = 30;
+        public const int EtwTotalBuffers_INDEX = 31;
+        public const int EtwEventsLost_INDEX = 32;
+        public const int EtwBuffersLost_INDEX = 33;
+        public const int VALID_LINE_LENGTH = 34;
 
-        public string ColumnHeader => string.Join(",",
-            Enumerable.Range(0, VALID_LINE_LENGTH).Select(i => $"Column{i}"));
+        public string ColumnHeader =>
+            "Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
+            "FrameType,TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency," +
+            "MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy," +
+            "MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,MsInstrumentedLatency,EtwBufferFillPct,EtwBuffersInUse,EtwTotalBuffers,EtwEventsLost,EtwBuffersLost";
 
         private readonly Subject<string[]> _frameDataSubject;
         private readonly Random _random;
@@ -518,6 +523,7 @@ namespace CapFrameX.Test.Mocks
             data[PresentFlags_INDEX] = "0";
             data[AllowsTearing_INDEX] = "1";
             data[PresentMode_INDEX] = "Hardware: Independent Flip";
+            data[FrameType_INDEX] = "Application";
             data[TimeInSeconds_INDEX] = _currentTimeInSeconds.ToString("F6");
             data[MsBetweenSimulationStart_INDEX] = msBetweenPresents.ToString("F4");
             data[MsBetweenPresents_INDEX] = msBetweenPresents.ToString("F4");
@@ -537,6 +543,7 @@ namespace CapFrameX.Test.Mocks
             data[MsAnimationError_INDEX] = "0.0000";
             data[AnimationTime_INDEX] = "0";
             data[MsFlipDelay_INDEX] = (0.1 + _random.NextDouble() * 0.2).ToString("F4");
+            data[MsInstrumentedLatency_INDEX] = "0.0000";
 
             // ETW tracking fields
             data[EtwBufferFillPct_INDEX] = (_random.NextDouble() * 10).ToString("F2");

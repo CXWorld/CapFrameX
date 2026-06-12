@@ -126,7 +126,59 @@ internal class RyzenSMU
                 { 448, new SmuSensorType { Name = "L3 (CCD1)", Type = SensorType.Temperature, Scale = 1 } },
                 { 449, new SmuSensorType { Name = "L3 (CCD2)", Type = SensorType.Temperature, Scale = 1 } }
             }
-        }
+        },
+
+        // Reuse the Zen-5 byte offsets (0x54 SOC Power, 0x68 Total Power,
+        // 0xC4 VDDCR, 0xD0 VDDCR SoC, 0xEC VDD Misc, 0x11C Fabric, 0x12C Uncore,
+        // 0x458 IOD Hotspot ...) for these generations, so we replicate the Zen-5
+        // (Granite Ridge, 0x00620105) sensor layout as best-guess.  When real
+        // hardware becomes available, validation is needed to confirm if the PM
+        // table layout is indeed identical to Zen 5.
+
+        // Zen 5 Strix Halo / Sarlak — PMT generation 0x005Exxxx (hypothesis)
+        { 0x005E0200, CreateZen5LikeMapping() },
+        { 0x005E0600, CreateZen5LikeMapping() },
+        { 0x005E0A00, CreateZen5LikeMapping() },
+        { 0x005E0A01, CreateZen5LikeMapping() },
+        { 0x005E0E00, CreateZen5LikeMapping() },
+        { 0x005E0E01, CreateZen5LikeMapping() },
+
+        // Zen 6 Olympic Ridge (Desktop) — PMT generation 0x0063xxxx (hypothesis)
+        { 0x00630200, CreateZen5LikeMapping() },
+        { 0x00630402, CreateZen5LikeMapping() },
+        { 0x00630403, CreateZen5LikeMapping() },
+        { 0x00630702, CreateZen5LikeMapping() },
+        { 0x00630703, CreateZen5LikeMapping() },
+        { 0x00630A01, CreateZen5LikeMapping() },
+        { 0x00630A02, CreateZen5LikeMapping() },
+
+        // Zen 6 Medusa Point (Mobile) — PMT generation 0x0073xxxx (hypothesis)
+        { 0x00730201, CreateZen5LikeMapping() },
+        { 0x00730601, CreateZen5LikeMapping() },
+        { 0x00730602, CreateZen5LikeMapping() },
+        { 0x00730A01, CreateZen5LikeMapping() },
+        { 0x00730A02, CreateZen5LikeMapping() },
+        { 0x00730E01, CreateZen5LikeMapping() },
+        { 0x00730E02, CreateZen5LikeMapping() }
+    };
+
+    private static Dictionary<uint, SmuSensorType> CreateZen5LikeMapping() => new()
+    {
+        { 3, new SmuSensorType { Name = "CPU PPT", Type = SensorType.Power, Scale = 1 } },
+        { 11, new SmuSensorType { Name = "Package", Type = SensorType.Temperature, Scale = 1 } },
+        { 20, new SmuSensorType { Name = "Core Power", Type = SensorType.Power, Scale = 1 } },
+        { 21, new SmuSensorType { Name = "SOC Power", Type = SensorType.Power, Scale = 1 } },
+        { 26, new SmuSensorType { Name = "Total Power", Type = SensorType.Power, Scale = 1 } },
+        { 49, new SmuSensorType { Name = "VDDCR", Type = SensorType.Voltage, Scale = 1 } },
+        { 59, new SmuSensorType { Name = "VDD Misc", Type = SensorType.Voltage, Scale = 1 } },
+        { 55, new SmuSensorType { Name = "SOC Current", Type = SensorType.Current, Scale = 1 } },
+        { 60, new SmuSensorType { Name = "Misc Current", Type = SensorType.Current, Scale = 1 } },
+        { 71, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
+        { 75, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
+        { 79, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
+        { 278, new SmuSensorType { Name = "IOD Hotspot", Type = SensorType.Temperature, Scale = 1 } },
+        { 448, new SmuSensorType { Name = "L3 (CCD1)", Type = SensorType.Temperature, Scale = 1 } },
+        { 449, new SmuSensorType { Name = "L3 (CCD2)", Type = SensorType.Temperature, Scale = 1 } }
     };
 
     private uint _pmTableSize;
@@ -364,6 +416,15 @@ internal class RyzenSMU
 
                 break;
 
+            case CpuCodeName.Sarlak:
+            case CpuCodeName.OlympicRidge:
+            case CpuCodeName.MedusaPoint:
+                // Best-guess: same PM-table size as Zen 5 Granite Ridge (0x950).
+                // Reuse the Zen-5 byte offsets for the 0x005E/0x0063/0x0073 generations.
+                // Refine per sub-version once real-hardware logs become available.
+                _pmTableSize = 0x950;
+                break;
+
             default:
                 break;
         }
@@ -379,6 +440,31 @@ internal class RyzenSMU
                 break;
             case 0x00540104:
             case 0x00620105:
+                _pmTableSize = 0x950;
+                break;
+
+            // Zen 5 Sarlak / Zen 6 Olympic Ridge / Zen 6 Medusa Point — best-guess
+            // size copied from Zen 5 Granite Ridge until real-hardware validation.
+            case 0x005E0200:
+            case 0x005E0600:
+            case 0x005E0A00:
+            case 0x005E0A01:
+            case 0x005E0E00:
+            case 0x005E0E01:
+            case 0x00630200:
+            case 0x00630402:
+            case 0x00630403:
+            case 0x00630702:
+            case 0x00630703:
+            case 0x00630A01:
+            case 0x00630A02:
+            case 0x00730201:
+            case 0x00730601:
+            case 0x00730602:
+            case 0x00730A01:
+            case 0x00730A02:
+            case 0x00730E01:
+            case 0x00730E02:
                 _pmTableSize = 0x950;
                 break;
         }
@@ -412,6 +498,9 @@ internal class RyzenSMU
         Milan,
         Dali,
         Raphael,
-        GraniteRidge
+        GraniteRidge,
+        Sarlak,
+        OlympicRidge,
+        MedusaPoint 
     }
 }

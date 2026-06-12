@@ -28,7 +28,12 @@ internal sealed class IntelCpu : GenericCpu
     private readonly Sensor _coreVoltage;
     private readonly Sensor[] _distToTjMaxTemperatures;
 
-    private readonly uint[] _energyStatusMsrs = { MSR_PKG_ENERGY_STATUS, MSR_PP0_ENERGY_STATUS, MSR_PP1_ENERGY_STATUS, MSR_DRAM_ENERGY_STATUS, MSR_PLATFORM_ENERGY_STATUS };
+    private readonly uint[] _energyStatusMsrs = 
+    { 
+        MSR_PKG_ENERGY_STATUS, MSR_PP0_ENERGY_STATUS, 
+        MSR_PP1_ENERGY_STATUS, MSR_DRAM_ENERGY_STATUS, 
+        MSR_PLATFORM_ENERGY_STATUS 
+    };
     private readonly uint[] _lastEnergyConsumed;
     private readonly DateTime[] _lastEnergyTime;
 
@@ -54,10 +59,21 @@ internal sealed class IntelCpu : GenericCpu
     private readonly bool _hasImc;
     private readonly bool _hasImcLive;
 
-    public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
+    private readonly IntelOobmsm _oobmsmModule;
+    private readonly IntelOobmsmClocks _oobmsmClocks;
+    private readonly IntelOcMailbox _ocMailbox;
+    private readonly Sensor _nguClock;
+    private readonly Sensor _d2dClock;
+    private readonly bool _hasOobmsmClocks;
+    private readonly bool _hasOcMailboxClocks;
+
+    public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) 
+        : base(processorIndex, cpuId, settings)
     {
         _msrModule = new IntelMsr();
         _imcModule = new IntelImc();
+        _oobmsmModule = new IntelOobmsm();
+        _oobmsmClocks = new IntelOobmsmClocks(_oobmsmModule);
 
         uint eax;
 
@@ -575,6 +591,56 @@ internal sealed class IntelCpu : GenericCpu
             _hasImcLive = _imcModule.ReadLiveClock(out _);
         }
 
+        if (SupportsOobmsmClocks(_microArchitecture) && _oobmsmClocks.IsReady)
+        {
+            int oobmsmSensorBaseIndex = _hasAperfMperf
+                ? _coreClocks.Length + 2 + _threadEffectiveClocks.Sum(t => t.Length) + 2
+                : _coreClocks.Length + 2;
+            if (_hasUncoreClock)
+                oobmsmSensorBaseIndex++;
+            if (_hasImc)
+                oobmsmSensorBaseIndex += 4;
+
+            if (_oobmsmClocks.HasNgu)
+            {
+                _nguClock = new Sensor("NGU/NCLK Clock", oobmsmSensorBaseIndex, SensorType.Clock, this, settings)
+                { PresentationSortKey = "0_5_0" };
+                ActivateSensor(_nguClock);
+            }
+            if (_oobmsmClocks.HasD2d)
+            {
+                _d2dClock = new Sensor("D2D Clock", oobmsmSensorBaseIndex + 1, SensorType.Clock, this, settings)
+                { PresentationSortKey = "0_5_1" };
+                ActivateSensor(_d2dClock);
+            }
+            _hasOobmsmClocks = _nguClock != null || _d2dClock != null;
+        }
+        else if (SupportsOcMailbox(_microArchitecture))
+        {
+            // ARL-S relocated the VR Mailbox to MSR 0x607/0x608. OOBMSM PMT
+            // doesn't expose D2D/NGU on ARL-S, so when the PMT path failed
+            // above, try the MSR-mailbox path. (See IntelOcMailbox.cs.)
+            _ocMailbox = new IntelOcMailbox(_msrModule);
+            if (_ocMailbox.IsReady)
+            {
+                int sensorBaseIndex = _hasAperfMperf
+                    ? _coreClocks.Length + 2 + _threadEffectiveClocks.Sum(t => t.Length) + 2
+                    : _coreClocks.Length + 2;
+                if (_hasUncoreClock)
+                    sensorBaseIndex++;
+                if (_hasImc)
+                    sensorBaseIndex += 4;
+
+                _nguClock = new Sensor("NGU/NCLK Clock", sensorBaseIndex, SensorType.Clock, this, settings)
+                { PresentationSortKey = "0_5_0" };
+                ActivateSensor(_nguClock);
+                _d2dClock = new Sensor("D2D Clock", sensorBaseIndex + 1, SensorType.Clock, this, settings)
+                { PresentationSortKey = "0_5_1" };
+                ActivateSensor(_d2dClock);
+                _hasOcMailboxClocks = true;
+            }
+        }
+
         if (_microArchitecture is MicroArchitecture.Airmont or
             MicroArchitecture.AlderLake or
             MicroArchitecture.ArrowLake or
@@ -768,6 +834,40 @@ internal sealed class IntelCpu : GenericCpu
             MicroArchitecture.BartlettLake;
     }
 
+    // Architectures whose SoC-fabric clocks (NGU, D2D) are exposed by the
+    // IntelOOBMSM PawnIO module via PMT Telemetry. NGU and D2D as discrete
+    // clock domains exist only on tile-based Core Ultra parts — monolithic
+    // CPUs (ADL/RPL/Bartlett) keep the role unified under the existing
+    // MSR_UNCORE_PERF_STATUS "Uncore Ring Clock". Server uncore (EMR/SPR)
+    // routes its fabric telemetry through a different PMU path and is
+    // intentionally out of scope.
+    //
+    // Validation status: this is a fresh integration; until the per-platform
+    // PMT register offsets are populated in IntelOobmsmClocks.GetPlatformOffsets
+    // (or supplied via env-var overrides), IntelOobmsmClocks.IsReady stays
+    // false and no sensors register here.
+    private static bool SupportsOobmsmClocks(MicroArchitecture arch)
+    {
+        return arch is MicroArchitecture.MeteorLake or
+            MicroArchitecture.ArrowLake or
+            MicroArchitecture.LunarLake or
+            MicroArchitecture.PantherLake or
+            MicroArchitecture.WildcatLake or
+            MicroArchitecture.NovaLake;
+    }
+
+    // Architectures whose fabric clocks (NGU, D2D) are exposed via the
+    // new VR Mailbox MSR pair (0x607 interface + 0x608 data) rather
+    // than the OOBMSM PMT Telemetry container. ARL-S desktop is the
+    // first known case; later monolithic Core Ultra Series 3+ desktop
+    // parts are speculative additions that will fall back gracefully
+    // if the MSRs return #GP at probe time (IntelOcMailbox.IsReady).
+    private static bool SupportsOcMailbox(MicroArchitecture arch)
+    {
+        return arch is MicroArchitecture.ArrowLake or
+            MicroArchitecture.NovaLake;
+    }
+
     private float[] GetTjMaxFromMsr()
     {
         float[] result = new float[_coreCount];
@@ -847,6 +947,7 @@ internal sealed class IntelCpu : GenericCpu
         base.Close();
         _msrModule.Close();
         _imcModule.Close();
+        _oobmsmModule.Close();
     }
 
     public override void Update()
@@ -1041,6 +1142,45 @@ internal sealed class IntelCpu : GenericCpu
                     _memoryDataRate.Value = null;
                     _dramFrequency.Value = null;
                     _memoryGear.Value = null;
+                }
+            }
+
+            if (_hasOobmsmClocks)
+            {
+                // PMT NGU/D2D fields use absolute MHz multipliers
+                // baked into the platform table (e.g. ratio × 50 MHz on
+                // LNL/PTL D2D, ratio × 100 MHz on MTL NGU). No BCLK
+                // scaling is involved, so the IMC reference-clock path
+                // doesn't apply here.
+                if (_oobmsmClocks.TryRead(out IntelOobmsmClocks.Sample oobmsmSample))
+                {
+                    if (_nguClock != null)
+                        _nguClock.Value = oobmsmSample.HasNgu ? (float?)oobmsmSample.NguMhz : null;
+                    if (_d2dClock != null)
+                        _d2dClock.Value = oobmsmSample.HasD2d ? (float?)oobmsmSample.D2dMhz : null;
+                }
+                else
+                {
+                    if (_nguClock != null) _nguClock.Value = null;
+                    if (_d2dClock != null) _d2dClock.Value = null;
+                }
+            }
+            else if (_hasOcMailboxClocks)
+            {
+                // ARL-S path: D2D/NGU come from VR Mailbox on MSR 0x607/0x608.
+                // Both ratios decode to MHz with a × 100 MHz multiplier baked
+                // into IntelOcMailbox.
+                if (_ocMailbox.TryRead(out IntelOcMailbox.Sample mboxSample))
+                {
+                    if (_nguClock != null)
+                        _nguClock.Value = mboxSample.HasNgu ? (float?)mboxSample.NguMhz : null;
+                    if (_d2dClock != null)
+                        _d2dClock.Value = mboxSample.HasD2d ? (float?)mboxSample.D2dMhz : null;
+                }
+                else
+                {
+                    if (_nguClock != null) _nguClock.Value = null;
+                    if (_d2dClock != null) _d2dClock.Value = null;
                 }
             }
         }

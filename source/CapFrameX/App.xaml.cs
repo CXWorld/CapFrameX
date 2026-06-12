@@ -24,6 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace CapFrameX
 {
@@ -119,22 +120,11 @@ namespace CapFrameX
                 try
                 {
                     var appConfiguration = _bootstrapper.Container.Resolve<IAppConfiguration>();
-                    if (!appConfiguration.SuppressFrameViewServiceWarning && EtwServiceChecker.IsFrameViewServiceRunning())
+                    if (!appConfiguration.SuppressFrameViewServiceWarning)
                     {
-                        var result = MessageBox.Show(
-                            "FrameViewService ETW session detected.\n\n" +
-                            "The NVIDIA FrameView SDK is currently running an ETW trace session that may conflict with PresentMon. " +
-                            "If CapFrameX does not show performance metrics during capture, consider uninstalling the NVIDIA FrameView SDK.\n\n" +
-                            "Click 'Yes' to continue and show this warning again next time.\n" +
-                            "Click 'No' to continue and never show this warning again.",
-                            "ETW Session Conflict Detected",
-                            MessageBoxButton.YesNo,
-                            MessageBoxImage.Warning);
-
-                        if (result == MessageBoxResult.No)
-                        {
-                            appConfiguration.SuppressFrameViewServiceWarning = true;
-                        }
+                        Current.Dispatcher.BeginInvoke(
+                            new Action(() => _ = CheckFrameViewServiceAsync(appConfiguration)),
+                            DispatcherPriority.ApplicationIdle);
                     }
                 }
                 catch (Exception ex)
@@ -163,6 +153,43 @@ namespace CapFrameX
                 _debugMonitorWindow = new DebugMonitorWindow(captureService);
                 _debugMonitorWindow.Show();
 #endif
+            }
+        }
+
+        private async Task CheckFrameViewServiceAsync(IAppConfiguration appConfiguration)
+        {
+            try
+            {
+                var frameViewServiceRunning = await Task.Run(() =>
+                    EtwServiceChecker.IsFrameViewServiceRunning(TimeSpan.FromSeconds(2))).ConfigureAwait(false);
+
+                if (!frameViewServiceRunning)
+                    return;
+
+                await Current.Dispatcher.InvokeAsync(() =>
+                {
+                    if (appConfiguration.SuppressFrameViewServiceWarning)
+                        return;
+
+                    var result = MessageBox.Show(
+                        "FrameViewService ETW session detected.\n\n" +
+                        "The NVIDIA FrameView SDK is currently running an ETW trace session that may conflict with PresentMon. " +
+                        "If CapFrameX does not show performance metrics during capture, consider uninstalling the NVIDIA FrameView SDK.\n\n" +
+                        "Click 'Yes' to continue and show this warning again next time.\n" +
+                        "Click 'No' to continue and never show this warning again.",
+                        "ETW Session Conflict Detected",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+
+                    if (result == MessageBoxResult.No)
+                    {
+                        appConfiguration.SuppressFrameViewServiceWarning = true;
+                    }
+                }).Task.ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error checking for ETW services");
             }
         }
 
