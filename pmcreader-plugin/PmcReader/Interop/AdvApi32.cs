@@ -58,6 +58,10 @@ namespace PmcReader.Interop
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool QueryServiceStatus(IntPtr hService, ref SERVICE_STATUS lpServiceStatus);
 
+        [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool QueryServiceConfig(IntPtr hService, IntPtr lpServiceConfig, uint cbBufSize, out uint pcbBytesNeeded);
+
         [Flags]
         internal enum SC_MANAGER_ACCESS_MASK : uint
         {
@@ -144,6 +148,22 @@ namespace PmcReader.Interop
             public uint dwServiceSpecificExitCode;
             public uint dwCheckPoint;
             public uint dwWaitHint;
+        }
+
+        // Natural alignment (no Pack override): QueryServiceConfigW fills this in-place,
+        // with the string fields as pointers into the trailing part of the buffer.
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        internal struct QUERY_SERVICE_CONFIG
+        {
+            public uint dwServiceType;
+            public uint dwStartType;
+            public uint dwErrorControl;
+            [MarshalAs(UnmanagedType.LPWStr)] public string lpBinaryPathName;
+            [MarshalAs(UnmanagedType.LPWStr)] public string lpLoadOrderGroup;
+            public uint dwTagId;
+            [MarshalAs(UnmanagedType.LPWStr)] public string lpDependencies;
+            [MarshalAs(UnmanagedType.LPWStr)] public string lpServiceStartName;
+            [MarshalAs(UnmanagedType.LPWStr)] public string lpDisplayName;
         }
     }
 }

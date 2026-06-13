@@ -274,7 +274,7 @@ namespace CapFrameX.PmcReader.Plugin
             if (!PmcReaderInterop.IsKernelDriverOpen())
             {
                 string report = PmcReaderInterop.GetKernelDriverReport();
-                PmcDiagnostics.Warning("PmcReader: PMC sensors disabled - WinRing0 kernel driver unavailable."
+                PmcDiagnostics.Warning("PmcReader: PMC sensors disabled - WinRing0 kernel driver could not be loaded."
                     + (string.IsNullOrEmpty(report)
                         ? string.Empty
                         : " " + report.Replace(Environment.NewLine, " ").Trim()));

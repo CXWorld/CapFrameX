@@ -51,9 +51,8 @@ namespace PmcReader.Interop
         public bool CreatedByUs { get; private set; }
 
         /// <summary>
-        /// Creates and starts the driver service from the given .sys file. Used only for
-        /// a user-provided driver (opt-in); the bundled, blocklisted WinRing0 is never
-        /// installed automatically.
+        /// Creates and starts the driver service from the given .sys file. Used both for
+        /// the WinRing0 driver bundled with the plugin and for a user-provided override.
         /// </summary>
         public bool Install(string path, out string errorMessage)
         {
@@ -183,6 +182,65 @@ namespace PmcReader.Interop
 
                     errorMessage = "Service did not reach the running state.";
                     return false;
+                }
+                finally
+                {
+                    AdvApi32.CloseServiceHandle(service);
+                }
+            }
+            finally
+            {
+                AdvApi32.CloseServiceHandle(manager);
+            }
+        }
+
+        /// <summary>
+        /// Returns the on-disk driver path (ImagePath) registered for this service, with
+        /// any leading NT "\??\" prefix stripped, or null when the service does not exist
+        /// or its configuration cannot be read. Used to decide whether an existing
+        /// registration is a leftover of ours (safe to reclaim) or belongs to another tool.
+        /// </summary>
+        public string TryGetServiceImagePath()
+        {
+            IntPtr manager = AdvApi32.OpenSCManager(null, null, AdvApi32.SC_MANAGER_ACCESS_MASK.SC_MANAGER_CONNECT);
+            if (manager == IntPtr.Zero)
+                return null;
+
+            try
+            {
+                IntPtr service = AdvApi32.OpenService(manager, _id, AdvApi32.SERVICE_ACCESS_MASK.SERVICE_QUERY_CONFIG);
+                if (service == IntPtr.Zero)
+                    return null;
+
+                try
+                {
+                    // First call sizes the buffer (fails with ERROR_INSUFFICIENT_BUFFER).
+                    AdvApi32.QueryServiceConfig(service, IntPtr.Zero, 0, out uint bytesNeeded);
+                    if (bytesNeeded == 0)
+                        return null;
+
+                    IntPtr buffer = Marshal.AllocHGlobal((int)bytesNeeded);
+                    try
+                    {
+                        if (!AdvApi32.QueryServiceConfig(service, buffer, bytesNeeded, out _))
+                            return null;
+
+                        AdvApi32.QUERY_SERVICE_CONFIG config =
+                            (AdvApi32.QUERY_SERVICE_CONFIG)Marshal.PtrToStructure(buffer, typeof(AdvApi32.QUERY_SERVICE_CONFIG));
+
+                        string imagePath = config.lpBinaryPathName;
+                        if (string.IsNullOrEmpty(imagePath))
+                            return null;
+
+                        if (imagePath.StartsWith(@"\??\", StringComparison.OrdinalIgnoreCase))
+                            imagePath = imagePath.Substring(4);
+
+                        return imagePath;
+                    }
+                    finally
+                    {
+                        Marshal.FreeHGlobal(buffer);
+                    }
                 }
                 finally
                 {
