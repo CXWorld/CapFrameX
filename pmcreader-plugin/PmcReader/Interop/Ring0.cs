@@ -197,11 +197,11 @@ namespace PmcReader.Interop
                     return;
                 }
 
-                PmcDiagnostics.Warning("Ring0.Open: WinRing0 service started but device could not be opened. " + DescribeWin32Error(_driver.lastError));
+                PmcDiagnostics.Info("Ring0.Open: WinRing0 service started but device could not be opened. " + DescribeWin32Error(_driver.lastError));
             }
             else if (startError != null)
             {
-                PmcDiagnostics.Warning("Ring0.Open: could not start existing WinRing0 service. " + startError);
+                PmcDiagnostics.Info("Ring0.Open: could not start existing WinRing0 service. " + startError);
             }
 
             // 3) Opt-in only: install a user-provided WinRing0 driver (own risk). The
@@ -219,11 +219,11 @@ namespace PmcReader.Interop
                         return;
                     }
 
-                    PmcDiagnostics.Warning("Ring0.Open: user-provided driver installed but device not openable. " + DescribeWin32Error(_driver.lastError));
+                    PmcDiagnostics.Info("Ring0.Open: user-provided driver installed but device not openable. " + DescribeWin32Error(_driver.lastError));
                 }
                 else
                 {
-                    PmcDiagnostics.Warning("Ring0.Open: install of user-provided WinRing0 driver failed. " + installError + " " + DescribeWin32Error(_driver.lastError));
+                    PmcDiagnostics.Info("Ring0.Open: install of user-provided WinRing0 driver failed. " + installError + " " + DescribeWin32Error(_driver.lastError));
                 }
             }
 
@@ -448,7 +448,7 @@ namespace PmcReader.Interop
             {
                 if (!_writeMsrDiagLogged)
                 {
-                    PmcDiagnostics.Log("WriteMsr: _driver is NULL - Ring0 driver not loaded!");
+                    PmcDiagnostics.Warning("WriteMsr: _driver is NULL - Ring0 driver not loaded!");
                     _writeMsrDiagLogged = true;
                 }
                 return false;
@@ -458,7 +458,7 @@ namespace PmcReader.Interop
             bool result = _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_MSR, input);
             if (!result && !_writeMsrDiagLogged)
             {
-                PmcDiagnostics.Log("WriteMsr: IOCTL FAILED for MSR 0x{0:X} (driver IS open, IOCTL returned false)", index);
+                PmcDiagnostics.Warning("WriteMsr: IOCTL FAILED for MSR 0x{0:X} (driver IS open, IOCTL returned false)", index);
                 _writeMsrDiagLogged = true;
             }
             return result;

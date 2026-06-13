@@ -27,6 +27,11 @@ namespace CapFrameX.PmcReader.Plugin
                 {
                     try
                     {
+                        // CapFrameX's Serilog logger runs at MinimumLevel.Debug, so it would
+                        // otherwise capture every PmcReader trace line. Forward only Warning and
+                        // Error to keep CapFrameX.log limited to critical PMC issues (driver
+                        // management and hardware access). The full Debug/Info detail is still
+                        // recorded in the dedicated %TEMP%\PmcReaderDiagnostics.log.
                         ILogger logger = Log.Logger;
                         switch (level)
                         {
@@ -36,11 +41,8 @@ namespace CapFrameX.PmcReader.Plugin
                             case PmcDiagnostics.Level.Warning:
                                 logger.Warning("[PmcReader] {Message}", message);
                                 break;
-                            case PmcDiagnostics.Level.Info:
-                                logger.Information("[PmcReader] {Message}", message);
-                                break;
                             default:
-                                logger.Debug("[PmcReader] {Message}", message);
+                                // Info/Debug stay out of the application log on purpose.
                                 break;
                         }
                     }
