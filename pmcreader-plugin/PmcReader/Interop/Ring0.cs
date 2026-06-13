@@ -173,7 +173,7 @@ namespace PmcReader.Interop
             Report.Length = 0;
             _installedByUs = false;
 
-            PmcDiagnostics.Info("Ring0.Open: locating WinRing0 device...");
+            PmcDiagnostics.Log("Ring0.Open: locating WinRing0 device...");
             _driver = new KernelDriver(ServiceName);
 
             // 1) Device already present: a previous run, or a third-party tool such as
@@ -197,11 +197,11 @@ namespace PmcReader.Interop
                     return;
                 }
 
-                PmcDiagnostics.Info("Ring0.Open: WinRing0 service started but device could not be opened. " + DescribeWin32Error(_driver.lastError));
+                PmcDiagnostics.Log("Ring0.Open: WinRing0 service started but device could not be opened. " + DescribeWin32Error(_driver.lastError));
             }
             else if (startError != null)
             {
-                PmcDiagnostics.Info("Ring0.Open: could not start existing WinRing0 service. " + startError);
+                PmcDiagnostics.Log("Ring0.Open: could not start existing WinRing0 service. " + startError);
             }
 
             // 3) Opt-in only: install a user-provided WinRing0 driver (own risk). The
@@ -219,11 +219,11 @@ namespace PmcReader.Interop
                         return;
                     }
 
-                    PmcDiagnostics.Info("Ring0.Open: user-provided driver installed but device not openable. " + DescribeWin32Error(_driver.lastError));
+                    PmcDiagnostics.Log("Ring0.Open: user-provided driver installed but device not openable. " + DescribeWin32Error(_driver.lastError));
                 }
                 else
                 {
-                    PmcDiagnostics.Info("Ring0.Open: install of user-provided WinRing0 driver failed. " + installError + " " + DescribeWin32Error(_driver.lastError));
+                    PmcDiagnostics.Log("Ring0.Open: install of user-provided WinRing0 driver failed. " + installError + " " + DescribeWin32Error(_driver.lastError));
                 }
             }
 

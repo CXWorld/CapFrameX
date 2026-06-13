@@ -259,6 +259,8 @@ namespace CapFrameX.PmcReader.Plugin
 
         private void TryInitializeMonitoring()
         {
+            PmcDiagnostics.Info("PmcReader: starting PMC monitoring initialization.");
+
             try
             {
                 PmcReaderInterop.Open();
@@ -282,9 +284,13 @@ namespace CapFrameX.PmcReader.Plugin
             string manufacturer = PmcReaderInterop.GetManufacturerId();
             if (!string.Equals(manufacturer, "GenuineIntel", StringComparison.Ordinal)
                 && !string.Equals(manufacturer, "AuthenticAMD", StringComparison.Ordinal))
+            {
+                PmcDiagnostics.Info("PmcReader: PMC sensors disabled - unsupported CPU manufacturer '" + manufacturer + "'.");
                 return;
+            }
 
             PmcReaderInterop.GetProcessorVersion(out byte family, out byte model, out _);
+            PmcDiagnostics.Info("PmcReader: detected {0} CPU (family 0x{1:X2}, model 0x{2:X2}).", manufacturer, family, model);
 
             L3ConfigInfo l3ConfigInfo = TryCreateL3Config(manufacturer, family, model);
             if (l3ConfigInfo != null)
@@ -312,6 +318,23 @@ namespace CapFrameX.PmcReader.Plugin
                     _gamingHasECores = gamingConfigInfo.HasECores;
                     _gamingConfig.Initialize();
                 }
+            }
+
+            if (_l3Config == null && _dramConfig == null && _gamingConfig == null)
+            {
+                PmcDiagnostics.Info("PmcReader: no PMC configuration available for this CPU (family 0x{0:X2}, model 0x{1:X2}); no PMC sensors enabled.",
+                    family, model);
+            }
+            else
+            {
+                string gamingState = _gamingConfig == null ? "off"
+                    : _gamingHasPCores && _gamingHasECores ? "P+E cores"
+                    : _gamingHasPCores ? "P-cores"
+                    : _gamingHasECores ? "E-cores" : "on";
+                PmcDiagnostics.Info("PmcReader: PMC sensors enabled - L3 hitrate={0}, DRAM bandwidth={1}, gaming config={2}.",
+                    _l3Config != null ? "on" : "off",
+                    _dramConfig != null ? "on" : "off",
+                    gamingState);
             }
         }
 
