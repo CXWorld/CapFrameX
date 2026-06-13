@@ -326,14 +326,20 @@ namespace PmcReader.Intel
                         ThreadAffinity.Set(1UL << threadIdx);
                         Ring0.WriteMsr(IA32_PERF_GLOBAL_CTRL, 0);
                         Ring0.WriteMsr(IA32_FIXED_CTR_CTRL, 0);
-                        for (byte pmcIdx = 0; pmcIdx < 16; pmcIdx++)
+                        // Only clear counters the core actually implements. Writing a
+                        // non-existent PMC/PERFEVTSEL MSR raises #GP, which is harmless but makes
+                        // the WinRing0 IOCTL fail and would surface as a spurious "WriteMsr IOCTL
+                        // FAILED" warning - e.g. PERFEVTSEL[10] = MSR 0x190 on cores with fewer
+                        // GP counters. Mirrors the bounds already used in EnablePerformanceCounters.
+                        for (byte pmcIdx = 0; pmcIdx < coreType.PmcCounters; pmcIdx++)
                         {
                             Ring0.WriteMsr(IA32_PERFEVTSEL[pmcIdx], 0);
                             Ring0.WriteMsr(IA32_A_PMC[pmcIdx], 0);
                         }
                         for (byte fixedIdx = 0; fixedIdx < 16; fixedIdx++)
                         {
-                            Ring0.WriteMsr(IA32_FIXED_CTR[fixedIdx], 0);
+                            if (((coreType.FixedCounterMask >> fixedIdx) & 0x1) == 0x1)
+                                Ring0.WriteMsr(IA32_FIXED_CTR[fixedIdx], 0);
                         }
                     }
                 }
