@@ -390,7 +390,15 @@ namespace CapFrameX.Sensor
                     _logger.LogInformation("PmcReader plugin not present ({pluginPath}); PMC sensors disabled.", pluginPath);
                     return null;
                 }
-                var assembly = Assembly.LoadFrom(pluginPath);
+                // Use UnsafeLoadFrom instead of LoadFrom: the plugin DLL ships inside
+                // the portable zip / installer download, so Windows tags it with the
+                // "Mark of the Web" (Zone.Identifier stream). On .NET Framework,
+                // Assembly.LoadFrom refuses such a local-but-remote-origin assembly with
+                // FileLoadException/NotSupportedException (HRESULT 0x80131515) unless
+                // loadFromRemoteSources is enabled. UnsafeLoadFrom loads the trusted
+                // local plugin while bypassing that remote-source check, so the plugin
+                // works without users having to unblock the file.
+                var assembly = Assembly.UnsafeLoadFrom(pluginPath);
                 var pluginType = assembly.GetTypes()
                     .FirstOrDefault(t => typeof(IPmcReaderSensorPlugin).IsAssignableFrom(t)
                         && t.IsClass
