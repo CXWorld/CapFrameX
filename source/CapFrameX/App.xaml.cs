@@ -149,9 +149,9 @@ namespace CapFrameX
 
 #if DEBUG
                 // Open debug monitor window in Debug mode
-                var captureService = _bootstrapper.Container.Resolve<ICaptureService>();
-                _debugMonitorWindow = new DebugMonitorWindow(captureService);
-                _debugMonitorWindow.Show();
+                //var captureService = _bootstrapper.Container.Resolve<ICaptureService>();
+                //_debugMonitorWindow = new DebugMonitorWindow(captureService);
+                //_debugMonitorWindow.Show();
 #endif
             }
         }

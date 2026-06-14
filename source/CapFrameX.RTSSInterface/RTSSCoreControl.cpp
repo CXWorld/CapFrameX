@@ -21,6 +21,25 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// Removes RTSS OSD format tags (e.g. <S1>, <C100>, <A0>) from a string, leaving
+// the plain text. Used to reuse an already formatted overlay entry value (which
+// carries the CapFrameX computed value) as a graph label instead of RTSS' own
+// <FR>/<FT> macros.
+static CString StripOSDFormatTags(const CString& input)
+{
+	CString output;
+	bool insideTag = false;
+	for (int i = 0; i < input.GetLength(); i++)
+	{
+		TCHAR ch = input[i];
+		if (ch == '<') { insideTag = true; continue; }
+		if (ch == '>') { insideTag = false; continue; }
+		if (!insideTag) output += ch;
+	}
+	output.Trim();
+	return output;
+}
+
 RTSSCoreControl::RTSSCoreControl()
 {
 	m_strInstallPath = "";
@@ -110,10 +129,17 @@ std::vector<float> RTSSCoreControl::GetCurrentFramerate(DWORD processId)
 					{
 						if (pEntry->dwProcessID == processId)
 						{
-							// & 1023 enforces upper limit = 1023 = max index
-							DWORD frameTimePos = pEntry->dwStatFrameTimeBufPos;
-							currentFrametime = pEntry->dwStatFrameTimeBuf[(frameTimePos - 1) & 1023] / 1000.0f;
 							currentFramerate = pEntry->dwStatFrameTimeBufFramerate / 10.0f;
+
+							// Derive the frametime from the same statistical framerate that the
+							// framerate value and the framerate/frametime graphs are based on.
+							// Previously the frametime was read from the last single sample in
+							// dwStatFrameTimeBuf, which made the frametime text value jitter and
+							// read several ms higher than both the frametime graph and the
+							// 1000 / FPS value (see issue #394). Using the reciprocal of the
+							// framerate keeps the frametime text consistent with the FPS value
+							// and the graph (frametime text == 1000 / framerate text).
+							currentFrametime = currentFramerate > 0.0f ? 1000.0f / currentFramerate : 0.0f;
 
 							break;
 						}
@@ -635,7 +661,19 @@ void RTSSCoreControl::Refresh()
 							? OverlayEntries[i].Value.Mid(indexStart, indexEnd + 1 - indexStart)
 							: "<C>";
 
-						strObj.Format("%s<OBJ=%08X><A0><S1><FT><A> ms<S><C>\n", color, dwObjectOffset);
+						// Show CapFrameX's own frametime value (consistent with the FPS value
+						// and the frametime text entry) next to the graph instead of RTSS' <FT>
+						// macro, which reflects the noisy last single frame and reads several ms
+						// higher than the FPS / 1000 value (see issue #394). The "ms" unit is
+						// appended separately so the label mirrors the framerate graph label
+						// style ("8.3 ms" like "120 FPS").
+						CString frametimeValue = StripOSDFormatTags(OverlayEntries[i].Value);
+						if (frametimeValue.GetLength() >= 2 && frametimeValue.Right(2) == "ms")
+						{
+							frametimeValue = frametimeValue.Left(frametimeValue.GetLength() - 2);
+							frametimeValue.Trim();
+						}
+						strObj.Format("%s<OBJ=%08X><A0><S1>%s<A> ms<S><C>\n", color, dwObjectOffset, (LPCTSTR)frametimeValue);
 						//print embedded object
 						strOSD += strObj;
 						//modify object offset
