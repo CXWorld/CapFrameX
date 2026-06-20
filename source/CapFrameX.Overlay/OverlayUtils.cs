@@ -219,6 +219,7 @@ namespace CapFrameX.Overlay
                         IsEntryEnabled = true
                     },
 
+                    new OverlayEntryWrapper("Resolution")
                     // PC Latency
                     new OverlayEntryWrapper("OnlinePcLatency")
                     {
