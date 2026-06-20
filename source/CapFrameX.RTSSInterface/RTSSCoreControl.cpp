@@ -104,6 +104,48 @@ CString RTSSCoreControl::GetApiInfo(DWORD processId)
 	return api;
 }
 
+CString RTSSCoreControl::GetResolution(DWORD processId)
+{
+	// returns the render resolution of the given 3D application as "WxH"
+	// (e.g. "2560x1440") or an empty string when it cannot be determined
+	CString resolution = "";
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
+
+	if (hMapFile)
+	{
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
+
+		if (pMem)
+		{
+			// dwResolutionX / dwResolutionY are valid for v2.20 (0x00020014) and
+			// newer shared memory format only. Reading them on older RTSS versions
+			// would point beyond the actual (smaller) app entry, so guard the version.
+			if ((pMem->dwSignature == 'RTSS') && (pMem->dwVersion >= 0x00020014))
+			{
+				for (DWORD dwEntry = 0; dwEntry < pMem->dwAppArrSize; dwEntry++)
+				{
+					RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY)((LPBYTE)pMem + pMem->dwAppArrOffset + dwEntry * pMem->dwAppEntrySize);
+
+					if (pEntry->dwProcessID == processId)
+					{
+						// resolution stays 0 until RTSS has hooked and measured the
+						// swapchain, so only format it once both dimensions are valid
+						if (pEntry->dwResolutionX > 0 && pEntry->dwResolutionY > 0)
+							resolution.Format("%ux%u", pEntry->dwResolutionX, pEntry->dwResolutionY);
+
+						break;
+					}
+				}
+			}
+			UnmapViewOfFile(pMapAddr);
+		}
+		CloseHandle(hMapFile);
+	}
+
+	return resolution;
+}
+
 std::vector<float> RTSSCoreControl::GetCurrentFramerate(DWORD processId)
 {
 	std::vector<float> result;

@@ -219,7 +219,22 @@ namespace CapFrameX.Overlay
                         IsEntryEnabled = true
                     },
 
+                    // Resolution (render resolution of the active 3D app, read from RTSS shared memory)
                     new OverlayEntryWrapper("Resolution")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Resolution",
+                        GroupName = "Resolution",
+                        Value = "N/A",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = true
+                    },
+
                     // PC Latency
                     new OverlayEntryWrapper("OnlinePcLatency")
                     {

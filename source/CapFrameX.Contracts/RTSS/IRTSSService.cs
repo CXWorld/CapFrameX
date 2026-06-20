@@ -9,6 +9,7 @@ namespace CapFrameX.Contracts.RTSS
     {
         bool IsRTSSInstalled();
         string GetApiInfo(int processId);
+        string GetResolution(int processId);
         Tuple<double, double> GetCurrentFramerate(int processId);
         float[] GetFrameTimesInterval(int processId, int milliseconds);
         Task CheckRTSSRunningAndRefresh();

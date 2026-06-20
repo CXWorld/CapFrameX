@@ -40,6 +40,7 @@ public:
 	BOOL						IsCaptureTimerActive;
 	BOOL						UpdateOSD(LPCSTR lpText);
 	CString						GetApiInfo(DWORD processId);
+	CString						GetResolution(DWORD processId);
 	std::vector<float>		    GetCurrentFramerate(DWORD processId);
 	std::vector<float>			GetFrameTimesInterval(DWORD processId, DWORD milliSeconds);
 	BOOL						ShowRunHistory;

@@ -546,7 +546,34 @@ typedef struct RTSS_SHARED_MEMORY
 		DWORD dwProcessPerfCountersSamplingTime;
 		DWORD dwProcessPerfCountersTimestamp;
 
-		//WARNING: next fields should never (!!!) be accessed directly, use the offsets to access them in order to provide 
+		//next fields are valid for v2.19 and newer shared memory format only
+
+		LARGE_INTEGER qwLatencyMarkerPresentTimestamp;
+
+		//next fields are valid for v2.20 and newer shared memory format only
+
+		DWORD dwResolutionX;
+		DWORD dwResolutionY;
+
+		//next fields are valid for v2.21 and newer shared memory format only
+
+		ULONGLONG	qwInputSampleTime;
+		ULONGLONG	qwSimStartTime;
+		ULONGLONG	qwSimEndTime;
+		ULONGLONG	qwRenderSubmitStartTime;
+		ULONGLONG	qwRenderSubmitEndTime;
+		ULONGLONG	qwPresentStartTime;
+		ULONGLONG	qwPresentEndTime;
+		ULONGLONG	qwDriverStartTime;
+		ULONGLONG	qwDriverEndTime;
+		ULONGLONG	qwOsRenderQueueStartTime;
+		ULONGLONG	qwOsRenderQueueEndTime;
+		ULONGLONG	qwGpuRenderStartTime;
+		ULONGLONG	qwGpuRenderEndTime;
+		DWORD		dwGpuActiveRenderTime;
+		DWORD		dwGpuFrameTime;
+
+		//WARNING: next fields should never (!!!) be accessed directly, use the offsets to access them in order to provide
 		//compatibility with future versions
 
 		RTSS_SHARED_MEMORY_PROCESS_PERF_COUNTER_ENTRY arrPerfCounters[256];

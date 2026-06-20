@@ -23,21 +23,11 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Data
 {
-    [StructLayout(LayoutKind.Sequential)]
-    public struct WindowRect
-    {
-        public int left;
-        public int top;
-        public int right;
-        public int bottom;
-    }
-
     public class RecordManager : IRecordManager
     {
         private const string IGNOREFLAGMARKER = "//Ignore=true";
@@ -55,9 +45,6 @@ namespace CapFrameX.Data
         private readonly IEventAggregator _eventAggregator;
         private readonly ICaptureService _captureService;
         private PubSubEvent<ViewMessages.UpdateSystemInfo> _updateSystemInfoEvent;
-
-        [DllImport("user32.dll", SetLastError = true)]
-        static extern bool GetWindowRect(IntPtr hWnd, ref WindowRect Rect);
 
         public RecordManager(ILogger<RecordManager> logger,
             IAppConfiguration appConfiguration,
@@ -528,6 +515,10 @@ namespace CapFrameX.Data
                     if (apiInfo == "unknown")
                         apiInfo = runs.First().PresentMonRuntime;
 
+                    // render resolution of the captured game, read from RTSS shared memory
+                    // (dwResolutionX/dwResolutionY); stays empty when RTSS can't provide it
+                    resolutionInfo = process != null ? _rTSSService.GetResolution(process.Id) : string.Empty;
+
 
                     _systemInfo.SetSystemInfosStatus();
                     _updateSystemInfoEvent.Publish(new ViewMessages.UpdateSystemInfo());
@@ -553,15 +544,6 @@ namespace CapFrameX.Data
 
                     if (_systemInfo.HardwareAcceleratedGPUSchedulingStatus != ESystemInfoTertiaryStatus.Error)
                         hAGS = _systemInfo.HardwareAcceleratedGPUSchedulingStatus == ESystemInfoTertiaryStatus.Enabled ? "Enabled" : "Disabled";
-
-                    // ToDo: muste be improved, doesn't work in many cases
-                    //string resolutionInfo = "unknown";
-                    //if (process != null)
-                    //{
-                    //    WindowRect wndRect = new WindowRect();
-                    //    GetWindowRect(process.MainWindowHandle, ref wndRect);
-                    //    resolutionInfo = $"{ wndRect.right - wndRect.left}x{wndRect.bottom - wndRect.top}";
-                    //}
                 }
 
                 IList<string> headerLines = Enumerable.Empty<string>().ToList();
@@ -588,7 +570,7 @@ namespace CapFrameX.Data
                         HAGS = hAGS,
                         PresentationMode = runs.GetPresentationMode(),
                         Comment = comment,
-                        //ResolutionInfo = resolutionInfo
+                        ResolutionInfo = resolutionInfo
                     }
                 };
 

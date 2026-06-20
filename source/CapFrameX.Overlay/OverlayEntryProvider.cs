@@ -132,6 +132,7 @@ namespace CapFrameX.Overlay
             await UpdateSensorData();
             UpdateOnlineMetrics();
             UpdateAppInfo();
+            UpdateResolution();
             UpdateThreadAffinityState();
             UpdateNetworkPing();
 
@@ -978,6 +979,19 @@ namespace CapFrameX.Overlay
             if (cxCpuUsage != null)
             {
                 cxCpuUsage.Value = _systemInfo.GetCapFrameXAppCpuUsage();
+            }
+        }
+
+        private void UpdateResolution()
+        {
+            _identifierOverlayEntryDict.TryGetValue("Resolution", out IOverlayEntry resolution);
+
+            if (resolution != null && resolution.ShowOnOverlay)
+            {
+                // render resolution of the currently active 3D app, read from RTSS shared memory
+                // (same source as the capture file's ResolutionInfo); empty until RTSS measured it
+                var resolutionInfo = _rTSSService.GetResolution(_currentProcessId);
+                resolution.Value = string.IsNullOrEmpty(resolutionInfo) ? "N/A" : resolutionInfo;
             }
         }
 
