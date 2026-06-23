@@ -29,6 +29,16 @@ internal sealed class NvidiaGpu : GenericGpu
     private const float MiB = 1024f * 1024f;
     private const float GiB = 1024f * 1024f * 1024f;
 
+    // NVAPI reports the memory clock on a generation-dependent basis: GDDR5/5X/6 are reported
+    // at a low (~1-2 GHz) clock with the per-cycle data rate folded into the 4x/8x multiplier
+    // from GetMemoryDataRateMultiplier(), whereas GDDR7 is reported at its true ~15 GHz I/O
+    // clock, whose data-rate multiplier is just 2 (plain DDR). The NvGpuMemoryType enum can't
+    // tell these generations apart (it tops out at GDDR5X), so a reported memory clock above
+    // this threshold (well above the ~2.6 GHz any pre-GDDR7 card reports) is taken as the
+    // GDDR7 high-clock basis and forced to the DDR multiplier of 2.
+    private const float Gddr7MemoryClockBasisThresholdMHz = 5000f;
+    private const float Gddr7DataRateMultiplier = 2f;
+
     private uint _lastBlankCounter;
 
     private readonly Stopwatch _stopwatch;
@@ -763,9 +773,17 @@ internal sealed class NvidiaGpu : GenericGpu
 
             if (memClockMHz.HasValue && controllerLoadPercent.HasValue)
             {
+                // A reported memory clock in the GDDR7 range uses the DDR multiplier of 2; the
+                // memory-type based multiplier only applies to the low clock basis NVAPI reports
+                // for GDDR5/5X/6 (see Gddr7MemoryClockBasisThresholdMHz). This is evaluated per
+                // tick rather than once because the memory clock downclocks at idle.
+                float dataRateMultiplier = memClockMHz.Value > Gddr7MemoryClockBasisThresholdMHz
+                    ? Gddr7DataRateMultiplier
+                    : _memoryDataRateMultiplier;
+
                 // peak [GB/s] = memClock[MHz] * 1e6 * multiplier * busWidth[bit] / 8 / 1e9
                 //             = memClock[MHz] * multiplier * busWidth / 8000
-                float peakGBs = memClockMHz.Value * _memoryDataRateMultiplier * _memoryBusWidth / 8000f;
+                float peakGBs = memClockMHz.Value * dataRateMultiplier * _memoryBusWidth / 8000f;
 
                 _memoryBandwidth.Value = peakGBs * (controllerLoadPercent.Value / 100f);
                 ActivateSensor(_memoryBandwidth);
