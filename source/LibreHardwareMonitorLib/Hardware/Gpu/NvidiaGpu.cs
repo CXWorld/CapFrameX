@@ -23,6 +23,9 @@ internal sealed class NvidiaGpu : GenericGpu
     private const int LoadIndexPowerBase = 100;
     private const int LoadIndexMemory = 300;
 
+    // Throughput sensor indices (PCIe Rx = 0, PCIe Tx = 1).
+    private const int ThroughputIndexMemoryBandwidth = 2;
+
     private const float MiB = 1024f * 1024f;
     private const float GiB = 1024f * 1024f * 1024f;
 
@@ -51,6 +54,11 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor _memoryTotal;
     private readonly Sensor _memoryUsed;
     private readonly Sensor _memoryLoad;
+    private readonly Sensor _memoryBandwidth;
+    private readonly Sensor _memoryClock;
+    private readonly Sensor _memoryControllerLoad;
+    private readonly uint _memoryBusWidth;
+    private readonly float _memoryDataRateMultiplier;
     private readonly NvidiaML.NvmlDevice? _nvmlDevice;
     private readonly Sensor _pcieThroughputRx;
     private readonly Sensor _pcieThroughputTx;
@@ -536,6 +544,27 @@ internal sealed class NvidiaGpu : GenericGpu
         _memoryLoad = new Sensor("GPU Memory", LoadIndexMemory, SensorType.Load, this, settings)
         { PresentationSortKey = $"{adapterIndex}_8_5" };
 
+        // Momentary memory bandwidth (concept ported from Special K's GPU monitor):
+        //   bandwidth = (theoretical peak) * (memory-controller utilization).
+        // The peak is derived from the memory clock, the data rate per clock cycle
+        // (depends on the memory type) and the memory bus width:
+        //   peak [B/s] = memClock[Hz] * dataRateMultiplier * busWidth[bit] / 8
+        // The dynamic part is the "GPU Memory Controller" load (NvUtilizationDomain.FrameBuffer).
+        _memoryBusWidth = GetMemoryBusWidth();
+        _memoryDataRateMultiplier = GetMemoryDataRateMultiplier(GetMemoryType());
+
+        // Reuse the already-created memory clock / memory-controller load sensors as inputs.
+        _memoryClock = _clocks?.FirstOrDefault(s => s.Index == (int)NvApi.NvGpuPublicClockId.Memory);
+        _memoryControllerLoad = _loads != null && _loads.Length > (int)NvApi.NvUtilizationDomain.FrameBuffer
+            ? _loads[(int)NvApi.NvUtilizationDomain.FrameBuffer]
+            : null;
+
+        if (_memoryBusWidth > 0 && _memoryClock != null && _memoryControllerLoad != null)
+        {
+            _memoryBandwidth = new Sensor("GPU Memory Bandwidth", ThroughputIndexMemoryBandwidth, SensorType.Throughput, this, settings)
+            { PresentationSortKey = $"{adapterIndex}_8_6" };
+        }
+
         Update();
     }
 
@@ -720,6 +749,26 @@ internal sealed class NvidiaGpu : GenericGpu
                         }
                     }
                 }
+            }
+        }
+
+        if (_memoryBandwidth != null && ShouldEvaluateMemoryBandwidthSensor())
+        {
+            // _memoryClock holds the reported memory clock in MHz, _memoryControllerLoad the
+            // memory-controller utilization in %. Compute the momentary bandwidth in GB/s
+            // (Throughput sensors are presented as GB/s). Done in floating point to keep the
+            // sub-percent resolution of the utilization value.
+            float? memClockMHz = _memoryClock.Value;
+            float? controllerLoadPercent = _memoryControllerLoad.Value;
+
+            if (memClockMHz.HasValue && controllerLoadPercent.HasValue)
+            {
+                // peak [GB/s] = memClock[MHz] * 1e6 * multiplier * busWidth[bit] / 8 / 1e9
+                //             = memClock[MHz] * multiplier * busWidth / 8000
+                float peakGBs = memClockMHz.Value * _memoryDataRateMultiplier * _memoryBusWidth / 8000f;
+
+                _memoryBandwidth.Value = peakGBs * (controllerLoadPercent.Value / 100f);
+                ActivateSensor(_memoryBandwidth);
             }
         }
 
@@ -966,6 +1015,17 @@ internal sealed class NvidiaGpu : GenericGpu
             return true;
 
         return _sensorConfig.GetSensorEvaluate(_monitorRefreshRate.Identifier.ToString());
+    }
+
+    private bool ShouldEvaluateMemoryBandwidthSensor()
+    {
+        if (_memoryBandwidth == null)
+            return false;
+
+        if (_sensorConfig == null)
+            return true;
+
+        return _sensorConfig.GetSensorEvaluate(_memoryBandwidth.Identifier.ToString());
     }
 
     public override string GetReport()
@@ -1255,6 +1315,16 @@ internal sealed class NvidiaGpu : GenericGpu
             r.AppendLine();
         }
 
+        if (NvApi.NvAPI_GPU_GetFBWidthAndLocation != null || NvApi.NvAPI_GPU_GetRamType != null)
+        {
+            r.AppendLine("Memory Bandwidth");
+            r.AppendLine();
+            r.AppendFormat(" Bus Width: {0} bit{1}", _memoryBusWidth, Environment.NewLine);
+            r.AppendFormat(" Memory Type: {0} (raw {1}){2}", GetMemoryType(), (uint)GetMemoryType(), Environment.NewLine);
+            r.AppendFormat(" Data Rate Multiplier: {0}{1}", _memoryDataRateMultiplier, Environment.NewLine);
+            r.AppendLine();
+        }
+
         if (_d3dDeviceId != null)
         {
             r.AppendLine("D3D");
@@ -1497,6 +1567,54 @@ internal sealed class NvidiaGpu : GenericGpu
 
         status = NvApi.NvAPI_GPU_GetTachReading(_handle, out int value);
         return value;
+    }
+
+    private uint GetMemoryBusWidth()
+    {
+        if (NvApi.NvAPI_GPU_GetFBWidthAndLocation == null)
+            return 0;
+
+        return NvApi.NvAPI_GPU_GetFBWidthAndLocation(_handle, out uint width, out _) == NvApi.NvStatus.OK
+            ? width
+            : 0;
+    }
+
+    private NvApi.NvGpuMemoryType GetMemoryType()
+    {
+        if (NvApi.NvAPI_GPU_GetRamType == null)
+            return NvApi.NvGpuMemoryType.Unknown;
+
+        return NvApi.NvAPI_GPU_GetRamType(_handle, out uint memType) == NvApi.NvStatus.OK
+            ? (NvApi.NvGpuMemoryType)memType
+            : NvApi.NvGpuMemoryType.Unknown;
+    }
+
+    private static float GetMemoryDataRateMultiplier(NvApi.NvGpuMemoryType memoryType)
+    {
+        // Multiplier = effective data transfers per *reported* NVAPI memory clock cycle.
+        // NVAPI reports the memory I/O command clock; multiplying yields the per-pin data rate.
+        switch (memoryType)
+        {
+            case NvApi.NvGpuMemoryType.Sdram:
+            case NvApi.NvGpuMemoryType.Ddr1:
+            case NvApi.NvGpuMemoryType.Ddr2:
+            case NvApi.NvGpuMemoryType.Ddr3:
+            case NvApi.NvGpuMemoryType.Gddr2:
+            case NvApi.NvGpuMemoryType.Gddr3:
+            case NvApi.NvGpuMemoryType.Lpddr2:
+                return 2f; // (LP/G)DDR: double data rate
+            case NvApi.NvGpuMemoryType.Gddr4:
+            case NvApi.NvGpuMemoryType.Gddr5:
+                return 4f; // GDDR5: quad data rate
+            case NvApi.NvGpuMemoryType.Gddr5x:
+                return 8f; // GDDR5X (and commonly reported for GDDR6)
+            default:
+                // GDDR6 / GDDR6X are frequently NOT distinguished by NvAPI_GPU_GetRamType
+                // (it tops out at GDDR5X) and may report Unknown or a newer, higher value.
+                // Assume a modern GDDR data rate when the raw value is >= GDDR5, otherwise plain DDR.
+                // NOTE: true GDDR6X (PAM4, ~16x) is under-reported by ~2x with this fallback.
+                return (uint)memoryType >= (uint)NvApi.NvGpuMemoryType.Gddr5 ? 8f : 2f;
+        }
     }
 
     private static string GetUtilizationDomainName(NvApi.NvUtilizationDomain utilizationDomain) => utilizationDomain switch
