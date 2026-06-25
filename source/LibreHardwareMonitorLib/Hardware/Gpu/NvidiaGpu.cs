@@ -317,10 +317,12 @@ internal sealed class NvidiaGpu : GenericGpu
             {
                 _loads = loads;
 
-                foreach (Sensor sensor in loads)
+                // The memory-controller (FrameBuffer) load is activated on demand in Update()
+                // (mirroring the PCIe throughput sensors), so it is not unconditionally activated here.
+                for (int i = 0; i < loads.Length; i++)
                 {
-                    if (sensor != null)
-                        ActivateSensor(sensor);
+                    if (loads[i] != null && i != (int)NvApi.NvUtilizationDomain.FrameBuffer)
+                        ActivateSensor(loads[i]);
                 }
             }
         }
@@ -350,10 +352,12 @@ internal sealed class NvidiaGpu : GenericGpu
                 {
                     _loads = loads;
 
-                    foreach (Sensor sensor in loads)
+                    // The memory-controller (FrameBuffer) load is activated on demand in Update()
+                    // (mirroring the PCIe throughput sensors), so it is not unconditionally activated here.
+                    for (int i = 0; i < loads.Length; i++)
                     {
-                        if (sensor != null)
-                            ActivateSensor(sensor);
+                        if (loads[i] != null && i != (int)NvApi.NvUtilizationDomain.FrameBuffer)
+                            ActivateSensor(loads[i]);
                     }
                 }
             }
@@ -771,6 +775,12 @@ internal sealed class NvidiaGpu : GenericGpu
                     }
                 }
             }
+
+            // Expose the memory-controller load like the PCIe throughput sensors: its value is
+            // always refreshed above (the bandwidth sensor consumes it), but it is only surfaced
+            // when selected for logging/overlay (GetSensorEvaluate returns true on first sight).
+            if (_memoryControllerLoad != null && ShouldEvaluateMemoryControllerSensor())
+                ActivateSensor(_memoryControllerLoad);
         }
 
         if (_memoryBandwidth != null && ShouldEvaluateMemoryBandwidthSensor())
@@ -1016,6 +1026,17 @@ internal sealed class NvidiaGpu : GenericGpu
             return true;
 
         return _sensorConfig.GetSensorEvaluate(_pcieThroughputTx.Identifier.ToString());
+    }
+
+    private bool ShouldEvaluateMemoryControllerSensor()
+    {
+        if (_memoryControllerLoad == null)
+            return false;
+
+        if (_sensorConfig == null)
+            return true;
+
+        return _sensorConfig.GetSensorEvaluate(_memoryControllerLoad.Identifier.ToString());
     }
 
     private bool ShouldEvaluateAnyLimitSensor()
