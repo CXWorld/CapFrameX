@@ -39,6 +39,12 @@ internal sealed class NvidiaGpu : GenericGpu
     private const float Gddr7MemoryClockBasisThresholdMHz = 5000f;
     private const float Gddr7DataRateMultiplier = 2f;
 
+    // GDDR6X uses PAM4 signalling and transfers 16 data words per reported NVAPI memory-clock
+    // cycle - twice the 8x of GDDR6/GDDR5X. NvAPI_GPU_GetRamType cannot report GDDR6X (its enum
+    // tops out at GDDR5X), so the affected boards are identified by PCI device id, see
+    // IsGddr6xMemory(). Example: RTX 4090 at ~1313 MHz x 16 x 384 bit / 8000 = ~1008 GB/s.
+    private const float Gddr6xDataRateMultiplier = 16f;
+
     private uint _lastBlankCounter;
 
     private readonly Stopwatch _stopwatch;
@@ -561,7 +567,12 @@ internal sealed class NvidiaGpu : GenericGpu
         //   peak [B/s] = memClock[Hz] * dataRateMultiplier * busWidth[bit] / 8
         // The dynamic part is the "GPU Memory Controller" load (NvUtilizationDomain.FrameBuffer).
         _memoryBusWidth = GetMemoryBusWidth();
-        _memoryDataRateMultiplier = GetMemoryDataRateMultiplier(GetMemoryType());
+        // GDDR6X (PAM4) is not reported by NvAPI_GPU_GetRamType, so detect those boards by PCI
+        // device id and use the PAM4 multiplier (16) instead of the GDDR5X/6 fallback value (8),
+        // which would otherwise under-report their bandwidth by 2x.
+        _memoryDataRateMultiplier = IsGddr6xMemory()
+            ? Gddr6xDataRateMultiplier
+            : GetMemoryDataRateMultiplier(GetMemoryType());
 
         // Reuse the already-created memory clock / memory-controller load sensors as inputs.
         _memoryClock = _clocks?.FirstOrDefault(s => s.Index == (int)NvApi.NvGpuPublicClockId.Memory);
@@ -1607,6 +1618,46 @@ internal sealed class NvidiaGpu : GenericGpu
             : NvApi.NvGpuMemoryType.Unknown;
     }
 
+    // Known desktop boards that use GDDR6X (PAM4) memory. NvAPI_GPU_GetRamType cannot report
+    // GDDR6X (its NvGpuMemoryType enum tops out at GDDR5X and returns GDDR5X/Unknown for it), so
+    // these are matched by PCI device id and forced to the PAM4 data-rate multiplier (16x), i.e.
+    // twice the GDDR5X/GDDR6 value of 8x. Device ids verified against the pci.ids repository.
+    private bool IsGddr6xMemory()
+    {
+        if (NvApi.NvAPI_GPU_GetPCIIdentifiers == null ||
+            NvApi.NvAPI_GPU_GetPCIIdentifiers(_handle, out uint deviceId, out _, out _, out _) != NvApi.NvStatus.OK)
+            return false;
+
+        // NvAPI packs the identifier as (pciDeviceId << 16) | pciVendorId (0x10DE for NVIDIA);
+        // the vendor check keeps the extraction correct even if a driver ever returns the bare id.
+        uint pciDeviceId = (deviceId & 0xFFFF) == 0x10DE ? deviceId >> 16 : deviceId & 0xFFFF;
+
+        switch (pciDeviceId)
+        {
+            // Ampere (GA102 / GA104)
+            case 0x2203: // RTX 3090 Ti
+            case 0x2204: // RTX 3090
+            case 0x2206: // RTX 3080
+            case 0x2208: // RTX 3080 Ti
+            case 0x220A: // RTX 3080 12GB
+            case 0x2216: // RTX 3080 (Lite Hash Rate)
+            case 0x2482: // RTX 3070 Ti
+            case 0x24C9: // RTX 3060 Ti GDDR6X (distinct id from the GDDR6 0x2489)
+            // Ada (AD102 / AD103 / AD104)
+            case 0x2684: // RTX 4090
+            case 0x2685: // RTX 4090 D
+            case 0x2702: // RTX 4080 SUPER
+            case 0x2704: // RTX 4080
+            case 0x2705: // RTX 4070 Ti SUPER
+            case 0x2782: // RTX 4070 Ti
+            case 0x2783: // RTX 4070 SUPER
+            case 0x2786: // RTX 4070 (GDDR6X launch part; the later GDDR6 / AD103 0x2709 variants are excluded)
+                return true;
+            default:
+                return false;
+        }
+    }
+
     private static float GetMemoryDataRateMultiplier(NvApi.NvGpuMemoryType memoryType)
     {
         // Multiplier = effective data transfers per *reported* NVAPI memory clock cycle.
@@ -1630,7 +1681,8 @@ internal sealed class NvidiaGpu : GenericGpu
                 // GDDR6 / GDDR6X are frequently NOT distinguished by NvAPI_GPU_GetRamType
                 // (it tops out at GDDR5X) and may report Unknown or a newer, higher value.
                 // Assume a modern GDDR data rate when the raw value is >= GDDR5, otherwise plain DDR.
-                // NOTE: true GDDR6X (PAM4, ~16x) is under-reported by ~2x with this fallback.
+                // NOTE: GDDR6 maps to 8x here; known GDDR6X (PAM4, 16x) boards are handled earlier
+                // by IsGddr6xMemory() via PCI device id, since this fallback would under-report 2x.
                 return (uint)memoryType >= (uint)NvApi.NvGpuMemoryType.Gddr5 ? 8f : 2f;
         }
     }
