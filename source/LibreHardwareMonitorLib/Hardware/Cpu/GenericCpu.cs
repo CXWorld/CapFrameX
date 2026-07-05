@@ -164,15 +164,22 @@ public class GenericCpu : Hardware
         return $"Core #{i + 1} {GetCoreLabel(i)}";
     }
 
+    private string GetCoreLabel(int i) => GetCoreLabel(_cpuId[i][0]);
+
+    /// <summary>
+    /// Gets the hybrid core-type suffix for a logical processor:
+    /// "P"/"E"/"LPE" on Intel, "P"/"D"/"LP" on AMD (LP = Zen 6+ low-power core),
+    /// or an empty string on non-hybrid parts.
+    /// </summary>
     // https://github.com/InstLatx64/InstLatX64_Demo/commit/e149a972655aff9c41f3eac66ad51fcfac1262b5
-    private string GetCoreLabel(int i)
+    public string GetCoreLabel(CpuId core)
     {
         string corelabel = string.Empty;
         if (_isHybrid)
         {
-            if (_cpuId[i][0].Vendor == Vendor.Intel)
+            if (core.Vendor == Vendor.Intel)
             {
-                var previousAffinity = ThreadAffinity.Set(_cpuId[i][0].Affinity);
+                var previousAffinity = ThreadAffinity.Set(core.Affinity);
 
                 if (OpCode.CpuId(CPUID_CORE_MASK_STATUS, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
                 {
@@ -210,9 +217,9 @@ public class GenericCpu : Hardware
 
                 ThreadAffinity.Set(previousAffinity);
             }
-            else if (_cpuId[i][0].Vendor == Vendor.AMD)
+            else if (core.Vendor == Vendor.AMD)
             {
-                var previousAffinity = ThreadAffinity.Set(_cpuId[i][0].Affinity);
+                var previousAffinity = ThreadAffinity.Set(core.Affinity);
                 if (OpCode.CpuId(0x80000026, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
                 {
                     // Heterogeneous core topology supported
@@ -223,6 +230,7 @@ public class GenericCpu : Hardware
                         {
                             case 0: corelabel = "P"; break;
                             case 1: corelabel = "D"; break;
+                            case 2: corelabel = "LP"; break; // Low Power core (Zen 6+), CPUID Fn0x80000026 EBX[31:28] == 2
                             default: break;
                         }
                     }
@@ -307,6 +315,7 @@ public class GenericCpu : Hardware
                         {
                             case 0: return CpuCoreType.PerformanceCore;
                             case 1: return CpuCoreType.DenseCore;
+                            case 2: return CpuCoreType.LowPowerCore; // Low Power core (Zen 6+)
                             default: return CpuCoreType.Standard;
                         }
                     }

@@ -95,6 +95,15 @@ The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (.NET Framework 4
 - Main output: `source\CapFrameX\bin\x64\Release\`
 - Installer output: `source\CapFrameXBootstrapper\bin\x64\Release\CapFrameXBootstrapper.exe`
 
+## Hook-free OSD (external source)
+
+The hook-free OSD lives in the **private** repo [CXWorld/CapFrameX.OSD](https://github.com/CXWorld/CapFrameX.OSD) (local checkout: `E:\Code\CapFrameX.OSD`), consumed as an *optional* git submodule at `external/CapFrameX.OSD` with prebuilt-binary fallback in `external/CapFrameX.OSD-prebuilt/` — the public repo builds either way:
+
+- With the submodule checked out, `CapFrameX.csproj` and `CapFrameX.OSD.Integration.csproj` set `CfxOsdFromSource=true` and build `CapFrameX.OSD.Interop` from source; without it they reference the prebuilt DLLs. Force the fallback with `/p:CfxOsdFromSource=false`.
+- The native renderer `cfx_osd_core.dll` is staged from the submodule's CMake output if built (`external/CapFrameX.OSD/CapFrameX.OSD/build/bin/RelWithDebInfo`), else from the prebuilt folder.
+- `source/CapFrameX.OSD.Integration` (adapter mapping `IOverlayEntry` onto the OSD, references `CapFrameX.Contracts`) intentionally stays in this repo; everything CapFrameX-independent (native core, Interop, WPF editor controls) lives in the OSD repo.
+- After OSD changes: update the DLLs in `external/CapFrameX.OSD-prebuilt/` (see its README) and bump the submodule commit.
+
 ## Configuration Files
 - User settings: `%appdata%/CapFrameX/Configuration/AppSettings.json`
 - Overlay config: `%appdata%/CapFrameX/Configuration/OverlayEntryConfiguration_(0/1/2).json`

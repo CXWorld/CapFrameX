@@ -700,6 +700,24 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool EnableHookFreeOverlay
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool EnableHookOverlay
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool HookOverlayUsePresentMonFrametimes
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
         public bool ShowSystemTimeSeconds
         {
             get => Get<bool>(false);

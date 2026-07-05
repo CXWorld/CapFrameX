@@ -25,6 +25,17 @@ internal class AmdGpuGroup : IGroup
             _report.AppendLine("AMD Display Library X (ADLX)");
             _report.AppendLine();
 
+            // Only load ADLX when an AMD GPU is actually present among the active display adapters.
+            // Initializing ADLX (which loads atiadlxx.dll) on a machine that merely has leftover AMD
+            // driver files — e.g. a disabled Ryzen iGPU while rendering on an NVIDIA card — makes
+            // ADLX.Close() deadlock during COM teardown on the STA thread at application shutdown.
+            if (!D3DDisplayDevice.IsAdapterVendorPresent("VEN_1002"))
+            {
+                _report.AppendLine("Status: skipped (no AMD display adapter present)");
+                _report.AppendLine();
+                return;
+            }
+
             _adlxInitialized = ADLX.Initialize();
 
             _report.Append("Status: ");

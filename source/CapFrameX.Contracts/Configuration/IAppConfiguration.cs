@@ -160,6 +160,27 @@ namespace CapFrameX.Contracts.Configuration
 		/// </summary>
 		bool HideOverlay { get; set; }
 
+		/// <summary>
+		/// Use the hook-free DWM/DirectComposition overlay (CapFrameX.OSD) instead of RTSS.
+		/// </summary>
+		bool EnableHookFreeOverlay { get; set; }
+
+		/// <summary>
+		/// Inject the in-game hook overlay (cfx_osd_hook.dll) into the detected game process
+		/// for smooth in-swapchain graphs. Opt-in, per detected process; injection targets the
+		/// PID CapFrameX already detected via <see cref="CapFrameX.Monitoring.Contracts.IProcessService.ProcessIdStream"/>.
+		/// </summary>
+		bool EnableHookOverlay { get; set; }
+
+		/// <summary>
+		/// In-game hook overlay graph data source. false (default) = the hook's own local
+		/// present-to-present ring (low latency, frametime only). true = CapFrameX's PresentMon
+		/// frame-data stream (frametime AND display-time), delivered via a shared-memory ring and
+		/// replayed by the renderer's buffer/replay clock. The two sources are kept strictly
+		/// separate: PresentMon data carries pipeline latency and isn't comparable to the in-game ring.
+		/// </summary>
+		bool HookOverlayUsePresentMonFrametimes { get; set; }
+
 		bool ShowSystemTimeSeconds { get; set; }
 
 		int InputLagOffset { get; set; }

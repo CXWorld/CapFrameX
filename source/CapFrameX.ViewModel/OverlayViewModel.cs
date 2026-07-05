@@ -93,7 +93,9 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.IsOverlayActive; }
             set
             {
-                if (IsRTSSInstalled)
+                // Alt+O drives the overlay: allow activation when RTSS is installed OR when a
+                // hook path (hook-free DWM or in-game hook) is selected — both need no RTSS.
+                if (IsRTSSInstalled || _appConfiguration.EnableHookFreeOverlay || _appConfiguration.EnableHookOverlay)
                 {
                     _appConfiguration.IsOverlayActive = value;
                     _overlayService.IsOverlayActiveStream.OnNext(value);
@@ -395,6 +397,81 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool EnableHookFreeOverlay
+        {
+            get { return _appConfiguration.EnableHookFreeOverlay; }
+            set
+            {
+                _appConfiguration.EnableHookFreeOverlay = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool EnableHookOverlay
+        {
+            get { return _appConfiguration.EnableHookOverlay; }
+            set
+            {
+                _appConfiguration.EnableHookOverlay = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        // In-game hook graph source: false = the hook's local present ring (frame time, zero latency);
+        // true = CapFrameX's PresentMon stream (frame + display times, buffered/replayed). Only applies
+        // while the in-game hook is the chosen renderer (the checkbox greys out otherwise).
+        public bool HookOverlayUsePresentMonFrametimes
+        {
+            get { return _appConfiguration.HookOverlayUsePresentMonFrametimes; }
+            set
+            {
+                _appConfiguration.HookOverlayUsePresentMonFrametimes = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        // Overlay renderer is a single choice of three mutually exclusive modes, surfaced as a
+        // radio group. They map onto the two underlying config flags so the existing gating in
+        // OverlayService / HookOverlayManager / OsdOverlayBridge keeps working unchanged:
+        //   RTSS      -> EnableHookOverlay=false, EnableHookFreeOverlay=false
+        //   In-game   -> EnableHookOverlay=true                                  (in-game hook)
+        //   Hook-free -> EnableHookOverlay=false, EnableHookFreeOverlay=true     (DWM, no injection)
+        public bool OverlayModeRtss
+        {
+            get { return !_appConfiguration.EnableHookOverlay && !_appConfiguration.EnableHookFreeOverlay; }
+            set { if (value) SetOverlayMode(hook: false, hookFree: false); }
+        }
+
+        public bool OverlayModeHook
+        {
+            get { return _appConfiguration.EnableHookOverlay; }
+            set { if (value) SetOverlayMode(hook: true, hookFree: false); }
+        }
+
+        public bool OverlayModeHookFree
+        {
+            get { return !_appConfiguration.EnableHookOverlay && _appConfiguration.EnableHookFreeOverlay; }
+            set { if (value) SetOverlayMode(hook: false, hookFree: true); }
+        }
+
+        // True when RTSS is the chosen renderer but "Hide OSD on RTSS" (HideOverlay) suppresses its
+        // output — a contradictory combination worth flagging in the UI next to the renderer choice.
+        public bool ShowRtssHiddenHint => OverlayModeRtss && _appConfiguration.HideOverlay;
+
+        private void SetOverlayMode(bool hook, bool hookFree)
+        {
+            // Order matters only in that the LAST write settles the final combination; OverlayService
+            // re-evaluates both flags on each change and re-arms RTSS when both end up false.
+            _appConfiguration.EnableHookOverlay = hook;
+            _appConfiguration.EnableHookFreeOverlay = hookFree;
+            RaisePropertyChanged(nameof(OverlayModeRtss));
+            RaisePropertyChanged(nameof(OverlayModeHook));
+            RaisePropertyChanged(nameof(OverlayModeHookFree));
+            RaisePropertyChanged(nameof(EnableHookOverlay));
+            RaisePropertyChanged(nameof(EnableHookFreeOverlay));
+            RaisePropertyChanged(nameof(ShowRtssHiddenHint));
+        }
+
         public bool UseThreadAffinity
         {
             get { return _appConfiguration.UseThreadAffinity; }
@@ -569,19 +646,27 @@ namespace CapFrameX.ViewModel
                 .StartWith(Enumerable.Empty<IOverlayEntry>())
                 .SelectMany(_ => overlayEntryProvider.GetOverlayEntries(false))
                 .ObserveOnDispatcher()
-                .Subscribe(entries =>
-                {
-                    entries.ForEach(entry => entry.UpdateGroupName = OverlaySubModelGroupSeparating.UpdateGroupName);
-                    OverlaySubModelGroupSeparating.SetOverlayEntries(entries);
+                .Subscribe(ApplyReloadedOverlayEntries);
 
-                    OverlayEntries.Clear();
-                    OverlayEntries.AddRange(entries);
-                    SetupOverlayEntriesView();
-                    _overlayEntryProvider.UpdateOverlayEntryFormats();
+            // The hook-free toggle gates entries only the hook-free OSD can render (the
+            // Displaytime graph): reload the entry list from config so the item appears/
+            // disappears immediately. Unlike the config switch above this must not wait
+            // for a dictionary tick — those pause while the overlay is inactive, and the
+            // toggle usually gets flipped from the options popup with the overlay off.
+            _appConfiguration.OnValueChanged
+                .Where(x => x.key == nameof(IAppConfiguration.EnableHookFreeOverlay))
+                .SelectMany(_ => Observable.FromAsync(() =>
+                    Task.Run(() => _overlayEntryProvider.SwitchConfigurationTo(_appConfiguration.OverlayEntryConfigurationFile))))
+                .SelectMany(_ => overlayEntryProvider.GetOverlayEntries(false))
+                .ObserveOnDispatcher()
+                .Subscribe(ApplyReloadedOverlayEntries);
 
-                    SetSaveButtonIsEnableAction();
-                    SaveButtonIsEnable = _overlayEntryProvider.HasHardwareChanged;
-                });
+            // Keep the "RTSS output is hidden" hint (ShowRtssHiddenHint) in sync when the user
+            // toggles "Hide OSD on RTSS" from the other settings view.
+            _appConfiguration.OnValueChanged
+                .Where(x => x.key == nameof(IAppConfiguration.HideOverlay))
+                .ObserveOnDispatcher()
+                .Subscribe(_ => RaisePropertyChanged(nameof(ShowRtssHiddenHint)));
 
             SaveConfigCommand = new DelegateCommand<object>(
                async (object targetConfig) =>
@@ -638,6 +723,22 @@ namespace CapFrameX.ViewModel
             SetGlobalHookEventResetMetricsHotkey();
 
             InitializeOSDCustomPosition();
+        }
+
+        // Shared refresh path after the provider re-read its entry list (config switch,
+        // hook-free toggle): rebind the view collection and re-apply formats.
+        private void ApplyReloadedOverlayEntries(IOverlayEntry[] entries)
+        {
+            entries.ForEach(entry => entry.UpdateGroupName = OverlaySubModelGroupSeparating.UpdateGroupName);
+            OverlaySubModelGroupSeparating.SetOverlayEntries(entries);
+
+            OverlayEntries.Clear();
+            OverlayEntries.AddRange(entries);
+            SetupOverlayEntriesView();
+            _overlayEntryProvider.UpdateOverlayEntryFormats();
+
+            SetSaveButtonIsEnableAction();
+            SaveButtonIsEnable = _overlayEntryProvider.HasHardwareChanged;
         }
 
         private void SetSaveButtonIsEnableAction()

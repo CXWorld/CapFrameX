@@ -104,18 +104,52 @@ namespace CapFrameX.Overlay
                         _rTSSService.ReleaseOSD();
                 });
 
+            // Overlay-renderer switch (RTSS / hook-free / in-game hook). React to BOTH flags and
+            // re-evaluate the COMBINED state — using the single changed value was wrong (turning one
+            // off while the other was on, or switching back to RTSS, was mishandled).
+            _appConfiguration.OnValueChanged
+                .Where(x => x.key == nameof(IAppConfiguration.EnableHookFreeOverlay)
+                         || x.key == nameof(IAppConfiguration.EnableHookOverlay))
+                .Subscribe(_ =>
+                {
+                    bool useHook = _appConfiguration.EnableHookFreeOverlay || _appConfiguration.EnableHookOverlay;
+                    _logger.LogInformation("Overlay renderer switch: hookFree={hf}, hook={h}, overlayActive={a} -> {mode}",
+                        _appConfiguration.EnableHookFreeOverlay, _appConfiguration.EnableHookOverlay,
+                        _appConfiguration.IsOverlayActive, useHook ? "hook (release RTSS)" : "RTSS");
+                    if (useHook)
+                    {
+                        // A CapFrameX OSD path took over: release the RTSS overlay so they don't
+                        // overlap — and never LAUNCH RTSS for a hook path (a stray RTSS process hooks
+                        // CapFrameX/DWM and can hang shutdown).
+                        _rTSSService.ReleaseOSD();
+                    }
+                    else if (_appConfiguration.IsOverlayActive && _isServiceAlive)
+                    {
+                        // Switched back to the RTSS renderer while the overlay is active. Re-drive the
+                        // overlay-active pipeline (as an Alt+O toggle would) so it re-runs the RTSS init
+                        // (launch + OnOSDOn) AND rebuilds the entry feed via .Switch(). Nothing else
+                        // re-initializes RTSS after a hook path released it — that's why it looked
+                        // "stuck off"; a one-shot OnOSDOn wasn't enough because the feed wasn't re-driven.
+                        IsOverlayActiveStream.OnNext(true);
+                    }
+                });
+
             Task.Run(async () => await InitializeOverlayEntryDict())
                 .ContinueWith(t =>
                {
+                   int rtssFeedLogState = -1; // logs only when the RTSS-feed decision flips (avoids per-tick spam)
                    _overlayActiveStreamDisposable = IsOverlayActiveStream
                        .Where(_ => _isServiceAlive)
                        .Select(isActive =>
                        {
                            if (isActive)
                            {
-                               _rTSSService.CheckRTSSRunning().Wait();
-                               _rTSSService.OnOSDOn();
-                               _rTSSService.ClearOSD();
+                               if (!_appConfiguration.EnableHookFreeOverlay && !_appConfiguration.EnableHookOverlay)
+                               {
+                                   _rTSSService.CheckRTSSRunning().Wait();
+                                   _rTSSService.OnOSDOn();
+                                   _rTSSService.ClearOSD();
+                               }
                                return _onDictionaryUpdated.
                                    SelectMany(_ => _overlayEntryProvider.GetOverlayEntries());
                            }
@@ -131,7 +165,16 @@ namespace CapFrameX.Overlay
                            CurrentOverlayEntries = entries;
                            OSDUpdateNotifier(entries);
 
-                           if (!overlayOnAPIOnly)
+                           bool feedRtss = !overlayOnAPIOnly && !_appConfiguration.EnableHookFreeOverlay && !_appConfiguration.EnableHookOverlay;
+                           int feedState = feedRtss ? 1 : 0;
+                           if (feedState != rtssFeedLogState)
+                           {
+                               rtssFeedLogState = feedState;
+                               _logger.LogInformation("RTSS feed {state} (apiOnly={api}, hookFree={hf}, hook={h})",
+                                   feedRtss ? "ON" : "OFF", overlayOnAPIOnly,
+                                   _appConfiguration.EnableHookFreeOverlay, _appConfiguration.EnableHookOverlay);
+                           }
+                           if (feedRtss)
                            {
                                _rTSSService.SetOverlayEntries(entries);
                                await _rTSSService.CheckRTSSRunningAndRefresh();

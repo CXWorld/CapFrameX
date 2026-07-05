@@ -35,6 +35,29 @@ internal static class D3DDisplayDevice
         return null;
     }
 
+    /// <summary>
+    /// Returns <c>true</c> if any <em>currently present</em> display adapter matches the given PCI
+    /// vendor token (e.g. <c>"VEN_1002"</c> for AMD, <c>"VEN_8086"</c> for Intel). The check uses the
+    /// CM_GET_DEVICE_INTERFACE_LIST_PRESENT interface list, so an installed-but-inactive adapter
+    /// (e.g. a disabled Ryzen iGPU on a machine that renders on a discrete card) is excluded.
+    /// If adapter enumeration fails, <paramref name="fallbackWhenUnknown"/> is returned (default
+    /// <c>true</c>) so callers can preserve legacy behaviour rather than skip a real GPU.
+    /// </summary>
+    public static bool IsAdapterVendorPresent(string vendorToken, bool fallbackWhenUnknown = true)
+    {
+        string[] identifiers = GetDeviceIdentifiers();
+        if (identifiers == null || identifiers.Length == 0)
+            return fallbackWhenUnknown;
+
+        foreach (string id in identifiers)
+        {
+            if (id != null && id.IndexOf(vendorToken, StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+        }
+
+        return false;
+    }
+
     public static string GetActualDeviceIdentifier(string deviceIdentifier)
     {
         if (string.IsNullOrEmpty(deviceIdentifier))

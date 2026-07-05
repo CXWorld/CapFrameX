@@ -41,6 +41,9 @@ namespace CapFrameX.PresentMonInterface
         public static readonly int ApplicationName_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "Application");
         public static readonly int ProcessID_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "ProcessID");
         public static readonly int SwapChainAddress_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "SwapChainAddress");
+        // Graphics runtime/API of the presenting app (e.g. "DXGI", "D3D9") — index 3; used to
+        // label the hook-free OSD's <APP> line (RTSS gets this from the 3D API, we get it from PresentMon).
+        public static readonly int PresentRuntime_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "PresentRuntime");
         public static readonly int MsBetweenPresents_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "MsBetweenPresents");
         public static readonly int MsBetweenDisplayChange_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "MsBetweenDisplayChange");
         public static readonly int MsPCLatency_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "MsPCLatency");
@@ -291,16 +294,6 @@ namespace CapFrameX.PresentMonInterface
         private static bool HasValidLineLength(string[] lineSplit, PresentMonColumnLayout columnLayout)
         {
             return lineSplit?.Length == columnLayout.ValidLineLength;
-        }
-
-        private void LogInvalidLineLength(int actualLineLength, PresentMonColumnLayout columnLayout, string line)
-        {
-            _logger.LogError(
-                "Received PresentMon output line with invalid column count. Expected {ExpectedLineLength}, actual {ActualLineLength}, UsePcLatency {UsePcLatency}. Line: {Line}",
-                columnLayout.ValidLineLength,
-                actualLineLength,
-                columnLayout.UsePcLatency,
-                line);
         }
 
         private sealed class PresentMonColumnLayout

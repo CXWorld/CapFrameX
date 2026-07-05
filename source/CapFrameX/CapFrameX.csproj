@@ -283,6 +283,8 @@
       <Project>{ADFBAECE-B74F-4A80-87D1-84BC990527B0}</Project>
       <Name>CapFrameX.PresentMonInterface</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.OSD.Integration\CapFrameX.OSD.Integration.csproj" />
+    <ProjectReference Include="..\..\external\CapFrameX.OSD\CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj" Condition="'$(CfxOsdFromSource)' == 'true'" />
     <ProjectReference Include="..\CapFrameX.RTSSIntegration\CapFrameX.RTSSIntegration.csproj">
       <Project>{AE3BDF42-2F21-4CC3-9171-6CF2FDFDAB7A}</Project>
       <Name>CapFrameX.RTSSIntegration</Name>
@@ -319,6 +321,26 @@
       <Project>{51e4211c-f281-11a3-9390-a6b54f703498}</Project>
       <Name>LibreHardwareMonitorLib</Name>
     </ProjectReference>
+  </ItemGroup>
+  <PropertyGroup>
+    <!-- CapFrameX.OSD lives in a private repo, consumed as an optional submodule under
+         external\CapFrameX.OSD. With the submodule checked out the OSD is built from
+         source; otherwise the prebuilt binaries in external\CapFrameX.OSD-prebuilt
+         are used so the app always builds with full OSD functionality. -->
+    <CfxOsdFromSource Condition="'$(CfxOsdFromSource)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD\CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj')">true</CfxOsdFromSource>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(CfxOsdFromSource)' != 'true'">
+    <Reference Include="CapFrameX.OSD.Interop">
+      <HintPath>..\..\external\CapFrameX.OSD-prebuilt\net472\CapFrameX.OSD.Interop.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <!-- Native renderer: staged from the submodule's CMake output when built from source
+       (via the Interop project's content items); otherwise use the prebuilt DLL. -->
+  <ItemGroup Condition="!Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD\CapFrameX.OSD\build\bin\RelWithDebInfo\cfx_osd_core.dll')">
+    <Content Include="..\..\external\CapFrameX.OSD-prebuilt\native\cfx_osd_core.dll">
+      <Link>cfx_osd_core.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\CX_Icon.png">

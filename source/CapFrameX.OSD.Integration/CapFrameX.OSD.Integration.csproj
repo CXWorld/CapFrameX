@@ -1,0 +1,62 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0-windows;net472</TargetFrameworks>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <RootNamespace>CapFrameX.OSD.Integration</RootNamespace>
+    <AssemblyName>CapFrameX.OSD.Integration</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <Deterministic>true</Deterministic>
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- CapFrameX.OSD lives in a private repo, consumed as an optional submodule.
+         With the submodule checked out we build the neutral native bridge from source;
+         otherwise we fall back to the prebuilt binaries in external\CapFrameX.OSD-prebuilt. -->
+    <CfxOsdSubmoduleDir>$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD\</CfxOsdSubmoduleDir>
+    <CfxOsdFromSource Condition="'$(CfxOsdFromSource)' == '' And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj')">true</CfxOsdFromSource>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- the CapFrameX overlay contracts this project adapts -->
+    <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(CfxOsdFromSource)' == 'true'">
+    <ProjectReference Include="$(CfxOsdSubmoduleDir)CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(CfxOsdFromSource)' != 'true'">
+    <Reference Include="CapFrameX.OSD.Interop">
+      <HintPath>$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\$(TargetFramework)\CapFrameX.OSD.Interop.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- IObservable.Subscribe extensions (matches CapFrameX.Contracts' version) -->
+    <PackageReference Include="System.Reactive" Version="6.1.0" />
+    <!-- structured logging for the hook injection manager (same Serilog the app uses) -->
+    <PackageReference Include="Serilog" Version="2.9.0" />
+  </ItemGroup>
+
+  <!-- Stage the in-game hook renderer (cfx_osd_hook.dll) into a 'hook' SUBFOLDER of the
+       app output — NOT next to the exe. HookOverlayManager injects a per-version COPY of
+       this file (under LocalAppData), so games lock the copy, never this staged source.
+       Keeping it in a subfolder also means a game that (legacy) locked the old top-level
+       bin\cfx_osd_hook.dll never blocks this build. Prefer the submodule's hook_poc build
+       output; fall back to the prebuilt native binary. -->
+  <PropertyGroup>
+    <CfxOsdHookDllPath Condition="'$(CfxOsdHookDllPath)' == '' And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD\hook_poc\build\bin\RelWithDebInfo\cfx_osd_hook.dll')">$(CfxOsdSubmoduleDir)CapFrameX.OSD\hook_poc\build\bin\RelWithDebInfo\cfx_osd_hook.dll</CfxOsdHookDllPath>
+    <CfxOsdHookDllPath Condition="'$(CfxOsdHookDllPath)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\cfx_osd_hook.dll')">$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\cfx_osd_hook.dll</CfxOsdHookDllPath>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(CfxOsdHookDllPath)' != ''">
+    <Content Include="$(CfxOsdHookDllPath)">
+      <Link>hook\cfx_osd_hook.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

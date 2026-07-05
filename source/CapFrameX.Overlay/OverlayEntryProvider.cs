@@ -676,6 +676,16 @@ namespace CapFrameX.Overlay
                 entry.IsEntryEnabled = _appConfiguration.UsePcLatency;
             }
 
+            // Displaytime graph (config): needs a display-time source (MsBetweenDisplayChange).
+            // The hook-free OSD provides it, and so does the in-game hook overlay in PresentMon
+            // graph mode (both feed display times); RTSS has no display-time source.
+            if (entry.Identifier == "DisplayTime")
+            {
+                entry.IsEntryEnabled = _appConfiguration.EnableHookFreeOverlay
+                    || (_appConfiguration.EnableHookOverlay
+                        && _appConfiguration.HookOverlayUsePresentMonFrametimes);
+            }
+
             // Return true by default
             return entry.IsEntryEnabled;
         }
@@ -1191,7 +1201,7 @@ namespace CapFrameX.Overlay
         private void SetRTSSMetricIsNumericState()
         {
             foreach (var entry in _overlayEntries.Where(x =>
-                x.Identifier == "Framerate" || x.Identifier == "Frametime"))
+                x.Identifier == "Framerate" || x.Identifier == "Frametime" || x.Identifier == "DisplayTime"))
             {
                 entry.IsNumeric = true;
             }
@@ -1235,6 +1245,15 @@ namespace CapFrameX.Overlay
             {
                 frametimeEntry.ValueUnitFormat = "ms ";
                 frametimeEntry.ValueAlignmentAndDigits = "{0,5:F1}";
+            }
+
+            // display time (hook-free OSD only)
+            _identifierOverlayEntryDict.TryGetValue("DisplayTime", out IOverlayEntry displayTimeEntry);
+
+            if (displayTimeEntry != null)
+            {
+                displayTimeEntry.ValueUnitFormat = "ms ";
+                displayTimeEntry.ValueAlignmentAndDigits = "{0,5:F1}";
             }
         }
 

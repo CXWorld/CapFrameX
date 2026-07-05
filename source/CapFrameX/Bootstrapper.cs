@@ -43,6 +43,15 @@ namespace CapFrameX
 {
     public class Bootstrapper : DryIocBootstrapper
     {
+        // Keeps the hook-free OSD bridge alive for the app lifetime.
+        private CapFrameX.OSD.Integration.OsdOverlayBridge _osdOverlayBridge;
+        // Manages in-game hook injection into the detected game process.
+        private CapFrameX.OSD.Integration.HookOverlayManager _hookOverlayManager;
+        // Publishes CapFrameX's overlay entries to the in-game hook via shared memory.
+        private CapFrameX.OSD.Integration.HookMetricsPublisher _hookMetricsPublisher;
+        // Streams per-frame PresentMon frametimes/display-times to the hook (PresentMon graph mode).
+        private CapFrameX.OSD.Integration.HookFrametimePublisher _hookFrametimePublisher;
+
 		protected override DependencyObject CreateShell()
         {
             var shell = Container.Resolve<Shell>();
@@ -65,6 +74,47 @@ namespace CapFrameX
 
             // get process service
             ProcessServiceProvider.ProcessService = Container.Resolve<IRTSSService>();
+
+            // CapFrameX.OSD: hook-free DWM/DirectComposition overlay, running in parallel to
+            // RTSS. Scalars come from the same IOverlayEntry[] stream RTSS uses; per-present
+            // frametimes from the capture service. Activates with IsOverlayActiveStream.
+            var osdOverlayService = Container.Resolve<CapFrameX.Contracts.Overlay.IOverlayService>();
+            var osdCaptureService = Container.Resolve<CapFrameX.Capture.Contracts.ICaptureService>();
+            _osdOverlayBridge = new CapFrameX.OSD.Integration.OsdOverlayBridge(
+                osdOverlayService,
+                config, // IAppConfiguration (resolved above) — gates OSD vs RTSS
+                osdCaptureService.FrameDataStream,
+                CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenPresents_INDEX,
+                CapFrameX.PresentMonInterface.PresentMonCaptureService.PresentRuntime_INDEX,
+                CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
+                () => osdCaptureService.CPUStartQPCTimeInMs_Index);
+
+            // In-game hook overlay: inject cfx_osd_hook.dll into the game CapFrameX already
+            // detected. The PID flows through IRTSSService.ProcessIdStream (IProcessService),
+            // the same stream the overlay/capture pipeline uses — so we address the process
+            // directly, no manual injector. Opt-in via IAppConfiguration.EnableHookOverlay.
+            var rtssService = Container.Resolve<IRTSSService>();
+            _hookOverlayManager = new CapFrameX.OSD.Integration.HookOverlayManager(
+                config,
+                rtssService.ProcessIdStream);
+
+            // While the in-game hook overlay is on, mirror CapFrameX's processed overlay entries
+            // (fps/lows/sensors/static rows — the same set RTSS/hook-free render) into shared memory
+            // so the injected hook shows authoritative values, not just its local frame ring.
+            _hookMetricsPublisher = new CapFrameX.OSD.Integration.HookMetricsPublisher(
+                osdOverlayService,
+                config);
+
+            // Optional PresentMon graph source for the hook: stream the SAME per-frame frametime +
+            // display-time data the hook-free bridge consumes into a shared-memory ring the hook
+            // replays. Active only with EnableHookOverlay + HookOverlayUsePresentMonFrametimes; the
+            // hook otherwise uses its own local present ring (the two sources stay strictly separate).
+            _hookFrametimePublisher = new CapFrameX.OSD.Integration.HookFrametimePublisher(
+                config,
+                osdCaptureService.FrameDataStream,
+                CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenPresents_INDEX,
+                CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
+                () => osdCaptureService.CPUStartQPCTimeInMs_Index);
 
             // get Shell to set the hardware acceleration
             var shell = Container.Resolve<IShell>();

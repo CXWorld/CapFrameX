@@ -276,6 +276,10 @@ namespace CapFrameX
             if (!_isSingleInstance)
                 return;
 
+            // Note: the in-game hook disables itself when it sees CapFrameX exit (it holds a
+            // SYNCHRONIZE handle to this process, polled from its Present hook), so no
+            // explicit shutdown signal is needed here.
+
 #if DEBUG
             try
             {

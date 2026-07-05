@@ -531,6 +531,7 @@
 															<RowDefinition Height="30" />
 															<RowDefinition Height="30" />
 															<RowDefinition Height="Auto" />
+															<RowDefinition Height="Auto" />
 														</Grid.RowDefinitions>
 														<Grid.ColumnDefinitions>
 															<ColumnDefinition Width="130"/>
@@ -585,6 +586,61 @@
 															<TextBox Width="30" Height="25" Text="{Binding OSDPositionX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Center" PreviewTextInput="IntegerNumberValidationTextBox"></TextBox>
 															<TextBlock VerticalAlignment="Center" Margin="5 0 5 0" Text="x"></TextBlock>
 															<TextBox Width="30" Height="25" Text="{Binding OSDPositionY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Center" PreviewTextInput="IntegerNumberValidationTextBox"></TextBox>
+														</StackPanel>
+
+														<StackPanel Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="5 6 0 2">
+															<TextBlock Text="Overlay renderer" FontWeight="SemiBold" Margin="0 0 0 4"/>
+
+															<!-- Distinct GroupNames on purpose: the ViewModel enforces exclusivity (each setter
+																 clears the others and raises PropertyChanged for all three). A SHARED GroupName
+																 lets WPF do its own uncheck, which can drop the IsChecked binding and leave a
+																 button unable to switch the mode. -->
+															<RadioButton GroupName="OverlayModeRtss" Margin="0 2 0 2" Content="RTSS"
+																		 IsChecked="{Binding OverlayModeRtss, Mode=TwoWay}"
+																		 Style="{StaticResource MaterialDesignRadioButton}" ToolTipService.ShowDuration="25000">
+																<RadioButton.ToolTip>
+																	<ToolTip>
+																		<TextBlock Width="275" TextWrapping="Wrap" Text="Classic RivaTuner Statistics Server overlay. Requires RTSS."/>
+																	</ToolTip>
+																</RadioButton.ToolTip>
+															</RadioButton>
+
+															<RadioButton GroupName="OverlayModeHook" Margin="0 2 0 2" Content="CapFrameX in-game"
+																		 IsChecked="{Binding OverlayModeHook, Mode=TwoWay}"
+																		 Style="{StaticResource MaterialDesignRadioButton}" ToolTipService.ShowDuration="25000">
+																<RadioButton.ToolTip>
+																	<ToolTip>
+																		<TextBlock Width="275" TextWrapping="Wrap" Text="CapFrameX's own overlay, injected into the detected game (hook) for the smoothest in-swapchain graphs. Best animation — but injection can trip anti-cheat, so single-player / non-AC titles only."/>
+																	</ToolTip>
+																</RadioButton.ToolTip>
+															</RadioButton>
+
+															<!-- In-game hook sub-option: which data source feeds the graph. Only meaningful
+																 for the in-game hook, so it greys out for the other renderers. -->
+															<CheckBox Margin="24 0 0 6" Content="Use PresentMon frame times"
+																	  IsChecked="{Binding HookOverlayUsePresentMonFrametimes, Mode=TwoWay}"
+																	  IsEnabled="{Binding OverlayModeHook}"
+																	  Style="{StaticResource MaterialDesignCheckBox}" ToolTipService.ShowDuration="25000">
+																<CheckBox.ToolTip>
+																	<ToolTip>
+																		<TextBlock Width="275" TextWrapping="Wrap" Text="In-game hook graph source. Off (default): the hook's own present-to-present ring — frame time only, zero latency. On: CapFrameX's PresentMon stream — frame times AND display times, buffered and replayed. Adds a display-time graph, but carries ETW-pipeline latency, so it isn't directly comparable to the in-game ring."/>
+																	</ToolTip>
+																</CheckBox.ToolTip>
+															</CheckBox>
+
+															<RadioButton GroupName="OverlayModeHookFree" Margin="0 2 0 2" Content="CapFrameX hook-free"
+																		 IsChecked="{Binding OverlayModeHookFree, Mode=TwoWay}"
+																		 Style="{StaticResource MaterialDesignRadioButton}" ToolTipService.ShowDuration="25000">
+																<RadioButton.ToolTip>
+																	<ToolTip>
+																		<TextBlock Width="275" TextWrapping="Wrap" Text="CapFrameX's own overlay via DWM/DirectComposition — no injection, anti-cheat safe. A lighter alternative to the in-game hook."/>
+																	</ToolTip>
+																</RadioButton.ToolTip>
+															</RadioButton>
+
+															<TextBlock Margin="0 8 0 0" MaxWidth="210" TextWrapping="Wrap" FontSize="11" Foreground="#E0A020"
+																	   Visibility="{Binding ShowRtssHiddenHint, Converter={StaticResource TrueToVisibleConverter}}"
+																	   Text="&#x26A0; &quot;Hide OSD on RTSS&quot; is enabled — the RTSS overlay stays hidden. Uncheck it (in the settings) to show it."/>
 														</StackPanel>
 													</Grid>
 												</StackPanel>

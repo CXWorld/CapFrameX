@@ -18,6 +18,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Sensor
@@ -37,6 +38,11 @@ namespace CapFrameX.Sensor
         private SessionSensorDataLive _sessionSensorDataLive;
         private bool _isLoggingActive = false;
         private bool _isServiceAlive = true;
+
+        // Upper bound for the LibreHardwareMonitor computer teardown at shutdown. Vendor GPU
+        // libraries (AMD ADLX, Intel IGCL) can deadlock in their COM teardown on some systems;
+        // if Computer.Close() overruns this, we abandon it so the application still exits.
+        private static readonly TimeSpan _shutdownComputerTimeout = TimeSpan.FromSeconds(3);
 
         private ISubject<TimeSpan> _sensorUpdateSubject;
         private ISubject<TimeSpan> _osdUpdateSubject;
@@ -563,9 +569,38 @@ namespace CapFrameX.Sensor
             _isServiceAlive = false;
             _logDisposable?.Dispose();
 
-            lock (_lockComputer)
+            // Close the LibreHardwareMonitor computer on a background thread bounded by a timeout.
+            // Vendor GPU libraries (AMD ADLX, Intel IGCL) tear down COM objects in Computer.Close();
+            // on some systems that teardown can deadlock (e.g. a COM/STA apartment mismatch, or a
+            // foreign vendor DLL that was loaded without an active GPU). Bounding it guarantees the
+            // application shutdown never hangs — if the teardown overruns, the stuck background
+            // thread is abandoned (IsBackground) and reclaimed when the process exits.
+            var closeThread = new Thread(() =>
             {
-                _computer?.Close();
+                try
+                {
+                    lock (_lockComputer)
+                    {
+                        _computer?.Close();
+                    }
+                }
+                catch
+                {
+                    // Ignore teardown exceptions during shutdown.
+                }
+            })
+            {
+                IsBackground = true,
+                Name = "SensorServiceShutdown"
+            };
+
+            closeThread.Start();
+
+            if (!closeThread.Join(_shutdownComputerTimeout))
+            {
+                _logger?.LogWarning("Sensor service teardown timed out after {Timeout} ms; abandoning " +
+                    "Computer.Close() (likely a GPU driver/COM deadlock) and continuing shutdown.",
+                    (int)_shutdownComputerTimeout.TotalMilliseconds);
             }
         }
 

@@ -696,7 +696,10 @@ internal sealed class Amd17Cpu : AmdCpu
 
             if (core == null)
             {
-                core = new Core(_cpu, coreId);
+                // Append the hybrid core-type suffix (P/D/LP on Zen 6+) so all "Core #N"
+                // sensors (clock/power/VID/effective) carry the same label as the load sensors.
+                string coreLabel = thread != null ? _cpu.GetCoreLabel(thread) : string.Empty;
+                core = new Core(_cpu, coreId, coreLabel);
                 Cores.Add(core);
             }
 
@@ -814,16 +817,20 @@ internal sealed class Amd17Cpu : AmdCpu
         public double CoreClock { get; set; } = 0;
         public double[] EffectiveClocks { get; set; } = [];
 
-        public Core(Amd17Cpu cpu, int id)
+        // "Core #N" plus the hybrid type suffix (e.g. "Core #3 LP"); empty suffix on non-hybrid parts.
+        private readonly string _coreName;
+
+        public Core(Amd17Cpu cpu, int id, string coreLabel = "")
         {
             _cpu = cpu;
             CoreId = id;
-            _clock = new Sensor("Core #" + CoreId, _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu._settings)
+            _coreName = "Core #" + CoreId + (string.IsNullOrEmpty(coreLabel) ? string.Empty : " " + coreLabel);
+            _clock = new Sensor(_coreName, _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu._settings)
             { IsPresentationDefault = true, PresentationSortKey = $"0_0_0_{id}" };
-            // _multiplier = new Sensor("Core #" + CoreId, cpu._sensorTypeIndex[SensorType.Factor]++, SensorType.Factor, cpu, cpu._settings);
-            _power = new Sensor("Core #" + CoreId + " (SMU)", cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, cpu, cpu._settings)
+            // _multiplier = new Sensor(_coreName, cpu._sensorTypeIndex[SensorType.Factor]++, SensorType.Factor, cpu, cpu._settings);
+            _power = new Sensor(_coreName + " (SMU)", cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, cpu, cpu._settings)
             { PresentationSortKey = $"2_0_{id}" };
-            _vcore = new Sensor("Core #" + CoreId + " VID", cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, cpu, cpu._settings)
+            _vcore = new Sensor(_coreName + " VID", cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, cpu, cpu._settings)
             { PresentationSortKey = $"4_0_{id}" };
 
             cpu.ActivateSensor(_clock);
@@ -843,7 +850,7 @@ internal sealed class Amd17Cpu : AmdCpu
             Threads.Add(t);
 
             // Create effective clock sensor for this thread
-            var sensor = new Sensor($"Core #{CoreId} Thread #{threadIndex + 1} (Effective)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings)
+            var sensor = new Sensor($"{_coreName} Thread #{threadIndex + 1} (Effective)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings)
             { PresentationSortKey = $"0_0_1_{CoreId}_{threadIndex}" };
             _clocksEffective.Add(sensor);
             _cpu.ActivateSensor(sensor);

@@ -69,13 +69,23 @@ namespace CapFrameX.RTSSIntegration
                     {
                         try
                         {
+                            var path = GetRTSSFullPath();
+                            _logger.LogInformation("CheckRTSSRunning: RTSS not running -> launching '{path}'", path);
                             Process proc = new Process();
-                            proc.StartInfo.FileName = Path.Combine(GetRTSSFullPath());
+                            proc.StartInfo.FileName = Path.Combine(path);
                             proc.StartInfo.UseShellExecute = false;
                             proc.Start();
                         }
                         catch (Exception ex) { _logger.LogError(ex, "Error while starting RTSS process"); }
                     }
+                    else
+                    {
+                        _logger.LogDebug("CheckRTSSRunning: RTSS already running ({count})", processes.Length);
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("CheckRTSSRunning: RTSS not installed (no InstallPath) — RTSS overlay unavailable");
                 }
             });
         }

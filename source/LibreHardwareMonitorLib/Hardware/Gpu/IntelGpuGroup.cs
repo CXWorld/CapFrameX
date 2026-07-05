@@ -26,7 +26,14 @@ internal class IntelGpuGroup : IGroup
 
             try
             {
-                gclInitialized = IGCL.IntializeIgcl();
+                // Only load the Intel GCL when an Intel GPU is actually present among the active
+                // display adapters. Initializing/tearing down IGCL on a non-Intel machine (which
+                // only has leftover Intel driver files) risks the same foreign-vendor COM teardown
+                // hang that ADLX exhibits on AMD-less systems.
+                if (D3DDisplayDevice.IsAdapterVendorPresent("VEN_8086"))
+                    gclInitialized = IGCL.IntializeIgcl();
+                else
+                    _report.AppendLine("Intel GCL skipped (no Intel display adapter present)");
             }
             catch (Exception ex)
             {
