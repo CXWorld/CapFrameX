@@ -55,6 +55,10 @@ namespace CapFrameX.OSD.Integration
         // used to label the <APP> line; RTSS reads this from the 3D API, we from PresentMon.
         private volatile string _curRuntime;
 
+        // Last background opacity forwarded to the OSD (percent); -1 forces the first push.
+        private readonly IAppConfiguration _appConfiguration;
+        private int _lastBgOpacity = -1;
+
         public OsdOverlayBridge(IOverlayService overlayService,
                                 IAppConfiguration appConfiguration,
                                 IObservable<string[]> frameDataStream = null,
@@ -67,6 +71,7 @@ namespace CapFrameX.OSD.Integration
             if (appConfiguration == null) throw new ArgumentNullException(nameof(appConfiguration));
 
             _overlayService = overlayService;
+            _appConfiguration = appConfiguration;
             _osd = new OsdHost(OsdAnchor.TopLeft, marginX: 40, marginY: 40);
             _ftIndex = frametimeColumnIndex;
             _runtimeIndex = presentRuntimeColumnIndex;
@@ -98,6 +103,7 @@ namespace CapFrameX.OSD.Integration
             {
                 _osd.Stop();
                 _started = false;
+                _lastBgOpacity = -1; // Stop destroys the native handle; re-feed on next start
                 _curRuntime = null;
                 lock (_fpsLock)
                 {
@@ -145,6 +151,16 @@ namespace CapFrameX.OSD.Integration
                 }
                 if (changed) list[i] = e;
             }
+
+            // Background opacity (percent -> 0..1); forwarded only on change. Same setting the
+            // hook overlay receives via the metrics-SHM flags, so both backends stay in sync.
+            int bgOpacity = _appConfiguration.OsdBackgroundOpacity;
+            if (bgOpacity != _lastBgOpacity)
+            {
+                _lastBgOpacity = bgOpacity;
+                _osd.SetBackgroundAlpha(Math.Max(0, Math.Min(100, bgOpacity)) / 100.0);
+            }
+
             _osd.UpdateEntries(list);
         }
 

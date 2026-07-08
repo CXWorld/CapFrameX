@@ -430,6 +430,19 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        // OSD background (panel + chart area) opacity in percent for BOTH CapFrameX renderers
+        // (in-game hook via the metrics SHM, hook-free via the C API). Applies live: the hook
+        // publisher and the hook-free bridge re-read the config on every OSD tick.
+        public int OsdBackgroundOpacity
+        {
+            get { return _appConfiguration.OsdBackgroundOpacity; }
+            set
+            {
+                _appConfiguration.OsdBackgroundOpacity = value;
+                RaisePropertyChanged();
+            }
+        }
+
         // Overlay renderer is a single choice of three mutually exclusive modes, surfaced as a
         // radio group. They map onto the two underlying config flags so the existing gating in
         // OverlayService / HookOverlayManager / OsdOverlayBridge keeps working unchanged:

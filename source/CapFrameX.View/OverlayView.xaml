@@ -638,6 +638,23 @@
 																</RadioButton.ToolTip>
 															</RadioButton>
 
+															<!-- Background opacity for BOTH CapFrameX renderers (in-game hook + hook-free).
+																 Applies live (the publishers re-read the config each OSD tick); RTSS has its
+																 own transparency setting, so this stays enabled but only affects CX modes. -->
+															<StackPanel Orientation="Horizontal" Margin="0 8 0 0" ToolTipService.ShowDuration="25000">
+																<TextBlock VerticalAlignment="Center" Text="Background opacity"/>
+																<Slider Width="90" Margin="8 0 6 0" VerticalAlignment="Center"
+																		Minimum="0" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True"
+																		Value="{Binding OsdBackgroundOpacity, Mode=TwoWay}"/>
+																<TextBlock VerticalAlignment="Center" MinWidth="32"
+																		   Text="{Binding OsdBackgroundOpacity, StringFormat={}{0} %}"/>
+																<StackPanel.ToolTip>
+																	<ToolTip>
+																		<TextBlock Width="275" TextWrapping="Wrap" Text="Panel and chart-area background opacity of the CapFrameX overlay (in-game hook and hook-free). Text and graph lines stay fully opaque. Does not affect RTSS."/>
+																	</ToolTip>
+																</StackPanel.ToolTip>
+															</StackPanel>
+
 															<TextBlock Margin="0 8 0 0" MaxWidth="210" TextWrapping="Wrap" FontSize="11" Foreground="#E0A020"
 																	   Visibility="{Binding ShowRtssHiddenHint, Converter={StaticResource TrueToVisibleConverter}}"
 																	   Text="&#x26A0; &quot;Hide OSD on RTSS&quot; is enabled — the RTSS overlay stays hidden. Uncheck it (in the settings) to show it."/>

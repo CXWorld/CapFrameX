@@ -67,6 +67,12 @@ namespace CapFrameX.OSD.Integration
                 var list = OverlayEntryAdapter.ToOsdEntries(_overlayService.CurrentOverlayEntries);
                 uint flags = _appConfiguration.HookOverlayUsePresentMonFrametimes
                     ? HookMetricsChannel.FlagPresentMonGraph : 0u;
+                // OSD background opacity (percent -> byte in bits 8..15). Published with every
+                // snapshot so slider changes reach the hook within one publish period.
+                uint alphaByte = (uint)Math.Round(
+                    Math.Max(0, Math.Min(100, _appConfiguration.OsdBackgroundOpacity)) * 2.55);
+                flags |= HookMetricsChannel.FlagBackgroundAlpha
+                       | (alphaByte << HookMetricsChannel.BackgroundAlphaShift);
                 channel.Publish(list, flags);
             }
             catch (Exception ex)

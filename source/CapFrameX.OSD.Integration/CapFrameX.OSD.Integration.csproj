@@ -59,4 +59,26 @@
     </Content>
   </ItemGroup>
 
+  <!-- x86 hook for 32-bit (WOW64) games: CapFrameX (x64) can't inject the x64 DLL there, so it
+       spawns the x86 cfx_inject.exe helper (runs in the target's bitness) to load the x86 hook.
+       Both staged into hook\x86\. Same submodule-then-prebuilt fallback as the x64 hook. -->
+  <PropertyGroup>
+    <CfxOsdHookDllX86Path Condition="'$(CfxOsdHookDllX86Path)' == '' And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD\hook_poc\build-x86\bin\RelWithDebInfo\cfx_osd_hook.dll')">$(CfxOsdSubmoduleDir)CapFrameX.OSD\hook_poc\build-x86\bin\RelWithDebInfo\cfx_osd_hook.dll</CfxOsdHookDllX86Path>
+    <CfxOsdHookDllX86Path Condition="'$(CfxOsdHookDllX86Path)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\x86\cfx_osd_hook.dll')">$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\x86\cfx_osd_hook.dll</CfxOsdHookDllX86Path>
+    <CfxOsdInjectX86Path Condition="'$(CfxOsdInjectX86Path)' == '' And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD\hook_poc\build-x86\bin\RelWithDebInfo\cfx_inject.exe')">$(CfxOsdSubmoduleDir)CapFrameX.OSD\hook_poc\build-x86\bin\RelWithDebInfo\cfx_inject.exe</CfxOsdInjectX86Path>
+    <CfxOsdInjectX86Path Condition="'$(CfxOsdInjectX86Path)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\x86\cfx_inject.exe')">$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\x86\cfx_inject.exe</CfxOsdInjectX86Path>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(CfxOsdHookDllX86Path)' != ''">
+    <Content Include="$(CfxOsdHookDllX86Path)">
+      <Link>hook\x86\cfx_osd_hook.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition="'$(CfxOsdInjectX86Path)' != ''">
+    <Content Include="$(CfxOsdInjectX86Path)">
+      <Link>hook\x86\cfx_inject.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

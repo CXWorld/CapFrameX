@@ -718,6 +718,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public int OsdBackgroundOpacity
+        {
+            get => Get<int>(97);
+            set => Set(Math.Max(0, Math.Min(100, value)));
+        }
+
         public bool ShowSystemTimeSeconds
         {
             get => Get<bool>(false);

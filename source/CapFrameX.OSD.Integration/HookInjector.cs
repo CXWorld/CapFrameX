@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace CapFrameX.OSD.Integration
@@ -9,8 +11,11 @@ namespace CapFrameX.OSD.Integration
     /// (<c>IProcessService.ProcessIdStream</c>), so it addresses the process directly —
     /// no manual injector, no on-disk proxy DLL.
     ///
-    /// Bitness must match: CapFrameX is x64 and injects the x64 hook DLL into x64 games.
-    /// 32-bit targets are detected and refused here (an x86 hook build is a later step).
+    /// Bitness must match the target. For x64 games CapFrameX (x64) injects the x64 hook DLL
+    /// directly (<see cref="TryInject"/>). For 32-bit (WOW64) games it cannot — kernel32 sits at a
+    /// different base in the 32-bit target, so this process' LoadLibraryW address is wrong there —
+    /// so it delegates to the x86 <c>cfx_inject.exe</c> helper running in the target's bitness
+    /// (<see cref="TryInjectViaHelper"/>). <see cref="TryGetIsWow64"/> picks the path.
     /// </summary>
     internal static class HookInjector
     {
@@ -19,6 +24,7 @@ namespace CapFrameX.OSD.Integration
         private const uint PROCESS_VM_WRITE = 0x0020;
         private const uint PROCESS_VM_READ = 0x0010;
         private const uint PROCESS_QUERY_INFORMATION = 0x0400;
+        private const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
         private const uint MEM_COMMIT = 0x1000;
         private const uint MEM_RESERVE = 0x2000;
         private const uint MEM_RELEASE = 0x8000;
@@ -27,6 +33,7 @@ namespace CapFrameX.OSD.Integration
         // spawns worker threads), so this returns in milliseconds. A cap ensures the
         // background injection task can never wait forever.
         private const uint LoadLibraryTimeoutMs = 15000;
+        private const int HelperTimeoutMs = 20000; // x86 helper: its own 15s inner cap + margin
         private const ushort IMAGE_FILE_MACHINE_I386 = 0x014C;
 
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -63,7 +70,7 @@ namespace CapFrameX.OSD.Integration
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool IsWow64Process2(IntPtr process, out ushort processMachine, out ushort nativeMachine);
 
-        /// <summary>True if the process runs as 32-bit (WOW64) — the x64 hook DLL cannot inject there.</summary>
+        /// <summary>True if the process runs as 32-bit (WOW64) — needs the x86 hook + helper.</summary>
         internal static bool IsWow64(IntPtr processHandle)
         {
             try
@@ -73,6 +80,73 @@ namespace CapFrameX.OSD.Integration
             }
             catch (EntryPointNotFoundException) { /* pre-Win8.1: assume native */ }
             return false;
+        }
+
+        /// <summary>
+        /// Determines whether process <paramref name="pid"/> is 32-bit (WOW64), used to pick the
+        /// x64 (direct) vs x86 (helper) injection path. Needs only QUERY_LIMITED_INFORMATION.
+        /// </summary>
+        internal static bool TryGetIsWow64(int pid, out bool isWow64, out string error)
+        {
+            isWow64 = false; error = null;
+            IntPtr proc = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid);
+            if (proc == IntPtr.Zero)
+                proc = OpenProcess(PROCESS_QUERY_INFORMATION, false, pid);
+            if (proc == IntPtr.Zero)
+            {
+                error = $"OpenProcess (bitness query) failed ({Marshal.GetLastWin32Error()}) — elevation may be required";
+                return false;
+            }
+            try { isWow64 = IsWow64(proc); return true; }
+            finally { CloseHandle(proc); }
+        }
+
+        /// <summary>
+        /// Injects a 32-bit hook into a WOW64 target by spawning the x86 <c>cfx_inject.exe</c> helper
+        /// (which runs in 32-bit mode, so its LoadLibraryW is valid in the target). Returns false with
+        /// a reason on any failure; never throws.
+        /// </summary>
+        internal static bool TryInjectViaHelper(int pid, string dllPath, string helperPath, out string error)
+        {
+            error = null;
+            if (string.IsNullOrEmpty(helperPath) || !File.Exists(helperPath))
+            {
+                error = $"x86 inject helper not found ('{helperPath}')";
+                return false;
+            }
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = helperPath,
+                    Arguments = $"{pid} \"{dllPath}\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                };
+                using (var p = Process.Start(psi))
+                {
+                    if (p == null) { error = "could not start the x86 inject helper"; return false; }
+                    var outTask = p.StandardOutput.ReadToEndAsync();
+                    var errTask = p.StandardError.ReadToEndAsync();
+                    if (!p.WaitForExit(HelperTimeoutMs))
+                    {
+                        try { p.Kill(); } catch { }
+                        error = "x86 inject helper timed out";
+                        return false;
+                    }
+                    if (p.ExitCode == 0) return true;
+                    string msg = (outTask.GetAwaiter().GetResult() + " " + errTask.GetAwaiter().GetResult()).Trim();
+                    error = $"x86 inject helper failed (exit {p.ExitCode})" + (msg.Length > 0 ? $": {msg}" : "");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                error = "x86 inject helper error: " + ex.Message;
+                return false;
+            }
         }
 
         /// <summary>
@@ -94,7 +168,9 @@ namespace CapFrameX.OSD.Integration
             {
                 if (IsWow64(proc))
                 {
-                    error = "target is 32-bit (WOW64); the x64 hook DLL cannot be injected (x86 build pending)";
+                    // Should never happen: the manager routes 32-bit targets to TryInjectViaHelper.
+                    // Guard anyway — a 64-bit LoadLibraryW address in a 32-bit target would corrupt it.
+                    error = "target is 32-bit but reached the x64 inject path (should use the x86 helper)";
                     return false;
                 }
 

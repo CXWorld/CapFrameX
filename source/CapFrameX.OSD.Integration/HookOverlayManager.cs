@@ -23,13 +23,16 @@ namespace CapFrameX.OSD.Integration
     public sealed class HookOverlayManager : IDisposable
     {
         private const string HookDllName = "cfx_osd_hook.dll";
+        private const string InjectHelperName = "cfx_inject.exe"; // x86 bitness helper (WOW64 targets)
 
         private readonly IAppConfiguration _appConfiguration;
         private readonly IDisposable _pidSub;
         private readonly IDisposable _enabledSub;
         private readonly IDisposable _visibilitySub;
         private readonly HookVisibilityChannel _visibility;
-        private readonly string _dllPath;
+        private readonly string _dllPath;         // x64 hook DLL
+        private readonly string _dllPathX86;      // x86 hook DLL (32-bit targets)
+        private readonly string _injectHelperX86; // x86 cfx_inject.exe helper
         private readonly object _gate = new object();
         private readonly HashSet<int> _injected = new HashSet<int>();
         private volatile bool _enabled;
@@ -37,14 +40,15 @@ namespace CapFrameX.OSD.Integration
 
         /// <param name="processIdStream">The detected-game PID stream (IProcessService.ProcessIdStream).</param>
         /// <param name="dllPathOverride">Optional explicit path to cfx_osd_hook.dll.</param>
-        public HookOverlayManager(IAppConfiguration appConfiguration,
-                                  IObservable<int> processIdStream,
-                                  string dllPathOverride = null)
+        public HookOverlayManager(IAppConfiguration appConfiguration, IObservable<int> processIdStream,
+            string dllPathOverride = null)
         {
             _appConfiguration = appConfiguration ?? throw new ArgumentNullException(nameof(appConfiguration));
             if (processIdStream == null) throw new ArgumentNullException(nameof(processIdStream));
 
-            _dllPath = dllPathOverride ?? ResolveHookDll();
+            _dllPath = dllPathOverride ?? ResolveHookAsset(HookDllName, "CFX_HOOK_DLL");
+            _dllPathX86 = ResolveHookAsset(Path.Combine("x86", HookDllName), "CFX_HOOK_DLL_X86");
+            _injectHelperX86 = ResolveHookAsset(Path.Combine("x86", InjectHelperName), "CFX_INJECT_X86");
             _enabled = appConfiguration.EnableHookOverlay;
 
             // Mirror the hook overlay's effective visibility to the in-game hook via a named event;
@@ -101,12 +105,6 @@ namespace CapFrameX.OSD.Integration
 
         private void TryInjectAsync(int pid)
         {
-            if (string.IsNullOrEmpty(_dllPath) || !File.Exists(_dllPath))
-            {
-                Log.Warning("HookOverlay: cannot inject — {dll} not found (looked at '{path}')", HookDllName, _dllPath);
-                return;
-            }
-
             lock (_gate)
             {
                 if (_injected.Contains(pid)) return; // already injected this process
@@ -124,25 +122,48 @@ namespace CapFrameX.OSD.Integration
                         return;
                     }
 
-                    // Inject a per-version COPY, never the app-bin DLL itself: a game
-                    // LoadLibrary's (and locks) whatever file it loads, so loading the
-                    // app-bin DLL directly would lock it and block CapFrameX builds/updates
-                    // while any injected game runs. The copy lives under LocalAppData and is
-                    // named by content hash, so a new build gets a new file and never
-                    // collides with a copy a running game still holds.
-                    string injectable = PrepareInjectableCopy();
-                    if (injectable == null)
+                    // Pick the path by the TARGET's bitness: x64 games get the x64 hook injected
+                    // directly; 32-bit (WOW64) games get the x86 hook via the bitness-matched helper.
+                    if (!HookInjector.TryGetIsWow64(pid, out bool isWow64, out string bitError))
                     {
-                        Log.Warning("HookOverlay: could not prepare an injectable copy of {dll}", HookDllName);
+                        Log.Warning("HookOverlay: cannot determine bitness of pid {pid} — {error}", pid, bitError);
                         lock (_gate) { _injected.Remove(pid); }
                         return;
                     }
 
-                    if (HookInjector.TryInject(pid, injectable, out string error))
-                        Log.Information("HookOverlay: injected {dll} into pid {pid}", HookDllName, pid);
+                    string arch = isWow64 ? "x86" : "x64";
+                    string sourceDll = isWow64 ? _dllPathX86 : _dllPath;
+                    if (string.IsNullOrEmpty(sourceDll) || !File.Exists(sourceDll))
+                    {
+                        Log.Warning("HookOverlay: cannot inject into {arch} pid {pid} — {dll} not found (looked at '{path}')",
+                            arch, pid, HookDllName, sourceDll);
+                        lock (_gate) { _injected.Remove(pid); }
+                        return;
+                    }
+
+                    // Inject a per-version COPY, never the staged DLL itself: a game LoadLibrary's (and
+                    // locks) whatever file it loads, so loading the staged DLL directly would lock it and
+                    // block CapFrameX builds/updates while an injected game runs. The copy lives under
+                    // LocalAppData\hook\<arch>\, named by content hash, so a new build gets a new file and
+                    // never collides with a copy a running game still holds.
+                    string injectable = PrepareInjectableCopy(sourceDll, arch);
+                    if (injectable == null)
+                    {
+                        Log.Warning("HookOverlay: could not prepare an injectable {arch} copy of {dll}", arch, HookDllName);
+                        lock (_gate) { _injected.Remove(pid); }
+                        return;
+                    }
+
+                    string error;
+                    bool ok = isWow64
+                        ? HookInjector.TryInjectViaHelper(pid, injectable, _injectHelperX86, out error)
+                        : HookInjector.TryInject(pid, injectable, out error);
+
+                    if (ok)
+                        Log.Information("HookOverlay: injected {dll} ({arch}) into pid {pid}", HookDllName, arch, pid);
                     else
                     {
-                        Log.Warning("HookOverlay: injection into pid {pid} failed — {error}", pid, error);
+                        Log.Warning("HookOverlay: injection into {arch} pid {pid} failed — {error}", arch, pid, error);
                         lock (_gate) { _injected.Remove(pid); } // allow a retry on next detection
                     }
                 }
@@ -157,24 +178,24 @@ namespace CapFrameX.OSD.Integration
         // Copy the source DLL to LocalAppData\CapFrameX\hook\cfx_osd_hook_<hash8>.dll and
         // return that path. The copy is what games load and lock, keeping the app-bin DLL
         // free so CapFrameX can be rebuilt/updated while injected games are running.
-        private string PrepareInjectableCopy()
+        private string PrepareInjectableCopy(string sourceDll, string arch)
         {
             try
             {
                 string tag;
                 using (var sha = SHA256.Create())
-                using (var fs = File.OpenRead(_dllPath))
+                using (var fs = File.OpenRead(sourceDll))
                     tag = BitConverter.ToString(sha.ComputeHash(fs)).Replace("-", "").Substring(0, 8).ToLowerInvariant();
 
                 var dir = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "CapFrameX", "hook");
+                    "CapFrameX", "hook", arch);
                 Directory.CreateDirectory(dir);
                 var target = Path.Combine(dir, $"cfx_osd_hook_{tag}.dll");
 
                 if (!File.Exists(target))
                 {
-                    try { File.Copy(_dllPath, target, overwrite: false); }
+                    try { File.Copy(sourceDll, target, overwrite: false); }
                     catch (IOException) { /* created concurrently, or same-content file already present */ }
                 }
                 TryCleanupOldCopies(dir, target);
@@ -221,12 +242,13 @@ namespace CapFrameX.OSD.Integration
             catch (InvalidOperationException) { return false; }
         }
 
-        private static string ResolveHookDll()
+        // Resolve a staged hook asset relative to the app-output 'hook' folder: the x64 DLL
+        // ("cfx_osd_hook.dll"), the x86 DLL ("x86\cfx_osd_hook.dll") or the x86 helper
+        // ("x86\cfx_inject.exe"). The build stages these into 'hook' (not next to the exe) so a game
+        // locking the injected COPY never touches the app tree. envVar gives a dev/testing override.
+        private static string ResolveHookAsset(string relative, string envVar)
         {
-            // The build stages the DLL into a 'hook' subfolder (not next to the exe) so a
-            // game locking the injected COPY never touches the app tree. An env override
-            // (CFX_HOOK_DLL) helps dev/testing.
-            var envOverride = Environment.GetEnvironmentVariable("CFX_HOOK_DLL");
+            var envOverride = Environment.GetEnvironmentVariable(envVar);
             if (!string.IsNullOrEmpty(envOverride) && File.Exists(envOverride)) return envOverride;
 
             foreach (var dir in new[]
@@ -236,10 +258,10 @@ namespace CapFrameX.OSD.Integration
             })
             {
                 if (string.IsNullOrEmpty(dir)) continue;
-                var candidate = Path.Combine(dir, "hook", HookDllName);
+                var candidate = Path.Combine(dir, "hook", relative);
                 if (File.Exists(candidate)) return candidate;
             }
-            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory ?? string.Empty, "hook", HookDllName);
+            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory ?? string.Empty, "hook", relative);
         }
 
         public void Dispose()

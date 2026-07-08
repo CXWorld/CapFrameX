@@ -181,6 +181,14 @@ namespace CapFrameX.Contracts.Configuration
 		/// </summary>
 		bool HookOverlayUsePresentMonFrametimes { get; set; }
 
+		/// <summary>
+		/// OSD background (panel + chart area) opacity in percent, 0..100. Applies to BOTH
+		/// cfx-OSD backends: the hook-free window overlay (directly via the C API) and the
+		/// in-game hook overlay (published through the metrics shared-memory header flags).
+		/// Text and graph lines are unaffected. Default 97 matches the theme's built-in look.
+		/// </summary>
+		int OsdBackgroundOpacity { get; set; }
+
 		bool ShowSystemTimeSeconds { get; set; }
 
 		int InputLagOffset { get; set; }

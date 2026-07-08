@@ -30,6 +30,10 @@ namespace CapFrameX.OSD.Integration
         // header Flags bits (OffFlags). bit0 tells the hook the graph source is PresentMon (the
         // CfxOsdFrametimesV1 ring), not the hook's own local present ring.
         internal const uint FlagPresentMonGraph = 1u;
+        // bit1: bits 8..15 carry the user's OSD background opacity (0..255). The hook falls back
+        // to the theme defaults when the bit is absent (old publisher).
+        internal const uint FlagBackgroundAlpha = 2u;
+        internal const int BackgroundAlphaShift = 8;
         // header
         private const int OffMagic = 0, OffVersion = 4, OffSeq = 8, OffEntryCount = 12,
                           OffPayloadBytes = 16, OffFlags = 20, OffWriteQpc = 24;
