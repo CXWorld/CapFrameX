@@ -16,6 +16,8 @@
 [Rr]eleases/
 x64/
 x86/
+# Prebuilt 32-bit hook binaries must be tracked despite the generic x86/ rule
+!external/CapFrameX.OSD-prebuilt/native/x86/
 bld/
 [Bb]in/
 [Oo]bj/
