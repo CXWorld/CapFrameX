@@ -17,9 +17,10 @@ namespace CapFrameX.OSD.Integration
     /// capture pipeline uses) and, when the hook overlay is enabled, injects
     /// cfx_osd_hook.dll straight into that process — no manual injector, no proxy DLL.
     ///
-    /// Opt-in via <see cref="IAppConfiguration.EnableHookOverlay"/>. Each PID is injected at
-    /// most once; a PID that has exited is forgotten so a relaunch re-injects. Injection runs
-    /// off the caller thread and never throws into the app.
+    /// Opt-in via <see cref="IAppConfiguration.EnableHookOverlay"/>. Each PID is successfully
+    /// injected at most once; failures use a per-PID exponential retry backoff. A PID that has
+    /// exited is forgotten so a relaunch re-injects. Injection runs off the caller thread and
+    /// never throws into the app.
     /// </summary>
     public sealed class HookOverlayManager : IDisposable
     {
@@ -42,6 +43,8 @@ namespace CapFrameX.OSD.Integration
         private readonly int _processIdColumnIndex;
         private readonly int _runtimeColumnIndex;
         private readonly HashSet<int> _injected = new HashSet<int>();
+        private readonly InjectionRetryBackoff _injectionRetryBackoff =
+            new InjectionRetryBackoff();
         private readonly Dictionary<int, string> _policyBlocks = new Dictionary<int, string>();
         private readonly Dictionary<int, string> _vulkanBlocks = new Dictionary<int, string>();
         private readonly Dictionary<int, long> _nextVulkanProbe = new Dictionary<int, long>();
@@ -128,9 +131,15 @@ namespace CapFrameX.OSD.Integration
                 HookTargetPolicy.Invalidate(previousPid);
                 lock (_gate)
                 {
+                    _injectionRetryBackoff.Reset(previousPid);
                     _vulkanBlocks.Remove(previousPid);
                     _nextVulkanProbe.Remove(previousPid);
                 }
+            }
+            lock (_gate)
+            {
+                // A newly selected process must never inherit retry state from a reused PID.
+                _injectionRetryBackoff.Reset(pid);
             }
             UpdateHookVisibility();
             if (pid <= 0)
@@ -180,13 +189,12 @@ namespace CapFrameX.OSD.Integration
 
         private void TryInjectAsync(int pid)
         {
+            // Frame rows can arrive many times per second. Suppress all of the comparatively
+            // expensive policy/probe work while a failed injection is in its retry window.
+            if (IsInjectionRetryBlocked(pid)) return;
             if (!RefreshVulkanInjectionGate(pid)) return;
             if (!RefreshTargetPolicy(pid)) return;
-            lock (_gate)
-            {
-                if (_injected.Contains(pid)) return; // already injected this process
-                _injected.Add(pid);                  // reserve now to avoid a double-inject race
-            }
+            if (!TryReserveInjection(pid)) return;
 
             Task.Run(() =>
             {
@@ -194,13 +202,13 @@ namespace CapFrameX.OSD.Integration
                 {
                     if (!_enabled || pid != _currentPid || !IsDxgiRuntime(_currentRuntime))
                     {
-                        lock (_gate) { _injected.Remove(pid); }
+                        ReleaseInjectionReservation(pid);
                         return;
                     }
                     // The detection can briefly hold a stale PID; skip if the process is gone.
                     if (!IsProcessAlive(pid))
                     {
-                        lock (_gate) { _injected.Remove(pid); }
+                        ReleaseInjectionReservation(pid);
                         return;
                     }
 
@@ -208,8 +216,10 @@ namespace CapFrameX.OSD.Integration
                     // directly; 32-bit (WOW64) games get the x86 hook via the bitness-matched helper.
                     if (!HookInjector.TryGetIsWow64(pid, out bool isWow64, out string bitError))
                     {
-                        Log.Warning("HookOverlay: cannot determine bitness of pid {pid} — {error}", pid, bitError);
-                        lock (_gate) { _injected.Remove(pid); }
+                        TimeSpan retryDelay = RegisterInjectionFailure(pid);
+                        Log.Warning(
+                            "HookOverlay: cannot determine bitness of pid {pid} — {error}; retry in {retrySeconds:0.#} s",
+                            pid, bitError, retryDelay.TotalSeconds);
                         return;
                     }
 
@@ -217,9 +227,10 @@ namespace CapFrameX.OSD.Integration
                     string sourceDll = isWow64 ? _dllPathX86 : _dllPath;
                     if (string.IsNullOrEmpty(sourceDll) || !File.Exists(sourceDll))
                     {
-                        Log.Warning("HookOverlay: cannot inject into {arch} pid {pid} — {dll} not found (looked at '{path}')",
-                            arch, pid, HookDllName, sourceDll);
-                        lock (_gate) { _injected.Remove(pid); }
+                        TimeSpan retryDelay = RegisterInjectionFailure(pid);
+                        Log.Warning(
+                            "HookOverlay: cannot inject into {arch} pid {pid} — {dll} not found (looked at '{path}'); retry in {retrySeconds:0.#} s",
+                            arch, pid, HookDllName, sourceDll, retryDelay.TotalSeconds);
                         return;
                     }
 
@@ -231,22 +242,24 @@ namespace CapFrameX.OSD.Integration
                     string injectable = PrepareInjectableCopy(sourceDll, arch);
                     if (injectable == null)
                     {
-                        Log.Warning("HookOverlay: could not prepare an injectable {arch} copy of {dll}", arch, HookDllName);
-                        lock (_gate) { _injected.Remove(pid); }
+                        TimeSpan retryDelay = RegisterInjectionFailure(pid);
+                        Log.Warning(
+                            "HookOverlay: could not prepare an injectable {arch} copy of {dll}; retry in {retrySeconds:0.#} s",
+                            arch, HookDllName, retryDelay.TotalSeconds);
                         return;
                     }
 
                     string error;
                     if (!RefreshTargetPolicy(pid))
                     {
-                        lock (_gate) { _injected.Remove(pid); }
+                        ReleaseInjectionReservation(pid);
                         return;
                     }
                     // Re-read immediately before LoadLibrary. The Vulkan mapping may have appeared
                     // after process/runtime detection but while the injectable copy was prepared.
                     if (!RefreshVulkanInjectionGate(pid, forceProbe: true))
                     {
-                        lock (_gate) { _injected.Remove(pid); }
+                        ReleaseInjectionReservation(pid);
                         return;
                     }
                     bool ok = isWow64
@@ -254,19 +267,70 @@ namespace CapFrameX.OSD.Integration
                         : HookInjector.TryInject(pid, injectable, out error);
 
                     if (ok)
+                    {
+                        RegisterInjectionSuccess(pid);
                         Log.Information("HookOverlay: injected {dll} ({arch}) into pid {pid}", HookDllName, arch, pid);
+                    }
                     else
                     {
-                        Log.Warning("HookOverlay: injection into {arch} pid {pid} failed — {error}", arch, pid, error);
-                        lock (_gate) { _injected.Remove(pid); } // allow a retry on next detection
+                        TimeSpan retryDelay = RegisterInjectionFailure(pid);
+                        Log.Warning(
+                            "HookOverlay: injection into {arch} pid {pid} failed — {error}; retry in {retrySeconds:0.#} s",
+                            arch, pid, error, retryDelay.TotalSeconds);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, "HookOverlay: unexpected error injecting into pid {pid}", pid);
-                    lock (_gate) { _injected.Remove(pid); }
+                    TimeSpan retryDelay = RegisterInjectionFailure(pid);
+                    Log.Error(ex,
+                        "HookOverlay: unexpected error injecting into pid {pid}; retry in {retrySeconds:0.#} s",
+                        pid, retryDelay.TotalSeconds);
                 }
             });
+        }
+
+        private bool IsInjectionRetryBlocked(int pid)
+        {
+            lock (_gate)
+                return _injectionRetryBackoff.IsBlocked(pid);
+        }
+
+        private bool TryReserveInjection(int pid)
+        {
+            lock (_gate)
+            {
+                // Re-check the backoff inside the reservation lock. An earlier attempt can
+                // fail between the fast check above and this point.
+                if (_injected.Contains(pid) || _injectionRetryBackoff.IsBlocked(pid))
+                    return false;
+
+                _injected.Add(pid);
+                return true;
+            }
+        }
+
+        private void ReleaseInjectionReservation(int pid)
+        {
+            lock (_gate)
+                _injected.Remove(pid);
+        }
+
+        private TimeSpan RegisterInjectionFailure(int pid)
+        {
+            lock (_gate)
+            {
+                TimeSpan retryDelay = _injectionRetryBackoff.RecordFailure(pid);
+                // Publish the retry deadline before releasing the reservation so a frame
+                // cannot start another injection attempt in between.
+                _injected.Remove(pid);
+                return retryDelay;
+            }
+        }
+
+        private void RegisterInjectionSuccess(int pid)
+        {
+            lock (_gate)
+                _injectionRetryBackoff.Reset(pid);
         }
 
         private bool RefreshVulkanInjectionGate(int pid, bool forceProbe = false)
@@ -398,6 +462,7 @@ namespace CapFrameX.OSD.Integration
             lock (_gate)
             {
                 _injected.RemoveWhere(p => !IsProcessAlive(p));
+                _injectionRetryBackoff.Prune(IsProcessAlive);
                 var stalePolicyPids = new List<int>();
                 foreach (int pid in _policyBlocks.Keys)
                     if (!IsProcessAlive(pid)) stalePolicyPids.Add(pid);
