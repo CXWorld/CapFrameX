@@ -13,7 +13,7 @@ namespace CapFrameX.OSD.Integration
     /// block, <c>Global\CfxOsdMetricsV1</c>. The hook (in the game process) opens it read-only and
     /// feeds the entries, so the in-game OSD shows the same values as RTSS / hook-free.
     ///
-    /// Layout is a fixed 32-byte header + up to 64 fixed-size records (no offset math). Updates use a
+    /// Layout is a fixed 32-byte v2 header + up to 64 fixed-size records (no offset math). Updates use a
     /// SEQLOCK: the sequence counter is odd while writing, even when a consistent snapshot is
     /// published; the reader retries/uses-cached on an odd or changed sequence. The block carries a
     /// QPC timestamp for staleness detection. Same permissive SD (Everyone DACL + LOW integrity
@@ -25,7 +25,7 @@ namespace CapFrameX.OSD.Integration
 
         // ---- shared layout (MUST match the native reader in overlay_metrics_shm.cpp) ----
         internal const uint Magic = 0x31584643u; // 'C''F''X''1'
-        internal const uint Version = 1;
+        internal const uint Version = 2;
         internal const int MaxEntries = 64;
         // header Flags bits (OffFlags). bit0 tells the hook the graph source is PresentMon (the
         // CfxOsdFrametimesV1 ring), not the hook's own local present ring.
@@ -35,8 +35,10 @@ namespace CapFrameX.OSD.Integration
         internal const uint FlagBackgroundAlpha = 2u;
         internal const int BackgroundAlphaShift = 8;
         // header
+        // v1 stored the redundant payload byte count at offset 16. v2 reuses that slot for the
+        // target PID, keeping HeaderSize and every record offset binary-compatible.
         private const int OffMagic = 0, OffVersion = 4, OffSeq = 8, OffEntryCount = 12,
-                          OffPayloadBytes = 16, OffFlags = 20, OffWriteQpc = 24;
+                          OffTargetPid = 16, OffFlags = 20, OffWriteQpc = 24;
         internal const int HeaderSize = 32;
         // record field offsets (relative to the record start) + sizes
         private const int RId = 0, SzId = 64, RGroup = 64, SzGroup = 64, RLabel = 128, SzLabel = 96,
@@ -57,6 +59,7 @@ namespace CapFrameX.OSD.Integration
         private IntPtr _mapHandle = IntPtr.Zero;
         private IntPtr _view = IntPtr.Zero;
         private int _seq;
+        private int _targetPid = -1;
 
         [StructLayout(LayoutKind.Sequential)]
         private struct SECURITY_ATTRIBUTES
@@ -89,7 +92,7 @@ namespace CapFrameX.OSD.Integration
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr LocalFree(IntPtr handle);
 
-        public static HookMetricsChannel Create()
+        public static HookMetricsChannel Create(int targetPid = 0)
         {
             var ch = new HookMetricsChannel();
             try
@@ -122,11 +125,21 @@ namespace CapFrameX.OSD.Integration
                         CloseHandle(ch._mapHandle); ch._mapHandle = IntPtr.Zero;
                         return ch;
                     }
+                    int existingSeq = Marshal.ReadInt32(ch._view, OffSeq);
+                    ch._seq = existingSeq & ~1;
+                    ch._seq++; // odd => initialize the full header atomically
+                    Marshal.WriteInt32(ch._view, OffSeq, ch._seq);
+                    Thread.MemoryBarrier();
                     Marshal.WriteInt32(ch._view, OffMagic, unchecked((int)Magic));
                     Marshal.WriteInt32(ch._view, OffVersion, (int)Version);
-                    Marshal.WriteInt32(ch._view, OffSeq, 0);
+                    Marshal.WriteInt32(ch._view, OffTargetPid, NormalizePid(targetPid));
                     Marshal.WriteInt32(ch._view, OffEntryCount, 0);
+                    Marshal.WriteInt32(ch._view, OffFlags, 0);
                     Marshal.WriteInt64(ch._view, OffWriteQpc, 0);
+                    ch._targetPid = NormalizePid(targetPid);
+                    Thread.MemoryBarrier();
+                    ch._seq++; // even => consistent empty snapshot ready
+                    Marshal.WriteInt32(ch._view, OffSeq, ch._seq);
                     Log.Information("HookOverlay: metrics channel '{name}' created", MapName);
                 }
                 finally
@@ -146,9 +159,10 @@ namespace CapFrameX.OSD.Integration
         /// <paramref name="flags"/> is stamped into the header (e.g. <see cref="FlagPresentMonGraph"/>)
         /// so the hook knows which graph source to use.
         /// </summary>
-        public void Publish(System.Collections.Generic.IReadOnlyList<OsdEntry> entries, uint flags)
+        public void Publish(System.Collections.Generic.IReadOnlyList<OsdEntry> entries, uint flags, int targetPid)
         {
-            if (_view == IntPtr.Zero || entries == null) return;
+            if (entries == null) return;
+            targetPid = NormalizePid(targetPid);
             lock (_gate)
             {
                 if (_view == IntPtr.Zero) return;
@@ -162,7 +176,8 @@ namespace CapFrameX.OSD.Integration
                 Marshal.WriteInt64(_view, OffWriteQpc, qpc);
                 Marshal.WriteInt32(_view, OffFlags, unchecked((int)flags));
                 Marshal.WriteInt32(_view, OffEntryCount, count);
-                Marshal.WriteInt32(_view, OffPayloadBytes, count * RecordSize);
+                Marshal.WriteInt32(_view, OffTargetPid, targetPid);
+                _targetPid = targetPid;
 
                 for (int i = 0; i < count; i++)
                 {
@@ -193,6 +208,32 @@ namespace CapFrameX.OSD.Integration
             }
         }
 
+        public void SetTargetPid(int targetPid)
+        {
+            targetPid = NormalizePid(targetPid);
+            lock (_gate)
+            {
+                if (_view == IntPtr.Zero || targetPid == _targetPid) return;
+
+                _seq++; // odd => write in progress
+                Marshal.WriteInt32(_view, OffSeq, _seq);
+                Thread.MemoryBarrier();
+
+                // Never leave the previous process' entries addressable under a new PID.
+                Marshal.WriteInt32(_view, OffTargetPid, targetPid);
+                Marshal.WriteInt32(_view, OffEntryCount, 0);
+                Marshal.WriteInt32(_view, OffFlags, 0);
+                Marshal.WriteInt64(_view, OffWriteQpc, 0);
+                _targetPid = targetPid;
+
+                Thread.MemoryBarrier();
+                _seq++; // even => consistent empty snapshot ready
+                Marshal.WriteInt32(_view, OffSeq, _seq);
+            }
+        }
+
+        private static int NormalizePid(int targetPid) => targetPid > 0 ? targetPid : 0;
+
         private static void WriteStr(IntPtr recBase, int off, int size, string s)
         {
             var buf = new byte[size]; // zeroed => guaranteed null terminator + clean tail
@@ -211,6 +252,20 @@ namespace CapFrameX.OSD.Integration
         {
             lock (_gate)
             {
+                if (_view != IntPtr.Zero)
+                {
+                    _seq++;
+                    Marshal.WriteInt32(_view, OffSeq, _seq);
+                    Thread.MemoryBarrier();
+                    Marshal.WriteInt32(_view, OffTargetPid, 0);
+                    Marshal.WriteInt32(_view, OffEntryCount, 0);
+                    Marshal.WriteInt32(_view, OffFlags, 0);
+                    Marshal.WriteInt64(_view, OffWriteQpc, 0);
+                    Thread.MemoryBarrier();
+                    _seq++;
+                    Marshal.WriteInt32(_view, OffSeq, _seq);
+                    _targetPid = 0;
+                }
                 if (_view != IntPtr.Zero) { UnmapViewOfFile(_view); _view = IntPtr.Zero; }
                 if (_mapHandle != IntPtr.Zero) { CloseHandle(_mapHandle); _mapHandle = IntPtr.Zero; }
             }

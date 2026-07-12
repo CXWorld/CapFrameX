@@ -110,18 +110,19 @@ namespace CapFrameX.Overlay
             _appConfiguration.OnValueChanged
                 .Where(x => x.key == nameof(IAppConfiguration.EnableHookFreeOverlay)
                          || x.key == nameof(IAppConfiguration.EnableHookOverlay))
-                .Subscribe(_ =>
+                .Select(_ => _appConfiguration.EnableHookFreeOverlay || _appConfiguration.EnableHookOverlay)
+                .DistinctUntilChanged()
+                .Subscribe(useHook =>
                 {
-                    bool useHook = _appConfiguration.EnableHookFreeOverlay || _appConfiguration.EnableHookOverlay;
                     _logger.LogInformation("Overlay renderer switch: hookFree={hf}, hook={h}, overlayActive={a} -> {mode}",
                         _appConfiguration.EnableHookFreeOverlay, _appConfiguration.EnableHookOverlay,
-                        _appConfiguration.IsOverlayActive, useHook ? "hook (release RTSS)" : "RTSS");
+                        _appConfiguration.IsOverlayActive, useHook ? "hook (clear RTSS)" : "RTSS");
                     if (useHook)
                     {
-                        // A CapFrameX OSD path took over: release the RTSS overlay so they don't
-                        // overlap — and never LAUNCH RTSS for a hook path (a stray RTSS process hooks
-                        // CapFrameX/DWM and can hang shutdown).
-                        _rTSSService.ReleaseOSD();
+                        // Keep the RTSS slot owned while its renderer may still be reading it. Clearing
+                        // uses RTSS' dwBusy synchronization; ReleaseOSD zeroes the whole shared-memory
+                        // entry and is reserved for a real overlay shutdown.
+                        _rTSSService.ClearOSD();
                     }
                     else if (_appConfiguration.IsOverlayActive && _isServiceAlive)
                     {

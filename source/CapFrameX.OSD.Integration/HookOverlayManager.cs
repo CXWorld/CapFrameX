@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Reactive.Linq;
 using System.Security.Cryptography;
@@ -24,27 +25,45 @@ namespace CapFrameX.OSD.Integration
     {
         private const string HookDllName = "cfx_osd_hook.dll";
         private const string InjectHelperName = "cfx_inject.exe"; // x86 bitness helper (WOW64 targets)
+        private static readonly long VulkanProbeRetryTicks =
+            Math.Max(1, Stopwatch.Frequency / 10L);
 
         private readonly IAppConfiguration _appConfiguration;
         private readonly IDisposable _pidSub;
         private readonly IDisposable _enabledSub;
         private readonly IDisposable _visibilitySub;
+        private readonly IDisposable _runtimeSub;
         private readonly HookVisibilityChannel _visibility;
         private readonly string _dllPath;         // x64 hook DLL
         private readonly string _dllPathX86;      // x86 hook DLL (32-bit targets)
         private readonly string _injectHelperX86; // x86 cfx_inject.exe helper
         private readonly object _gate = new object();
+        private readonly object _stateGate = new object();
+        private readonly int _processIdColumnIndex;
+        private readonly int _runtimeColumnIndex;
         private readonly HashSet<int> _injected = new HashSet<int>();
+        private readonly Dictionary<int, string> _policyBlocks = new Dictionary<int, string>();
+        private readonly Dictionary<int, string> _vulkanBlocks = new Dictionary<int, string>();
+        private readonly Dictionary<int, long> _nextVulkanProbe = new Dictionary<int, long>();
         private volatile bool _enabled;
+        private volatile bool _targetAllowed;
         private volatile int _currentPid;
+        private volatile string _currentRuntime;
 
         /// <param name="processIdStream">The detected-game PID stream (IProcessService.ProcessIdStream).</param>
         /// <param name="dllPathOverride">Optional explicit path to cfx_osd_hook.dll.</param>
         public HookOverlayManager(IAppConfiguration appConfiguration, IObservable<int> processIdStream,
+            IObservable<string[]> frameDataStream, int processIdColumnIndex, int runtimeColumnIndex,
             string dllPathOverride = null)
         {
             _appConfiguration = appConfiguration ?? throw new ArgumentNullException(nameof(appConfiguration));
             if (processIdStream == null) throw new ArgumentNullException(nameof(processIdStream));
+            if (frameDataStream == null) throw new ArgumentNullException(nameof(frameDataStream));
+            if (processIdColumnIndex < 0) throw new ArgumentOutOfRangeException(nameof(processIdColumnIndex));
+            if (runtimeColumnIndex < 0) throw new ArgumentOutOfRangeException(nameof(runtimeColumnIndex));
+
+            _processIdColumnIndex = processIdColumnIndex;
+            _runtimeColumnIndex = runtimeColumnIndex;
 
             _dllPath = dllPathOverride ?? ResolveHookAsset(HookDllName, "CFX_HOOK_DLL");
             _dllPathX86 = ResolveHookAsset(Path.Combine("x86", HookDllName), "CFX_HOOK_DLL_X86");
@@ -57,7 +76,7 @@ namespace CapFrameX.OSD.Integration
             // IsOverlayActive), so unchecking the box hides the resident overlay LIVE — otherwise the
             // already-injected hook keeps drawing (it doesn't otherwise learn it was disabled).
             _visibility = HookVisibilityChannel.Create(
-                appConfiguration.EnableHookOverlay && appConfiguration.IsOverlayActive);
+                _enabled && appConfiguration.IsOverlayActive && IsDxgiRuntime(_currentRuntime));
 
             _enabledSub = appConfiguration.OnValueChanged
                 .Where(x => x.key == nameof(IAppConfiguration.EnableHookOverlay))
@@ -71,13 +90,15 @@ namespace CapFrameX.OSD.Integration
             _pidSub = processIdStream
                 .DistinctUntilChanged()
                 .Subscribe(OnProcessId);
+
+            _runtimeSub = frameDataStream.Subscribe(OnFrameRow);
         }
 
         private void OnEnabledChanged(bool enabled)
         {
             _enabled = enabled;
             UpdateHookVisibility(); // disabling hides the resident hook immediately (no game restart)
-            if (enabled)
+            if (_enabled && IsDxgiRuntime(_currentRuntime))
             {
                 int pid = _currentPid;
                 if (pid > 0) TryInjectAsync(pid);
@@ -88,23 +109,79 @@ namespace CapFrameX.OSD.Integration
         // state to the in-game hook through the named visibility event.
         private void UpdateHookVisibility()
         {
-            _visibility.SetVisible(_appConfiguration.EnableHookOverlay && _appConfiguration.IsOverlayActive);
+            _visibility.SetVisible(_enabled && _appConfiguration.IsOverlayActive &&
+                _targetAllowed && IsDxgiRuntime(_currentRuntime));
         }
 
         private void OnProcessId(int pid)
         {
-            _currentPid = pid;
+            int previousPid;
+            lock (_stateGate)
+            {
+                previousPid = _currentPid;
+                _currentPid = pid;
+                _currentRuntime = null;
+                _targetAllowed = false;
+            }
+            if (previousPid > 0 && previousPid != pid)
+            {
+                HookTargetPolicy.Invalidate(previousPid);
+                lock (_gate)
+                {
+                    _vulkanBlocks.Remove(previousPid);
+                    _nextVulkanProbe.Remove(previousPid);
+                }
+            }
+            UpdateHookVisibility();
             if (pid <= 0)
             {
                 // process deselected/exited: forget stale PIDs so a relaunch re-injects
                 PruneExited();
                 return;
             }
-            if (_enabled) TryInjectAsync(pid);
         }
+
+        private void OnFrameRow(string[] row)
+        {
+            if (row == null || _processIdColumnIndex >= row.Length || _runtimeColumnIndex >= row.Length)
+                return;
+            if (!int.TryParse(row[_processIdColumnIndex], NumberStyles.Integer,
+                CultureInfo.InvariantCulture, out int pid) || pid <= 0)
+                return;
+
+            string runtime = row[_runtimeColumnIndex]?.Trim();
+            if (string.IsNullOrEmpty(runtime)) return;
+
+            bool runtimeChanged;
+            lock (_stateGate)
+            {
+                if (pid != _currentPid) return;
+                runtimeChanged = !string.Equals(runtime, _currentRuntime,
+                    StringComparison.OrdinalIgnoreCase);
+                if (runtimeChanged) _currentRuntime = runtime;
+            }
+            if (runtimeChanged) UpdateHookVisibility();
+            if (IsDxgiRuntime(runtime))
+            {
+                if (runtimeChanged)
+                    Log.Information("HookOverlay: target PID {pid} runtime {runtime} -> DXGI hook", pid, runtime);
+                if (_enabled) TryInjectAsync(pid);
+            }
+            else if (runtimeChanged)
+            {
+                Log.Information("HookOverlay: target PID {pid} runtime {runtime} -> no DXGI injection", pid, runtime);
+            }
+        }
+
+        internal static bool IsDxgiRuntime(string runtime)
+            => string.Equals(runtime, "DXGI", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(runtime, "D3D11", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(runtime, "D3D12", StringComparison.OrdinalIgnoreCase);
 
         private void TryInjectAsync(int pid)
         {
+            if (!RefreshVulkanInjectionGate(pid)) return;
+            if (!RefreshTargetPolicy(pid)) return;
             lock (_gate)
             {
                 if (_injected.Contains(pid)) return; // already injected this process
@@ -115,6 +192,11 @@ namespace CapFrameX.OSD.Integration
             {
                 try
                 {
+                    if (!_enabled || pid != _currentPid || !IsDxgiRuntime(_currentRuntime))
+                    {
+                        lock (_gate) { _injected.Remove(pid); }
+                        return;
+                    }
                     // The detection can briefly hold a stale PID; skip if the process is gone.
                     if (!IsProcessAlive(pid))
                     {
@@ -155,6 +237,18 @@ namespace CapFrameX.OSD.Integration
                     }
 
                     string error;
+                    if (!RefreshTargetPolicy(pid))
+                    {
+                        lock (_gate) { _injected.Remove(pid); }
+                        return;
+                    }
+                    // Re-read immediately before LoadLibrary. The Vulkan mapping may have appeared
+                    // after process/runtime detection but while the injectable copy was prepared.
+                    if (!RefreshVulkanInjectionGate(pid, forceProbe: true))
+                    {
+                        lock (_gate) { _injected.Remove(pid); }
+                        return;
+                    }
                     bool ok = isWow64
                         ? HookInjector.TryInjectViaHelper(pid, injectable, _injectHelperX86, out error)
                         : HookInjector.TryInject(pid, injectable, out error);
@@ -173,6 +267,82 @@ namespace CapFrameX.OSD.Integration
                     lock (_gate) { _injected.Remove(pid); }
                 }
             });
+        }
+
+        private bool RefreshVulkanInjectionGate(int pid, bool forceProbe = false)
+        {
+            long now = Stopwatch.GetTimestamp();
+            lock (_gate)
+            {
+                if (!forceProbe && _vulkanBlocks.ContainsKey(pid) &&
+                    _nextVulkanProbe.TryGetValue(pid, out long retryAt) && now < retryAt)
+                    return false;
+            }
+
+            bool probeOk = VulkanActivityProbe.TryHasRecentPresent(
+                pid, out bool recent, out string probeError);
+            bool allowed = probeOk && !recent;
+            string reason = !probeOk
+                ? $"Vulkan activity probe failed ({probeError ?? "unknown error"})"
+                : recent ? "recent Vulkan presents" : null;
+
+            lock (_gate)
+            {
+                if (!allowed)
+                {
+                    bool changed = !_vulkanBlocks.TryGetValue(pid, out string previousReason) ||
+                        !string.Equals(previousReason, reason, StringComparison.Ordinal);
+                    _vulkanBlocks[pid] = reason;
+                    _nextVulkanProbe[pid] = now + VulkanProbeRetryTicks;
+                    if (changed)
+                    {
+                        Log.Information(
+                            "HookOverlay: DXGI injection into pid {pid} suppressed ({reason})",
+                            pid, reason);
+                    }
+                }
+                else
+                {
+                    if (_vulkanBlocks.Remove(pid))
+                    {
+                        Log.Information(
+                            "HookOverlay: Vulkan activity grace elapsed for pid {pid}; DXGI injection allowed",
+                            pid);
+                    }
+                    _nextVulkanProbe.Remove(pid);
+                }
+            }
+
+            return allowed;
+        }
+
+        private bool RefreshTargetPolicy(int pid)
+        {
+            string reason = null;
+            bool allowed = pid == _currentPid && HookTargetPolicy.IsAllowed(pid, out reason);
+            bool visibilityChanged = allowed != _targetAllowed;
+            _targetAllowed = allowed;
+
+            lock (_gate)
+            {
+                if (!allowed)
+                {
+                    if (!_policyBlocks.TryGetValue(pid, out string previousReason) ||
+                        !string.Equals(previousReason, reason, StringComparison.Ordinal))
+                    {
+                        _policyBlocks[pid] = reason;
+                        Log.Warning("HookOverlay: target PID {pid} blocked by target policy ({reason})",
+                            pid, reason ?? "unknown reason");
+                    }
+                }
+                else if (_policyBlocks.Remove(pid))
+                {
+                    Log.Information("HookOverlay: target PID {pid} now passes the target policy", pid);
+                }
+            }
+
+            if (visibilityChanged) UpdateHookVisibility();
+            return allowed;
         }
 
         // Copy the source DLL to LocalAppData\CapFrameX\hook\cfx_osd_hook_<hash8>.dll and
@@ -228,6 +398,19 @@ namespace CapFrameX.OSD.Integration
             lock (_gate)
             {
                 _injected.RemoveWhere(p => !IsProcessAlive(p));
+                var stalePolicyPids = new List<int>();
+                foreach (int pid in _policyBlocks.Keys)
+                    if (!IsProcessAlive(pid)) stalePolicyPids.Add(pid);
+                foreach (int pid in stalePolicyPids)
+                    _policyBlocks.Remove(pid);
+                var staleVulkanPids = new List<int>();
+                foreach (int pid in _vulkanBlocks.Keys)
+                    if (!IsProcessAlive(pid)) staleVulkanPids.Add(pid);
+                foreach (int pid in staleVulkanPids)
+                {
+                    _vulkanBlocks.Remove(pid);
+                    _nextVulkanProbe.Remove(pid);
+                }
             }
         }
 
@@ -269,6 +452,7 @@ namespace CapFrameX.OSD.Integration
             _pidSub?.Dispose();
             _enabledSub?.Dispose();
             _visibilitySub?.Dispose();
+            _runtimeSub?.Dispose();
             _visibility?.Dispose();
             // The injected hook disables itself when it observes CapFrameX exiting (it polls
             // a SYNCHRONIZE handle to this process), so no explicit teardown signal is needed.

@@ -77,6 +77,7 @@
   <ItemGroup>
     <Compile Include="Data\CaptureManagerTest.cs" />
     <Compile Include="Integration\PresentMonIntegrationTest.cs" />
+    <Compile Include="Integration\OverlayEntryAdapterTest.cs" />
     <Compile Include="Data\FileRecordInfoTest.cs" />
     <Compile Include="Extensions\ObservableExtensionsTest.cs" />
     <Compile Include="Extensions\StringExtensionsTest.cs" />
@@ -165,6 +166,10 @@
       <Project>{624777C2-6AF6-46D5-A019-1285F699B8A7}</Project>
       <Name>CapFrameX.Overlay</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.OSD.Integration\CapFrameX.OSD.Integration.csproj">
+      <Project>{EA8855B6-DD66-4ECA-A6A6-38CF39FCBE72}</Project>
+      <Name>CapFrameX.OSD.Integration</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.PMD\CapFrameX.PMD.csproj">
       <Project>{8a0eff6f-a7bc-450a-ac29-d0f5ccd96bc3}</Project>
       <Name>CapFrameX.PMD</Name>
@@ -219,6 +224,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="CapFrameX.OSD.Interop">
+      <HintPath>..\..\external\CapFrameX.OSD-prebuilt\net472\CapFrameX.OSD.Interop.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Castle.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Castle.Core.4.4.0\lib\net45\Castle.Core.dll</HintPath>
     </Reference>

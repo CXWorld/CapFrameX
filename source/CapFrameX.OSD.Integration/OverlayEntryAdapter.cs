@@ -44,10 +44,22 @@ namespace CapFrameX.OSD.Integration
                 // sensors the flag doesn't cover (Fan/Mainboard aren't in SetHardwareIsNumericState)
                 // still format; but a text value that only looks numeric (driver "551.86") stays text
                 // because we do NOT string-parse unflagged values.
-                double dv;
-                bool numeric = e.IsNumeric
-                    ? TryToDouble(e.Value, out dv)         // flagged: parse boxed number or numeric string
-                    : TryUnboxNumber(e.Value, out dv);     // unflagged: only a real boxed number, never a string
+                double dv = 0;
+                bool numeric;
+                if (e.IsNumeric)
+                {
+                    // IsNumeric describes the entry's data type, not whether this particular
+                    // snapshot already has a value. Transient values are not persisted, so a
+                    // freshly loaded numeric entry (notably DisplayTime) can legitimately be null.
+                    // Keep it numeric and publish 0 until its live source supplies a sample.
+                    numeric = true;
+                    TryToDouble(e.Value, out dv);
+                }
+                else
+                {
+                    // Unflagged: only a real boxed number, never a numeric-looking string.
+                    numeric = TryUnboxNumber(e.Value, out dv);
+                }
                 if (numeric)
                 {
                     o.IsNumeric = true;
@@ -59,7 +71,9 @@ namespace CapFrameX.OSD.Integration
                 else
                 {
                     o.IsNumeric = false;
-                    o.ValueText = e.Value?.ToString() ?? e.FormattedValue;
+                    // FormattedValue contains RTSS hypertext (<S...>/<C...>). The neutral OSD
+                    // renderer does not interpret those tags, so only forward the raw text value.
+                    o.ValueText = e.Value?.ToString() ?? string.Empty;
                 }
 
                 if (TryParseLimit(e.UpperLimitValue, out var up))

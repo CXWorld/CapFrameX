@@ -96,14 +96,18 @@ namespace CapFrameX
             var rtssService = Container.Resolve<IRTSSService>();
             _hookOverlayManager = new CapFrameX.OSD.Integration.HookOverlayManager(
                 config,
-                rtssService.ProcessIdStream);
+                rtssService.ProcessIdStream,
+                osdCaptureService.FrameDataStream,
+                CapFrameX.PresentMonInterface.PresentMonCaptureService.ProcessID_INDEX,
+                CapFrameX.PresentMonInterface.PresentMonCaptureService.PresentRuntime_INDEX);
 
             // While the in-game hook overlay is on, mirror CapFrameX's processed overlay entries
             // (fps/lows/sensors/static rows — the same set RTSS/hook-free render) into shared memory
             // so the injected hook shows authoritative values, not just its local frame ring.
             _hookMetricsPublisher = new CapFrameX.OSD.Integration.HookMetricsPublisher(
                 osdOverlayService,
-                config);
+                config,
+                rtssService.ProcessIdStream);
 
             // Optional PresentMon graph source for the hook: stream the SAME per-frame frametime +
             // display-time data the hook-free bridge consumes into a shared-memory ring the hook
@@ -112,6 +116,7 @@ namespace CapFrameX
             _hookFrametimePublisher = new CapFrameX.OSD.Integration.HookFrametimePublisher(
                 config,
                 osdCaptureService.FrameDataStream,
+                rtssService.ProcessIdStream,
                 CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenPresents_INDEX,
                 CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
                 () => osdCaptureService.CPUStartQPCTimeInMs_Index);

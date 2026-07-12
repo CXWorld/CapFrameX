@@ -9,10 +9,11 @@ namespace CapFrameX.OSD.Integration
     /// <summary>
     /// Streams CapFrameX's live PresentMon per-frame frametime + display-time samples to the in-game
     /// hook via <see cref="HookFrametimeChannel"/>, so the hook can replay the SAME data its hook-free
-    /// sibling shows — but timestamped and buffered, kept strictly separate from the hook's own local
+    /// sibling shows - but timestamped and buffered, kept strictly separate from the hook's own local
     /// present ring. Active only while BOTH the in-game hook overlay
     /// (<see cref="IAppConfiguration.EnableHookOverlay"/>) AND the PresentMon graph source
-    /// (<see cref="IAppConfiguration.HookOverlayUsePresentMonFrametimes"/>) are enabled.
+    /// (<see cref="IAppConfiguration.HookOverlayUsePresentMonFrametimes"/>) are enabled, and
+    /// only while the selected target passes <see cref="HookTargetPolicy"/>.
     ///
     /// Mirrors the per-frame parsing of <see cref="OsdOverlayBridge.OnFrameRow"/> (same frame stream +
     /// column indices), but writes to shared memory instead of the in-process renderer.
@@ -25,12 +26,15 @@ namespace CapFrameX.OSD.Integration
         private readonly Func<int> _startTimeIndexProvider;
         private readonly IDisposable _frameSub;
         private readonly IDisposable _configSub;
+        private readonly IDisposable _pidSub;
         private readonly object _gate = new object();
         private volatile HookFrametimeChannel _channel;
         private volatile bool _enabled;
+        private volatile int _targetPid;
 
         public HookFrametimePublisher(IAppConfiguration appConfiguration,
                                       IObservable<string[]> frameDataStream,
+                                      IObservable<int> processIdStream,
                                       int frametimeColumnIndex,
                                       int displayChangedColumnIndex,
                                       Func<int> startTimeIndexProvider)
@@ -39,8 +43,13 @@ namespace CapFrameX.OSD.Integration
             _ftIndex = frametimeColumnIndex;
             _displayChangedIndex = displayChangedColumnIndex;
             _startTimeIndexProvider = startTimeIndexProvider;
+            if (processIdStream == null) throw new ArgumentNullException(nameof(processIdStream));
 
             RecomputeEnabled();
+
+            _pidSub = processIdStream
+                .DistinctUntilChanged()
+                .Subscribe(OnTargetPidChanged);
 
             _configSub = appConfiguration.OnValueChanged
                 .Where(x => x.key == nameof(IAppConfiguration.EnableHookOverlay)
@@ -71,10 +80,26 @@ namespace CapFrameX.OSD.Integration
             }
         }
 
+        private void OnTargetPidChanged(int pid)
+        {
+            pid = pid > 0 ? pid : 0;
+            lock (_gate)
+            {
+                if (pid == _targetPid) return;
+                _targetPid = pid;
+                // The frametime ring has no per-record PID. Recreate it on every target switch so
+                // a newly selected process can never replay the previous process' samples.
+                _channel?.Dispose();
+                _channel = _enabled ? HookFrametimeChannel.Create() : null;
+            }
+        }
+
         private void OnFrameRow(string[] row)
         {
             HookFrametimeChannel channel = _channel; // capture; PushSample no-ops if disposed concurrently
             if (channel == null || row == null || _ftIndex < 0 || row.Length <= _ftIndex) return;
+            int targetPid = _targetPid;
+            if (targetPid <= 0 || !HookTargetPolicy.IsAllowed(targetPid, out _)) return;
 
             if (!double.TryParse(row[_ftIndex], NumberStyles.Any, CultureInfo.InvariantCulture, out var ms)
                 || ms <= 0 || ms >= 10000) return;
@@ -107,6 +132,7 @@ namespace CapFrameX.OSD.Integration
         {
             _frameSub?.Dispose();
             _configSub?.Dispose();
+            _pidSub?.Dispose();
             lock (_gate) { _channel?.Dispose(); _channel = null; }
         }
     }

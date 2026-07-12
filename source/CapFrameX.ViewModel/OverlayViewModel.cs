@@ -473,10 +473,31 @@ namespace CapFrameX.ViewModel
 
         private void SetOverlayMode(bool hook, bool hookFree)
         {
-            // Order matters only in that the LAST write settles the final combination; OverlayService
-            // re-evaluates both flags on each change and re-arms RTSS when both end up false.
-            _appConfiguration.EnableHookOverlay = hook;
-            _appConfiguration.EnableHookFreeOverlay = hookFree;
+            // Keep at least one hook path selected while moving between the two hook modes. The
+            // configuration raises OnValueChanged even when a value is assigned to itself, so only
+            // write real changes; otherwise one click can release or re-arm RTSS twice.
+            if (hook)
+            {
+                if (!_appConfiguration.EnableHookOverlay)
+                    _appConfiguration.EnableHookOverlay = true;
+                if (_appConfiguration.EnableHookFreeOverlay)
+                    _appConfiguration.EnableHookFreeOverlay = false;
+            }
+            else if (hookFree)
+            {
+                if (!_appConfiguration.EnableHookFreeOverlay)
+                    _appConfiguration.EnableHookFreeOverlay = true;
+                if (_appConfiguration.EnableHookOverlay)
+                    _appConfiguration.EnableHookOverlay = false;
+            }
+            else
+            {
+                if (_appConfiguration.EnableHookOverlay)
+                    _appConfiguration.EnableHookOverlay = false;
+                if (_appConfiguration.EnableHookFreeOverlay)
+                    _appConfiguration.EnableHookFreeOverlay = false;
+            }
+
             RaisePropertyChanged(nameof(OverlayModeRtss));
             RaisePropertyChanged(nameof(OverlayModeHook));
             RaisePropertyChanged(nameof(OverlayModeHookFree));

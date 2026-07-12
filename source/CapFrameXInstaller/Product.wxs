@@ -13,6 +13,7 @@
 			<ComponentGroupRef Id="CapFrameXBinaries" />
 			<ComponentRef Id="ApplicationShortcut"/>
 			<ComponentRef Id="ApplicationShortcutDesktop" />
+			<ComponentRef Id="VulkanLayerRegistration" />
 		</Feature>
 
     <Property Id="INSTALLSHORTCUT" Value="1" Secure="yes"/>
@@ -52,6 +53,21 @@
   
   <Fragment>
     <Binary Id="CapFrameX.CustomInstallerActions.CA.dll" SourceFile="$(var.CapFrameX.CustomInstallerActions.TargetDir)$(var.CapFrameX.CustomInstallerActions.TargetName).CA.dll" />
+  </Fragment>
+
+  <Fragment>
+    <DirectoryRef Id="INSTALLFOLDER">
+      <!-- A future manifest filename/version must get a new component GUID as well. The major
+           upgrade then removes this component and its old path-valued registry entry. -->
+      <Component Id="VulkanLayerRegistration" Guid="4B3D5A2F-E00E-4930-A9E1-9F4BE8E91D58" Win64="yes">
+        <RegistryValue Root="HKLM"
+                       Key="SOFTWARE\Khronos\Vulkan\ImplicitLayers"
+                       Name="[INSTALLFOLDER]vulkan\cfx_osd_vklayer_v1.json"
+                       Type="integer"
+                       Value="0"
+                       KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
   </Fragment>
 
   <!--https://stackoverflow.com/questions/4658220/create-shortcut-checkbox-->

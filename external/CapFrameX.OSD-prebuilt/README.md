@@ -11,6 +11,14 @@ the OSD is built from source instead and these files are ignored.
 
 - `net472/`, `net9.0-windows/` — `CapFrameX.OSD.Interop.dll` (managed P/Invoke bridge, x64)
 - `native/cfx_osd_core.dll` — native renderer (x64, RelWithDebInfo)
+- `native/cfx_osd_hook.dll` — x64 DXGI hook
+- `native/x86/` — x86 DXGI hook and injection helper
+- `native/vk/cfx_osd_vklayer.dll` — x64 Vulkan implicit layer
+- `native/vk/cfx_osd_vklayer_v1.json` — versioned Vulkan loader manifest
+
+The WiX installer registers the Vulkan manifest under
+`HKLM\SOFTWARE\Khronos\Vulkan\ImplicitLayers`. Portable builds stage the files but do not
+change the registry.
 
 ## Updating (requires access to the private repo)
 
@@ -20,6 +28,6 @@ cmake --preset vs2022 && cmake --build build --config RelWithDebInfo   # in CapF
 dotnet build CapFrameX.OSD.sln -c Release
 ```
 
-Then copy `CapFrameX.OSD.Interop\bin\x64\Release\<tfm>\CapFrameX.OSD.Interop.dll` and
-`CapFrameX.OSD\build\bin\RelWithDebInfo\cfx_osd_core.dll` here, and bump the submodule
-to the matching commit.
+Then copy the managed bridge, core, x64/x86 hooks, injection helper, and Vulkan layer/manifest
+from their `RelWithDebInfo` outputs into the matching folders above, and bump the submodule to
+the matching commit.
