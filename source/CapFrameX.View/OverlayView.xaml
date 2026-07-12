@@ -32,20 +32,42 @@
 				<Setter Property="Padding" Value="0"/>
 				<Setter Property="Height" Value="25" />
 			</Style>
+			<Style x:Key="OsdOptionsCard" TargetType="{x:Type Border}">
+				<Setter Property="Margin" Value="6"/>
+				<Setter Property="Padding" Value="18"/>
+				<Setter Property="Background" Value="{DynamicResource MaterialDesignTextFieldBoxBackground}"/>
+				<Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignDivider}"/>
+				<Setter Property="BorderThickness" Value="0.5"/>
+				<Setter Property="CornerRadius" Value="2"/>
+			</Style>
+			<Style x:Key="OsdOptionsSectionHeader" TargetType="{x:Type TextBlock}">
+				<Setter Property="Margin" Value="0 0 0 4"/>
+				<Setter Property="FontSize" Value="16"/>
+				<Setter Property="FontWeight" Value="SemiBold"/>
+			</Style>
+			<Style x:Key="OsdOptionsDescription" TargetType="{x:Type TextBlock}">
+				<Setter Property="FontSize" Value="11"/>
+				<Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}"/>
+				<Setter Property="TextWrapping" Value="Wrap"/>
+			</Style>
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid HorizontalAlignment="Center">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="50"></RowDefinition>
-			<RowDefinition Height="20*"></RowDefinition>
-			<RowDefinition Height="0.5*"></RowDefinition>
-		</Grid.RowDefinitions>
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="460"/>
-			<ColumnDefinition Width="10"/>
-			<ColumnDefinition Width="450"/>
-		</Grid.ColumnDefinitions>
-		<TextBlock Margin="0" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"
+		<TabControl Width="940" Margin="10" Background="{DynamicResource MaterialDesignBackground}" BorderThickness="0" FocusVisualStyle="{x:Null}">
+			<TabItem Width="140" Foreground="{DynamicResource MaterialDesignBody}">
+				<TabItem.Header>
+					<Label FontSize="12">Overlay items</Label>
+				</TabItem.Header>
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="*"/>
+					</Grid.RowDefinitions>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="460"/>
+						<ColumnDefinition Width="10"/>
+						<ColumnDefinition Width="460"/>
+					</Grid.ColumnDefinitions>
+		<TextBlock Margin="0" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"
 				    FontSize="18" Visibility="{Binding IsRTSSInstalled, Converter={StaticResource FalseToVisibleConverter}}">             
 			<Hyperlink NavigateUri="https://www.guru3d.com/files-details/rtss-rivatuner-statistics-server-download.html" 
 					   RequestNavigate="Hyperlink_RequestNavigate">
@@ -57,7 +79,7 @@
 				<TextBlock Text="{Binding Path=UpdateHpyerlinkText}" TextAlignment="Center"/>
 			</Hyperlink>
 		</TextBlock>
-		<Border BorderBrush="{DynamicResource MaterialDesignBody}" BorderThickness="0.3" Grid.Row="1" Grid.Column="0" >
+		<Border BorderBrush="{DynamicResource MaterialDesignBody}" BorderThickness="0.3" Grid.Row="0" Grid.Column="0" >
 			<materialDesign:DialogHost IsOpen="{Binding ResetOverlayConfigContentIsOpen}"
 								        DialogContent="{Binding ResetOverlayConfigContent}"
 								        CloseOnClickAway="True">
@@ -70,7 +92,6 @@
 							<RowDefinition Height="35"></RowDefinition>
 							<RowDefinition Height="1*"></RowDefinition>
 							<RowDefinition Height="50"></RowDefinition>
-							<RowDefinition Height="120"></RowDefinition>
 						</Grid.RowDefinitions>
 						<StackPanel Orientation="Horizontal" Margin="15 0 0 10" HorizontalAlignment="Left">
 							<TextBlock Margin="0 0 10 0" Text="Overlay Items" FontSize="18" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
@@ -519,221 +540,14 @@
 											</ToolTip>
 										</Button.ToolTip>
 									</Button>
-									<StackPanel Margin="20 0 0 0" Orientation="Horizontal">
-										<TextBlock Text="OSD Options" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
-										<materialDesign:PopupBox StaysOpen="True" Foreground="{DynamicResource MaterialDesignBody}">
-											<materialDesign:Card  Margin="0 0 0 -10">
-												<StackPanel>
-													<Grid Margin="8 8 8 8">
-														<Grid.RowDefinitions>
-															<RowDefinition Height="30" />
-															<RowDefinition Height="30" />
-															<RowDefinition Height="30" />
-															<RowDefinition Height="30" />
-															<RowDefinition Height="Auto" />
-															<RowDefinition Height="Auto" />
-														</Grid.RowDefinitions>
-														<Grid.ColumnDefinitions>
-															<ColumnDefinition Width="130"/>
-															<ColumnDefinition Width="85"/>
-														</Grid.ColumnDefinitions>
-
-														<TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="CX overlay toggle" VerticalAlignment="Center"/>
-														<ToggleButton Margin="0 0 0 0" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" IsChecked="{Binding IsOverlayActive, Mode=TwoWay}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTipService.ShowDuration="25000">
-															<ToggleButton.ToolTip>
-																<ToolTip>
-																	<TextBlock Width="275" Text="Activates or deactivates the CX overlay, same funtionality as the overlay hotkey." TextWrapping="Wrap">
-																	</TextBlock>
-																</ToolTip>
-															</ToggleButton.ToolTip>
-														</ToggleButton>
-
-														<!--<TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Link global OSD" VerticalAlignment="Center"/>
-                                                    <CheckBox Margin="5 0 0 0" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" IsChecked="{Binding ToggleGlobalRTSSOSD, Mode=TwoWay}" Style="{StaticResource MaterialDesignCheckBox}" ToolTipService.ShowDuration="25000">
-                                                        <CheckBox.ToolTip>
-                                                            <ToolTip>
-                                                                <TextBlock Width="275" Text="If checked, the overlay hotkey will also toggle the global RTSS OSD instead of only the CX items." TextWrapping="Wrap">
-                                                                </TextBlock>
-                                                            </ToolTip>
-                                                        </CheckBox.ToolTip>
-                                                    </CheckBox>-->
-
-														<TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Auto-disable OSD" VerticalAlignment="Center"/>
-														<CheckBox Margin="5 0 0 0" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" IsChecked="{Binding AutoDisableOverlay, Mode=TwoWay}" Style="{StaticResource MaterialDesignCheckBox}" ToolTipService.ShowDuration="25000">
-															<CheckBox.ToolTip>
-																<ToolTip>
-																	<TextBlock Width="275" Text="If checked, the global RTSS OSD will be disabled while running a benchmark. For 32bit applications, only the CX overlay items will be disabled." TextWrapping="Wrap">
-																	</TextBlock>
-																</ToolTip>
-															</CheckBox.ToolTip>
-														</CheckBox>
-
-														<TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="System time seconds" VerticalAlignment="Center"/>
-														<CheckBox Margin="5 0 0 0" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center"  IsChecked="{Binding ShowSystemTimeSeconds, Mode=TwoWay}" Style="{StaticResource MaterialDesignCheckBox}" ToolTip="Show seconds for the system time overlay entry"/>
-
-														<TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="Custom position" VerticalAlignment="Center"/>
-														<CheckBox Margin="5 0 0 0" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Center" IsChecked="{Binding OSDCustomPosition, Mode=TwoWay}" Style="{StaticResource MaterialDesignCheckBox}" ToolTipService.ShowDuration="25000">
-															<CheckBox.ToolTip>
-																<ToolTip>
-																	<TextBlock Width="275" Text="Adds options to manually set the position of the CX overlay items (not of the global OSD)" TextWrapping="Wrap">
-																	</TextBlock>
-																</ToolTip>
-															</CheckBox.ToolTip>
-														</CheckBox>
-
-														<TextBlock Grid.Row="4" Grid.Column="0" Margin="5 0 0 0" VerticalAlignment="Center" Text="CX overlay position" Visibility="{Binding OSDCustomPosition, Converter={StaticResource TrueToVisibleConverter}}"></TextBlock>
-														<StackPanel Grid.Row="4" Grid.Column="1" Margin="8 0 0 0" Orientation="Horizontal" ToolTip="Changes position of the CX overlay items (not of the global OSD)" Visibility="{Binding OSDCustomPosition, Converter={StaticResource TrueToVisibleConverter}}">
-															<TextBox Width="30" Height="25" Text="{Binding OSDPositionX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Center" PreviewTextInput="IntegerNumberValidationTextBox"></TextBox>
-															<TextBlock VerticalAlignment="Center" Margin="5 0 5 0" Text="x"></TextBlock>
-															<TextBox Width="30" Height="25" Text="{Binding OSDPositionY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Center" PreviewTextInput="IntegerNumberValidationTextBox"></TextBox>
-														</StackPanel>
-
-														<StackPanel Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="5 6 0 2">
-															<TextBlock Text="Overlay renderer" FontWeight="SemiBold" Margin="0 0 0 4"/>
-
-															<!-- Distinct GroupNames on purpose: the ViewModel enforces exclusivity (each setter
-																 clears the others and raises PropertyChanged for all three). A SHARED GroupName
-																 lets WPF do its own uncheck, which can drop the IsChecked binding and leave a
-																 button unable to switch the mode. -->
-															<RadioButton GroupName="OverlayModeRtss" Margin="0 2 0 2" Content="RTSS"
-																		 IsChecked="{Binding OverlayModeRtss, Mode=TwoWay}"
-																		 Style="{StaticResource MaterialDesignRadioButton}" ToolTipService.ShowDuration="25000">
-																<RadioButton.ToolTip>
-																	<ToolTip>
-																		<TextBlock Width="275" TextWrapping="Wrap" Text="Classic RivaTuner Statistics Server overlay. Requires RTSS."/>
-																	</ToolTip>
-																</RadioButton.ToolTip>
-															</RadioButton>
-
-															<RadioButton GroupName="OverlayModeHook" Margin="0 2 0 2" Content="CapFrameX in-game"
-																		 IsChecked="{Binding OverlayModeHook, Mode=TwoWay}"
-																		 Style="{StaticResource MaterialDesignRadioButton}" ToolTipService.ShowDuration="25000">
-																<RadioButton.ToolTip>
-																	<ToolTip>
-																		<TextBlock Width="275" TextWrapping="Wrap" Text="CapFrameX's own overlay, injected into the detected game (hook) for the smoothest in-swapchain graphs. Best animation — but injection can trip anti-cheat, so single-player / non-AC titles only."/>
-																	</ToolTip>
-																</RadioButton.ToolTip>
-															</RadioButton>
-
-															<!-- In-game hook sub-option: which data source feeds the graph. Only meaningful
-																 for the in-game hook, so it greys out for the other renderers. -->
-															<CheckBox Margin="24 0 0 6" Content="Use PresentMon frame times"
-																	  IsChecked="{Binding HookOverlayUsePresentMonFrametimes, Mode=TwoWay}"
-																	  IsEnabled="{Binding OverlayModeHook}"
-																	  Style="{StaticResource MaterialDesignCheckBox}" ToolTipService.ShowDuration="25000">
-																<CheckBox.ToolTip>
-																	<ToolTip>
-																		<TextBlock Width="275" TextWrapping="Wrap" Text="In-game hook graph source. Off (default): the hook's own present-to-present ring — frame time only, zero latency. On: CapFrameX's PresentMon stream — frame times AND display times, buffered and replayed. Adds a display-time graph, but carries ETW-pipeline latency, so it isn't directly comparable to the in-game ring."/>
-																	</ToolTip>
-																</CheckBox.ToolTip>
-															</CheckBox>
-
-															<RadioButton GroupName="OverlayModeHookFree" Margin="0 2 0 2" Content="CapFrameX hook-free"
-																		 IsChecked="{Binding OverlayModeHookFree, Mode=TwoWay}"
-																		 Style="{StaticResource MaterialDesignRadioButton}" ToolTipService.ShowDuration="25000">
-																<RadioButton.ToolTip>
-																	<ToolTip>
-																		<TextBlock Width="275" TextWrapping="Wrap" Text="CapFrameX's own overlay via DWM/DirectComposition — no injection, anti-cheat safe. A lighter alternative to the in-game hook."/>
-																	</ToolTip>
-																</RadioButton.ToolTip>
-															</RadioButton>
-
-															<!-- Background opacity for BOTH CapFrameX renderers (in-game hook + hook-free).
-																 Applies live (the publishers re-read the config each OSD tick); RTSS has its
-																 own transparency setting, so this stays enabled but only affects CX modes. -->
-															<StackPanel Orientation="Horizontal" Margin="0 8 0 0" ToolTipService.ShowDuration="25000">
-																<TextBlock VerticalAlignment="Center" Text="Background opacity"/>
-																<Slider Width="90" Margin="8 0 6 0" VerticalAlignment="Center"
-																		Minimum="0" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True"
-																		Value="{Binding OsdBackgroundOpacity, Mode=TwoWay}"/>
-																<TextBlock VerticalAlignment="Center" MinWidth="32"
-																		   Text="{Binding OsdBackgroundOpacity, StringFormat={}{0} %}"/>
-																<StackPanel.ToolTip>
-																	<ToolTip>
-																		<TextBlock Width="275" TextWrapping="Wrap" Text="Panel and chart-area background opacity of the CapFrameX overlay (in-game hook and hook-free). Text and graph lines stay fully opaque. Does not affect RTSS."/>
-																	</ToolTip>
-																</StackPanel.ToolTip>
-															</StackPanel>
-
-															<TextBlock Margin="0 8 0 0" MaxWidth="210" TextWrapping="Wrap" FontSize="11" Foreground="#E0A020"
-																	   Visibility="{Binding ShowRtssHiddenHint, Converter={StaticResource TrueToVisibleConverter}}"
-																	   Text="&#x26A0; &quot;Hide OSD on RTSS&quot; is enabled — the RTSS overlay stays hidden. Uncheck it (in the settings) to show it."/>
-														</StackPanel>
-													</Grid>
-												</StackPanel>
-											</materialDesign:Card>
-										</materialDesign:PopupBox>
-									</StackPanel>
 								</StackPanel>
 							</Border>
 						</StackPanel>
-						<!--Global overlay toggle-->
-						<Grid Grid.Row="4" Margin="20 0 0 0" DockPanel.Dock="Bottom">
-							<Grid.RowDefinitions>
-								<RowDefinition Height="*"/>
-								<RowDefinition Height="*"/>
-							</Grid.RowDefinitions>
-							<StackPanel Grid.Row="0" Orientation="Horizontal">
-								<TextBox Margin="0 0 0 0" materialDesign:HintAssist.Hint="Toggle Overlay Hotkey" Width="140" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
-										 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown" materialDesign:HintAssist.HintOpacity=".8"
-										 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" Foreground="{DynamicResource MaterialDesignBody}">
-									<Binding Path="OverlayHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
-										<Binding.ValidationRules>
-											<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True" />
-										</Binding.ValidationRules>
-									</Binding>
-								</TextBox>
-								<TextBox Margin="25 0 0 0" materialDesign:HintAssist.Hint="Toggle Config Hotkey" Width="132" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
-								IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ConfigHotkeyTextBox_PreviewKeyDown" materialDesign:HintAssist.HintOpacity=".8"
-								ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" Foreground="{DynamicResource MaterialDesignBody}">
-									<Binding Path="OverlayConfigHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
-										<Binding.ValidationRules>
-											<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True" />
-										</Binding.ValidationRules>
-									</Binding>
-								</TextBox>
-								<ComboBox Margin="25 5 0 0" 
-											materialDesign:ComboBoxAssist.ClassicMode="True"
-											materialDesign:HintAssist.Hint="Refresh Period (ms)" materialDesign:HintAssist.HintOpacity=".8"
-											materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110" Height="40"
-											MouseLeave="OSDRefreshPeriodComboBox_MouseLeave" FontSize="14"
-                                            ToolTip="Overlay refresh period in ms"
-											Foreground="{DynamicResource MaterialDesignBody}"
-											ItemsSource="{Binding Path=RefreshPeriodItemsSource}">
-									<ComboBox.Text>
-										<Binding Path="OSDRefreshPeriod" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
-									</ComboBox.Text>
-								</ComboBox>
-							</StackPanel>
-							<StackPanel Grid.Row="1" Orientation="Horizontal">
-								<TextBox Margin="0 0 0 0" materialDesign:HintAssist.Hint="Reset Metrics Hotkey" Width="140" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
-										IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ResetMetricsHotkeyTextBox_PreviewKeyDown" materialDesign:HintAssist.HintOpacity=".8"
-										ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" Foreground="{DynamicResource MaterialDesignBody}">
-									<Binding Path="ResetMetricsHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
-										<Binding.ValidationRules>
-											<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True" />
-										</Binding.ValidationRules>
-									</Binding>
-								</TextBox>
-								<ComboBox Margin="25 5 0 0" 
-											materialDesign:ComboBoxAssist.ClassicMode="True"
-											materialDesign:HintAssist.Hint="Metric Interval (s)" materialDesign:HintAssist.HintOpacity=".8"
-											materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="135" Height="40"
-											MouseLeave="MetricIntervalComboBox_MouseLeave" FontSize="14"
-                                            ToolTip="Real-time metrics calculation time frame in s"
-											Foreground="{DynamicResource MaterialDesignBody}"
-											ItemsSource="{Binding Path=MetricIntervalItemsSource}">
-									<ComboBox.Text>
-										<Binding Path="MetricInterval" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
-									</ComboBox.Text>
-								</ComboBox>
-							</StackPanel>
-						</Grid>
 					</Grid>
 				</DockPanel>
 			</materialDesign:DialogHost>
 		</Border>
-		<Border Grid.Row="1" Grid.Column="2" Margin="0 0 0 0" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
+		<Border Grid.Row="0" Grid.Column="2" Margin="0 0 0 0" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
 			<Grid HorizontalAlignment="Center">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="5"></RowDefinition>
@@ -749,7 +563,7 @@
 				<!--<TextBlock Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" Text="{Binding SelectedOverlayItemName}"/>-->
 				<!-- Overlay Template Picker -->
 				<Border Grid.Row="1" Grid.ColumnSpan="2" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
-					<Grid Margin="10 0 10 0">
+					<Grid Margin="5 0 5 0">
 						<Grid.RowDefinitions>
 							<RowDefinition Height="55"/>
 							<RowDefinition Height="65"/>
@@ -1175,5 +989,265 @@
 				</Grid>
 			</Grid>
 		</Border>
+				</Grid>
+			</TabItem>
+			<TabItem Width="140" Foreground="{DynamicResource MaterialDesignBody}">
+				<TabItem.Header>
+					<Label FontSize="12">OSD options</Label>
+				</TabItem.Header>
+				<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+					<Grid Margin="8 8 8 14">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="*"/>
+						</Grid.ColumnDefinitions>
+
+						<!-- Independent vertical sections keep future options local to their topic. -->
+						<StackPanel Grid.Column="0">
+							<Border Style="{StaticResource OsdOptionsCard}">
+								<StackPanel>
+									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="General"/>
+									<TextBlock Style="{StaticResource OsdOptionsDescription}"
+											   Text="Control when the overlay is visible and how common entries behave."/>
+									<Separator Margin="0 10 0 4" Background="{DynamicResource MaterialDesignDivider}"/>
+
+									<DockPanel Margin="0 8">
+										<ToggleButton DockPanel.Dock="Right" Margin="12 0 0 0" VerticalAlignment="Center"
+													  IsChecked="{Binding IsOverlayActive, Mode=TwoWay}"
+													  Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+										<StackPanel>
+											<TextBlock FontWeight="SemiBold" Text="Overlay active"/>
+											<TextBlock Style="{StaticResource OsdOptionsDescription}"
+													   Text="Show or hide the selected overlay renderer."/>
+										</StackPanel>
+									</DockPanel>
+
+									<DockPanel Margin="0 8">
+										<CheckBox DockPanel.Dock="Right" Margin="12 0 5 0" VerticalAlignment="Center"
+												  IsChecked="{Binding AutoDisableOverlay, Mode=TwoWay}"
+												  Style="{StaticResource MaterialDesignCheckBox}"/>
+										<StackPanel>
+											<TextBlock FontWeight="SemiBold" Text="Auto-disable while capturing"/>
+											<TextBlock Style="{StaticResource OsdOptionsDescription}"
+													   Text="Hide the OSD while a benchmark capture is running."/>
+										</StackPanel>
+									</DockPanel>
+
+									<DockPanel Margin="0 8">
+										<CheckBox DockPanel.Dock="Right" Margin="12 0 5 0" VerticalAlignment="Center"
+												  IsChecked="{Binding ShowSystemTimeSeconds, Mode=TwoWay}"
+												  Style="{StaticResource MaterialDesignCheckBox}"/>
+										<StackPanel>
+											<TextBlock FontWeight="SemiBold" Text="System time seconds"/>
+											<TextBlock Style="{StaticResource OsdOptionsDescription}"
+													   Text="Include seconds in the system-time overlay entry."/>
+										</StackPanel>
+									</DockPanel>
+								</StackPanel>
+							</Border>
+
+							<Border Style="{StaticResource OsdOptionsCard}">
+								<StackPanel>
+									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="Appearance and position"/>
+									<TextBlock Style="{StaticResource OsdOptionsDescription}"
+											   Text="Adjust the placement and background of CapFrameX overlay content."/>
+									<Separator Margin="0 10 0 4" Background="{DynamicResource MaterialDesignDivider}"/>
+
+									<DockPanel Margin="0 8">
+										<CheckBox DockPanel.Dock="Right" Margin="12 0 5 0" VerticalAlignment="Center"
+												  IsChecked="{Binding OSDCustomPosition, Mode=TwoWay}"
+												  Style="{StaticResource MaterialDesignCheckBox}"/>
+										<StackPanel>
+											<TextBlock FontWeight="SemiBold" Text="Custom position"/>
+											<TextBlock Style="{StaticResource OsdOptionsDescription}"
+													   Text="Manually position the CapFrameX overlay items."/>
+										</StackPanel>
+									</DockPanel>
+
+									<Grid Margin="0 4 0 10"
+										  Visibility="{Binding OSDCustomPosition, Converter={StaticResource TrueToVisibleConverter}}">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="*"/>
+											<ColumnDefinition Width="Auto"/>
+										</Grid.ColumnDefinitions>
+										<TextBlock VerticalAlignment="Center" Text="Overlay coordinates"/>
+										<StackPanel Grid.Column="1" Orientation="Horizontal">
+											<TextBlock Margin="0 0 6 0" VerticalAlignment="Center" Text="X"/>
+											<TextBox Width="45" Height="28" HorizontalContentAlignment="Center"
+													 Text="{Binding OSDPositionX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+													 PreviewTextInput="IntegerNumberValidationTextBox"/>
+											<TextBlock Margin="12 0 6 0" VerticalAlignment="Center" Text="Y"/>
+											<TextBox Width="45" Height="28" HorizontalContentAlignment="Center"
+													 Text="{Binding OSDPositionY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+													 PreviewTextInput="IntegerNumberValidationTextBox"/>
+										</StackPanel>
+									</Grid>
+
+									<TextBlock Margin="0 8 0 0" FontWeight="SemiBold" Text="Background opacity"/>
+									<TextBlock Style="{StaticResource OsdOptionsDescription}"
+											   Text="Applies to the in-game and hook-free CapFrameX renderers; RTSS uses its own setting."/>
+									<Grid Margin="0 8 0 0">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="*"/>
+											<ColumnDefinition Width="48"/>
+										</Grid.ColumnDefinitions>
+										<Slider VerticalAlignment="Center" Minimum="0" Maximum="100" TickFrequency="5"
+												IsSnapToTickEnabled="True" Value="{Binding OsdBackgroundOpacity, Mode=TwoWay}"/>
+										<TextBlock Grid.Column="1" Margin="8 0 0 0" VerticalAlignment="Center" TextAlignment="Right"
+												   Text="{Binding OsdBackgroundOpacity, StringFormat={}{0} %}"/>
+									</Grid>
+								</StackPanel>
+							</Border>
+						</StackPanel>
+
+						<StackPanel Grid.Column="1">
+							<Border Style="{StaticResource OsdOptionsCard}">
+								<StackPanel>
+									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="Overlay renderer"/>
+									<TextBlock Style="{StaticResource OsdOptionsDescription}"
+											   Text="Choose one output backend. Renderer-specific options stay with their renderer."/>
+									<Separator Margin="0 10 0 8" Background="{DynamicResource MaterialDesignDivider}"/>
+
+									<!-- The ViewModel enforces exclusivity. Distinct GroupNames prevent WPF from
+										 dropping a binding while it automatically unchecks another renderer. -->
+									<StackPanel Margin="0 4 0 8">
+										<RadioButton GroupName="OverlayModeRtss" Content="RTSS"
+													 IsChecked="{Binding OverlayModeRtss, Mode=TwoWay}"
+													 Style="{StaticResource MaterialDesignRadioButton}"/>
+										<TextBlock Margin="26 0 0 0" Style="{StaticResource OsdOptionsDescription}"
+												   Text="Classic RivaTuner Statistics Server overlay. Requires RTSS."/>
+										<TextBlock Margin="26 5 0 0" FontSize="11" Foreground="#E0A020" TextWrapping="Wrap"
+												   Visibility="{Binding ShowRtssHiddenHint, Converter={StaticResource TrueToVisibleConverter}}"
+												   Text="&#x26A0; &quot;Hide OSD on RTSS&quot; is enabled. Disable that setting to show the RTSS overlay."/>
+									</StackPanel>
+
+									<Separator Margin="0 4" Background="{DynamicResource MaterialDesignDivider}"/>
+									<StackPanel Margin="0 8">
+										<RadioButton GroupName="OverlayModeHook" Content="CapFrameX in-game"
+													 IsChecked="{Binding OverlayModeHook, Mode=TwoWay}"
+													 Style="{StaticResource MaterialDesignRadioButton}"/>
+										<TextBlock Margin="26 0 0 0" Style="{StaticResource OsdOptionsDescription}"
+												   Text="Injected into the game for the smoothest in-swapchain graphs. Use only with titles where injection is safe."/>
+										<StackPanel Margin="26 8 0 0" IsEnabled="{Binding OverlayModeHook}">
+											<CheckBox Content="Use PresentMon frame times"
+													  IsChecked="{Binding HookOverlayUsePresentMonFrametimes, Mode=TwoWay}"
+													  Style="{StaticResource MaterialDesignCheckBox}"/>
+											<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
+													   Text="Adds display-time data through the buffered PresentMon stream. Off uses the hook's low-latency present-to-present data."/>
+										</StackPanel>
+									</StackPanel>
+
+									<Separator Margin="0 4" Background="{DynamicResource MaterialDesignDivider}"/>
+									<StackPanel Margin="0 8 0 4">
+										<RadioButton GroupName="OverlayModeHookFree" Content="CapFrameX hook-free"
+													 IsChecked="{Binding OverlayModeHookFree, Mode=TwoWay}"
+													 Style="{StaticResource MaterialDesignRadioButton}"/>
+										<TextBlock Margin="26 0 0 0" Style="{StaticResource OsdOptionsDescription}"
+												   Text="Uses DWM/DirectComposition without game injection and is safe for anti-cheat protected titles."/>
+									</StackPanel>
+								</StackPanel>
+							</Border>
+
+							<Border Style="{StaticResource OsdOptionsCard}">
+								<StackPanel>
+									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="Shortcuts and timing"/>
+									<TextBlock Style="{StaticResource OsdOptionsDescription}"
+											   Text="Configure overlay controls and data update intervals."/>
+									<Separator Margin="0 10 0 4" Background="{DynamicResource MaterialDesignDivider}"/>
+
+									<DockPanel Margin="0 5">
+										<TextBox DockPanel.Dock="Right" Width="160" Height="42"
+												 materialDesign:HintAssist.Hint="Toggle overlay"
+												 materialDesign:HintAssist.HintOpacity=".8"
+												 Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
+												 PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
+												 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
+											<Binding Path="OverlayHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
+												<Binding.ValidationRules>
+													<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True"/>
+												</Binding.ValidationRules>
+											</Binding>
+										</TextBox>
+										<TextBlock Margin="0 0 12 0" VerticalAlignment="Center" Text="Overlay hotkey"/>
+									</DockPanel>
+
+									<DockPanel Margin="0 5">
+										<TextBox DockPanel.Dock="Right" Width="160" Height="42"
+												 materialDesign:HintAssist.Hint="Switch config"
+												 materialDesign:HintAssist.HintOpacity=".8"
+												 Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
+												 PreviewKeyDown="ConfigHotkeyTextBox_PreviewKeyDown"
+												 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
+											<Binding Path="OverlayConfigHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
+												<Binding.ValidationRules>
+													<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True"/>
+												</Binding.ValidationRules>
+											</Binding>
+										</TextBox>
+										<TextBlock Margin="0 0 12 0" VerticalAlignment="Center" Text="Config hotkey"/>
+									</DockPanel>
+
+									<DockPanel Margin="0 5">
+										<TextBox DockPanel.Dock="Right" Width="160" Height="42"
+												 materialDesign:HintAssist.Hint="Reset metrics"
+												 materialDesign:HintAssist.HintOpacity=".8"
+												 Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
+												 PreviewKeyDown="ResetMetricsHotkeyTextBox_PreviewKeyDown"
+												 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
+											<Binding Path="ResetMetricsHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
+												<Binding.ValidationRules>
+													<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True"/>
+												</Binding.ValidationRules>
+											</Binding>
+										</TextBox>
+										<TextBlock Margin="0 0 12 0" VerticalAlignment="Center" Text="Reset metrics hotkey"/>
+									</DockPanel>
+
+									<TextBlock Margin="0 14 0 2" FontWeight="SemiBold" Text="Update intervals"/>
+									<DockPanel Margin="0 5">
+										<ComboBox DockPanel.Dock="Right" Width="160" Height="40" FontSize="14"
+												  materialDesign:ComboBoxAssist.ClassicMode="True"
+												  materialDesign:HintAssist.Hint="Refresh period (ms)"
+												  materialDesign:HintAssist.HintOpacity=".8"
+												  materialDesign:HintAssist.IsFloating="True"
+												  MaxDropDownHeight="200" MouseLeave="OSDRefreshPeriodComboBox_MouseLeave"
+												  ItemsSource="{Binding Path=RefreshPeriodItemsSource}">
+											<ComboBox.Text>
+												<Binding Path="OSDRefreshPeriod" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
+											</ComboBox.Text>
+										</ComboBox>
+										<StackPanel Margin="0 0 12 0" VerticalAlignment="Center">
+											<TextBlock Text="Overlay refresh"/>
+											<TextBlock Style="{StaticResource OsdOptionsDescription}" Text="OSD update period"/>
+										</StackPanel>
+									</DockPanel>
+
+									<DockPanel Margin="0 5">
+										<ComboBox DockPanel.Dock="Right" Width="160" Height="40" FontSize="14"
+												  materialDesign:ComboBoxAssist.ClassicMode="True"
+												  materialDesign:HintAssist.Hint="Metric interval (s)"
+												  materialDesign:HintAssist.HintOpacity=".8"
+												  materialDesign:HintAssist.IsFloating="True"
+												  MaxDropDownHeight="200" MouseLeave="MetricIntervalComboBox_MouseLeave"
+												  ItemsSource="{Binding Path=MetricIntervalItemsSource}">
+											<ComboBox.Text>
+												<Binding Path="MetricInterval" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
+											</ComboBox.Text>
+										</ComboBox>
+										<StackPanel Margin="0 0 12 0" VerticalAlignment="Center">
+											<TextBlock Text="Real-time metrics"/>
+											<TextBlock Style="{StaticResource OsdOptionsDescription}" Text="Calculation time frame"/>
+										</StackPanel>
+									</DockPanel>
+								</StackPanel>
+							</Border>
+						</StackPanel>
+					</Grid>
+				</ScrollViewer>
+			</TabItem>
+		</TabControl>
 	</Grid>
 </UserControl>
