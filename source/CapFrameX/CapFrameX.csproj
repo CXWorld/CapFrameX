@@ -284,7 +284,11 @@
       <Name>CapFrameX.PresentMonInterface</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.OSD.Integration\CapFrameX.OSD.Integration.csproj" />
-    <ProjectReference Include="..\..\external\CapFrameX.OSD\CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj" Condition="'$(CfxOsdFromSource)' == 'true'" />
+    <ProjectReference Include="..\..\external\CapFrameX.OSD\CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj" Condition="'$(CfxOsdFromSource)' == 'true'">
+      <!-- The optional submodule project is not listed in CapFrameX.sln, so Visual Studio
+           cannot apply a solution platform mapping to this x64-only reference. -->
+      <SetPlatform>Platform=x64</SetPlatform>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.RTSSIntegration\CapFrameX.RTSSIntegration.csproj">
       <Project>{AE3BDF42-2F21-4CC3-9171-6CF2FDFDAB7A}</Project>
       <Name>CapFrameX.RTSSIntegration</Name>
@@ -328,6 +332,9 @@
          source; otherwise the prebuilt binaries in external\CapFrameX.OSD-prebuilt
          are used so the app always builds with full OSD functionality. -->
     <CfxOsdFromSource Condition="'$(CfxOsdFromSource)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD\CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj')">true</CfxOsdFromSource>
+    <!-- Preserve the explicit x64 mapping on the optional project reference. Visual Studio
+         otherwise removes the platform for projects that are not listed in the solution. -->
+    <ShouldUnsetParentConfigurationAndPlatform Condition="'$(CfxOsdFromSource)' == 'true' And '$(ShouldUnsetParentConfigurationAndPlatform)' == ''">false</ShouldUnsetParentConfigurationAndPlatform>
   </PropertyGroup>
   <ItemGroup Condition="'$(CfxOsdFromSource)' != 'true'">
     <Reference Include="CapFrameX.OSD.Interop">

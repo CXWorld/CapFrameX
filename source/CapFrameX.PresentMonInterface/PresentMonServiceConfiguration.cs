@@ -10,6 +10,7 @@ namespace CapFrameX.PresentMonInterface
     public class PresentMonServiceConfiguration
     {
         private const string PARAMETER_SEPARATOR = " ";
+        private const string PRESENT_EVENT_CIRCULAR_BUFFER_SIZE = "4096";
 
         public string ProcessName { get; set; }
 
@@ -35,6 +36,10 @@ namespace CapFrameX.PresentMonInterface
                 arguments += "--no_track_input";
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--qpc_time_ms";
+                arguments += PARAMETER_SEPARATOR;
+                arguments += "--set_circular_buffer_size";
+                arguments += PARAMETER_SEPARATOR;
+                arguments += PRESENT_EVENT_CIRCULAR_BUFFER_SIZE;
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--track_frame_type";
                 arguments += PARAMETER_SEPARATOR;
@@ -80,6 +85,10 @@ namespace CapFrameX.PresentMonInterface
                 arguments += "--no_track_input";
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--qpc_time_ms";
+                arguments += PARAMETER_SEPARATOR;
+                arguments += "--set_circular_buffer_size";
+                arguments += PARAMETER_SEPARATOR;
+                arguments += PRESENT_EVENT_CIRCULAR_BUFFER_SIZE;
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--track_frame_type";
                 arguments += PARAMETER_SEPARATOR;
