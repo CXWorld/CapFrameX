@@ -78,6 +78,7 @@
     <EmbeddedResource Include="Resources\PawnIO\SmbusPIIX4.bin" />
     <EmbeddedResource Include="Resources\PawnIO\DellSMM.bin" />
     <EmbeddedResource Include="Resources\PawnIO\IntelMCHBAR.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\Nvidia.bin" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />

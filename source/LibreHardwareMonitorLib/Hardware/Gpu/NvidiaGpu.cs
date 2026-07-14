@@ -6,6 +6,7 @@
 
 using CapFrameX.Monitoring.Contracts;
 using LibreHardwareMonitor.Interop;
+using LibreHardwareMonitor.PawnIo;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -64,6 +65,7 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor _gpuSharedMemoryUsage;
     private readonly NvApi.NvPhysicalGpuHandle _handle;
     private readonly Sensor _hotSpotTemperature;
+    private readonly Sensor _hotSpotTemperature2;
     private readonly Sensor[] _loads;
     private readonly Sensor _memoryFree;
     private readonly Sensor _memoryJunctionTemperature;
@@ -75,6 +77,7 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor _memoryControllerLoad;
     private readonly uint _memoryBusWidth;
     private readonly float _memoryDataRateMultiplier;
+    private readonly NvidiaThermal _nvidiaThermal;
     private readonly NvidiaML.NvmlDevice? _nvmlDevice;
     private readonly Sensor _pcieThroughputRx;
     private readonly Sensor _pcieThroughputTx;
@@ -101,6 +104,8 @@ internal sealed class NvidiaGpu : GenericGpu
         _stopwatch = new Stopwatch();
 
         bool hasBusId = NvApi.NvAPI_GPU_GetBusId(handle, out uint busId) == NvApi.NvStatus.OK;
+        uint pciDevice = 0;
+        uint pciFunction = 0;
 
         // Thermal settings
         NvApi.NvThermalSettings thermalSettings = GetThermalSettings(out NvApi.NvStatus status);
@@ -138,6 +143,8 @@ internal sealed class NvidiaGpu : GenericGpu
         { PresentationSortKey = $"{adapterIndex}_2_0_{thermalSettings.Count + 1}" };
         _memoryJunctionTemperature = new Sensor("GPU Memory Junction", (int)thermalSettings.Count + 2, SensorType.Temperature, this, settings)
         { PresentationSortKey = $"{adapterIndex}_2_0_{thermalSettings.Count + 2}" };
+        _hotSpotTemperature2 = new Sensor("GPU Hot Spot 2", (int)thermalSettings.Count + 3, SensorType.Temperature, this, settings)
+        { PresentationSortKey = $"{adapterIndex}_2_0_{thermalSettings.Count + 3}" };
         bool hasAnyThermalSensor = false;
 
         for (int thermalSensorsMaxBit = 0; thermalSensorsMaxBit < 32; thermalSensorsMaxBit++)
@@ -453,6 +460,9 @@ internal sealed class NvidiaGpu : GenericGpu
 
                     if (pciInfo is { } pci)
                     {
+                        pciDevice = pci.device;
+                        pciFunction = GetPciFunction(pci.busId);
+
                         string[] deviceIds = D3DDisplayDevice.GetDeviceIdentifiers();
                         if (deviceIds != null)
                         {
@@ -555,6 +565,9 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
+        if (hasBusId && !Software.OperatingSystem.IsUnix)
+            _nvidiaThermal = new NvidiaThermal(busId, pciDevice, pciFunction);
+
         _memoryFree = new Sensor("GPU Memory Free", 0, SensorType.Data, this, settings)
         { PresentationSortKey = $"{adapterIndex}_8_2" };
         _memoryUsed = new Sensor("GPU Memory Used", 1, SensorType.Data, this, settings)
@@ -645,6 +658,15 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
+        float? directHotSpot = null;
+        float? directHotSpot2 = null;
+        bool hasDirectThermalData = _nvidiaThermal?.TryRead(out directHotSpot, out directHotSpot2) == true;
+        if (hasDirectThermalData)
+            _hotSpotTemperature.Value = directHotSpot;
+        else if (_nvidiaThermal != null && Name.StartsWith("NVIDIA GeForce RTX 50", StringComparison.OrdinalIgnoreCase))
+            _hotSpotTemperature.Value = null;
+        _hotSpotTemperature2.Value = hasDirectThermalData ? directHotSpot2 : null;
+
         if (_thermalSensorsMask > 0)
         {
             NvApi.NvThermalSensors thermalSensors = GetThermalSensors(_thermalSensorsMask, out status);
@@ -654,34 +676,39 @@ internal sealed class NvidiaGpu : GenericGpu
                 // RTX 50xx series
                 if (Name.StartsWith("NVIDIA GeForce RTX 50", StringComparison.OrdinalIgnoreCase))
                 {
-                    _hotSpotTemperature.Value = 0;
                     _temperatures[0].Value = thermalSensors.Temperatures[1] / 256.0f;
                     _memoryJunctionTemperature.Value = thermalSensors.Temperatures[2] / 256.0f;
                 }
                 // RTX 40xx series
                 else if (Name.StartsWith("NVIDIA GeForce RTX 40", StringComparison.OrdinalIgnoreCase))
                 {
-                    _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
+                    if (!hasDirectThermalData)
+                        _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
                     _memoryJunctionTemperature.Value = thermalSensors.Temperatures[7] / 256.0f;
                 }
                 else
                 {
-                    _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
+                    if (!hasDirectThermalData)
+                        _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
                     _memoryJunctionTemperature.Value = thermalSensors.Temperatures[9] / 256.0f;
                 }
             }
-
-            if (_hotSpotTemperature.Value != 0)
-                ActivateSensor(_hotSpotTemperature);
-
-            if (_memoryJunctionTemperature.Value != 0)
-                ActivateSensor(_memoryJunctionTemperature);
         }
         else
         {
-            _hotSpotTemperature.Value = null;
+            if (!hasDirectThermalData)
+                _hotSpotTemperature.Value = null;
             _memoryJunctionTemperature.Value = null;
         }
+
+        if (_hotSpotTemperature.Value is > 0)
+            ActivateSensor(_hotSpotTemperature);
+
+        if (_hotSpotTemperature2.Value is > 0)
+            ActivateSensor(_hotSpotTemperature2);
+
+        if (_memoryJunctionTemperature.Value is > 0)
+            ActivateSensor(_memoryJunctionTemperature);
 
         if (_clocks is { Length: > 0 })
         {
@@ -1398,6 +1425,19 @@ internal sealed class NvidiaGpu : GenericGpu
         return "NVIDIA";
     }
 
+    private static uint GetPciFunction(string busId)
+    {
+        if (string.IsNullOrEmpty(busId))
+            return 0;
+
+        int separator = busId.LastIndexOf('.');
+        return separator >= 0 &&
+               uint.TryParse(busId.Substring(separator + 1), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out uint function) &&
+               function <= 7
+            ? function
+            : 0;
+    }
+
     private NvApi.NvMemoryInfo GetMemoryInfo(out NvApi.NvStatus status)
     {
         if (NvApi.NvAPI_GPU_GetMemoryInfo == null || _displayHandle == null)
@@ -1853,6 +1893,8 @@ internal sealed class NvidiaGpu : GenericGpu
 
     public override void Close()
     {
+        _nvidiaThermal?.Close();
+
         if (_fanControls != null)
         {
             for (int i = 0; i < _fanControls.Length; i++)
