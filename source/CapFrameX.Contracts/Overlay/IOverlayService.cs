@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Data.Session.Contracts;
 using System;
+using System.Collections.Generic;
 using System.Reactive.Subjects;
 
 namespace CapFrameX.Contracts.Overlay
@@ -15,6 +16,12 @@ namespace CapFrameX.Contracts.Overlay
 		string ThirdMetric { get; set; }
 
 		int RunHistoryCount { get; }
+
+		IReadOnlyList<string> RunHistory { get; }
+
+		IReadOnlyList<bool> RunHistoryOutlierFlags { get; }
+
+		string RunHistoryAggregation { get; }
 
 		void UpdateNumberOfRuns(int numberOfRuns);
 

@@ -41,10 +41,22 @@ namespace CapFrameX
         private DebugMonitorWindow _debugMonitorWindow;
 #endif
 
+        public App()
+        {
+            StartupPerformanceLogger.Start();
+        }
+
         protected override void OnStartup(StartupEventArgs e)
         {
+            StartupPerformanceLogger.Mark("App.OnStartup entered (application resources loaded)");
+
             const string appName = "CapFrameX";
-            _mutex = new Mutex(true, appName, out bool createdNew);
+            bool createdNew;
+            using (StartupPerformanceLogger.Measure("Single-instance mutex initialization"))
+            {
+                _mutex = new Mutex(true, appName, out createdNew);
+            }
+
             if (!createdNew)
             {
                 Process current = Process.GetCurrentProcess();
@@ -60,6 +72,7 @@ namespace CapFrameX
                         catch (Exception ex)
                         {
                             InitializeLogger();
+                            StartupPerformanceLogger.LoggerReady();
                             Log.Logger.Fatal(ex, "Exception in ShowWindowInCorrectState");
                         }
                         break;
@@ -72,80 +85,114 @@ namespace CapFrameX
             else
             {
                 // We need to check for .NET Framework presence and C++ redistributables.
-                try
-                {
-                    var checkReport = AppDependencyChecker.CheckAndNotifyMissingDependencies();
-
-                    if (!checkReport.Valid)
-                    {
-                        var netFrameWorkMessage = checkReport.MissingDotNetFrameworkVersion != null
-                            ? $"- .NET Framework {checkReport.MissingDotNetFrameworkVersion} is not installed.\n"
-                            : string.Empty;
-
-                        var vcRedistMessage = checkReport.MissingVCRedistVersions != null
-                            ? $"- Visual C++ Redistributables missing: {string.Join(", ", checkReport.MissingVCRedistVersions)}\n"
-                            : string.Empty;
-
-                        // Show info message to user
-                        MessageBox.Show($"CapFrameX requires certain dependencies to be installed on the system.\n\n" +
-                            $"The following dependencies are missing:\n" +
-                            $"{netFrameWorkMessage}" +
-                            $"{vcRedistMessage}" +
-                            $"\nPlease install the missing dependencies and restart CapFrameX.",
-                            "Missing Dependencies",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Error);
-
-                        // Missing dependencies, exit application
-                        Current.Shutdown();
-                        return;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // Log error
-                    Log.Logger.Fatal(ex, "Exception in AppDependencyChecker");
-                }
-
-                // Initialize portable mode detection before anything else
-                PortableModeDetector.Initialize();
-
-                InitializeLogger();
-                SetupExceptionHandling();
-                base.OnStartup(e);
-                _bootstrapper = new Bootstrapper();
-                _bootstrapper.Run(true);
-
-                // Check for conflicting ETW sessions (FrameViewService)
-                try
-                {
-                    var appConfiguration = _bootstrapper.Container.Resolve<IAppConfiguration>();
-                    if (!appConfiguration.SuppressFrameViewServiceWarning)
-                    {
-                        Current.Dispatcher.BeginInvoke(
-                            new Action(() => _ = CheckFrameViewServiceAsync(appConfiguration)),
-                            DispatcherPriority.ApplicationIdle);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Logger.Error(ex, "Error checking for ETW services");
-                }
-
-                Task.Run(async () =>
+                using (StartupPerformanceLogger.Measure("Runtime dependency check"))
                 {
                     try
                     {
-                        _webServer = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://*", false);
-                        await _webServer.RunAsync().ConfigureAwait(false);
+                        var checkReport = AppDependencyChecker.CheckAndNotifyMissingDependencies();
+
+                        if (!checkReport.Valid)
+                        {
+                            var netFrameWorkMessage = checkReport.MissingDotNetFrameworkVersion != null
+                                ? $"- .NET Framework {checkReport.MissingDotNetFrameworkVersion} is not installed.\n"
+                                : string.Empty;
+
+                            var vcRedistMessage = checkReport.MissingVCRedistVersions != null
+                                ? $"- Visual C++ Redistributables missing: {string.Join(", ", checkReport.MissingVCRedistVersions)}\n"
+                                : string.Empty;
+
+                            // Show info message to user
+                            MessageBox.Show($"CapFrameX requires certain dependencies to be installed on the system.\n\n" +
+                                $"The following dependencies are missing:\n" +
+                                $"{netFrameWorkMessage}" +
+                                $"{vcRedistMessage}" +
+                                $"\nPlease install the missing dependencies and restart CapFrameX.",
+                                "Missing Dependencies",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error);
+
+                            // Missing dependencies, exit application
+                            Current.Shutdown();
+                            return;
+                        }
                     }
-                    catch (System.Net.HttpListenerException)
+                    catch (Exception ex)
                     {
-                        _webServer?.Dispose();
-                        _webServer = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://*", true);
-                        await _webServer.RunAsync().ConfigureAwait(false);
+                        // Log error
+                        Log.Logger.Fatal(ex, "Exception in AppDependencyChecker");
                     }
-                });
+                }
+
+                // Initialize portable mode detection before anything else
+                using (StartupPerformanceLogger.Measure("Portable mode detection"))
+                {
+                    PortableModeDetector.Initialize();
+                }
+
+                using (StartupPerformanceLogger.Measure("Logging initialization"))
+                {
+                    InitializeLogger();
+                }
+                StartupPerformanceLogger.LoggerReady();
+
+                using (StartupPerformanceLogger.Measure("Global exception handling setup"))
+                {
+                    SetupExceptionHandling();
+                }
+
+                using (StartupPerformanceLogger.Measure("WPF startup event processing"))
+                {
+                    base.OnStartup(e);
+                }
+
+                using (StartupPerformanceLogger.Measure("Prism/DryIoc bootstrapper total"))
+                {
+                    _bootstrapper = new Bootstrapper();
+                    _bootstrapper.Run(true);
+                }
+
+                // Check for conflicting ETW sessions (FrameViewService)
+                using (StartupPerformanceLogger.Measure("ETW conflict check scheduling"))
+                {
+                    try
+                    {
+                        var appConfiguration = _bootstrapper.Container.Resolve<IAppConfiguration>();
+                        if (!appConfiguration.SuppressFrameViewServiceWarning)
+                        {
+                            Current.Dispatcher.BeginInvoke(
+                                new Action(() => _ = CheckFrameViewServiceAsync(appConfiguration)),
+                                DispatcherPriority.ApplicationIdle);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Error(ex, "Error checking for ETW services");
+                    }
+                }
+
+                using (StartupPerformanceLogger.Measure("Embedded web server task scheduling"))
+                {
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            using (StartupPerformanceLogger.Measure("Embedded web server creation"))
+                            {
+                                _webServer = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://*", false);
+                            }
+                            await _webServer.RunAsync().ConfigureAwait(false);
+                        }
+                        catch (System.Net.HttpListenerException)
+                        {
+                            _webServer?.Dispose();
+                            using (StartupPerformanceLogger.Measure("Embedded web server fallback creation"))
+                            {
+                                _webServer = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://*", true);
+                            }
+                            await _webServer.RunAsync().ConfigureAwait(false);
+                        }
+                    });
+                }
 
 #if DEBUG
                 // Open debug monitor window in Debug mode
@@ -153,6 +200,8 @@ namespace CapFrameX
                 //_debugMonitorWindow = new DebugMonitorWindow(captureService);
                 //_debugMonitorWindow.Show();
 #endif
+
+                StartupPerformanceLogger.Complete();
             }
         }
 
@@ -359,76 +408,85 @@ namespace CapFrameX
 
         private void ApplicationStartup(object sender, StartupEventArgs e)
         {
-            if (!IsAdministrator)
+            using (StartupPerformanceLogger.Measure("Administrator privilege check"))
             {
-                MessageBox.Show("Run CapFrameX as administrator. Right click on desktop shortcut" + Environment.NewLine
-                    + "and got to Properties -> Shortcut -> Advanced then check option Run as administrator.");
-                Current.Shutdown();
+                if (!IsAdministrator)
+                {
+                    MessageBox.Show("Run CapFrameX as administrator. Right click on desktop shortcut" + Environment.NewLine
+                        + "and got to Properties -> Shortcut -> Advanced then check option Run as administrator.");
+                    Current.Shutdown();
+                }
             }
 
             // Skip config migration in portable mode - only relevant for installed mode upgrades
-            if (!PortableModeDetector.IsPortableMode)
+            using (StartupPerformanceLogger.Measure("Legacy configuration migration"))
             {
-                // unify old config folders
-                try
+                if (!PortableModeDetector.IsPortableMode)
                 {
-                    var configFolderV1 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                            @"CapFrameX\Configuration\");
-                    var configFolderV2 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                            @"CapFrameX\Configuration\");
-
-                    if (!Directory.Exists(configFolderV2))
+                    // unify old config folders
+                    try
                     {
-                        Directory.CreateDirectory(configFolderV2);
-                    }
+                        var configFolderV1 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                                @"CapFrameX\Configuration\");
+                        var configFolderV2 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                                @"CapFrameX\Configuration\");
 
-                    if (Directory.Exists(configFolderV1))
-                    {
-                        var oldSettingsFileName = Path.Combine(configFolderV1, "settings.json");
-                        var newSettingsFileName = Path.Combine(configFolderV1, "AppSettings.json");
-                        if (File.Exists(oldSettingsFileName))
+                        if (!Directory.Exists(configFolderV2))
                         {
-                            if (!File.Exists(newSettingsFileName))
-                                File.Move(oldSettingsFileName, newSettingsFileName);
-
-                            File.Delete(oldSettingsFileName);
+                            Directory.CreateDirectory(configFolderV2);
                         }
 
-                        CleanupOldConfigStorage(configFolderV1, configFolderV2);
+                        if (Directory.Exists(configFolderV1))
+                        {
+                            var oldSettingsFileName = Path.Combine(configFolderV1, "settings.json");
+                            var newSettingsFileName = Path.Combine(configFolderV1, "AppSettings.json");
+                            if (File.Exists(oldSettingsFileName))
+                            {
+                                if (!File.Exists(newSettingsFileName))
+                                    File.Move(oldSettingsFileName, newSettingsFileName);
+
+                                File.Delete(oldSettingsFileName);
+                            }
+
+                            CleanupOldConfigStorage(configFolderV1, configFolderV2);
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Log.Logger.Error(ex, "Error while creating config folder.");
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Error(ex, "Error while creating config folder.");
+                    }
                 }
             }
 
             // create capture folder
-            try
+            using (StartupPerformanceLogger.Measure("Capture directory initialization"))
             {
-                string captureFolder;
-                if (PortableModeDetector.IsPortableMode && PortableModeDetector.Config != null)
+                try
                 {
-                    var appDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                    var relativePath = PortableModeDetector.Config.Paths.Captures;
-                    if (relativePath.StartsWith("./") || relativePath.StartsWith(".\\"))
-                        relativePath = relativePath.Substring(2);
-                    captureFolder = Path.GetFullPath(Path.Combine(appDirectory, relativePath));
-                }
-                else
-                {
-                    captureFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                        @"CapFrameX\Captures\");
-                }
+                    string captureFolder;
+                    if (PortableModeDetector.IsPortableMode && PortableModeDetector.Config != null)
+                    {
+                        var appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                        var relativePath = PortableModeDetector.Config.Paths.Captures;
+                        if (relativePath.StartsWith("./") || relativePath.StartsWith(".\\"))
+                            relativePath = relativePath.Substring(2);
+                        captureFolder = Path.GetFullPath(Path.Combine(appDirectory, relativePath));
+                    }
+                    else
+                    {
+                        captureFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                            @"CapFrameX\Captures\");
+                    }
 
-                if (!Directory.Exists(captureFolder))
-                {
-                    Directory.CreateDirectory(captureFolder);
+                    if (!Directory.Exists(captureFolder))
+                    {
+                        Directory.CreateDirectory(captureFolder);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Error(ex, "Error while creating capture folder.");
+                catch (Exception ex)
+                {
+                    Log.Logger.Error(ex, "Error while creating capture folder.");
+                }
             }
         }
 
@@ -514,35 +572,44 @@ namespace CapFrameX
         {
             string logPath;
 
-            if (PortableModeDetector.IsPortableMode && PortableModeDetector.Config?.Paths != null)
+            using (StartupPerformanceLogger.Measure("Log path resolution"))
             {
-                // Portable mode: resolve log path relative to app directory
-                var appDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                var relativePath = PortableModeDetector.Config.Paths.Logs;
-                if (relativePath.StartsWith("./") || relativePath.StartsWith(".\\"))
-                    relativePath = relativePath.Substring(2);
-                logPath = Path.GetFullPath(Path.Combine(appDirectory, relativePath));
-            }
-            else
-            {
-                // Installed mode: use AppData
-                logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"CapFrameX\Logs");
+                if (PortableModeDetector.IsPortableMode && PortableModeDetector.Config?.Paths != null)
+                {
+                    // Portable mode: resolve log path relative to app directory
+                    var appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                    var relativePath = PortableModeDetector.Config.Paths.Logs;
+                    if (relativePath.StartsWith("./") || relativePath.StartsWith(".\\"))
+                        relativePath = relativePath.Substring(2);
+                    logPath = Path.GetFullPath(Path.Combine(appDirectory, relativePath));
+                }
+                else
+                {
+                    // Installed mode: use AppData
+                    logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"CapFrameX\Logs");
+                }
             }
 
             // Ensure log directory exists
-            if (!Directory.Exists(logPath))
-                Directory.CreateDirectory(logPath);
+            using (StartupPerformanceLogger.Measure("Log directory initialization"))
+            {
+                if (!Directory.Exists(logPath))
+                    Directory.CreateDirectory(logPath);
+            }
 
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .Enrich.FromLogContext()
-                .AuditTo.Sink<InMemorySink>()
-                .WriteTo.File(
-                    path: Path.Combine(logPath, "CapFrameX.log"),
-                    fileSizeLimitBytes: 1024 * 10000, // approx 10MB
-                    rollOnFileSizeLimit: true, // if filesize is reached, it created a new file
-                    retainedFileCountLimit: 10, // it keeps max 10 files
-                    formatter: new CompactJsonFormatter()).CreateLogger();
+            using (StartupPerformanceLogger.Measure("Serilog pipeline creation"))
+            {
+                Log.Logger = new LoggerConfiguration()
+                    .MinimumLevel.Debug()
+                    .Enrich.FromLogContext()
+                    .AuditTo.Sink<InMemorySink>()
+                    .WriteTo.File(
+                        path: Path.Combine(logPath, "CapFrameX.log"),
+                        fileSizeLimitBytes: 1024 * 10000, // approx 10MB
+                        rollOnFileSizeLimit: true, // if filesize is reached, it created a new file
+                        retainedFileCountLimit: 10, // it keeps max 10 files
+                        formatter: new CompactJsonFormatter()).CreateLogger();
+            }
         }
 
     }

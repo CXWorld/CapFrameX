@@ -155,6 +155,7 @@
     <Compile Include="IconHelper.cs" />
     <Compile Include="InMemorySink.cs" />
     <Compile Include="RegionManagerWrapper.cs" />
+    <Compile Include="StartupPerformanceLogger.cs" />
     <Compile Include="Shell.xaml.cs">
       <DependentUpon>Shell.xaml</DependentUpon>
     </Compile>
@@ -346,7 +347,7 @@
   <ItemGroup Condition="!Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD\CapFrameX.OSD\build\bin\RelWithDebInfo\cfx_osd_core.dll')">
     <Content Include="..\..\external\CapFrameX.OSD-prebuilt\native\cfx_osd_core.dll">
       <Link>cfx_osd_core.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>

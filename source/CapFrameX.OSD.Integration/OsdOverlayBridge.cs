@@ -126,7 +126,11 @@ namespace CapFrameX.OSD.Integration
             var entries = _overlayService.CurrentOverlayEntries;
             if (entries == null || entries.Length == 0) return;
 
-            var list = OverlayEntryAdapter.ToOsdEntries(entries);
+            var list = OverlayEntryAdapter.ToOsdEntries(entries,
+                _appConfiguration.UseRunHistory,
+                _overlayService.RunHistory,
+                _overlayService.RunHistoryOutlierFlags,
+                _overlayService.RunHistoryAggregation);
 
             // The <APP> Framerate/Frametime entries are filled by RTSS in the classic path;
             // hook-free they arrive as 0, so overwrite them with the stream-derived values.

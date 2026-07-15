@@ -137,7 +137,12 @@ namespace CapFrameX.OSD.Integration
                     int targetPid = EffectiveTargetPidLocked();
                     if (_channel == null || targetPid == 0) return;
 
-                    var list = OverlayEntryAdapter.ToOsdEntries(_overlayService.CurrentOverlayEntries);
+                    var list = OverlayEntryAdapter.ToOsdEntries(
+                        _overlayService.CurrentOverlayEntries,
+                        _appConfiguration.UseRunHistory,
+                        _overlayService.RunHistory,
+                        _overlayService.RunHistoryOutlierFlags,
+                        _overlayService.RunHistoryAggregation);
                     uint flags = _appConfiguration.HookOverlayUsePresentMonFrametimes
                         ? HookMetricsChannel.FlagPresentMonGraph : 0u;
                     // OSD background opacity (percent -> byte in bits 8..15). Published with every

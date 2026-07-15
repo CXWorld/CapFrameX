@@ -39,10 +39,13 @@ namespace CapFrameX.Overlay
         private IDisposable _overlayActiveStreamDisposable;
 
         private IList<string> _runHistory = new List<string>();
+        private volatile string[] _runHistorySnapshot = Array.Empty<string>();
         private IList<ISessionRun> _captureDataHistory = new List<ISessionRun>();
         private IList<IList<double>> _frametimeHistory = new List<IList<double>>();
         private IList<IList<double>> _displaytimeHistory = new List<IList<double>>();
         private bool[] _runHistoryOutlierFlags;
+        private volatile bool[] _runHistoryOutlierFlagsSnapshot = Array.Empty<bool>();
+        private volatile string _runHistoryAggregation = string.Empty;
         private int _numberOfRuns;
         private IList<IMetricAnalysis> _metricAnalysis = new List<IMetricAnalysis>();
         private ISubject<IOverlayEntry[]> _onDictionaryUpdated = new Subject<IOverlayEntry[]>();
@@ -57,6 +60,12 @@ namespace CapFrameX.Overlay
         public string ThirdMetric { get; set; }
 
         public int RunHistoryCount => _runHistory.Count(run => run != "N/A");
+
+        public IReadOnlyList<string> RunHistory => _runHistorySnapshot;
+
+        public IReadOnlyList<bool> RunHistoryOutlierFlags => _runHistoryOutlierFlagsSnapshot;
+
+        public string RunHistoryAggregation => _runHistoryAggregation;
 
         public IObservable<IOverlayEntry[]> OnDictionaryUpdated => _onDictionaryUpdated;
 
@@ -177,7 +186,7 @@ namespace CapFrameX.Overlay
                            }
                            if (feedRtss)
                            {
-                               _rTSSService.SetOverlayEntries(entries);
+                               _rTSSService.SetOverlayEntries(entries.Where(entry => entry.IsEntryEnabled).ToArray());
                                await _rTSSService.CheckRTSSRunningAndRefresh();
                            }
                        });
@@ -201,9 +210,9 @@ namespace CapFrameX.Overlay
                 });
 
             _runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
-            _rTSSService.SetRunHistory(_runHistory.ToArray());
-            _rTSSService.SetRunHistoryAggregation(string.Empty);
-            _rTSSService.SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+            PublishRunHistory();
+            PublishRunHistoryAggregation(string.Empty);
+            PublishRunHistoryOutlierFlags();
             _rTSSService.SetIsCaptureTimerActive(false);
         }
 
@@ -300,9 +309,9 @@ namespace CapFrameX.Overlay
             _frametimeHistory.Clear();
             _displaytimeHistory.Clear();
             _metricAnalysis.Clear();
-            _rTSSService.SetRunHistory(_runHistory.ToArray());
-            _rTSSService.SetRunHistoryAggregation(string.Empty);
-            _rTSSService.SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+            PublishRunHistory();
+            PublishRunHistoryAggregation(string.Empty);
+            PublishRunHistoryOutlierFlags();
         }
 
         public void AddRunToHistory(ISessionRun sessionRun, string process, string recordDirectory)
@@ -336,9 +345,9 @@ namespace CapFrameX.Overlay
 
                     // local reset
                     _runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
-                    _rTSSService.SetRunHistory(_runHistory.ToArray());
-                    _rTSSService.SetRunHistoryAggregation(string.Empty);
-                    _rTSSService.SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+                    PublishRunHistory();
+                    PublishRunHistoryAggregation(string.Empty);
+                    PublishRunHistoryOutlierFlags();
                 }
                 else
                 {
@@ -354,7 +363,7 @@ namespace CapFrameX.Overlay
 
                 _metricAnalysis.Add(currentAnalysis);
                 _runHistory[RunHistoryCount] = currentAnalysis.ResultString;
-                _rTSSService.SetRunHistory(_runHistory.ToArray());
+                PublishRunHistory();
 
                 // capture data history
                 _captureDataHistory.Add(sessionRun);
@@ -375,13 +384,13 @@ namespace CapFrameX.Overlay
                             .GetOutlierAnalysis(_metricAnalysis,
                                 _appConfiguration.RelatedMetricOverlay,
                                 _appConfiguration.OutlierPercentageOverlay);
-                        _rTSSService.SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+                        PublishRunHistoryOutlierFlags();
 
                         if ((_runHistoryOutlierFlags.All(x => x == false)
                             && _appConfiguration.OutlierHandling == EOutlierHandling.Replace.ConvertToString())
                             || _appConfiguration.OutlierHandling == EOutlierHandling.Ignore.ConvertToString())
                         {
-                            _rTSSService.SetRunHistoryAggregation(GetAggregation());
+                            PublishRunHistoryAggregation(GetAggregation());
 
                             // write aggregated file
                             Task.Run(async () =>
@@ -408,6 +417,26 @@ namespace CapFrameX.Overlay
         {
             _numberOfRuns = numberOfRuns;
             ResetHistory();
+        }
+
+        private void PublishRunHistory()
+        {
+            var snapshot = _runHistory.ToArray();
+            _runHistorySnapshot = snapshot;
+            _rTSSService.SetRunHistory(snapshot);
+        }
+
+        private void PublishRunHistoryOutlierFlags()
+        {
+            var snapshot = _runHistoryOutlierFlags?.ToArray() ?? Array.Empty<bool>();
+            _runHistoryOutlierFlagsSnapshot = snapshot;
+            _rTSSService.SetRunHistoryOutlierFlags(snapshot);
+        }
+
+        private void PublishRunHistoryAggregation(string aggregation)
+        {
+            _runHistoryAggregation = aggregation ?? string.Empty;
+            _rTSSService.SetRunHistoryAggregation(_runHistoryAggregation);
         }
 
         public IOverlayEntry GetSensorOverlayEntry(string identifier)

@@ -52,7 +52,11 @@ namespace CapFrameX
 
         public Shell(ISettingsStorage settingsStorage, IPathService pathService)
         {
-            InitializeComponent();
+            using (StartupPerformanceLogger.Measure("Shell XAML and resource initialization"))
+            {
+                InitializeComponent();
+            }
+
             _settingsStorage = settingsStorage;
             _pathService = pathService;
             Closing += Shell_Closing;
@@ -62,17 +66,20 @@ namespace CapFrameX
                 Title = "CapFrameX Portable";
             }
 
-            // Start tracking the Window instance.
-            var windowStateTracker = new WindowStateTracker(_pathService.ConfigFolder);
-            windowStateTracker.Tracker.Track(this);
-            StateChanged += Resize;
+            using (StartupPerformanceLogger.Measure("Shell window state tracker initialization"))
+            {
+                // Start tracking the Window instance.
+                var windowStateTracker = new WindowStateTracker(_pathService.ConfigFolder);
+                windowStateTracker.Tracker.Track(this);
+                StateChanged += Resize;
 
-            // Start tracking column width
-            var columnAWidthTracker = new ColumnWidthTracker(this, _pathService.ConfigFolder);
-            var columnBWidthTracker = new ColumnWidthTracker(this, _pathService.ConfigFolder);
+                // Start tracking column width
+                var columnAWidthTracker = new ColumnWidthTracker(this, _pathService.ConfigFolder);
+                var columnBWidthTracker = new ColumnWidthTracker(this, _pathService.ConfigFolder);
 
-            columnAWidthTracker.Tracker.Track(LeftColumn);
-            columnBWidthTracker.Tracker.Track(RightColumn);
+                columnAWidthTracker.Tracker.Track(LeftColumn);
+                columnBWidthTracker.Tracker.Track(RightColumn);
+            }
         }
 
         protected override void OnSourceInitialized(EventArgs e)

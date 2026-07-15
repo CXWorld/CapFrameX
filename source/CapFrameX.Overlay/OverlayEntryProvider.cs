@@ -686,6 +686,12 @@ namespace CapFrameX.Overlay
                         && _appConfiguration.HookOverlayUsePresentMonFrametimes);
             }
 
+            // Only RTSS and the in-game API hook have a trustworthy render-resolution source.
+            if (entry.Identifier == "Resolution")
+            {
+                entry.IsEntryEnabled = !_appConfiguration.EnableHookFreeOverlay;
+            }
+
             // Return true by default
             return entry.IsEntryEnabled;
         }
@@ -998,6 +1004,14 @@ namespace CapFrameX.Overlay
 
             if (resolution != null && resolution.ShowOnOverlay)
             {
+                // The in-game renderer replaces this placeholder with the hooked swapchain's
+                // backbuffer extent. Querying RTSS here would publish a stale/unrelated value.
+                if (_appConfiguration.EnableHookOverlay)
+                {
+                    resolution.Value = "N/A";
+                    return;
+                }
+
                 // render resolution of the currently active 3D app, read from RTSS shared memory
                 // (same source as the capture file's ResolutionInfo); empty until RTSS measured it
                 var resolutionInfo = _rTSSService.GetResolution(_currentProcessId);

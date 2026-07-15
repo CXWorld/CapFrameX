@@ -13,7 +13,9 @@ namespace CapFrameX.OSD.Integration
     /// block, <c>Global\CfxOsdMetricsV1</c>. The hook (in the game process) opens it read-only and
     /// feeds the entries, so the in-game OSD shows the same values as RTSS / hook-free.
     ///
-    /// Layout is a fixed 32-byte v2 header + up to 64 fixed-size records (no offset math). Updates use a
+    /// Layout is a fixed 32-byte header + up to 64 fixed-size v2 records (no offset math). The final
+    /// four bytes of the existing v2 record are used for the optional group color; legacy readers
+    /// ignore that reserved tail and remain wire-compatible. Updates use a
     /// SEQLOCK: the sequence counter is odd while writing, even when a consistent snapshot is
     /// published; the reader retries/uses-cached on an odd or changed sequence. The block carries a
     /// QPC timestamp for staleness detection. Same permissive SD (Everyone DACL + LOW integrity
@@ -45,7 +47,8 @@ namespace CapFrameX.OSD.Integration
                           RValueText = 224, SzValueText = 64, RUnit = 288, SzUnit = 16,
                           RValue = 304, RUpperLimit = 312, RLowerLimit = 320, RIsNumeric = 328,
                           RColor = 332, RShowGraph = 336, RDigits = 340, RHasUpper = 344,
-                          RUpperColor = 348, RHasLower = 352, RLowerColor = 356, RSeparators = 360;
+                          RUpperColor = 348, RHasLower = 352, RLowerColor = 356, RSeparators = 360,
+                          RGroupColor = 364;
         internal const int RecordSize = 368;
         private const int MapSize = 32768; // > HeaderSize + MaxEntries*RecordSize (23584)
 
@@ -200,6 +203,7 @@ namespace CapFrameX.OSD.Integration
                     Marshal.WriteInt32(rec, RHasLower, e.HasLower ? 1 : 0);
                     Marshal.WriteInt32(rec, RLowerColor, unchecked((int)e.LowerColor));
                     Marshal.WriteInt32(rec, RSeparators, e.Separators);
+                    Marshal.WriteInt32(rec, RGroupColor, unchecked((int)e.GroupColor));
                 }
 
                 Thread.MemoryBarrier();

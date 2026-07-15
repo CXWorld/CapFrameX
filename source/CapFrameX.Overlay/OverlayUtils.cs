@@ -124,7 +124,7 @@ namespace CapFrameX.Overlay
                         IsEntryEnabled = true
                     },
 
-					// Displaytime (MsBetweenDisplayChange). Hook-free OSD only:
+					// Displaytime (MsBetweenDisplayChange). CX renderers only:
 					// RTSS cannot render this graph, so the entry is hidden in RTSS mode.
 					new OverlayEntryWrapper("DisplayTime")
                     {
@@ -240,7 +240,8 @@ namespace CapFrameX.Overlay
                         IsEntryEnabled = true
                     },
 
-                    // Resolution (render resolution of the active 3D app, read from RTSS shared memory)
+                    // Resolution. RTSS reads its shared memory; the in-game API hook substitutes
+                    // the actual backbuffer extent. A hook-free window cannot determine it.
                     new OverlayEntryWrapper("Resolution")
                     {
                         OverlayEntryType = EOverlayEntryType.CX,
@@ -253,7 +254,7 @@ namespace CapFrameX.Overlay
                         ShowGraph = false,
                         ShowGraphIsEnabled = false,
                         Color = string.Empty,
-                        IsEntryEnabled = true
+                        IsEntryEnabled = !appConfiguration.EnableHookFreeOverlay
                     },
 
                     // PC Latency

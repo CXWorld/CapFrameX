@@ -682,13 +682,14 @@ namespace CapFrameX.ViewModel
                 .ObserveOnDispatcher()
                 .Subscribe(ApplyReloadedOverlayEntries);
 
-            // The hook-free toggle gates entries only the hook-free OSD can render (the
-            // Displaytime graph): reload the entry list from config so the item appears/
-            // disappears immediately. Unlike the config switch above this must not wait
-            // for a dictionary tick — those pause while the overlay is inactive, and the
-            // toggle usually gets flipped from the options popup with the overlay off.
+            // Renderer/source changes gate Displaytime and Resolution. Coalesce the two flag
+            // writes made by a radio-button mode switch, then reload immediately even when the
+            // overlay is inactive and therefore produces no dictionary tick.
             _appConfiguration.OnValueChanged
-                .Where(x => x.key == nameof(IAppConfiguration.EnableHookFreeOverlay))
+                .Where(x => x.key == nameof(IAppConfiguration.EnableHookFreeOverlay)
+                         || x.key == nameof(IAppConfiguration.EnableHookOverlay)
+                         || x.key == nameof(IAppConfiguration.HookOverlayUsePresentMonFrametimes))
+                .Throttle(TimeSpan.FromMilliseconds(50))
                 .SelectMany(_ => Observable.FromAsync(() =>
                     Task.Run(() => _overlayEntryProvider.SwitchConfigurationTo(_appConfiguration.OverlayEntryConfigurationFile))))
                 .SelectMany(_ => overlayEntryProvider.GetOverlayEntries(false))

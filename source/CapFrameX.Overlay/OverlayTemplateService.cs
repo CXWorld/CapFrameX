@@ -266,6 +266,7 @@ namespace CapFrameX.Overlay
             // 7. Framerate Section (at the end, with blank line, no graph)
             EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", false);
             EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", true);
+            EnableByIdentifier(entries, "DisplayTime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "Displaytime", true);
 
             EnsureCpuSectionSeparator(entries);
         }

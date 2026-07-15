@@ -52,225 +52,322 @@ namespace CapFrameX
         // Streams per-frame PresentMon frametimes/display-times to the hook (PresentMon graph mode).
         private CapFrameX.OSD.Integration.HookFrametimePublisher _hookFrametimePublisher;
 
-		protected override DependencyObject CreateShell()
+        protected override DependencyObject CreateShell()
         {
-            var shell = Container.Resolve<Shell>();
-            Container.UseInstance<IShell>(shell);
-            return shell;
+            using (StartupPerformanceLogger.Measure("Shell resolution and construction"))
+            {
+                var shell = Container.Resolve<Shell>();
+                Container.UseInstance<IShell>(shell);
+                return shell;
+            }
         }
 
         protected override void InitializeShell()
         {
-            base.InitializeShell();
-            LogAppInfo();
+            using (StartupPerformanceLogger.Measure("Bootstrapper.InitializeShell total"))
+            {
+                using (StartupPerformanceLogger.Measure("Prism base shell initialization"))
+                {
+                    base.InitializeShell();
+                }
 
-            // get config
-            var config = Container.Resolve<IAppConfiguration>();
-            ConfigurationProvider.AppConfiguration = config;
+                using (StartupPerformanceLogger.Measure("Application metadata logging"))
+                {
+                    LogAppInfo();
+                }
 
-            // get path service
-            var pathService = Container.Resolve<IPathService>();
-            PathServiceProvider.PathService = pathService;
+                IAppConfiguration config;
+                using (StartupPerformanceLogger.Measure("Application configuration resolution"))
+                {
+                    config = Container.Resolve<IAppConfiguration>();
+                    ConfigurationProvider.AppConfiguration = config;
+                }
 
-            // get process service
-            ProcessServiceProvider.ProcessService = Container.Resolve<IRTSSService>();
+                using (StartupPerformanceLogger.Measure("Path service resolution"))
+                {
+                    var pathService = Container.Resolve<IPathService>();
+                    PathServiceProvider.PathService = pathService;
+                }
 
-            // CapFrameX.OSD: hook-free DWM/DirectComposition overlay, running in parallel to
-            // RTSS. Scalars come from the same IOverlayEntry[] stream RTSS uses; per-present
-            // frametimes from the capture service. Activates with IsOverlayActiveStream.
-            var osdOverlayService = Container.Resolve<CapFrameX.Contracts.Overlay.IOverlayService>();
-            var osdCaptureService = Container.Resolve<CapFrameX.Capture.Contracts.ICaptureService>();
-            _osdOverlayBridge = new CapFrameX.OSD.Integration.OsdOverlayBridge(
-                osdOverlayService,
-                config, // IAppConfiguration (resolved above) — gates OSD vs RTSS
-                osdCaptureService.FrameDataStream,
-                CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenPresents_INDEX,
-                CapFrameX.PresentMonInterface.PresentMonCaptureService.PresentRuntime_INDEX,
-                CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
-                () => osdCaptureService.CPUStartQPCTimeInMs_Index);
+                IRTSSService rtssService;
+                using (StartupPerformanceLogger.Measure("RTSS service dependency graph initialization"))
+                {
+                    rtssService = Container.Resolve<IRTSSService>();
+                    ProcessServiceProvider.ProcessService = rtssService;
+                }
 
-            // In-game hook overlay: inject cfx_osd_hook.dll into the game CapFrameX already
-            // detected. The PID flows through IRTSSService.ProcessIdStream (IProcessService),
-            // the same stream the overlay/capture pipeline uses — so we address the process
-            // directly, no manual injector. Opt-in via IAppConfiguration.EnableHookOverlay.
-            var rtssService = Container.Resolve<IRTSSService>();
-            _hookOverlayManager = new CapFrameX.OSD.Integration.HookOverlayManager(
-                config,
-                rtssService.ProcessIdStream,
-                osdCaptureService.FrameDataStream,
-                CapFrameX.PresentMonInterface.PresentMonCaptureService.ProcessID_INDEX,
-                CapFrameX.PresentMonInterface.PresentMonCaptureService.PresentRuntime_INDEX);
+                CapFrameX.Contracts.Overlay.IOverlayService osdOverlayService;
+                using (StartupPerformanceLogger.Measure("Overlay service dependency graph initialization"))
+                {
+                    osdOverlayService = Container.Resolve<CapFrameX.Contracts.Overlay.IOverlayService>();
+                }
 
-            // While the in-game hook overlay is on, mirror CapFrameX's processed overlay entries
-            // (fps/lows/sensors/static rows — the same set RTSS/hook-free render) into shared memory
-            // so the injected hook shows authoritative values, not just its local frame ring.
-            _hookMetricsPublisher = new CapFrameX.OSD.Integration.HookMetricsPublisher(
-                osdOverlayService,
-                config,
-                rtssService.ProcessIdStream);
+                CapFrameX.Capture.Contracts.ICaptureService osdCaptureService;
+                using (StartupPerformanceLogger.Measure("Capture service dependency graph initialization"))
+                {
+                    osdCaptureService = Container.Resolve<CapFrameX.Capture.Contracts.ICaptureService>();
+                }
 
-            // Optional PresentMon graph source for the hook: stream the SAME per-frame frametime +
-            // display-time data the hook-free bridge consumes into a shared-memory ring the hook
-            // replays. Active only with EnableHookOverlay + HookOverlayUsePresentMonFrametimes; the
-            // hook otherwise uses its own local present ring (the two sources stay strictly separate).
-            _hookFrametimePublisher = new CapFrameX.OSD.Integration.HookFrametimePublisher(
-                config,
-                osdCaptureService.FrameDataStream,
-                rtssService.ProcessIdStream,
-                CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenPresents_INDEX,
-                CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
-                () => osdCaptureService.CPUStartQPCTimeInMs_Index);
+                // CapFrameX.OSD: hook-free DWM/DirectComposition overlay, running in parallel to
+                // RTSS. Scalars come from the same IOverlayEntry[] stream RTSS uses; per-present
+                // frametimes from the capture service. Activates with IsOverlayActiveStream.
+                using (StartupPerformanceLogger.Measure("OSD overlay bridge initialization"))
+                {
+                    _osdOverlayBridge = new CapFrameX.OSD.Integration.OsdOverlayBridge(
+                        osdOverlayService,
+                        config, // IAppConfiguration (resolved above) — gates OSD vs RTSS
+                        osdCaptureService.FrameDataStream,
+                        CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenPresents_INDEX,
+                        CapFrameX.PresentMonInterface.PresentMonCaptureService.PresentRuntime_INDEX,
+                        CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
+                        () => osdCaptureService.CPUStartQPCTimeInMs_Index);
+                }
 
-            // get Shell to set the hardware acceleration
-            var shell = Container.Resolve<IShell>();
-            shell.IsGpuAccelerationActive = config.IsGpuAccelerationActive;
+                // In-game hook overlay: inject cfx_osd_hook.dll into the game CapFrameX already
+                // detected. The PID flows through IRTSSService.ProcessIdStream (IProcessService),
+                // the same stream the overlay/capture pipeline uses — so we address the process
+                // directly, no manual injector. Opt-in via IAppConfiguration.EnableHookOverlay.
+                using (StartupPerformanceLogger.Measure("Hook overlay manager initialization"))
+                {
+                    _hookOverlayManager = new CapFrameX.OSD.Integration.HookOverlayManager(
+                        config,
+                        rtssService.ProcessIdStream,
+                        osdCaptureService.FrameDataStream,
+                        CapFrameX.PresentMonInterface.PresentMonCaptureService.ProcessID_INDEX,
+                        CapFrameX.PresentMonInterface.PresentMonCaptureService.PresentRuntime_INDEX);
+                }
 
-            Application.Current.MainWindow = (Window)Shell;
+                // While the in-game hook overlay is on, mirror CapFrameX's processed overlay entries
+                // (fps/lows/sensors/static rows — the same set RTSS/hook-free render) into shared memory
+                // so the injected hook shows authoritative values, not just its local frame ring.
+                using (StartupPerformanceLogger.Measure("Hook metrics publisher initialization"))
+                {
+                    _hookMetricsPublisher = new CapFrameX.OSD.Integration.HookMetricsPublisher(
+                        osdOverlayService,
+                        config,
+                        rtssService.ProcessIdStream);
+                }
 
-            // get last tracked WindowState
-            var startupWindowState = Application.Current.MainWindow.WindowState;
+                // Optional PresentMon graph source for the hook: stream the SAME per-frame frametime +
+                // display-time data the hook-free bridge consumes into a shared-memory ring the hook
+                // replays. Active only with EnableHookOverlay + HookOverlayUsePresentMonFrametimes; the
+                // hook otherwise uses its own local present ring (the two sources stay strictly separate).
+                using (StartupPerformanceLogger.Measure("Hook frametime publisher initialization"))
+                {
+                    _hookFrametimePublisher = new CapFrameX.OSD.Integration.HookFrametimePublisher(
+                        config,
+                        osdCaptureService.FrameDataStream,
+                        rtssService.ProcessIdStream,
+                        CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenPresents_INDEX,
+                        CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
+                        () => osdCaptureService.CPUStartQPCTimeInMs_Index);
+                }
 
-            // initial startup with minimized window
-            Application.Current.MainWindow.WindowState = WindowState.Minimized;
-            Application.Current.MainWindow.Show();
+                using (StartupPerformanceLogger.Measure("Shell configuration"))
+                {
+                    var shell = Container.Resolve<IShell>();
+                    shell.IsGpuAccelerationActive = config.IsGpuAccelerationActive;
+                    Application.Current.MainWindow = (Window)Shell;
+                }
 
-            // set window to tray or revert back to last tracked WindowState
-            if (config.StartMinimized)
-                if(config.MinimizeToTray)
-                    Application.Current.MainWindow.Hide();
-                else
+                // get last tracked WindowState
+                var startupWindowState = Application.Current.MainWindow.WindowState;
+
+                // initial startup with minimized window
+                using (StartupPerformanceLogger.Measure("Main window first show"))
+                {
                     Application.Current.MainWindow.WindowState = WindowState.Minimized;
-            else
-                    Application.Current.MainWindow.WindowState = startupWindowState;
+                    Application.Current.MainWindow.Show();
+                }
 
-            LogWindowState();
+                // set window to tray or revert back to last tracked WindowState
+                if (config.StartMinimized)
+                    if(config.MinimizeToTray)
+                        Application.Current.MainWindow.Hide();
+                    else
+                        Application.Current.MainWindow.WindowState = WindowState.Minimized;
+                else
+                        Application.Current.MainWindow.WindowState = startupWindowState;
+
+                LogWindowState();
+            }
         }
 
         protected override void ConfigureContainer()
         {
-            base.ConfigureContainer();
-
-            // Intialize static classes
-            PoweneticsChannelExtensions.Initialize();
-
-			// Vertical components
-			Container.ConfigureSerilogILogger(Log.Logger);
-            Container.Register<IEventAggregator, EventAggregator>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "EventAggregator");
-
-            // Register PathService first - other services depend on it for path resolution
-            Container.Register<IPathService, PathService>(Reuse.Singleton);
-
-            Container.Register<ISettingsStorage, JsonSettingsStorage>(Reuse.Singleton);
-            Container.Register<IAppConfiguration, CapFrameXConfiguration>(Reuse.Singleton);
-            Container.RegisterInstance<IFrametimeStatisticProviderOptions>(Container.Resolve<IAppConfiguration>());
-            Container.RegisterInstance(new ApplicationState(), Reuse.Singleton);
-
-            // Prism
-            Container.Register<IRegionManager, RegionManager>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "RegionManager");
-
-            // Core components
-            Container.Register<IRecordDirectoryObserver, RecordDirectoryObserver>(Reuse.Singleton);
-            Container.Register<IStatisticProvider, FrametimeStatisticProvider>(Reuse.Singleton);
-            Container.Register<IFrametimeAnalyzer, FrametimeAnalyzer>(Reuse.Singleton);
-            Container.Register<ICaptureService, PresentMonCaptureService>(Reuse.Singleton);
-            Container.Register<IRTSSService, RTSSService>(Reuse.Singleton);
-            Container.Register<IOverlayEntryCore, OverlayEntryCore>(Reuse.Singleton);
-            Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
-            Container.Register<IOnlineMetricService, OnlineMetricService>(Reuse.Singleton);
-            Container.Register<ISensorService, SensorService>(Reuse.Singleton);
-            var pathService = Container.Resolve<IPathService>();
-            var sensorConfigFolder = pathService.ConfigFolder;
-            // We don't use a sensor config for new LibreHardwareMonitor based sensor service
-            Container.RegisterInstance<ISensorConfig>(new SensorConfig(sensorConfigFolder), Reuse.Singleton);
-            Container.Register<ISensorEntryProvider, SensorEntryProvider>(Reuse.Singleton);
-            Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
-            Container.Register<IOverlayTemplateService, OverlayTemplateService>(Reuse.Singleton);
-            Container.Register<IRecordManager, RecordManager>(Reuse.Singleton);
-
-            // MCP tools (resolved by McpToolRegistry via reflection-based discovery)
-            Container.Register<RecordTools>(Reuse.Singleton);
-            Container.Register<MetricsTools>(Reuse.Singleton);
-            Container.Register<SensorTools>(Reuse.Singleton);
-            Container.Register<PmdTools>(Reuse.Singleton);
-            Container.Register<ComparisonTools>(Reuse.Singleton);
-            Container.Register<SearchTools>(Reuse.Singleton);
-            Container.Register<BottleneckTools>(Reuse.Singleton);
-            Container.Register<DiagnosticsTools>(Reuse.Singleton);
-            Container.Register<CaptureTimelineTools>(Reuse.Singleton);
-            Container.Register<SystemInfoTools>(Reuse.Singleton);
-            Container.Register<CaptureStatusTools>(Reuse.Singleton);
-            Container.Register<SensorConfigTools>(Reuse.Singleton);
-            Container.Register<OverlayConfigTools>(Reuse.Singleton);
-
-            Container.Register<ISystemInfo, SystemInfo.NetStandard.SystemInfo>(Reuse.Singleton);
-            Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
-            Container.RegisterInstance<IWebVersionProvider>(new WebVersionProvider(), Reuse.Singleton);
-            Container.Register<IUpdateCheck, UpdateCheck>(Reuse.Singleton);
-            Container.Register<ILogEntryManager, LogEntryManager>(Reuse.Singleton);
-            Container.Register<LoginManager>(Reuse.Singleton);
-            Container.Register<ICloudManager, CloudManager>(Reuse.Singleton);
-            var loggerFactory = Container.Resolve<ILoggerFactory>();
-            var loggerProcessList = loggerFactory.CreateLogger<ProcessList>();
-            Container.RegisterInstance(ProcessList.Create(
-                filename: "Processes.json",
-                foldername: pathService.ConfigFolder,
-                appConfiguration: Container.Resolve<IAppConfiguration>(),
-                logger: loggerProcessList));
-            Container.Register<SoundManager>(Reuse.Singleton);
-            Container.Resolve<IEventAggregator>().GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>()
-                .Subscribe(async _ =>
+            using (StartupPerformanceLogger.Measure("Bootstrapper.ConfigureContainer total"))
+            {
+                using (StartupPerformanceLogger.Measure("Prism base container configuration"))
                 {
-                    var loginManager = Container.Resolve<LoginManager>();
-                    await loginManager.HandleRedirect(url => Task.FromResult(Process.Start(url)));
-                });
-            Container.Register<CaptureManager>(Reuse.Singleton);
-            Container.Register<IPoweneticsService, PoweneticsService>(Reuse.Singleton);
-            Container.Register<IPoweneticsDriver, PoweneticsUSBDriver>(Reuse.Singleton);
-            Container.Register<IBenchlabService, BenchlabService>(Reuse.Singleton);
-            Container.Register<IThreadAffinityController, ThreadAffinityController>(Reuse.Singleton);
-		}
+                    base.ConfigureContainer();
+                }
+
+                using (StartupPerformanceLogger.Measure("Powenetics channel initialization"))
+                {
+                    PoweneticsChannelExtensions.Initialize();
+                }
+
+                using (StartupPerformanceLogger.Measure("Logging and event aggregator registration"))
+                {
+                    Container.ConfigureSerilogILogger(Log.Logger);
+                    Container.Register<IEventAggregator, EventAggregator>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "EventAggregator");
+                }
+
+                IPathService pathService;
+                IAppConfiguration appConfiguration;
+                using (StartupPerformanceLogger.Measure("Configuration services registration and initialization"))
+                {
+                    // Register PathService first - other services depend on it for path resolution
+                    Container.Register<IPathService, PathService>(Reuse.Singleton);
+                    Container.Register<ISettingsStorage, JsonSettingsStorage>(Reuse.Singleton);
+                    Container.Register<IAppConfiguration, CapFrameXConfiguration>(Reuse.Singleton);
+
+                    using (StartupPerformanceLogger.Measure("Path service initialization"))
+                    {
+                        pathService = Container.Resolve<IPathService>();
+                    }
+
+                    using (StartupPerformanceLogger.Measure("Settings and application configuration loading"))
+                    {
+                        appConfiguration = Container.Resolve<IAppConfiguration>();
+                    }
+
+                    Container.RegisterInstance<IFrametimeStatisticProviderOptions>(appConfiguration);
+                    Container.RegisterInstance(new ApplicationState(), Reuse.Singleton);
+                }
+
+                using (StartupPerformanceLogger.Measure("Prism and core service registrations"))
+                {
+                    Container.Register<IRegionManager, RegionManager>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "RegionManager");
+                    Container.Register<IRecordDirectoryObserver, RecordDirectoryObserver>(Reuse.Singleton);
+                    Container.Register<IStatisticProvider, FrametimeStatisticProvider>(Reuse.Singleton);
+                    Container.Register<IFrametimeAnalyzer, FrametimeAnalyzer>(Reuse.Singleton);
+                    Container.Register<ICaptureService, PresentMonCaptureService>(Reuse.Singleton);
+                    Container.Register<IRTSSService, RTSSService>(Reuse.Singleton);
+                    Container.Register<IOverlayEntryCore, OverlayEntryCore>(Reuse.Singleton);
+                    Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
+                    Container.Register<IOnlineMetricService, OnlineMetricService>(Reuse.Singleton);
+                    Container.Register<ISensorService, SensorService>(Reuse.Singleton);
+                }
+
+                using (StartupPerformanceLogger.Measure("Sensor and overlay configuration registration"))
+                {
+                    var sensorConfigFolder = pathService.ConfigFolder;
+                    // We don't use a sensor config for new LibreHardwareMonitor based sensor service
+                    Container.RegisterInstance<ISensorConfig>(new SensorConfig(sensorConfigFolder), Reuse.Singleton);
+                    Container.Register<ISensorEntryProvider, SensorEntryProvider>(Reuse.Singleton);
+                    Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
+                    Container.Register<IOverlayTemplateService, OverlayTemplateService>(Reuse.Singleton);
+                    Container.Register<IRecordManager, RecordManager>(Reuse.Singleton);
+                }
+
+                using (StartupPerformanceLogger.Measure("MCP tool registrations"))
+                {
+                    // MCP tools are resolved by McpToolRegistry via reflection-based discovery.
+                    Container.Register<RecordTools>(Reuse.Singleton);
+                    Container.Register<MetricsTools>(Reuse.Singleton);
+                    Container.Register<SensorTools>(Reuse.Singleton);
+                    Container.Register<PmdTools>(Reuse.Singleton);
+                    Container.Register<ComparisonTools>(Reuse.Singleton);
+                    Container.Register<SearchTools>(Reuse.Singleton);
+                    Container.Register<BottleneckTools>(Reuse.Singleton);
+                    Container.Register<DiagnosticsTools>(Reuse.Singleton);
+                    Container.Register<CaptureTimelineTools>(Reuse.Singleton);
+                    Container.Register<SystemInfoTools>(Reuse.Singleton);
+                    Container.Register<CaptureStatusTools>(Reuse.Singleton);
+                    Container.Register<SensorConfigTools>(Reuse.Singleton);
+                    Container.Register<OverlayConfigTools>(Reuse.Singleton);
+                }
+
+                using (StartupPerformanceLogger.Measure("Application service registrations and initialization"))
+                {
+                    Container.Register<ISystemInfo, SystemInfo.NetStandard.SystemInfo>(Reuse.Singleton);
+                    Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
+                    Container.RegisterInstance<IWebVersionProvider>(new WebVersionProvider(), Reuse.Singleton);
+                    Container.Register<IUpdateCheck, UpdateCheck>(Reuse.Singleton);
+                    Container.Register<ILogEntryManager, LogEntryManager>(Reuse.Singleton);
+                    Container.Register<LoginManager>(Reuse.Singleton);
+                    Container.Register<ICloudManager, CloudManager>(Reuse.Singleton);
+
+                    using (StartupPerformanceLogger.Measure("Process list loading"))
+                    {
+                        var loggerFactory = Container.Resolve<ILoggerFactory>();
+                        var loggerProcessList = loggerFactory.CreateLogger<ProcessList>();
+                        Container.RegisterInstance(ProcessList.Create(
+                            filename: "Processes.json",
+                            foldername: pathService.ConfigFolder,
+                            appConfiguration: appConfiguration,
+                            logger: loggerProcessList));
+                    }
+
+                    Container.Register<SoundManager>(Reuse.Singleton);
+
+                    using (StartupPerformanceLogger.Measure("Application event subscriptions"))
+                    {
+                        Container.Resolve<IEventAggregator>().GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>()
+                            .Subscribe(async _ =>
+                            {
+                                var loginManager = Container.Resolve<LoginManager>();
+                                await loginManager.HandleRedirect(url => Task.FromResult(Process.Start(url)));
+                            });
+                    }
+
+                    Container.Register<CaptureManager>(Reuse.Singleton);
+                    Container.Register<IPoweneticsService, PoweneticsService>(Reuse.Singleton);
+                    Container.Register<IPoweneticsDriver, PoweneticsUSBDriver>(Reuse.Singleton);
+                    Container.Register<IBenchlabService, BenchlabService>(Reuse.Singleton);
+                    Container.Register<IThreadAffinityController, ThreadAffinityController>(Reuse.Singleton);
+                }
+            }
+        }
 
         /// <summary>
         /// https://www.c-sharpcorner.com/forums/using-ioc-with-wpf-prism-in-mvvm
         /// </summary>
         protected override void ConfigureViewModelLocator()
         {
-            base.ConfigureViewModelLocator();
-
-            ViewModelLocationProvider.SetDefaultViewTypeToViewModelTypeResolver(viewType =>
+            using (StartupPerformanceLogger.Measure("ViewModel locator configuration"))
             {
-                var viewName = viewType.FullName;
+                base.ConfigureViewModelLocator();
 
-                // Naming convention
-                viewName = viewName.Replace(".View.", ".ViewModel.");
-                viewName = viewName.Replace(".Views.", ".ViewModels.");
-                var viewAssemblyName = viewType.GetTypeInfo().Assembly.FullName;
+                ViewModelLocationProvider.SetDefaultViewTypeToViewModelTypeResolver(viewType =>
+                {
+                    var viewName = viewType.FullName;
 
-                // Saving ViewModels in another assembly.
-                viewAssemblyName = viewAssemblyName.Replace("View", "ViewModel");
-                var suffix = viewName.EndsWith("View", StringComparison.Ordinal) ? "Model" : "ViewModel";
-                var viewModelName = string.Format(CultureInfo.InvariantCulture, "{0}{1}, {2}", viewName, suffix, viewAssemblyName);
-                var t = Type.GetType(viewModelName);
-                return t;
-            });
+                    // Naming convention
+                    viewName = viewName.Replace(".View.", ".ViewModel.");
+                    viewName = viewName.Replace(".Views.", ".ViewModels.");
+                    var viewAssemblyName = viewType.GetTypeInfo().Assembly.FullName;
 
-            ViewModelLocationProvider.SetDefaultViewModelFactory(type => Container.Resolve(type, IfUnresolved.Throw));
+                    // Saving ViewModels in another assembly.
+                    viewAssemblyName = viewAssemblyName.Replace("View", "ViewModel");
+                    var suffix = viewName.EndsWith("View", StringComparison.Ordinal) ? "Model" : "ViewModel";
+                    var viewModelName = string.Format(CultureInfo.InvariantCulture, "{0}{1}, {2}", viewName, suffix, viewAssemblyName);
+                    var t = Type.GetType(viewModelName);
+                    return t;
+                });
+
+                ViewModelLocationProvider.SetDefaultViewModelFactory(type => Container.Resolve(type, IfUnresolved.Throw));
+            }
         }
 
         protected override void ConfigureModuleCatalog()
         {
-            base.ConfigureModuleCatalog();
+            using (StartupPerformanceLogger.Measure("Module catalog configuration"))
+            {
+                base.ConfigureModuleCatalog();
 
-            ModuleCatalog moduleCatalog = (ModuleCatalog)ModuleCatalog;
-            moduleCatalog.AddModule(typeof(CapFrameXViewRegion));
+                ModuleCatalog moduleCatalog = (ModuleCatalog)ModuleCatalog;
+                moduleCatalog.AddModule(typeof(CapFrameXViewRegion));
+            }
         }
 
         private void LogAppInfo()
         {
             var loggerFactory = Container.Resolve<ILoggerFactory>();
             var version = Container.Resolve<IAppVersionProvider>().GetAppVersion().ToString();
-            var atomicTime = AtomicTime.Now.TimeOfDay;
-            loggerFactory.CreateLogger<ILogger<Bootstrapper>>().LogInformation("CapFrameX {version} started at UTC {atomicTime}", version, atomicTime);
+            var utcTime = DateTime.UtcNow.TimeOfDay;
+            loggerFactory.CreateLogger<ILogger<Bootstrapper>>().LogInformation("CapFrameX {version} started at UTC {utcTime}", version, utcTime);
         }
 
         private void LogWindowState()

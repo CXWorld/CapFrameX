@@ -62,7 +62,7 @@
   <ItemGroup Condition="'$(CfxOsdHookDllPath)' != ''">
     <Content Include="$(CfxOsdHookDllPath)">
       <Link>hook\cfx_osd_hook.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
@@ -78,13 +78,13 @@
   <ItemGroup Condition="'$(CfxOsdHookDllX86Path)' != ''">
     <Content Include="$(CfxOsdHookDllX86Path)">
       <Link>hook\x86\cfx_osd_hook.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup Condition="'$(CfxOsdInjectX86Path)' != ''">
     <Content Include="$(CfxOsdInjectX86Path)">
       <Link>hook\x86\cfx_inject.exe</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
@@ -100,7 +100,7 @@
   <ItemGroup Condition="'$(CfxOsdVulkanDllPath)' != ''">
     <Content Include="$(CfxOsdVulkanDllPath)">
       <Link>vulkan\cfx_osd_vklayer.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup Condition="'$(CfxOsdVulkanManifestPath)' != ''">

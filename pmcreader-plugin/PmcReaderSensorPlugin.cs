@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading;
 using System.Threading.Tasks;
 using LibreHardwareMonitor.Hardware;
 
@@ -174,6 +175,7 @@ namespace CapFrameX.PmcReader.Plugin
         private MonitoringConfig _dramConfig;
         private List<ISensorEntry> _ccxL3HitRateEntries;
         private List<ISensorEntry> _ccxDramLatencyEntries;
+        private IDisposable _updateIntervalSubscription;
         private bool _disposed;
 
         // Gaming config (Arrow Lake, Alder Lake, Raptor Lake)
@@ -194,9 +196,24 @@ namespace CapFrameX.PmcReader.Plugin
 
         public async Task InitializeAsync(IObservable<TimeSpan> updateIntervalStream)
         {
-            TryInitializeMonitoring();
+            if (updateIntervalStream == null)
+                throw new ArgumentNullException(nameof(updateIntervalStream));
+            if (_disposed)
+                throw new ObjectDisposedException(nameof(PmcReaderSensorPlugin));
 
-            updateIntervalStream.Subscribe(_updateIntervalSubject);
+            // PMC discovery performs blocking WMI/native calls and changes the current thread's
+            // affinity while configuring counters. A dedicated thread keeps both costs completely
+            // outside the UI thread and prevents a ThreadPool thread from retaining that affinity.
+            await Task.Factory.StartNew(
+                TryInitializeMonitoring,
+                CancellationToken.None,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default).ConfigureAwait(false);
+
+            if (_disposed)
+                return;
+
+            _updateIntervalSubscription = updateIntervalStream.Subscribe(_updateIntervalSubject);
 
             SensorSnapshotStream = _updateIntervalSubject
                 .Select(timespan => Observable.Interval(timespan).StartWith(0L))
@@ -204,8 +221,6 @@ namespace CapFrameX.PmcReader.Plugin
                 .Select(_ => CaptureSnapshot())
                 .Publish()
                 .RefCount();
-
-            await Task.CompletedTask;
         }
 
         public Task<IEnumerable<ISensorEntry>> GetSensorEntriesAsync()
@@ -253,6 +268,7 @@ namespace CapFrameX.PmcReader.Plugin
                 return;
 
             _disposed = true;
+            _updateIntervalSubscription?.Dispose();
             _updateIntervalSubject.Dispose();
             PmcReaderInterop.Close();
         }

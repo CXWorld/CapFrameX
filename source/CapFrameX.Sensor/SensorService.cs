@@ -32,9 +32,9 @@ namespace CapFrameX.Sensor
         private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<SensorService> _logger;
         private readonly IDisposable _logDisposable;
+        private readonly Task<IPmcReaderSensorPlugin> _pmcReaderInitializationTask;
 
         private Computer _computer;
-        private IPmcReaderSensorPlugin _pmcReaderPlugin;
         private SessionSensorDataLive _sessionSensorDataLive;
         private bool _isLoggingActive = false;
         private bool _isServiceAlive = true;
@@ -107,7 +107,8 @@ namespace CapFrameX.Sensor
                .Where((_, idx) => idx == 0 || IsOverlayActive || (_isLoggingActive && UseSensorLogging) || IsSensorWebsocketActive())
                .SelectMany(_ => GetTimeStampedSensorValues());
 
-            var pluginSensorStream = InitializePmcReaderPlugin()
+            _pmcReaderInitializationTask = InitializePmcReaderPluginAsync();
+            var pluginSensorStream = CreatePmcReaderSensorStream()
                 .Where(_ => _isServiceAlive)
                 .Where(_ => IsOverlayActive || (_isLoggingActive && UseSensorLogging) || IsSensorWebsocketActive());
 
@@ -285,9 +286,10 @@ namespace CapFrameX.Sensor
                     }
                 }
 
-                if (_pmcReaderPlugin != null)
+                var pmcReaderPlugin = await _pmcReaderInitializationTask.ConfigureAwait(false);
+                if (pmcReaderPlugin != null)
                 {
-                    var pluginEntries = await _pmcReaderPlugin.GetSensorEntriesAsync();
+                    var pluginEntries = await pmcReaderPlugin.GetSensorEntriesAsync().ConfigureAwait(false);
                     if (pluginEntries != null)
                         entries.AddRange(pluginEntries);
                 }
@@ -364,25 +366,47 @@ namespace CapFrameX.Sensor
             return (DateTime.UtcNow, dict.ToDictionary(x => x.Key, x => x.Value));
         }
 
-        private IObservable<(DateTime, Dictionary<ISensorEntry, float>)> InitializePmcReaderPlugin()
+        private IObservable<(DateTime, Dictionary<ISensorEntry, float>)> CreatePmcReaderSensorStream()
         {
-            _pmcReaderPlugin = TryLoadPmcReaderPlugin();
-            if (_pmcReaderPlugin == null)
-                return Observable.Empty<(DateTime, Dictionary<ISensorEntry, float>)>();
+            return Observable.FromAsync(() => _pmcReaderInitializationTask)
+                .SelectMany(plugin => plugin?.SensorSnapshotStream
+                    ?? Observable.Empty<(DateTime, Dictionary<ISensorEntry, float>)>());
+        }
+
+        private async Task<IPmcReaderSensorPlugin> InitializePmcReaderPluginAsync()
+        {
+#if DEBUG
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+#endif
+            // Assembly loading and plugin construction can execute arbitrary plugin code, so they
+            // belong to the asynchronous setup path as well as the expensive hardware discovery.
+            var plugin = await Task.Run(() => TryLoadPmcReaderPlugin()).ConfigureAwait(false);
+            if (plugin == null)
+                return null;
 
             try
             {
-                _pmcReaderPlugin.InitializeAsync(_sensorUpdateSubject.AsObservable())
-                    .ConfigureAwait(false);
+                await plugin.InitializeAsync(_sensorUpdateSubject.AsObservable()).ConfigureAwait(false);
+#if DEBUG
+                stopwatch.Stop();
+                _logger.LogDebug("PmcReader plugin setup completed asynchronously in {elapsedMilliseconds:F2} ms.",
+                    stopwatch.Elapsed.TotalMilliseconds);
+#endif
+                return plugin;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to initialize PmcReader plugin.");
-                return Observable.Empty<(DateTime, Dictionary<ISensorEntry, float>)>();
+                try
+                {
+                    plugin.Dispose();
+                }
+                catch
+                {
+                    // Preserve the initialization exception; teardown is best-effort here.
+                }
+                return null;
             }
-
-            return _pmcReaderPlugin.SensorSnapshotStream
-                ?? Observable.Empty<(DateTime, Dictionary<ISensorEntry, float>)>();
         }
 
         private IPmcReaderSensorPlugin TryLoadPmcReaderPlugin()
@@ -568,6 +592,24 @@ namespace CapFrameX.Sensor
         {
             _isServiceAlive = false;
             _logDisposable?.Dispose();
+
+            // Initialization may still be running when the application closes. Dispose the plugin
+            // on the default scheduler once that one-time task finishes without blocking shutdown.
+            _ = _pmcReaderInitializationTask.ContinueWith(
+                task =>
+                {
+                    try
+                    {
+                        task.Result?.Dispose();
+                    }
+                    catch
+                    {
+                        // Ignore teardown exceptions during shutdown.
+                    }
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnRanToCompletion,
+                TaskScheduler.Default);
 
             // Close the LibreHardwareMonitor computer on a background thread bounded by a timeout.
             // Vendor GPU libraries (AMD ADLX, Intel IGCL) tear down COM objects in Computer.Close();

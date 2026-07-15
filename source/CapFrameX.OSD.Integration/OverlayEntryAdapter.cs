@@ -15,7 +15,11 @@ namespace CapFrameX.OSD.Integration
     /// </summary>
     public static class OverlayEntryAdapter
     {
-        public static List<OsdEntry> ToOsdEntries(IEnumerable<IOverlayEntry> entries)
+        public static List<OsdEntry> ToOsdEntries(IEnumerable<IOverlayEntry> entries,
+            bool showRunHistory = false,
+            IReadOnlyList<string> runHistory = null,
+            IReadOnlyList<bool> runHistoryOutlierFlags = null,
+            string runHistoryAggregation = null)
         {
             var list = new List<OsdEntry>();
             if (entries == null) return list;
@@ -24,6 +28,17 @@ namespace CapFrameX.OSD.Integration
             {
                 if (e == null || !e.ShowOnOverlay || !e.IsEntryEnabled) continue;
 
+                // RTSS expands this placeholder from its own run-history state. The CX renderers
+                // receive that state explicitly and create one real row per configured run, so an
+                // inactive history never leaks an otherwise empty "Run history" group.
+                if (e.Identifier == "RunHistory")
+                {
+                    if (showRunHistory)
+                        AddRunHistoryEntries(list, e, runHistory, runHistoryOutlierFlags,
+                            runHistoryAggregation);
+                    continue;
+                }
+
                 var o = new OsdEntry
                 {
                     Identifier = e.Identifier,
@@ -31,6 +46,7 @@ namespace CapFrameX.OSD.Integration
                     Label = string.IsNullOrEmpty(e.Description) ? e.Identifier : e.Description,
                     Unit = ExtractUnit(e.ValueUnitFormat),
                     Color = OsdColor.FromCapFrameXHex(e.Color),
+                    GroupColor = OsdColor.FromCapFrameXHex(e.GroupColor),
                     ShowGraph = e.ShowGraph,
                     Digits = ExtractDigits(e.ValueAlignmentAndDigits),
                     Separators = e.GroupSeparators,
@@ -92,6 +108,47 @@ namespace CapFrameX.OSD.Integration
                 list.Add(o);
             }
             return list;
+        }
+
+        private static void AddRunHistoryEntries(List<OsdEntry> list, IOverlayEntry template,
+            IReadOnlyList<string> runHistory, IReadOnlyList<bool> outlierFlags,
+            string aggregation)
+        {
+            if (runHistory == null) return;
+
+            uint valueColor = OsdColor.FromCapFrameXHex(template.Color);
+            uint groupColor = OsdColor.FromCapFrameXHex(template.GroupColor);
+            uint outlierColor = OsdColor.FromCapFrameXHex(template.LowerLimitColor, 0xC80000FFu);
+
+            for (int i = 0; i < runHistory.Count; i++)
+            {
+                bool isOutlier = outlierFlags != null && i < outlierFlags.Count && outlierFlags[i];
+                list.Add(new OsdEntry
+                {
+                    Identifier = $"RunHistory.{i + 1}",
+                    Group = $"Run {i + 1}:",
+                    Label = template.Description ?? "Run history",
+                    ValueText = string.IsNullOrEmpty(runHistory[i]) ? "N/A" : runHistory[i],
+                    IsNumeric = false,
+                    Color = isOutlier ? outlierColor : valueColor,
+                    GroupColor = groupColor,
+                    Separators = i == 0 ? template.GroupSeparators : 0
+                });
+            }
+
+            if (!string.IsNullOrWhiteSpace(aggregation))
+            {
+                list.Add(new OsdEntry
+                {
+                    Identifier = "RunHistory.Result",
+                    Group = "Result:",
+                    Label = template.Description ?? "Run history",
+                    ValueText = aggregation,
+                    IsNumeric = false,
+                    Color = valueColor,
+                    GroupColor = groupColor
+                });
+            }
         }
 
         private static bool TryToDouble(object value, out double result)
