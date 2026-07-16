@@ -272,4 +272,5 @@ nul
 
 # Crash reports
 crash-report/
+/memory-dumps/
 /pmcreader-plugin/Zen5Log.txt

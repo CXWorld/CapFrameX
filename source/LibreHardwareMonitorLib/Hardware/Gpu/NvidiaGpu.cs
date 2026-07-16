@@ -660,7 +660,8 @@ internal sealed class NvidiaGpu : GenericGpu
 
         float? directHotSpot = null;
         float? directHotSpot2 = null;
-        bool hasDirectThermalData = _nvidiaThermal?.TryRead(out directHotSpot, out directHotSpot2) == true;
+        bool hasDirectThermalData = ShouldEvaluateDirectThermalSensors() &&
+            _nvidiaThermal.TryRead(out directHotSpot, out directHotSpot2);
         if (hasDirectThermalData)
             _hotSpotTemperature.Value = directHotSpot;
         else if (_nvidiaThermal != null && Name.StartsWith("NVIDIA GeForce RTX 50", StringComparison.OrdinalIgnoreCase))
@@ -1006,6 +1007,22 @@ internal sealed class NvidiaGpu : GenericGpu
         //}
 
         return false;
+    }
+
+    private bool ShouldEvaluateDirectThermalSensors()
+    {
+        if (_nvidiaThermal == null)
+            return false;
+
+        if (_sensorConfig == null)
+            return true;
+
+        // Evaluate both identifiers without short-circuiting. GetSensorEvaluate permits the
+        // initial discovery read; NeedsInitialSample keeps the asynchronous reader eligible until
+        // that result has been consumed. Afterwards, polling requires logging or overlay usage.
+        bool evaluateHotSpot = _sensorConfig.GetSensorEvaluate(_hotSpotTemperature.Identifier.ToString());
+        bool evaluateHotSpot2 = _sensorConfig.GetSensorEvaluate(_hotSpotTemperature2.Identifier.ToString());
+        return _nvidiaThermal.NeedsInitialSample || evaluateHotSpot || evaluateHotSpot2;
     }
 
     private bool ShouldEvaluateAnyPowerSensor()

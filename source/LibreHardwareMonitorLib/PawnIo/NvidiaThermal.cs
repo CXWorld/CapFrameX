@@ -35,6 +35,7 @@ internal sealed class NvidiaThermal
     private int _consecutiveFailures;
     private bool _disabled;
     private bool _hasCachedData;
+    private bool _hasDeliveredData;
     private bool _readInProgress;
     private bool _readPending;
     private long _readStartedTimestamp;
@@ -54,6 +55,17 @@ internal sealed class NvidiaThermal
                 Name = $"NVIDIA thermal reader {_deviceAddress}"
             };
             _worker.Start();
+        }
+    }
+
+    public bool NeedsInitialSample
+    {
+        get
+        {
+            lock (_sync)
+            {
+                return _worker != null && !_closeRequested && !_disabled && !_hasDeliveredData;
+            }
         }
     }
 
@@ -88,6 +100,7 @@ internal sealed class NvidiaThermal
             {
                 hotSpot = _cachedHotSpot;
                 hotSpot2 = _cachedHotSpot2;
+                _hasDeliveredData = true;
             }
             else
             {

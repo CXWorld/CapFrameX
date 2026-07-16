@@ -9,10 +9,11 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using CapFrameX.Monitoring.Contracts;
+using LibreHardwareMonitor.Interop;
 using Windows.Win32;
 using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.System.Ioctl;
-using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
@@ -25,6 +26,7 @@ public abstract class AbstractStorage : Hardware
     private readonly PerformanceValue _perfWrite = new();
     private readonly StorageInfo _storageInfo;
 
+    private ISensorConfig _sensorConfig;
     private long _lastReadCount;
     private long _lastTime;
     private long _lastWriteCount;
@@ -71,6 +73,11 @@ public abstract class AbstractStorage : Hardware
     public override HardwareType HardwareType => HardwareType.Storage;
 
     public int Index { get; }
+
+    internal void SetSensorConfig(ISensorConfig sensorConfig)
+    {
+        _sensorConfig = sensorConfig;
+    }
 
     /// <inheritdoc />
     public override void Close()
@@ -162,7 +169,7 @@ public abstract class AbstractStorage : Hardware
     public override void Update()
     {
         // Update statistics.
-        if (_storageInfo != null)
+        if (_storageInfo != null && ShouldEvaluatePerformanceSensors())
         {
             try
             {
@@ -174,9 +181,10 @@ public abstract class AbstractStorage : Hardware
             }
         }
 
-        UpdateSensors();
+        if (ShouldEvaluateDeviceSensors())
+            UpdateSensors();
 
-        if (_usageSensor != null)
+        if (_usageSensor != null && ShouldEvaluateSensor(_usageSensor))
         {
             long totalSize = 0;
             long totalFreeSpace = 0;
@@ -202,6 +210,56 @@ public abstract class AbstractStorage : Hardware
             else
                 _usageSensor.Value = null;
         }
+    }
+
+    private bool ShouldEvaluateDeviceSensors()
+    {
+        if (_sensorConfig == null)
+            return true;
+
+        bool evaluate = false;
+
+        // Evaluate every identifier without short-circuiting. GetSensorEvaluate deliberately
+        // returns true once for discovery, so short-circuiting would spread discovery over
+        // several ticks and issue one unnecessary SMART request per sensor.
+        foreach (ISensor sensor in _active)
+        {
+            if (IsBaseSensor(sensor))
+                continue;
+
+            evaluate |= _sensorConfig.GetSensorEvaluate(sensor.Identifier.ToString());
+        }
+
+        return evaluate;
+    }
+
+    private bool ShouldEvaluatePerformanceSensors()
+    {
+        if (_sensorConfig == null)
+            return true;
+
+        bool evaluate = false;
+        evaluate |= ShouldEvaluateSensor(_sensorDiskReadActivity);
+        evaluate |= ShouldEvaluateSensor(_sensorDiskWriteActivity);
+        evaluate |= ShouldEvaluateSensor(_sensorDiskTotalActivity);
+        evaluate |= ShouldEvaluateSensor(_sensorDiskReadRate);
+        evaluate |= ShouldEvaluateSensor(_sensorDiskWriteRate);
+        return evaluate;
+    }
+
+    private bool ShouldEvaluateSensor(ISensor sensor)
+    {
+        return sensor != null && (_sensorConfig == null || _sensorConfig.GetSensorEvaluate(sensor.Identifier.ToString()));
+    }
+
+    private bool IsBaseSensor(ISensor sensor)
+    {
+        return ReferenceEquals(sensor, _usageSensor) ||
+               ReferenceEquals(sensor, _sensorDiskReadActivity) ||
+               ReferenceEquals(sensor, _sensorDiskWriteActivity) ||
+               ReferenceEquals(sensor, _sensorDiskTotalActivity) ||
+               ReferenceEquals(sensor, _sensorDiskReadRate) ||
+               ReferenceEquals(sensor, _sensorDiskWriteRate);
     }
 
     private unsafe void UpdatePerformanceSensors()

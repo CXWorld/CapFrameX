@@ -31,7 +31,7 @@ public sealed class NVMeGeneric : AbstractStorage
 
     private static NVMeInfo GetDeviceInfo(StorageInfo storageInfo)
     {
-        var smart = new NVMeSmart(storageInfo);
+        using var smart = new NVMeSmart(storageInfo, enableHealthReader: false);
         return smart.GetInfo();
     }
 
@@ -43,7 +43,7 @@ public sealed class NVMeGeneric : AbstractStorage
 
     protected override void CreateSensors()
     {
-        NVMeHealthInfo log = Smart.GetHealthInfo();
+        NVMeHealthInfo log = Smart.GetInitialHealthInfo();
         if (log != null)
         {
             AddSensor("Temperature", 0, false, SensorType.Temperature, health => health.Temperature, $"{Index}_1_0");
@@ -87,8 +87,8 @@ public sealed class NVMeGeneric : AbstractStorage
 
     protected override void UpdateSensors()
     {
-        NVMeHealthInfo health = Smart.GetHealthInfo();
-        if (health == null)
+        Smart.RequestHealthInfo();
+        if (!Smart.TryGetHealthInfo(out NVMeHealthInfo health, out _))
             return;
 
         foreach (NVMeSensor sensor in _sensors)
@@ -110,9 +110,11 @@ public sealed class NVMeGeneric : AbstractStorage
         r.AppendLine("Controller ID: " + _info.ControllerId);
         r.AppendLine("Number of Namespaces: " + _info.NumberNamespaces);
 
-        NVMeHealthInfo health = Smart.GetHealthInfo();
-        if (health == null)
+        Smart.RequestHealthInfo();
+        if (!Smart.TryGetHealthInfo(out NVMeHealthInfo health, out System.TimeSpan age))
             return;
+
+        r.AppendLine("Health Data Age: " + age.TotalSeconds.ToString("F1") + " seconds");
 
         r.AppendLine("Temperature: " + health.Temperature + " Celsius");
         r.AppendLine("Available Spare: " + health.AvailableSpare + "%");

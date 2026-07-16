@@ -27,6 +27,7 @@ namespace CapFrameX.Sensor
     {
         private GpuSensorCache _gpuSensorCache;
         private readonly object _lockComputer = new object();
+        private readonly object _lockSensorUpdate = new object();
         private readonly ISensorConfig _sensorConfig;
         private readonly IRTSSService _rTSSService;
         private readonly IAppConfiguration _appConfiguration;
@@ -454,20 +455,31 @@ namespace CapFrameX.Sensor
         {
             List<ISensor> sensors;
             GpuSensorCache gpuCache;
+            List<IHardware> hardware;
 
-            lock (_lockComputer)
+            lock (_lockSensorUpdate)
             {
-                // Update + collect sensors in a single pass; materialize under lock.
+                // Only protect the mutable Computer graph while taking a snapshot. Vendor and
+                // driver I/O must not run while holding _lockComputer, otherwise one stalled
+                // device blocks unrelated metadata/UI access and shutdown coordination.
+                lock (_lockComputer)
+                {
+                    hardware = _computer?.Hardware?.ToList() ?? new List<IHardware>();
+                }
+
                 sensors = new List<ISensor>(capacity: 1024);
 
-                foreach (var hw in _computer.Hardware)
+                foreach (var hw in hardware)
                 {
                     hw.Update();
                     CollectSensors(hw, sensors);
                 }
 
-                // Cache GPU count + GPU sensors once
-                gpuCache = GetOrBuildGpuCacheLocked();
+                lock (_lockComputer)
+                {
+                    // Cache GPU count + GPU sensors once while the Computer graph is stable.
+                    gpuCache = GetOrBuildGpuCacheLocked();
+                }
             }
 
             var selectedAdapter = _appConfiguration.GraphicsAdapter;
@@ -621,9 +633,12 @@ namespace CapFrameX.Sensor
             {
                 try
                 {
-                    lock (_lockComputer)
+                    lock (_lockSensorUpdate)
                     {
-                        _computer?.Close();
+                        lock (_lockComputer)
+                        {
+                            _computer?.Close();
+                        }
                     }
                 }
                 catch

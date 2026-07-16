@@ -339,7 +339,7 @@ public class Computer : IComputer
             if (_open && value != _storageEnabled)
             {
                 if (value)
-                    Add(new StorageGroup(_settings));
+                    Add(new StorageGroup(_settings, _sensorConfig));
                 else
                     RemoveType<StorageGroup>();
             }
@@ -599,7 +599,7 @@ public class Computer : IComputer
         }
 
         if (_storageEnabled)
-            Add(new StorageGroup(_settings));
+            Add(new StorageGroup(_settings, _sensorConfig));
 
         if (_networkEnabled)
             Add(new NetworkGroup(_settings));

@@ -90,6 +90,8 @@
     <Compile Include="PMD\OfflineDataProcessingTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sensor\ComputerTest.cs" />
+    <Compile Include="Sensor\NVMeSmartWorkerTest.cs" />
+    <Compile Include="Sensor\StoragePollingSelectionTest.cs" />
     <Compile Include="Sensor\IntelOobmsmPlatformTest.cs" />
     <Compile Include="Sensor\OverlayConfigMigrationNvAmdTest.cs" />
     <Compile Include="Sensor\OverlayConfigMigrationIntelIntelTest.cs" />
