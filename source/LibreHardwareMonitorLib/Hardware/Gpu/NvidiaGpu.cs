@@ -65,7 +65,6 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor _gpuSharedMemoryUsage;
     private readonly NvApi.NvPhysicalGpuHandle _handle;
     private readonly Sensor _hotSpotTemperature;
-    private readonly Sensor _hotSpotTemperature2;
     private readonly Sensor[] _loads;
     private readonly Sensor _memoryFree;
     private readonly Sensor _memoryJunctionTemperature;
@@ -143,8 +142,6 @@ internal sealed class NvidiaGpu : GenericGpu
         { PresentationSortKey = $"{adapterIndex}_2_0_{thermalSettings.Count + 1}" };
         _memoryJunctionTemperature = new Sensor("GPU Memory Junction", (int)thermalSettings.Count + 2, SensorType.Temperature, this, settings)
         { PresentationSortKey = $"{adapterIndex}_2_0_{thermalSettings.Count + 2}" };
-        _hotSpotTemperature2 = new Sensor("GPU Hot Spot 2", (int)thermalSettings.Count + 3, SensorType.Temperature, this, settings)
-        { PresentationSortKey = $"{adapterIndex}_2_0_{thermalSettings.Count + 3}" };
         bool hasAnyThermalSensor = false;
 
         for (int thermalSensorsMaxBit = 0; thermalSensorsMaxBit < 32; thermalSensorsMaxBit++)
@@ -659,14 +656,12 @@ internal sealed class NvidiaGpu : GenericGpu
         }
 
         float? directHotSpot = null;
-        float? directHotSpot2 = null;
-        bool hasDirectThermalData = ShouldEvaluateDirectThermalSensors() &&
-            _nvidiaThermal.TryRead(out directHotSpot, out directHotSpot2);
+        bool hasDirectThermalData = ShouldEvaluateDirectThermalSensor() &&
+            _nvidiaThermal.TryRead(out directHotSpot);
         if (hasDirectThermalData)
             _hotSpotTemperature.Value = directHotSpot;
         else if (_nvidiaThermal != null && Name.StartsWith("NVIDIA GeForce RTX 50", StringComparison.OrdinalIgnoreCase))
             _hotSpotTemperature.Value = null;
-        _hotSpotTemperature2.Value = hasDirectThermalData ? directHotSpot2 : null;
 
         if (_thermalSensorsMask > 0)
         {
@@ -704,9 +699,6 @@ internal sealed class NvidiaGpu : GenericGpu
 
         if (_hotSpotTemperature.Value is > 0)
             ActivateSensor(_hotSpotTemperature);
-
-        if (_hotSpotTemperature2.Value is > 0)
-            ActivateSensor(_hotSpotTemperature2);
 
         if (_memoryJunctionTemperature.Value is > 0)
             ActivateSensor(_memoryJunctionTemperature);
@@ -1009,7 +1001,7 @@ internal sealed class NvidiaGpu : GenericGpu
         return false;
     }
 
-    private bool ShouldEvaluateDirectThermalSensors()
+    private bool ShouldEvaluateDirectThermalSensor()
     {
         if (_nvidiaThermal == null)
             return false;
@@ -1017,12 +1009,11 @@ internal sealed class NvidiaGpu : GenericGpu
         if (_sensorConfig == null)
             return true;
 
-        // Evaluate both identifiers without short-circuiting. GetSensorEvaluate permits the
-        // initial discovery read; NeedsInitialSample keeps the asynchronous reader eligible until
-        // that result has been consumed. Afterwards, polling requires logging or overlay usage.
+        // GetSensorEvaluate permits the initial discovery read; NeedsInitialSample keeps the
+        // asynchronous reader eligible until a valid result has been consumed. Afterwards,
+        // polling requires logging or overlay usage.
         bool evaluateHotSpot = _sensorConfig.GetSensorEvaluate(_hotSpotTemperature.Identifier.ToString());
-        bool evaluateHotSpot2 = _sensorConfig.GetSensorEvaluate(_hotSpotTemperature2.Identifier.ToString());
-        return _nvidiaThermal.NeedsInitialSample || evaluateHotSpot || evaluateHotSpot2;
+        return _nvidiaThermal.NeedsInitialSample || evaluateHotSpot;
     }
 
     private bool ShouldEvaluateAnyPowerSensor()

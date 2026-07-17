@@ -9,10 +9,9 @@ internal sealed class NvidiaThermal
 {
     private const int CacheLifetimeMilliseconds = 5000;
     private const int HotSpotIndex = 0;
-    private const int HotSpot2Index = 1;
     private const int MaxConsecutiveFailures = 3;
-    private const int OutputLength = 2;
     private const int ReadTimeoutMilliseconds = 1000;
+    private const int ThermalChannelCount = 6;
     private const string ReadThermalRegisters = "ioctl_read_thermal_registers";
 
     private static readonly long CacheLifetimeTicks = MillisecondsToStopwatchTicks(CacheLifetimeMilliseconds);
@@ -20,7 +19,7 @@ internal sealed class NvidiaThermal
 
     private readonly string _deviceAddress;
     private readonly long[] _input = new long[3];
-    private readonly long[] _output = new long[OutputLength];
+    private readonly long[] _output = new long[ThermalChannelCount];
     private readonly PawnIo _pawnIo = PawnIo.LoadModuleFromResource(
         typeof(NvidiaThermal).Assembly,
         $"{nameof(LibreHardwareMonitor)}.Resources.PawnIO.Nvidia.bin");
@@ -29,7 +28,6 @@ internal sealed class NvidiaThermal
     private readonly Thread _worker;
 
     private float? _cachedHotSpot;
-    private float? _cachedHotSpot2;
     private long _cacheTimestamp;
     private bool _closeRequested;
     private int _consecutiveFailures;
@@ -69,10 +67,9 @@ internal sealed class NvidiaThermal
         }
     }
 
-    public bool TryRead(out float? hotSpot, out float? hotSpot2)
+    public bool TryRead(out float? hotSpot)
     {
         hotSpot = null;
-        hotSpot2 = null;
 
         bool requestRead = false;
         bool timedOut = false;
@@ -99,8 +96,8 @@ internal sealed class NvidiaThermal
             if (hasData)
             {
                 hotSpot = _cachedHotSpot;
-                hotSpot2 = _cachedHotSpot2;
-                _hasDeliveredData = true;
+                if (hotSpot.HasValue)
+                    _hasDeliveredData = true;
             }
             else
             {
@@ -145,12 +142,11 @@ internal sealed class NvidiaThermal
 
     private static float? DecodeTemperature(long raw)
     {
-        uint value = (uint)raw;
-        uint whole = (value >> 8) & 0xFF;
-        if (whole is 0 or 0xFF)
+        uint value = unchecked((uint)raw);
+        if ((value & (1u << 30)) == 0)
             return null;
 
-        return whole + (value & 0xFF) / 32.0f;
+        return (value & 0xFFFF) / 256.0f;
     }
 
     private static bool HasElapsed(long now, long start, long duration) => now - start >= duration;
@@ -182,7 +178,7 @@ internal sealed class NvidiaThermal
                     _readStartedTimestamp = Stopwatch.GetTimestamp();
                 }
 
-                bool success = TryReadHardware(out float? hotSpot, out float? hotSpot2);
+                bool success = TryReadHardware(out float? hotSpot);
                 bool disableAfterFailures = false;
                 bool closeRequested;
 
@@ -194,7 +190,6 @@ internal sealed class NvidiaThermal
                     if (success && !_disabled && !_closeRequested)
                     {
                         _cachedHotSpot = hotSpot;
-                        _cachedHotSpot2 = hotSpot2;
                         _cacheTimestamp = Stopwatch.GetTimestamp();
                         _consecutiveFailures = 0;
                         _hasCachedData = true;
@@ -231,20 +226,18 @@ internal sealed class NvidiaThermal
         }
     }
 
-    private bool TryReadHardware(out float? hotSpot, out float? hotSpot2)
+    private bool TryReadHardware(out float? hotSpot)
     {
         hotSpot = null;
-        hotSpot2 = null;
 
         try
         {
-            int hr = _pawnIo.ExecuteHr(ReadThermalRegisters, _input, 3, _output, OutputLength, out uint returnSize);
-            if (hr != 0 || returnSize < OutputLength)
+            int hr = _pawnIo.ExecuteHr(ReadThermalRegisters, _input, 3, _output, ThermalChannelCount, out uint returnSize);
+            if (hr != 0 || returnSize != ThermalChannelCount)
                 return false;
 
             hotSpot = DecodeTemperature(_output[HotSpotIndex]);
-            hotSpot2 = DecodeTemperature(_output[HotSpot2Index]);
-            return hotSpot.HasValue || hotSpot2.HasValue;
+            return true;
         }
         catch (Exception ex)
         {

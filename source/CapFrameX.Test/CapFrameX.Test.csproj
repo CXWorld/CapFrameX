@@ -79,6 +79,7 @@
     <Compile Include="Integration\PresentMonIntegrationTest.cs" />
     <Compile Include="Integration\OverlayEntryAdapterTest.cs" />
     <Compile Include="Integration\InjectionRetryBackoffTest.cs" />
+    <Compile Include="Integration\HookOverlayStatusEvaluatorTest.cs" />
     <Compile Include="Data\FileRecordInfoTest.cs" />
     <Compile Include="Extensions\ObservableExtensionsTest.cs" />
     <Compile Include="Extensions\StringExtensionsTest.cs" />

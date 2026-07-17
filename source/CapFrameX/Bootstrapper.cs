@@ -47,6 +47,8 @@ namespace CapFrameX
         private CapFrameX.OSD.Integration.OsdOverlayBridge _osdOverlayBridge;
         // Manages in-game hook injection into the detected game process.
         private CapFrameX.OSD.Integration.HookOverlayManager _hookOverlayManager;
+        // Publishes the hook's native handshake/heartbeat to view models.
+        private CapFrameX.OSD.Integration.HookOverlayStatusService _hookOverlayStatusService;
         // Publishes CapFrameX's overlay entries to the in-game hook via shared memory.
         private CapFrameX.OSD.Integration.HookMetricsPublisher _hookMetricsPublisher;
         // Streams per-frame PresentMon frametimes/display-times to the hook (PresentMon graph mode).
@@ -134,7 +136,8 @@ namespace CapFrameX
                         rtssService.ProcessIdStream,
                         osdCaptureService.FrameDataStream,
                         CapFrameX.PresentMonInterface.PresentMonCaptureService.ProcessID_INDEX,
-                        CapFrameX.PresentMonInterface.PresentMonCaptureService.PresentRuntime_INDEX);
+                        CapFrameX.PresentMonInterface.PresentMonCaptureService.PresentRuntime_INDEX,
+                        statusService: _hookOverlayStatusService);
                 }
 
                 // While the in-game hook overlay is on, mirror CapFrameX's processed overlay entries
@@ -234,6 +237,9 @@ namespace CapFrameX
 
                     Container.RegisterInstance<IFrametimeStatisticProviderOptions>(appConfiguration);
                     Container.RegisterInstance(new ApplicationState(), Reuse.Singleton);
+                    _hookOverlayStatusService = new CapFrameX.OSD.Integration.HookOverlayStatusService();
+                    Container.RegisterInstance<IHookOverlayStatusService>(
+                        _hookOverlayStatusService, Reuse.Singleton);
                 }
 
                 using (StartupPerformanceLogger.Measure("Prism and core service registrations"))

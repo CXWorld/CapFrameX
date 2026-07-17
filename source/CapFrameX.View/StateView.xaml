@@ -43,6 +43,16 @@
             <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsOverlayActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=On|Off}" 
                        FontWeight="Bold" Foreground="{Binding IsOverlayActive, Converter={StaticResource ModeColorConverter}}"></TextBlock>
 
+            <TextBlock Margin="20 0 5 0" VerticalAlignment="Center"
+                       Visibility="{Binding IsHookOverlayStatusVisible, Converter={StaticResource FalseToCollapsedConverter}}"
+                       Foreground="{DynamicResource MaterialDesignBody}">Hook:</TextBlock>
+            <TextBlock Width="Auto" VerticalAlignment="Center"
+                       Visibility="{Binding IsHookOverlayStatusVisible, Converter={StaticResource FalseToCollapsedConverter}}"
+                       Text="{Binding HookOverlayStatusText}" FontWeight="Bold"
+                       Foreground="{Binding HookOverlayStatusColor}"
+                       ToolTip="{Binding HookOverlayStatusToolTip}"
+                       ToolTipService.ShowDuration="120000"></TextBlock>
+
             <TextBlock Margin="20 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Sensor Logging:</TextBlock>
             <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsLoggingActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=On|Off}" 
                        FontWeight="Bold" Foreground="{Binding IsLoggingActive, Converter={StaticResource ModeColorConverter}}"></TextBlock>
