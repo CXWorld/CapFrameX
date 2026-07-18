@@ -97,6 +97,8 @@
     <Compile Include="Sensor\PantherLakeVoltageTest.cs" />
     <Compile Include="Statistics\CircularBufferTest.cs" />
     <Compile Include="Statistics\FrametimeStatisticProviderTest.cs" />
+    <Compile Include="Statistics\LineSeriesDecimationTest.cs" />
+    <Compile Include="Statistics\PlotBuilderRenderingTest.cs" />
     <Compile Include="TestHelper.cs" />
     <Compile Include="Updater\UpdateCheckTest.cs" />
     <Compile Include="ViewModel\CaptureViewModelTest.cs" />
@@ -184,6 +186,10 @@
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
       <Project>{dc30f7f7-5725-4de9-b271-0d621b559cd5}</Project>
       <Name>CapFrameX.Statistics.NetStandard</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Statistics.PlotBuilder\CapFrameX.Statistics.PlotBuilder.csproj">
+      <Project>{80a26f08-6ae5-472d-bb13-b6fb9a37fdcb}</Project>
+      <Name>CapFrameX.Statistics.PlotBuilder</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Updater\CapFrameX.Updater.csproj">
       <Project>{5d12aa37-cc30-4476-94ad-11c15dc65518}</Project>

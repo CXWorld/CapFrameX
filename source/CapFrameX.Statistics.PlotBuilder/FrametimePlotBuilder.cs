@@ -16,10 +16,11 @@ namespace CapFrameX.Statistics.PlotBuilder
         public void BuildPlotmodel(ISession session, IPlotSettings plotSettings, double startTime, double endTime, ERemoveOutlierMethod eRemoveOutlinerMethod, Action<PlotModel> onFinishAction = null)
         {
             var plotModel = PlotModel;
-            Reset();
+            Reset(false);
 
             if (session == null)
             {
+                plotModel.InvalidatePlot(true);
                 return;
             }
 
@@ -102,12 +103,10 @@ namespace CapFrameX.Statistics.PlotBuilder
             }
 
             var stuttering = new List<double>();
-            var lowFPS = new List<double>();
 
             for (int i = 0; i < count; i++)
             {
                 stuttering.Add(movingAverageValues[i] * plotSettings.StutteringFactor);
-                lowFPS.Add(1000 / plotSettings.LowFPSThreshold);
             }
 
             plotModel.Series.Clear();
@@ -181,7 +180,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             {
                 axis.Minimum = frametimePoints.First().X;
                 axis.Maximum = frametimePoints.Last().X;
-            });
+            }, false);
 
             plotModel.Series.Add(frametimeSeries);
             plotModel.Series.Add(movingAverageSeries);
@@ -195,13 +194,13 @@ namespace CapFrameX.Statistics.PlotBuilder
             if (plotSettings.ShowThresholds)
             {
                 stutteringSeries.Points.AddRange(stuttering.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
-                lowFPSSeries.Points.AddRange(lowFPS.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
+                double lowFpsThreshold = 1000 / plotSettings.LowFPSThreshold;
+                lowFPSSeries.Points.Add(new DataPoint(frametimePoints.First().X, lowFpsThreshold));
+                lowFPSSeries.Points.Add(new DataPoint(frametimePoints.Last().X, lowFpsThreshold));
 
                 plotModel.Series.Add(stutteringSeries);
                 plotModel.Series.Add(lowFPSSeries);
             }
-
-            plotModel.InvalidatePlot(true);
         }
     }
 }

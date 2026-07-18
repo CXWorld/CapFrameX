@@ -18,10 +18,11 @@ namespace CapFrameX.Statistics.PlotBuilder
         public void BuildPlotmodel(ISession session, IPlotSettings plotSettings, double startTime, double endTime, ERemoveOutlierMethod eRemoveOutlinerMethod, Action<PlotModel> onFinishAction = null)
         {
             var plotModel = PlotModel;
-            Reset();
+            Reset(false);
 
             if (session == null)
             {
+                plotModel.InvalidatePlot(true);
                 return;
             }
 
@@ -102,10 +103,8 @@ namespace CapFrameX.Statistics.PlotBuilder
             {
                 axis.Minimum = frametimeDistributionPoints.First().X - 1;
                 axis.Maximum = frametimeDistributionPoints.Last().X + 1;
-            });
+            }, false);
             plotModel.Series.Add(distributionSeries);
-
-            plotModel.InvalidatePlot(true);
         }
 
         private void UpdateYAxisMaxBorder(double yMax)
@@ -129,7 +128,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                      stepSize = 10;
 
                  axis.MajorStep = stepSize;
-             });
+             }, false);
         }
     }
 }

@@ -16,9 +16,13 @@ namespace CapFrameX.Statistics.PlotBuilder
         public void BuildPlotmodel(ISession session, IPlotSettings plotSettings, double startTime, double endTime, ERemoveOutlierMethod eRemoveOutlinerMethod, EFilterMode filterMode, Action<PlotModel> onFinishAction = null)
         {
             var plotModel = PlotModel;
-            Reset();
+            Reset(false);
 
-            if (session == null) return;
+            if (session == null)
+            {
+                plotModel.InvalidatePlot(true);
+                return;
+            }
 
             plotModel.Axes.Add(AxisDefinitions[EPlotAxis.XAXIS]);
             plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISFPS]);
@@ -112,7 +116,6 @@ namespace CapFrameX.Statistics.PlotBuilder
             if (fpsPoints == null || !fpsPoints.Any())
                 return;
 
-            int count = fpsPoints.Count;
             var fpsDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
             var gpuActiveFpsDataPoints = gpuActiveFpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
 
@@ -149,8 +152,6 @@ namespace CapFrameX.Statistics.PlotBuilder
             //    plotModel.Series.Add(gpuActiveFpsSeries);
             //}
 
-            var averageDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, average));
-
             var averageSeries = new LineSeries
             {
                 Title = "Avg FPS",
@@ -159,7 +160,8 @@ namespace CapFrameX.Statistics.PlotBuilder
                 Color = OxyColor.FromAColor(200, Constants.FpsAverageColor)
             };
 
-            averageSeries.Points.AddRange(averageDataPoints);
+            averageSeries.Points.Add(new DataPoint(fpsPoints.First().X, average));
+            averageSeries.Points.Add(new DataPoint(fpsPoints.Last().X, average));
             plotModel.Series.Add(averageSeries);
 
 
@@ -167,9 +169,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             {
                 axis.Minimum = rawfpsPoints.First().X;
                 axis.Maximum = rawfpsPoints.Last().X;
-            });
-
-            plotModel.InvalidatePlot(true);
+            }, false);
         }
 
         private void SetRawFPS(PlotModel plotModel, IList<Point> fpsPoints)
@@ -186,19 +186,10 @@ namespace CapFrameX.Statistics.PlotBuilder
             var points = fpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
             fpsSeries.Points.AddRange(points);
             plotModel.Series.Add(fpsSeries);
-
-            plotModel.InvalidatePlot(true);
         }
 
         private void SetThresholdChart(PlotModel plotModel, IPlotSettings plotSettings, IList<Point> fpspoints)
         {
-            var lowFPS = new List<double>();
-
-            for (int i = 0; i < fpspoints.Count; i++)
-            {
-                lowFPS.Add(plotSettings.LowFPSThreshold);
-            }
-
             var lowFPSSeries = new LineSeries
             {
                 Title = "LowFPS",
@@ -209,7 +200,8 @@ namespace CapFrameX.Statistics.PlotBuilder
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
-            lowFPSSeries.Points.AddRange(lowFPS.Select((y, i) => new DataPoint(fpspoints[i].X, y)));
+            lowFPSSeries.Points.Add(new DataPoint(fpspoints.First().X, plotSettings.LowFPSThreshold));
+            lowFPSSeries.Points.Add(new DataPoint(fpspoints.Last().X, plotSettings.LowFPSThreshold));
             plotModel.Series.Add(lowFPSSeries);
         }
 
@@ -233,7 +225,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                     axis.Maximum = average + 5;
                 else
                     axis.Maximum = axisMaximum;
-            });
+            }, false);
         }
 
     }
