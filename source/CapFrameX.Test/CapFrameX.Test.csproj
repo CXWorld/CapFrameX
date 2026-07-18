@@ -102,6 +102,7 @@
     <Compile Include="TestHelper.cs" />
     <Compile Include="Updater\UpdateCheckTest.cs" />
     <Compile Include="ViewModel\CaptureViewModelTest.cs" />
+    <Compile Include="ViewModel\ComparisonSeriesBoundsTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="TestRecordFiles\CustomFilenameWithoutComment.csv">
