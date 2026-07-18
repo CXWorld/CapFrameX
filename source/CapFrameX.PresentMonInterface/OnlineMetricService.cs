@@ -66,6 +66,9 @@ namespace CapFrameX.PresentMonInterface
         // Reusable list buffers to avoid allocations during metric calculations
         private List<double> _reusableListBufferA;
         private List<double> _reusableListBufferB;
+        // The five-second path is protected by a different lock and therefore
+        // must not share the realtime path's mutable scratch buffer.
+        private List<double> _reusableListBuffer5Seconds;
 
         // Disposable resources
         private IDisposable _frameDataSubscription;
@@ -101,6 +104,7 @@ namespace CapFrameX.PresentMonInterface
             // Initialize reusable buffers
             _reusableListBufferA = new List<double>(LIST_CAPACITY);
             _reusableListBufferB = new List<double>(LIST_CAPACITY);
+            _reusableListBuffer5Seconds = new List<double>(LIST_CAPACITY);
 
             SubscribeToUpdateSession();
             ConnectOnlineMetricDataStream();
@@ -441,14 +445,19 @@ namespace CapFrameX.PresentMonInterface
             lock (_lockRealtimeMetric)
             {
                 // Use frame times when calculating average fps
-                var buffer = (_appConfiguration.UseDisplayChangeMetrics && metric != EMetric.Average)
+                var useDisplayTimes = _appConfiguration.UseDisplayChangeMetrics && metric != EMetric.Average;
+                var buffer = useDisplayTimes
                     ? _displayedtimesRealtimeSeconds : _frametimesRealtimeSeconds;
 
                 if (buffer == null || buffer.Count == 0)
                     return double.NaN;
 
-                // Reuse list buffer to avoid allocations
-                var samples = buffer.ToList(_reusableListBufferA);
+                var samples = CopyValidTimings(buffer, _reusableListBufferA);
+                if (samples.Count == 0 && useDisplayTimes)
+                    samples = CopyValidTimings(_frametimesRealtimeSeconds, _reusableListBufferA);
+
+                if (samples.Count == 0)
+                    return double.NaN;
 
                 return _frametimeStatisticProvider
                     .GetFpsMetricValue(samples, metric);
@@ -521,23 +530,37 @@ namespace CapFrameX.PresentMonInterface
         {
             lock (_lock5SecondsMetric)
             {
-                var buffer = _appConfiguration.UseDisplayChangeMetrics ? _displaytimes5Seconds : _frametimes5Seconds;
+                var useDisplayTimes = _appConfiguration.UseDisplayChangeMetrics;
+                var buffer = useDisplayTimes ? _displaytimes5Seconds : _frametimes5Seconds;
 
                 if (buffer == null || buffer.Count == 0)
                     return double.NaN;
 
-                // Check for NaN values
-                foreach (var sample in buffer)
-                {
-                    if (double.IsNaN(sample))
-                        return double.NaN;
-                }
+                var samples = CopyValidTimings(buffer, _reusableListBuffer5Seconds);
+                if (samples.Count == 0 && useDisplayTimes)
+                    samples = CopyValidTimings(_frametimes5Seconds, _reusableListBuffer5Seconds);
 
-                var samples = buffer.ToList(_reusableListBufferA);
+                if (samples.Count == 0)
+                    return double.NaN;
 
                 return _frametimeStatisticProvider
                     .GetOnlineStutteringTimePercentage(samples, _appConfiguration.StutteringFactor);
             }
+        }
+
+        private static List<double> CopyValidTimings(IEnumerable<double> source, List<double> target)
+        {
+            target.Clear();
+            if (source == null)
+                return target;
+
+            foreach (double timing in source)
+            {
+                if (timing > 0 && !double.IsNaN(timing) && !double.IsInfinity(timing))
+                    target.Add(timing);
+            }
+
+            return target;
         }
 
         public double GetOnlinePcLatencyAverageValue()
@@ -716,6 +739,7 @@ namespace CapFrameX.PresentMonInterface
 
                 _reusableListBufferA?.Clear();
                 _reusableListBufferB?.Clear();
+                _reusableListBuffer5Seconds?.Clear();
             }
 
             _disposed = true;
