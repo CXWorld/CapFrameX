@@ -76,6 +76,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Data\CaptureManagerTest.cs" />
+    <Compile Include="Data\RecordManagerCacheTest.cs" />
     <Compile Include="Integration\PresentMonIntegrationTest.cs" />
     <Compile Include="Data\FileRecordInfoTest.cs" />
     <Compile Include="Extensions\ObservableExtensionsTest.cs" />
