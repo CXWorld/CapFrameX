@@ -24,6 +24,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
@@ -59,6 +60,10 @@ namespace CapFrameX.ViewModel
         private bool _customRamDescriptionChanged = false;
         private bool _customGameNameChanged = false;
         private bool _customCommentChanged = false;
+        private readonly SemaphoreSlim _selectionLoadSemaphore = new SemaphoreSlim(1, 1);
+        private Task<ISession> _selectedSessionTask = Task.FromResult<ISession>(null);
+        private CancellationTokenSource _selectionLoadCancellation = new CancellationTokenSource();
+        private int _selectionVersion;
 
         public bool ShowCreationDate
         {
@@ -124,6 +129,10 @@ namespace CapFrameX.ViewModel
             get { return _selectedRecordInfo; }
             set
             {
+                if (ReferenceEquals(_selectedRecordInfo, value))
+                {
+                    return;
+                }
 
                 _selectedRecordInfo = value;
                 OnSelectedRecordInfoChanged();
@@ -769,39 +778,111 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public void OnRecordSelectByDoubleClick()
+        public async void OnRecordSelectByDoubleClick()
         {
-            if (SelectedRecordInfo != null && _selectSessionEvent != null)
+            var selectedRecordInfo = SelectedRecordInfo;
+            if (selectedRecordInfo != null && _selectSessionEvent != null)
             {
-                var session = _recordManager.LoadData(SelectedRecordInfo.FullPath);
-                _selectSessionEvent.Publish(new ViewMessages.SelectSession(session, SelectedRecordInfo));
+                try
+                {
+                    // Reuse the selection load. Besides avoiding duplicate parsing, awaiting this
+                    // task preserves UpdateSession-before-SelectSession event ordering.
+                    var session = await _selectedSessionTask;
+                    if (session != null && ReferenceEquals(_selectedRecordInfo, selectedRecordInfo))
+                    {
+                        _selectSessionEvent.Publish(new ViewMessages.SelectSession(session, selectedRecordInfo));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error selecting record {RecordPath}.", selectedRecordInfo.FullPath);
+                }
             }
         }
 
         private void OnSelectedRecordInfoChanged()
         {
-            if (_selectedRecordInfo is null)
+            var selectionVersion = Interlocked.Increment(ref _selectionVersion);
+            var newCancellation = new CancellationTokenSource();
+            var previousCancellation = Interlocked.Exchange(ref _selectionLoadCancellation, newCancellation);
+            previousCancellation?.Cancel();
+            previousCancellation?.Dispose();
+            var selectedRecordInfo = _selectedRecordInfo;
+
+            if (selectedRecordInfo is null)
             {
+                _selectedSessionTask = Task.FromResult<ISession>(null);
                 ResetInfoEditBoxes();
+                ResetDescriptionChangedFlags();
             }
             else
             {
-                var session = _recordManager.LoadData(_selectedRecordInfo.FullPath);
-                if (session is ISession)
+                // These values come from FileRecordInfo and do not depend on parsing the capture.
+                // Updating them now prevents the previous record's metadata remaining visible
+                // while a large session is loaded in the background.
+                CustomCpuDescription = string.Copy(selectedRecordInfo.ProcessorName ?? string.Empty);
+                CustomGpuDescription = string.Copy(selectedRecordInfo.GraphicCardName ?? string.Empty);
+                CustomRamDescription = string.Copy(selectedRecordInfo.SystemRamInfo ?? string.Empty);
+                CustomGameName = string.Copy(selectedRecordInfo.GameName ?? string.Empty);
+                CustomComment = string.Copy(selectedRecordInfo.Comment ?? string.Empty);
+                ResetDescriptionChangedFlags();
+                _selectedSessionTask = LoadSelectedSessionAsync(selectedRecordInfo, selectionVersion,
+                    newCancellation.Token);
+            }
+        }
+
+        private async Task<ISession> LoadSelectedSessionAsync(IFileRecordInfo selectedRecordInfo, int selectionVersion,
+            CancellationToken cancellationToken)
+        {
+            var lockTaken = false;
+            try
+            {
+                await _selectionLoadSemaphore.WaitAsync(cancellationToken);
+                lockTaken = true;
+
+                // Rapid keyboard or mouse navigation can queue several selections while an HDD
+                // read is active. Only the newest queued selection should touch the disk.
+                if (cancellationToken.IsCancellationRequested
+                    || !IsCurrentSelection(selectedRecordInfo, selectionVersion))
+                {
+                    return null;
+                }
+
+                var session = await Task.Run(() => _recordManager.LoadData(selectedRecordInfo.FullPath), cancellationToken);
+                if (session != null && !cancellationToken.IsCancellationRequested
+                    && IsCurrentSelection(selectedRecordInfo, selectionVersion))
                 {
                     if (_updateSessionEvent != null)
                     {
-                        _updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, SelectedRecordInfo));
+                        _updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, selectedRecordInfo));
                     }
-                    CustomCpuDescription = string.Copy(SelectedRecordInfo.ProcessorName ?? string.Empty);
-                    CustomGpuDescription = string.Copy(SelectedRecordInfo.GraphicCardName ?? string.Empty);
-                    CustomRamDescription = string.Copy(SelectedRecordInfo.SystemRamInfo ?? string.Empty);
-                    CustomGameName = string.Copy(SelectedRecordInfo.GameName ?? string.Empty);
-                    CustomComment = string.Copy(SelectedRecordInfo.Comment ?? string.Empty);
+                    return session;
+                }
+
+                return null;
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading selected record {RecordPath}.", selectedRecordInfo.FullPath);
+                return null;
+            }
+            finally
+            {
+                if (lockTaken)
+                {
+                    _selectionLoadSemaphore.Release();
                 }
             }
+        }
 
-            ResetDescriptionChangedFlags();
+        private bool IsCurrentSelection(IFileRecordInfo selectedRecordInfo, int selectionVersion)
+        {
+            return Volatile.Read(ref _selectionVersion) == selectionVersion
+                && ReferenceEquals(_selectedRecordInfo, selectedRecordInfo);
         }
 
         private void OnPressDeleteKey()

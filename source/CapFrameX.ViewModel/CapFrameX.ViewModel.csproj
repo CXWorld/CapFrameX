@@ -195,6 +195,7 @@
     <Compile Include="CaptureViewModel.cs" />
     <Compile Include="ColorRessource.cs" />
     <Compile Include="ComparisonColorManager.cs" />
+    <Compile Include="ComparisonMetricSourceResolver.cs" />
     <Compile Include="ComparisonRecordInfoWrapper.cs" />
     <Compile Include="ComparisonViewModel.cs" />
     <Compile Include="ComparisonViewModelLabel.cs" />

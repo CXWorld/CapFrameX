@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -64,6 +65,8 @@ namespace CapFrameX.ViewModel
         private int _inputLagBarMaxValue = 100;
         private Func<double, string> _inputLagParameterFormatter;
         private string[] _inputLagParameterLabels;
+        private int _chartUpdateVersion;
+        private CancellationTokenSource _chartUpdateCancellation = new CancellationTokenSource();
 
         /// <summary>
         /// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
@@ -388,31 +391,51 @@ namespace CapFrameX.ViewModel
 
         private void UpdateCharts()
         {
-            if (_session == null)
+            int updateVersion = Interlocked.Increment(ref _chartUpdateVersion);
+            var newCancellation = new CancellationTokenSource();
+            var previousCancellation = Interlocked.Exchange(ref _chartUpdateCancellation, newCancellation);
+            previousCancellation?.Cancel();
+            previousCancellation?.Dispose();
+            var cancellationToken = newCancellation.Token;
+            var session = _session;
+            if (session == null)
                 return;
 
-            // Do not run on background thread, leads to errors on analysis page
-            var inputLagTimes = _session.CalculateInputLagTimes(EInputLagType.Expected).Select(val => val += InputLagOffset).ToList();
-            var upperBoundInputLagTimes = _session.CalculateInputLagTimes(EInputLagType.UpperBound).Select(val => val += InputLagOffset).ToList();
-            var lowerBoundInputLagTimes = _session.CalculateInputLagTimes(EInputLagType.LowerBound).Select(val => val += InputLagOffset).ToList();
-            var frametimes = _session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
-            var displayTimes = _session.Runs.SelectMany(r => r.CaptureData.MsUntilDisplayed).ToList();
-            var appMissed = _session.Runs.SelectMany(r => r.CaptureData.Dropped).ToList();
+            int inputLagOffset = InputLagOffset;
+            Task.Run(() =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var inputLagTimes = session.CalculateInputLagTimes(EInputLagType.Expected).Select(val => val + inputLagOffset).ToList();
+                cancellationToken.ThrowIfCancellationRequested();
+                var upperBoundInputLagTimes = session.CalculateInputLagTimes(EInputLagType.UpperBound).Select(val => val + inputLagOffset).ToList();
+                cancellationToken.ThrowIfCancellationRequested();
+                var lowerBoundInputLagTimes = session.CalculateInputLagTimes(EInputLagType.LowerBound).Select(val => val + inputLagOffset).ToList();
+                cancellationToken.ThrowIfCancellationRequested();
+                var frametimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
+                var displayTimes = session.Runs.SelectMany(r => r.CaptureData.MsUntilDisplayed).ToList();
+                var appMissed = session.Runs.SelectMany(r => r.CaptureData.Dropped).ToList();
 
-            SetFrameDisplayTimesChart(frametimes, displayTimes);
-            SetFrameInputLagChart(frametimes, upperBoundInputLagTimes, lowerBoundInputLagTimes);
-            Task.Factory.StartNew(() => SetDisplayTimesHistogramChart(displayTimes));
-            Task.Factory.StartNew(() => SetInputLagHistogramChart(inputLagTimes.Where(t => !double.IsNaN(t)).ToList()));
-            Task.Factory.StartNew(() => SetInputLagStatisticChart(
-                inputLagTimes.Where(t => !double.IsNaN(t)).ToList(),
-                upperBoundInputLagTimes.Where(t => !double.IsNaN(t)).ToList(), 
-                lowerBoundInputLagTimes.Where(t => !double.IsNaN(t)).ToList())
-            );
-            Task.Factory.StartNew(() => SetDroppedFramesChart(appMissed));
+                if (cancellationToken.IsCancellationRequested || !IsCurrentChartUpdate(updateVersion))
+                    return;
+
+                var validInputLagTimes = FilterFiniteValues(inputLagTimes, cancellationToken);
+                var validUpperBounds = FilterFiniteValues(upperBoundInputLagTimes, cancellationToken);
+                var validLowerBounds = FilterFiniteValues(lowerBoundInputLagTimes, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+                SetFrameDisplayTimesChart(frametimes, displayTimes, updateVersion, cancellationToken);
+                SetFrameInputLagChart(frametimes, upperBoundInputLagTimes, lowerBoundInputLagTimes,
+                    appMissed, updateVersion, cancellationToken);
+                SetDisplayTimesHistogramChart(displayTimes, updateVersion, cancellationToken);
+                SetInputLagHistogramChart(validInputLagTimes, updateVersion, cancellationToken);
+                SetInputLagStatisticChart(validInputLagTimes, validUpperBounds, validLowerBounds, updateVersion, cancellationToken);
+                SetDroppedFramesChart(appMissed, updateVersion, cancellationToken);
+            }, cancellationToken);
         }
 
-        private void SetFrameDisplayTimesChart(IList<double> frametimes, IList<double> displaytimes)
+        private void SetFrameDisplayTimesChart(IList<double> frametimes, IList<double> displaytimes, int updateVersion,
+            CancellationToken cancellationToken)
         {
+            if (cancellationToken.IsCancellationRequested || !IsCurrentChartUpdate(updateVersion)) return;
             if (frametimes == null || !frametimes.Any())
                 return;
 
@@ -442,11 +465,21 @@ namespace CapFrameX.ViewModel
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
-            frametimeSeries.Points.AddRange(frametimes.Select((x, i) => new DataPoint(i, x)));
-            untilDisplayedTimesSeries.Points.AddRange(displaytimes.Select((x, i) => new DataPoint(i, x)));
+            for (int i = 0; i < frametimes.Count; i++)
+            {
+                if ((i & 1023) == 0) cancellationToken.ThrowIfCancellationRequested();
+                frametimeSeries.Points.Add(new DataPoint(i, frametimes[i]));
+            }
+            for (int i = 0; i < displaytimes.Count; i++)
+            {
+                if ((i & 1023) == 0) cancellationToken.ThrowIfCancellationRequested();
+                untilDisplayedTimesSeries.Points.Add(new DataPoint(i, displaytimes[i]));
+            }
 
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
+                if (cancellationToken.IsCancellationRequested || !IsCurrentChartUpdate(updateVersion)) return;
+
                 var tmp = new PlotModel
                 {
                     PlotMargins = new OxyThickness(40, 10, 40, 40),
@@ -503,8 +536,10 @@ namespace CapFrameX.ViewModel
             }));
         }
 
-        private void SetDisplayTimesHistogramChart(IList<double> displaytimes)
+        private void SetDisplayTimesHistogramChart(IList<double> displaytimes, int updateVersion,
+            CancellationToken cancellationToken)
         {
+            if (cancellationToken.IsCancellationRequested || !IsCurrentChartUpdate(updateVersion)) return;
             var histogramValues = new ChartValues<double>();
             var bins = new List<double>();
 
@@ -517,6 +552,7 @@ namespace CapFrameX.ViewModel
 
                     for (int i = 0; i < discreteDistribution.Length; i++)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         var count = discreteDistribution[i].Count;
                         var avg = count > 0 ?
                                   discreteDistribution[i].Average() :
@@ -530,6 +566,8 @@ namespace CapFrameX.ViewModel
 
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
+                if (cancellationToken.IsCancellationRequested || !IsCurrentChartUpdate(updateVersion)) return;
+
                 DisplayTimesHistogramCollection = new SeriesCollection
                 {
                     new LiveCharts.Wpf.ColumnSeries
@@ -547,8 +585,10 @@ namespace CapFrameX.ViewModel
             }));
         }
 
-        private void SetInputLagHistogramChart(IList<double> inputLagTimes)
+        private void SetInputLagHistogramChart(IList<double> inputLagTimes, int updateVersion,
+            CancellationToken cancellationToken)
         {
+            if (cancellationToken.IsCancellationRequested || !IsCurrentChartUpdate(updateVersion)) return;
             var bins = new List<double>();
             var histogramValues = new ChartValues<double>();
 
@@ -561,6 +601,7 @@ namespace CapFrameX.ViewModel
 
                     for (int i = 0; i < discreteDistribution.Length; i++)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         var count = discreteDistribution[i].Count;
                         var avg = count > 0 ?
                                   discreteDistribution[i].Average() :
@@ -574,6 +615,8 @@ namespace CapFrameX.ViewModel
 
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
+                if (cancellationToken.IsCancellationRequested || !IsCurrentChartUpdate(updateVersion)) return;
+
                 InputLagHistogramCollection = new SeriesCollection
                 {
                     new LiveCharts.Wpf.ColumnSeries
@@ -591,8 +634,10 @@ namespace CapFrameX.ViewModel
             }));
         }
 
-        private void SetInputLagStatisticChart(IList<double> inputLagTimes, IList<double> upperBoundInputLagTimes, IList<double> lowerBoundInputLagTimes)
+        private void SetInputLagStatisticChart(IList<double> inputLagTimes, IList<double> upperBoundInputLagTimes,
+            IList<double> lowerBoundInputLagTimes, int updateVersion, CancellationToken cancellationToken)
         {
+            if (cancellationToken.IsCancellationRequested || !IsCurrentChartUpdate(updateVersion)) return;
             double upperBound = 0;
             double expected = 0;
             double lowerBound = 0;
@@ -606,6 +651,8 @@ namespace CapFrameX.ViewModel
 
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
+                if (cancellationToken.IsCancellationRequested || !IsCurrentChartUpdate(updateVersion)) return;
+
                 IChartValues values = new ChartValues<double>
                 {
                     upperBound,
@@ -638,13 +685,17 @@ namespace CapFrameX.ViewModel
             }));
         }
 
-        private void SetDroppedFramesChart(List<bool> appMissed)
+        private void SetDroppedFramesChart(List<bool> appMissed, int updateVersion,
+            CancellationToken cancellationToken)
         {
+            if (cancellationToken.IsCancellationRequested || !IsCurrentChartUpdate(updateVersion)) return;
             if (!appMissed.Any())
                 return;
 
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
+                if (cancellationToken.IsCancellationRequested || !IsCurrentChartUpdate(updateVersion)) return;
+
                 DroppedFramesStatisticCollection = new SeriesCollection()
                 {
                     new LiveCharts.Wpf.PieSeries
@@ -685,8 +736,26 @@ namespace CapFrameX.ViewModel
                 .ToString() + "%";
         }
 
-        private void SetFrameInputLagChart(IList<double> frametimes, IList<double> upperBoundInputlagtimes, IList<double> lowerBoundInputlagtimes)
+        private bool IsCurrentChartUpdate(int updateVersion)
+            => Volatile.Read(ref _chartUpdateVersion) == updateVersion;
+
+        private static List<double> FilterFiniteValues(IList<double> values, CancellationToken cancellationToken)
         {
+            var result = new List<double>(values.Count);
+            for (int i = 0; i < values.Count; i++)
+            {
+                if ((i & 1023) == 0) cancellationToken.ThrowIfCancellationRequested();
+                if (!double.IsNaN(values[i])) result.Add(values[i]);
+            }
+            return result;
+        }
+
+        private void SetFrameInputLagChart(IList<double> frametimes, IList<double> upperBoundInputlagtimes,
+            IList<double> lowerBoundInputlagtimes, IList<bool> appMissed, int updateVersion,
+            CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested || !IsCurrentChartUpdate(updateVersion)) return;
+
             if (frametimes.IsNullOrEmpty() ||
                 upperBoundInputlagtimes.IsNullOrEmpty() ||
                 lowerBoundInputlagtimes.IsNullOrEmpty() ||
@@ -694,23 +763,31 @@ namespace CapFrameX.ViewModel
                 lowerBoundInputlagtimes.All(t => double.IsNaN(t)))
             {
 
-                InputLagModel = new PlotModel
+                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    PlotMargins = new OxyThickness(40, 10, 0, 40),
-                    PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(100, 204, 204, 204) : OxyColor.FromArgb(50, 30, 30, 30)
-                };
+                    if (cancellationToken.IsCancellationRequested || !IsCurrentChartUpdate(updateVersion)) return;
+                    InputLagModel = new PlotModel
+                    {
+                        PlotMargins = new OxyThickness(40, 10, 0, 40),
+                        PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(100, 204, 204, 204) : OxyColor.FromArgb(50, 30, 30, 30)
+                    };
 
-                InputLagModel.Legends.Add(new Legend()
-                {
-                    LegendPosition = LegendPosition.TopCenter,
-                    LegendOrientation = LegendOrientation.Horizontal
-                });
+                    InputLagModel.Legends.Add(new Legend()
+                    {
+                        LegendPosition = LegendPosition.TopCenter,
+                        LegendOrientation = LegendOrientation.Horizontal
+                    });
+                }));
 
                 return;
             }
 
-            var appMissed = _session.Runs.SelectMany(r => r.CaptureData.Dropped).ToList();
-            var filteredFrametimes = frametimes.Where((ft, i) => appMissed[i] != true).ToList();
+            var filteredFrametimes = new List<double>(frametimes.Count);
+            for (int i = 0; i < frametimes.Count; i++)
+            {
+                if ((i & 1023) == 0) cancellationToken.ThrowIfCancellationRequested();
+                if (!appMissed[i]) filteredFrametimes.Add(frametimes[i]);
+            }
 
             var yMin = Math.Min(filteredFrametimes.Min(), lowerBoundInputlagtimes.Min());
             var yMax = Math.Max(filteredFrametimes.Max(), upperBoundInputlagtimes.Max());
@@ -749,14 +826,28 @@ namespace CapFrameX.ViewModel
                 Fill = OxyColor.FromArgb(64, 225, 145, 145)
             };
 
-            frametimeSeries.Points.AddRange(filteredFrametimes.Select((x, i) => new DataPoint(i, x)));
-            upperBoundInputLagSeries.Points.AddRange(upperBoundInputlagtimes.Select((x, i) => new DataPoint(i, x)));
-            lowerBoundInputLagSeries.Points.AddRange(lowerBoundInputlagtimes.Select((x, i) => new DataPoint(i, x)));
-            areaSeries.Points.AddRange(lowerBoundInputlagtimes.Select((x, i) => new DataPoint(i, x)));
-            areaSeries.Points2.AddRange(upperBoundInputlagtimes.Select((x, i) => new DataPoint(i, x)));
+            for (int i = 0; i < filteredFrametimes.Count; i++)
+            {
+                if ((i & 1023) == 0) cancellationToken.ThrowIfCancellationRequested();
+                frametimeSeries.Points.Add(new DataPoint(i, filteredFrametimes[i]));
+            }
+            for (int i = 0; i < upperBoundInputlagtimes.Count; i++)
+            {
+                if ((i & 1023) == 0) cancellationToken.ThrowIfCancellationRequested();
+                upperBoundInputLagSeries.Points.Add(new DataPoint(i, upperBoundInputlagtimes[i]));
+                areaSeries.Points2.Add(new DataPoint(i, upperBoundInputlagtimes[i]));
+            }
+            for (int i = 0; i < lowerBoundInputlagtimes.Count; i++)
+            {
+                if ((i & 1023) == 0) cancellationToken.ThrowIfCancellationRequested();
+                lowerBoundInputLagSeries.Points.Add(new DataPoint(i, lowerBoundInputlagtimes[i]));
+                areaSeries.Points.Add(new DataPoint(i, lowerBoundInputlagtimes[i]));
+            }
 
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
+                if (cancellationToken.IsCancellationRequested || !IsCurrentChartUpdate(updateVersion)) return;
+
                 var tmp = new PlotModel
                 {
                     PlotMargins = new OxyThickness(40, 10, 40, 40),

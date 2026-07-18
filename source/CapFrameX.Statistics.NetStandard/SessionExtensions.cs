@@ -4,135 +4,363 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace CapFrameX.Statistics.NetStandard
 {
-    public static class SessionExtensions
-    {
-		private static IList<double> FilterDataWithinTimeWindow(IList<double> startTimes, IList<double> data, double startTime, double endTime)
+	public static class SessionExtensions
+	{
+		[Flags]
+		private enum TimingSeries
 		{
-			return startTimes.Zip(data, (t, y) => new { t, y })
-					 .Where(pair => pair.t >= startTime && pair.t <= endTime)
-					 .Select(pair => pair.y)
-					 .ToList();
+			StartTimes = 1,
+			Frametimes = 2,
+			DisplayChangeTimes = 4,
+			GpuActiveTimes = 8,
+			CpuActiveTimes = 16,
+			AnimationErrors = 32,
+			PcLatencies = 64
 		}
 
-		private static IList<Point> FilterDataPointsWithinTimeWindow(IList<double> startTimes, IList<double> data, double startTime, double endTime)
+		private sealed class SessionTimingData
 		{
-			return startTimes.Zip(data, (t, y) => new Point(t, y))
-					 .Where(point => point.X >= startTime && point.X <= endTime)
-					 .ToList();
+			public ISessionRun[] Runs;
+			public ISessionCaptureData[] CaptureData;
+			public double[][] StartTimeSources;
+			public double[][] FrametimeSources;
+			public double[][] DisplayChangeSources;
+			public double[][] GpuActiveSources;
+			public double[][] CpuActiveSources;
+			public double[][] AnimationErrorSources;
+			public double[][] PcLatencySources;
+			public double[] StartTimes;
+			public double[] Frametimes;
+			public double[] DisplayChangeTimes;
+			public double[] GpuActiveTimes;
+			public double[] CpuActiveTimes;
+			public double[] AnimationErrors;
+			public double[] PcLatencies;
 		}
+
+		private static readonly ConditionalWeakTable<ISession, SessionTimingData> TimingDataCache =
+			new ConditionalWeakTable<ISession, SessionTimingData>();
+
+		private static SessionTimingData GetTimingData(ISession session, TimingSeries requestedSeries)
+		{
+			var timingData = TimingDataCache.GetValue(session, _ => new SessionTimingData());
+			lock (timingData)
+			{
+				if (!IsTimingStructureCurrent(session, timingData))
+				{
+					timingData.Runs = session?.Runs?.ToArray() ?? Array.Empty<ISessionRun>();
+					timingData.CaptureData = timingData.Runs
+						.Select(run => run?.CaptureData).ToArray();
+					ClearTimingSeries(timingData);
+				}
+
+				if ((requestedSeries & TimingSeries.StartTimes) != 0)
+					EnsureTimingSeries(session, timingData, data => data.TimeInSeconds,
+						run => run.CaptureData.TimeInSeconds, ref timingData.StartTimeSources, ref timingData.StartTimes);
+				if ((requestedSeries & TimingSeries.Frametimes) != 0)
+					EnsureTimingSeries(session, timingData, data => data.MsBetweenPresents,
+						run => run.CaptureData.MsBetweenPresents, ref timingData.FrametimeSources, ref timingData.Frametimes);
+				if ((requestedSeries & TimingSeries.DisplayChangeTimes) != 0)
+					EnsureTimingSeries(session, timingData, data => data.MsBetweenDisplayChange,
+						run => run.CaptureData.MsBetweenDisplayChange, ref timingData.DisplayChangeSources, ref timingData.DisplayChangeTimes);
+				if ((requestedSeries & TimingSeries.GpuActiveTimes) != 0)
+					EnsureTimingSeries(session, timingData, data => data.GpuActive,
+						run => run.CaptureData.GpuActive, ref timingData.GpuActiveSources, ref timingData.GpuActiveTimes);
+				if ((requestedSeries & TimingSeries.CpuActiveTimes) != 0)
+					EnsureTimingSeries(session, timingData, data => data.CpuActive,
+						run => run.CaptureData.CpuActive, ref timingData.CpuActiveSources, ref timingData.CpuActiveTimes);
+				if ((requestedSeries & TimingSeries.AnimationErrors) != 0)
+					EnsureTimingSeries(session, timingData, data => data.AnimationError,
+						run => run.CaptureData.AnimationError, ref timingData.AnimationErrorSources, ref timingData.AnimationErrors);
+				if ((requestedSeries & TimingSeries.PcLatencies) != 0)
+					EnsureTimingSeries(session, timingData, data => data.PcLatency,
+						run => run.CaptureData.PcLatency, ref timingData.PcLatencySources, ref timingData.PcLatencies);
+
+				return timingData;
+			}
+		}
+
+		private static bool IsTimingStructureCurrent(ISession session, SessionTimingData timingData)
+		{
+			if (session?.Runs == null || timingData.Runs == null
+				|| timingData.Runs.Length != session.Runs.Count)
+				return false;
+
+			for (int i = 0; i < timingData.Runs.Length; i++)
+			{
+				var run = session.Runs[i];
+				var captureData = run?.CaptureData;
+				if (!ReferenceEquals(timingData.Runs[i], run)
+					|| !ReferenceEquals(timingData.CaptureData[i], captureData))
+					return false;
+			}
+
+			return true;
+		}
+
+		private static void EnsureTimingSeries(ISession session, SessionTimingData timingData,
+			Func<ISessionCaptureData, double[]> captureSelector, Func<ISessionRun, double[]> runSelector,
+			ref double[][] sources, ref double[] flattened)
+		{
+			bool isCurrent = sources != null && sources.Length == timingData.CaptureData.Length;
+			if (isCurrent)
+			{
+				for (int i = 0; i < sources.Length; i++)
+				{
+					var current = timingData.CaptureData[i] == null
+						? null : captureSelector(timingData.CaptureData[i]);
+					if (!ReferenceEquals(sources[i], current))
+					{
+						isCurrent = false;
+						break;
+					}
+				}
+			}
+
+			if (isCurrent && timingData.Runs.Length > 1)
+				isCurrent = FlattenedValuesMatch(sources, flattened);
+
+			if (!isCurrent)
+			{
+				sources = GetSourceArrays(timingData.CaptureData, captureSelector);
+				flattened = FlattenOrReuse(session, runSelector);
+			}
+		}
+
+		private static void ClearTimingSeries(SessionTimingData timingData)
+		{
+			timingData.StartTimeSources = null;
+			timingData.FrametimeSources = null;
+			timingData.DisplayChangeSources = null;
+			timingData.GpuActiveSources = null;
+			timingData.CpuActiveSources = null;
+			timingData.AnimationErrorSources = null;
+			timingData.PcLatencySources = null;
+			timingData.StartTimes = null;
+			timingData.Frametimes = null;
+			timingData.DisplayChangeTimes = null;
+			timingData.GpuActiveTimes = null;
+			timingData.CpuActiveTimes = null;
+			timingData.AnimationErrors = null;
+			timingData.PcLatencies = null;
+		}
+
+		private static bool FlattenedValuesMatch(double[][] sources, double[] flattened)
+		{
+			int index = 0;
+			foreach (var source in sources)
+			{
+				if (source == null)
+					continue;
+
+				for (int i = 0; i < source.Length; i++)
+				{
+					if (index >= flattened.Length
+						|| BitConverter.DoubleToInt64Bits(source[i]) != BitConverter.DoubleToInt64Bits(flattened[index]))
+						return false;
+					index++;
+				}
+			}
+
+			return index == flattened.Length;
+		}
+
+		private static double[][] GetSourceArrays(ISessionCaptureData[] captureData,
+			Func<ISessionCaptureData, double[]> selector)
+		{
+			return captureData.Select(data => data == null ? null : selector(data)).ToArray();
+		}
+
+		private static T[] FlattenOrReuse<T>(ISession session, Func<ISessionRun, T[]> selector)
+		{
+			if (session?.Runs == null || session.Runs.Count == 0)
+				return Array.Empty<T>();
+			if (session.Runs.Count == 1)
+				return selector(session.Runs[0]) ?? Array.Empty<T>();
+
+			return session.Runs.SelectMany(run => selector(run) ?? Array.Empty<T>()).ToArray();
+		}
+
+		private static IList<double> FilterDataWithinTimeWindow(IList<double> startTimes, IList<double> data,
+            double startTime, double endTime, FrametimeStatisticProvider statisticProvider = null,
+            ERemoveOutlierMethod removeOutlierMethod = ERemoveOutlierMethod.None,
+            Func<double, bool> isValidValue = null)
+		{
+            int count = Math.Min(startTimes.Count, data.Count);
+            var filteredData = new List<double>(count);
+            var valueValidator = isValidValue ?? IsValidTimingValue;
+
+            for (int i = 0; i < count; i++)
+            {
+                double time = startTimes[i];
+                double value = data[i];
+
+                if (time >= startTime && time <= endTime && valueValidator(value))
+                {
+                    filteredData.Add(value);
+                }
+            }
+
+            return statisticProvider == null
+                ? filteredData
+                : statisticProvider.GetOutlierAdjustedSequence(filteredData, removeOutlierMethod);
+		}
+
+		private static IList<Point> FilterDataPointsWithinTimeWindow(IList<double> startTimes, IList<double> data,
+            double startTime, double endTime, FrametimeStatisticProvider statisticProvider = null,
+            ERemoveOutlierMethod removeOutlierMethod = ERemoveOutlierMethod.None,
+            Func<double, bool> isValidValue = null)
+		{
+            int count = Math.Min(startTimes.Count, data.Count);
+            var filteredPoints = new List<Point>(count);
+            var valueValidator = isValidValue ?? IsValidTimingValue;
+
+            for (int i = 0; i < count; i++)
+            {
+                double time = startTimes[i];
+                double value = data[i];
+
+                if (time >= startTime && time <= endTime && valueValidator(value))
+                {
+                    filteredPoints.Add(new Point(time, value));
+                }
+            }
+
+            if (removeOutlierMethod == ERemoveOutlierMethod.DeciPercentile && filteredPoints.Count > 0)
+            {
+                var adjustedValues = statisticProvider.GetOutlierAdjustedSequence(
+                    filteredPoints.Select(point => point.Y).ToArray(), removeOutlierMethod);
+                var remainingValueCounts = adjustedValues
+                    .GroupBy(value => value)
+                    .ToDictionary(group => group.Key, group => group.Count());
+                var adjustedPoints = new List<Point>(adjustedValues.Count);
+
+                foreach (Point point in filteredPoints)
+                {
+                    int remainingCount;
+                    if (remainingValueCounts.TryGetValue(point.Y, out remainingCount) && remainingCount > 0)
+                    {
+                        adjustedPoints.Add(point);
+                        remainingValueCounts[point.Y] = remainingCount - 1;
+                    }
+                }
+
+                return adjustedPoints;
+            }
+
+            return filteredPoints;
+		}
+
+        private static bool IsValidTimingValue(double value)
+        {
+            return value > 0 && !double.IsNaN(value) && !double.IsInfinity(value);
+        }
+
+        private static bool IsValidActiveTimeValue(double value)
+        {
+            return value >= 0 && !double.IsNaN(value) && !double.IsInfinity(value);
+        }
 
 		public static IList<double> GetFrametimeTimeWindow(this ISession session, double startTime, double endTime,
             IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
         {
             var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
-            var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
-            var frametimes = frametimeStatisticProvider?
-                .GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray(), eRemoveOutlierMethod)
-                ?? Enumerable.Empty<double>().ToList();
+            var timingData = GetTimingData(session, TimingSeries.StartTimes | TimingSeries.Frametimes);
 
-            return FilterDataWithinTimeWindow(frameStartTimes, frametimes, startTime, endTime);
+            return FilterDataWithinTimeWindow(timingData.StartTimes, timingData.Frametimes, startTime, endTime,
+                frametimeStatisticProvider, eRemoveOutlierMethod);
         }
 
         public static IList<double> GetDisplayChangeTimeWindow(this ISession session, double startTime, double endTime,
             IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
         {
             var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
-            var dispalyStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
-            var displayChangeTimes = frametimeStatisticProvider?
-                .GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToArray(), eRemoveOutlierMethod)
-                ?? Enumerable.Empty<double>().ToList();
+            var timingData = GetTimingData(session, TimingSeries.StartTimes | TimingSeries.DisplayChangeTimes);
 
-            return FilterDataWithinTimeWindow(dispalyStartTimes, displayChangeTimes, startTime, endTime);
+            return FilterDataWithinTimeWindow(timingData.StartTimes, timingData.DisplayChangeTimes, startTime, endTime,
+                frametimeStatisticProvider, eRemoveOutlierMethod);
         }
 
         public static IList<double> GetGpuActiveTimeTimeWindow(this ISession session, double startTime, double endTime,
 			IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
-			var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
+            var timingData = GetTimingData(session, TimingSeries.StartTimes | TimingSeries.GpuActiveTimes);
 
-            var gpuActiveTimes = frametimeStatisticProvider?
-                .GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.GpuActive).ToArray(), eRemoveOutlierMethod)
-				?? Enumerable.Empty<double>().ToList();
-
-			return FilterDataWithinTimeWindow(frameStartTimes, gpuActiveTimes, startTime, endTime);
+			return FilterDataWithinTimeWindow(timingData.StartTimes, timingData.GpuActiveTimes, startTime, endTime,
+                frametimeStatisticProvider, eRemoveOutlierMethod, IsValidActiveTimeValue);
 		}
 
         public static IList<double> GetCpuActiveTimeTimeWindow(this ISession session, double startTime, double endTime,
             IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
         {
             var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
-            var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
+            var timingData = GetTimingData(session, TimingSeries.StartTimes | TimingSeries.CpuActiveTimes);
 
-            var cpuActiveTimes = frametimeStatisticProvider?
-                .GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.CpuActive).ToArray(), eRemoveOutlierMethod)
-                ?? Enumerable.Empty<double>().ToList();
-
-            return FilterDataWithinTimeWindow(frameStartTimes, cpuActiveTimes, startTime, endTime);
+            return FilterDataWithinTimeWindow(timingData.StartTimes, timingData.CpuActiveTimes, startTime, endTime,
+                frametimeStatisticProvider, eRemoveOutlierMethod, IsValidActiveTimeValue);
         }
 
         public static IList<double> GetAnimationErrorTimeWindow(this ISession session, double startTime, double endTime)
         {
-            var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
-            var animationErrors = session.Runs.SelectMany(r => r.CaptureData.AnimationError).ToArray();
+            var timingData = GetTimingData(session, TimingSeries.StartTimes | TimingSeries.AnimationErrors);
+            int count = Math.Min(timingData.StartTimes.Length, timingData.AnimationErrors.Length);
+            var values = new List<double>(count);
 
-            return frameStartTimes.Zip(animationErrors, (t, y) => new { t, y })
-                .Where(pair => pair.t >= startTime && pair.t <= endTime && !double.IsNaN(pair.y))
-                .Select(pair => pair.y)
-                .ToList();
+            for (int i = 0; i < count; i++)
+            {
+                if (timingData.StartTimes[i] >= startTime && timingData.StartTimes[i] <= endTime
+                    && !double.IsNaN(timingData.AnimationErrors[i]) && !double.IsInfinity(timingData.AnimationErrors[i]))
+                {
+                    values.Add(timingData.AnimationErrors[i]);
+                }
+            }
+
+            return values;
         }
 
         public static IList<Point> GetFrametimePointsTimeWindow(this ISession session, double startTime, double endTime,
             IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
         {
             var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
-			var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
-			var frametimes = frametimeStatisticProvider?
-                .GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray(), eRemoveOutlierMethod)
-				?? Enumerable.Empty<double>().ToList();
+            var timingData = GetTimingData(session, TimingSeries.StartTimes | TimingSeries.Frametimes);
 
-			return FilterDataPointsWithinTimeWindow(frameStartTimes, frametimes, startTime, endTime);
+			return FilterDataPointsWithinTimeWindow(timingData.StartTimes, timingData.Frametimes, startTime, endTime,
+                frametimeStatisticProvider, eRemoveOutlierMethod);
         }
 
         public static IList<Point> GetDisplayChangeTimePointsTimeWindow(this ISession session, double startTime, double endTime,
             IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
         {
             var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
-            var displayStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
-            var displayChangeTimes = frametimeStatisticProvider?
-                .GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToArray(), eRemoveOutlierMethod)
-                ?? Enumerable.Empty<double>().ToList();
+            var timingData = GetTimingData(session, TimingSeries.StartTimes | TimingSeries.DisplayChangeTimes);
 
-            return FilterDataPointsWithinTimeWindow(displayStartTimes, displayChangeTimes, startTime, endTime);
+            return FilterDataPointsWithinTimeWindow(timingData.StartTimes, timingData.DisplayChangeTimes, startTime, endTime,
+                frametimeStatisticProvider, eRemoveOutlierMethod);
         }
 
         public static IList<Point> GetGpuActiveTimePointsTimeWindow(this ISession session, double startTime, double endTime,
 			IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
-			var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
+            var timingData = GetTimingData(session, TimingSeries.StartTimes | TimingSeries.GpuActiveTimes);
 
-			var gpuActiveTimes = frametimeStatisticProvider?
-                .GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.GpuActive).ToArray(), eRemoveOutlierMethod)
-				?? Enumerable.Empty<double>().ToList();
-
-			return FilterDataPointsWithinTimeWindow(frameStartTimes, gpuActiveTimes, startTime, endTime);
+			return FilterDataPointsWithinTimeWindow(timingData.StartTimes, timingData.GpuActiveTimes, startTime, endTime,
+                frametimeStatisticProvider, eRemoveOutlierMethod, IsValidActiveTimeValue);
 		}
 
         public static IList<Point> GetCpuActiveTimePointsTimeWindow(this ISession session, double startTime, double endTime,
             IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
         {
             var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
-            var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
+            var timingData = GetTimingData(session, TimingSeries.StartTimes | TimingSeries.CpuActiveTimes);
 
-            var cpuActiveTimes = frametimeStatisticProvider?
-                .GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.CpuActive).ToArray(), eRemoveOutlierMethod)
-                ?? Enumerable.Empty<double>().ToList();
-
-            return FilterDataPointsWithinTimeWindow(frameStartTimes, cpuActiveTimes, startTime, endTime);
+            return FilterDataPointsWithinTimeWindow(timingData.StartTimes, timingData.CpuActiveTimes, startTime, endTime,
+                frametimeStatisticProvider, eRemoveOutlierMethod, IsValidActiveTimeValue);
         }
 
 		public static IList<Point> GetFrametimePoints(this ISession session)
@@ -472,12 +700,10 @@ namespace CapFrameX.Statistics.NetStandard
         {
             var list = new List<Point>();
 
-            if (session.Runs.Any(r => r.SensorData2 == null))
-                return list;
-
-            var times = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
-            var latencies = session.Runs.SelectMany(r => r.CaptureData.PcLatency).ToArray();
-            int count = Math.Min(times.Count(), latencies.Count());
+            var timingData = GetTimingData(session, TimingSeries.StartTimes | TimingSeries.PcLatencies);
+            var times = timingData.StartTimes;
+            var latencies = timingData.PcLatencies;
+            int count = Math.Min(times.Length, latencies.Length);
 
             if (latencies.Any())
             {
@@ -494,9 +720,10 @@ namespace CapFrameX.Statistics.NetStandard
         {
             var list = new List<Point>();
 
-            var times = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
-            var animationErrors = session.Runs.SelectMany(r => r.CaptureData.AnimationError).ToArray();
-            int count = Math.Min(times.Count(), animationErrors.Count());
+            var timingData = GetTimingData(session, TimingSeries.StartTimes | TimingSeries.AnimationErrors);
+            var times = timingData.StartTimes;
+            var animationErrors = timingData.AnimationErrors;
+            int count = Math.Min(times.Length, animationErrors.Length);
 
             if (animationErrors.Any())
             {
@@ -520,8 +747,9 @@ namespace CapFrameX.Statistics.NetStandard
                 case EFilterMode.TimeIntervalAverage:
                     var intervalFrametimePoints = session.GetFrametimePointsTimeWindow(0, endTime, options, eRemoveOutlierMethod);
                     var timeIntervalAverageFilter = new IntervalTimeAverageFilter(options.IntervalAverageWindowTime);
+                    var timingData = GetTimingData(session, TimingSeries.StartTimes);
                     var timeIntervalAveragePoints = timeIntervalAverageFilter
-                        .ProcessSamples(intervalFrametimePoints, startTime, endTime, session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last());
+                        .ProcessSamples(intervalFrametimePoints, startTime, endTime, timingData.StartTimes.Last());
                     fpsPoints = timeIntervalAveragePoints.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
                     break;
                 default:
@@ -544,8 +772,9 @@ namespace CapFrameX.Statistics.NetStandard
                 case EFilterMode.TimeIntervalAverage:
                     var intervalDisplayChangeTimePoints = session.GetDisplayChangeTimePointsTimeWindow(0, endTime, options, eRemoveOutlierMethod);
                     var timeIntervalAverageFilter = new IntervalTimeAverageFilter(options.IntervalAverageWindowTime);
+                    var timingData = GetTimingData(session, TimingSeries.StartTimes);
                     var timeIntervalAveragePoints = timeIntervalAverageFilter
-                        .ProcessSamples(intervalDisplayChangeTimePoints, startTime, endTime, session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last());
+                        .ProcessSamples(intervalDisplayChangeTimePoints, startTime, endTime, timingData.StartTimes.Last());
                     displayFpsPoints = timeIntervalAveragePoints.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
                     break;
                 default:
@@ -568,8 +797,9 @@ namespace CapFrameX.Statistics.NetStandard
 				case EFilterMode.TimeIntervalAverage:
                     var intervalGpuActiveTimePoints = session.GetGpuActiveTimePointsTimeWindow(0, endTime, options, eRemoveOutlierMethod);
                     var timeIntervalAverageFilter = new IntervalTimeAverageFilter(options.IntervalAverageWindowTime);
+					var timingData = GetTimingData(session, TimingSeries.StartTimes);
 					var timeIntervalAveragePoints = timeIntervalAverageFilter
-						.ProcessSamples(intervalGpuActiveTimePoints, startTime, endTime, session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last());
+						.ProcessSamples(intervalGpuActiveTimePoints, startTime, endTime, timingData.StartTimes.Last());
 					fpsPoints = timeIntervalAveragePoints.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
 					break;
 				default:
@@ -619,58 +849,69 @@ namespace CapFrameX.Statistics.NetStandard
         public static IList<Point> GetFrametimeDistributionPoints(this ISession session, double startTime, double endTime,
             IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
         {
+            var timingData = GetTimingData(session, TimingSeries.StartTimes | TimingSeries.Frametimes);
 
+            return GetTimingDistributionPoints(timingData.StartTimes, timingData.Frametimes, startTime, endTime,
+                options, eRemoveOutlierMethod);
+        }
+
+        public static IList<Point> GetDisplayTimeDistributionPoints(this ISession session, double startTime, double endTime,
+            IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
+        {
+            var timingData = GetTimingData(session, TimingSeries.StartTimes | TimingSeries.DisplayChangeTimes);
+
+            return GetTimingDistributionPoints(timingData.StartTimes, timingData.DisplayChangeTimes, startTime, endTime,
+                options, eRemoveOutlierMethod);
+        }
+
+        private static IList<Point> GetTimingDistributionPoints(IList<double> frameStartTimes, IList<double> timingValues,
+            double startTime, double endTime, IFrametimeStatisticProviderOptions options,
+            ERemoveOutlierMethod eRemoveOutlierMethod)
+        {
             var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
-            var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
-            var frametimes = frametimeStatisticProvider?
-                .GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray(), eRemoveOutlierMethod)
-                ?? Enumerable.Empty<double>().ToList();
+            var filteredFrameTimes = FilterDataWithinTimeWindow(frameStartTimes, timingValues, startTime, endTime,
+                frametimeStatisticProvider, eRemoveOutlierMethod);
 
-            var filteredFrameTimes = FilterDataWithinTimeWindow(frameStartTimes, frametimes, startTime, endTime);
+            if (filteredFrameTimes.Count == 0)
+            {
+                return new List<Point>();
+            }
 
-            // Bin increments
-            double increments = 0.1;
+            const double increment = 0.1;
             double maxValue = filteredFrameTimes.Max();
-
-
-            // Create Bins (start, end)
-            List<(double start, double end)> bins = new List<(double, double)>();
-            for (double start = 0; start < maxValue; start += increments)
-            {
-                double end = Math.Round(start + increments, 10);
-                bins.Add((start, end));
-            }
-
-            // Expand last bin if maxValue doesn't fit
-            if (bins.Count == 0 || bins.Last().end < maxValue)
-            {
-                double start = bins.Count > 0 ? bins.Last().end : 0;
-                double end = Math.Round(start + increments, 10);
-                bins.Add((start, end));
-            }
-
-
-            // Distribution list (X = bin threshold, Y = percentage)
             double totalSum = filteredFrameTimes.Sum();
-            List<Point> frametimeDistribution = new List<Point>();
+            var binSums = new Dictionary<int, double>();
 
-            foreach (var (start, end) in bins)
+            // Build only populated bins. This is O(samples) and cannot allocate a huge
+            // dense array when a capture contains a very large hitch.
+            for (int i = 0; i < filteredFrameTimes.Count; i++)
             {
-                bool isLastBin = (start, end) == bins.Last();
+                double value = filteredFrameTimes[i];
+                double scaledValue = value / increment;
+                double roundedScaledValue = Math.Round(scaledValue);
+                if (Math.Abs(scaledValue - roundedScaledValue) < 1E-9)
+                    scaledValue = roundedScaledValue;
 
-                // sum of values in bin
-                double binSum = filteredFrameTimes
-                    .Where(w => isLastBin ? (w >= start && w <= end) : (w >= start && w < end))
-                    .Sum();
+                int binIndex = (int)Math.Floor(scaledValue);
 
-                if (binSum > 0 )
+                // Bins are [start, end), except for the final bin which includes
+                // the maximum. Keep an exact maximum boundary in that final bin.
+                if (value == maxValue && binIndex > 0 && scaledValue == roundedScaledValue)
                 {
-                    double percentage = (binSum / totalSum) * 100;
-                    frametimeDistribution.Add(new Point(end, percentage));
+                    binIndex--;
                 }
+
+                double currentSum;
+                binSums.TryGetValue(binIndex, out currentSum);
+                binSums[binIndex] = currentSum + value;
             }
 
-            return frametimeDistribution;
+            return binSums
+                .OrderBy(pair => pair.Key)
+                .Select(pair => new Point(
+                    Math.Round((pair.Key + 1) * increment, 10),
+                    pair.Value / totalSum * 100))
+                .ToList();
         }
     }
 }

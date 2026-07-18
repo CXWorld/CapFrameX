@@ -305,9 +305,15 @@ namespace CapFrameX.ViewModel
                 sequence.Any()
                     ? Math.Round(sequence.Average(), _appConfiguration.FpsValuesRoundingDigits, MidpointRounding.AwayFromZero)
                     : double.NaN;
-            var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
-            var displayTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToList();
-            var samples = _appConfiguration.UseDisplayChangeMetrics ? displayTimes : frameTimes;
+            var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents)
+                .Where(time => time > 0 && !double.IsNaN(time) && !double.IsInfinity(time))
+                .ToList();
+            var displayTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange)
+                .Where(time => time > 0 && !double.IsNaN(time) && !double.IsInfinity(time))
+                .ToList();
+            var samples = _appConfiguration.UseDisplayChangeMetrics && displayTimes.Any()
+                ? displayTimes
+                : frameTimes;
 
             var GpuActiveTimes = session.Runs.SelectMany(r => r.CaptureData.GpuActive).ToList();
             var animationErrorsAbs = session.Runs

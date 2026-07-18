@@ -7,11 +7,13 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace CapFrameX.Data
 {
-    public class FileRecordInfo : IFileRecordInfo
+	public class FileRecordInfo : IFileRecordInfo
 	{
+		private const int MAX_INDEX_STRING_BYTES = 1024 * 1024;
 		public static string HEADER_MARKER = "//";
 		public static readonly char INFO_SEPERATOR = '=';
 
@@ -58,48 +60,70 @@ namespace CapFrameX.Data
 		public string HAGS { get; private set; }
 		public string PresentationMode { get; private set; }
 		public string Resolution { get; private set; }
+		internal bool UsesProcessListGameName { get; set; }
+
+		private FileRecordInfo()
+		{
+		}
 
 		private FileRecordInfo(FileInfo fileInfo, ISession session)
+			: this(fileInfo, session?.Info, session?.Hash, session?.Runs?.Count ?? 0,
+				session?.Runs?.LastOrDefault()?.CaptureData?.TimeInSeconds?.LastOrDefault() ?? 0)
 		{
-			var creationDateTime = session.Info.CreationDate.ToLocalTime();
+		}
+
+		private FileRecordInfo(FileInfo fileInfo, ISessionInfo sessionInfo, string hash,
+			int runCount, double recordTime)
+		{
+			if (fileInfo == null || sessionInfo == null)
+			{
+				throw new ArgumentException("Record metadata is incomplete.");
+			}
+
+			var creationDateTime = sessionInfo.CreationDate.ToLocalTime();
 			FileInfo = fileInfo;
 			FullPath = fileInfo.FullName;
-			Id = session.Info.Id.ToString();
+			Id = sessionInfo.Id.ToString();
 			CreationDate = creationDateTime.ToString("yyyy-MM-dd");
 			CreationTime = creationDateTime.ToString("HH:mm:ss");
-			ProcessName = session.Info.ProcessName;
-			GameName = session.Info.GameName;
-			ProcessorName = session.Info.Processor;
-			GraphicCardName = session.Info.GPU;
-			SystemRamInfo = session.Info.SystemRam;
-			MotherboardName = session.Info.Motherboard;
-			OsVersion = session.Info.OS;
-			GPUMemoryClock = session.Info.GpuMemoryClock;
-			GPUCoreClock = session.Info.GpuCoreClock;
-			DriverPackage = session.Info.DriverPackage;
-			BaseDriverVersion = session.Info.BaseDriverVersion;
-			GPUDriverVersion = session.Info.GPUDriverVersion;
-			Comment = session.Info.Comment;
-			ProcessName = session.Info.ProcessName;
-			IsAggregated = Convert.ToString(session.Runs.Count() > 1);
+			ProcessName = sessionInfo.ProcessName;
+			GameName = sessionInfo.GameName;
+			ProcessorName = sessionInfo.Processor;
+			GraphicCardName = sessionInfo.GPU;
+			SystemRamInfo = sessionInfo.SystemRam;
+			MotherboardName = sessionInfo.Motherboard;
+			OsVersion = sessionInfo.OS;
+			GPUMemoryClock = sessionInfo.GpuMemoryClock;
+			GPUCoreClock = sessionInfo.GpuCoreClock;
+			DriverPackage = sessionInfo.DriverPackage;
+			BaseDriverVersion = sessionInfo.BaseDriverVersion;
+			GPUDriverVersion = sessionInfo.GPUDriverVersion;
+			Comment = sessionInfo.Comment;
+			IsAggregated = Convert.ToString(runCount > 1);
 			IsValid = true;
-			Hash = session.Hash;
-			ApiInfo = session.Info.ApiInfo;
-			ResizableBar = session.Info.ResizableBar;
-			WinGameMode = session.Info.WinGameMode;
-			HAGS = session.Info.HAGS;
-			PresentationMode = session.Info.PresentationMode;
-			Resolution = session.Info.ResolutionInfo;
+			Hash = hash;
+			RecordTime = recordTime;
+			ApiInfo = sessionInfo.ApiInfo;
+			ResizableBar = sessionInfo.ResizableBar;
+			WinGameMode = sessionInfo.WinGameMode;
+			HAGS = sessionInfo.HAGS;
+			PresentationMode = sessionInfo.PresentationMode;
+			Resolution = sessionInfo.ResolutionInfo;
 		}
 
 		private FileRecordInfo(FileInfo fileInfo, string hash)
+			: this(fileInfo, hash, null)
+		{
+		}
+
+		private FileRecordInfo(FileInfo fileInfo, string hash, string[] lines)
 		{
 			if (fileInfo != null && File.Exists(fileInfo.FullName))
 			{
 				FileInfo = fileInfo;
 				FullPath = fileInfo.FullName;
 				Hash = hash;
-				_lines = File.ReadAllLines(fileInfo.FullName);
+				_lines = lines ?? File.ReadAllLines(fileInfo.FullName);
 
 				if (_lines != null && _lines.Any())
 				{
@@ -373,6 +397,26 @@ namespace CapFrameX.Data
 			return recordInfo;
 		}
 
+		internal static IFileRecordInfo Create(FileInfo fileInfo, string hash, string[] lines)
+		{
+			FileRecordInfo recordInfo = null;
+
+			try
+			{
+				recordInfo = new FileRecordInfo(fileInfo, hash, lines);
+			}
+			catch (ArgumentException)
+			{
+				// Log
+			}
+			catch (Exception)
+			{
+				// Log
+			}
+
+			return recordInfo;
+		}
+
 		public static IFileRecordInfo Create(FileInfo fileInfo, ISession session)
 		{
 			FileRecordInfo recordInfo = null;
@@ -391,6 +435,140 @@ namespace CapFrameX.Data
 			}
 
 			return recordInfo;
+		}
+
+		internal static IFileRecordInfo Create(FileInfo fileInfo, ISessionInfo sessionInfo,
+			string hash, int runCount, double recordTime)
+		{
+			try
+			{
+				return new FileRecordInfo(fileInfo, sessionInfo, hash, runCount, recordTime);
+			}
+			catch (Exception)
+			{
+				return null;
+			}
+		}
+
+		internal void WriteMetadata(BinaryWriter writer)
+		{
+			WriteString(writer, GameName);
+			writer.Write(UsesProcessListGameName);
+			WriteString(writer, ProcessName);
+			WriteString(writer, CreationDate);
+			WriteString(writer, CreationTime);
+			writer.Write(RecordTime);
+			WriteString(writer, CombinedInfo);
+			WriteString(writer, MotherboardName);
+			WriteString(writer, OsVersion);
+			WriteString(writer, ProcessorName);
+			WriteString(writer, SystemRamInfo);
+			WriteString(writer, BaseDriverVersion);
+			WriteString(writer, DriverPackage);
+			WriteString(writer, NumberGPUs);
+			WriteString(writer, GraphicCardName);
+			WriteString(writer, GPUCoreClock);
+			WriteString(writer, GPUMemoryClock);
+			WriteString(writer, GPUMemory);
+			WriteString(writer, GPUDriverVersion);
+			WriteString(writer, Comment);
+			WriteString(writer, IsAggregated);
+			writer.Write(IsValid);
+			writer.Write(HasInfoHeader);
+			WriteString(writer, Id);
+			WriteString(writer, Hash);
+			WriteString(writer, ApiInfo);
+			WriteString(writer, ResizableBar);
+			WriteString(writer, WinGameMode);
+			WriteString(writer, HAGS);
+			WriteString(writer, PresentationMode);
+			WriteString(writer, Resolution);
+		}
+
+		internal static IFileRecordInfo ReadMetadata(FileInfo fileInfo, BinaryReader reader)
+		{
+			if (fileInfo == null)
+			{
+				throw new InvalidDataException("Record metadata path is missing.");
+			}
+
+			var recordInfo = new FileRecordInfo
+			{
+				FileInfo = fileInfo,
+				FullPath = fileInfo.FullName,
+				GameName = ReadString(reader),
+				UsesProcessListGameName = reader.ReadBoolean(),
+				ProcessName = ReadString(reader),
+				CreationDate = ReadString(reader),
+				CreationTime = ReadString(reader),
+				RecordTime = reader.ReadDouble(),
+				CombinedInfo = ReadString(reader),
+				MotherboardName = ReadString(reader),
+				OsVersion = ReadString(reader),
+				ProcessorName = ReadString(reader),
+				SystemRamInfo = ReadString(reader),
+				BaseDriverVersion = ReadString(reader),
+				DriverPackage = ReadString(reader),
+				NumberGPUs = ReadString(reader),
+				GraphicCardName = ReadString(reader),
+				GPUCoreClock = ReadString(reader),
+				GPUMemoryClock = ReadString(reader),
+				GPUMemory = ReadString(reader),
+				GPUDriverVersion = ReadString(reader),
+				Comment = ReadString(reader),
+				IsAggregated = ReadString(reader),
+				IsValid = reader.ReadBoolean(),
+				HasInfoHeader = reader.ReadBoolean(),
+				Id = ReadString(reader),
+				Hash = ReadString(reader),
+				ApiInfo = ReadString(reader),
+				ResizableBar = ReadString(reader),
+				WinGameMode = ReadString(reader),
+				HAGS = ReadString(reader),
+				PresentationMode = ReadString(reader),
+				Resolution = ReadString(reader)
+			};
+
+			return recordInfo;
+		}
+
+		private static void WriteString(BinaryWriter writer, string value)
+		{
+			if (value == null)
+			{
+				writer.Write(-1);
+				return;
+			}
+
+			byte[] bytes = Encoding.UTF8.GetBytes(value);
+			if (bytes.Length > MAX_INDEX_STRING_BYTES)
+			{
+				throw new InvalidDataException("Record metadata string exceeds the index limit.");
+			}
+
+			writer.Write(bytes.Length);
+			writer.Write(bytes);
+		}
+
+		private static string ReadString(BinaryReader reader)
+		{
+			int length = reader.ReadInt32();
+			if (length == -1)
+			{
+				return null;
+			}
+			if (length < 0 || length > MAX_INDEX_STRING_BYTES)
+			{
+				throw new InvalidDataException("Record metadata string length is invalid.");
+			}
+
+			byte[] bytes = reader.ReadBytes(length);
+			if (bytes.Length != length)
+			{
+				throw new EndOfStreamException("Record metadata string is truncated.");
+			}
+
+			return Encoding.UTF8.GetString(bytes);
 		}
 
 		public static bool IsMangoHudFile(string line)

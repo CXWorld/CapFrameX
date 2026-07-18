@@ -661,7 +661,7 @@
 				</StackPanel.Style>
 			</StackPanel>
 
-            <StackPanel Grid.Column="6" Margin="10 10 5 0" Orientation="Horizontal">
+			<StackPanel Grid.Column="6" Margin="10 10 5 0" Orientation="Horizontal">
                 <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Further Settings</TextBlock>
                 <materialDesign:PopupBox Foreground="{DynamicResource MaterialDesignBody}" StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
                     <materialDesign:Card Width="Auto" Margin="0 0 0 -10">
@@ -676,8 +676,7 @@
                                 <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">GPU-Busy times:</TextBlock>
                                 <ToggleButton Name="GPUActiveMetricsToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 								  ToolTip="Show GPU-Busy times instead of regular frametimes" IsChecked="{Binding ShowGpuActiveLineCharts}"/>
-                            </StackPanel>
-
+			</StackPanel>
                             <StackPanel Margin="10 10 10 0" VerticalAlignment="Center" Orientation="Horizontal"
 							Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
                                 <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Relative Mode:</TextBlock>
@@ -742,6 +741,9 @@
                     </Style>
                 </StackPanel.Style>
             </StackPanel>
+			<TextBlock Grid.Column="8" Margin="10 10 10 0" HorizontalAlignment="Right" VerticalAlignment="Center"
+				Text="{Binding ComparisonMetricSourceDescription}" TextTrimming="CharacterEllipsis"
+				ToolTip="All compared records use this timing source; mixed display/present comparisons are prevented." />
         </Grid>
 		<!-- Copmparison List -->
 		<StackPanel Margin="5 10 5 0" Grid.Column="1" Grid.RowSpan="2" Orientation="Vertical">

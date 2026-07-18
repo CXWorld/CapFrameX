@@ -25,7 +25,11 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
 
         double GetFpsMetricValue(IList<double> sequence, EMetric metric);
 
+        IDictionary<EMetric, double> GetFpsMetricValues(IList<double> sequence, IEnumerable<EMetric> metrics);
+
         double GetFrametimeMetricValue(IList<double> sequence, EMetric metric);
+
+        IDictionary<EMetric, double> GetFrametimeMetricValues(IList<double> sequence, IEnumerable<EMetric> metrics);
 
         double GetPhysicalMetricValue(IList<double> sequence, EMetric metric, double coefficient);
 
@@ -38,6 +42,8 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
         IList<int> GetFpsThresholdCounts(IList<double> frametimes, bool isReversed);
 
         IList<double> GetFpsThresholdTimes(IList<double> frametimes, bool isReversed);
+
+        IList<double> GetVariancePercentages(IList<double> sequence);
 
         IList<double> GetFrametimeVariancePercentages(ISession session);
 

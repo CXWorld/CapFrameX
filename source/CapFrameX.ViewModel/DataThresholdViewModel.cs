@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -138,7 +139,8 @@ namespace CapFrameX.ViewModel
 
             if (sampleSubset != null)
             {
-                Task.Factory.StartNew(() => SetFpsThresholdChart(sampleSubset));
+                var cancellationToken = BeginThresholdUpdate(out int updateVersion);
+                Task.Run(() => SetFpsThresholdChart(sampleSubset, updateVersion, cancellationToken, true), cancellationToken);
                 SetThresholdLabels();
             }
         }
@@ -157,20 +159,32 @@ namespace CapFrameX.ViewModel
                 }).ToArray();
         }
 
-        private void SetFpsThresholdChart(IList<double> samples)
+        private void SetFpsThresholdChart(IList<double> samples, int updateVersion,
+            CancellationToken cancellationToken, bool thresholdOnlyUpdate = false)
         {
+            if (!IsCurrentThresholdChartUpdate(updateVersion, cancellationToken, thresholdOnlyUpdate)) return;
             if (samples == null || !samples.Any()) return;
 
             var thresholdCounts = _frametimeStatisticProvider.GetFpsThresholdCounts(samples, ThresholdToggleButtonIsChecked);
+            cancellationToken.ThrowIfCancellationRequested();
             var thresholdCountValues = new ChartValues<double>();
             thresholdCountValues.AddRange(thresholdCounts.Select(val => (double)val / samples.Count));
 
             var thresholdTimes = _frametimeStatisticProvider.GetFpsThresholdTimes(samples, ThresholdToggleButtonIsChecked);
+            cancellationToken.ThrowIfCancellationRequested();
+            double totalSampleTime = 0;
+            for (int i = 0; i < samples.Count; i++)
+            {
+                if ((i & 1023) == 0) cancellationToken.ThrowIfCancellationRequested();
+                totalSampleTime += samples[i];
+            }
             var thresholdTimesValues = new ChartValues<double>();
-            thresholdTimesValues.AddRange(thresholdTimes.Select(val => val / samples.Sum()));
+            thresholdTimesValues.AddRange(thresholdTimes.Select(val => val / totalSampleTime));
 
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
+                if (!IsCurrentThresholdChartUpdate(updateVersion, cancellationToken, thresholdOnlyUpdate)) return;
+
                 if (!ShowThresholdTimes)
                 {
                     YAxisLabel = "Frames";
@@ -197,7 +211,7 @@ namespace CapFrameX.ViewModel
                             Values = thresholdTimesValues,
                             Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
                             DataLabels = true,
-                            LabelPoint = p => ThresholdShowAbsoluteValues ? ((samples.Sum()* p.Y) * 1E-03).ToString("N1", CultureInfo.InvariantCulture) + "s" :
+                            LabelPoint = p => ThresholdShowAbsoluteValues ? ((totalSampleTime * p.Y) * 1E-03).ToString("N1", CultureInfo.InvariantCulture) + "s" :
                                 (100 * p.Y).ToString("N1", CultureInfo.InvariantCulture) + "%",
                             MaxColumnWidth = 40
                         }
@@ -207,6 +221,8 @@ namespace CapFrameX.ViewModel
 
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
+                if (!IsCurrentThresholdChartUpdate(updateVersion, cancellationToken, thresholdOnlyUpdate)) return;
+
                 if (!ShowThresholdTimes)
                 {
                     YAxisLabel = "Frames";
@@ -233,13 +249,22 @@ namespace CapFrameX.ViewModel
                             Values = thresholdTimesValues,
                             Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
                             DataLabels = true,
-                            LabelPoint = p => ThresholdShowAbsoluteValues ? ((samples.Sum()* p.Y) * 1E-03).ToString("N1", CultureInfo.InvariantCulture) + "s" :
+                            LabelPoint = p => ThresholdShowAbsoluteValues ? ((totalSampleTime * p.Y) * 1E-03).ToString("N1", CultureInfo.InvariantCulture) + "s" :
                                 (100 * p.Y).ToString("N1", CultureInfo.InvariantCulture) + "%",
                             MaxColumnWidth = 40
                         }
                     };
                 }
             }));
+        }
+
+        private bool IsCurrentThresholdChartUpdate(int updateVersion,
+            CancellationToken cancellationToken, bool thresholdOnlyUpdate)
+        {
+            return !cancellationToken.IsCancellationRequested
+                && (thresholdOnlyUpdate
+                    ? IsCurrentThresholdUpdate(updateVersion)
+                    : IsCurrentAnalysisUpdate(updateVersion));
         }
     }
 }

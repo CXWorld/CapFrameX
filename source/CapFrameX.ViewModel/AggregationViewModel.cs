@@ -40,6 +40,17 @@ namespace CapFrameX.ViewModel
         private bool _showResultString;
         private string _aggregationResultString = string.Empty;
         private bool _supressCollectionChanged;
+        private readonly Dictionary<string, AggregationWorkingSet> _workingSets =
+            new Dictionary<string, AggregationWorkingSet>(StringComparer.OrdinalIgnoreCase);
+
+        private sealed class AggregationWorkingSet
+        {
+            public ISession Session;
+            public List<double> FrametimeValues;
+            public List<double> DisplayTimeValues;
+            public long FileLength;
+            public long LastWriteTimeUtcTicks;
+        }
 
         public int SelectedAggregationEntryIndex
         {
@@ -217,6 +228,10 @@ namespace CapFrameX.ViewModel
         public void RemoveAggregationEntry(IAggregationEntry entry)
         {
             _fileRecordInfoList.Remove(entry.FileRecordInfo);
+            if (entry.FileRecordInfo != null)
+            {
+                _workingSets.Remove(entry.FileRecordInfo.FullPath);
+            }
             AggregationEntries.Remove(entry);
         }
 
@@ -274,17 +289,14 @@ namespace CapFrameX.ViewModel
                     return;
             }
 
-            _fileRecordInfoList.Add(recordInfo);
-
-            session = session ?? _recordManager.LoadData(recordInfo.FullPath);
-            var frametimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
-            var displaytimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToList();
+            var workingSet = GetWorkingSet(recordInfo, session);
 
             var metricAnalysis = _statisticProvider
-                .GetMetricAnalysis(frametimes, displaytimes, _appConfiguration.UseDisplayChangeMetrics,
+                .GetMetricAnalysis(workingSet.FrametimeValues, workingSet.DisplayTimeValues,
+                    _appConfiguration.UseDisplayChangeMetrics,
                     SelectedSecondMetric.ConvertToString(), SelectedThirdMetric.ConvertToString());
 
-            AggregationEntries.Add(new AggregationEntry()
+            var entry = new AggregationEntry()
             {
                 GameName = recordInfo.GameName,
                 CreationDate = recordInfo.CreationDate,
@@ -294,7 +306,18 @@ namespace CapFrameX.ViewModel
                 ThirdMetricValue = metricAnalysis.Third,
                 MetricAnalysis = metricAnalysis,
                 FileRecordInfo = recordInfo
-            });
+            };
+
+            _fileRecordInfoList.Add(recordInfo);
+            try
+            {
+                AggregationEntries.Add(entry);
+            }
+            catch
+            {
+                _fileRecordInfoList.Remove(recordInfo);
+                throw;
+            }
         }
 
         private void UpdateAggregationEntries()
@@ -302,20 +325,17 @@ namespace CapFrameX.ViewModel
             if (!_fileRecordInfoList.Any())
                 return;
 
-            AggregationEntries.Clear();
-
-            _supressCollectionChanged = true;
+            var updatedEntries = new List<AggregationEntry>(_fileRecordInfoList.Count);
             foreach (var recordInfo in _fileRecordInfoList)
             {
-                var localSession = _recordManager.LoadData(recordInfo.FullPath);
-                var frametimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
-                var displaytimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToList();
+                var workingSet = GetWorkingSet(recordInfo);
 
                 var metricAnalysis = _statisticProvider
-                    .GetMetricAnalysis(frametimes, displaytimes, _appConfiguration.UseDisplayChangeMetrics,
+                    .GetMetricAnalysis(workingSet.FrametimeValues, workingSet.DisplayTimeValues,
+                        _appConfiguration.UseDisplayChangeMetrics,
                         SelectedSecondMetric.ConvertToString(), SelectedThirdMetric.ConvertToString());
 
-                AggregationEntries.Add(new AggregationEntry()
+                updatedEntries.Add(new AggregationEntry()
                 {
                     GameName = recordInfo.GameName,
                     CreationDate = recordInfo.CreationDate,
@@ -323,17 +343,38 @@ namespace CapFrameX.ViewModel
                     AverageValue = metricAnalysis.Average,
                     SecondMetricValue = metricAnalysis.Second,
                     ThirdMetricValue = metricAnalysis.Third,
-                    MetricAnalysis = metricAnalysis
+                    MetricAnalysis = metricAnalysis,
+                    FileRecordInfo = recordInfo
                 });
             }
-            _supressCollectionChanged = false;
-            OnAggregationEntriesChanged();
+
+            var previousEntries = AggregationEntries.ToList();
+            _supressCollectionChanged = true;
+            try
+            {
+                AggregationEntries.Clear();
+                foreach (var entry in updatedEntries)
+                    AggregationEntries.Add(entry);
+            }
+            catch
+            {
+                AggregationEntries.Clear();
+                foreach (var entry in previousEntries)
+                    AggregationEntries.Add(entry);
+                throw;
+            }
+            finally
+            {
+                _supressCollectionChanged = false;
+                OnAggregationEntriesChanged();
+            }
         }
 
         private void OnClearTable()
         {
             AggregationEntries.Clear();
             _fileRecordInfoList.Clear();
+            _workingSets.Clear();
             AggregationResultString = string.Empty;
             ShowResultString = false;
         }
@@ -342,17 +383,14 @@ namespace CapFrameX.ViewModel
         {
             try
             {
-                var concatedFrametimesInclude = new List<double>();
-                var concatedDisplaytimesInclude = new List<double>();
+                var workingSets = _fileRecordInfoList.Select(info => GetWorkingSet(info)).ToList();
+                var concatedFrametimesInclude = new List<double>(workingSets.Sum(set => set.FrametimeValues.Count));
+                var concatedDisplaytimesInclude = new List<double>(workingSets.Sum(set => set.DisplayTimeValues.Count));
 
-                foreach (var recordInfo in _fileRecordInfoList)
+                foreach (var workingSet in workingSets)
                 {
-                    var localSession = _recordManager.LoadData(recordInfo.FullPath);
-                    var frametimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
-                    var displaytimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToList();
-
-                    concatedFrametimesInclude.AddRange(frametimes);
-                    concatedDisplaytimesInclude.AddRange(displaytimes);
+                    concatedFrametimesInclude.AddRange(workingSet.FrametimeValues);
+                    concatedDisplaytimesInclude.AddRange(workingSet.DisplayTimeValues);
                 }
 
                 var resultString = _statisticProvider
@@ -382,17 +420,17 @@ namespace CapFrameX.ViewModel
                         .GetOutlierAnalysis(AggregationEntries.Select(analysis => analysis.MetricAnalysis).ToList(),
                         _appConfiguration.RelatedMetricAggregation, _appConfiguration.OutlierPercentageAggregation);
 
-                var concatedFrametimesExclude = new List<double>();
-                var concatedDisplaytimesExclude = new List<double>();
+                var includedWorkingSets = _fileRecordInfoList
+                    .Where((x, i) => !outlierFlags[i])
+                    .Select(info => GetWorkingSet(info))
+                    .ToList();
+                var concatedFrametimesExclude = new List<double>(includedWorkingSets.Sum(set => set.FrametimeValues.Count));
+                var concatedDisplaytimesExclude = new List<double>(includedWorkingSets.Sum(set => set.DisplayTimeValues.Count));
 
-                foreach (var recordInfo in _fileRecordInfoList.Where((x, i) => !outlierFlags[i]))
+                foreach (var workingSet in includedWorkingSets)
                 {
-                    var localSession = _recordManager.LoadData(recordInfo.FullPath);
-                    var frametimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
-                    var displaytimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToList();
-
-                    concatedFrametimesExclude.AddRange(frametimes);
-                    concatedDisplaytimesExclude.AddRange(displaytimes);
+                    concatedFrametimesExclude.AddRange(workingSet.FrametimeValues);
+                    concatedDisplaytimesExclude.AddRange(workingSet.DisplayTimeValues);
                 }
 
                 var resultString = _statisticProvider
@@ -416,26 +454,62 @@ namespace CapFrameX.ViewModel
 
         private void WriteAggregatedFileAsync(bool[] outlierFlags)
         {
+            var includedSessions = _fileRecordInfoList
+                .Where((x, i) => !outlierFlags[i])
+                .Select(info => GetWorkingSet(info).Session)
+                .ToList();
+
             // write aggregated file
             Task.Run(() =>
             {
                 string process = string.Empty;
-                var filteredFileRecordInfoList = _fileRecordInfoList.Where((x, i) => !outlierFlags[i]);
 
                 var hwInfo = new List<ISessionInfo>();
 
                 var runs = new List<ISessionRun>();
 
-                foreach (var recordInfo in filteredFileRecordInfoList)
+                foreach (var session in includedSessions)
                 {
-                    var otherSession = _recordManager.LoadData(recordInfo.FullPath);
-                    process = otherSession.Info.ProcessName;
-                    hwInfo.Add(otherSession.Info);
-                    runs.AddRange(otherSession.Runs);
+                    process = session.Info.ProcessName;
+                    hwInfo.Add(session.Info);
+                    runs.AddRange(session.Runs);
                 }
 
                 _recordManager.SaveSessionRunsToFile(runs, process, string.Empty, null, hwInfo);
             });
+        }
+
+        private AggregationWorkingSet GetWorkingSet(IFileRecordInfo recordInfo, ISession suppliedSession = null)
+        {
+            var fileInfo = recordInfo.FileInfo;
+            fileInfo?.Refresh();
+            long fileLength = fileInfo?.Exists == true ? fileInfo.Length : 0;
+            long lastWriteTimeUtcTicks = fileInfo?.Exists == true ? fileInfo.LastWriteTimeUtc.Ticks : 0;
+
+            if (suppliedSession == null
+                && _workingSets.TryGetValue(recordInfo.FullPath, out var cached)
+                && cached.FileLength == fileLength
+                && cached.LastWriteTimeUtcTicks == lastWriteTimeUtcTicks)
+            {
+                return cached;
+            }
+
+            var session = suppliedSession ?? _recordManager.LoadData(recordInfo.FullPath);
+            if (session == null)
+            {
+                throw new InvalidOperationException($"Unable to load aggregation record '{recordInfo.FullPath}'.");
+            }
+
+            var workingSet = new AggregationWorkingSet
+            {
+                Session = session,
+                FrametimeValues = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList(),
+                DisplayTimeValues = session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToList(),
+                FileLength = fileLength,
+                LastWriteTimeUtcTicks = lastWriteTimeUtcTicks
+            };
+            _workingSets[recordInfo.FullPath] = workingSet;
+            return workingSet;
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)

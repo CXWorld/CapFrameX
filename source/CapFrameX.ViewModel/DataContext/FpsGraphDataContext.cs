@@ -3,6 +3,7 @@ using OxyPlot;
 using OxyPlot.Axes;
 using Prism.Commands;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Windows.Input;
 using System.Globalization;
@@ -13,6 +14,7 @@ using CapFrameX.Statistics.PlotBuilder;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using Prism.Events;
 using CapFrameX.Extensions.NetStandard;
+using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 
 namespace CapFrameX.ViewModel.DataContext
@@ -133,14 +135,15 @@ namespace CapFrameX.ViewModel.DataContext
             if (RecordSession == null)
                 return;
 
-            var fps = RecordDataServer.GetFpsTimeWindow();
-            var gpuActiveFps = RecordDataServer.GetGpuActiveFpsTimeWindow();
+            var alignedPoints = GetAlignedFinitePoints(
+                RecordDataServer.GetFpsPointTimeWindow(),
+                RecordDataServer.GetGpuActiveFpsPointTimeWindow());
             StringBuilder builder = new StringBuilder();
 
-            for (int i = 0; i < fps.Count; i++)
+            foreach (var points in alignedPoints)
             {
-                builder.Append(Math.Round(fps[i], 2, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture) + "\t" +
-                    Math.Round(gpuActiveFps[i], 2, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                builder.Append(Math.Round(points.Item1.Y, 2, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture) + "\t" +
+                    Math.Round(points.Item2.Y, 2, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);
@@ -168,18 +171,55 @@ namespace CapFrameX.ViewModel.DataContext
             if (RecordSession == null)
                 return;
 
-            var fpsPoints = RecordDataServer.GetFpsPointTimeWindow();
-            var gpuActiveFpsPoints = RecordDataServer.GetGpuActiveFpsPointTimeWindow();
+            var alignedPoints = GetAlignedFinitePoints(
+                RecordDataServer.GetFpsPointTimeWindow(),
+                RecordDataServer.GetGpuActiveFpsPointTimeWindow());
             StringBuilder builder = new StringBuilder();
 
-            for (int i = 0; i < fpsPoints.Count; i++)
+            foreach (var points in alignedPoints)
             {
-                builder.Append(Math.Round(fpsPoints[i].X, 2).ToString(CultureInfo.InvariantCulture) + "\t" +
-                    Math.Round(fpsPoints[i].Y, 2).ToString(CultureInfo.InvariantCulture) + "\t"+
-                    Math.Round(gpuActiveFpsPoints[i].Y, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                builder.Append(Math.Round(points.Item1.X, 2).ToString(CultureInfo.InvariantCulture) + "\t" +
+                    Math.Round(points.Item1.Y, 2).ToString(CultureInfo.InvariantCulture) + "\t"+
+                    Math.Round(points.Item2.Y, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);
         }
+
+        private static IList<Tuple<Point, Point>> GetAlignedFinitePoints(
+            IList<Point> fpsPoints, IList<Point> gpuActiveFpsPoints)
+        {
+            var alignedPoints = new List<Tuple<Point, Point>>();
+            if (fpsPoints == null || gpuActiveFpsPoints == null)
+                return alignedPoints;
+
+            int fpsIndex = 0;
+            int gpuIndex = 0;
+            while (fpsIndex < fpsPoints.Count && gpuIndex < gpuActiveFpsPoints.Count)
+            {
+                var fpsPoint = fpsPoints[fpsIndex];
+                var gpuPoint = gpuActiveFpsPoints[gpuIndex];
+                if (fpsPoint.X < gpuPoint.X)
+                {
+                    fpsIndex++;
+                    continue;
+                }
+                if (gpuPoint.X < fpsPoint.X)
+                {
+                    gpuIndex++;
+                    continue;
+                }
+
+                if (IsFinite(fpsPoint.Y) && IsFinite(gpuPoint.Y))
+                    alignedPoints.Add(Tuple.Create(fpsPoint, gpuPoint));
+                fpsIndex++;
+                gpuIndex++;
+            }
+
+            return alignedPoints;
+        }
+
+        private static bool IsFinite(double value)
+            => !double.IsNaN(value) && !double.IsInfinity(value);
     }
 }

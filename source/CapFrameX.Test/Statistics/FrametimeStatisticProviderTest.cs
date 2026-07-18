@@ -298,6 +298,51 @@ namespace CapFrameX.Test.Statistics
             Assert.IsFalse(result.Contains(10000));
         }
 
+        [TestMethod]
+        public void GetOutlierAdjustedSequence_DeciPercentile_RetainsConstantSequence()
+        {
+            var sequence = Enumerable.Repeat(16.67, 1000).ToList();
+
+            var result = _provider.GetOutlierAdjustedSequence(sequence, ERemoveOutlierMethod.DeciPercentile);
+
+            Assert.AreEqual(sequence.Count, result.Count);
+            CollectionAssert.AreEqual(sequence, result.ToList());
+        }
+
+        [TestMethod]
+        public void GetOutlierAdjustedSequence_DeciPercentile_ExactThousandSamples_RemovesExactlyOne()
+        {
+            // Regression: 1000 * (1 - 0.999) evaluates to 1.0000000000000002 in
+            // floating point, so an unguarded Math.Ceiling removed two samples.
+            var sequence = Enumerable.Repeat(10.0, 999).Concat(new[] { 500.0 }).ToList();
+
+            var result = _provider.GetOutlierAdjustedSequence(sequence, ERemoveOutlierMethod.DeciPercentile);
+
+            Assert.AreEqual(999, result.Count);
+            Assert.IsFalse(result.Contains(500.0));
+        }
+
+        [TestMethod]
+        public void GetOutlierAdjustedSequence_UnimplementedMethods_ReturnSequenceUnchanged()
+        {
+            // Regression: these enum members produced a null return value, which
+            // callers in SessionExtensions no longer null-coalesce.
+            var sequence = new List<double> { 10, 20, 30 };
+
+            foreach (var method in new[]
+            {
+                ERemoveOutlierMethod.InterquartileRange,
+                ERemoveOutlierMethod.ThreeSigma,
+                ERemoveOutlierMethod.TwoDotFiveSigma
+            })
+            {
+                var result = _provider.GetOutlierAdjustedSequence(sequence, method);
+
+                Assert.IsNotNull(result, $"Null returned for {method}");
+                CollectionAssert.AreEqual(sequence.ToList(), result.ToList(), $"Sequence changed for {method}");
+            }
+        }
+
         #endregion
 
         #region GetFpsThresholdCounts Tests
@@ -360,6 +405,128 @@ namespace CapFrameX.Test.Statistics
             var result = _provider.GetPercentageHighIntegralSequence(sequence, 0.99);
 
             Assert.IsFalse(double.IsNaN(result));
+        }
+
+        [TestMethod]
+        public void GetFpsMetricValues_MatchesIndividualMetricCalculations()
+        {
+            var sequence = Enumerable.Range(0, 5000)
+                .Select(index => 5.0 + index % 300 / 10.0)
+                .ToList();
+            var metrics = new[]
+            {
+                EMetric.Max, EMetric.P99, EMetric.P95, EMetric.Average, EMetric.Median,
+                EMetric.P5, EMetric.P1, EMetric.P0dot2, EMetric.P0dot1,
+                EMetric.OnePercentLowAverage, EMetric.ZerodotOnePercentLowAverage,
+                EMetric.OnePercentLowIntegral, EMetric.ZerodotOnePercentLowIntegral, EMetric.Min
+            };
+
+            var batch = _provider.GetFpsMetricValues(sequence, metrics);
+
+            foreach (var metric in metrics)
+            {
+                Assert.AreEqual(_provider.GetFpsMetricValue(sequence, metric), batch[metric], 0.001,
+                    $"Batch result differs for {metric}");
+            }
+        }
+
+        [TestMethod]
+        public void GetMetricAnalysis_FrametimeMetrics_MatchesIndividualCalculations()
+        {
+            var frametimes = Enumerable.Range(0, 10000)
+                .Select(index => 4.0 + index % 600 / 20.0)
+                .ToList();
+
+            var analysis = _provider.GetMetricAnalysis(frametimes, Array.Empty<double>(), false,
+                EMetric.P1.ToString(), EMetric.P0dot1.ToString());
+
+            Assert.AreEqual(_provider.GetFpsMetricValue(frametimes, EMetric.Average), analysis.Average, 0.001);
+            Assert.AreEqual(_provider.GetFpsMetricValue(frametimes, EMetric.P1), analysis.Second, 0.001);
+            Assert.AreEqual(_provider.GetFpsMetricValue(frametimes, EMetric.P0dot1), analysis.Third, 0.001);
+        }
+
+        [TestMethod]
+        public void GetMetricAnalysis_DisplayMetrics_UsesDisplayTimesOnlyForLowMetrics()
+        {
+            var frametimes = Enumerable.Range(0, 10000)
+                .Select(index => 5.0 + index % 500 / 25.0)
+                .ToList();
+            var displayTimes = Enumerable.Range(0, 10000)
+                .Select(index => 7.0 + index % 400 / 16.0)
+                .ToList();
+
+            var analysis = _provider.GetMetricAnalysis(frametimes, displayTimes, true,
+                EMetric.P1.ToString(), EMetric.P0dot1.ToString());
+
+            Assert.AreEqual(_provider.GetFpsMetricValue(frametimes, EMetric.Average), analysis.Average, 0.001);
+            Assert.AreEqual(_provider.GetFpsMetricValue(displayTimes, EMetric.P1), analysis.Second, 0.001);
+            Assert.AreEqual(_provider.GetFpsMetricValue(displayTimes, EMetric.P0dot1), analysis.Third, 0.001);
+        }
+
+        [TestMethod]
+        public void GetFrametimeMetricValues_MatchesIndividualMetricCalculations()
+        {
+            var sequence = Enumerable.Range(0, 5000)
+                .Select(index => 5.0 + index % 300 / 10.0)
+                .ToList();
+            var metrics = new[]
+            {
+                EMetric.Max, EMetric.P99, EMetric.P95, EMetric.Average, EMetric.Median,
+                EMetric.P5, EMetric.P1, EMetric.P0dot2, EMetric.P0dot1,
+                EMetric.OnePercentLowAverage, EMetric.ZerodotOnePercentLowAverage,
+                EMetric.OnePercentLowIntegral, EMetric.ZerodotOnePercentLowIntegral, EMetric.Min
+            };
+
+            var batch = _provider.GetFrametimeMetricValues(sequence, metrics);
+
+            foreach (var metric in metrics)
+            {
+                Assert.AreEqual(_provider.GetFrametimeMetricValue(sequence, metric), batch[metric], 0.001,
+                    $"Batch result differs for {metric}");
+            }
+        }
+
+        [TestMethod]
+        public void GetFrametimeMetricValues_RepeatedAnalysisInvalidatesAfterInPlaceMutation()
+        {
+            var sequence = Enumerable.Range(0, 5000)
+                .Select(index => 5.0 + index % 300 / 10.0)
+                .ToList();
+            var metrics = new[]
+            {
+                EMetric.Average, EMetric.P1, EMetric.P0dot1,
+                EMetric.OnePercentLowAverage, EMetric.ZerodotOnePercentLowAverage
+            };
+
+            _provider.GetFrametimeMetricValues(sequence, metrics);
+            sequence[2500] = 100000;
+
+            var cachedResult = _provider.GetFrametimeMetricValues(sequence, metrics);
+            var freshResult = _provider.GetFrametimeMetricValues(sequence.ToArray(), metrics);
+
+            foreach (var metric in metrics)
+            {
+                Assert.AreEqual(freshResult[metric], cachedResult[metric], 0.0,
+                    $"Cached result was stale for {metric}");
+            }
+        }
+
+        [TestMethod]
+        public void GetVariancePercentages_ClassifiesEachThresholdExactlyOnce()
+        {
+            var sequence = new List<double> { 0, 1, 4, 10, 20, 35 };
+
+            var result = _provider.GetVariancePercentages(sequence);
+
+            CollectionAssert.AreEqual(new[] { 0.2, 0.2, 0.2, 0.2, 0.2 }, result.ToArray());
+        }
+
+        [TestMethod]
+        public void GetVariancePercentages_NoValidPairs_ReturnsZeroes()
+        {
+            var result = _provider.GetVariancePercentages(new List<double> { 10, double.NaN, 11 });
+
+            CollectionAssert.AreEqual(new double[5], result.ToArray());
         }
 
         [TestMethod]

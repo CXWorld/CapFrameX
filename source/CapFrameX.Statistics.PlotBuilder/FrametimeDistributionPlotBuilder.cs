@@ -18,10 +18,13 @@ namespace CapFrameX.Statistics.PlotBuilder
         public void BuildPlotmodel(ISession session, IPlotSettings plotSettings, double startTime, double endTime, ERemoveOutlierMethod eRemoveOutlinerMethod, Action<PlotModel> onFinishAction = null)
         {
             var plotModel = PlotModel;
-            Reset();
+            Reset(false);
 
             if (session == null)
             {
+                // Reset(false) skipped the redraw; render the cleared model so no
+                // stale chart from a previously selected record stays on screen.
+                plotModel.InvalidatePlot(true);
                 return;
             }
 
@@ -29,13 +32,25 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISDISTRIBUTION]);
 
 
-            var frametimeDistributionPoints = session.GetFrametimeDistributionPoints(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
+            var useDisplayTimes = plotSettings.ShowDisplayTimes;
+            var frametimeDistributionPoints = useDisplayTimes
+                ? session.GetDisplayTimeDistributionPoints(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod)
+                : session.GetFrametimeDistributionPoints(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
 
+            if (useDisplayTimes && frametimeDistributionPoints.Count == 0)
+            {
+                useDisplayTimes = false;
+                frametimeDistributionPoints = session.GetFrametimeDistributionPoints(startTime, endTime,
+                    _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
+            }
 
-            IList<Point> GpuActiveTimePoints = new List<Point>();
+            if (frametimeDistributionPoints.Count == 0)
+            {
+                plotModel.InvalidatePlot(true);
+                return;
+            }
 
-
-            SetFrametimeDistributionChart(plotModel, frametimeDistributionPoints, plotSettings);
+            SetFrametimeDistributionChart(plotModel, frametimeDistributionPoints, useDisplayTimes);
 
 
             SetAggregationSeparators(session, plotModel, plotSettings.ShowAggregationSeparators);
@@ -74,19 +89,20 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.InvalidatePlot(true);
         }
 
-        private void SetFrametimeDistributionChart(PlotModel plotModel, IList<Point> frametimeDistributionPoints, IPlotSettings plotSettings)
+        private void SetFrametimeDistributionChart(PlotModel plotModel,
+            IList<Point> frametimeDistributionPoints, bool useDisplayTimes)
         {
             if (frametimeDistributionPoints == null || !frametimeDistributionPoints.Any())
                 return;
 
-            int count = frametimeDistributionPoints.Count;
-            var distributionDataPoints = frametimeDistributionPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
+            var distributionDataPoints = GetRenderablePoints(frametimeDistributionPoints)
+                .Select(pnt => new DataPoint(pnt.X, pnt.Y));
 
             plotModel.Series.Clear();
 
             var distributionSeries = new LineSeries
             {
-                Title = "Distribution",
+                Title = useDisplayTimes ? "Display Time Distribution" : "Frame Time Distribution",
                 StrokeThickness = 3,
                 LegendStrokeThickness = 4,
                 Color = Constants.FrametimeColor,
@@ -100,12 +116,11 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             UpdateAxis(EPlotAxis.XAXISFRAMETIMES, (axis) =>
             {
+                axis.Title = useDisplayTimes ? "Display time [ms]" : "Frametime [ms]";
                 axis.Minimum = frametimeDistributionPoints.First().X - 1;
                 axis.Maximum = frametimeDistributionPoints.Last().X + 1;
-            });
+            }, false);
             plotModel.Series.Add(distributionSeries);
-
-            plotModel.InvalidatePlot(true);
         }
 
         private void UpdateYAxisMaxBorder(double yMax)
@@ -129,7 +144,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                      stepSize = 10;
 
                  axis.MajorStep = stepSize;
-             });
+             }, false);
         }
     }
 }

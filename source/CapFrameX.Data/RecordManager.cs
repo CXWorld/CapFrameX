@@ -3,6 +3,7 @@ using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
+using CapFrameX.Configuration;
 using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Data.Session.Converters;
@@ -24,7 +25,9 @@ using System.Reactive.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Data
@@ -41,6 +44,40 @@ namespace CapFrameX.Data
     public class RecordManager : IRecordManager
     {
         private const string IGNOREFLAGMARKER = "//Ignore=true";
+        private const int SESSION_CACHE_CAPACITY = 16;
+        private const int RECORD_INFO_CACHE_CAPACITY = 4096;
+        private const int RECORD_INDEX_MAGIC = 0x58494643; // "CFIX" in little-endian storage
+        private const int RECORD_INDEX_VERSION = 2;
+        private const long RECORD_INDEX_MAX_BYTES = 64L * 1024 * 1024;
+        private const int RECORD_INDEX_WRITE_DELAY_MS = 250;
+        private const string RECORD_INDEX_FILE_NAME = "RecordMetadataIndex.bin";
+
+        private sealed class SessionCacheEntry
+        {
+            public long Length;
+            public long LastWriteTimeUtcTicks;
+            // Session models are mutable. A weak reference avoids extending their lifetime and
+            // lets memory pressure discard large captures while active views can still reuse them.
+            public WeakReference<ISession> Session;
+            public Lazy<ISession> LoadingSession;
+            public long LastAccess;
+        }
+
+        private sealed class RecordInfoCacheEntry
+        {
+            public long Length;
+            public long LastWriteTimeUtcTicks;
+            public IFileRecordInfo RecordInfo;
+            public long LastAccess;
+        }
+
+        private sealed class PersistentRecordInfoEntry
+        {
+            public string Path;
+            public long Length;
+            public long LastWriteTimeUtcTicks;
+            public FileRecordInfo RecordInfo;
+        }
 
         private readonly TimeSpan _fileAccessIntervalTimespan = TimeSpan.FromMilliseconds(200);
         private readonly int _fileAccessIntervalRetryLimit = 50;
@@ -54,6 +91,17 @@ namespace CapFrameX.Data
         private readonly IRTSSService _rTSSService;
         private readonly IEventAggregator _eventAggregator;
         private readonly ICaptureService _captureService;
+        private readonly object _sessionCacheSync = new object();
+        private readonly Dictionary<string, SessionCacheEntry> _sessionCache =
+            new Dictionary<string, SessionCacheEntry>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, RecordInfoCacheEntry> _recordInfoCache =
+            new Dictionary<string, RecordInfoCacheEntry>(StringComparer.OrdinalIgnoreCase);
+        private long _sessionCacheAccessSequence;
+        private long _recordInfoCacheAccessSequence;
+        private bool _recordIndexLoaded;
+        private bool _recordIndexDirty;
+        private bool _recordIndexWriteScheduled;
+        private string _recordIndexPath;
         private PubSubEvent<ViewMessages.UpdateSystemInfo> _updateSystemInfoEvent;
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -137,6 +185,7 @@ namespace CapFrameX.Data
                         lines[commentNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}Comment{FileRecordInfo.INFO_SEPERATOR}{customComment}";
 
                         File.WriteAllLines(recordInfo.FullPath, lines);
+                        InvalidateSessionCache(recordInfo.FullPath);
                     }
                     else
                     {
@@ -163,6 +212,7 @@ namespace CapFrameX.Data
 
                         recordInfo.HasInfoHeader = true;
                         File.WriteAllLines(recordInfo.FullPath, headerLines.Concat(lines));
+                        InvalidateSessionCache(recordInfo.FullPath);
                     }
                 }
             }
@@ -238,15 +288,110 @@ namespace CapFrameX.Data
             {
                 return null;
             }
-            var fileInfo = new FileInfo(path);
-
-            if (!fileInfo.Exists || fileInfo.Length == 0)
-            {
-                return null;
-            }
-
             try
             {
+                var normalizedPath = Path.GetFullPath(path);
+                var fileInfo = new FileInfo(normalizedPath);
+
+                if (!fileInfo.Exists || fileInfo.Length == 0)
+                {
+                    InvalidateSessionCache(normalizedPath);
+                    return null;
+                }
+
+                if (fileInfo.Extension != ".json" && fileInfo.Extension != ".csv")
+                {
+                    return null;
+                }
+
+                long length = fileInfo.Length;
+                long lastWriteTimeUtcTicks = fileInfo.LastWriteTimeUtc.Ticks;
+                SessionCacheEntry cacheEntry;
+                Lazy<ISession> loadingSession;
+
+                lock (_sessionCacheSync)
+                {
+                    if (_sessionCache.TryGetValue(normalizedPath, out cacheEntry)
+                        && cacheEntry.Length == length
+                        && cacheEntry.LastWriteTimeUtcTicks == lastWriteTimeUtcTicks)
+                    {
+                        cacheEntry.LastAccess = ++_sessionCacheAccessSequence;
+                        if (cacheEntry.Session != null
+                            && cacheEntry.Session.TryGetTarget(out var cachedSession))
+                        {
+                            return cachedSession;
+                        }
+
+                        if (cacheEntry.LoadingSession == null)
+                        {
+                            cacheEntry.LoadingSession = CreateSessionLoader(normalizedPath);
+                        }
+                    }
+                    else
+                    {
+                        cacheEntry = new SessionCacheEntry
+                        {
+                            Length = length,
+                            LastWriteTimeUtcTicks = lastWriteTimeUtcTicks,
+                            LastAccess = ++_sessionCacheAccessSequence,
+                            LoadingSession = CreateSessionLoader(normalizedPath)
+                        };
+                        _sessionCache[normalizedPath] = cacheEntry;
+                        TrimSessionCacheLocked(normalizedPath);
+                    }
+
+                    loadingSession = cacheEntry.LoadingSession;
+                }
+
+                ISession loadedSession;
+                try
+                {
+                    // Lazy<T> makes concurrent requests for the same file share one parse.
+                    loadedSession = loadingSession.Value;
+                }
+                catch
+                {
+                    RemoveSessionCacheEntry(normalizedPath, cacheEntry);
+                    throw;
+                }
+
+                fileInfo.Refresh();
+                bool fileUnchanged = fileInfo.Exists
+                    && fileInfo.Length == length
+                    && fileInfo.LastWriteTimeUtc.Ticks == lastWriteTimeUtcTicks;
+
+                lock (_sessionCacheSync)
+                {
+                    if (_sessionCache.TryGetValue(normalizedPath, out var currentEntry)
+                        && ReferenceEquals(currentEntry, cacheEntry))
+                    {
+                        currentEntry.LoadingSession = null;
+                        if (loadedSession != null && fileUnchanged)
+                        {
+                            currentEntry.Session = new WeakReference<ISession>(loadedSession);
+                            currentEntry.LastAccess = ++_sessionCacheAccessSequence;
+                        }
+                        else
+                        {
+                            _sessionCache.Remove(normalizedPath);
+                        }
+                    }
+                }
+
+                return loadedSession;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while loading {path}", path);
+                return null;
+            }
+        }
+
+        private Lazy<ISession> CreateSessionLoader(string normalizedPath)
+        {
+            return new Lazy<ISession>(() =>
+            {
+                var fileInfo = new FileInfo(normalizedPath);
                 switch (fileInfo.Extension)
                 {
                     case ".json":
@@ -256,11 +401,63 @@ namespace CapFrameX.Data
                     default:
                         return null;
                 }
+            }, LazyThreadSafetyMode.ExecutionAndPublication);
+        }
+
+        private void InvalidateSessionCache(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return;
+            }
+
+            try
+            {
+                string normalizedPath = Path.GetFullPath(path);
+                bool recordInfoRemoved;
+                lock (_sessionCacheSync)
+                {
+                    _sessionCache.Remove(normalizedPath);
+                    recordInfoRemoved = _recordInfoCache.Remove(normalizedPath);
+                }
+                if (recordInfoRemoved)
+                {
+                    MarkRecordIndexDirty();
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error while loading {path}", path);
-                return null;
+                _logger.LogDebug(ex, "Unable to invalidate cached session for {path}", path);
+            }
+        }
+
+        private void RemoveSessionCacheEntry(string normalizedPath, SessionCacheEntry expectedEntry)
+        {
+            lock (_sessionCacheSync)
+            {
+                if (_sessionCache.TryGetValue(normalizedPath, out var currentEntry)
+                    && ReferenceEquals(currentEntry, expectedEntry))
+                {
+                    _sessionCache.Remove(normalizedPath);
+                }
+            }
+        }
+
+        private void TrimSessionCacheLocked(string preservedPath)
+        {
+            while (_sessionCache.Count > SESSION_CACHE_CAPACITY)
+            {
+                var candidate = _sessionCache
+                    .Where(pair => !string.Equals(pair.Key, preservedPath, StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(pair => pair.Value.LastAccess)
+                    .FirstOrDefault();
+
+                if (candidate.Key == null)
+                {
+                    return;
+                }
+
+                _sessionCache.Remove(candidate.Key);
             }
         }
 
@@ -301,6 +498,13 @@ namespace CapFrameX.Data
 
         private ISession LoadSessionFromCSV(FileInfo csvFile)
         {
+            return LoadSessionFromCSV(csvFile, out _);
+        }
+
+        private ISession LoadSessionFromCSV(FileInfo csvFile, out IFileRecordInfo recordedFileInfo)
+        {
+            recordedFileInfo = null;
+
             // Exception: ignore Nv FrameView summary file
             if (csvFile.Name == "FrameView_Summary.csv")
                 return null;
@@ -309,63 +513,60 @@ namespace CapFrameX.Data
             if (csvFile.Name.Contains("-stats.csv"))
                 return null;
 
-            using (var reader = new StreamReader(csvFile.FullName))
+            var lines = File.ReadAllLines(csvFile.FullName);
+            if (lines.First().Equals(IGNOREFLAGMARKER))
             {
-                var lines = File.ReadAllLines(csvFile.FullName);
-                if (lines.First().Equals(IGNOREFLAGMARKER))
-                {
-                    throw new HasIgnoreFlagException();
-                }
-
-                IEnumerable<string> skippedLines = null;
-
-                // MangoHud capture file
-                if (lines.First().Contains("cpuscheduler") && lines.First().Contains("kernel"))
-                {
-                    skippedLines = lines.Skip(2);
-
-                }
-                // Standard CSV with header
-                else
-                {
-                    skippedLines = lines.SkipWhile(line => line.Contains(FileRecordInfo.HEADER_MARKER));
-
-                    if (FileRecordInfo.IsMangoHudFile(skippedLines.First()))
-                    {
-                        skippedLines = skippedLines.Skip(2);
-                    }
-                }
-
-                var sessionRun = ConvertPresentDataLinesToSessionRun(skippedLines);
-                var recordedFileInfo = FileRecordInfo.Create(csvFile, sessionRun.Hash);
-                var systemInfos = GetSystemInfos(recordedFileInfo);
-
-                return new Session.Classes.Session()
-                {
-                    Hash = string.Join(",", new string[] { sessionRun.Hash }).GetSha1(),
-                    Runs = new List<ISessionRun>() { sessionRun },
-                    Info = new SessionInfo()
-                    {
-                        ProcessName = recordedFileInfo.ProcessName,
-                        Processor = recordedFileInfo.ProcessorName,
-                        GPU = recordedFileInfo.GraphicCardName,
-                        BaseDriverVersion = recordedFileInfo.BaseDriverVersion,
-                        GameName = recordedFileInfo.GameName,
-                        Comment = recordedFileInfo.Comment,
-                        Id = Guid.TryParse(recordedFileInfo.Id, out var guidId) ? guidId : Guid.NewGuid(),
-                        OS = recordedFileInfo.OsVersion,
-                        GpuCoreClock = recordedFileInfo.GPUCoreClock,
-                        GPUCount = recordedFileInfo.NumberGPUs,
-                        SystemRam = recordedFileInfo.SystemRamInfo,
-                        Motherboard = recordedFileInfo.MotherboardName,
-                        DriverPackage = recordedFileInfo.DriverPackage,
-                        GpuMemoryClock = recordedFileInfo.GPUMemoryClock,
-                        CreationDate = DateTime.TryParse(recordedFileInfo.CreationDate + "T" + recordedFileInfo.CreationTime, out var creationDate) ? creationDate : new DateTime(),
-                        AppVersion = new Version(),
-                        ApiInfo = recordedFileInfo.ApiInfo
-                    }
-                };
+                throw new HasIgnoreFlagException();
             }
+
+            IEnumerable<string> skippedLines = null;
+
+            // MangoHud capture file
+            if (lines.First().Contains("cpuscheduler") && lines.First().Contains("kernel"))
+            {
+                skippedLines = lines.Skip(2);
+
+            }
+            // Standard CSV with header
+            else
+            {
+                skippedLines = lines.SkipWhile(line => line.Contains(FileRecordInfo.HEADER_MARKER));
+
+                if (FileRecordInfo.IsMangoHudFile(skippedLines.First()))
+                {
+                    skippedLines = skippedLines.Skip(2);
+                }
+            }
+
+            var sessionRun = ConvertPresentDataLinesToSessionRun(skippedLines);
+            var sessionHash = sessionRun.Hash.GetSha1();
+            recordedFileInfo = FileRecordInfo.Create(csvFile, sessionHash, lines);
+
+            return new Session.Classes.Session()
+            {
+                Hash = sessionHash,
+                Runs = new List<ISessionRun>() { sessionRun },
+                Info = new SessionInfo()
+                {
+                    ProcessName = recordedFileInfo.ProcessName,
+                    Processor = recordedFileInfo.ProcessorName,
+                    GPU = recordedFileInfo.GraphicCardName,
+                    BaseDriverVersion = recordedFileInfo.BaseDriverVersion,
+                    GameName = recordedFileInfo.GameName,
+                    Comment = recordedFileInfo.Comment,
+                    Id = Guid.TryParse(recordedFileInfo.Id, out var guidId) ? guidId : Guid.NewGuid(),
+                    OS = recordedFileInfo.OsVersion,
+                    GpuCoreClock = recordedFileInfo.GPUCoreClock,
+                    GPUCount = recordedFileInfo.NumberGPUs,
+                    SystemRam = recordedFileInfo.SystemRamInfo,
+                    Motherboard = recordedFileInfo.MotherboardName,
+                    DriverPackage = recordedFileInfo.DriverPackage,
+                    GpuMemoryClock = recordedFileInfo.GPUMemoryClock,
+                    CreationDate = DateTime.TryParse(recordedFileInfo.CreationDate + "T" + recordedFileInfo.CreationTime, out var creationDate) ? creationDate : new DateTime(),
+                    AppVersion = new Version(),
+                    ApiInfo = recordedFileInfo.ApiInfo
+                }
+            };
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -373,32 +574,38 @@ namespace CapFrameX.Data
         {
             if (index < array.Length && index > -1)
             {
-                return array[index];
+                return array[index] ?? string.Empty;
             }
             return string.Empty;
         }
 
         public async Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo)
         {
-            return await Observable.Timer(_fileAccessIntervalTimespan)
+            fileInfo.Refresh();
+            if (TryGetCachedRecordInfo(fileInfo, out var cachedRecordInfo))
+            {
+                return cachedRecordInfo;
+            }
+            long expectedLength = fileInfo.Length;
+            long expectedLastWriteTimeUtcTicks = fileInfo.LastWriteTimeUtc.Ticks;
+
+            var recordInfo = await Observable.Timer(_fileAccessIntervalTimespan)
                 .SelectMany(_ =>
                 {
                     switch (fileInfo.Extension)
                     {
                         case ".csv":
-                            var sessionFromCSV = LoadSessionFromCSV(fileInfo);
+                            var sessionFromCSV = LoadSessionFromCSV(fileInfo, out var recordInfoFromCSV);
 
                             if (sessionFromCSV == null)
                                 return Observable.Empty<IFileRecordInfo>();
 
-                            return Observable.Return(FileRecordInfo.Create(fileInfo, sessionFromCSV.Hash));
+                            return Observable.Return(recordInfoFromCSV);
                         case ".json":
-                            var sessionFromJSON = LoadSessionFromJSON(fileInfo);
-
-                            if (sessionFromJSON == null)
-                                return Observable.Empty<IFileRecordInfo>();
-
-                            return Observable.Return(FileRecordInfo.Create(fileInfo, sessionFromJSON));
+                            var recordInfoFromJSON = LoadRecordInfoFromJSON(fileInfo);
+                            return recordInfoFromJSON == null
+                                ? Observable.Empty<IFileRecordInfo>()
+                                : Observable.Return(recordInfoFromJSON);
                         default:
                             return Observable.Empty<IFileRecordInfo>();
                     }
@@ -419,23 +626,551 @@ namespace CapFrameX.Data
                     }
                 })
                 .Retry(_fileAccessIntervalRetryLimit)
+                .DefaultIfEmpty()
                 .Do(fileRecordInfo =>
                 {
-                    if (fileRecordInfo is IFileRecordInfo)
+                    if (fileRecordInfo != null)
                     {
-                        if (fileRecordInfo.ProcessName == fileRecordInfo.GameName)
-                        {
+                        bool usesProcessListName = fileRecordInfo.ProcessName == fileRecordInfo.GameName
+                            || fileRecordInfo.GameName.IsNullOrEmpty();
+                        if (fileRecordInfo is FileRecordInfo concreteRecordInfo)
+                            concreteRecordInfo.UsesProcessListGameName = usesProcessListName;
+                        if (usesProcessListName)
                             fileRecordInfo.GameName = GetGameNameFromProcessList(fileRecordInfo.ProcessName);
-                        }
-                        else
-                        {
-                            if (fileRecordInfo.GameName.IsNullOrEmpty())
-                            {
-                                fileRecordInfo.GameName = GetGameNameFromProcessList(fileRecordInfo.ProcessName);
-                            }
-                        }
                     }
                 });
+
+            if (recordInfo != null)
+            {
+                StoreRecordInfo(fileInfo, recordInfo, expectedLength, expectedLastWriteTimeUtcTicks);
+            }
+
+            return recordInfo;
+        }
+
+        private IFileRecordInfo LoadRecordInfoFromJSON(FileInfo fileInfo)
+        {
+            using (var stream = new StreamReader(fileInfo.FullName))
+            using (var jsonReader = new JsonTextReader(stream))
+            {
+                var serializer = new JsonSerializer();
+                string hash = null;
+                ISessionInfo sessionInfo = null;
+                int runCount = 0;
+                double recordTime = 0;
+
+                while (jsonReader.Read())
+                {
+                    if (jsonReader.TokenType != JsonToken.PropertyName)
+                    {
+                        continue;
+                    }
+
+                    string propertyName = Convert.ToString(jsonReader.Value, CultureInfo.InvariantCulture);
+                    if (!jsonReader.Read())
+                    {
+                        break;
+                    }
+
+                    if (string.Equals(propertyName, "Hash", StringComparison.OrdinalIgnoreCase))
+                    {
+                        hash = Convert.ToString(jsonReader.Value, CultureInfo.InvariantCulture);
+                    }
+                    else if (string.Equals(propertyName, "Info", StringComparison.OrdinalIgnoreCase))
+                    {
+                        sessionInfo = serializer.Deserialize<SessionInfo>(jsonReader);
+                    }
+                    else if (string.Equals(propertyName, "Runs", StringComparison.OrdinalIgnoreCase)
+                        && jsonReader.TokenType == JsonToken.StartArray)
+                    {
+                        ReadRunMetadata(jsonReader, ref runCount, ref recordTime);
+                    }
+                    else
+                    {
+                        jsonReader.Skip();
+                    }
+                }
+
+                return sessionInfo == null || runCount == 0
+                    ? null
+                    : FileRecordInfo.Create(fileInfo, sessionInfo, hash, runCount, recordTime);
+            }
+        }
+
+        private static void ReadRunMetadata(JsonReader reader, ref int runCount, ref double recordTime)
+        {
+            int arrayDepth = reader.Depth;
+            while (reader.Read())
+            {
+                if (reader.TokenType == JsonToken.EndArray && reader.Depth == arrayDepth)
+                {
+                    return;
+                }
+
+                if (reader.TokenType == JsonToken.StartObject && reader.Depth == arrayDepth + 1)
+                {
+                    runCount++;
+                    ReadSingleRunMetadata(reader, ref recordTime);
+                }
+            }
+        }
+
+        private static void ReadSingleRunMetadata(JsonReader reader, ref double recordTime)
+        {
+            int objectDepth = reader.Depth;
+            while (reader.Read())
+            {
+                if (reader.TokenType == JsonToken.EndObject && reader.Depth == objectDepth)
+                {
+                    return;
+                }
+
+                if (reader.TokenType != JsonToken.PropertyName)
+                {
+                    continue;
+                }
+
+                string propertyName = Convert.ToString(reader.Value, CultureInfo.InvariantCulture);
+                if (!reader.Read())
+                {
+                    return;
+                }
+
+                if (string.Equals(propertyName, "CaptureData", StringComparison.OrdinalIgnoreCase)
+                    && reader.TokenType == JsonToken.StartObject)
+                {
+                    ReadCaptureRecordTime(reader, ref recordTime);
+                }
+                else
+                {
+                    reader.Skip();
+                }
+            }
+        }
+
+        private static void ReadCaptureRecordTime(JsonReader reader, ref double recordTime)
+        {
+            int objectDepth = reader.Depth;
+            while (reader.Read())
+            {
+                if (reader.TokenType == JsonToken.EndObject && reader.Depth == objectDepth)
+                {
+                    return;
+                }
+
+                if (reader.TokenType != JsonToken.PropertyName)
+                {
+                    continue;
+                }
+
+                string propertyName = Convert.ToString(reader.Value, CultureInfo.InvariantCulture);
+                if (!reader.Read())
+                {
+                    return;
+                }
+
+                if (string.Equals(propertyName, "TimeInSeconds", StringComparison.OrdinalIgnoreCase)
+                    && reader.TokenType == JsonToken.StartArray)
+                {
+                    int arrayDepth = reader.Depth;
+                    while (reader.Read())
+                    {
+                        if (reader.TokenType == JsonToken.EndArray && reader.Depth == arrayDepth)
+                        {
+                            break;
+                        }
+
+                        if (reader.TokenType == JsonToken.Float || reader.TokenType == JsonToken.Integer)
+                        {
+                            recordTime = Convert.ToDouble(reader.Value, CultureInfo.InvariantCulture);
+                        }
+                    }
+                }
+                else
+                {
+                    reader.Skip();
+                }
+            }
+        }
+
+        private bool TryGetCachedRecordInfo(FileInfo fileInfo, out IFileRecordInfo recordInfo)
+        {
+            EnsureRecordIndexLoaded();
+            recordInfo = null;
+            if (!fileInfo.Exists || fileInfo.Length == 0)
+            {
+                return false;
+            }
+
+            string path = Path.GetFullPath(fileInfo.FullName);
+            bool staleEntryRemoved = false;
+            lock (_sessionCacheSync)
+            {
+                if (_recordInfoCache.TryGetValue(path, out var entry)
+                    && entry.Length == fileInfo.Length
+                    && entry.LastWriteTimeUtcTicks == fileInfo.LastWriteTimeUtc.Ticks)
+                {
+                    entry.LastAccess = ++_recordInfoCacheAccessSequence;
+                    recordInfo = entry.RecordInfo;
+                    if (recordInfo is FileRecordInfo concreteRecordInfo
+                        && concreteRecordInfo.UsesProcessListGameName)
+                    {
+                        recordInfo.GameName = GetGameNameFromProcessList(recordInfo.ProcessName);
+                    }
+                    return recordInfo != null;
+                }
+
+                staleEntryRemoved = _recordInfoCache.Remove(path);
+            }
+            if (staleEntryRemoved)
+            {
+                MarkRecordIndexDirty();
+            }
+            return false;
+        }
+
+        private void StoreRecordInfo(FileInfo fileInfo, IFileRecordInfo recordInfo,
+            long expectedLength, long expectedLastWriteTimeUtcTicks)
+        {
+            fileInfo.Refresh();
+            if (!fileInfo.Exists || fileInfo.Length != expectedLength
+                || fileInfo.LastWriteTimeUtc.Ticks != expectedLastWriteTimeUtcTicks)
+            {
+                return;
+            }
+
+            string path = Path.GetFullPath(fileInfo.FullName);
+            bool persistable = recordInfo is FileRecordInfo;
+            lock (_sessionCacheSync)
+            {
+                _recordInfoCache[path] = new RecordInfoCacheEntry
+                {
+                    Length = fileInfo.Length,
+                    LastWriteTimeUtcTicks = fileInfo.LastWriteTimeUtc.Ticks,
+                    RecordInfo = recordInfo,
+                    LastAccess = ++_recordInfoCacheAccessSequence
+                };
+
+                while (_recordInfoCache.Count > RECORD_INFO_CACHE_CAPACITY)
+                {
+                    var oldest = _recordInfoCache.OrderBy(pair => pair.Value.LastAccess).First();
+                    _recordInfoCache.Remove(oldest.Key);
+                }
+            }
+            if (persistable)
+            {
+                MarkRecordIndexDirty();
+            }
+        }
+
+        private void EnsureRecordIndexLoaded()
+        {
+            lock (_sessionCacheSync)
+            {
+                if (_recordIndexLoaded)
+                {
+                    return;
+                }
+
+                string configFolder = PathServiceProvider.PathService?.ConfigFolder;
+                if (string.IsNullOrWhiteSpace(configFolder))
+                {
+                    return;
+                }
+
+                _recordIndexLoaded = true;
+                _recordIndexPath = Path.Combine(configFolder, "Cache", RECORD_INDEX_FILE_NAME);
+                Dictionary<string, RecordInfoCacheEntry> loadedEntries;
+                try
+                {
+                    loadedEntries = ReadRecordIndex(_recordIndexPath);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Ignoring corrupt record metadata index {path}", _recordIndexPath);
+                    TryDeleteRecordIndex(_recordIndexPath);
+                    return;
+                }
+
+                foreach (var pair in loadedEntries)
+                {
+                    if (!_recordInfoCache.ContainsKey(pair.Key))
+                    {
+                        pair.Value.LastAccess = ++_recordInfoCacheAccessSequence;
+                        _recordInfoCache[pair.Key] = pair.Value;
+                    }
+                }
+            }
+        }
+
+        private Dictionary<string, RecordInfoCacheEntry> ReadRecordIndex(string indexPath)
+        {
+            var entries = new Dictionary<string, RecordInfoCacheEntry>(StringComparer.OrdinalIgnoreCase);
+            if (string.IsNullOrWhiteSpace(indexPath) || !File.Exists(indexPath))
+            {
+                return entries;
+            }
+
+            var fileInfo = new FileInfo(indexPath);
+            if (fileInfo.Length <= 0 || fileInfo.Length > RECORD_INDEX_MAX_BYTES)
+            {
+                throw new InvalidDataException("Record metadata index size is invalid.");
+            }
+
+            using (var stream = new FileStream(indexPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var reader = new BinaryReader(stream, Encoding.UTF8))
+            {
+                if (reader.ReadInt32() != RECORD_INDEX_MAGIC)
+                {
+                    throw new InvalidDataException("Record metadata index magic is invalid.");
+                }
+                if (reader.ReadInt32() != RECORD_INDEX_VERSION)
+                {
+                    throw new InvalidDataException("Record metadata index version is unsupported.");
+                }
+
+                int count = reader.ReadInt32();
+                if (count < 0 || count > RECORD_INFO_CACHE_CAPACITY)
+                {
+                    throw new InvalidDataException("Record metadata index entry count is invalid.");
+                }
+
+                for (int index = 0; index < count; index++)
+                {
+                    string path = ReadIndexPath(reader);
+                    long length = reader.ReadInt64();
+                    long lastWriteTimeUtcTicks = reader.ReadInt64();
+                    if (length < 0 || lastWriteTimeUtcTicks < DateTime.MinValue.Ticks
+                        || lastWriteTimeUtcTicks > DateTime.MaxValue.Ticks)
+                    {
+                        throw new InvalidDataException("Record metadata index stamp is invalid.");
+                    }
+
+                    string normalizedPath = Path.GetFullPath(path);
+                    var recordInfo = FileRecordInfo.ReadMetadata(new FileInfo(normalizedPath), reader);
+                    entries[normalizedPath] = new RecordInfoCacheEntry
+                    {
+                        Length = length,
+                        LastWriteTimeUtcTicks = lastWriteTimeUtcTicks,
+                        RecordInfo = recordInfo
+                    };
+                }
+
+                if (stream.Position != stream.Length)
+                {
+                    throw new InvalidDataException("Record metadata index contains trailing data.");
+                }
+            }
+
+            return entries;
+        }
+
+        private static string ReadIndexPath(BinaryReader reader)
+        {
+            int byteCount = reader.ReadInt32();
+            const int MaxPathBytes = 32768;
+            if (byteCount <= 0 || byteCount > MaxPathBytes)
+            {
+                throw new InvalidDataException("Record metadata index path length is invalid.");
+            }
+
+            byte[] bytes = reader.ReadBytes(byteCount);
+            if (bytes.Length != byteCount)
+            {
+                throw new EndOfStreamException("Record metadata index path is truncated.");
+            }
+            return Encoding.UTF8.GetString(bytes);
+        }
+
+        private static void WriteIndexPath(BinaryWriter writer, string path)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(path);
+            if (bytes.Length <= 0 || bytes.Length > 32768)
+            {
+                throw new InvalidDataException("Record metadata index path length is invalid.");
+            }
+            writer.Write(bytes.Length);
+            writer.Write(bytes);
+        }
+
+        private void MarkRecordIndexDirty()
+        {
+            lock (_sessionCacheSync)
+            {
+                if (!_recordIndexLoaded || string.IsNullOrWhiteSpace(_recordIndexPath))
+                {
+                    return;
+                }
+
+                _recordIndexDirty = true;
+                if (_recordIndexWriteScheduled)
+                {
+                    return;
+                }
+                _recordIndexWriteScheduled = true;
+            }
+
+            Task.Run((Func<Task>)PersistRecordIndexLoopAsync);
+        }
+
+        private async Task PersistRecordIndexLoopAsync()
+        {
+            int consecutiveFailures = 0;
+            while (true)
+            {
+                await Task.Delay(RECORD_INDEX_WRITE_DELAY_MS).ConfigureAwait(false);
+                List<PersistentRecordInfoEntry> snapshot;
+                string indexPath;
+                lock (_sessionCacheSync)
+                {
+                    if (!_recordIndexDirty)
+                    {
+                        _recordIndexWriteScheduled = false;
+                        return;
+                    }
+
+                    _recordIndexDirty = false;
+                    indexPath = _recordIndexPath;
+                    snapshot = _recordInfoCache
+                        .Where(pair => pair.Value.RecordInfo is FileRecordInfo)
+                        .OrderByDescending(pair => pair.Value.LastAccess)
+                        .Take(RECORD_INFO_CACHE_CAPACITY)
+                        .Select(pair => new PersistentRecordInfoEntry
+                        {
+                            Path = pair.Key,
+                            Length = pair.Value.Length,
+                            LastWriteTimeUtcTicks = pair.Value.LastWriteTimeUtcTicks,
+                            RecordInfo = (FileRecordInfo)pair.Value.RecordInfo
+                        })
+                        .ToList();
+                }
+
+                try
+                {
+                    var persistableSnapshot = snapshot
+                        .Where(CanPersistRecordIndexEntry)
+                        .ToList();
+                    WriteRecordIndexAtomically(indexPath, persistableSnapshot);
+                    consecutiveFailures = 0;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Unable to persist record metadata index {path}", indexPath);
+                    consecutiveFailures++;
+                    if (consecutiveFailures <= 3)
+                    {
+                        lock (_sessionCacheSync)
+                        {
+                            _recordIndexDirty = true;
+                        }
+                    }
+                }
+
+                lock (_sessionCacheSync)
+                {
+                    if (!_recordIndexDirty)
+                    {
+                        _recordIndexWriteScheduled = false;
+                        return;
+                    }
+                }
+            }
+        }
+
+        private bool CanPersistRecordIndexEntry(PersistentRecordInfoEntry entry)
+        {
+            try
+            {
+                using (var writer = new BinaryWriter(Stream.Null, Encoding.UTF8, true))
+                {
+                    WriteIndexPath(writer, entry.Path);
+                    entry.RecordInfo.WriteMetadata(writer);
+                }
+                return true;
+            }
+            catch (InvalidDataException ex)
+            {
+                _logger.LogWarning(ex, "Skipping oversized record metadata index entry {path}", entry.Path);
+                return false;
+            }
+        }
+
+        private static void WriteRecordIndexAtomically(string indexPath, IList<PersistentRecordInfoEntry> entries)
+        {
+            if (string.IsNullOrWhiteSpace(indexPath))
+            {
+                return;
+            }
+
+            string directory = Path.GetDirectoryName(indexPath);
+            Directory.CreateDirectory(directory);
+            string temporaryPath = Path.Combine(directory,
+                Path.GetFileName(indexPath) + "." + Guid.NewGuid().ToString("N") + ".tmp");
+
+            try
+            {
+                using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write,
+                    FileShare.None, 4096, FileOptions.WriteThrough))
+                using (var writer = new BinaryWriter(stream, Encoding.UTF8))
+                {
+                    writer.Write(RECORD_INDEX_MAGIC);
+                    writer.Write(RECORD_INDEX_VERSION);
+                    writer.Write(entries.Count);
+                    foreach (var entry in entries)
+                    {
+                        WriteIndexPath(writer, entry.Path);
+                        writer.Write(entry.Length);
+                        writer.Write(entry.LastWriteTimeUtcTicks);
+                        entry.RecordInfo.WriteMetadata(writer);
+                        if (stream.Position > RECORD_INDEX_MAX_BYTES)
+                        {
+                            throw new InvalidDataException("Record metadata index exceeds its size limit.");
+                        }
+                    }
+                    writer.Flush();
+                    stream.Flush(true);
+                }
+
+                if (File.Exists(indexPath))
+                {
+                    // File.Replace is atomic on the supported Windows filesystems. If it fails,
+                    // leave the previous valid index untouched and discard only the temp file.
+                    File.Replace(temporaryPath, indexPath, null, true);
+                }
+                else
+                {
+                    File.Move(temporaryPath, indexPath);
+                }
+            }
+            finally
+            {
+                if (File.Exists(temporaryPath))
+                {
+                    try
+                    {
+                        File.Delete(temporaryPath);
+                    }
+                    catch
+                    {
+                        // A leftover temp file is harmless and never read as the index.
+                    }
+                }
+            }
+        }
+
+        private static void TryDeleteRecordIndex(string indexPath)
+        {
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(indexPath) && File.Exists(indexPath))
+                {
+                    File.Delete(indexPath);
+                }
+            }
+            catch
+            {
+                // Corrupt cache data is ignored even if another process currently owns the file.
+            }
         }
 
         public async Task SavePresentmonRawToFile(IEnumerable<string> lines, string process, string recordDirectory = null)
@@ -444,7 +1179,9 @@ namespace CapFrameX.Data
             {
                 var filePath = await GetOutputFilename(process, recordDirectory);
                 lines = new string[] { IGNOREFLAGMARKER, _captureService.ColumnHeader }.Concat(lines);
-                File.WriteAllLines(filePath + ".csv", lines);
+                string outputPath = filePath + ".csv";
+                File.WriteAllLines(outputPath, lines);
+                InvalidateSessionCache(outputPath);
             }
             catch (Exception ex)
             {
@@ -740,6 +1477,9 @@ namespace CapFrameX.Data
                         memoryStream.CopyTo(fileStream);
                     }
 
+                    // Explicit invalidation also covers filesystems where timestamp precision is
+                    // too coarse to distinguish two same-size writes.
+                    InvalidateSessionCache(filePath);
                     _logger.LogInformation("{FilePath} successfully written", filePath);
                 }
                 catch (Exception ex)
@@ -785,7 +1525,7 @@ namespace CapFrameX.Data
             }
 
             var processNameExtStripped = processName.StripExeExtension();
-            return _processList.FindProcessByName(processName)?.DisplayName ?? processNameExtStripped;
+            return _processList?.FindProcessByName(processName)?.DisplayName ?? processNameExtStripped;
         }
 
         private string GetGameNameFromFileDescription(string processName)
@@ -882,11 +1622,11 @@ namespace CapFrameX.Data
                 }
 
                 // Filter lines by dominant process and SwapChainAddress
-                presentLines = FilterByDominantSwapChain(presentLines, headerLine);
+                var dataLines = FilterByDominantSwapChain(presentLines, headerLine);
 
                 var sessionRun = new SessionRun()
                 {
-                    Hash = string.Join(",", presentLines).GetSha1(),
+                    Hash = GetPresentLinesSha1(dataLines),
                     PresentMonRuntime = "unknown"
                 };
 
@@ -898,7 +1638,7 @@ namespace CapFrameX.Data
 
                 string frameStartUnit = "s";
                 var metrics = Array.ConvertAll(headerLine.Split(','), p => p.Trim());
-                for (int i = 0; i < metrics.Count(); i++)
+                for (int i = 0; i < metrics.Length; i++)
                 {
                     if (string.Compare(metrics[i], "AppRenderStart") == 0 || string.Compare(metrics[i], "TimeInSeconds") == 0
                          || string.Compare(metrics[i], "TimeInMs") == 0)
@@ -985,49 +1725,32 @@ namespace CapFrameX.Data
                     }
                 }
 
-                var presentLineCount = presentLines.Count();
-                var captureData = new SessionCaptureData(presentLineCount)
+                var presentLineCount = dataLines.Count;
+                var captureData = new SessionCaptureData(presentLineCount);
+                for (int i = 0; i < captureData.AnimationError.Length; i++)
                 {
-                    AnimationError = Enumerable.Repeat(double.NaN, presentLineCount).ToArray()
-                };
-
-                // When latency data is available initialize array
-                if (indexPcLatency > 0)
-                {
-                    captureData.PcLatency = new double[presentLineCount];
+                    captureData.AnimationError[i] = double.NaN;
                 }
-
-                var dataLines = presentLines.ToArray();
 
                 var presentModeMapping = Enum.GetValues(typeof(EPresentMode)).Cast<EPresentMode>()
                     .ToDictionary(e => e.GetDescription(), e => (int)e);
-                for (int lineIndex = 0; lineIndex < dataLines.Count(); lineIndex++)
+                var requiredColumns = new bool[metrics.Length];
+                MarkRequiredColumns(requiredColumns,
+                    indexFrameStart, indexFrameTimes, indexUntilDisplayedTimes, indexAppMissed,
+                    indexPresentMode, indexMsInPresentAPI, indexDisplayTimes, indexQPCTimes,
+                    indexRuntime, indexAllowsTearing, indexSyncInterval, indexFrameType,
+                    indexPcLatency, indexMsAnimationError, indexmsGPUActive, indexmsCPUActive,
+                    indexCPUStartQPCTime, indexCPUStartQPCTimeInMs);
+                var values = new string[metrics.Length];
+
+                for (int lineIndex = 0; lineIndex < dataLines.Count; lineIndex++)
                 {
                     string line = dataLines[lineIndex];
-                    if (!line.Any())
+                    if (line.Length == 0)
                     {
                         continue;
                     }
-                    var lineCharList = new List<char>();
-                    string[] values = Array.Empty<string>();
-
-                    if (lineIndex == 0)
-                    {
-                        int isInner = -1;
-                        for (int i = 0; i < line.Length; i++)
-                        {
-                            if (line[i] == '"')
-                                isInner *= -1;
-
-                            if (!(line[i] == ',' && isInner == 1))
-                                lineCharList.Add(line[i]);
-
-                        }
-
-                        line = new string(lineCharList.ToArray());
-                    }
-
-                    values = line.Split(',');
+                    ParseCsvFields(line, values, requiredColumns);
                     double frameStart = 0;
 
                     if (lineIndex == 0)
@@ -1182,24 +1905,23 @@ namespace CapFrameX.Data
                 if (indexFrameStart > -1)
                 {
                     var startTime = captureData.TimeInSeconds[0];
-                    captureData.TimeInSeconds = captureData.TimeInSeconds.Select(time => time - startTime).ToArray();
+                    for (int i = 0; i < captureData.TimeInSeconds.Length; i++)
+                    {
+                        captureData.TimeInSeconds[i] -= startTime;
+                    }
                 }
                 // Get render times from frame time data
                 else
                 {
-                    var normalizedTimes = captureData.MsBetweenPresents
-                        .Skip(1)
-                        .Prepend(0)
-                        .ToArray();
-
-                    captureData.TimeInSeconds = normalizedTimes
-                        .Aggregate(new List<double>(), (a, x) =>
+                    double cumulativeTime = 0;
+                    for (int i = 0; i < captureData.TimeInSeconds.Length; i++)
+                    {
+                        if (i > 0)
                         {
-                            a.Add(a.LastOrDefault() + x);
-                            return a;
-                        })
-                        .Select(x => x / 1000d)
-                        .ToArray();
+                            cumulativeTime += captureData.MsBetweenPresents[i];
+                        }
+                        captureData.TimeInSeconds[i] = cumulativeTime / 1000d;
+                    }
                 }
 
                 // Take over sensor data from CSV file
@@ -1220,10 +1942,10 @@ namespace CapFrameX.Data
         /// Filters present data lines to include only the dominant process and its dominant SwapChainAddress.
         /// This handles scenarios where multiple processes or multiple swap chains per process are present.
         /// </summary>
-        private IEnumerable<string> FilterByDominantSwapChain(IEnumerable<string> presentLines, string headerLine)
+        private List<string> FilterByDominantSwapChain(IEnumerable<string> presentLines, string headerLine)
         {
             var linesList = presentLines.ToList();
-            if (!linesList.Any())
+            if (linesList.Count == 0)
                 return linesList;
 
             // Find SwapChainAddress index from header
@@ -1243,57 +1965,79 @@ namespace CapFrameX.Data
             if (swapChainIndex < 0 || processNameIndex < 0)
                 return linesList;
 
-            // Parse all lines to extract (ProcessName, SwapChainAddress) pairs and count occurrences
+            // Extract only the two fields needed here. Splitting every row into every CSV
+            // column doubles most of the parser's allocations before the real parse begins.
             var processSwapChainCounts = new Dictionary<(string ProcessName, string SwapChain), int>();
-            var lineData = new List<(string Line, string ProcessName, string SwapChain)>();
+            var pairOrder = new List<(string ProcessName, string SwapChain)>();
 
             foreach (var line in linesList)
             {
-                var values = line.Split(',');
-                if (values.Length <= Math.Max(swapChainIndex, processNameIndex))
+                if (!TryGetCsvFields(line, processNameIndex, swapChainIndex,
+                    out var processName, out var swapChain))
+                {
                     continue;
+                }
 
-                var processName = values[processNameIndex];
-                var swapChain = values[swapChainIndex];
                 var key = (processName, swapChain);
 
-                if (!processSwapChainCounts.ContainsKey(key))
-                    processSwapChainCounts[key] = 0;
-                processSwapChainCounts[key]++;
-
-                lineData.Add((line, processName, swapChain));
+                if (processSwapChainCounts.TryGetValue(key, out var count))
+                {
+                    processSwapChainCounts[key] = count + 1;
+                }
+                else
+                {
+                    processSwapChainCounts[key] = 1;
+                    pairOrder.Add(key);
+                }
             }
 
-            if (!processSwapChainCounts.Any())
+            if (processSwapChainCounts.Count == 0)
                 return linesList;
 
-            // Group by process and find the dominant SwapChain for each process
-            var processCounts = processSwapChainCounts
-                .GroupBy(kvp => kvp.Key.ProcessName)
-                .ToDictionary(
-                    g => g.Key,
-                    g => new
-                    {
-                        TotalFrames = g.Sum(x => x.Value),
-                        DominantSwapChain = g.OrderByDescending(x => x.Value).First().Key.SwapChain,
-                        DominantSwapChainCount = g.OrderByDescending(x => x.Value).First().Value
-                    });
+            var processOrder = new List<string>();
+            var processTotals = new Dictionary<string, int>();
+            var dominantPairs = new Dictionary<string, (string SwapChain, int Count)>();
+            foreach (var pair in pairOrder)
+            {
+                int count = processSwapChainCounts[pair];
+                if (processTotals.TryGetValue(pair.ProcessName, out var total))
+                {
+                    processTotals[pair.ProcessName] = total + count;
+                }
+                else
+                {
+                    processTotals[pair.ProcessName] = count;
+                    processOrder.Add(pair.ProcessName);
+                }
 
-            // Select the dominant process (the one with the most frames from its dominant SwapChain)
-            var dominantProcess = processCounts
-                .OrderByDescending(p => p.Value.DominantSwapChainCount)
-                .First();
+                if (!dominantPairs.TryGetValue(pair.ProcessName, out var dominant)
+                    || count > dominant.Count)
+                {
+                    dominantPairs[pair.ProcessName] = (pair.SwapChain, count);
+                }
+            }
 
-            var selectedProcessName = dominantProcess.Key;
-            var selectedSwapChain = dominantProcess.Value.DominantSwapChain;
+            string selectedProcessName = processOrder[0];
+            var selectedDominant = dominantPairs[selectedProcessName];
+            foreach (var processName in processOrder.Skip(1))
+            {
+                var candidate = dominantPairs[processName];
+                if (candidate.Count > selectedDominant.Count)
+                {
+                    selectedProcessName = processName;
+                    selectedDominant = candidate;
+                }
+            }
+
+            var selectedSwapChain = selectedDominant.SwapChain;
 
             _logger.LogInformation($"SwapChain filtering: Selected process '{selectedProcessName}' with SwapChain '{selectedSwapChain}' " +
-                $"({dominantProcess.Value.DominantSwapChainCount} frames out of {dominantProcess.Value.TotalFrames} total for this process)");
+                $"({selectedDominant.Count} frames out of {processTotals[selectedProcessName]} total for this process)");
 
             // Log if we're filtering out other processes or swap chains
-            if (processCounts.Count > 1)
+            if (processOrder.Count > 1)
             {
-                _logger.LogInformation($"SwapChain filtering: Filtered out {processCounts.Count - 1} other process(es)");
+                _logger.LogInformation($"SwapChain filtering: Filtered out {processOrder.Count - 1} other process(es)");
             }
 
             var otherSwapChainsForProcess = processSwapChainCounts
@@ -1307,12 +2051,205 @@ namespace CapFrameX.Data
             }
 
             // Filter lines to only include the selected process and SwapChain
-            var filteredLines = lineData
-                .Where(ld => ld.ProcessName == selectedProcessName && ld.SwapChain == selectedSwapChain)
-                .Select(ld => ld.Line)
-                .ToList();
+            var filteredLines = new List<string>(selectedDominant.Count);
+            foreach (var line in linesList)
+            {
+                if (TryGetCsvFields(line, processNameIndex, swapChainIndex,
+                    out var processName, out var swapChain)
+                    && processName == selectedProcessName
+                    && swapChain == selectedSwapChain)
+                {
+                    filteredLines.Add(line);
+                }
+            }
 
             return filteredLines;
+        }
+
+        private static bool TryGetCsvFields(string line, int firstIndex, int secondIndex,
+            out string firstValue, out string secondValue)
+        {
+            firstValue = null;
+            secondValue = null;
+            int highestIndex = Math.Max(firstIndex, secondIndex);
+            int position = 0;
+
+            for (int fieldIndex = 0; fieldIndex <= highestIndex; fieldIndex++)
+            {
+                bool required = fieldIndex == firstIndex || fieldIndex == secondIndex;
+                if (!TryReadCsvField(line, ref position, required, out var value))
+                {
+                    return false;
+                }
+
+                if (fieldIndex == firstIndex)
+                {
+                    firstValue = value;
+                }
+                if (fieldIndex == secondIndex)
+                {
+                    secondValue = value;
+                }
+            }
+
+            return true;
+        }
+
+        private static void MarkRequiredColumns(bool[] requiredColumns, params int[] indices)
+        {
+            foreach (int index in indices)
+            {
+                if (index >= 0 && index < requiredColumns.Length)
+                {
+                    requiredColumns[index] = true;
+                }
+            }
+        }
+
+        private static void ParseCsvFields(string line, string[] values, bool[] requiredColumns)
+        {
+            Array.Clear(values, 0, values.Length);
+            int position = 0;
+            for (int fieldIndex = 0; fieldIndex < values.Length; fieldIndex++)
+            {
+                if (!TryReadCsvField(line, ref position, requiredColumns[fieldIndex], out var value))
+                {
+                    return;
+                }
+
+                if (requiredColumns[fieldIndex])
+                {
+                    values[fieldIndex] = value;
+                }
+            }
+        }
+
+        private static bool TryReadCsvField(string line, ref int position, bool materialize, out string value)
+        {
+            value = null;
+            if (line == null || position > line.Length)
+            {
+                return false;
+            }
+
+            if (position < line.Length && line[position] == '"')
+            {
+                position++;
+                int segmentStart = position;
+                StringBuilder builder = materialize ? new StringBuilder() : null;
+                bool closed = false;
+
+                while (position < line.Length)
+                {
+                    if (line[position] != '"')
+                    {
+                        position++;
+                        continue;
+                    }
+
+                    if (position + 1 < line.Length && line[position + 1] == '"')
+                    {
+                        if (materialize)
+                        {
+                            builder.Append(line, segmentStart, position - segmentStart);
+                            builder.Append('"');
+                        }
+                        position += 2;
+                        segmentStart = position;
+                        continue;
+                    }
+
+                    if (materialize)
+                    {
+                        builder.Append(line, segmentStart, position - segmentStart);
+                    }
+                    position++;
+                    closed = true;
+                    break;
+                }
+
+                if (!closed && materialize)
+                {
+                    builder.Append(line, segmentStart, position - segmentStart);
+                }
+
+                while (position < line.Length && line[position] != ',')
+                {
+                    if (materialize)
+                    {
+                        builder.Append(line[position]);
+                    }
+                    position++;
+                }
+
+                if (materialize)
+                {
+                    value = builder.ToString();
+                }
+            }
+            else
+            {
+                int fieldStart = position;
+                while (position < line.Length && line[position] != ',')
+                {
+                    position++;
+                }
+
+                if (materialize)
+                {
+                    value = line.Substring(fieldStart, position - fieldStart);
+                }
+            }
+
+            if (position < line.Length && line[position] == ',')
+            {
+                position++;
+            }
+            else
+            {
+                position = line.Length + 1;
+            }
+
+            return true;
+        }
+
+        private static string GetPresentLinesSha1(IList<string> lines)
+        {
+            var encoding = Encoding.ASCII;
+            var buffer = new byte[256];
+            var delimiter = new byte[] { (byte)',' };
+
+            using (var sha1 = new SHA1Managed())
+            {
+                for (int i = 0; i < lines.Count; i++)
+                {
+                    if (i > 0)
+                    {
+                        sha1.TransformBlock(delimiter, 0, delimiter.Length, delimiter, 0);
+                    }
+
+                    string line = lines[i] ?? string.Empty;
+                    int requiredLength = encoding.GetMaxByteCount(line.Length);
+                    if (buffer.Length < requiredLength)
+                    {
+                        buffer = new byte[requiredLength];
+                    }
+
+                    int byteCount = encoding.GetBytes(line, 0, line.Length, buffer, 0);
+                    if (byteCount > 0)
+                    {
+                        sha1.TransformBlock(buffer, 0, byteCount, buffer, 0);
+                    }
+                }
+
+                sha1.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+                var hash = new StringBuilder(sha1.Hash.Length * 2);
+                foreach (byte value in sha1.Hash)
+                {
+                    hash.Append(value.ToString("X2"));
+                }
+                return hash.ToString();
+            }
         }
 
         public void NormalizeStartTimesOfSessionRuns(IEnumerable<ISessionRun> sessionRuns)

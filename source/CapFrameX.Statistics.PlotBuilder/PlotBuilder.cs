@@ -196,20 +196,26 @@ namespace CapFrameX.Statistics.PlotBuilder
             }
         };
 
-        public void Reset()
+        public void Reset(bool invalidatePlot = true)
         {
             PlotModel.Series.Clear();
             PlotModel.Axes.Clear();
-            PlotModel.InvalidatePlot(true);
+            if (invalidatePlot)
+            {
+                PlotModel.InvalidatePlot(true);
+            }
         }
 
-        public void UpdateAxis(EPlotAxis axisType, Action<Axis> action)
+        public void UpdateAxis(EPlotAxis axisType, Action<Axis> action, bool invalidatePlot = true)
         {
             var axis = PlotModel.GetAxisOrDefault(axisType.GetDescription(), null);
             if (axis != null)
             {
                 action(axis);
-                PlotModel.InvalidatePlot(false);
+                if (invalidatePlot)
+                {
+                    PlotModel.InvalidatePlot(false);
+                }
             }
         }
 
@@ -238,7 +244,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 YAxisKey = EPlotAxis.YAXISFRAMETIMES.GetDescription()
             };
 
-            series.Points.AddRange(points.Select(p => new DataPoint(p.X, p.Y)));
+            series.Points.AddRange(GetRenderablePoints(points).Select(p => new DataPoint(p.X, p.Y)));
             plotModel.Series.Add(series);
         }
 
@@ -253,7 +259,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 YAxisKey = EPlotAxis.YAXISPERCENTAGE.GetDescription()
             };
 
-            series.Points.AddRange(points.Select(p => new DataPoint(p.X, p.Y)));
+            series.Points.AddRange(GetRenderablePoints(points).Select(p => new DataPoint(p.X, p.Y)));
             plotModel.Series.Add(series);
         }
 
@@ -268,7 +274,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 YAxisKey = EPlotAxis.YAXISPERCENTAGE.GetDescription()
             };
 
-            series.Points.AddRange(points.Select(p => new DataPoint(p.X, p.Y)));
+            series.Points.AddRange(GetRenderablePoints(points).Select(p => new DataPoint(p.X, p.Y)));
             plotModel.Series.Add(series);
         }
 
@@ -283,7 +289,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 YAxisKey = EPlotAxis.YAXISPERCENTAGE.GetDescription()
             };
 
-            series.Points.AddRange(points.Select(p => new DataPoint(p.X, p.Y)));
+            series.Points.AddRange(GetRenderablePoints(points).Select(p => new DataPoint(p.X, p.Y)));
             plotModel.Series.Add(series);
         }
 
@@ -299,7 +305,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 YAxisKey = EPlotAxis.YAXISPERCENTAGE.GetDescription()
             };
 
-            series.Points.AddRange(points.Select(p => new DataPoint(p.X, p.Y)));
+            series.Points.AddRange(GetRenderablePoints(points).Select(p => new DataPoint(p.X, p.Y)));
             plotModel.Series.Add(series);
         }
 
@@ -314,7 +320,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 YAxisKey = EPlotAxis.YAXISFRAMETIMES.GetDescription()
             };
 
-            series.Points.AddRange(points.Select(p => new DataPoint(p.X, p.Y)));
+            series.Points.AddRange(GetRenderablePoints(points).Select(p => new DataPoint(p.X, p.Y)));
             plotModel.Series.Add(series);
         }
 
@@ -354,8 +360,35 @@ namespace CapFrameX.Statistics.PlotBuilder
                 YAxisKey = EPlotAxis.YAXISFRAMETIMES.GetDescription()
             };
 
-            series.Points.AddRange(points.Select(p => new DataPoint(p.X, p.Y)));
+            series.Points.AddRange(GetRenderablePoints(points).Select(p => new DataPoint(p.X, p.Y)));
             plotModel.Series.Add(series);
+        }
+
+        protected static IList<Point> GetRenderablePoints(IList<Point> points)
+        {
+            return points ?? new List<Point>();
+        }
+
+        protected static IList<Point> GetRenderablePoints(IList<Point> points, double startTime, double endTime)
+        {
+            if (points == null || points.Count == 0)
+            {
+                return new List<Point>();
+            }
+
+            var window = new List<Point>(points.Count);
+            for (int i = 0; i < points.Count; i++)
+            {
+                Point point = points[i];
+                if (point.X >= startTime && point.X <= endTime
+                    && !double.IsNaN(point.X) && !double.IsInfinity(point.X)
+                    && !double.IsNaN(point.Y) && !double.IsInfinity(point.Y))
+                {
+                    window.Add(point);
+                }
+            }
+
+            return window;
         }
 
         public void SetAggregationSeparators(ISession session, PlotModel plotModel, bool showSeparators)

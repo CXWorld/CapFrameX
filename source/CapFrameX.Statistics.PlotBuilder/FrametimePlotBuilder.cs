@@ -16,10 +16,13 @@ namespace CapFrameX.Statistics.PlotBuilder
         public void BuildPlotmodel(ISession session, IPlotSettings plotSettings, double startTime, double endTime, ERemoveOutlierMethod eRemoveOutlinerMethod, Action<PlotModel> onFinishAction = null)
         {
             var plotModel = PlotModel;
-            Reset();
+            Reset(false);
 
             if (session == null)
             {
+                // Reset(false) skipped the redraw; render the cleared model so no
+                // stale chart from a previously selected record stays on screen.
+                plotModel.InvalidatePlot(true);
                 return;
             }
 
@@ -38,8 +41,6 @@ namespace CapFrameX.Statistics.PlotBuilder
             if (plotSettings.ShowCpuActiveCharts)
                 CpuActiveTimePoints = session.GetCpuActiveTimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
 
-            var frametimes = session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod); ;
-
             SetFrametimeChart(plotModel, frametimepoints, displaytimespoints, GpuActiveTimePoints, CpuActiveTimePoints, plotSettings);
 
             if (plotSettings.IsAnyPercentageGraphVisible && session.HasValidSensorData())
@@ -47,13 +48,13 @@ namespace CapFrameX.Statistics.PlotBuilder
                 plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISPERCENTAGE]);
 
                 if (plotSettings.ShowGpuLoad)
-                    SetGPULoadChart(plotModel, session.GetGPULoadPointTimeWindow());
+                    SetGPULoadChart(plotModel, GetRenderablePoints(session.GetGPULoadPointTimeWindow(), startTime, endTime));
                 if (plotSettings.ShowCpuLoad)
-                    SetCPULoadChart(plotModel, session.GetCPULoadPointTimeWindow());
+                    SetCPULoadChart(plotModel, GetRenderablePoints(session.GetCPULoadPointTimeWindow(), startTime, endTime));
                 if (plotSettings.ShowCpuMaxThreadLoad)
-                    SetCPUMaxThreadLoadChart(plotModel, session.GetCPUMaxThreadLoadPointTimeWindow());
+                    SetCPUMaxThreadLoadChart(plotModel, GetRenderablePoints(session.GetCPUMaxThreadLoadPointTimeWindow(), startTime, endTime));
                 if (plotSettings.ShowGpuPowerLimit)
-                    SetGpuPowerLimitChart(plotModel, session.GetGpuPowerLimitPointTimeWindow());
+                    SetGpuPowerLimitChart(plotModel, GetRenderablePoints(session.GetGpuPowerLimitPointTimeWindow(), startTime, endTime));
             }
 
             // Draw display times graph
@@ -65,13 +66,13 @@ namespace CapFrameX.Statistics.PlotBuilder
             // Draw PC latency graph
             if (plotSettings.ShowPcLatency)
             {
-                SetPcLatencyChart(plotModel, session.GetPcLatencyPointTimeWindow());
+                SetPcLatencyChart(plotModel, GetRenderablePoints(session.GetPcLatencyPointTimeWindow(), startTime, endTime));
             }
 
             // Draw Animation Error graph
             if (plotSettings.ShowAnimationError)
             {
-                SetAnimationErrorChart(plotModel, session.GetAnimationErrorPointTimeWindow());
+                SetAnimationErrorChart(plotModel, GetRenderablePoints(session.GetAnimationErrorPointTimeWindow(), startTime, endTime));
             }
 
             SetAggregationSeparators(session, plotModel, plotSettings.ShowAggregationSeparators);
@@ -85,30 +86,14 @@ namespace CapFrameX.Statistics.PlotBuilder
         {
             if (frametimePoints == null || !frametimePoints.Any()) return;
 
-            int count = frametimePoints.Count;
-            var frametimeDataPoints = frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
-            var GpuActiveTimeDataPoints = GpuActiveTimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
-            var CpuActiveTimeDataPoints = CpuActiveTimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
-
-            IList<double> movingAverageValues;
-
-            if (plotSettings.ShowDisplayTimes)
-            {
-                movingAverageValues = _frametimesStatisticProvider.GetMovingAverage(displaytimespoints.Select(pnt => pnt.Y).ToList());
-            }
-            else
-            {
-                movingAverageValues = _frametimesStatisticProvider.GetMovingAverage(frametimePoints.Select(pnt => pnt.Y).ToList());
-            }
-
-            var stuttering = new List<double>();
-            var lowFPS = new List<double>();
-
-            for (int i = 0; i < count; i++)
-            {
-                stuttering.Add(movingAverageValues[i] * plotSettings.StutteringFactor);
-                lowFPS.Add(1000 / plotSettings.LowFPSThreshold);
-            }
+            var movingAverageSourcePoints = plotSettings.ShowDisplayTimes && displaytimespoints.Any()
+                ? displaytimespoints
+                : frametimePoints;
+            var movingAverageValues = _frametimesStatisticProvider.GetMovingAverage(
+                movingAverageSourcePoints.Select(point => point.Y).ToList());
+            var movingAveragePoints = movingAverageValues
+                .Select((value, index) => new Point(movingAverageSourcePoints[index].X, value))
+                .ToList();
 
             plotModel.Series.Clear();
 
@@ -168,20 +153,24 @@ namespace CapFrameX.Statistics.PlotBuilder
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
-            frametimeSeries.Points.AddRange(frametimeDataPoints);
-            movingAverageSeries.Points.AddRange(movingAverageValues.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
+            frametimeSeries.Points.AddRange(GetRenderablePoints(frametimePoints)
+                .Select(point => new DataPoint(point.X, point.Y)));
+            movingAverageSeries.Points.AddRange(GetRenderablePoints(movingAveragePoints)
+                .Select(point => new DataPoint(point.X, point.Y)));
 
             if (plotSettings.ShowGpuActiveCharts)
-                GpuActiveTimeSeries.Points.AddRange(GpuActiveTimeDataPoints);
+                GpuActiveTimeSeries.Points.AddRange(GetRenderablePoints(GpuActiveTimePoints)
+                    .Select(point => new DataPoint(point.X, point.Y)));
 
             if (plotSettings.ShowCpuActiveCharts)
-                CpuActiveTimeSeries.Points.AddRange(CpuActiveTimeDataPoints);
+                CpuActiveTimeSeries.Points.AddRange(GetRenderablePoints(CpuActiveTimePoints)
+                    .Select(point => new DataPoint(point.X, point.Y)));
 
             UpdateAxis(EPlotAxis.XAXIS, (axis) =>
             {
                 axis.Minimum = frametimePoints.First().X;
                 axis.Maximum = frametimePoints.Last().X;
-            });
+            }, false);
 
             plotModel.Series.Add(frametimeSeries);
             plotModel.Series.Add(movingAverageSeries);
@@ -194,14 +183,19 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             if (plotSettings.ShowThresholds)
             {
-                stutteringSeries.Points.AddRange(stuttering.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
-                lowFPSSeries.Points.AddRange(lowFPS.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
+                var stutteringPoints = movingAveragePoints
+                    .Select(point => new Point(point.X, point.Y * plotSettings.StutteringFactor))
+                    .ToList();
+                stutteringSeries.Points.AddRange(GetRenderablePoints(stutteringPoints)
+                    .Select(point => new DataPoint(point.X, point.Y)));
+
+                double lowFpsThreshold = 1000 / plotSettings.LowFPSThreshold;
+                lowFPSSeries.Points.Add(new DataPoint(movingAverageSourcePoints.First().X, lowFpsThreshold));
+                lowFPSSeries.Points.Add(new DataPoint(movingAverageSourcePoints.Last().X, lowFpsThreshold));
 
                 plotModel.Series.Add(stutteringSeries);
                 plotModel.Series.Add(lowFPSSeries);
             }
-
-            plotModel.InvalidatePlot(true);
         }
     }
 }
