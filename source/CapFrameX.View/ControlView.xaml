@@ -194,8 +194,12 @@
 					        dragdrop:DragDrop.IsDropTarget="False"
 					        dragdrop:DragDrop.UseDefaultDragAdorner="True"
 					        dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
-					        dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
+                            dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
                             Style="{StaticResource MaterialDesignDataGrid}"
+                            EnableRowVirtualization="True"
+                            EnableColumnVirtualization="True"
+                            VirtualizingPanel.IsVirtualizing="True"
+                            VirtualizingPanel.VirtualizationMode="Recycling"
                             Background="{DynamicResource MaterialDesignBackground}">
                         <DataGrid.Resources>
                             <Style TargetType="{x:Type DataGridRow}">
