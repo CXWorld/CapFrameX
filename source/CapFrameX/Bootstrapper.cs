@@ -114,7 +114,7 @@ namespace CapFrameX
                 // detected. The PID flows through IRTSSService.ProcessIdStream (IProcessService),
                 // the same stream the overlay/capture pipeline uses — so we address the process
                 // directly, no manual injector. It also publishes the transient hook-free fallback
-                // state for presentation runtimes the native renderers do not support.
+                // state when injection is unsafe, fails its handshake, or the runtime is unsupported.
                 using (StartupPerformanceLogger.Measure("Hook overlay manager initialization"))
                 {
                     _hookOverlayManager = new CapFrameX.OSD.Integration.HookOverlayManager(
@@ -129,7 +129,7 @@ namespace CapFrameX
                 // CapFrameX.OSD: hook-free DWM/DirectComposition overlay. Scalars come from the
                 // same IOverlayEntry[] stream RTSS uses; per-present frametimes from the capture
                 // service. Besides the explicit hook-free mode, it takes over transiently when the
-                // selected in-game renderer encounters an unsupported runtime such as D3D9.
+                // selected in-game renderer cannot safely become operational (including D3D9).
                 using (StartupPerformanceLogger.Measure("OSD overlay bridge initialization"))
                 {
                     _osdOverlayBridge = new CapFrameX.OSD.Integration.OsdOverlayBridge(

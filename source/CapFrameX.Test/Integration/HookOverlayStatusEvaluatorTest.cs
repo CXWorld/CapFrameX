@@ -191,6 +191,26 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void ShouldUseHookFreeFallback_UsesFallbackForBlockedTarget()
+        {
+            bool useFallback = HookOverlayManager.ShouldUseHookFreeFallback(
+                hookEnabled: true, processId: 42, runtime: "DXGI",
+                targetBlockReason: "process 'cs2' is on the in-game injection blacklist");
+
+            Assert.IsTrue(useFallback);
+        }
+
+        [TestMethod]
+        public void ShouldUseHookFreeFallback_UsesFallbackForNativeHookFailure()
+        {
+            bool useFallback = HookOverlayManager.ShouldUseHookFreeFallback(
+                hookEnabled: true, processId: 42, runtime: "D3D11",
+                nativeFallbackReason: "in-game hook injection failed");
+
+            Assert.IsTrue(useFallback);
+        }
+
+        [TestMethod]
         public void ShouldUseHookFreeFallback_WaitsForEnabledHookAndValidTarget()
         {
             Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
@@ -221,6 +241,49 @@ namespace CapFrameX.Test.Integration
 
             Assert.AreEqual(EHookOverlayStatus.Hidden, status.State);
             StringAssert.Contains(status.Detail, "hook-free fallback is hidden");
+        }
+
+        [TestMethod]
+        public void CreateHookFreeFallbackStatus_ReportsNativeFailureReason()
+        {
+            HookOverlayStatus status = HookOverlayManager.CreateHookFreeFallbackStatus(
+                processId: 42, runtime: "DXGI", visible: true,
+                fallbackReason: "native hook did not publish status within 3 seconds after injection");
+
+            Assert.AreEqual(EHookOverlayStatus.Fallback, status.State);
+            StringAssert.Contains(status.Detail, "did not publish status within 3 seconds");
+        }
+
+        [TestMethod]
+        public void HasHookStatusTimedOut_WaitsForGracePeriod()
+        {
+            Assert.IsFalse(HookOverlayManager.HasHookStatusTimedOut(
+                injectionSucceeded: true, injectionSucceededTickMs: 1000,
+                lastNativeStatusTickMs: 0, hasNativeStatus: false,
+                nowTickMs: 1000 + HookOverlayManager.HookHandshakeTimeoutMs - 1));
+            Assert.IsTrue(HookOverlayManager.HasHookStatusTimedOut(
+                injectionSucceeded: true, injectionSucceededTickMs: 1000,
+                lastNativeStatusTickMs: 0, hasNativeStatus: false,
+                nowTickMs: 1000 + HookOverlayManager.HookHandshakeTimeoutMs));
+        }
+
+        [TestMethod]
+        public void HasHookStatusTimedOut_DoesNotFallbackWithNativeStatus()
+        {
+            Assert.IsFalse(HookOverlayManager.HasHookStatusTimedOut(
+                injectionSucceeded: true, injectionSucceededTickMs: 1000,
+                lastNativeStatusTickMs: 0, hasNativeStatus: true,
+                nowTickMs: 1000 + HookOverlayManager.HookHandshakeTimeoutMs));
+        }
+
+        [TestMethod]
+        public void HookTargetPolicy_BlacklistsProtectedProcessesForInjectionOnly()
+        {
+            Assert.IsTrue(HookTargetPolicy.IsInjectionBlacklisted("CS2.exe", out string reason));
+            StringAssert.Contains(reason, "in-game injection blacklist");
+            Assert.IsTrue(HookTargetPolicy.IsInjectionBlacklisted(
+                "VALORANT-Win64-Shipping.exe", out _));
+            Assert.IsFalse(HookTargetPolicy.IsInjectionBlacklisted("hl2.exe", out _));
         }
 
         private static NativeHookStatusSnapshot ReadySnapshot()

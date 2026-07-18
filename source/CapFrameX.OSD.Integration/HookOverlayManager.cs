@@ -29,6 +29,7 @@ namespace CapFrameX.OSD.Integration
     {
         private const string HookDllName = "cfx_osd_hook.dll";
         private const string InjectHelperName = "cfx_inject.exe"; // x86 bitness helper (WOW64 targets)
+        internal const ulong HookHandshakeTimeoutMs = 3000;
         private static readonly long VulkanProbeRetryTicks =
             Math.Max(1, Stopwatch.Frequency / 10L);
 
@@ -64,8 +65,12 @@ namespace CapFrameX.OSD.Integration
         private bool _injectionInProgress;
         private bool _injectionSucceeded;
         private bool _hookFreeFallbackActive;
+        private ulong _injectionSucceededTickMs;
+        private ulong _lastNativeStatusTickMs;
         private int _injectionStatusPid;
         private string _lastInjectionError;
+        private string _nativeFallbackReason;
+        private string _hookFreeFallbackReason;
         private string _targetBlockReason;
         private string _vulkanBlockReason;
 
@@ -117,9 +122,9 @@ namespace CapFrameX.OSD.Integration
         }
 
         /// <summary>
-        /// Becomes active while the in-game renderer is selected but the detected presentation
-        /// runtime is not supported by either the DXGI hook or the Vulkan layer. Consumers use
-        /// this transient signal without changing the user's persisted renderer selection.
+        /// Becomes active while the in-game renderer is selected but native injection is blocked,
+        /// fails, does not complete its status handshake, or the presentation runtime is unsupported.
+        /// Consumers use this transient signal without changing the user's persisted selection.
         /// </summary>
         public IObservable<bool> HookFreeFallbackStream =>
             _hookFreeFallbackStream.DistinctUntilChanged();
@@ -141,8 +146,16 @@ namespace CapFrameX.OSD.Integration
         // state to the in-game hook through the named visibility event.
         private void UpdateHookVisibility()
         {
+            bool targetAllowed;
+            bool fallbackActive;
+            lock (_stateGate)
+            {
+                targetAllowed = _targetAllowed;
+                fallbackActive = _hookFreeFallbackActive;
+            }
+
             _visibility.SetVisible(_enabled && _appConfiguration.IsOverlayActive &&
-                _targetAllowed && IsDxgiRuntime(_currentRuntime));
+                targetAllowed && !fallbackActive && IsDxgiRuntime(_currentRuntime));
         }
 
         private void OnProcessId(int pid)
@@ -157,7 +170,11 @@ namespace CapFrameX.OSD.Integration
                 _injectionStatusPid = pid;
                 _injectionInProgress = false;
                 _injectionSucceeded = false;
+                _injectionSucceededTickMs = 0;
+                _lastNativeStatusTickMs = 0;
                 _lastInjectionError = null;
+                _nativeFallbackReason = null;
+                _hookFreeFallbackReason = null;
                 _targetBlockReason = null;
                 _vulkanBlockReason = null;
             }
@@ -235,23 +252,53 @@ namespace CapFrameX.OSD.Integration
             => string.Equals(runtime, "Vulkan", StringComparison.OrdinalIgnoreCase);
 
         internal static bool ShouldUseHookFreeFallback(bool hookEnabled, int processId,
-            string runtime)
+            string runtime, string targetBlockReason = null, string nativeFallbackReason = null)
+            => GetHookFreeFallbackReason(hookEnabled, processId, runtime,
+                targetBlockReason, nativeFallbackReason) != null;
+
+        internal static string GetHookFreeFallbackReason(bool hookEnabled, int processId,
+            string runtime, string targetBlockReason = null, string nativeFallbackReason = null)
         {
             if (!hookEnabled || processId <= 0 || string.IsNullOrWhiteSpace(runtime) ||
                 string.Equals(runtime, "<error>", StringComparison.OrdinalIgnoreCase))
-                return false;
+                return null;
 
-            return !IsDxgiRuntime(runtime) && !IsVulkanRuntime(runtime);
+            if (!string.IsNullOrWhiteSpace(targetBlockReason))
+                return $"in-game injection blocked ({targetBlockReason})";
+
+            if (!string.IsNullOrWhiteSpace(nativeFallbackReason))
+                return nativeFallbackReason;
+
+            return !IsDxgiRuntime(runtime) && !IsVulkanRuntime(runtime)
+                ? "unsupported by the in-game renderer"
+                : null;
         }
 
         internal static HookOverlayStatus CreateHookFreeFallbackStatus(int processId,
-            string runtime, bool visible)
+            string runtime, bool visible, string fallbackReason = null)
         {
+            string reason = string.IsNullOrWhiteSpace(fallbackReason)
+                ? "unsupported by the in-game renderer"
+                : fallbackReason;
             return new HookOverlayStatus(
                 visible ? EHookOverlayStatus.Fallback : EHookOverlayStatus.Hidden,
                 processId, runtime,
-                $"PID {processId}, {runtime}: unsupported by the in-game renderer; " +
+                $"PID {processId}, {runtime}: {reason}; " +
                 $"hook-free fallback is {(visible ? "active" : "hidden")}.");
+        }
+
+        internal static bool HasHookStatusTimedOut(bool injectionSucceeded,
+            ulong injectionSucceededTickMs, ulong lastNativeStatusTickMs,
+            bool hasNativeStatus, ulong nowTickMs)
+        {
+            if (!injectionSucceeded || hasNativeStatus) return false;
+
+            ulong referenceTickMs = lastNativeStatusTickMs > 0
+                ? lastNativeStatusTickMs
+                : injectionSucceededTickMs;
+            if (referenceTickMs == 0 || nowTickMs < referenceTickMs) return false;
+
+            return nowTickMs - referenceTickMs >= HookHandshakeTimeoutMs;
         }
 
         private void UpdateHookFreeFallback()
@@ -263,20 +310,31 @@ namespace CapFrameX.OSD.Integration
                 bool active;
                 int pid;
                 string runtime;
+                string reason;
+                bool activeChanged;
+                bool reasonChanged;
                 lock (_stateGate)
                 {
                     pid = _currentPid;
                     runtime = _currentRuntime;
-                    active = ShouldUseHookFreeFallback(_enabled, pid, runtime);
-                    if (active == _hookFreeFallbackActive) return;
+                    reason = GetHookFreeFallbackReason(_enabled, pid, runtime,
+                        _targetBlockReason, _nativeFallbackReason);
+                    active = reason != null;
+                    activeChanged = active != _hookFreeFallbackActive;
+                    reasonChanged = !string.Equals(reason, _hookFreeFallbackReason,
+                        StringComparison.Ordinal);
+                    if (!activeChanged && !reasonChanged) return;
                     _hookFreeFallbackActive = active;
+                    _hookFreeFallbackReason = reason;
                 }
 
                 Log.Information(
-                    "HookOverlay: hook-free fallback {state} for pid {pid} (runtime {runtime})",
+                    "HookOverlay: hook-free fallback {state} for pid {pid} (runtime {runtime}, reason {reason})",
                     active ? "enabled" : "disabled", pid,
-                    string.IsNullOrWhiteSpace(runtime) ? "unknown" : runtime);
-                _hookFreeFallbackStream.OnNext(active);
+                    string.IsNullOrWhiteSpace(runtime) ? "unknown" : runtime,
+                    string.IsNullOrWhiteSpace(reason) ? "none" : reason);
+                if (activeChanged) _hookFreeFallbackStream.OnNext(active);
+                UpdateHookVisibility();
             }
         }
 
@@ -454,8 +512,72 @@ namespace CapFrameX.OSD.Integration
                 _injectionInProgress = inProgress;
                 _injectionSucceeded = succeeded;
                 _lastInjectionError = error;
+                if (succeeded)
+                {
+                    _injectionSucceededTickMs = HookStatusProbe.CurrentTickCount;
+                    _lastNativeStatusTickMs = 0;
+                }
+                else if (!inProgress)
+                {
+                    _injectionSucceededTickMs = 0;
+                }
+
+                if (!string.IsNullOrWhiteSpace(error))
+                    _nativeFallbackReason = $"in-game hook injection failed ({error})";
             }
+            UpdateHookFreeFallback();
             PublishStatus();
+        }
+
+        private void UpdateNativeStatusFallback(int pid, bool hasNativeStatus, ulong nowTickMs)
+        {
+            bool changed = false;
+            bool fallbackEnabled = false;
+            string reason = null;
+            lock (_stateGate)
+            {
+                if (pid != _currentPid) return;
+
+                if (hasNativeStatus)
+                {
+                    _lastNativeStatusTickMs = nowTickMs;
+                    if (!string.IsNullOrEmpty(_nativeFallbackReason))
+                    {
+                        _nativeFallbackReason = null;
+                        changed = true;
+                    }
+                }
+                else if (HasHookStatusTimedOut(_injectionSucceeded,
+                    _injectionSucceededTickMs, _lastNativeStatusTickMs,
+                    hasNativeStatus: false, nowTickMs))
+                {
+                    reason = _lastNativeStatusTickMs > 0
+                        ? $"native hook status was unavailable for more than {HookHandshakeTimeoutMs / 1000} seconds"
+                        : $"native hook did not publish status within {HookHandshakeTimeoutMs / 1000} seconds after injection";
+                    if (!string.Equals(reason, _nativeFallbackReason, StringComparison.Ordinal))
+                    {
+                        _nativeFallbackReason = reason;
+                        changed = true;
+                        fallbackEnabled = true;
+                    }
+                }
+            }
+
+            if (!changed) return;
+
+            if (fallbackEnabled)
+            {
+                Log.Warning(
+                    "HookOverlay: native status handshake timed out for pid {pid}; enabling hook-free fallback",
+                    pid);
+            }
+            else
+            {
+                Log.Information(
+                    "HookOverlay: native status available for pid {pid}; clearing native-failure fallback",
+                    pid);
+            }
+            UpdateHookFreeFallback();
         }
 
         private bool RefreshVulkanInjectionGate(int pid, bool forceProbe = false)
@@ -551,6 +673,7 @@ namespace CapFrameX.OSD.Integration
             }
 
             if (visibilityChanged) UpdateHookVisibility();
+            if (visibilityChanged || reasonChanged) UpdateHookFreeFallback();
             if (reasonChanged) PublishStatus();
             return allowed;
         }
@@ -564,6 +687,7 @@ namespace CapFrameX.OSD.Integration
                 int injectionPid;
                 string runtime;
                 string injectionError;
+                string hookFreeFallbackReason;
                 string targetBlockReason;
                 string vulkanBlockReason;
                 bool targetAllowed;
@@ -579,6 +703,7 @@ namespace CapFrameX.OSD.Integration
                     injectionInProgress = _injectionInProgress;
                     injectionSucceeded = _injectionSucceeded;
                     hookFreeFallbackActive = _hookFreeFallbackActive;
+                    hookFreeFallbackReason = _hookFreeFallbackReason;
                     injectionError = _lastInjectionError;
                     targetBlockReason = _targetBlockReason;
                     vulkanBlockReason = _vulkanBlockReason;
@@ -605,6 +730,12 @@ namespace CapFrameX.OSD.Integration
                     ulong nowTickMs = HookStatusProbe.CurrentTickCount;
                     bool hasDxgiStatus = HookStatusProbe.TryRead(pid,
                         out NativeHookStatusSnapshot native, out string dxgiProbeError);
+                    UpdateNativeStatusFallback(pid, hasDxgiStatus, nowTickMs);
+                    lock (_stateGate)
+                    {
+                        hookFreeFallbackActive = _hookFreeFallbackActive;
+                        hookFreeFallbackReason = _hookFreeFallbackReason;
+                    }
                     bool vulkanProbeOk = VulkanActivityProbe.TryRead(pid,
                         out VulkanActivitySnapshot vulkan, out string vulkanProbeError);
                     bool hasVulkanStatus = vulkanProbeOk && vulkan.IsLayerLoaded &&
@@ -619,7 +750,13 @@ namespace CapFrameX.OSD.Integration
                     bool useVulkanStatus = ShouldUseVulkanStatus(runtime, hasVulkanStatus,
                         vulkanHeartbeatAge, hasDxgiStatus, dxgiTransitionStarted);
 
-                    if (useVulkanStatus)
+                    if (hookFreeFallbackActive)
+                    {
+                        bool visible = _appConfiguration.IsOverlayActive;
+                        status = CreateHookFreeFallbackStatus(pid, runtime, visible,
+                            hookFreeFallbackReason);
+                    }
+                    else if (useVulkanStatus)
                     {
                         if (!targetAllowed)
                         {
@@ -639,11 +776,6 @@ namespace CapFrameX.OSD.Integration
                             status = HookOverlayStatusEvaluator.EvaluateVulkan(pid, "Vulkan",
                                 vulkan, nowTickMs, _appConfiguration.IsOverlayActive);
                         }
-                    }
-                    else if (hookFreeFallbackActive)
-                    {
-                        bool visible = _appConfiguration.IsOverlayActive;
-                        status = CreateHookFreeFallbackStatus(pid, runtime, visible);
                     }
                     else if (!IsDxgiRuntime(runtime))
                     {

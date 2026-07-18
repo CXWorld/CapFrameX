@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace CapFrameX.OSD.Integration
@@ -22,6 +23,17 @@ namespace CapFrameX.OSD.Integration
             "beclient",
             "battleye",
             "vac_module",
+        };
+        private static readonly string[] InjectionBlacklist =
+        {
+            // CS2's default Trusted Mode rejects/ejects third-party hook DLLs. Keep the game
+            // detectable so capture and the hook-free overlay continue to work; only native
+            // injection is denied here.
+            "cs2",
+
+            // Vanguard is mandatory for VALORANT and operates outside the user-mode module
+            // markers scanned below. Do not make an unsigned LoadLibrary attempt there.
+            "VALORANT-Win64-Shipping",
         };
 
         private static readonly object Gate = new object();
@@ -79,7 +91,7 @@ namespace CapFrameX.OSD.Integration
                     return _cachedAllowed;
                 }
 
-                _cachedAllowed = ScanModules(pid, out _cachedReason);
+                _cachedAllowed = EvaluateTarget(pid, out _cachedReason);
                 _cachedPid = pid;
                 _cacheUntil = now + CacheTicks;
                 reason = _cachedReason;
@@ -115,6 +127,46 @@ namespace CapFrameX.OSD.Integration
 
             marker = null;
             return false;
+        }
+
+        internal static bool IsInjectionBlacklisted(string processName, out string reason)
+        {
+            string normalized = string.IsNullOrWhiteSpace(processName)
+                ? string.Empty
+                : Path.GetFileNameWithoutExtension(processName.Trim());
+            foreach (string candidate in InjectionBlacklist)
+            {
+                if (string.Equals(normalized, candidate, StringComparison.OrdinalIgnoreCase))
+                {
+                    reason = $"process '{normalized}' is on the in-game injection blacklist";
+                    return true;
+                }
+            }
+
+            reason = null;
+            return false;
+        }
+
+        private static bool EvaluateTarget(int pid, out string reason)
+        {
+            try
+            {
+                using (var process = Process.GetProcessById(pid))
+                {
+                    if (IsInjectionBlacklisted(process.ProcessName, out reason))
+                        return false;
+                }
+            }
+            catch (Exception ex) when (ex is ArgumentException ||
+                                       ex is InvalidOperationException ||
+                                       ex is System.ComponentModel.Win32Exception ||
+                                       ex is NotSupportedException)
+            {
+                reason = $"process identity check failed ({ex.Message})";
+                return false;
+            }
+
+            return ScanModules(pid, out reason);
         }
 
         private static bool ScanModules(int pid, out string reason)
