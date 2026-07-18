@@ -742,6 +742,11 @@
                     </Style>
                 </StackPanel.Style>
             </StackPanel>
+            <TextBlock Grid.Column="8" Margin="10 10 10 0"
+                       HorizontalAlignment="Right" VerticalAlignment="Center"
+                       Text="{Binding ComparisonMetricSourceDescription}"
+                       TextTrimming="CharacterEllipsis"
+                       ToolTip="All compared records use this timing source; mixed display/present comparisons are prevented." />
         </Grid>
 		<!-- Copmparison List -->
 		<StackPanel Margin="5 10 5 0" Grid.Column="1" Grid.RowSpan="2" Orientation="Vertical">

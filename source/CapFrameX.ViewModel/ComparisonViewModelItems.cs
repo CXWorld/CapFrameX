@@ -26,6 +26,12 @@ namespace CapFrameX.ViewModel
             var wrappedComparisonRecordInfo = GetWrappedRecordInfo(comparisonRecordInfo);
 
             // Insert into list (sorted)
+            bool sourceChanged = UpdateComparisonMetricSource(wrappedComparisonRecordInfo);
+            if (sourceChanged)
+            {
+                foreach (ComparisonRecordInfoWrapper existingRecord in ComparisonRecords)
+                    SetMetrics(existingRecord);
+            }
             SetMetrics(wrappedComparisonRecordInfo);
             InsertComparisonRecordsSorted(wrappedComparisonRecordInfo);
 
@@ -55,11 +61,24 @@ namespace CapFrameX.ViewModel
         private void SetMetrics(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
         {
             double startTime = FirstSeconds;
-            double lastFrameStart = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
-            double endTime = LastSeconds > lastFrameStart ? lastFrameStart : lastFrameStart + LastSeconds;
+            double lastFrameStart;
+            if (!TryGetLastFrameStart(wrappedComparisonRecordInfo.WrappedRecordInfo.Session, out lastFrameStart))
+            {
+                wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric = double.NaN;
+                wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric = double.NaN;
+                wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric = double.NaN;
+                wrappedComparisonRecordInfo.WrappedRecordInfo.SortingVariances = 0;
+                return;
+            }
+
+            double endTime = LastSeconds <= 0 || LastSeconds > lastFrameStart
+                ? lastFrameStart : LastSeconds;
 
             var frametimeTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
-            var displayChangeTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetDisplayChangeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
+            var displayChangeTimeWindow = _useDisplayChangeSamplesForComparison
+                ? wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetDisplayChangeTimeWindow(
+                    startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None)
+                : null;
             var gpuActiveTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetGpuActiveTimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
 
             double GeMetricValue(IList<double> sequence, EMetric metric) =>
@@ -94,7 +113,7 @@ namespace CapFrameX.ViewModel
                 }
                 else
                 {
-                    var samples = _appConfiguration.UseDisplayChangeMetrics
+                    var samples = _useDisplayChangeSamplesForComparison
                         ? displayChangeTimeWindow : frametimeTimeWindow;
 
                     wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric =
@@ -131,7 +150,7 @@ namespace CapFrameX.ViewModel
                 }
                 else
                 {
-                    var samples = _appConfiguration.UseDisplayChangeMetrics
+                    var samples = _useDisplayChangeSamplesForComparison
                         ? displayChangeTimeWindow : frametimeTimeWindow;
 
                     wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric =
@@ -168,7 +187,7 @@ namespace CapFrameX.ViewModel
                 }
                 else
                 {
-                    var samples = _appConfiguration.UseDisplayChangeMetrics
+                    var samples = _useDisplayChangeSamplesForComparison
                         ? displayChangeTimeWindow : frametimeTimeWindow;
 
                     wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric =
@@ -176,16 +195,9 @@ namespace CapFrameX.ViewModel
                 }
             }
 
-            IList<double> variances;
-
-            if (_appConfiguration.UseDisplayChangeMetrics)
-            {
-                variances = _frametimeStatisticProvider.GetDisplayTimeVariancePercentages(wrappedComparisonRecordInfo.WrappedRecordInfo.Session);
-            }
-            else
-            {
-                variances = _frametimeStatisticProvider.GetFrametimeVariancePercentages(wrappedComparisonRecordInfo.WrappedRecordInfo.Session);
-            }
+            var varianceSamples = _useDisplayChangeSamplesForComparison
+                ? displayChangeTimeWindow : frametimeTimeWindow;
+            var variances = _frametimeStatisticProvider.GetVariancePercentages(varianceSamples);
 
             wrappedComparisonRecordInfo.WrappedRecordInfo.SortingVariances
                 = variances[0] + variances[1];
