@@ -97,6 +97,7 @@
     <Compile Include="Sensor\PantherLakeVoltageTest.cs" />
     <Compile Include="Statistics\CircularBufferTest.cs" />
     <Compile Include="Statistics\FrametimeStatisticProviderTest.cs" />
+    <Compile Include="Statistics\SessionExtensionsTest.cs" />
     <Compile Include="TestHelper.cs" />
     <Compile Include="Updater\UpdateCheckTest.cs" />
     <Compile Include="ViewModel\CaptureViewModelTest.cs" />
