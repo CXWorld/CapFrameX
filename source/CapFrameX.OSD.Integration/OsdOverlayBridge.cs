@@ -16,9 +16,10 @@ namespace CapFrameX.OSD.Integration
     ///    OnDictionaryUpdated payload is only used as the per-tick trigger,
     ///  - per-present frametimes and display times (MsBetweenDisplayChange) from the
     ///    capture service's frame-data stream → PushFrame / PushDisplayChange,
-    ///  - runs only when the overlay is active AND the user enabled the hook-free overlay
-    ///    (<c>IAppConfiguration.EnableHookFreeOverlay</c>); RTSS is gated off in OverlayService
-    ///    when this setting is on, so the two never overlap.
+    ///  - runs when the overlay is active AND either the user enabled the hook-free overlay
+    ///    (<c>IAppConfiguration.EnableHookFreeOverlay</c>) or the in-game renderer requested a
+    ///    transient fallback for an unsupported runtime; RTSS is gated off in OverlayService
+    ///    for both hook modes, so the renderers never overlap.
     /// </summary>
     public sealed class OsdOverlayBridge : IDisposable
     {
@@ -28,6 +29,7 @@ namespace CapFrameX.OSD.Integration
         private readonly IDisposable _entriesSub;
         private readonly IDisposable _frameSub;
         private readonly IDisposable _enabledSub;
+        private readonly IDisposable _fallbackSub;
         private readonly int _ftIndex;
         private readonly int _runtimeIndex;
         private readonly int _displayChangedIndex;
@@ -36,6 +38,7 @@ namespace CapFrameX.OSD.Integration
         private readonly Func<int> _startTimeIndexProvider;
         private volatile bool _active;
         private volatile bool _enabled;
+        private volatile bool _fallbackEnabled;
         private volatile bool _started;
 
         // Current <APP> framerate/frametime derived from the PresentMon frame-data stream
@@ -65,7 +68,8 @@ namespace CapFrameX.OSD.Integration
                                 int frametimeColumnIndex = -1,
                                 int presentRuntimeColumnIndex = -1,
                                 int displayChangedColumnIndex = -1,
-                                Func<int> startTimeIndexProvider = null)
+                                Func<int> startTimeIndexProvider = null,
+                                IObservable<bool> hookFreeFallbackStream = null)
         {
             if (overlayService == null) throw new ArgumentNullException(nameof(overlayService));
             if (appConfiguration == null) throw new ArgumentNullException(nameof(appConfiguration));
@@ -84,6 +88,10 @@ namespace CapFrameX.OSD.Integration
             _enabledSub = appConfiguration.OnValueChanged
                 .Where(x => x.key == nameof(IAppConfiguration.EnableHookFreeOverlay))
                 .Subscribe(x => OnEnabledChanged((bool)x.value));
+            if (hookFreeFallbackStream != null)
+                _fallbackSub = hookFreeFallbackStream
+                    .DistinctUntilChanged()
+                    .Subscribe(OnFallbackChanged);
             if (frameDataStream != null && frametimeColumnIndex >= 0)
                 _frameSub = frameDataStream.Subscribe(OnFrameRow);
         }
@@ -94,10 +102,11 @@ namespace CapFrameX.OSD.Integration
 
         private void OnActiveChanged(bool active) { _active = active; UpdateRunState(); }
         private void OnEnabledChanged(bool enabled) { _enabled = enabled; UpdateRunState(); }
+        private void OnFallbackChanged(bool enabled) { _fallbackEnabled = enabled; UpdateRunState(); }
 
         private void UpdateRunState()
         {
-            bool run = _active && _enabled;
+            bool run = _active && (_enabled || _fallbackEnabled);
             if (run && !_started) { _osd.Start(); _started = true; }
             else if (!run && _started)
             {
@@ -245,6 +254,7 @@ namespace CapFrameX.OSD.Integration
             _entriesSub?.Dispose();
             _frameSub?.Dispose();
             _enabledSub?.Dispose();
+            _fallbackSub?.Dispose();
             _osd?.Dispose();
         }
     }

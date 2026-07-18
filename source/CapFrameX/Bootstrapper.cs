@@ -110,25 +110,11 @@ namespace CapFrameX
                     osdCaptureService = Container.Resolve<CapFrameX.Capture.Contracts.ICaptureService>();
                 }
 
-                // CapFrameX.OSD: hook-free DWM/DirectComposition overlay, running in parallel to
-                // RTSS. Scalars come from the same IOverlayEntry[] stream RTSS uses; per-present
-                // frametimes from the capture service. Activates with IsOverlayActiveStream.
-                using (StartupPerformanceLogger.Measure("OSD overlay bridge initialization"))
-                {
-                    _osdOverlayBridge = new CapFrameX.OSD.Integration.OsdOverlayBridge(
-                        osdOverlayService,
-                        config, // IAppConfiguration (resolved above) — gates OSD vs RTSS
-                        osdCaptureService.FrameDataStream,
-                        CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenPresents_INDEX,
-                        CapFrameX.PresentMonInterface.PresentMonCaptureService.PresentRuntime_INDEX,
-                        CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
-                        () => osdCaptureService.CPUStartQPCTimeInMs_Index);
-                }
-
                 // In-game hook overlay: inject cfx_osd_hook.dll into the game CapFrameX already
                 // detected. The PID flows through IRTSSService.ProcessIdStream (IProcessService),
                 // the same stream the overlay/capture pipeline uses — so we address the process
-                // directly, no manual injector. Opt-in via IAppConfiguration.EnableHookOverlay.
+                // directly, no manual injector. It also publishes the transient hook-free fallback
+                // state for presentation runtimes the native renderers do not support.
                 using (StartupPerformanceLogger.Measure("Hook overlay manager initialization"))
                 {
                     _hookOverlayManager = new CapFrameX.OSD.Integration.HookOverlayManager(
@@ -138,6 +124,23 @@ namespace CapFrameX
                         CapFrameX.PresentMonInterface.PresentMonCaptureService.ProcessID_INDEX,
                         CapFrameX.PresentMonInterface.PresentMonCaptureService.PresentRuntime_INDEX,
                         statusService: _hookOverlayStatusService);
+                }
+
+                // CapFrameX.OSD: hook-free DWM/DirectComposition overlay. Scalars come from the
+                // same IOverlayEntry[] stream RTSS uses; per-present frametimes from the capture
+                // service. Besides the explicit hook-free mode, it takes over transiently when the
+                // selected in-game renderer encounters an unsupported runtime such as D3D9.
+                using (StartupPerformanceLogger.Measure("OSD overlay bridge initialization"))
+                {
+                    _osdOverlayBridge = new CapFrameX.OSD.Integration.OsdOverlayBridge(
+                        osdOverlayService,
+                        config, // IAppConfiguration (resolved above) — gates OSD vs RTSS
+                        osdCaptureService.FrameDataStream,
+                        CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenPresents_INDEX,
+                        CapFrameX.PresentMonInterface.PresentMonCaptureService.PresentRuntime_INDEX,
+                        CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
+                        () => osdCaptureService.CPUStartQPCTimeInMs_Index,
+                        _hookOverlayManager.HookFreeFallbackStream);
                 }
 
                 // While the in-game hook overlay is on, mirror CapFrameX's processed overlay entries

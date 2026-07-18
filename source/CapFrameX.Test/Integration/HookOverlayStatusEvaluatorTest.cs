@@ -168,6 +168,61 @@ namespace CapFrameX.Test.Integration
             Assert.IsFalse(useVulkan);
         }
 
+        [TestMethod]
+        public void ShouldUseHookFreeFallback_UsesFallbackForD3D9()
+        {
+            bool useFallback = HookOverlayManager.ShouldUseHookFreeFallback(
+                hookEnabled: true, processId: 42, runtime: "D3D9");
+
+            Assert.IsTrue(useFallback);
+        }
+
+        [TestMethod]
+        public void ShouldUseHookFreeFallback_DoesNotReplaceNativeRenderers()
+        {
+            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+                hookEnabled: true, processId: 42, runtime: "DXGI"));
+            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+                hookEnabled: true, processId: 42, runtime: "D3D11"));
+            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+                hookEnabled: true, processId: 42, runtime: "D3D12"));
+            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+                hookEnabled: true, processId: 42, runtime: "Vulkan"));
+        }
+
+        [TestMethod]
+        public void ShouldUseHookFreeFallback_WaitsForEnabledHookAndValidTarget()
+        {
+            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+                hookEnabled: false, processId: 42, runtime: "D3D9"));
+            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+                hookEnabled: true, processId: 0, runtime: "D3D9"));
+            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+                hookEnabled: true, processId: 42, runtime: null));
+            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+                hookEnabled: true, processId: 42, runtime: "<error>"));
+        }
+
+        [TestMethod]
+        public void CreateHookFreeFallbackStatus_ReportsFallbackWhileVisible()
+        {
+            HookOverlayStatus status = HookOverlayManager.CreateHookFreeFallbackStatus(
+                processId: 42, runtime: "D3D9", visible: true);
+
+            Assert.AreEqual(EHookOverlayStatus.Fallback, status.State);
+            StringAssert.Contains(status.Detail, "hook-free fallback is active");
+        }
+
+        [TestMethod]
+        public void CreateHookFreeFallbackStatus_ReportsHiddenWhenOverlayIsOff()
+        {
+            HookOverlayStatus status = HookOverlayManager.CreateHookFreeFallbackStatus(
+                processId: 42, runtime: "D3D9", visible: false);
+
+            Assert.AreEqual(EHookOverlayStatus.Hidden, status.State);
+            StringAssert.Contains(status.Detail, "hook-free fallback is hidden");
+        }
+
         private static NativeHookStatusSnapshot ReadySnapshot()
         {
             return new NativeHookStatusSnapshot

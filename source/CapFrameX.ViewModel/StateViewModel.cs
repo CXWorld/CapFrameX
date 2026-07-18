@@ -88,6 +88,7 @@ namespace CapFrameX.ViewModel
 					case EHookOverlayStatus.Injected: return "Injected";
 					case EHookOverlayStatus.Initializing: return "Initializing";
 					case EHookOverlayStatus.Active: return "Active";
+					case EHookOverlayStatus.Fallback: return "Fallback";
 					case EHookOverlayStatus.Hidden: return "Hidden";
 					case EHookOverlayStatus.Idle: return "Idle";
 					case EHookOverlayStatus.Error: return "Error";
@@ -104,6 +105,7 @@ namespace CapFrameX.ViewModel
 				switch (_hookOverlayStatus.State)
 				{
 					case EHookOverlayStatus.Active: return "LimeGreen";
+					case EHookOverlayStatus.Fallback: return "DarkOrange";
 					case EHookOverlayStatus.Error: return "OrangeRed";
 					case EHookOverlayStatus.Disabled:
 					case EHookOverlayStatus.Hidden: return "Gray";

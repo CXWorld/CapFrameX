@@ -12,7 +12,8 @@ namespace CapFrameX.Contracts.Overlay
         Active,
         Hidden,
         Idle,
-        Error
+        Error,
+        Fallback
     }
 
     public sealed class HookOverlayStatus

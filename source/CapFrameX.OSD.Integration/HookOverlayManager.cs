@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,6 +37,8 @@ namespace CapFrameX.OSD.Integration
         private readonly IDisposable _enabledSub;
         private readonly IDisposable _visibilitySub;
         private readonly IDisposable _runtimeSub;
+        private readonly BehaviorSubject<bool> _hookFreeFallbackStream =
+            new BehaviorSubject<bool>(false);
         private readonly HookVisibilityChannel _visibility;
         private readonly HookOverlayStatusService _statusService;
         private readonly Timer _statusTimer;
@@ -44,6 +47,7 @@ namespace CapFrameX.OSD.Integration
         private readonly string _injectHelperX86; // x86 cfx_inject.exe helper
         private readonly object _gate = new object();
         private readonly object _stateGate = new object();
+        private readonly object _fallbackGate = new object();
         private readonly int _processIdColumnIndex;
         private readonly int _runtimeColumnIndex;
         private readonly HashSet<int> _injected = new HashSet<int>();
@@ -59,6 +63,7 @@ namespace CapFrameX.OSD.Integration
         private bool _disposed;
         private bool _injectionInProgress;
         private bool _injectionSucceeded;
+        private bool _hookFreeFallbackActive;
         private int _injectionStatusPid;
         private string _lastInjectionError;
         private string _targetBlockReason;
@@ -111,10 +116,19 @@ namespace CapFrameX.OSD.Integration
             PublishStatus();
         }
 
+        /// <summary>
+        /// Becomes active while the in-game renderer is selected but the detected presentation
+        /// runtime is not supported by either the DXGI hook or the Vulkan layer. Consumers use
+        /// this transient signal without changing the user's persisted renderer selection.
+        /// </summary>
+        public IObservable<bool> HookFreeFallbackStream =>
+            _hookFreeFallbackStream.DistinctUntilChanged();
+
         private void OnEnabledChanged(bool enabled)
         {
             _enabled = enabled;
             UpdateHookVisibility(); // disabling hides the resident hook immediately (no game restart)
+            UpdateHookFreeFallback();
             if (_enabled && IsDxgiRuntime(_currentRuntime))
             {
                 int pid = _currentPid;
@@ -163,6 +177,7 @@ namespace CapFrameX.OSD.Integration
                 _injectionRetryBackoff.Reset(pid);
             }
             UpdateHookVisibility();
+            UpdateHookFreeFallback();
             if (pid <= 0)
             {
                 // process deselected/exited: forget stale PIDs so a relaunch re-injects
@@ -192,8 +207,12 @@ namespace CapFrameX.OSD.Integration
                     StringComparison.OrdinalIgnoreCase);
                 if (runtimeChanged) _currentRuntime = runtime;
             }
-            if (runtimeChanged) UpdateHookVisibility();
-            if (runtimeChanged) RefreshTargetPolicy(pid);
+            if (runtimeChanged)
+            {
+                UpdateHookVisibility();
+                UpdateHookFreeFallback();
+                RefreshTargetPolicy(pid);
+            }
             if (IsDxgiRuntime(runtime))
             {
                 if (runtimeChanged)
@@ -214,6 +233,52 @@ namespace CapFrameX.OSD.Integration
 
         internal static bool IsVulkanRuntime(string runtime)
             => string.Equals(runtime, "Vulkan", StringComparison.OrdinalIgnoreCase);
+
+        internal static bool ShouldUseHookFreeFallback(bool hookEnabled, int processId,
+            string runtime)
+        {
+            if (!hookEnabled || processId <= 0 || string.IsNullOrWhiteSpace(runtime) ||
+                string.Equals(runtime, "<error>", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            return !IsDxgiRuntime(runtime) && !IsVulkanRuntime(runtime);
+        }
+
+        internal static HookOverlayStatus CreateHookFreeFallbackStatus(int processId,
+            string runtime, bool visible)
+        {
+            return new HookOverlayStatus(
+                visible ? EHookOverlayStatus.Fallback : EHookOverlayStatus.Hidden,
+                processId, runtime,
+                $"PID {processId}, {runtime}: unsupported by the in-game renderer; " +
+                $"hook-free fallback is {(visible ? "active" : "hidden")}.");
+        }
+
+        private void UpdateHookFreeFallback()
+        {
+            lock (_fallbackGate)
+            {
+                if (_disposed) return;
+
+                bool active;
+                int pid;
+                string runtime;
+                lock (_stateGate)
+                {
+                    pid = _currentPid;
+                    runtime = _currentRuntime;
+                    active = ShouldUseHookFreeFallback(_enabled, pid, runtime);
+                    if (active == _hookFreeFallbackActive) return;
+                    _hookFreeFallbackActive = active;
+                }
+
+                Log.Information(
+                    "HookOverlay: hook-free fallback {state} for pid {pid} (runtime {runtime})",
+                    active ? "enabled" : "disabled", pid,
+                    string.IsNullOrWhiteSpace(runtime) ? "unknown" : runtime);
+                _hookFreeFallbackStream.OnNext(active);
+            }
+        }
 
         internal static bool ShouldUseVulkanStatus(string runtime, bool hasVulkanStatus,
             long vulkanHeartbeatAgeMs, bool hasDxgiStatus, bool dxgiTransitionStarted)
@@ -504,6 +569,7 @@ namespace CapFrameX.OSD.Integration
                 bool targetAllowed;
                 bool injectionInProgress;
                 bool injectionSucceeded;
+                bool hookFreeFallbackActive;
                 lock (_stateGate)
                 {
                     pid = _currentPid;
@@ -512,6 +578,7 @@ namespace CapFrameX.OSD.Integration
                     injectionPid = _injectionStatusPid;
                     injectionInProgress = _injectionInProgress;
                     injectionSucceeded = _injectionSucceeded;
+                    hookFreeFallbackActive = _hookFreeFallbackActive;
                     injectionError = _lastInjectionError;
                     targetBlockReason = _targetBlockReason;
                     vulkanBlockReason = _vulkanBlockReason;
@@ -572,6 +639,11 @@ namespace CapFrameX.OSD.Integration
                             status = HookOverlayStatusEvaluator.EvaluateVulkan(pid, "Vulkan",
                                 vulkan, nowTickMs, _appConfiguration.IsOverlayActive);
                         }
+                    }
+                    else if (hookFreeFallbackActive)
+                    {
+                        bool visible = _appConfiguration.IsOverlayActive;
+                        status = CreateHookFreeFallbackStatus(pid, runtime, visible);
                     }
                     else if (!IsDxgiRuntime(runtime))
                     {
@@ -733,7 +805,14 @@ namespace CapFrameX.OSD.Integration
 
         public void Dispose()
         {
-            _disposed = true;
+            lock (_fallbackGate)
+            {
+                if (_disposed) return;
+                _disposed = true;
+                _hookFreeFallbackStream.OnNext(false);
+                _hookFreeFallbackStream.OnCompleted();
+                _hookFreeFallbackStream.Dispose();
+            }
             _statusTimer?.Dispose();
             _pidSub?.Dispose();
             _enabledSub?.Dispose();
