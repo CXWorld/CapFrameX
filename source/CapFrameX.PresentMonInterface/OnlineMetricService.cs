@@ -710,6 +710,8 @@ namespace CapFrameX.PresentMonInterface
                     _gpuActiveTimesRealtimeSeconds?.Clear();
                     _cpuActiveTimesRealtimeSeconds?.Clear();
                     _measuretimesRealtimeSeconds?.Clear();
+                    _reusableListBufferA?.Clear();
+                    _reusableListBufferB?.Clear();
                 }
 
                 lock (_lock5SecondsMetric)
@@ -717,6 +719,7 @@ namespace CapFrameX.PresentMonInterface
                     _frametimes5Seconds?.Clear();
                     _displaytimes5Seconds?.Clear();
                     _measuretimes5Seconds?.Clear();
+                    _reusableListBuffer5Seconds?.Clear();
                 }
 
                 lock (_lock1SecondMetric)
@@ -736,10 +739,6 @@ namespace CapFrameX.PresentMonInterface
                     _channelDataBuffer?.Clear();
                     _sensorDataBuffer?.Clear();
                 }
-
-                _reusableListBufferA?.Clear();
-                _reusableListBufferB?.Clear();
-                _reusableListBuffer5Seconds?.Clear();
             }
 
             _disposed = true;
