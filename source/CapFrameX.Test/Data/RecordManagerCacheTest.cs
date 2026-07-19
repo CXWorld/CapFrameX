@@ -102,6 +102,24 @@ namespace CapFrameX.Test.Data
         }
 
         [TestMethod]
+        public async Task UpdateCustomData_JsonInvalidatesSessionAndMetadataCaches()
+        {
+            string path = CreateMetadataSessionFile("update.json", "Update.exe", "Update");
+            var session = _recordManager.LoadData(path);
+            var recordInfo = await _recordManager.GetFileRecordInfo(new FileInfo(path));
+
+            Assert.IsNotNull(session);
+            Assert.IsNotNull(recordInfo);
+            Assert.AreEqual(1, GetPrivateCacheCount("_sessionCache"));
+            Assert.AreEqual(1, GetPrivateCacheCount("_recordInfoCache"));
+
+            _recordManager.UpdateCustomData(recordInfo, "CPU", "GPU", "RAM", "Updated", "Comment");
+
+            Assert.AreEqual(0, GetPrivateCacheCount("_sessionCache"));
+            Assert.AreEqual(0, GetPrivateCacheCount("_recordInfoCache"));
+        }
+
+        [TestMethod]
         public void IncrementalPresentHash_MatchesLegacyContract()
         {
             var cases = new[]
@@ -299,6 +317,16 @@ namespace CapFrameX.Test.Data
                 "\"GameName\":\"" + gameName + "\",\"Comment\":\"metadata\"}," +
                 "\"Runs\":[{\"CaptureData\":{\"TimeInSeconds\":[0.0,2.5]}}]}");
             return path;
+        }
+
+        private int GetPrivateCacheCount(string fieldName)
+        {
+            var field = typeof(RecordManager).GetField(fieldName,
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNotNull(field);
+            var cache = field.GetValue(_recordManager) as System.Collections.IDictionary;
+            Assert.IsNotNull(cache);
+            return cache.Count;
         }
 
     }

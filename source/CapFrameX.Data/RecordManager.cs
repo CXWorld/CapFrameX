@@ -1131,6 +1131,7 @@ namespace CapFrameX.Data
                     }
 
                     _logger.LogInformation("{FilePath} successfully written", filePath);
+                    InvalidateSessionCache(filePath);
                 }
                 catch (Exception ex)
                 {
