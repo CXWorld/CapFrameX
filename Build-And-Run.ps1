@@ -16,6 +16,18 @@ $appProject = Join-Path $repositoryRoot "source\CapFrameX\CapFrameX.csproj"
 $appPath = Join-Path $repositoryRoot "source\CapFrameX\bin\x64\Release\CapFrameX.exe"
 $nugetPath = Join-Path $repositoryRoot "source\CapFrameX.Charts\WpfView\nuget.exe"
 
+$stateHashProvider = [Security.Cryptography.SHA256]::Create()
+try
+{
+    $stateKeyBytes = [Text.Encoding]::UTF8.GetBytes([IO.Path]::GetFullPath($repositoryRoot).ToUpperInvariant())
+    $stateKey = ([BitConverter]::ToString($stateHashProvider.ComputeHash($stateKeyBytes), 0, 8)).Replace("-", "")
+}
+finally
+{
+    $stateHashProvider.Dispose()
+}
+$processStatePath = Join-Path ([IO.Path]::GetTempPath()) "CapFrameX.BuildAndRun.$stateKey.state"
+
 function Get-VisualStudioInstances
 {
     if (-not (Test-Path -LiteralPath $vswherePath))
@@ -123,6 +135,13 @@ function Invoke-NativeCommand
     }
 }
 
+function Test-IsAdministrator
+{
+    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = [Security.Principal.WindowsPrincipal]::new($identity)
+    return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
 function Stop-RunningOutputProcesses
 {
     $outputDirectory = Split-Path $appPath
@@ -130,6 +149,76 @@ function Stop-RunningOutputProcesses
         [IO.Path]::GetFullPath($appPath),
         [IO.Path]::GetFullPath((Join-Path $outputDirectory "PresentMon\PresentMon-2.4.1-x64.exe"))
     )
+
+    if (Test-Path -LiteralPath $processStatePath)
+    {
+        $removeProcessState = $true
+        try
+        {
+            $stateParts = [IO.File]::ReadAllText($processStatePath).Split('|')
+            $trackedProcessId = 0
+            $trackedStartTimeTicks = 0L
+            if ($stateParts.Length -eq 2 -and
+                [int]::TryParse($stateParts[0], [ref]$trackedProcessId) -and
+                [long]::TryParse($stateParts[1], [ref]$trackedStartTimeTicks))
+            {
+                $trackedProcess = Get-Process -Id $trackedProcessId -ErrorAction SilentlyContinue
+                if ($null -ne $trackedProcess -and
+                    $trackedProcess.ProcessName -eq "CapFrameX" -and
+                    $trackedProcess.StartTime.ToUniversalTime().Ticks -eq $trackedStartTimeTicks)
+                {
+                    $trackedChildProcessIds = @(Get-CimInstance Win32_Process `
+                        -Filter "ParentProcessId = $trackedProcessId" -ErrorAction SilentlyContinue |
+                        Where-Object { $_.Name -eq "PresentMon-2.4.1-x64.exe" } |
+                        Select-Object -ExpandProperty ProcessId)
+                    $trackedProcessIds = @($trackedProcessId) + $trackedChildProcessIds
+                    try
+                    {
+                        Stop-Process -Id $trackedProcessIds -Force -ErrorAction Stop
+                    }
+                    catch
+                    {
+                        if (-not (Test-IsAdministrator))
+                        {
+                            $stopArguments = '-NoProfile -Command "Stop-Process -Id ' +
+                                ($trackedProcessIds -join ',') + ' -Force -ErrorAction Stop"'
+                            $elevatedStop = Start-Process -FilePath "powershell.exe" -Verb RunAs -WindowStyle Hidden `
+                                -ArgumentList $stopArguments -Wait -PassThru
+                            if ($elevatedStop.ExitCode -ne 0)
+                            {
+                                throw "Unable to stop the tracked CapFrameX process (PID $trackedProcessId)."
+                            }
+                        }
+                        else
+                        {
+                            throw
+                        }
+                    }
+
+                    foreach ($processId in $trackedProcessIds)
+                    {
+                        $processToWait = Get-Process -Id $processId -ErrorAction SilentlyContinue
+                        if ($null -ne $processToWait)
+                        {
+                            $null = $processToWait.WaitForExit(5000)
+                        }
+                    }
+                }
+            }
+        }
+        catch
+        {
+            $removeProcessState = $false
+            throw
+        }
+        finally
+        {
+            if ($removeProcessState)
+            {
+                Remove-Item -LiteralPath $processStatePath -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
 
     $processes = Get-CimInstance Win32_Process -Filter "Name = 'CapFrameX.exe' OR Name = 'PresentMon-2.4.1-x64.exe'" -ErrorAction SilentlyContinue
     foreach ($process in $processes)
@@ -139,6 +228,7 @@ function Stop-RunningOutputProcesses
             Stop-Process -Id $process.ProcessId -Force -ErrorAction Stop
         }
     }
+
 }
 
 Push-Location $repositoryRoot
@@ -166,7 +256,7 @@ try
         throw "The repository NuGet executable was not found at '$nugetPath'."
     }
 
-    Stop-RunningOutputProcesses
+    $null = Stop-RunningOutputProcesses
 
     Write-Host "Using MSVC $($buildInstance.ToolsetVersion) and restoring dependencies..." -ForegroundColor Cyan
     Invoke-NativeCommand -FilePath $nugetPath -Arguments @(
@@ -185,6 +275,7 @@ try
     )
 
     Write-Host "Building CapFrameX x64 Release..." -ForegroundColor Cyan
+    # The legacy native projects share PDB writers; single-node, non-reused MSBuild avoids intermittent C1041/mspdbsrv contention.
     Invoke-NativeCommand -FilePath $buildInstance.MsBuildPath -Arguments @(
         $appProject,
         "/t:Build",
@@ -204,10 +295,28 @@ try
     }
 
     $process = Start-Process -FilePath $appPath -WorkingDirectory (Split-Path $appPath) -PassThru
+    [IO.File]::WriteAllText($processStatePath,
+        "$($process.Id)|$($process.StartTime.ToUniversalTime().Ticks)", [Text.Encoding]::UTF8)
     Write-Host "CapFrameX is running (PID $($process.Id))." -ForegroundColor Green
 }
 finally
 {
-    & dotnet build-server shutdown *> $null
-    Pop-Location
+    try
+    {
+        $dotnetCommand = Get-Command "dotnet" -ErrorAction SilentlyContinue
+        if ($null -ne $dotnetCommand)
+        {
+            & $dotnetCommand.Source build-server shutdown *> $null
+        }
+    }
+    catch
+    {
+        Write-Verbose "Unable to shut down the .NET build server: $($_.Exception.Message)"
+    }
+    finally
+    {
+        Pop-Location
+    }
 }
+
+exit 0
