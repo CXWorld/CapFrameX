@@ -747,7 +747,7 @@ namespace CapFrameX.Statistics.NetStandard
             return GetVariancePercentages(new[] { sequence });
         }
 
-        private static IList<double> GetVariancePercentages(IEnumerable<IList<double>> sequences)
+        public IList<double> GetVariancePercentages(IEnumerable<IList<double>> sequences)
         {
             var thresholds = new int[5];
             var varianceCount = 0;

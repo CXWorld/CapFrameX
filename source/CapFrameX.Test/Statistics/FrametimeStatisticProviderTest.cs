@@ -422,6 +422,20 @@ namespace CapFrameX.Test.Statistics
         }
 
         [TestMethod]
+        public void GetVariancePercentages_MultipleRuns_DoesNotCreateBoundaryPair()
+        {
+            var runs = new IList<double>[]
+            {
+                new List<double> { 10, 11 },
+                new List<double> { 100, 101 }
+            };
+
+            var result = _provider.GetVariancePercentages(runs);
+
+            CollectionAssert.AreEqual(new[] { 1d, 0d, 0d, 0d, 0d }, result.ToArray());
+        }
+
+        [TestMethod]
         public void GetFpsMetricValue_VerySmallFrametimes_HandlesCorrectly()
         {
             // Very high FPS scenario (1ms frame times = 1000 FPS)

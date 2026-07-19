@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Data;
+using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Sensor.Reporting;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
@@ -195,12 +196,51 @@ namespace CapFrameX.ViewModel
                 }
             }
 
-            var varianceSamples = _useDisplayChangeSamplesForComparison
-                ? displayChangeTimeWindow : frametimeTimeWindow;
-            var variances = _frametimeStatisticProvider.GetVariancePercentages(varianceSamples);
+            var varianceSequences = GetVarianceSequences(
+                wrappedComparisonRecordInfo.WrappedRecordInfo.Session,
+                _useDisplayChangeSamplesForComparison, startTime, endTime);
+            var variances = _frametimeStatisticProvider.GetVariancePercentages(varianceSequences);
 
             wrappedComparisonRecordInfo.WrappedRecordInfo.SortingVariances
                 = variances[0] + variances[1];
+        }
+
+        private static IEnumerable<IList<double>> GetVarianceSequences(ISession session,
+            bool useDisplayChangeSamples, double startTime, double endTime)
+        {
+            foreach (ISessionRun run in session.Runs)
+            {
+                ISessionCaptureData captureData = run?.CaptureData;
+                if (captureData == null)
+                {
+                    yield return new double[0];
+                    continue;
+                }
+
+                IList<double> times = captureData.TimeInSeconds ?? new double[0];
+                IList<double> values = useDisplayChangeSamples
+                    ? captureData.MsBetweenDisplayChange : captureData.MsBetweenPresents;
+                if (values == null)
+                {
+                    yield return new double[0];
+                    continue;
+                }
+
+                int count = Math.Min(times.Count, values.Count);
+                var sequence = new List<double>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    double time = times[i];
+                    double value = values[i];
+                    if (time >= startTime && time <= endTime && value > 0
+                        && !double.IsNaN(value) && !double.IsInfinity(value))
+                    {
+                        sequence.Add(value);
+                    }
+                }
+
+                yield return sequence;
+            }
         }
 
         private void InsertComparisonRecordsSorted(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)

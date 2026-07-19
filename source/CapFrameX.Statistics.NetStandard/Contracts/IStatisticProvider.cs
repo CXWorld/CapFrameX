@@ -41,6 +41,8 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
 
         IList<double> GetVariancePercentages(IList<double> sequence);
 
+        IList<double> GetVariancePercentages(IEnumerable<IList<double>> sequences);
+
         IList<double> GetFrametimeVariancePercentages(ISession session);
 
         IList<double> GetDisplayTimeVariancePercentages(ISession session);
