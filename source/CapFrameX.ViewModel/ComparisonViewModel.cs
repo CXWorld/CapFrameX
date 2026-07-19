@@ -2307,16 +2307,13 @@ namespace CapFrameX.ViewModel
         {
             var session = wrappedComparisonInfo.WrappedRecordInfo.Session;
             double lastFrameStart;
-            IList<double> samples = new List<double>();
+            IEnumerable<IList<double>> samples = Enumerable.Empty<IList<double>>();
             if (TryGetLastFrameStart(session, out lastFrameStart))
             {
                 double endTime = LastSeconds <= 0 || LastSeconds > lastFrameStart
                     ? lastFrameStart : LastSeconds;
-                samples = _useDisplayChangeSamplesForComparison
-                    ? session.GetDisplayChangeTimeWindow(FirstSeconds, endTime,
-                        _appConfiguration, ERemoveOutlierMethod.None)
-                    : session.GetFrametimeTimeWindow(FirstSeconds, endTime,
-                        _appConfiguration, ERemoveOutlierMethod.None);
+                samples = GetVarianceSequences(session,
+                    _useDisplayChangeSamplesForComparison, FirstSeconds, endTime);
             }
             var variances = _frametimeStatisticProvider.GetVariancePercentages(samples);
 
