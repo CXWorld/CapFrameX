@@ -224,6 +224,22 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void ShouldUseHookFreeFallback_DoesNotOutliveTargetProcess()
+        {
+            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+                hookEnabled: true, processId: 42, runtime: "DXGI",
+                targetBlockReason: "process identity check failed",
+                targetProcessAlive: false));
+            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+                hookEnabled: true, processId: 42, runtime: "D3D11",
+                nativeFallbackReason: "native hook status was unavailable",
+                targetProcessAlive: false));
+            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+                hookEnabled: true, processId: 42, runtime: "D3D9",
+                targetProcessAlive: false));
+        }
+
+        [TestMethod]
         public void CreateHookFreeFallbackStatus_ReportsFallbackWhileVisible()
         {
             HookOverlayStatus status = HookOverlayManager.CreateHookFreeFallbackStatus(

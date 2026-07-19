@@ -54,6 +54,10 @@ namespace CapFrameX.OSD.Integration
         private readonly HashSet<int> _injected = new HashSet<int>();
         private readonly InjectionRetryBackoff _injectionRetryBackoff =
             new InjectionRetryBackoff();
+        private readonly InjectionCompatibilityDelay _compatibilityDelay =
+            new InjectionCompatibilityDelay();
+        private readonly Dictionary<int, HookCompatibilityChannel> _compatibilityChannels =
+            new Dictionary<int, HookCompatibilityChannel>();
         private readonly Dictionary<int, string> _policyBlocks = new Dictionary<int, string>();
         private readonly Dictionary<int, string> _vulkanBlocks = new Dictionary<int, string>();
         private readonly Dictionary<int, long> _nextVulkanProbe = new Dictionary<int, long>();
@@ -61,7 +65,7 @@ namespace CapFrameX.OSD.Integration
         private volatile bool _targetAllowed;
         private volatile int _currentPid;
         private volatile string _currentRuntime;
-        private bool _disposed;
+        private volatile bool _disposed;
         private bool _injectionInProgress;
         private bool _injectionSucceeded;
         private bool _hookFreeFallbackActive;
@@ -73,6 +77,8 @@ namespace CapFrameX.OSD.Integration
         private string _hookFreeFallbackReason;
         private string _targetBlockReason;
         private string _vulkanBlockReason;
+        private ulong _injectionDelayUntilTickMs;
+        private string _injectionDelayProfile;
 
         /// <param name="processIdStream">The detected-game PID stream (IProcessService.ProcessIdStream).</param>
         /// <param name="dllPathOverride">Optional explicit path to cfx_osd_hook.dll.</param>
@@ -177,6 +183,8 @@ namespace CapFrameX.OSD.Integration
                 _hookFreeFallbackReason = null;
                 _targetBlockReason = null;
                 _vulkanBlockReason = null;
+                _injectionDelayUntilTickMs = 0;
+                _injectionDelayProfile = null;
             }
             if (previousPid > 0 && previousPid != pid)
             {
@@ -184,14 +192,18 @@ namespace CapFrameX.OSD.Integration
                 lock (_gate)
                 {
                     _injectionRetryBackoff.Reset(previousPid);
+                    _compatibilityDelay.Reset(previousPid);
                     _vulkanBlocks.Remove(previousPid);
                     _nextVulkanProbe.Remove(previousPid);
+                    DisposeCompatibilityChannelLocked(previousPid);
                 }
             }
             lock (_gate)
             {
                 // A newly selected process must never inherit retry state from a reused PID.
                 _injectionRetryBackoff.Reset(pid);
+                _compatibilityDelay.Reset(pid);
+                DisposeCompatibilityChannelLocked(pid);
             }
             UpdateHookVisibility();
             UpdateHookFreeFallback();
@@ -252,14 +264,17 @@ namespace CapFrameX.OSD.Integration
             => string.Equals(runtime, "Vulkan", StringComparison.OrdinalIgnoreCase);
 
         internal static bool ShouldUseHookFreeFallback(bool hookEnabled, int processId,
-            string runtime, string targetBlockReason = null, string nativeFallbackReason = null)
+            string runtime, string targetBlockReason = null, string nativeFallbackReason = null,
+            bool targetProcessAlive = true)
             => GetHookFreeFallbackReason(hookEnabled, processId, runtime,
-                targetBlockReason, nativeFallbackReason) != null;
+                targetBlockReason, nativeFallbackReason, targetProcessAlive) != null;
 
         internal static string GetHookFreeFallbackReason(bool hookEnabled, int processId,
-            string runtime, string targetBlockReason = null, string nativeFallbackReason = null)
+            string runtime, string targetBlockReason = null, string nativeFallbackReason = null,
+            bool targetProcessAlive = true)
         {
-            if (!hookEnabled || processId <= 0 || string.IsNullOrWhiteSpace(runtime) ||
+            if (!hookEnabled || !targetProcessAlive || processId <= 0 ||
+                string.IsNullOrWhiteSpace(runtime) ||
                 string.Equals(runtime, "<error>", StringComparison.OrdinalIgnoreCase))
                 return null;
 
@@ -318,7 +333,8 @@ namespace CapFrameX.OSD.Integration
                     pid = _currentPid;
                     runtime = _currentRuntime;
                     reason = GetHookFreeFallbackReason(_enabled, pid, runtime,
-                        _targetBlockReason, _nativeFallbackReason);
+                        _targetBlockReason, _nativeFallbackReason,
+                        targetProcessAlive: pid > 0 && IsProcessAlive(pid));
                     active = reason != null;
                     activeChanged = active != _hookFreeFallbackActive;
                     reasonChanged = !string.Equals(reason, _hookFreeFallbackReason,
@@ -356,14 +372,23 @@ namespace CapFrameX.OSD.Integration
             if (IsInjectionRetryBlocked(pid)) return;
             if (!RefreshVulkanInjectionGate(pid)) return;
             if (!RefreshTargetPolicy(pid)) return;
+            HookCompatibilityProfileCatalog.TryGetForProcess(pid,
+                out HookCompatibilityProfile compatibilityProfile);
             if (!TryReserveInjection(pid)) return;
+            TimeSpan compatibilityDelay;
+            lock (_gate)
+            {
+                compatibilityDelay = _compatibilityDelay.GetRemainingDelay(pid,
+                    compatibilityProfile?.InjectionDelay ?? TimeSpan.Zero);
+            }
             SetInjectionStatus(pid, inProgress: true, succeeded: false, error: null);
+            SetInjectionDelayStatus(pid, compatibilityProfile, compatibilityDelay);
 
-            Task.Run(() =>
+            Task.Run(async () =>
             {
                 try
                 {
-                    if (!_enabled || pid != _currentPid || !IsDxgiRuntime(_currentRuntime))
+                    if (!IsInjectionStillEligible(pid))
                     {
                         ReleaseInjectionReservation(pid);
                         return;
@@ -373,6 +398,21 @@ namespace CapFrameX.OSD.Integration
                     {
                         ReleaseInjectionReservation(pid);
                         return;
+                    }
+
+                    if (compatibilityDelay > TimeSpan.Zero)
+                    {
+                        Log.Information(
+                            "HookOverlay: compatibility profile {profile} delays injection into pid {pid} by {delaySeconds:0.#} s",
+                            compatibilityProfile.ExecutableName, pid,
+                            compatibilityDelay.TotalSeconds);
+                        await Task.Delay(compatibilityDelay).ConfigureAwait(false);
+                        ClearInjectionDelayStatus(pid);
+                        if (!IsInjectionStillEligible(pid) || !IsProcessAlive(pid))
+                        {
+                            ReleaseInjectionReservation(pid);
+                            return;
+                        }
                     }
 
                     // Pick the path by the TARGET's bitness: x64 games get the x64 hook injected
@@ -427,6 +467,26 @@ namespace CapFrameX.OSD.Integration
                         ReleaseInjectionReservation(pid);
                         return;
                     }
+                    if (!IsInjectionStillEligible(pid))
+                    {
+                        ReleaseInjectionReservation(pid);
+                        return;
+                    }
+                    if (!TryPublishCompatibilityProfile(pid, compatibilityProfile,
+                        out string compatibilityError))
+                    {
+                        TimeSpan retryDelay = RegisterInjectionFailure(pid,
+                            compatibilityError);
+                        Log.Warning(
+                            "HookOverlay: compatibility configuration for pid {pid} failed — {error}; retry in {retrySeconds:0.#} s",
+                            pid, compatibilityError, retryDelay.TotalSeconds);
+                        return;
+                    }
+                    if (!IsInjectionStillEligible(pid))
+                    {
+                        ReleaseInjectionReservation(pid);
+                        return;
+                    }
                     bool ok = isWow64
                         ? HookInjector.TryInjectViaHelper(pid, injectable, _injectHelperX86, out error)
                         : HookInjector.TryInject(pid, injectable, out error);
@@ -452,6 +512,86 @@ namespace CapFrameX.OSD.Integration
                         pid, retryDelay.TotalSeconds);
                 }
             });
+        }
+
+        private bool IsInjectionStillEligible(int pid)
+        {
+            return !_disposed && _enabled && pid == _currentPid &&
+                IsDxgiRuntime(_currentRuntime);
+        }
+
+        private void SetInjectionDelayStatus(int pid, HookCompatibilityProfile profile,
+            TimeSpan delay)
+        {
+            if (profile == null || delay <= TimeSpan.Zero) return;
+            ulong delayMs = (ulong)Math.Ceiling(delay.TotalMilliseconds);
+            ulong now = HookStatusProbe.CurrentTickCount;
+            lock (_stateGate)
+            {
+                if (pid != _currentPid) return;
+                _injectionDelayUntilTickMs = now > ulong.MaxValue - delayMs
+                    ? ulong.MaxValue
+                    : now + delayMs;
+                _injectionDelayProfile = profile.ExecutableName;
+            }
+            PublishStatus();
+        }
+
+        private void ClearInjectionDelayStatus(int pid)
+        {
+            lock (_stateGate)
+            {
+                if (pid != _currentPid) return;
+                _injectionDelayUntilTickMs = 0;
+                _injectionDelayProfile = null;
+            }
+            PublishStatus();
+        }
+
+        private bool TryPublishCompatibilityProfile(int pid,
+            HookCompatibilityProfile profile, out string error)
+        {
+            error = null;
+            if (_disposed)
+            {
+                error = "hook overlay manager is disposed";
+                return false;
+            }
+            NativeHookCompatibilityFlags flags = profile?.NativeFlags ??
+                NativeHookCompatibilityFlags.None;
+            if (flags == NativeHookCompatibilityFlags.None) return true;
+
+            lock (_gate)
+            {
+                if (_disposed)
+                {
+                    error = "hook overlay manager is disposed";
+                    return false;
+                }
+                if (_compatibilityChannels.ContainsKey(pid)) return true;
+                if (!HookCompatibilityChannel.TryCreate(pid, flags,
+                    out HookCompatibilityChannel channel, out error))
+                {
+                    error = $"could not publish native compatibility flags ({error})";
+                    return false;
+                }
+
+                _compatibilityChannels.Add(pid, channel);
+            }
+
+            Log.Information(
+                "HookOverlay: compatibility profile {profile} published flags {flags} for pid {pid}",
+                profile.ExecutableName, flags, pid);
+            return true;
+        }
+
+        private void DisposeCompatibilityChannelLocked(int pid)
+        {
+            if (!_compatibilityChannels.TryGetValue(pid,
+                out HookCompatibilityChannel channel))
+                return;
+            _compatibilityChannels.Remove(pid);
+            channel.Dispose();
         }
 
         private bool IsInjectionRetryBlocked(int pid)
@@ -520,6 +660,11 @@ namespace CapFrameX.OSD.Integration
                 else if (!inProgress)
                 {
                     _injectionSucceededTickMs = 0;
+                }
+                if (!inProgress)
+                {
+                    _injectionDelayUntilTickMs = 0;
+                    _injectionDelayProfile = null;
                 }
 
                 if (!string.IsNullOrWhiteSpace(error))
@@ -690,10 +835,12 @@ namespace CapFrameX.OSD.Integration
                 string hookFreeFallbackReason;
                 string targetBlockReason;
                 string vulkanBlockReason;
+                string injectionDelayProfile;
                 bool targetAllowed;
                 bool injectionInProgress;
                 bool injectionSucceeded;
                 bool hookFreeFallbackActive;
+                ulong injectionDelayUntilTickMs;
                 lock (_stateGate)
                 {
                     pid = _currentPid;
@@ -707,6 +854,8 @@ namespace CapFrameX.OSD.Integration
                     injectionError = _lastInjectionError;
                     targetBlockReason = _targetBlockReason;
                     vulkanBlockReason = _vulkanBlockReason;
+                    injectionDelayUntilTickMs = _injectionDelayUntilTickMs;
+                    injectionDelayProfile = _injectionDelayProfile;
                 }
 
                 HookOverlayStatus status;
@@ -799,6 +948,16 @@ namespace CapFrameX.OSD.Integration
                         status = HookOverlayStatusEvaluator.EvaluateNative(pid, runtime, native,
                             nowTickMs);
                     }
+                    else if (injectionPid == pid && injectionInProgress &&
+                        injectionDelayUntilTickMs > nowTickMs)
+                    {
+                        ulong remainingMs = injectionDelayUntilTickMs - nowTickMs;
+                        double remainingSeconds = Math.Ceiling(remainingMs / 1000.0);
+                        status = new HookOverlayStatus(EHookOverlayStatus.Waiting, pid, runtime,
+                            $"PID {pid}, {runtime}: compatibility profile " +
+                            $"{injectionDelayProfile} delays injection for " +
+                            $"{remainingSeconds:0} more seconds.");
+                    }
                     else if (injectionPid == pid && injectionInProgress)
                     {
                         status = new HookOverlayStatus(EHookOverlayStatus.Injecting, pid, runtime,
@@ -886,6 +1045,7 @@ namespace CapFrameX.OSD.Integration
             {
                 _injected.RemoveWhere(p => !IsProcessAlive(p));
                 _injectionRetryBackoff.Prune(IsProcessAlive);
+                _compatibilityDelay.Prune(IsProcessAlive);
                 var stalePolicyPids = new List<int>();
                 foreach (int pid in _policyBlocks.Keys)
                     if (!IsProcessAlive(pid)) stalePolicyPids.Add(pid);
@@ -899,6 +1059,11 @@ namespace CapFrameX.OSD.Integration
                     _vulkanBlocks.Remove(pid);
                     _nextVulkanProbe.Remove(pid);
                 }
+                var staleCompatibilityPids = new List<int>();
+                foreach (int pid in _compatibilityChannels.Keys)
+                    if (!IsProcessAlive(pid)) staleCompatibilityPids.Add(pid);
+                foreach (int pid in staleCompatibilityPids)
+                    DisposeCompatibilityChannelLocked(pid);
             }
         }
 
@@ -911,6 +1076,10 @@ namespace CapFrameX.OSD.Integration
             }
             catch (ArgumentException) { return false; } // no such process
             catch (InvalidOperationException) { return false; }
+            // A query failure is not proof that the target exited. Preserve the normal
+            // fallback behavior unless Windows conclusively reports that the PID is gone.
+            catch (System.ComponentModel.Win32Exception) { return true; }
+            catch (NotSupportedException) { return true; }
         }
 
         // Resolve a staged hook asset relative to the app-output 'hook' folder: the x64 DLL
@@ -951,6 +1120,12 @@ namespace CapFrameX.OSD.Integration
             _visibilitySub?.Dispose();
             _runtimeSub?.Dispose();
             _visibility?.Dispose();
+            lock (_gate)
+            {
+                foreach (HookCompatibilityChannel channel in _compatibilityChannels.Values)
+                    channel.Dispose();
+                _compatibilityChannels.Clear();
+            }
             _statusService.Publish(new HookOverlayStatus(EHookOverlayStatus.Disabled,
                 detail: "The in-game hook overlay is disabled."));
             // The injected hook disables itself when it observes CapFrameX exiting (it polls

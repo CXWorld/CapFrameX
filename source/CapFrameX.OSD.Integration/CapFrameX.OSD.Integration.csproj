@@ -28,6 +28,12 @@
     <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="HookCompatibilityProfiles.xml" />
+    <EmbeddedResource Include="HookCompatibilityProfiles.xml"
+                      LogicalName="CapFrameX.OSD.Integration.HookCompatibilityProfiles.xml" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(CfxOsdFromSource)' == 'true'">
     <ProjectReference Include="$(CfxOsdSubmoduleDir)CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj">
       <!-- The optional submodule project is not listed in CapFrameX.sln, so Visual Studio

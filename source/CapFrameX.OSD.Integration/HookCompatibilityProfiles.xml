@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<HookCompatibilityProfiles version="1">
+  <!-- Curated translations of RTSS 7.3.7 ProfileTemplates. Only settings whose
+       semantics match the CapFrameX hook are represented here. -->
+  <Profile executable="BF1.exe"
+           disableDxgiSwapchainReleaseHook="true"
+           source="RTSS 7.3.7 ProfileTemplates/BF1.exe.cfg" />
+  <Profile executable="BF1_CTE.exe"
+           disableDxgiSwapchainReleaseHook="true"
+           source="RTSS 7.3.7 ProfileTemplates/BF1_CTE.exe.cfg" />
+  <Profile executable="GearGame.exe"
+           disableDxgiSwapchainReleaseHook="true"
+           source="RTSS 7.3.7 ProfileTemplates/GearGame.exe.cfg" />
+  <Profile executable="MetroExodus.exe"
+           disableDxgiSwapchainReleaseHook="true"
+           source="RTSS 7.3.7 ProfileTemplates/MetroExodus.exe.cfg" />
+  <Profile executable="dirt5.exe"
+           injectionDelayMilliseconds="15000"
+           source="RTSS 7.3.7 ProfileTemplates/dirt5.exe.cfg: InjectionDelayDirect3D12=1; Global: InjectionDelay=15000" />
+</HookCompatibilityProfiles>
