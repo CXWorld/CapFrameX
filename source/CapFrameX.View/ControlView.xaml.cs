@@ -322,6 +322,11 @@ namespace CapFrameX.View
                 return;
 
             var myCell = (sender as MultiSelectionDataGrid).CurrentCell;
+            // CurrentCell.Column is null when no cell ever had keyboard focus (e.g. a
+            // row was only selected and focus then moves to a button elsewhere)
+            if (myCell.Column == null)
+                return;
+
             if (myCell.Column.Header.ToString() == "Comment")
             {
                 if (_viewModel.CustomComment != _viewModel.SelectedRecordInfo.Comment)
@@ -365,6 +370,9 @@ namespace CapFrameX.View
                 return;
 
             var myCell = (sender as MultiSelectionDataGrid).CurrentCell;
+            if (myCell.Column == null)
+                return;
+
             if (myCell.Column.Header.ToString() == "Comment")
             {
                 if (_viewModel.CustomComment != _viewModel.SelectedRecordInfo.Comment)
