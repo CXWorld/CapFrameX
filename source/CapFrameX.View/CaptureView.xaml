@@ -131,7 +131,7 @@
 												<materialDesign:PackIcon Kind="Autorenew" Width="20" Height="20"/>
 											</Button>
 										</DockPanel>
-										<Border Margin="0 12 0 0" CornerRadius="4"
+										<Border Margin="0 12 0 0" CornerRadius="4" Padding="0 4 6 4"
 											Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
 											<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToCapture}" SelectedItem="{Binding SelectedProcessToCapture}"
 												ScrollViewer.VerticalScrollBarVisibility="Auto" FontSize="14" ScrollViewer.CanContentScroll="True" Height="160"
@@ -159,7 +159,7 @@
 											<TextBlock Text="Process ignore list" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
 												Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 										</DockPanel>
-										<Border Margin="0 12 0 0" CornerRadius="4"
+										<Border Margin="0 12 0 0" CornerRadius="4" Padding="0 4 6 4"
 											Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
 											<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToIgnore}" SelectedItem="{Binding SelectedProcessToIgnore}"
 												ScrollViewer.VerticalScrollBarVisibility="Auto" FontSize="14" ScrollViewer.CanContentScroll="True" Height="160">
