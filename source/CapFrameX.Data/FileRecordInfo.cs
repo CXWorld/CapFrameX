@@ -58,48 +58,66 @@ namespace CapFrameX.Data
 		public string HAGS { get; private set; }
 		public string PresentationMode { get; private set; }
 		public string Resolution { get; private set; }
+		internal bool UsesProcessListGameName { get; set; }
 
 		private FileRecordInfo(FileInfo fileInfo, ISession session)
+			: this(fileInfo, session?.Info, session?.Hash, session?.Runs?.Count ?? 0,
+				session?.Runs?.LastOrDefault()?.CaptureData?.TimeInSeconds?.LastOrDefault() ?? 0)
 		{
-			var creationDateTime = session.Info.CreationDate.ToLocalTime();
+		}
+
+		private FileRecordInfo(FileInfo fileInfo, ISessionInfo sessionInfo, string hash,
+			int runCount, double recordTime)
+		{
+			if (fileInfo == null || sessionInfo == null)
+			{
+				throw new ArgumentException("Record metadata is incomplete.");
+			}
+
+			var creationDateTime = sessionInfo.CreationDate.ToLocalTime();
 			FileInfo = fileInfo;
 			FullPath = fileInfo.FullName;
-			Id = session.Info.Id.ToString();
+			Id = sessionInfo.Id.ToString();
 			CreationDate = creationDateTime.ToString("yyyy-MM-dd");
 			CreationTime = creationDateTime.ToString("HH:mm:ss");
-			ProcessName = session.Info.ProcessName;
-			GameName = session.Info.GameName;
-			ProcessorName = session.Info.Processor;
-			GraphicCardName = session.Info.GPU;
-			SystemRamInfo = session.Info.SystemRam;
-			MotherboardName = session.Info.Motherboard;
-			OsVersion = session.Info.OS;
-			GPUMemoryClock = session.Info.GpuMemoryClock;
-			GPUCoreClock = session.Info.GpuCoreClock;
-			DriverPackage = session.Info.DriverPackage;
-			BaseDriverVersion = session.Info.BaseDriverVersion;
-			GPUDriverVersion = session.Info.GPUDriverVersion;
-			Comment = session.Info.Comment;
-			ProcessName = session.Info.ProcessName;
-			IsAggregated = Convert.ToString(session.Runs.Count() > 1);
+			ProcessName = sessionInfo.ProcessName;
+			GameName = sessionInfo.GameName;
+			ProcessorName = sessionInfo.Processor;
+			GraphicCardName = sessionInfo.GPU;
+			SystemRamInfo = sessionInfo.SystemRam;
+			MotherboardName = sessionInfo.Motherboard;
+			OsVersion = sessionInfo.OS;
+			GPUMemoryClock = sessionInfo.GpuMemoryClock;
+			GPUCoreClock = sessionInfo.GpuCoreClock;
+			DriverPackage = sessionInfo.DriverPackage;
+			BaseDriverVersion = sessionInfo.BaseDriverVersion;
+			GPUDriverVersion = sessionInfo.GPUDriverVersion;
+			Comment = sessionInfo.Comment;
+			IsAggregated = Convert.ToString(runCount > 1);
 			IsValid = true;
-			Hash = session.Hash;
-			ApiInfo = session.Info.ApiInfo;
-			ResizableBar = session.Info.ResizableBar;
-			WinGameMode = session.Info.WinGameMode;
-			HAGS = session.Info.HAGS;
-			PresentationMode = session.Info.PresentationMode;
-			Resolution = session.Info.ResolutionInfo;
+			Hash = hash;
+			RecordTime = recordTime;
+			ApiInfo = sessionInfo.ApiInfo;
+			ResizableBar = sessionInfo.ResizableBar;
+			WinGameMode = sessionInfo.WinGameMode;
+			HAGS = sessionInfo.HAGS;
+			PresentationMode = sessionInfo.PresentationMode;
+			Resolution = sessionInfo.ResolutionInfo;
 		}
 
 		private FileRecordInfo(FileInfo fileInfo, string hash)
+			: this(fileInfo, hash, null)
+		{
+		}
+
+		private FileRecordInfo(FileInfo fileInfo, string hash, string[] lines)
 		{
 			if (fileInfo != null && File.Exists(fileInfo.FullName))
 			{
 				FileInfo = fileInfo;
 				FullPath = fileInfo.FullName;
 				Hash = hash;
-				_lines = File.ReadAllLines(fileInfo.FullName);
+				_lines = lines ?? File.ReadAllLines(fileInfo.FullName);
 
 				if (_lines != null && _lines.Any())
 				{
@@ -373,6 +391,26 @@ namespace CapFrameX.Data
 			return recordInfo;
 		}
 
+		internal static IFileRecordInfo Create(FileInfo fileInfo, string hash, string[] lines)
+		{
+			FileRecordInfo recordInfo = null;
+
+			try
+			{
+				recordInfo = new FileRecordInfo(fileInfo, hash, lines);
+			}
+			catch (ArgumentException)
+			{
+				// Log
+			}
+			catch (Exception)
+			{
+				// Log
+			}
+
+			return recordInfo;
+		}
+
 		public static IFileRecordInfo Create(FileInfo fileInfo, ISession session)
 		{
 			FileRecordInfo recordInfo = null;
@@ -391,6 +429,19 @@ namespace CapFrameX.Data
 			}
 
 			return recordInfo;
+		}
+
+		internal static IFileRecordInfo Create(FileInfo fileInfo, ISessionInfo sessionInfo,
+			string hash, int runCount, double recordTime)
+		{
+			try
+			{
+				return new FileRecordInfo(fileInfo, sessionInfo, hash, runCount, recordTime);
+			}
+			catch (Exception)
+			{
+				return null;
+			}
 		}
 
 		public static bool IsMangoHudFile(string line)
