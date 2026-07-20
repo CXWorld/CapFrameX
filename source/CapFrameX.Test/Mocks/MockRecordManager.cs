@@ -142,7 +142,8 @@ namespace CapFrameX.Test.Mocks
         }
 
         public void UpdateCustomData(IFileRecordInfo recordInfo, string customCpuInfo,
-            string customGpuInfo, string customRamInfo, string customGameName, string customComment)
+            string customGpuInfo, string customRamInfo, string customGameName, string customComment,
+            string customResolution = null)
         {
             var path = recordInfo.FullPath;
 

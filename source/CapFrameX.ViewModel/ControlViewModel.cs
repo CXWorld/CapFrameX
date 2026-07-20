@@ -59,6 +59,8 @@ namespace CapFrameX.ViewModel
         private bool _customRamDescriptionChanged = false;
         private bool _customGameNameChanged = false;
         private bool _customCommentChanged = false;
+        private string _customResolution;
+        private bool _customResolutionChanged = false;
         private readonly SemaphoreSlim _selectionLoadSemaphore = new SemaphoreSlim(1, 1);
         private Task<ISession> _selectedSessionTask = Task.FromResult<ISession>(null);
         private CancellationTokenSource _selectionLoadCancellation = new CancellationTokenSource();
@@ -200,6 +202,17 @@ namespace CapFrameX.ViewModel
             {
                 _customComment = value;
                 _customCommentChanged = true;
+                RaisePropertyChanged();
+            }
+        }
+
+        public string CustomResolution
+        {
+            get { return _customResolution; }
+            set
+            {
+                _customResolution = value;
+                _customResolutionChanged = true;
                 RaisePropertyChanged();
             }
         }
@@ -673,6 +686,7 @@ namespace CapFrameX.ViewModel
             CustomRamDescription = string.Empty;
             CustomGameName = string.Empty;
             CustomComment = string.Empty;
+            CustomResolution = string.Empty;
         }
 
         private void ResetDescriptionChangedFlags()
@@ -682,6 +696,7 @@ namespace CapFrameX.ViewModel
             _customRamDescriptionChanged = false;
             _customGameNameChanged = false;
             _customCommentChanged = false;
+            _customResolutionChanged = false;
         }
 
         private void OnAcceptEditingDialog() => SaveDescriptions();
@@ -696,7 +711,8 @@ namespace CapFrameX.ViewModel
             if (_applicationState.SelectedRecords.Count == 1)
             {
                 _recordManager.UpdateCustomData(_selectedRecordInfo, CustomCpuDescription,
-                    CustomGpuDescription, CustomRamDescription, CustomGameName, CustomComment);
+                    CustomGpuDescription, CustomRamDescription, CustomGameName, CustomComment,
+                    CustomResolution);
             }
             else if (_applicationState.SelectedRecords.Count > 1)
             {
@@ -710,7 +726,8 @@ namespace CapFrameX.ViewModel
                         _customGpuDescriptionChanged ? CustomGpuDescription : session.Info.GPU,
                         _customRamDescriptionChanged ? CustomRamDescription : session.Info.SystemRam,
                         _customGameNameChanged ? CustomGameName : session.Info.GameName,
-                        _customCommentChanged ? CustomComment : session.Info.Comment);
+                        _customCommentChanged ? CustomComment : session.Info.Comment,
+                        _customResolutionChanged ? CustomResolution : session.Info.ResolutionInfo);
                 }
             }
 
@@ -804,6 +821,7 @@ namespace CapFrameX.ViewModel
                 CustomRamDescription = string.Copy(selectedRecordInfo.SystemRamInfo ?? string.Empty);
                 CustomGameName = string.Copy(selectedRecordInfo.GameName ?? string.Empty);
                 CustomComment = string.Copy(selectedRecordInfo.Comment ?? string.Empty);
+                CustomResolution = string.Copy(selectedRecordInfo.Resolution ?? string.Empty);
                 ResetDescriptionChangedFlags();
                 _selectedSessionTask = LoadSelectedSessionAsync(selectedRecordInfo, selectionVersion,
                     newCancellation.Token);

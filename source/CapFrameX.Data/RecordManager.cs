@@ -102,7 +102,7 @@ namespace CapFrameX.Data
         public void UpdateCustomData(IFileRecordInfo recordInfo,
             string customCpuInfo, string customGpuInfo,
             string customRamInfo, string customGameName,
-            string customComment)
+            string customComment, string customResolution = null)
         {
             if (recordInfo == null) return;
 
@@ -122,6 +122,10 @@ namespace CapFrameX.Data
                     session.Info.SystemRam = customRamInfo;
                     session.Info.GameName = customGameName;
                     session.Info.Comment = customComment;
+                    // null = leave unchanged; CSV records have no resolution header,
+                    // so the resolution is only persisted for JSON sessions
+                    if (customResolution != null)
+                        session.Info.ResolutionInfo = customResolution;
 
                     SaveSessionToFile(recordInfo.FileInfo.FullName, session);
 

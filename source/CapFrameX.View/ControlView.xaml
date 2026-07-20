@@ -489,11 +489,8 @@
                     <!--Record metadata (right column)-->
                     <TextBox Grid.Row="0" Grid.Column="2" wpf:HintAssist.Hint="Game"
                              Text="{Binding CustomGameName, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
-                    <!--Read-only via Focusable=False: IsReadOnly shifts the text against
-                        the floating hint in MDIX 5.x-->
                     <TextBox Grid.Row="1" Grid.Column="2" wpf:HintAssist.Hint="Resolution"
-                             Focusable="False" ContextMenu="{x:Null}" Cursor="Arrow"
-                             Text="{Binding SelectedRecordInfo.Resolution, Mode=OneWay}"/>
+                             Text="{Binding CustomResolution, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
                     <TextBox Grid.Row="2" Grid.Column="2" VerticalAlignment="Stretch" wpf:HintAssist.Hint="Comment"
                              Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
                     <!--Actions-->
