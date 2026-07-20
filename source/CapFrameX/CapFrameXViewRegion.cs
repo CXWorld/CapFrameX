@@ -1,13 +1,18 @@
 using System;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.View;
+using Prism.Ioc;
 using Prism.Modularity;
 
 namespace CapFrameX
 {
     public class CapFrameXViewRegion : IModule
     {
-        public void Initialize()
+        public void RegisterTypes(IContainerRegistry containerRegistry)
+        {
+        }
+
+        public void OnInitialized(IContainerProvider containerProvider)
         {
             using (StartupPerformanceLogger.Measure("CapFrameX view module initialization total"))
             {

@@ -13,7 +13,6 @@ using CapFrameX.Webservice.Data.DTO;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using Microsoft.Win32.TaskScheduler;
-using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json;
 using Prism.Commands;
 using Prism.Events;
@@ -646,17 +645,12 @@ namespace CapFrameX.ViewModel
 
         private void OnSelectScreenshotFolder()
         {
-            var dialog = new CommonOpenFileDialog
-            {
-                IsFolderPicker = true
-            };
+            var dialog = new Microsoft.Win32.OpenFolderDialog();
 
-            CommonFileDialogResult result = dialog.ShowDialog();
-
-            if (result == CommonFileDialogResult.Ok)
+            if (dialog.ShowDialog() == true)
             {
-                _appConfiguration.ScreenshotDirectory = dialog.FileName;
-                ScreenshotDirectory = dialog.FileName;
+                _appConfiguration.ScreenshotDirectory = dialog.FolderName;
+                ScreenshotDirectory = dialog.FolderName;
             }
         }
 

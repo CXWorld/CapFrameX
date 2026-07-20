@@ -9,7 +9,6 @@ using CapFrameX.MVVM.Dialogs;
 using DynamicData;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic.FileIO;
-using Microsoft.WindowsAPICodePack.Dialogs;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
@@ -422,16 +421,11 @@ namespace CapFrameX.ViewModel
 
         public bool OnSelectRootFolder()
         {
-            var dialog = new CommonOpenFileDialog
-            {
-                IsFolderPicker = true
-            };
+            var dialog = new Microsoft.Win32.OpenFolderDialog();
 
-            CommonFileDialogResult result = dialog.ShowDialog();
-
-            if (result == CommonFileDialogResult.Ok)
+            if (dialog.ShowDialog() == true)
             {
-                RootDirectory = dialog.FileName;
+                RootDirectory = dialog.FolderName;
                 _appConfiguration.ObservedDirectory = RootDirectory;
                 return true;
             }
@@ -568,18 +562,11 @@ namespace CapFrameX.ViewModel
             if (!wasDropped)
             {
 
-                var dialog = new CommonOpenFileDialog
+                var dialog = new Microsoft.Win32.OpenFolderDialog();
+
+                if (dialog.ShowDialog() == true)
                 {
-                    IsFolderPicker = true
-                };
-
-                CommonFileDialogResult result = dialog.ShowDialog();
-
-
-                if (result == CommonFileDialogResult.Ok)
-                {
-                    destinationfolder = dialog.FileName;
-
+                    destinationfolder = dialog.FolderName;
                 }
             }
             else
@@ -636,16 +623,11 @@ namespace CapFrameX.ViewModel
             if (!RecordInfoList.Any())
                 return;
 
-            var dialog = new CommonOpenFileDialog
-            {
-                IsFolderPicker = true
-            };
+            var dialog = new Microsoft.Win32.OpenFolderDialog();
 
-            CommonFileDialogResult result = dialog.ShowDialog();
-
-            if (result == CommonFileDialogResult.Ok)
+            if (dialog.ShowDialog() == true)
             {
-                string destinationfolder = dialog.FileName;
+                string destinationfolder = dialog.FolderName;
                 try
                 {
 

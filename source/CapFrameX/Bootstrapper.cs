@@ -239,10 +239,10 @@ namespace CapFrameX
                     }
 
                     Container.RegisterInstance<IFrametimeStatisticProviderOptions>(appConfiguration);
-                    Container.RegisterInstance(new ApplicationState(), Reuse.Singleton);
+                    Container.RegisterInstance(new ApplicationState());
                     _hookOverlayStatusService = new CapFrameX.OSD.Integration.HookOverlayStatusService();
                     Container.RegisterInstance<IHookOverlayStatusService>(
-                        _hookOverlayStatusService, Reuse.Singleton);
+                        _hookOverlayStatusService);
                 }
 
                 using (StartupPerformanceLogger.Measure("Prism and core service registrations"))
@@ -263,7 +263,7 @@ namespace CapFrameX
                 {
                     var sensorConfigFolder = pathService.ConfigFolder;
                     // We don't use a sensor config for new LibreHardwareMonitor based sensor service
-                    Container.RegisterInstance<ISensorConfig>(new SensorConfig(sensorConfigFolder), Reuse.Singleton);
+                    Container.RegisterInstance<ISensorConfig>(new SensorConfig(sensorConfigFolder));
                     Container.Register<ISensorEntryProvider, SensorEntryProvider>(Reuse.Singleton);
                     Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
                     Container.Register<IOverlayTemplateService, OverlayTemplateService>(Reuse.Singleton);
@@ -292,7 +292,7 @@ namespace CapFrameX
                 {
                     Container.Register<ISystemInfo, SystemInfo.NetStandard.SystemInfo>(Reuse.Singleton);
                     Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
-                    Container.RegisterInstance<IWebVersionProvider>(new WebVersionProvider(), Reuse.Singleton);
+                    Container.RegisterInstance<IWebVersionProvider>(new WebVersionProvider());
                     Container.Register<IUpdateCheck, UpdateCheck>(Reuse.Singleton);
                     Container.Register<ILogEntryManager, LogEntryManager>(Reuse.Singleton);
                     Container.Register<LoginManager>(Reuse.Singleton);

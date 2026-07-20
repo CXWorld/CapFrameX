@@ -11,14 +11,20 @@
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
-  <!-- Files only buildable on net472 (DryIoc/Serilog source-distribution + BinaryFormatter) -->
+  <!-- ObjectCopier relies on BinaryFormatter, which no longer exists on modern .NET. -->
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
-    <Compile Remove="ContainerExtensions.cs" />
     <Compile Remove="ObjectCopier.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Reactive" Version="6.1.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
+    <PackageReference Include="DryIoc.dll" Version="4.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+    <PackageReference Include="Serilog" Version="2.9.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">

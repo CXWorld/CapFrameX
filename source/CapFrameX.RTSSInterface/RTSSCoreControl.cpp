@@ -656,9 +656,9 @@ void RTSSCoreControl::Refresh()
 					int indexEnd = (indexStart >= 0) ? OverlayEntries[i].GroupName.Find('>', indexStart) : -1;
 					CString color = (indexStart >= 0 && indexEnd > indexStart)
 						? OverlayEntries[i].GroupName.Mid(indexStart, indexEnd + 1 - indexStart)
-						: "<C>";
+						: CString("<C>");
 					CString string;
-					string.Format("%s<S1>Framerate\n<S><C>", color);
+					string.Format("%s<S1>Framerate\n<S><C>", (LPCSTR)color);
 					strOSD += string;
 
 					//embed framerate graph object into the buffer
@@ -670,9 +670,9 @@ void RTSSCoreControl::Refresh()
 						int indexEnd = (indexStart >= 0) ? OverlayEntries[i].Value.Find('>', indexStart) : -1;
 						CString color = (indexStart >= 0 && indexEnd > indexStart)
 							? OverlayEntries[i].Value.Mid(indexStart, indexEnd + 1 - indexStart)
-							: "<C>";
+							: CString("<C>");
 
-						strObj.Format("%s<OBJ=%08X><A0><S1><FR><A> FPS<S><C>\n", color, dwObjectOffset);
+						strObj.Format("%s<OBJ=%08X><A0><S1><FR><A> FPS<S><C>\n", (LPCSTR)color, dwObjectOffset);
 						//print embedded object
 						strOSD += strObj;
 						//modify object offset
@@ -687,9 +687,9 @@ void RTSSCoreControl::Refresh()
 					int indexEnd = (indexStart >= 0) ? OverlayEntries[i].GroupName.Find('>', indexStart) : -1;
 					CString color = (indexStart >= 0 && indexEnd > indexStart)
 						? OverlayEntries[i].GroupName.Mid(indexStart, indexEnd + 1 - indexStart)
-						: "<C>";
+						: CString("<C>");
 					CString string;
-					string.Format("%s<S1>Frametime\n<S><C>", color);
+					string.Format("%s<S1>Frametime\n<S><C>", (LPCSTR)color);
 					strOSD += string;
 
 					//embed frametime graph object into the buffer
@@ -701,7 +701,7 @@ void RTSSCoreControl::Refresh()
 						int indexEnd = (indexStart >= 0) ? OverlayEntries[i].Value.Find('>', indexStart) : -1;
 						CString color = (indexStart >= 0 && indexEnd > indexStart)
 							? OverlayEntries[i].Value.Mid(indexStart, indexEnd + 1 - indexStart)
-							: "<C>";
+							: CString("<C>");
 
 						// Show CapFrameX's own frametime value (consistent with the FPS value
 						// and the frametime text entry) next to the graph instead of RTSS' <FT>
@@ -715,7 +715,7 @@ void RTSSCoreControl::Refresh()
 							frametimeValue = frametimeValue.Left(frametimeValue.GetLength() - 2);
 							frametimeValue.Trim();
 						}
-						strObj.Format("%s<OBJ=%08X><A0><S1>%s<A> ms<S><C>\n", color, dwObjectOffset, (LPCTSTR)frametimeValue);
+						strObj.Format("%s<OBJ=%08X><A0><S1>%s<A> ms<S><C>\n", (LPCSTR)color, dwObjectOffset, (LPCSTR)frametimeValue);
 						//print embedded object
 						strOSD += strObj;
 						//modify object offset
