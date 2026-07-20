@@ -20,6 +20,7 @@
             <CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
             <mvvm:AddValueConverter x:Key="AddValueConverterExpander" Offset="-70"/>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
+            <mvvm:PathLeafConverter x:Key="PathLeafConverter"/>
             <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
         </ResourceDictionary>
@@ -30,101 +31,17 @@
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
         <FrameworkElement x:Name="ColumnHeaders" Visibility="Collapsed"/>
-        <!--Record folder management expander-->
-        <Expander Name="Expander" Margin="0 0 0 0" MaxWidth="365" Grid.RowSpan="2" Panel.ZIndex="10" ExpandDirection="Right" HorizontalAlignment="Left"
-                  Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" wpf:ExpanderAssist.VerticalHeaderPadding="5">
-            <Expander.Header>
-                <TextBlock Text="Observed directory" RenderTransformOrigin=".5,.5" FontSize="14" HorizontalAlignment="Center">
-                    <TextBlock.LayoutTransform>
-                        <RotateTransform Angle="90"/>
-                    </TextBlock.LayoutTransform>
-                </TextBlock>
-            </Expander.Header>
-            <materialDesign:DialogHost Margin="0 0 5 0"
-							IsOpen="{Binding CreateFolderDialogIsOpen}"
-							DialogContent="{Binding CreateFolderDialogContent}"
-							CloseOnClickAway="False">
-                <Grid Name="ExpanderGrid" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
-                    <Grid.Effect>
-                        <DropShadowEffect BlurRadius="14" ShadowDepth="2" Direction="0" Opacity="0.45"/>
-                    </Grid.Effect>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="10" ></RowDefinition>
-                        <RowDefinition Height="Auto" ></RowDefinition>
-                        <RowDefinition Height="Auto" ></RowDefinition>
-                    </Grid.RowDefinitions>
-                    <ToggleButton Panel.ZIndex="2" Grid.Row="0" HorizontalAlignment="Right" Padding="0" Margin="0 0 5 -25" IsChecked="{Binding FixedExpanderPosition, Mode=TwoWay}" 
-                        Style="{StaticResource MaterialDesignActionToggleButton}" Height="20" Width="20" ToolTip="Lock expander position" Background="#6ec6ff">
-                        <materialDesign:PackIcon Kind="PinOff" RenderTransformOrigin=".5,.5">
-                            <materialDesign:PackIcon.RenderTransform>
-                                <RotateTransform Angle="90"/>
-                            </materialDesign:PackIcon.RenderTransform>
-                        </materialDesign:PackIcon>
-                        <materialDesign:ToggleButtonAssist.OnContent>
-                            <materialDesign:PackIcon Kind="Pin" RenderTransformOrigin=".5,.5">
-                                <materialDesign:PackIcon.RenderTransform>
-                                    <RotateTransform Angle="0"/>
-                                </materialDesign:PackIcon.RenderTransform>
-                                </materialDesign:PackIcon>
-                        </materialDesign:ToggleButtonAssist.OnContent>
-                    </ToggleButton>
-                    <TextBox Grid.Row="1" Margin="10 0 10 0" Width="250" IsReadOnly="True" HorizontalAlignment="Right" materialDesign:HintAssist.Hint="Root capture folder" materialDesign:HintAssist.IsFloating="True"
-                             Text="{Binding DataContext.RootDirectory, ElementName=ControlViewControl, Mode=OneWay}" TextWrapping="NoWrap" PreviewMouseDown="RootFolder_PreviewMouseDown" materialDesign:HintAssist.HintOpacity=".8"
-                             ToolTip="{Binding DataContext.RootDirectory, ElementName=ControlViewControl, Mode=OneWay}"/>
-                    <Button Grid.Row="1" Margin="5 0 0 5" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
-							VerticalAlignment="Bottom" HorizontalAlignment="Left"
-							Width="20" Height="20"
-							ToolTip="Reload root folder"
-							Command="{Binding ReloadRootFolderCommand}">
-                        <materialDesign:PackIcon Kind="Cached" Width="15" Height="15"/>
-                    </Button>
-                    <ScrollViewer Margin="0 20 0 0" Width="300" Grid.Row="2" Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverterExpander}}" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel" >
-                        <TreeView Name="TrvStructure" Padding="5" TreeViewItem.Selected="TreeViewItem_Selected" PreviewMouseRightButtonDown="TreeView_PreviewMouseRightButtonDown"
-                                  Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="13"  
-                                  AllowDrop="True" 
-                                  DragOver="TrvStructure_DragOver" 
-                                  MouseEnter="TrvStructure_MouseEnter"
-                                  dragdrop:DragDrop.IsDragSource="True"
-                                  dragdrop:DragDrop.UseDefaultDragAdorner="True"
-                                  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
-                                  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
-                                  Drop="TrvStructure_Drop">
-                            <TreeView.ContextMenu>
-                                <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                    <MenuItem Header="Open folder" Command="{Binding OpenObservedFolderCommand}"/>
-                                    <MenuItem Header="Delete folder" Command="{Binding DeleteFolderCommand}"/>
-                                    <MenuItem Header="Create new subfolder" Command="{Binding OpenCreateSubFolderDialogCommand}"/>
-                                </ContextMenu>
-                            </TreeView.ContextMenu>
-                        </TreeView>
-                    </ScrollViewer>
-                </Grid>
-            </materialDesign:DialogHost>
-        </Expander>
+<!-- Observed-directory tree moved into the breadcrumb popup below (no layout reflow). -->
         <!--Record list. The observed-directory drawer overlays this area when it is
              opened transiently; only pinning it docks the drawer and shifts the list. -->
         <Grid Grid.Row="0">
-            <Grid.Style>
-                <Style TargetType="{x:Type Grid}">
-                    <Setter Property="Margin" Value="27 0 0 0"/>
-                    <Style.Triggers>
-                        <MultiDataTrigger>
-                            <MultiDataTrigger.Conditions>
-                                <Condition Binding="{Binding FixedExpanderPosition}" Value="True"/>
-                                <Condition Binding="{Binding IsExpanded, ElementName=Expander}" Value="True"/>
-                            </MultiDataTrigger.Conditions>
-                            <Setter Property="Margin" Value="334 0 0 0"/>
-                        </MultiDataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Grid.Style>
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"></RowDefinition>
                 <RowDefinition Height="Auto"></RowDefinition>
             </Grid.RowDefinitions>
             <Border Grid.Column="0" Grid.Row="0" Visibility="{Binding HasValidSource, Converter={StaticResource FalseToVisibleConverter}}" Margin="0 0 50 0" BorderThickness="1" Panel.ZIndex="2">
                 <!--Style="{StaticResource MaterialDesignHeadlineTextBlock}"-->
-                <TextBlock Text="Observed directory missing.&#10;Open expander and select a folder." TextAlignment="Center"
+                <TextBlock Text="Observed directory missing.&#10;Open the folder chip above and select a folder." TextAlignment="Center"
                        TextWrapping="Wrap" Width="220" Margin="60 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center"
                        Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
             </Border>
@@ -143,6 +60,70 @@
 
                     <!--Column options & search bar-->
                     <DockPanel Grid.Row="0" Margin="8 8 8 4" LastChildFill="True">
+                        <!--Observed-directory breadcrumb: opens the folder tree in a floating
+                            popup that overlays nothing in the layout, so the record list is
+                            never reflowed. Replaces the old side expander/drawer. -->
+                        <Button x:Name="FolderChipButton" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0 0 12 0"
+                            Click="FolderChipButton_Click" Cursor="Hand" Height="32" Padding="10 0"
+                            Style="{StaticResource MaterialDesignFlatButton}"
+                            Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+                            ToolTip="{Binding DataContext.RootDirectory, ElementName=ControlViewControl}" ToolTipService.ShowDuration="25000">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="FolderOutline" Width="18" Height="18" VerticalAlignment="Center"/>
+                                <TextBlock Margin="8 0 4 0" VerticalAlignment="Center" MaxWidth="180" TextTrimming="CharacterEllipsis"
+                                    Text="{Binding DataContext.RootDirectory, ElementName=ControlViewControl, Converter={StaticResource PathLeafConverter}}"/>
+                                <materialDesign:PackIcon Kind="ChevronDown" Width="16" Height="16" VerticalAlignment="Center" Opacity="0.7"/>
+                            </StackPanel>
+                        </Button>
+                        <Popup x:Name="FolderPopup" DockPanel.Dock="Left" PlacementTarget="{Binding ElementName=FolderChipButton}" Placement="Bottom"
+                            StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade" HorizontalOffset="0" VerticalOffset="4">
+                            <materialDesign:Card Width="330" Margin="8" UniformCornerRadius="6"
+                                Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+                                <materialDesign:Card.Effect>
+                                    <DropShadowEffect BlurRadius="16" ShadowDepth="3" Opacity="0.5"/>
+                                </materialDesign:Card.Effect>
+                                <materialDesign:DialogHost IsOpen="{Binding CreateFolderDialogIsOpen}"
+                                    DialogContent="{Binding CreateFolderDialogContent}" CloseOnClickAway="False">
+                                    <Grid Margin="12">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <DockPanel Grid.Row="0" LastChildFill="True">
+                                            <Button DockPanel.Dock="Right" VerticalAlignment="Bottom" Margin="8 0 0 4"
+                                                Width="26" Height="26" Padding="0" Style="{StaticResource MaterialDesignIconButton}"
+                                                ToolTip="Reload root folder" Command="{Binding ReloadRootFolderCommand}"
+                                                Foreground="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
+                                                <materialDesign:PackIcon Kind="Cached" Width="18" Height="18"/>
+                                            </Button>
+                                            <TextBox IsReadOnly="True" materialDesign:HintAssist.Hint="Root capture folder"
+                                                materialDesign:HintAssist.IsFloating="True" materialDesign:HintAssist.HintOpacity=".8"
+                                                Text="{Binding DataContext.RootDirectory, ElementName=ControlViewControl, Mode=OneWay}"
+                                                TextWrapping="NoWrap" PreviewMouseDown="RootFolder_PreviewMouseDown"
+                                                ToolTip="{Binding DataContext.RootDirectory, ElementName=ControlViewControl, Mode=OneWay}"/>
+                                        </DockPanel>
+                                        <ScrollViewer Grid.Row="1" Margin="0 12 0 0" Height="320" VerticalScrollBarVisibility="Auto"
+                                            PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
+                                            <TreeView Name="TrvStructure" Padding="5" TreeViewItem.Selected="TreeViewItem_Selected"
+                                                PreviewMouseRightButtonDown="TreeView_PreviewMouseRightButtonDown"
+                                                Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="13"
+                                                AllowDrop="True" DragOver="TrvStructure_DragOver" MouseEnter="TrvStructure_MouseEnter"
+                                                dragdrop:DragDrop.IsDragSource="True" dragdrop:DragDrop.UseDefaultDragAdorner="True"
+                                                dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+                                                dragdrop:DragDrop.UseDefaultEffectDataTemplate="False" Drop="TrvStructure_Drop">
+                                                <TreeView.ContextMenu>
+                                                    <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                                        <MenuItem Header="Open folder" Command="{Binding OpenObservedFolderCommand}"/>
+                                                        <MenuItem Header="Delete folder" Command="{Binding DeleteFolderCommand}"/>
+                                                        <MenuItem Header="Create new subfolder" Command="{Binding OpenCreateSubFolderDialogCommand}"/>
+                                                    </ContextMenu>
+                                                </TreeView.ContextMenu>
+                                            </TreeView>
+                                        </ScrollViewer>
+                                    </Grid>
+                                </materialDesign:DialogHost>
+                            </materialDesign:Card>
+                        </Popup>
                         <materialDesign:PackIcon DockPanel.Dock="Right" Kind="Magnify" Width="20" Height="20"
                             Margin="8 0 4 4" VerticalAlignment="Center" Opacity="0.6"
                             Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>

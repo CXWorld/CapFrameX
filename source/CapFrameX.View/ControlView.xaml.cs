@@ -32,8 +32,6 @@ namespace CapFrameX.View
 
         private bool CreateFolderDialogIsOpen;
 
-        private bool FixedExpanderPosition => _viewModel.FixedExpanderPosition;
-
         private bool RecordInfoExpanderinitialPosition => _viewModel.AppConfiguration.IsRecordInfoExpanded;
 
         private string ObservedDirectory
@@ -50,9 +48,6 @@ namespace CapFrameX.View
         {
             InitializeComponent();
             SetHeaders();
-
-            if (FixedExpanderPosition)
-                Expander.IsExpanded = true;
 
             if (RecordInfoExpanderinitialPosition)
                 RecordInfoExpander.IsExpanded = true;
@@ -78,17 +73,6 @@ namespace CapFrameX.View
 
             BuildTreeView();
             SetSortSettings(_viewModel.AppConfiguration);
-
-            Observable.FromEventPattern(Expander, "MouseLeave")
-                .Where(_ => !TrvStructure.ContextMenu.IsOpen)
-                .Where(_ => Expander.IsExpanded)
-                .Where(isOpen => !CreateFolderDialogIsOpen)
-                .Where(_ => !FixedExpanderPosition)
-                .ObserveOnDispatcher()
-                .Subscribe(_ =>
-                {
-                    Expander.IsExpanded = false;
-                });
         }
 
         private void BuildTreeView()
@@ -300,6 +284,11 @@ namespace CapFrameX.View
             {
                 BuildTreeView();
             }
+        }
+
+        private void FolderChipButton_Click(object sender, RoutedEventArgs e)
+        {
+            FolderPopup.IsOpen = !FolderPopup.IsOpen;
         }
 
         private void TreeView_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
