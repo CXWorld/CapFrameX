@@ -117,17 +117,17 @@
 							</materialDesign:PackIcon>
 						</StackPanel>
 						<StackPanel Grid.Row="0" Margin="0 0 0 10" Orientation="Horizontal" HorizontalAlignment="Right">
-							<Button Width="28" Height="28" Margin="7 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+							<Button Width="28" Height="28" Margin="7 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
 								ToolTip="Sort entries by type" Command="{Binding SortByEntryTypeCommand}"
 								materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="Sort" Height="22" Width="22" />
 							</Button>
-							<Button Width="28" Height="28" Margin="0 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+							<Button Width="28" Height="28" Margin="0 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
 								ToolTip="Open configuration folder" Command="{Binding OpenConfigFolderCommand}"
 								materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="Folder" Height="22" Width="22" />
 							</Button>
-							<Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+							<Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
 									ToolTip="Save selection to other configs" Click="CopyButton_Click" 
 									materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="ContentCopy" Height="22" Width="22"/>
@@ -147,17 +147,17 @@
 										<TextBlock Grid.Row="0" Grid.Column="0" Margin="0 5 25 5" Text="Config  1" Foreground="{DynamicResource MaterialDesignBody}"></TextBlock>
 										<TextBlock Grid.Row="1" Grid.Column="0" Margin="0 5 25 5" Text="Config  2" Foreground="{DynamicResource MaterialDesignBody}"></TextBlock>
 										<TextBlock Grid.Row="2" Grid.Column="0" Margin="0 5 25 5" Text="Config  3" Foreground="{DynamicResource MaterialDesignBody}"></TextBlock>
-										<Button Grid.Row="0" Grid.Column="1" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+										<Button Grid.Row="0" Grid.Column="1" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
                                         Command="{Binding SaveConfigCommand}" CommandParameter="0"
                                         materialDesign:RippleAssist.Feedback="#DD000000">
 											<materialDesign:PackIcon Kind="ArrowRight" Height="15" Width="15" />
 										</Button>
-										<Button Grid.Row="1" Grid.Column="1" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+										<Button Grid.Row="1" Grid.Column="1" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
                                         Command="{Binding SaveConfigCommand}" CommandParameter="1"
                                         materialDesign:RippleAssist.Feedback="#DD000000">
 											<materialDesign:PackIcon Kind="ArrowRight" Height="15" Width="15" />
 										</Button>
-										<Button Grid.Row="2" Grid.Column="1" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+										<Button Grid.Row="2" Grid.Column="1" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
                                         Command="{Binding SaveConfigCommand}" CommandParameter="2"
                                         materialDesign:RippleAssist.Feedback="#DD000000">
 											<materialDesign:PackIcon Kind="ArrowRight" Height="15" Width="15" />
@@ -165,7 +165,7 @@
 									</Grid>
 								</materialDesign:Card>
 							</Popup>
-							<Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+							<Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
                             ToolTip="Save selection to current config" Command="{Binding SaveConfigCommand}" CommandParameter="3" IsEnabled="{Binding SaveButtonIsEnable}"
                             materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="ContentSaveSettings" Height="22" Width="22" />
@@ -194,7 +194,7 @@
                                  Content="3" 
                                  Foreground="{DynamicResource MaterialDesignBody}"
                                  Command="{Binding ConfigSwitchCommand}" CommandParameter="2"/>
-							<Button Width="28" Height="28" Margin="7 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+							<Button Width="28" Height="28" Margin="7 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
 								ToolTip="Reset to defaults" Command="{Binding OpenResetDialogCommand}"
                             materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="Restore" Height="22" Width="22" />
@@ -211,7 +211,7 @@
 							<ComboBox Width="110" Height="28" Margin="10 0 0 0" FontSize="12" VerticalContentAlignment="Center"
 									  materialDesign:HintAssist.Hint="Entry Type" materialDesign:HintAssist.HintOpacity=".6"
 									  materialDesign:HintAssist.IsFloating="False"
-									  materialDesign:ComboBoxAssist.ClassicMode="True"
+
 									  ItemsSource="{Binding EntryTypeFilterItems}"
 									  SelectedItem="{Binding SelectedEntryTypeFilter}"
 									  Foreground="{DynamicResource MaterialDesignBody}"
@@ -222,7 +222,7 @@
 									</DataTemplate>
 								</ComboBox.ItemTemplate>
 							</ComboBox>
-							<Button Width="24" Height="24" Margin="10 0 0 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+							<Button Width="24" Height="24" Margin="10 0 0 0" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
 									ToolTip="Clear filters" Command="{Binding ClearFilterCommand}"
 									materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="FilterRemove" Height="16" Width="16" />
@@ -519,7 +519,7 @@
 										</materialDesign:Card>
 									</materialDesign:PopupBox>
 									<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Min OSD</TextBlock>
-									<Button Margin="10 0 0 0" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+									<Button Margin="10 0 0 0" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
                                             Command="{Binding SetToMinOsdCommand}" materialDesign:RippleAssist.Feedback="#DD000000">
 										<materialDesign:PackIcon Kind="FlipToFront" Height="15" Width="15" />
 										<Button.ToolTip>
@@ -530,7 +530,7 @@
 										</Button.ToolTip>
 									</Button>
 									<TextBlock Margin="10 0 0 0"  VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Resync Perfmon</TextBlock>
-									<Button Margin="10 0 0 0" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+									<Button Margin="10 0 0 0" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
                                             Command="{Binding ResyncPerfmonCommand}" materialDesign:RippleAssist.Feedback="#DD000000">
 										<materialDesign:PackIcon Kind="Update" Height="15" Width="15" />
 										<Button.ToolTip>
@@ -570,7 +570,7 @@
 						</Grid.RowDefinitions>
 						<StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
 							<TextBlock VerticalAlignment="Center" Text="Overlay Template" FontSize="16" Margin="5 0 15 0"/>
-							<ComboBox materialDesign:ComboBoxAssist.ClassicMode="True" Margin="5 0 0 0" Padding="0 10 0 0"
+							<ComboBox Margin="5 0 0 0" Padding="0 10 0 0"
 								Width="140" Height="35"
 								FontSize="14"
 								Foreground="{DynamicResource MaterialDesignBody}"
@@ -631,7 +631,7 @@
 								<ColumnDefinition Width="1*"/>
 							</Grid.ColumnDefinitions>
 							<TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Colors and Limits" FontSize="16"/>
-							<Button Grid.Row="0" Grid.Column="2" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+							<Button Grid.Row="0" Grid.Column="2" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
 								ToolTip="Reset to defaults" Command="{Binding ResetColorAndLimitDefaultsCommand}"
 								materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="Restore" Height="15" Width="15" />
@@ -914,7 +914,7 @@
 						</StackPanel>
 						<TextBlock Grid.Row="2"  Text="Group Name" TextAlignment="Left" Margin="10 5 0 0"/>
 						<StackPanel Grid.Row="3" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
-							<Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+							<Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
 								IsEnabled="{Binding SetGroupButtonEnabled}" Command="{Binding SetFormatForGroupNameCommand}" ToolTip="Set selected options for all entries with this group name"
 								materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
@@ -923,7 +923,7 @@
 						</StackPanel>
 						<TextBlock Grid.Row="4" TextAlignment="Left" Text="Sensor Type" Margin="10 5 0 0"/>
 						<StackPanel Grid.Row="5" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
-							<Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+							<Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
 								IsEnabled="{Binding SetSensorTypeButtonEnabled}" Command="{Binding SetFormatForSensorTypeCommand}" ToolTip="Set selected options for all entries with this sensor type"
 								materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
@@ -935,7 +935,7 @@
 						<TextBlock Grid.Row="6" Text="All Entries" TextAlignment="Left" Margin="10 5 0 0"/>
 
 						<StackPanel Grid.Row="7" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
-							<Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+							<Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
 								Command="{Binding SetFormatForAllGroupsCommand}" ToolTip="Set selected options for all entries groups">
 								<materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
 							</Button>
@@ -943,7 +943,7 @@
 						</StackPanel>
 
 						<StackPanel Grid.Row="8" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
-							<Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+							<Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
 								Command="{Binding SetFormatForAllValuesCommand}" ToolTip="Set selected options for all entries values"
                                 materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
@@ -1209,7 +1209,7 @@
 									<TextBlock Margin="0 14 0 2" FontWeight="SemiBold" Text="Update intervals"/>
 									<DockPanel Margin="0 5">
 										<ComboBox DockPanel.Dock="Right" Width="160" Height="40" FontSize="14"
-												  materialDesign:ComboBoxAssist.ClassicMode="True"
+
 												  materialDesign:HintAssist.Hint="Refresh period (ms)"
 												  materialDesign:HintAssist.HintOpacity=".8"
 												  materialDesign:HintAssist.IsFloating="True"
@@ -1227,7 +1227,7 @@
 
 									<DockPanel Margin="0 5">
 										<ComboBox DockPanel.Dock="Right" Width="160" Height="40" FontSize="14"
-												  materialDesign:ComboBoxAssist.ClassicMode="True"
+
 												  materialDesign:HintAssist.Hint="Metric interval (s)"
 												  materialDesign:HintAssist.HintOpacity=".8"
 												  materialDesign:HintAssist.IsFloating="True"

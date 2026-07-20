@@ -1,5 +1,4 @@
 ﻿using CapFrameX.EventAggregation.Messages;
-using CapFrameX.View.Themes;
 using CapFrameX.ViewModel;
 using MaterialDesignThemes.Wpf;
 using Microsoft.Extensions.Logging;
@@ -259,8 +258,22 @@ namespace CapFrameX.View
         private static void ModifyTheme(bool isDarkTheme)
         {
             PaletteHelper paletteHelper = new PaletteHelper();
-            ITheme theme = paletteHelper.GetTheme();
-            theme.SetBaseTheme(isDarkTheme ? new DarkTheme() : (IBaseTheme)new LightTheme());
+            Theme theme = paletteHelper.GetTheme();
+            theme.SetBaseTheme(isDarkTheme ? BaseTheme.Dark : BaseTheme.Light);
+
+            // CapFrameX brand palette, carried over from the pre-5.x custom
+            // IBaseTheme implementations (VS-code-like greys in dark mode).
+            if (isDarkTheme)
+            {
+                theme.Background = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#252526");
+                theme.Foreground = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#DDFFFFFF");
+            }
+            else
+            {
+                theme.Background = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#f8f8f8");
+                theme.Foreground = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#DD000000");
+            }
+
             paletteHelper.SetTheme(theme);
         }
 
