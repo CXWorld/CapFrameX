@@ -35,7 +35,7 @@ msbuild source\CapFrameXBootstrapper\CapFrameXBootstrapper.wixproj /p:SolutionDi
 ### Run Tests
 Tests use MSTest framework:
 ```bash
-vstest.console source\CapFrameX.Test\bin\x64\Release\CapFrameX.Test.dll
+vstest.console source\CapFrameX.Test\bin\x64\Release\net9.0-windows\CapFrameX.Test.dll /Platform:x64
 ```
 
 ## Architecture
@@ -92,7 +92,8 @@ The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (.NET Framework 4
 
 ### Build Output
 - Platform: x64
-- Main output: `source\CapFrameX\bin\x64\Release\`
+- Target framework (1.9+): `net9.0-windows` (SDK-style projects; legacy 1.8.x was .NET Framework 4.7.2)
+- Main output: `source\CapFrameX\bin\x64\Release\net9.0-windows\`
 - Installer output: `source\CapFrameXBootstrapper\bin\x64\Release\CapFrameXBootstrapper.exe`
 
 ## Hook-free OSD (external source)
