@@ -32,7 +32,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="CapFrameX.OSD.Interop">
+      <HintPath>..\..\external\CapFrameX.OSD-prebuilt\net9.0-windows\CapFrameX.OSD.Interop.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="TestRecordFiles\**">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Sensor\*.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
