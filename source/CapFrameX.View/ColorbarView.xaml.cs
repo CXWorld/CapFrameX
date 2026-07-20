@@ -255,27 +255,58 @@ namespace CapFrameX.View
             ModifyTheme(toggleButton.IsChecked == true);
         }
 
+        // CapFrameX brand palette, carried over from the pre-5.x custom IBaseTheme
+        // implementations (VS-code-like greys in dark mode). Keys follow the
+        // MaterialDesign 5.x brush names; entries are (key, dark, light).
+        private static readonly (string Key, string Dark, string Light)[] BrandPalette =
+        {
+            ("MaterialDesign.Brush.Card.Background", "#252526", "#f8f8f8"),
+            ("MaterialDesign.Brush.ForegroundLight", "#89FFFFFF", "#89000000"),
+            ("MaterialDesign.Brush.Header.Foreground", "#BCFFFFFF", "#BC000000"),
+            ("MaterialDesign.Brush.TextBox.FilledBackground", "#2d2d30", "#ededed"),
+            ("MaterialDesign.Brush.TextBox.HoverBackground", "#1FFFFFFF", "#14000000"),
+            ("MaterialDesign.Brush.TextBox.DisabledBackground", "#0DFFFFFF", "#08000000"),
+            ("MaterialDesign.Brush.TextBox.OutlineInactiveBorder", "#1AFFFFFF", "#0F000000"),
+            ("MaterialDesign.Brush.DataGrid.RowHoverBackground", "#14FFFFFF", "#0A000000"),
+            ("MaterialDesign.Brush.ToolBar.Background", "#FF212121", "#FFF5F5F5"),
+            ("MaterialDesign.Brush.ToolBar.Item.Background", "#2196F3", "#2298f3"),
+            ("MaterialDesign.Brush.ToolBar.Item.Foreground", "#FF616161", "#FF616161"),
+            ("MaterialDesign.Brush.Button.FlatClick", "#19757575", "#FFDEDEDE"),
+            ("MaterialDesign.Brush.Button.Ripple", "#FFB6B6B6", "#FFB6B6B6"),
+            ("MaterialDesign.Brush.ToolTip.Background", "#eeeeee", "#757575"),
+            ("MaterialDesign.Brush.Chip.Background", "#FF2E3C43", "#12000000"),
+            ("MaterialDesign.Brush.SnackBar.Background", "#FFCDCDCD", "#FF323232"),
+            ("MaterialDesign.Brush.SnackBar.MouseOver", "#FFB9B9BD", "#FF464642"),
+            ("MaterialDesign.Brush.CheckBox.Disabled", "#FF647076", "#FFBDBDBD"),
+            ("MaterialDesign.Brush.ValidationError", "#f44336", "#F44336"),
+            // Not part of the 5.x obsolete-alias set, but still used by the views.
+            ("MaterialDesignSelection", "#757575", "#FFDEDEDE"),
+        };
+
         private static void ModifyTheme(bool isDarkTheme)
         {
             PaletteHelper paletteHelper = new PaletteHelper();
             Theme theme = paletteHelper.GetTheme();
             theme.SetBaseTheme(isDarkTheme ? BaseTheme.Dark : BaseTheme.Light);
 
-            // CapFrameX brand palette, carried over from the pre-5.x custom
-            // IBaseTheme implementations (VS-code-like greys in dark mode).
-            if (isDarkTheme)
-            {
-                theme.Background = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#252526");
-                theme.Foreground = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#DDFFFFFF");
-            }
-            else
-            {
-                theme.Background = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#f8f8f8");
-                theme.Foreground = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#DD000000");
-            }
+            // Base surfaces and text via the Theme API so derived colors stay consistent.
+            theme.Background = ParseColor(isDarkTheme ? "#2d2d30" : "#fafbfc");
+            theme.Foreground = ParseColor(isDarkTheme ? "#DDFFFFFF" : "#DD000000");
 
             paletteHelper.SetTheme(theme);
+
+            // Surface fine-tuning: override the brand-specific brushes after every
+            // SetTheme call, since SetTheme rewrites the application resources.
+            foreach (var (key, dark, light) in BrandPalette)
+            {
+                var brush = new System.Windows.Media.SolidColorBrush(ParseColor(isDarkTheme ? dark : light));
+                brush.Freeze();
+                Application.Current.Resources[key] = brush;
+            }
         }
+
+        private static System.Windows.Media.Color ParseColor(string value)
+            => (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(value);
 
         private void HorizontalRes_PreviewMouseDown(object sender, MouseButtonEventArgs e) { }
 
