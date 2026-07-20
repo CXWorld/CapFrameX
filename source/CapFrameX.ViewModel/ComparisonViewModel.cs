@@ -115,6 +115,7 @@ namespace CapFrameX.ViewModel
         private bool _isFrametimeChartDirty = true;
         private bool _useDisplayChangeSamplesForComparison;
         private string _comparisonMetricSourceDescription = "Source: Presents";
+        private bool _isComparisonMetricSourceFallback;
 
         public Array FirstMetricItems => Enum.GetValues(typeof(EMetric))
             .Cast<EMetric>().Where(metric => metric != EMetric.None && metric != EMetric.GpuActiveAverage && metric != EMetric.GpuActiveOnePercentLowAverage && metric != EMetric.GpuActiveP1)
@@ -358,6 +359,19 @@ namespace CapFrameX.ViewModel
                     return;
 
                 _comparisonMetricSourceDescription = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool IsComparisonMetricSourceFallback
+        {
+            get { return _isComparisonMetricSourceFallback; }
+            private set
+            {
+                if (_isComparisonMetricSourceFallback == value)
+                    return;
+
+                _isComparisonMetricSourceFallback = value;
                 RaisePropertyChanged();
             }
         }
@@ -1364,11 +1378,20 @@ namespace CapFrameX.ViewModel
 
             bool hasRecords = ComparisonRecords.Any() || additionalRecord != null;
             if (useDisplayTimes)
+            {
                 ComparisonMetricSourceDescription = "Source: Display changes (Average FPS: Presents)";
+                IsComparisonMetricSourceFallback = false;
+            }
             else if (_appConfiguration.UseDisplayChangeMetrics && hasRecords)
+            {
                 ComparisonMetricSourceDescription = "Source: Presents (display data unavailable)";
+                IsComparisonMetricSourceFallback = true;
+            }
             else
+            {
                 ComparisonMetricSourceDescription = "Source: Presents";
+                IsComparisonMetricSourceFallback = false;
+            }
 
             UpdateComparisonMetricSourceLabels();
             return sourceChanged;

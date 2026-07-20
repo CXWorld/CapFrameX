@@ -746,7 +746,18 @@
                        HorizontalAlignment="Right" VerticalAlignment="Center"
                        Text="{Binding ComparisonMetricSourceDescription}"
                        TextTrimming="CharacterEllipsis"
-                       ToolTip="All compared records use this timing source; mixed display/present comparisons are prevented." />
+                       ToolTip="All compared records use this timing source; mixed display/present comparisons are prevented.">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsComparisonMetricSourceFallback}" Value="True">
+                                <Setter Property="Foreground" Value="Orange" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
         </Grid>
 		<!-- Copmparison List -->
 		<StackPanel Margin="5 10 5 0" Grid.Column="1" Grid.RowSpan="2" Orientation="Vertical">
