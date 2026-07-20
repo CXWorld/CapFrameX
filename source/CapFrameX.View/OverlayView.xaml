@@ -36,9 +36,14 @@
 				<Setter Property="Margin" Value="6"/>
 				<Setter Property="Padding" Value="18"/>
 				<Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"/>
-				<Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
-				<Setter Property="BorderThickness" Value="0.5"/>
-				<Setter Property="CornerRadius" Value="2"/>
+				<Setter Property="BorderThickness" Value="0"/>
+				<Setter Property="CornerRadius" Value="6"/>
+			</Style>
+			<!--Filled rounded surface instead of a thin outline frame-->
+			<Style x:Key="SectionCard" TargetType="{x:Type Border}">
+				<Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"/>
+				<Setter Property="BorderThickness" Value="0"/>
+				<Setter Property="CornerRadius" Value="6"/>
 			</Style>
 			<Style x:Key="OsdOptionsSectionHeader" TargetType="{x:Type TextBlock}">
 				<Setter Property="Margin" Value="0 0 0 4"/>
@@ -79,7 +84,7 @@
 				<TextBlock Text="{Binding Path=UpdateHpyerlinkText}" TextAlignment="Center"/>
 			</Hyperlink>
 		</TextBlock>
-		<Border BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" BorderThickness="0.3" Grid.Row="0" Grid.Column="0" >
+		<Border Style="{StaticResource SectionCard}" Grid.Row="0" Grid.Column="0" >
 			<materialDesign:DialogHost IsOpen="{Binding ResetOverlayConfigContentIsOpen}"
 								        DialogContent="{Binding ResetOverlayConfigContent}"
 								        CloseOnClickAway="True">
@@ -372,8 +377,8 @@
 							</DataGrid.Columns>
 						</DataGrid>
 						<StackPanel Grid.Row="3" Orientation="Vertical">
-							<Border Margin="10 5 10 0" BorderThickness="0.4" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}">
-								<StackPanel Margin="5 5 0 5" Orientation="Horizontal">
+							<Border Margin="10 5 10 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}" BorderThickness="0" CornerRadius="6">
+								<StackPanel Margin="10 5 0 5" Orientation="Horizontal">
 									<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Group Control:</TextBlock>
 									<materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
 										<materialDesign:PopupBox.ToolTip>
@@ -547,7 +552,8 @@
 				</DockPanel>
 			</materialDesign:DialogHost>
 		</Border>
-		<Border Grid.Row="0" Grid.Column="2" Margin="0 0 0 0" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}">
+		<!--No outer frame: the sections inside are individual filled cards-->
+		<Border Grid.Row="0" Grid.Column="2" Margin="0 0 0 0" Background="Transparent" BorderThickness="0">
 			<Grid HorizontalAlignment="Center">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="5"></RowDefinition>
@@ -562,7 +568,7 @@
 				</Grid.ColumnDefinitions>
 				<!--<TextBlock Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" Text="{Binding SelectedOverlayItemName}"/>-->
 				<!-- Overlay Template Picker -->
-				<Border Grid.Row="1" Grid.ColumnSpan="2" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}">
+				<Border Grid.Row="1" Grid.ColumnSpan="2" Margin="5" Style="{StaticResource SectionCard}">
 					<Grid Margin="5 0 5 0">
 						<Grid.RowDefinitions>
 							<RowDefinition Height="55"/>
@@ -614,7 +620,7 @@
 						</UniformGrid>
 					</Grid>
 				</Border>
-				<Border Grid.Row="2" Grid.Column="0" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}">
+				<Border Grid.Row="2" Grid.Column="0" Margin="5" Style="{StaticResource SectionCard}">
 					<StackPanel Margin="5" IsEnabled="{Binding OverlayItemsOptionsEnabled}">
 						<Grid>
 							<Grid.RowDefinitions>
@@ -766,7 +772,7 @@
 					</StackPanel>
 				</Border>
 				<!-- Format options -->
-				<Border Grid.Row="2" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}">
+				<Border Grid.Row="2" Grid.Column="1" Margin="5" Style="{StaticResource SectionCard}">
 					<StackPanel Margin="5" IsEnabled="{Binding OverlayItemsOptionsEnabled}">
 						<Grid>
 							<Grid.RowDefinitions>
@@ -798,7 +804,7 @@
 						</Grid>
 					</StackPanel>
 				</Border>
-				<Border Grid.Row="3" Grid.Column="0" Margin="5" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}">
+				<Border Grid.Row="3" Grid.Column="0" Margin="5" Padding="4" Style="{StaticResource SectionCard}">
 					<DataGrid x:Name="SeparatorDataGrid" FontSize="11"
 						SelectedIndex="{Binding Path=OverlaySubModelGroupSeparating.SelectedOverlayGroupIndex}" 
 						ItemsSource="{Binding Path=OverlaySubModelGroupSeparating.OverlayGroupNameSeparatorEntries}"
@@ -886,7 +892,7 @@
 						</DataGrid.Columns>
 					</DataGrid>
 				</Border>
-				<Border Grid.Row="3" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}">
+				<Border Grid.Row="3" Grid.Column="1" Margin="5" Style="{StaticResource SectionCard}">
 					<Grid>
 						<Grid.RowDefinitions>
 							<RowDefinition Height="30"></RowDefinition>
