@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="CapFrameX.View.ControlView"
+<UserControl x:Class="CapFrameX.View.ControlView"
              Name="ControlViewControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -29,13 +29,9 @@
             <RowDefinition Height="1*"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
-            <ColumnDefinition Width="1*"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
         <FrameworkElement x:Name="ColumnHeaders" Visibility="Collapsed"/>
         <!--Record folder management expander-->
-        <Expander Name="Expander" Margin="0 0 0 0" MaxWidth="365" Grid.RowSpan="2" Grid.Column="0" Panel.ZIndex="1" ExpandDirection="Right" HorizontalAlignment="Left"
+        <Expander Name="Expander" Margin="0 0 0 0" MaxWidth="365" Grid.RowSpan="2" Panel.ZIndex="10" ExpandDirection="Right" HorizontalAlignment="Left"
                   Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" wpf:ExpanderAssist.VerticalHeaderPadding="5">
             <Expander.Header>
                 <TextBlock Text="Observed directory" RenderTransformOrigin=".5,.5" FontSize="14" HorizontalAlignment="Center">
@@ -49,6 +45,9 @@
 							DialogContent="{Binding CreateFolderDialogContent}"
 							CloseOnClickAway="False">
                 <Grid Name="ExpanderGrid" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+                    <Grid.Effect>
+                        <DropShadowEffect BlurRadius="14" ShadowDepth="2" Direction="0" Opacity="0.45"/>
+                    </Grid.Effect>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="10" ></RowDefinition>
                         <RowDefinition Height="Auto" ></RowDefinition>
@@ -102,8 +101,23 @@
                 </Grid>
             </materialDesign:DialogHost>
         </Expander>
-        <!--Record list-->
-        <Grid Grid.Row="0" Grid.Column="1">
+        <!--Record list. The observed-directory drawer overlays this area when it is
+             opened transiently; only pinning it docks the drawer and shifts the list. -->
+        <Grid Grid.Row="0">
+            <Grid.Style>
+                <Style TargetType="{x:Type Grid}">
+                    <Setter Property="Margin" Value="27 0 0 0"/>
+                    <Style.Triggers>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding FixedExpanderPosition}" Value="True"/>
+                                <Condition Binding="{Binding IsExpanded, ElementName=Expander}" Value="True"/>
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="Margin" Value="334 0 0 0"/>
+                        </MultiDataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"></RowDefinition>
                 <RowDefinition Height="Auto"></RowDefinition>
@@ -482,11 +496,11 @@
                         <ColumnDefinition Width="1*"/>
                     </Grid.ColumnDefinitions>
                     <!--System descriptions (left column)-->
-                    <TextBox Grid.Row="0" Grid.Column="0" wpf:HintAssist.Hint="Custom CPU description"
+                    <TextBox Grid.Row="0" Grid.Column="0" wpf:HintAssist.Hint="CPU description"
                              Text="{Binding CustomCpuDescription, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
-                    <TextBox Grid.Row="1" Grid.Column="0" wpf:HintAssist.Hint="Custom GPU description"
+                    <TextBox Grid.Row="1" Grid.Column="0" wpf:HintAssist.Hint="GPU description"
                              Text="{Binding CustomGpuDescription, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
-                    <TextBox Grid.Row="2" Grid.Column="0" wpf:HintAssist.Hint="Custom RAM description"
+                    <TextBox Grid.Row="2" Grid.Column="0" wpf:HintAssist.Hint="RAM description"
                              Text="{Binding CustomRamDescription, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
                     <!--Record metadata (right column)-->
                     <TextBox Grid.Row="0" Grid.Column="2" wpf:HintAssist.Hint="Game"
