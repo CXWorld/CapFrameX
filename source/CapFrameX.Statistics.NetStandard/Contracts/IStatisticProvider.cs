@@ -39,6 +39,10 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
 
         IList<double> GetFpsThresholdTimes(IList<double> frametimes, bool isReversed);
 
+        IList<double> GetVariancePercentages(IList<double> sequence);
+
+        IList<double> GetVariancePercentages(IEnumerable<IList<double>> sequences);
+
         IList<double> GetFrametimeVariancePercentages(ISession session);
 
         IList<double> GetDisplayTimeVariancePercentages(ISession session);

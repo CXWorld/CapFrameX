@@ -137,14 +137,15 @@ namespace CapFrameX.ViewModel.DataContext
             if (RecordSession == null)
                 return;
 
-            var frametimes = RecordDataServer.GetFrametimeTimeWindow();
-            var gpuActiveTimes = RecordDataServer.GetGpuActiveTimeTimeWindow();
+            var alignedPoints = GetAlignedFinitePoints(
+                RecordDataServer.GetFrametimePointTimeWindow(),
+                RecordDataServer.GetGpuActiveTimePointTimeWindow());
             StringBuilder builder = new StringBuilder();
 
-            for (int i = 0; i < frametimes.Count; i++)
+            foreach (var points in alignedPoints)
             {
-                builder.Append(Math.Round(frametimes[i], 2).ToString(CultureInfo.InvariantCulture) + "\t" +
-                    Math.Round(gpuActiveTimes[i], 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                builder.Append(Math.Round(points.Item1.Y, 2).ToString(CultureInfo.InvariantCulture) + "\t" +
+                    Math.Round(points.Item2.Y, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);
@@ -172,15 +173,16 @@ namespace CapFrameX.ViewModel.DataContext
             if (RecordSession == null)
                 return;
 
-            var frametimePoints = RecordDataServer.GetFrametimePointTimeWindow();
-            var gpuActiveTimePoints = RecordDataServer.GetGpuActiveTimePointTimeWindow();
+            var alignedPoints = GetAlignedFinitePoints(
+                RecordDataServer.GetFrametimePointTimeWindow(),
+                RecordDataServer.GetGpuActiveTimePointTimeWindow());
             StringBuilder builder = new StringBuilder();
 
-            for (int i = 0; i < frametimePoints.Count; i++)
+            foreach (var points in alignedPoints)
             {
-                builder.Append(Math.Round(gpuActiveTimePoints[i].X, 2).ToString(CultureInfo.InvariantCulture) + "\t" +
-                    Math.Round(frametimePoints[i].Y, 2).ToString(CultureInfo.InvariantCulture) + "\t"+
-                    Math.Round(gpuActiveTimePoints[i].Y, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                builder.Append(Math.Round(points.Item2.X, 2).ToString(CultureInfo.InvariantCulture) + "\t" +
+                    Math.Round(points.Item1.Y, 2).ToString(CultureInfo.InvariantCulture) + "\t"+
+                    Math.Round(points.Item2.Y, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);
