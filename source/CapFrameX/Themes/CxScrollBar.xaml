@@ -37,14 +37,18 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Thumb}">
-                    <Border x:Name="Pill" Background="{DynamicResource Cx.Brush.ScrollBar.Thumb}"
-                            CornerRadius="4" Margin="2"/>
+                    <!--Rectangle instead of Border: its corner radii are clamped to half
+                        the actual size, so very short thumbs stay symmetric ovals instead
+                        of clipped capsules. The Track ignores a Thumb Min length anyway
+                        (it computes and clips the slot itself), so none is set.-->
+                    <Rectangle x:Name="Pill" Fill="{DynamicResource Cx.Brush.ScrollBar.Thumb}"
+                            RadiusX="4" RadiusY="4" Margin="2"/>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Pill" Property="Background" Value="{DynamicResource Cx.Brush.ScrollBar.ThumbHover}"/>
+                            <Setter TargetName="Pill" Property="Fill" Value="{DynamicResource Cx.Brush.ScrollBar.ThumbHover}"/>
                         </Trigger>
                         <Trigger Property="IsDragging" Value="True">
-                            <Setter TargetName="Pill" Property="Background" Value="{DynamicResource Cx.Brush.ScrollBar.ThumbHover}"/>
+                            <Setter TargetName="Pill" Property="Fill" Value="{DynamicResource Cx.Brush.ScrollBar.ThumbHover}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -165,7 +169,7 @@
                                 <RepeatButton Style="{StaticResource CxScrollBarPageButton}" Command="{x:Static ScrollBar.PageUpCommand}"/>
                             </Track.DecreaseRepeatButton>
                             <Track.Thumb>
-                                <Thumb Style="{StaticResource CxScrollBarThumb}" MinHeight="28"/>
+                                <Thumb Style="{StaticResource CxScrollBarThumb}"/>
                             </Track.Thumb>
                             <Track.IncreaseRepeatButton>
                                 <RepeatButton Style="{StaticResource CxScrollBarPageButton}" Command="{x:Static ScrollBar.PageDownCommand}"/>
@@ -197,7 +201,7 @@
                                         <RepeatButton Style="{StaticResource CxScrollBarPageButton}" Command="{x:Static ScrollBar.PageLeftCommand}"/>
                                     </Track.DecreaseRepeatButton>
                                     <Track.Thumb>
-                                        <Thumb Style="{StaticResource CxScrollBarThumb}" MinWidth="28"/>
+                                        <Thumb Style="{StaticResource CxScrollBarThumb}"/>
                                     </Track.Thumb>
                                     <Track.IncreaseRepeatButton>
                                         <RepeatButton Style="{StaticResource CxScrollBarPageButton}" Command="{x:Static ScrollBar.PageRightCommand}"/>
