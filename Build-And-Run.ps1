@@ -63,11 +63,9 @@ function Get-V143BuildInstance
         foreach ($toolset in $toolsets)
         {
             $hasCompiler = Test-Path -LiteralPath (Join-Path $toolset.FullName "bin\Hostx64\x64\cl.exe")
-            $hasMfc = Test-Path -LiteralPath (Join-Path $toolset.FullName "atlmfc\include\afx.h")
-            $hasMfcLibraries = Test-Path -LiteralPath (Join-Path $toolset.FullName "atlmfc\lib\x64\mfc140.lib")
             $hasCli = Test-Path -LiteralPath (Join-Path $toolset.FullName "lib\x64\msvcmrt.lib")
 
-            if ($hasCompiler -and $hasMfc -and $hasMfcLibraries -and $hasCli)
+            if ($hasCompiler -and $hasCli)
             {
                 return [PSCustomObject]@{
                     InstallationPath = $instance.installationPath
@@ -104,10 +102,9 @@ function Install-V143Prerequisites
         throw "MSBuild is currently running. Close Visual Studio/build processes and run this same command again."
     }
 
-    Write-Host "Installing the v143 x64 compiler, MFC, and C++/CLI prerequisites..." -ForegroundColor Cyan
+    Write-Host "Installing the v143 x64 compiler and C++/CLI prerequisites..." -ForegroundColor Cyan
     $arguments = 'modify --installPath "' + $targetInstance.installationPath +
         '" --add Microsoft.VisualStudio.Component.VC.14.44.17.14.x86.x64' +
-        ' --add Microsoft.VisualStudio.Component.VC.14.44.17.14.MFC' +
         ' --add Microsoft.VisualStudio.Component.VC.14.44.17.14.CLI.Support' +
         ' --quiet --norestart'
 
@@ -247,7 +244,7 @@ try
     {
         if (-not $InstallPrerequisites)
         {
-            throw "The v143 x64 compiler, MFC, or C++/CLI support is missing. Rerun with -InstallPrerequisites to let Visual Studio Installer add the required components."
+            throw "The v143 x64 compiler or C++/CLI support is missing. Rerun with -InstallPrerequisites to let Visual Studio Installer add the required components."
         }
 
         Install-V143Prerequisites
@@ -256,7 +253,7 @@ try
 
     if ($null -eq $buildInstance)
     {
-        throw "The v143 compiler, MFC, or C++/CLI support is still unavailable after installation."
+        throw "The v143 compiler or C++/CLI support is still unavailable after installation."
     }
 
     if (-not (Test-Path -LiteralPath $nugetPath))

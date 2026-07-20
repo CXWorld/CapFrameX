@@ -11,7 +11,7 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn);NU1701</NoWarn>
+
   </PropertyGroup>
 
   <ItemGroup>
