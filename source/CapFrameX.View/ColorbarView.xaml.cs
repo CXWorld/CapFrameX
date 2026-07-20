@@ -282,6 +282,12 @@ namespace CapFrameX.View
             ("MaterialDesign.Brush.ValidationError", "#f44336", "#F44336"),
             // Not part of the 5.x obsolete-alias set, but still used by the views.
             ("MaterialDesignSelection", "#757575", "#FFDEDEDE"),
+
+            // Rounded scrollbar restyle (templates in CapFrameX/Themes/CxScrollBar.xaml)
+            ("Cx.Brush.ScrollBar.Thumb", "#5A5A60", "#C4C4CA"),
+            ("Cx.Brush.ScrollBar.ThumbHover", "#8A8A92", "#9B9BA2"),
+            ("Cx.Brush.ScrollBar.Glyph", "#9A9AA2", "#8A8A90"),
+            ("Cx.Brush.ScrollBar.GlyphHover", "#E0E0E0", "#3A3A40"),
         };
 
         private static void ModifyTheme(bool isDarkTheme)
