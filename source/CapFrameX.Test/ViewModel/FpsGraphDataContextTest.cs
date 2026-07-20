@@ -21,7 +21,7 @@ namespace CapFrameX.Test.ViewModel
             {
                 new Point(0, 100), new Point(2, double.PositiveInfinity), new Point(3, 103)
             };
-            MethodInfo method = typeof(FpsGraphDataContext).GetMethod("GetAlignedFinitePoints",
+            MethodInfo method = typeof(GraphDataContextBase).GetMethod("GetAlignedFinitePoints",
                 BindingFlags.NonPublic | BindingFlags.Static);
 
             var result = (IList<Tuple<Point, Point>>)method.Invoke(null,

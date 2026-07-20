@@ -185,43 +185,5 @@ namespace CapFrameX.ViewModel.DataContext
 
             Clipboard.SetDataObject(builder.ToString(), false);
         }
-
-        private static IList<Tuple<Point, Point>> GetAlignedFinitePoints(
-            IList<Point> fpsPoints, IList<Point> gpuActiveFpsPoints)
-        {
-            var alignedPoints = new List<Tuple<Point, Point>>();
-            if (fpsPoints == null || gpuActiveFpsPoints == null)
-                return alignedPoints;
-
-            int fpsIndex = 0;
-            int gpuIndex = 0;
-            while (fpsIndex < fpsPoints.Count && gpuIndex < gpuActiveFpsPoints.Count)
-            {
-                Point fpsPoint = fpsPoints[fpsIndex];
-                Point gpuPoint = gpuActiveFpsPoints[gpuIndex];
-                if (fpsPoint.X < gpuPoint.X)
-                {
-                    fpsIndex++;
-                    continue;
-                }
-                if (gpuPoint.X < fpsPoint.X)
-                {
-                    gpuIndex++;
-                    continue;
-                }
-
-                if (IsFinite(fpsPoint.Y) && IsFinite(gpuPoint.Y))
-                    alignedPoints.Add(Tuple.Create(fpsPoint, gpuPoint));
-                fpsIndex++;
-                gpuIndex++;
-            }
-
-            return alignedPoints;
-        }
-
-        private static bool IsFinite(double value)
-        {
-            return !double.IsNaN(value) && !double.IsInfinity(value);
-        }
     }
 }
