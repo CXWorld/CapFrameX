@@ -25,6 +25,11 @@
             <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
         </ResourceDictionary>
     </UserControl.Resources>
+    <!--The create-folder dialog is hosted at view level (not inside the folder
+        popup): a DialogHost inside a WPF Popup does not reliably render its
+        overlay until the popup gets another input event. -->
+    <materialDesign:DialogHost IsOpen="{Binding CreateFolderDialogIsOpen}"
+        DialogContent="{Binding CreateFolderDialogContent}" CloseOnClickAway="False">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"></RowDefinition>
@@ -63,7 +68,7 @@
                         <!--Observed-directory breadcrumb: opens the folder tree in a floating
                             popup that overlays nothing in the layout, so the record list is
                             never reflowed. Replaces the old side expander/drawer. -->
-                        <Button x:Name="FolderChipButton" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0 0 12 0"
+                        <Button x:Name="FolderChipButton" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0 0 0 0"
                             Click="FolderChipButton_Click" Cursor="Hand" Height="32" Padding="10 0"
                             Style="{StaticResource MaterialDesignFlatButton}"
                             Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
@@ -82,8 +87,6 @@
                                 <materialDesign:Card.Effect>
                                     <DropShadowEffect BlurRadius="16" ShadowDepth="3" Opacity="0.5"/>
                                 </materialDesign:Card.Effect>
-                                <materialDesign:DialogHost IsOpen="{Binding CreateFolderDialogIsOpen}"
-                                    DialogContent="{Binding CreateFolderDialogContent}" CloseOnClickAway="False">
                                     <Grid Margin="12">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
@@ -97,6 +100,7 @@
                                                 <materialDesign:PackIcon Kind="Cached" Width="18" Height="18"/>
                                             </Button>
                                             <TextBox IsReadOnly="True" materialDesign:HintAssist.Hint="Root capture folder"
+												Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                                                 materialDesign:HintAssist.IsFloating="True" materialDesign:HintAssist.HintOpacity=".8"
                                                 Text="{Binding DataContext.RootDirectory, ElementName=ControlViewControl, Mode=OneWay}"
                                                 TextWrapping="NoWrap" PreviewMouseDown="RootFolder_PreviewMouseDown"
@@ -121,11 +125,10 @@
                                             </TreeView>
                                         </ScrollViewer>
                                     </Grid>
-                                </materialDesign:DialogHost>
                             </materialDesign:Card>
                         </Popup>
                         <materialDesign:PackIcon DockPanel.Dock="Right" Kind="Magnify" Width="20" Height="20"
-                            Margin="8 0 4 4" VerticalAlignment="Center" Opacity="0.6"
+                            Margin="0 0 4 4" VerticalAlignment="Center" Opacity="0.6"
                             Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                         <materialDesign:PopupBox x:Name="ColumnOptionsPopup" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0 0 8 0" StaysOpen="True" ToolTipService.ShowDuration="25000"
                             Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
@@ -156,7 +159,7 @@
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="100"/>
-                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="100"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Date / Time" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding ShowCreationDate}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
@@ -327,7 +330,7 @@
                                                                 x:Name="SortDirectionIndicator"
                                                                 ListSortDirection="{TemplateBinding SortDirection}"/>
                                                         <ContentPresenter Height="20" Grid.Column="1" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                  Margin="{TemplateBinding Padding}"/>
+                                                            Margin="{TemplateBinding Padding}"/>
                                                     </Grid>
                                                 </Border>
                                                 <Thumb x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignGridColumnHeaderGripper}"/>
@@ -372,7 +375,7 @@
                             </DataGridTextColumn>
                             <DataGridTextColumn Binding="{Binding CreationTimestamp, Mode=OneWay}"
                                         Width="Auto"
-                                        MinWidth="100"
+                                        MinWidth="110"
                                         Header="Date / Time"
                                         IsReadOnly="True"
                                         Visibility="{Binding DataContext.ShowCreationDate, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
@@ -486,7 +489,7 @@
                     <!--Record metadata (right column)-->
                     <TextBox Grid.Row="0" Grid.Column="2" wpf:HintAssist.Hint="Game"
                              Text="{Binding CustomGameName, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
-                    <TextBox Grid.Row="1" Grid.Column="2" Grid.RowSpan="2" VerticalAlignment="Stretch" wpf:HintAssist.Hint="Comment"
+                    <TextBox Grid.Row="2" Grid.Column="2" VerticalAlignment="Stretch" wpf:HintAssist.Hint="Comment"
                              Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
                     <!--Actions-->
                     <Button Grid.Row="3" Grid.Column="2" Margin="0 12 0 0" MinWidth="120" HorizontalAlignment="Right"
@@ -501,4 +504,5 @@
             </Expander>
         </Grid>
     </Grid>
+    </materialDesign:DialogHost>
 </UserControl>

@@ -30,8 +30,6 @@ namespace CapFrameX.View
         private const int SEARCH_REFRESH_DELAY_MS = 100;
         private readonly CollectionViewSource _recordInfoCollection;
 
-        private bool CreateFolderDialogIsOpen;
-
         private bool RecordInfoExpanderinitialPosition => _viewModel.AppConfiguration.IsRecordInfoExpanded;
 
         private string ObservedDirectory
@@ -60,16 +58,12 @@ namespace CapFrameX.View
 
             _viewModel.TreeViewUpdateStream.Subscribe(_ => BuildTreeView());
 
+            // The create-folder dialog is shown by a view-level DialogHost, so the
+            // folder popup closes when the dialog opens (it would float above it).
             _viewModel.CreateFolderdialogIsOpenStream
-                .SelectMany(isOpen =>
-                {
-                    if (isOpen)
-                    {
-                        return Observable.Return(true);
-                    }
-                    return Observable.Return(false).Delay(TimeSpan.FromMilliseconds(500));
-                })
-                .Subscribe(isOpen => CreateFolderDialogIsOpen = isOpen);
+                .Where(isOpen => isOpen)
+                .ObserveOnDispatcher()
+                .Subscribe(_ => FolderPopup.IsOpen = false);
 
             BuildTreeView();
             SetSortSettings(_viewModel.AppConfiguration);
@@ -143,7 +137,9 @@ namespace CapFrameX.View
                 {
                     foreach (DirectoryInfo subDir in expandedDir.GetDirectories())
                     {
-                        var subItem = CreateTreeItem(subDir, subDir.ToString());
+                        // DirectoryInfo.ToString() returns the full path on .NET Core+
+                        // (it returned just the name on .NET Framework), so use Name here.
+                        var subItem = CreateTreeItem(subDir, subDir.Name);
                         item.Items.Add(subItem);
                         CreateTreeViewRecursive(subItem);
                     }
