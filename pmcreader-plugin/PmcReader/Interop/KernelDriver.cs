@@ -383,9 +383,10 @@ namespace PmcReader.Interop
             try
             {
                 // restrict the driver access to system (SY) and builtin admins (BA)
-                FileSecurity fileSecurity = File.GetAccessControl(@"\\.\" + _id);
+                var deviceFileInfo = new FileInfo(@"\\.\" + _id);
+                FileSecurity fileSecurity = deviceFileInfo.GetAccessControl();
                 fileSecurity.SetSecurityDescriptorSddlForm("O:BAG:SYD:(A;;FA;;;SY)(A;;FA;;;BA)");
-                File.SetAccessControl(@"\\.\" + _id, fileSecurity);
+                deviceFileInfo.SetAccessControl(fileSecurity);
             }
             catch
             {
