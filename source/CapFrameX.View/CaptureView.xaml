@@ -272,12 +272,12 @@
 										</ToggleButton.ToolTip>
 									</ToggleButton>
 								</DockPanel>
-								<Grid IsEnabled="{Binding UseRunHistory}" Margin="0 8 0 0">
+								<Grid IsEnabled="{Binding UseRunHistory}" Margin="0 12 0 0">
 									<Grid.Resources>
 										<Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource MaterialDesignComboBox}">
 											<Setter Property="materialDesign:HintAssist.IsFloating" Value="True"/>
 											<Setter Property="materialDesign:HintAssist.HintOpacity" Value=".8"/>
-											<Setter Property="Margin" Value="0 4 0 4"/>
+											<Setter Property="Margin" Value="0 10 0 10"/>
 										</Style>
 									</Grid.Resources>
 									<Grid.RowDefinitions>
@@ -309,7 +309,7 @@
 									    read-only text-field styling indents the text against the floating hint. All
 									    keyboard input is swallowed by the PreviewKeyDown hotkey capture; paste and
 									    IME input are disabled via ContextMenu/InputMethod. -->
-									<TextBox Grid.Row="0" Grid.Column="2" Margin="0 4 0 4" materialDesign:HintAssist.Hint="Reset run history"
+									<TextBox Grid.Row="0" Grid.Column="2" Margin="0 10 0 10" materialDesign:HintAssist.Hint="Reset run history"
 										Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 										IsUndoEnabled="False" PreviewKeyDown="ResetHistoryHotkeyTextBox_PreviewKeyDown"
 										ContextMenu="{x:Null}" InputMethod.IsInputMethodEnabled="False"
@@ -365,12 +365,12 @@
 										</ToggleButton.ToolTip>
 									</ToggleButton>
 								</DockPanel>
-								<Grid IsEnabled="{Binding UseAggregation}" Margin="0 8 0 0">
+								<Grid IsEnabled="{Binding UseAggregation}" Margin="0 12 0 0">
 									<Grid.Resources>
 										<Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource MaterialDesignComboBox}">
 											<Setter Property="materialDesign:HintAssist.IsFloating" Value="True"/>
 											<Setter Property="materialDesign:HintAssist.HintOpacity" Value=".8"/>
-											<Setter Property="Margin" Value="0 4 0 4"/>
+											<Setter Property="Margin" Value="0 10 0 10"/>
 										</Style>
 									</Grid.Resources>
 									<Grid.RowDefinitions>
@@ -421,7 +421,7 @@
 											</ToolTip>
 										</ComboBox.ToolTip>
 									</ComboBox>
-									<CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="0 8 0 0"
+									<CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="0 12 0 4"
 										IsChecked="{Binding SaveAggregationOnly}" ToolTipService.ShowDuration="25000">
 										<CheckBox.ToolTip>
 											<ToolTip StaysOpen="True" MaxWidth="275">
