@@ -891,6 +891,7 @@ namespace CapFrameX.ViewModel
             {
                 configurationChanges
                     .Where(change => change.key == nameof(IAppConfiguration.UseDisplayChangeMetrics))
+                    .ObserveOnDispatcher()
                     .Subscribe(_ =>
                     {
                         SetChartUpdateFlags();
