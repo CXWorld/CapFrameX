@@ -116,6 +116,7 @@ namespace CapFrameX.ViewModel
         private bool _useDisplayChangeSamplesForComparison;
         private string _comparisonMetricSourceDescription = "Source: Presents";
         private bool _isComparisonMetricSourceFallback;
+        private readonly ISubject<Unit> _rangeSliderUpdate = new Subject<Unit>();
 
         public Array FirstMetricItems => Enum.GetValues(typeof(EMetric))
             .Cast<EMetric>().Where(metric => metric != EMetric.None && metric != EMetric.GpuActiveAverage && metric != EMetric.GpuActiveOnePercentLowAverage && metric != EMetric.GpuActiveP1)
@@ -445,7 +446,7 @@ namespace CapFrameX.ViewModel
                 SetChartUpdateFlags();
 
                 if (ComparisonRangeSliderRealTime)
-                    UpdateCharts();
+                    _rangeSliderUpdate.OnNext(default);
             }
         }
 
@@ -462,7 +463,7 @@ namespace CapFrameX.ViewModel
                 SetChartUpdateFlags();
 
                 if (ComparisonRangeSliderRealTime)
-                    UpdateCharts();
+                    _rangeSliderUpdate.OnNext(default);
             }
         }
 
@@ -491,7 +492,7 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged(nameof(IsVarianceChartTabActive));
                 RaisePropertyChanged(nameof(IsDistributionTabActive));
                 OnChartItemChanged();
-                UpdateCharts();
+                UpdateChartsSafely();
 
                 if (!IsLineChartTabActive && !IsDistributionTabActive)
                 {
@@ -663,7 +664,7 @@ namespace CapFrameX.ViewModel
                 else
                     ComparisonLShapeYAxisLabel = "FPS" + Environment.NewLine + " ";
                 RaisePropertyChanged();
-                UpdateCharts();
+                UpdateChartsSafely();
             }
         }
 
@@ -728,7 +729,7 @@ namespace CapFrameX.ViewModel
                 _isDistributionChartDirty = true;
                 RaisePropertyChanged();
                 InitializePlotModels();
-                UpdateCharts();
+                UpdateChartsSafely();
             }
         }
 
@@ -741,7 +742,7 @@ namespace CapFrameX.ViewModel
                 IsFpsChartDirty = true;
                 IsFrametimeChartDirty = true;
                 RaisePropertyChanged();
-                UpdateCharts();
+                UpdateChartsSafely();
             }
         }
 
@@ -899,6 +900,11 @@ namespace CapFrameX.ViewModel
             SubscribeToSelectRecord();
             SubscribeToUpdateRecordInfos();
             SubscribeToThemeChanged();
+            _rangeSliderUpdate
+                .Throttle(TimeSpan.FromMilliseconds(75))
+                .ObserveOnDispatcher()
+                .Subscribe(_ => UpdateChartsSafely(), error =>
+                    _logger?.LogError(error, "The comparison chart update pipeline stopped unexpectedly."));
 
             var configurationChanges = _appConfiguration.OnValueChanged;
             if (configurationChanges != null)
@@ -909,7 +915,7 @@ namespace CapFrameX.ViewModel
                     .Subscribe(_ =>
                     {
                         SetChartUpdateFlags();
-                        UpdateCharts();
+                        UpdateChartsSafely();
                     }, error => _logger?.LogError(error,
                         "The comparison display-metric update subscription stopped unexpectedly."));
             }
@@ -1445,6 +1451,20 @@ namespace CapFrameX.ViewModel
             return !double.IsNaN(lastFrameStart) && !double.IsInfinity(lastFrameStart);
         }
 
+        private void UpdateChartsSafely()
+        {
+            try
+            {
+                UpdateCharts();
+            }
+            catch (Exception exception)
+            {
+                SetChartUpdateFlags();
+                _logger?.LogError(exception,
+                    "A comparison chart update failed. The next update will retry the complete redraw.");
+            }
+        }
+
         private void OnChartItemChanged()
         {
             if (SelectedChartItem?.Header.ToString().Contains("Line") ?? false)
@@ -1581,7 +1601,7 @@ namespace CapFrameX.ViewModel
         private void OnRangeSliderChanged()
         {
             UpdateRangeSliderParameter();
-            UpdateCharts();
+            UpdateChartsSafely();
         }
 
         public void OnRangeSliderValuesChanged()
@@ -1593,13 +1613,13 @@ namespace CapFrameX.ViewModel
                 LastSeconds = MaxRecordingTime;
 
             if (!ComparisonRangeSliderRealTime)
-                UpdateCharts();
+                UpdateChartsSafely();
         }
 
         public void OnRangeSliderDragCompleted()
         {
             if (!ComparisonRangeSliderRealTime)
-                UpdateCharts();
+                UpdateChartsSafely();
         }
 
         internal class ChartLabel
@@ -1713,74 +1733,15 @@ namespace CapFrameX.ViewModel
 
         private void UpdateAxesMinMaxFrametimeChart()
         {
-            if (ComparisonRecords == null || !ComparisonRecords.Any())
-                return;
-
             var xAxis = ComparisonFrametimesModel.GetAxisOrDefault("xAxis", null);
             var yAxis = ComparisonFrametimesModel.GetAxisOrDefault("yAxis", null);
 
-            if (xAxis == null || yAxis == null)
+            double xMin, xMax, yMin, yMax;
+            if (xAxis == null || yAxis == null
+                || !TryGetSeriesBounds(ComparisonFrametimesModel, out xMin, out xMax, out yMin, out yMax))
                 return;
 
             xAxis.Reset();
-
-            double xMin = 0;
-            double xMax = 0;
-            double yMin = 0;
-            double yMax = 0;
-
-            double startTime = FirstSeconds;
-            double endTime = LastSeconds;
-
-            var sessionParallelQuery = ComparisonRecords.Select(record => record.WrappedRecordInfo.Session).AsParallel();
-
-            xMin = sessionParallelQuery.Min(session =>
-            {
-                var window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
-                if (window.Any())
-                    return window.First().X;
-                else
-                    return double.MaxValue;
-            });
-
-            xMax = sessionParallelQuery.Max(session =>
-            {
-                var window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
-                if (window.Any())
-                    return window.Last().X;
-                else
-                    return double.MinValue;
-            });
-
-            yMin = sessionParallelQuery.Min(session =>
-            {
-                IList<Point> window = null;
-
-                if (ShowGpuActiveLineCharts)
-                    window = session.GetGpuActiveTimePointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
-                else
-                    window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
-
-                if (window.Any())
-                    return window.Min(pnt => pnt.Y);
-                else
-                    return double.MaxValue;
-            });
-
-            yMax = sessionParallelQuery.Max(session =>
-            {
-                IList<Point> window = null;
-
-                if (ShowGpuActiveLineCharts)
-                    window = session.GetGpuActiveTimePointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
-                else
-                    window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
-
-                if (window.Any())
-                    return window.Max(pnt => pnt.Y);
-                else
-                    return double.MinValue;
-            });
 
             xAxis.Minimum = xMin;
             xAxis.Maximum = xMax;
@@ -1791,79 +1752,17 @@ namespace CapFrameX.ViewModel
             ComparisonFrametimesModel.InvalidatePlot(true);
         }
 
-        // ToDo: Optimieren!
         private void UpdateAxesMinMaxFpsChart()
         {
-            if (ComparisonRecords == null || !ComparisonRecords.Any())
-                return;
-
             var xAxis = ComparisonFpsModel.GetAxisOrDefault("xAxis", null);
             var yAxis = ComparisonFpsModel.GetAxisOrDefault("yAxis", null);
 
-            if (xAxis == null || yAxis == null)
+            double xMin, xMax, yMin, yMax;
+            if (xAxis == null || yAxis == null
+                || !TryGetSeriesBounds(ComparisonFpsModel, out xMin, out xMax, out yMin, out yMax))
                 return;
 
             xAxis.Reset();
-
-            double xMin = 0;
-            double xMax = 0;
-            double yMin = 0;
-            double yMax = 0;
-
-            double startTime = FirstSeconds;
-            double endTime = LastSeconds;
-
-            var sessionParallelQuery = ComparisonRecords.Select(record => record.WrappedRecordInfo.Session).AsParallel();
-
-            xMin = sessionParallelQuery.Min(session =>
-            {
-                IList<Point> window = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
-
-                if (window.Any())
-                    return window.First().X;
-                else
-                    return double.MaxValue;
-            });
-
-            xMax = sessionParallelQuery.Max(session =>
-            {
-                IList<Point> window = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
-
-                if (window.Any())
-                    return window.Last().X;
-                else
-                    return double.MinValue;
-            });
-
-            yMin = sessionParallelQuery.Min(session =>
-            {
-                IList<Point> window = null;
-
-                //if (ShowGpuActiveLineCharts)
-                //	window = session.GetGpuActiveFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode);
-                //else
-                window = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode);
-
-                if (window.Any())
-                    return window.Min(pnt => pnt.Y);
-                else
-                    return double.MaxValue;
-            });
-
-            yMax = sessionParallelQuery.Max(session =>
-            {
-                IList<Point> window = null;
-
-                //if (ShowGpuActiveLineCharts)
-                //	window = session.GetGpuActiveFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode);
-                //else
-                window = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode);
-
-                if (window.Any())
-                    return window.Max(pnt => pnt.Y);
-                else
-                    return double.MinValue;
-            });
 
             xAxis.Minimum = xMin;
             xAxis.Maximum = xMax;
@@ -1876,69 +1775,15 @@ namespace CapFrameX.ViewModel
 
         private void UpdateAxesMinMaxDistributionChart()
         {
-
-            if (ComparisonRecords == null || !ComparisonRecords.Any())
-                return;
-
             var xAxis = ComparisonDistributionModel.GetAxisOrDefault("xAxis", null);
             var yAxis = ComparisonDistributionModel.GetAxisOrDefault("yAxis", null);
 
-            if (xAxis == null || yAxis == null)
+            double xMin, xMax, yMin, yMax;
+            if (xAxis == null || yAxis == null
+                || !TryGetSeriesBounds(ComparisonDistributionModel, out xMin, out xMax, out yMin, out yMax))
                 return;
 
-            double startTime = FirstSeconds;
-            double endTime = LastSeconds;
-
             xAxis.Reset();
-
-            double xMin = 0;
-            double xMax = 0;
-            double yMin = 0;
-            double yMax = 0;
-
-            var sessionParallelQuery = ComparisonRecords.Select(record => record.WrappedRecordInfo.Session).AsParallel();
-
-            xMin = sessionParallelQuery.Min(session =>
-            {
-                var window = session.GetFrametimeDistributionPoints(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
-                if (window.Any())
-                    return window.First().X;
-                else
-                    return double.MaxValue;
-            });
-
-            xMax = sessionParallelQuery.Max(session =>
-            {
-                var window = session.GetFrametimeDistributionPoints(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
-                if (window.Any())
-                    return window.Last().X;
-                else
-                    return double.MinValue;
-            });
-
-            yMin = sessionParallelQuery.Min(session =>
-            {
-                IList<Point> window = null;
-
-                window = session.GetFrametimeDistributionPoints(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
-
-                if (window.Any())
-                    return window.Min(pnt => pnt.Y);
-                else
-                    return double.MaxValue;
-            });
-
-            yMax = sessionParallelQuery.Max(session =>
-            {
-                IList<Point> window = null;
-
-                window = session.GetFrametimeDistributionPoints(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
-
-                if (window.Any())
-                    return window.Max(pnt => pnt.Y);
-                else
-                    return double.MinValue;
-            });
 
             xAxis.Minimum = xMin - 1;
             xAxis.Maximum = xMax;
@@ -1962,6 +1807,36 @@ namespace CapFrameX.ViewModel
 
 
             ComparisonDistributionModel.InvalidatePlot(true);
+        }
+
+        private static bool TryGetSeriesBounds(PlotModel plotModel, out double xMin, out double xMax,
+            out double yMin, out double yMax)
+        {
+            xMin = double.MaxValue;
+            xMax = double.MinValue;
+            yMin = double.MaxValue;
+            yMax = double.MinValue;
+            bool hasPoints = false;
+
+            foreach (var series in plotModel.Series.OfType<OxyPlot.Series.LineSeries>())
+            {
+                foreach (var point in series.Points)
+                {
+                    if (double.IsNaN(point.X) || double.IsInfinity(point.X)
+                        || double.IsNaN(point.Y) || double.IsInfinity(point.Y))
+                    {
+                        continue;
+                    }
+
+                    hasPoints = true;
+                    xMin = Math.Min(xMin, point.X);
+                    xMax = Math.Max(xMax, point.X);
+                    yMin = Math.Min(yMin, point.Y);
+                    yMax = Math.Max(yMax, point.Y);
+                }
+            }
+
+            return hasPoints;
         }
 
         private void UpdateBarChartHeight()
@@ -2485,7 +2360,7 @@ namespace CapFrameX.ViewModel
                 .Subscribe(msg =>
                 {
                     InitializePlotModels();
-                    UpdateCharts();
+                    UpdateChartsSafely();
                 });
         }
 
