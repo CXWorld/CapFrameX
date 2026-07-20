@@ -108,64 +108,66 @@
 				<Grid DockPanel.Dock="Top" HorizontalAlignment="Center">
 					<Grid HorizontalAlignment="Center">
 						<DockPanel>
-							<Grid DockPanel.Dock="Top" >
+							<Grid DockPanel.Dock="Top">
 								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="260"/>
-									<ColumnDefinition Width="260"/>
+									<ColumnDefinition Width="Auto"/>
+									<ColumnDefinition Width="Auto"/>
 								</Grid.ColumnDefinitions>
-								<Border Grid.Column="0" Margin="0 0 20 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}">
-									<Grid Margin="0 20 0 20">
-										<StackPanel Orientation="Vertical" Width="190">
-											<StackPanel Orientation="Horizontal">
-												<TextBlock VerticalAlignment="Center" FontSize="18" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Running processes</TextBlock>
-												<Button Margin="5 0 0 0" Padding="0" Width="30" Height="30" BorderThickness="0" ToolTip="Reset and rescan processes"
-                                                        Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-                                                        materialDesign:RippleAssist.Feedback="#DD000000"
-													    Command="{Binding ResetPresentMonCommand}" 
-													    IsEnabled="{Binding AreButtonsActive}" 
-                                                        Foreground="White"
-                                                        Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}"
-                                                        BorderBrush="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
-													<materialDesign:PackIcon Kind="Autorenew" Width="20" Height="20"/>
-												</Button>
-											</StackPanel>
-											<Border Margin="0 10 0 0" BorderThickness="0.1" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}"
-                                                Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
-												<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToCapture}" SelectedItem="{Binding SelectedProcessToCapture}"
-													  ScrollViewer.VerticalScrollBarVisibility="Auto" FontSize="14" ScrollViewer.CanContentScroll="True" Height="150" Width="190"
-													  IsEnabled="{Binding AreButtonsActive}">
-                                                    <ListView.ContextMenu>
-                                                        <ContextMenu>
-                                                            <MenuItem Header="Show process details" 
-															Command="{Binding ShowProcessDetailsCommand}" />
-                                                        </ContextMenu>
-                                                    </ListView.ContextMenu>
-                                                </ListView>
-											</Border>
-											<Button Margin="0 10 0 0" HorizontalAlignment="Right" BorderThickness="0" Width="120" Height="45" 
-												Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding AreButtonsActive}" Foreground="White" Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
-												<TextBlock Text="Move to ignore list" TextWrapping="Wrap" TextAlignment="Center"/>
+								<!--Running processes card-->
+								<materialDesign:Card Grid.Column="0" Width="264" Margin="0 0 12 0" Padding="16 12 16 16"
+									Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
+									<StackPanel>
+										<DockPanel LastChildFill="False">
+											<materialDesign:PackIcon Kind="ApplicationOutline" Width="20" Height="20" VerticalAlignment="Center"
+												Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+											<TextBlock Text="Running processes" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
+												Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+											<Button DockPanel.Dock="Right" VerticalAlignment="Center" Width="26" Height="26" Padding="0"
+												Style="{StaticResource MaterialDesignIconButton}" ToolTip="Reset and rescan processes"
+												Command="{Binding ResetPresentMonCommand}" IsEnabled="{Binding AreButtonsActive}"
+												Foreground="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
+												<materialDesign:PackIcon Kind="Autorenew" Width="20" Height="20"/>
 											</Button>
-										</StackPanel>
-									</Grid>
-								</Border>
-								<Border Grid.Column="1" Margin="20 0 0 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}">
-									<Grid Margin="0 25 0 20">
-										<StackPanel  Orientation="Vertical" Width="190">
-											<TextBlock Margin="0 0 0 -3" FontSize="18" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Process ignore list</TextBlock>
-											<Border Margin="0 10 0 0" BorderThickness="0.1" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}"
-                                                Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
-												<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToIgnore}" SelectedItem="{Binding SelectedProcessToIgnore}"
-										              ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="150" Width="190">
-												</ListView>
-											</Border>
-											<Button Margin="0 10 0 0" HorizontalAlignment="Right" BorderThickness="0" Width="120" Height="45"
-												Command="{Binding AddToProcessListCommand}" IsEnabled="{Binding AreButtonsActive}" Foreground="White" Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
-												<TextBlock Text="Remove from ignore list" TextWrapping="Wrap" TextAlignment="Center"/>
-											</Button>
-										</StackPanel>
-									</Grid>
-								</Border>
+										</DockPanel>
+										<Border Margin="0 12 0 0" CornerRadius="4"
+											Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+											<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToCapture}" SelectedItem="{Binding SelectedProcessToCapture}"
+												ScrollViewer.VerticalScrollBarVisibility="Auto" FontSize="14" ScrollViewer.CanContentScroll="True" Height="160"
+												IsEnabled="{Binding AreButtonsActive}">
+												<ListView.ContextMenu>
+													<ContextMenu>
+														<MenuItem Header="Show process details"
+														Command="{Binding ShowProcessDetailsCommand}" />
+													</ContextMenu>
+												</ListView.ContextMenu>
+											</ListView>
+										</Border>
+										<Button Margin="0 12 0 0" HorizontalAlignment="Right" BorderThickness="0" Height="34" Padding="12 0"
+											Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding AreButtonsActive}" Foreground="White"
+											Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}" Content="Move to ignore list"/>
+									</StackPanel>
+								</materialDesign:Card>
+								<!--Process ignore list card-->
+								<materialDesign:Card Grid.Column="1" Width="264" Margin="12 0 0 0" Padding="16 12 16 16"
+									Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
+									<StackPanel>
+										<DockPanel LastChildFill="False" Height="26">
+											<materialDesign:PackIcon Kind="EyeOffOutline" Width="20" Height="20" VerticalAlignment="Center"
+												Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+											<TextBlock Text="Process ignore list" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
+												Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+										</DockPanel>
+										<Border Margin="0 12 0 0" CornerRadius="4"
+											Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+											<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToIgnore}" SelectedItem="{Binding SelectedProcessToIgnore}"
+												ScrollViewer.VerticalScrollBarVisibility="Auto" FontSize="14" ScrollViewer.CanContentScroll="True" Height="160">
+											</ListView>
+										</Border>
+										<Button Margin="0 12 0 0" HorizontalAlignment="Right" BorderThickness="0" Height="34" Padding="12 0"
+											Command="{Binding AddToProcessListCommand}" IsEnabled="{Binding AreButtonsActive}" Foreground="White"
+											Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}" Content="Remove from ignore list"/>
+									</StackPanel>
+								</materialDesign:Card>
 							</Grid>
 							<TextBlock DockPanel.Dock="Bottom" Grid.Column="0" Grid.ColumnSpan="2" TextAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                                    Margin="0 20 0 0" Text="{Binding CaptureStateInfo}" HorizontalAlignment="Center" FontSize="16" Style="{StaticResource MaterialDesignCaptionTextBlock}" />
