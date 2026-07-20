@@ -15,7 +15,7 @@
 			 xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
 			 xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              d:DesignHeight="450" d:DesignWidth="800"
-			 Background="{DynamicResource MaterialDesignPaper}"
+			 Background="{DynamicResource MaterialDesign.Brush.Background}"
              FontFamily="{StaticResource MaterialDesignFont}"
              mc:Ignorable="d"
 			 prism:ViewModelLocator.AutoWireViewModel="True">
@@ -145,7 +145,7 @@
 											<Border x:Name="Border"
 													Padding="8"
 													BorderThickness="0 0 0 1"
-													BorderBrush="{DynamicResource MaterialDesignDivider}">
+													BorderBrush="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}">
 												<Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="Auto"/>

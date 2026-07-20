@@ -11,7 +11,7 @@
 		mc:Ignorable="d"
         Title="CapFrameX"
         Height="800" Width="1400" MinHeight="740" MinWidth="1250" Icon="Icons/CX_Icon.png"
-        Background="{DynamicResource MaterialDesignPaper}"
+        Background="{DynamicResource MaterialDesign.Brush.Background}"
         FontFamily="{materialDesign:MaterialDesignFont}">
     <Window.Resources>
         <ResourceDictionary>

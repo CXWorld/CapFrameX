@@ -33,7 +33,7 @@
 				<TextBlock Text="Close" TextWrapping="Wrap" TextAlignment="Center"/>
 			</Button>
 		</StackPanel>
-		<materialDesign:ColorZone Mode="PrimaryMid" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
+		<materialDesign:ColorZone Mode="PrimaryMid" Foreground="White" Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
 			<Grid>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="7*"/>
@@ -120,7 +120,7 @@
 						        HorizontalAlignment="Right"
 						        ToolTip="Take a screenshot"
 						        materialDesign:RippleAssist.Feedback="#DD000000"
-                                Background="{DynamicResource MaterialDesignToolBackground}"
+                                Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}"
                                 BorderBrush="Transparent"
 						        Width="32" Height="32" Click="ScreenshotPopupBox_Open">
 							<materialDesign:PackIcon Kind="PhotoLibrary" Foreground="White"/>
@@ -129,13 +129,13 @@
 					<UniformGrid Columns="2" Width="180" Height="50">
 						<Button Width="70" Height="40" VerticalContentAlignment="Center"
                                 Style="{StaticResource MaterialDesignRaisedButton}"
-                                Background="{DynamicResource MaterialDesignToolBackground}" Foreground="White"
+                                Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}" Foreground="White"
                                 BorderBrush="Transparent"
                                 HorizontalContentAlignment="Center" Padding="0"
                                 Content="Save" Click="SaveScreenShotButton_Click"/>
 						<Button Width="70" Height="40" VerticalContentAlignment="Center"
                                 Style="{StaticResource MaterialDesignRaisedButton}"
-                                Background="{DynamicResource MaterialDesignToolBackground}" Foreground="White" 
+                                Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}" Foreground="White" 
                                 BorderBrush="Transparent"
                                 HorizontalContentAlignment="Center" Padding="0"
                                 Content="Copy" Click="CopyScreenShotButton_Click"/>
@@ -148,7 +148,7 @@
                             HorizontalAlignment="Right"
 						    materialDesign:RippleAssist.Feedback="#DD000000"
 						    Width="32" Height="32" Click="Login_Click"
-                            Background="{DynamicResource MaterialDesignToolBackground}" BorderBrush="Transparent"
+                            Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}" BorderBrush="Transparent"
 							Visibility="{Binding Path=DataContext.IsLoggedIn, ElementName=ColorbarViewName, Converter={StaticResource FalseToVisibleConverter}}">
 					<materialDesign:PackIcon Kind="Login" Foreground="GreenYellow"/>
 				</Button>
@@ -159,7 +159,7 @@
                             HorizontalAlignment="Right"
 						    materialDesign:RippleAssist.Feedback="#DD000000"
 						    Width="32" Height="32" Click="Logout_Click"
-                            Background="{DynamicResource MaterialDesignToolBackground}" BorderBrush="Transparent"
+                            Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}" BorderBrush="Transparent"
 							Visibility="{Binding Path=DataContext.IsLoggedIn, ElementName=ColorbarViewName, Converter={StaticResource TrueToVisibleConverter}}">
 					<materialDesign:PackIcon Kind="Logout" Foreground="DarkRed"/>
 				</Button>
@@ -521,8 +521,8 @@
 									</Grid>
 								</DataTemplate>
 								<DataTemplate x:Key="HelpContent">
-									<xctk:RichTextBox Margin="10" Width="475" Height="300" IsHitTestVisible="False" IsReadOnly="True"  Foreground="{DynamicResource MaterialDesignBody}"
-                                                      Background="{DynamicResource MaterialDesignPaper}"
+									<xctk:RichTextBox Margin="10" Width="475" Height="300" IsHitTestVisible="False" IsReadOnly="True"  Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+                                                      Background="{DynamicResource MaterialDesign.Brush.Background}"
 													  Text="{Binding Path=DataContext.HelpText, ElementName=ColorbarViewName, Mode=OneWay}"></xctk:RichTextBox>
 								</DataTemplate>
 							</ContentPresenter.Resources>

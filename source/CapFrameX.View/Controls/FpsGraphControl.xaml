@@ -28,11 +28,11 @@
 			<RowDefinition Height="1*"></RowDefinition>
 		</Grid.RowDefinitions>
         <Grid Grid.Row="0">
-            <controls:PlotViewCustomZoom Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="FpsPlotView" Model="{Binding FpsModel}" Tag="{Binding ElementName=FpsGraphControlName, Path=DataContext}"
+            <controls:PlotViewCustomZoom Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" x:Name="FpsPlotView" Model="{Binding FpsModel}" Tag="{Binding ElementName=FpsGraphControlName, Path=DataContext}"
 						  MouseDoubleClick="ResetChart_MouseDoubleClick">
                 <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                     <ControlTemplate>
-                        <oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
+                        <oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
                             <oxy:TrackerControl.Content>
                                 <TextBlock Text="{Binding}" Margin="5" />
                             </oxy:TrackerControl.Content>

@@ -13,7 +13,7 @@
 			 xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
-             Background="{DynamicResource MaterialDesignBackground}"
+             Background="{DynamicResource MaterialDesign.Brush.Card.Background}"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -36,7 +36,7 @@
         <FrameworkElement x:Name="ColumnHeaders" Visibility="Collapsed"/>
         <!--Record folder management expander-->
         <Expander Name="Expander" Margin="0 0 0 0" MaxWidth="365" Grid.RowSpan="2" Grid.Column="0" Panel.ZIndex="1" ExpandDirection="Right" HorizontalAlignment="Left"
-                  Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" wpf:ExpanderAssist.VerticalHeaderPadding="5">
+                  Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" wpf:ExpanderAssist.VerticalHeaderPadding="5">
             <Expander.Header>
                 <TextBlock Text="Observed directory" RenderTransformOrigin=".5,.5" FontSize="14" HorizontalAlignment="Center">
                     <TextBlock.LayoutTransform>
@@ -48,7 +48,7 @@
 							IsOpen="{Binding CreateFolderDialogIsOpen}"
 							DialogContent="{Binding CreateFolderDialogContent}"
 							CloseOnClickAway="False">
-                <Grid Name="ExpanderGrid" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                <Grid Name="ExpanderGrid" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="10" ></RowDefinition>
                         <RowDefinition Height="Auto" ></RowDefinition>
@@ -112,7 +112,7 @@
                 <!--Style="{StaticResource MaterialDesignHeadlineTextBlock}"-->
                 <TextBlock Text="Observed directory missing.&#10;Open expander and select a folder." TextAlignment="Center"
                        TextWrapping="Wrap" Width="220" Margin="60 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center"
-                       Foreground="{DynamicResource MaterialDesignBody}"/>
+                       Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
             </Border>
             <DockPanel Margin="5 0 0 0"  VerticalAlignment="Stretch" >
                 <Grid Grid.Row="0" Visibility="{Binding HasValidSource, Converter={StaticResource FalseToCollapsedConverter}}">
@@ -122,18 +122,18 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Loading records..." FontSize="16" Panel.ZIndex="1" Visibility="{Binding DirectoryLoading, Converter={StaticResource TrueToVisibleConverter}}"
-                        Foreground="{DynamicResource MaterialDesignBody}"/>
+                        Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 					<TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Directory is empty. Refresh directory (context menu) or start a game and then press the capture key to create records." TextWrapping="Wrap" Width="200" TextAlignment="Center" FontSize="16" Panel.ZIndex="1"
                         Visibility="{Binding DirectoryIsEmpty, Converter={StaticResource TrueToVisibleConverter}}"
-                        Foreground="{DynamicResource MaterialDesignBody}"/>
+                        Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 
                     <!--Column options & search bar-->
                     <DockPanel Grid.Row="0" Margin="8 8 8 4" LastChildFill="True">
                         <materialDesign:PackIcon DockPanel.Dock="Right" Kind="Magnify" Width="20" Height="20"
                             Margin="8 0 4 4" VerticalAlignment="Center" Opacity="0.6"
-                            Foreground="{DynamicResource MaterialDesignBody}"/>
+                            Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                         <materialDesign:PopupBox x:Name="ColumnOptionsPopup" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0 0 8 0" StaysOpen="True" ToolTipService.ShowDuration="25000"
-                            Foreground="{DynamicResource MaterialDesignBody}">
+                            Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                         <materialDesign:PopupBox.ToolTip>
                             <ToolTip Placement="Top">
                                 <TextBlock Text="Column options"/>
@@ -179,7 +179,7 @@
                         </materialDesign:Card>
                     </materialDesign:PopupBox>
                         <TextBox Name="RecordSearchBox" VerticalAlignment="Center"
-                            Foreground="{DynamicResource MaterialDesignBody}"
+                            Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                             materialDesign:HintAssist.Hint="{Binding SearchBarText}"
                             materialDesign:HintAssist.HintOpacity=".8"/>
                     </DockPanel>
@@ -207,7 +207,7 @@
                             EnableColumnVirtualization="True"
                             VirtualizingPanel.IsVirtualizing="True"
                             VirtualizingPanel.VirtualizationMode="Recycling"
-                            Background="{DynamicResource MaterialDesignBackground}">
+                            Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
                         <DataGrid.Resources>
                             <Style TargetType="{x:Type DataGridRow}">
                                 <EventSetter Event="MouseDoubleClick" Handler="DataGridRow_MouseDoubleClick"/>
@@ -261,7 +261,7 @@
                                         <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}" />
                                     </Trigger>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="{DynamicResource MaterialDesignDataGridRowHoverBackground}" />
+                                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.DataGrid.RowHoverBackground}" />
                                     </Trigger>
                                     <Trigger Property="IsNewItem" Value="True">
                                         <Setter Property="Margin" Value="{Binding NewItemMargin, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
@@ -298,12 +298,12 @@
                         <DataGrid.ColumnHeaderStyle>
                             <Style TargetType="{x:Type DataGridColumnHeader}">
                                 <Setter Property="BorderThickness" Value="0, 0, 1, 0"/>
-                                <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignDivider}" />
+                                <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}" />
                                 <Setter Property="VerticalContentAlignment" Value="Center"/>
                                 <Setter Property="TextBlock.FontSize" Value="12" />
                                 <Setter Property="TextBlock.FontWeight" Value="Medium" />
                                 <Setter Property="Padding" Value="12, 5, 0, 0"/>
-                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignColumnHeader}" />
+                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Header.Foreground}" />
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
@@ -340,13 +340,13 @@
                                             </Grid>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
                                                 </Trigger>
                                                 <Trigger Property="SortDirection" Value="Ascending">
-                                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
                                                 </Trigger>
                                                 <Trigger Property="SortDirection" Value="Descending">
-                                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
                                                 </Trigger>
                                                 <Trigger SourceName="SortDirectionIndicator" Property="IsNeutral" Value="False">
                                                     <Trigger.EnterActions>
@@ -453,7 +453,7 @@
             </DockPanel>
             <Expander Name="RecordInfoExpander" Grid.Row="1" Grid.Column="1" Margin="8 4 8 8" VerticalAlignment="Bottom" Panel.ZIndex="1" ExpandDirection="Down"
                       IsExpanded="False" wpf:ExpanderAssist.HorizontalHeaderPadding="12 8 12 8" Expanded="RecordInfoExpander_Change" Collapsed="RecordInfoExpander_Change"
-                      Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                      Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
                 <Expander.Header>
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon Kind="CardTextOutline" Width="18" Height="18" VerticalAlignment="Center" Margin="0 0 8 0"/>
@@ -466,7 +466,7 @@
                         <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource MaterialDesignFloatingHintTextBox}">
                             <Setter Property="FontSize" Value="14"/>
                             <Setter Property="Margin" Value="0 4 0 4"/>
-                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                             <Setter Property="wpf:HintAssist.HintOpacity" Value=".8"/>
                         </Style>
                     </Grid.Resources>
