@@ -104,7 +104,9 @@
 				<ColumnDefinition Width="5*"></ColumnDefinition>
 				<ColumnDefinition Width="4*"></ColumnDefinition>
 			</Grid.ColumnDefinitions>
-			<DockPanel Grid.Column="0" Margin="10 40 0 0">
+			<!-- Top margin aligns the process cards with the first card of the
+			     run-history tab on the right (tab strip height + card margin). -->
+			<DockPanel Grid.Column="0" Margin="10 58 0 0">
 				<Grid DockPanel.Dock="Top" HorizontalAlignment="Center">
 					<Grid HorizontalAlignment="Center">
 						<DockPanel>
