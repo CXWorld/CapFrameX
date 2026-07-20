@@ -299,7 +299,8 @@ namespace CapFrameX
 
                     Log.Logger.Information("Uploading Logs. Report-ID is {reportId}", reportId);
                     MessageBox.Show($"Your Report-ID is {reportId}.\nPlease include this Id in your support inquiry. Visit https://www.capframex.com/support for further information.");
-                    Process.Start(string.Format(ConfigurationManager.AppSettings.Get("ContactFormUriTemplate"),
+                    // UseShellExecute is required to open a URL in the default browser on .NET Core+
+                    Process.Start(new ProcessStartInfo(string.Format(ConfigurationManager.AppSettings.Get("ContactFormUriTemplate"),
                         HttpUtility.UrlEncode($"Crashlog-Report: {reportId}"),
                         HttpUtility.UrlEncode($@"Dear CapframeX Team,
                         I encountered a fatal Crash.
@@ -308,7 +309,8 @@ namespace CapFrameX
                         <<< Please describe briefly what you did when the error occurred >>>
 
                         Feel free to contact me by mail."),
-                        string.Empty));
+                        string.Empty))
+                    { UseShellExecute = true });
                 }
             }
 

@@ -36,12 +36,13 @@ namespace CapFrameX.View
 
         private void GitHubButton_Click(object sender, RoutedEventArgs e)
         {
-            _ = Process.Start("https://github.com/DevTechProfile/CapFrameX#capframex");
+            // UseShellExecute is required to open a URL in the default browser on .NET Core+
+            _ = Process.Start(new ProcessStartInfo("https://github.com/DevTechProfile/CapFrameX#capframex") { UseShellExecute = true });
         }
 
         private void Donate_Button_Click(object sender, RoutedEventArgs e)
         {
-            _ = Process.Start("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=A4VJPT9NB7G28&source=url");
+            _ = Process.Start(new ProcessStartInfo("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=A4VJPT9NB7G28&source=url") { UseShellExecute = true });
         }
 
         /// <summary>

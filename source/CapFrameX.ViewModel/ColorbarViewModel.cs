@@ -659,7 +659,8 @@ namespace CapFrameX.ViewModel
             try
             {
                 var path = _pathService.ResolveDocumentsPlaceholder(_appConfiguration.ScreenshotDirectory);
-                Process.Start(path);
+                // UseShellExecute is required to open a folder in Explorer on .NET Core+
+                Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
             }
             catch { _logger.LogError("Error while opening screenshot folder."); }
         }

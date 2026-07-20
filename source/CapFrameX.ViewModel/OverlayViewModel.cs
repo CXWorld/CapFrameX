@@ -930,7 +930,8 @@ namespace CapFrameX.ViewModel
         {
             try
             {
-                Process.Start(_pathService.ConfigFolder);
+                // UseShellExecute is required to open a folder in Explorer on .NET Core+
+                Process.Start(new ProcessStartInfo(_pathService.ConfigFolder) { UseShellExecute = true });
             }
             catch { }
         }

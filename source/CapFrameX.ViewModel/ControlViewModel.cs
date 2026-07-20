@@ -437,7 +437,8 @@ namespace CapFrameX.ViewModel
             try
             {
                 var path = _pathService.ResolveDocumentsPlaceholder(_appConfiguration.ObservedDirectory);
-                Process.Start(path);
+                // UseShellExecute is required to open a folder in Explorer on .NET Core+
+                Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
             }
             catch (Exception ex) { _logger.LogError(ex, "Error while opening observed folder."); }
         }

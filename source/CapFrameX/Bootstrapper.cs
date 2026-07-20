@@ -317,7 +317,8 @@ namespace CapFrameX
                             .Subscribe(async _ =>
                             {
                                 var loginManager = Container.Resolve<LoginManager>();
-                                await loginManager.HandleRedirect(url => Task.FromResult(Process.Start(url)));
+                                // UseShellExecute is required to open a URL in the default browser on .NET Core+
+                                await loginManager.HandleRedirect(url => Task.FromResult(Process.Start(new ProcessStartInfo(url) { UseShellExecute = true })));
                             });
                     }
 
