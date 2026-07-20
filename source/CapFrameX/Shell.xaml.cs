@@ -160,14 +160,19 @@ namespace CapFrameX
 
         private void GridSplitter_PreviewMouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+            // Drag-resizing keeps the column's MinWidth floor (so the control area
+            // can't be squeezed below its default width), but the double-click
+            // hide/show toggle deliberately bypasses that floor to fully collapse it.
             if (LeftColumn.ActualWidth > 8)
             {
                 ColumnAWidthSaved = LeftColumn.Width;
+                LeftColumn.MinWidth = 8;
                 LeftColumn.Width = new GridLength(8, GridUnitType.Pixel);
             }
             else
             {
                 LeftColumn.Width = ColumnAWidthSaved;
+                LeftColumn.MinWidth = 400;
             }
         }
 

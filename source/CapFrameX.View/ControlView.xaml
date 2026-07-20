@@ -372,7 +372,7 @@
                             </DataGridTextColumn>
                             <DataGridTextColumn Binding="{Binding CreationTimestamp, Mode=OneWay}"
                                         Width="Auto"
-                                        MinWidth="95"
+                                        MinWidth="100"
                                         Header="Date / Time"
                                         IsReadOnly="True"
                                         Visibility="{Binding DataContext.ShowCreationDate, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
