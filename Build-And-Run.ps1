@@ -145,10 +145,11 @@ function Test-IsAdministrator
 function Stop-RunningOutputProcesses
 {
     $outputDirectory = Split-Path $appPath
-    $ownedExecutablePaths = @(
-        [IO.Path]::GetFullPath($appPath),
-        [IO.Path]::GetFullPath((Join-Path $outputDirectory "PresentMon\PresentMon-2.4.1-x64.exe"))
-    )
+    $ownedAppPath = [IO.Path]::GetFullPath($appPath)
+    # The PresentMon executable name carries its version, so match by directory
+    # instead of pinning a version that changes between releases.
+    $ownedPresentMonDirectory = [IO.Path]::GetFullPath((Join-Path $outputDirectory "PresentMon")) +
+        [IO.Path]::DirectorySeparatorChar
 
     if (Test-Path -LiteralPath $processStatePath)
     {
@@ -169,7 +170,7 @@ function Stop-RunningOutputProcesses
                 {
                     $trackedChildProcessIds = @(Get-CimInstance Win32_Process `
                         -Filter "ParentProcessId = $trackedProcessId" -ErrorAction SilentlyContinue |
-                        Where-Object { $_.Name -eq "PresentMon-2.4.1-x64.exe" } |
+                        Where-Object { $_.Name -like "PresentMon*.exe" } |
                         Select-Object -ExpandProperty ProcessId)
                     $trackedProcessIds = @($trackedProcessId) + $trackedChildProcessIds
                     try
@@ -220,10 +221,17 @@ function Stop-RunningOutputProcesses
         }
     }
 
-    $processes = Get-CimInstance Win32_Process -Filter "Name = 'CapFrameX.exe' OR Name = 'PresentMon-2.4.1-x64.exe'" -ErrorAction SilentlyContinue
+    $processes = Get-CimInstance Win32_Process -Filter "Name = 'CapFrameX.exe' OR Name LIKE 'PresentMon%.exe'" -ErrorAction SilentlyContinue
     foreach ($process in $processes)
     {
-        if ($process.ExecutablePath -and $ownedExecutablePaths -contains [IO.Path]::GetFullPath($process.ExecutablePath))
+        if (-not $process.ExecutablePath)
+        {
+            continue
+        }
+
+        $processPath = [IO.Path]::GetFullPath($process.ExecutablePath)
+        if ($processPath -eq $ownedAppPath -or
+            $processPath.StartsWith($ownedPresentMonDirectory, [StringComparison]::OrdinalIgnoreCase))
         {
             Stop-Process -Id $process.ProcessId -Force -ErrorAction Stop
         }
