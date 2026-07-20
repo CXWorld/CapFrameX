@@ -252,7 +252,8 @@
                     <Grid Grid.Column="0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="1*"/>
-                            <RowDefinition Height="20"/>
+                            <!--Auto: the MD3 switch toggle is taller than the old 20px row and got clipped-->
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                             <lvc:CartesianChart Grid.Row="0" Margin="15 10 10 5" Series="{Binding StatisticCollection}" LegendLocation="None"
 									Tag="{Binding DataContext, ElementName=DataViewUserControl}" DataTooltip="{x:Null}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
@@ -278,10 +279,10 @@
                             </lvc:CartesianChart.AxisY>
                         </lvc:CartesianChart>
                         <StackPanel Grid.Row="1" Orientation="Horizontal" Panel.ZIndex="1" VerticalAlignment="Bottom" HorizontalAlignment="Center">
-                            <TextBlock Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="FPS" />
+                            <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="FPS" />
                             <ToggleButton x:Name="FrametimeStatisticToggleButton" VerticalAlignment="Center" Margin="5 0 5 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 									  IsChecked="{Binding UseFrametimeStatisticParameters}"/>
-                            <TextBlock Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="ms"/>
+                            <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="ms"/>
                         </StackPanel>
                     </Grid>
                     <!--FPS thresholds and stuttering analysis-->
@@ -972,21 +973,21 @@
                 </StackPanel>
                 <StackPanel Grid.Column="3" HorizontalAlignment="Right" Orientation="Horizontal">
                     <StackPanel Margin="10 0 0 0" VerticalAlignment="Center"  Orientation="Horizontal">
-                        <TextBlock Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="Show aggregation:"/></TextBlock>
+                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="Show aggregation:"/></TextBlock>
                         <ToggleButton VerticalAlignment="Center" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsChecked="{Binding ShowAggregationSeparators}"
 								  ToolTip="Show separator lines for the different runs within the session"/>
                     </StackPanel>
                     <StackPanel Margin="10 0 0 0" VerticalAlignment="Center"  Orientation="Horizontal">
-                        <TextBlock Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="Custom title:"/></TextBlock>
+                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="Custom title:"/></TextBlock>
                         <ToggleButton x:Name="ShowCustomTitleToggleButton" VerticalAlignment="Center" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 								  ToolTip="Show custom title edit box"/>
                     </StackPanel>
                     <StackPanel  Margin="10 0 0 0" VerticalAlignment="Center" Orientation="Horizontal">
-                        <TextBlock Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="Remove outliers:"/></TextBlock>
+                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="Remove outliers:"/></TextBlock>
                         <ToggleButton Margin="10 0 0 0" VerticalAlignment="Center" IsChecked="{Binding RemoveOutliers}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                     </StackPanel>
                     <StackPanel Margin="10 0 5 0" VerticalAlignment="Center" Orientation="Horizontal">
-                        <TextBlock Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="Range slider:"/></TextBlock>
+                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="Range slider:"/></TextBlock>
                         <ToggleButton x:Name="RangeSliderActiveToggleButton" VerticalAlignment="Center" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 									  IsChecked="{Binding IsRangeSliderActive}"/>
                     </StackPanel>
