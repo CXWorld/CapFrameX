@@ -84,7 +84,8 @@
 				<TextBlock Text="{Binding Path=UpdateHpyerlinkText}" TextAlignment="Center"/>
 			</Hyperlink>
 		</TextBlock>
-		<Border Style="{StaticResource SectionCard}" Grid.Row="0" Grid.Column="0" >
+		<!--Margin keeps the top edge level with the first card of the right column (spacer-less grid + 5px card margin)-->
+		<Border Style="{StaticResource SectionCard}" Margin="0 5 0 5" Grid.Row="0" Grid.Column="0" >
 			<materialDesign:DialogHost IsOpen="{Binding ResetOverlayConfigContentIsOpen}"
 								        DialogContent="{Binding ResetOverlayConfigContent}"
 								        CloseOnClickAway="True">
@@ -377,7 +378,7 @@
 							</DataGrid.Columns>
 						</DataGrid>
 						<StackPanel Grid.Row="3" Orientation="Vertical">
-							<Border Margin="10 5 10 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}" BorderThickness="0" CornerRadius="6">
+							<Border Margin="10 10 10 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}" BorderThickness="0" CornerRadius="6">
 								<StackPanel Margin="10 5 0 5" Orientation="Horizontal">
 									<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Group Control:</TextBlock>
 									<materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
@@ -556,7 +557,7 @@
 		<Border Grid.Row="0" Grid.Column="2" Margin="0 0 0 0" Background="Transparent" BorderThickness="0">
 			<Grid HorizontalAlignment="Center">
 				<Grid.RowDefinitions>
-					<RowDefinition Height="5"></RowDefinition>
+					<RowDefinition Height="0"></RowDefinition>
 					<RowDefinition Height="120"></RowDefinition>
 					<RowDefinition Height="200"></RowDefinition>
 					<RowDefinition Height="320"></RowDefinition>
@@ -576,8 +577,9 @@
 						</Grid.RowDefinitions>
 						<StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
 							<TextBlock VerticalAlignment="Center" Text="Overlay Template" FontSize="16" Margin="5 0 15 0"/>
-							<ComboBox Margin="5 0 0 0" Padding="0 10 0 0"
+							<ComboBox Margin="5 0 0 0" Padding="8 0 8 0"
 								Width="140" Height="35"
+								VerticalContentAlignment="Center"
 								FontSize="14"
 								Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
 								ItemsSource="{Binding OverlayTemplateItems}"
