@@ -215,14 +215,14 @@
                             materialDesign:RippleAssist.Feedback="#DD000000">
 						<materialDesign:PackIcon Kind="ContentSaveSettings" Height="15" Width="15" />
 					</Button>
-					<StackPanel Grid.Row="1" Grid.Column="1" Margin="30 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left" ToolTipService.ShowDuration="25000" IsEnabled="{Binding AreButtonsActive}">
+					<!--<StackPanel Grid.Row="1" Grid.Column="1" Margin="30 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left" ToolTipService.ShowDuration="25000" IsEnabled="{Binding AreButtonsActive}">
 						<TextBlock Text="Global time" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 						<ToggleButton HorizontalAlignment="Right" Margin="5 0 -30 0" IsChecked="{Binding UseGlobalCaptureTime}"></ToggleButton>
 						<StackPanel.ToolTip >
 							<TextBlock Width="280" Text="Uses the same capture time for all processes.&#xA;Unchecked, when detecting a process this box will be filled with the last saved capture time of that process."
 								TextWrapping="Wrap"></TextBlock>
 						</StackPanel.ToolTip>
-					</StackPanel>
+					</StackPanel>-->
 
 					<TextBox Grid.Row="0" Grid.Column="2" Width="110" wpf:HintAssist.Hint="Capture delay [s]" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="30 0 0 0" FontSize="14" Text="{Binding CaptureDelayString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"

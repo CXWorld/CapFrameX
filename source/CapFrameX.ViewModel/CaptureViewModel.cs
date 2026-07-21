@@ -230,21 +230,21 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool UseGlobalCaptureTime
-        {
-            get { return _appConfiguration.UseGlobalCaptureTime; }
-            set
-            {
-                _appConfiguration.UseGlobalCaptureTime = value;
+        public bool UseGlobalCaptureTime => true;
+        //{
+        //    get { return _appConfiguration.UseGlobalCaptureTime; }
+        //    set
+        //    {
+        //        _appConfiguration.UseGlobalCaptureTime = value;
 
-                if (value)
-                    CaptureTimeString = Convert.ToString(_appConfiguration.CaptureTime, CultureInfo.InvariantCulture);
-                else
-                    UdateCustomCaptureTime(_currentProcessToCapture);
+        //        if (value)
+        //            CaptureTimeString = Convert.ToString(_appConfiguration.CaptureTime, CultureInfo.InvariantCulture);
+        //        else
+        //            UdateCustomCaptureTime(_currentProcessToCapture);
 
-                RaisePropertyChanged();
-            }
-        }
+        //        RaisePropertyChanged();
+        //    }
+        //}
 
         // Run history and aggregation options
         public string ResetHistoryHotkeyString
