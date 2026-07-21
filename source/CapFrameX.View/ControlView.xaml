@@ -162,17 +162,17 @@
                                     <ColumnDefinition Width="100"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Date / Time" VerticalAlignment="Center"/>
-                                <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding ShowCreationDate}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding ShowCreationDate}"/>
                                 <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Comment" VerticalAlignment="Center"/>
-                                <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowComment}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowComment}"/>
                                 <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="Aggregated" VerticalAlignment="Center"/>
-                                <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding ShowIsAggregated}" Style="{StaticResource MaterialDesignSwitchToggleButton}" />
+                                <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding ShowIsAggregated}" />
                                 <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="CPU" VerticalAlignment="Center"/>
-                                <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowCpuName}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowCpuName}"/>
                                 <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="GPU" VerticalAlignment="Center"/>
-                                <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding ShowGpuName}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding ShowGpuName}"/>
                                 <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="RAM" VerticalAlignment="Center"/>
-                                <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding ShowRamName}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding ShowRamName}"/>
                             </Grid>
                         </materialDesign:Card>
                     </materialDesign:PopupBox>

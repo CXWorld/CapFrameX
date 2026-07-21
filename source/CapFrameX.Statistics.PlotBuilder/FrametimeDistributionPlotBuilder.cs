@@ -103,8 +103,23 @@ namespace CapFrameX.Statistics.PlotBuilder
             {
                 axis.Minimum = frametimeDistributionPoints.First().X - 1;
                 axis.Maximum = frametimeDistributionPoints.Last().X + 1;
+                axis.MajorStep = GetXAxisMajorStep(axis.Maximum - axis.Minimum);
             }, false);
             plotModel.Series.Add(distributionSeries);
+        }
+
+        private static double GetXAxisMajorStep(double range)
+        {
+            if (range <= 50)
+                return 2;
+            else if (range <= 100)
+                return 5;
+            else if (range <= 200)
+                return 10;
+            else if (range <= 500)
+                return 25;
+            else
+                return 50;
         }
 
         private void UpdateYAxisMaxBorder(double yMax)

@@ -441,7 +441,7 @@
 
 			<StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10 10 5 0" Orientation="Horizontal">
 				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Custom Title:</TextBlock>
-				<ToggleButton x:Name="ShowCustomTitleToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+				<ToggleButton x:Name="ShowCustomTitleToggleButton" Margin="10 0 0 0"
 				    ToolTip="Show custom title edit box" IsChecked="{Binding ShowCustomTitle}"/>
 			</StackPanel>
 
@@ -585,13 +585,13 @@
 			<StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10 10 5 0" Orientation="Horizontal"
                         Visibility="{Binding IsLineChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
 				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Legend:</TextBlock>
-				<ToggleButton Name="ContextLegendActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+				<ToggleButton Name="ContextLegendActiveToggleButton" Margin="10 0 0 0"
 					  ToolTip="Show selected labels as chart legend" IsChecked="{Binding IsContextLegendActive}"/>
 			</StackPanel>
 
 			<StackPanel Grid.Column="4" Margin="10 10 5 0" VerticalAlignment="Center" Orientation="Horizontal">
 				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Range Slider:</TextBlock>
-				<ToggleButton Name="RangeSliderActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+				<ToggleButton Name="RangeSliderActiveToggleButton" Margin="10 0 0 0"
 							  IsChecked="{Binding IsRangeSliderActive}"/>
 				<StackPanel.Style>
 					<Style TargetType="StackPanel">
@@ -610,7 +610,7 @@
 
 			<StackPanel Grid.Column="5" Margin="10 10 5 0" VerticalAlignment="Center" Orientation="Horizontal">
 				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Grouping:</TextBlock>
-				<ToggleButton Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+				<ToggleButton Margin="10 0 0 0"
 					ToolTip="Sort entries by game first" IsChecked="{Binding UseComparisonGrouping}"/>
 				<StackPanel.Style>
 					<Style TargetType="StackPanel">
@@ -628,7 +628,7 @@
 			</StackPanel>
 
 			<StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="10 10 5 0" Orientation="Horizontal">
-				<ComboBox Width="Auto" Height="40" Margin="0 0 0 10" materialDesign:HintAssist.Hint="Sort method" materialDesign:HintAssist.HintOpacity=".8" materialDesign:HintAssist.IsFloating="True"
+				<ComboBox Width="Auto" Height="40" materialDesign:HintAssist.Hint="Sort method" materialDesign:HintAssist.HintOpacity=".8" materialDesign:HintAssist.IsFloating="True"
 					ItemsSource="{Binding SortMetricItemsSource}" SelectedItem="{Binding SelectedSortMetric}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
 					Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
 				</ComboBox>
@@ -674,21 +674,21 @@
                             <StackPanel HorizontalAlignment="Right" Margin="10 10 10 0" Orientation="Horizontal"
 							Visibility="{Binding IsLineChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
                                 <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">GPU-Busy times:</TextBlock>
-                                <ToggleButton Name="GPUActiveMetricsToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                <ToggleButton Name="GPUActiveMetricsToggleButton" Margin="10 0 0 0"
 								  ToolTip="Show GPU-Busy times instead of regular frametimes" IsChecked="{Binding ShowGpuActiveLineCharts}"/>
                             </StackPanel>
 
                             <StackPanel Margin="10 10 10 0" VerticalAlignment="Center" Orientation="Horizontal"
 							Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
                                 <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Relative Mode:</TextBlock>
-                                <ToggleButton Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                <ToggleButton Margin="10 0 0 0"
 							  ToolTip="Toggle fixed relative mode. Target value selectable by mouse click." IsChecked="{Binding UseComparisonRelativeMode}"/>
                             </StackPanel>
 
                             <StackPanel HorizontalAlignment="Right" Margin="10 10 10 0" Orientation="Horizontal"
 							Visibility="{Binding IsVarianceChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
                                 <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Auto scale:</TextBlock>
-                                <ToggleButton  Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                <ToggleButton  Margin="10 0 0 0"
 							    ToolTip="Auto scale variance bars based on the first variance group" IsChecked="{Binding VarianceAutoScaling}"/>
 
                             </StackPanel>

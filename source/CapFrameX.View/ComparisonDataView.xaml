@@ -263,12 +263,12 @@
 				</Grid.ColumnDefinitions>
 				<StackPanel VerticalAlignment="Top" Grid.Column="0" Margin="25 10 0 10" Orientation="Horizontal">
 					<TextBlock VerticalAlignment="Center">Cutting mode:</TextBlock>
-					<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+					<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0"
 								  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"/>
 				</StackPanel>
 				<StackPanel VerticalAlignment="Top" Grid.Column="1" Margin="25 10 0 10" Orientation="Horizontal">
 					<TextBlock VerticalAlignment="Center">Show context legend:</TextBlock>
-					<ToggleButton Name="ContextLegendActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+					<ToggleButton Name="ContextLegendActiveToggleButton" Margin="10 0 0 0"
 								  ToolTip="Show context legend" IsChecked="{Binding IsContextLegendActive}"/>
 				</StackPanel>
 			</Grid>

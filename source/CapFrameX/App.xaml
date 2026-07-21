@@ -10,6 +10,10 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign3.Defaults.xaml" />
                 <ResourceDictionary Source="Themes/CxScrollBar.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <!-- Global default for ToggleButtons: switch look with uniform 32px height -->
+            <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource MaterialDesignSwitchToggleButton}">
+                <Setter Property="Height" Value="32" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

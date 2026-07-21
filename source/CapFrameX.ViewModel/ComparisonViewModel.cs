@@ -1405,6 +1405,8 @@ namespace CapFrameX.ViewModel
 
         private void UpdateComparisonMetricSourceLabels()
         {
+            UpdateRowSeriesTitles();
+
             string timingSource = _useDisplayChangeSamplesForComparison
                 ? "Display time" : "Present frametime";
             string fpsSource = _useDisplayChangeSamplesForComparison
@@ -1431,6 +1433,25 @@ namespace CapFrameX.ViewModel
                 ComparisonLShapeYAxisLabel = SelectedChartView == "FPS"
                     ? fpsSource + Environment.NewLine + " "
                     : timingSource + " (ms)" + Environment.NewLine + " ";
+            }
+        }
+
+        private void UpdateRowSeriesTitles()
+        {
+            if (ComparisonRowChartSeriesCollection == null)
+                return;
+
+            for (int i = 0; i < ComparisonRowChartSeriesCollection.Count; i++)
+            {
+                string title = GetDescriptionAndFpsUnit(GetMetricByIndex(i));
+
+                if (ComparisonRowChartSeriesCollection[i] is RowSeries rowSeries)
+                    rowSeries.Title = title;
+
+                if (ComparisonRowChartSeriesCollectionLegend != null
+                    && i < ComparisonRowChartSeriesCollectionLegend.Count
+                    && ComparisonRowChartSeriesCollectionLegend[i] is RowSeries legendSeries)
+                    legendSeries.Title = title;
             }
         }
 

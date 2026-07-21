@@ -267,7 +267,7 @@
 									<TextBlock Text="Run history" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
 										Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 									<ToggleButton DockPanel.Dock="Right" VerticalAlignment="Center" IsChecked="{Binding UseRunHistory}"
-										Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTipService.ShowDuration="25000">
+										ToolTipService.ShowDuration="25000">
 										<ToggleButton.ToolTip>
 											<ToolTip MaxWidth="250">
 												<TextBlock Text="Saves a set number of runs into a history which can also be displayed on the overlay"
@@ -357,7 +357,7 @@
 									<TextBlock Text="Aggregation of run history" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
 										Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 									<ToggleButton DockPanel.Dock="Right" VerticalAlignment="Center" IsChecked="{Binding UseAggregation}"
-										Style="{StaticResource MaterialDesignSwitchToggleButton}" IsEnabled="{Binding AggregationButtonEnabled}"
+										IsEnabled="{Binding AggregationButtonEnabled}"
 										ToolTipService.ShowDuration="25000">
 										<ToggleButton.ToolTip>
 											<ToolTip MaxWidth="350">

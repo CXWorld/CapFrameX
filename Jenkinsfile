@@ -4,9 +4,12 @@ pipeline {
     }
 
     stages {
-        stage('Nuget restore') {
+        stage('Restore') {
             steps {
+                // Legacy packages.config projects (e.g. CapFrameX.CustomInstallerActions used by the installer)
                 bat "nuget restore CapFrameX.sln"
+                // SDK-style net9.0-windows project graph
+                bat "msbuild source\\CapFrameX\\CapFrameX.csproj /t:Restore /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=17.0"
             }
         }
 
@@ -25,16 +28,26 @@ pipeline {
 								bat "msbuild source\\CapFrameX.Hwinfo\\CapFrameX.Hwinfo.vcxproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
 							}
 						}
-						
+
 						stage('Build IGCL') {
 							steps {
 								bat "msbuild source\\CapFrameX.IGCL\\CapFrameX.IGCL.vcxproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
 							}
 						}
-			    
+
 			    		stage('Build ADLX') {
 							steps {
 								bat "msbuild source\\CapFrameX.ADLX\\CapFrameX.ADLX.vcxproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
+							}
+						}
+
+						// The vcxproj post-build events copy the native DLLs to bin\x64\Release,
+						// but the app output and the installer harvest live in net9.0-windows.
+						stage('Stage native DLLs') {
+							steps {
+								bat "copy /y source\\CapFrameX\\bin\\x64\\Release\\CapFrameX.Hwinfo.dll source\\CapFrameX\\bin\\x64\\Release\\net9.0-windows\\"
+								bat "copy /y source\\CapFrameX\\bin\\x64\\Release\\CapFrameX.IGCL.dll source\\CapFrameX\\bin\\x64\\Release\\net9.0-windows\\"
+								bat "copy /y source\\CapFrameX\\bin\\x64\\Release\\CapFrameX.ADLX.dll source\\CapFrameX\\bin\\x64\\Release\\net9.0-windows\\"
 							}
 						}
 
@@ -53,7 +66,7 @@ pipeline {
                 }
             }
         }
-		
+
 		stage('Publish') {
 			environment {
                 filename = getFilename()
@@ -63,14 +76,14 @@ pipeline {
             stages {
                 stage('Prepare Portable') {
                     steps {
-                        bat "copy portable.json.sample source\\CapFrameX\\bin\\x64\\Release\\portable.json"
+                        bat "copy portable.json.sample source\\CapFrameX\\bin\\x64\\Release\\net9.0-windows\\portable.json"
                     }
                 }
 
                 stage('Create Archive') {
                     steps {
                         zip archive: false, dir: 'source/CapFrameXBootstrapper/bin/x64/Release', glob: 'CapFrameXBootstrapper.exe', zipFile: "${filename}_installer.zip"
-						zip archive: false, dir: 'source/CapFrameX/bin/x64/Release', glob: '**/*', zipFile: "${filename}_portable.zip"
+						zip archive: false, dir: 'source/CapFrameX/bin/x64/Release/net9.0-windows', glob: '**/*', zipFile: "${filename}_portable.zip"
                     }
                 }
 
