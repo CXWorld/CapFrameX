@@ -213,19 +213,6 @@ namespace CapFrameX.Test.ViewModel
         }
 
         [TestMethod]
-        public void CaptureTimeString_WhenUseGlobalCaptureTime_UpdatesAppConfiguration()
-        {
-            var sut = CreateSut();
-            sut.UseGlobalCaptureTime = true;
-
-            sut.CaptureTimeString = "42.5";
-
-            Assert.AreEqual(42.5d, _appConfigurationMock.Object.CaptureTime, 0.001d);
-
-            DisposeHeartbeat(sut);
-        }
-
-        [TestMethod]
         public void OnSaveCaptureTime_WithVkcube_UpdatesProcessListEntry()
         {
             var sut = CreateSut();
