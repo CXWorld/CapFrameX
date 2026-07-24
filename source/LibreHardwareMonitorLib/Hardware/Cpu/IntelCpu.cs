@@ -620,7 +620,15 @@ internal sealed class IntelCpu : GenericCpu
             // ARL-S relocated the VR Mailbox to MSR 0x607/0x608. OOBMSM PMT
             // doesn't expose D2D/NGU on ARL-S, so when the PMT path failed
             // above, try the MSR-mailbox path. (See IntelOcMailbox.cs.)
-            _ocMailbox = new IntelOcMailbox(_msrModule);
+            // Only the validated ARL-S CPUID model 0xC6 may resolve the
+            // 0x3F NGU sentinel to its stock 26x ratio. Other mailbox
+            // platforms suppress an unresolved sentinel instead of
+            // presenting an assumed clock.
+            uint? nguSentinelFallbackRatio =
+                _microArchitecture == MicroArchitecture.ArrowLake && _model == 0xC6
+                    ? 26U
+                    : null;
+            _ocMailbox = new IntelOcMailbox(_msrModule, nguSentinelFallbackRatio);
             if (_ocMailbox.IsReady)
             {
                 int sensorBaseIndex = _hasAperfMperf

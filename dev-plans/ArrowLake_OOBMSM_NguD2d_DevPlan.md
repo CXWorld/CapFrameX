@@ -243,9 +243,20 @@ read RdMSR 0x608                              // result word
 | Command   | Result mask    | Scale     | Meaning                       |
 |---        |---             |---        |---                            |
 | `0x1237`  | `& 0x7FFF`     | × 100 MHz | D2D ratio (boot-fixed)        |
-| `0x0022`  | `(>>8) & 0xFF` | × 100 MHz | NGU ratio (runtime variable)  |
+| `0x0022`  | `(>>8) & 0xFF` | × 100 MHz | NGU ratio candidate           |
+| Legacy OC mailbox `0x10`, domain `7` on MSR `0x150` | `& 0xFF` | × 100 MHz | NGU validation/limit |
 
 For BIOS-set 2800 MHz both commands return ratio `0x1C`; for 3200 MHz both return `0x20`.
+
+On a Core Ultra 9 285K with ASRock Z890 firmware tested on 2026-07-23,
+the NGU response to `0x0022` was `0x3F30`. The high byte alone would
+incorrectly report 6300 MHz; the low byte is not an NGU ratio. HWiNFO
+validates this candidate with the legacy OC mailbox request encoded as
+`0x8000071000000000`. A successful lower ratio caps the candidate.
+When the validation path is unavailable, candidate `0x3F` is treated as
+a sentinel. Only validated ARL-S model `0xC6` supplies the stock 26x
+fallback (2600 MHz); other platforms suppress the NGU clock when the
+sentinel cannot be resolved.
 
 ### 11.3 Integration
 
