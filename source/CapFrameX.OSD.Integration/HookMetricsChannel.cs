@@ -35,6 +35,9 @@ namespace CapFrameX.OSD.Integration
         // bit1: bits 8..15 carry the user's OSD background opacity (0..255). The hook falls back
         // to the theme defaults when the bit is absent (old publisher).
         internal const uint FlagBackgroundAlpha = 2u;
+        // bit2 disables the renderer's historic numeric-value smoothing. Absence means enabled,
+        // preserving the behavior of old publishers and configurations.
+        internal const uint FlagDisableValueSmoothing = 4u;
         internal const int BackgroundAlphaShift = 8;
         // header
         // v1 stored the redundant payload byte count at offset 16. v2 reuses that slot for the

@@ -189,6 +189,13 @@ namespace CapFrameX.Contracts.Configuration
 		/// </summary>
 		int OsdBackgroundOpacity { get; set; }
 
+		/// <summary>
+		/// Smooth numeric values between OSD data updates. When disabled, the CapFrameX
+		/// renderers display each newly published value immediately without generated
+		/// intermediate values. Enabled by default for backward compatibility.
+		/// </summary>
+		bool UseOsdValueSmoothing { get; set; }
+
 		bool ShowSystemTimeSeconds { get; set; }
 
 		int InputLagOffset { get; set; }

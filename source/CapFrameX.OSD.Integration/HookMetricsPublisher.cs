@@ -145,6 +145,8 @@ namespace CapFrameX.OSD.Integration
                         _overlayService.RunHistoryAggregation);
                     uint flags = _appConfiguration.HookOverlayUsePresentMonFrametimes
                         ? HookMetricsChannel.FlagPresentMonGraph : 0u;
+                    if (!_appConfiguration.UseOsdValueSmoothing)
+                        flags |= HookMetricsChannel.FlagDisableValueSmoothing;
                     // OSD background opacity (percent -> byte in bits 8..15). Published with every
                     // snapshot so slider changes reach the hook within one publish period.
                     uint alphaByte = (uint)Math.Round(

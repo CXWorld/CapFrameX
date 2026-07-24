@@ -724,6 +724,12 @@ namespace CapFrameX.Configuration
             set => Set(Math.Max(0, Math.Min(100, value)));
         }
 
+        public bool UseOsdValueSmoothing
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
         public bool ShowSystemTimeSeconds
         {
             get => Get<bool>(false);

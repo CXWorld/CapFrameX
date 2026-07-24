@@ -443,6 +443,18 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        // Controls the renderer-side smoothing of numeric values for BOTH CapFrameX renderers.
+        // Off displays the latest published value directly; RTSS is unaffected.
+        public bool UseOsdValueSmoothing
+        {
+            get { return _appConfiguration.UseOsdValueSmoothing; }
+            set
+            {
+                _appConfiguration.UseOsdValueSmoothing = value;
+                RaisePropertyChanged();
+            }
+        }
+
         // Overlay renderer is a single choice of three mutually exclusive modes, surfaced as a
         // radio group. They map onto the two underlying config flags so the existing gating in
         // OverlayService / HookOverlayManager / OsdOverlayBridge keeps working unchanged:

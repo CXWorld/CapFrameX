@@ -1104,6 +1104,18 @@
 										<TextBlock Grid.Column="1" Margin="8 0 0 0" VerticalAlignment="Center" TextAlignment="Right"
 												   Text="{Binding OsdBackgroundOpacity, StringFormat={}{0} %}"/>
 									</Grid>
+
+									<Separator Margin="0 12 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
+									<DockPanel Margin="0 8 0 0">
+										<CheckBox DockPanel.Dock="Right" Margin="12 0 5 0" VerticalAlignment="Center"
+												  IsChecked="{Binding UseOsdValueSmoothing, Mode=TwoWay}"
+												  Style="{StaticResource MaterialDesignCheckBox}"/>
+										<StackPanel>
+											<TextBlock FontWeight="SemiBold" Text="Smooth numeric values"/>
+											<TextBlock Style="{StaticResource OsdOptionsDescription}"
+													   Text="Animate intermediate values between data updates. Turn off to display every published value immediately; RTSS is unaffected."/>
+										</StackPanel>
+									</DockPanel>
 								</StackPanel>
 							</Border>
 						</StackPanel>
