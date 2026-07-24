@@ -133,4 +133,15 @@
     </Content>
   </ItemGroup>
 
+  <!-- CapFrameX.Hwinfo is built by the solution dependency and its post-build
+       step stages the native DLL in the configuration directory above the
+       target-framework-specific app output. Keep the P/Invoke dependency next
+       to CapFrameX.exe so TSC-based CPU clocks are available at runtime. -->
+  <Target Name="StageCapFrameXHwinfo" AfterTargets="Build"
+          Condition="'$(Platform)' == 'x64' And Exists('$(OutputPath)..\CapFrameX.Hwinfo.dll')">
+    <Copy SourceFiles="$(OutputPath)..\CapFrameX.Hwinfo.dll"
+          DestinationFolder="$(TargetDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
+
 </Project>
