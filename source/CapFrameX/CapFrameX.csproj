@@ -133,13 +133,26 @@
     </Content>
   </ItemGroup>
 
-  <!-- CapFrameX.Hwinfo is built by the solution dependency and its post-build
-       step stages the native DLL in the configuration directory above the
-       target-framework-specific app output. Keep the P/Invoke dependency next
-       to CapFrameX.exe so TSC-based CPU clocks are available at runtime. -->
-  <Target Name="StageCapFrameXHwinfo" AfterTargets="Build"
-          Condition="'$(Platform)' == 'x64' And Exists('$(OutputPath)..\CapFrameX.Hwinfo.dll')">
-    <Copy SourceFiles="$(OutputPath)..\CapFrameX.Hwinfo.dll"
+  <!-- The native C++ projects are built by solution dependencies and their post-build steps
+       stage the DLLs in the configuration directory ABOVE the target-framework-specific app
+       output — the layout that existed before the net9.0-windows migration. Copy them next to
+       CapFrameX.exe, otherwise every P/Invoke into them throws DllNotFoundException.
+       That failure is silent: the sensor groups catch it and fall back, so the only symptom is
+       missing hardware. Without CapFrameX.IGCL.dll an Intel Arc drops to LibreHardwareMonitor's
+       integrated-GPU path (two D3D memory counters, no temperature/power/clock/load and an
+       unknown driver version); without CapFrameX.ADLX.dll the same happens to AMD cards. -->
+  <ItemGroup>
+    <CfxNativeRuntimeDll Include="CapFrameX.Hwinfo.dll" />
+    <CfxNativeRuntimeDll Include="CapFrameX.IGCL.dll" />
+    <CfxNativeRuntimeDll Include="CapFrameX.ADLX.dll" />
+  </ItemGroup>
+
+  <Target Name="StageCapFrameXNativeRuntime" AfterTargets="Build" Condition="'$(Platform)' == 'x64'">
+    <ItemGroup>
+      <CfxNativeRuntimeSource Include="$(OutputPath)..\%(CfxNativeRuntimeDll.Identity)"
+                              Condition="Exists('$(OutputPath)..\%(CfxNativeRuntimeDll.Identity)')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(CfxNativeRuntimeSource)"
           DestinationFolder="$(TargetDir)"
           SkipUnchangedFiles="true" />
   </Target>
