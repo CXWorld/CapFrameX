@@ -38,6 +38,23 @@ Tests use MSTest framework:
 vstest.console source\CapFrameX.Test\bin\x64\Release\net9.0-windows\CapFrameX.Test.dll /Platform:x64
 ```
 
+This skips the `Integration` category, which drives the **real** PresentMon capture service and
+`CaptureManager` against `vkcube.exe` (staged from `source\CapFrameX.Overlay\3d-test-app\` into the
+app output). Those tests report themselves as *skipped* — not failed — whenever their prerequisites
+are missing, so a green run is no evidence that they executed. Run them explicitly, **from an
+elevated shell**:
+```bash
+vstest.console source\CapFrameX.Test\bin\x64\Release\net9.0-windows\CapFrameX.Test.dll /Platform:x64 /TestCaseFilter:TestCategory=Integration
+```
+Prerequisites, each of which turns into a skip instead of a failure:
+- administrator privileges (ETW),
+- the main application built, so `PresentMon\` and `3d-test-app\` exist in its output directory,
+- a Vulkan-capable GPU — the tests abort if vkcube exits immediately.
+
+The run takes about a minute, opens vkcube windows and starts PresentMon. Frame-time assertions
+tolerate occasional stalls: vkcube shares the desktop, and a window losing the foreground or being
+occluded stalls its presents.
+
 ## Architecture
 
 ### Solution Structure
