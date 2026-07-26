@@ -85,6 +85,7 @@
     <ProjectReference Include="..\CapFrameX.EventAggregation\CapFrameX.EventAggregation.csproj" />
     <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj" />
     <ProjectReference Include="..\CapFrameX.Hardware.Controller\CapFrameX.Hardware.Controller.csproj" />
+    <ProjectReference Include="..\CapFrameX.Hotkey\CapFrameX.Hotkey.csproj" />
     <ProjectReference Include="..\CapFrameX.Monitoring.Contracts\CapFrameX.Monitoring.Contracts.csproj" />
     <ProjectReference Include="..\CapFrameX.MVVM\CapFrameX.MVVM.csproj" />
     <ProjectReference Include="..\CapFrameX.Overlay\CapFrameX.Overlay.csproj" />

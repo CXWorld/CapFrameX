@@ -13,6 +13,7 @@ using CapFrameX.Data.Logging;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.Hardware.Controller;
+using CapFrameX.Hotkey;
 using CapFrameX.Mcp.Tools;
 using CapFrameX.Monitoring.Contracts;
 using CapFrameX.Overlay;
@@ -319,6 +320,13 @@ namespace CapFrameX
                     }
 
                     Container.Register<SoundManager>(Reuse.Singleton);
+
+                    // The global hotkey hook is static and lives outside the container. Handing it
+                    // a logger here — before any view model registers a hotkey — is what makes hook
+                    // installation, re-arming and triggered hotkeys visible in the app log; a hook
+                    // that Windows removes leaves no other trace.
+                    HotkeyDictionaryBuilder.Logger = Container.Resolve<ILoggerFactory>()
+                        .CreateLogger("CapFrameX.Hotkey");
 
                     using (StartupPerformanceLogger.Measure("Application event subscriptions"))
                     {

@@ -16,8 +16,7 @@ namespace CapFrameX.Hotkey
     /// (Return/Enter) among them: .NET Framework reported "OemBackslash", .NET 9 reports
     /// "Oem102". Since the WPF side kept its naming, a config written before the
     /// net9.0-windows migration holds a name the hook no longer produces, the string comparison
-    /// in <see cref="KeyCombinationExtensions.OnCXCombination"/> never matches, and the hotkey
-    /// silently stops firing.
+    /// in <see cref="GlobalHotkeyHook"/> never matches, and the hotkey silently stops firing.
     ///
     /// Parsing accepts every alias, so routing a name through the parsed value yields the single
     /// name the running framework uses. That keeps existing configurations working, needs no

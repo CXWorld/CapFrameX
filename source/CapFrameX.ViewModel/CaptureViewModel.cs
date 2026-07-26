@@ -62,7 +62,6 @@ namespace CapFrameX.ViewModel
         private string _captureStartDelayString = "0";
         private PlotModel _frametimeModel;
         private string _lastCapturedProcess;
-        private bool _hotkeyLocked = false;
         private string _currentGameNameToCapture = string.Empty;
         private string _currentProcessToCapture = string.Empty;
         private bool _isLoggerOutputEmpty = true;
@@ -625,19 +624,18 @@ namespace CapFrameX.ViewModel
             if (!CXHotkey.IsValidHotkey(CaptureHotkeyString))
                 return;
 
+            // No local re-trigger lock: key repeat is filtered centrally for every hotkey now
+            // (KeyRepeatFilter). The 500 ms lock this replaces also swallowed deliberate double
+            // presses; a start immediately followed by a stop is legitimate and is already
+            // guarded by LockCaptureService and the capture state checks in SetCaptureMode.
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.Capture,
                 () =>
                 {
-                    if (!_hotkeyLocked)
+                    _logger.LogInformation("Hotkey ({captureHotkeyString}) callback triggered. Lock capture service state is {lockCaptureServiceState}.", CaptureHotkeyString, _captureManager.LockCaptureService);
+                    _logger.LogInformation("IsCapturing state: {isCapturingState}", _captureManager.IsCapturing);
+                    if (!_captureManager.LockCaptureService)
                     {
-                        _hotkeyLocked = true;
-                        Task.Run(async () => await Task.Delay(500)).ContinueWith(t => _hotkeyLocked = false);
-                        _logger.LogInformation("Hotkey ({captureHotkeyString}) callback triggered. Lock capture service state is {lockCaptureServiceState}.", CaptureHotkeyString, _captureManager.LockCaptureService);
-                        _logger.LogInformation("IsCapturing state: {isCapturingState}", _captureManager.IsCapturing);
-                        if (!_captureManager.LockCaptureService)
-                        {
-                            SetCaptureMode();
-                        }
+                        SetCaptureMode();
                     }
                 });
         }
@@ -840,7 +838,6 @@ namespace CapFrameX.ViewModel
         private void UpdateProcessToCaptureList()
         {
             var selectedProcessToCapture = SelectedProcessToCapture;
-            var backupProcessList = new List<string>(ProcessesToCapture);
 
             ProcessesToCapture.Clear();
             ProcessesInfo.Clear();
@@ -862,11 +859,10 @@ namespace CapFrameX.ViewModel
                 }
             }
 
-            // fire update global hook if new process is detected
-            if (backupProcessList.Count != ProcessesToCapture.Count)
-            {
-                SetGlobalHookEventCaptureHotkey();
-            }
+            // The capture hotkey is deliberately NOT re-registered here. Its action is a closure
+            // over this view model and always reads the current process list, so a detected
+            // process never invalidated the registration — while re-registering once per process
+            // change used to tear down and re-install the global hook, which drops keystrokes.
 
             if (!processList.Contains(selectedProcessToCapture))
                 SelectedProcessToCapture = null;
