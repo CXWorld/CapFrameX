@@ -23,6 +23,9 @@ namespace CapFrameX.Hotkey
             {
                 registeredEvent.Dispose();
             }
+            // Every call replaces the whole set of hooks. Without clearing, the list keeps every
+            // hook ever created and each call disposes the already disposed ones again.
+            registeredEvents.Clear();
 
             var actionList = new List<(string key, string combination, Dictionary<string, Action> actionDictionary)>();
 
@@ -50,7 +53,11 @@ namespace CapFrameX.Hotkey
         {
             var hotkeySplit = hotkey.Split('+');
             var hotkeyChords = hotkeySplit.Take(hotkeySplit.Length - 1);
-            var hotkeyTriggerKey = hotkeySplit.Last();
+            // The stored name comes from the WPF Key enum, the hook reports a WinForms Keys name.
+            // For keys that carry alias names the two only agree after canonicalization, and this
+            // is the single place the trigger key enters — it feeds both the comparison key and
+            // the combination strings built below. See HotkeyKeyName.
+            var hotkeyTriggerKey = HotkeyKeyName.Canonicalize(hotkeySplit.Last());
             var hotkeyActions = dict.TryGetValue(hotkeyaction, out var action) ? BuildList(hotkeyTriggerKey, hotkeyChords, action) : new Dictionary<string, Action>();
             actionList.Add((hotkeyTriggerKey, hotkey, hotkeyActions));
         }

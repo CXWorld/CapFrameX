@@ -24,6 +24,13 @@ namespace CapFrameX.Hotkey
 		/// <param name="reset">
 		/// This optional action will be executed when some key was pressed but it was not part of any wanted combinations.
 		/// </param>
+		/// <remarks>
+		/// <paramref name="key" /> and the keys of <paramref name="map" /> must name the trigger
+		/// key the way the running framework's <see cref="Keys" /> enum does, because both are
+		/// compared against <c>e.KeyCode.ToString()</c>. <see cref="HotkeyDictionaryBuilder" />
+		/// establishes that by running the configured name through
+		/// <see cref="HotkeyKeyName.Canonicalize" />.
+		/// </remarks>
 		public static void OnCXCombination(this IKeyboardEvents source, string key, Dictionary<string, Action> map, Action reset = null)
 		{
 			source.KeyDown += (sender, e) =>
