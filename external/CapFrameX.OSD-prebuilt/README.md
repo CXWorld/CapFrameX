@@ -13,12 +13,18 @@ the OSD is built from source instead and these files are ignored.
 - `native/cfx_osd_core.dll` — native renderer (x64, RelWithDebInfo)
 - `native/cfx_osd_hook.dll` — x64 DXGI hook
 - `native/x86/` — x86 DXGI hook and injection helper
-- `native/vk/cfx_osd_vklayer.dll` — x64 Vulkan implicit layer
-- `native/vk/cfx_osd_vklayer_v1.json` — versioned Vulkan loader manifest
+- `native/vk/` — x64 Vulkan implicit layer + versioned loader manifest
+- `native/vk/x86/` — the same pair for 32-bit Vulkan games
 
-The WiX installer registers the Vulkan manifest under
-`HKLM\SOFTWARE\Khronos\Vulkan\ImplicitLayers`. Portable builds stage the files but do not
-change the registry.
+Both manifests are byte-identical; only their folder decides which DLL the loader picks up,
+because `library_path` inside them is relative. Keep each DLL next to its manifest.
+
+The WiX installer registers each manifest in its **own** registry view under
+`HKLM\SOFTWARE\Khronos\Vulkan\ImplicitLayers` — the x64 one in the 64-bit view, the x86 one in
+WOW6432Node. That split is load-bearing, not cosmetic: the Vulkan loader identifies a layer by
+the name inside the manifest, so a manifest reachable by processes that cannot load its DLL
+shadows the correct registration and disables the layer for that bitness. Portable builds stage
+the files but do not change the registry.
 
 ## Updating (requires access to the private repo)
 
@@ -26,8 +32,10 @@ change the registry.
 cd CapFrameX.OSD                      # the OSD repo
 cmake --preset vs2022 && cmake --build build --config RelWithDebInfo   # in CapFrameX.OSD/CapFrameX.OSD
 dotnet build CapFrameX.OSD.sln -c Release
+cd CapFrameX.OSD/vk_layer             # the 32-bit Vulkan layer is a separate build tree
+cmake -B build-x86 -A Win32 && cmake --build build-x86 --config RelWithDebInfo
 ```
 
-Then copy the managed bridge, core, x64/x86 hooks, injection helper, and Vulkan layer/manifest
-from their `RelWithDebInfo` outputs into the matching folders above, and bump the submodule to
-the matching commit.
+Then copy the managed bridge, core, x64/x86 hooks, injection helper, and both Vulkan
+layers/manifests from their `RelWithDebInfo` outputs into the matching folders above, and bump
+the submodule to the matching commit.

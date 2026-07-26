@@ -10,7 +10,7 @@ CapFrameX is a Windows desktop application for frametime capture and analysis, b
 
 ### Prerequisites
 - Visual Studio 2022
-- WiX Toolset v3.14.1 with VS 2022 Extension
+- WiX Toolset v3.14.1 ([wix314.exe](https://github.com/wixtoolset/wix3/releases/tag/wix3141rtm)) — **v3 only**, v4+ uses an incompatible SDK-style project format. It sets the `WIX` environment variable that the installer's `heat.exe` pre-build step needs, and installs the targets under `Program Files (x86)\MSBuild\Microsoft\WiX\v3.x\`. The separate VS 2022 extension only adds IDE integration and is not required for the msbuild command line.
 - C++ MFC build tools
 
 ### Build the Main Application
@@ -104,6 +104,14 @@ The hook-free OSD lives in the **private** repo [CXWorld/CapFrameX.OSD](https://
 - The native renderer `cfx_osd_core.dll` is staged from the submodule's CMake output if built (`external/CapFrameX.OSD/CapFrameX.OSD/build/bin/RelWithDebInfo`), else from the prebuilt folder.
 - `source/CapFrameX.OSD.Integration` (adapter mapping `IOverlayEntry` onto the OSD, references `CapFrameX.Contracts`) intentionally stays in this repo; everything CapFrameX-independent (native core, Interop, WPF editor controls) lives in the OSD repo.
 - After OSD changes: update the DLLs in `external/CapFrameX.OSD-prebuilt/` (see its README) and bump the submodule commit.
+
+### Vulkan titles: implicit layer instead of injection
+
+Vulkan games present through the driver's ICD, so the DXGI Present hook never fires. They are served by an implicit loader layer (`VK_LAYER_CAPFRAMEX_overlay`) staged one folder per bitness — `vulkan\cfx_osd_vklayer.dll` and `vulkan\x86\cfx_osd_vklayer.dll`, mirroring the hook's `hook\` / `hook\x86\` split. Both manifests are byte-identical; `library_path` inside them is relative, so only the folder decides which DLL the loader picks up. The x86 layer comes from its own CMake tree in the OSD repo (`vk_layer`, `cmake -B build-x86 -A Win32`).
+
+Registration is bitness-scoped and this is load-bearing: the loader identifies a layer by the NAME in its manifest, so a manifest reachable by processes that cannot load its DLL **shadows** the correct registration and disables the layer for that bitness. `CapFrameXInstaller` therefore ships one component per bitness — `Win64="yes"` for the 64-bit view, `Win64="no"` for `WOW6432Node`. The 32-bit one is anchored to `TARGETDIR`, not `INSTALLFOLDER`, because ICE80 rejects a 32-bit component in a directory below `ProgramFiles64Folder`.
+
+**Never register the layer in HKCU** (the OSD repo's `register_layer.cmd` uses HKLM only and purges HKCU leftovers). HKCU is user-controlled, so the loader ignores it for targets started elevated — e.g. a game launched from a Visual Studio that debugs the admin-only `CapFrameX.exe` — and it is not split by bitness, so it also triggers the shadowing above. Both failure modes are silent and look exactly like "this game has no Vulkan": `VulkanActivityProbe` finds no renderer-state mapping, `VulkanLayerModuleProbe` finds no layer module, and `HookOverlayManager` correctly concludes DXGI and injects the hook into a Vulkan title — where the in-game arbiter denies its renderer lease and the status parks on `Initializing` until the hook-free fallback takes over.
 
 ## Configuration Files
 - User settings: `%appdata%/CapFrameX/Configuration/AppSettings.json`

@@ -13,7 +13,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>Debug;CapFrameXInstaller.BinaryDir=$(RepoRoot)\source\CapFrameX\bin\$(Configuration)</DefineConstants>
+    <DefineConstants>Debug;CapFrameXInstaller.BinaryDir=$(RepoRoot)\source\CapFrameX\bin\x64\$(Configuration)\net9.0-windows</DefineConstants>
     <SuppressValidation>False</SuppressValidation>
     <SuppressIces>ICE57</SuppressIces>
   </PropertyGroup>
@@ -24,7 +24,7 @@
     <SuppressIces>ICE57</SuppressIces>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-    <DefineConstants>Debug;CapFrameXInstaller.BinaryDir=$(RepoRoot)\source\CapFrameX\bin\$(Configuration)</DefineConstants>
+    <DefineConstants>Debug;CapFrameXInstaller.BinaryDir=$(RepoRoot)\source\CapFrameX\bin\x64\$(Configuration)\net9.0-windows</DefineConstants>
     <SuppressValidation>False</SuppressValidation>
     <SuppressIces>ICE57</SuppressIces>
     <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>

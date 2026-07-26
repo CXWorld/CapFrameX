@@ -94,24 +94,49 @@
     </Content>
   </ItemGroup>
 
-  <!-- x64 Vulkan implicit layer. The installer registers the versioned manifest from this
-       staged folder under HKLM\SOFTWARE\Khronos\Vulkan\ImplicitLayers. Keep the DLL beside
-       the manifest because library_path is relative. -->
+  <!-- Vulkan implicit layer, one folder per bitness: 'vulkan' (x64) and 'vulkan\x86', the same
+       split the hook already uses. The installer registers each manifest in the matching
+       registry view — a wrong-bitness entry does not merely fail to load, it shadows the
+       correct one, because the loader identifies layers by NAME. Keep every DLL beside its
+       manifest: library_path is relative, which is why both manifests can be identical files. -->
   <PropertyGroup>
     <CfxOsdVulkanDllPath Condition="'$(CfxOsdVulkanDllPath)' == '' And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD\vk_layer\build\bin\RelWithDebInfo\cfx_osd_vklayer.dll')">$(CfxOsdSubmoduleDir)CapFrameX.OSD\vk_layer\build\bin\RelWithDebInfo\cfx_osd_vklayer.dll</CfxOsdVulkanDllPath>
     <CfxOsdVulkanDllPath Condition="'$(CfxOsdVulkanDllPath)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\vk\cfx_osd_vklayer.dll')">$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\vk\cfx_osd_vklayer.dll</CfxOsdVulkanDllPath>
     <CfxOsdVulkanManifestPath Condition="'$(CfxOsdVulkanManifestPath)' == '' And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD\vk_layer\cfx_osd_vklayer.json')">$(CfxOsdSubmoduleDir)CapFrameX.OSD\vk_layer\cfx_osd_vklayer.json</CfxOsdVulkanManifestPath>
     <CfxOsdVulkanManifestPath Condition="'$(CfxOsdVulkanManifestPath)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\vk\cfx_osd_vklayer_v1.json')">$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\vk\cfx_osd_vklayer_v1.json</CfxOsdVulkanManifestPath>
+    <CfxOsdVulkanDllPathX86 Condition="'$(CfxOsdVulkanDllPathX86)' == '' And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD\vk_layer\build-x86\bin\RelWithDebInfo\cfx_osd_vklayer.dll')">$(CfxOsdSubmoduleDir)CapFrameX.OSD\vk_layer\build-x86\bin\RelWithDebInfo\cfx_osd_vklayer.dll</CfxOsdVulkanDllPathX86>
+    <CfxOsdVulkanDllPathX86 Condition="'$(CfxOsdVulkanDllPathX86)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\vk\x86\cfx_osd_vklayer.dll')">$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\vk\x86\cfx_osd_vklayer.dll</CfxOsdVulkanDllPathX86>
+    <!-- Byte-identical to the x64 manifest, but a separate source file: MSBuild deduplicates
+         Content items by Include, so one file cannot be staged to two link targets. -->
+    <CfxOsdVulkanManifestPathX86 Condition="'$(CfxOsdVulkanManifestPathX86)' == '' And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD\vk_layer\build-x86\bin\RelWithDebInfo\cfx_osd_vklayer.json')">$(CfxOsdSubmoduleDir)CapFrameX.OSD\vk_layer\build-x86\bin\RelWithDebInfo\cfx_osd_vklayer.json</CfxOsdVulkanManifestPathX86>
+    <CfxOsdVulkanManifestPathX86 Condition="'$(CfxOsdVulkanManifestPathX86)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\vk\x86\cfx_osd_vklayer_v1.json')">$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\vk\x86\cfx_osd_vklayer_v1.json</CfxOsdVulkanManifestPathX86>
   </PropertyGroup>
+  <!-- PreserveNewest, not Always: unlike the hook — which games load as a content-hashed copy
+       under LocalAppData, never from here — the registered layer is loaded straight out of this
+       folder by EVERY Vulkan process on the machine. 'Always' rewrites it on every build and
+       fails as soon as any Vulkan app is running; 'PreserveNewest' skips the copy while the
+       staged file is current, so only a genuinely rebuilt layer needs those apps closed. -->
   <ItemGroup Condition="'$(CfxOsdVulkanDllPath)' != ''">
     <Content Include="$(CfxOsdVulkanDllPath)">
       <Link>vulkan\cfx_osd_vklayer.dll</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup Condition="'$(CfxOsdVulkanManifestPath)' != ''">
     <Content Include="$(CfxOsdVulkanManifestPath)">
       <Link>vulkan\cfx_osd_vklayer_v1.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition="'$(CfxOsdVulkanDllPathX86)' != ''">
+    <Content Include="$(CfxOsdVulkanDllPathX86)">
+      <Link>vulkan\x86\cfx_osd_vklayer.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition="'$(CfxOsdVulkanManifestPathX86)' != ''">
+    <Content Include="$(CfxOsdVulkanManifestPathX86)">
+      <Link>vulkan\x86\cfx_osd_vklayer_v1.json</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
