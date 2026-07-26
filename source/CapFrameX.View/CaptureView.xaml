@@ -48,6 +48,31 @@
 				<Setter Property="Height" Value="25" />
 			</Style>
 
+			<!-- Log text the user can select and copy. WPF has no selectable TextBlock, so a
+			     read-only TextBox takes over. The stripped-down template is what keeps it looking
+			     like the TextBlock it replaces: MaterialDesign3.Defaults is merged application
+			     wide and styles every TextBox implicitly, which would otherwise add an underline,
+			     padding and a floating hint. Both scrollbars stay Disabled so the inner
+			     ScrollViewer never swallows the mouse wheel — the log list scrolls instead. -->
+			<Style TargetType="{x:Type TextBox}" x:Key="SelectableLogTextStyle">
+				<Setter Property="IsReadOnly" Value="True"/>
+				<Setter Property="IsTabStop" Value="False"/>
+				<Setter Property="Background" Value="Transparent"/>
+				<Setter Property="BorderThickness" Value="0"/>
+				<Setter Property="Padding" Value="0"/>
+				<Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+				<Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
+				<Setter Property="VerticalScrollBarVisibility" Value="Disabled"/>
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="{x:Type TextBox}">
+							<ScrollViewer x:Name="PART_ContentHost" Focusable="False"
+								HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"/>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
+			</Style>
+
 			<DataTemplate DataType="{x:Type log:LogEntry}">
 				<Grid>
 					<Grid.RowDefinitions>
@@ -55,10 +80,10 @@
 						<RowDefinition Height="Auto"></RowDefinition>
 					</Grid.RowDefinitions>
 
-					<TextBlock Text="{Binding MessageInfo}" Grid.Row="0" Grid.Column="0" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+					<TextBox Text="{Binding MessageInfo, Mode=OneWay}" Grid.Row="0" Grid.Column="0" Style="{StaticResource SelectableLogTextStyle}"
                        FontWeight="Bold" FontSize="11"  Margin="5,3,5,0"/>
 
-					<TextBlock Text="{Binding Message}" Grid.Row="1" Grid.ColumnSpan="3" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+					<TextBox Text="{Binding Message, Mode=OneWay}" Grid.Row="1" Grid.ColumnSpan="3" Style="{StaticResource SelectableLogTextStyle}"
                        TextWrapping="Wrap" FontSize="13"  Margin="5,0,5,5"/>
 				</Grid>
 			</DataTemplate>
