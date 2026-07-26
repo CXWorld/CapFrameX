@@ -15,6 +15,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Overlay
@@ -156,10 +157,18 @@ namespace CapFrameX.Overlay
                            {
                                if (!_appConfiguration.EnableHookFreeOverlay && !_appConfiguration.EnableHookOverlay)
                                {
-                                   _rTSSService.CheckRTSSRunning().Wait();
-                                   _rTSSService.OnOSDOn();
-                                   _rTSSService.ClearOSD();
+                                   // Deferred instead of awaited inline: this selector runs on the
+                                   // thread that pushed the value — the WPF dispatcher for the
+                                   // overlay hotkey and for the checkbox — while the RTSS check
+                                   // enumerates processes and may start RTSS. FromAsync preserves
+                                   // the ordering (entries only flow once RTSS is up) without
+                                   // blocking the caller, which .Wait() did.
+                                   return Observable
+                                       .FromAsync(cancellationToken => InitializeRTSSAsync(cancellationToken))
+                                       .SelectMany(_ => _onDictionaryUpdated.
+                                           SelectMany(__ => _overlayEntryProvider.GetOverlayEntries()));
                                }
+
                                return _onDictionaryUpdated.
                                    SelectMany(_ => _overlayEntryProvider.GetOverlayEntries());
                            }
@@ -214,6 +223,33 @@ namespace CapFrameX.Overlay
             PublishRunHistoryAggregation(string.Empty);
             PublishRunHistoryOutlierFlags();
             _rTSSService.SetIsCaptureTimerActive(false);
+        }
+
+        /// <summary>
+        /// Brings RTSS up for an overlay that has just been activated.
+        ///
+        /// Failures are logged rather than propagated: an OnError here would travel through
+        /// Switch() to the subscriber and tear the overlay feed down for the rest of the session.
+        /// </summary>
+        private async Task InitializeRTSSAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _rTSSService.CheckRTSSRunning();
+
+                // The overlay can be switched off again while RTSS is starting. Switch() cancels
+                // this token when it drops the subscription, and turning the OSD on afterwards
+                // would leave it on against the user's last input.
+                if (cancellationToken.IsCancellationRequested)
+                    return;
+
+                _rTSSService.OnOSDOn();
+                _rTSSService.ClearOSD();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "RTSS initialization for the activated overlay failed.");
+            }
         }
 
         public void StartCountdown(double seconds)
