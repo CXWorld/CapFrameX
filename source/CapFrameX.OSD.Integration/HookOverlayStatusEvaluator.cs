@@ -70,8 +70,33 @@ namespace CapFrameX.OSD.Integration
             long heartbeatAge, NativeHookStatusSnapshot native, int processId, string runtime)
         {
             return new HookOverlayStatus(state, processId, runtime, detail, heartbeatAge,
-                native.SteadyRefcount, native.ReleaseThreshold);
+                native.SteadyRefcount, native.ReleaseThreshold,
+                FormatResolution(native.ResolutionX, native.ResolutionY),
+                FormatApi(native.Api));
         }
+
+        /// <summary>
+        /// The hook's proven device type, spelled the way RTSS spells it so both can feed the
+        /// capture file's ApiInfo. Null while unknown — a caller must be able to tell "not
+        /// determined yet" from an answer.
+        /// </summary>
+        internal static string FormatApi(NativeHookApi api)
+        {
+            switch (api)
+            {
+                case NativeHookApi.D3D11: return "DX11";
+                case NativeHookApi.D3D12: return "DX12";
+                default: return null;
+            }
+        }
+
+        /// <summary>
+        /// The hook's swapchain extent as "WxH", matching the format RTSS reports so both can
+        /// feed the capture file's ResolutionInfo. Null while the extent is unknown — a caller
+        /// must be able to tell "not measured yet" from a value.
+        /// </summary>
+        internal static string FormatResolution(int width, int height)
+            => width > 0 && height > 0 ? $"{width}x{height}" : null;
 
         internal static HookOverlayStatus EvaluateVulkan(int processId, string runtime,
             VulkanActivitySnapshot native, ulong nowTickMs, bool overlayVisible)
@@ -83,36 +108,48 @@ namespace CapFrameX.OSD.Integration
                     $"{target}: waiting for the CapFrameX Vulkan layer.");
             }
 
+            // Past this point the layer is loaded into the process, which settles the API the
+            // same way the DXGI renderer's proven device type does.
             long heartbeatAge = HookStatusProbe.GetHeartbeatAgeMilliseconds(
                 native.LastVulkanPresentTickMs, nowTickMs);
+            string resolution = FormatResolution(native.ResolutionX, native.ResolutionY);
             if (native.PreferredBackend == 1)
             {
-                return new HookOverlayStatus(EHookOverlayStatus.Error, processId, runtime,
+                return VulkanStatus(EHookOverlayStatus.Error, processId, runtime,
                     $"{target}: the Vulkan compositor failed and yielded to DXGI.",
-                    heartbeatAge);
+                    heartbeatAge, resolution);
             }
             if (heartbeatAge < 0)
             {
-                return new HookOverlayStatus(EHookOverlayStatus.Initializing, processId, runtime,
+                return VulkanStatus(EHookOverlayStatus.Initializing, processId, runtime,
                     $"{target}: Vulkan layer loaded; waiting for the first vkQueuePresentKHR.",
-                    heartbeatAge);
+                    heartbeatAge, resolution);
             }
             if ((ulong)heartbeatAge > HookStatusProbe.HeartbeatStaleAfterMs)
             {
-                return new HookOverlayStatus(EHookOverlayStatus.Idle, processId, runtime,
+                return VulkanStatus(EHookOverlayStatus.Idle, processId, runtime,
                     $"{target}: no Vulkan Present for {heartbeatAge / 1000.0:F1} s; the game may be paused or minimized.",
-                    heartbeatAge);
+                    heartbeatAge, resolution);
             }
             if (!overlayVisible)
             {
-                return new HookOverlayStatus(EHookOverlayStatus.Hidden, processId, runtime,
+                return VulkanStatus(EHookOverlayStatus.Hidden, processId, runtime,
                     $"{target}: Vulkan layer and Present heartbeat are live; the overlay is hidden.",
-                    heartbeatAge);
+                    heartbeatAge, resolution);
             }
 
-            return new HookOverlayStatus(EHookOverlayStatus.Active, processId, runtime,
+            return VulkanStatus(EHookOverlayStatus.Active, processId, runtime,
                 $"{target}: Vulkan layer active, Present heartbeat {heartbeatAge / 1000.0:F1} s.",
-                heartbeatAge);
+                heartbeatAge, resolution);
+        }
+
+        // Vulkan carries no swapchain refcounts — those belong to the DXGI release policy.
+        private static HookOverlayStatus VulkanStatus(EHookOverlayStatus state, int processId,
+            string runtime, string detail, long heartbeatAge, string renderResolution)
+        {
+            return new HookOverlayStatus(state, processId, runtime, detail, heartbeatAge,
+                steadyRefcount: 0, releaseThreshold: 0, renderResolution: renderResolution,
+                renderApi: "Vulkan");
         }
 
         private static string Target(int processId, string runtime)

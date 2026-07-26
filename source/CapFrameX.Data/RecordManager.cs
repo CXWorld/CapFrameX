@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Capture.Contracts;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Classes;
@@ -66,6 +67,7 @@ namespace CapFrameX.Data
         private readonly IRTSSService _rTSSService;
         private readonly IEventAggregator _eventAggregator;
         private readonly ICaptureService _captureService;
+        private readonly IHookOverlayStatusService _hookOverlayStatusService;
         private readonly object _sessionCacheSync = new object();
         private readonly Dictionary<string, SessionCacheEntry> _sessionCache =
             new Dictionary<string, SessionCacheEntry>(StringComparer.OrdinalIgnoreCase);
@@ -84,8 +86,10 @@ namespace CapFrameX.Data
             ProcessList processList,
             IRTSSService rTSSService,
             IEventAggregator eventAggregator,
-            ICaptureService captureService)
+            ICaptureService captureService,
+            IHookOverlayStatusService hookOverlayStatusService)
         {
+            _hookOverlayStatusService = hookOverlayStatusService;
             _logger = logger;
             _appConfiguration = appConfiguration;
             _recordObserver = recordObserver;
@@ -833,6 +837,58 @@ namespace CapFrameX.Data
             }
         }
 
+        /// <summary>
+        /// Render resolution of the captured game as "WxH", empty when no source can supply it.
+        ///
+        /// Two independent sources are needed because neither covers every overlay mode. RTSS
+        /// fills dwResolutionX/Y only for processes it has hooked ITSELF — and while the in-game
+        /// overlay renders, CapFrameX never even starts RTSS, which is what left this field (and
+        /// ApiInfo) empty in every capture taken that way. The in-game hook knows the extent
+        /// first hand: it is the swapchain it presents into, so it is also the more direct
+        /// answer whenever it is available.
+        /// </summary>
+        private string GetRenderResolution(Process process)
+        {
+            if (process == null) return string.Empty;
+
+            string fromHook = HookStatusFor(process)?.RenderResolution;
+            if (!string.IsNullOrEmpty(fromHook)) return fromHook;
+
+            return _rTSSService.GetResolution(process.Id) ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Graphics API of the captured game — "DX11", "DX12", "Vulkan" — or "unknown".
+        ///
+        /// Same problem as the render resolution: RTSS answers only for processes it hooked
+        /// itself and is not running at all while the in-game overlay renders, which is why this
+        /// field came out empty rather than as the documented "unknown". The in-game renderer
+        /// proves the device type from the swapchain it presents into, and the Vulkan layer
+        /// settles it by being loaded, so both spell it the way RTSS does.
+        /// </summary>
+        private string GetApiInfo(Process process, IEnumerable<ISessionRun> runs)
+        {
+            string fromHook = HookStatusFor(process)?.RenderApi;
+            if (!string.IsNullOrEmpty(fromHook)) return fromHook;
+
+            string fromRtss = process != null ? _rTSSService.GetApiInfo(process.Id) : null;
+            // RTSS reports its own "unknown", but an absent RTSS yields an empty string — treat
+            // both as no answer, otherwise the fallback below never runs.
+            if (!string.IsNullOrWhiteSpace(fromRtss) && fromRtss != "unknown") return fromRtss;
+
+            string fromPresentMon = runs.FirstOrDefault()?.PresentMonRuntime;
+            return string.IsNullOrWhiteSpace(fromPresentMon) ? "unknown" : fromPresentMon;
+        }
+
+        // Bind the status to the captured process: a status left over from a previously selected
+        // game would otherwise be written into this capture.
+        private HookOverlayStatus HookStatusFor(Process process)
+        {
+            if (process == null) return null;
+            var status = _hookOverlayStatusService?.Current;
+            return status != null && status.ProcessId == process.Id ? status : null;
+        }
+
         public async Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName, string comment, string recordDirectory = null, List<ISessionInfo> hwInfo = null)
         {
             var filePath = await GetOutputFilename(processName, recordDirectory);
@@ -904,14 +960,9 @@ namespace CapFrameX.Data
                     appVersion = _appVersionProvider.GetAppVersion();
 
                     var process = Process.GetProcessesByName(processName).FirstOrDefault();
-                    apiInfo = process != null ? _rTSSService.GetApiInfo(process.Id) : "unknown";
+                    apiInfo = GetApiInfo(process, runs);
 
-                    if (apiInfo == "unknown")
-                        apiInfo = runs.First().PresentMonRuntime;
-
-                    // render resolution of the captured game, read from RTSS shared memory
-                    // (dwResolutionX/dwResolutionY); stays empty when RTSS can't provide it
-                    resolutionInfo = process != null ? _rTSSService.GetResolution(process.Id) : string.Empty;
+                    resolutionInfo = GetRenderResolution(process);
 
 
                     _systemInfo.SetSystemInfosStatus();

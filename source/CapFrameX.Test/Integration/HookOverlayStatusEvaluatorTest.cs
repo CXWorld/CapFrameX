@@ -169,6 +169,72 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void IsDxgiInjectionAllowed_SuppressedWhileTheVulkanLayerIsLoaded()
+        {
+            // The layer is mapped during vkCreateInstance but only publishes its renderer state
+            // on the first present. Injecting in that window puts the DXGI hook into a Vulkan
+            // title, where it can never acquire the renderer lease.
+            bool allowed = HookOverlayManager.IsDxgiInjectionAllowed(
+                probeSucceeded: true, hasRecentVulkanPresent: false,
+                vulkanLayerLoaded: true);
+
+            Assert.IsFalse(allowed);
+        }
+
+        [TestMethod]
+        public void IsDxgiInjectionAllowed_AllowsDxgiWithoutTheVulkanLayer()
+        {
+            bool allowed = HookOverlayManager.IsDxgiInjectionAllowed(
+                probeSucceeded: true, hasRecentVulkanPresent: false,
+                vulkanLayerLoaded: false);
+
+            Assert.IsTrue(allowed);
+        }
+
+        [TestMethod]
+        public void IsDxgiInjectionAllowed_SuppressedWhenTheLayerCheckIsInconclusive()
+        {
+            // An unreadable module list is not evidence that no Vulkan layer is present, and
+            // injection cannot be undone once it happened.
+            bool allowed = HookOverlayManager.IsDxgiInjectionAllowed(
+                probeSucceeded: true, hasRecentVulkanPresent: false,
+                vulkanLayerLoaded: false, vulkanLayerCheckInconclusive: true);
+
+            Assert.IsFalse(allowed);
+        }
+
+        [TestMethod]
+        public void IsDxgiInjectionAllowed_NeverOverridesVulkanOrProbeFailure()
+        {
+            Assert.IsFalse(HookOverlayManager.IsDxgiInjectionAllowed(
+                probeSucceeded: true, hasRecentVulkanPresent: true,
+                vulkanLayerLoaded: false));
+            Assert.IsFalse(HookOverlayManager.IsDxgiInjectionAllowed(
+                probeSucceeded: false, hasRecentVulkanPresent: false,
+                vulkanLayerLoaded: false));
+        }
+
+        [TestMethod]
+        public void HasRendererInitializationStalled_TrueOnceTheTimeoutElapsed()
+        {
+            ulong since = 1000;
+
+            Assert.IsFalse(HookOverlayManager.HasRendererInitializationStalled(
+                since, since + HookOverlayManager.HookRendererReadyTimeoutMs - 1));
+            Assert.IsTrue(HookOverlayManager.HasRendererInitializationStalled(
+                since, since + HookOverlayManager.HookRendererReadyTimeoutMs));
+        }
+
+        [TestMethod]
+        public void HasRendererInitializationStalled_IgnoresUntrackedOrRolledBackClock()
+        {
+            Assert.IsFalse(HookOverlayManager.HasRendererInitializationStalled(
+                initializingSinceTickMs: 0, nowTickMs: ulong.MaxValue));
+            Assert.IsFalse(HookOverlayManager.HasRendererInitializationStalled(
+                initializingSinceTickMs: 5000, nowTickMs: 4000));
+        }
+
+        [TestMethod]
         public void ShouldUseHookFreeFallback_UsesFallbackForD3D9()
         {
             bool useFallback = HookOverlayManager.ShouldUseHookFreeFallback(
@@ -300,6 +366,145 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(HookTargetPolicy.IsInjectionBlacklisted(
                 "VALORANT-Win64-Shipping.exe", out _));
             Assert.IsFalse(HookTargetPolicy.IsInjectionBlacklisted("hl2.exe", out _));
+        }
+
+        /// <summary>
+        /// The capture file's ResolutionInfo is written from this value. It used to come only
+        /// from RTSS, which is never started while the in-game overlay renders — so every
+        /// capture taken that way recorded an empty resolution.
+        /// </summary>
+        [TestMethod]
+        public void EvaluateNative_PublishesTheHooksSwapchainExtent()
+        {
+            var snapshot = ReadySnapshot();
+            snapshot.ResolutionX = 2560;
+            snapshot.ResolutionY = 1440;
+
+            var status = HookOverlayStatusEvaluator.EvaluateNative(4711, "DXGI", snapshot, Now);
+
+            Assert.AreEqual("2560x1440", status.RenderResolution);
+        }
+
+        [TestMethod]
+        public void EvaluateNative_ReportsAnUnmeasuredExtentAsUnknown()
+        {
+            // A hook that has not presented yet publishes 0/0, and so does an older hook build
+            // that does not know the field at all. Neither may turn into a "0x0" in the file.
+            var status = HookOverlayStatusEvaluator.EvaluateNative(4711, "DXGI", ReadySnapshot(),
+                Now);
+
+            Assert.IsNull(status.RenderResolution);
+            Assert.IsNull(HookOverlayStatusEvaluator.FormatResolution(0, 0));
+            Assert.IsNull(HookOverlayStatusEvaluator.FormatResolution(3840, 0));
+            Assert.IsNull(HookOverlayStatusEvaluator.FormatResolution(0, 2160));
+        }
+
+        /// <summary>
+        /// The capture file's ApiInfo. RTSS answers only for processes it hooked itself, so with
+        /// the in-game overlay the hook's own proven device type is the only source.
+        /// </summary>
+        [TestMethod]
+        public void EvaluateNative_PublishesTheProvenDeviceType()
+        {
+            var d3d11 = ReadySnapshot();
+            d3d11.Api = NativeHookApi.D3D11;
+            var d3d12 = ReadySnapshot();
+            d3d12.Api = NativeHookApi.D3D12;
+
+            // Spelled the way RTSS spells it, so both sources produce comparable records.
+            Assert.AreEqual("DX11",
+                HookOverlayStatusEvaluator.EvaluateNative(1, "DXGI", d3d11, Now).RenderApi);
+            Assert.AreEqual("DX12",
+                HookOverlayStatusEvaluator.EvaluateNative(1, "DXGI", d3d12, Now).RenderApi);
+        }
+
+        [TestMethod]
+        public void EvaluateNative_ReportsAnUnprovenDeviceTypeAsUnknown()
+        {
+            // Before the first present, and for any hook older than the field, this reads 0.
+            Assert.IsNull(
+                HookOverlayStatusEvaluator.EvaluateNative(1, "DXGI", ReadySnapshot(), Now)
+                    .RenderApi);
+            Assert.IsNull(HookOverlayStatusEvaluator.FormatApi(NativeHookApi.Unknown));
+        }
+
+        [TestMethod]
+        public void EvaluateVulkan_ReportsVulkanOnceTheLayerIsLoaded()
+        {
+            var loaded = new VulkanActivitySnapshot
+            {
+                IsLayerLoaded = true,
+                LastVulkanPresentTickMs = (long)Now - 250
+            };
+            var notLoaded = new VulkanActivitySnapshot { IsLayerLoaded = false };
+
+            Assert.AreEqual("Vulkan", HookOverlayStatusEvaluator
+                .EvaluateVulkan(1, "Vulkan", loaded, Now, overlayVisible: true).RenderApi);
+            // Nothing is proven before the layer is in the process.
+            Assert.IsNull(HookOverlayStatusEvaluator
+                .EvaluateVulkan(1, "Vulkan", notLoaded, Now, overlayVisible: true).RenderApi);
+        }
+
+        [TestMethod]
+        public void EvaluateVulkan_PublishesTheLayersSwapchainExtent()
+        {
+            var native = new VulkanActivitySnapshot
+            {
+                IsLayerLoaded = true,
+                LastVulkanPresentTickMs = (long)Now - 250,
+                ResolutionX = 3440,
+                ResolutionY = 1440
+            };
+
+            var active = HookOverlayStatusEvaluator.EvaluateVulkan(1, "Vulkan", native, Now,
+                overlayVisible: true);
+            var hidden = HookOverlayStatusEvaluator.EvaluateVulkan(1, "Vulkan", native, Now,
+                overlayVisible: false);
+
+            Assert.AreEqual(EHookOverlayStatus.Active, active.State);
+            Assert.AreEqual("3440x1440", active.RenderResolution);
+            // A capture may well be taken with the overlay switched off.
+            Assert.AreEqual(EHookOverlayStatus.Hidden, hidden.State);
+            Assert.AreEqual("3440x1440", hidden.RenderResolution);
+        }
+
+        [TestMethod]
+        public void EvaluateVulkan_ReportsAnUnmeasuredExtentAsUnknown()
+        {
+            // An older layer leaves the packed word at 0, which must not become "0x0".
+            var native = new VulkanActivitySnapshot
+            {
+                IsLayerLoaded = true,
+                LastVulkanPresentTickMs = (long)Now - 250
+            };
+
+            Assert.IsNull(HookOverlayStatusEvaluator
+                .EvaluateVulkan(1, "Vulkan", native, Now, overlayVisible: true)
+                .RenderResolution);
+        }
+
+        [TestMethod]
+        public void EvaluateNative_KeepsTheExtentAcrossEveryLiveState()
+        {
+            // The resolution must survive the states a capture can end in — a game paused at the
+            // end of a run (Idle) or an overlay toggled off (Hidden) still has a resolution.
+            var idle = ReadySnapshot();
+            idle.ResolutionX = 1920;
+            idle.ResolutionY = 1080;
+            idle.LastHeartbeatTickMs = (long)(Now - HookStatusProbe.HeartbeatStaleAfterMs - 1);
+
+            var hidden = ReadySnapshot();
+            hidden.ResolutionX = 1920;
+            hidden.ResolutionY = 1080;
+            hidden.Flags &= ~NativeHookStatusFlags.Visible;
+
+            var idleStatus = HookOverlayStatusEvaluator.EvaluateNative(1, "DXGI", idle, Now);
+            var hiddenStatus = HookOverlayStatusEvaluator.EvaluateNative(1, "DXGI", hidden, Now);
+
+            Assert.AreEqual(EHookOverlayStatus.Idle, idleStatus.State);
+            Assert.AreEqual("1920x1080", idleStatus.RenderResolution);
+            Assert.AreEqual(EHookOverlayStatus.Hidden, hiddenStatus.State);
+            Assert.AreEqual("1920x1080", hiddenStatus.RenderResolution);
         }
 
         private static NativeHookStatusSnapshot ReadySnapshot()

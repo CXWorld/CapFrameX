@@ -44,6 +44,7 @@ namespace CapFrameX.Test.Data
                 processList,
                 null,
                 new EventAggregator(),
+                null,
                 null);
         }
 
@@ -157,7 +158,8 @@ namespace CapFrameX.Test.Data
                 null,
                 null,
                 new EventAggregator(),
-                new MockCaptureService());
+                new MockCaptureService(),
+                null);
             const string header = "Application,ProcessID,SwapChainAddress,TimeInSeconds,MsBetweenPresents,MsBetweenDisplayChange";
             var selectedRows = new[]
             {
@@ -271,7 +273,7 @@ namespace CapFrameX.Test.Data
             var recordManager = new RecordManager(
                 new Mock<ILogger<RecordManager>>().Object,
                 null, null, null, null, null, null, null,
-                new EventAggregator(), new MockCaptureService());
+                new EventAggregator(), new MockCaptureService(), null);
             const string header = "Application,ProcessID,SwapChainAddress,TimeInSeconds,MsBetweenPresents,MsBetweenDisplayChange";
             var selectedRows = new[]
             {
