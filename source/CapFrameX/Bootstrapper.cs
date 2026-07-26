@@ -110,6 +110,15 @@ namespace CapFrameX
                     osdCaptureService = Container.Resolve<CapFrameX.Capture.Contracts.ICaptureService>();
                 }
 
+                // Only the composition root sees both the RTSS integration and the OSD's Vulkan
+                // probes, so the "is this target presenting through Vulkan?" answer is handed over
+                // here. RTSS uses it to decide whether it may still be launched into a running
+                // game: injecting into a live DXGI title is its normal mode, into a live Vulkan
+                // title it can only do harm — the implicit layer it would need is bound at
+                // vkCreateInstance and cannot be added afterwards.
+                rtssService.VulkanPresentationProbe =
+                    CapFrameX.OSD.Integration.VulkanPresentation.IsActive;
+
                 // In-game hook overlay: inject cfx_osd_hook.dll into the game CapFrameX already
                 // detected. The PID flows through IRTSSService.ProcessIdStream (IProcessService),
                 // the same stream the overlay/capture pipeline uses — so we address the process

@@ -30,6 +30,10 @@ namespace CapFrameX.OSD.Integration
         private const string HookDllName = "cfx_osd_hook.dll";
         private const string InjectHelperName = "cfx_inject.exe"; // x86 bitness helper (WOW64 targets)
         internal const ulong HookHandshakeTimeoutMs = 3000;
+        // The injected hook reports Present activity long before it can draw. If it never gets
+        // past that stage the overlay would silently stay invisible forever, so bound it and let
+        // the hook-free renderer take over instead.
+        internal const ulong HookRendererReadyTimeoutMs = 10000;
         private static readonly long VulkanProbeRetryTicks =
             Math.Max(1, Stopwatch.Frequency / 10L);
 
@@ -64,6 +68,7 @@ namespace CapFrameX.OSD.Integration
         private volatile bool _enabled;
         private volatile bool _targetAllowed;
         private volatile int _currentPid;
+        private volatile string _currentProcessName;
         private volatile string _currentRuntime;
         private volatile bool _disposed;
         private bool _injectionInProgress;
@@ -71,6 +76,8 @@ namespace CapFrameX.OSD.Integration
         private bool _hookFreeFallbackActive;
         private ulong _injectionSucceededTickMs;
         private ulong _lastNativeStatusTickMs;
+        private ulong _rendererInitializingSinceTickMs;
+        private bool _rendererInitializationStalled;
         private int _injectionStatusPid;
         private string _lastInjectionError;
         private string _nativeFallbackReason;
@@ -167,10 +174,12 @@ namespace CapFrameX.OSD.Integration
         private void OnProcessId(int pid)
         {
             int previousPid;
+            string processName = ResolveProcessName(pid);
             lock (_stateGate)
             {
                 previousPid = _currentPid;
                 _currentPid = pid;
+                _currentProcessName = processName;
                 _currentRuntime = null;
                 _targetAllowed = false;
                 _injectionStatusPid = pid;
@@ -178,6 +187,8 @@ namespace CapFrameX.OSD.Integration
                 _injectionSucceeded = false;
                 _injectionSucceededTickMs = 0;
                 _lastNativeStatusTickMs = 0;
+                _rendererInitializingSinceTickMs = 0;
+                _rendererInitializationStalled = false;
                 _lastInjectionError = null;
                 _nativeFallbackReason = null;
                 _hookFreeFallbackReason = null;
@@ -195,25 +206,29 @@ namespace CapFrameX.OSD.Integration
                     _compatibilityDelay.Reset(previousPid);
                     _vulkanBlocks.Remove(previousPid);
                     _nextVulkanProbe.Remove(previousPid);
+                    VulkanLayerModuleProbe.Invalidate(previousPid);
                     DisposeCompatibilityChannelLocked(previousPid);
                 }
             }
+            // Forget stale PIDs so a relaunch re-injects, and so a reused PID cannot inherit the
+            // "already injected" mark of the process that previously held it. Pruning by liveness
+            // clears exactly that, and leaves a still running, merely re-selected process alone.
+            PruneExited();
             lock (_gate)
             {
-                // A newly selected process must never inherit retry state from a reused PID.
+                // A newly selected process must never inherit retry or probe state from a
+                // previously selected process whose PID has since been reused.
                 _injectionRetryBackoff.Reset(pid);
                 _compatibilityDelay.Reset(pid);
+                _vulkanBlocks.Remove(pid);
+                _nextVulkanProbe.Remove(pid);
+                VulkanLayerModuleProbe.Invalidate(pid);
                 DisposeCompatibilityChannelLocked(pid);
             }
             UpdateHookVisibility();
             UpdateHookFreeFallback();
-            if (pid <= 0)
-            {
-                // process deselected/exited: forget stale PIDs so a relaunch re-injects
-                PruneExited();
-                PublishStatus();
-                return;
-            }
+            if (pid > 0)
+                Log.Information("HookOverlay: target PID {pid} is '{process}'", pid, processName);
             PublishStatus();
         }
 
@@ -316,6 +331,21 @@ namespace CapFrameX.OSD.Integration
             return nowTickMs - referenceTickMs >= HookHandshakeTimeoutMs;
         }
 
+        /// <summary>
+        /// True once the injected hook has reported <see cref="EHookOverlayStatus.Initializing"/>
+        /// uninterruptedly for longer than <see cref="HookRendererReadyTimeoutMs"/>. Present
+        /// activity is live at that point, so the renderer is not going to come up — typically
+        /// because the hook landed in a process whose swapchain another renderer owns.
+        /// </summary>
+        internal static bool HasRendererInitializationStalled(ulong initializingSinceTickMs,
+            ulong nowTickMs)
+        {
+            if (initializingSinceTickMs == 0 || nowTickMs < initializingSinceTickMs)
+                return false;
+
+            return nowTickMs - initializingSinceTickMs >= HookRendererReadyTimeoutMs;
+        }
+
         private void UpdateHookFreeFallback()
         {
             lock (_fallbackGate)
@@ -367,11 +397,13 @@ namespace CapFrameX.OSD.Integration
 
         private void TryInjectAsync(int pid)
         {
-            // Frame rows can arrive many times per second. Suppress all of the comparatively
-            // expensive policy/probe work while a failed injection is in its retry window.
-            if (IsInjectionRetryBlocked(pid)) return;
-            if (!RefreshVulkanInjectionGate(pid)) return;
+            // The target policy gates the resident hook's visibility as well as injection, so it
+            // stays current for the whole session — an anti-cheat module that appears later must
+            // still hide the overlay. Its own cache keeps the per-frame cost at a timestamp
+            // compare. Everything below only serves injection and is dead once that is settled.
             if (!RefreshTargetPolicy(pid)) return;
+            if (IsInjectionAttemptBlocked(pid)) return;
+            if (!RefreshVulkanInjectionGate(pid)) return;
             HookCompatibilityProfileCatalog.TryGetForProcess(pid,
                 out HookCompatibilityProfile compatibilityProfile);
             if (!TryReserveInjection(pid)) return;
@@ -460,8 +492,8 @@ namespace CapFrameX.OSD.Integration
                         ReleaseInjectionReservation(pid);
                         return;
                     }
-                    // Re-read immediately before LoadLibrary. The Vulkan mapping may have appeared
-                    // after process/runtime detection but while the injectable copy was prepared.
+                    // Re-read immediately before LoadLibrary. Vulkan may have claimed the process
+                    // after the runtime was detected but while the injectable copy was prepared.
                     if (!RefreshVulkanInjectionGate(pid, forceProbe: true))
                     {
                         ReleaseInjectionReservation(pid);
@@ -594,10 +626,10 @@ namespace CapFrameX.OSD.Integration
             channel.Dispose();
         }
 
-        private bool IsInjectionRetryBlocked(int pid)
+        private bool IsInjectionAttemptBlocked(int pid)
         {
             lock (_gate)
-                return _injectionRetryBackoff.IsBlocked(pid);
+                return _injected.Contains(pid) || _injectionRetryBackoff.IsBlocked(pid);
         }
 
         private bool TryReserveInjection(int pid)
@@ -674,7 +706,8 @@ namespace CapFrameX.OSD.Integration
             PublishStatus();
         }
 
-        private void UpdateNativeStatusFallback(int pid, bool hasNativeStatus, ulong nowTickMs)
+        private void UpdateNativeStatusFallback(int pid, bool hasNativeStatus,
+            EHookOverlayStatus? nativeState, ulong nowTickMs)
         {
             bool changed = false;
             bool fallbackEnabled = false;
@@ -686,7 +719,37 @@ namespace CapFrameX.OSD.Integration
                 if (hasNativeStatus)
                 {
                     _lastNativeStatusTickMs = nowTickMs;
-                    if (!string.IsNullOrEmpty(_nativeFallbackReason))
+                    // The hook reports Present activity long before it can draw. Track how long
+                    // it stays in that stage; once it has clearly stalled, latch the verdict so
+                    // hiding the hook for the fallback cannot flip the state back and forth.
+                    if (!_rendererInitializationStalled)
+                    {
+                        if (nativeState == EHookOverlayStatus.Initializing)
+                        {
+                            if (_rendererInitializingSinceTickMs == 0)
+                                _rendererInitializingSinceTickMs = nowTickMs;
+                            _rendererInitializationStalled = HasRendererInitializationStalled(
+                                _rendererInitializingSinceTickMs, nowTickMs);
+                        }
+                        else
+                        {
+                            _rendererInitializingSinceTickMs = 0;
+                        }
+                    }
+
+                    if (_rendererInitializationStalled)
+                    {
+                        reason = "the in-game renderer did not initialize within " +
+                            $"{HookRendererReadyTimeoutMs / 1000} seconds";
+                        if (!string.Equals(reason, _nativeFallbackReason,
+                            StringComparison.Ordinal))
+                        {
+                            _nativeFallbackReason = reason;
+                            changed = true;
+                            fallbackEnabled = true;
+                        }
+                    }
+                    else if (!string.IsNullOrEmpty(_nativeFallbackReason))
                     {
                         _nativeFallbackReason = null;
                         changed = true;
@@ -713,8 +776,8 @@ namespace CapFrameX.OSD.Integration
             if (fallbackEnabled)
             {
                 Log.Warning(
-                    "HookOverlay: native status handshake timed out for pid {pid}; enabling hook-free fallback",
-                    pid);
+                    "HookOverlay: in-game renderer unusable for pid {pid} ('{process}', {reason}); enabling hook-free fallback",
+                    pid, _currentProcessName ?? "unknown", reason);
             }
             else
             {
@@ -728,33 +791,78 @@ namespace CapFrameX.OSD.Integration
         private bool RefreshVulkanInjectionGate(int pid, bool forceProbe = false)
         {
             long now = Stopwatch.GetTimestamp();
+            bool firstEvaluation;
             lock (_gate)
             {
-                if (!forceProbe && _vulkanBlocks.ContainsKey(pid) &&
+                firstEvaluation = !_nextVulkanProbe.ContainsKey(pid);
+                if (!forceProbe &&
                     _nextVulkanProbe.TryGetValue(pid, out long retryAt) && now < retryAt)
-                    return false;
+                    return !_vulkanBlocks.ContainsKey(pid);
             }
 
             bool probeOk = VulkanActivityProbe.TryHasRecentPresent(
-                pid, out bool recent, out string probeError);
-            bool allowed = probeOk && !recent;
+                pid, out bool recent, out bool yieldedToDxgi, out string probeError);
+
+            // A recent Vulkan present is the strongest signal, but the renderer-state mapping it
+            // is read from only exists once the layer has presented — PresentMon reports a Vulkan
+            // swapchain as DXGI well before that, so relying on it alone races the very first
+            // frames and injects the DXGI hook into a Vulkan title. The loaded layer module
+            // settles that deterministically: the Vulkan loader maps it during vkCreateInstance.
+            // A layer that has permanently yielded (PreferDxgi) is exempt — that is the
+            // documented fail-open path where DXGI is supposed to take over.
+            string layerError = null;
+            VulkanLayerPresence layerPresence = probeOk && !recent && !yieldedToDxgi
+                ? VulkanLayerModuleProbe.GetPresence(pid, out layerError, forceRescan: forceProbe)
+                : VulkanLayerPresence.Absent;
+            bool layerLoaded = layerPresence == VulkanLayerPresence.Loaded;
+            // An unreadable module list is not evidence of absence. Injection is irreversible
+            // and a wrong "no Vulkan" costs the overlay entirely, while waiting costs one more
+            // probe interval — so an inconclusive scan holds the hook back.
+            bool layerUnknown = layerPresence == VulkanLayerPresence.Unknown;
+
+            bool allowed = IsDxgiInjectionAllowed(probeOk, recent, layerLoaded, layerUnknown);
             string reason = !probeOk
                 ? $"Vulkan activity probe failed ({probeError ?? "unknown error"})"
-                : recent ? "recent Vulkan presents" : null;
+                : recent
+                    ? "recent Vulkan presents"
+                    : layerLoaded
+                        ? "the CapFrameX Vulkan layer renders this process"
+                        : layerUnknown
+                            ? $"Vulkan layer check inconclusive ({layerError ?? "unknown error"})"
+                            : null;
+
+            if (firstEvaluation)
+            {
+                // The decision to permit injection is irreversible and was previously invisible:
+                // only blocks were logged, so a wrong "allow" left no trace at all. Report the
+                // module scan as skipped rather than as "Absent" when a stronger signal already
+                // settled the decision — otherwise the line reads like a missing layer.
+                bool layerChecked = probeOk && !recent && !yieldedToDxgi;
+                Log.Information(
+                    "HookOverlay: Vulkan gate for pid {pid} ('{process}') — probeOk {probeOk}, " +
+                    "recentPresent {recent}, yieldedToDxgi {yielded}, layer {layer}; " +
+                    "DXGI injection {decision}",
+                    pid, _currentProcessName ?? "unknown", probeOk, recent, yieldedToDxgi,
+                    layerChecked ? layerPresence.ToString() : "not checked",
+                    allowed ? "allowed" : "suppressed");
+            }
 
             lock (_gate)
             {
+                // Cache both outcomes briefly. A missing map is the normal DXGI case and frame
+                // rows can arrive many times per second. The forceProbe immediately before
+                // LoadLibrary still bypasses this cache and closes the Vulkan activation race.
+                _nextVulkanProbe[pid] = now + VulkanProbeRetryTicks;
                 if (!allowed)
                 {
                     bool changed = !_vulkanBlocks.TryGetValue(pid, out string previousReason) ||
                         !string.Equals(previousReason, reason, StringComparison.Ordinal);
                     _vulkanBlocks[pid] = reason;
-                    _nextVulkanProbe[pid] = now + VulkanProbeRetryTicks;
                     if (changed)
                     {
                         Log.Information(
-                            "HookOverlay: DXGI injection into pid {pid} suppressed ({reason})",
-                            pid, reason);
+                            "HookOverlay: DXGI injection into pid {pid} ('{process}') suppressed ({reason})",
+                            pid, _currentProcessName ?? "unknown", reason);
                     }
                 }
                 else
@@ -762,10 +870,9 @@ namespace CapFrameX.OSD.Integration
                     if (_vulkanBlocks.Remove(pid))
                     {
                         Log.Information(
-                            "HookOverlay: Vulkan activity grace elapsed for pid {pid}; DXGI injection allowed",
+                            "HookOverlay: Vulkan no longer renders pid {pid}; DXGI injection allowed",
                             pid);
                     }
-                    _nextVulkanProbe.Remove(pid);
                 }
             }
 
@@ -783,6 +890,12 @@ namespace CapFrameX.OSD.Integration
 
             return allowed;
         }
+
+        internal static bool IsDxgiInjectionAllowed(bool probeSucceeded,
+            bool hasRecentVulkanPresent, bool vulkanLayerLoaded,
+            bool vulkanLayerCheckInconclusive = false)
+            => probeSucceeded && !hasRecentVulkanPresent && !vulkanLayerLoaded &&
+               !vulkanLayerCheckInconclusive;
 
         private bool RefreshTargetPolicy(int pid)
         {
@@ -879,7 +992,12 @@ namespace CapFrameX.OSD.Integration
                     ulong nowTickMs = HookStatusProbe.CurrentTickCount;
                     bool hasDxgiStatus = HookStatusProbe.TryRead(pid,
                         out NativeHookStatusSnapshot native, out string dxgiProbeError);
-                    UpdateNativeStatusFallback(pid, hasDxgiStatus, nowTickMs);
+                    HookOverlayStatus nativeStatus = hasDxgiStatus
+                        ? HookOverlayStatusEvaluator.EvaluateNative(pid, runtime, native,
+                            nowTickMs)
+                        : null;
+                    UpdateNativeStatusFallback(pid, hasDxgiStatus, nativeStatus?.State,
+                        nowTickMs);
                     lock (_stateGate)
                     {
                         hookFreeFallbackActive = _hookFreeFallbackActive;
@@ -945,8 +1063,7 @@ namespace CapFrameX.OSD.Integration
                     }
                     else if (hasDxgiStatus)
                     {
-                        status = HookOverlayStatusEvaluator.EvaluateNative(pid, runtime, native,
-                            nowTickMs);
+                        status = nativeStatus;
                     }
                     else if (injectionPid == pid && injectionInProgress &&
                         injectionDelayUntilTickMs > nowTickMs)
@@ -1046,6 +1163,7 @@ namespace CapFrameX.OSD.Integration
                 _injected.RemoveWhere(p => !IsProcessAlive(p));
                 _injectionRetryBackoff.Prune(IsProcessAlive);
                 _compatibilityDelay.Prune(IsProcessAlive);
+                VulkanLayerModuleProbe.Prune(IsProcessAlive);
                 var stalePolicyPids = new List<int>();
                 foreach (int pid in _policyBlocks.Keys)
                     if (!IsProcessAlive(pid)) stalePolicyPids.Add(pid);
@@ -1055,15 +1173,36 @@ namespace CapFrameX.OSD.Integration
                 foreach (int pid in _vulkanBlocks.Keys)
                     if (!IsProcessAlive(pid)) staleVulkanPids.Add(pid);
                 foreach (int pid in staleVulkanPids)
-                {
                     _vulkanBlocks.Remove(pid);
+                var staleVulkanProbePids = new List<int>();
+                foreach (int pid in _nextVulkanProbe.Keys)
+                    if (!IsProcessAlive(pid)) staleVulkanProbePids.Add(pid);
+                foreach (int pid in staleVulkanProbePids)
                     _nextVulkanProbe.Remove(pid);
-                }
                 var staleCompatibilityPids = new List<int>();
                 foreach (int pid in _compatibilityChannels.Keys)
                     if (!IsProcessAlive(pid)) staleCompatibilityPids.Add(pid);
                 foreach (int pid in staleCompatibilityPids)
                     DisposeCompatibilityChannelLocked(pid);
+            }
+        }
+
+        // Every diagnostic here is keyed by PID alone, which cannot answer the first question an
+        // unexpected hook target raises: which process is this? Resolved once per selection.
+        private static string ResolveProcessName(int pid)
+        {
+            if (pid <= 0) return "none";
+            try
+            {
+                using (var process = Process.GetProcessById(pid))
+                    return process.ProcessName;
+            }
+            catch (Exception ex) when (ex is ArgumentException ||
+                                       ex is InvalidOperationException ||
+                                       ex is System.ComponentModel.Win32Exception ||
+                                       ex is NotSupportedException)
+            {
+                return "unknown";
             }
         }
 

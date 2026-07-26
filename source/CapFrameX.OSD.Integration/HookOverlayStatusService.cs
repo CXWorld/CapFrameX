@@ -1,6 +1,7 @@
 using System;
 using System.Reactive.Subjects;
 using CapFrameX.Contracts.Overlay;
+using Serilog;
 
 namespace CapFrameX.OSD.Integration
 {
@@ -33,7 +34,25 @@ namespace CapFrameX.OSD.Integration
             if (status == null) return;
             lock (_publishGate)
             {
-                lock (_gate) _current = status;
+                HookOverlayStatus previous;
+                lock (_gate)
+                {
+                    previous = _current;
+                    _current = status;
+                }
+                if (previous.State != status.State ||
+                    previous.ProcessId != status.ProcessId ||
+                    !string.Equals(previous.Runtime, status.Runtime,
+                        StringComparison.Ordinal) ||
+                    !string.Equals(previous.Detail, status.Detail,
+                        StringComparison.Ordinal))
+                {
+                    Log.Debug(
+                        "HookOverlay: status {state} for pid {pid} runtime {runtime}: {detail}",
+                        status.State, status.ProcessId,
+                        string.IsNullOrWhiteSpace(status.Runtime) ? "unknown" : status.Runtime,
+                        status.Detail);
+                }
                 _statusStream.OnNext(status);
             }
         }
