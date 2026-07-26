@@ -21,6 +21,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -66,6 +67,11 @@ namespace CapFrameX.Data
         private CancellationTokenSource _cancelDelay = new CancellationTokenSource();
 
         private IDisposable _disposableCaptureStream;
+        // Serializes the swap of the frame-stream subscription and its scheduler. Concurrent
+        // StartCapture calls are possible (see the comment at the subscription site), and two
+        // of them racing here would either orphan a subscription or dispose a scheduler the
+        // other is about to subscribe on.
+        private readonly object _captureStreamGate = new object();
         private IDisposable _disposableArchiveStream;
         private IDisposable _autoCompletionDisposableStream;
         private IDisposable _disposablePoweneticsDataStream;
@@ -252,50 +258,66 @@ namespace CapFrameX.Data
                     .Subscribe(sensorSample => FillPmdDataLists(sensorSample));
             }
 
-            // Create scheduler for capture stream
-            _captureStreamScheduler = new EventLoopScheduler();
+            // Replace the previous subscription instead of assigning over it, the way
+            // StartFillArchive already does. The handle is the only way to dispose one, so
+            // overwriting a live subscription orphans it forever — and its handler appends to
+            // _captureData, the FIELD, so it goes on filling whatever list the CURRENT capture
+            // uses. Each orphan adds one more copy of every frame for the rest of the session.
+            //
+            // This is reachable: the IsCapturing guard in StartCapture is a check-then-act
+            // across the awaits below it, so several hotkey presses a few hundred ms apart can
+            // all pass it and run concurrently. The lock keeps that concurrency from disposing
+            // a scheduler another start is about to subscribe on; it holds no await.
+            lock (_captureStreamGate)
+            {
+                _disposableCaptureStream?.Dispose();
+                _captureStreamScheduler?.Dispose();
 
-            _disposableCaptureStream = _captureService
-                .FrameDataStream
-                .Skip(1)
-                .ObserveOn(_captureStreamScheduler)
-                .Subscribe(lineSplit =>
-                {
-                    _captureData.Add(lineSplit);
+                // Create scheduler for capture stream
+                _captureStreamScheduler = new EventLoopScheduler();
 
-                    if (!intializedStartTime && _captureData.Any())
+                _disposableCaptureStream = _captureService
+                    .FrameDataStream
+                    .Skip(1)
+                    .ObserveOn(_captureStreamScheduler)
+                    .Subscribe(lineSplit =>
                     {
-                        double captureDataFirstTime = 0;
-                        try
-                        {
-                            captureDataFirstTime = GetCpuStartQpcFromDataLine(_captureData.First());
-                        }
-                        catch { return; }
+                        _captureData.Add(lineSplit);
 
-                        lock (_archiveLock)
+                        if (!intializedStartTime && _captureData.Any())
                         {
-                            if (_captureDataArchive.Any())
+                            double captureDataFirstTime = 0;
+                            try
                             {
-                                try
+                                captureDataFirstTime = GetCpuStartQpcFromDataLine(_captureData.First());
+                            }
+                            catch { return; }
+
+                            lock (_archiveLock)
+                            {
+                                if (_captureDataArchive.Any())
                                 {
-                                    captureDataArchiveLastTime = GetCpuStartQpcFromDataLine(_captureDataArchive.Last());
+                                    try
+                                    {
+                                        captureDataArchiveLastTime = GetCpuStartQpcFromDataLine(_captureDataArchive.Last());
+                                    }
+                                    catch { return; }
                                 }
-                                catch { return; }
+                            }
+
+                            if (captureDataFirstTime < captureDataArchiveLastTime)
+                            {
+                                intializedStartTime = true;
+
+                                // stop filling archive
+                                _fillArchive = false;
+                                _disposableArchiveStream?.Dispose();
+
+                                _logEntryManager.AddLogEntry("Stopped filling Archive", ELogMessageType.AdvancedInfo, false);
                             }
                         }
-
-                        if (captureDataFirstTime < captureDataArchiveLastTime)
-                        {
-                            intializedStartTime = true;
-
-                            // stop filling archive
-                            _fillArchive = false;
-                            _disposableArchiveStream?.Dispose();
-
-                            _logEntryManager.AddLogEntry("Stopped filling Archive", ELogMessageType.AdvancedInfo, false);
-                        }
-                    }
-                });
+                    });
+            }
 
             // Start capturing RTSS frame times
             _rTSSFrameTimesIntervalStream = GetRTSSFrameTimesIntervalHeartBeat(options.ProcessInfo.Item2);
@@ -377,9 +399,13 @@ namespace CapFrameX.Data
             IsCapturing = false;
 
             // Stop Present logging
-            _disposableCaptureStream?.Dispose();
-            _captureStreamScheduler?.Dispose();
-            _captureStreamScheduler = null;
+            lock (_captureStreamGate)
+            {
+                _disposableCaptureStream?.Dispose();
+                _disposableCaptureStream = null;
+                _captureStreamScheduler?.Dispose();
+                _captureStreamScheduler = null;
+            }
 
             // Stop PMD logging
             _disposablePoweneticsDataStream?.Dispose();
@@ -798,20 +824,29 @@ namespace CapFrameX.Data
             return Math.Round(length, 2, MidpointRounding.AwayFromZero);
         }
 
-        private IEnumerable<string> NormalizeTimes(IEnumerable<string[]> recordLines)
+        /// <summary>
+        /// Rebases every frame's CPUStartQPCTime onto the first frame of the capture.
+        ///
+        /// Deliberately writes into fresh strings instead of back into the caller's rows: those
+        /// rows are the live capture buffer, and normalizing one twice would subtract the start
+        /// time twice. A row that reaches this method more than once used to come out at
+        /// -k * startTime — a capture full of timestamps hours before the run, which no longer
+        /// loads. Reading the input read-only makes duplicates stay duplicates instead of
+        /// turning into corruption.
+        /// </summary>
+        internal IEnumerable<string> NormalizeTimes(IEnumerable<string[]> recordLines)
         {
+            int timeIndex = _captureService.CPUStartQPCTimeInMs_Index;
             string[] firstLineSplit = recordLines.First();
             var lines = new List<string>();
             //start time
             var timeStart = GetCpuStartQpcFromDataLine(firstLineSplit);
 
             // normalize time
-            var currentLineSplit = firstLineSplit;
-            currentLineSplit[_captureService.CPUStartQPCTimeInMs_Index] = "0";
             double previousNormalizedTime = 0;
             double delta = 0;
 
-            lines.Add(string.Join(",", currentLineSplit));
+            lines.Add(JoinWithReplacedField(firstLineSplit, timeIndex, "0"));
 
             foreach (var lineSplit in recordLines.Skip(1))
             {
@@ -832,13 +867,23 @@ namespace CapFrameX.Data
 
                 previousNormalizedTime = normalizedTime;
 
-                currentLineSplit = lineSplit;
-                currentLineSplit[_captureService.CPUStartQPCTimeInMs_Index] = (1E03 * (normalizedTime + delta)).ToString(CultureInfo.InvariantCulture);
-
-                lines.Add(string.Join(",", currentLineSplit));
+                lines.Add(JoinWithReplacedField(lineSplit, timeIndex,
+                    (1E03 * (normalizedTime + delta)).ToString(CultureInfo.InvariantCulture)));
             }
 
             return lines;
+        }
+
+        // Joins a data line, substituting one field, without touching the source row.
+        private static string JoinWithReplacedField(string[] lineSplit, int index, string value)
+        {
+            var line = new StringBuilder();
+            for (int i = 0; i < lineSplit.Length; i++)
+            {
+                if (i > 0) line.Append(',');
+                line.Append(i == index ? value : lineSplit[i]);
+            }
+            return line.ToString();
         }
 
         private IDisposable GetRTSSFrameTimesIntervalHeartBeat(int processId)

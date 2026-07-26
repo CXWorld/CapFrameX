@@ -35,6 +35,15 @@ namespace CapFrameX.Test.Mocks
         /// </summary>
         public int FileCount => _inMemoryFiles.Count;
 
+        /// <summary>
+        /// The normalized PresentMon lines handed to the last
+        /// <see cref="ConvertPresentDataLinesToSessionRun"/> call. Lets a test inspect what the
+        /// capture pipeline actually produced, which the converted SessionRun does not show —
+        /// it recomputes its own timeline from MsBetweenPresents.
+        /// </summary>
+        public IReadOnlyList<string> LastConvertedPresentLines { get; private set; } =
+            new List<string>();
+
         public MockRecordManager()
         {
             _inMemoryFiles = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -210,6 +219,7 @@ namespace CapFrameX.Test.Mocks
         public ISessionRun ConvertPresentDataLinesToSessionRun(IEnumerable<string> presentLines)
         {
             var lines = presentLines.ToList();
+            LastConvertedPresentLines = lines;
             if (lines.Count == 0)
             {
                 return new SessionRun
