@@ -60,6 +60,7 @@ namespace CapFrameX.ViewModel
         private bool _hardwareViewSelected;
         private bool _appViewSelected;
         private bool _remoteViewSelected;
+        private bool _updateViewSelected;
         private bool _helpViewSelected;
         private bool _showNotification;
         private DateTime _notificationTimestamp = DateTime.MinValue;
@@ -373,6 +374,17 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool UpdateViewSelected
+        {
+            get { return _updateViewSelected; }
+            set
+            {
+                _updateViewSelected = value;
+                OnViewSelectionChanged();
+                RaisePropertyChanged();
+            }
+        }
+
         public bool HelpViewSelected
         {
             get { return _helpViewSelected; }
@@ -555,6 +567,11 @@ namespace CapFrameX.ViewModel
 
         public ISensorService SensorService => _sensorService;
 
+        /// <summary>
+        /// Backs the update tab. Shared with the status bar and the embedded update dialog.
+        /// </summary>
+        public UpdateViewModel UpdateViewModel { get; }
+
         public string ResolveDocumentsPath(string path) => _pathService.ResolveDocumentsPlaceholder(path);
 
         public ColorbarViewModel(IRegionManager regionManager,
@@ -565,7 +582,8 @@ namespace CapFrameX.ViewModel
             ILogger<ColorbarViewModel> logger,
             IShell shell,
             ISystemInfo systemInfo,
-            LoginManager loginManager)
+            LoginManager loginManager,
+            UpdateViewModel updateViewModel)
         {
             _regionManager = regionManager;
             _eventAggregator = eventAggregator;
@@ -576,6 +594,7 @@ namespace CapFrameX.ViewModel
             _shell = shell;
             _systemInfo = systemInfo;
             _loginManager = loginManager;
+            UpdateViewModel = updateViewModel;
 
             RoundingDigits = new List<int>(Enumerable.Range(0, 8));
             SelectScreenshotFolderCommand = new DelegateCommand(OnSelectScreenshotFolder);
@@ -752,6 +771,9 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged(nameof(SensorsWSUrl));
                 RaisePropertyChanged(nameof(ActiveSensorsWSUrl));
             }
+
+            if (UpdateViewSelected)
+                SelectedView = "Update";
 
             if (HelpViewSelected)
                 SelectedView = "Help";

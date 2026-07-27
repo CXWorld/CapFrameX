@@ -9,6 +9,7 @@ using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Remote;
+using CapFrameX.Updater;
 using DryIoc;
 using EmbedIO;
 using Newtonsoft.Json;
@@ -36,6 +37,9 @@ namespace CapFrameX
         private Bootstrapper _bootstrapper;
         private WebServer _webServer;
         private bool _isSingleInstance = true;
+        // Set when the app exits before the bootstrapper ran, so the shutdown sequence below has
+        // nothing to tear down.
+        private bool _skipShutdownSequence;
         private Mutex _mutex;
 #if DEBUG
         private DebugMonitorWindow _debugMonitorWindow;
@@ -134,6 +138,32 @@ namespace CapFrameX
                     InitializeLogger();
                 }
                 StartupPerformanceLogger.LoggerReady();
+
+                // An update staged by a previous session is installed here, before anything else
+                // is built: the installer replaces the files of the running app, so CapFrameX has
+                // to be on its way out by the time it starts.
+                using (StartupPerformanceLogger.Measure("Pending update installation"))
+                {
+                    var installerStarted = UpdateInstaller.TryStartPendingUpdate(
+                        PathService.GetUpdatesFolder(),
+                        System.Reflection.Assembly.GetExecutingAssembly().GetName().Version,
+                        message => Log.Logger.Information(message),
+                        (exception, message) =>
+                        {
+                            if (exception == null)
+                                Log.Logger.Error(message);
+                            else
+                                Log.Logger.Error(exception, message);
+                        });
+
+                    if (installerStarted)
+                    {
+                        // Nothing has been started yet, so there is nothing to shut down either.
+                        _skipShutdownSequence = true;
+                        Current.Shutdown();
+                        return;
+                    }
+                }
 
                 using (StartupPerformanceLogger.Measure("Global exception handling setup"))
                 {
@@ -324,7 +354,7 @@ namespace CapFrameX
                 _mutex.Dispose();
             }
 
-            if (!_isSingleInstance)
+            if (!_isSingleInstance || _skipShutdownSequence)
                 return;
 
             // Note: the in-game hook disables itself when it sees CapFrameX exit (it holds a

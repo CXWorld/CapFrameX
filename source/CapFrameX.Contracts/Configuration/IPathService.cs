@@ -38,6 +38,13 @@ namespace CapFrameX.Contracts.Configuration
         string CloudFolder { get; }
 
         /// <summary>
+        /// Gets the folder path downloaded update packages are staged in. Unlike the other folders
+        /// this one is created on demand by the update service, so that installations that never
+        /// download an update do not carry an empty folder around.
+        /// </summary>
+        string UpdatesFolder { get; }
+
+        /// <summary>
         /// Resolves a relative path to an absolute path based on the current mode.
         /// In portable mode, resolves relative to the application directory.
         /// In installed mode, resolves relative to the appropriate system folder.

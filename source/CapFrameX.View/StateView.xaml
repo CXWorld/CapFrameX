@@ -115,14 +115,26 @@
                        FontWeight="Bold" Foreground="{Binding IsHAGSEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
         </StackPanel>
         <StackPanel HorizontalAlignment="Right" Grid.Column="1" Margin="0 0 10 0" Orientation="Horizontal">
-            <Border Visibility="{Binding IsUpdateAvailable, Converter={StaticResource FalseToCollapsedConverter}}" Background="Transparent" 
-                    Cursor="Hand" MouseLeftButtonDown="PackIcon_MouseLeftButtonDown">
-                <Border.ToolTip>
-                    <TextBlock Text="{Binding Path=UpdateHyperlinkText}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-                </Border.ToolTip>
-                <materialDesign:PackIcon Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}" Margin="0 0 5 0" Height="20" Width="20" Kind="Download" VerticalAlignment="Center" >
-                </materialDesign:PackIcon>
-            </Border>
+            <TextBlock Margin="0 0 6 0" VerticalAlignment="Center" FontWeight="Bold"
+                       Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+                       Visibility="{Binding UpdateViewModel.IsDownloading, Converter={StaticResource FalseToCollapsedConverter}}"
+                       Text="{Binding UpdateViewModel.DownloadProgressText}"/>
+            <Button Margin="0 0 5 0" Width="20" Height="20" Padding="0"
+                    Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
+                    Background="Transparent" BorderBrush="Transparent" VerticalAlignment="Center"
+                    Visibility="{Binding UpdateViewModel.IsUpdateIndicatorVisible, Converter={StaticResource FalseToCollapsedConverter}}"
+                    Command="{Binding UpdateViewModel.ShowUpdateDialogCommand}">
+                <Grid>
+                    <materialDesign:PackIcon Height="20" Width="20" Kind="Download"
+                                             Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
+                                             Visibility="{Binding UpdateViewModel.IsUpdateReadyToInstall, Converter={StaticResource TrueToCollapsedConverter}}"/>
+                    <materialDesign:PackIcon Height="20" Width="20" Kind="Restart" Foreground="LimeGreen"
+                                             Visibility="{Binding UpdateViewModel.IsUpdateReadyToInstall, Converter={StaticResource FalseToCollapsedConverter}}"/>
+                </Grid>
+                <Button.ToolTip>
+                    <TextBlock Text="{Binding UpdateViewModel.StatusText}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+                </Button.ToolTip>
+            </Button>
             <materialDesign:PackIcon Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"  Kind="Information" VerticalAlignment="Center">
                 <materialDesign:PackIcon.ToolTip>
                     <TextBlock Text="{Binding InfoToolTipText, UpdateSourceTrigger=Default}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>

@@ -176,7 +176,9 @@
 					<materialDesign:PopupBox.ToggleContent>
 						<materialDesign:PackIcon Kind="Cog" Width="30" Height="30" Foreground="White"/>
 					</materialDesign:PopupBox.ToggleContent>
-					<DockPanel Width="550">
+					<!-- The tab strip measures 659px with all six tabs, so anything narrower clips
+					     the last one. Keep headroom here when adding a tab. -->
+					<DockPanel Width="690">
 						<StackPanel Margin="10" DockPanel.Dock="Top" Orientation="Horizontal">
 							<RadioButton Margin="18 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
 										 IsChecked="{Binding OptionsViewSelected}"
@@ -190,6 +192,9 @@
 							<RadioButton Margin="18 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
 										 IsChecked="{Binding RemoteViewSelected}"
 										 Content="REMOTE" />
+							<RadioButton Margin="18 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
+										 IsChecked="{Binding UpdateViewSelected}"
+										 Content="UPDATE" />
 							<RadioButton Margin="20 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
 										 IsChecked="{Binding HelpViewSelected}"
 										 Content="HELP" />
@@ -520,6 +525,58 @@
 										</StackPanel>
 									</Grid>
 								</DataTemplate>
+								<DataTemplate x:Key="UpdateContent">
+									<Grid Margin="10">
+										<Grid.Resources>
+											<Style TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
+												<Setter Property="Margin" Value="8,8,10,8" />
+											</Style>
+										</Grid.Resources>
+										<Grid.RowDefinitions>
+											<RowDefinition Height="Auto" />
+											<RowDefinition Height="Auto" />
+											<RowDefinition Height="Auto" />
+											<RowDefinition Height="Auto" />
+										</Grid.RowDefinitions>
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="*"/>
+											<ColumnDefinition Width="*"/>
+										</Grid.ColumnDefinitions>
+
+										<StackPanel Grid.Row="0" Grid.Column="0" Margin="15 5 0 5" Orientation="Horizontal">
+											<TextBlock Text="Installed version" VerticalAlignment="Center"/>
+											<TextBlock Margin="10 0 0 0" FontWeight="Bold" VerticalAlignment="Center"
+													   Text="{Binding UpdateViewModel.InstalledVersionString, Mode=OneWay}"/>
+										</StackPanel>
+										<StackPanel Grid.Row="0" Grid.Column="1" Margin="15 5 0 5" Orientation="Horizontal">
+											<TextBlock Text="Available version" VerticalAlignment="Center"/>
+											<TextBlock Margin="10 0 0 0" FontWeight="Bold" VerticalAlignment="Center"
+													   Text="{Binding UpdateViewModel.AvailableVersionString, Mode=OneWay}"/>
+										</StackPanel>
+
+										<TextBlock Grid.Row="1" Grid.ColumnSpan="2" Margin="15 12 15 5" TextWrapping="Wrap" MinHeight="36"
+												   Text="{Binding UpdateViewModel.StatusText, Mode=OneWay}"/>
+
+										<ProgressBar Grid.Row="2" Grid.ColumnSpan="2" Margin="15 0 15 5" Height="6" Minimum="0" Maximum="100"
+													 Value="{Binding UpdateViewModel.DownloadProgressPercent, Mode=OneWay}"
+													 Visibility="{Binding UpdateViewModel.IsDownloading, Converter={StaticResource FalseToCollapsedConverter}}"/>
+
+										<StackPanel Grid.Row="3" Grid.ColumnSpan="2" Margin="15 12 0 5" Orientation="Horizontal">
+											<Button Width="180" Height="32" Content="CHECK FOR UPDATES"
+													Command="{Binding UpdateViewModel.CheckForUpdateCommand}"
+													ToolTip="Ask the CapFrameX update server whether a newer version is available"/>
+											<Button Width="145" Height="32" Margin="15 0 0 0" Content="SHOW UPDATE"
+													Command="{Binding UpdateViewModel.ShowUpdateDialogCommand}"
+													ToolTip="Show what the available update contains"/>
+											<!-- The explicit margin replaces the one from the CheckBox style above,
+											     so the gap to the label has to be restored here. -->
+											<CheckBox Margin="25 0 8 0" VerticalAlignment="Center"
+													  IsChecked="{Binding UpdateViewModel.AutoUpdateCheckActive, Mode=TwoWay}"
+													  ToolTip="Check for updates every time CapFrameX starts"/>
+											<TextBlock VerticalAlignment="Center" Text="Check on start"/>
+										</StackPanel>
+									</Grid>
+								</DataTemplate>
 								<DataTemplate x:Key="HelpContent">
 									<xctk:RichTextBox Margin="10" Width="475" Height="300" IsHitTestVisible="False" IsReadOnly="True"  Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                                                       Background="{DynamicResource MaterialDesign.Brush.Background}"
@@ -540,6 +597,9 @@
 										</DataTrigger>
 										<DataTrigger Binding="{Binding DataContext.SelectedView, ElementName=ColorbarViewName}" Value="Remote">
 											<Setter Property="ContentTemplate" Value="{StaticResource RemoteContent}" />
+										</DataTrigger>
+										<DataTrigger Binding="{Binding DataContext.SelectedView, ElementName=ColorbarViewName}" Value="Update">
+											<Setter Property="ContentTemplate" Value="{StaticResource UpdateContent}" />
 										</DataTrigger>
 										<DataTrigger Binding="{Binding DataContext.SelectedView, ElementName=ColorbarViewName}" Value="Help">
 											<Setter Property="ContentTemplate" Value="{StaticResource HelpContent}" />

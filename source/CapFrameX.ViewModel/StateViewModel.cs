@@ -4,7 +4,6 @@ using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
-using CapFrameX.Contracts.UpdateCheck;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using Microsoft.Extensions.Logging;
@@ -29,7 +28,6 @@ namespace CapFrameX.ViewModel
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ICaptureService _captureService;
 		private readonly IOverlayService _overlayService;
-		private readonly IUpdateCheck _updateCheck;
 		private readonly IAppVersionProvider _appVersionProvider;
 		private readonly ISystemInfo _systemInfo;
 		private static ILogger<StateViewModel> _logger;
@@ -39,7 +37,6 @@ namespace CapFrameX.ViewModel
 		private HookOverlayStatus _hookOverlayStatus;
 		private bool _isHookOverlayStatusVisible;
 		private Task _systemInfoStatusUpdateTask;
-		private string _updateHyperlinkText;
 
 		private bool IsBeta => GetBetaState();
 
@@ -136,15 +133,11 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public string UpdateHyperlinkText
-		{
-			get { return _updateHyperlinkText; }
-			set
-			{
-				_updateHyperlinkText = value;
-				RaisePropertyChanged();
-			}
-		}
+		/// <summary>
+		/// Backs the update indicator on the right of the status bar. The shared instance also
+		/// backs the update tab in the options popup and the embedded dialog.
+		/// </summary>
+		public UpdateViewModel UpdateViewModel { get; }
 
 		public string VersionString
 		{
@@ -157,8 +150,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool IsUpdateAvailable { get; private set; }
-
 		public bool IsLoggedIn { get; private set; }
 
 		public string InfoToolTipText => GetInfoText();
@@ -170,7 +161,7 @@ namespace CapFrameX.ViewModel
 			ICaptureService captureService,
 			IOverlayService overlayService,
 			IHookOverlayStatusService hookOverlayStatusService,
-			IUpdateCheck updateCheck,
+			UpdateViewModel updateViewModel,
 			IAppVersionProvider appVersionProvider,
 			LoginManager loginManager,
 			IRTSSService rTSSService,
@@ -182,7 +173,7 @@ namespace CapFrameX.ViewModel
 			_appConfiguration = appConfiguration;
 			_captureService = captureService;
 			_overlayService = overlayService;
-			_updateCheck = updateCheck;
+			UpdateViewModel = updateViewModel;
 			_appVersionProvider = appVersionProvider;
 			_systemInfo = systemInfo;
 			_logger = logger;
@@ -231,17 +222,6 @@ namespace CapFrameX.ViewModel
 			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSystemInfo>>().Subscribe(msg =>
 			{
 				UpdateSystemInfoStatus();
-			});
-
-			Task.Run(async () =>
-			{
-				var (updateAvailable, updateVersion) = await _updateCheck.IsUpdateAvailable();
-				Dispatcher.CurrentDispatcher.Invoke(() =>
-				{
-					IsUpdateAvailable = updateAvailable;
-					UpdateHyperlinkText = $"New version available on GitHub: v{updateVersion}";
-					RaisePropertyChanged(nameof(IsUpdateAvailable));
-				});
 			});
 
 			Dispatcher.CurrentDispatcher.BeginInvoke(

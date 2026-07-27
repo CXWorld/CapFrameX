@@ -52,6 +52,13 @@
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
+        <!-- Hosts the embedded update dialog. It sits above the regions so the modal overlay
+             covers the whole window; the options popup cannot host it, because a DialogHost
+             nested in a WPF Popup does not reliably render its overlay. Its DataContext is set
+             to the UpdateViewModel in the code-behind. -->
+        <materialDesign:DialogHost x:Name="UpdateDialogHost"
+                                   IsOpen="{Binding IsUpdateDialogOpen, Mode=TwoWay}"
+                                   DialogContent="{Binding UpdateDialogContent}">
         <Grid>
 			<Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="LeftColumn" Width="400" MaxWidth="{Binding ElementName=ShellWindow, Path=ActualWidth, Converter={StaticResource AddValueConverter}}" MinWidth="400"/>
@@ -69,5 +76,6 @@
             <ContentControl x:Name="ScreenshotArea" Grid.Column="2" Grid.Row="1" prism:RegionManager.RegionName="DataRegion" />
 			<ContentControl Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2" prism:RegionManager.RegionName="StateRegion" />
 		</Grid>
+        </materialDesign:DialogHost>
 	</Grid>
 </Window>

@@ -3,6 +3,7 @@ using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.MVVM;
 using CapFrameX.MVVM;
 using CapFrameX.View.UITracker;
+using CapFrameX.ViewModel;
 using Serilog;
 using System;
 using System.ComponentModel;
@@ -50,7 +51,8 @@ namespace CapFrameX
 
         private GridLength ColumnAWidthSaved { get; set; }
 
-        public Shell(ISettingsStorage settingsStorage, IPathService pathService)
+        public Shell(ISettingsStorage settingsStorage, IPathService pathService,
+            UpdateViewModel updateViewModel)
         {
             using (StartupPerformanceLogger.Measure("Shell XAML and resource initialization"))
             {
@@ -60,6 +62,10 @@ namespace CapFrameX
             _settingsStorage = settingsStorage;
             _pathService = pathService;
             Closing += Shell_Closing;
+
+            // Only the DialogHost gets the update view model; the regions bring their own view
+            // models along, so nothing else in the shell is affected by this DataContext.
+            UpdateDialogHost.DataContext = updateViewModel;
 
             if (PortableModeDetector.IsPortableMode)
             {

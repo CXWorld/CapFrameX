@@ -130,9 +130,40 @@ Registration is bitness-scoped and this is load-bearing: the loader identifies a
 
 **Never register the layer in HKCU** (the OSD repo's `register_layer.cmd` uses HKLM only and purges HKCU leftovers). HKCU is user-controlled, so the loader ignores it for targets started elevated — e.g. a game launched from a Visual Studio that debugs the admin-only `CapFrameX.exe` — and it is not split by bitness, so it also triggers the shadowing above. Both failure modes are silent and look exactly like "this game has no Vulkan": `VulkanActivityProbe` finds no renderer-state mapping, `VulkanLayerModuleProbe` finds no layer module, and `HookOverlayManager` correctly concludes DXGI and injects the hook into a Vulkan title — where the in-game arbiter denies its renderer lease and the status parks on `Initializing` until the hook-free fallback takes over.
 
+## Update service
+
+`IUpdateService` (`CapFrameX.Updater/UpdateService.cs`) fetches a JSON manifest from the CapFrameX
+update server, compares it against the running assembly version and, once the user confirms,
+downloads the installer package into the updates folder. The manifest URI comes from the
+`UpdateManifestUri` key in `App.config`; **while it is empty the whole feature stays inert** and no
+update UI appears. The wire format is documented by `CapFrameX.Updater/update-manifest.sample.json`.
+
+Installing happens on the *next* app start, not at download time, because the installer replaces the
+files of the running app. `UpdateInstaller.TryStartPendingUpdate` therefore runs in `App.OnStartup`
+**before the bootstrapper builds the container** — it reads the `pending-update.json` marker,
+re-verifies the package against its SHA-256, starts it and returns true, at which point `App` sets
+`_skipShutdownSequence` (nothing has been started yet, so the shutdown sequence in `ApplicationExit`
+would only throw) and exits. The marker is deleted *before* the installer is launched so a failing
+or cancelled install cannot loop forever; with no marker present, leftover packages are deleted.
+A package is only ever executed when it is an `.exe`/`.msi` and its name resolves inside the updates
+folder — the manifest is remote input.
+
+Version comparison is normalized to `Major.Minor.Build`: assembly versions carry a fourth component
+that manifests do not, and `Version` sorts an unset component below zero, so `1.9.1` would otherwise
+look older than `1.9.1.0`.
+
+One shared `UpdateViewModel` singleton backs all three surfaces: the indicator on the right of the
+status bar (`StateView`), the UPDATE tab in the options popup (`ColorbarView`), and the embedded
+dialog. The dialog's `DialogHost` sits in `Shell.xaml`, not in the options popup — a `DialogHost`
+nested inside a WPF `Popup` does not reliably render its overlay (same caveat as `ControlView.xaml`).
+
+`IUpdateCheck`/`WebVersionProvider` (the older check against `version/Version.txt` on GitHub) are
+still registered and covered by tests, but nothing in the UI consumes them any more.
+
 ## Configuration Files
 - User settings: `%appdata%/CapFrameX/Configuration/AppSettings.json`
 - Overlay config: `%appdata%/CapFrameX/Configuration/OverlayEntryConfiguration_(0/1/2).json`
+- Staged update packages: `%appdata%/CapFrameX/Updates` (portable mode: `<appdir>/Updates`)
 - Version: `version/Version.txt`
 
 ## NuGet Package Issues

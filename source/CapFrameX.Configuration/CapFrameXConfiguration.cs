@@ -146,6 +146,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool AutoUpdateCheckActive
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
         public string WebservicePort
         {
             get => Get<string>("1337");

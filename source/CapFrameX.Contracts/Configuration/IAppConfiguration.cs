@@ -286,6 +286,12 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool AppNotificationsActive { get; set; }
 
+		/// <summary>
+		/// Whether the update service asks the update server for a newer version on app start.
+		/// The manual check in the options popup works regardless of this setting.
+		/// </summary>
+		bool AutoUpdateCheckActive { get; set; }
+
 		string WebservicePort { get; set; }
 
 		bool CaptureRTSSFrameTimes { get; set; }

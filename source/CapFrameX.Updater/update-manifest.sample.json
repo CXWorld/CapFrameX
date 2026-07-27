@@ -1,0 +1,28 @@
+{
+  "_comment": [
+    "Example of the manifest CapFrameX fetches from the URI configured as 'UpdateManifestUri'",
+    "in App.config. Serve it as application/json. Only 'version' and 'package.url' are required.",
+    "'package.url' may be relative - it is then resolved against the manifest URI.",
+    "Set 'package.sha256' (lower or upper case hex): when present the download is rejected unless",
+    "it matches, and the staged file is verified again before it is executed.",
+    "'package.arguments' is the command line handed to the installer; for the CapFrameX WiX",
+    "bootstrapper '/passive /norestart' installs without further prompts."
+  ],
+
+  "version": "1.9.1",
+  "releaseDate": "2026-08-01",
+  "summary": "Fixes PresentMon capture stalls and adds the new overlay layout editor.",
+  "highlights": [
+    "Capture no longer stalls when a game loses focus",
+    "New overlay layout editor",
+    "Updated Intel PresentMon to 2.3"
+  ],
+  "releaseNotesUrl": "https://github.com/DevTechProfile/CapFrameX/releases",
+
+  "package": {
+    "url": "packages/CapFrameXBootstrapper-1.9.1.exe",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "size": 78123456,
+    "arguments": "/passive /norestart"
+  }
+}

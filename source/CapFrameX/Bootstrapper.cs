@@ -7,6 +7,7 @@ using CapFrameX.Contracts.MVVM;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
+using CapFrameX.Contracts.Update;
 using CapFrameX.Contracts.UpdateCheck;
 using CapFrameX.Data;
 using CapFrameX.Data.Logging;
@@ -25,6 +26,7 @@ using CapFrameX.Sensor;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Updater;
+using CapFrameX.ViewModel;
 using DryIoc;
 using Microsoft.Extensions.Logging;
 using Prism.DryIoc;
@@ -34,6 +36,7 @@ using Prism.Mvvm;
 using Prism.Regions;
 using Serilog;
 using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
@@ -304,6 +307,19 @@ namespace CapFrameX
                     Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
                     Container.RegisterInstance<IWebVersionProvider>(new WebVersionProvider());
                     Container.Register<IUpdateCheck, UpdateCheck>(Reuse.Singleton);
+
+                    // The update service needs its manifest URI and the staging folder, neither of
+                    // which the container can supply, so it is built here like the process list below.
+                    var updateServiceLogger = Container.Resolve<ILoggerFactory>().CreateLogger<UpdateService>();
+                    Container.RegisterInstance<IUpdateService>(new UpdateService(
+                        ConfigurationManager.AppSettings["UpdateManifestUri"],
+                        Container.Resolve<IAppVersionProvider>(),
+                        pathService.UpdatesFolder,
+                        updateServiceLogger));
+
+                    // Status bar, options popup and the embedded dialog share one instance.
+                    Container.Register<UpdateViewModel>(Reuse.Singleton);
+
                     Container.Register<ILogEntryManager, LogEntryManager>(Reuse.Singleton);
                     Container.Register<LoginManager>(Reuse.Singleton);
                     Container.Register<ICloudManager, CloudManager>(Reuse.Singleton);
