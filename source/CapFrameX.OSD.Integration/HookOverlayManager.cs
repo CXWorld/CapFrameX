@@ -81,6 +81,7 @@ namespace CapFrameX.OSD.Integration
         private ulong _lastNativeStatusTickMs;
         private ulong _rendererInitializingSinceTickMs;
         private bool _rendererInitializationStalled;
+        private bool _foreignPresenterDetected;
         private int _injectionStatusPid;
         private string _lastInjectionError;
         private string _nativeFallbackReason;
@@ -208,6 +209,7 @@ namespace CapFrameX.OSD.Integration
                 _lastNativeStatusTickMs = 0;
                 _rendererInitializingSinceTickMs = 0;
                 _rendererInitializationStalled = false;
+                _foreignPresenterDetected = false;
                 _lastInjectionError = null;
                 _nativeFallbackReason = null;
                 _hookFreeFallbackReason = null;
@@ -729,7 +731,7 @@ namespace CapFrameX.OSD.Integration
         }
 
         private void UpdateNativeStatusFallback(int pid, bool hasNativeStatus,
-            EHookOverlayStatus? nativeState, ulong nowTickMs)
+            EHookOverlayStatus? nativeState, ulong nowTickMs, bool foreignPresenter)
         {
             bool changed = false;
             bool fallbackEnabled = false;
@@ -741,10 +743,16 @@ namespace CapFrameX.OSD.Integration
                 if (hasNativeStatus)
                 {
                     _lastNativeStatusTickMs = nowTickMs;
+                    // A frame-generation runtime (FSR FG / DLSS-G / XeSS-FG) wraps this game's
+                    // swapchain; the hook stands down by design. Latched so an in-game FG toggle
+                    // cannot flip the OSD path back and forth mid-session.
+                    if (foreignPresenter)
+                        _foreignPresenterDetected = true;
+
                     // The hook reports Present activity long before it can draw. Track how long
                     // it stays in that stage; once it has clearly stalled, latch the verdict so
                     // hiding the hook for the fallback cannot flip the state back and forth.
-                    if (!_rendererInitializationStalled)
+                    if (!_rendererInitializationStalled && !_foreignPresenterDetected)
                     {
                         if (nativeState == EHookOverlayStatus.Initializing)
                         {
@@ -759,7 +767,19 @@ namespace CapFrameX.OSD.Integration
                         }
                     }
 
-                    if (_rendererInitializationStalled)
+                    if (_foreignPresenterDetected)
+                    {
+                        reason = "a frame-generation runtime (FSR FG / DLSS FG / XeSS FG) is " +
+                            "presenting this game; the in-game overlay stands down";
+                        if (!string.Equals(reason, _nativeFallbackReason,
+                            StringComparison.Ordinal))
+                        {
+                            _nativeFallbackReason = reason;
+                            changed = true;
+                            fallbackEnabled = true;
+                        }
+                    }
+                    else if (_rendererInitializationStalled)
                     {
                         reason = "the in-game renderer did not initialize within " +
                             $"{HookRendererReadyTimeoutMs / 1000} seconds";
@@ -1134,7 +1154,8 @@ namespace CapFrameX.OSD.Integration
                             nowTickMs)
                         : null;
                     UpdateNativeStatusFallback(pid, hasDxgiStatus, nativeStatus?.State,
-                        nowTickMs);
+                        nowTickMs, hasDxgiStatus &&
+                        (native.Flags & NativeHookStatusFlags.ForeignPresenter) != 0);
                     lock (_stateGate)
                     {
                         hookFreeFallbackActive = _hookFreeFallbackActive;

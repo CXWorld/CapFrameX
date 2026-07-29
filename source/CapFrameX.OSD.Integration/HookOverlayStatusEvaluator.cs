@@ -19,6 +19,12 @@ namespace CapFrameX.OSD.Integration
                     $"{target}: {DescribeError(native.LastError)}", heartbeatAge, native,
                     processId, runtime);
             }
+            if ((flags & NativeHookStatusFlags.ForeignPresenter) != 0)
+            {
+                return Status(EHookOverlayStatus.Initializing,
+                    $"{target}: a frame-generation runtime is presenting; the in-game overlay stands down.",
+                    heartbeatAge, native, processId, runtime);
+            }
             if ((flags & NativeHookStatusFlags.HooksArmed) == 0)
             {
                 return Status(EHookOverlayStatus.Initializing,

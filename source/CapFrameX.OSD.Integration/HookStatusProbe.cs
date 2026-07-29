@@ -14,7 +14,8 @@ namespace CapFrameX.OSD.Integration
         MetricsConnected = 1u << 5,
         Rendered = 1u << 6,
         Dormant = 1u << 7,
-        Error = 1u << 8
+        Error = 1u << 8,
+        ForeignPresenter = 1u << 9
     }
 
     internal struct NativeHookStatusSnapshot
