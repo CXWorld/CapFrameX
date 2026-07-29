@@ -195,6 +195,17 @@
                                 materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="Restore" Height="22" Width="22" />
                                 </Button>
+                                <Button Width="28" Height="28" Margin="0 10 100 0" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
+                                    Command="{Binding ResyncPerfmonCommand}"
+                                    materialDesign:RippleAssist.Feedback="#DD000000">
+                                    <materialDesign:PackIcon Kind="Update" Height="22" Width="22" />
+                                    <Button.ToolTip>
+                                        <ToolTip>
+                                            <TextBlock Width="275" TextWrapping="Wrap"
+                                                       Text="Resync Windows performance monitor when you have issues with 0 memory counter. Restart CX after execution."/>
+                                        </ToolTip>
+                                    </Button.ToolTip>
+                                </Button>
                                 <Button Width="28" Height="28" Margin="0 10 60 0" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
                                     ToolTip="Open configuration folder" Command="{Binding OpenConfigFolderCommand}"
                                     materialDesign:RippleAssist.Feedback="#DD000000">

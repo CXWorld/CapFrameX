@@ -605,8 +605,6 @@ namespace CapFrameX.ViewModel
 
         public ICommand SetToMinOsdCommand { get; }
 
-        public ICommand ResyncPerfmonCommand { get; }
-
         public ICommand OpenConfigFolderCommand { get; }
 
         public ICommand SortByEntryTypeCommand { get; }
@@ -751,9 +749,6 @@ namespace CapFrameX.ViewModel
             SetToMinOsdCommand = new DelegateCommand(
                 () => OnSetMinOsd());
 
-            ResyncPerfmonCommand = new DelegateCommand(
-                () => OnResyncPerfmon());
-
             OpenConfigFolderCommand = new DelegateCommand(OnOpenConfigFolder);
             SortByEntryTypeCommand = new DelegateCommand(OnSortByEntryType);
             ClearFilterCommand = new DelegateCommand(OnClearFilter);
@@ -847,24 +842,6 @@ namespace CapFrameX.ViewModel
                         break;
                 }
             }
-        }
-
-        private void OnResyncPerfmon()
-        {
-            ProcessStartInfo processStartInfo = new ProcessStartInfo("cmd.exe", "/c " + @"Files\bf0822e8-2e55-4b99-82ee-939d8ac2384e.bat")
-            {
-                CreateNoWindow = false,
-                WindowStyle = ProcessWindowStyle.Normal,
-                Verb = "runas"
-            };
-
-            Process p = new Process
-            {
-                StartInfo = processStartInfo
-            };
-
-            p.Start();
-            p.WaitForExit();
         }
 
         private void SetGlobalHookEventOverlayHotkey()

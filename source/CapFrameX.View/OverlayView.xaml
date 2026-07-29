@@ -535,17 +535,6 @@
 											</ToolTip>
 										</Button.ToolTip>
 									</Button>
-									<TextBlock Margin="10 0 0 0"  VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Resync Perfmon</TextBlock>
-									<Button Margin="10 0 0 0" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-                                            Command="{Binding ResyncPerfmonCommand}" materialDesign:RippleAssist.Feedback="#DD000000">
-										<materialDesign:PackIcon Kind="Update" Height="15" Width="15" />
-										<Button.ToolTip>
-											<ToolTip>
-												<TextBlock Width="275" Text="Resync Windows performance monitor when you have issues with 0 memory counter. Restart CX after execution." TextWrapping="Wrap">
-												</TextBlock>
-											</ToolTip>
-										</Button.ToolTip>
-									</Button>
 								</StackPanel>
 							</Border>
 						</StackPanel>
