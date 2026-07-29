@@ -1,9 +1,7 @@
 using CapFrameX.Contracts.Configuration;
-using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Logging;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
-using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Monitoring.Contracts;
