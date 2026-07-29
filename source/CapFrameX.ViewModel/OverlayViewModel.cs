@@ -443,6 +443,50 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        // Uniform size of BOTH CapFrameX renderers in percent; RTSS has its own zoom in the RTSS
+        // settings and is unaffected. Applies live through the same two paths as the opacity.
+        public int OsdZoom
+        {
+            get { return _appConfiguration.OsdZoom; }
+            set
+            {
+                _appConfiguration.OsdZoom = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        // Placement of the CapFrameX overlay: anchored corner + distance from it. Reaches all
+        // three CapFrameX renderers; RTSS is positioned by its own settings.
+        public int OsdAnchor
+        {
+            get { return _appConfiguration.OsdAnchor; }
+            set
+            {
+                _appConfiguration.OsdAnchor = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int OsdMarginX
+        {
+            get { return _appConfiguration.OsdMarginX; }
+            set
+            {
+                _appConfiguration.OsdMarginX = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int OsdMarginY
+        {
+            get { return _appConfiguration.OsdMarginY; }
+            set
+            {
+                _appConfiguration.OsdMarginY = value;
+                RaisePropertyChanged();
+            }
+        }
+
         // Controls the renderer-side smoothing of numeric values for BOTH CapFrameX renderers.
         // Off displays the latest published value directly; RTSS is unaffected.
         public bool UseOsdValueSmoothing

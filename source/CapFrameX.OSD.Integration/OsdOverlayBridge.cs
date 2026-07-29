@@ -62,6 +62,10 @@ namespace CapFrameX.OSD.Integration
         // Last background opacity forwarded to the OSD (percent); -1 forces the first push.
         private readonly IAppConfiguration _appConfiguration;
         private int _lastBgOpacity = -1;
+        // Last zoom forwarded to the OSD (percent); -1 forces the first push.
+        private int _lastZoom = -1;
+        // Last placement forwarded; -1 forces the first push after a (re)start.
+        private int _lastAnchor = -1, _lastMarginX = -1, _lastMarginY = -1;
 
         public OsdOverlayBridge(IOverlayService overlayService,
                                 IAppConfiguration appConfiguration,
@@ -77,7 +81,10 @@ namespace CapFrameX.OSD.Integration
 
             _overlayService = overlayService;
             _appConfiguration = appConfiguration;
-            _osd = new OsdHost(OsdAnchor.TopLeft, marginX: 40, marginY: 40);
+            // Seeded from the configuration so the very first frame is already placed correctly;
+            // OnEntries keeps it in sync from there.
+            _osd = new OsdHost((OsdAnchor)appConfiguration.OsdAnchor,
+                marginX: appConfiguration.OsdMarginX, marginY: appConfiguration.OsdMarginY);
             _ftIndex = frametimeColumnIndex;
             _runtimeIndex = presentRuntimeColumnIndex;
             _displayChangedIndex = displayChangedColumnIndex;
@@ -118,6 +125,8 @@ namespace CapFrameX.OSD.Integration
                 _osd.Stop();
                 _started = false;
                 _lastBgOpacity = -1; // Stop destroys the native handle; re-feed on next start
+                _lastZoom = -1;
+                _lastAnchor = -1; _lastMarginX = -1; _lastMarginY = -1;
                 _curRuntime = null;
                 lock (_fpsLock)
                 {
@@ -177,6 +186,27 @@ namespace CapFrameX.OSD.Integration
             {
                 _lastBgOpacity = bgOpacity;
                 _osd.SetBackgroundAlpha(Math.Max(0, Math.Min(100, bgOpacity)) / 100.0);
+            }
+
+            // Overlay zoom. Forwarded only on change: unlike the alpha this rebuilds the scene,
+            // so pushing it every tick would re-measure the whole panel each OSD update.
+            int zoom = _appConfiguration.OsdZoom;
+            if (zoom != _lastZoom)
+            {
+                _lastZoom = zoom;
+                _osd.SetZoom(Math.Max(50, Math.Min(200, zoom)) / 100.0);
+            }
+
+            // Placement. SetPosition moves the top-level window, so forward it on change only.
+            int anchor = _appConfiguration.OsdAnchor;
+            int marginX = _appConfiguration.OsdMarginX;
+            int marginY = _appConfiguration.OsdMarginY;
+            if (anchor != _lastAnchor || marginX != _lastMarginX || marginY != _lastMarginY)
+            {
+                _lastAnchor = anchor;
+                _lastMarginX = marginX;
+                _lastMarginY = marginY;
+                _osd.SetPosition((OsdAnchor)anchor, monitor: 0, marginX: marginX, marginY: marginY);
             }
 
             _osd.UpdateEntries(list);

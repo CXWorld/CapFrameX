@@ -24,6 +24,10 @@ namespace CapFrameX.OSD.Integration
         private readonly IDisposable _pidSub;
         private readonly object _gate = new object();
         private volatile HookMetricsChannel _channel;
+        // Anchor + margins ride their own channel: the metrics flags DWORD has no room for two
+        // pixel margins, and growing the metrics header would move the record area under readers
+        // that already accept the next version number.
+        private volatile HookPlacementChannel _placement;
         private volatile bool _enabled;
         private int _selectedPid;
         private bool _overlayActive;
@@ -39,7 +43,11 @@ namespace CapFrameX.OSD.Integration
 
             _enabled = appConfiguration.EnableHookOverlay;
             _overlayActive = appConfiguration.IsOverlayActive;
-            if (_enabled) _channel = HookMetricsChannel.Create(EffectiveTargetPidLocked());
+            if (_enabled)
+            {
+                _channel = HookMetricsChannel.Create(EffectiveTargetPidLocked());
+                _placement = HookPlacementChannel.Create();
+            }
 
             _pidSub = processIdStream
                 .DistinctUntilChanged()
@@ -68,11 +76,15 @@ namespace CapFrameX.OSD.Integration
                     RefreshTargetPolicyLocked();
                     if (_channel == null)
                         _channel = HookMetricsChannel.Create(EffectiveTargetPidLocked());
+                    if (_placement == null)
+                        _placement = HookPlacementChannel.Create();
                 }
                 else
                 {
                     _channel?.Dispose();
                     _channel = null;
+                    _placement?.Dispose();
+                    _placement = null;
                 }
             }
         }
@@ -153,7 +165,15 @@ namespace CapFrameX.OSD.Integration
                         Math.Max(0, Math.Min(100, _appConfiguration.OsdBackgroundOpacity)) * 2.55);
                     flags |= HookMetricsChannel.FlagBackgroundAlpha
                            | (alphaByte << HookMetricsChannel.BackgroundAlphaShift);
+                    // Overlay zoom (percent -> bits 16..23), same publish-every-snapshot rule as
+                    // the opacity so a slider move reaches the hook within one publish period.
+                    uint zoomPercent = (uint)Math.Max(50, Math.Min(200, _appConfiguration.OsdZoom));
+                    flags |= HookMetricsChannel.FlagZoom
+                           | (zoomPercent << HookMetricsChannel.ZoomShift);
                     _channel.Publish(list, flags, targetPid);
+                    // Publishes only on change; the renderers re-place the panel on every write.
+                    _placement?.Publish(_appConfiguration.OsdAnchor,
+                        _appConfiguration.OsdMarginX, _appConfiguration.OsdMarginY);
                 }
             }
             catch (Exception ex)
@@ -168,7 +188,11 @@ namespace CapFrameX.OSD.Integration
             _enabledSub?.Dispose();
             _activeSub?.Dispose();
             _pidSub?.Dispose();
-            lock (_gate) { _channel?.Dispose(); _channel = null; }
+            lock (_gate)
+            {
+                _channel?.Dispose(); _channel = null;
+                _placement?.Dispose(); _placement = null;
+            }
         }
     }
 }

@@ -190,6 +190,29 @@ namespace CapFrameX.Contracts.Configuration
 		int OsdBackgroundOpacity { get; set; }
 
 		/// <summary>
+		/// Uniform size of the CapFrameX overlay in percent (50..200, default 100). Reaches the
+		/// same two cfx-OSD backends as <see cref="OsdBackgroundOpacity"/> — the hook-free window
+		/// overlay directly through the C API, the in-game hook through the metrics shared-memory
+		/// header flags. Scales fonts, paddings, row gaps and the graphs alike; it does NOT affect
+		/// the RTSS renderer, which has its own zoom in the RTSS settings.
+		/// </summary>
+		int OsdZoom { get; set; }
+
+		/// <summary>
+		/// Corner the CapFrameX overlay is anchored to, as <c>cfx_osd_anchor</c>:
+		/// 0 = top left, 1 = top right, 2 = bottom left, 3 = bottom right, 4 = top center.
+		/// Applies to all three CapFrameX renderers (hook-free, in-game hook, Vulkan layer);
+		/// RTSS is positioned by its own settings.
+		/// </summary>
+		int OsdAnchor { get; set; }
+
+		/// <summary>Horizontal distance from the anchored corner in px (0..2000).</summary>
+		int OsdMarginX { get; set; }
+
+		/// <summary>Vertical distance from the anchored corner in px (0..2000).</summary>
+		int OsdMarginY { get; set; }
+
+		/// <summary>
 		/// Smooth numeric values between OSD data updates. When disabled, the CapFrameX
 		/// renderers display each newly published value immediately without generated
 		/// intermediate values. Enabled by default for backward compatibility.

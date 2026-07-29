@@ -1094,6 +1094,47 @@
 												   Text="{Binding OsdBackgroundOpacity, StringFormat={}{0} %}"/>
 									</Grid>
 
+									<TextBlock Margin="0 8 0 0" FontWeight="SemiBold" Text="Overlay position"/>
+									<TextBlock Style="{StaticResource OsdOptionsDescription}"
+											   Text="Corner the in-game and hook-free CapFrameX renderers anchor to, and the distance from it in pixels; RTSS is positioned in the RTSS settings."/>
+									<Grid Margin="0 8 0 0">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="*"/>
+											<ColumnDefinition Width="Auto"/>
+										</Grid.ColumnDefinitions>
+										<ComboBox VerticalAlignment="Center" SelectedIndex="{Binding OsdAnchor, Mode=TwoWay}">
+											<ComboBoxItem Content="Top left"/>
+											<ComboBoxItem Content="Top right"/>
+											<ComboBoxItem Content="Bottom left"/>
+											<ComboBoxItem Content="Bottom right"/>
+											<ComboBoxItem Content="Top center"/>
+										</ComboBox>
+										<StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12 0 0 0">
+											<TextBlock Margin="0 0 6 0" VerticalAlignment="Center" Text="X"/>
+											<TextBox Width="45" Height="28" HorizontalContentAlignment="Center"
+													 Text="{Binding OsdMarginX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+													 PreviewTextInput="IntegerNumberValidationTextBox"/>
+											<TextBlock Margin="12 0 6 0" VerticalAlignment="Center" Text="Y"/>
+											<TextBox Width="45" Height="28" HorizontalContentAlignment="Center"
+													 Text="{Binding OsdMarginY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+													 PreviewTextInput="IntegerNumberValidationTextBox"/>
+										</StackPanel>
+									</Grid>
+
+									<TextBlock Margin="0 8 0 0" FontWeight="SemiBold" Text="Overlay size"/>
+									<TextBlock Style="{StaticResource OsdOptionsDescription}"
+											   Text="Scales text, spacing and graphs of the in-game and hook-free CapFrameX renderers; RTSS uses its own zoom."/>
+									<Grid Margin="0 8 0 0">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="*"/>
+											<ColumnDefinition Width="48"/>
+										</Grid.ColumnDefinitions>
+										<Slider VerticalAlignment="Center" Minimum="50" Maximum="200" TickFrequency="5"
+												IsSnapToTickEnabled="True" Value="{Binding OsdZoom, Mode=TwoWay}"/>
+										<TextBlock Grid.Column="1" Margin="8 0 0 0" VerticalAlignment="Center" TextAlignment="Right"
+												   Text="{Binding OsdZoom, StringFormat={}{0} %}"/>
+									</Grid>
+
 									<Separator Margin="0 12 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 									<DockPanel Margin="0 8 0 0">
 										<CheckBox DockPanel.Dock="Right" Margin="12 0 5 0" VerticalAlignment="Center"

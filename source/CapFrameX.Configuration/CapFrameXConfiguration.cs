@@ -730,6 +730,34 @@ namespace CapFrameX.Configuration
             set => Set(Math.Max(0, Math.Min(100, value)));
         }
 
+        // Clamped to the range the metrics shared memory can carry: the hook receives the zoom as
+        // a single byte in the header flags, so anything outside 50..200 could not be published.
+        public int OsdZoom
+        {
+            get => Get<int>(100);
+            set => Set(Math.Max(50, Math.Min(200, value)));
+        }
+
+        // 0..4 = cfx_osd_anchor. The native reader rejects anything outside that range and keeps
+        // the previous placement, so clamping here is what makes a bad value visible as "no move".
+        public int OsdAnchor
+        {
+            get => Get<int>(0);
+            set => Set(Math.Max(0, Math.Min(4, value)));
+        }
+
+        public int OsdMarginX
+        {
+            get => Get<int>(30);
+            set => Set(Math.Max(0, Math.Min(2000, value)));
+        }
+
+        public int OsdMarginY
+        {
+            get => Get<int>(30);
+            set => Set(Math.Max(0, Math.Min(2000, value)));
+        }
+
         public bool UseOsdValueSmoothing
         {
             get => Get<bool>(true);
