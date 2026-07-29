@@ -17,6 +17,15 @@ static ADLXHelper g_ADLXHelp;
 IADLXPerformanceMonitoringServicesPtr _perfMonitoringService;
 IADLXGPUListPtr _gpus;
 
+// Release all globally held ADLX interfaces. Must run before g_ADLXHelp.Terminate();
+// a Release() after Terminate() - e.g. via the atexit destructors on process
+// shutdown - crashes inside amdadlx64.dll.
+static void ReleaseAdlxInterfaces()
+{
+	_gpus = nullptr;
+	_perfMonitoringService = nullptr;
+}
+
 void GetTimeStamp(IADLXGPUMetricsPtr gpuMetrics)
 {
 	adlx_int64 timeStamp = 0;
@@ -363,17 +372,20 @@ bool IntializeAdlx()
 
 		if (!check)
 		{
+			ReleaseAdlxInterfaces();
 			g_ADLXHelp.Terminate();
 		}
 	}
 	catch (const std::exception& e)
 	{
+		ReleaseAdlxInterfaces();
 		g_ADLXHelp.Terminate();  // Clean up resources
 		return false; // Return false on any exception
 	}
 	catch (...)
 	{
 		// Catch any other types of exceptions
+		ReleaseAdlxInterfaces();
 		g_ADLXHelp.Terminate();  // Clean up resources
 		return false; // Return false on any unknown exception
 	}
@@ -383,7 +395,10 @@ bool IntializeAdlx()
 
 void CloseAdlx()
 {
-	_perfMonitoringService->StopPerformanceMetricsTracking();
+	if (_perfMonitoringService != nullptr)
+		_perfMonitoringService->StopPerformanceMetricsTracking();
+
+	ReleaseAdlxInterfaces();
 	g_ADLXHelp.Terminate();
 }
 
