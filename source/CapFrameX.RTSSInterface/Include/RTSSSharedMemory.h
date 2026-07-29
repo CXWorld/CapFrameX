@@ -368,6 +368,11 @@ typedef struct RTSS_SHARED_MEMORY
 	DWORD dwProcessPerfCountersArrOffset;
 	//offset of arrPerfCounters array for compatibility with future versions (relative to application entry)
 
+//next fields are valid for v2.19 and newer shared memory format only
+
+	LARGE_INTEGER qwLatencyMarkerSetTimestamp;
+	LARGE_INTEGER qwLatencyMarkerResetTimestamp;
+
 //OSD slot descriptor structure
 
 	typedef struct RTSS_SHARED_MEMORY_OSD_ENTRY
@@ -386,6 +391,11 @@ typedef struct RTSS_SHARED_MEMORY
 
 		BYTE	buffer[262144];
 		//OSD slot data buffer
+
+	//next fields are valid for v2.20 and newer shared memory format only
+
+		char	szOSDEx2[32768];
+		//additional 32KB extended OSD slot text
 
 	} RTSS_SHARED_MEMORY_OSD_ENTRY, * LPRTSS_SHARED_MEMORY_OSD_ENTRY;
 
@@ -627,6 +637,8 @@ typedef struct RTSS_EMBEDDED_OBJECT
 #define RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_FRAMERATE_MAX				1024
 #define RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_FRAMERATE_1DOT0_PERCENT_LOW	2048
 #define RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_FRAMERATE_0DOT1_PERCENT_LOW	4096
+
+#define RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_BAR_RANGE					8192
 /////////////////////////////////////////////////////////////////////////////
 #pragma warning (disable : 4200)
 
