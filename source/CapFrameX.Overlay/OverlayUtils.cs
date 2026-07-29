@@ -1,11 +1,83 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CapFrameX.Overlay
 {
     public static class OverlayUtils
     {
+        /// <summary>
+        /// Position of an entry in the list an overlay template produces. The framerate block always
+        /// closes the overlay, and DisplayTime belongs directly beneath the framerate rows — the same
+        /// order <see cref="GetOverlayEntryDefaults"/> lays out, so applying a template never moves it
+        /// somewhere else than "Reset to default" does.
+        /// </summary>
+        /// <remarks>
+        /// Framerate, Frametime and DisplayTime deliberately get THREE DISTINCT ranks rather than one
+        /// shared rank. Callers sort ties by SortKey, which is identical ("0_0_0_0_0") for all CX
+        /// entries, so a shared rank would leave the stable sort to inherit whatever order the
+        /// incoming list happens to have — and a configuration written before DisplayTime was ranked
+        /// here has it sitting at the very TOP of the list. Distinct ranks repair such a list instead
+        /// of preserving it.
+        /// </remarks>
+        public static int GetTemplateSortOrder(IOverlayEntry entry)
+        {
+            if (entry.Identifier == "Framerate")
+                return 80;
+            if (entry.Identifier == "Frametime")
+                return 81;
+            if (entry.Identifier == "DisplayTime")
+                return 82;
+
+            // Group entries by type so that sort keys from different hardware
+            // namespaces never mix. Within each type group the SortKey (derived
+            // from PresentationSortKey) controls the order, regardless of
+            // whether the entry is enabled or disabled.
+
+            switch (entry.OverlayEntryType)
+            {
+                case EOverlayEntryType.CX:
+                    // CustomCPU/CustomRAM act as section headers when template-enabled
+                    if (entry.Identifier == "CustomCPU")
+                        return entry.ShowOnOverlay ? 30 : 10;
+                    if (entry.Identifier == "CustomRAM")
+                        return entry.ShowOnOverlay ? 50 : 10;
+                    return 10;
+
+                case EOverlayEntryType.GPU:
+                    return 20;
+
+                case EOverlayEntryType.CPU:
+                    return 40;
+
+                case EOverlayEntryType.RAM:
+                    return 60;
+
+                case EOverlayEntryType.HDD:
+                    return 65;
+
+                case EOverlayEntryType.OnlineMetric:
+                    return 70;
+
+                default:
+                    return 90;
+            }
+        }
+
+        /// <summary>
+        /// Orders the entries an overlay template produced: by section (<see cref="GetTemplateSortOrder"/>),
+        /// then by SortKey within a section so sort keys from different hardware namespaces never mix.
+        /// </summary>
+        public static List<IOverlayEntry> SortForTemplate(IEnumerable<IOverlayEntry> entries)
+        {
+            return entries
+                .GroupBy(entry => GetTemplateSortOrder(entry))
+                .OrderBy(group => group.Key)
+                .SelectMany(group => group.OrderBy(entry => entry.SortKey, AlphanumericComparer.Instance))
+                .ToList();
+        }
+
         public static List<OverlayEntryWrapper> GetOverlayEntryDefaults(IAppConfiguration appConfiguration)
         {
             return new List<OverlayEntryWrapper>

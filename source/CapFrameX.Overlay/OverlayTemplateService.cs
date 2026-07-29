@@ -152,6 +152,7 @@ namespace CapFrameX.Overlay
             // 4. Framerate Section (at the end, with blank line, no graph)
             EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", false);
             EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", true);
+            EnableDisplayTimeIfSourceAvailable(entries);
 
             EnsureCpuSectionSeparator(entries);
         }
@@ -190,6 +191,7 @@ namespace CapFrameX.Overlay
             // 6. Framerate Section (at the end, with blank line, no graph)
             EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", false);
             EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", true);
+            EnableDisplayTimeIfSourceAvailable(entries);
 
             EnsureCpuSectionSeparator(entries);
         }
@@ -266,9 +268,30 @@ namespace CapFrameX.Overlay
             // 7. Framerate Section (at the end, with blank line, no graph)
             EnableByIdentifier(entries, "Framerate", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", false);
             EnableByIdentifier(entries, "Frametime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "<APP>", true);
-            EnableByIdentifier(entries, "DisplayTime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0, "Displaytime", true);
+            EnableDisplayTimeIfSourceAvailable(entries);
 
             EnsureCpuSectionSeparator(entries);
+        }
+
+        /// <summary>
+        /// Turns the Displaytime row on — but only where a display-time source exists.
+        /// </summary>
+        /// <remarks>
+        /// MsBetweenDisplayChange is delivered by the CapFrameX overlay fed from PresentMon: the
+        /// hook-free OSD, or the in-game hook in PresentMon graph mode. RTSS has no such source.
+        /// <c>OverlayEntryProvider.GetIsEntryEnabled</c> already encodes exactly that condition (and
+        /// even drops the entry from the list entirely under RTSS), and the view model reloads the
+        /// entries whenever the renderer or the data source changes — so gating on IsEntryEnabled
+        /// keeps the templates in step with the configuration instead of duplicating the rule here.
+        /// </remarks>
+        private void EnableDisplayTimeIfSourceAvailable(List<IOverlayEntry> entries)
+        {
+            var displayTime = entries.FirstOrDefault(e => e.Identifier == "DisplayTime");
+            if (displayTime == null || !displayTime.IsEntryEnabled)
+                return;
+
+            EnableByIdentifier(entries, "DisplayTime", FRAMERATE_COLOR, FRAMERATE_COLOR, 0,
+                "Displaytime", true);
         }
 
         private string GetGpuGroupColor()

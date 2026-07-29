@@ -966,11 +966,7 @@ namespace CapFrameX.ViewModel
 
             // Group entries by template section, sort groups by section order,
             // then sort elements within each group by SortKey.
-            var sortedEntries = clonedEntries
-                .GroupBy(entry => GetTemplateSortOrder(entry))
-                .OrderBy(group => group.Key)
-                .SelectMany(group => group.OrderBy(entry => entry.SortKey, AlphanumericComparer.Instance))
-                .ToList();
+            var sortedEntries = OverlayUtils.SortForTemplate(clonedEntries);
 
             // Dispose old entries and replace with sorted and templated entries
             OverlayEntries.ForEach(entry => entry.Dispose());
@@ -1017,47 +1013,6 @@ namespace CapFrameX.ViewModel
 
             if (wasOverlayActive)
                 IsOverlayActive = true;
-        }
-
-        private int GetTemplateSortOrder(IOverlayEntry entry)
-        {
-            // Framerate and Frametime always at the end
-            if (entry.Identifier == "Framerate" || entry.Identifier == "Frametime")
-                return 80;
-
-            // Group entries by type so that sort keys from different hardware
-            // namespaces never mix. Within each type group the SortKey (derived
-            // from PresentationSortKey) controls the order, regardless of
-            // whether the entry is enabled or disabled.
-
-            switch (entry.OverlayEntryType)
-            {
-                case EOverlayEntryType.CX:
-                    // CustomCPU/CustomRAM act as section headers when template-enabled
-                    if (entry.Identifier == "CustomCPU")
-                        return entry.ShowOnOverlay ? 30 : 10;
-                    if (entry.Identifier == "CustomRAM")
-                        return entry.ShowOnOverlay ? 50 : 10;
-                    return 10;
-
-                case EOverlayEntryType.GPU:
-                    return 20;
-
-                case EOverlayEntryType.CPU:
-                    return 40;
-
-                case EOverlayEntryType.RAM:
-                    return 60;
-
-                case EOverlayEntryType.HDD:
-                    return 65;
-
-                case EOverlayEntryType.OnlineMetric:
-                    return 70;
-
-                default:
-                    return 90;
-            }
         }
 
         private void OnSortByEntryType()
