@@ -13,7 +13,8 @@ namespace CapFrameX.OSD.Integration
     /// block, <c>Global\CfxOsdMetricsV1</c>. The hook (in the game process) opens it read-only and
     /// feeds the entries, so the in-game OSD shows the same values as RTSS / hook-free.
     ///
-    /// Layout is a fixed 32-byte header + up to 64 fixed-size v2 records (no offset math). The final
+    /// Layout is a fixed 32-byte header + up to <see cref="MaxEntries"/> fixed-size v2 records (no
+    /// offset math; only the first <c>EntryCount</c> records are written and read). The final
     /// four bytes of the existing v2 record are used for the optional group color; legacy readers
     /// ignore that reserved tail and remain wire-compatible. Updates use a
     /// SEQLOCK: the sequence counter is odd while writing, even when a consistent snapshot is
@@ -28,7 +29,13 @@ namespace CapFrameX.OSD.Integration
         // ---- shared layout (MUST match the native reader in overlay_metrics_shm.cpp) ----
         internal const uint Magic = 0x31584643u; // 'C''F''X''1'
         internal const uint Version = 2;
-        internal const int MaxEntries = 64;
+        // Raised 64 -> 256 (2026-07-28): the Enthusiast template enables one entry per core clock
+        // AND per core load (plus per-thread loads where the CPU exposes them), so a 24-core CPU
+        // already produced 68 entries. Publish() truncates, and GetTemplateSortOrder puts the
+        // online metrics (70) and Framerate/Frametime (80) LAST — so the rows users notice first
+        // were exactly the ones dropped, including the frametime graph. The reader's MAX_ENTRIES
+        // must be raised in lockstep: it REJECTS a snapshot whose count exceeds its own bound.
+        internal const int MaxEntries = 256;
         // header Flags bits (OffFlags). bit0 tells the hook the graph source is PresentMon (the
         // CfxOsdFrametimesV1 ring), not the hook's own local present ring.
         internal const uint FlagPresentMonGraph = 1u;
@@ -38,7 +45,11 @@ namespace CapFrameX.OSD.Integration
         // bit2 disables the renderer's historic numeric-value smoothing. Absence means enabled,
         // preserving the behavior of old publishers and configurations.
         internal const uint FlagDisableValueSmoothing = 4u;
+        // bit3: bits 16..23 carry the overlay zoom in percent (50..200). Absence means 100 %,
+        // which is what an old publisher implies for a new hook.
+        internal const uint FlagZoom = 8u;
         internal const int BackgroundAlphaShift = 8;
+        internal const int ZoomShift = 16;
         // header
         // v1 stored the redundant payload byte count at offset 16. v2 reuses that slot for the
         // target PID, keeping HeaderSize and every record offset binary-compatible.
@@ -53,7 +64,7 @@ namespace CapFrameX.OSD.Integration
                           RUpperColor = 348, RHasLower = 352, RLowerColor = 356, RSeparators = 360,
                           RGroupColor = 364;
         internal const int RecordSize = 368;
-        private const int MapSize = 32768; // > HeaderSize + MaxEntries*RecordSize (23584)
+        private const int MapSize = 131072; // > HeaderSize + MaxEntries*RecordSize (94240)
 
         private const string Sddl = "D:(A;;GA;;;WD)S:(ML;;NW;;;LW)";
         private const uint SDDL_REVISION_1 = 1;
@@ -66,6 +77,9 @@ namespace CapFrameX.OSD.Integration
         private IntPtr _view = IntPtr.Zero;
         private int _seq;
         private int _targetPid = -1;
+        // Last entry count we warned about, so an over-long entry set logs once per configuration
+        // change instead of on every publish tick. -1 = nothing reported yet.
+        private int _lastTruncationWarnCount = -1;
 
         [StructLayout(LayoutKind.Sequential)]
         private struct SECURITY_ATTRIBUTES
@@ -173,6 +187,21 @@ namespace CapFrameX.OSD.Integration
             {
                 if (_view == IntPtr.Zero) return;
                 int count = Math.Min(entries.Count, MaxEntries);
+                // Truncation drops the TAIL of a list the template sorter deliberately ends with
+                // the online metrics and Framerate/Frametime — i.e. the rows a user misses first,
+                // and the frametime graph with them. Never let that happen silently again.
+                if (entries.Count > MaxEntries && entries.Count != _lastTruncationWarnCount)
+                {
+                    _lastTruncationWarnCount = entries.Count;
+                    Log.Warning("HookOverlay: {total} overlay entries exceed the metrics channel " +
+                        "capacity of {max}; the last {dropped} ({names}) are not shown in the " +
+                        "in-game overlay", entries.Count, MaxEntries, entries.Count - MaxEntries,
+                        string.Join(", ", DroppedNames(entries)));
+                }
+                else if (entries.Count <= MaxEntries)
+                {
+                    _lastTruncationWarnCount = -1;
+                }
 
                 _seq++; // odd => write in progress
                 Marshal.WriteInt32(_view, OffSeq, _seq);
@@ -240,6 +269,17 @@ namespace CapFrameX.OSD.Integration
         }
 
         private static int NormalizePid(int targetPid) => targetPid > 0 ? targetPid : 0;
+
+        // Identifiers past the capacity, capped so a pathological config can't produce a
+        // multi-kilobyte log line.
+        private static System.Collections.Generic.IEnumerable<string> DroppedNames(
+            System.Collections.Generic.IReadOnlyList<OsdEntry> entries)
+        {
+            const int maxNames = 12;
+            for (int i = MaxEntries; i < entries.Count && i < MaxEntries + maxNames; i++)
+                yield return entries[i].Identifier ?? "?";
+            if (entries.Count > MaxEntries + maxNames) yield return "…";
+        }
 
         private static void WriteStr(IntPtr recBase, int off, int size, string s)
         {
