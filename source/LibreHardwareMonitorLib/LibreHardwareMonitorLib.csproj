@@ -44,8 +44,10 @@
     <None Remove="Resources\PawnIO\ARMMSR.bin" />
     <None Remove="Resources\PawnIO\Echo.bin" />
     <None Remove="Resources\PawnIO\IntelOOBMSM.bin" />
+    <None Remove="Resources\PawnIO\IntelPCHThermal.bin" />
     <None Remove="Resources\PawnIO\IsaBridgeEC.bin" />
     <None Remove="Resources\PawnIO\LpcCrOSEC.bin" />
+    <None Remove="Resources\PawnIO\ZhaoxinMSR.bin" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="PawnIo\PawnIO.sys">
@@ -63,6 +65,7 @@
     <EmbeddedResource Include="Resources\PawnIO\ARMMSR.bin" />
     <EmbeddedResource Include="Resources\PawnIO\Echo.bin" />
     <EmbeddedResource Include="Resources\PawnIO\IntelOOBMSM.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\IntelPCHThermal.bin" />
     <EmbeddedResource Include="Resources\PawnIO\IsaBridgeEC.bin" />
     <EmbeddedResource Include="Resources\PawnIO\LpcCrOSEC.bin" />
     <EmbeddedResource Include="Resources\PawnIO\LpcIO.bin" />
@@ -79,6 +82,7 @@
     <EmbeddedResource Include="Resources\PawnIO\DellSMM.bin" />
     <EmbeddedResource Include="Resources\PawnIO\IntelMCHBAR.bin" />
     <EmbeddedResource Include="Resources\PawnIO\Nvidia.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\ZhaoxinMSR.bin" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
