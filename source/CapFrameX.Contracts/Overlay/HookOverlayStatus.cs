@@ -13,7 +13,13 @@ namespace CapFrameX.Contracts.Overlay
         Hidden,
         Idle,
         Error,
-        Fallback
+        Fallback,
+        /// <summary>
+        /// Injection was deliberately not attempted and will not be retried for this process.
+        /// Unlike <see cref="Waiting"/> this never resolves on its own — the game has to be
+        /// restarted. Detail carries the reason.
+        /// </summary>
+        Blocked
     }
 
     public sealed class HookOverlayStatus

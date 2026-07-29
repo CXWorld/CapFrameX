@@ -89,6 +89,7 @@ namespace CapFrameX.ViewModel
 					case EHookOverlayStatus.Hidden: return "Hidden";
 					case EHookOverlayStatus.Idle: return "Idle";
 					case EHookOverlayStatus.Error: return "Error";
+					case EHookOverlayStatus.Blocked: return "Blocked";
 					default: return "Waiting";
 				}
 			}
@@ -103,6 +104,9 @@ namespace CapFrameX.ViewModel
 				{
 					case EHookOverlayStatus.Active: return "LimeGreen";
 					case EHookOverlayStatus.Fallback: return "DarkOrange";
+					// Needs the user to act (restart the game), so it must not read as a
+					// transient "Waiting" orange, but it is not a malfunction either.
+					case EHookOverlayStatus.Blocked: return "Goldenrod";
 					case EHookOverlayStatus.Error: return "OrangeRed";
 					case EHookOverlayStatus.Disabled:
 					case EHookOverlayStatus.Hidden: return "Gray";

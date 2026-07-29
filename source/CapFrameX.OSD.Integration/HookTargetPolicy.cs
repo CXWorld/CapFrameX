@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace CapFrameX.OSD.Integration
@@ -34,6 +36,21 @@ namespace CapFrameX.OSD.Integration
             // Vanguard is mandatory for VALORANT and operates outside the user-mode module
             // markers scanned below. Do not make an unsigned LoadLibrary attempt there.
             "VALORANT-Win64-Shipping",
+        };
+
+        // Overlays that install their own present hook. Their mere presence is NOT a reason to
+        // refuse injection — RTSS is loaded in every game while it runs (CapFrameX starts it
+        // itself for the RTSS renderer) and the Steam overlay is in every Steam title by default,
+        // so treating them as blockers would disable the in-game hook almost everywhere. They only
+        // matter in combination with a mid-session injection, see HookOverlayManager.
+        private static readonly string[] ForeignOverlayModules =
+        {
+            "rtsshooks",            // RivaTuner Statistics Server / MSI Afterburner
+            "gameoverlayrenderer",  // Steam
+            "discordhook",          // Discord
+            "eosovh",               // Epic Online Services
+            "graphics-hook",        // OBS game capture
+            "nvspcap",              // NVIDIA ShadowPlay / GeForce Experience
         };
 
         private static readonly object Gate = new object();
@@ -145,6 +162,86 @@ namespace CapFrameX.OSD.Integration
 
             reason = null;
             return false;
+        }
+
+        /// <summary>
+        /// Names of the foreign present-hook overlays currently loaded in <paramref name="pid"/>,
+        /// newest scan (never cached — the caller evaluates this once per process).
+        /// </summary>
+        /// <returns>
+        /// false when the module list could not be read; <paramref name="modules"/> is empty then.
+        /// An unreadable list is NOT evidence of absence, but it is also not a reason to hold the
+        /// hook back on its own — the caller decides.
+        /// </returns>
+        internal static bool TryGetForeignOverlayModules(int pid, out string[] modules,
+            out string error)
+        {
+            modules = Array.Empty<string>();
+            error = null;
+            if (pid <= 0)
+            {
+                error = "no target process";
+                return false;
+            }
+
+            var found = new List<string>();
+            IntPtr snapshot = InvalidHandleValue;
+            int snapshotError = 0;
+            for (int attempt = 0; attempt < 3; attempt++)
+            {
+                snapshot = CreateToolhelp32Snapshot(Th32csSnapModule | Th32csSnapModule32,
+                    unchecked((uint)pid));
+                if (snapshot != InvalidHandleValue) break;
+                snapshotError = Marshal.GetLastWin32Error();
+                if (snapshotError != ErrorBadLength) break;
+            }
+
+            if (snapshot == InvalidHandleValue)
+            {
+                error = $"module scan failed ({snapshotError})";
+                return false;
+            }
+
+            try
+            {
+                var entry = new ModuleEntry32 { Size = (uint)Marshal.SizeOf<ModuleEntry32>() };
+                if (!Module32FirstW(snapshot, ref entry))
+                {
+                    error = $"module scan returned no modules ({Marshal.GetLastWin32Error()})";
+                    return false;
+                }
+
+                do
+                {
+                    string name = entry.ModuleName;
+                    foreach (string candidate in ForeignOverlayModules)
+                    {
+                        if (!string.IsNullOrEmpty(name) &&
+                            name.IndexOf(candidate, StringComparison.OrdinalIgnoreCase) >= 0 &&
+                            !found.Contains(name, StringComparer.OrdinalIgnoreCase))
+                        {
+                            found.Add(name);
+                            break;
+                        }
+                    }
+                    entry.Size = (uint)Marshal.SizeOf<ModuleEntry32>();
+                }
+                while (Module32NextW(snapshot, ref entry));
+
+                int enumerationError = Marshal.GetLastWin32Error();
+                if (enumerationError != ErrorNoMoreFiles)
+                {
+                    error = $"module enumeration failed ({enumerationError})";
+                    return false;
+                }
+
+                modules = found.ToArray();
+                return true;
+            }
+            finally
+            {
+                CloseHandle(snapshot);
+            }
         }
 
         private static bool EvaluateTarget(int pid, out string reason)

@@ -65,6 +65,9 @@ namespace CapFrameX.OSD.Integration
         private readonly Dictionary<int, string> _policyBlocks = new Dictionary<int, string>();
         private readonly Dictionary<int, string> _vulkanBlocks = new Dictionary<int, string>();
         private readonly Dictionary<int, long> _nextVulkanProbe = new Dictionary<int, long>();
+        // Evaluated ONCE per process: neither the foreign overlay modules nor the process start
+        // time can change while the process lives, so a re-scan could only produce log noise.
+        private readonly Dictionary<int, string> _foreignOverlayBlocks = new Dictionary<int, string>();
         private volatile bool _enabled;
         private volatile bool _targetAllowed;
         private volatile int _currentPid;
@@ -84,6 +87,14 @@ namespace CapFrameX.OSD.Integration
         private string _hookFreeFallbackReason;
         private string _targetBlockReason;
         private string _vulkanBlockReason;
+        private string _foreignOverlayBlockReason;
+        // When the USER switched the in-game hook on at runtime. A process that already existed at
+        // that moment gets injected MID-SESSION, into a live device other overlays draw into.
+        // MinValue while the hook was merely enabled by the stored configuration at startup:
+        // CapFrameX starting next to an already running game is the normal case, not a renderer
+        // switch, and must never be blocked — otherwise restarting CapFrameX disables the overlay
+        // for every game that happens to be open.
+        private DateTime _hookEnabledAtUtc = DateTime.MinValue;
         private ulong _injectionDelayUntilTickMs;
         private string _injectionDelayProfile;
 
@@ -144,6 +155,14 @@ namespace CapFrameX.OSD.Integration
 
         private void OnEnabledChanged(bool enabled)
         {
+            if (enabled && !_enabled)
+            {
+                _hookEnabledAtUtc = DateTime.UtcNow;
+                // A process blocked under the previous activation must be re-evaluated against
+                // the new timestamp instead of inheriting a verdict from a past session.
+                lock (_gate) _foreignOverlayBlocks.Clear();
+                lock (_stateGate) _foreignOverlayBlockReason = null;
+            }
             _enabled = enabled;
             UpdateHookVisibility(); // disabling hides the resident hook immediately (no game restart)
             UpdateHookFreeFallback();
@@ -194,6 +213,7 @@ namespace CapFrameX.OSD.Integration
                 _hookFreeFallbackReason = null;
                 _targetBlockReason = null;
                 _vulkanBlockReason = null;
+                _foreignOverlayBlockReason = null;
                 _injectionDelayUntilTickMs = 0;
                 _injectionDelayProfile = null;
             }
@@ -206,6 +226,7 @@ namespace CapFrameX.OSD.Integration
                     _compatibilityDelay.Reset(previousPid);
                     _vulkanBlocks.Remove(previousPid);
                     _nextVulkanProbe.Remove(previousPid);
+                    _foreignOverlayBlocks.Remove(previousPid);
                     VulkanLayerModuleProbe.Invalidate(previousPid);
                     DisposeCompatibilityChannelLocked(previousPid);
                 }
@@ -404,6 +425,7 @@ namespace CapFrameX.OSD.Integration
             if (!RefreshTargetPolicy(pid)) return;
             if (IsInjectionAttemptBlocked(pid)) return;
             if (!RefreshVulkanInjectionGate(pid)) return;
+            if (!RefreshForeignOverlayGate(pid)) return;
             HookCompatibilityProfileCatalog.TryGetForProcess(pid,
                 out HookCompatibilityProfile compatibilityProfile);
             if (!TryReserveInjection(pid)) return;
@@ -897,6 +919,119 @@ namespace CapFrameX.OSD.Integration
             => probeSucceeded && !hasRecentVulkanPresent && !vulkanLayerLoaded &&
                !vulkanLayerCheckInconclusive;
 
+        /// <summary>
+        /// Refuses injection into a process that was ALREADY RUNNING when the in-game hook was
+        /// switched on AND already carries another overlay's present hook.
+        /// </summary>
+        /// <remarks>
+        /// Injecting into a live D3D12 device that other overlays are drawing into crashed
+        /// LEGO Batman (UE 5.6, AMD) with a GPU device removal one second after the first publish,
+        /// while the identical switch had succeeded 25 minutes earlier — it is a race, not a fixed
+        /// incompatibility. Neither condition alone is a usable signal: RTSS is loaded in every
+        /// game while it runs and the Steam overlay in every Steam title, so blocking on the
+        /// modules alone would disable the in-game hook nearly everywhere; and a mid-session
+        /// injection without foreign hooks has not been observed to fail. Requiring BOTH keeps the
+        /// normal case (game started with the hook already enabled) completely untouched.
+        /// </remarks>
+        private bool RefreshForeignOverlayGate(int pid)
+        {
+            lock (_gate)
+            {
+                if (_foreignOverlayBlocks.TryGetValue(pid, out string cached))
+                    return cached == null;
+            }
+
+            bool startTimeKnown = TryIsMidSessionTarget(pid, out bool midSession);
+            string[] modules = Array.Empty<string>();
+            bool moduleScanOk = false;
+            if (startTimeKnown && midSession)
+                moduleScanOk = HookTargetPolicy.TryGetForeignOverlayModules(pid, out modules, out _);
+
+            string reason = IsForeignOverlayInjectionBlocked(startTimeKnown, midSession,
+                moduleScanOk, modules.Length)
+                ? $"the game was already running when the in-game overlay was enabled and " +
+                  $"another overlay is hooked into it ({string.Join(", ", modules)}); " +
+                  $"restart the game to use the in-game overlay"
+                : null;
+
+            bool firstEvaluation;
+            lock (_gate)
+            {
+                firstEvaluation = !_foreignOverlayBlocks.ContainsKey(pid);
+                _foreignOverlayBlocks[pid] = reason;
+            }
+
+            if (firstEvaluation)
+            {
+                if (reason != null)
+                    Log.Warning("HookOverlay: injection into pid {pid} ('{process}') blocked — {reason}",
+                        pid, _currentProcessName ?? "unknown", reason);
+                else
+                    Log.Information("HookOverlay: foreign-overlay gate for pid {pid} ('{process}') — passed",
+                        pid, _currentProcessName ?? "unknown");
+            }
+
+            bool reasonChanged = false;
+            lock (_stateGate)
+            {
+                if (pid == _currentPid &&
+                    !string.Equals(_foreignOverlayBlockReason, reason, StringComparison.Ordinal))
+                {
+                    _foreignOverlayBlockReason = reason;
+                    reasonChanged = true;
+                }
+            }
+            if (reasonChanged) PublishStatus();
+
+            return reason == null;
+        }
+
+        /// <summary>
+        /// The gate's decision, isolated from process and module lookups so it can be tested.
+        /// EVERY condition must hold — each unknown falls open, because a wrongly withheld
+        /// injection costs the overlay outright while the crash it guards against is a race that
+        /// needs the mid-session + foreign-hook combination to occur at all.
+        /// </summary>
+        internal static bool IsForeignOverlayInjectionBlocked(bool startTimeKnown, bool midSession,
+            bool moduleScanOk, int foreignModuleCount)
+            => startTimeKnown && midSession && moduleScanOk && foreignModuleCount > 0;
+
+        /// <summary>
+        /// Whether injecting into a process started at <paramref name="processStartUtc"/> would be a
+        /// MID-SESSION injection. Only a runtime switch counts: while <paramref name="hookEnabledAtUtc"/>
+        /// is <see cref="DateTime.MinValue"/> the hook came from the stored configuration at startup,
+        /// and a game that was already open then is the normal case — not a renderer switch.
+        /// </summary>
+        internal static bool IsMidSession(DateTime processStartUtc, DateTime hookEnabledAtUtc)
+            => hookEnabledAtUtc != DateTime.MinValue && processStartUtc < hookEnabledAtUtc;
+
+        /// <summary>
+        /// True when <paramref name="pid"/> already existed when the hook overlay was enabled.
+        /// Returns false when the start time is unreadable — an unknown age must not cost the
+        /// overlay, so the gate falls open and behaves exactly as before.
+        /// </summary>
+        private bool TryIsMidSessionTarget(int pid, out bool midSession)
+        {
+            midSession = false;
+            try
+            {
+                using (var process = Process.GetProcessById(pid))
+                {
+                    midSession = IsMidSession(process.StartTime.ToUniversalTime(), _hookEnabledAtUtc);
+                    return true;
+                }
+            }
+            catch (Exception ex) when (ex is ArgumentException ||
+                                       ex is InvalidOperationException ||
+                                       ex is System.ComponentModel.Win32Exception ||
+                                       ex is NotSupportedException)
+            {
+                Log.Debug("HookOverlay: could not read the start time of pid {pid} ({message})",
+                    pid, ex.Message);
+                return false;
+            }
+        }
+
         private bool RefreshTargetPolicy(int pid)
         {
             string reason = null;
@@ -948,6 +1083,7 @@ namespace CapFrameX.OSD.Integration
                 string hookFreeFallbackReason;
                 string targetBlockReason;
                 string vulkanBlockReason;
+                string foreignOverlayBlockReason;
                 string injectionDelayProfile;
                 bool targetAllowed;
                 bool injectionInProgress;
@@ -967,6 +1103,7 @@ namespace CapFrameX.OSD.Integration
                     injectionError = _lastInjectionError;
                     targetBlockReason = _targetBlockReason;
                     vulkanBlockReason = _vulkanBlockReason;
+                    foreignOverlayBlockReason = _foreignOverlayBlockReason;
                     injectionDelayUntilTickMs = _injectionDelayUntilTickMs;
                     injectionDelayProfile = _injectionDelayProfile;
                 }
@@ -1048,6 +1185,13 @@ namespace CapFrameX.OSD.Integration
                     {
                         status = new HookOverlayStatus(EHookOverlayStatus.Waiting, pid, runtime,
                             $"PID {pid}, {runtime}: unsupported presentation runtime.");
+                    }
+                    // Ahead of the Vulkan suppression on purpose: that one resolves by itself once
+                    // the probe settles, this one never does without a game restart.
+                    else if (!string.IsNullOrEmpty(foreignOverlayBlockReason))
+                    {
+                        status = new HookOverlayStatus(EHookOverlayStatus.Blocked, pid, runtime,
+                            $"PID {pid}, {runtime}: injection blocked — {foreignOverlayBlockReason}.");
                     }
                     else if (!string.IsNullOrEmpty(vulkanBlockReason))
                     {
