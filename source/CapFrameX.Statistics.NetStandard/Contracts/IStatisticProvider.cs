@@ -9,6 +9,8 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
 
         double GetAdaptiveStandardDeviation(IList<double> sequence, double timeWindow);
 
+        double GetFpsAdaptiveStandardDeviation(IList<double> frametimes, IList<double> fps, double timeWindow);
+
         double GetStutteringCountPercentage(IList<double> sequence, double stutteringFactor);
 
         double GetOnlineStutteringTimePercentage(IList<double> sequence, double stutteringFactor);

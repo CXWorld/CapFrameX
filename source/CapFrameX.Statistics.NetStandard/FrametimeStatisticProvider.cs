@@ -67,6 +67,56 @@ namespace CapFrameX.Statistics.NetStandard
             return Math.Sqrt(sumResidualSquares / (sequence.Count - 1));
         }
 
+        public double GetFpsAdaptiveStandardDeviation(IList<double> frametimes, IList<double> fps,
+            double timeWindow)
+        {
+            if (frametimes == null)
+            {
+                throw new ArgumentNullException(nameof(frametimes));
+            }
+
+            if (fps == null)
+            {
+                throw new ArgumentNullException(nameof(fps));
+            }
+
+            if (frametimes.Count != fps.Count)
+            {
+                throw new InvalidDataException("Different sample count frametimes vs. FPS");
+            }
+
+            if (frametimes.Count < 2)
+            {
+                return double.NaN;
+            }
+
+            var windowStart = 0;
+            var windowFrametimeSum = 0d;
+            var windowFpsSum = 0d;
+            var sumResidualSquares = 0d;
+
+            for (int i = 0; i < frametimes.Count; i++)
+            {
+                windowFrametimeSum += frametimes[i];
+                windowFpsSum += fps[i];
+
+                while (windowStart < i &&
+                    windowFrametimeSum - frametimes[windowStart] >= timeWindow)
+                {
+                    windowFrametimeSum -= frametimes[windowStart];
+                    windowFpsSum -= fps[windowStart];
+                    windowStart++;
+                }
+
+                var windowSampleCount = i - windowStart + 1;
+                var movingAverageFps = windowFpsSum / windowSampleCount;
+                var residual = fps[i] - movingAverageFps;
+                sumResidualSquares += residual * residual;
+            }
+
+            return Math.Sqrt(sumResidualSquares / (frametimes.Count - 1));
+        }
+
         public double GetStutteringCountPercentage(IList<double> sequence, double stutteringFactor)
         {
             var average = sequence.Average();
@@ -124,9 +174,7 @@ namespace CapFrameX.Statistics.NetStandard
 
         public IList<double> GetTimeBasedMovingAverage(IList<double> sequence, double timeWindow)
         {
-            var average = sequence.Average();
             var timeBasedMovingAverageFilter = new TimeBasedMovingAverage(timeWindow);
-
             return timeBasedMovingAverageFilter.ProcessSamples(sequence);
         }
 
@@ -356,11 +404,8 @@ namespace CapFrameX.Statistics.NetStandard
                         metricValue = GetMin(fps);
                         break;
                     case EMetric.AdaptiveStd:
-                        // For AdaptiveStd, we need to pass as IList - use a temporary list
-                        var fpsList = new List<double>(count);
-                        for (int i = 0; i < count; i++)
-                            fpsList.Add(fpsBuffer[i]);
-                        metricValue = GetAdaptiveStandardDeviation(fpsList, _options.IntervalAverageWindowTime);
+                        metricValue = GetFpsAdaptiveStandardDeviation(sequence, fps,
+                            _options.IntervalAverageWindowTime);
                         break;
                     default:
                         metricValue = double.NaN;

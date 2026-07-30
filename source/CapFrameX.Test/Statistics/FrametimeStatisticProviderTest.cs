@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace CapFrameX.Test.Statistics
@@ -92,6 +93,37 @@ namespace CapFrameX.Test.Statistics
 
             // P1 should be close to the outlier FPS value
             Assert.IsTrue(result < 60);
+        }
+
+        [TestMethod]
+        public void GetFpsAdaptiveStandardDeviation_UsesFrametimesForTimeWindow()
+        {
+            var frametimes = new List<double> { 300, 300, 300 };
+            var fps = new List<double> { 10, 20, 30 };
+
+            var result = _provider.GetFpsAdaptiveStandardDeviation(frametimes, fps, 500);
+
+            Assert.AreEqual(5, result, 0.001);
+        }
+
+        [TestMethod]
+        public void GetFpsAdaptiveStandardDeviation_DifferentSampleCounts_Throws()
+        {
+            var frametimes = new List<double> { 10, 20 };
+            var fps = new List<double> { 100 };
+
+            Assert.ThrowsException<InvalidDataException>(
+                () => _provider.GetFpsAdaptiveStandardDeviation(frametimes, fps, 500));
+        }
+
+        [TestMethod]
+        public void GetFpsMetricValue_AdaptiveStd_UsesFpsWithinFrametimeWindow()
+        {
+            var frametimes = new List<double> { 400, 100, 400 };
+
+            var result = _provider.GetFpsMetricValue(frametimes, EMetric.AdaptiveStd);
+
+            Assert.AreEqual(3.75, result, 0.001);
         }
 
         #endregion
