@@ -21,6 +21,7 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
+				<ResourceDictionary Source="Styles/CxCards.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
@@ -50,7 +51,7 @@
 		<StackPanel Grid.Column="1" Width="577" VerticalAlignment="Top">
 
 			<!--Record upload card-->
-			<materialDesign:Card Padding="16 12 16 16" Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
+			<Border Style="{StaticResource SectionCard}" Padding="16 12 16 16">
 				<StackPanel>
 					<DockPanel LastChildFill="False" Height="26">
 						<materialDesign:PackIcon Kind="CloudUploadOutline" Width="20" Height="20" VerticalAlignment="Center"
@@ -90,7 +91,7 @@
 							dragdrop:DragDrop.UseDefaultDragAdorner="True"
 							dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 							dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
-							Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"
+							Background="{DynamicResource MaterialDesign.Brush.Card.Background}"
 							Style="{StaticResource MaterialDesignDataGrid}">
 							<DataGrid.Columns>
 								<DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}" Header="Game" Width="Auto" IsReadOnly="True"/>
@@ -139,10 +140,10 @@
 						</Grid>
 					</Grid>
 				</StackPanel>
-			</materialDesign:Card>
+			</Border>
 
 			<!--Record download card-->
-			<materialDesign:Card Margin="0 16 0 0" Padding="16 12 16 16" Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
+			<Border Style="{StaticResource SectionCard}" Margin="0 16 0 0" Padding="16 12 16 16">
 				<StackPanel>
 					<DockPanel LastChildFill="False" Height="26">
 						<materialDesign:PackIcon Kind="CloudDownloadOutline" Width="20" Height="20" VerticalAlignment="Center"
@@ -187,12 +188,11 @@
 						</Button>
 					</Grid>
 				</StackPanel>
-			</materialDesign:Card>
+			</Border>
 		</StackPanel>
 
 		<!--Process list options card-->
-		<materialDesign:Card Grid.Column="2" Width="400" Margin="24 0 0 0" Padding="16 12 16 16" VerticalAlignment="Top"
-			Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
+		<Border Style="{StaticResource SectionCard}" Grid.Column="2" Width="400" Margin="24 0 0 0" Padding="16 12 16 16" VerticalAlignment="Top">
 			<StackPanel>
 				<DockPanel LastChildFill="False" Height="26">
 					<materialDesign:PackIcon Kind="PlaylistEdit" Width="20" Height="20" VerticalAlignment="Center"
@@ -201,7 +201,7 @@
 						Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 				</DockPanel>
 
-				<Border Margin="0 12 0 0" CornerRadius="4" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+				<Border Margin="0 12 0 0" Style="{StaticResource SectionCardInset}">
 					<Expander Background="Transparent" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
 						wpf:ExpanderAssist.HorizontalHeaderPadding="12 8 12 8">
 						<Expander.Header>
@@ -242,6 +242,6 @@
 					</CheckBox>
 				</StackPanel>
 			</StackPanel>
-		</materialDesign:Card>
+		</Border>
 	</Grid>
 </UserControl>

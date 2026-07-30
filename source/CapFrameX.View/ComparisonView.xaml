@@ -30,6 +30,7 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
 				<ResourceDictionary Source="Styles/CustomRangeSliderStyle.xaml" />
+				<ResourceDictionary Source="Styles/CxCards.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
@@ -763,7 +764,7 @@
 		<StackPanel Margin="5 10 5 0" Grid.Column="1" Grid.RowSpan="2" Orientation="Vertical">
 			<TextBox IsReadOnly="True" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                      materialDesign:HintAssist.Hint="Comparisons" />
-			<Border Margin="0 5 0 5" BorderThickness="1" BorderBrush="#CCC" VerticalAlignment="Stretch">
+			<Border Margin="0 5 0 5" Style="{StaticResource SectionCard}" Padding="0 4 0 4" VerticalAlignment="Stretch">
 				<Grid>
 					<Grid.RowDefinitions>
 						<RowDefinition Height="1*"></RowDefinition>

@@ -25,6 +25,7 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.GridSplitter.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Flipper.xaml" />
+                <ResourceDictionary Source="Styles/CxCards.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
@@ -44,7 +45,7 @@
             <ColumnDefinition Width="10"/>
             <ColumnDefinition Width="460"/>
         </Grid.ColumnDefinitions>
-        <Border BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" BorderThickness="0.3" Grid.Row="1" Grid.Column="0" >
+        <Border Style="{StaticResource SectionCard}" Grid.Row="1" Grid.Column="0" >
             <DockPanel Margin="0 10 0 10">
                 <Grid DockPanel.Dock="Top">
                     <TextBlock Margin="15 0 0 10" HorizontalAlignment="Left" Text="Sensor items" FontSize="16" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
@@ -305,7 +306,7 @@
             </DockPanel>
         </Border>
 
-        <Border BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" BorderThickness="0.3" Grid.Row="1" Grid.Column="2" >
+        <Border Style="{StaticResource SectionCard}" Grid.Row="1" Grid.Column="2" >
             <DockPanel Margin="0 10 0 10">
                 <Grid DockPanel.Dock="Top">
                     <TextBlock Margin="15 0 0 10" HorizontalAlignment="Left" Text="{Binding SensorStatisticsText}" FontSize="16" VerticalAlignment="Center"

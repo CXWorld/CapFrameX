@@ -16,6 +16,9 @@
              prism:ViewModelLocator.AutoWireViewModel="True">
 	<UserControl.Resources>
 		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="Styles/CxCards.xaml" />
+			</ResourceDictionary.MergedDictionaries>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
@@ -131,7 +134,7 @@
 			</Grid.ColumnDefinitions>
 			<!-- Top margin aligns the process cards with the first card of the
 			     run-history tab on the right (tab strip height + card margin). -->
-			<DockPanel Grid.Column="0" Margin="10 58 0 0">
+			<DockPanel Grid.Column="0" Margin="10 50 0 0">
 				<Grid DockPanel.Dock="Top" HorizontalAlignment="Center">
 					<Grid HorizontalAlignment="Center">
 						<DockPanel>
@@ -141,8 +144,7 @@
 									<ColumnDefinition Width="Auto"/>
 								</Grid.ColumnDefinitions>
 								<!--Running processes card-->
-								<materialDesign:Card Grid.Column="0" Width="264" Margin="0 0 12 0" Padding="16 12 16 16"
-									Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
+								<Border Style="{StaticResource SectionCard}" Grid.Column="0" Width="264" Margin="0 0 12 0" Padding="16 12 16 16">
 									<StackPanel>
 										<DockPanel LastChildFill="False">
 											<materialDesign:PackIcon Kind="ApplicationOutline" Width="20" Height="20" VerticalAlignment="Center"
@@ -156,8 +158,7 @@
 												<materialDesign:PackIcon Kind="Autorenew" Width="20" Height="20"/>
 											</Button>
 										</DockPanel>
-										<Border Margin="0 12 0 0" CornerRadius="4" Padding="0 4 6 4"
-											Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+										<Border Margin="0 12 0 0" Style="{StaticResource SectionCardInset}" Padding="0 4 6 4">
 											<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToCapture}" SelectedItem="{Binding SelectedProcessToCapture}"
 												ScrollViewer.VerticalScrollBarVisibility="Auto" FontSize="14" ScrollViewer.CanContentScroll="True" Height="160"
 												IsEnabled="{Binding AreButtonsActive}">
@@ -173,10 +174,9 @@
 											Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding AreButtonsActive}" Foreground="White"
 											Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}" Content="Move to ignore list"/>
 									</StackPanel>
-								</materialDesign:Card>
+								</Border>
 								<!--Process ignore list card-->
-								<materialDesign:Card Grid.Column="1" Width="264" Margin="12 0 0 0" Padding="16 12 16 16"
-									Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
+								<Border Style="{StaticResource SectionCard}" Grid.Column="1" Width="264" Margin="12 0 0 0" Padding="16 12 16 16">
 									<StackPanel>
 										<DockPanel LastChildFill="False" Height="26">
 											<materialDesign:PackIcon Kind="EyeOffOutline" Width="20" Height="20" VerticalAlignment="Center"
@@ -184,8 +184,7 @@
 											<TextBlock Text="Process ignore list" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
 												Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 										</DockPanel>
-										<Border Margin="0 12 0 0" CornerRadius="4" Padding="0 4 6 4"
-											Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+										<Border Margin="0 12 0 0" Style="{StaticResource SectionCardInset}" Padding="0 4 6 4">
 											<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToIgnore}" SelectedItem="{Binding SelectedProcessToIgnore}"
 												ScrollViewer.VerticalScrollBarVisibility="Auto" FontSize="14" ScrollViewer.CanContentScroll="True" Height="160">
 											</ListView>
@@ -194,14 +193,22 @@
 											Command="{Binding AddToProcessListCommand}" IsEnabled="{Binding AreButtonsActive}" Foreground="White"
 											Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}" Content="Remove from ignore list"/>
 									</StackPanel>
-								</materialDesign:Card>
+								</Border>
 							</Grid>
 							<TextBlock DockPanel.Dock="Bottom" Grid.Column="0" Grid.ColumnSpan="2" TextAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                                    Margin="0 20 0 0" Text="{Binding CaptureStateInfo}" HorizontalAlignment="Center" FontSize="16" Style="{StaticResource MaterialDesignCaptionTextBlock}" />
 						</DockPanel>
 					</Grid>
 				</Grid>
-				<Grid x:Name="HotkeyTextBox" Margin="0 30 0 0" DockPanel.Dock="Bottom" HorizontalAlignment="Center">
+				<Border Style="{StaticResource SectionCard}" Margin="0 24 0 0" Padding="16 12 16 16" DockPanel.Dock="Bottom" HorizontalAlignment="Center">
+				<StackPanel>
+					<DockPanel LastChildFill="False">
+						<materialDesign:PackIcon Kind="Tune" Width="20" Height="20" VerticalAlignment="Center"
+							Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+						<TextBlock Text="Capture settings" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
+							Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+					</DockPanel>
+					<Grid x:Name="HotkeyTextBox" Margin="0 8 0 0" HorizontalAlignment="Center">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="45"/>
 						<RowDefinition Height="45"/>
@@ -276,6 +283,8 @@
 						<TextBlock HorizontalAlignment="Right" Text="{Binding SliderSoundLevel}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 					</Grid>
 				</Grid>
+				</StackPanel>
+			</Border>
 			</DockPanel>
 			<TabControl Grid.Column="1" Margin="20 14 20 20" Background="Transparent" BorderThickness="0">
 				<TabItem Width="200" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
@@ -284,7 +293,7 @@
 					</TabItem.Header>
 					<StackPanel Width="400" Margin="0 4 0 0">
 						<!--Run history card-->
-						<materialDesign:Card Margin="0 8 0 4" Padding="16 12 16 16" Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
+						<Border Style="{StaticResource SectionCard}" Margin="0 8 0 4" Padding="16 12 16 16">
 							<StackPanel>
 								<DockPanel LastChildFill="False">
 									<materialDesign:PackIcon Kind="History" Width="20" Height="20" VerticalAlignment="Center"
@@ -372,9 +381,9 @@
 									</ComboBox>
 								</Grid>
 							</StackPanel>
-						</materialDesign:Card>
+						</Border>
 						<!--Aggregation card-->
-						<materialDesign:Card Margin="0 8 0 8" Padding="16 12 16 16" Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
+						<Border Style="{StaticResource SectionCard}" Margin="0 8 0 8" Padding="16 12 16 16">
 							<StackPanel>
 								<DockPanel LastChildFill="False">
 									<materialDesign:PackIcon Kind="Sigma" Width="20" Height="20" VerticalAlignment="Center"
@@ -464,7 +473,7 @@
 									</CheckBox>
 								</Grid>
 							</StackPanel>
-						</materialDesign:Card>
+						</Border>
 					</StackPanel>
 				</TabItem>
 				<TabItem Width="120" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
@@ -472,7 +481,8 @@
 						<Label FontSize="12">Capture Logger</Label>
 					</TabItem.Header>
 					<StackPanel Width="400" Margin="0 4 0 0">
-						<Grid Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" Height="415" VerticalAlignment="Top">
+						<Border Style="{StaticResource SectionCard}" Height="415" VerticalAlignment="Top">
+						<Grid>
 							<TextBlock Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Text="Capture service logger output..." FontSize="14" Margin="10 10 0 0" 
                        Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Visibility="{Binding IsLoggerOutputEmpty, Converter={StaticResource FalseToCollapsedConverter}}"></TextBlock>
 							<ItemsControl ItemsSource="{Binding LoggerOutput}" Style="{StaticResource LogViewerStyle}">
@@ -489,7 +499,8 @@
 									</ItemsPanelTemplate>
 								</ItemsControl.ItemsPanel>
 							</ItemsControl>
-						</Grid>
+							</Grid>
+						</Border>
 						<StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Height="50">
 							<Button HorizontalAlignment="Left" Margin="0 0 10 0" Width="25" Height="25" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
                                     materialDesign:RippleAssist.Feedback="#DD000000" 
