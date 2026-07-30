@@ -848,9 +848,9 @@
                                 <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="Median" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="3" Grid.Column="4" IsChecked="{Binding UseMedianStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="4" Grid.Column="3" Text="5% percentile" VerticalAlignment="Center"/>
-                                <ToggleButton Margin="5" Grid.Row="4" Grid.Column="4" IsChecked="{Binding UseFrametimeP5QuantileStatisticParameter}"/>
+                                <ToggleButton Margin="5" Grid.Row="4" Grid.Column="4" IsChecked="{Binding UseP95QuantileStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="5" Grid.Column="3" Text="1% percentile" VerticalAlignment="Center"/>
-                                <ToggleButton Margin="5" Grid.Row="5" Grid.Column="4" IsChecked="{Binding UseFrametimeP1QuantileStatisticParameter}"/>
+                                <ToggleButton Margin="5" Grid.Row="5" Grid.Column="4" IsChecked="{Binding UseP99QuantileStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="6" Grid.Column="3" Text="Maximum" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="6" Grid.Column="4" IsChecked="{Binding UseMinStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="7" Grid.Column="3" Text="P99 |Animation Error| (only ms)" VerticalAlignment="Center"

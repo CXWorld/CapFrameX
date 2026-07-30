@@ -23,10 +23,6 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool UseSingleRecordP95QuantileStatisticParameter { get; set; }
 
-		bool UseSingleRecordFrametimeP1QuantileStatisticParameter { get; set; }
-
-		bool UseSingleRecordFrametimeP5QuantileStatisticParameter { get; set; }
-
 		bool UseSingleRecordAverageStatisticParameter { get; set; }
 
         bool UseSingleRecordGpuActiveAverageStatisticParameter { get; set; }

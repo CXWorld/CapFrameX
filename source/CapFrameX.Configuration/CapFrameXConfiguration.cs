@@ -368,18 +368,6 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
-        public bool UseSingleRecordFrametimeP1QuantileStatisticParameter
-        {
-            get => Get<bool>(true);
-            set => Set(value);
-        }
-
-        public bool UseSingleRecordFrametimeP5QuantileStatisticParameter
-        {
-            get => Get<bool>(false);
-            set => Set(value);
-        }
-
         public bool UseSingleRecordAverageStatisticParameter
         {
             get => Get<bool>(true);
