@@ -8,6 +8,9 @@
             <Component Id="cmp3FA3E043C67E501AF5D90725CBA9EA07" Guid="*" Win64="yes">
                 <File Id="fil92741D310FD3D2D6E3992F483E00C520" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\BlackSharp.Core.dll" />
             </Component>
+            <Component Id="cmp010346265BD055915F2AF759DD155A33" Guid="*" Win64="yes">
+                <File Id="filC36055874C8412817A8A62A3DD63255D" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.ADLX.dll" />
+            </Component>
             <Component Id="cmpFCC1F35455D5814F6F5D83CFB2CBB5EA" Guid="*" Win64="yes">
                 <File Id="filBF5E6522ABF9B07B4C721A3F08328663" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Capture.Contracts.dll" />
             </Component>
@@ -88,6 +91,9 @@
             </Component>
             <Component Id="cmp58A6D9654BB2BC6D1688D3E3B41884A9" Guid="*" Win64="yes">
                 <File Id="fil722BF3ED7108CA65E0196ECD23702B49" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Hwinfo.dll" />
+            </Component>
+            <Component Id="cmp46ECDD0C7AD9D4FBBE09ADEECDCCFDB7" Guid="*" Win64="yes">
+                <File Id="fil85C3B6DBB9E77A4332828A454895E1E1" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.IGCL.dll" />
             </Component>
             <Component Id="cmpCE6407D64F3B32290FED3723C36974A4" Guid="*" Win64="yes">
                 <File Id="fil47F33075B03F68CA7363910CEC4027AF" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Mcp.dll" />
@@ -1179,6 +1185,7 @@
         <ComponentGroup Id="CapFrameXBinaries">
             <ComponentRef Id="cmpFD65F52CD5EC0B46A750F8EEFC3D4422" />
             <ComponentRef Id="cmp3FA3E043C67E501AF5D90725CBA9EA07" />
+            <ComponentRef Id="cmp010346265BD055915F2AF759DD155A33" />
             <ComponentRef Id="cmpFCC1F35455D5814F6F5D83CFB2CBB5EA" />
             
             <ComponentRef Id="cmp367B18F442C629D69A743133694E4034" />
@@ -1212,6 +1219,7 @@
             
             <ComponentRef Id="cmp6C8034C8386700B60102EFDA32EE9A7C" />
             <ComponentRef Id="cmp58A6D9654BB2BC6D1688D3E3B41884A9" />
+            <ComponentRef Id="cmp46ECDD0C7AD9D4FBBE09ADEECDCCFDB7" />
             <ComponentRef Id="cmpCE6407D64F3B32290FED3723C36974A4" />
             <ComponentRef Id="cmp48FC6F843096B2C49CDC104336ABDEB7" />
             <ComponentRef Id="cmp085F019DCFA91EA3CC69ED65224795C3" />
