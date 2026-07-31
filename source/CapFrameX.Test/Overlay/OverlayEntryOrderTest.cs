@@ -72,7 +72,7 @@ namespace CapFrameX.Test.Overlay
 
             Assert.AreEqual(enabled, entry.IsEntryEnabled);
             Assert.AreEqual(enabled, entry.ShowOnOverlayIsEnabled);
-            Assert.AreEqual("AMD FLM Latency (ms)", entry.Description);
+            Assert.AreEqual("Click-to-Screen-Response Latency (ms)", entry.Description);
             Assert.AreEqual("AMD FLM Latency", entry.GroupName);
         }
 

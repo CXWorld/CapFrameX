@@ -352,7 +352,7 @@ namespace CapFrameX.Overlay
                         OverlayEntryType = EOverlayEntryType.OnlineMetric,
                         ShowOnOverlay = false,
                         ShowOnOverlayIsEnabled = appConfiguration.UseAmdFlmLatency,
-                        Description = "AMD FLM Latency (ms)",
+                        Description = "Click-to-Screen-Response Latency (ms)",
                         GroupName = "AMD FLM Latency",
                         Value = "0",
                         ValueFormat = default,

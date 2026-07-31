@@ -628,7 +628,8 @@ namespace CapFrameX.Overlay
 
             foreach (var defaultEntry in utilsDefaults)
             {
-                if (configOverlayEntries.FirstOrDefault(entry => entry.Identifier == defaultEntry.Identifier) == null)
+                var existingConfigEntry = configOverlayEntries.FirstOrDefault(entry => entry.Identifier == defaultEntry.Identifier);
+                if (existingConfigEntry == null)
                 {
                     int index = utilsDefaults.IndexOf(defaultEntry) - 1;
 
@@ -639,6 +640,14 @@ namespace CapFrameX.Overlay
                         int predecessorConfigOverlayEntryIndex = configOverlayEntries.IndexOf(predecessorConfigOverlayEntry);
                         configOverlayEntries.Insert(predecessorConfigOverlayEntryIndex + 1, defaultEntry);
                     }
+                }
+                else if (CONFIG_GATED_ONLINE_METRICS.ContainsKey(defaultEntry.Identifier)
+                    && existingConfigEntry is OverlayEntryWrapper existingWrapper)
+                {
+                    // The description is a fixed label (not user-editable) but persists in the
+                    // config JSON — refresh it so renamed metrics don't keep stale wording.
+                    // GroupName stays untouched: users may have customized it.
+                    existingWrapper.Description = defaultEntry.Description;
                 }
             }
 
