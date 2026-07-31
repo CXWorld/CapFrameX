@@ -490,7 +490,9 @@ namespace CapFrameX.Configuration
 
         public bool UseSingleRecordAnimationErrorP99StatisticParameter
         {
-            get => Get<bool>(true);
+            // Opt-in like the Average variant: this metric only renders in frametime (ms) mode,
+            // so a default of true makes an unselected row appear when switching units.
+            get => Get<bool>(false);
             set => Set(value);
         }
 
