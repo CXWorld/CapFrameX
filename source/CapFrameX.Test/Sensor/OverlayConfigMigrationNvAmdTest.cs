@@ -354,6 +354,12 @@ namespace CapFrameX.Test.Sensor
                 Assert.IsTrue(entryIds.Contains(configEntry.Identifier),
                     $"Entry '{configEntry.Identifier}' should be present.");
             }
+
+            var amdFlmEntry = entries.Single(entry => entry.Identifier == "OnlineAmdFlmLatency");
+            Assert.IsFalse(amdFlmEntry.IsEntryEnabled,
+                "Disabled FLM should remain in migrated configs without being activated.");
+            Assert.IsFalse(amdFlmEntry.ShowOnOverlayIsEnabled,
+                "The FLM overlay toggle should remain disabled until FLM is enabled.");
         }
 
         [TestMethod]

@@ -329,6 +329,10 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool UsePcLatency { get; set; }
 
+		bool UseAmdFlmLatency { get; set; }
+
+		bool AmdFlmFrameGeneration { get; set; }
+
         bool UseAdlFallback { get; set; }
 
 		string FirstMetricBarColor { get; set; }

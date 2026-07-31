@@ -35,7 +35,8 @@ public enum SensorType
     Energy, // milliwatt-hour (mWh)
     Noise, // dBA
     Conductivity, // µS/cm
-    Humidity // %
+    Humidity, // %
+    Latency // ms
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }
 

@@ -258,7 +258,12 @@ namespace CapFrameX.Overlay
             if (hasPcLatency)
                 EnableByIdentifier(entries, "OnlinePcLatency", LATENCY_GROUP_COLOR, LATENCY_VALUE_COLOR, 1);
 
-            var animationErrorSeparators = hasPcLatency ? 0 : 1;
+            var amdFlmLatencyEntry = entries.FirstOrDefault(e => e.Identifier == "OnlineAmdFlmLatency");
+            var hasAmdFlmLatency = amdFlmLatencyEntry != null && amdFlmLatencyEntry.IsEntryEnabled;
+            if (hasAmdFlmLatency)
+                EnableByIdentifier(entries, "OnlineAmdFlmLatency", LATENCY_GROUP_COLOR, LATENCY_VALUE_COLOR, hasPcLatency ? 0 : 1);
+
+            var animationErrorSeparators = hasPcLatency || hasAmdFlmLatency ? 0 : 1;
             EnableByIdentifier(entries, "OnlineAnimationError", LATENCY_GROUP_COLOR, LATENCY_VALUE_COLOR, animationErrorSeparators);
 
             // 6. Metrics Section (with blank line)

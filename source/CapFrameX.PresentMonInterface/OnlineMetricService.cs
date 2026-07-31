@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Capture.Contracts;
 using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Latency;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.PMD.Benchlab;
@@ -9,6 +10,7 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 using Prism.Events;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reactive.Concurrency;
@@ -32,10 +34,12 @@ namespace CapFrameX.PresentMonInterface
         private readonly IPoweneticsService _poweneticsService;
         private readonly IBenchlabService _benchlabService;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly IAmdFlmService _amdFlmService;
 
         private readonly object _lockRealtimeMetric = new object();
         private readonly object _lock5SecondsMetric = new object();
         private readonly object _lock1SecondMetric = new object();
+        private readonly object _lockAmdFlmMetric = new object();
         private readonly object _lockAnimationErrorMetric = new object();
         private readonly object _lockPmdMetrics = new object();
 
@@ -55,6 +59,10 @@ namespace CapFrameX.PresentMonInterface
         private CircularBuffer<double> _pcLatency1Second;
         private CircularBuffer<double> _measuretimes1Second;
 
+        // FLM emits independently from PresentMon, so it uses its own QPC-based window.
+        private CircularBuffer<double> _amdFlmLatency1Second;
+        private CircularBuffer<double> _amdFlmMeasuretimes1Second;
+
         // Circular buffers for 250ms animation error window metrics
         private CircularBuffer<double> _animationError500Ms;
         private CircularBuffer<double> _measuretimes500Ms;
@@ -69,14 +77,18 @@ namespace CapFrameX.PresentMonInterface
         // The five-second path is protected by a different lock and therefore
         // must not share the realtime path's mutable scratch buffer.
         private List<double> _reusableListBuffer5Seconds;
+        private List<double> _reusableAmdFlmBuffer;
 
         // Disposable resources
         private IDisposable _frameDataSubscription;
         private IDisposable _poweneticsSubscription;
         private IDisposable _benchlabSubscription;
+        private IDisposable _amdFlmSubscription;
+        private IDisposable _amdFlmConfigurationSubscription;
         private EventLoopScheduler _frameDataScheduler;
         private EventLoopScheduler _poweneticsScheduler;
         private EventLoopScheduler _benchlabScheduler;
+        private EventLoopScheduler _amdFlmScheduler;
         private bool _disposed;
 
         private string _currentProcess;
@@ -90,7 +102,8 @@ namespace CapFrameX.PresentMonInterface
             IOverlayEntryCore oerlayEntryCore,
             IPoweneticsService poweneticsService,
             IBenchlabService benchlabService,
-            IAppConfiguration appConfiguration)
+            IAppConfiguration appConfiguration,
+            IAmdFlmService amdFlmService)
         {
             _captureService = captureServive;
             _eventAggregator = eventAggregator;
@@ -98,6 +111,7 @@ namespace CapFrameX.PresentMonInterface
             _poweneticsService = poweneticsService;
             _benchlabService = benchlabService;
             _appConfiguration = appConfiguration;
+            _amdFlmService = amdFlmService;
 
             _frametimeStatisticProvider = frametimeStatisticProvider;
 
@@ -105,6 +119,7 @@ namespace CapFrameX.PresentMonInterface
             _reusableListBufferA = new List<double>(LIST_CAPACITY);
             _reusableListBufferB = new List<double>(LIST_CAPACITY);
             _reusableListBuffer5Seconds = new List<double>(LIST_CAPACITY);
+            _reusableAmdFlmBuffer = new List<double>(LIST_CAPACITY / 20);
 
             SubscribeToUpdateSession();
             ConnectOnlineMetricDataStream();
@@ -136,6 +151,7 @@ namespace CapFrameX.PresentMonInterface
             _frameDataScheduler = new EventLoopScheduler();
             _poweneticsScheduler = new EventLoopScheduler();
             _benchlabScheduler = new EventLoopScheduler();
+            _amdFlmScheduler = new EventLoopScheduler();
 
             _frameDataSubscription = _captureService
                 .FrameDataStream
@@ -155,6 +171,50 @@ namespace CapFrameX.PresentMonInterface
                 .Where(_ => EvaluatePmdMetrics())
                 .Buffer(TimeSpan.FromMilliseconds(50))
                 .Subscribe(metricsData => UpdatePmdMetrics(metricsData));
+
+            _amdFlmSubscription = _amdFlmService.SampleStream
+                .ObserveOn(_amdFlmScheduler)
+                .Subscribe(UpdateAmdFlmMetric);
+
+            _amdFlmConfigurationSubscription = _appConfiguration.OnValueChanged
+                .Where(change => change.key == nameof(IAppConfiguration.UseAmdFlmLatency)
+                    || change.key == nameof(IAppConfiguration.AmdFlmFrameGeneration))
+                .ObserveOn(_amdFlmScheduler)
+                .Subscribe(_ => ClearAmdFlmMetric());
+        }
+
+        private void UpdateAmdFlmMetric(AmdFlmSample sample)
+        {
+            if (sample.FrameQpc <= 0 || sample.LatencyMs <= 0 ||
+                double.IsNaN(sample.LatencyMs) || double.IsInfinity(sample.LatencyMs))
+                return;
+
+            double sampleTime = sample.FrameQpc / (double)Stopwatch.Frequency;
+            lock (_lockAmdFlmMetric)
+            {
+                if (_amdFlmMeasuretimes1Second == null || _amdFlmLatency1Second == null)
+                    return;
+
+                _amdFlmMeasuretimes1Second.Add(sampleTime);
+                _amdFlmLatency1Second.Add(sample.LatencyMs);
+
+                while (_amdFlmMeasuretimes1Second.Count > 0 &&
+                    sampleTime - _amdFlmMeasuretimes1Second.PeekFirst() > 1.0)
+                {
+                    _amdFlmMeasuretimes1Second.RemoveFirst();
+                    _amdFlmLatency1Second.RemoveFirst();
+                }
+            }
+        }
+
+        private void ClearAmdFlmMetric()
+        {
+            lock (_lockAmdFlmMetric)
+            {
+                _amdFlmLatency1Second?.Clear();
+                _amdFlmMeasuretimes1Second?.Clear();
+                _reusableAmdFlmBuffer?.Clear();
+            }
         }
 
         private bool EvaluateRealtimeMetrics()
@@ -421,6 +481,13 @@ namespace CapFrameX.PresentMonInterface
                 _pcLatency1Second = new CircularBuffer<double>(capacity1Second);
             }
 
+            lock (_lockAmdFlmMetric)
+            {
+                int capacity1Second = LIST_CAPACITY / 20;
+                _amdFlmMeasuretimes1Second = new CircularBuffer<double>(capacity1Second);
+                _amdFlmLatency1Second = new CircularBuffer<double>(capacity1Second);
+            }
+
             lock (_lock5SecondsMetric)
             {
                 int capacity5Seconds = LIST_CAPACITY / 4;
@@ -582,6 +649,36 @@ namespace CapFrameX.PresentMonInterface
             }
         }
 
+        public double GetOnlineAmdFlmLatencyAverageValue()
+        {
+            if (!_appConfiguration.UseAmdFlmLatency || !_amdFlmService.IsRunning)
+                return double.NaN;
+
+            lock (_lockAmdFlmMetric)
+            {
+                if (_amdFlmLatency1Second == null || _amdFlmLatency1Second.Count == 0)
+                    return double.NaN;
+
+                double now = Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency;
+                if (_amdFlmMeasuretimes1Second == null ||
+                    _amdFlmMeasuretimes1Second.Count == 0 ||
+                    now - _amdFlmMeasuretimes1Second.PeekLast() > 1.0)
+                {
+                    _amdFlmLatency1Second.Clear();
+                    _amdFlmMeasuretimes1Second?.Clear();
+                    _reusableAmdFlmBuffer?.Clear();
+                    return double.NaN;
+                }
+
+                var samples = CopyValidTimings(_amdFlmLatency1Second, _reusableAmdFlmBuffer);
+                if (samples.Count == 0)
+                    return double.NaN;
+
+                return _frametimeStatisticProvider
+                    .GetFrametimeMetricValue(samples, EMetric.Average);
+            }
+        }
+
         public double GetOnlineAnimationErrorValue()
         {
             lock (_lockAnimationErrorMetric)
@@ -696,11 +793,14 @@ namespace CapFrameX.PresentMonInterface
                 _frameDataSubscription?.Dispose();
                 _poweneticsSubscription?.Dispose();
                 _benchlabSubscription?.Dispose();
+                _amdFlmSubscription?.Dispose();
+                _amdFlmConfigurationSubscription?.Dispose();
 
                 // Dispose schedulers (EventLoopScheduler implements IDisposable)
                 _frameDataScheduler?.Dispose();
                 _poweneticsScheduler?.Dispose();
                 _benchlabScheduler?.Dispose();
+                _amdFlmScheduler?.Dispose();
 
                 // Clear buffers
                 lock (_lockRealtimeMetric)
@@ -726,6 +826,13 @@ namespace CapFrameX.PresentMonInterface
                 {
                     _pcLatency1Second?.Clear();
                     _measuretimes1Second?.Clear();
+                }
+
+                lock (_lockAmdFlmMetric)
+                {
+                    _amdFlmLatency1Second?.Clear();
+                    _amdFlmMeasuretimes1Second?.Clear();
+                    _reusableAmdFlmBuffer?.Clear();
                 }
 
                 lock (_lockAnimationErrorMetric)

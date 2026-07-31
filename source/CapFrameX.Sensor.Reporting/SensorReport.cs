@@ -58,6 +58,7 @@ namespace CapFrameX.Sensor.Reporting
             ["Noise"] = 1,
             ["Conductivity"] = 1,
             ["Humidity"] = 0,
+            ["Latency"] = 1,
             ["LoadLimit"] = 0
         };
 
@@ -283,9 +284,11 @@ namespace CapFrameX.Sensor.Reporting
                 for (int i = 0; i < sensor.Value.Count; i++)
                 {
                     var measureTime = measureTimes[i];
-                    if (measureTime >= startTime && measureTime <= endTime)
+                    double value = sensor.Value[i];
+                    if (measureTime >= startTime && measureTime <= endTime
+                        && !double.IsNaN(value) && !double.IsInfinity(value))
                     {
-                        filteredValueList.Add(sensor.Value[i]);
+                        filteredValueList.Add(value);
                     }
                 }
                 sensor.Value.RemoveAll(x => true);
@@ -338,6 +341,8 @@ namespace CapFrameX.Sensor.Reporting
                         return "(µS/cm)";
                     case "Humidity":
                         return "(%)";
+                    case "Latency":
+                        return "(ms)";
                     case "LoadLimit":
                         return "(%)";
                     default:

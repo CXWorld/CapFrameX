@@ -59,6 +59,23 @@ namespace CapFrameX.Test.Overlay
                 "Frametime and DisplayTime must tie on SortKey");
         }
 
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void Defaults_AmdFlmLatencyFollowsFeatureToggle(bool enabled)
+        {
+            var configuration = new Mock<IAppConfiguration>();
+            configuration.SetupGet(value => value.UseAmdFlmLatency).Returns(enabled);
+
+            var entry = OverlayUtils.GetOverlayEntryDefaults(configuration.Object)
+                .Single(value => value.Identifier == "OnlineAmdFlmLatency");
+
+            Assert.AreEqual(enabled, entry.IsEntryEnabled);
+            Assert.AreEqual(enabled, entry.ShowOnOverlayIsEnabled);
+            Assert.AreEqual("AMD FLM Latency (ms)", entry.Description);
+            Assert.AreEqual("AMD FLM Latency", entry.GroupName);
+        }
+
         // ---------------------------------------------------------------- the three templates
 
         [DataTestMethod]

@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Latency;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
@@ -34,6 +35,7 @@ namespace CapFrameX.Sensor
         private readonly ILogger<SensorService> _logger;
         private readonly IDisposable _logDisposable;
         private readonly Task<IPmcReaderSensorPlugin> _pmcReaderInitializationTask;
+        private readonly AmdFlmSensorSource _amdFlmSensorSource;
 
         private Computer _computer;
         private SessionSensorDataLive _sessionSensorDataLive;
@@ -79,12 +81,14 @@ namespace CapFrameX.Sensor
            = new TaskCompletionSource<bool>();
 
         public SensorService(IAppConfiguration appConfig, ISensorConfig sensorConfig,
-            IRTSSService rTSSService, ILogger<SensorService> logger)
+            IAmdFlmService amdFlmService, IRTSSService rTSSService,
+            ILogger<SensorService> logger)
         {
             _appConfiguration = appConfig;
             _sensorConfig = sensorConfig;
             _rTSSService = rTSSService;
             _logger = logger;
+            _amdFlmSensorSource = new AmdFlmSensorSource(amdFlmService, appConfig);
             _currentOSDTimespan = TimeSpan.FromMilliseconds(_appConfiguration.OSDRefreshPeriod);
             _currentLoggingTimespan = TimeSpan.FromMilliseconds(_appConfiguration.SensorLoggingRefreshPeriod);
             _loggingUpdateSubject = new BehaviorSubject<TimeSpan>(_currentLoggingTimespan);
@@ -300,6 +304,7 @@ namespace CapFrameX.Sensor
                 // Don't write periodic log entries
             }
 
+            entries.Add(_amdFlmSensorSource.CreateEntry());
             return entries;
         }
 
@@ -332,6 +337,7 @@ namespace CapFrameX.Sensor
                     _sessionSensorDataLive.AddSensorValue(sensorPair.Key, sensorPair.Value);
                 }
             }
+            _sessionSensorDataLive.CompleteMeasure();
         }
 
         private async Task<(DateTime, Dictionary<ISensorEntry, float>)> GetTimeStampedSensorValues()
@@ -362,6 +368,12 @@ namespace CapFrameX.Sensor
             catch
             {
                 // Don't write periodic log entries
+            }
+
+            if (_appConfiguration.UseAmdFlmLatency)
+            {
+                var amdFlmEntry = _amdFlmSensorSource.CreateEntry();
+                dict.TryAdd(amdFlmEntry, (float)amdFlmEntry.Value);
             }
 
             return (DateTime.UtcNow, dict.ToDictionary(x => x.Key, x => x.Value));
@@ -604,6 +616,7 @@ namespace CapFrameX.Sensor
         {
             _isServiceAlive = false;
             _logDisposable?.Dispose();
+            _amdFlmSensorSource.Dispose();
 
             // Initialization may still be running when the application closes. Dispose the plugin
             // on the default scheduler once that one-time task finishes without blocking shutdown.

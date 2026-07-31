@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{0EBC22F0-823A-487B-9160-CFDE179944A6}</ProjectGuid>
+    <RootNamespace>CapFrameXFLM</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(ProjectDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\obj\</IntDir>
+    <TargetName>CapFrameX.FLM</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(ProjectDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\obj\</IntDir>
+    <TargetName>CapFrameX.FLM</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;CAPFRAMEXFLM_EXPORTS;CAPFRAMEX_FLM_EMBEDDED;API_DX12;_CMP_CPP17_=1;_WINDOWS;_USRDLL;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(ProjectDir)ThirdParty\FLM\backend;$(ProjectDir)ThirdParty\FLM\external;$(ProjectDir)ThirdParty\FLM\external\ini;$(ProjectDir)ThirdParty\FLM\external\amf;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4251;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>d3d11.lib;d3d12.lib;dxgi.lib;winmm.lib;user32.lib;gdi32.lib;ole32.lib;uuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>if not exist "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\" mkdir "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\"&#xD;&#xA;xcopy /y /d "$(TargetPath)" "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;CAPFRAMEXFLM_EXPORTS;CAPFRAMEX_FLM_EMBEDDED;API_DX12;_CMP_CPP17_=1;_WINDOWS;_USRDLL;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(ProjectDir)ThirdParty\FLM\backend;$(ProjectDir)ThirdParty\FLM\external;$(ProjectDir)ThirdParty\FLM\external\ini;$(ProjectDir)ThirdParty\FLM\external\amf;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4251;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>d3d11.lib;d3d12.lib;dxgi.lib;winmm.lib;user32.lib;gdi32.lib;ole32.lib;uuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>if not exist "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\" mkdir "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\"&#xD;&#xA;xcopy /y /d "$(TargetPath)" "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="CapFrameXFLM.h" />
+    <ClInclude Include="ThirdParty\FLM\backend\flm.h" />
+    <ClInclude Include="ThirdParty\FLM\backend\flm_capture_amf.h" />
+    <ClInclude Include="ThirdParty\FLM\backend\flm_capture_context.h" />
+    <ClInclude Include="ThirdParty\FLM\backend\flm_capture_dxgi.h" />
+    <ClInclude Include="ThirdParty\FLM\backend\flm_keyboard.h" />
+    <ClInclude Include="ThirdParty\FLM\backend\flm_mouse.h" />
+    <ClInclude Include="ThirdParty\FLM\backend\flm_pipeline.h" />
+    <ClInclude Include="ThirdParty\FLM\backend\flm_timer.h" />
+    <ClInclude Include="ThirdParty\FLM\backend\flm_utils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CapFrameXFLM.cpp" />
+    <ClCompile Include="ThirdParty\FLM\backend\flm_capture_amf.cpp" />
+    <ClCompile Include="ThirdParty\FLM\backend\flm_capture_context.cpp" />
+    <ClCompile Include="ThirdParty\FLM\backend\flm_capture_dxgi.cpp" />
+    <ClCompile Include="ThirdParty\FLM\backend\flm_keyboard.cpp" />
+    <ClCompile Include="ThirdParty\FLM\backend\flm_mouse.cpp" />
+    <ClCompile Include="ThirdParty\FLM\backend\flm_pipeline.cpp" />
+    <ClCompile Include="ThirdParty\FLM\backend\flm_timer.cpp" />
+    <ClCompile Include="ThirdParty\FLM\backend\flm_utils.cpp" />
+    <ClCompile Include="ThirdParty\FLM\external\amf\public\common\AMFFactory.cpp" />
+    <ClCompile Include="ThirdParty\FLM\external\amf\public\common\AMFSTL.cpp" />
+    <ClCompile Include="ThirdParty\FLM\external\amf\public\common\CurrentTimeImpl.cpp" />
+    <ClCompile Include="ThirdParty\FLM\external\amf\public\common\DataStreamFactory.cpp" />
+    <ClCompile Include="ThirdParty\FLM\external\amf\public\common\DataStreamFile.cpp" />
+    <ClCompile Include="ThirdParty\FLM\external\amf\public\common\DataStreamMemory.cpp" />
+    <ClCompile Include="ThirdParty\FLM\external\amf\public\common\PropertyStorageExImpl.cpp" />
+    <ClCompile Include="ThirdParty\FLM\external\amf\public\common\Thread.cpp" />
+    <ClCompile Include="ThirdParty\FLM\external\amf\public\common\TraceAdapter.cpp" />
+    <ClCompile Include="ThirdParty\FLM\external\amf\public\common\Windows\ThreadWindows.cpp" />
+    <ClCompile Include="ThirdParty\FLM\external\amf\public\src\components\DisplayCapture\DDAPISource.cpp" />
+    <ClCompile Include="ThirdParty\FLM\external\amf\public\src\components\DisplayCapture\DisplayCaptureImpl.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

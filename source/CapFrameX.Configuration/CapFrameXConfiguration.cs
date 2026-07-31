@@ -194,6 +194,18 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool UseAmdFlmLatency
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool AmdFlmFrameGeneration
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
         public bool UseAdlFallback
         {
             get => Get<bool>(false);

@@ -519,6 +519,27 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool UseAmdFlmLatency
+        {
+            get { return _appConfiguration.UseAmdFlmLatency; }
+            set
+            {
+                _appConfiguration.UseAmdFlmLatency = value;
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(AmdFlmFrameGeneration));
+            }
+        }
+
+        public bool AmdFlmFrameGeneration
+        {
+            get { return _appConfiguration.AmdFlmFrameGeneration; }
+            set
+            {
+                _appConfiguration.AmdFlmFrameGeneration = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public string PingURL
         {
             get { return _appConfiguration.PingURL; }

@@ -48,7 +48,7 @@ namespace CapFrameX.Overlay
         private static readonly HashSet<string> ONLINE_METRIC_NAMES = new HashSet<string>()
         {
             "OnlineAverage", "OnlineP1","OnlineP0dot1", "OnlineP0dot2", "Online1PercentLow", "Online0dot1PercentLow", "Online0dot2PercentLow",
-            "OnlineGpuActiveTimeAverage", "OnlineCpuActiveTimeAverage", "OnlineFrameTimeAverage", "OnlinePcLatency", "OnlineAnimationError",
+            "OnlineGpuActiveTimeAverage", "OnlineCpuActiveTimeAverage", "OnlineFrameTimeAverage", "OnlinePcLatency", "OnlineAmdFlmLatency", "OnlineAnimationError",
             "OnlineGpuActiveTimePercentageDeviation", "OnlineStutteringPercentage", "PmdGpuPowerCurrent",
             "PmdCpuPowerCurrent", "PmdSystemPowerCurrent"
         };
@@ -113,6 +113,11 @@ namespace CapFrameX.Overlay
             .Where(x => x.key == nameof(IAppConfiguration.ShowSystemTimeSeconds))
             .Select(x => x.value)
             .Subscribe(value => ShowSystemTimeSeconds = (bool)value);
+
+            _appConfiguration.OnValueChanged
+            .Where(x => x.key == nameof(IAppConfiguration.UseAmdFlmLatency))
+            .Select(x => x.value)
+            .Subscribe(value => UpdateAmdFlmEntryState((bool)value));
 
             rTSSService.ProcessIdStream.Subscribe(id =>
             {
@@ -604,7 +609,7 @@ namespace CapFrameX.Overlay
 
             // Manage default entries from Utils list
             var utilsDefaults = OverlayUtils.GetOverlayEntryDefaults(_appConfiguration)
-                .Where(item => item.IsEntryEnabled)
+                .Where(item => item.IsEntryEnabled || item.Identifier == "OnlineAmdFlmLatency")
                 .ToList();
 
             foreach (var defaultEntry in utilsDefaults)
@@ -674,6 +679,16 @@ namespace CapFrameX.Overlay
             if (entry.Identifier == "OnlinePcLatency")
             {
                 entry.IsEntryEnabled = _appConfiguration.UsePcLatency;
+            }
+
+            if (entry.Identifier == "OnlineAmdFlmLatency")
+            {
+                bool enabled = _appConfiguration.UseAmdFlmLatency;
+                entry.IsEntryEnabled = enabled;
+                entry.ShowOnOverlayIsEnabled = enabled;
+                if (!enabled)
+                    entry.ShowOnOverlay = false;
+                return true;
             }
 
             // Displaytime graph (config): needs a display-time source (MsBetweenDisplayChange).
@@ -756,7 +771,7 @@ namespace CapFrameX.Overlay
         private async Task<BlockingCollection<IOverlayEntry>> CreateDefaultOverlayEntries()
         {
             var overlayEntries = OverlayUtils.GetOverlayEntryDefaults(_appConfiguration)
-                .Where(item => item.IsEntryEnabled)
+                .Where(item => item.IsEntryEnabled || item.Identifier == "OnlineAmdFlmLatency")
                 .Select(item => (item as IOverlayEntry).Clone())
                 .ToBlockingCollection();
 
@@ -794,6 +809,17 @@ namespace CapFrameX.Overlay
                     }
                 }).ThenBy(entry => entry.SortKey, new SortKeyComparer())
                 .ToBlockingCollection());
+        }
+
+        private void UpdateAmdFlmEntryState(bool enabled)
+        {
+            if (!_identifierOverlayEntryDict.TryGetValue("OnlineAmdFlmLatency", out IOverlayEntry entry))
+                return;
+
+            entry.IsEntryEnabled = enabled;
+            entry.ShowOnOverlayIsEnabled = enabled;
+            if (!enabled)
+                entry.ShowOnOverlay = false;
         }
 
         private async Task UpdateSensorData()
@@ -947,6 +973,14 @@ namespace CapFrameX.Overlay
             if (pcLatency != null && pcLatency.ShowOnOverlay)
             {
                 pcLatency.Value = Math.Round(_onlineMetricService.GetOnlinePcLatencyAverageValue(), 1, MidpointRounding.AwayFromZero);
+            }
+
+            // AMD Frame Latency Meter
+            _identifierOverlayEntryDict.TryGetValue("OnlineAmdFlmLatency", out IOverlayEntry amdFlmLatency);
+
+            if (amdFlmLatency != null && amdFlmLatency.ShowOnOverlay)
+            {
+                amdFlmLatency.Value = Math.Round(_onlineMetricService.GetOnlineAmdFlmLatencyAverageValue(), 1, MidpointRounding.AwayFromZero);
             }
 
             // Animation Error
@@ -1174,6 +1208,15 @@ namespace CapFrameX.Overlay
             {
                 pcLatency.ValueUnitFormat = "ms";
                 pcLatency.ValueAlignmentAndDigits = "{0,5:F1}";
+            }
+
+            // AMD Frame Latency Meter
+            _identifierOverlayEntryDict.TryGetValue("OnlineAmdFlmLatency", out IOverlayEntry amdFlmLatency);
+
+            if (amdFlmLatency != null)
+            {
+                amdFlmLatency.ValueUnitFormat = "ms";
+                amdFlmLatency.ValueAlignmentAndDigits = "{0,5:F1}";
             }
 
             // Animation Error

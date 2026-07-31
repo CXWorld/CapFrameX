@@ -217,6 +217,7 @@
 											<RowDefinition Height="*" />
 											<RowDefinition Height="*" />
 											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
 										</Grid.RowDefinitions>
 										<Grid.ColumnDefinitions>
 											<ColumnDefinition Width="*"/>
@@ -296,7 +297,23 @@
 											<TextBlock Text="Use PC Latency" VerticalAlignment="Center"></TextBlock>
 										</StackPanel>
 
-										<StackPanel Grid.Row="3" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 5 0 5">
+										<StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="10 0 0 0">
+											<CheckBox IsChecked="{Binding UseAmdFlmLatency, Mode=TwoWay}" ToolTipService.ShowDuration="25000">
+											<CheckBox.ToolTip>
+												<ToolTip MaxWidth="440">
+													<TextBlock TextWrapping="Wrap" Text="Enable continuous AMD Frame Latency Meter polling. FLM runs independently of captures, actively injects small horizontal mouse movements, and exposes the result as a loggable sensor and live overlay metric. It is independent of PresentMon and Anti-Lag 2 markers." />
+													</ToolTip>
+												</CheckBox.ToolTip>
+											</CheckBox>
+											<TextBlock Text="Use AMD FLM latency" VerticalAlignment="Center" />
+										</StackPanel>
+
+										<StackPanel Grid.Row="3" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0 0 0 0">
+											<CheckBox IsChecked="{Binding AmdFlmFrameGeneration, Mode=TwoWay}" IsEnabled="{Binding UseAmdFlmLatency}" ToolTip="Restart FLM immediately with its longer measurement interval for games with Frame Generation enabled." />
+											<TextBlock Text="Frame Generation" VerticalAlignment="Center" />
+										</StackPanel>
+
+										<StackPanel Grid.Row="4" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 5 0 5">
 											<TextBox Width="350" IsReadOnly="True" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
 											<Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.SelectScreenshotFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select screenshot folder">
 												<materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />

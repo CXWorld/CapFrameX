@@ -2,6 +2,7 @@
 using CapFrameX.Configuration;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Latency;
 using CapFrameX.Contracts.Logging;
 using CapFrameX.Contracts.MVVM;
 using CapFrameX.Contracts.Overlay;
@@ -21,6 +22,7 @@ using CapFrameX.Overlay;
 using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
 using CapFrameX.PresentMonInterface;
+using CapFrameX.PresentMonInterface.AmdFlm;
 using CapFrameX.RTSSIntegration;
 using CapFrameX.Sensor;
 using CapFrameX.Statistics.NetStandard;
@@ -113,6 +115,10 @@ namespace CapFrameX
                 {
                     osdCaptureService = Container.Resolve<CapFrameX.Capture.Contracts.ICaptureService>();
                 }
+
+                // Resolve the opt-in FLM service at startup so it can measure independently of
+                // PresentMon captures and feed both the live metric and sensor pipelines.
+                Container.Resolve<IAmdFlmService>();
 
                 // Only the composition root sees both the RTSS integration and the OSD's Vulkan
                 // probes, so the "is this target presenting through Vulkan?" answer is handed over
@@ -268,6 +274,7 @@ namespace CapFrameX
                     Container.Register<IRTSSService, RTSSService>(Reuse.Singleton);
                     Container.Register<IOverlayEntryCore, OverlayEntryCore>(Reuse.Singleton);
                     Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
+                    Container.Register<IAmdFlmService, AmdFlmService>(Reuse.Singleton);
                     Container.Register<IOnlineMetricService, OnlineMetricService>(Reuse.Singleton);
                     Container.Register<ISensorService, SensorService>(Reuse.Singleton);
                 }

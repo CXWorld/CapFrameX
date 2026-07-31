@@ -29,6 +29,18 @@
       <Link>LICENSE</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="..\CapFrameX.FLM\ThirdParty\FLM\LICENSE-FLM.txt">
+      <Link>AMD-FLM-LICENSE.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\CapFrameX.FLM\ThirdParty\FLM\external\amf\LICENSE.txt">
+      <Link>AMD-AMF-LICENSE.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\CapFrameX.FLM\ThirdParty\FLM\external\ini\LICENCE.txt">
+      <Link>SIMPLEINI-LICENSE.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Files\bf0822e8-2e55-4b99-82ee-939d8ac2384e.bat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -146,6 +158,7 @@
     <CfxNativeRuntimeDll Include="CapFrameX.Hwinfo.dll" />
     <CfxNativeRuntimeDll Include="CapFrameX.IGCL.dll" />
     <CfxNativeRuntimeDll Include="CapFrameX.ADLX.dll" />
+    <CfxNativeRuntimeDll Include="CapFrameX.FLM.dll" />
   </ItemGroup>
 
   <Target Name="StageCapFrameXNativeRuntime" AfterTargets="Build" Condition="'$(Platform)' == 'x64'">

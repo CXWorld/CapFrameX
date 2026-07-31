@@ -346,6 +346,23 @@ namespace CapFrameX.Overlay
                         SortKey = "1_1"
                     },
 
+                    // AMD Frame Latency Meter
+                    new OverlayEntryWrapper("OnlineAmdFlmLatency")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = appConfiguration.UseAmdFlmLatency,
+                        Description = "AMD FLM Latency (ms)",
+                        GroupName = "AMD FLM Latency",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = appConfiguration.UseAmdFlmLatency,
+                        SortKey = "1_2"
+                    },
+
                     // Animation Error
                     new OverlayEntryWrapper("OnlineAnimationError")
                     {
@@ -360,7 +377,7 @@ namespace CapFrameX.Overlay
                         ShowGraphIsEnabled = false,
                         Color = string.Empty,
                         IsEntryEnabled = true,
-                        SortKey = "1_2"
+                        SortKey = "1_3"
                     },
 
                     // Online metrics

@@ -11,6 +11,9 @@
             <Component Id="cmp010346265BD055915F2AF759DD155A33" Guid="*" Win64="yes">
                 <File Id="filC36055874C8412817A8A62A3DD63255D" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.ADLX.dll" />
             </Component>
+            <Component Id="cmp571C79666C6544C989330DA7CDB6F7C2" Guid="*" Win64="yes">
+                <File Id="fil9196AF89D5CE40A0A2671AE2EF5A48D7" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.FLM.dll" />
+            </Component>
             <Component Id="cmpFCC1F35455D5814F6F5D83CFB2CBB5EA" Guid="*" Win64="yes">
                 <File Id="filBF5E6522ABF9B07B4C721A3F08328663" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Capture.Contracts.dll" />
             </Component>
@@ -286,6 +289,15 @@
             
             <Component Id="cmpE6F3483C369D2CFABDCB2AA8B75E6959" Guid="*" Win64="yes">
                 <File Id="fil2FD040EEC008499F18B1397AF5810979" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\LICENSE" />
+            </Component>
+            <Component Id="cmpA94D9B0F37E44C789E9A3F05BA88C1B7" Guid="*" Win64="yes">
+                <File Id="filCD9D2DF6BC3B43FA8686D3C9413E532F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\AMD-FLM-LICENSE.txt" />
+            </Component>
+            <Component Id="cmpD1B6A7545FC74D75995DCC92BF6732AF" Guid="*" Win64="yes">
+                <File Id="fil2D9BFE5888D74C48B1A75740E6BE4F37" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\AMD-AMF-LICENSE.txt" />
+            </Component>
+            <Component Id="cmp71BDF06BF51249DFA12EEBA38AEC1905" Guid="*" Win64="yes">
+                <File Id="fil7504C49DB1A74FC69B27B8DBB8E2523F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\SIMPLEINI-LICENSE.txt" />
             </Component>
             <Component Id="cmp60805430DA62A620ADC712537D30F06A" Guid="*" Win64="yes">
                 <File Id="filDB1D736833CDA4D30509594A7B6D0162" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\LiveCharts.dll" />
@@ -1186,6 +1198,7 @@
             <ComponentRef Id="cmpFD65F52CD5EC0B46A750F8EEFC3D4422" />
             <ComponentRef Id="cmp3FA3E043C67E501AF5D90725CBA9EA07" />
             <ComponentRef Id="cmp010346265BD055915F2AF759DD155A33" />
+            <ComponentRef Id="cmp571C79666C6544C989330DA7CDB6F7C2" />
             <ComponentRef Id="cmpFCC1F35455D5814F6F5D83CFB2CBB5EA" />
             
             <ComponentRef Id="cmp367B18F442C629D69A743133694E4034" />
@@ -1292,6 +1305,9 @@
             <ComponentRef Id="cmpBE129962DAD164AE9F278C8874CBF5F9" />
             
             <ComponentRef Id="cmpE6F3483C369D2CFABDCB2AA8B75E6959" />
+            <ComponentRef Id="cmpA94D9B0F37E44C789E9A3F05BA88C1B7" />
+            <ComponentRef Id="cmpD1B6A7545FC74D75995DCC92BF6732AF" />
+            <ComponentRef Id="cmp71BDF06BF51249DFA12EEBA38AEC1905" />
             <ComponentRef Id="cmp60805430DA62A620ADC712537D30F06A" />
             <ComponentRef Id="cmpB1EC42AB2EFCC8248CA692650E5CBA2C" />
             <ComponentRef Id="cmpB80EB57EF2904D1A74E508B15C150404" />
