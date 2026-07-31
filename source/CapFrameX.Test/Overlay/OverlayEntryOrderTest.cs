@@ -76,6 +76,23 @@ namespace CapFrameX.Test.Overlay
             Assert.AreEqual("AMD FLM Latency", entry.GroupName);
         }
 
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void Defaults_PcLatencyFollowsFeatureToggle(bool enabled)
+        {
+            var configuration = new Mock<IAppConfiguration>();
+            configuration.SetupGet(value => value.UsePcLatency).Returns(enabled);
+
+            var entry = OverlayUtils.GetOverlayEntryDefaults(configuration.Object)
+                .Single(value => value.Identifier == "OnlinePcLatency");
+
+            Assert.AreEqual(enabled, entry.IsEntryEnabled);
+            Assert.AreEqual(enabled, entry.ShowOnOverlayIsEnabled);
+            Assert.AreEqual("PC Latency (ms)", entry.Description);
+            Assert.AreEqual("PC Latency", entry.GroupName);
+        }
+
         // ---------------------------------------------------------------- the three templates
 
         [DataTestMethod]

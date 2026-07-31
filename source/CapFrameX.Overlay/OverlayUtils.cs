@@ -212,7 +212,7 @@ namespace CapFrameX.Overlay
                         Color = string.Empty,
                         // Enabled for any renderer that has a display-time source: the hook-free OSD,
                         // or the in-game hook in PresentMon graph mode. Must match OverlayEntryProvider
-                        // .GetIsEntryEnabled so the defaults-merge adds it and the load-filter keeps it.
+                        // .GetIsEntryKeptInList so the defaults-merge adds it and the load-filter keeps it.
                         IsEntryEnabled = appConfiguration.EnableHookFreeOverlay
                             || (appConfiguration.EnableHookOverlay && appConfiguration.HookOverlayUsePresentMonFrametimes)
                     },
@@ -334,7 +334,7 @@ namespace CapFrameX.Overlay
                     {
                         OverlayEntryType = EOverlayEntryType.OnlineMetric,
                         ShowOnOverlay = false,
-                        ShowOnOverlayIsEnabled = true,
+                        ShowOnOverlayIsEnabled = appConfiguration.UsePcLatency,
                         Description = "PC Latency (ms)",
                         GroupName = "PC Latency",
                         Value = "0",

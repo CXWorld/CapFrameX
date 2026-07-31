@@ -53,6 +53,16 @@ namespace CapFrameX.Overlay
             "PmdCpuPowerCurrent", "PmdSystemPowerCurrent"
         };
 
+        // Feature-toggle gated online metrics. These entries always stay in the overlay entry
+        // list: the constructor subscribes to their config keys and flips the existing entry
+        // in place, which requires the entry to be present even while the feature is off.
+        private static readonly IReadOnlyDictionary<string, (string ConfigKey, Func<IAppConfiguration, bool> GetIsEnabled)>
+            CONFIG_GATED_ONLINE_METRICS = new Dictionary<string, (string, Func<IAppConfiguration, bool>)>()
+            {
+                { "OnlinePcLatency", (nameof(IAppConfiguration.UsePcLatency), config => config.UsePcLatency) },
+                { "OnlineAmdFlmLatency", (nameof(IAppConfiguration.UseAmdFlmLatency), config => config.UseAmdFlmLatency) },
+            };
+
         private readonly ISensorService _sensorService;
         private readonly IAppConfiguration _appConfiguration;
         private readonly IEventAggregator _eventAggregator;
@@ -114,10 +124,14 @@ namespace CapFrameX.Overlay
             .Select(x => x.value)
             .Subscribe(value => ShowSystemTimeSeconds = (bool)value);
 
-            _appConfiguration.OnValueChanged
-            .Where(x => x.key == nameof(IAppConfiguration.UseAmdFlmLatency))
-            .Select(x => x.value)
-            .Subscribe(value => UpdateAmdFlmEntryState((bool)value));
+            foreach (var gatedMetric in CONFIG_GATED_ONLINE_METRICS)
+            {
+                string identifier = gatedMetric.Key;
+                _appConfiguration.OnValueChanged
+                .Where(x => x.key == gatedMetric.Value.ConfigKey)
+                .Select(x => x.value)
+                .Subscribe(value => UpdateConfigGatedEntryState(identifier, (bool)value));
+            }
 
             rTSSService.ProcessIdStream.Subscribe(id =>
             {
@@ -413,7 +427,7 @@ namespace CapFrameX.Overlay
             string json = File.ReadAllText(GetConfigurationFileName(_appConfiguration.OverlayEntryConfigurationFile));
             var overlayEntriesFromJson = JsonConvert.DeserializeObject<OverlayEntryPersistence>(json)
                 .OverlayEntries
-                .Where(entry => GetIsEntryEnabled(entry))
+                .Where(entry => GetIsEntryKeptInList(entry))
                 .Cast<IOverlayEntry>()
                 .ToList();
 
@@ -609,7 +623,7 @@ namespace CapFrameX.Overlay
 
             // Manage default entries from Utils list
             var utilsDefaults = OverlayUtils.GetOverlayEntryDefaults(_appConfiguration)
-                .Where(item => item.IsEntryEnabled || item.Identifier == "OnlineAmdFlmLatency")
+                .Where(item => item.IsEntryEnabled || CONFIG_GATED_ONLINE_METRICS.ContainsKey(item.Identifier))
                 .ToList();
 
             foreach (var defaultEntry in utilsDefaults)
@@ -672,22 +686,18 @@ namespace CapFrameX.Overlay
             return !(oldHasThreadMarker && !currentHasThreadMarker);
         }
 
-        private bool GetIsEntryEnabled(OverlayEntryWrapper entry)
+        /// <summary>
+        /// Applies config-driven enabled state to a persisted entry and decides whether it
+        /// stays in the overlay entry list when a configuration is loaded from JSON.
+        /// </summary>
+        private bool GetIsEntryKeptInList(OverlayEntryWrapper entry)
         {
-            // Manage enabled state special cases (get state from sources like config)
-            // PC Latency (coofig)
-            if (entry.Identifier == "OnlinePcLatency")
+            // Feature-toggle gated online metrics: sync all state flags from the config
+            // toggle, but always keep the entry so the live toggle subscription in the
+            // constructor can flip it in place later.
+            if (CONFIG_GATED_ONLINE_METRICS.TryGetValue(entry.Identifier, out var gatedMetric))
             {
-                entry.IsEntryEnabled = _appConfiguration.UsePcLatency;
-            }
-
-            if (entry.Identifier == "OnlineAmdFlmLatency")
-            {
-                bool enabled = _appConfiguration.UseAmdFlmLatency;
-                entry.IsEntryEnabled = enabled;
-                entry.ShowOnOverlayIsEnabled = enabled;
-                if (!enabled)
-                    entry.ShowOnOverlay = false;
+                SetConfigGatedEntryState(entry, gatedMetric.GetIsEnabled(_appConfiguration));
                 return true;
             }
 
@@ -771,7 +781,7 @@ namespace CapFrameX.Overlay
         private async Task<BlockingCollection<IOverlayEntry>> CreateDefaultOverlayEntries()
         {
             var overlayEntries = OverlayUtils.GetOverlayEntryDefaults(_appConfiguration)
-                .Where(item => item.IsEntryEnabled || item.Identifier == "OnlineAmdFlmLatency")
+                .Where(item => item.IsEntryEnabled || CONFIG_GATED_ONLINE_METRICS.ContainsKey(item.Identifier))
                 .Select(item => (item as IOverlayEntry).Clone())
                 .ToBlockingCollection();
 
@@ -811,11 +821,16 @@ namespace CapFrameX.Overlay
                 .ToBlockingCollection());
         }
 
-        private void UpdateAmdFlmEntryState(bool enabled)
+        private void UpdateConfigGatedEntryState(string identifier, bool enabled)
         {
-            if (!_identifierOverlayEntryDict.TryGetValue("OnlineAmdFlmLatency", out IOverlayEntry entry))
+            if (!_identifierOverlayEntryDict.TryGetValue(identifier, out IOverlayEntry entry))
                 return;
 
+            SetConfigGatedEntryState(entry, enabled);
+        }
+
+        private static void SetConfigGatedEntryState(IOverlayEntry entry, bool enabled)
+        {
             entry.IsEntryEnabled = enabled;
             entry.ShowOnOverlayIsEnabled = enabled;
             if (!enabled)
