@@ -118,26 +118,47 @@ namespace CapFrameX.OSD.Integration
 
         private void UpdateRunState()
         {
-            bool run = _active && (_enabled || _fallbackEnabled);
-            if (run && !_started) { _osd.Start(); _started = true; }
-            else if (!run && _started)
+            // Two-level lifecycle: the renderer EXISTS while a hook-free mode is selected,
+            // and mere visibility toggles (IsOverlayActive — capture auto-disable, overlay
+            // hotkey) are soft-hides via DWM cloaking. Tearing the window down instead
+            // stalls the game's presentation path (measured 20-70 ms display hitches from
+            // the multi-stage DWM re-evaluation, including a delayed one seconds later) —
+            // cloaking is the only hide method that stays completely stall-free.
+            bool exist = _enabled || _fallbackEnabled;
+            bool visible = _active && exist;
+
+            if (exist && !_started) { _osd.Start(); _started = true; }
+
+            if (!_started) return;
+
+            if (!exist)
             {
-                _osd.Stop();
-                _started = false;
-                _lastBgOpacity = -1; // Stop destroys the native handle; re-feed on next start
-                _lastZoom = -1;
-                _lastAnchor = -1; _lastMarginX = -1; _lastMarginY = -1;
-                _curRuntime = null;
-                lock (_fpsLock)
-                {
-                    _ftWindow.Clear();
-                    _ftWindowSumMs = 0;
-                    _curFps = 0;
-                    _curFrametimeMs = 0;
-                    _dtWindow.Clear();
-                    _dtWindowSumMs = 0;
-                    _curDisplayTimeMs = 0;
-                }
+                StopOsd();
+                return;
+            }
+
+            // Old prebuilt core without the hidden API: fall back to the historic full stop.
+            if (!_osd.SetHidden(!visible) && !visible)
+                StopOsd();
+        }
+
+        private void StopOsd()
+        {
+            _osd.Stop();
+            _started = false;
+            _lastBgOpacity = -1; // Stop destroys the native handle; re-feed on next start
+            _lastZoom = -1;
+            _lastAnchor = -1; _lastMarginX = -1; _lastMarginY = -1;
+            _curRuntime = null;
+            lock (_fpsLock)
+            {
+                _ftWindow.Clear();
+                _ftWindowSumMs = 0;
+                _curFps = 0;
+                _curFrametimeMs = 0;
+                _dtWindow.Clear();
+                _dtWindowSumMs = 0;
+                _curDisplayTimeMs = 0;
             }
         }
 
