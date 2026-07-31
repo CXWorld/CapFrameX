@@ -38,6 +38,12 @@ internal static class ADLX
         Discrete = 2
     }
 
+    public enum AntiLagLevel : uint
+    {
+        AntiLag = 0,
+        AntiLagNext = 1
+    }
+
     /// <summary>
     /// Telemetry support flags structure matching AdlxTelemetrySupport in ADLXManager.h.
     /// Used to query what metrics are supported before actual data is available.
@@ -189,6 +195,25 @@ internal static class ADLX
         public string DriverPath;
     }
 
+    /// <summary>
+    /// AMD Anti-Lag status from ADLX 3D settings. This is configuration state,
+    /// not a latency sample from the Radeon latency monitor.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct AdlxAntiLagInfo
+    {
+        [MarshalAs(UnmanagedType.I1)]
+        public bool AntiLagSupported;
+
+        [MarshalAs(UnmanagedType.I1)]
+        public bool AntiLagEnabled;
+
+        [MarshalAs(UnmanagedType.I1)]
+        public bool AntiLagLevelSupported;
+
+        public uint AntiLagLevel;
+    }
+
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "IntializeAdlx")]
     private static extern bool IntializeAdlx_Native();
 
@@ -206,6 +231,9 @@ internal static class ADLX
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "GetAdlxDeviceInfo")]
     private static extern bool GetAdlxDeviceInfo_Native(uint index, ref AdlxDeviceInfo deviceInfo);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "GetAdlxAntiLagInfo")]
+    private static extern bool GetAdlxAntiLagInfo_Native(uint index, ref AdlxAntiLagInfo antiLagInfo);
 
     /// <summary>
     /// Checks if the ADLX DLL is available and can be loaded.
@@ -366,6 +394,27 @@ internal static class ADLX
         try
         {
             return GetAdlxDeviceInfo_Native(index, ref deviceInfo);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Gets AMD Anti-Lag support, enabled state, and Anti-Lag/Anti-Lag Next level.
+    /// </summary>
+    /// <param name="index">Adapter index (0-based).</param>
+    /// <param name="antiLagInfo">Output Anti-Lag status structure.</param>
+    /// <returns>True if ADLX returned Anti-Lag status, false otherwise.</returns>
+    public static bool GetAntiLagInfo(uint index, ref AdlxAntiLagInfo antiLagInfo)
+    {
+        if (!_dllLoaded)
+            return false;
+
+        try
+        {
+            return GetAdlxAntiLagInfo_Native(index, ref antiLagInfo);
         }
         catch
         {

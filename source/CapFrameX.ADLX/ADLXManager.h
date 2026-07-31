@@ -104,7 +104,20 @@ typedef struct AdlxDeviceInfo
 	char DriverPath[MAX_DRIVER_PATH_LEN];
 };
 
+struct AdlxAntiLagInfo
+{
+	bool antiLagSupported = false;
+	bool antiLagEnabled = false;
+	bool antiLagLevelSupported = false;
+	// ADLX_ANTILAG_STATE: 0 = AntiLag, 1 = AntiLag Next
+	uint32_t antiLagLevel = 0;
+};
+
+#ifdef CAPFRAMEXADLX_EXPORTS
+#define ADLX_API __declspec(dllexport)
+#else
 #define ADLX_API __declspec(dllimport)
+#endif
 
 extern "C" ADLX_API bool IntializeAdlx();
 
@@ -117,3 +130,5 @@ extern "C" ADLX_API bool GetAdlxTelemetry(const adlx_uint index, const adlx_uint
 extern "C" ADLX_API bool GetAdlxTelemetrySupport(const adlx_uint index, AdlxTelemetrySupport * adlxTelemetrySupport);
 
 extern "C" ADLX_API bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo * adlxDeviceInfo);
+
+extern "C" ADLX_API bool GetAdlxAntiLagInfo(const adlx_uint index, AdlxAntiLagInfo * adlxAntiLagInfo);

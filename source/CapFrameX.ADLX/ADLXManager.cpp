@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "SDK/ADLXHelper/Windows/Cpp/ADLXHelper.h"
+#include "SDK/Include/I3DSettings.h"
 #include "SDK/Include/IPerformanceMonitoring3.h"
 #include "ADLXManager.h"
 #include <exception>
@@ -15,6 +16,7 @@ using namespace adlx;
 static ADLXHelper g_ADLXHelp;
 
 IADLXPerformanceMonitoringServicesPtr _perfMonitoringService;
+IADLX3DSettingsServicesPtr _3dSettingsService;
 IADLXGPUListPtr _gpus;
 
 // Release all globally held ADLX interfaces. Must run before g_ADLXHelp.Terminate();
@@ -23,7 +25,19 @@ IADLXGPUListPtr _gpus;
 static void ReleaseAdlxInterfaces()
 {
 	_gpus = nullptr;
+	_3dSettingsService = nullptr;
 	_perfMonitoringService = nullptr;
+}
+
+static bool Ensure3DSettingsService()
+{
+	if (_3dSettingsService != nullptr)
+		return true;
+
+	if (g_ADLXHelp.GetSystemServices() == nullptr)
+		return false;
+
+	return ADLX_SUCCEEDED(g_ADLXHelp.GetSystemServices()->Get3DSettingsServices(&_3dSettingsService));
 }
 
 void GetTimeStamp(IADLXGPUMetricsPtr gpuMetrics)
@@ -650,6 +664,61 @@ bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
 	catch (...)
 	{
 		return false; // Return false on any unknown exception
+	}
+
+	return check;
+}
+
+bool GetAdlxAntiLagInfo(const adlx_uint index, AdlxAntiLagInfo* adlxAntiLagInfo)
+{
+	bool check = false;
+
+	if (adlxAntiLagInfo == nullptr || _gpus == nullptr)
+		return false;
+
+	try
+	{
+		IADLXGPUPtr gpu;
+		ADLX_RESULT res = _gpus->At(index, &gpu);
+
+		if (ADLX_SUCCEEDED(res) && Ensure3DSettingsService())
+		{
+			IADLX3DAntiLagPtr antiLag;
+			res = _3dSettingsService->GetAntiLag(gpu, &antiLag);
+
+			if (ADLX_SUCCEEDED(res) && antiLag != nullptr)
+			{
+				adlx_bool supported = false;
+				if (ADLX_SUCCEEDED(antiLag->IsSupported(&supported)))
+					adlxAntiLagInfo->antiLagSupported = supported;
+
+				adlx_bool enabled = false;
+				if (ADLX_SUCCEEDED(antiLag->IsEnabled(&enabled)))
+					adlxAntiLagInfo->antiLagEnabled = enabled;
+
+				IADLX3DAntiLag1Ptr antiLag1;
+				if (ADLX_SUCCEEDED(antiLag->QueryInterface(IADLX3DAntiLag1::IID(), reinterpret_cast<void**>(&antiLag1)))
+					&& antiLag1 != nullptr)
+				{
+					ADLX_ANTILAG_STATE level = ANTILAG;
+					if (ADLX_SUCCEEDED(antiLag1->GetLevel(&level)))
+					{
+						adlxAntiLagInfo->antiLagLevelSupported = true;
+						adlxAntiLagInfo->antiLagLevel = static_cast<uint32_t>(level);
+					}
+				}
+
+				check = true;
+			}
+		}
+	}
+	catch (const std::exception&)
+	{
+		return false;
+	}
+	catch (...)
+	{
+		return false;
 	}
 
 	return check;
