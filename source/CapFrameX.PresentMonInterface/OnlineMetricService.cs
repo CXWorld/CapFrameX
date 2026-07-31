@@ -322,9 +322,13 @@ namespace CapFrameX.PresentMonInterface
             }
 
             double pcLatency = double.NaN;
-            if (_appConfiguration.UsePcLatency)
+            // Dynamic index: the running PresentMon session only carries the MsPCLatency column
+            // when it was started with PC latency tracking — after a live config toggle the
+            // session lags behind the config until the capture service restarts.
+            int pcLatencyIndex = _captureService.MsPcLatency_Index;
+            if (_appConfiguration.UsePcLatency && pcLatencyIndex >= 0 && pcLatencyIndex < lineSplit.Length)
             {
-                if (!double.TryParse(lineSplit[PresentMonCaptureService.MsPCLatency_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out pcLatency))
+                if (!double.TryParse(lineSplit[pcLatencyIndex], NumberStyles.Any, CultureInfo.InvariantCulture, out pcLatency))
                 {
                     // Don't reset metrics if PC latency if not available
                     pcLatency = double.NaN;

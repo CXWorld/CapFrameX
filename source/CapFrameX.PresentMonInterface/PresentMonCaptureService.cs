@@ -37,7 +37,8 @@ namespace CapFrameX.PresentMonInterface
         private static readonly PresentMonColumnLayout ColumnLayoutWithoutPcLatency =
             new PresentMonColumnLayout(COLUMN_HEADER_WITHOUT_PC_LATENCY, false);
 
-        // Fixed indices before the optional PC latency column. MsPCLatency is only available in the PC latency layout.
+        // Fixed indices before the optional PC latency column — identical in both layouts.
+        // MsPCLatency itself has no fixed index; use the dynamic MsPcLatency_Index instead.
         public static readonly int ApplicationName_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "Application");
         public static readonly int ProcessID_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "ProcessID");
         public static readonly int SwapChainAddress_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "SwapChainAddress");
@@ -46,7 +47,6 @@ namespace CapFrameX.PresentMonInterface
         public static readonly int PresentRuntime_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "PresentRuntime");
         public static readonly int MsBetweenPresents_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "MsBetweenPresents");
         public static readonly int MsBetweenDisplayChange_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "MsBetweenDisplayChange");
-        public static readonly int MsPCLatency_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "MsPCLatency");
 
         private readonly IAppConfiguration _appConfiguration;
 
@@ -61,6 +61,8 @@ namespace CapFrameX.PresentMonInterface
         public int CpuBusy_Index => Array.IndexOf(CurrentColumnLayout.Columns, "MsCPUBusy");
         public int GpuBusy_Index => Array.IndexOf(CurrentColumnLayout.Columns, "MsGPUBusy");
         public int AnimationError_Index => Array.IndexOf(CurrentColumnLayout.Columns, "MsAnimationError");
+        // -1 when the running session was started without PC latency tracking
+        public int MsPcLatency_Index => Array.IndexOf(CurrentColumnLayout.Columns, "MsPCLatency");
 
         // Custom PresentMon build - ETW tracking columns
         public int EtwBufferFillPct_Index => Array.IndexOf(CurrentColumnLayout.Columns, "EtwBufferFillPct");

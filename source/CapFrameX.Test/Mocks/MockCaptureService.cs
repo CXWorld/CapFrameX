@@ -83,6 +83,7 @@ namespace CapFrameX.Test.Mocks
         int ICaptureService.CpuBusy_Index => CpuBusy_INDEX;
         int ICaptureService.GpuBusy_Index => GpuBusy_INDEX;
         int ICaptureService.AnimationError_Index => MsAnimationError_INDEX;
+        int ICaptureService.MsPcLatency_Index => MsPCLatency_INDEX;
         int ICaptureService.EtwBufferFillPct_Index => EtwBufferFillPct_INDEX;
         int ICaptureService.EtwBuffersInUse_Index => EtwBuffersInUse_INDEX;
         int ICaptureService.EtwTotalBuffers_Index => EtwTotalBuffers_INDEX;

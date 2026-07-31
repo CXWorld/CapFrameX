@@ -24,6 +24,8 @@ namespace CapFrameX.Capture.Contracts
         int CpuBusy_Index { get; }
         int GpuBusy_Index { get; }
         int AnimationError_Index { get; }
+        // -1 when the running session was started without PC latency tracking
+        int MsPcLatency_Index { get; }
         int EtwBufferFillPct_Index { get; }
         int EtwBuffersInUse_Index { get; }
         int EtwTotalBuffers_Index { get; }
