@@ -144,7 +144,15 @@ FLM_STATUS FLM_Capture_AMF::GetFrame()
             break;
         else if (res == AMF_REPEAT)
         {
+#ifdef CAPFRAMEX_FLM_EMBEDDED
+            // Sleep(0) yield-spins a core for the whole inter-frame gap — too expensive for an
+            // always-on background service. Sleep(1) delays frame pickup by at most ~1 ms
+            // (timeBeginPeriod(1) is active for the session), well below the refresh-quantization
+            // noise of the click-to-screen-response metric.
+            Sleep(1);
+#else
             Sleep(0);  // Sleep(1) should be just as good...
+#endif
         }
         else if (res == AMF_FAIL)
         {

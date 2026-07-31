@@ -128,6 +128,7 @@ private:
     HANDLE  m_eventMovementDetected         = NULL;
     bool    m_bMouseClickDetected           = false;
     int64_t m_iiMouseMoveEventTime          = 0;
+    int64_t m_iiMouseClickEventTime         = 0;  // CapFrameX: QPC of the real user click (MOUSE_CLICK mode)
     int     m_iMeasurementPhaseCounter      = 0;
     int     m_iDequantizingPhaseCounter     = 0;
     int64_t m_iiMotionDetectedFrameFlipTime = 0;

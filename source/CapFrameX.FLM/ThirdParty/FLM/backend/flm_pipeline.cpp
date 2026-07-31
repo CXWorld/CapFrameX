@@ -205,7 +205,11 @@ FLM_STATUS FLM_Pipeline::InitSettings()
     m_bMeasuringInProgress = false;
 
     // Mouse
+#ifndef CAPFRAMEX_FLM_EMBEDDED
+    // The embedded build receives the mouse event type from the host before Init();
+    // it must not be reset here (sanitized in the embedded block below).
     m_runtimeOptions.mouseEventType = FLM_MOUSE_EVENT_TYPE::MOUSE_MOVE;
+#endif
     m_iiMouseMoveEventTime          = 0L;
     m_hMouseThread                  = NULL;
     m_iMeasurementPhaseCounter      = 0;
@@ -228,14 +232,18 @@ FLM_STATUS FLM_Pipeline::InitSettings()
 #ifdef CAPFRAMEX_FLM_EMBEDDED
     m_runtimeOptions.appWindowTopMost = false;
     m_runtimeOptions.printLevel = FLM_PRINT_LEVEL::RUN;
-    m_runtimeOptions.mouseEventType = FLM_MOUSE_EVENT_TYPE::MOUSE_MOVE;
+    // Keep the mouse event type selected by the host (MOUSE_MOVE = synthetic injection,
+    // MOUSE_CLICK = passive measurement of real user clicks); sanitize unknown values.
+    if (m_runtimeOptions.mouseEventType != FLM_MOUSE_EVENT_TYPE::MOUSE_CLICK)
+        m_runtimeOptions.mouseEventType = FLM_MOUSE_EVENT_TYPE::MOUSE_MOVE;
     m_runtimeOptions.autoBias = false;
     m_runtimeOptions.minimizeApp = false;
     m_runtimeOptions.showOptions = false;
     m_runtimeOptions.saveUserSettings = false;
     m_runtimeOptions.thresholdCoefficient[FLM_MOUSE_EVENT_TYPE::MOUSE_MOVE] =
         std::max(0.1f, m_runtimeOptions.thresholdCoefficient[FLM_MOUSE_EVENT_TYPE::MOUSE_MOVE]);
-    m_runtimeOptions.thresholdCoefficient[FLM_MOUSE_EVENT_TYPE::MOUSE_CLICK] = 5.0f;
+    m_runtimeOptions.thresholdCoefficient[FLM_MOUSE_EVENT_TYPE::MOUSE_CLICK] =
+        std::max(0.1f, m_runtimeOptions.thresholdCoefficient[FLM_MOUSE_EVENT_TYPE::MOUSE_CLICK]);
     m_setting.iMouseHorizontalStep = std::clamp(m_runtimeOptions.mouseHorizontalStep, 10, 1000);
     m_setting.saveToFile = false;
     m_setting.showBoundingBox = false;
@@ -617,16 +625,30 @@ void FLM_Pipeline::MouseEventThreadFunction()
         {
             if (m_runtimeOptions.mouseEventType == FLM_MOUSE_EVENT_TYPE::MOUSE_CLICK)
             {
+#ifdef CAPFRAMEX_FLM_EMBEDDED
+                // Arm on the thresholded SAD: raw SAD is never zero in a live game scene
+                // (idle animations, film grain, HUD), so requiring m_iSAD == 0 would keep
+                // click measurements from ever arming. The background-SAD estimator in
+                // GetThresholdedSAD exists precisely to model that baseline motion.
+                while (m_iThSAD > 0)
+                {
+                    Sleep(1);  // motion above background level; poll cheaply in continuous background use
+                    if (m_bTerminateMouseThread)
+                        break;
+                }
+#else
                 while (m_iSAD > 0)
                 {
                     Sleep(0);
                     if (m_bTerminateMouseThread)
                         break;
                 }
+#endif
 
                 if (m_mouse.IsButtonDown(MOUSE_LEFT_BUTTON))
                 {
-                    m_bMouseClickDetected = false;
+                    m_bMouseClickDetected   = false;
+                    m_iiMouseClickEventTime = GetTimeStamp().QuadPart;  // CapFrameX: QPC of the real user click
                     m_timer_performance.Start();
                     if (WaitForFrameDetection())
                     {
@@ -637,9 +659,18 @@ void FLM_Pipeline::MouseEventThreadFunction()
                         {
                             if (m_bTerminateMouseThread)
                                 break;
+#ifdef CAPFRAMEX_FLM_EMBEDDED
+                            Sleep(1);  // don't burn a core while the button is held
+#endif
                         }
                     }
                 }
+#ifdef CAPFRAMEX_FLM_EMBEDDED
+                else
+                {
+                    Sleep(1);  // idle poll for the next click
+                }
+#endif
             }
             else if (m_runtimeOptions.mouseEventType == FLM_MOUSE_EVENT_TYPE::MOUSE_MOVE)
             {
@@ -1103,6 +1134,7 @@ void FLM_Pipeline::ResetState()
     m_fAccumulatedFrameTimeMS      = 0;
     m_iMeasurementPhaseCounter     = 0;
     m_iiMouseMoveEventTime         = 0;
+    m_iiMouseClickEventTime        = 0;
     m_iSkipMeasurementsOnInitCount = 1; // = 2; // Skip a few initial measurements, just in case
     m_telemetry.Reset();
     m_capture->ResetState();
@@ -1355,14 +1387,30 @@ FLM_PROCESS_STATUS FLM_Pipeline::Process()
             else
                 m_iiMotionDetectedFrameFlipTime = m_iiFrameTimeStamp;
 
-            if (m_runtimeOptions.mouseEventType == FLM_MOUSE_EVENT_TYPE::MOUSE_MOVE)
             {
                 FLM_LATENCY_SAMPLE sample;
                 sample.sequence = ++m_latencySampleSequence;
-                sample.inputQpc = m_codec == FLM_CAPTURE_CODEC_TYPE::AMF
-                    ? m_timer.TranslateAmfTimeToPerformanceCounter(inputTimestamp)
-                    : inputTimestamp;
-                sample.frameQpc = m_iiMotionDetectedFrameFlipTime;
+                if (m_runtimeOptions.mouseEventType == FLM_MOUSE_EVENT_TYPE::MOUSE_MOVE)
+                {
+                    sample.inputQpc = m_codec == FLM_CAPTURE_CODEC_TYPE::AMF
+                        ? m_timer.TranslateAmfTimeToPerformanceCounter(inputTimestamp)
+                        : inputTimestamp;
+                    sample.frameQpc = m_iiMotionDetectedFrameFlipTime;
+                }
+                else
+                {
+                    // MOUSE_CLICK: the latency is measured with the performance timer from
+                    // the real user click; derive the frame timestamp from the click QPC so
+                    // both stamps share the QueryPerformanceCounter timebase.
+                    static const int64_t iiQpcTicksPerMs = []() {
+                        LARGE_INTEGER frequency = {};
+                        QueryPerformanceFrequency(&frequency);
+                        return frequency.QuadPart / 1000;
+                    }();
+                    sample.inputQpc = m_iiMouseClickEventTime;
+                    sample.frameQpc = m_iiMouseClickEventTime +
+                        (int64_t)(m_fLatestMeasuredLatencyMS * iiQpcTicksPerMs);
+                }
                 sample.latencyMs = m_fLatestMeasuredLatencyMS;
                 sample.latencyFrames = m_capture->m_fMovingAverageFrameTimeMS > 0.0f
                     ? m_fLatestMeasuredLatencyMS / m_capture->m_fMovingAverageFrameTimeMS - 0.5f

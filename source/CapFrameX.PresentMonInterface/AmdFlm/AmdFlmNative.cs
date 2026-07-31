@@ -11,6 +11,11 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
         internal const int NoSample = 1;
         private const string DllName = "CapFrameX.FLM.dll";
 
+        // Mirrors FlmInteropConfig.mouseEventType: 0 = synthetic mouse move (injects input via
+        // SendInput), 1 = passive click-to-photon (measures real user clicks). CapFrameX always
+        // uses the passive mode — the user's mouse must never be manipulated.
+        internal const int MouseEventTypePassiveClick = 1;
+
         [StructLayout(LayoutKind.Sequential)]
         internal struct Config
         {
@@ -26,6 +31,7 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
             internal float ThresholdCoefficient;
             internal int AverageFilterFrames;
             internal int FilmGrainThreshold;
+            internal int MouseEventType;
 
             internal static Config CreateDefault(bool gameUsesFrameGeneration)
             {
@@ -36,13 +42,17 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
                     GameUsesFrameGeneration = gameUsesFrameGeneration ? 1 : 0,
                     InitAmfUsingDx12 = 0,
                     MouseHorizontalStep = 50,
-                    CaptureStartX = 0.125f,
-                    CaptureStartY = 0.03125f,
-                    CaptureWidth = 0.75f,
-                    CaptureHeight = 0.0149f,
+                    // Passive click mode monitors the screen response to a real click (muzzle
+                    // flash, recoil, ability effects), which happens around the crosshair — not
+                    // in the top-of-screen strip the synthetic move mode uses for camera pans.
+                    CaptureStartX = 0.40f,
+                    CaptureStartY = 0.45f,
+                    CaptureWidth = 0.20f,
+                    CaptureHeight = 0.25f,
                     ThresholdCoefficient = 5.0f,
                     AverageFilterFrames = 100,
-                    FilmGrainThreshold = 4
+                    FilmGrainThreshold = 4,
+                    MouseEventType = MouseEventTypePassiveClick
                 };
             }
         }

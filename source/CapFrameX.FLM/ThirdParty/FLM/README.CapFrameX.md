@@ -14,5 +14,14 @@ possible. They remove console/UI, keyboard, INI and CSV behavior; add explicit
 start/stop control and a bounded sample ring; expose QPC-based latency samples;
 and make cleanup safe for repeated in-process capture sessions.
 
+The host selects the mouse event type via `FlmInteropConfig.mouseEventType`.
+CapFrameX always passes the passive `MOUSE_CLICK` mode: latency is measured
+from the user's real left-click to the on-screen response, and the sample ring
+receives click samples (input QPC recorded at the click). The `MOUSE_MOVE`
+mode injects synthetic mouse input via `SendInput` and must not be used from
+CapFrameX — the user's mouse must never be manipulated. The click-mode wait
+loops sleep 1 ms in the embedded build so the always-on background service
+does not spin a core.
+
 License texts are in `LICENSE-FLM.txt`, `external/amf/LICENSE.txt`, and
 `external/ini/LICENCE.txt`.

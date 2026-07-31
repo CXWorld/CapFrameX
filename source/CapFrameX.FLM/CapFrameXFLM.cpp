@@ -2,6 +2,8 @@
 
 #include "ThirdParty/FLM/backend/flm_pipeline.h"
 
+#include <timeapi.h>
+
 #include <algorithm>
 #include <atomic>
 #include <cstring>
@@ -10,6 +12,8 @@
 #include <new>
 #include <string>
 #include <thread>
+
+#pragma comment(lib, "winmm.lib")
 
 namespace
 {
@@ -40,6 +44,11 @@ namespace
                 options.captureFilmGrainThreshold = std::clamp(config.filmGrainThreshold, 0, 255);
                 options.thresholdCoefficient[FLM_MOUSE_EVENT_TYPE::MOUSE_MOVE] =
                     std::max(0.1f, config.thresholdCoefficient);
+                options.thresholdCoefficient[FLM_MOUSE_EVENT_TYPE::MOUSE_CLICK] =
+                    std::max(0.1f, config.thresholdCoefficient);
+                options.mouseEventType = config.mouseEventType == 1
+                    ? FLM_MOUSE_EVENT_TYPE::MOUSE_CLICK
+                    : FLM_MOUSE_EVENT_TYPE::MOUSE_MOVE;
 
                 const auto codec = static_cast<FLM_CAPTURE_CODEC_TYPE>(config.codec);
                 const FLM_STATUS status = m_pipeline->Init(codec);
@@ -50,6 +59,11 @@ namespace
                     m_pipeline.reset();
                     return FLM_INTEROP_INITIALIZATION_FAILED;
                 }
+
+                // The click-mode poll loops sleep 1 ms; without a 1 ms timer period those
+                // sleeps can stretch to ~15 ms and delay click detection, which would bias
+                // the measured latency low. Scoped to the session lifetime.
+                m_timerPeriodActive = timeBeginPeriod(1) == TIMERR_NOERROR;
 
                 m_worker = std::thread(&FlmSession::ProcessLoop, this);
                 return FLM_INTEROP_OK;
@@ -140,6 +154,12 @@ namespace
 
             m_pipeline->Close();
             m_pipeline.reset();
+
+            if (m_timerPeriodActive)
+            {
+                timeEndPeriod(1);
+                m_timerPeriodActive = false;
+            }
         }
 
     private:
@@ -182,6 +202,7 @@ namespace
         std::thread m_worker;
         std::atomic_bool m_shutdownRequested = false;
         bool m_measuring = false;
+        bool m_timerPeriodActive = false;
         std::mutex m_lifecycleMutex;
         std::mutex m_errorMutex;
         std::string m_lastError;
@@ -192,7 +213,9 @@ namespace
         return config != nullptr &&
             config->structSize >= sizeof(FlmInteropConfig) &&
             config->codec >= static_cast<int32_t>(FLM_CAPTURE_CODEC_TYPE::AUTO) &&
-            config->codec <= static_cast<int32_t>(FLM_CAPTURE_CODEC_TYPE::DXGI);
+            config->codec <= static_cast<int32_t>(FLM_CAPTURE_CODEC_TYPE::DXGI) &&
+            config->mouseEventType >= 0 &&
+            config->mouseEventType <= 1;
     }
 }
 

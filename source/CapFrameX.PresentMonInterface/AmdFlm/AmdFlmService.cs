@@ -156,6 +156,7 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
         {
             try
             {
+                bool firstSampleLogged = false;
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     int status;
@@ -165,6 +166,14 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
                         status = AmdFlmNative.FlmTryGetSample(session, ref nativeSample);
                         if (status == AmdFlmNative.Ok)
                         {
+                            if (!firstSampleLogged)
+                            {
+                                firstSampleLogged = true;
+                                _logger.LogInformation(
+                                    "AMD FLM first latency sample received: {LatencyMs} ms",
+                                    nativeSample.LatencyMs);
+                            }
+
                             _sampleSubject.OnNext(new AmdFlmSample(
                                 nativeSample.Sequence,
                                 nativeSample.InputQpc,

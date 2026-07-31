@@ -32,6 +32,7 @@ struct FlmInteropConfig
     float    thresholdCoefficient;
     int32_t  averageFilterFrames;
     int32_t  filmGrainThreshold;
+    int32_t  mouseEventType;  // 0 = synthetic mouse move (injects input), 1 = passive click-to-photon
 };
 
 struct FlmInteropSample
