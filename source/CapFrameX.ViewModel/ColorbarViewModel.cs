@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.MVVM;
+using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
@@ -26,6 +27,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.NetworkInformation;
+using System.Reactive.Linq;
 using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
@@ -64,6 +66,7 @@ namespace CapFrameX.ViewModel
         private bool _helpViewSelected;
         private bool _showNotification;
         private DateTime _notificationTimestamp = DateTime.MinValue;
+        private bool _isFlmSupported;
 
         public string OsdHttpUrl => WebserverFactory.OsdHttpUrl;
         public string OsdWSUrl => WebserverFactory.OsdWSUrl;
@@ -519,6 +522,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool IsFlmSupported
+        {
+            get { return _isFlmSupported; }
+            private set
+            {
+                _isFlmSupported = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public bool UseAmdFlmLatency
         {
             get { return _appConfiguration.UseAmdFlmLatency; }
@@ -637,7 +650,19 @@ namespace CapFrameX.ViewModel
                     .ToArray();
 
                 RaisePropertyChanged(nameof(GraphicsAdapters));
+
+                IsFlmSupported = sensorService.GetGpuVendor() == EGpuVendor.Amd;
             });
+
+            // AmdFlmService resets UseAmdFlmLatency when a copied config enables it on a
+            // non-AMD system; mirror such external changes into the checkbox bindings.
+            _appConfiguration.OnValueChanged
+                .Where(change => change.key == nameof(IAppConfiguration.UseAmdFlmLatency))
+                .Subscribe(_ =>
+                {
+                    RaisePropertyChanged(nameof(UseAmdFlmLatency));
+                    RaisePropertyChanged(nameof(AmdFlmFrameGeneration));
+                });
 
             SetAggregatorEvents();
             SubscribeToAggregatorEvents();

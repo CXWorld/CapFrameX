@@ -1,5 +1,7 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Latency;
+using CapFrameX.Contracts.Overlay;
+using CapFrameX.Contracts.Sensor;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Reactive;
@@ -16,6 +18,9 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
         private static readonly TimeSpan PollInterval = TimeSpan.FromMilliseconds(4);
 
         private readonly IAppConfiguration _appConfiguration;
+        // Lazy: SensorService itself depends on IAmdFlmService, a direct
+        // ISensorService constructor dependency would be circular.
+        private readonly Lazy<ISensorService> _sensorService;
         private readonly ILogger<AmdFlmService> _logger;
         private readonly Subject<AmdFlmSample> _sampleSubject = new Subject<AmdFlmSample>();
         private readonly EventLoopScheduler _lifecycleScheduler;
@@ -26,6 +31,7 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
         private CancellationTokenSource _pollCancellation;
         private Task _pollTask;
         private bool? _activeFrameGeneration;
+        private bool? _isAmdGpuSystem;
         private volatile bool _isRunning;
         private bool _disposed;
 
@@ -37,9 +43,11 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
 
         public AmdFlmService(
             IAppConfiguration appConfiguration,
+            Lazy<ISensorService> sensorService,
             ILogger<AmdFlmService> logger)
         {
             _appConfiguration = appConfiguration;
+            _sensorService = sensorService;
             _logger = logger;
             _lifecycleScheduler = new EventLoopScheduler(start =>
             {
@@ -71,12 +79,37 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
                 return;
             }
 
+            if (!IsAmdGpuSystem())
+            {
+                // A copied AppSettings.json can carry the option onto a non-AMD system.
+                // Reset it so the overlay entry and sensor stay disabled consistently.
+                _logger.LogInformation("AMD FLM latency measurement is only supported on AMD GPUs, disabling the option");
+                _appConfiguration.UseAmdFlmLatency = false;
+                StopNativeSession();
+                return;
+            }
+
             bool useFrameGenerationTiming = _appConfiguration.AmdFlmFrameGeneration;
             if (_session != null && _activeFrameGeneration == useFrameGenerationTiming)
                 return;
 
             StopNativeSession();
             StartNativeSession(useFrameGenerationTiming);
+        }
+
+        private bool IsAmdGpuSystem()
+        {
+            if (!_isAmdGpuSystem.HasValue)
+            {
+                // Runs on the dedicated lifecycle thread, so blocking until the hardware
+                // monitor has finished initializing is safe; before that point the vendor
+                // reads as Unknown and an AMD system would wrongly be rejected.
+                var sensorService = _sensorService.Value;
+                sensorService.SensorServiceCompletionSource.Task.GetAwaiter().GetResult();
+                _isAmdGpuSystem = sensorService.GetGpuVendor() == EGpuVendor.Amd;
+            }
+
+            return _isAmdGpuSystem.Value;
         }
 
         private void StartNativeSession(bool useFrameGenerationTiming)
