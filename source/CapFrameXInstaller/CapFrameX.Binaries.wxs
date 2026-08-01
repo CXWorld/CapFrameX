@@ -2,6 +2,12 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Fragment>
         <DirectoryRef Id="INSTALLFOLDER">
+            <Component Id="cmp6B7ACE5822A45CF03FDF93CE7FC9F22D" Guid="*" Win64="yes">
+                <File Id="fil6733F62FB0AEAF3E605F7D518E185666" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\AMD-AMF-LICENSE.txt" />
+            </Component>
+            <Component Id="cmp658DEB2F840A3CF70441A777477903ED" Guid="*" Win64="yes">
+                <File Id="fil98E328FFA0443BA51CF6B0EA94ED95E7" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\AMD-FLM-LICENSE.txt" />
+            </Component>
             <Component Id="cmpFD65F52CD5EC0B46A750F8EEFC3D4422" Guid="*" Win64="yes">
                 <File Id="fil1F7E777B326B02F60B86F747002F8605" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\AutoMapper.dll" />
             </Component>
@@ -10,9 +16,6 @@
             </Component>
             <Component Id="cmp010346265BD055915F2AF759DD155A33" Guid="*" Win64="yes">
                 <File Id="filC36055874C8412817A8A62A3DD63255D" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.ADLX.dll" />
-            </Component>
-            <Component Id="cmp571C79666C6544C989330DA7CDB6F7C2" Guid="*" Win64="yes">
-                <File Id="fil9196AF89D5CE40A0A2671AE2EF5A48D7" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.FLM.dll" />
             </Component>
             <Component Id="cmpFCC1F35455D5814F6F5D83CFB2CBB5EA" Guid="*" Win64="yes">
                 <File Id="filBF5E6522ABF9B07B4C721A3F08328663" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Capture.Contracts.dll" />
@@ -77,6 +80,9 @@
             </Component>
             <Component Id="cmpF3D48399A0F13574BBC5D2D15C71B25C" Guid="*" Win64="yes">
                 <File Id="fil804C4BD6BD64859B2C6C4826C2EDE7CC" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Extensions.pdb" />
+            </Component>
+            <Component Id="cmpA1BCC1E17242DA16AC4FDC7FA12F6C3A" Guid="*" Win64="yes">
+                <File Id="filA2C7DE2E14D81D137691C097ED1F8A7C" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.FLM.dll" />
             </Component>
             <Component Id="cmpB6667BCA4B65EF30DBEC87C6744D2AE9" Guid="*" Win64="yes">
                 <File Id="filE95B34771D9FD2DF85704CB98AD42F0B" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Hardware.Controller.dll" />
@@ -290,15 +296,6 @@
             <Component Id="cmpE6F3483C369D2CFABDCB2AA8B75E6959" Guid="*" Win64="yes">
                 <File Id="fil2FD040EEC008499F18B1397AF5810979" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\LICENSE" />
             </Component>
-            <Component Id="cmpA94D9B0F37E44C789E9A3F05BA88C1B7" Guid="*" Win64="yes">
-                <File Id="filCD9D2DF6BC3B43FA8686D3C9413E532F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\AMD-FLM-LICENSE.txt" />
-            </Component>
-            <Component Id="cmpD1B6A7545FC74D75995DCC92BF6732AF" Guid="*" Win64="yes">
-                <File Id="fil2D9BFE5888D74C48B1A75740E6BE4F37" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\AMD-AMF-LICENSE.txt" />
-            </Component>
-            <Component Id="cmp71BDF06BF51249DFA12EEBA38AEC1905" Guid="*" Win64="yes">
-                <File Id="fil7504C49DB1A74FC69B27B8DBB8E2523F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\SIMPLEINI-LICENSE.txt" />
-            </Component>
             <Component Id="cmp60805430DA62A620ADC712537D30F06A" Guid="*" Win64="yes">
                 <File Id="filDB1D736833CDA4D30509594A7B6D0162" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\LiveCharts.dll" />
             </Component>
@@ -488,6 +485,9 @@
             </Component>
             <Component Id="cmp417BB047C679FC9F84F4083A063225E5" Guid="*" Win64="yes">
                 <File Id="fil568F630BA0560FCAD3197AF49E5E9371" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Silk.NET.Vulkan.dll" />
+            </Component>
+            <Component Id="cmp67A263E88600FEDAB57F34640E148AB4" Guid="*" Win64="yes">
+                <File Id="fil7B5AD7ED77FCB7E3606E13BC73C5E8FC" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\SIMPLEINI-LICENSE.txt" />
             </Component>
             <Component Id="cmpECC0DB43D675D3354C308FED694EB2A4" Guid="*" Win64="yes">
                 <File Id="fil096A18880498670BA154574207EB2E0F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Splat.dll" />
@@ -795,9 +795,6 @@
                     <File Id="filC62398BC67A23124C623F535B0898526" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\hook\cfx_osd_hook.dll" />
                 </Component>
                 <Directory Id="dir5B4F1D6B0A7085A89BDC9C1B43165D27" Name="x86">
-                    <Component Id="cmpBBEC6815F860569B81B6948537B74631" Guid="*" Win64="yes">
-                        <File Id="filCF0D6C9E6593EBB46EE00AF0C5C2B91B" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\hook\x86\cfx_inject.exe" />
-                    </Component>
                     <Component Id="cmp916768CCA957B024FA3E5120C4E792E2" Guid="*" Win64="yes">
                         <File Id="filBE67009E71DE81E2327D5883737A10BC" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\hook\x86\cfx_osd_hook.dll" />
                     </Component>
@@ -1195,10 +1192,11 @@
     </Fragment>
     <Fragment>
         <ComponentGroup Id="CapFrameXBinaries">
+            <ComponentRef Id="cmp6B7ACE5822A45CF03FDF93CE7FC9F22D" />
+            <ComponentRef Id="cmp658DEB2F840A3CF70441A777477903ED" />
             <ComponentRef Id="cmpFD65F52CD5EC0B46A750F8EEFC3D4422" />
             <ComponentRef Id="cmp3FA3E043C67E501AF5D90725CBA9EA07" />
             <ComponentRef Id="cmp010346265BD055915F2AF759DD155A33" />
-            <ComponentRef Id="cmp571C79666C6544C989330DA7CDB6F7C2" />
             <ComponentRef Id="cmpFCC1F35455D5814F6F5D83CFB2CBB5EA" />
             
             <ComponentRef Id="cmp367B18F442C629D69A743133694E4034" />
@@ -1225,6 +1223,7 @@
             <ComponentRef Id="cmp946F72DFC650C4E5A49C51A838713428" />
             <ComponentRef Id="cmp4974650E9CE6F14031D0ABC8811B7A46" />
             <ComponentRef Id="cmpF3D48399A0F13574BBC5D2D15C71B25C" />
+            <ComponentRef Id="cmpA1BCC1E17242DA16AC4FDC7FA12F6C3A" />
             <ComponentRef Id="cmpB6667BCA4B65EF30DBEC87C6744D2AE9" />
             
             <ComponentRef Id="cmp6BEF906CB6FADDBDBA3AAF1A06E55843" />
@@ -1305,9 +1304,6 @@
             <ComponentRef Id="cmpBE129962DAD164AE9F278C8874CBF5F9" />
             
             <ComponentRef Id="cmpE6F3483C369D2CFABDCB2AA8B75E6959" />
-            <ComponentRef Id="cmpA94D9B0F37E44C789E9A3F05BA88C1B7" />
-            <ComponentRef Id="cmpD1B6A7545FC74D75995DCC92BF6732AF" />
-            <ComponentRef Id="cmp71BDF06BF51249DFA12EEBA38AEC1905" />
             <ComponentRef Id="cmp60805430DA62A620ADC712537D30F06A" />
             <ComponentRef Id="cmpB1EC42AB2EFCC8248CA692650E5CBA2C" />
             <ComponentRef Id="cmpB80EB57EF2904D1A74E508B15C150404" />
@@ -1372,6 +1368,7 @@
             <ComponentRef Id="cmp609B1CFE4195028805411B060B83208B" />
             <ComponentRef Id="cmp28E1FF85CFD84830768D3E9A5E5EE156" />
             <ComponentRef Id="cmp417BB047C679FC9F84F4083A063225E5" />
+            <ComponentRef Id="cmp67A263E88600FEDAB57F34640E148AB4" />
             <ComponentRef Id="cmpECC0DB43D675D3354C308FED694EB2A4" />
             <ComponentRef Id="cmp29B124E05CCAD23A5A2E64AF36D0DB99" />
             <ComponentRef Id="cmp525502E9B65457F91935CD39242E7D55" />
@@ -1456,7 +1453,6 @@
             <ComponentRef Id="cmp3EB7F17B0DCBDF3729FDAAAF0CF6B665" />
             <ComponentRef Id="cmpEEF8583F33AC9DCDC349C22B5162CEF5" />
             <ComponentRef Id="cmpFE4DB43903D5E98C8998C262D9986373" />
-            <ComponentRef Id="cmpBBEC6815F860569B81B6948537B74631" />
             <ComponentRef Id="cmp916768CCA957B024FA3E5120C4E792E2" />
             <ComponentRef Id="cmpFB118A47202A6B98ED49B3C952C22F35" />
             <ComponentRef Id="cmpA2349B128022FD9468B4B0472DF8814A" />

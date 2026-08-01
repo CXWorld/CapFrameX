@@ -28,7 +28,6 @@ namespace CapFrameX.OSD.Integration
     public sealed class HookOverlayManager : IDisposable
     {
         private const string HookDllName = "cfx_osd_hook.dll";
-        private const string InjectHelperName = "cfx_inject.exe"; // x86 bitness helper (WOW64 targets)
         internal const ulong HookHandshakeTimeoutMs = 3000;
         // The injected hook reports Present activity long before it can draw. If it never gets
         // past that stage the overlay would silently stay invisible forever, so bound it and let
@@ -49,7 +48,6 @@ namespace CapFrameX.OSD.Integration
         private readonly Timer _statusTimer;
         private readonly string _dllPath;         // x64 hook DLL
         private readonly string _dllPathX86;      // x86 hook DLL (32-bit targets)
-        private readonly string _injectHelperX86; // x86 cfx_inject.exe helper
         private readonly object _gate = new object();
         private readonly object _stateGate = new object();
         private readonly object _fallbackGate = new object();
@@ -116,7 +114,6 @@ namespace CapFrameX.OSD.Integration
 
             _dllPath = dllPathOverride ?? ResolveHookAsset(HookDllName, "CFX_HOOK_DLL");
             _dllPathX86 = ResolveHookAsset(Path.Combine("x86", HookDllName), "CFX_HOOK_DLL_X86");
-            _injectHelperX86 = ResolveHookAsset(Path.Combine("x86", InjectHelperName), "CFX_INJECT_X86");
             _enabled = appConfiguration.EnableHookOverlay;
             _statusService = statusService ?? new HookOverlayStatusService();
 
@@ -471,8 +468,8 @@ namespace CapFrameX.OSD.Integration
                         }
                     }
 
-                    // Pick the path by the TARGET's bitness: x64 games get the x64 hook injected
-                    // directly; 32-bit (WOW64) games get the x86 hook via the bitness-matched helper.
+                    // Pick the DLL by the TARGET's bitness. HookInjector handles both targets from
+                    // this x64 process by resolving LoadLibraryW inside the corresponding target.
                     if (!HookInjector.TryGetIsWow64(pid, out bool isWow64, out string bitError))
                     {
                         TimeSpan retryDelay = RegisterInjectionFailure(pid, bitError);
@@ -543,9 +540,7 @@ namespace CapFrameX.OSD.Integration
                         ReleaseInjectionReservation(pid);
                         return;
                     }
-                    bool ok = isWow64
-                        ? HookInjector.TryInjectViaHelper(pid, injectable, _injectHelperX86, out error)
-                        : HookInjector.TryInject(pid, injectable, out error);
+                    bool ok = HookInjector.TryInject(pid, injectable, out error);
 
                     if (ok)
                     {
@@ -1386,10 +1381,10 @@ namespace CapFrameX.OSD.Integration
             catch (NotSupportedException) { return true; }
         }
 
-        // Resolve a staged hook asset relative to the app-output 'hook' folder: the x64 DLL
-        // ("cfx_osd_hook.dll"), the x86 DLL ("x86\cfx_osd_hook.dll") or the x86 helper
-        // ("x86\cfx_inject.exe"). The build stages these into 'hook' (not next to the exe) so a game
-        // locking the injected COPY never touches the app tree. envVar gives a dev/testing override.
+        // Resolve a staged hook DLL relative to the app-output 'hook' folder: the x64 DLL
+        // ("cfx_osd_hook.dll") or the x86 DLL ("x86\cfx_osd_hook.dll"). The build stages these into
+        // 'hook' (not next to the exe) so a game locking the injected COPY never touches the app
+        // tree. envVar gives a dev/testing override.
         private static string ResolveHookAsset(string relative, string envVar)
         {
             var envOverride = Environment.GetEnvironmentVariable(envVar);
