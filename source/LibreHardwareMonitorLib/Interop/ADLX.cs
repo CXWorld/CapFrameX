@@ -23,6 +23,7 @@ internal static class ADLX
 
     private const int MAX_DRIVER_PATH_LEN = 200;
     private const int MAX_GPU_NAME_LEN = 100;
+    private const int MAX_PNP_STRING_LEN = 256;
     private const int MAX_VENDOR_ID_LEN = 20;
 
     private static bool _dllLoaded;
@@ -187,6 +188,15 @@ internal static class ADLX
 
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MAX_DRIVER_PATH_LEN)]
         public string DriverPath;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MAX_PNP_STRING_LEN)]
+        public string PnpString;
+
+        public uint LuidLowPart;
+
+        public int LuidHighPart;
+
+        public uint LuidValid;
     }
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "IntializeAdlx")]

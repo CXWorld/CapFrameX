@@ -80,6 +80,74 @@ internal static class D3DDisplayDevice
         return deviceIdentifier.Replace('#', '\\');
     }
 
+    public static bool TryGetDeviceInfoByAdapterLuid(
+        string adapterLuidInstanceName,
+        string vendorToken,
+        out string deviceIdentifier,
+        out D3DDeviceInfo deviceInfo)
+    {
+        deviceIdentifier = null;
+        deviceInfo = default;
+
+        if (string.IsNullOrWhiteSpace(adapterLuidInstanceName))
+            return false;
+
+        foreach (string candidate in GetVendorDeviceIdentifiers(vendorToken))
+        {
+            if (GetDeviceInfoByIdentifier(candidate, out D3DDeviceInfo candidateInfo) &&
+                string.Equals(candidateInfo.AdapterLuidInstanceName, adapterLuidInstanceName, StringComparison.OrdinalIgnoreCase))
+            {
+                deviceIdentifier = candidate;
+                deviceInfo = candidateInfo;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static bool TryGetDeviceInfoByPnpIdentifier(
+        string pnpIdentifier,
+        string vendorToken,
+        out string deviceIdentifier,
+        out D3DDeviceInfo deviceInfo)
+    {
+        deviceIdentifier = null;
+        deviceInfo = default;
+
+        string[] candidates = GetVendorDeviceIdentifiers(vendorToken);
+        string[] matches = candidates
+            .Where(candidate => DeviceIdentifiersMatch(candidate, pnpIdentifier))
+            .ToArray();
+
+        // A PNP identifier must resolve unambiguously. If ADLX cannot provide one, a single
+        // present AMD adapter is still safe to associate; multiple adapters are not.
+        string match = matches.Length == 1
+            ? matches[0]
+            : matches.Length == 0 && candidates.Length == 1
+                ? candidates[0]
+                : null;
+
+        if (match == null || !GetDeviceInfoByIdentifier(match, out deviceInfo))
+            return false;
+
+        deviceIdentifier = match;
+        return true;
+    }
+
+    internal static bool DeviceIdentifiersMatch(string first, string second)
+    {
+        string normalizedFirst = NormalizeDeviceIdentifier(first);
+        string normalizedSecond = NormalizeDeviceIdentifier(second);
+
+        if (normalizedFirst == null || normalizedSecond == null)
+            return false;
+
+        return string.Equals(normalizedFirst, normalizedSecond, StringComparison.OrdinalIgnoreCase) ||
+               normalizedFirst.StartsWith(normalizedSecond + "\\", StringComparison.OrdinalIgnoreCase) ||
+               normalizedSecond.StartsWith(normalizedFirst + "\\", StringComparison.OrdinalIgnoreCase);
+    }
+
     public static bool GetDeviceInfoByIdentifier(string deviceIdentifier, out D3DDeviceInfo deviceInfo)
     {
         deviceInfo = new D3DDeviceInfo();
@@ -151,12 +219,12 @@ internal static class D3DDisplayDevice
             if (aperture == 1)
             {
                 deviceInfo.GpuSharedUsed += bytesResident;
-                deviceInfo.GpuSharedMax += bytesCommitted;
+                deviceInfo.GpuSharedCommitted += bytesCommitted;
             }
             else
             {
                 deviceInfo.GpuDedicatedUsed += bytesResident;
-                deviceInfo.GpuDedicatedMax += bytesCommitted;
+                deviceInfo.GpuDedicatedCommitted += bytesCommitted;
             }
         }
 
@@ -295,9 +363,34 @@ internal static class D3DDisplayDevice
         status = Windows.Wdk.PInvoke.D3DKMTCloseAdapter(closeAdapter);
     }
 
+    public static string GetAdapterLuidInstanceName(int highPart, uint lowPart)
+    {
+        return $"luid_0x{unchecked((uint)highPart):X8}_0x{lowPart:X8}";
+    }
+
     private static string GetAdapterLuidInstanceName(LUID luid)
     {
-        return $"luid_0x{unchecked((uint)luid.HighPart):X8}_0x{luid.LowPart:X8}";
+        return GetAdapterLuidInstanceName(luid.HighPart, luid.LowPart);
+    }
+
+    private static string[] GetVendorDeviceIdentifiers(string vendorToken)
+    {
+        string[] identifiers = GetDeviceIdentifiers();
+        if (identifiers == null)
+            return Array.Empty<string>();
+
+        return identifiers
+            .Where(identifier => !string.IsNullOrEmpty(identifier) &&
+                (string.IsNullOrEmpty(vendorToken) || identifier.IndexOf(vendorToken, StringComparison.OrdinalIgnoreCase) >= 0))
+            .ToArray();
+    }
+
+    private static string NormalizeDeviceIdentifier(string deviceIdentifier)
+    {
+        if (string.IsNullOrWhiteSpace(deviceIdentifier))
+            return null;
+
+        return GetActualDeviceIdentifier(deviceIdentifier).Trim().TrimEnd('\\');
     }
 
     public struct D3DDeviceNodeInfo
@@ -319,8 +412,8 @@ internal static class D3DDisplayDevice
         public ulong GpuSharedUsed;
         public ulong GpuDedicatedUsed;
 
-        public ulong GpuSharedMax;
-        public ulong GpuDedicatedMax;
+        public ulong GpuSharedCommitted;
+        public ulong GpuDedicatedCommitted;
 
         public D3DDeviceNodeInfo[] Nodes;
         public bool Integrated;

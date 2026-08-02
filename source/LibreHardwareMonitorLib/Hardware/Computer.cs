@@ -235,8 +235,8 @@ public class Computer : IComputer
                     else
                     {
                         Add(new NvidiaGroup(_settings, _sensorConfig));
-                        Add(new AmdGpuGroup(_settings));
-                        Add(new IntelGpuGroup(GetIntelCpus(), _settings));
+                        Add(new AmdGpuGroup(_settings, _sensorConfig));
+                        Add(new IntelGpuGroup(GetIntelCpus(), _settings, _sensorConfig));
                     }
                 }
                 else
@@ -583,8 +583,8 @@ public class Computer : IComputer
             else
             {
                 Add(new NvidiaGroup(_settings, _sensorConfig));
-                Add(new AmdGpuGroup(_settings));
-                Add(new IntelGpuGroup(GetIntelCpus(), _settings));
+                Add(new AmdGpuGroup(_settings, _sensorConfig));
+                Add(new IntelGpuGroup(GetIntelCpus(), _settings, _sensorConfig));
             }
         }
 

@@ -1,8 +1,10 @@
-using LibreHardwareMonitor.Interop;
-using Microsoft.Win32;
 using System;
 using System.Globalization;
 using System.Text;
+
+using CapFrameX.Monitoring.Contracts;
+using LibreHardwareMonitor.Interop;
+using Microsoft.Win32;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
 
@@ -10,7 +12,6 @@ internal sealed class AmdGpu : GenericGpu
 {
     private readonly uint _adapterIndex;
     private readonly ADLX.AdlxDeviceInfo _deviceInfo;
-    private readonly string _d3dDeviceId;
 
     // Temperature sensors
     private readonly Sensor _temperatureCore;
@@ -42,10 +43,11 @@ internal sealed class AmdGpu : GenericGpu
     private readonly Sensor _memoryUsed;
     private readonly Sensor _sharedMemory;
 
-    public AmdGpu(uint adapterIndex, ADLX.AdlxDeviceInfo deviceInfo, ISettings settings)
+    public AmdGpu(uint adapterIndex, ADLX.AdlxDeviceInfo deviceInfo, ISettings settings, ISensorConfig sensorConfig = null)
         : base(deviceInfo.GpuName?.Trim() ?? "AMD GPU",
                new Identifier("gpu-amd", adapterIndex.ToString(CultureInfo.InvariantCulture)),
-               settings)
+               settings,
+               sensorConfig: sensorConfig)
     {
         _adapterIndex = adapterIndex;
         _deviceInfo = deviceInfo;
@@ -100,6 +102,18 @@ internal sealed class AmdGpu : GenericGpu
         { IsPresentationDefault = true, PresentationSortKey = $"{index}_6_0" };
         _sharedMemory = new Sensor("GPU Memory Shared", 3, SensorType.Data, this, settings)
         { PresentationSortKey = $"{index}_6_1" };
+
+        if (TryResolveWddmDevice(deviceInfo, out string deviceId, out D3DDisplayDevice.D3DDeviceInfo wddmDeviceInfo))
+        {
+            bool hasDedicatedMemory = IsDiscreteGpu ||
+                                      wddmDeviceInfo.GpuDedicatedLimit > 0 ||
+                                      wddmDeviceInfo.GpuVideoMemoryLimit > 0;
+            InitializeWddmDevice(
+                deviceId,
+                wddmDeviceInfo.AdapterLuidInstanceName,
+                hasDedicatedMemory ? 4 : null,
+                $"{index}_6_0_1");
+        }
 
         // Activate sensors based on support flags BEFORE calling Update()
         // This ensures sensors are visible in the UI even if the first telemetry call returns no data
@@ -163,13 +177,25 @@ internal sealed class AmdGpu : GenericGpu
             ActivateSensor(_sharedMemory);
     }
 
-    public override string DeviceId => _deviceInfo.DriverPath ?? string.Empty;
+    public override string DeviceId
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(WddmDeviceId))
+                return D3DDisplayDevice.GetActualDeviceIdentifier(WddmDeviceId);
+
+            return !string.IsNullOrEmpty(_deviceInfo.PnpString)
+                ? _deviceInfo.PnpString
+                : _deviceInfo.DriverPath ?? string.Empty;
+        }
+    }
 
     public override HardwareType HardwareType => HardwareType.GpuAmd;
 
     public override void Update()
     {
         UpdateProcessMemorySensors();
+        TryUpdateWddmMemorySensors(false, out _);
 
         // Get ADLX telemetry data
         ADLX.AdlxTelemetryData telemetry = new();
@@ -299,6 +325,12 @@ internal sealed class AmdGpu : GenericGpu
         r.AppendLine(_deviceInfo.VendorId);
         r.Append("DriverPath: ");
         r.AppendLine(_deviceInfo.DriverPath);
+        r.Append("PnpString: ");
+        r.AppendLine(_deviceInfo.PnpString);
+        r.Append("Luid: ");
+        r.AppendLine(_deviceInfo.LuidValid != 0
+            ? D3DDisplayDevice.GetAdapterLuidInstanceName(_deviceInfo.LuidHighPart, _deviceInfo.LuidLowPart)
+            : "Unavailable");
         r.Append("UniqueId: ");
         r.AppendLine(_deviceInfo.Id.ToString(CultureInfo.InvariantCulture));
         r.AppendLine();
@@ -333,13 +365,40 @@ internal sealed class AmdGpu : GenericGpu
 
         r.AppendLine();
 
-        if (_d3dDeviceId != null)
+        if (WddmDeviceId != null)
         {
             r.AppendLine("D3D");
             r.AppendLine();
-            r.AppendLine(" Id: " + _d3dDeviceId);
+            r.AppendLine(" Id: " + WddmDeviceId);
         }
 
         return r.ToString();
+    }
+
+    private static bool TryResolveWddmDevice(
+        ADLX.AdlxDeviceInfo deviceInfo,
+        out string deviceId,
+        out D3DDisplayDevice.D3DDeviceInfo wddmDeviceInfo)
+    {
+        if (deviceInfo.LuidValid != 0)
+        {
+            string adapterLuidInstanceName = D3DDisplayDevice.GetAdapterLuidInstanceName(
+                deviceInfo.LuidHighPart,
+                deviceInfo.LuidLowPart);
+            if (D3DDisplayDevice.TryGetDeviceInfoByAdapterLuid(
+                adapterLuidInstanceName,
+                "VEN_1002",
+                out deviceId,
+                out wddmDeviceInfo))
+            {
+                return true;
+            }
+        }
+
+        return D3DDisplayDevice.TryGetDeviceInfoByPnpIdentifier(
+            deviceInfo.PnpString,
+            "VEN_1002",
+            out deviceId,
+            out wddmDeviceInfo);
     }
 }

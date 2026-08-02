@@ -3,11 +3,12 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
-using CapFrameX.Monitoring.Contracts;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
+
+using CapFrameX.Monitoring.Contracts;
 using Serilog;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
@@ -31,7 +32,12 @@ public abstract class GenericGpu : Hardware
     protected readonly object _displayLock = new();
     /// <summary>
     /// Lock object for performance counter operations
+    /// </summary>
     protected readonly object _performanceCounterLock = new();
+    /// <summary>
+    /// Sensor polling configuration shared by GPU implementations.
+    /// </summary>
+    protected readonly ISensorConfig _sensorConfig;
     /// <summary>
     /// Buffer to store refresh rate values.
     /// </summary>
@@ -48,6 +54,7 @@ public abstract class GenericGpu : Hardware
     /// Name of the display device. 
     /// </summary>
     protected string _displayDeviceName;
+    private Sensor _gpuMemoryAllocated;
     private Sensor _processMemoryUsageDedicated;
     private Sensor _processMemoryUsageShared;
 
@@ -57,6 +64,7 @@ public abstract class GenericGpu : Hardware
     private PerformanceCounter _dedicatedVramUsageProcessPerformCounter;
     private PerformanceCounter _sharedVramUsageProcessPerformCounter;
     private string _processMemoryInstanceFilter;
+    private string _wddmDeviceId;
     private int _counterProcessId;
     private int _currentProcessId;
 
@@ -67,8 +75,15 @@ public abstract class GenericGpu : Hardware
     /// <param name="identifier">Identifier that will be assigned to the device. Based on <see cref="Identifier" /></param>
     /// <param name="settings">Additional settings passed by the <see cref="IComputer" />.</param>
     /// <param name="enableProcessMemorySensors">Indicates whether to enable the process memory sensors. These sensors rely on Windows performance counters and may not be supported or may cause errors on certain systems, particularly those with specific GPU drivers or configurations. Enabling this option will attempt to initialize the necessary performance counters and will monitor the current process for changes to update the sensor values accordingly. If any issues are encountered while initializing or updating the performance counters, the sensors will be disabled and will not report values until a new process change is detected or the counters can be successfully reinitialized.</param>
-    protected GenericGpu(string name, Identifier identifier, ISettings settings, bool enableProcessMemorySensors = true) : base(name, identifier, settings)
+    /// <param name="sensorConfig">Configuration used to avoid polling unselected sensors.</param>
+    protected GenericGpu(
+        string name,
+        Identifier identifier,
+        ISettings settings,
+        bool enableProcessMemorySensors = true,
+        ISensorConfig sensorConfig = null) : base(name, identifier, settings)
     {
+        _sensorConfig = sensorConfig;
         _refreshRateBuffer = new RefreshRateBuffer<float>(2);
         var processService = ProcessServiceProvider.ProcessService;
         _enableProcessMemorySensors = enableProcessMemorySensors && !Software.OperatingSystem.IsUnix && processService != null;
@@ -153,9 +168,77 @@ public abstract class GenericGpu : Hardware
     public abstract string DeviceId { get; }
 
     /// <summary>
+    /// Gets the Windows display-adapter identifier used for WDDM queries.
+    /// </summary>
+    protected string WddmDeviceId => _wddmDeviceId;
+
+    /// <summary>
     /// Gets a value indicating whether the GPU is a discrete GPU.
     /// </summary>
     public bool IsDiscreteGpu { get; set; } = true;
+
+    /// <summary>
+    /// Associates this hardware instance with a Windows display adapter and optionally creates
+    /// the common dedicated-memory allocation sensor.
+    /// </summary>
+    protected void InitializeWddmDevice(
+        string deviceId,
+        string adapterLuidInstanceName,
+        int? allocatedSensorIndex,
+        string allocatedPresentationSortKey)
+    {
+        _wddmDeviceId = deviceId;
+        SetProcessMemoryInstanceFilter(adapterLuidInstanceName);
+
+        if (!allocatedSensorIndex.HasValue)
+            return;
+
+        _gpuMemoryAllocated = new Sensor("GPU Memory Allocated", allocatedSensorIndex.Value, SensorType.Data, this, _settings)
+        {
+            PresentationSortKey = allocatedPresentationSortKey
+        };
+    }
+
+    /// <summary>
+    /// Performs the shared WDDM query and updates the dedicated-memory allocation sensor. The
+    /// returned adapter data can also be consumed by the vendor implementation without issuing a
+    /// second D3DKMT query.
+    /// </summary>
+    internal bool TryUpdateWddmMemorySensors(bool queryRequiredByDerivedClass, out D3DDisplayDevice.D3DDeviceInfo deviceInfo)
+    {
+        deviceInfo = default;
+
+        if (string.IsNullOrEmpty(_wddmDeviceId))
+            return false;
+
+        bool shouldQuery = queryRequiredByDerivedClass;
+        shouldQuery |= ShouldEvaluateWddmMemoryAllocatedSensor();
+        if (!shouldQuery)
+            return false;
+
+        if (!D3DDisplayDevice.GetDeviceInfoByIdentifier(_wddmDeviceId, out deviceInfo))
+        {
+            if (_gpuMemoryAllocated != null)
+                _gpuMemoryAllocated.Value = null;
+
+            return false;
+        }
+
+        UpdateWddmMemorySensor(deviceInfo);
+        return true;
+    }
+
+    /// <summary>
+    /// Updates the common allocation sensor from already queried WDDM adapter data.
+    /// </summary>
+    internal void UpdateWddmMemorySensor(D3DDisplayDevice.D3DDeviceInfo deviceInfo)
+    {
+        if (_gpuMemoryAllocated == null)
+            return;
+
+        _gpuMemoryAllocated.Value = deviceInfo.GpuDedicatedCommitted / VRAM_USAGE_SCALE;
+        ActivateSensor(_gpuMemoryAllocated);
+    }
 
     /// <summary>
     /// Sets the filter string used to identify the correct process memory performance counter instance for the current process. This is necessary in cases where multiple instances exist for the same process, which can happen with certain GPU drivers or configurations. The filter string should be a unique substring of the instance name that corresponds to the current process. If multiple instances match the filter, the one with the highest dedicated memory usage will be selected. If no instances match, the process memory sensors will not report values until a matching instance is found.
@@ -202,6 +285,12 @@ public abstract class GenericGpu : Hardware
                 _processMemoryUsageShared.Value = 0f;
             }
         }
+    }
+
+    private bool ShouldEvaluateWddmMemoryAllocatedSensor()
+    {
+        return _gpuMemoryAllocated != null &&
+               (_sensorConfig == null || _sensorConfig.GetSensorEvaluate(_gpuMemoryAllocated.Identifier.ToString()));
     }
 
     /// <summary>

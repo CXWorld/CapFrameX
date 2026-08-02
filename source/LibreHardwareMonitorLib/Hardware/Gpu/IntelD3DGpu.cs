@@ -3,6 +3,7 @@ using Microsoft.Win32;
 using System;
 using System.Globalization;
 using System.Linq;
+using CapFrameX.Monitoring.Contracts;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
 
@@ -13,7 +14,6 @@ internal class IntelD3dGpu : GenericGpu
     private readonly Sensor _dedicatedMemoryUsage;
     private readonly Sensor _sharedMemoryLimit;
     private readonly Sensor _sharedMemoryFree;
-    private readonly string _deviceId;
     private readonly float _energyUnitMultiplier;
     //private readonly Sensor[] _nodeUsage;
     //private readonly DateTime[] _nodeUsagePrevTick;
@@ -26,17 +26,26 @@ internal class IntelD3dGpu : GenericGpu
 
     private readonly IntelMsr _pawnModule;
 
-    public IntelD3dGpu(Cpu.IntelCpu intelCpu, int index, string deviceId, D3DDisplayDevice.D3DDeviceInfo deviceInfo, ISettings settings)
-        : base(GetName(deviceId), new Identifier("gpu-intel-integrated", deviceId.ToString(CultureInfo.InvariantCulture)), settings)
+    public IntelD3dGpu(
+        Cpu.IntelCpu intelCpu,
+        int index,
+        string deviceId,
+        D3DDisplayDevice.D3DDeviceInfo deviceInfo,
+        ISettings settings,
+        ISensorConfig sensorConfig = null)
+        : base(
+            GetName(deviceId),
+            new Identifier("gpu-intel-integrated", deviceId.ToString(CultureInfo.InvariantCulture)),
+            settings,
+            sensorConfig: sensorConfig)
     {
         _pawnModule = new IntelMsr();
-        _deviceId = deviceId;
         IsDiscreteGpu = !deviceInfo.Integrated;
-        SetProcessMemoryInstanceFilter(deviceInfo.AdapterLuidInstanceName);
 
         int memorySensorIndex = 0;
 
-        if (deviceInfo.GpuDedicatedLimit > 0 || IsDiscreteGpu)
+        bool hasDedicatedMemory = deviceInfo.GpuDedicatedLimit > 0 || IsDiscreteGpu;
+        if (hasDedicatedMemory)
         {
             _dedicatedMemoryUsage = new Sensor("D3D Dedicated Memory Used", memorySensorIndex++, SensorType.Data, this, settings)
             { IsPresentationDefault = true, PresentationSortKey = $"{index}_1" };
@@ -52,6 +61,12 @@ internal class IntelD3dGpu : GenericGpu
             _sharedMemoryLimit = new Sensor("D3D Shared Memory Total", memorySensorIndex++, SensorType.Data, this, settings)
             { PresentationSortKey = $"{index}_3_2" };
         }
+
+        InitializeWddmDevice(
+            deviceId,
+            deviceInfo.AdapterLuidInstanceName,
+            hasDedicatedMemory ? memorySensorIndex : null,
+            $"{index}_1_1");
 
         if (!IsDiscreteGpu)
         {
@@ -84,7 +99,7 @@ internal class IntelD3dGpu : GenericGpu
     }
 
     /// <inheritdoc />
-    public override string DeviceId => D3DDisplayDevice.GetActualDeviceIdentifier(_deviceId);
+    public override string DeviceId => D3DDisplayDevice.GetActualDeviceIdentifier(WddmDeviceId);
 
     public override HardwareType HardwareType => HardwareType.GpuIntel;
 
@@ -92,7 +107,7 @@ internal class IntelD3dGpu : GenericGpu
     {
         UpdateProcessMemorySensors();
 
-        if (D3DDisplayDevice.GetDeviceInfoByIdentifier(_deviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+        if (TryUpdateWddmMemorySensors(true, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
         {
             if (_dedicatedMemoryUsage != null)
             {

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "SDK/ADLXHelper/Windows/Cpp/ADLXHelper.h"
 #include "SDK/Include/IPerformanceMonitoring3.h"
+#include "SDK/Include/ISystem2.h"
 #include "ADLXManager.h"
 #include <exception>
 
@@ -608,6 +609,11 @@ bool GetAdlxTelemetrySupport(const adlx_uint index, AdlxTelemetrySupport* adlxTe
 
 bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
 {
+	if (adlxDeviceInfo == nullptr)
+		return false;
+
+	*adlxDeviceInfo = {};
+
 	ADLX_RESULT res = ADLX_FAIL;
 	ADLX_RESULT ret;
 	bool check = false;
@@ -621,7 +627,8 @@ bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
 		{
 			const char* vendorId = nullptr;
 			ret = gpu->VendorId(&vendorId);
-			strcpy_s(adlxDeviceInfo->VendorId, vendorId);
+			if (ADLX_SUCCEEDED(ret) && vendorId != nullptr)
+				strcpy_s(adlxDeviceInfo->VendorId, vendorId);
 
 			ADLX_GPU_TYPE gpuType = GPUTYPE_UNDEFINED;
 			ret = gpu->Type(&gpuType);
@@ -630,15 +637,35 @@ bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
 
 			const char* gpuName = nullptr;
 			ret = gpu->Name(&gpuName);
-			strcpy_s(adlxDeviceInfo->GpuName, gpuName);
+			if (ADLX_SUCCEEDED(ret) && gpuName != nullptr)
+				strcpy_s(adlxDeviceInfo->GpuName, gpuName);
 
 			const char* driverPath = nullptr;
 			ret = gpu->DriverPath(&driverPath);
-			strcpy_s(adlxDeviceInfo->DriverPath, driverPath);
+			if (ADLX_SUCCEEDED(ret) && driverPath != nullptr)
+				strcpy_s(adlxDeviceInfo->DriverPath, driverPath);
+
+			const char* pnpString = nullptr;
+			ret = gpu->PNPString(&pnpString);
+			if (ADLX_SUCCEEDED(ret) && pnpString != nullptr)
+				strcpy_s(adlxDeviceInfo->PnpString, pnpString);
 
 			adlx_int id;
 			ret = gpu->UniqueId(&id);
-			adlxDeviceInfo->Id = id;
+			if (ADLX_SUCCEEDED(ret))
+				adlxDeviceInfo->Id = id;
+
+			IADLXGPU2Ptr gpu2;
+			if (ADLX_SUCCEEDED(gpu->QueryInterface(IADLXGPU2::IID(), reinterpret_cast<void**>(&gpu2))))
+			{
+				ADLX_LUID luid = {};
+				if (ADLX_SUCCEEDED(gpu2->LUID(&luid)))
+				{
+					adlxDeviceInfo->LuidLowPart = static_cast<uint32_t>(luid.lowPart);
+					adlxDeviceInfo->LuidHighPart = static_cast<int32_t>(luid.highPart);
+					adlxDeviceInfo->LuidValid = 1;
+				}
+			}
 
 			check = true;
 		}

@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+
+using CapFrameX.Monitoring.Contracts;
 using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
@@ -18,7 +20,7 @@ internal class AmdGpuGroup : IGroup
     private readonly StringBuilder _report = new();
     private readonly bool _adlxInitialized;
 
-    public AmdGpuGroup(ISettings settings)
+    public AmdGpuGroup(ISettings settings, ISensorConfig sensorConfig = null)
     {
         try
         {
@@ -68,6 +70,12 @@ internal class AmdGpuGroup : IGroup
                             _report.AppendLine(deviceInfo.VendorId);
                             _report.Append("DriverPath: ");
                             _report.AppendLine(deviceInfo.DriverPath);
+                            _report.Append("PnpString: ");
+                            _report.AppendLine(deviceInfo.PnpString);
+                            _report.Append("Luid: ");
+                            _report.AppendLine(deviceInfo.LuidValid != 0
+                                ? D3DDisplayDevice.GetAdapterLuidInstanceName(deviceInfo.LuidHighPart, deviceInfo.LuidLowPart)
+                                : "Unavailable");
                             _report.Append("UniqueId: ");
                             _report.AppendLine(deviceInfo.Id.ToString(CultureInfo.InvariantCulture));
                             _report.AppendLine();
@@ -75,7 +83,7 @@ internal class AmdGpuGroup : IGroup
                             // Check for valid AMD GPU
                             if (!string.IsNullOrEmpty(deviceInfo.GpuName))
                             {
-                                _hardware.Add(new AmdGpu(i, deviceInfo, settings));
+                                _hardware.Add(new AmdGpu(i, deviceInfo, settings, sensorConfig));
                             }
                         }
                     }

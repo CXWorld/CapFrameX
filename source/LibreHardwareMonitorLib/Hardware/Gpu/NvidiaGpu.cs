@@ -4,16 +4,17 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using CapFrameX.Monitoring.Contracts;
-using LibreHardwareMonitor.Interop;
-using LibreHardwareMonitor.PawnIo;
-using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+
+using CapFrameX.Monitoring.Contracts;
+using LibreHardwareMonitor.Interop;
+using LibreHardwareMonitor.PawnIo;
+using Microsoft.Win32;
 using static LibreHardwareMonitor.Interop.NvApi;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
@@ -53,7 +54,6 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor[] _clocks;
     private readonly int _clockVersion;
     private readonly Sensor[] _controls;
-    private readonly string _d3dDeviceId;
     private NvDisplayHandle? _displayHandle;
     private readonly IReadOnlyList<NvDisplayHandleInfo> _displayHandleInfos;
     private readonly Control[] _fanControls;
@@ -89,15 +89,13 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor _powerLimit;
     private readonly Sensor _temperatureLimit;
     private readonly Sensor _voltageLimit;
-    private readonly ISensorConfig _sensorConfig;
     private string _activeDisplayDeviceName;
 
     public NvidiaGpu(int adapterIndex, NvApi.NvPhysicalGpuHandle handle, IReadOnlyList<NvDisplayHandleInfo> displayHandles, ISettings settings, ISensorConfig sensorConfig = null)
-        : base(GetName(handle), new Identifier("gpu-nvidia", adapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
+        : base(GetName(handle), new Identifier("gpu-nvidia", adapterIndex.ToString(CultureInfo.InvariantCulture)), settings, sensorConfig: sensorConfig)
     {
         _adapterIndex = adapterIndex;
         _handle = handle;
-        _sensorConfig = sensorConfig;
         _displayHandleInfos = displayHandles ?? Array.Empty<NvDisplayHandleInfo>();
         _displayHandle = _displayHandleInfos.Count > 0 ? _displayHandleInfos[0].Handle : null;
         _stopwatch = new Stopwatch();
@@ -531,13 +529,15 @@ internal sealed class NvidiaGpu : GenericGpu
                                     {
                                         int smallDataSensorIndex = 3; // There are three normal GPU memory sensors.
 
-                                        _d3dDeviceId = deviceId;
-                                        SetProcessMemoryInstanceFilter(deviceInfo.AdapterLuidInstanceName);
-
                                         _gpuDedicatedMemoryUsage = new Sensor("GPU Memory Dedicated", smallDataSensorIndex++, SensorType.Data, this, settings)
                                         { PresentationSortKey = $"{adapterIndex}_8_0" };
-                                        _gpuSharedMemoryUsage = new Sensor("GPU Memory Shared", smallDataSensorIndex, SensorType.Data, this, settings)
+                                        _gpuSharedMemoryUsage = new Sensor("GPU Memory Shared", smallDataSensorIndex++, SensorType.Data, this, settings)
                                         { PresentationSortKey = $"{adapterIndex}_8_1" };
+                                        InitializeWddmDevice(
+                                            deviceId,
+                                            deviceInfo.AdapterLuidInstanceName,
+                                            smallDataSensorIndex,
+                                            $"{adapterIndex}_8_0_1");
 
                                         //_gpuNodeUsage = new Sensor[deviceInfo.Nodes.Length];
                                         //_gpuNodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
@@ -608,7 +608,7 @@ internal sealed class NvidiaGpu : GenericGpu
     {
         get
         {
-            return _d3dDeviceId != null ? D3DDisplayDevice.GetActualDeviceIdentifier(_d3dDeviceId) : null;
+            return WddmDeviceId != null ? D3DDisplayDevice.GetActualDeviceIdentifier(WddmDeviceId) : null;
         }
     }
 
@@ -622,8 +622,7 @@ internal sealed class NvidiaGpu : GenericGpu
         UpdateProcessMemorySensors();
         UpdateDisplayHandleIfNeeded();
 
-        if (_d3dDeviceId != null && ShouldEvaluateAnyD3DSensor() &&
-            D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+        if (TryUpdateWddmMemorySensors(ShouldEvaluateAnyD3DSensor(), out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
         {
             _gpuDedicatedMemoryUsage.Value = deviceInfo.GpuDedicatedUsed / GiB;
             _gpuSharedMemoryUsage.Value = deviceInfo.GpuSharedUsed / GiB;
@@ -983,11 +982,12 @@ internal sealed class NvidiaGpu : GenericGpu
         if (_sensorConfig == null)
             return true;
 
-        if (_gpuDedicatedMemoryUsage != null && _sensorConfig.GetSensorEvaluate(_gpuDedicatedMemoryUsage.Identifier.ToString()))
-            return true;
+        bool evaluate = false;
+        if (_gpuDedicatedMemoryUsage != null)
+            evaluate |= _sensorConfig.GetSensorEvaluate(_gpuDedicatedMemoryUsage.Identifier.ToString());
 
-        if (_gpuSharedMemoryUsage != null && _sensorConfig.GetSensorEvaluate(_gpuSharedMemoryUsage.Identifier.ToString()))
-            return true;
+        if (_gpuSharedMemoryUsage != null)
+            evaluate |= _sensorConfig.GetSensorEvaluate(_gpuSharedMemoryUsage.Identifier.ToString());
 
         //if (_gpuNodeUsage is { Length: > 0 })
         //{
@@ -998,7 +998,7 @@ internal sealed class NvidiaGpu : GenericGpu
         //    }
         //}
 
-        return false;
+        return evaluate;
     }
 
     private bool ShouldEvaluateDirectThermalSensor()
@@ -1410,11 +1410,11 @@ internal sealed class NvidiaGpu : GenericGpu
             r.AppendLine();
         }
 
-        if (_d3dDeviceId != null)
+        if (WddmDeviceId != null)
         {
             r.AppendLine("D3D");
             r.AppendLine();
-            r.AppendLine(" Id: " + _d3dDeviceId);
+            r.AppendLine(" Id: " + WddmDeviceId);
 
             r.AppendLine();
         }
