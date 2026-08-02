@@ -173,7 +173,9 @@ namespace CapFrameX.ViewModel
 			UpdateStatusInfoCommand = new DelegateCommand(RefreshSystemInfo);
 
 			IsCaptureModeActive = false;
-			IsOverlayActive = _appConfiguration.IsOverlayActive && rTSSService.IsRTSSInstalled();
+			IsOverlayActive = _appConfiguration.IsOverlayActive &&
+				(rTSSService.IsRTSSInstalled() || _appConfiguration.EnableHookFreeOverlay ||
+				 _appConfiguration.EnableHookOverlay);
 			IsHookOverlayStatusVisible = _appConfiguration.EnableHookOverlay;
 			ApplyHookOverlayStatus(hookOverlayStatusService.Current);
 			Dispatcher uiDispatcher = Dispatcher.CurrentDispatcher;

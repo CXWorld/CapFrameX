@@ -45,7 +45,6 @@ namespace CapFrameX.ViewModel
         private int _selectedOverlayEntryIndex = -1;
         private IOverlayEntry _selectedOverlayEntry;
         private IOverlayEntryFormatChange _checkboxes = new OverlayEntryFormatChange();
-        private string _updateHpyerlinkText;
         private bool _setSensorTypeButtonEnabled;
         private bool _setGroupButtonEnabled;
         private bool _overlayItemsOptionsEnabled = false;
@@ -262,16 +261,6 @@ namespace CapFrameX.ViewModel
             set
             {
                 _checkboxes = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public string UpdateHpyerlinkText
-        {
-            get { return _updateHpyerlinkText; }
-            set
-            {
-                _updateHpyerlinkText = value;
                 RaisePropertyChanged();
             }
         }
@@ -799,9 +788,6 @@ namespace CapFrameX.ViewModel
             LaunchOverlayPreviewAppCommand = new DelegateCommand(OnLaunchOverlayPreviewApp);
             ApplyOverlayTemplateCommand = new DelegateCommand(async () => await OnApplyOverlayTemplate());
             RevertOverlayTemplateCommand = new DelegateCommand(async () => await OnRevertOverlayTemplate());
-
-            UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
-                "RivaTuner Statistics Server (RTSS)";
 
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventOverlayConfigHotkey();

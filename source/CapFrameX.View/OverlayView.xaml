@@ -77,25 +77,12 @@
 						<ColumnDefinition Width="10"/>
 						<ColumnDefinition Width="460"/>
 					</Grid.ColumnDefinitions>
-		<TextBlock Margin="0" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
-				    FontSize="18" Visibility="{Binding IsRTSSInstalled, Converter={StaticResource FalseToVisibleConverter}}">             
-			<Hyperlink NavigateUri="https://www.guru3d.com/files-details/rtss-rivatuner-statistics-server-download.html" 
-					   RequestNavigate="Hyperlink_RequestNavigate">
-                     <Hyperlink.Style>
-                        <Style TargetType="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
-                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.ForegroundLight}"/>
-                        </Style>
-                    </Hyperlink.Style>
-				<TextBlock Text="{Binding Path=UpdateHpyerlinkText}" TextAlignment="Center"/>
-			</Hyperlink>
-		</TextBlock>
 		<!--Margin keeps the top edge level with the first card of the right column (spacer-less grid + 5px card margin)-->
 		<Border Style="{StaticResource SectionCard}" Margin="0 5 0 5" Grid.Row="0" Grid.Column="0" >
 			<materialDesign:DialogHost IsOpen="{Binding ResetOverlayConfigContentIsOpen}"
 								        DialogContent="{Binding ResetOverlayConfigContent}"
 								        CloseOnClickAway="True">
-				<DockPanel Margin="0 10 0 10"
-                   Visibility="{Binding  IsRTSSInstalled, Converter={StaticResource TrueToVisibleConverter}}">
+				<DockPanel Margin="0 10 0 10">
 					<!--DataGrid and Overlay hotkey-->
 					<Grid >
 						<Grid.RowDefinitions>
@@ -1173,6 +1160,7 @@
 									<StackPanel Margin="0 4 0 8">
 										<RadioButton GroupName="OverlayModeRtss" Content="RTSS"
 													 IsChecked="{Binding OverlayModeRtss, Mode=TwoWay}"
+													 IsEnabled="{Binding IsRTSSInstalled}"
 													 Style="{StaticResource MaterialDesignRadioButton}"/>
 										<TextBlock Margin="26 0 0 0" Style="{StaticResource OsdOptionsDescription}"
 												   Text="Classic RivaTuner Statistics Server overlay. Requires RTSS."/>
