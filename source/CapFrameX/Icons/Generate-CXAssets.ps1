@@ -447,6 +447,67 @@ function Save-JpegAtomic {
     }
 }
 
+function ConvertTo-IcoDibFrame {
+    param([System.Drawing.Bitmap] $Frame)
+
+    if ($Frame.Width -ne $Frame.Height) {
+        throw 'ICO frames must be square.'
+    }
+
+    $width = $Frame.Width
+    $height = $Frame.Height
+    $xorByteCount = $width * $height * 4
+    $maskStride = [int] ([Math]::Ceiling($width / 32.0) * 4)
+
+    $stream = [System.IO.MemoryStream]::new()
+    $writer = [System.IO.BinaryWriter]::new($stream)
+    try {
+        # BITMAPINFOHEADER. ICO DIB heights include both the color image and AND mask.
+        $writer.Write([uint32] 40)
+        $writer.Write([int32] $width)
+        $writer.Write([int32] ($height * 2))
+        $writer.Write([uint16] 1)
+        $writer.Write([uint16] 32)
+        $writer.Write([uint32] 0)
+        $writer.Write([uint32] $xorByteCount)
+        $writer.Write([int32] 0)
+        $writer.Write([int32] 0)
+        $writer.Write([uint32] 0)
+        $writer.Write([uint32] 0)
+
+        # Windows icon DIBs use bottom-up BGRA rows.
+        for ($y = $height - 1; $y -ge 0; $y--) {
+            for ($x = 0; $x -lt $width; $x++) {
+                $color = $Frame.GetPixel($x, $y)
+                $writer.Write([byte] $color.B)
+                $writer.Write([byte] $color.G)
+                $writer.Write([byte] $color.R)
+                $writer.Write([byte] $color.A)
+            }
+        }
+
+        # Keep a 1-bpp transparency mask for decoders that do not honor alpha.
+        for ($y = $height - 1; $y -ge 0; $y--) {
+            $maskRow = [byte[]]::new($maskStride)
+            for ($x = 0; $x -lt $width; $x++) {
+                if ($Frame.GetPixel($x, $y).A -eq 0) {
+                    $maskIndex = [int] [Math]::Floor($x / 8.0)
+                    $maskRow[$maskIndex] = [byte] ($maskRow[$maskIndex] -bor (0x80 -shr ($x % 8)))
+                }
+            }
+
+            $writer.Write($maskRow)
+        }
+
+        $writer.Flush()
+        return $stream.ToArray()
+    }
+    finally {
+        $writer.Dispose()
+        $stream.Dispose()
+    }
+}
+
 function Save-IcoAtomic {
     param(
         [hashtable] $Frames,
@@ -457,13 +518,20 @@ function Save-IcoAtomic {
     $frameBytes = @{}
 
     foreach ($size in $sizes) {
-        $stream = [System.IO.MemoryStream]::new()
-        try {
-            $Frames[$size].Save($stream, [System.Drawing.Imaging.ImageFormat]::Png)
-            $frameBytes[$size] = $stream.ToArray()
+        if ($size -eq 256) {
+            $stream = [System.IO.MemoryStream]::new()
+            try {
+                $Frames[$size].Save($stream, [System.Drawing.Imaging.ImageFormat]::Png)
+                $frameBytes[$size] = $stream.ToArray()
+            }
+            finally {
+                $stream.Dispose()
+            }
         }
-        finally {
-            $stream.Dispose()
+        else {
+            # Small PNG-compressed ICO frames are not decoded reliably by all Windows
+            # shell consumers (including Task Manager). Store them as classic DIBs.
+            $frameBytes[$size] = ConvertTo-IcoDibFrame -Frame $Frames[$size]
         }
     }
 

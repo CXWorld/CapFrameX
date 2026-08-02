@@ -44,6 +44,7 @@ namespace CapFrameX
 
         private bool _isShuttingDown = false;
         private bool _isReadyToClose = false;
+        private bool _isTaskbarIconRefreshed = false;
 
         private readonly ISettingsStorage _settingsStorage;
         private readonly IPathService _pathService;
@@ -100,6 +101,19 @@ namespace CapFrameX
 
             base.OnSourceInitialized(e);
             IconHelper.RemoveIcon(this);
+        }
+
+        protected override void OnContentRendered(EventArgs e)
+        {
+            base.OnContentRendered(e);
+
+            if (_isTaskbarIconRefreshed)
+                return;
+
+            _isTaskbarIconRefreshed = true;
+            Dispatcher.BeginInvoke(
+                System.Windows.Threading.DispatcherPriority.ApplicationIdle,
+                new Action(() => IconHelper.RefreshTaskbarIcon(this)));
         }
 
         private void Resize(object sender, EventArgs e)
