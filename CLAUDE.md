@@ -157,14 +157,21 @@ status bar (`StateView`), the UPDATE tab in the options popup (`ColorbarView`), 
 dialog. The dialog's `DialogHost` sits in `Shell.xaml`, not in the options popup — a `DialogHost`
 nested inside a WPF `Popup` does not reliably render its overlay (same caveat as `ControlView.xaml`).
 
-`IUpdateCheck`/`WebVersionProvider` (the older check against `version/Version.txt` on GitHub) are
-still registered and covered by tests, but nothing in the UI consumes them any more.
-
 ## Configuration Files
 - User settings: `%appdata%/CapFrameX/Configuration/AppSettings.json`
 - Overlay config: `%appdata%/CapFrameX/Configuration/OverlayEntryConfiguration_(0/1/2).json`
 - Staged update packages: `%appdata%/CapFrameX/Updates` (portable mode: `<appdir>/Updates`)
-- Version: `version/Version.txt`
+- Build version: `version/Version.txt`
+- Release channel (`release` or `beta`): `version/Channel.txt`
+
+`version/Version.props` validates both values and generates the executable's version and
+release-channel assembly metadata. The update UI uses only the catalog configured through
+`UpdateCatalogUri`; the former GitHub `Version.txt` web check has been removed.
+
+Versions have four significant components (`major.minor.patch.build`). The update catalog v2
+groups every package into the Release or Beta channel and preserves the fourth component during
+comparison, rollback and display. The MSI project maps patch/build monotonically into MSI's
+three-component ProductVersion while the app and bootstrapper retain the full version.
 
 ## NuGet Package Issues
 If package conflicts occur, run in Package Manager Console:

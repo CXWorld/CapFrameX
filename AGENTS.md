@@ -5,7 +5,7 @@
 - `source/` holds the main C# and C++ projects; the WPF app lives in `source/CapFrameX` and native components live in folders like `source/CapFrameX.Hwinfo`, `source/CapFrameX.FrameView`, `source/CapFrameX.IGCL`, and `source/CapFrameX.ADLX`.
 - Tests are in `source/CapFrameX.Test` (MSTest), with fixture files under `source/CapFrameX.Test/TestRecordFiles`.
 - Assets and documentation resources live in `images/` and project docs like `PORTABLE_MODE.md` and `README.md` live at the repo root.
-- Build and version metadata are in `CapFrameX.sln`, `packages/`, and `version/Version.txt`.
+- Build and version metadata are in `CapFrameX.sln`, `packages/`, and the files under `version/`.
 
 ## Build, Test, and Development Commands
 
