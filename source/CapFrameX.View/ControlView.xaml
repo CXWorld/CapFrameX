@@ -498,8 +498,9 @@
                             Style="{DynamicResource MaterialDesignRaisedButton}" Command="{Binding AcceptEditingDialogCommand}"
                             ToolTip="Apply the descriptions to the selected record(s). Enter inside a field saves as well.">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="ContentSave" Width="16" Height="16" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                            <TextBlock Text="SAVE" VerticalAlignment="Center"/>
+                            <materialDesign:PackIcon Kind="ContentSave" Width="16" Height="16" VerticalAlignment="Center" Margin="0 0 8 0"
+                                                     Foreground="White"/>
+                            <TextBlock Text="SAVE" VerticalAlignment="Center" Foreground="White"/>
                         </StackPanel>
                     </Button>
                 </Grid>
