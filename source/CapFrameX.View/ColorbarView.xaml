@@ -267,7 +267,7 @@
 					<materialDesign:PopupBox.ToggleContent>
 						<materialDesign:PackIcon Kind="Cog" Width="30" Height="30" Foreground="White"/>
 					</materialDesign:PopupBox.ToggleContent>
-					<Border Width="960" Height="560"
+					<Border Width="960" Height="672"
 							Background="{DynamicResource MaterialDesign.Brush.Card.Background}"
 							CornerRadius="10" SnapsToDevicePixels="True">
 						<Grid>
