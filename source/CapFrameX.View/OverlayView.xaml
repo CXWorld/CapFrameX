@@ -55,6 +55,11 @@
 				<Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.ForegroundLight}"/>
 				<Setter Property="TextWrapping" Value="Wrap"/>
 			</Style>
+			<Style x:Key="OverlayTemplateOutlinedButton" TargetType="{x:Type Button}"
+				   BasedOn="{StaticResource MaterialDesignOutlinedButton}">
+				<Setter Property="Foreground" Value="{DynamicResource Cx.Brush.OutlinedAction.Foreground}"/>
+				<Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Primary}"/>
+			</Style>
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid HorizontalAlignment="Center">
@@ -582,21 +587,25 @@
 						</StackPanel>
 						<UniformGrid Grid.Row="1" Columns="3" VerticalAlignment="Center">
 							<Button Height="28" Margin="5 0 5 0"
-								Style="{StaticResource MaterialDesignOutlinedButton}"
+								Style="{StaticResource OverlayTemplateOutlinedButton}"
 								Command="{Binding LaunchOverlayPreviewAppCommand}"
 								ToolTip="Launch preview app">
 								<StackPanel Orientation="Horizontal">
-									<materialDesign:PackIcon Kind="Play" VerticalAlignment="Center" Margin="0 0 5 0"/>
-									<TextBlock Text="Preview" VerticalAlignment="Center"/>
+									<materialDesign:PackIcon Kind="Play" VerticalAlignment="Center" Margin="0 0 5 0"
+										Foreground="{DynamicResource Cx.Brush.OutlinedAction.Foreground}"/>
+									<TextBlock Text="Preview" VerticalAlignment="Center"
+										Foreground="{DynamicResource Cx.Brush.OutlinedAction.Foreground}"/>
 								</StackPanel>
 							</Button>
 							<Button Height="28" Margin="5 0 5 0"
-								Style="{StaticResource MaterialDesignOutlinedButton}"
+								Style="{StaticResource OverlayTemplateOutlinedButton}"
 								Command="{Binding RevertOverlayTemplateCommand}"
 								ToolTip="Revert to last applied template">
 								<StackPanel Orientation="Horizontal">
-									<materialDesign:PackIcon Kind="Undo" VerticalAlignment="Center" Margin="0 0 5 0"/>
-									<TextBlock Text="Revert" VerticalAlignment="Center"/>
+									<materialDesign:PackIcon Kind="Undo" VerticalAlignment="Center" Margin="0 0 5 0"
+										Foreground="{DynamicResource Cx.Brush.OutlinedAction.Foreground}"/>
+									<TextBlock Text="Revert" VerticalAlignment="Center"
+										Foreground="{DynamicResource Cx.Brush.OutlinedAction.Foreground}"/>
 								</StackPanel>
 							</Button>
 							<Button Height="28" Margin="5 0 5 0"
@@ -604,8 +613,9 @@
 								Command="{Binding ApplyOverlayTemplateCommand}"
 								ToolTip="Apply selected template">
 								<StackPanel Orientation="Horizontal">
-									<materialDesign:PackIcon Kind="Check" VerticalAlignment="Center" Margin="0 0 5 0"/>
-									<TextBlock Text="Apply" VerticalAlignment="Center"/>
+									<materialDesign:PackIcon Kind="Check" VerticalAlignment="Center" Margin="0 0 5 0"
+										Foreground="White"/>
+									<TextBlock Text="Apply" VerticalAlignment="Center" Foreground="White"/>
 								</StackPanel>
 							</Button>
 						</UniformGrid>

@@ -287,6 +287,9 @@ namespace CapFrameX.View
             // Not part of the 5.x obsolete-alias set, but still used by the views.
             ("MaterialDesignSelection", "#757575", "#FFDEDEDE"),
 
+            // Outlined actions use strong contrast in dark mode and brand blue in light mode.
+            ("Cx.Brush.OutlinedAction.Foreground", "#FFFFFFFF", "#FF0271F9"),
+
             // Rounded scrollbar restyle (templates in CapFrameX/Themes/CxScrollBar.xaml)
             ("Cx.Brush.ScrollBar.Thumb", "#5A5A60", "#C4C4CA"),
             ("Cx.Brush.ScrollBar.ThumbHover", "#8A8A92", "#9B9BA2"),
