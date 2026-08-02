@@ -15,7 +15,7 @@ namespace CapFrameX.Updater
 		/// Hands a staged package to the installer, if there is one.
 		/// </summary>
 		/// <param name="updatesFolder">Folder holding the staged package and its marker file.</param>
-		/// <param name="currentVersion">Version of the running app; older packages are discarded.</param>
+		/// <param name="currentVersion">Version of the running app. Older packages require an explicit rollback marker.</param>
 		/// <param name="logInfo">Receives progress messages.</param>
 		/// <param name="logError">Receives failures. The exception may be null.</param>
 		/// <returns>
@@ -57,9 +57,10 @@ namespace CapFrameX.Updater
 					return false;
 				}
 
-				if (currentVersion != null && pendingVersion <= currentVersion)
+				if (!IsVersionTransitionAllowed(pendingVersion, currentVersion, pending.AllowDowngrade,
+					out var versionRejectReason))
 				{
-					logInfo($"Pending update {pendingVersion} is not newer than the installed version {currentVersion}. Discarding it.");
+					logInfo(versionRejectReason + " Discarding it.");
 					Discard(updatesFolder, logError);
 					return false;
 				}
@@ -83,10 +84,9 @@ namespace CapFrameX.Updater
 					return false;
 				}
 
-				if (!string.IsNullOrWhiteSpace(pending.Sha256)
-					&& !PackageIntegrity.HashMatches(pending.Sha256, PackageIntegrity.ComputeSha256(packagePath)))
+				if (!PackageIntegrity.HashMatches(pending.Sha256, PackageIntegrity.ComputeSha256(packagePath)))
 				{
-					logError(null, "Pending update package failed its checksum check. Discarding it.");
+					logError(null, "Pending update package has no valid checksum or failed its checksum check. Discarding it.");
 					Discard(updatesFolder, logError);
 					return false;
 				}
@@ -104,7 +104,10 @@ namespace CapFrameX.Updater
 				};
 
 				Process.Start(startInfo);
-				logInfo($"Started the installer for CapFrameX {pendingVersion} and shutting down.");
+				var operation = currentVersion != null && UpdatePolicy.IsDowngrade(pendingVersion, currentVersion)
+					? "rollback"
+					: "update";
+				logInfo($"Started the CapFrameX {operation} installer for version {pendingVersion} and shutting down.");
 				return true;
 			}
 			catch (Exception ex)
@@ -112,6 +115,33 @@ namespace CapFrameX.Updater
 				logError(ex, "Unable to install the pending update.");
 				return false;
 			}
+		}
+
+		internal static bool IsVersionTransitionAllowed(Version targetVersion, Version currentVersion,
+			bool allowDowngrade, out string rejectReason)
+		{
+			if (UpdatePolicy.IsBelowRollbackFloor(targetVersion))
+			{
+				rejectReason = $"Pending version {targetVersion} is older than the supported rollback floor {UpdatePolicy.MinimumRollbackVersion}.";
+				return false;
+			}
+
+			if (currentVersion != null && UpdatePolicy.IsSameVersion(targetVersion, currentVersion))
+			{
+				rejectReason = $"Pending version {targetVersion} is already installed.";
+				return false;
+			}
+
+			if (currentVersion != null
+				&& UpdatePolicy.IsDowngrade(targetVersion, currentVersion)
+				&& !allowDowngrade)
+			{
+				rejectReason = $"Pending version {targetVersion} is older than {currentVersion}, but no explicit rollback was requested.";
+				return false;
+			}
+
+			rejectReason = null;
+			return true;
 		}
 
 		private static void Discard(string updatesFolder, Action<Exception, string> logError)

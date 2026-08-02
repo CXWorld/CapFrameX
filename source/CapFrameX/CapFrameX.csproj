@@ -6,7 +6,16 @@
     <Platforms>AnyCPU;x64</Platforms>
     <RootNamespace>CapFrameX</RootNamespace>
     <AssemblyName>CapFrameX</AssemblyName>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <!-- General assembly attributes remain in Properties\AssemblyInfo.cs. Version and
+         release-channel attributes are generated from the files under version\. -->
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyTrademarkAttribute>false</GenerateAssemblyTrademarkAttribute>
     <Deterministic>true</Deterministic>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
     <UseWPF>true</UseWPF>
@@ -15,6 +24,8 @@
     <ApplicationIcon>Icons\cx_icon_BUC.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+
+  <Import Project="..\..\version\Version.props" />
 
   <ItemGroup>
     <Resource Include="Icons\CapFrameXLogoOnly.png" />

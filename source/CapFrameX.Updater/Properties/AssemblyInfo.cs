@@ -21,6 +21,7 @@ using System.Runtime.InteropServices;
 
 // Die folgende GUID bestimmt die ID der Typbibliothek, wenn dieses Projekt für COM verfügbar gemacht wird
 [assembly: Guid("5d12aa37-cc30-4476-94ad-11c15dc65518")]
+[assembly: InternalsVisibleTo("CapFrameX.Test")]
 
 // Versionsinformationen für eine Assembly bestehen aus den folgenden vier Werten:
 //

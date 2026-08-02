@@ -10,6 +10,7 @@
     <OutputType>Package</OutputType>
     <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..'))</RepoRoot>
   </PropertyGroup>
+  <Import Project="$(RepoRoot)\version\Version.props" />
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
@@ -35,6 +36,9 @@
     <SuppressIces>ICE57</SuppressIces>
     <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);CapFrameXVersion=$(CapFrameXVersion);CapFrameXInstallerVersion=$(CapFrameXInstallerVersion)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CapFrameX.Binaries.wxs" />

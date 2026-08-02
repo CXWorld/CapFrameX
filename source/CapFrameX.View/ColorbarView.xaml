@@ -876,14 +876,16 @@
 										<StackPanel Margin="24 20 18 22">
 											<TextBlock Style="{StaticResource SettingsPageTitle}" Text="Update"/>
 											<TextBlock Style="{StaticResource SettingsPageDescription}"
-													   Text="Check your installed version and manage automatic update checks."/>
+													   Text="Check for updates or deliberately return to an earlier supported release."/>
 
-											<Border Style="{StaticResource SettingsCard}" Margin="0">
+											<Border Style="{StaticResource SettingsCard}">
 												<StackPanel>
 													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Version status"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="CapFrameX compares your local installation with the current release channel."/>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="Automatic checks follow the installed channel. Every published Release and Beta build remains selectable below."/>
 													<Grid Margin="0 16 0 0">
 														<Grid.ColumnDefinitions>
+															<ColumnDefinition Width="*"/>
+															<ColumnDefinition Width="12"/>
 															<ColumnDefinition Width="*"/>
 															<ColumnDefinition Width="12"/>
 															<ColumnDefinition Width="*"/>
@@ -893,13 +895,22 @@
 																<TextBlock Style="{StaticResource SettingsDescription}" Text="Installed version"/>
 																<TextBlock Margin="0 4 0 0" FontSize="18" FontWeight="SemiBold"
 																		   Text="{Binding UpdateViewModel.InstalledVersionString, Mode=OneWay}"/>
+																<TextBlock Margin="0 3 0 0" FontSize="11" Opacity="0.7"
+																		   Text="{Binding UpdateViewModel.InstalledChannelString, Mode=OneWay}"/>
 															</StackPanel>
 														</Border>
 														<Border Grid.Column="2" Padding="14" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}" CornerRadius="6">
 															<StackPanel>
-																<TextBlock Style="{StaticResource SettingsDescription}" Text="Available version"/>
+																<TextBlock Style="{StaticResource SettingsDescription}" Text="Latest Release"/>
 																<TextBlock Margin="0 4 0 0" FontSize="18" FontWeight="SemiBold"
-																		   Text="{Binding UpdateViewModel.AvailableVersionString, Mode=OneWay}"/>
+																		   Text="{Binding UpdateViewModel.LatestReleaseVersionString, Mode=OneWay}"/>
+															</StackPanel>
+														</Border>
+														<Border Grid.Column="4" Padding="14" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}" CornerRadius="6">
+															<StackPanel>
+																<TextBlock Style="{StaticResource SettingsDescription}" Text="Latest Beta"/>
+																<TextBlock Margin="0 4 0 0" FontSize="18" FontWeight="SemiBold"
+																		   Text="{Binding UpdateViewModel.LatestBetaVersionString, Mode=OneWay}"/>
 															</StackPanel>
 														</Border>
 													</Grid>
@@ -943,6 +954,68 @@
 																  IsChecked="{Binding UpdateViewModel.AutoUpdateCheckActive, Mode=TwoWay}"
 																  ToolTip="Check for updates every time CapFrameX starts"/>
 													</Grid>
+												</StackPanel>
+											</Border>
+
+											<Border Style="{StaticResource SettingsCard}" Margin="0">
+												<StackPanel>
+													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Version history"/>
+													<TextBlock Style="{StaticResource SettingsDescription}" TextWrapping="Wrap">
+														<Run Text="Install any published release from "/>
+														<Run FontWeight="SemiBold" Text="{Binding UpdateViewModel.MinimumRollbackVersionString, Mode=OneWay}"/>
+														<Run Text=" onward. Selecting an older version starts an explicit rollback."/>
+													</TextBlock>
+
+													<Grid Margin="0 16 0 0">
+														<Grid.ColumnDefinitions>
+															<ColumnDefinition Width="*"/>
+															<ColumnDefinition Width="230"/>
+															<ColumnDefinition Width="12"/>
+															<ColumnDefinition Width="155"/>
+														</Grid.ColumnDefinitions>
+														<StackPanel VerticalAlignment="Center">
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Target version"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="Packages are verified before installation."/>
+														</StackPanel>
+														<ComboBox Grid.Column="1" Height="42" MaxDropDownHeight="260"
+																  ItemsSource="{Binding UpdateViewModel.AvailableVersionsView, Mode=OneWay}"
+																  SelectedItem="{Binding UpdateViewModel.SelectedVersion, Mode=TwoWay}"
+																  materialDesign:HintAssist.Hint="Published version"
+																  materialDesign:HintAssist.IsFloating="True">
+															<ComboBox.GroupStyle>
+																<GroupStyle>
+																	<GroupStyle.HeaderTemplate>
+																		<DataTemplate>
+																			<TextBlock Margin="8 8 8 4" FontSize="11" FontWeight="SemiBold"
+																					   Opacity="0.72" Text="{Binding Name}"/>
+																		</DataTemplate>
+																	</GroupStyle.HeaderTemplate>
+																</GroupStyle>
+															</ComboBox.GroupStyle>
+															<ComboBox.ItemTemplate>
+																<DataTemplate>
+																	<TextBlock Margin="8 3" FontWeight="SemiBold" Text="{Binding Version}"/>
+																</DataTemplate>
+															</ComboBox.ItemTemplate>
+														</ComboBox>
+														<Button Grid.Column="3" Height="38"
+																Style="{StaticResource MaterialDesignRaisedButton}"
+																Content="{Binding UpdateViewModel.VersionSelectionActionText, Mode=OneWay}"
+																Command="{Binding UpdateViewModel.InstallSelectedVersionCommand}"/>
+													</Grid>
+
+													<Border Margin="0 14 0 0" Padding="12"
+															Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"
+															CornerRadius="6"
+															Visibility="{Binding UpdateViewModel.IsSelectedVersionRollback, Converter={StaticResource FalseToCollapsedConverter}}">
+														<StackPanel Orientation="Horizontal">
+															<materialDesign:PackIcon Kind="BackupRestore" Width="20" Height="20" Margin="0 1 10 0"
+																				 VerticalAlignment="Top" Foreground="{DynamicResource MaterialDesign.Brush.Primary}"/>
+															<TextBlock TextWrapping="Wrap" MaxWidth="590"
+																	   Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
+																	   Text="Rollback replaces the application version. Captures and settings remain, but newer settings may not be compatible with the selected release."/>
+														</StackPanel>
+													</Border>
 												</StackPanel>
 											</Border>
 										</StackPanel>

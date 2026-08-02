@@ -4,6 +4,7 @@ using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
+using CapFrameX.Contracts.Update;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using Microsoft.Extensions.Logging;
@@ -13,7 +14,6 @@ using Prism.Mvvm;
 using System;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -38,19 +38,7 @@ namespace CapFrameX.ViewModel
 		private bool _isHookOverlayStatusVisible;
 		private Task _systemInfoStatusUpdateTask;
 
-		private bool IsBeta => GetBetaState();
-
-		private bool GetBetaState()
-		{
-			Assembly assembly = GetAssemblyByName("CapFrameX");
-			var metaData = assembly.GetCustomAttributes(typeof(AssemblyMetadataAttribute));
-
-			if (metaData.FirstOrDefault(attribute => (attribute as AssemblyMetadataAttribute).Key == "IsBeta")
-				is AssemblyMetadataAttribute isBetaAttribute)
-				return Convert.ToBoolean(isBetaAttribute.Value);
-
-			return true;
-		}
+		private bool IsBeta => _appVersionProvider.GetReleaseChannel() == EUpdateChannel.Beta;
 
 		public bool IsOverlayActive
 		{
@@ -148,7 +136,7 @@ namespace CapFrameX.ViewModel
 			get
 			{
 				var version = _appVersionProvider.GetAppVersion();
-				var versionString = $"{version.Major}.{version.Minor}.{version.Build}";
+				var versionString = $"{version.Major}.{version.Minor}.{Math.Max(version.Build, 0)}.{Math.Max(version.Revision, 0)}";
 
 				return IsBeta ? $"{versionString} Beta" : versionString;
 			}
@@ -241,12 +229,6 @@ namespace CapFrameX.ViewModel
 			RaisePropertyChanged(nameof(HookOverlayStatusToolTip));
 		}
 
-		private Assembly GetAssemblyByName(string name)
-		{
-			return AppDomain.CurrentDomain.GetAssemblies().
-				   SingleOrDefault(assembly => assembly.GetName().Name == name);
-		}
-
 		public async void RefreshSystemInfo()
 		{
 			await RefreshSystemInfoAsync();
@@ -296,7 +278,7 @@ namespace CapFrameX.ViewModel
 			string info;
 			try
 			{
-				var version = GetAssemblyByName("CapFrameX").GetName().Version;
+				var version = _appVersionProvider.GetAppVersion();
 				info = $"Revision: {version.Revision}";
 			}
 			catch

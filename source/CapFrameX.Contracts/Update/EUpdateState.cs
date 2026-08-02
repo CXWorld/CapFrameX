@@ -15,7 +15,7 @@ namespace CapFrameX.Contracts.Update
 		/// <summary>The installed version is the newest one the server offers.</summary>
 		UpToDate,
 
-		/// <summary>The server offers a newer package that has not been downloaded yet.</summary>
+		/// <summary>A newer package or an explicitly selected rollback package is ready to download.</summary>
 		UpdateAvailable,
 
 		/// <summary>The package is being downloaded.</summary>

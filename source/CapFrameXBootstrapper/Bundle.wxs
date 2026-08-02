@@ -2,9 +2,8 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
 	 xmlns:bal="http://schemas.microsoft.com/wix/BalExtension"
    xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
-	<?define VersionNumber="!(bind.packageVersion.CapFrameXPackage)" ?>
 	<Bundle Name="CapFrameX Capture and Analysis Tool"
-					Version="$(var.VersionNumber)"
+					Version="$(var.CapFrameXVersion)"
 				  Manufacturer="DevTechProfile"
 					UpgradeCode="D124F3FF-D15F-4B43-BD0D-CD631DD931DA"
 					IconSourceFile="../CapFrameX/Icons/cx_icon_BUC.ico">

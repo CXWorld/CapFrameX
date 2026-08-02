@@ -12,7 +12,7 @@
         <converter:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
         <converter:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" FalseValue="Visible" TrueValue="Collapsed"/>
     </UserControl.Resources>
-    <Grid Width="460" MaxHeight="440" Margin="20 18 20 15">
+    <Grid Width="500" MaxHeight="460" Margin="20 18 20 15">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -24,15 +24,21 @@
 
         <StackPanel Grid.Row="0" Orientation="Horizontal">
             <materialDesign:PackIcon Kind="Download" Width="26" Height="26" VerticalAlignment="Center"
-                                     Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+                                     Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+                                     Visibility="{Binding IsRollback, Converter={StaticResource TrueToCollapsedConverter}}"/>
+            <materialDesign:PackIcon Kind="BackupRestore" Width="26" Height="26" VerticalAlignment="Center"
+                                     Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+                                     Visibility="{Binding IsRollback, Converter={StaticResource FalseToCollapsedConverter}}"/>
             <TextBlock Margin="10 0 0 0" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"
-                       Text="CapFrameX update"/>
+                       Text="{Binding UpdateDialogTitle, Mode=OneWay}"/>
         </StackPanel>
 
         <StackPanel Grid.Row="1" Margin="0 12 0 0" Orientation="Horizontal">
-            <TextBlock Text="Version" VerticalAlignment="Center"/>
+            <TextBlock Text="Target version" VerticalAlignment="Center"/>
             <TextBlock Margin="6 0 0 0" FontWeight="Bold" VerticalAlignment="Center"
                        Text="{Binding AvailableVersionString, Mode=OneWay}"/>
+            <TextBlock Margin="7 0 0 0" VerticalAlignment="Center" Opacity="0.7"
+                       Text="{Binding TargetChannelString, Mode=OneWay, StringFormat=({0})}"/>
             <TextBlock Margin="10 0 0 0" VerticalAlignment="Center" Opacity="0.7"
                        Visibility="{Binding HasReleaseDate, Converter={StaticResource FalseToCollapsedConverter}}"
                        Text="{Binding ReleaseDateText, Mode=OneWay, StringFormat=(released {0})}"/>
@@ -69,10 +75,11 @@
              staged, or a failed check - has nothing left to confirm and only needs a way out. -->
         <StackPanel Grid.Row="5" Margin="0 18 0 0" Orientation="Horizontal" HorizontalAlignment="Right"
                     Visibility="{Binding CanConfirmUpdate, Converter={StaticResource FalseToCollapsedConverter}}">
-            <TextBlock Width="250" Margin="0 0 10 0" VerticalAlignment="Center" TextWrapping="Wrap"
+            <TextBlock Width="280" Margin="0 0 10 0" VerticalAlignment="Center" TextWrapping="Wrap"
                        FontSize="11" Opacity="0.7"
-                       Text="The update is downloaded now and installed the next time CapFrameX starts."/>
-            <Button Width="80" Height="30" Content="OK" Command="{Binding ConfirmUpdateCommand}"/>
+                       Text="{Binding InstallConfirmationText, Mode=OneWay}"/>
+            <Button Width="100" Height="30" Content="{Binding ConfirmActionText, Mode=OneWay}"
+                    Command="{Binding ConfirmUpdateCommand}"/>
             <Button Width="90" Height="30" Margin="10 0 0 0" Content="Cancel"
                     Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"/>
         </StackPanel>

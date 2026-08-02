@@ -2,15 +2,37 @@ using Newtonsoft.Json;
 
 namespace CapFrameX.Updater
 {
+	/// <summary>Version catalog served by the isolated CapFrameX update service.</summary>
+	public class UpdateCatalogManifest
+	{
+		[JsonProperty("schemaVersion")]
+		public int SchemaVersion { get; set; }
+
+		[JsonProperty("minimumVersion")]
+		public string MinimumVersion { get; set; }
+
+		[JsonProperty("latestRelease")]
+		public string LatestRelease { get; set; }
+
+		[JsonProperty("latestBeta")]
+		public string LatestBeta { get; set; }
+
+		[JsonProperty("releases")]
+		public UpdateManifest[] Releases { get; set; }
+	}
+
 	/// <summary>
-	/// Wire format served by the update server. See <c>update-manifest.sample.json</c> next to this
-	/// file for a complete example.
+	/// One release inside the update server's version catalog.
 	/// </summary>
 	public class UpdateManifest
 	{
-		/// <summary>Version the package installs, e.g. "1.9.1". Required.</summary>
+		/// <summary>Version the package installs, e.g. "1.9.1.4". Required.</summary>
 		[JsonProperty("version")]
 		public string Version { get; set; }
+
+		/// <summary>Publication channel: "release" or "beta". Required.</summary>
+		[JsonProperty("channel")]
+		public string Channel { get; set; }
 
 		/// <summary>Release date in a format <see cref="System.DateTime.TryParse(string, out System.DateTime)"/> accepts. Optional.</summary>
 		[JsonProperty("releaseDate")]
@@ -46,13 +68,13 @@ namespace CapFrameX.Updater
 		public string Url { get; set; }
 
 		/// <summary>
-		/// Hex encoded SHA-256 of the package. Strongly recommended: when present the download is
-		/// rejected unless it matches, and the staged file is re-verified before it is executed.
+		/// Hex encoded SHA-256 of the package. Required: the release is rejected unless this contains
+		/// exactly 64 hexadecimal characters, and the package is re-verified before execution.
 		/// </summary>
 		[JsonProperty("sha256")]
 		public string Sha256 { get; set; }
 
-		/// <summary>Package size in bytes. Used for the progress display only. Optional.</summary>
+		/// <summary>Package size in bytes. Required and verified while downloading.</summary>
 		[JsonProperty("size")]
 		public long Size { get; set; }
 

@@ -11,6 +11,9 @@ namespace CapFrameX.Contracts.Update
 		/// <summary>Version the package installs. Compared against the running assembly version.</summary>
 		public Version Version { get; set; }
 
+		/// <summary>Whether this package is a regular release or a beta build.</summary>
+		public EUpdateChannel Channel { get; set; }
+
 		/// <summary>Release date, if the manifest supplies one.</summary>
 		public DateTime? ReleaseDate { get; set; }
 
@@ -23,7 +26,7 @@ namespace CapFrameX.Contracts.Update
 		/// <summary>Absolute URI of the installer package (.exe or .msi).</summary>
 		public Uri PackageUri { get; set; }
 
-		/// <summary>Hex encoded SHA-256 of the package. Verified after the download when present.</summary>
+		/// <summary>Required hex encoded SHA-256 of the package, verified after download and before execution.</summary>
 		public string Sha256 { get; set; }
 
 		/// <summary>Package size in bytes, used for the progress display. Zero when unknown.</summary>

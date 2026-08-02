@@ -29,6 +29,13 @@ namespace CapFrameX.Updater
 		[JsonProperty("arguments")]
 		public string Arguments { get; set; }
 
+		/// <summary>
+		/// True only when the user explicitly selected a version older than the running application.
+		/// The startup installer rejects every downgrade without this marker.
+		/// </summary>
+		[JsonProperty("allowDowngrade")]
+		public bool AllowDowngrade { get; set; }
+
 		[JsonProperty("stagedUtc")]
 		public DateTime StagedUtc { get; set; }
 

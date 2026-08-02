@@ -7,12 +7,14 @@ using Prism.Commands;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Data;
 using System.Windows.Threading;
 
 namespace CapFrameX.ViewModel
@@ -32,6 +34,8 @@ namespace CapFrameX.ViewModel
 
 		private UpdateStatus _status = new UpdateStatus(EUpdateState.Unknown);
 		private bool _isUpdateDialogOpen;
+		private UpdatePackageInfo _selectedVersion;
+		private ICollectionView _availableVersionsView;
 
 		public UpdateDialog UpdateDialogContent { get; }
 
@@ -49,7 +53,49 @@ namespace CapFrameX.ViewModel
 
 		public string InstalledVersionString => FormatVersion(_appVersionProvider.GetAppVersion());
 
+		public string InstalledChannelString => _appVersionProvider.GetReleaseChannel().ToString();
+
 		public string AvailableVersionString => Package == null ? "-" : FormatVersion(Package.Version);
+
+		public string LatestReleaseVersionString => FormatVersion(AvailableVersions
+			.FirstOrDefault(package => package.Channel == EUpdateChannel.Release)?.Version);
+
+		public string LatestBetaVersionString => FormatVersion(AvailableVersions
+			.FirstOrDefault(package => package.Channel == EUpdateChannel.Beta)?.Version);
+
+		public string MinimumRollbackVersionString => FormatVersion(_updateService.MinimumRollbackVersion);
+
+		public IReadOnlyList<UpdatePackageInfo> AvailableVersions => _updateService.AvailablePackages;
+
+		public ICollectionView AvailableVersionsView => _availableVersionsView;
+
+		public bool HasAvailableVersions => AvailableVersions.Count > 0;
+
+		public UpdatePackageInfo SelectedVersion
+		{
+			get { return _selectedVersion; }
+			set
+			{
+				if (!SetProperty(ref _selectedVersion, value))
+					return;
+
+				RaisePropertyChanged(nameof(CanInstallSelectedVersion));
+				RaisePropertyChanged(nameof(IsSelectedVersionRollback));
+				RaisePropertyChanged(nameof(VersionSelectionActionText));
+				(InstallSelectedVersionCommand as DelegateCommand)?.RaiseCanExecuteChanged();
+			}
+		}
+
+		public bool IsSelectedVersionRollback => SelectedVersion != null
+			&& Normalize(SelectedVersion.Version) < Normalize(_appVersionProvider.GetAppVersion());
+
+		public bool CanInstallSelectedVersion => IsUpdateServerConfigured
+			&& SelectedVersion != null
+			&& !IsChecking
+			&& !IsDownloading
+			&& Normalize(SelectedVersion.Version) != Normalize(_appVersionProvider.GetAppVersion());
+
+		public string VersionSelectionActionText => IsSelectedVersionRollback ? "ROLL BACK" : "INSTALL VERSION";
 
 		/// <summary>Full sentence for the tab and the status bar tooltip.</summary>
 		public string StatusText
@@ -80,6 +126,19 @@ namespace CapFrameX.ViewModel
 
 		public bool IsUpdateReadyToInstall => _status.State == EUpdateState.ReadyToInstall;
 
+		public bool IsRollback => Package != null
+			&& Normalize(Package.Version) < Normalize(_appVersionProvider.GetAppVersion());
+
+		public string UpdateDialogTitle => IsRollback ? "Roll back CapFrameX" : "CapFrameX update";
+
+		public string ConfirmActionText => IsRollback ? "ROLL BACK" : "UPDATE";
+
+		public string InstallConfirmationText => IsRollback
+			? "The selected version replaces the current installation on the next launch. Captures and settings remain, but settings created by newer versions may not be understood by the older release."
+			: Package?.Channel == EUpdateChannel.Beta
+				? "This beta build is downloaded now and installed the next time CapFrameX starts. Beta builds may be less stable than regular releases."
+				: "The update is downloaded now and installed the next time CapFrameX starts.";
+
 		/// <summary>Drives the download icon in the status bar.</summary>
 		public bool IsUpdateIndicatorVisible => IsUpdateAvailable || IsDownloading || IsUpdateReadyToInstall;
 
@@ -103,6 +162,8 @@ namespace CapFrameX.ViewModel
 			: Package.ReleaseDate.Value.ToString("d", CultureInfo.CurrentCulture);
 
 		public bool HasReleaseDate => Package?.ReleaseDate != null;
+
+		public string TargetChannelString => Package?.Channel.ToString() ?? string.Empty;
 
 		public string PackageSizeText
 		{
@@ -141,6 +202,8 @@ namespace CapFrameX.ViewModel
 
 		public ICommand OpenReleaseNotesCommand { get; }
 
+		public ICommand InstallSelectedVersionCommand { get; }
+
 		private UpdatePackageInfo Package => _status.Package;
 
 		public UpdateViewModel(IUpdateService updateService,
@@ -164,11 +227,14 @@ namespace CapFrameX.ViewModel
 				OnConfirmUpdate, () => CanConfirmUpdate);
 			var cancelDownloadCommand = new DelegateCommand(
 				() => _updateService.CancelDownload(), () => IsDownloading);
+			var installSelectedVersionCommand = new DelegateCommand(
+				OnInstallSelectedVersion, () => CanInstallSelectedVersion);
 
 			CheckForUpdateCommand = checkForUpdateCommand;
 			ShowUpdateDialogCommand = showUpdateDialogCommand;
 			ConfirmUpdateCommand = confirmUpdateCommand;
 			CancelDownloadCommand = cancelDownloadCommand;
+			InstallSelectedVersionCommand = installSelectedVersionCommand;
 			OpenReleaseNotesCommand = new DelegateCommand(OnOpenReleaseNotes, () => HasReleaseNotesLink);
 
 			// BehaviorSubject replays the current status, so this also seeds the initial state.
@@ -179,6 +245,8 @@ namespace CapFrameX.ViewModel
 				if (_dispatcher.CheckAccess()) apply();
 				else _dispatcher.BeginInvoke(apply);
 			});
+
+			RefreshAvailableVersions();
 
 			if (IsUpdateServerConfigured && AutoUpdateCheckActive)
 			{
@@ -193,6 +261,10 @@ namespace CapFrameX.ViewModel
 			try
 			{
 				await _updateService.CheckForUpdateAsync().ConfigureAwait(false);
+
+				Action refresh = RefreshAvailableVersions;
+				if (_dispatcher.CheckAccess()) refresh();
+				else _ = _dispatcher.BeginInvoke(refresh);
 			}
 			catch (Exception ex)
 			{
@@ -200,6 +272,16 @@ namespace CapFrameX.ViewModel
 				// a command handler faulting the dispatcher.
 				_logger.LogError(ex, "Error while checking for updates.");
 			}
+		}
+
+		private void OnInstallSelectedVersion()
+		{
+			if (SelectedVersion == null)
+				return;
+
+			var status = _updateService.SelectVersion(SelectedVersion.Version);
+			if (status.State == EUpdateState.UpdateAvailable && status.Package != null)
+				IsUpdateDialogOpen = true;
 		}
 
 		private void OnShowUpdateDialog()
@@ -261,15 +343,23 @@ namespace CapFrameX.ViewModel
 			RaisePropertyChanged(nameof(IsDownloading));
 			RaisePropertyChanged(nameof(IsUpdateAvailable));
 			RaisePropertyChanged(nameof(IsUpdateReadyToInstall));
+			RaisePropertyChanged(nameof(IsRollback));
+			RaisePropertyChanged(nameof(UpdateDialogTitle));
+			RaisePropertyChanged(nameof(ConfirmActionText));
+			RaisePropertyChanged(nameof(InstallConfirmationText));
 			RaisePropertyChanged(nameof(IsUpdateIndicatorVisible));
 			RaisePropertyChanged(nameof(DownloadProgressPercent));
 			RaisePropertyChanged(nameof(DownloadProgressText));
 			RaisePropertyChanged(nameof(AvailableVersionString));
+			RaisePropertyChanged(nameof(CanInstallSelectedVersion));
+			RaisePropertyChanged(nameof(IsSelectedVersionRollback));
+			RaisePropertyChanged(nameof(VersionSelectionActionText));
 			RaisePropertyChanged(nameof(ReleaseSummary));
 			RaisePropertyChanged(nameof(ReleaseHighlights));
 			RaisePropertyChanged(nameof(HasReleaseHighlights));
 			RaisePropertyChanged(nameof(ReleaseDateText));
 			RaisePropertyChanged(nameof(HasReleaseDate));
+			RaisePropertyChanged(nameof(TargetChannelString));
 			RaisePropertyChanged(nameof(PackageSizeText));
 			RaisePropertyChanged(nameof(HasReleaseNotesLink));
 			RaisePropertyChanged(nameof(CanConfirmUpdate));
@@ -279,14 +369,45 @@ namespace CapFrameX.ViewModel
 			(ConfirmUpdateCommand as DelegateCommand)?.RaiseCanExecuteChanged();
 			(CancelDownloadCommand as DelegateCommand)?.RaiseCanExecuteChanged();
 			(OpenReleaseNotesCommand as DelegateCommand)?.RaiseCanExecuteChanged();
+			(InstallSelectedVersionCommand as DelegateCommand)?.RaiseCanExecuteChanged();
+		}
+
+		private void RefreshAvailableVersions()
+		{
+			var previousVersion = SelectedVersion?.Version;
+			var preferredVersion = previousVersion ?? Package?.Version ?? _appVersionProvider.GetAppVersion();
+			var groupedVersions = AvailableVersions
+				.OrderBy(package => package.Channel == EUpdateChannel.Release ? 0 : 1)
+				.ThenByDescending(package => Normalize(package.Version))
+				.ToList();
+			var availableVersionsView = new ListCollectionView(groupedVersions);
+			availableVersionsView.GroupDescriptions.Add(
+				new PropertyGroupDescription(nameof(UpdatePackageInfo.Channel)));
+			_availableVersionsView = availableVersionsView;
+
+			RaisePropertyChanged(nameof(AvailableVersions));
+			RaisePropertyChanged(nameof(AvailableVersionsView));
+			RaisePropertyChanged(nameof(HasAvailableVersions));
+			RaisePropertyChanged(nameof(LatestReleaseVersionString));
+			RaisePropertyChanged(nameof(LatestBetaVersionString));
+			RaisePropertyChanged(nameof(MinimumRollbackVersionString));
+
+			SelectedVersion = AvailableVersions.FirstOrDefault(candidate =>
+				Normalize(candidate.Version) == Normalize(preferredVersion))
+				?? AvailableVersions.FirstOrDefault();
 		}
 
 		/// <summary>
-		/// CapFrameX releases on three components; the assembly's fourth one is build noise.
+		/// CapFrameX uses all four version components; the fourth one identifies the build.
 		/// </summary>
 		private static string FormatVersion(Version version)
 			=> version == null
 				? "-"
-				: $"{version.Major}.{version.Minor}.{Math.Max(version.Build, 0)}";
+				: $"{version.Major}.{version.Minor}.{Math.Max(version.Build, 0)}.{Math.Max(version.Revision, 0)}";
+
+		private static Version Normalize(Version version)
+			=> version == null
+				? new Version(0, 0, 0, 0)
+				: new Version(version.Major, version.Minor, Math.Max(version.Build, 0), Math.Max(version.Revision, 0));
 	}
 }

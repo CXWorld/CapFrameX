@@ -9,7 +9,6 @@ using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Contracts.Update;
-using CapFrameX.Contracts.UpdateCheck;
 using CapFrameX.Data;
 using CapFrameX.Data.Logging;
 using CapFrameX.EventAggregation.Messages;
@@ -312,14 +311,12 @@ namespace CapFrameX
                 {
                     Container.Register<ISystemInfo, SystemInfo.NetStandard.SystemInfo>(Reuse.Singleton);
                     Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
-                    Container.RegisterInstance<IWebVersionProvider>(new WebVersionProvider());
-                    Container.Register<IUpdateCheck, UpdateCheck>(Reuse.Singleton);
 
-                    // The update service needs its manifest URI and the staging folder, neither of
-                    // which the container can supply, so it is built here like the process list below.
-                    var updateServiceLogger = Container.Resolve<ILoggerFactory>().CreateLogger<UpdateService>();
-                    Container.RegisterInstance<IUpdateService>(new UpdateService(
-                        ConfigurationManager.AppSettings["UpdateManifestUri"],
+					// The update service needs its catalog URI and the staging folder, neither of
+					// which the container can supply, so it is built here like the process list below.
+					var updateServiceLogger = Container.Resolve<ILoggerFactory>().CreateLogger<UpdateService>();
+					Container.RegisterInstance<IUpdateService>(new UpdateService(
+						ConfigurationManager.AppSettings["UpdateCatalogUri"],
                         Container.Resolve<IAppVersionProvider>(),
                         pathService.UpdatesFolder,
                         updateServiceLogger));
