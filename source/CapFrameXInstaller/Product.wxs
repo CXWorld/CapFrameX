@@ -7,6 +7,9 @@
 		<!--<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />-->
 		<MajorUpgrade AllowDowngrades="yes"/>
 		<Media Id="1" Cabinet="CapFrameX.cab" EmbedCab="yes" CompressionLevel="high" />		
+		<Icon Id="CapFrameXProductIcon" SourceFile="..\CapFrameX\Icons\cx_icon_BUC.ico" />
+		<Property Id="ARPPRODUCTICON" Value="CapFrameXProductIcon" />
+
 
 		<Feature Id="ProductFeature" Title="CapFrameX" Level="1">
 			<ComponentGroupRef Id="CapFrameXBinaries" />

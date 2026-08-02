@@ -622,6 +622,39 @@ try {
         $screenWordmark.Dispose()
     }
 
+    $installerBanner = [System.Drawing.Bitmap]::new(
+        500,
+        80,
+        [System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
+    $installerBannerGraphics = New-HighQualityGraphics -Image $installerBanner
+    try {
+        $installerBannerGraphics.Clear($blue)
+
+        $installerMarkBounds = [System.Drawing.RectangleF]::new(18.0, 8.0, 92.0, 64.0)
+        $null = Draw-ContainedImage `
+            -Graphics $installerBannerGraphics `
+            -Image $mark `
+            -Bounds $installerMarkBounds
+
+        $installerWordmarkBounds = [System.Drawing.RectangleF]::new(128.0, 22.0, 342.0, 34.0)
+        $null = Draw-ContainedImage `
+            -Graphics $installerBannerGraphics `
+            -Image $wordmark `
+            -Bounds $installerWordmarkBounds
+    }
+    finally {
+        $installerBannerGraphics.Dispose()
+    }
+
+    try {
+        Save-PngAtomic `
+            -Image $installerBanner `
+            -Path (Join-Path $OutputRoot 'CX_Installer_Banner.png')
+    }
+    finally {
+        $installerBanner.Dispose()
+    }
+
     $windowIcon = New-TileIcon -Mark $mark -Size 70
     try {
         Save-PngAtomic -Image $windowIcon -Path (Join-Path $OutputRoot 'CX_Icon.png')
@@ -800,5 +833,6 @@ Get-Item -LiteralPath @(
     (Join-Path $OutputRoot 'CapFrameXLogoOnly.png'),
     (Join-Path $OutputRoot 'cx_icon_BUC.ico'),
     (Join-Path $OutputRoot 'CX_Screen_Logo_Name.png'),
+    (Join-Path $OutputRoot 'CX_Installer_Banner.png'),
     (Join-Path $OutputRoot 'X_Banner.jpg')) |
     Select-Object Name, Length

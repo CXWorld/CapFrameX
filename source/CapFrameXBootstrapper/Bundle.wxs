@@ -11,7 +11,7 @@
 			<bal:WixStandardBootstrapperApplication
 						LicenseFile="license.rtf"
 						ShowVersion="yes"
-            LogoFile="../CapFrameX/Icons/CX_Icon.png"
+            LogoFile="../CapFrameX/Icons/CX_Installer_Banner.png"
             ThemeFile="theme.xml"/>
 		</BootstrapperApplicationRef>
 
