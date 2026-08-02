@@ -76,8 +76,11 @@ namespace CapFrameX.ViewModel.DataContext
                 {
                     try
                     {
-                        PlotModel.TextColor = AppConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black;
-                        PlotModel.InvalidatePlot(false);
+                        if (PlotModel is not null)
+                        {
+                            PlotModel.TextColor = AppConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black;
+                            PlotModel.InvalidatePlot(false);
+                        }
                     }
                     catch { }
                 });
