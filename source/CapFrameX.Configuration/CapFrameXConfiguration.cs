@@ -803,17 +803,17 @@ namespace CapFrameX.Configuration
 
         public string FirstMetricBarColor
         {
-            get => Get<string>("#3AA0FF");
+            get => Get<string>("#0271F9");
             set => Set(value);
         }
         public string SecondMetricBarColor
         {
-            get => Get<string>("#E879F9");
+            get => Get<string>("#7B8794");
             set => Set(value);
         }
         public string ThirdMetricBarColor
         {
-            get => Get<string>("#FBBF24");
+            get => Get<string>("#00B8D9");
             set => Set(value);
         }
         public bool ComparisonRangeSliderRealTime

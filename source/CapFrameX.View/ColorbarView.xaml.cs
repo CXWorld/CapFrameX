@@ -144,15 +144,15 @@ namespace CapFrameX.View
 
                 // Add upper rectangle
                 AddFillRectangle(bitmap, new System.Drawing.Point(0, 0),
-                    new System.Drawing.Size(imageWidth, upperRectangleHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
+                    new System.Drawing.Size(imageWidth, upperRectangleHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 2, 113, 249)));
 
                 // Add lower rectangle
                 AddFillRectangle(bitmap, new System.Drawing.Point(0, imageHeight - lowerRectangleHeight),
-                    new System.Drawing.Size(imageWidth, lowerRectangleHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
+                    new System.Drawing.Size(imageWidth, lowerRectangleHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 2, 113, 249)));
 
                 // Add frame
                 AddRectangle(bitmap, new System.Drawing.Point(1, 1),
-                    new System.Drawing.Size(imageWidth - 2, imageHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
+                    new System.Drawing.Size(imageWidth - 2, imageHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 2, 113, 249)));
 
                 // Add CX logos
                 AddLogo(bitmap, logoName, new System.Drawing.Point(20, imageHeight - logoName.Height - (lowerRectangleHeight - logoName.Height) / 2));
@@ -270,7 +270,7 @@ namespace CapFrameX.View
             ("MaterialDesign.Brush.TextBox.OutlineInactiveBorder", "#1AFFFFFF", "#0F000000"),
             ("MaterialDesign.Brush.DataGrid.RowHoverBackground", "#14FFFFFF", "#0A000000"),
             ("MaterialDesign.Brush.ToolBar.Background", "#FF212121", "#FFF5F5F5"),
-            ("MaterialDesign.Brush.ToolBar.Item.Background", "#2196F3", "#2298f3"),
+            ("MaterialDesign.Brush.ToolBar.Item.Background", "#0271F9", "#0271F9"),
             ("MaterialDesign.Brush.ToolBar.Item.Foreground", "#FF616161", "#FF616161"),
             ("MaterialDesign.Brush.Button.FlatClick", "#19757575", "#FFDEDEDE"),
             ("MaterialDesign.Brush.Button.Ripple", "#FFB6B6B6", "#FFB6B6B6"),

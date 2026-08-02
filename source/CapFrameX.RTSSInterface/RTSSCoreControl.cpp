@@ -675,7 +675,7 @@ void RTSSCoreControl::Refresh()
 		strOSD += "<C200=FFFFFF>"; // White
 		////define color variable C[1] as R=FF,G=FF and B=FF
 		// CX blue
-		strOSD += "<C250=2297F3>"; //CX Blue
+		strOSD += "<C250=0271F9>"; //CX Blue
 		////define color variable C[1] as R=FF,G=FF and B=FF
 		//// CX orange
 		//strOSD += "<C4=F17D20>"; //CX Orange

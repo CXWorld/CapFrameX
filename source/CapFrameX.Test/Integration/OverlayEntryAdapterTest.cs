@@ -65,7 +65,7 @@ namespace CapFrameX.Test.Integration
             {
                 Description = "Colored entry",
                 GroupName = "Group",
-                GroupColor = "FF2297F3",
+                GroupColor = "FF0271F9",
                 Color = "FFFFD700",
                 IsEntryEnabled = true,
                 ShowOnOverlay = true,
@@ -74,7 +74,7 @@ namespace CapFrameX.Test.Integration
 
             var result = OverlayEntryAdapter.ToOsdEntries(new[] { entry }).Single();
 
-            Assert.AreEqual(0x2297F3FFu, result.GroupColor);
+            Assert.AreEqual(0x0271F9FFu, result.GroupColor);
             Assert.AreEqual(0xFFD700FFu, result.Color);
         }
 
@@ -140,7 +140,7 @@ namespace CapFrameX.Test.Integration
             {
                 Description = "Run history",
                 GroupColor = "FFFFFFFF",
-                Color = "FF2297F3",
+                Color = "FF0271F9",
                 LowerLimitColor = "FFC80000",
                 GroupSeparators = 1,
                 IsEntryEnabled = true,

@@ -30,7 +30,7 @@ namespace CapFrameX.Overlay
         private const string FRAMERATE_COLOR = "FFAEEA00";
 
         // Latency Colors (ARGB hex)
-        private const string LATENCY_GROUP_COLOR = "FF2297F3";
+        private const string LATENCY_GROUP_COLOR = "FF0271F9";
         private const string LATENCY_VALUE_COLOR = "FFFFD700";
 
         private readonly ISensorService _sensorService;
