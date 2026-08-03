@@ -92,7 +92,13 @@ internal sealed class NvidiaGpu : GenericGpu
     private string _activeDisplayDeviceName;
 
     public NvidiaGpu(int adapterIndex, NvApi.NvPhysicalGpuHandle handle, IReadOnlyList<NvDisplayHandleInfo> displayHandles, ISettings settings, ISensorConfig sensorConfig = null)
-        : base(GetName(handle), new Identifier("gpu-nvidia", adapterIndex.ToString(CultureInfo.InvariantCulture)), settings, sensorConfig: sensorConfig)
+        : base(
+            GetName(handle),
+            new Identifier("gpu-nvidia", adapterIndex.ToString(CultureInfo.InvariantCulture)),
+            settings,
+            sensorConfig: sensorConfig,
+            dedicatedMemoryPresentationSortKey: $"{adapterIndex}_8_0",
+            sharedMemoryPresentationSortKey: $"{adapterIndex}_8_1")
     {
         _adapterIndex = adapterIndex;
         _handle = handle;

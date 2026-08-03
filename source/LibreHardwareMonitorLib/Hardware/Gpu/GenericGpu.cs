@@ -76,19 +76,25 @@ public abstract class GenericGpu : Hardware
     /// <param name="settings">Additional settings passed by the <see cref="IComputer" />.</param>
     /// <param name="enableProcessMemorySensors">Indicates whether to enable the process memory sensors. These sensors rely on Windows performance counters and may not be supported or may cause errors on certain systems, particularly those with specific GPU drivers or configurations. Enabling this option will attempt to initialize the necessary performance counters and will monitor the current process for changes to update the sensor values accordingly. If any issues are encountered while initializing or updating the performance counters, the sensors will be disabled and will not report values until a new process change is detected or the counters can be successfully reinitialized.</param>
     /// <param name="sensorConfig">Configuration used to avoid polling unselected sensors.</param>
+    /// <param name="dedicatedMemoryPresentationSortKey">Sort key of the global dedicated-memory sensor. The per-process sensor is placed directly after it and the allocated-memory sensor.</param>
+    /// <param name="sharedMemoryPresentationSortKey">Sort key of the global shared-memory sensor. The per-process sensor is placed directly after it.</param>
     protected GenericGpu(
         string name,
         Identifier identifier,
         ISettings settings,
         bool enableProcessMemorySensors = true,
-        ISensorConfig sensorConfig = null) : base(name, identifier, settings)
+        ISensorConfig sensorConfig = null,
+        string dedicatedMemoryPresentationSortKey = null,
+        string sharedMemoryPresentationSortKey = null) : base(name, identifier, settings)
     {
         _sensorConfig = sensorConfig;
         _refreshRateBuffer = new RefreshRateBuffer<float>(2);
         var processService = ProcessServiceProvider.ProcessService;
         _enableProcessMemorySensors = enableProcessMemorySensors && !Software.OperatingSystem.IsUnix && processService != null;
 
-        InitializeProcessMemorySensors();
+        InitializeProcessMemorySensors(
+            dedicatedMemoryPresentationSortKey,
+            sharedMemoryPresentationSortKey);
 
         if (processService == null)
             return;
@@ -315,7 +321,9 @@ public abstract class GenericGpu : Hardware
         base.Close();
     }
 
-    private void InitializeProcessMemorySensors()
+    private void InitializeProcessMemorySensors(
+        string dedicatedMemoryPresentationSortKey,
+        string sharedMemoryPresentationSortKey)
     {
         if (!_enableProcessMemorySensors)
             return;
@@ -329,12 +337,20 @@ public abstract class GenericGpu : Hardware
 
             _processMemoryUsageDedicated = new Sensor("GPU Memory Dedicated Game", PROCESS_MEMORY_DEDICATED_SENSOR_INDEX, SensorType.Data, this, _settings)
             {
-                PresentationSortKey = "99_0",
+                // Position this after the global dedicated and allocated rows. The allocated
+                // sensor uses child key 1 where it exists.
+                PresentationSortKey = GetProcessMemoryPresentationSortKey(
+                    dedicatedMemoryPresentationSortKey,
+                    2,
+                    "99_0"),
                 Value = 0f
             };
             _processMemoryUsageShared = new Sensor("GPU Memory Shared Game", PROCESS_MEMORY_SHARED_SENSOR_INDEX, SensorType.Data, this, _settings)
             {
-                PresentationSortKey = "99_1",
+                PresentationSortKey = GetProcessMemoryPresentationSortKey(
+                    sharedMemoryPresentationSortKey,
+                    1,
+                    "99_1"),
                 Value = 0f
             };
 
@@ -345,6 +361,16 @@ public abstract class GenericGpu : Hardware
         {
             Log.Logger.Error(ex, "Error while creating GPU process memory sensors.");
         }
+    }
+
+    internal static string GetProcessMemoryPresentationSortKey(
+        string globalMemoryPresentationSortKey,
+        int childPosition,
+        string fallbackSortKey)
+    {
+        return string.IsNullOrEmpty(globalMemoryPresentationSortKey)
+            ? fallbackSortKey
+            : $"{globalMemoryPresentationSortKey}_{childPosition}";
     }
 
     private void EnsureProcessMemoryCounters(int processId, bool forceRefresh)

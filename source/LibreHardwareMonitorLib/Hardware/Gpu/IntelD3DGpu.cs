@@ -37,7 +37,9 @@ internal class IntelD3dGpu : GenericGpu
             GetName(deviceId),
             new Identifier("gpu-intel-integrated", deviceId.ToString(CultureInfo.InvariantCulture)),
             settings,
-            sensorConfig: sensorConfig)
+            sensorConfig: sensorConfig,
+            dedicatedMemoryPresentationSortKey: $"{index}_1",
+            sharedMemoryPresentationSortKey: $"{index}_2_0")
     {
         _pawnModule = new IntelMsr();
         IsDiscreteGpu = !deviceInfo.Integrated;

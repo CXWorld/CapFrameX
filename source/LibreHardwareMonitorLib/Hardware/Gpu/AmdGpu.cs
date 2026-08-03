@@ -47,7 +47,9 @@ internal sealed class AmdGpu : GenericGpu
         : base(deviceInfo.GpuName?.Trim() ?? "AMD GPU",
                new Identifier("gpu-amd", adapterIndex.ToString(CultureInfo.InvariantCulture)),
                settings,
-               sensorConfig: sensorConfig)
+               sensorConfig: sensorConfig,
+               dedicatedMemoryPresentationSortKey: $"{adapterIndex}_6_0",
+               sharedMemoryPresentationSortKey: $"{adapterIndex}_6_1")
     {
         _adapterIndex = adapterIndex;
         _deviceInfo = deviceInfo;

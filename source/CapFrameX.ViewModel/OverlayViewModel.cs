@@ -1189,81 +1189,45 @@ namespace CapFrameX.ViewModel
         {
         }
 
-        async void IDropTarget.Drop(IDropInfo dropInfo)
+        void IDropTarget.Drop(IDropInfo dropInfo)
         {
-            if (HasActiveFilter)
+            if (HasActiveFilter || dropInfo == null)
                 return;
 
-            if (dropInfo != null)
-            {
-                if (dropInfo.VisualTarget is FrameworkElement frameworkElement)
-                {
-                    if (frameworkElement.Name == "OverlayItemDataGrid")
-                    {
-                        if (dropInfo.Data is IOverlayEntry overlayEntry)
-                        {
-                            // get source index
-                            int sourceIndex = OverlayEntries.IndexOf(overlayEntry);
-                            int targetIndex = dropInfo.InsertIndex;
+            if (!(dropInfo.VisualTarget is FrameworkElement frameworkElement)
+                || frameworkElement.Name != "OverlayItemDataGrid")
+                return;
 
-                            // move downwards
-                            if (sourceIndex < targetIndex)
-                            {
-                                _overlayEntryProvider.MoveEntry(sourceIndex, targetIndex - 1);
-                            }
-                            // moving upwards
-                            else
-                            {
-                                _overlayEntryProvider.MoveEntry(sourceIndex, targetIndex);
-                            }
+            var draggedEntries = OverlayEntryReorder.GetDraggedItems<IOverlayEntry>(dropInfo.Data);
+            if (draggedEntries.Count == 0)
+                return;
 
-                            OverlayEntries.Clear();
-                            OverlayEntries.AddRange(await _overlayEntryProvider.GetOverlayEntries());
-                            SetupOverlayEntriesView();
-                        }
-                        else if (dropInfo.Data is IEnumerable<IOverlayEntry> overlayEntries)
-                        {
-                            // get source index
-                            int count = overlayEntries.Count();
-                            int sourceIndex = overlayEntries.Min(entry => OverlayEntries.IndexOf(entry));
-                            int targetIndex = dropInfo.InsertIndex;
+            var reorderedEntries = OverlayEntryReorder.CreateOrder(
+                OverlayEntries,
+                draggedEntries,
+                dropInfo.InsertIndex);
 
-                            // move downwards
-                            if (sourceIndex < targetIndex)
-                            {
-                                for (int i = 0; i < count; i++)
-                                {
-                                    _overlayEntryProvider.MoveEntry(sourceIndex, targetIndex - 1);
-                                }
-                            }
-                            // moving upwards
-                            else
-                            {
-                                for (int i = 0; i < count; i++)
-                                {
-                                    _overlayEntryProvider.MoveEntry(sourceIndex + i, targetIndex + i);
-                                }
-                            }
+            // ObservableCollection.Move raises item-level move notifications. Keeping the
+            // collection and view instances alive preserves both the viewport and selection.
+            OverlayEntryReorder.ApplyOrder(
+                OverlayEntries,
+                reorderedEntries,
+                _overlayEntryProvider.MoveEntry);
 
-                            OverlayEntries.Clear();
-                            OverlayEntries.AddRange(await _overlayEntryProvider.GetOverlayEntries());
-                            SetupOverlayEntriesView();
-                        }
-
-                        SetSaveButtonIsEnable();
-                    }
-                }
-            }
+            SetSaveButtonIsEnable();
         }
 
         void IDropTarget.DragOver(IDropInfo dropInfo)
         {
-            if (dropInfo != null)
+            if (dropInfo != null
+                && !HasActiveFilter
+                && OverlayEntryReorder.GetDraggedItems<IOverlayEntry>(dropInfo.Data).Count > 0)
             {
                 // standard behavior
                 dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
                 dropInfo.Effects = DragDropEffects.Move;
             }
         }
+
     }
 }

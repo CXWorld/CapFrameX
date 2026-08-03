@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using CapFrameX.Data;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Hardware.Gpu;
 using LibreHardwareMonitor.Hardware.Simulation;
@@ -55,6 +56,47 @@ namespace CapFrameX.Test.Sensor
             {
                 gpu.Close();
             }
+        }
+
+        [DataTestMethod]
+        [DataRow("0_8_0", "0_8_0_1", "0_8_1")]
+        [DataRow("0_6_0", "0_6_0_1", "0_6_1")]
+        [DataRow("0_1", "0_1_1", "0_2_0")]
+        public void ProcessMemorySortKeys_FollowGlobalMemorySensors(
+            string dedicatedGlobalSortKey,
+            string allocatedGlobalSortKey,
+            string sharedGlobalSortKey)
+        {
+            string dedicatedGameSortKey = GenericGpu.GetProcessMemoryPresentationSortKey(
+                dedicatedGlobalSortKey,
+                2,
+                "99_0");
+            string sharedGameSortKey = GenericGpu.GetProcessMemoryPresentationSortKey(
+                sharedGlobalSortKey,
+                1,
+                "99_1");
+
+            var sortedKeys = new[]
+                {
+                    sharedGameSortKey,
+                    dedicatedGameSortKey,
+                    sharedGlobalSortKey,
+                    allocatedGlobalSortKey,
+                    dedicatedGlobalSortKey
+                }
+                .OrderBy(key => key, new SortKeyComparer())
+                .ToArray();
+
+            CollectionAssert.AreEqual(
+                new[]
+                {
+                    dedicatedGlobalSortKey,
+                    allocatedGlobalSortKey,
+                    dedicatedGameSortKey,
+                    sharedGlobalSortKey,
+                    sharedGameSortKey
+                },
+                sortedKeys);
         }
 
         [TestMethod]
