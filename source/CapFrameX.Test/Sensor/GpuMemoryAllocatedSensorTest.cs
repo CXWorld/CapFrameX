@@ -1,12 +1,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+
 using CapFrameX.Data;
+using CapFrameX.Monitoring.Contracts;
 using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Hardware.Gpu;
 using LibreHardwareMonitor.Hardware.Simulation;
 using LibreHardwareMonitor.Interop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace CapFrameX.Test.Sensor
 {
@@ -122,6 +125,86 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
+        public void GenericGpu_AllocatedMemorySensorParticipatesInEvaluateSelection()
+        {
+            var evaluatedIdentifiers = new List<string>();
+            var sensorConfig = new Mock<ISensorConfig>();
+            sensorConfig
+                .Setup(config => config.GetSensorEvaluate(It.IsAny<string>()))
+                .Returns((string identifier) =>
+                {
+                    evaluatedIdentifiers.Add(identifier);
+                    return false;
+                });
+
+            var gpu = new TestWddmGpu(new TestSettings(), sensorConfig.Object);
+
+            try
+            {
+                bool updated = gpu.TryUpdateWddmMemorySensors(false, out _);
+
+                Assert.IsFalse(updated);
+                CollectionAssert.AreEqual(
+                    new[] { "/gpu-wddm-test/0/data/5" },
+                    evaluatedIdentifiers);
+            }
+            finally
+            {
+                gpu.Close();
+            }
+        }
+
+        [TestMethod]
+        public void GenericGpu_ProcessMemorySensorsEvaluateBothIdentifiersWithoutShortCircuiting()
+        {
+            var evaluatedIdentifiers = new List<string>();
+            var sensorConfig = new Mock<ISensorConfig>();
+            var gpu = new TestWddmGpu(new TestSettings());
+            var dedicatedSensor = new LibreHardwareMonitor.Hardware.Sensor(
+                "GPU Memory Dedicated Game",
+                90,
+                SensorType.Data,
+                gpu,
+                new TestSettings());
+            var sharedSensor = new LibreHardwareMonitor.Hardware.Sensor(
+                "GPU Memory Shared Game",
+                91,
+                SensorType.Data,
+                gpu,
+                new TestSettings());
+
+            sensorConfig
+                .Setup(config => config.GetSensorEvaluate(It.IsAny<string>()))
+                .Returns((string identifier) =>
+                {
+                    evaluatedIdentifiers.Add(identifier);
+                    return identifier == dedicatedSensor.Identifier.ToString();
+                });
+
+            try
+            {
+                (bool evaluateDedicated, bool evaluateShared) = GenericGpu.EvaluateSensorPair(
+                    sensorConfig.Object,
+                    dedicatedSensor,
+                    sharedSensor);
+
+                Assert.IsTrue(evaluateDedicated);
+                Assert.IsFalse(evaluateShared);
+                CollectionAssert.AreEqual(
+                    new[]
+                    {
+                        dedicatedSensor.Identifier.ToString(),
+                        sharedSensor.Identifier.ToString()
+                    },
+                    evaluatedIdentifiers);
+            }
+            finally
+            {
+                gpu.Close();
+            }
+        }
+
+        [TestMethod]
         public void DeviceIdentifiersMatch_InterfacePathAndPnpInstance()
         {
             const string interfacePath = @"\\?\PCI#VEN_1002&DEV_744C&SUBSYS_0E3A1002&REV_C8#6&12345678&0&00000019#{1ca05180-a699-450a-9a0c-de4fbe3ddd89}";
@@ -153,8 +236,13 @@ namespace CapFrameX.Test.Sensor
 
         private sealed class TestWddmGpu : GenericGpu
         {
-            public TestWddmGpu(ISettings settings)
-                : base("Test WDDM GPU", new Identifier("gpu-wddm-test", "0"), settings, enableProcessMemorySensors: false)
+            public TestWddmGpu(ISettings settings, ISensorConfig sensorConfig = null)
+                : base(
+                    "Test WDDM GPU",
+                    new Identifier("gpu-wddm-test", "0"),
+                    settings,
+                    enableProcessMemorySensors: false,
+                    sensorConfig: sensorConfig)
             {
                 InitializeWddmDevice(
                     @"\\?\PCI#VEN_1234&DEV_5678#0#{1ca05180-a699-450a-9a0c-de4fbe3ddd89}",

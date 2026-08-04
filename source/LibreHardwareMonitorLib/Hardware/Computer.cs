@@ -205,7 +205,7 @@ public class Computer : IComputer
                     if (IsSimulationEnabled)
                         Add(new SimulatedCpuGroup(_simulationConfiguration, _settings));
                     else
-                        Add(new CpuGroup(_settings));
+                        Add(new CpuGroup(_settings, _sensorConfig));
                 }
                 else
                 {
@@ -261,7 +261,7 @@ public class Computer : IComputer
             if (_open && value != _memoryEnabled)
             {
                 if (value)
-                    Add(new MemoryGroup(_settings));
+                    Add(new MemoryGroup(_settings, _sensorConfig));
                 else
                     RemoveType<MemoryGroup>();
             }
@@ -568,11 +568,11 @@ public class Computer : IComputer
             if (IsSimulationEnabled)
                 Add(new SimulatedCpuGroup(_simulationConfiguration, _settings));
             else
-                Add(new CpuGroup(_settings));
+                Add(new CpuGroup(_settings, _sensorConfig));
         }
 
         if (_memoryEnabled)
-            Add(new MemoryGroup(_settings));
+            Add(new MemoryGroup(_settings, _sensorConfig));
 
         if (_gpuEnabled)
         {
@@ -741,7 +741,7 @@ public class Computer : IComputer
         // Create a temporary cpu group if one has not been added.
         lock (_lock)
         {
-            IGroup cpuGroup = _groups.Find(x => x is CpuGroup) ?? new CpuGroup(_settings);
+            IGroup cpuGroup = _groups.Find(x => x is CpuGroup) ?? new CpuGroup(_settings, _sensorConfig);
             return cpuGroup.Hardware.Select(x => x as IntelCpu).ToList();
         }
     }

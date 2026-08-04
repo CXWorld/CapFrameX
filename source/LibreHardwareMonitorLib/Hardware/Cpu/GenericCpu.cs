@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using CapFrameX.Monitoring.Contracts;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
@@ -28,6 +29,7 @@ public class GenericCpu : Hardware
     protected readonly uint _stepping;
     protected readonly int _threadCount;
     protected readonly bool _isHybrid;
+    private protected readonly ISensorConfig _sensorConfig;
 
     private readonly CpuLoad _cpuLoad;
     private readonly double _estimatedTimeStampCounterFrequency;
@@ -45,9 +47,15 @@ public class GenericCpu : Hardware
     /// <param name="processorIndex">The zero-based processor index.</param>
     /// <param name="cpuId">The CPUID data for all cores and threads.</param>
     /// <param name="settings">The settings instance.</param>
-    public GenericCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(cpuId[0][0].Name, CreateIdentifier(cpuId[0][0].Vendor, processorIndex), settings)
+    public GenericCpu(int processorIndex, CpuId[][] cpuId, ISettings settings)
+        : this(processorIndex, cpuId, settings, null)
+    { }
+
+    internal GenericCpu(int processorIndex, CpuId[][] cpuId, ISettings settings, ISensorConfig sensorConfig)
+        : base(cpuId[0][0].Name, CreateIdentifier(cpuId[0][0].Vendor, processorIndex), settings)
     {
         _cpuId = cpuId;
+        _sensorConfig = sensorConfig;
         _vendor = cpuId[0][0].Vendor;
         _family = cpuId[0][0].Family;
         _model = cpuId[0][0].Model;

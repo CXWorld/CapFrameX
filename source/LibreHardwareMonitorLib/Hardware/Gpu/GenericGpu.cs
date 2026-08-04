@@ -67,6 +67,7 @@ public abstract class GenericGpu : Hardware
     private string _wddmDeviceId;
     private int _counterProcessId;
     private int _currentProcessId;
+    private volatile bool _pollProcessMemorySensors;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GenericGpu" /> class.
@@ -117,7 +118,7 @@ public abstract class GenericGpu : Hardware
                     _currentProcessId = args.ProcessId;
                 }
 
-                if (_enableProcessMemorySensors)
+                if (_enableProcessMemorySensors && _pollProcessMemorySensors)
                 {
                     EnsureProcessMemoryCounters(args.ProcessId, args.IsProcessChange);
                 }
@@ -271,6 +272,15 @@ public abstract class GenericGpu : Hardware
         if (!_enableProcessMemorySensors || _processMemoryUsageDedicated == null || _processMemoryUsageShared == null)
             return;
 
+        (bool evaluateDedicated, bool evaluateShared) = EvaluateSensorPair(
+            _sensorConfig,
+            _processMemoryUsageDedicated,
+            _processMemoryUsageShared);
+
+        _pollProcessMemorySensors = evaluateDedicated || evaluateShared;
+        if (!_pollProcessMemorySensors)
+            return;
+
         if (_currentProcessId != 0)
         {
             EnsureProcessMemoryCounters(_currentProcessId, false);
@@ -280,17 +290,39 @@ public abstract class GenericGpu : Hardware
         {
             try
             {
-                _processMemoryUsageDedicated.Value = _dedicatedVramUsageProcessPerformCounter?.NextValue() / VRAM_USAGE_SCALE ?? 0f;
-                _processMemoryUsageShared.Value = _sharedVramUsageProcessPerformCounter?.NextValue() / VRAM_USAGE_SCALE ?? 0f;
+                if (evaluateDedicated)
+                    _processMemoryUsageDedicated.Value = _dedicatedVramUsageProcessPerformCounter?.NextValue() / VRAM_USAGE_SCALE ?? 0f;
+
+                if (evaluateShared)
+                    _processMemoryUsageShared.Value = _sharedVramUsageProcessPerformCounter?.NextValue() / VRAM_USAGE_SCALE ?? 0f;
             }
             catch
             {
                 DisposeProcessMemoryCounters();
                 _counterProcessId = 0;
-                _processMemoryUsageDedicated.Value = 0f;
-                _processMemoryUsageShared.Value = 0f;
+
+                if (evaluateDedicated)
+                    _processMemoryUsageDedicated.Value = 0f;
+
+                if (evaluateShared)
+                    _processMemoryUsageShared.Value = 0f;
             }
         }
+    }
+
+    internal static (bool First, bool Second) EvaluateSensorPair(
+        ISensorConfig sensorConfig,
+        ISensor firstSensor,
+        ISensor secondSensor)
+    {
+        // Evaluate both identifiers without short-circuiting. GetSensorEvaluate deliberately
+        // permits the first read of every sensor before applying the logging/overlay selection.
+        bool evaluateFirst = firstSensor != null &&
+                             (sensorConfig == null || sensorConfig.GetSensorEvaluate(firstSensor.Identifier.ToString()));
+        bool evaluateSecond = secondSensor != null &&
+                              (sensorConfig == null || sensorConfig.GetSensorEvaluate(secondSensor.Identifier.ToString()));
+
+        return (evaluateFirst, evaluateSecond);
     }
 
     private bool ShouldEvaluateWddmMemoryAllocatedSensor()
