@@ -114,7 +114,7 @@ namespace CapFrameX.Test.Sensor
             Assert.AreEqual(42.5f, sensor.Value);
         }
 
-        private sealed class TestHardware : Hardware
+        private sealed class TestHardware : LibreHardwareMonitor.Hardware.Hardware
         {
             public TestHardware()
                 : base("Polling Test", new Identifier("polling-test"), new TestSettings())
