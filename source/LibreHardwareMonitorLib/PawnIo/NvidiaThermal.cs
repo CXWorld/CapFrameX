@@ -10,8 +10,14 @@ internal sealed class NvidiaThermal
     private const int CacheLifetimeMilliseconds = 5000;
     private const int HotSpotIndex = 0;
     private const int MaxConsecutiveFailures = 3;
+    private const int MemoryTemperatureCountIndex = 1;
+    private const int MemoryTemperatureFirstSensorIndex = 2;
+    private const int MemoryTemperatureSensorCount = 48;
+    private const int MemoryTemperatureOutputLength = MemoryTemperatureFirstSensorIndex + MemoryTemperatureSensorCount;
+    private const long MemoryTemperatureUnavailable = int.MinValue;
     private const int ReadTimeoutMilliseconds = 1000;
     private const int ThermalChannelCount = 6;
+    private const string ReadMemoryTemperatures = "ioctl_read_memory_temperatures";
     private const string ReadThermalRegisters = "ioctl_read_thermal_registers";
 
     private static readonly long CacheLifetimeTicks = MillisecondsToStopwatchTicks(CacheLifetimeMilliseconds);
@@ -19,15 +25,17 @@ internal sealed class NvidiaThermal
 
     private readonly string _deviceAddress;
     private readonly long[] _input = new long[3];
-    private readonly long[] _output = new long[ThermalChannelCount];
+    private readonly long[] _memoryTemperatureOutput = new long[MemoryTemperatureOutputLength];
     private readonly PawnIo _pawnIo = PawnIo.LoadModuleFromResource(
         typeof(NvidiaThermal).Assembly,
         $"{nameof(LibreHardwareMonitor)}.Resources.PawnIO.Nvidia.bin");
     private readonly AutoResetEvent _readRequested = new(false);
     private readonly object _sync = new();
+    private readonly long[] _thermalOutput = new long[ThermalChannelCount];
     private readonly Thread _worker;
 
     private float? _cachedHotSpot;
+    private float? _cachedMemoryJunction;
     private long _cacheTimestamp;
     private bool _closeRequested;
     private int _consecutiveFailures;
@@ -67,9 +75,10 @@ internal sealed class NvidiaThermal
         }
     }
 
-    public bool TryRead(out float? hotSpot)
+    public bool TryRead(out float? hotSpot, out float? memoryJunction)
     {
         hotSpot = null;
+        memoryJunction = null;
 
         bool requestRead = false;
         bool timedOut = false;
@@ -96,7 +105,8 @@ internal sealed class NvidiaThermal
             if (hasData)
             {
                 hotSpot = _cachedHotSpot;
-                if (hotSpot.HasValue)
+                memoryJunction = _cachedMemoryJunction;
+                if (hotSpot.HasValue || memoryJunction.HasValue)
                     _hasDeliveredData = true;
             }
             else
@@ -149,6 +159,37 @@ internal sealed class NvidiaThermal
         return (value & 0xFFFF) / 256.0f;
     }
 
+    internal static bool TryDecodeMemoryJunctionTemperature(long[] output, uint returnSize, out float? memoryJunction)
+    {
+        memoryJunction = null;
+
+        if (output == null || returnSize < MemoryTemperatureFirstSensorIndex || returnSize > output.Length)
+            return false;
+
+        long sensorCount = output[MemoryTemperatureCountIndex];
+        if (sensorCount < 0 || sensorCount > MemoryTemperatureSensorCount ||
+            returnSize < MemoryTemperatureFirstSensorIndex + (uint)sensorCount)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < sensorCount; i++)
+        {
+            long raw = output[MemoryTemperatureFirstSensorIndex + i];
+            if (raw == MemoryTemperatureUnavailable)
+                continue;
+
+            if (raw < int.MinValue || raw > int.MaxValue)
+                return false;
+
+            float temperature = raw;
+            if (!memoryJunction.HasValue || temperature > memoryJunction.Value)
+                memoryJunction = temperature;
+        }
+
+        return true;
+    }
+
     private static bool HasElapsed(long now, long start, long duration) => now - start >= duration;
 
     private static long MillisecondsToStopwatchTicks(int milliseconds) =>
@@ -178,7 +219,9 @@ internal sealed class NvidiaThermal
                     _readStartedTimestamp = Stopwatch.GetTimestamp();
                 }
 
-                bool success = TryReadHardware(out float? hotSpot);
+                bool thermalSuccess = TryReadThermalHardware(out float? hotSpot);
+                bool memorySuccess = TryReadMemoryHardware(out float? memoryJunction);
+                bool success = thermalSuccess || memorySuccess;
                 bool disableAfterFailures = false;
                 bool closeRequested;
 
@@ -189,7 +232,8 @@ internal sealed class NvidiaThermal
 
                     if (success && !_disabled && !_closeRequested)
                     {
-                        _cachedHotSpot = hotSpot;
+                        _cachedHotSpot = thermalSuccess ? hotSpot : null;
+                        _cachedMemoryJunction = memorySuccess ? memoryJunction : null;
                         _cacheTimestamp = Stopwatch.GetTimestamp();
                         _consecutiveFailures = 0;
                         _hasCachedData = true;
@@ -226,22 +270,47 @@ internal sealed class NvidiaThermal
         }
     }
 
-    private bool TryReadHardware(out float? hotSpot)
+    private bool TryReadThermalHardware(out float? hotSpot)
     {
         hotSpot = null;
 
         try
         {
-            int hr = _pawnIo.ExecuteHr(ReadThermalRegisters, _input, 3, _output, ThermalChannelCount, out uint returnSize);
+            int hr = _pawnIo.ExecuteHr(ReadThermalRegisters, _input, 3, _thermalOutput, ThermalChannelCount, out uint returnSize);
             if (hr != 0 || returnSize != ThermalChannelCount)
                 return false;
 
-            hotSpot = DecodeTemperature(_output[HotSpotIndex]);
+            hotSpot = DecodeTemperature(_thermalOutput[HotSpotIndex]);
             return true;
         }
         catch (Exception ex)
         {
             Log.Debug(ex, "PawnIO NVIDIA thermal read for {DeviceAddress} failed.", _deviceAddress);
+            return false;
+        }
+    }
+
+    private bool TryReadMemoryHardware(out float? memoryJunction)
+    {
+        memoryJunction = null;
+
+        try
+        {
+            int hr = _pawnIo.ExecuteHr(
+                ReadMemoryTemperatures,
+                _input,
+                3,
+                _memoryTemperatureOutput,
+                MemoryTemperatureOutputLength,
+                out uint returnSize);
+            if (hr != 0 || returnSize != MemoryTemperatureOutputLength)
+                return false;
+
+            return TryDecodeMemoryJunctionTemperature(_memoryTemperatureOutput, returnSize, out memoryJunction);
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "PawnIO NVIDIA memory temperature read for {DeviceAddress} failed.", _deviceAddress);
             return false;
         }
     }

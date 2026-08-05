@@ -661,12 +661,19 @@ internal sealed class NvidiaGpu : GenericGpu
         }
 
         float? directHotSpot = null;
-        bool hasDirectThermalData = ShouldEvaluateDirectThermalSensor() &&
-            _nvidiaThermal.TryRead(out directHotSpot);
-        if (hasDirectThermalData)
+        float? directMemoryJunction = null;
+        bool hasDirectThermalData = ShouldEvaluateDirectThermalSensors() &&
+            _nvidiaThermal.TryRead(out directHotSpot, out directMemoryJunction);
+        bool hasDirectHotSpot = hasDirectThermalData && directHotSpot.HasValue;
+        bool hasDirectMemoryJunction = hasDirectThermalData && directMemoryJunction.HasValue;
+
+        if (hasDirectHotSpot)
             _hotSpotTemperature.Value = directHotSpot;
         else if (_nvidiaThermal != null && Name.StartsWith("NVIDIA GeForce RTX 50", StringComparison.OrdinalIgnoreCase))
             _hotSpotTemperature.Value = null;
+
+        if (hasDirectMemoryJunction)
+            _memoryJunctionTemperature.Value = directMemoryJunction;
 
         if (_thermalSensorsMask > 0)
         {
@@ -678,28 +685,32 @@ internal sealed class NvidiaGpu : GenericGpu
                 if (Name.StartsWith("NVIDIA GeForce RTX 50", StringComparison.OrdinalIgnoreCase))
                 {
                     _temperatures[0].Value = thermalSensors.Temperatures[1] / 256.0f;
-                    _memoryJunctionTemperature.Value = thermalSensors.Temperatures[2] / 256.0f;
+                    if (!hasDirectMemoryJunction)
+                        _memoryJunctionTemperature.Value = thermalSensors.Temperatures[2] / 256.0f;
                 }
                 // RTX 40xx series
                 else if (Name.StartsWith("NVIDIA GeForce RTX 40", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!hasDirectThermalData)
+                    if (!hasDirectHotSpot)
                         _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
-                    _memoryJunctionTemperature.Value = thermalSensors.Temperatures[7] / 256.0f;
+                    if (!hasDirectMemoryJunction)
+                        _memoryJunctionTemperature.Value = thermalSensors.Temperatures[7] / 256.0f;
                 }
                 else
                 {
-                    if (!hasDirectThermalData)
+                    if (!hasDirectHotSpot)
                         _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
-                    _memoryJunctionTemperature.Value = thermalSensors.Temperatures[9] / 256.0f;
+                    if (!hasDirectMemoryJunction)
+                        _memoryJunctionTemperature.Value = thermalSensors.Temperatures[9] / 256.0f;
                 }
             }
         }
         else
         {
-            if (!hasDirectThermalData)
+            if (!hasDirectHotSpot)
                 _hotSpotTemperature.Value = null;
-            _memoryJunctionTemperature.Value = null;
+            if (!hasDirectMemoryJunction)
+                _memoryJunctionTemperature.Value = null;
         }
 
         if (_hotSpotTemperature.Value is > 0)
@@ -1007,7 +1018,7 @@ internal sealed class NvidiaGpu : GenericGpu
         return evaluate;
     }
 
-    private bool ShouldEvaluateDirectThermalSensor()
+    private bool ShouldEvaluateDirectThermalSensors()
     {
         if (_nvidiaThermal == null)
             return false;
@@ -1019,7 +1030,8 @@ internal sealed class NvidiaGpu : GenericGpu
         // asynchronous reader eligible until a valid result has been consumed. Afterwards,
         // polling requires logging or overlay usage.
         bool evaluateHotSpot = _sensorConfig.GetSensorEvaluate(_hotSpotTemperature.Identifier.ToString());
-        return _nvidiaThermal.NeedsInitialSample || evaluateHotSpot;
+        bool evaluateMemoryJunction = _sensorConfig.GetSensorEvaluate(_memoryJunctionTemperature.Identifier.ToString());
+        return _nvidiaThermal.NeedsInitialSample || evaluateHotSpot || evaluateMemoryJunction;
     }
 
     private bool ShouldEvaluateAnyPowerSensor()
