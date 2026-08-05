@@ -48,8 +48,13 @@ namespace CapFrameX.OSD.Integration
         // bit3: bits 16..23 carry the overlay zoom in percent (50..200). Absence means 100 %,
         // which is what an old publisher implies for a new hook.
         internal const uint FlagZoom = 8u;
+        // bit4: bits 24..31 carry the PresentMon replay-buffer baseline in 50 ms units.
+        // Absence preserves the old native core's 500 ms baseline.
+        internal const uint FlagReplayBuffer = 16u;
         internal const int BackgroundAlphaShift = 8;
         internal const int ZoomShift = 16;
+        internal const int ReplayBufferShift = 24;
+        internal const int ReplayBufferUnitMs = 50;
         // header
         // v1 stored the redundant payload byte count at offset 16. v2 reuses that slot for the
         // target PID, keeping HeaderSize and every record offset binary-compatible.

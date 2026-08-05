@@ -419,6 +419,18 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        // PresentMon replay baseline shared by the hook-free renderer and the in-game hook's
+        // PresentMon source. A larger value bridges wider delivery gaps but adds graph latency.
+        public int OsdReplayBufferSize
+        {
+            get { return _appConfiguration.OsdReplayBufferSize; }
+            set
+            {
+                _appConfiguration.OsdReplayBufferSize = value;
+                RaisePropertyChanged();
+            }
+        }
+
         // OSD background (panel + chart area) opacity in percent for BOTH CapFrameX renderers
         // (in-game hook via the metrics SHM, hook-free via the C API). Applies live: the hook
         // publisher and the hook-free bridge re-read the config on every OSD tick.

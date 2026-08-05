@@ -726,6 +726,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public int OsdReplayBufferSize
+        {
+            get => Get<int>(750);
+            set => Set(Math.Max(500, Math.Min(10000, value)));
+        }
+
         public int OsdBackgroundOpacity
         {
             get => Get<int>(97);

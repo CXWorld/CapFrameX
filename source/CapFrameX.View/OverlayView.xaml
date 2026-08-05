@@ -1193,6 +1193,23 @@
 										<TextBlock Margin="26 0 0 0" Style="{StaticResource OsdOptionsDescription}"
 												   Text="Uses DWM/DirectComposition without game injection and is safe for anti-cheat protected titles."/>
 									</StackPanel>
+
+									<Separator Margin="0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
+									<StackPanel Margin="0 8 0 4">
+										<TextBlock FontWeight="SemiBold" Text="PresentMon replay buffer"/>
+										<TextBlock Style="{StaticResource OsdOptionsDescription}"
+												   Text="Minimum buffering used to smooth bursty PresentMon frame data. Increase it if graphs pause between updates; higher values add latency. Applies to hook-free and the in-game PresentMon source."/>
+										<Grid Margin="0 8 0 0">
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="*"/>
+												<ColumnDefinition Width="68"/>
+											</Grid.ColumnDefinitions>
+											<Slider VerticalAlignment="Center" Minimum="500" Maximum="10000" TickFrequency="250"
+													IsSnapToTickEnabled="True" Value="{Binding OsdReplayBufferSize, Mode=TwoWay}"/>
+											<TextBlock Grid.Column="1" Margin="8 0 0 0" VerticalAlignment="Center" TextAlignment="Right"
+													   Text="{Binding OsdReplayBufferSize, StringFormat={}{0} ms}"/>
+										</Grid>
+									</StackPanel>
 								</StackPanel>
 							</Border>
 

@@ -170,6 +170,16 @@ namespace CapFrameX.OSD.Integration
                     uint zoomPercent = (uint)Math.Max(50, Math.Min(200, _appConfiguration.OsdZoom));
                     flags |= HookMetricsChannel.FlagZoom
                            | (zoomPercent << HookMetricsChannel.ZoomShift);
+                    // PresentMon replay baseline (500..10000 ms -> one byte in 50 ms units).
+                    // This reaches both the DXGI hook and the Vulkan layer through the shared
+                    // metrics header without changing its wire layout.
+                    int replayBufferMs = Math.Max(500,
+                        Math.Min(10000, _appConfiguration.OsdReplayBufferSize));
+                    uint replayBufferUnits = (uint)((replayBufferMs +
+                        HookMetricsChannel.ReplayBufferUnitMs / 2) /
+                        HookMetricsChannel.ReplayBufferUnitMs);
+                    flags |= HookMetricsChannel.FlagReplayBuffer
+                           | (replayBufferUnits << HookMetricsChannel.ReplayBufferShift);
                     _channel.Publish(list, flags, targetPid);
                     // Publishes only on change; the renderers re-place the panel on every write.
                     _placement?.Publish(_appConfiguration.OsdAnchor,

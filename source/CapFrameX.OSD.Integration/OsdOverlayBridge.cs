@@ -31,6 +31,7 @@ namespace CapFrameX.OSD.Integration
         private readonly IDisposable _enabledSub;
         private readonly IDisposable _fallbackSub;
         private readonly IDisposable _valueSmoothingSub;
+        private readonly IDisposable _replayBufferSub;
         private readonly int _ftIndex;
         private readonly int _runtimeIndex;
         private readonly int _displayChangedIndex;
@@ -91,6 +92,7 @@ namespace CapFrameX.OSD.Integration
             _startTimeIndexProvider = startTimeIndexProvider;
             _enabled = appConfiguration.EnableHookFreeOverlay;
             _osd.SetValueSmoothing(appConfiguration.UseOsdValueSmoothing);
+            _osd.SetReplayBuffer(appConfiguration.OsdReplayBufferSize);
 
             _activeSub = overlayService.IsOverlayActiveStream.Subscribe(OnActiveChanged);
             _entriesSub = overlayService.OnDictionaryUpdated.Subscribe(_ => OnEntries());
@@ -100,6 +102,9 @@ namespace CapFrameX.OSD.Integration
             _valueSmoothingSub = appConfiguration.OnValueChanged
                 .Where(x => x.key == nameof(IAppConfiguration.UseOsdValueSmoothing))
                 .Subscribe(x => _osd.SetValueSmoothing((bool)x.value));
+            _replayBufferSub = appConfiguration.OnValueChanged
+                .Where(x => x.key == nameof(IAppConfiguration.OsdReplayBufferSize))
+                .Subscribe(x => _osd.SetReplayBuffer((int)x.value));
             if (hookFreeFallbackStream != null)
                 _fallbackSub = hookFreeFallbackStream
                     .DistinctUntilChanged()
@@ -312,6 +317,7 @@ namespace CapFrameX.OSD.Integration
             _enabledSub?.Dispose();
             _fallbackSub?.Dispose();
             _valueSmoothingSub?.Dispose();
+            _replayBufferSub?.Dispose();
             _osd?.Dispose();
         }
     }

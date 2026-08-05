@@ -178,6 +178,14 @@ namespace CapFrameX.Contracts.Configuration
 		bool HookOverlayUsePresentMonFrametimes { get; set; }
 
 		/// <summary>
+		/// Minimum buffer duration in milliseconds for replaying the bursty PresentMon frame
+		/// stream in the hook-free and in-game CapFrameX renderers. Larger values tolerate wider
+		/// delivery gaps at the cost of additional graph latency. Range 500..10000; default 750.
+		/// The renderer may still increase the delay when it detects a wider delivery wave.
+		/// </summary>
+		int OsdReplayBufferSize { get; set; }
+
+		/// <summary>
 		/// OSD background (panel + chart area) opacity in percent, 0..100. Applies to BOTH
 		/// cfx-OSD backends: the hook-free window overlay (directly via the C API) and the
 		/// in-game hook overlay (published through the metrics shared-memory header flags).
