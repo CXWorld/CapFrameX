@@ -415,6 +415,9 @@ adlx_uint GetAtiAdpaterCount()
 
 bool GetAdlxTelemetry(const adlx_uint index, const adlx_uint historyLength, AdlxTelemetryData* adlxTelemetryData)
 {
+	if (_gpus == nullptr || _perfMonitoringService == nullptr)
+		return false;
+
 	bool check = false;
 
 	try
@@ -511,6 +514,9 @@ bool GetAdlxTelemetry(const adlx_uint index, const adlx_uint historyLength, Adlx
 
 bool GetAdlxTelemetrySupport(const adlx_uint index, AdlxTelemetrySupport* adlxTelemetrySupport)
 {
+	if (_gpus == nullptr || _perfMonitoringService == nullptr)
+		return false;
+
 	bool check = false;
 
 	try
@@ -613,6 +619,9 @@ bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
 		return false;
 
 	*adlxDeviceInfo = {};
+
+	if (_gpus == nullptr)
+		return false;
 
 	ADLX_RESULT res = ADLX_FAIL;
 	ADLX_RESULT ret;
