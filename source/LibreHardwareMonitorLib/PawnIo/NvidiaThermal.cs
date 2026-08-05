@@ -12,7 +12,7 @@ internal sealed class NvidiaThermal
     private const int MaxConsecutiveFailures = 3;
     private const int MemoryTemperatureCountIndex = 1;
     private const int MemoryTemperatureFirstSensorIndex = 2;
-    private const int MemoryTemperatureSensorCount = 48;
+    internal const int MemoryTemperatureSensorCount = 48;
     private const int MemoryTemperatureOutputLength = MemoryTemperatureFirstSensorIndex + MemoryTemperatureSensorCount;
     private const long MemoryTemperatureUnavailable = int.MinValue;
     private const int ReadTimeoutMilliseconds = 1000;
@@ -24,6 +24,7 @@ internal sealed class NvidiaThermal
     private static readonly long ReadTimeoutTicks = MillisecondsToStopwatchTicks(ReadTimeoutMilliseconds);
 
     private readonly string _deviceAddress;
+    private readonly float?[] _cachedMemoryTemperatures = new float?[MemoryTemperatureSensorCount];
     private readonly long[] _input = new long[3];
     private readonly long[] _memoryTemperatureOutput = new long[MemoryTemperatureOutputLength];
     private readonly PawnIo _pawnIo = PawnIo.LoadModuleFromResource(
@@ -33,18 +34,23 @@ internal sealed class NvidiaThermal
     private readonly object _sync = new();
     private readonly long[] _thermalOutput = new long[ThermalChannelCount];
     private readonly Thread _worker;
+    private readonly float?[] _workerMemoryTemperatures = new float?[MemoryTemperatureSensorCount];
 
     private float? _cachedHotSpot;
     private float? _cachedMemoryJunction;
+    private bool _cachedMemoryReadSucceeded;
     private long _cacheTimestamp;
     private bool _closeRequested;
     private int _consecutiveFailures;
+    private int _consecutiveMemoryFailures;
     private bool _disabled;
     private bool _hasCachedData;
     private bool _hasDeliveredData;
     private bool _readInProgress;
     private bool _readPending;
     private long _readStartedTimestamp;
+    private bool _memoryFailureLogged;
+    private bool _memoryResultLogged;
 
     public NvidiaThermal(uint bus, uint device, uint function)
     {
@@ -75,10 +81,19 @@ internal sealed class NvidiaThermal
         }
     }
 
-    public bool TryRead(out float? hotSpot, out float? memoryJunction)
+    public bool TryRead(
+        out float? hotSpot,
+        out float? memoryJunction,
+        float?[] memoryTemperatures,
+        out bool memoryReadSucceeded)
     {
+        if (memoryTemperatures == null || memoryTemperatures.Length < MemoryTemperatureSensorCount)
+            throw new ArgumentException($"At least {MemoryTemperatureSensorCount} memory temperature entries are required.", nameof(memoryTemperatures));
+
         hotSpot = null;
         memoryJunction = null;
+        memoryReadSucceeded = false;
+        Array.Clear(memoryTemperatures, 0, MemoryTemperatureSensorCount);
 
         bool requestRead = false;
         bool timedOut = false;
@@ -106,8 +121,15 @@ internal sealed class NvidiaThermal
             {
                 hotSpot = _cachedHotSpot;
                 memoryJunction = _cachedMemoryJunction;
-                if (hotSpot.HasValue || memoryJunction.HasValue)
+                memoryReadSucceeded = _cachedMemoryReadSucceeded;
+                if (memoryReadSucceeded)
+                    Array.Copy(_cachedMemoryTemperatures, memoryTemperatures, MemoryTemperatureSensorCount);
+
+                if (memoryReadSucceeded ||
+                    (hotSpot.HasValue && _consecutiveMemoryFailures >= MaxConsecutiveFailures))
+                {
                     _hasDeliveredData = true;
+                }
             }
             else
             {
@@ -159,9 +181,18 @@ internal sealed class NvidiaThermal
         return (value & 0xFFFF) / 256.0f;
     }
 
-    internal static bool TryDecodeMemoryJunctionTemperature(long[] output, uint returnSize, out float? memoryJunction)
+    internal static bool TryDecodeMemoryTemperatures(
+        long[] output,
+        uint returnSize,
+        float?[] memoryTemperatures,
+        out float? memoryJunction)
     {
         memoryJunction = null;
+
+        if (memoryTemperatures == null || memoryTemperatures.Length < MemoryTemperatureSensorCount)
+            return false;
+
+        Array.Clear(memoryTemperatures, 0, MemoryTemperatureSensorCount);
 
         if (output == null || returnSize < MemoryTemperatureFirstSensorIndex || returnSize > output.Length)
             return false;
@@ -180,9 +211,14 @@ internal sealed class NvidiaThermal
                 continue;
 
             if (raw < int.MinValue || raw > int.MaxValue)
+            {
+                Array.Clear(memoryTemperatures, 0, MemoryTemperatureSensorCount);
+                memoryJunction = null;
                 return false;
+            }
 
             float temperature = raw;
+            memoryTemperatures[i] = temperature;
             if (!memoryJunction.HasValue || temperature > memoryJunction.Value)
                 memoryJunction = temperature;
         }
@@ -220,7 +256,7 @@ internal sealed class NvidiaThermal
                 }
 
                 bool thermalSuccess = TryReadThermalHardware(out float? hotSpot);
-                bool memorySuccess = TryReadMemoryHardware(out float? memoryJunction);
+                bool memorySuccess = TryReadMemoryHardware(out float? memoryJunction, _workerMemoryTemperatures);
                 bool success = thermalSuccess || memorySuccess;
                 bool disableAfterFailures = false;
                 bool closeRequested;
@@ -229,11 +265,20 @@ internal sealed class NvidiaThermal
                 {
                     _readInProgress = false;
                     _readStartedTimestamp = 0;
+                    _consecutiveMemoryFailures = memorySuccess
+                        ? 0
+                        : Math.Min(_consecutiveMemoryFailures + 1, MaxConsecutiveFailures);
 
                     if (success && !_disabled && !_closeRequested)
                     {
                         _cachedHotSpot = thermalSuccess ? hotSpot : null;
                         _cachedMemoryJunction = memorySuccess ? memoryJunction : null;
+                        _cachedMemoryReadSucceeded = memorySuccess;
+                        if (memorySuccess)
+                            Array.Copy(_workerMemoryTemperatures, _cachedMemoryTemperatures, MemoryTemperatureSensorCount);
+                        else
+                            Array.Clear(_cachedMemoryTemperatures, 0, MemoryTemperatureSensorCount);
+
                         _cacheTimestamp = Stopwatch.GetTimestamp();
                         _consecutiveFailures = 0;
                         _hasCachedData = true;
@@ -290,9 +335,10 @@ internal sealed class NvidiaThermal
         }
     }
 
-    private bool TryReadMemoryHardware(out float? memoryJunction)
+    private bool TryReadMemoryHardware(out float? memoryJunction, float?[] memoryTemperatures)
     {
         memoryJunction = null;
+        Array.Clear(memoryTemperatures, 0, MemoryTemperatureSensorCount);
 
         try
         {
@@ -304,9 +350,54 @@ internal sealed class NvidiaThermal
                 MemoryTemperatureOutputLength,
                 out uint returnSize);
             if (hr != 0 || returnSize != MemoryTemperatureOutputLength)
-                return false;
+            {
+                if (!_memoryFailureLogged)
+                {
+                    Log.Warning(
+                        "PawnIO NVIDIA memory temperature read for {DeviceAddress} failed with HRESULT 0x{HResult:X8} and return size {ReturnSize}.",
+                        _deviceAddress,
+                        unchecked((uint)hr),
+                        returnSize);
+                    _memoryFailureLogged = true;
+                }
 
-            return TryDecodeMemoryJunctionTemperature(_memoryTemperatureOutput, returnSize, out memoryJunction);
+                return false;
+            }
+
+            if (!TryDecodeMemoryTemperatures(_memoryTemperatureOutput, returnSize, memoryTemperatures, out memoryJunction))
+            {
+                if (!_memoryFailureLogged)
+                {
+                    Log.Warning(
+                        "PawnIO NVIDIA memory temperature read for {DeviceAddress} returned an invalid payload.",
+                        _deviceAddress);
+                    _memoryFailureLogged = true;
+                }
+
+                return false;
+            }
+
+            _memoryFailureLogged = false;
+
+            if (!_memoryResultLogged)
+            {
+                int availableCount = 0;
+                foreach (float? temperature in memoryTemperatures)
+                {
+                    if (temperature.HasValue)
+                        availableCount++;
+                }
+
+                Log.Information(
+                    "PawnIO NVIDIA memory temperatures for {DeviceAddress}: {AvailableCount}/{SensorCount} sensors available, topology 0x{Topology:X8}.",
+                    _deviceAddress,
+                    availableCount,
+                    MemoryTemperatureSensorCount,
+                    unchecked((uint)_memoryTemperatureOutput[0]));
+                _memoryResultLogged = true;
+            }
+
+            return true;
         }
         catch (Exception ex)
         {

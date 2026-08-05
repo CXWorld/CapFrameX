@@ -67,6 +67,7 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor _hotSpotTemperature;
     private readonly Sensor[] _loads;
     private readonly Sensor _memoryFree;
+    private readonly Sensor[] _memoryTemperatures;
     private readonly Sensor _memoryJunctionTemperature;
     private readonly Sensor _memoryTotal;
     private readonly Sensor _memoryUsed;
@@ -76,6 +77,7 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor _memoryControllerLoad;
     private readonly uint _memoryBusWidth;
     private readonly float _memoryDataRateMultiplier;
+    private readonly float?[] _directMemoryTemperatures = new float?[NvidiaThermal.MemoryTemperatureSensorCount];
     private readonly NvidiaThermal _nvidiaThermal;
     private readonly NvidiaML.NvmlDevice? _nvmlDevice;
     private readonly Sensor _pcieThroughputRx;
@@ -146,6 +148,14 @@ internal sealed class NvidiaGpu : GenericGpu
         { PresentationSortKey = $"{adapterIndex}_2_0_{thermalSettings.Count + 1}" };
         _memoryJunctionTemperature = new Sensor("GPU Memory Junction", (int)thermalSettings.Count + 2, SensorType.Temperature, this, settings)
         { PresentationSortKey = $"{adapterIndex}_2_0_{thermalSettings.Count + 2}" };
+        _memoryTemperatures = new Sensor[NvidiaThermal.MemoryTemperatureSensorCount];
+        for (int i = 0; i < _memoryTemperatures.Length; i++)
+        {
+            int sensorIndex = (int)thermalSettings.Count + 3 + i;
+            _memoryTemperatures[i] = new Sensor($"GPU Memory Temperature #{i + 1}", sensorIndex, SensorType.Temperature, this, settings)
+            { PresentationSortKey = $"{adapterIndex}_2_0_{sensorIndex}" };
+        }
+
         bool hasAnyThermalSensor = false;
 
         for (int thermalSensorsMaxBit = 0; thermalSensorsMaxBit < 32; thermalSensorsMaxBit++)
@@ -662,8 +672,13 @@ internal sealed class NvidiaGpu : GenericGpu
 
         float? directHotSpot = null;
         float? directMemoryJunction = null;
+        bool directMemoryReadSucceeded = false;
         bool hasDirectThermalData = ShouldEvaluateDirectThermalSensors() &&
-            _nvidiaThermal.TryRead(out directHotSpot, out directMemoryJunction);
+            _nvidiaThermal.TryRead(
+                out directHotSpot,
+                out directMemoryJunction,
+                _directMemoryTemperatures,
+                out directMemoryReadSucceeded);
         bool hasDirectHotSpot = hasDirectThermalData && directHotSpot.HasValue;
         bool hasDirectMemoryJunction = hasDirectThermalData && directMemoryJunction.HasValue;
 
@@ -674,6 +689,17 @@ internal sealed class NvidiaGpu : GenericGpu
 
         if (hasDirectMemoryJunction)
             _memoryJunctionTemperature.Value = directMemoryJunction;
+
+        if (hasDirectThermalData && directMemoryReadSucceeded)
+        {
+            for (int i = 0; i < _memoryTemperatures.Length; i++)
+            {
+                Sensor memoryTemperature = _memoryTemperatures[i];
+                memoryTemperature.Value = _directMemoryTemperatures[i];
+                if (memoryTemperature.Value.HasValue)
+                    ActivateSensor(memoryTemperature);
+            }
+        }
 
         if (_thermalSensorsMask > 0)
         {
@@ -1029,9 +1055,14 @@ internal sealed class NvidiaGpu : GenericGpu
         // GetSensorEvaluate permits the initial discovery read; NeedsInitialSample keeps the
         // asynchronous reader eligible until a valid result has been consumed. Afterwards,
         // polling requires logging or overlay usage.
-        bool evaluateHotSpot = _sensorConfig.GetSensorEvaluate(_hotSpotTemperature.Identifier.ToString());
-        bool evaluateMemoryJunction = _sensorConfig.GetSensorEvaluate(_memoryJunctionTemperature.Identifier.ToString());
-        return _nvidiaThermal.NeedsInitialSample || evaluateHotSpot || evaluateMemoryJunction;
+        bool evaluate = _nvidiaThermal.NeedsInitialSample;
+        evaluate |= _sensorConfig.GetSensorEvaluate(_hotSpotTemperature.Identifier.ToString());
+        evaluate |= _sensorConfig.GetSensorEvaluate(_memoryJunctionTemperature.Identifier.ToString());
+
+        foreach (Sensor memoryTemperature in _memoryTemperatures)
+            evaluate |= _sensorConfig.GetSensorEvaluate(memoryTemperature.Identifier.ToString());
+
+        return evaluate;
     }
 
     private bool ShouldEvaluateAnyPowerSensor()
