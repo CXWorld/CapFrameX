@@ -25,7 +25,7 @@
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
-			<Style x:Key="CloudHintTextBox" TargetType="{x:Type TextBox}" BasedOn="{StaticResource MaterialDesignFloatingHintTextBox}">
+			<Style x:Key="CloudHintTextBox" TargetType="{x:Type TextBox}" BasedOn="{StaticResource CxFloatingHintTextBox}">
 				<Setter Property="FontSize" Value="14"/>
 				<Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 				<Setter Property="wpf:HintAssist.HintOpacity" Value=".8"/>

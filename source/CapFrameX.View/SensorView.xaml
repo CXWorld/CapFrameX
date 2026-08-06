@@ -229,7 +229,7 @@
 											BasedOn="{StaticResource MaterialDesignCheckBox}">
                                                     <Setter Property="Margin" Value="8,8,10,8" />
                                                 </Style>
-                                                <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
+                                                <Style TargetType="TextBox" BasedOn="{StaticResource CxTextBox}">
                                                     <Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
                                                     <Setter Property="Margin" Value="8,8,8,8" />
                                                 </Style>

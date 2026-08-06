@@ -388,7 +388,7 @@
 											                    BasedOn="{StaticResource MaterialDesignCheckBox}">
 															<Setter Property="Margin" Value="8,8,10,8" />
 														</Style>
-														<Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
+														<Style TargetType="TextBox" BasedOn="{StaticResource CxTextBox}">
 															<Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
 															<Setter Property="materialDesign:HintAssist.HintOpacity" Value=".8"/>
 															<Setter Property="Margin" Value="8,8,8,8" />
@@ -964,7 +964,7 @@
 										</ToggleButton.ToolTip>
 									</ToggleButton>
 								</StackPanel>
-								<TextBox Margin="30 0 0 0" materialDesign:HintAssist.Hint="Thread Affinity Hotkey" Width="145" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+								<TextBox Margin="30 0 0 0" materialDesign:HintAssist.Hint="Thread Affinity Hotkey" Width="145" Height="45" Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 									 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ThreadAffinityHotkeyTextBox_PreviewKeyDown" materialDesign:HintAssist.HintOpacity=".8"
 									 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
 									<Binding Path="ThreadAffinityHotkey"
@@ -1224,7 +1224,7 @@
 										<TextBox DockPanel.Dock="Right" Width="160" Height="42"
 												 materialDesign:HintAssist.Hint="Toggle overlay"
 												 materialDesign:HintAssist.HintOpacity=".8"
-												 Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
 												 PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
 												 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
@@ -1241,7 +1241,7 @@
 										<TextBox DockPanel.Dock="Right" Width="160" Height="42"
 												 materialDesign:HintAssist.Hint="Switch config"
 												 materialDesign:HintAssist.HintOpacity=".8"
-												 Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
 												 PreviewKeyDown="ConfigHotkeyTextBox_PreviewKeyDown"
 												 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
@@ -1258,7 +1258,7 @@
 										<TextBox DockPanel.Dock="Right" Width="160" Height="42"
 												 materialDesign:HintAssist.Hint="Reset metrics"
 												 materialDesign:HintAssist.HintOpacity=".8"
-												 Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
 												 PreviewKeyDown="ResetMetricsHotkeyTextBox_PreviewKeyDown"
 												 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">

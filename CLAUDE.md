@@ -157,6 +157,17 @@ status bar (`StateView`), the UPDATE tab in the options popup (`ColorbarView`), 
 dialog. The dialog's `DialogHost` sits in `Shell.xaml`, not in the options popup — a `DialogHost`
 nested inside a WPF `Popup` does not reliably render its overlay (same caveat as `ControlView.xaml`).
 
+## Text field styles
+
+`CapFrameX.View/Styles/CxTextFields.xaml` (merged in `App.xaml`) replaces MDIX's implicit `TextBox`
+and `ComboBox` styles with `CxTextBox` / `CxFloatingHintTextBox` / `CxComboBox`. They differ from
+the MDIX originals by `VerticalContentAlignment="Bottom"` only, which anchors the text to the
+underline instead of centring it in the box — without it every field that is forced taller than its
+natural height (the settings UI pins all of them to 40-45px) drifts off its baseline, TextBox and
+ComboBox by different amounts. **Use the `Cx*` keys, not the `MaterialDesign*` ones**, whenever a
+view sets a text field style explicitly or bases a local style on one; anything that just relies on
+the implicit style is already covered.
+
 ## Configuration Files
 - User settings: `%appdata%/CapFrameX/Configuration/AppSettings.json`
 - Overlay config: `%appdata%/CapFrameX/Configuration/OverlayEntryConfiguration_(0/1/2).json`

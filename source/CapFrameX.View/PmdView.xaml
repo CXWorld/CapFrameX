@@ -233,7 +233,7 @@
 							</ToggleButton>
 
 							<TextBlock Text="COM Port" FontSize="14" VerticalAlignment="Center" Margin="30 0 0 0"/>
-							<ComboBox Margin="10 -20 0 0" Padding="0 10 0 0" FontSize="14" Style="{StaticResource MaterialDesignComboBox}"
+							<ComboBox Margin="10 -20 0 0" Padding="0 10 0 0" FontSize="14" Style="{StaticResource CxComboBox}"
 								materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="80" Height="40" materialDesign:HintAssist.HintOpacity=".8"
 								ItemsSource="{Binding PoweneticsViewModel.ComPortsItemsSource}" SelectedItem="{Binding PoweneticsViewModel.SelectedComPort}" IsEnabled="{Binding PoweneticsViewModel.IsComPortEnabled}"
 								ToolTipService.ShowDuration="25000">
@@ -264,7 +264,7 @@
 							<Border Height="160" Margin="5 10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" HorizontalAlignment="Stretch">
 								<StackPanel>
 									<TextBlock Text="Downsampling Factor" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
-									<ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
+									<ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource CxComboBox}"
 					                          materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
 					                          ItemsSource="{Binding PoweneticsViewModel.DownsamplingFactors}" SelectedItem="{Binding PoweneticsViewModel.SelectedDownSamplingFactor}"
                                               ToolTipService.ShowDuration="25000">
@@ -276,7 +276,7 @@
 										</ComboBox.ToolTip>
 									</ComboBox>
 									<TextBlock Text="Downsampling Mode" FontSize="13" HorizontalAlignment="Left" Margin="10 20 0 0"/>
-									<ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
+									<ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource CxComboBox}"
 										materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="100" Height="30" materialDesign:HintAssist.HintOpacity=".8"
 										ItemsSource="{Binding PoweneticsViewModel.DownsamplingModes}" SelectedItem="{Binding PoweneticsViewModel.SelectedDownSamlingMode}"
 										ToolTipService.ShowDuration="25000">
@@ -297,7 +297,7 @@
 							<Border Height="80" Margin="5 10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" HorizontalAlignment="Stretch">
 								<StackPanel>
 									<TextBlock Text="Chart Length [s]" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
-									<ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
+									<ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource CxComboBox}"
 										materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
 										ItemsSource="{Binding PoweneticsViewModel.PmdDataWindows}" SelectedItem="{Binding PoweneticsViewModel.SelectedPmdDataWindow}"
 										ToolTipService.ShowDuration="25000">
@@ -500,7 +500,7 @@
 							<Border Height="80" Margin="5 10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" HorizontalAlignment="Stretch">
 								<StackPanel>
 									<TextBlock Text="Monitoring Interval [ms]" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
-									<ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
+									<ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource CxComboBox}"
 										materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
 										ItemsSource="{Binding BenchlabViewModel.MonitoringIntervals}" SelectedItem="{Binding BenchlabViewModel.SelectedMonitoringInterval}"
 										ToolTipService.ShowDuration="25000">
@@ -516,7 +516,7 @@
 							<Border Height="80" Margin="5 10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" HorizontalAlignment="Stretch">
 								<StackPanel>
 									<TextBlock Text="Chart Length [s]" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
-									<ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
+									<ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource CxComboBox}"
 										materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
 										ItemsSource="{Binding BenchlabViewModel.PmdDataWindows}" SelectedItem="{Binding BenchlabViewModel.SelectedPmdDataWindow}"
 										ToolTipService.ShowDuration="25000">

@@ -15,11 +15,11 @@
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
-		<TextBox wpf:HintAssist.Hint="Custom CPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+		<TextBox wpf:HintAssist.Hint="Custom CPU description" Style="{DynamicResource CxFloatingHintTextBox}"
                  Margin="0 6 0 0" FontSize="18" Grid.Row="0" Text="{Binding CustomCpuDescription}"/>
-		<TextBox wpf:HintAssist.Hint="Custom GPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+		<TextBox wpf:HintAssist.Hint="Custom GPU description" Style="{DynamicResource CxFloatingHintTextBox}"
                  Margin="0 6 0 0" FontSize="18" Grid.Row="1" Text="{Binding CustomGpuDescription}"/>
-		<TextBox wpf:HintAssist.Hint="Custom comment" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+		<TextBox wpf:HintAssist.Hint="Custom comment" Style="{DynamicResource CxFloatingHintTextBox}"
                  Margin="0 6 0 0" FontSize="18" Grid.Row="2" Text="{Binding CustomComment}"/>
 		
 		<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="3"

@@ -216,7 +216,7 @@
 								Style="{StaticResource MaterialDesignDiscreteSlider}"
 								ToolTip="Cut first seconds"/>
 						<TextBox Grid.Column="1" HorizontalAlignment="Center" IsReadOnly="True" Margin="20 0 20 3"
-								 Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding RemainingRecordingTime}">
+								 Style="{StaticResource CxFloatingHintTextBox}" Text="{Binding RemainingRecordingTime}">
 							<materialDesign:HintAssist.Hint>
 								<StackPanel Orientation="Horizontal" Margin="-2 0 0 0">
 									<materialDesign:PackIcon Kind="ChartLine" />

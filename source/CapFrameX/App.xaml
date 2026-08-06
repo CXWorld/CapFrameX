@@ -8,6 +8,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <materialDesign:CustomColorTheme BaseTheme="Inherit" PrimaryColor="#0271F9" SecondaryColor="Lime" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign3.Defaults.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/CapFrameX.View;component/Styles/CxTextFields.xaml" />
                 <ResourceDictionary Source="Themes/CxScrollBar.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <SolidColorBrush x:Key="Cx.Brush.OutlinedAction.Foreground" Color="#0271F9" />

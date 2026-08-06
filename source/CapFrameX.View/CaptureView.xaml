@@ -219,7 +219,7 @@
 						<ColumnDefinition Width="1*"/>
 						<ColumnDefinition Width="1*"/>
 					</Grid.ColumnDefinitions>
-					<TextBox Grid.Row="0" Grid.Column="0" Width="110" wpf:HintAssist.Hint="Capture hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+					<TextBox Grid.Row="0" Grid.Column="0" Width="110" wpf:HintAssist.Hint="Capture hotkey" Style="{DynamicResource CxFloatingHintTextBox}"
 						 Margin="0" FontSize="14" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" wpf:HintAssist.HintOpacity=".8"
 						 IsUndoEnabled="False" PreviewKeyDown="CaptureHotkeyTextBox_PreviewKeyDown"
 						 ContextMenu="{x:Null}" InputMethod.IsInputMethodEnabled="False"
@@ -238,7 +238,7 @@
 						</Binding>
 					</TextBox>
 
-					<TextBox Grid.Row="0" Grid.Column="1" Width="110" wpf:HintAssist.Hint="Capture time [s]" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+					<TextBox Grid.Row="0" Grid.Column="1" Width="110" wpf:HintAssist.Hint="Capture time [s]" Style="{DynamicResource CxFloatingHintTextBox}"
 						 Margin="30 0 0 0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
 						 PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="TextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"
 						 PreviewTextInput="NumberValidationTextBox" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" wpf:HintAssist.HintOpacity=".8"/>
@@ -256,12 +256,12 @@
 						</StackPanel.ToolTip>
 					</StackPanel>-->
 
-					<TextBox Grid.Row="0" Grid.Column="2" Width="110" wpf:HintAssist.Hint="Capture delay [s]" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+					<TextBox Grid.Row="0" Grid.Column="2" Width="110" wpf:HintAssist.Hint="Capture delay [s]" Style="{DynamicResource CxFloatingHintTextBox}"
 					 Margin="30 0 0 0" FontSize="14" Text="{Binding CaptureDelayString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
                      PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="TextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no delay"
                      PreviewTextInput="NumberValidationTextBox" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" wpf:HintAssist.HintOpacity=".8"/>
 
-					<ComboBox Grid.Row="0" Grid.Column="3" Width="102" Height="40" materialDesign:HintAssist.Hint="Hotkey sound" Style="{StaticResource MaterialDesignComboBox}"                          
+					<ComboBox Grid.Row="0" Grid.Column="3" Width="102" Height="40" materialDesign:HintAssist.Hint="Hotkey sound" Style="{StaticResource CxComboBox}"                          
 						  Margin="30 0 0 0" MaxDropDownHeight="200" FontSize="14" materialDesign:HintAssist.IsFloating="True" materialDesign:HintAssist.HintOpacity=".8"
 						  ItemsSource="{Binding SoundModes}" HorizontalAlignment="Left" HorizontalContentAlignment="Left" VerticalAlignment="Bottom" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
 						<ComboBox.Text>
@@ -312,7 +312,7 @@
 								</DockPanel>
 								<Grid IsEnabled="{Binding UseRunHistory}" Margin="0 12 0 0">
 									<Grid.Resources>
-										<Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource MaterialDesignComboBox}">
+										<Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource CxComboBox}">
 											<Setter Property="materialDesign:HintAssist.IsFloating" Value="True"/>
 											<Setter Property="materialDesign:HintAssist.HintOpacity" Value=".8"/>
 											<Setter Property="Margin" Value="0 10 0 10"/>
@@ -348,7 +348,7 @@
 									    keyboard input is swallowed by the PreviewKeyDown hotkey capture; paste and
 									    IME input are disabled via ContextMenu/InputMethod. -->
 									<TextBox Grid.Row="0" Grid.Column="2" Margin="0 10 0 10" materialDesign:HintAssist.Hint="Reset run history"
-										Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+										Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 										IsUndoEnabled="False" PreviewKeyDown="ResetHistoryHotkeyTextBox_PreviewKeyDown"
 										ContextMenu="{x:Null}" InputMethod.IsInputMethodEnabled="False"
 										ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" materialDesign:HintAssist.HintOpacity=".8">
@@ -405,7 +405,7 @@
 								</DockPanel>
 								<Grid IsEnabled="{Binding UseAggregation}" Margin="0 12 0 0">
 									<Grid.Resources>
-										<Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource MaterialDesignComboBox}">
+										<Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource CxComboBox}">
 											<Setter Property="materialDesign:HintAssist.IsFloating" Value="True"/>
 											<Setter Property="materialDesign:HintAssist.HintOpacity" Value=".8"/>
 											<Setter Property="Margin" Value="0 10 0 10"/>
