@@ -678,6 +678,18 @@ namespace CapFrameX.ViewModel
                 OnFilterModeChanged();
             }
         }
+
+        /// <summary>
+        /// Stroke thickness a freshly built frametime series has. Owned here so that the mouse
+        /// highlight can restore an absolute value instead of subtracting its own delta again.
+        /// </summary>
+        internal double FrametimeSeriesStrokeThickness => 1.5;
+
+        internal double FpsSeriesStrokeThickness
+            => SelectedFilterMode == EFilterMode.TimeIntervalAverage ? 3 : 1.5;
+
+        internal double DistributionSeriesStrokeThickness => 2;
+
         public string SelectedSortMetric
         {
             get { return _selectedSortMetric; }
@@ -1323,16 +1335,19 @@ namespace CapFrameX.ViewModel
 
             if (_isFrametimeChartDirty)
             {
+                Statistics.PlotBuilder.SeriesHighlightAnnotation.Clear(ComparisonFrametimesModel);
                 ComparisonFrametimesModel.Series.Clear();
                 ComparisonFrametimesModel.ResetAllAxes();
             }
             if (_isFpsChartDirty)
             {
+                Statistics.PlotBuilder.SeriesHighlightAnnotation.Clear(ComparisonFpsModel);
                 ComparisonFpsModel.Series.Clear();
                 ComparisonFpsModel.ResetAllAxes();
             }
             if (_isDistributionChartDirty)
             {
+                Statistics.PlotBuilder.SeriesHighlightAnnotation.Clear(ComparisonDistributionModel);
                 ComparisonDistributionModel.Series.Clear();
                 ComparisonDistributionModel.ResetAllAxes();
             }
@@ -1614,6 +1629,7 @@ namespace CapFrameX.ViewModel
         {
 
             _isFpsChartDirty = true;
+            Statistics.PlotBuilder.SeriesHighlightAnnotation.Clear(ComparisonFpsModel);
             ComparisonFpsModel.Series.Clear();
             SetFpsChart();
             OnComparisonContextChanged();
@@ -1678,35 +1694,22 @@ namespace CapFrameX.ViewModel
             {
                 ComparisonRowChartLabels = labels.Select(label => GetHasUniqueGameNames() ? label.Context : $"{label.GameName}{Environment.NewLine}{label.Context}").Reverse().ToArray();
 
-                if (IsContextLegendActive)
+                if (!IsContextLegendActive)
+                    return;
+
+                var titlesByRecordId = new Dictionary<string, string>();
+                for (int i = 0; i < ComparisonRecords.Count && i < labels.Length; i++)
                 {
-                    if (ComparisonFrametimesModel.Series.Count == ComparisonRecords.Count)
-                    {
-                        for (int i = 0; i < ComparisonRecords.Count; i++)
-                        {
-                            if (!ComparisonRecords[i].IsHideModeSelected)
-                                ComparisonFrametimesModel.Series[i].Title = labels[i].Context;
-                        }
-                    }
+                    if (ComparisonRecords[i].IsHideModeSelected)
+                        continue;
 
-                    if (ComparisonFpsModel.Series.Count == ComparisonRecords.Count)
-                    {
-                        for (int i = 0; i < ComparisonRecords.Count; i++)
-                        {
-                            if (!ComparisonRecords[i].IsHideModeSelected)
-                                ComparisonFpsModel.Series[i].Title = labels[i].Context;
-                        }
-                    }
-
-                    if (ComparisonDistributionModel.Series.Count == ComparisonRecords.Count)
-                    {
-                        for (int i = 0; i < ComparisonRecords.Count; i++)
-                        {
-                            if (!ComparisonRecords[i].IsHideModeSelected)
-                                ComparisonDistributionModel.Series[i].Title = labels[i].Context;
-                        }
-                    }
+                    titlesByRecordId[ComparisonRecords[i].WrappedRecordInfo.FileRecordInfo.Id]
+                        = labels[i].Context;
                 }
+
+                ApplySeriesTitles(ComparisonFrametimesModel, titlesByRecordId);
+                ApplySeriesTitles(ComparisonFpsModel, titlesByRecordId);
+                ApplySeriesTitles(ComparisonDistributionModel, titlesByRecordId);
             }
 
             if (ComparisonFrametimesModel == null
@@ -1719,6 +1722,28 @@ namespace CapFrameX.ViewModel
             ComparisonFrametimesModel.InvalidatePlot(true);
             ComparisonFpsModel.InvalidatePlot(true);
             ComparisonDistributionModel.InvalidatePlot(true);
+        }
+
+        /// <summary>
+        /// Assigns the legend titles by record id instead of by position. Hovering a record moves
+        /// its series to the end of the collection to draw it on top and never moves it back
+        /// (see <see cref="ComparisonRecordInfoWrapper"/>), so the n-th series is not the n-th
+        /// record - a positional assignment puts one record's label next to another's color.
+        /// </summary>
+        private static void ApplySeriesTitles(PlotModel plotModel,
+            IDictionary<string, string> titlesByRecordId)
+        {
+            if (plotModel == null || titlesByRecordId == null)
+                return;
+
+            foreach (var series in plotModel.Series)
+            {
+                if (series.Tag is string recordId
+                    && titlesByRecordId.TryGetValue(recordId, out string title))
+                {
+                    series.Title = title;
+                }
+            }
         }
 
         private void UpdateRangeSliderParameter()
@@ -2062,7 +2087,7 @@ namespace CapFrameX.ViewModel
             {
                 Tag = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Id,
                 Title = chartTitle,
-                StrokeThickness = 1.5,
+                StrokeThickness = FrametimeSeriesStrokeThickness,
                 LegendStrokeThickness = 4,
                 Color = wrappedComparisonInfo.IsHideModeSelected ?
                 OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B),
@@ -2099,7 +2124,7 @@ namespace CapFrameX.ViewModel
             {
                 Tag = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Id,
                 Title = chartTitle,
-                StrokeThickness = SelectedFilterMode == EFilterMode.TimeIntervalAverage ? 3 : 1.5,
+                StrokeThickness = FpsSeriesStrokeThickness,
                 LegendStrokeThickness = 4,
                 Color = wrappedComparisonInfo.IsHideModeSelected ?
                 OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B),
@@ -2135,7 +2160,7 @@ namespace CapFrameX.ViewModel
             {
                 Tag = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Id,
                 Title = chartTitle,
-                StrokeThickness = 2,
+                StrokeThickness = DistributionSeriesStrokeThickness,
                 LegendStrokeThickness = 4,
                 Color = wrappedComparisonInfo.IsHideModeSelected ?
                 OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B),
@@ -2328,7 +2353,6 @@ namespace CapFrameX.ViewModel
             var wrappedComparisonRecordInfo = new ComparisonRecordInfoWrapper(comparisonRecordInfo, this);
 
             var color = _comparisonColorManager.GetNextFreeColor();
-            wrappedComparisonRecordInfo.Color = color;
             wrappedComparisonRecordInfo.FrametimeGraphColor = color.Color;
 
             return wrappedComparisonRecordInfo;

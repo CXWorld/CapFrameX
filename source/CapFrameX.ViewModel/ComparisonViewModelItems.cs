@@ -576,6 +576,11 @@ namespace CapFrameX.ViewModel
                     ComparisonRecords.Add(item);
                 }
 
+                // The records are replaced by clones, so every series still holds a wrapper that
+                // is no longer in the list. Without this the line charts keep the series built for
+                // the previous order until some unrelated change happens to set the flags.
+                SetChartUpdateFlags();
+
                 //Draw charts and performance parameter
                 UpdateCharts();
             }
