@@ -59,13 +59,14 @@ namespace CapFrameX.OSD.Integration
 
         /// <summary>
         /// Reads the arbitration signals the DXGI injection gate needs from a single mapping
-        /// open: whether Vulkan presented within <see cref="PriorityWindowMs"/>, and whether the
-        /// layer has permanently yielded presentation to DXGI.
+        /// open: whether Vulkan presented within <see cref="PriorityWindowMs"/>, whether it has
+        /// ever presented, and whether the layer has permanently yielded presentation to DXGI.
         /// </summary>
         internal static bool TryHasRecentPresent(int pid, out bool recent,
-            out bool yieldedToDxgi, out string error)
+            out bool hasEverPresented, out bool yieldedToDxgi, out string error)
         {
             recent = false;
+            hasEverPresented = false;
             yieldedToDxgi = false;
             if (!TryRead(pid, out VulkanActivitySnapshot snapshot, out error))
                 return false;
@@ -74,7 +75,8 @@ namespace CapFrameX.OSD.Integration
                 return true;
 
             yieldedToDxgi = snapshot.PreferredBackend == PreferDxgiBackend;
-            if (snapshot.LastVulkanPresentTickMs <= 0)
+            hasEverPresented = snapshot.LastVulkanPresentTickMs > 0;
+            if (!hasEverPresented)
                 return true;
 
             recent = IsRecent(unchecked((ulong)snapshot.LastVulkanPresentTickMs),

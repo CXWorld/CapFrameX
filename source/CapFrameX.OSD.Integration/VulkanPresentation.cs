@@ -14,7 +14,7 @@ namespace CapFrameX.OSD.Integration
         public static bool IsActive(int processId)
         {
             return VulkanActivityProbe.TryHasRecentPresent(
-                processId, out bool recent, out _, out _) && recent;
+                processId, out bool recent, out _, out _, out _) && recent;
         }
     }
 }

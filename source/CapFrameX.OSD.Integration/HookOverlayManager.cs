@@ -33,8 +33,15 @@ namespace CapFrameX.OSD.Integration
         // past that stage the overlay would silently stay invisible forever, so bound it and let
         // the hook-free renderer take over instead.
         internal const ulong HookRendererReadyTimeoutMs = 10000;
+        // Some DXGI games create a Vulkan instance for auxiliary APIs such as upscalers, which
+        // maps the implicit layer although Vulkan never owns a presenting swapchain. Keep the
+        // real-Vulkan startup race closed for a bounded interval, then trust sustained DXGI
+        // presentation if the layer has never published a Vulkan present.
+        internal const ulong VulkanLayerFirstPresentGraceMs = 5000;
         private static readonly long VulkanProbeRetryTicks =
             Math.Max(1, Stopwatch.Frequency / 10L);
+        private static readonly long VulkanLayerFirstPresentGraceTicks = Math.Max(1,
+            Stopwatch.Frequency * (long)VulkanLayerFirstPresentGraceMs / 1000L);
 
         private readonly IAppConfiguration _appConfiguration;
         private readonly IDisposable _pidSub;
@@ -63,6 +70,8 @@ namespace CapFrameX.OSD.Integration
         private readonly Dictionary<int, string> _policyBlocks = new Dictionary<int, string>();
         private readonly Dictionary<int, string> _vulkanBlocks = new Dictionary<int, string>();
         private readonly Dictionary<int, long> _nextVulkanProbe = new Dictionary<int, long>();
+        private readonly Dictionary<int, long> _vulkanLayerAwaitingFirstPresentSince =
+            new Dictionary<int, long>();
         // Evaluated ONCE per process: neither the foreign overlay modules nor the process start
         // time can change while the process lives, so a re-scan could only produce log noise.
         private readonly Dictionary<int, string> _foreignOverlayBlocks = new Dictionary<int, string>();
@@ -225,6 +234,7 @@ namespace CapFrameX.OSD.Integration
                     _compatibilityDelay.Reset(previousPid);
                     _vulkanBlocks.Remove(previousPid);
                     _nextVulkanProbe.Remove(previousPid);
+                    _vulkanLayerAwaitingFirstPresentSince.Remove(previousPid);
                     _foreignOverlayBlocks.Remove(previousPid);
                     VulkanLayerModuleProbe.Invalidate(previousPid);
                     DisposeCompatibilityChannelLocked(previousPid);
@@ -242,6 +252,7 @@ namespace CapFrameX.OSD.Integration
                 _compatibilityDelay.Reset(pid);
                 _vulkanBlocks.Remove(pid);
                 _nextVulkanProbe.Remove(pid);
+                _vulkanLayerAwaitingFirstPresentSince.Remove(pid);
                 VulkanLayerModuleProbe.Invalidate(pid);
                 DisposeCompatibilityChannelLocked(pid);
             }
@@ -838,13 +849,16 @@ namespace CapFrameX.OSD.Integration
             }
 
             bool probeOk = VulkanActivityProbe.TryHasRecentPresent(
-                pid, out bool recent, out bool yieldedToDxgi, out string probeError);
+                pid, out bool recent, out bool hasEverPresented,
+                out bool yieldedToDxgi, out string probeError);
 
             // A recent Vulkan present is the strongest signal, but the renderer-state mapping it
             // is read from only exists once the layer has presented — PresentMon reports a Vulkan
             // swapchain as DXGI well before that, so relying on it alone races the very first
             // frames and injects the DXGI hook into a Vulkan title. The loaded layer module
-            // settles that deterministically: the Vulkan loader maps it during vkCreateInstance.
+            // closes that startup window because the Vulkan loader maps it during
+            // vkCreateInstance. It is not permanent proof of presentation: some DXGI titles
+            // initialize Vulkan only for an auxiliary API and never create a Vulkan swapchain.
             // A layer that has permanently yielded (PreferDxgi) is exempt — that is the
             // documented fail-open path where DXGI is supposed to take over.
             string layerError = null;
@@ -857,13 +871,40 @@ namespace CapFrameX.OSD.Integration
             // probe interval — so an inconclusive scan holds the hook back.
             bool layerUnknown = layerPresence == VulkanLayerPresence.Unknown;
 
-            bool allowed = IsDxgiInjectionAllowed(probeOk, recent, layerLoaded, layerUnknown);
+            bool firstPresentGraceElapsed = false;
+            if (probeOk && layerLoaded && !hasEverPresented && !yieldedToDxgi)
+            {
+                long awaitingSince;
+                lock (_gate)
+                {
+                    if (!_vulkanLayerAwaitingFirstPresentSince.TryGetValue(pid,
+                        out awaitingSince))
+                    {
+                        awaitingSince = now;
+                        _vulkanLayerAwaitingFirstPresentSince[pid] = awaitingSince;
+                    }
+                }
+                firstPresentGraceElapsed = HasVulkanLayerFirstPresentGraceElapsed(
+                    awaitingSince, now);
+            }
+            else if (probeOk &&
+                (hasEverPresented || yieldedToDxgi || layerPresence == VulkanLayerPresence.Absent))
+            {
+                lock (_gate) _vulkanLayerAwaitingFirstPresentSince.Remove(pid);
+            }
+
+            bool allowed = IsDxgiInjectionAllowed(probeOk, recent, layerLoaded,
+                layerUnknown, hasEverPresented, firstPresentGraceElapsed);
             string reason = !probeOk
                 ? $"Vulkan activity probe failed ({probeError ?? "unknown error"})"
                 : recent
                     ? "recent Vulkan presents"
                     : layerLoaded
-                        ? "the CapFrameX Vulkan layer renders this process"
+                        ? hasEverPresented
+                            ? "the CapFrameX Vulkan layer has presented in this process"
+                            : !firstPresentGraceElapsed
+                                ? "the CapFrameX Vulkan layer is waiting for its first present"
+                                : null
                         : layerUnknown
                             ? $"Vulkan layer check inconclusive ({layerError ?? "unknown error"})"
                             : null;
@@ -906,9 +947,20 @@ namespace CapFrameX.OSD.Integration
                 {
                     if (_vulkanBlocks.Remove(pid))
                     {
-                        Log.Information(
-                            "HookOverlay: Vulkan no longer renders pid {pid}; DXGI injection allowed",
-                            pid);
+                        if (layerLoaded && !hasEverPresented && firstPresentGraceElapsed)
+                        {
+                            Log.Information(
+                                "HookOverlay: Vulkan layer in pid {pid} ('{process}') produced no presents " +
+                                "during the {graceSeconds:0.#} s startup grace; DXGI injection allowed",
+                                pid, _currentProcessName ?? "unknown",
+                                VulkanLayerFirstPresentGraceMs / 1000d);
+                        }
+                        else
+                        {
+                            Log.Information(
+                                "HookOverlay: Vulkan no longer renders pid {pid}; DXGI injection allowed",
+                                pid);
+                        }
                     }
                 }
             }
@@ -930,9 +982,18 @@ namespace CapFrameX.OSD.Integration
 
         internal static bool IsDxgiInjectionAllowed(bool probeSucceeded,
             bool hasRecentVulkanPresent, bool vulkanLayerLoaded,
-            bool vulkanLayerCheckInconclusive = false)
-            => probeSucceeded && !hasRecentVulkanPresent && !vulkanLayerLoaded &&
+            bool vulkanLayerCheckInconclusive = false,
+            bool vulkanLayerHasEverPresented = false,
+            bool vulkanLayerFirstPresentGraceElapsed = false)
+            => probeSucceeded && !hasRecentVulkanPresent &&
+               (!vulkanLayerLoaded ||
+                (!vulkanLayerHasEverPresented && vulkanLayerFirstPresentGraceElapsed)) &&
                !vulkanLayerCheckInconclusive;
+
+        internal static bool HasVulkanLayerFirstPresentGraceElapsed(long awaitingSince,
+            long now)
+            => now >= awaitingSince &&
+               now - awaitingSince >= VulkanLayerFirstPresentGraceTicks;
 
         /// <summary>
         /// Refuses injection into a process that was ALREADY RUNNING when the in-game hook was
@@ -1339,6 +1400,11 @@ namespace CapFrameX.OSD.Integration
                     if (!IsProcessAlive(pid)) staleVulkanProbePids.Add(pid);
                 foreach (int pid in staleVulkanProbePids)
                     _nextVulkanProbe.Remove(pid);
+                var staleVulkanFirstPresentPids = new List<int>();
+                foreach (int pid in _vulkanLayerAwaitingFirstPresentSince.Keys)
+                    if (!IsProcessAlive(pid)) staleVulkanFirstPresentPids.Add(pid);
+                foreach (int pid in staleVulkanFirstPresentPids)
+                    _vulkanLayerAwaitingFirstPresentSince.Remove(pid);
                 var staleCompatibilityPids = new List<int>();
                 foreach (int pid in _compatibilityChannels.Keys)
                     if (!IsProcessAlive(pid)) staleCompatibilityPids.Add(pid);

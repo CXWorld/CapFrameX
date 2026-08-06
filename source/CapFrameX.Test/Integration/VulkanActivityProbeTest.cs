@@ -79,6 +79,41 @@ namespace CapFrameX.Test.Integration
             }
         }
 
+        [TestMethod]
+        public void TryHasRecentPresent_DistinguishesLoadedLayerBeforeItsFirstPresent()
+        {
+            int pid = NextTestPid();
+
+            using (MemoryMappedFile mapping = MemoryMappedFile.CreateNew(
+                VulkanActivityProbe.GetMappingName(pid), StateSize,
+                MemoryMappedFileAccess.ReadWrite))
+            using (MemoryMappedViewAccessor view = mapping.CreateViewAccessor(
+                0, StateSize, MemoryMappedFileAccess.ReadWrite))
+            {
+                view.Write(0, 2);
+                view.Flush();
+
+                Assert.IsTrue(VulkanActivityProbe.TryHasRecentPresent(pid,
+                    out bool recentBeforePresent, out bool hasEverPresentedBefore,
+                    out bool yieldedBefore, out string errorBefore));
+                Assert.IsFalse(recentBeforePresent);
+                Assert.IsFalse(hasEverPresentedBefore);
+                Assert.IsFalse(yieldedBefore);
+                Assert.IsNull(errorBefore);
+
+                view.Write(8, Environment.TickCount64);
+                view.Flush();
+
+                Assert.IsTrue(VulkanActivityProbe.TryHasRecentPresent(pid,
+                    out bool recentAfterPresent, out bool hasEverPresentedAfter,
+                    out bool yieldedAfter, out string errorAfter));
+                Assert.IsTrue(recentAfterPresent);
+                Assert.IsTrue(hasEverPresentedAfter);
+                Assert.IsFalse(yieldedAfter);
+                Assert.IsNull(errorAfter);
+            }
+        }
+
         /// <summary>
         /// The extent shares the 24-byte block's trailing padding, packed as
         /// <c>width | height &lt;&lt; 16</c>. Keeping the block at 24 bytes is what lets an older

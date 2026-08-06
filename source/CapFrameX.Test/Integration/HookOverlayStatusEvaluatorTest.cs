@@ -169,16 +169,56 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void IsDxgiInjectionAllowed_SuppressedWhileTheVulkanLayerIsLoaded()
+        public void IsDxgiInjectionAllowed_SuppressedDuringTheVulkanLayerStartupGrace()
         {
-            // The layer is mapped during vkCreateInstance but only publishes its renderer state
-            // on the first present. Injecting in that window puts the DXGI hook into a Vulkan
-            // title, where it can never acquire the renderer lease.
             bool allowed = HookOverlayManager.IsDxgiInjectionAllowed(
                 probeSucceeded: true, hasRecentVulkanPresent: false,
-                vulkanLayerLoaded: true);
+                vulkanLayerLoaded: true, vulkanLayerHasEverPresented: false,
+                vulkanLayerFirstPresentGraceElapsed: false);
 
             Assert.IsFalse(allowed);
+        }
+
+        [TestMethod]
+        public void IsDxgiInjectionAllowed_AllowsDxgiWhenLoadedLayerNeverPresents()
+        {
+            // Crysis Remastered creates Vulkan objects for an auxiliary API while its actual
+            // swapchain remains DXGI. Module presence alone must not block that title forever.
+            bool allowed = HookOverlayManager.IsDxgiInjectionAllowed(
+                probeSucceeded: true, hasRecentVulkanPresent: false,
+                vulkanLayerLoaded: true, vulkanLayerHasEverPresented: false,
+                vulkanLayerFirstPresentGraceElapsed: true);
+
+            Assert.IsTrue(allowed);
+        }
+
+        [TestMethod]
+        public void IsDxgiInjectionAllowed_DoesNotExpireAnEstablishedVulkanRenderer()
+        {
+            // A paused Vulkan title can have no recent heartbeat. Once it has presented, the
+            // startup timeout must never reinterpret it as a DXGI renderer.
+            bool allowed = HookOverlayManager.IsDxgiInjectionAllowed(
+                probeSucceeded: true, hasRecentVulkanPresent: false,
+                vulkanLayerLoaded: true, vulkanLayerHasEverPresented: true,
+                vulkanLayerFirstPresentGraceElapsed: true);
+
+            Assert.IsFalse(allowed);
+        }
+
+        [TestMethod]
+        public void HasVulkanLayerFirstPresentGraceElapsed_UsesTheConfiguredBoundary()
+        {
+            long graceTicks = System.Math.Max(1,
+                System.Diagnostics.Stopwatch.Frequency *
+                (long)HookOverlayManager.VulkanLayerFirstPresentGraceMs / 1000L);
+            long since = 1234;
+
+            Assert.IsFalse(HookOverlayManager.HasVulkanLayerFirstPresentGraceElapsed(
+                since, since + graceTicks - 1));
+            Assert.IsTrue(HookOverlayManager.HasVulkanLayerFirstPresentGraceElapsed(
+                since, since + graceTicks));
+            Assert.IsFalse(HookOverlayManager.HasVulkanLayerFirstPresentGraceElapsed(
+                since, since - 1));
         }
 
         [TestMethod]

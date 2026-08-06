@@ -30,11 +30,15 @@ namespace CapFrameX.OSD.Integration
     /// that cannot be taken back: whether to LoadLibrary the DXGI hook into a Vulkan title. The
     /// Vulkan loader maps implicit layers during vkCreateInstance — before any present, and
     /// therefore before PresentMon can report the target's first frame row — so module presence
-    /// answers "this process renders through our Vulkan layer" without racing the first present.
+    /// answers "the layer may still become the renderer" without racing the first present. It
+    /// does not prove that Vulkan owns presentation: DXGI titles may initialize Vulkan for an
+    /// auxiliary API without ever creating a presenting Vulkan swapchain.
     ///
     /// A positive result is sticky: an implicit layer stays mapped for the process lifetime, and
-    /// the answer only matters until injection. A negative result is re-checked no more often
-    /// than <see cref="HookTargetPolicy"/> repeats its own module scan.
+    /// the answer only matters until injection. <see cref="HookOverlayManager"/> bounds how long
+    /// a positive result without any Vulkan present can suppress sustained DXGI presentation. A
+    /// negative result is re-checked no more often than <see cref="HookTargetPolicy"/> repeats its
+    /// own module scan.
     /// </summary>
     internal static class VulkanLayerModuleProbe
     {
