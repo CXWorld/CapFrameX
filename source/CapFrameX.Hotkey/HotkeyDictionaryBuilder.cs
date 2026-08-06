@@ -52,6 +52,27 @@ namespace CapFrameX.Hotkey
             }
         }
 
+        /// <summary>
+        /// Rebuilds the registered hotkey snapshot after configuration was changed outside a
+        /// view model, for example through MCP. Existing actions and their synchronization
+        /// contexts are retained.
+        /// </summary>
+        public static void Refresh(IAppConfiguration appConfiguration)
+        {
+            if (appConfiguration == null)
+                throw new ArgumentNullException(nameof(appConfiguration));
+
+            lock (_syncRoot)
+            {
+                // Before the owning view models have registered their actions there is nothing
+                // to refresh. Their later SetHotkey calls will read the already-updated config.
+                if (_registeredActions.Count == 0)
+                    return;
+
+                GlobalHotkeyHook.SetRegistrations(BuildRegistrations(appConfiguration));
+            }
+        }
+
         private static HotkeyRegistration[] BuildRegistrations(IAppConfiguration appConfiguration)
         {
             var actionList = new List<(HotkeyAction hotkeyAction, string key, string combination,

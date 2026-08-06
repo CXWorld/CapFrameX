@@ -305,6 +305,7 @@ namespace CapFrameX
                     Container.Register<CaptureStatusTools>(Reuse.Singleton);
                     Container.Register<SensorConfigTools>(Reuse.Singleton);
                     Container.Register<OverlayConfigTools>(Reuse.Singleton);
+                    Container.Register<OsdOptionsTools>(Reuse.Singleton);
                 }
 
                 using (StartupPerformanceLogger.Measure("Application service registrations and initialization"))

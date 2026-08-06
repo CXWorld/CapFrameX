@@ -59,6 +59,7 @@
     <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj" />
     <ProjectReference Include="..\CapFrameX.Hardware.Controller\CapFrameX.Hardware.Controller.csproj" />
     <ProjectReference Include="..\CapFrameX.Hotkey\CapFrameX.Hotkey.csproj" />
+    <ProjectReference Include="..\CapFrameX.Mcp\CapFrameX.Mcp.csproj" />
     <ProjectReference Include="..\CapFrameX.OSD.Integration\CapFrameX.OSD.Integration.csproj" />
     <ProjectReference Include="..\CapFrameX.Sensor.Reporting\CapFrameX.Sensor.Reporting.csproj" />
     <ProjectReference Include="..\CapFrameX\CapFrameX.csproj" />

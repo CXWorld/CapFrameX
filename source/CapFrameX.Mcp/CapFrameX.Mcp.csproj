@@ -33,6 +33,8 @@
     <ProjectReference Include="..\CapFrameX.Data\CapFrameX.Data.csproj" />
     <ProjectReference Include="..\CapFrameX.Capture.Contracts\CapFrameX.Capture.Contracts.csproj" />
     <ProjectReference Include="..\CapFrameX.Configuration\CapFrameX.Configuration.csproj" />
+    <ProjectReference Include="..\CapFrameX.Hotkey\CapFrameX.Hotkey.csproj" />
+    <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj" />
   </ItemGroup>
 
 </Project>
