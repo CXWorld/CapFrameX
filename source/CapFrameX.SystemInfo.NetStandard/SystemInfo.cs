@@ -249,9 +249,8 @@ namespace CapFrameX.SystemInfo.NetStandard
             }
             catch { propertyDataValueManufacturer = string.Empty; propertyDataValueProduct = string.Empty; }
 
-            //Manufacturer + Product
-            string result = $"{propertyDataValueManufacturer} {propertyDataValueProduct}";
-            return result.Replace(",", "");
+            //Manufacturer + Product, shortened to the brand people actually use
+            return MainboardNameShortener.Shorten(propertyDataValueManufacturer, propertyDataValueProduct);
         }
 
         public string GetSystemRAMInfoName()
