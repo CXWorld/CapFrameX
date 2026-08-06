@@ -774,7 +774,9 @@ namespace CapFrameX.Overlay
 
             if (mainboardEntry != null)
             {
-                mainboardEntry.Value = _systemInfo.GetMotherboardName();
+                mainboardEntry.Value =
+                    _appConfiguration.HardwareInfoSource == "Auto" ? _systemInfo.GetMotherboardName()
+                    : _appConfiguration.CustomMainboardDescription;
             }
 
             _identifierOverlayEntryDict.TryGetValue("CustomRAM", out IOverlayEntry customRAMEntry); ;

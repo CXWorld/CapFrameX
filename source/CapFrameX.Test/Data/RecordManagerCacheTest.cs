@@ -114,7 +114,7 @@ namespace CapFrameX.Test.Data
             Assert.AreEqual(1, GetPrivateCacheCount("_sessionCache"));
             Assert.AreEqual(1, GetPrivateCacheCount("_recordInfoCache"));
 
-            _recordManager.UpdateCustomData(recordInfo, "CPU", "GPU", "RAM", "Updated", "Comment");
+            _recordManager.UpdateCustomData(recordInfo, "CPU", "GPU", "RAM", "Mainboard", "Updated", "Comment");
 
             Assert.AreEqual(0, GetPrivateCacheCount("_sessionCache"));
             Assert.AreEqual(0, GetPrivateCacheCount("_recordInfoCache"));

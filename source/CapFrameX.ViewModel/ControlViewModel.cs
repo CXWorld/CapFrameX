@@ -46,6 +46,7 @@ namespace CapFrameX.ViewModel
         private string _customCpuDescription;
         private string _customGpuDescription;
         private string _customRamDescription;
+        private string _customMainboardDescription;
         private string _customGameName;
         private string _customComment;
         private int _recordDataGridSelectedIndex;
@@ -57,6 +58,7 @@ namespace CapFrameX.ViewModel
         private bool _customCpuDescriptionChanged = false;
         private bool _customGpuDescriptionChanged = false;
         private bool _customRamDescriptionChanged = false;
+        private bool _customMainboardDescriptionChanged = false;
         private bool _customGameNameChanged = false;
         private bool _customCommentChanged = false;
         private string _customResolution;
@@ -180,6 +182,17 @@ namespace CapFrameX.ViewModel
             {
                 _customRamDescription = value;
                 _customRamDescriptionChanged = true;
+                RaisePropertyChanged();
+            }
+        }
+
+        public string CustomMainboardDescription
+        {
+            get { return _customMainboardDescription; }
+            set
+            {
+                _customMainboardDescription = value;
+                _customMainboardDescriptionChanged = true;
                 RaisePropertyChanged();
             }
         }
@@ -684,6 +697,7 @@ namespace CapFrameX.ViewModel
             CustomCpuDescription = string.Empty;
             CustomGpuDescription = string.Empty;
             CustomRamDescription = string.Empty;
+            CustomMainboardDescription = string.Empty;
             CustomGameName = string.Empty;
             CustomComment = string.Empty;
             CustomResolution = string.Empty;
@@ -694,6 +708,7 @@ namespace CapFrameX.ViewModel
             _customCpuDescriptionChanged = false;
             _customGpuDescriptionChanged = false;
             _customRamDescriptionChanged = false;
+            _customMainboardDescriptionChanged = false;
             _customGameNameChanged = false;
             _customCommentChanged = false;
             _customResolutionChanged = false;
@@ -704,15 +719,15 @@ namespace CapFrameX.ViewModel
         public void SaveDescriptions()
         {
             if (!ObjectExtensions.IsAllNotNull(CustomCpuDescription,
-                CustomGpuDescription, CustomRamDescription, CustomGameName,
-                CustomComment, _selectedRecordInfo, _applicationState.SelectedRecords))
+                CustomGpuDescription, CustomRamDescription, CustomMainboardDescription,
+                CustomGameName, CustomComment, _selectedRecordInfo, _applicationState.SelectedRecords))
                 return;
 
             if (_applicationState.SelectedRecords.Count == 1)
             {
                 _recordManager.UpdateCustomData(_selectedRecordInfo, CustomCpuDescription,
-                    CustomGpuDescription, CustomRamDescription, CustomGameName, CustomComment,
-                    CustomResolution);
+                    CustomGpuDescription, CustomRamDescription, CustomMainboardDescription,
+                    CustomGameName, CustomComment, CustomResolution);
             }
             else if (_applicationState.SelectedRecords.Count > 1)
             {
@@ -725,6 +740,7 @@ namespace CapFrameX.ViewModel
                         _customCpuDescriptionChanged ? CustomCpuDescription : session.Info.Processor,
                         _customGpuDescriptionChanged ? CustomGpuDescription : session.Info.GPU,
                         _customRamDescriptionChanged ? CustomRamDescription : session.Info.SystemRam,
+                        _customMainboardDescriptionChanged ? CustomMainboardDescription : session.Info.Motherboard,
                         _customGameNameChanged ? CustomGameName : session.Info.GameName,
                         _customCommentChanged ? CustomComment : session.Info.Comment,
                         _customResolutionChanged ? CustomResolution : session.Info.ResolutionInfo);
@@ -819,6 +835,7 @@ namespace CapFrameX.ViewModel
                 CustomCpuDescription = string.Copy(selectedRecordInfo.ProcessorName ?? string.Empty);
                 CustomGpuDescription = string.Copy(selectedRecordInfo.GraphicCardName ?? string.Empty);
                 CustomRamDescription = string.Copy(selectedRecordInfo.SystemRamInfo ?? string.Empty);
+                CustomMainboardDescription = string.Copy(selectedRecordInfo.MotherboardName ?? string.Empty);
                 CustomGameName = string.Copy(selectedRecordInfo.GameName ?? string.Empty);
                 CustomComment = string.Copy(selectedRecordInfo.Comment ?? string.Empty);
                 CustomResolution = string.Copy(selectedRecordInfo.Resolution ?? string.Empty);

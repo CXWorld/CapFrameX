@@ -86,6 +86,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public string CustomMainboardDescription
+        {
+            get => Get<string>("Mainboard");
+            set => Set(value);
+        }
+
         public bool StartMinimized
         {
             get => Get<bool>(false);

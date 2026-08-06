@@ -105,14 +105,16 @@ namespace CapFrameX.Data
 
         public void UpdateCustomData(IFileRecordInfo recordInfo,
             string customCpuInfo, string customGpuInfo,
-            string customRamInfo, string customGameName,
-            string customComment, string customResolution = null)
+            string customRamInfo, string customMainboardInfo,
+            string customGameName, string customComment,
+            string customResolution = null)
         {
             if (recordInfo == null) return;
 
             customCpuInfo = customCpuInfo ?? string.Empty;
             customGpuInfo = customGpuInfo ?? string.Empty;
             customRamInfo = customRamInfo ?? string.Empty;
+            customMainboardInfo = customMainboardInfo ?? string.Empty;
             customGameName = customGameName ?? string.Empty;
             customComment = customComment ?? string.Empty;
 
@@ -124,6 +126,7 @@ namespace CapFrameX.Data
                     session.Info.Processor = customCpuInfo;
                     session.Info.GPU = customGpuInfo;
                     session.Info.SystemRam = customRamInfo;
+                    session.Info.Motherboard = customMainboardInfo;
                     session.Info.GameName = customGameName;
                     session.Info.Comment = customComment;
                     // null = leave unchanged; CSV records have no resolution header,
@@ -152,6 +155,12 @@ namespace CapFrameX.Data
                         int systemRamNameHeaderIndex = GetHeaderIndex(lines, "System RAM");
                         lines[systemRamNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}System RAM{FileRecordInfo.INFO_SEPERATOR}{customRamInfo}";
 
+                        // Motherboard — records written before the mainboard became editable may
+                        // not carry the header at all, so skip it instead of losing the whole edit
+                        int motherboardNameHeaderIndex = FindHeaderIndex(lines, "Motherboard");
+                        if (motherboardNameHeaderIndex > -1)
+                            lines[motherboardNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}Motherboard{FileRecordInfo.INFO_SEPERATOR}{customMainboardInfo}";
+
                         // GameName
                         int gameNameHeaderIndex = GetHeaderIndex(lines, "GameName");
                         lines[gameNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}GameName{FileRecordInfo.INFO_SEPERATOR}{customGameName}";
@@ -172,7 +181,7 @@ namespace CapFrameX.Data
                             $"{FileRecordInfo.HEADER_MARKER}ProcessName{FileRecordInfo.INFO_SEPERATOR}{recordInfo.ProcessName}",
                             $"{FileRecordInfo.HEADER_MARKER}CreationDate{FileRecordInfo.INFO_SEPERATOR}{recordInfo.CreationDate}",
                             $"{FileRecordInfo.HEADER_MARKER}CreationTime{FileRecordInfo.INFO_SEPERATOR}{recordInfo.CreationTime}",
-                            $"{FileRecordInfo.HEADER_MARKER}Motherboard{FileRecordInfo.INFO_SEPERATOR}{recordInfo.MotherboardName}",
+                            $"{FileRecordInfo.HEADER_MARKER}Motherboard{FileRecordInfo.INFO_SEPERATOR}{customMainboardInfo}",
                             $"{FileRecordInfo.HEADER_MARKER}OS{FileRecordInfo.INFO_SEPERATOR}{recordInfo.OsVersion}",
                             $"{FileRecordInfo.HEADER_MARKER}Processor{FileRecordInfo.INFO_SEPERATOR}{customCpuInfo}",
                             $"{FileRecordInfo.HEADER_MARKER}System RAM{FileRecordInfo.INFO_SEPERATOR}{customRamInfo}",
@@ -206,6 +215,24 @@ namespace CapFrameX.Data
                 index++;
             }
             return index;
+        }
+
+        /// <summary>
+        /// Like <see cref="GetHeaderIndex(string[], string)"/>, but returns -1 for an entry the
+        /// header does not contain instead of running off the end of the file.
+        /// </summary>
+        private int FindHeaderIndex(string[] lines, string headerEntry)
+        {
+            for (int index = 0; index < lines.Length; index++)
+            {
+                if (!lines[index].StartsWith(FileRecordInfo.HEADER_MARKER))
+                    break;
+
+                if (lines[index].Contains(headerEntry))
+                    return index;
+            }
+
+            return -1;
         }
 
         public List<ISystemInfoEntry> GetSystemInfos(IFileRecordInfo recordInfo)
@@ -946,15 +973,16 @@ namespace CapFrameX.Data
                         cpuInfo = _appConfiguration.CustomCpuDescription;
                         gpuInfo = _appConfiguration.CustomGpuDescription;
                         ramInfo = _appConfiguration.CustomRamDescription;
+                        mbInfo = _appConfiguration.CustomMainboardDescription;
                     }
                     else
                     {
                         cpuInfo = _systemInfo.GetProcessorName();
                         gpuInfo = _systemInfo.GetGraphicCardName();
                         ramInfo = _systemInfo.GetSystemRAMInfoName();
+                        mbInfo = _systemInfo.GetMotherboardName();
                     }
 
-                    mbInfo = _systemInfo.GetMotherboardName();
                     osInfo = _systemInfo.GetOSVersion();
                     gpuDriverInfo = _sensorService.GetGpuDriverVersion();
                     appVersion = _appVersionProvider.GetAppVersion();

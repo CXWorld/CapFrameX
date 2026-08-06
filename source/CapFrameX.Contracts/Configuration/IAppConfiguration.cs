@@ -125,8 +125,10 @@ namespace CapFrameX.Contracts.Configuration
 
 		string CustomGpuDescription { get; set; }
 
-		string CustomRamDescription { get; set; }	
-		
+		string CustomRamDescription { get; set; }
+
+		string CustomMainboardDescription { get; set; }
+
 		bool IsOverlayActive { get; set; }
 
 		string ResetHistoryHotkey { get; set; }

@@ -633,25 +633,43 @@
 													Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
 												<StackPanel>
 													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Custom hardware labels"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Override the GPU and memory names stored with captures."/>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="Override the hardware names stored with captures."/>
 													<Grid Margin="0 14 0 0">
 														<Grid.ColumnDefinitions>
 															<ColumnDefinition Width="*"/>
 															<ColumnDefinition Width="18"/>
 															<ColumnDefinition Width="*"/>
 														</Grid.ColumnDefinitions>
-														<TextBox Height="42" materialDesign:HintAssist.Hint="GPU"
+														<Grid.RowDefinitions>
+															<RowDefinition Height="Auto"/>
+															<RowDefinition Height="Auto"/>
+														</Grid.RowDefinitions>
+														<TextBox Height="42" materialDesign:HintAssist.Hint="CPU"
+																 Style="{DynamicResource CxFloatingHintTextBox}"
+																 PreviewKeyDown="HardwareDescription_PreviewKeyDown">
+															<TextBox.Text>
+																<Binding Path="DataContext.CustomCpuDescription" ElementName="ColorbarViewName" Mode="TwoWay" UpdateSourceTrigger="LostFocus"/>
+															</TextBox.Text>
+														</TextBox>
+														<TextBox Grid.Column="2" Height="42" materialDesign:HintAssist.Hint="GPU"
 																 Style="{DynamicResource CxFloatingHintTextBox}"
 																 PreviewKeyDown="HardwareDescription_PreviewKeyDown">
 															<TextBox.Text>
 																<Binding Path="DataContext.CustomGpuDescription" ElementName="ColorbarViewName" Mode="TwoWay" UpdateSourceTrigger="LostFocus"/>
 															</TextBox.Text>
 														</TextBox>
-														<TextBox Grid.Column="2" Height="42" materialDesign:HintAssist.Hint="RAM"
+														<TextBox Grid.Row="1" Margin="0 14 0 0" Height="42" materialDesign:HintAssist.Hint="RAM"
 																 Style="{DynamicResource CxFloatingHintTextBox}"
 																 PreviewKeyDown="HardwareDescription_PreviewKeyDown">
 															<TextBox.Text>
 																<Binding Path="DataContext.CustomRamDescription" ElementName="ColorbarViewName" Mode="TwoWay" UpdateSourceTrigger="LostFocus"/>
+															</TextBox.Text>
+														</TextBox>
+														<TextBox Grid.Row="1" Grid.Column="2" Margin="0 14 0 0" Height="42" materialDesign:HintAssist.Hint="Mainboard"
+																 Style="{DynamicResource CxFloatingHintTextBox}"
+																 PreviewKeyDown="HardwareDescription_PreviewKeyDown">
+															<TextBox.Text>
+																<Binding Path="DataContext.CustomMainboardDescription" ElementName="ColorbarViewName" Mode="TwoWay" UpdateSourceTrigger="LostFocus"/>
 															</TextBox.Text>
 														</TextBox>
 													</Grid>

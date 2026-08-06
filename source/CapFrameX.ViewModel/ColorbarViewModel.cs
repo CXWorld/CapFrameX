@@ -313,6 +313,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public string CustomMainboardDescription
+        {
+            get { return _appConfiguration.CustomMainboardDescription; }
+            set
+            {
+                _appConfiguration.CustomMainboardDescription = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public bool IsGpuAccelerationActive
         {
             get { return _appConfiguration.IsGpuAccelerationActive; }
@@ -706,6 +716,9 @@ namespace CapFrameX.ViewModel
 
             if (CustomRamDescription == "RAM")
                 CustomRamDescription = _systemInfo.GetSystemRAMInfoName();
+
+            if (CustomMainboardDescription == "Mainboard")
+                CustomMainboardDescription = _systemInfo.GetMotherboardName();
         }
 
         private void OnSelectScreenshotFolder()

@@ -153,8 +153,8 @@ namespace CapFrameX.Test.Mocks
         }
 
         public void UpdateCustomData(IFileRecordInfo recordInfo, string customCpuInfo,
-            string customGpuInfo, string customRamInfo, string customGameName, string customComment,
-            string customResolution = null)
+            string customGpuInfo, string customRamInfo, string customMainboardInfo,
+            string customGameName, string customComment, string customResolution = null)
         {
             var path = recordInfo.FullPath;
 
@@ -170,6 +170,8 @@ namespace CapFrameX.Test.Mocks
                         session.Info.GPU = customGpuInfo;
                     if (!string.IsNullOrEmpty(customRamInfo))
                         session.Info.SystemRam = customRamInfo;
+                    if (!string.IsNullOrEmpty(customMainboardInfo))
+                        session.Info.Motherboard = customMainboardInfo;
                     if (!string.IsNullOrEmpty(customGameName))
                         session.Info.GameName = customGameName;
                     if (!string.IsNullOrEmpty(customComment))

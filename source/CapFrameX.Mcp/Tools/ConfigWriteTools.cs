@@ -291,6 +291,7 @@ namespace CapFrameX.Mcp.Tools
                 customCpuInfo: info.ProcessorName,
                 customGpuInfo: info.GraphicCardName,
                 customRamInfo: info.SystemRamInfo,
+                customMainboardInfo: info.MotherboardName,
                 customGameName: info.GameName,
                 customComment: comment ?? string.Empty);
 
