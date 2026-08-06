@@ -1322,6 +1322,13 @@ namespace CapFrameX.ViewModel
             if (!_doUpdateCharts)
                 return;
 
+            // An empty record list has to clear the charts even when no flag marked them dirty.
+            // Not every caller invalidates before calling in - RemoveAllComparisonItems only
+            // reaches UpdateRangeSliderParameter afterwards - and a series that survives keeps
+            // drawing a record that is already gone.
+            if (!ComparisonRecords.Any())
+                SetChartUpdateFlags();
+
             bool sourceChanged = UpdateComparisonMetricSource();
             if (sourceChanged)
             {
