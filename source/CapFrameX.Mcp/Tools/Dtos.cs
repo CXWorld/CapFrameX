@@ -325,6 +325,7 @@ namespace CapFrameX.Mcp.Tools
         [JsonProperty("hideOverlay")] public bool HideOverlay { get; set; }
         [JsonProperty("hookOverlayUsePresentMonFrametimes")] public bool HookOverlayUsePresentMonFrametimes { get; set; }
         [JsonProperty("replayBufferSizeMs")] public int ReplayBufferSizeMs { get; set; }
+        [JsonProperty("hookFreeRefreshRate")] public int HookFreeRefreshRate { get; set; }
         [JsonProperty("osdCustomPosition")] public bool OsdCustomPosition { get; set; }
         [JsonProperty("osdPositionX")] public int OsdPositionX { get; set; }
         [JsonProperty("osdPositionY")] public int OsdPositionY { get; set; }

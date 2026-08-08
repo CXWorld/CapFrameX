@@ -28,6 +28,7 @@ namespace CapFrameX.Test.Mcp
             config.Object.HideOverlay = true;
             config.Object.HookOverlayUsePresentMonFrametimes = true;
             config.Object.OsdReplayBufferSize = 1750;
+            config.Object.HookFreeRefreshRate = 10;
             config.Object.OSDCustomPosition = true;
             config.Object.OSDPositionX = 123;
             config.Object.OSDPositionY = 456;
@@ -60,6 +61,7 @@ namespace CapFrameX.Test.Mcp
             Assert.IsTrue(result.HideOverlay);
             Assert.IsTrue(result.HookOverlayUsePresentMonFrametimes);
             Assert.AreEqual(1750, result.ReplayBufferSizeMs);
+            Assert.AreEqual(10, result.HookFreeRefreshRate);
             Assert.IsTrue(result.OsdCustomPosition);
             Assert.AreEqual(123, result.OsdPositionX);
             Assert.AreEqual(456, result.OsdPositionY);
@@ -87,6 +89,7 @@ namespace CapFrameX.Test.Mcp
             config.Object.OSDCustomPosition = false;
             config.Object.OSDPositionX = 0;
             config.Object.OSDPositionY = 0;
+            config.Object.HookFreeRefreshRate = 1;
             config.Object.OSDRefreshPeriod = 1000;
             config.Object.MetricInterval = 20;
 
@@ -107,6 +110,7 @@ namespace CapFrameX.Test.Mcp
                 autoDisableOverlay: false,
                 showSystemTimeSeconds: true,
                 replayBufferSizeMs: 1500,
+                hookFreeRefreshRate: 20,
                 osdCustomPosition: true,
                 osdPositionX: 100,
                 osdPositionY: 200,
@@ -125,6 +129,7 @@ namespace CapFrameX.Test.Mcp
             Assert.IsFalse(config.Object.AutoDisableOverlay);
             Assert.IsTrue(config.Object.ShowSystemTimeSeconds);
             Assert.AreEqual(1500, config.Object.OsdReplayBufferSize);
+            Assert.AreEqual(20, config.Object.HookFreeRefreshRate);
             Assert.IsTrue(config.Object.OSDCustomPosition);
             Assert.AreEqual(100, config.Object.OSDPositionX);
             Assert.AreEqual(200, config.Object.OSDPositionY);
@@ -147,8 +152,10 @@ namespace CapFrameX.Test.Mcp
             Assert.AreEqual(result.ChangedProperties.Count, result.ChangedCount);
             Assert.AreEqual("HookFree", result.Options.Renderer);
             Assert.AreEqual(1500, result.Options.ReplayBufferSizeMs);
+            Assert.AreEqual(20, result.Options.HookFreeRefreshRate);
             CollectionAssert.Contains(result.ChangedProperties, nameof(IAppConfiguration.IsOverlayActive));
             CollectionAssert.Contains(result.ChangedProperties, nameof(IAppConfiguration.EnableHookFreeOverlay));
+            CollectionAssert.Contains(result.ChangedProperties, nameof(IAppConfiguration.HookFreeRefreshRate));
         }
 
         [TestMethod]
@@ -158,6 +165,7 @@ namespace CapFrameX.Test.Mcp
             config.Object.AutoDisableOverlay = true;
             config.Object.OsdZoom = 100;
             config.Object.OsdReplayBufferSize = 750;
+            config.Object.HookFreeRefreshRate = 1;
             var activeStream = new Subject<bool>();
             int publishedCount = 0;
             activeStream.Subscribe(_ => publishedCount++);
@@ -169,10 +177,13 @@ namespace CapFrameX.Test.Mcp
                 tool.SetOsdOptions(autoDisableOverlay: false, zoom: 201));
             Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
                 tool.SetOsdOptions(autoDisableOverlay: false, replayBufferSizeMs: 499));
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+                tool.SetOsdOptions(autoDisableOverlay: false, hookFreeRefreshRate: 3));
 
             Assert.IsTrue(config.Object.AutoDisableOverlay);
             Assert.AreEqual(100, config.Object.OsdZoom);
             Assert.AreEqual(750, config.Object.OsdReplayBufferSize);
+            Assert.AreEqual(1, config.Object.HookFreeRefreshRate);
             Assert.AreEqual(0, publishedCount);
         }
 
@@ -315,6 +326,7 @@ namespace CapFrameX.Test.Mcp
             config.SetupAllProperties();
             config.Object.OsdBackgroundOpacity = 97;
             config.Object.OsdReplayBufferSize = 750;
+            config.Object.HookFreeRefreshRate = 1;
             config.Object.OsdZoom = 100;
             config.Object.OsdAnchor = 0;
             config.Object.OsdMarginX = 30;

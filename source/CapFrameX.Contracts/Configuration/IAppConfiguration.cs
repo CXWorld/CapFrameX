@@ -164,6 +164,12 @@ namespace CapFrameX.Contracts.Configuration
 		bool EnableHookFreeOverlay { get; set; }
 
 		/// <summary>
+		/// Maximum visible refresh rate of the hook-free overlay charts in Hz.
+		/// Supported values are 1, 2, 5, 10, 20, and 30; default is 1.
+		/// </summary>
+		int HookFreeRefreshRate { get; set; }
+
+		/// <summary>
 		/// Inject the in-game hook overlay (cfx_osd_hook.dll) into the detected game process
 		/// for smooth in-swapchain graphs. Opt-in, per detected process; injection targets the
 		/// PID CapFrameX already detected via <see cref="CapFrameX.Monitoring.Contracts.IProcessService.ProcessIdStream"/>.
@@ -338,6 +344,12 @@ namespace CapFrameX.Contracts.Configuration
 		bool UseDisplayChangeMetrics { get; set; }
 
 		bool UsePcLatency { get; set; }
+
+		/// <summary>
+		/// Size of PresentMon's present event circular buffer (--set_circular_buffer_size).
+		/// PresentMon only accepts powers of two; CapFrameX offers 2048, 4096 and 8192.
+		/// </summary>
+		int PresentMonCircularBufferSize { get; set; }
 
 		bool UseAmdFlmLatency { get; set; }
 

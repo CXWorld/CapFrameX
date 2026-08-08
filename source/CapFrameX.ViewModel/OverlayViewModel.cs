@@ -396,6 +396,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public int HookFreeRefreshRate
+        {
+            get { return _appConfiguration.HookFreeRefreshRate; }
+            set
+            {
+                _appConfiguration.HookFreeRefreshRate = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public bool EnableHookOverlay
         {
             get { return _appConfiguration.EnableHookOverlay; }
@@ -687,6 +697,8 @@ namespace CapFrameX.ViewModel
         public Array RelatedMetricItemsSource => new[] { "Average", "Second", "Third" };
 
         public Array RefreshPeriodItemsSource => new[] { 500, 1000, 1500, 2000 };
+
+        public Array HookFreeRefreshRateItemsSource => new[] { 1, 2, 5, 10, 20, 30 };
 
         public Array MetricIntervalItemsSource => new[] { 5, 10, 20, 30, 60, 120, 240, 300 };
 

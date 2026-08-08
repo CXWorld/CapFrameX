@@ -200,6 +200,14 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        // PresentMon rejects anything that is not a power of two, and a rejected argument keeps
+        // the capture service from starting at all - so an unknown value falls back to the default.
+        public int PresentMonCircularBufferSize
+        {
+            get => PresentMonCircularBuffer.Normalize(Get<int>(PresentMonCircularBuffer.DefaultSize));
+            set => Set(PresentMonCircularBuffer.Normalize(value));
+        }
+
         public bool UseAmdFlmLatency
         {
             get => Get<bool>(false);
@@ -718,6 +726,20 @@ namespace CapFrameX.Configuration
         {
             get => Get<bool>(false);
             set => Set(value);
+        }
+
+        public int HookFreeRefreshRate
+        {
+            get => NormalizeHookFreeRefreshRate(Get<int>(1));
+            set => Set(NormalizeHookFreeRefreshRate(value));
+        }
+
+        private static int NormalizeHookFreeRefreshRate(int value)
+        {
+            return value == 1 || value == 2 || value == 5 ||
+                value == 10 || value == 20 || value == 30
+                ? value
+                : 1;
         }
 
         public bool EnableHookOverlay

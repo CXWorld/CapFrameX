@@ -56,6 +56,7 @@ namespace CapFrameX.Mcp.Tools
             [Description("Suppress RTSS output while keeping overlay data available to APIs.")] bool? hideOverlay = null,
             [Description("For the in-game renderer, use CapFrameX PresentMon frame/display times instead of the hook-local frame times.")] bool? hookOverlayUsePresentMonFrametimes = null,
             [Description("PresentMon replay buffer in milliseconds for the in-game PresentMon source and hook-free renderer, 500..10000.")] int? replayBufferSizeMs = null,
+            [Description("Maximum hook-free chart refresh rate in Hz; one of 1, 2, 5, 10, 20, or 30.")] int? hookFreeRefreshRate = null,
             [Description("Enable RTSS custom coordinates.")] bool? osdCustomPosition = null,
             [Description("RTSS custom X coordinate.")] int? osdPositionX = null,
             [Description("RTSS custom Y coordinate.")] int? osdPositionY = null,
@@ -72,7 +73,8 @@ namespace CapFrameX.Mcp.Tools
             [Description("Real-time metric calculation interval in seconds; must be greater than zero.")] int? metricIntervalSeconds = null)
         {
             if (!HasAnyUpdate(renderer, isOverlayActive, autoDisableOverlay, showSystemTimeSeconds,
-                hideOverlay, hookOverlayUsePresentMonFrametimes, replayBufferSizeMs, osdCustomPosition, osdPositionX,
+                hideOverlay, hookOverlayUsePresentMonFrametimes, replayBufferSizeMs, hookFreeRefreshRate,
+                osdCustomPosition, osdPositionX,
                 osdPositionY, backgroundOpacity, anchor, marginX, marginY, zoom,
                 useValueSmoothing, overlayHotkey, overlayConfigHotkey, resetMetricsHotkey,
                 refreshPeriodMs, metricIntervalSeconds))
@@ -83,6 +85,7 @@ namespace CapFrameX.Mcp.Tools
             ValidateDefinedEnum(renderer, nameof(renderer));
             ValidateDefinedEnum(anchor, nameof(anchor));
             ValidateRange(replayBufferSizeMs, 500, 10000, nameof(replayBufferSizeMs));
+            ValidateHookFreeRefreshRate(hookFreeRefreshRate, nameof(hookFreeRefreshRate));
             ValidateRange(backgroundOpacity, 0, 100, nameof(backgroundOpacity));
             ValidateRange(marginX, 0, 2000, nameof(marginX));
             ValidateRange(marginY, 0, 2000, nameof(marginY));
@@ -127,6 +130,8 @@ namespace CapFrameX.Mcp.Tools
                 value => _config.HookOverlayUsePresentMonFrametimes = value, changed);
             ApplyIfChanged(nameof(IAppConfiguration.OsdReplayBufferSize), replayBufferSizeMs,
                 () => _config.OsdReplayBufferSize, value => _config.OsdReplayBufferSize = value, changed);
+            ApplyIfChanged(nameof(IAppConfiguration.HookFreeRefreshRate), hookFreeRefreshRate,
+                () => _config.HookFreeRefreshRate, value => _config.HookFreeRefreshRate = value, changed);
 
             bool customPositionChanged = ApplyIfChanged(nameof(IAppConfiguration.OSDCustomPosition), osdCustomPosition,
                 () => _config.OSDCustomPosition, value => _config.OSDCustomPosition = value, changed);
@@ -210,6 +215,7 @@ namespace CapFrameX.Mcp.Tools
                 HideOverlay = _config.HideOverlay,
                 HookOverlayUsePresentMonFrametimes = _config.HookOverlayUsePresentMonFrametimes,
                 ReplayBufferSizeMs = _config.OsdReplayBufferSize,
+                HookFreeRefreshRate = _config.HookFreeRefreshRate,
                 OsdCustomPosition = _config.OSDCustomPosition,
                 OsdPositionX = _config.OSDPositionX,
                 OsdPositionY = _config.OSDPositionY,
@@ -310,6 +316,19 @@ namespace CapFrameX.Mcp.Tools
         {
             if (value.HasValue && value.Value <= 0)
                 throw new ArgumentOutOfRangeException(parameterName, value.Value, "Value must be greater than zero.");
+        }
+
+        private static void ValidateHookFreeRefreshRate(int? value, string parameterName)
+        {
+            if (!value.HasValue)
+                return;
+
+            int rate = value.Value;
+            if (rate != 1 && rate != 2 && rate != 5 && rate != 10 && rate != 20 && rate != 30)
+            {
+                throw new ArgumentOutOfRangeException(parameterName, rate,
+                    "Value must be one of 1, 2, 5, 10, 20, or 30 Hz.");
+            }
         }
 
         private static void ValidateDefinedEnum<T>(T? value, string parameterName)

@@ -1192,6 +1192,25 @@
 													 Style="{StaticResource MaterialDesignRadioButton}"/>
 										<TextBlock Margin="26 0 0 0" Style="{StaticResource OsdOptionsDescription}"
 												   Text="Uses DWM/DirectComposition without game injection and is safe for anti-cheat protected titles."/>
+										<DockPanel Margin="26 8 0 0" IsEnabled="{Binding OverlayModeHookFree}">
+											<ComboBox DockPanel.Dock="Right" Width="120" Height="40" FontSize="14"
+													  materialDesign:HintAssist.Hint="Refresh rate"
+													  materialDesign:HintAssist.HintOpacity=".8"
+													  materialDesign:HintAssist.IsFloating="True"
+													  ItemsSource="{Binding HookFreeRefreshRateItemsSource}"
+													  SelectedItem="{Binding HookFreeRefreshRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+												<ComboBox.ItemTemplate>
+													<DataTemplate>
+														<TextBlock Text="{Binding StringFormat={}{0} Hz}"/>
+													</DataTemplate>
+												</ComboBox.ItemTemplate>
+											</ComboBox>
+											<StackPanel Margin="0 0 12 0" VerticalAlignment="Center">
+												<TextBlock Text="Chart refresh rate"/>
+												<TextBlock Style="{StaticResource OsdOptionsDescription}"
+														   Text="Maximum visible chart updates per second"/>
+											</StackPanel>
+										</DockPanel>
 									</StackPanel>
 
 									<Separator Margin="0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
