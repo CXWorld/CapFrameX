@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CapFrameX.Contracts.Configuration;
+using System;
+using System.Globalization;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -10,7 +12,6 @@ namespace CapFrameX.PresentMonInterface
     public class PresentMonServiceConfiguration
     {
         private const string PARAMETER_SEPARATOR = " ";
-        private const string PRESENT_EVENT_CIRCULAR_BUFFER_SIZE = "4096";
 
         public string ProcessName { get; set; }
 
@@ -21,6 +22,12 @@ namespace CapFrameX.PresentMonInterface
         public List<string> ExcludeProcesses { get; set; }
 
         public bool TrackPcLatency { get; set; } = true;
+
+        /// <summary>
+        /// Present event circular buffer size handed to --set_circular_buffer_size. Normalized on
+        /// use: PresentMon only accepts powers of two and refuses to start on anything else.
+        /// </summary>
+        public int CircularBufferSize { get; set; } = PresentMonCircularBuffer.DefaultSize;
 
         public string ConfigParameterToArguments()
         {
@@ -39,7 +46,8 @@ namespace CapFrameX.PresentMonInterface
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--set_circular_buffer_size";
                 arguments += PARAMETER_SEPARATOR;
-                arguments += PRESENT_EVENT_CIRCULAR_BUFFER_SIZE;
+                arguments += PresentMonCircularBuffer.Normalize(CircularBufferSize)
+                    .ToString(CultureInfo.InvariantCulture);
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--track_frame_type";
                 arguments += PARAMETER_SEPARATOR;
@@ -88,7 +96,8 @@ namespace CapFrameX.PresentMonInterface
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--set_circular_buffer_size";
                 arguments += PARAMETER_SEPARATOR;
-                arguments += PRESENT_EVENT_CIRCULAR_BUFFER_SIZE;
+                arguments += PresentMonCircularBuffer.Normalize(CircularBufferSize)
+                    .ToString(CultureInfo.InvariantCulture);
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--track_frame_type";
                 arguments += PARAMETER_SEPARATOR;

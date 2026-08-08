@@ -37,6 +37,19 @@ namespace CapFrameX.Capture.Contracts
 
         Subject<bool> IsCaptureModeActiveStream { get; }
 
+        /// <summary>
+        /// True while the capture service process is up and delivering data. Unlike
+        /// <see cref="IsCaptureModeActiveStream"/> this says nothing about a recording being in
+        /// progress - it only reports whether the service itself is healthy.
+        /// </summary>
+        bool IsCaptureServiceRunning { get; }
+
+        /// <summary>
+        /// Pushes the current value of <see cref="IsCaptureServiceRunning"/> on subscribe and
+        /// every change afterwards.
+        /// </summary>
+        IObservable<bool> CaptureServiceRunningStream { get; }
+
         bool StartCaptureService(IServiceStartInfo startinfo);
 
         bool StopCaptureService();

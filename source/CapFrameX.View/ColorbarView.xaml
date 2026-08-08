@@ -468,6 +468,31 @@
 															</CheckBox.ToolTip>
 														</CheckBox>
 													</Grid>
+													<Separator Margin="0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
+													<Grid Margin="0 8" ToolTipService.ShowDuration="25000">
+														<Grid.ColumnDefinitions>
+															<ColumnDefinition Width="*"/>
+															<ColumnDefinition Width="Auto"/>
+														</Grid.ColumnDefinitions>
+														<StackPanel VerticalAlignment="Center">
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="PresentMon event buffer"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="Size of PresentMon's present event ring buffer. Restarts the capture service."/>
+														</StackPanel>
+														<ComboBox Grid.Column="1" Width="130" Height="42" MaxDropDownHeight="140"
+																  VerticalAlignment="Center"
+																  materialDesign:HintAssist.Hint="Events"
+																  materialDesign:HintAssist.IsFloating="True"
+																  IsEnabled="{Binding IsCaptureServiceReady}"
+																  ToolTipService.ShowOnDisabled="True"
+																  ItemsSource="{Binding PresentMonCircularBufferSizeItemsSource}"
+																  SelectedItem="{Binding PresentMonCircularBufferSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+															<ComboBox.ToolTip>
+																<ToolTip MaxWidth="400">
+																	<TextBlock TextWrapping="Wrap" Text="Number of present events PresentMon keeps in its circular buffer (--set_circular_buffer_size). Raise it if frames are lost at very high frame rates; PresentMon's own default is 2048.&#10;Changing this restarts the capture service, which takes a moment. The setting is locked while the service is down or a capture is running."/>
+																</ToolTip>
+															</ComboBox.ToolTip>
+														</ComboBox>
+													</Grid>
 												</StackPanel>
 											</Border>
 

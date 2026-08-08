@@ -43,6 +43,7 @@ namespace CapFrameX.ViewModel
         private readonly IShell _shell;
         private readonly ISystemInfo _systemInfo;
         private readonly LoginManager _loginManager;
+        private readonly CaptureManager _captureManager;
         private PubSubEvent<AppMessages.OpenLoginWindow> _openLoginWindow;
         public PubSubEvent<ViewMessages.OptionPopupClosed> OptionPopupClosed;
         public PubSubEvent<ViewMessages.ThemeChanged> _themeChanged;
@@ -67,6 +68,8 @@ namespace CapFrameX.ViewModel
         private bool _showNotification;
         private DateTime _notificationTimestamp = DateTime.MinValue;
         private bool _isFlmSupported;
+        private bool _isCaptureServiceRunning;
+        private bool _isCapturing;
 
         public string OsdHttpUrl => WebserverFactory.OsdHttpUrl;
         public string OsdWSUrl => WebserverFactory.OsdWSUrl;
@@ -532,6 +535,34 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public Array PresentMonCircularBufferSizeItemsSource
+            => PresentMonCircularBuffer.Sizes.ToArray();
+
+        /// <summary>
+        /// Only reaches PresentMon on its command line, so changing it restarts the capture
+        /// service. <see cref="IsCaptureServiceReady"/> keeps the combo box disabled until it is
+        /// back up.
+        /// </summary>
+        public int PresentMonCircularBufferSize
+        {
+            get { return _appConfiguration.PresentMonCircularBufferSize; }
+            set
+            {
+                if (value == _appConfiguration.PresentMonCircularBufferSize)
+                    return;
+
+                _appConfiguration.PresentMonCircularBufferSize = value;
+                RaisePropertyChanged();
+                RestartCaptureService();
+            }
+        }
+
+        /// <summary>
+        /// True while PresentMon runs properly and no capture is in progress - the only state in
+        /// which the capture service may be restarted.
+        /// </summary>
+        public bool IsCaptureServiceReady => _isCaptureServiceRunning && !_isCapturing;
+
         public bool IsFlmSupported
         {
             get { return _isFlmSupported; }
@@ -627,7 +658,8 @@ namespace CapFrameX.ViewModel
             IShell shell,
             ISystemInfo systemInfo,
             LoginManager loginManager,
-            UpdateViewModel updateViewModel)
+            UpdateViewModel updateViewModel,
+            CaptureManager captureManager)
         {
             _regionManager = regionManager;
             _eventAggregator = eventAggregator;
@@ -638,6 +670,7 @@ namespace CapFrameX.ViewModel
             _shell = shell;
             _systemInfo = systemInfo;
             _loginManager = loginManager;
+            _captureManager = captureManager;
             UpdateViewModel = updateViewModel;
 
             RoundingDigits = new List<int>(Enumerable.Range(0, 8));
@@ -663,6 +696,24 @@ namespace CapFrameX.ViewModel
 
                 IsFlmSupported = sensorService.GetGpuVendor() == EGpuVendor.Amd;
             });
+
+            _captureManager.CaptureServiceRunningStream
+                .ObserveOnDispatcher()
+                .Subscribe(isRunning =>
+                {
+                    _isCaptureServiceRunning = isRunning;
+                    RaisePropertyChanged(nameof(IsCaptureServiceReady));
+                });
+
+            // Restarting the capture service kills a recording in progress, so a capture started
+            // while this popup is open has to lock the setting as well.
+            _captureManager.CaptureStatusChange
+                .ObserveOnDispatcher()
+                .Subscribe(status =>
+                {
+                    _isCapturing = status.Status != null && status.Status != ECaptureStatus.Stopped;
+                    RaisePropertyChanged(nameof(IsCaptureServiceReady));
+                });
 
             // AmdFlmService resets UseAmdFlmLatency when a copied config enables it on a
             // non-AMD system; mirror such external changes into the checkbox bindings.
@@ -704,6 +755,28 @@ namespace CapFrameX.ViewModel
         public async void Logout()
         {
             await _loginManager.Logout();
+        }
+
+        // The restart waits for PresentMon's ETW session to go down and come back up, which must
+        // not block the UI thread. IsCaptureServiceReady goes false right away so the setting
+        // cannot be changed again while the service is down; the capture service pushes it back
+        // to true once PresentMon delivers data again.
+        private void RestartCaptureService()
+        {
+            _isCaptureServiceRunning = false;
+            RaisePropertyChanged(nameof(IsCaptureServiceReady));
+
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                try
+                {
+                    _captureManager.RestartCaptureService();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Unable to restart the capture service.");
+                }
+            });
         }
 
         private void SetHardwareInfoDefaultsFromConfig()

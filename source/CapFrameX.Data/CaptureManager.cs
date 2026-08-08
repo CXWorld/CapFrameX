@@ -97,6 +97,16 @@ namespace CapFrameX.Data
 
         public IObservable<CaptureStatus> CaptureStatusChange
             => _captureStatusChange.AsObservable();
+
+        /// <summary>
+        /// True while PresentMon is up and delivering data - independent of a recording being in
+        /// progress. Settings that only reach PresentMon through its command line must not be
+        /// changed while this is false.
+        /// </summary>
+        public bool IsCaptureServiceRunning => _captureService.IsCaptureServiceRunning;
+
+        public IObservable<bool> CaptureServiceRunningStream => _captureService.CaptureServiceRunningStream;
+
         public bool LockCaptureService { get; private set; }
 
         public bool DelayCountdownRunning { get; set; }
@@ -451,6 +461,49 @@ namespace CapFrameX.Data
         public bool StartCaptureService(IServiceStartInfo startInfo)
         {
             return _captureService.StartCaptureService(startInfo);
+        }
+
+        /// <summary>
+        /// Start info for PresentMon, built from the current configuration. Everything that starts
+        /// PresentMon goes through here: PC latency tracking, the circular buffer size and the
+        /// ignore list only reach PresentMon on its command line, so a second place building these
+        /// arguments would quietly start the service with stale settings.
+        /// </summary>
+        public IServiceStartInfo GetPresentMonStartInfo()
+        {
+            var serviceConfig = new PresentMonServiceConfiguration
+            {
+                RedirectOutputStream = true,
+                ExcludeProcesses = _processList.GetIgnoredProcessNames().ToList(),
+                TrackPcLatency = _appConfiguration.UsePcLatency,
+                CircularBufferSize = _appConfiguration.PresentMonCircularBufferSize
+            };
+
+            return CaptureServiceConfiguration.GetServiceStartInfo(serviceConfig.ConfigParameterToArguments());
+        }
+
+        /// <summary>
+        /// Brings PresentMon up with the current configuration: a running instance is stopped
+        /// first and the frame data archive is dropped and refilled from the new session. Also
+        /// covers the initial start - stopping a service that is not running is a no-op.
+        /// </summary>
+        /// <remarks>
+        /// The archive is not optional here. Its subscription carries the Skip(1) that drops the
+        /// CSV header, and the frame data subject outlives a PresentMon restart - a subscription
+        /// kept across one would take the new instance's header for a data row. On top of that,
+        /// rows from the old session can have a different column layout when PC latency tracking
+        /// was toggled in between.
+        /// Waits for the ETW session teardown, so keep it off the UI thread where responsiveness
+        /// matters.
+        /// </remarks>
+        public bool RestartCaptureService()
+        {
+            StopFillArchive();
+            var success = StartCaptureService(GetPresentMonStartInfo());
+            StartFillArchive();
+
+            _logger.LogInformation("Capture service restarted, success: {success}", success);
+            return success;
         }
 
         public void ToggleSensorLogging(bool enabled)

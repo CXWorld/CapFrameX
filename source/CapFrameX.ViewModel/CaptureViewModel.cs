@@ -568,7 +568,7 @@ namespace CapFrameX.ViewModel
             SubscribeToGlobalCaptureHookEvent();
             SetGlobalHookEventResetHistoryHotkey();
 
-            bool captureServiceStarted = StartCaptureService();
+            bool captureServiceStarted = _captureManager.RestartCaptureService();
 
             if (captureServiceStarted)
                 _overlayService.SetCaptureServiceStatus("Capture service ready...");
@@ -705,40 +705,12 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        private bool StartCaptureService()
-        {
-            bool success;
-            var serviceConfig = GetRedirectedServiceConfig();
-            var startInfo = CaptureServiceConfiguration
-                .GetServiceStartInfo(serviceConfig.ConfigParameterToArguments());
-            success = _captureManager.StartCaptureService(startInfo);
-
-            _captureManager.StartFillArchive();
-
-            return success;
-        }
-
-        private void StopCaptureService()
-        {
-            _captureManager.StopFillArchive();
-        }
-
-        private PresentMonServiceConfiguration GetRedirectedServiceConfig()
-        {
-            return new PresentMonServiceConfiguration
-            {
-                RedirectOutputStream = true,
-                ExcludeProcesses = _processList.GetIgnoredProcessNames().ToList(),
-                TrackPcLatency = _appConfiguration.UsePcLatency
-            };
-        }
-
+        // The ignore list reaches PresentMon as --exclude arguments, so every change to it has to
+        // go through a restart of the capture service - which reads the list back in.
         private void OnAddToIgonreList()
         {
             if (SelectedProcessToCapture == null)
                 return;
-
-            StopCaptureService();
 
             var process = _processList.Processes
                 .FirstOrDefault(p => p.Name == SelectedProcessToCapture);
@@ -753,7 +725,7 @@ namespace CapFrameX.ViewModel
             _processList?.Save();
 
             SelectedProcessToCapture = null;
-            StartCaptureService();
+            _captureManager.RestartCaptureService();
         }
 
         private void OnAddToProcessList()
@@ -761,7 +733,6 @@ namespace CapFrameX.ViewModel
             if (SelectedProcessToIgnore == null)
                 return;
 
-            StopCaptureService();
             var process = _processList.Processes
                 .FirstOrDefault(p => p.Name == SelectedProcessToIgnore);
 
@@ -771,14 +742,13 @@ namespace CapFrameX.ViewModel
                 _processList?.Save();
             }
 
-            StartCaptureService();
+            _captureManager.RestartCaptureService();
         }
 
         private void OnResetCaptureProcess()
         {
             SelectedProcessToCapture = null;
-            StopCaptureService();
-            StartCaptureService();
+            _captureManager.RestartCaptureService();
         }
 
         public void OnSaveCaptureTime(string captureTimeString, string process)
