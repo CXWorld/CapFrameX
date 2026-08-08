@@ -38,6 +38,8 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="PawnIo\PawnIO.sys" />
+    <None Remove="PawnIo\PawnIO.inf" />
+    <None Remove="PawnIo\PawnIO.cat" />
     <None Remove="PawnIo\PawnIOLib.dll" />
     <None Remove="PawnIo\PawnIOLib.h" />
     <None Remove="Resources\PawnIO\AMDReset.bin" />
@@ -51,6 +53,16 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="PawnIo\PawnIO.sys">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <!-- PawnIO 2.x is a PnP driver: the device object is only created once a Root\PawnIO node
+         exists, so it has to be installed through its INF. INF, catalog and .sys must stay in
+         the same folder - the INF references the .sys via SourceDisksFiles and names the
+         catalog in CatalogFile. -->
+    <Content Include="PawnIo\PawnIO.inf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PawnIo\PawnIO.cat">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="PawnIo\PawnIOLib.dll">
