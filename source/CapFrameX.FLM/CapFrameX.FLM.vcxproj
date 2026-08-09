@@ -21,13 +21,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -70,7 +70,8 @@
       <AdditionalDependencies>d3d11.lib;d3d12.lib;dxgi.lib;winmm.lib;user32.lib;gdi32.lib;ole32.lib;uuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>if not exist "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\" mkdir "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\"&#xD;&#xA;xcopy /y /d "$(TargetPath)" "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\"</Command>
+      <Command>if not exist "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\" mkdir "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\"
+xcopy /y /d "$(TargetPath)" "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -96,7 +97,8 @@
       <AdditionalDependencies>d3d11.lib;d3d12.lib;dxgi.lib;winmm.lib;user32.lib;gdi32.lib;ole32.lib;uuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>if not exist "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\" mkdir "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\"&#xD;&#xA;xcopy /y /d "$(TargetPath)" "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\"</Command>
+      <Command>if not exist "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\" mkdir "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\"
+xcopy /y /d "$(TargetPath)" "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
