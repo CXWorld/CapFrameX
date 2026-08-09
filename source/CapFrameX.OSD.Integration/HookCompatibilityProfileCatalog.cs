@@ -20,17 +20,21 @@ namespace CapFrameX.OSD.Integration
     {
         internal HookCompatibilityProfile(string executableName,
             bool disableDxgiSwapchainReleaseHook, TimeSpan injectionDelay,
-            string source)
+            string earlyInjectionModule, string source)
         {
             ExecutableName = executableName;
             DisableDxgiSwapchainReleaseHook = disableDxgiSwapchainReleaseHook;
             InjectionDelay = injectionDelay;
+            EarlyInjectionModule = earlyInjectionModule;
             Source = source;
         }
 
         internal string ExecutableName { get; }
         internal bool DisableDxgiSwapchainReleaseHook { get; }
         internal TimeSpan InjectionDelay { get; }
+        internal string EarlyInjectionModule { get; }
+        internal bool RequiresEarlyInjection =>
+            !string.IsNullOrWhiteSpace(EarlyInjectionModule);
         internal string Source { get; }
 
         internal NativeHookCompatibilityFlags NativeFlags =>
@@ -76,6 +80,16 @@ namespace CapFrameX.OSD.Integration
             }
         }
 
+        internal static IReadOnlyList<HookCompatibilityProfile> GetEarlyInjectionProfiles()
+        {
+            var result = new List<HookCompatibilityProfile>();
+            foreach (HookCompatibilityProfile profile in Profiles.Value.Values)
+            {
+                if (profile.RequiresEarlyInjection) result.Add(profile);
+            }
+            return result;
+        }
+
         internal static IReadOnlyDictionary<string, HookCompatibilityProfile>
             ParseProfiles(Stream stream)
         {
@@ -102,14 +116,17 @@ namespace CapFrameX.OSD.Integration
 
                 bool disableRelease = ParseBooleanAttribute(element,
                     "disableDxgiSwapchainReleaseHook");
+                string earlyInjectionModule = ParseModuleNameAttribute(element,
+                    "earlyInjectionModule");
                 int delayMilliseconds = ParseNonNegativeIntegerAttribute(element,
                     "injectionDelayMilliseconds");
-                if (!disableRelease && delayMilliseconds == 0)
+                if (!disableRelease && delayMilliseconds == 0 &&
+                    earlyInjectionModule == null)
                     throw new InvalidDataException($"Profile '{executable}' has no compatibility settings.");
 
                 var profile = new HookCompatibilityProfile(
                     Path.GetFileName(executable), disableRelease,
-                    TimeSpan.FromMilliseconds(delayMilliseconds),
+                    TimeSpan.FromMilliseconds(delayMilliseconds), earlyInjectionModule,
                     ((string)element.Attribute("source"))?.Trim());
                 if (profiles.ContainsKey(key))
                     throw new InvalidDataException($"Duplicate hook compatibility profile '{executable}'.");
@@ -163,6 +180,22 @@ namespace CapFrameX.OSD.Integration
             if (bool.TryParse(attribute.Value, out bool value)) return value;
             throw new InvalidDataException(
                 $"Profile '{(string)element.Attribute("executable")}' has invalid {attributeName}.");
+        }
+
+        private static string ParseModuleNameAttribute(XElement element,
+            string attributeName)
+        {
+            string value = ((string)element.Attribute(attributeName))?.Trim();
+            if (string.IsNullOrWhiteSpace(value)) return null;
+            if (!string.Equals(value, Path.GetFileName(value),
+                    StringComparison.Ordinal) ||
+                !string.Equals(Path.GetExtension(value), ".dll",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidDataException(
+                    $"Profile '{(string)element.Attribute("executable")}' has invalid {attributeName}.");
+            }
+            return value;
         }
 
         private static int ParseNonNegativeIntegerAttribute(XElement element,

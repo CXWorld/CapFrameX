@@ -37,6 +37,12 @@ namespace CapFrameX.OSD.Integration
         // past that stage the overlay would silently stay invisible forever, so bound it and let
         // the hook-free renderer take over instead.
         internal const ulong HookRendererReadyTimeoutMs = 10000;
+        internal const int EarlyInjectionPollMs = 25;
+        private static readonly string[] SafeEarlyInjectionGateModules =
+        {
+            "sl.interposer.dll",
+            "libxess_fg.dll",
+        };
         // Some DXGI games create a Vulkan instance for auxiliary APIs such as upscalers, which
         // maps the implicit layer although Vulkan never owns a presenting swapchain. Keep the
         // real-Vulkan startup race closed for a bounded interval, then trust sustained DXGI
@@ -57,6 +63,7 @@ namespace CapFrameX.OSD.Integration
         private readonly HookVisibilityChannel _visibility;
         private readonly HookOverlayStatusService _statusService;
         private readonly Timer _statusTimer;
+        private readonly Timer _earlyInjectionTimer;
         private readonly string _dllPath;         // x64 hook DLL
         private readonly string _dllPathX86;      // x86 hook DLL (32-bit targets)
         private readonly object _gate = new object();
@@ -65,6 +72,7 @@ namespace CapFrameX.OSD.Integration
         private readonly int _processIdColumnIndex;
         private readonly int _runtimeColumnIndex;
         private readonly HashSet<int> _injected = new HashSet<int>();
+        private readonly HashSet<int> _successfulInjections = new HashSet<int>();
         private readonly InjectionRetryBackoff _injectionRetryBackoff =
             new InjectionRetryBackoff();
         private readonly InjectionCompatibilityDelay _compatibilityDelay =
@@ -79,6 +87,15 @@ namespace CapFrameX.OSD.Integration
         // Evaluated ONCE per process: neither the foreign overlay modules nor the process start
         // time can change while the process lives, so a re-scan could only produce log noise.
         private readonly Dictionary<int, string> _foreignOverlayBlocks = new Dictionary<int, string>();
+        // Learned only after a hook was armed for 15 seconds without seeing Present. Such a
+        // title has already passed the target policy and proven that late attachment is too late
+        // (typically a private frame-generation presenter). While CapFrameX remains running we
+        // watch for the same executable to relaunch. Injection is never triggered by process
+        // visibility alone: a known presenter module must first be mapped, keeping our DLL out of
+        // the executable's fragile CRT/loader startup phase.
+        private readonly Dictionary<string, EarlyInjectionTarget> _earlyInjectionTargets =
+            new Dictionary<string, EarlyInjectionTarget>(StringComparer.OrdinalIgnoreCase);
+        private int _earlyInjectionProbeActive;
         private volatile bool _enabled;
         private volatile bool _targetAllowed;
         private volatile int _currentPid;
@@ -140,6 +157,12 @@ namespace CapFrameX.OSD.Integration
             _visibility = HookVisibilityChannel.Create(
                 _enabled && appConfiguration.IsOverlayActive && IsDxgiRuntime(_currentRuntime));
 
+            // BehaviorSubject-backed streams can emit synchronously from Subscribe. Create the
+            // early-start timer first because that initial PID 0 passes through OnProcessId and
+            // may arm the watcher before the constructor reaches the subscription assignment.
+            _earlyInjectionTimer = new Timer(_ => ProbeEarlyInjectionTargets(), null,
+                Timeout.Infinite, Timeout.Infinite);
+
             _enabledSub = appConfiguration.OnValueChanged
                 .Where(x => x.key == nameof(IAppConfiguration.EnableHookOverlay))
                 .Subscribe(x => OnEnabledChanged((bool)x.value));
@@ -155,6 +178,7 @@ namespace CapFrameX.OSD.Integration
 
             _runtimeSub = frameDataStream.Subscribe(OnFrameRow);
             _statusTimer = new Timer(_ => PublishStatus(), null, 1000, 1000);
+            AddConfiguredEarlyInjectionTargets();
             PublishStatus();
         }
 
@@ -177,6 +201,10 @@ namespace CapFrameX.OSD.Integration
                 lock (_stateGate) _foreignOverlayBlockReason = null;
             }
             _enabled = enabled;
+            if (enabled)
+                ArmEarlyInjectionProbe();
+            else
+                StopEarlyInjectionProbe();
             UpdateHookVisibility(); // disabling hides the resident hook immediately (no game restart)
             UpdateHookFreeFallback();
             if (_enabled && IsDxgiRuntime(_currentRuntime))
@@ -264,6 +292,20 @@ namespace CapFrameX.OSD.Integration
                 VulkanLayerModuleProbe.Invalidate(pid);
                 DisposeCompatibilityChannelLocked(pid);
             }
+            bool injectionAlreadySucceeded;
+            lock (_gate)
+                injectionAlreadySucceeded = _successfulInjections.Contains(pid);
+            if (injectionAlreadySucceeded)
+            {
+                // An early injection normally finishes before PresentMon selects the process.
+                // Rehydrate the selected-PID state so handshake timeout and status reporting do
+                // not treat the already resident hook as an injection that never started.
+                SetInjectionStatus(pid, inProgress: false, succeeded: true, error: null);
+            }
+            if (pid <= 0)
+                ArmEarlyInjectionProbe();
+            else if (!IsEarlyInjectionProcessName(processName))
+                StopEarlyInjectionProbe();
             UpdateHookVisibility();
             UpdateHookFreeFallback();
             if (pid > 0)
@@ -461,6 +503,8 @@ namespace CapFrameX.OSD.Integration
             HookCompatibilityProfileCatalog.TryGetForProcess(pid,
                 out HookCompatibilityProfile compatibilityProfile);
             if (!TryReserveInjection(pid)) return;
+            if (IsEarlyInjectionProcessName(_currentProcessName))
+                StopEarlyInjectionProbe();
             TimeSpan compatibilityDelay;
             lock (_gate)
             {
@@ -578,6 +622,8 @@ namespace CapFrameX.OSD.Integration
                     if (ok)
                     {
                         RegisterInjectionSuccess(pid);
+                        if (IsEarlyInjectionProcessName(_currentProcessName))
+                            ArmEarlyInjectionProbeAfterExit(pid);
                         Log.Information("HookOverlay: injected {dll} ({arch}) into pid {pid}", HookDllName, arch, pid);
                     }
                     else
@@ -602,6 +648,410 @@ namespace CapFrameX.OSD.Integration
         {
             return !_disposed && _enabled && pid == _currentPid &&
                 IsDxgiRuntime(_currentRuntime);
+        }
+
+        private void RememberEarlyInjectionTarget(int pid)
+        {
+            if (!TryReadProcessIdentity(pid, out string processName,
+                out string executablePath))
+            {
+                Log.Warning(
+                    "HookOverlay: could not remember pid {pid} for early injection because its executable identity is unavailable",
+                    pid);
+                return;
+            }
+
+            if (!HookTargetPolicy.TryFindLoadedModule(pid,
+                    SafeEarlyInjectionGateModules, out string gateModule,
+                    out string moduleError) || string.IsNullOrWhiteSpace(gateModule))
+            {
+                Log.Warning(
+                    "HookOverlay: not learning unsafe process-start injection for pid {pid} ('{process}'); no supported presenter module was found ({reason})",
+                    pid, processName, moduleError ?? "no Streamline/XeSS-FG module loaded");
+                return;
+            }
+
+            var target = new EarlyInjectionTarget(processName, executablePath,
+                gateModule);
+            bool added;
+            lock (_gate)
+            {
+                added = !_earlyInjectionTargets.ContainsKey(executablePath);
+                _earlyInjectionTargets[executablePath] = target;
+            }
+            if (added)
+            {
+                Log.Warning(
+                    "HookOverlay: learned early-injection target '{process}' at '{path}', gated by '{module}'; keep CapFrameX running and restart the game",
+                    processName, executablePath, gateModule);
+                ArmEarlyInjectionProbeAfterExit(pid);
+            }
+        }
+
+        private void AddConfiguredEarlyInjectionTargets()
+        {
+            bool added = false;
+            lock (_gate)
+            {
+                foreach (HookCompatibilityProfile profile in
+                    HookCompatibilityProfileCatalog.GetEarlyInjectionProfiles())
+                {
+                    string processName = Path.GetFileNameWithoutExtension(
+                        profile.ExecutableName);
+                    if (string.IsNullOrWhiteSpace(processName)) continue;
+                    string key = $"profile:{processName}";
+                    if (_earlyInjectionTargets.ContainsKey(key)) continue;
+                    _earlyInjectionTargets.Add(key,
+                        new EarlyInjectionTarget(processName, executablePath: null,
+                            profile.EarlyInjectionModule));
+                    added = true;
+                }
+            }
+            if (added) ArmEarlyInjectionProbe();
+        }
+
+        private void ArmEarlyInjectionProbe()
+            => ArmEarlyInjectionProbe(TimeSpan.Zero);
+
+        private void ArmEarlyInjectionProbe(TimeSpan delay)
+        {
+            if (_disposed || !_enabled) return;
+            lock (_gate)
+            {
+                if (_earlyInjectionTargets.Count == 0) return;
+            }
+            double delayMs = Math.Max(0, delay.TotalMilliseconds);
+            int dueTimeMs = delayMs >= int.MaxValue
+                ? int.MaxValue
+                : (int)Math.Ceiling(delayMs);
+            try
+            {
+                _earlyInjectionTimer.Change(dueTimeMs, EarlyInjectionPollMs);
+            }
+            catch (ObjectDisposedException)
+            {
+                // A status callback can finish concurrently with manager disposal.
+            }
+        }
+
+        private void StopEarlyInjectionProbe()
+        {
+            try
+            {
+                _earlyInjectionTimer.Change(Timeout.Infinite, Timeout.Infinite);
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+        }
+
+        private void ArmEarlyInjectionProbeAfterExit(int pid)
+        {
+            if (pid <= 0) return;
+            Task.Run(async () =>
+            {
+                try
+                {
+                    using (var process = Process.GetProcessById(pid))
+                    {
+                        if (!process.HasExited)
+                            await process.WaitForExitAsync().ConfigureAwait(false);
+                    }
+                }
+                catch (Exception ex) when (ex is ArgumentException ||
+                                           ex is InvalidOperationException ||
+                                           ex is System.ComponentModel.Win32Exception ||
+                                           ex is NotSupportedException)
+                {
+                    // A missing process already satisfies the condition; arm below.
+                }
+                ArmEarlyInjectionProbe();
+            });
+        }
+
+        private bool IsEarlyInjectionProcessName(string processName)
+        {
+            if (string.IsNullOrWhiteSpace(processName)) return false;
+            lock (_gate)
+            {
+                foreach (EarlyInjectionTarget target in _earlyInjectionTargets.Values)
+                {
+                    if (string.Equals(target.ProcessName, processName,
+                        StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+            }
+            return false;
+        }
+
+        private void ProbeEarlyInjectionTargets()
+        {
+            if (_disposed || !_enabled ||
+                Interlocked.Exchange(ref _earlyInjectionProbeActive, 1) != 0)
+                return;
+            try
+            {
+                var targets = new List<EarlyInjectionTarget>();
+                lock (_gate)
+                    targets.AddRange(_earlyInjectionTargets.Values);
+                foreach (EarlyInjectionTarget target in targets)
+                {
+                    Process[] processes;
+                    try { processes = Process.GetProcessesByName(target.ProcessName); }
+                    catch (Exception ex) when (ex is InvalidOperationException ||
+                                               ex is System.ComponentModel.Win32Exception ||
+                                               ex is NotSupportedException)
+                    {
+                        continue;
+                    }
+
+                    foreach (Process process in processes)
+                    {
+                        using (process)
+                        {
+                            int pid;
+                            try { pid = process.Id; }
+                            catch (InvalidOperationException) { continue; }
+                            if (IsInjectionAttemptBlocked(pid)) continue;
+                            if (!TryReadProcessIdentity(process, out string actualName,
+                                out string actualPath) ||
+                                !IsEarlyInjectionTargetMatch(target.ProcessName,
+                                    target.ExecutablePath, actualName, actualPath))
+                                continue;
+                            if (!IsEarlyInjectionGateSatisfied(pid, target,
+                                out _))
+                                continue;
+                            TryInjectEarlyAsync(pid, target);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "HookOverlay: early-injection process probe failed");
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _earlyInjectionProbeActive, 0);
+            }
+        }
+
+        private void TryInjectEarlyAsync(int pid, EarlyInjectionTarget target)
+        {
+            if (!IsEarlyInjectionStillEligible(pid, target) || !TryReserveInjection(pid))
+                return;
+            StopEarlyInjectionProbe();
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    if (!IsEarlyInjectionStillEligible(pid, target))
+                    {
+                        ReleaseEarlyInjectionReservation(pid);
+                        return;
+                    }
+                    // Do not inherit the normal two-second policy cache here. A newly created
+                    // process may have produced a transient empty module snapshot a few
+                    // milliseconds earlier; early injection has no seconds to spare.
+                    HookTargetPolicy.Invalidate(pid);
+                    if (!HookTargetPolicy.IsAllowed(pid, out string policyReason))
+                    {
+                        if (HookTargetPolicy.IsTransientStartupFailure(policyReason))
+                        {
+                            ReleaseEarlyInjectionReservation(pid);
+                        }
+                        else
+                        {
+                            TimeSpan retryDelay = RegisterEarlyInjectionFailure(pid,
+                                $"early target policy check failed ({policyReason})");
+                            Log.Warning(
+                                "HookOverlay: early injection into pid {pid} deferred by target policy ({reason}); retry in {retrySeconds:0.#} s",
+                                pid, policyReason ?? "unknown reason", retryDelay.TotalSeconds);
+                        }
+                        return;
+                    }
+
+                    HookCompatibilityProfileCatalog.TryGetForProcess(pid,
+                        out HookCompatibilityProfile compatibilityProfile);
+                    TimeSpan delay = compatibilityProfile?.InjectionDelay ?? TimeSpan.Zero;
+                    if (delay > TimeSpan.Zero)
+                    {
+                        await Task.Delay(delay).ConfigureAwait(false);
+                        if (!IsEarlyInjectionStillEligible(pid, target))
+                        {
+                            ReleaseEarlyInjectionReservation(pid);
+                            return;
+                        }
+                    }
+
+                    if (!HookInjector.TryGetIsWow64(pid, out bool isWow64,
+                        out string bitError))
+                    {
+                        TimeSpan retryDelay = RegisterEarlyInjectionFailure(pid, bitError);
+                        Log.Warning(
+                            "HookOverlay: early injection could not determine bitness of pid {pid} — {error}; retry in {retrySeconds:0.#} s",
+                            pid, bitError, retryDelay.TotalSeconds);
+                        return;
+                    }
+                    string arch = isWow64 ? "x86" : "x64";
+                    string sourceDll = isWow64 ? _dllPathX86 : _dllPath;
+                    if (string.IsNullOrEmpty(sourceDll) || !File.Exists(sourceDll))
+                    {
+                        string failure = $"{arch} hook DLL not found at '{sourceDll}'";
+                        TimeSpan retryDelay = RegisterEarlyInjectionFailure(pid, failure);
+                        Log.Warning(
+                            "HookOverlay: early injection into {arch} pid {pid} failed — {error}; retry in {retrySeconds:0.#} s",
+                            arch, pid, failure, retryDelay.TotalSeconds);
+                        return;
+                    }
+                    string injectable = PrepareInjectableCopy(sourceDll, arch);
+                    if (injectable == null)
+                    {
+                        TimeSpan retryDelay = RegisterEarlyInjectionFailure(pid,
+                            $"could not prepare an injectable {arch} hook DLL");
+                        Log.Warning(
+                            "HookOverlay: early injection could not prepare the {arch} hook for pid {pid}; retry in {retrySeconds:0.#} s",
+                            arch, pid, retryDelay.TotalSeconds);
+                        return;
+                    }
+                    if (!TryPublishCompatibilityProfile(pid, compatibilityProfile,
+                        out string compatibilityError))
+                    {
+                        TimeSpan retryDelay = RegisterEarlyInjectionFailure(pid,
+                            compatibilityError);
+                        Log.Warning(
+                            "HookOverlay: early compatibility configuration for pid {pid} failed — {error}; retry in {retrySeconds:0.#} s",
+                            pid, compatibilityError, retryDelay.TotalSeconds);
+                        return;
+                    }
+                    HookTargetPolicy.Invalidate(pid);
+                    if (!IsEarlyInjectionStillEligible(pid, target))
+                    {
+                        ReleaseEarlyInjectionReservation(pid);
+                        return;
+                    }
+                    if (!HookTargetPolicy.IsAllowed(pid, out policyReason))
+                    {
+                        if (HookTargetPolicy.IsTransientStartupFailure(policyReason))
+                            ReleaseEarlyInjectionReservation(pid);
+                        else
+                            RegisterEarlyInjectionFailure(pid,
+                                $"early target policy recheck failed ({policyReason})");
+                        return;
+                    }
+
+                    bool ok = HookInjector.TryInject(pid, injectable, out string error);
+                    if (ok)
+                    {
+                        RegisterInjectionSuccess(pid);
+                        ArmEarlyInjectionProbeAfterExit(pid);
+                        Log.Information(
+                            "HookOverlay: EARLY injected {dll} ({arch}) into pid {pid} ('{process}') after '{module}' was mapped and before runtime detection",
+                            HookDllName, arch, pid, target.ProcessName,
+                            target.RequiredModuleName);
+                    }
+                    else
+                    {
+                        TimeSpan retryDelay = RegisterEarlyInjectionFailure(pid, error);
+                        Log.Warning(
+                            "HookOverlay: early injection into {arch} pid {pid} failed — {error}; retry in {retrySeconds:0.#} s",
+                            arch, pid, error, retryDelay.TotalSeconds);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TimeSpan retryDelay = RegisterEarlyInjectionFailure(pid, ex.Message);
+                    Log.Error(ex,
+                        "HookOverlay: unexpected early-injection error for pid {pid}; retry in {retrySeconds:0.#} s",
+                        pid, retryDelay.TotalSeconds);
+                }
+            });
+        }
+
+        private bool IsEarlyInjectionStillEligible(int pid, EarlyInjectionTarget target)
+        {
+            return !_disposed && _enabled && IsProcessAlive(pid) &&
+                TryReadProcessIdentity(pid, out string processName,
+                    out string executablePath) &&
+                IsEarlyInjectionTargetMatch(target.ProcessName, target.ExecutablePath,
+                    processName, executablePath) &&
+                IsEarlyInjectionGateSatisfied(pid, target, out _);
+        }
+
+        private static bool IsEarlyInjectionGateSatisfied(int pid,
+            EarlyInjectionTarget target, out string error)
+        {
+            error = null;
+            if (target == null || string.IsNullOrWhiteSpace(target.RequiredModuleName))
+            {
+                error = "no safe early-injection module gate configured";
+                return false;
+            }
+            return HookTargetPolicy.TryFindLoadedModule(pid,
+                       target.RequiredModuleNames, out string loadedModule,
+                       out error) &&
+                !string.IsNullOrWhiteSpace(loadedModule);
+        }
+
+        internal static bool IsEarlyInjectionTargetMatch(string expectedProcessName,
+            string expectedExecutablePath, string actualProcessName,
+            string actualExecutablePath)
+        {
+            return !string.IsNullOrWhiteSpace(expectedProcessName) &&
+                !string.IsNullOrWhiteSpace(actualExecutablePath) &&
+                string.Equals(expectedProcessName, actualProcessName,
+                    StringComparison.OrdinalIgnoreCase) &&
+                (string.IsNullOrWhiteSpace(expectedExecutablePath) ||
+                 string.Equals(expectedExecutablePath, actualExecutablePath,
+                     StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static bool TryReadProcessIdentity(int pid, out string processName,
+            out string executablePath)
+        {
+            processName = null;
+            executablePath = null;
+            try
+            {
+                using (var process = Process.GetProcessById(pid))
+                    return TryReadProcessIdentity(process, out processName,
+                        out executablePath);
+            }
+            catch (Exception ex) when (ex is ArgumentException ||
+                                       ex is InvalidOperationException ||
+                                       ex is System.ComponentModel.Win32Exception ||
+                                       ex is NotSupportedException)
+            {
+                return false;
+            }
+        }
+
+        private static bool TryReadProcessIdentity(Process process,
+            out string processName, out string executablePath)
+        {
+            processName = null;
+            executablePath = null;
+            try
+            {
+                processName = process.ProcessName;
+                executablePath = process.MainModule?.FileName;
+                if (string.IsNullOrWhiteSpace(processName) ||
+                    string.IsNullOrWhiteSpace(executablePath))
+                    return false;
+                executablePath = Path.GetFullPath(executablePath);
+                return true;
+            }
+            catch (Exception ex) when (ex is ArgumentException ||
+                                       ex is InvalidOperationException ||
+                                       ex is System.ComponentModel.Win32Exception ||
+                                       ex is NotSupportedException ||
+                                       ex is IOException)
+            {
+                processName = null;
+                executablePath = null;
+                return false;
+            }
         }
 
         private void SetInjectionDelayStatus(int pid, HookCompatibilityProfile profile,
@@ -705,6 +1155,12 @@ namespace CapFrameX.OSD.Integration
             SetInjectionStatus(pid, inProgress: false, succeeded: false, error: null);
         }
 
+        private void ReleaseEarlyInjectionReservation(int pid)
+        {
+            ReleaseInjectionReservation(pid);
+            ArmEarlyInjectionProbe(TimeSpan.FromMilliseconds(EarlyInjectionPollMs));
+        }
+
         private TimeSpan RegisterInjectionFailure(int pid, string error)
         {
             TimeSpan retryDelay;
@@ -714,16 +1170,27 @@ namespace CapFrameX.OSD.Integration
                 // Publish the retry deadline before releasing the reservation so a frame
                 // cannot start another injection attempt in between.
                 _injected.Remove(pid);
+                _successfulInjections.Remove(pid);
             }
             SetInjectionStatus(pid, inProgress: false, succeeded: false,
                 error: string.IsNullOrWhiteSpace(error) ? "injection failed" : error);
             return retryDelay;
         }
 
+        private TimeSpan RegisterEarlyInjectionFailure(int pid, string error)
+        {
+            TimeSpan retryDelay = RegisterInjectionFailure(pid, error);
+            ArmEarlyInjectionProbe(retryDelay);
+            return retryDelay;
+        }
+
         private void RegisterInjectionSuccess(int pid)
         {
             lock (_gate)
+            {
                 _injectionRetryBackoff.Reset(pid);
+                _successfulInjections.Add(pid);
+            }
             SetInjectionStatus(pid, inProgress: false, succeeded: true, error: null);
         }
 
@@ -763,6 +1230,7 @@ namespace CapFrameX.OSD.Integration
         {
             bool changed = false;
             bool fallbackEnabled = false;
+            bool rememberEarlyInjectionTarget = false;
             string reason = null;
             lock (_stateGate)
             {
@@ -788,8 +1256,11 @@ namespace CapFrameX.OSD.Integration
                         {
                             if (_firstPresentWaitingSinceTickMs == 0)
                                 _firstPresentWaitingSinceTickMs = nowTickMs;
-                            _firstPresentTimedOut = HasFirstPresentTimedOut(
+                            bool timedOut = HasFirstPresentTimedOut(
                                 _firstPresentWaitingSinceTickMs, nowTickMs);
+                            if (timedOut && !_firstPresentTimedOut)
+                                rememberEarlyInjectionTarget = true;
+                            _firstPresentTimedOut = timedOut;
                             _rendererInitializingSinceTickMs = 0;
                         }
                         else
@@ -868,6 +1339,8 @@ namespace CapFrameX.OSD.Integration
                 }
             }
 
+            if (rememberEarlyInjectionTarget)
+                RememberEarlyInjectionTarget(pid);
             if (!changed) return;
 
             if (fallbackEnabled)
@@ -1431,6 +1904,7 @@ namespace CapFrameX.OSD.Integration
             lock (_gate)
             {
                 _injected.RemoveWhere(p => !IsProcessAlive(p));
+                _successfulInjections.RemoveWhere(p => !IsProcessAlive(p));
                 _injectionRetryBackoff.Prune(IsProcessAlive);
                 _compatibilityDelay.Prune(IsProcessAlive);
                 VulkanLayerModuleProbe.Prune(IsProcessAlive);
@@ -1496,6 +1970,23 @@ namespace CapFrameX.OSD.Integration
             catch (NotSupportedException) { return true; }
         }
 
+        private sealed class EarlyInjectionTarget
+        {
+            internal EarlyInjectionTarget(string processName, string executablePath,
+                string requiredModuleName)
+            {
+                ProcessName = processName;
+                ExecutablePath = executablePath;
+                RequiredModuleName = requiredModuleName;
+                RequiredModuleNames = new[] { requiredModuleName };
+            }
+
+            internal string ProcessName { get; }
+            internal string ExecutablePath { get; }
+            internal string RequiredModuleName { get; }
+            internal string[] RequiredModuleNames { get; }
+        }
+
         // Resolve a staged hook DLL relative to the app-output 'hook' folder: the x64 DLL
         // ("cfx_osd_hook.dll") or the x86 DLL ("x86\cfx_osd_hook.dll"). The build stages these into
         // 'hook' (not next to the exe) so a game locking the injected COPY never touches the app
@@ -1529,6 +2020,7 @@ namespace CapFrameX.OSD.Integration
                 _hookFreeFallbackStream.Dispose();
             }
             _statusTimer?.Dispose();
+            _earlyInjectionTimer?.Dispose();
             _pidSub?.Dispose();
             _enabledSub?.Dispose();
             _visibilitySub?.Dispose();

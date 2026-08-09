@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <HookCompatibilityProfiles version="1">
-  <!-- Curated translations of RTSS 7.3.7 ProfileTemplates. Only settings whose
-       semantics match the CapFrameX hook are represented here. -->
+  <!-- Curated compatibility settings from RTSS templates and CapFrameX validation. -->
   <Profile executable="BF1.exe"
            disableDxgiSwapchainReleaseHook="true"
            source="RTSS 7.3.7 ProfileTemplates/BF1.exe.cfg" />
@@ -17,4 +16,7 @@
   <Profile executable="dirt5.exe"
            injectionDelayMilliseconds="15000"
            source="RTSS 7.3.7 ProfileTemplates/dirt5.exe.cfg: InjectionDelayDirect3D12=1; Global: InjectionDelay=15000" />
+  <Profile executable="DyingLightGame_TheBeast_x64_rwdi.exe"
+           earlyInjectionModule="sl.interposer.dll"
+           source="CapFrameX validation: inject after Streamline is mapped, never during the process CRT startup phase" />
 </HookCompatibilityProfiles>

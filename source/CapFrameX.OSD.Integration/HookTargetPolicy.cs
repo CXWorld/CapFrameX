@@ -128,6 +128,18 @@ namespace CapFrameX.OSD.Integration
             }
         }
 
+        // A process can become visible a few milliseconds before its loader has exposed a stable
+        // module list. Early injection retries these readiness failures immediately; a real policy
+        // denial (blacklist or anti-cheat marker) continues through the normal bounded backoff.
+        internal static bool IsTransientStartupFailure(string reason)
+        {
+            if (string.IsNullOrWhiteSpace(reason)) return false;
+            return reason.StartsWith("process identity check failed", StringComparison.Ordinal) ||
+                reason.StartsWith("module scan failed", StringComparison.Ordinal) ||
+                reason.StartsWith("module scan returned no modules", StringComparison.Ordinal) ||
+                reason.StartsWith("module enumeration failed", StringComparison.Ordinal);
+        }
+
         internal static bool HasAntiCheatMarker(string moduleName, string path, out string marker)
         {
             foreach (string candidate in AntiCheatMarkers)
@@ -162,6 +174,92 @@ namespace CapFrameX.OSD.Integration
 
             reason = null;
             return false;
+        }
+
+        /// <summary>
+        /// Scans a live target without caching and returns the first requested module that is
+        /// currently mapped. A successful scan with no match returns true and a null module.
+        /// Early injection uses this as a loader milestone so it never runs merely because the
+        /// process object became visible while the executable's CRT is still starting.
+        /// </summary>
+        internal static bool TryFindLoadedModule(int pid,
+            IEnumerable<string> requestedModules, out string loadedModule,
+            out string error)
+        {
+            loadedModule = null;
+            error = null;
+            if (pid <= 0)
+            {
+                error = "no target process";
+                return false;
+            }
+
+            var requested = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (requestedModules != null)
+            {
+                foreach (string module in requestedModules)
+                {
+                    if (!string.IsNullOrWhiteSpace(module))
+                        requested.Add(Path.GetFileName(module));
+                }
+            }
+            if (requested.Count == 0)
+            {
+                error = "no module names requested";
+                return false;
+            }
+
+            IntPtr snapshot = InvalidHandleValue;
+            int snapshotError = 0;
+            for (int attempt = 0; attempt < 3; attempt++)
+            {
+                snapshot = CreateToolhelp32Snapshot(Th32csSnapModule | Th32csSnapModule32,
+                    unchecked((uint)pid));
+                if (snapshot != InvalidHandleValue) break;
+                snapshotError = Marshal.GetLastWin32Error();
+                if (snapshotError != ErrorBadLength) break;
+            }
+
+            if (snapshot == InvalidHandleValue)
+            {
+                error = $"module scan failed ({snapshotError})";
+                return false;
+            }
+
+            try
+            {
+                var entry = new ModuleEntry32 { Size = (uint)Marshal.SizeOf<ModuleEntry32>() };
+                if (!Module32FirstW(snapshot, ref entry))
+                {
+                    error = $"module scan returned no modules ({Marshal.GetLastWin32Error()})";
+                    return false;
+                }
+
+                do
+                {
+                    if (!string.IsNullOrWhiteSpace(entry.ModuleName) &&
+                        requested.Contains(entry.ModuleName))
+                    {
+                        loadedModule = entry.ModuleName;
+                        return true;
+                    }
+                    entry.Size = (uint)Marshal.SizeOf<ModuleEntry32>();
+                }
+                while (Module32NextW(snapshot, ref entry));
+
+                int enumerationError = Marshal.GetLastWin32Error();
+                if (enumerationError != ErrorNoMoreFiles)
+                {
+                    error = $"module enumeration failed ({enumerationError})";
+                    return false;
+                }
+
+                return true;
+            }
+            finally
+            {
+                CloseHandle(snapshot);
+            }
         }
 
         /// <summary>

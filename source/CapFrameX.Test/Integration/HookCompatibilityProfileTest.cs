@@ -40,6 +40,21 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void Catalog_RequiresEarlyInjectionForDyingLightTheBeast()
+        {
+            Assert.IsTrue(HookCompatibilityProfileCatalog.TryGet(
+                "DyingLightGame_TheBeast_x64_rwdi.exe",
+                out HookCompatibilityProfile profile));
+            Assert.IsTrue(profile.RequiresEarlyInjection);
+            Assert.AreEqual("sl.interposer.dll", profile.EarlyInjectionModule);
+            Assert.AreEqual(NativeHookCompatibilityFlags.None, profile.NativeFlags);
+            Assert.AreEqual(TimeSpan.Zero, profile.InjectionDelay);
+            CollectionAssert.Contains(
+                new System.Collections.Generic.List<HookCompatibilityProfile>(
+                    HookCompatibilityProfileCatalog.GetEarlyInjectionProfiles()), profile);
+        }
+
+        [TestMethod]
         public void CompatibilityDelay_IsAppliedOncePerPid()
         {
             long timestamp = 1000;

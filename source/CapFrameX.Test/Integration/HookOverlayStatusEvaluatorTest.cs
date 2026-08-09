@@ -1,6 +1,10 @@
+using System.Diagnostics;
+using System.Reactive.Subjects;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.OSD.Integration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace CapFrameX.Test.Integration
 {
@@ -296,6 +300,59 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void EarlyInjectionTargetMatch_RequiresTheSameExecutableIdentity()
+        {
+            const string path =
+                @"C:\Games\Dying Light The Beast\DyingLightGame_TheBeast_x64_rwdi.exe";
+
+            Assert.IsTrue(HookOverlayManager.IsEarlyInjectionTargetMatch(
+                "DyingLightGame_TheBeast_x64_rwdi", path,
+                "dyinglightgame_thebeast_x64_rwdi", path.ToUpperInvariant()));
+            Assert.IsTrue(HookOverlayManager.IsEarlyInjectionTargetMatch(
+                "DyingLightGame_TheBeast_x64_rwdi", null,
+                "dyinglightgame_thebeast_x64_rwdi", path));
+            Assert.IsFalse(HookOverlayManager.IsEarlyInjectionTargetMatch(
+                "DyingLightGame_TheBeast_x64_rwdi", path,
+                "DyingLightGame_TheBeast_x64_rwdi", @"D:\Other\game.exe"));
+            Assert.IsFalse(HookOverlayManager.IsEarlyInjectionTargetMatch(
+                "DyingLightGame_TheBeast_x64_rwdi", path,
+                "unrelated", path));
+        }
+
+        [TestMethod]
+        public void EarlyInjectionModuleGate_RequiresAMappedModule()
+        {
+            int processId = Process.GetCurrentProcess().Id;
+
+            Assert.IsTrue(HookTargetPolicy.TryFindLoadedModule(processId,
+                new[] { "kernel32.dll" }, out string loadedModule,
+                out string error), error);
+            Assert.IsTrue(string.Equals("kernel32.dll", loadedModule,
+                System.StringComparison.OrdinalIgnoreCase));
+
+            Assert.IsTrue(HookTargetPolicy.TryFindLoadedModule(processId,
+                new[] { "definitely-not-loaded-cfx-test.dll" },
+                out loadedModule, out error), error);
+            Assert.IsNull(loadedModule);
+        }
+
+        [TestMethod]
+        public void Constructor_AcceptsTheBehaviorSubjectsSynchronousInitialPid()
+        {
+            using var changes = new Subject<(string key, object value)>();
+            using var pids = new BehaviorSubject<int>(0);
+            using var rows = new Subject<string[]>();
+            var configuration = new Mock<IAppConfiguration>();
+            configuration.SetupGet(x => x.OnValueChanged).Returns(changes);
+            configuration.SetupGet(x => x.EnableHookOverlay).Returns(true);
+            configuration.SetupGet(x => x.IsOverlayActive).Returns(true);
+
+            using var manager = new HookOverlayManager(configuration.Object, pids, rows,
+                processIdColumnIndex: 0, runtimeColumnIndex: 1,
+                dllPathOverride: @"C:\missing\cfx_osd_hook.dll");
+        }
+
+        [TestMethod]
         public void ShouldUseHookFreeFallback_UsesFallbackForD3D9()
         {
             bool useFallback = HookOverlayManager.ShouldUseHookFreeFallback(
@@ -427,6 +484,19 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(HookTargetPolicy.IsInjectionBlacklisted(
                 "VALORANT-Win64-Shipping.exe", out _));
             Assert.IsFalse(HookTargetPolicy.IsInjectionBlacklisted("hl2.exe", out _));
+        }
+
+        [TestMethod]
+        public void HookTargetPolicy_OnlyTreatsLoaderReadinessErrorsAsTransient()
+        {
+            Assert.IsTrue(HookTargetPolicy.IsTransientStartupFailure(
+                "module scan returned no modules (18)"));
+            Assert.IsTrue(HookTargetPolicy.IsTransientStartupFailure(
+                "process identity check failed (process is still starting)"));
+            Assert.IsFalse(HookTargetPolicy.IsTransientStartupFailure(
+                "anti-cheat module 'beclient_x64.dll' matched 'beclient'"));
+            Assert.IsFalse(HookTargetPolicy.IsTransientStartupFailure(
+                "process 'cs2' is on the in-game injection blacklist"));
         }
 
         /// <summary>
