@@ -799,6 +799,9 @@
                 <Component Id="cmpFE4DB43903D5E98C8998C262D9986373" Guid="*" Win64="yes">
                     <File Id="filC62398BC67A23124C623F535B0898526" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\hook\cfx_osd_hook.dll" />
                 </Component>
+                <Component Id="cmp5846B05895F916FC3471933452E58AC2" Guid="*" Win64="yes">
+                    <File Id="fil488DEF4B554419358590851C0D7A9AFF" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\hook\MinHook.LICENSE.txt" />
+                </Component>
                 <Directory Id="dir5B4F1D6B0A7085A89BDC9C1B43165D27" Name="x86">
                     <Component Id="cmp916768CCA957B024FA3E5120C4E792E2" Guid="*" Win64="yes">
                         <File Id="filBE67009E71DE81E2327D5883737A10BC" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\hook\x86\cfx_osd_hook.dll" />
@@ -1465,6 +1468,7 @@
             <ComponentRef Id="cmp3EB7F17B0DCBDF3729FDAAAF0CF6B665" />
             <ComponentRef Id="cmpEEF8583F33AC9DCDC349C22B5162CEF5" />
             <ComponentRef Id="cmpFE4DB43903D5E98C8998C262D9986373" />
+            <ComponentRef Id="cmp5846B05895F916FC3471933452E58AC2" />
             <ComponentRef Id="cmp916768CCA957B024FA3E5120C4E792E2" />
             <ComponentRef Id="cmpFB118A47202A6B98ED49B3C952C22F35" />
             <ComponentRef Id="cmpA2349B128022FD9468B4B0472DF8814A" />

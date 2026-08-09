@@ -85,6 +85,19 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <!-- MinHook is linked statically into both DXGI hook DLLs. Ship its BSD license once beside
+       the hook payload for both source and prebuilt builds. -->
+  <PropertyGroup>
+    <CfxOsdMinHookLicensePath Condition="'$(CfxOsdMinHookLicensePath)' == '' And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD\third_party\minhook\LICENSE.txt')">$(CfxOsdSubmoduleDir)CapFrameX.OSD\third_party\minhook\LICENSE.txt</CfxOsdMinHookLicensePath>
+    <CfxOsdMinHookLicensePath Condition="'$(CfxOsdMinHookLicensePath)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\MinHook.LICENSE.txt')">$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\MinHook.LICENSE.txt</CfxOsdMinHookLicensePath>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(CfxOsdMinHookLicensePath)' != ''">
+    <Content Include="$(CfxOsdMinHookLicensePath)">
+      <Link>hook\MinHook.LICENSE.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <!-- Vulkan implicit layer, one folder per bitness: 'vulkan' (x64) and 'vulkan\x86', the same
        split the hook already uses. The installer registers each manifest in the matching
        registry view — a wrong-bitness entry does not merely fail to load, it shadows the
