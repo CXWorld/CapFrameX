@@ -120,6 +120,12 @@ public:
 		TrimLeft();
 	}
 
+	// C4793: a variadic function cannot be emitted as MSIL, so under /clr the compiler falls back
+	// to native code generation for Format and reports what it did. That is the intended outcome -
+	// the whole point of this helper is printf-style formatting against the CRT - and the callers
+	// are native C++ anyway. Nothing to fix, so the notice is silenced where it originates.
+#pragma warning(push)
+#pragma warning(disable : 4793)
 	void Format(LPCSTR format, ...)
 	{
 		if (format == nullptr)
@@ -145,6 +151,7 @@ public:
 		va_end(arguments);
 		m_value = buffer;
 	}
+#pragma warning(pop)
 
 	const std::string& Std() const { return m_value; }
 

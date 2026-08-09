@@ -451,6 +451,12 @@ DWORD RTSSCoreControl::EmbedGraph(DWORD dwOffset, FLOAT* lpBuffer, DWORD dwBuffe
 	return dwResult;
 }
 
+// C4793: _interlockedbittestandset below is a compiler intrinsic with no MSIL equivalent, so the
+// compiler emits this whole function as native code and reports that it did. That is required, not
+// incidental - the bit it sets is RTSS's shared-memory OSD lock, which is only correct if the test
+// and the set are one atomic instruction. Silenced here because there is nothing to repair.
+#pragma warning(push)
+#pragma warning(disable : 4793)
 BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
 {
 	BOOL bResult = FALSE;
@@ -525,6 +531,7 @@ BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
 
 	return bResult;
 }
+#pragma warning(pop)
 
 void RTSSCoreControl::ReleaseOSD()
 {
