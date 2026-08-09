@@ -9,21 +9,21 @@ CapFrameX is a Windows desktop application for frametime capture and analysis, b
 ## Build Commands
 
 ### Prerequisites
-- Visual Studio 2022
-- WiX Toolset v3.14.1 ([wix314.exe](https://github.com/wixtoolset/wix3/releases/tag/wix3141rtm)) — **v3 only**, v4+ uses an incompatible SDK-style project format. It sets the `WIX` environment variable that the installer's `heat.exe` pre-build step needs, and installs the targets under `Program Files (x86)\MSBuild\Microsoft\WiX\v3.x\`. The separate VS 2022 extension only adds IDE integration and is not required for the msbuild command line.
+- Visual Studio 2026 (toolset v145; the native projects pin it)
+- WiX Toolset v3.14.1 ([wix314.exe](https://github.com/wixtoolset/wix3/releases/tag/wix3141rtm)) — **v3 only**, v4+ uses an incompatible SDK-style project format. It sets the `WIX` environment variable that the installer's `heat.exe` pre-build step needs, and installs the targets under `Program Files (x86)\MSBuild\Microsoft\WiX\v3.x\`. The separate Visual Studio extension only adds IDE integration and is not required for the msbuild command line.
 - C++ MFC build tools
 
 ### Build the Main Application
 ```bash
 nuget restore CapFrameX.sln
-msbuild source\CapFrameX\CapFrameX.csproj /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=17.0
+msbuild source\CapFrameX\CapFrameX.csproj /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0
 ```
 
 ### Build Native C++ Components (required for full functionality)
 ```bash
-msbuild source\CapFrameX.Hwinfo\CapFrameX.Hwinfo.vcxproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=17.0
-msbuild source\CapFrameX.IGCL\CapFrameX.IGCL.vcxproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=17.0
-msbuild source\CapFrameX.ADLX\CapFrameX.ADLX.vcxproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=17.0
+msbuild source\CapFrameX.Hwinfo\CapFrameX.Hwinfo.vcxproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0
+msbuild source\CapFrameX.IGCL\CapFrameX.IGCL.vcxproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0
+msbuild source\CapFrameX.ADLX\CapFrameX.ADLX.vcxproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0
 ```
 
 ### Build Installer

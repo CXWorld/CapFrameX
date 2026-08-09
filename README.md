@@ -337,9 +337,9 @@ Potential conflicts with the Nuget packages can be solved via Package Manger Con
 * Microsoft Visual C++ Redistributable Package (installer check)
 
 # Build requirements
-* MS Visual Studio 2022
+* MS Visual Studio 2026
 * WiX V3.14.1
-* WiX Toolset Visual Studio 2022 Extension
+* WiX Toolset Visual Studio Extension (optional, IDE integration only)
 * WiX Toolset and VS Extension: http://wixtoolset.org/releases/
 * C++ MFC build tools
 

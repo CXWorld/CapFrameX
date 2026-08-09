@@ -9,7 +9,7 @@ pipeline {
                 // Legacy packages.config projects (e.g. CapFrameX.CustomInstallerActions used by the installer)
                 bat "nuget restore CapFrameX.sln"
                 // SDK-style net9.0-windows project graph
-                bat "msbuild source\\CapFrameX\\CapFrameX.csproj /t:Restore /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=17.0"
+                bat "msbuild source\\CapFrameX\\CapFrameX.csproj /t:Restore /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0"
             }
         }
 
@@ -19,25 +19,25 @@ pipeline {
                     stages {
                         stage('Build CX') {
                             steps {
-                                bat "msbuild source\\CapFrameX\\CapFrameX.csproj /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
+                                bat "msbuild source\\CapFrameX\\CapFrameX.csproj /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=18.0"
                             }
                         }
 
 						stage('Build HWInfo') {
 							steps {
-								bat "msbuild source\\CapFrameX.Hwinfo\\CapFrameX.Hwinfo.vcxproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
+								bat "msbuild source\\CapFrameX.Hwinfo\\CapFrameX.Hwinfo.vcxproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=18.0"
 							}
 						}
 
 						stage('Build IGCL') {
 							steps {
-								bat "msbuild source\\CapFrameX.IGCL\\CapFrameX.IGCL.vcxproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
+								bat "msbuild source\\CapFrameX.IGCL\\CapFrameX.IGCL.vcxproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=18.0"
 							}
 						}
 
 			    		stage('Build ADLX') {
 							steps {
-								bat "msbuild source\\CapFrameX.ADLX\\CapFrameX.ADLX.vcxproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
+								bat "msbuild source\\CapFrameX.ADLX\\CapFrameX.ADLX.vcxproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=18.0"
 							}
 						}
 
@@ -53,13 +53,13 @@ pipeline {
 
                         stage('Build Installer') {
                             steps {
-                                bat "msbuild source\\CapFrameXInstaller\\CapFrameXInstaller.wixproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
+                                bat "msbuild source\\CapFrameXInstaller\\CapFrameXInstaller.wixproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=18.0"
                             }
                         }
 
                         stage('Build Bootstrapper') {
                             steps {
-                                bat "msbuild source\\CapFrameXBootstrapper\\CapFrameXBootstrapper.wixproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
+                                bat "msbuild source\\CapFrameXBootstrapper\\CapFrameXBootstrapper.wixproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=18.0"
                             }
                         }
                     }
