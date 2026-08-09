@@ -832,13 +832,13 @@ namespace CapFrameX.ViewModel
             {
                 // FileRecordInfo already contains these fields, so the editor can update without
                 // waiting for the complete capture to be parsed on the background thread.
-                CustomCpuDescription = string.Copy(selectedRecordInfo.ProcessorName ?? string.Empty);
-                CustomGpuDescription = string.Copy(selectedRecordInfo.GraphicCardName ?? string.Empty);
-                CustomRamDescription = string.Copy(selectedRecordInfo.SystemRamInfo ?? string.Empty);
-                CustomMainboardDescription = string.Copy(selectedRecordInfo.MotherboardName ?? string.Empty);
-                CustomGameName = string.Copy(selectedRecordInfo.GameName ?? string.Empty);
-                CustomComment = string.Copy(selectedRecordInfo.Comment ?? string.Empty);
-                CustomResolution = string.Copy(selectedRecordInfo.Resolution ?? string.Empty);
+                CustomCpuDescription = selectedRecordInfo.ProcessorName ?? string.Empty;
+                CustomGpuDescription = selectedRecordInfo.GraphicCardName ?? string.Empty;
+                CustomRamDescription = selectedRecordInfo.SystemRamInfo ?? string.Empty;
+                CustomMainboardDescription = selectedRecordInfo.MotherboardName ?? string.Empty;
+                CustomGameName = selectedRecordInfo.GameName ?? string.Empty;
+                CustomComment = selectedRecordInfo.Comment ?? string.Empty;
+                CustomResolution = selectedRecordInfo.Resolution ?? string.Empty;
                 ResetDescriptionChangedFlags();
                 _selectedSessionTask = LoadSelectedSessionAsync(selectedRecordInfo, selectionVersion,
                     newCancellation.Token);
