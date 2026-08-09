@@ -17,6 +17,10 @@ using Windows.Win32.System.Ioctl;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
+/// <summary>
+/// Base class for all storage devices, providing the drive performance sensors that are
+/// independent of the underlying bus.
+/// </summary>
 public abstract class AbstractStorage : Hardware
 {
     private const double BytesPerGigabyte = 1_000_000_000d;
@@ -66,12 +70,22 @@ public abstract class AbstractStorage : Hardware
         DriveInfos = driveInfoList.ToArray();
     }
 
+    /// <summary>
+    /// Gets the logical drives that reside on this storage device.
+    /// </summary>
     public DriveInfo[] DriveInfos { get; }
 
+    /// <summary>
+    /// Gets the firmware revision reported by the device.
+    /// </summary>
     public string FirmwareRevision { get; }
 
+    /// <inheritdoc />
     public override HardwareType HardwareType => HardwareType.Storage;
 
+    /// <summary>
+    /// Gets the zero-based index of the physical drive.
+    /// </summary>
     public int Index { get; }
 
     internal void SetSensorConfig(ISensorConfig sensorConfig)
@@ -86,6 +100,15 @@ public abstract class AbstractStorage : Hardware
         base.Close();
     }
 
+    /// <summary>
+    /// Creates the storage implementation that matches the bus type of the given device.
+    /// </summary>
+    /// <param name="deviceId">The device path of the physical drive.</param>
+    /// <param name="driveNumber">The number of the physical drive.</param>
+    /// <param name="diskSize">The size of the drive in bytes.</param>
+    /// <param name="scsiPort">The SCSI port the drive is attached to.</param>
+    /// <param name="settings">Additional settings passed by the <see cref="IComputer" />.</param>
+    /// <returns>The storage instance, or <see langword="null" /> if the device is not supported.</returns>
     public static AbstractStorage CreateInstance(string deviceId, uint driveNumber, ulong diskSize, int scsiPort, ISettings settings)
     {
         StorageInfo info = WindowsStorage.GetStorageInfo(deviceId, driveNumber);
@@ -117,6 +140,9 @@ public abstract class AbstractStorage : Hardware
             : StorageGeneric.CreateInstance(info, settings);
     }
 
+    /// <summary>
+    /// Creates the sensors of the device. Overrides add their device-specific sensors and call the base implementation.
+    /// </summary>
     protected virtual void CreateSensors()
     {
         if (DriveInfos.Length > 0)
@@ -147,14 +173,20 @@ public abstract class AbstractStorage : Hardware
         ActivateSensor(_sensorDiskWriteRate);
     }
 
+    /// <summary>
+    /// Reads the device-specific sensors of the device.
+    /// </summary>
     protected abstract void UpdateSensors();
 
-    // Normalises any storage sensor label so the entire Storage subsystem
-    // surfaces sensors with a uniform "Drive " prefix. Used by both the SMART
-    // attribute path (ATAStorage) and the NVMe AddSensor helper (NVMeGeneric).
-    // Names that already start with "Drive " are passed through unchanged;
-    // any "Disk " prefix (from SmartNames.DiskShift etc.) is rewritten to
-    // "Drive " so flat OSD lists use one consistent vocabulary.
+    /// <summary>
+    /// Normalises any storage sensor label so the entire Storage subsystem surfaces sensors with a
+    /// uniform "Drive " prefix. Used by both the SMART attribute path (ATAStorage) and the NVMe
+    /// AddSensor helper (NVMeGeneric). Names that already start with "Drive " are passed through
+    /// unchanged; any "Disk " prefix (from <see cref="SmartNames.DiskShift" /> etc.) is rewritten to
+    /// "Drive " so flat OSD lists use one consistent vocabulary.
+    /// </summary>
+    /// <param name="sensorName">The sensor label to normalise.</param>
+    /// <returns>The label carrying the uniform "Drive " prefix.</returns>
     protected static string WithDrivePrefix(string sensorName)
     {
         if (string.IsNullOrEmpty(sensorName))
@@ -166,6 +198,7 @@ public abstract class AbstractStorage : Hardware
         return "Drive " + sensorName;
     }
 
+    /// <inheritdoc />
     public override void Update()
     {
         // Update statistics.
@@ -305,8 +338,13 @@ public abstract class AbstractStorage : Hardware
         _lastTime = currentTime;
     }
 
+    /// <summary>
+    /// Appends the device-specific part of the report.
+    /// </summary>
+    /// <param name="r">The builder collecting the report.</param>
     protected abstract void GetReport(StringBuilder r);
 
+    /// <inheritdoc />
     public override string GetReport()
     {
         var r = new StringBuilder();
@@ -339,6 +377,7 @@ public abstract class AbstractStorage : Hardware
         return r.ToString();
     }
 
+    /// <inheritdoc />
     public override void Traverse(IVisitor visitor)
     {
         foreach (ISensor sensor in Sensors)

@@ -9,6 +9,9 @@ using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
+/// <summary>
+/// An NVMe storage device, monitored through its SMART health log.
+/// </summary>
 public sealed class NVMeGeneric : AbstractStorage
 {
     private const ulong Scale = 1000000;
@@ -41,6 +44,7 @@ public sealed class NVMeGeneric : AbstractStorage
         return nvmeInfo == null ? null : new NVMeGeneric(storageInfo, nvmeInfo, storageInfo.Index, settings);
     }
 
+    /// <inheritdoc />
     protected override void CreateSensors()
     {
         NVMeHealthInfo log = Smart.GetInitialHealthInfo();
@@ -85,6 +89,7 @@ public sealed class NVMeGeneric : AbstractStorage
         return Units * u / Scale;
     }
 
+    /// <inheritdoc />
     protected override void UpdateSensors()
     {
         Smart.RequestHealthInfo();
@@ -95,6 +100,7 @@ public sealed class NVMeGeneric : AbstractStorage
             sensor.Update(health);
     }
 
+    /// <inheritdoc />
     protected override void GetReport(StringBuilder r)
     {
         if (_info == null)
@@ -139,6 +145,7 @@ public sealed class NVMeGeneric : AbstractStorage
         }
     }
 
+    /// <inheritdoc />
     public override void Close()
     {
         Smart?.Close();

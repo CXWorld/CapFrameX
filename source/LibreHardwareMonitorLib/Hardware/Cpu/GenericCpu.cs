@@ -21,13 +21,28 @@ public class GenericCpu : Hardware
 {
     private const uint CPUID_CORE_MASK_STATUS = 0x1A;
 
+    /// <summary>The number of physical cores of the processor.</summary>
     protected readonly int _coreCount;
+
+    /// <summary>The CPUID data, indexed by core and then by thread.</summary>
     protected readonly CpuId[][] _cpuId;
+
+    /// <summary>The processor family reported by CPUID.</summary>
     protected readonly uint _family;
+
+    /// <summary>The processor model reported by CPUID.</summary>
     protected readonly uint _model;
+
+    /// <summary>The package type reported by CPUID.</summary>
     protected readonly uint _packageType;
+
+    /// <summary>The processor stepping reported by CPUID.</summary>
     protected readonly uint _stepping;
+
+    /// <summary>The number of logical threads of the processor.</summary>
     protected readonly int _threadCount;
+
+    /// <summary><see langword="true" /> when the processor mixes performance and efficiency cores.</summary>
     protected readonly bool _isHybrid;
     private protected readonly ISensorConfig _sensorConfig;
 

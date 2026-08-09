@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 
+#pragma warning disable CS1591 // file exempt from XML documentation
+
 namespace LibreHardwareMonitor.Hardware.Simulation;
 
 public enum SimulationMode

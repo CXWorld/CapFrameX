@@ -12,6 +12,8 @@ using LibreHardwareMonitor.Interop;
 using Serilog;
 using Windows.Win32.Storage.Nvme;
 
+#pragma warning disable CS1591 // file exempt from XML documentation
+
 namespace LibreHardwareMonitor.Hardware.Storage;
 
 public class NVMeSmart : IDisposable

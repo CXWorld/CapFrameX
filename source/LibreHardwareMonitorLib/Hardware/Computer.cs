@@ -362,7 +362,7 @@ public class Computer : IComputer
         }
     }
 
-    //// <inheritdoc />
+    /// <inheritdoc />
     public string GetReport()
     {
         lock (_lock)

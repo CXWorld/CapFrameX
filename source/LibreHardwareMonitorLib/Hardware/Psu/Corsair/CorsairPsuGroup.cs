@@ -9,6 +9,8 @@ using System.Linq;
 using System.Text;
 using HidSharp;
 
+#pragma warning disable CS1591 // file exempt from XML documentation
+
 namespace LibreHardwareMonitor.Hardware.Psu.Corsair;
 
 public class CorsairPsuGroup : IGroup
