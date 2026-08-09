@@ -9,10 +9,11 @@ the OSD is built from source instead and these files are ignored.
 
 ## Contents
 
-- `net472/`, `net9.0-windows/` — `CapFrameX.OSD.Interop.dll` (managed P/Invoke bridge, x64)
+- `net9.0-windows/` — `CapFrameX.OSD.Interop.dll` (managed P/Invoke bridge, x64)
 - `native/cfx_osd_core.dll` — native renderer (x64, RelWithDebInfo)
 - `native/cfx_osd_hook.dll` — x64 DXGI hook
-- `native/x86/` — x86 DXGI hook and injection helper
+- `native/x86/` — x86 DXGI hook. The hook DLL alone: `HookInjector` resolves the target's 32-bit
+  `LoadLibraryW` from the x64 app, so no separate 32-bit injector is shipped
 - `native/vk/` — x64 Vulkan implicit layer + versioned loader manifest
 - `native/vk/x86/` — the same pair for 32-bit Vulkan games
 
@@ -36,6 +37,12 @@ cd CapFrameX.OSD/vk_layer             # the 32-bit Vulkan layer is a separate bu
 cmake -B build-x86 -A Win32 && cmake --build build-x86 --config RelWithDebInfo
 ```
 
-Then copy the managed bridge, core, x64/x86 hooks, injection helper, and both Vulkan
-layers/manifests from their `RelWithDebInfo` outputs into the matching folders above, and bump
-the submodule to the matching commit.
+Then copy the managed bridge, core, x64/x86 hooks, and both Vulkan layers/manifests from their
+`RelWithDebInfo` outputs into the matching folders above, and bump the submodule to the matching
+commit. The Vulkan manifest is renamed on the way in: the build emits `cfx_osd_vklayer.json`,
+this tree keeps the versioned `cfx_osd_vklayer_v1.json`.
+
+Configure every native tree with the **same** toolset the core preset pins (`-G "Visual Studio 17
+2022"`). `hook_poc` and `vk_layer` take no preset, so omitting `-G` silently picks the newest
+installed Visual Studio and produces hook and layer DLLs built against a different toolset than
+the core — all three end up loaded in the same game process.
