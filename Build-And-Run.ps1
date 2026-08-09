@@ -38,25 +38,27 @@ function Get-VisualStudioInstances
     return @(& $vswherePath -all -products * -format json | ConvertFrom-Json)
 }
 
-function Get-V143BuildInstance
+function Get-V145BuildInstance
 {
     foreach ($instance in (Get-VisualStudioInstances | Sort-Object installationVersion -Descending))
     {
         $msbuildPath = Join-Path $instance.installationPath "MSBuild\Current\Bin\MSBuild.exe"
         $toolsRoot = Join-Path $instance.installationPath "VC\Tools\MSVC"
-        $v143Targets = Join-Path $instance.installationPath "MSBuild\Microsoft\VC\v170"
+        # The native projects pin PlatformToolset v145, whose targets live under VC\v180.
+        $v145Targets = Join-Path $instance.installationPath "MSBuild\Microsoft\VC\v180"
 
         if (-not (Test-Path -LiteralPath $msbuildPath) -or
             -not (Test-Path -LiteralPath $toolsRoot) -or
-            -not (Test-Path -LiteralPath $v143Targets))
+            -not (Test-Path -LiteralPath $v145Targets))
         {
             continue
         }
 
         $toolsets = Get-ChildItem -LiteralPath $toolsRoot -Directory -ErrorAction SilentlyContinue |
             Where-Object {
+                # v145 ships as MSVC 14.5x; an older VS side by side must not be picked.
                 $version = [Version]$_.Name
-                $version.Major -eq 14 -and $version.Minor -ge 30 -and $version.Minor -lt 50
+                $version.Major -eq 14 -and $version.Minor -ge 50
             } |
             Sort-Object { [Version]$_.Name } -Descending
 
@@ -80,7 +82,7 @@ function Get-V143BuildInstance
     return $null
 }
 
-function Install-V143Prerequisites
+function Install-V145Prerequisites
 {
     if (-not (Test-Path -LiteralPath $installerPath))
     {
@@ -102,10 +104,12 @@ function Install-V143Prerequisites
         throw "MSBuild is currently running. Close Visual Studio/build processes and run this same command again."
     }
 
-    Write-Host "Installing the v143 x64 compiler and C++/CLI prerequisites..." -ForegroundColor Cyan
+    Write-Host "Installing the v145 x64 compiler and C++/CLI prerequisites..." -ForegroundColor Cyan
+    # Version-neutral component ids: they resolve to the instance's current toolset, so this does
+    # not have to be touched again on the next Visual Studio release.
     $arguments = 'modify --installPath "' + $targetInstance.installationPath +
-        '" --add Microsoft.VisualStudio.Component.VC.14.44.17.14.x86.x64' +
-        ' --add Microsoft.VisualStudio.Component.VC.14.44.17.14.CLI.Support' +
+        '" --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64' +
+        ' --add Microsoft.VisualStudio.Component.VC.CLI.Support' +
         ' --quiet --norestart'
 
     $installer = Start-Process -FilePath $installerPath -Verb RunAs -ArgumentList $arguments -Wait -PassThru
@@ -239,21 +243,21 @@ function Stop-RunningOutputProcesses
 Push-Location $repositoryRoot
 try
 {
-    $buildInstance = Get-V143BuildInstance
+    $buildInstance = Get-V145BuildInstance
     if ($null -eq $buildInstance)
     {
         if (-not $InstallPrerequisites)
         {
-            throw "The v143 x64 compiler or C++/CLI support is missing. Rerun with -InstallPrerequisites to let Visual Studio Installer add the required components."
+            throw "The v145 x64 compiler or C++/CLI support is missing. Rerun with -InstallPrerequisites to let Visual Studio Installer add the required components."
         }
 
-        Install-V143Prerequisites
-        $buildInstance = Get-V143BuildInstance
+        Install-V145Prerequisites
+        $buildInstance = Get-V145BuildInstance
     }
 
     if ($null -eq $buildInstance)
     {
-        throw "The v143 compiler or C++/CLI support is still unavailable after installation."
+        throw "The v145 compiler or C++/CLI support is still unavailable after installation."
     }
 
     if (-not (Test-Path -LiteralPath $nugetPath))
