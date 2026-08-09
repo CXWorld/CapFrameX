@@ -1,6 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;netstandard2.0;net8.0;net9.0</TargetFrameworks>
+    <!-- Only the framework this repo actually consumes. The upstream netstandard2.0/net8.0 targets
+         found no matching TFM in the referenced CapFrameX projects and silently fell back to
+         net472, which dragged the .NET Framework dependency graph into a .NET Core compilation
+         (NU1702 + MSB3277 conflicts on Microsoft.Extensions.Logging.Abstractions and
+         System.Net.Http). net472 itself became unused once the PmcReader plugin moved to .NET 9. -->
+    <TargetFramework>net9.0</TargetFramework>
     <AssemblyName>LibreHardwareMonitorLib</AssemblyName>
     <RootNamespace>LibreHardwareMonitor</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -96,14 +101,12 @@
     <EmbeddedResource Include="Resources\PawnIO\Nvidia.bin" />
     <EmbeddedResource Include="Resources\PawnIO\ZhaoxinMSR.bin" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
+  <ItemGroup>
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="10.0.1" />
     <PackageReference Include="System.IO.Ports" Version="10.0.1" />
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="HidSharp" Version="2.6.3" />
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.205">
       <PrivateAssets>all</PrivateAssets>
@@ -112,7 +115,6 @@
     <PackageReference Include="RAMSPDToolkit-NDD" Version="1.6.0" />
     <PackageReference Include="Serilog" Version="2.9.0" />
     <PackageReference Include="System.Management" Version="10.0.3" />
-    <PackageReference Include="System.Memory" Version="4.6.3" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="System.Reactive" Version="6.1.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
     <PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
