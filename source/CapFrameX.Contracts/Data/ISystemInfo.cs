@@ -26,7 +26,15 @@
 
         string GetMotherboardName();
 
+        string GetMotherboardManufacturerBrand();
+
+        string GetBiosVersion();
+
         string GetSystemRAMInfoName();
+
+        string GetSystemRAMManufacturer();
+
+        string GetProcessorCoreCountInfo();
 
         void SetSystemInfosStatus();
 

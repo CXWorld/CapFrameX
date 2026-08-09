@@ -15,6 +15,13 @@ namespace CapFrameX.Monitoring.Contracts
 
         bool WsActiveSensorsEnabled { get; set; }
 
+        /// <summary>
+        /// Forces evaluation of every sensor regardless of the logging/overlay selection.
+        /// Set while a live-telemetry consumer without its own selection (the Info tab)
+        /// is visible; the flag also keeps the sensor snapshot stream running.
+        /// </summary>
+        bool EvaluateAllSensors { get; set; }
+
         int SensorLoggingRefreshPeriod { get; set; }
 
         bool IsSelectedForLogging(string identifier);

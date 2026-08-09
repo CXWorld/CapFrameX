@@ -25,6 +25,9 @@ namespace CapFrameX
                     isCaptureServiceCompatible = CaptureServiceInfo.IsCompatibleWithRunningOS;
                 }
 
+                // First DataRegion registration = startup view; must match the
+                // ColorbarViewModel default (InfoIsChecked).
+                RegisterViewWithTiming("DataRegion", typeof(InfoView));
                 if (isCaptureServiceCompatible)
                     RegisterViewWithTiming("DataRegion", typeof(CaptureView));
                 RegisterViewWithTiming("DataRegion", typeof(OverlayView));

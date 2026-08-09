@@ -48,7 +48,10 @@ namespace CapFrameX.ViewModel
         public PubSubEvent<ViewMessages.OptionPopupClosed> OptionPopupClosed;
         public PubSubEvent<ViewMessages.ThemeChanged> _themeChanged;
 
-        private bool _captureIsChecked = true;
+        // The Info tab is the leading tab and the startup view (see CapFrameXViewRegion,
+        // which registers InfoView first so the region activates it initially).
+        private bool _infoIsChecked = true;
+        private bool _captureIsChecked;
         private bool _overlayIsChecked;
         private bool _singleRecordIsChecked;
         private bool _recordComparisonIsChecked;
@@ -76,9 +79,22 @@ namespace CapFrameX.ViewModel
         public string SensorsWSUrl => WebserverFactory.SensorsWSUrl;
         public string ActiveSensorsWSUrl => WebserverFactory.ActiveSensorsWSUrl;
 
-        public string CurrentPageName { get; set; }
+        public string CurrentPageName { get; set; } = "Info";
 
         public IFileRecordInfo RecordInfo { get; set; }
+
+        public bool InfoIsChecked
+        {
+            get { return _infoIsChecked; }
+            set
+            {
+                _infoIsChecked = value;
+                RaisePropertyChanged();
+
+                if (value)
+                    OnInfoIsCheckedChanged();
+            }
+        }
 
         public bool CaptureIsChecked
         {
@@ -814,6 +830,12 @@ namespace CapFrameX.ViewModel
                 Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
             }
             catch { _logger.LogError("Error while opening screenshot folder."); }
+        }
+
+        private void OnInfoIsCheckedChanged()
+        {
+            _regionManager.RequestNavigate("DataRegion", "InfoView");
+            CurrentPageName = "Info";
         }
 
         private void OnCaptureIsCheckedChanged()

@@ -43,6 +43,15 @@ namespace CapFrameX.Sensor
 
         public bool WsActiveSensorsEnabled { get; set; }
 
+        // Written from the UI thread, read from the sensor update loop.
+        private volatile bool _evaluateAllSensors;
+
+        public bool EvaluateAllSensors
+        {
+            get => _evaluateAllSensors;
+            set => _evaluateAllSensors = value;
+        }
+
         public int SensorLoggingRefreshPeriod { get; set; }
 
         public SensorConfig(string sensorConfigFolder)
@@ -117,13 +126,16 @@ namespace CapFrameX.Sensor
 
         public bool GetSensorEvaluate(string identifier)
         {
+            // Keep registering first calls even while EvaluateAllSensors is set, so the
+            // per-identifier first-read bookkeeping stays consistent once the flag drops.
             if (!_sensorEvaluateFirstCallSeen.Contains(identifier))
             {
                 _sensorEvaluateFirstCallSeen.Add(identifier);
                 return true;
             }
 
-            return IsSelectedForLogging(identifier) || IsSelectedForOverlay(identifier);
+            return _evaluateAllSensors
+                || IsSelectedForLogging(identifier) || IsSelectedForOverlay(identifier);
         }
 
         public async Task Save()

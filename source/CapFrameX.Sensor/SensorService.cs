@@ -109,7 +109,8 @@ namespace CapFrameX.Sensor
                .Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan)))
                .Switch()
                .Where(_ => _isServiceAlive)
-               .Where((_, idx) => idx == 0 || IsOverlayActive || (_isLoggingActive && UseSensorLogging) || IsSensorWebsocketActive())
+               .Where((_, idx) => idx == 0 || IsOverlayActive || (_isLoggingActive && UseSensorLogging)
+                    || IsSensorWebsocketActive() || _sensorConfig.EvaluateAllSensors)
                .SelectMany(_ => GetTimeStampedSensorValues());
 
             _pmcReaderInitializationTask = InitializePmcReaderPluginAsync();
