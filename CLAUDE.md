@@ -91,8 +91,12 @@ The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (.NET Framework 4
 **Webservice (ASP.NET Core 3.1)**
 - `CapFrameX.Webservice.Host` - API host
 - `CapFrameX.Webservice.Implementation` - Business logic
-- `CapFrameX.Webservice.Data` - Entity Framework Core models
-- `CapFrameX.Webservice.Persistance` - Data persistence
+- `CapFrameX.Webservice.Data` - DTOs, commands and queries; `netstandard2.0`, and the only
+  webservice project the desktop app references (through `CapFrameX.ViewModel`)
+
+Data is served from Squidex (`SquidexService`), not from a database — the Entity Framework
+persistence layer was dropped. netcoreapp3.1 is out of support; the packages warn about it, which
+`SuppressTfmSupportBuildWarnings` silences in Host and Implementation.
 
 **Charting**
 - `CapFrameX.Charts/Core40` - Core charting engine

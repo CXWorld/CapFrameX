@@ -329,7 +329,7 @@ This doesn't affect any processes you already have on your list. If our online l
 * Report: parameter table
 * Synchronization: display changed times(dc), histogram data
 
-Potential conflicts with the Nuget packages can be solved via Package Manger Console. Just type "Update-Package -reinstall". The calling application must run as administrator. See "MonitoringLibTestApp" example code how to integrate the customized library.
+Potential conflicts with the Nuget packages can be solved via Package Manger Console. Just type "Update-Package -reinstall". The calling application must run as administrator. See `source/CapFrameX.Sensor/SensorService.cs` and `SensorConfig.cs` for how the customized library is integrated.
 
 # Requirements
 * .NET 9.0 (no installer check, must be installed manually)
