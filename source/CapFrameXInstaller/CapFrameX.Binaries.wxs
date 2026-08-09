@@ -821,6 +821,12 @@
                 </Component>
             </Directory>
             <Directory Id="dir447EB06E547F3575E011CE0F1CF9028B" Name="PawnIo">
+                <Component Id="cmp4E232508EC359C2D3789E0AA5CB2C43B" Guid="*" Win64="yes">
+                    <File Id="fil4063BDA0F53456865FF2E1E8A2EAE4C1" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PawnIo\PawnIO.cat" />
+                </Component>
+                <Component Id="cmpCC818C0081BEDC340AC78DEC9FCA17C4" Guid="*" Win64="yes">
+                    <File Id="fil9512C3A2D3B10D9A45E94FDA24110FCA" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PawnIo\PawnIO.inf" />
+                </Component>
                 <Component Id="cmpC39E25791A464CA675CEA5231C3504BD" Guid="*" Win64="yes">
                     <File Id="fil3559CD5AAC729FDF4FD72E1FFFC2032F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PawnIo\PawnIO.sys" />
                 </Component>
@@ -1460,6 +1466,8 @@
             <ComponentRef Id="cmpA2349B128022FD9468B4B0472DF8814A" />
             <ComponentRef Id="cmp0B9527E49327DF46736C8F6F58634C01" />
             <ComponentRef Id="cmp7746FE0DEDBE5684F977FE2DB4787E3E" />
+            <ComponentRef Id="cmp4E232508EC359C2D3789E0AA5CB2C43B" />
+            <ComponentRef Id="cmpCC818C0081BEDC340AC78DEC9FCA17C4" />
             <ComponentRef Id="cmpC39E25791A464CA675CEA5231C3504BD" />
             <ComponentRef Id="cmp51EF57F7972E2D0FB19D3F191FDB3643" />
             <ComponentRef Id="cmpA3C39F2E722F5E7841B00911B47A0BF6" />
