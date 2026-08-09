@@ -22,12 +22,14 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Microsoft.Win32;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
+using WinForms = System.Windows.Forms;
 
 namespace CapFrameX.ViewModel
 {
@@ -56,6 +58,9 @@ namespace CapFrameX.ViewModel
         private EOverlayEntryType? _selectedEntryTypeFilter;
         private ICollectionView _overlayEntriesView;
         private readonly object _overlayEntriesViewLock = new object();
+        private IReadOnlyList<HookFreeDisplayItem> _hookFreeDisplayItemsSource =
+            Array.Empty<HookFreeDisplayItem>();
+        private bool _displaySettingsChangedSubscribed;
 
         public bool OverlayItemsOptionsEnabled
         {
@@ -393,6 +398,36 @@ namespace CapFrameX.ViewModel
             {
                 _appConfiguration.EnableHookFreeOverlay = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(CanConfigureHookFreeOptions));
+            }
+        }
+
+        public IReadOnlyList<HookFreeDisplayItem> HookFreeDisplayItemsSource
+        {
+            get { return _hookFreeDisplayItemsSource; }
+            private set
+            {
+                _hookFreeDisplayItemsSource = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public string HookFreeDisplayDeviceName
+        {
+            get { return _appConfiguration.HookFreeDisplayDeviceName; }
+            set
+            {
+                // ItemsSource replacement briefly clears SelectedValue. Keep the persisted
+                // selection until the refreshed list has supplied its matching item again.
+                if (string.IsNullOrWhiteSpace(value) ||
+                    string.Equals(value, _appConfiguration.HookFreeDisplayDeviceName,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                _appConfiguration.HookFreeDisplayDeviceName = value;
+                RaisePropertyChanged();
             }
         }
 
@@ -413,6 +448,7 @@ namespace CapFrameX.ViewModel
             {
                 _appConfiguration.EnableHookOverlay = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(CanConfigureHookFreeOptions));
             }
         }
 
@@ -534,6 +570,9 @@ namespace CapFrameX.ViewModel
             set { if (value) SetOverlayMode(hook: false, hookFree: true); }
         }
 
+        public bool CanConfigureHookFreeOptions =>
+            _appConfiguration.EnableHookOverlay || _appConfiguration.EnableHookFreeOverlay;
+
         // True when RTSS is the chosen renderer but "Hide OSD on RTSS" (HideOverlay) suppresses its
         // output — a contradictory combination worth flagging in the UI next to the renderer choice.
         public bool ShowRtssHiddenHint => OverlayModeRtss && _appConfiguration.HideOverlay;
@@ -568,6 +607,7 @@ namespace CapFrameX.ViewModel
             RaisePropertyChanged(nameof(OverlayModeRtss));
             RaisePropertyChanged(nameof(OverlayModeHook));
             RaisePropertyChanged(nameof(OverlayModeHookFree));
+            RaisePropertyChanged(nameof(CanConfigureHookFreeOptions));
             RaisePropertyChanged(nameof(EnableHookOverlay));
             RaisePropertyChanged(nameof(EnableHookFreeOverlay));
             RaisePropertyChanged(nameof(ShowRtssHiddenHint));
@@ -726,6 +766,7 @@ namespace CapFrameX.ViewModel
             _overlayTemplateService = overlayTemplateService;
             _threadAffinityController = threadAffinityController;
             _onlineMetricService = onlineMetricService;
+            RefreshHookFreeDisplayItems();
 
             // Define submodels
             OverlaySubModelGroupControl = new OverlayGroupControl(this);
@@ -1207,10 +1248,75 @@ namespace CapFrameX.ViewModel
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
+            if (_displaySettingsChangedSubscribed)
+            {
+                SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
+                _displaySettingsChangedSubscribed = false;
+            }
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
+            RefreshHookFreeDisplayItems();
+            if (!_displaySettingsChangedSubscribed)
+            {
+                SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
+                _displaySettingsChangedSubscribed = true;
+            }
+        }
+
+        private void OnDisplaySettingsChanged(object sender, EventArgs e)
+        {
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher == null || dispatcher.CheckAccess())
+            {
+                RefreshHookFreeDisplayItems(notifyRenderer: true);
+                return;
+            }
+
+            dispatcher.BeginInvoke(new Action(() =>
+                RefreshHookFreeDisplayItems(notifyRenderer: true)));
+        }
+
+        private void RefreshHookFreeDisplayItems(bool notifyRenderer = false)
+        {
+            var items = WinForms.Screen.AllScreens
+                .Select(screen =>
+                {
+                    string deviceName = screen.DeviceName ?? string.Empty;
+                    string shortName = deviceName.StartsWith(@"\\.\",
+                        StringComparison.OrdinalIgnoreCase)
+                        ? deviceName.Substring(4)
+                        : deviceName;
+                    string primarySuffix = screen.Primary ? " (Primary)" : string.Empty;
+                    string displayName = $"{shortName} — {screen.Bounds.Width} × " +
+                        $"{screen.Bounds.Height}{primarySuffix}";
+
+                    return new HookFreeDisplayItem(deviceName, displayName, screen.Primary);
+                })
+                .ToArray();
+
+            HookFreeDisplayItemsSource = items;
+
+            string selectedDeviceName = _appConfiguration.HookFreeDisplayDeviceName;
+            bool selectionExists = items.Any(item =>
+                string.Equals(item.DeviceName, selectedDeviceName,
+                    StringComparison.OrdinalIgnoreCase));
+            if (!selectionExists)
+            {
+                var fallback = items.FirstOrDefault(item => item.IsPrimary) ?? items.FirstOrDefault();
+                selectedDeviceName = fallback?.DeviceName ?? string.Empty;
+            }
+
+            if (!string.Equals(_appConfiguration.HookFreeDisplayDeviceName, selectedDeviceName,
+                    StringComparison.OrdinalIgnoreCase) || notifyRenderer)
+            {
+                // Re-emitting the same device name after a topology change makes the bridge
+                // resolve its potentially changed native monitor index immediately.
+                _appConfiguration.HookFreeDisplayDeviceName = selectedDeviceName;
+            }
+
+            RaisePropertyChanged(nameof(HookFreeDisplayDeviceName));
         }
 
         void IDropTarget.Drop(IDropInfo dropInfo)

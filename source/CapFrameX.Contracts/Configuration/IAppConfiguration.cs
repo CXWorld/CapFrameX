@@ -164,6 +164,12 @@ namespace CapFrameX.Contracts.Configuration
 		bool EnableHookFreeOverlay { get; set; }
 
 		/// <summary>
+		/// Windows display device name used by the hook-free overlay, for example
+		/// <c>\\.\DISPLAY1</c>. An empty or unavailable device falls back to the primary display.
+		/// </summary>
+		string HookFreeDisplayDeviceName { get; set; }
+
+		/// <summary>
 		/// Maximum visible refresh rate of the hook-free overlay charts in Hz.
 		/// Supported values are 1, 2, 5, 10, 20, and 30; default is 1.
 		/// </summary>

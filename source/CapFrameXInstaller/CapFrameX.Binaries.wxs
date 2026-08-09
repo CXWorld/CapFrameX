@@ -240,6 +240,9 @@
             <Component Id="cmp9DD1286D83CFBB521DC0A94C03E27037" Guid="*" Win64="yes">
                 <File Id="fil3324512EC1877353CA1C697DA87398AA" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Webservice.Data.pdb" />
             </Component>
+            <Component Id="cmpF53A2BF580251F65EEEFA1A6ABBA2E15" Guid="*" Win64="yes">
+                <File Id="fil84B76B3D53B8639062829E067E2A184E" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX_WinRing0x64.sys" />
+            </Component>
             <Component Id="cmp25EB44D8F5087FA0DC13491026DE588C" Guid="*" Win64="yes">
                 <File Id="fil2DCC14B223F51BAF07CBBE21F84491A3" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\cfx_osd_core.dll" />
             </Component>
@@ -1292,6 +1295,7 @@
             <ComponentRef Id="cmp7208E56B684EFF6D86BA4E30F31A526F" />
             <ComponentRef Id="cmp65E830F64B198A56C158E8F21A46E482" />
             <ComponentRef Id="cmp9DD1286D83CFBB521DC0A94C03E27037" />
+            <ComponentRef Id="cmpF53A2BF580251F65EEEFA1A6ABBA2E15" />
             <ComponentRef Id="cmp25EB44D8F5087FA0DC13491026DE588C" />
             <ComponentRef Id="cmp7497E0B354AEA7F54D987BCDF7301E52" />
             <ComponentRef Id="cmp8916B4F533C096DC1039F6D5C4AA940F" />

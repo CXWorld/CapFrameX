@@ -728,6 +728,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public string HookFreeDisplayDeviceName
+        {
+            get => Get<string>(string.Empty);
+            set => Set(value ?? string.Empty);
+        }
+
         public int HookFreeRefreshRate
         {
             get => NormalizeHookFreeRefreshRate(Get<int>(1));

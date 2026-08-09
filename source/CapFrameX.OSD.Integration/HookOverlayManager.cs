@@ -29,6 +29,10 @@ namespace CapFrameX.OSD.Integration
     {
         private const string HookDllName = "cfx_osd_hook.dll";
         internal const ulong HookHandshakeTimeoutMs = 3000;
+        // A status mapping with HooksArmed but no PresentSeen means injection completed, yet the
+        // title's actual presenter is bypassing the patched DXGI vtable (for example an XeSS-FG
+        // proxy swapchain). Do not leave the OSD on Waiting forever in that state.
+        internal const ulong HookFirstPresentTimeoutMs = 15000;
         // The injected hook reports Present activity long before it can draw. If it never gets
         // past that stage the overlay would silently stay invisible forever, so bound it and let
         // the hook-free renderer take over instead.
@@ -86,6 +90,8 @@ namespace CapFrameX.OSD.Integration
         private bool _hookFreeFallbackActive;
         private ulong _injectionSucceededTickMs;
         private ulong _lastNativeStatusTickMs;
+        private ulong _firstPresentWaitingSinceTickMs;
+        private bool _firstPresentTimedOut;
         private ulong _rendererInitializingSinceTickMs;
         private bool _rendererInitializationStalled;
         private bool _foreignPresenterDetected;
@@ -213,6 +219,8 @@ namespace CapFrameX.OSD.Integration
                 _injectionSucceeded = false;
                 _injectionSucceededTickMs = 0;
                 _lastNativeStatusTickMs = 0;
+                _firstPresentWaitingSinceTickMs = 0;
+                _firstPresentTimedOut = false;
                 _rendererInitializingSinceTickMs = 0;
                 _rendererInitializationStalled = false;
                 _foreignPresenterDetected = false;
@@ -360,6 +368,20 @@ namespace CapFrameX.OSD.Integration
             if (referenceTickMs == 0 || nowTickMs < referenceTickMs) return false;
 
             return nowTickMs - referenceTickMs >= HookHandshakeTimeoutMs;
+        }
+
+        /// <summary>
+        /// True once an armed native hook has waited for its first DXGI Present for longer than
+        /// <see cref="HookFirstPresentTimeoutMs"/>. This is a separate phase from renderer
+        /// initialization: a late first Present still receives the full renderer-ready window.
+        /// </summary>
+        internal static bool HasFirstPresentTimedOut(ulong waitingSinceTickMs,
+            ulong nowTickMs)
+        {
+            if (waitingSinceTickMs == 0 || nowTickMs < waitingSinceTickMs)
+                return false;
+
+            return nowTickMs - waitingSinceTickMs >= HookFirstPresentTimeoutMs;
         }
 
         /// <summary>
@@ -755,11 +777,26 @@ namespace CapFrameX.OSD.Integration
                     if (foreignPresenter)
                         _foreignPresenterDetected = true;
 
-                    // The hook reports Present activity long before it can draw. Track how long
-                    // it stays in that stage; once it has clearly stalled, latch the verdict so
-                    // hiding the hook for the fallback cannot flip the state back and forth.
-                    if (!_rendererInitializationStalled && !_foreignPresenterDetected)
+                    // Track the two native startup phases independently. Waiting means the hook
+                    // is armed but has not intercepted a Present yet; Initializing means Present
+                    // is live but the renderer is not ready. Latch either timeout so hiding the
+                    // hook for the fallback cannot flip the state back and forth.
+                    if (!_firstPresentTimedOut && !_rendererInitializationStalled &&
+                        !_foreignPresenterDetected)
                     {
+                        if (nativeState == EHookOverlayStatus.Waiting)
+                        {
+                            if (_firstPresentWaitingSinceTickMs == 0)
+                                _firstPresentWaitingSinceTickMs = nowTickMs;
+                            _firstPresentTimedOut = HasFirstPresentTimedOut(
+                                _firstPresentWaitingSinceTickMs, nowTickMs);
+                            _rendererInitializingSinceTickMs = 0;
+                        }
+                        else
+                        {
+                            _firstPresentWaitingSinceTickMs = 0;
+                        }
+
                         if (nativeState == EHookOverlayStatus.Initializing)
                         {
                             if (_rendererInitializingSinceTickMs == 0)
@@ -777,6 +814,18 @@ namespace CapFrameX.OSD.Integration
                     {
                         reason = "a frame-generation runtime (FSR FG / DLSS FG / XeSS FG) is " +
                             "presenting this game; the in-game overlay stands down";
+                        if (!string.Equals(reason, _nativeFallbackReason,
+                            StringComparison.Ordinal))
+                        {
+                            _nativeFallbackReason = reason;
+                            changed = true;
+                            fallbackEnabled = true;
+                        }
+                    }
+                    else if (_firstPresentTimedOut)
+                    {
+                        reason = "the in-game hook did not observe a DXGI Present within " +
+                            $"{HookFirstPresentTimeoutMs / 1000} seconds after it was armed";
                         if (!string.Equals(reason, _nativeFallbackReason,
                             StringComparison.Ordinal))
                         {

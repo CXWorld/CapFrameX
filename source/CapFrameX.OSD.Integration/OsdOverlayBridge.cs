@@ -33,6 +33,9 @@ namespace CapFrameX.OSD.Integration
         private readonly IDisposable _valueSmoothingSub;
         private readonly IDisposable _replayBufferSub;
         private readonly IDisposable _hookFreeRefreshRateSub;
+        private readonly IDisposable _displaySub;
+        private readonly IDisposable _backgroundOpacitySub;
+        private readonly IDisposable _zoomSub;
         private readonly int _ftIndex;
         private readonly int _runtimeIndex;
         private readonly int _displayChangedIndex;
@@ -67,7 +70,8 @@ namespace CapFrameX.OSD.Integration
         // Last zoom forwarded to the OSD (percent); -1 forces the first push.
         private int _lastZoom = -1;
         // Last placement forwarded; -1 forces the first push after a (re)start.
-        private int _lastAnchor = -1, _lastMarginX = -1, _lastMarginY = -1;
+        private int _lastAnchor = -1, _lastMonitor = -1, _lastMarginX = -1, _lastMarginY = -1;
+        private readonly object _positionLock = new object();
 
         public OsdOverlayBridge(IOverlayService overlayService,
                                 IAppConfiguration appConfiguration,
@@ -86,7 +90,9 @@ namespace CapFrameX.OSD.Integration
             // Seeded from the configuration so the very first frame is already placed correctly;
             // OnEntries keeps it in sync from there.
             _osd = new OsdHost((OsdAnchor)appConfiguration.OsdAnchor,
-                marginX: appConfiguration.OsdMarginX, marginY: appConfiguration.OsdMarginY);
+                marginX: appConfiguration.OsdMarginX, marginY: appConfiguration.OsdMarginY,
+                monitor: DisplayMonitorResolver.GetMonitorIndex(
+                    appConfiguration.HookFreeDisplayDeviceName));
             _ftIndex = frametimeColumnIndex;
             _runtimeIndex = presentRuntimeColumnIndex;
             _displayChangedIndex = displayChangedColumnIndex;
@@ -110,6 +116,15 @@ namespace CapFrameX.OSD.Integration
             _hookFreeRefreshRateSub = appConfiguration.OnValueChanged
                 .Where(x => x.key == nameof(IAppConfiguration.HookFreeRefreshRate))
                 .Subscribe(x => _osd.SetHookFreeRefreshRate((int)x.value));
+            _displaySub = appConfiguration.OnValueChanged
+                .Where(x => x.key == nameof(IAppConfiguration.HookFreeDisplayDeviceName))
+                .Subscribe(_ => ApplyPosition());
+            _backgroundOpacitySub = appConfiguration.OnValueChanged
+                .Where(x => x.key == nameof(IAppConfiguration.OsdBackgroundOpacity))
+                .Subscribe(_ => ApplyBackgroundOpacity());
+            _zoomSub = appConfiguration.OnValueChanged
+                .Where(x => x.key == nameof(IAppConfiguration.OsdZoom))
+                .Subscribe(_ => ApplyZoom());
             if (hookFreeFallbackStream != null)
                 _fallbackSub = hookFreeFallbackStream
                     .DistinctUntilChanged()
@@ -137,7 +152,16 @@ namespace CapFrameX.OSD.Integration
             bool exist = _enabled || _fallbackEnabled;
             bool visible = _active && exist;
 
-            if (exist && !_started) { _osd.Start(); _started = true; }
+            if (exist && !_started)
+            {
+                ApplyPosition(force: true);
+                _osd.Start();
+                _started = true;
+                // Start creates the native handle asynchronously. These calls apply immediately
+                // if it is ready; otherwise OnEntries retries without poisoning the caches.
+                ApplyBackgroundOpacity();
+                ApplyZoom();
+            }
 
             if (!_started) return;
 
@@ -158,7 +182,7 @@ namespace CapFrameX.OSD.Integration
             _started = false;
             _lastBgOpacity = -1; // Stop destroys the native handle; re-feed on next start
             _lastZoom = -1;
-            _lastAnchor = -1; _lastMarginX = -1; _lastMarginY = -1;
+            _lastAnchor = -1; _lastMonitor = -1; _lastMarginX = -1; _lastMarginY = -1;
             _curRuntime = null;
             lock (_fpsLock)
             {
@@ -210,37 +234,67 @@ namespace CapFrameX.OSD.Integration
                 if (changed) list[i] = e;
             }
 
-            // Background opacity (percent -> 0..1); forwarded only on change. Same setting the
-            // hook overlay receives via the metrics-SHM flags, so both backends stay in sync.
-            int bgOpacity = _appConfiguration.OsdBackgroundOpacity;
-            if (bgOpacity != _lastBgOpacity)
-            {
-                _lastBgOpacity = bgOpacity;
-                _osd.SetBackgroundAlpha(Math.Max(0, Math.Min(100, bgOpacity)) / 100.0);
-            }
+            ApplyBackgroundOpacity();
+            ApplyZoom();
 
-            // Overlay zoom. Forwarded only on change: unlike the alpha this rebuilds the scene,
-            // so pushing it every tick would re-measure the whole panel each OSD update.
-            int zoom = _appConfiguration.OsdZoom;
-            if (zoom != _lastZoom)
-            {
-                _lastZoom = zoom;
-                _osd.SetZoom(Math.Max(50, Math.Min(200, zoom)) / 100.0);
-            }
-
-            // Placement. SetPosition moves the top-level window, so forward it on change only.
-            int anchor = _appConfiguration.OsdAnchor;
-            int marginX = _appConfiguration.OsdMarginX;
-            int marginY = _appConfiguration.OsdMarginY;
-            if (anchor != _lastAnchor || marginX != _lastMarginX || marginY != _lastMarginY)
-            {
-                _lastAnchor = anchor;
-                _lastMarginX = marginX;
-                _lastMarginY = marginY;
-                _osd.SetPosition((OsdAnchor)anchor, monitor: 0, marginX: marginX, marginY: marginY);
-            }
+            ApplyPosition();
 
             _osd.UpdateEntries(list);
+        }
+
+        private void ApplyPosition(bool force = false)
+        {
+            int anchor = _appConfiguration.OsdAnchor;
+            // The native API consumes the raw EnumDisplayMonitors index, whereas the setting
+            // stores the stable Windows device name exposed in the UI.
+            int monitor = DisplayMonitorResolver.GetMonitorIndex(
+                _appConfiguration.HookFreeDisplayDeviceName);
+            int marginX = _appConfiguration.OsdMarginX;
+            int marginY = _appConfiguration.OsdMarginY;
+
+            lock (_positionLock)
+            {
+                if (!force && anchor == _lastAnchor && monitor == _lastMonitor &&
+                    marginX == _lastMarginX && marginY == _lastMarginY)
+                {
+                    return;
+                }
+
+                _lastAnchor = anchor;
+                _lastMonitor = monitor;
+                _lastMarginX = marginX;
+                _lastMarginY = marginY;
+                _osd.SetPosition((OsdAnchor)anchor, monitor, marginX, marginY);
+            }
+        }
+
+        private void ApplyBackgroundOpacity()
+        {
+            int bgOpacity = Math.Max(0, Math.Min(100,
+                _appConfiguration.OsdBackgroundOpacity));
+            if (!_osd.IsRunning || bgOpacity == _lastBgOpacity)
+            {
+                return;
+            }
+
+            _osd.SetBackgroundAlpha(bgOpacity / 100.0);
+            // SetBackgroundAlpha is a no-op until the asynchronous native handle exists. Only
+            // cache the value after IsRunning confirms that the call could reach that handle.
+            _lastBgOpacity = bgOpacity;
+        }
+
+        private void ApplyZoom()
+        {
+            int zoom = Math.Max(50, Math.Min(200, _appConfiguration.OsdZoom));
+            if (!_osd.IsRunning || zoom == _lastZoom)
+            {
+                return;
+            }
+
+            _osd.SetZoom(zoom / 100.0);
+            // Like the opacity API, SetZoom does not retain values while OsdHost is stopped.
+            // Keep retrying on data ticks until the native renderer is actually available.
+            _lastZoom = zoom;
         }
 
         private void OnFrameRow(string[] row)
@@ -324,6 +378,9 @@ namespace CapFrameX.OSD.Integration
             _valueSmoothingSub?.Dispose();
             _replayBufferSub?.Dispose();
             _hookFreeRefreshRateSub?.Dispose();
+            _displaySub?.Dispose();
+            _backgroundOpacitySub?.Dispose();
+            _zoomSub?.Dispose();
             _osd?.Dispose();
         }
     }

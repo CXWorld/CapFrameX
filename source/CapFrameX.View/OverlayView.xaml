@@ -1192,7 +1192,22 @@
 													 Style="{StaticResource MaterialDesignRadioButton}"/>
 										<TextBlock Margin="26 0 0 0" Style="{StaticResource OsdOptionsDescription}"
 												   Text="Uses DWM/DirectComposition without game injection and is safe for anti-cheat protected titles."/>
-										<DockPanel Margin="26 8 0 0" IsEnabled="{Binding OverlayModeHookFree}">
+										<DockPanel Margin="26 8 0 0" IsEnabled="{Binding CanConfigureHookFreeOptions}">
+											<ComboBox DockPanel.Dock="Right" Width="250" Height="40" FontSize="14"
+													  materialDesign:HintAssist.Hint="Display"
+													  materialDesign:HintAssist.HintOpacity=".8"
+													  materialDesign:HintAssist.IsFloating="True"
+													  ItemsSource="{Binding HookFreeDisplayItemsSource}"
+													  DisplayMemberPath="DisplayName"
+													  SelectedValuePath="DeviceName"
+													  SelectedValue="{Binding HookFreeDisplayDeviceName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+											<StackPanel Margin="0 0 12 0" VerticalAlignment="Center">
+												<TextBlock Text="Hook-free output display"/>
+												<TextBlock Style="{StaticResource OsdOptionsDescription}"
+														   Text="Used by hook-free mode and the in-game fallback"/>
+											</StackPanel>
+										</DockPanel>
+										<DockPanel Margin="26 8 0 0" IsEnabled="{Binding CanConfigureHookFreeOptions}">
 											<ComboBox DockPanel.Dock="Right" Width="120" Height="40" FontSize="14"
 													  materialDesign:HintAssist.Hint="Refresh rate"
 													  materialDesign:HintAssist.HintOpacity=".8"

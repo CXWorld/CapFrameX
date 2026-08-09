@@ -275,6 +275,27 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void HasFirstPresentTimedOut_TrueAfterFifteenSeconds()
+        {
+            ulong since = 1000;
+
+            Assert.AreEqual(15000UL, HookOverlayManager.HookFirstPresentTimeoutMs);
+            Assert.IsFalse(HookOverlayManager.HasFirstPresentTimedOut(
+                since, since + HookOverlayManager.HookFirstPresentTimeoutMs - 1));
+            Assert.IsTrue(HookOverlayManager.HasFirstPresentTimedOut(
+                since, since + HookOverlayManager.HookFirstPresentTimeoutMs));
+        }
+
+        [TestMethod]
+        public void HasFirstPresentTimedOut_IgnoresUntrackedOrRolledBackClock()
+        {
+            Assert.IsFalse(HookOverlayManager.HasFirstPresentTimedOut(
+                waitingSinceTickMs: 0, nowTickMs: ulong.MaxValue));
+            Assert.IsFalse(HookOverlayManager.HasFirstPresentTimedOut(
+                waitingSinceTickMs: 5000, nowTickMs: 4000));
+        }
+
+        [TestMethod]
         public void ShouldUseHookFreeFallback_UsesFallbackForD3D9()
         {
             bool useFallback = HookOverlayManager.ShouldUseHookFreeFallback(
