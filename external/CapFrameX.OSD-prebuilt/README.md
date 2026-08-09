@@ -31,10 +31,10 @@ the files but do not change the registry.
 
 ```
 cd CapFrameX.OSD                      # the OSD repo
-cmake --preset vs2022 && cmake --build build --config RelWithDebInfo   # in CapFrameX.OSD/CapFrameX.OSD
+cmake --preset vs2026 && cmake --build build --config RelWithDebInfo   # in CapFrameX.OSD/CapFrameX.OSD
 dotnet build CapFrameX.OSD.sln -c Release
 cd CapFrameX.OSD/vk_layer             # the 32-bit Vulkan layer is a separate build tree
-cmake -B build-x86 -A Win32 && cmake --build build-x86 --config RelWithDebInfo
+cmake -B build-x86 -G "Visual Studio 18 2026" -A Win32 && cmake --build build-x86 --config RelWithDebInfo
 ```
 
 Then copy the managed bridge, core, x64/x86 hooks, and both Vulkan layers/manifests from their
@@ -42,7 +42,11 @@ Then copy the managed bridge, core, x64/x86 hooks, and both Vulkan layers/manife
 commit. The Vulkan manifest is renamed on the way in: the build emits `cfx_osd_vklayer.json`,
 this tree keeps the versioned `cfx_osd_vklayer_v1.json`.
 
-Configure every native tree with the **same** toolset the core preset pins (`-G "Visual Studio 17
-2022"`). `hook_poc` and `vk_layer` take no preset, so omitting `-G` silently picks the newest
-installed Visual Studio and produces hook and layer DLLs built against a different toolset than
-the core — all three end up loaded in the same game process.
+Configure every native tree with the **same** toolset the core preset pins (`-G "Visual Studio 18
+2026"`, toolset v145, matching the `.vcxproj` projects in this repo). `hook_poc` and `vk_layer`
+take no preset, so passing `-G` explicitly is what keeps them in step: core, hook and layer all end
+up loaded in the same game process, and a silent toolset split between them is hard to spot.
+
+Rebuild **all** native trees, not just the core: `hook_poc` and `vk_layer` compile the core sources
+into themselves (`${CFX_OSD_CORE_SRC}`), so a core change that is not followed by a rebuild of
+those two leaves them silently behind.
