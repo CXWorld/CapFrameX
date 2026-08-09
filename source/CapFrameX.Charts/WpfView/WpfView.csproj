@@ -9,6 +9,11 @@
     <Deterministic>true</Deterministic>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
     <UseWPF>true</UseWPF>
+    <!-- Vendored LiveCharts: the library calls its own [Obsolete] members internally (ChartFunctions
+         .GetUnitWidth, AxisSection.UpdateSection, Axis.AxisChanged, Chart.PrepareScrolBar, ...).
+         Resolving these means changing upstream code, so the obsolete diagnostics are silenced
+         here rather than in every consumer. -->
+    <NoWarn>$(NoWarn);CS0612;CS0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
