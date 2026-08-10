@@ -226,25 +226,6 @@ jobs:
       - name: Build Installer
         shell: cmd
         run: |
-          if not defined WIX set "WIX=%ProgramFiles(x86)%\WiX Toolset v3.14"
-          echo Using WIX=%WIX%
-
-          if not exist "%WIX%\bin\heat.exe" (
-            echo Missing heat.exe at %WIX%\bin\heat.exe
-            exit /b 1
-          )
-
-          if not exist "source\CapFrameX\bin\x64\Release\net9.0-windows" (
-            echo Missing installer input directory: source\CapFrameX\bin\x64\Release\net9.0-windows
-            dir "source\CapFrameX\bin\x64\Release"
-            exit /b 1
-          )
-
-          if not exist "source\CapFrameXInstaller\filter.xslt" (
-            echo Missing filter.xslt at source\CapFrameXInstaller\filter.xslt
-            exit /b 1
-          )
-
           msbuild source\CapFrameXInstaller\CapFrameXInstaller.wixproj /p:SolutionDir="%GITHUB_WORKSPACE%\\" /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
 
       - name: Build Bootstrapper
