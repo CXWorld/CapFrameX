@@ -1,0 +1,156 @@
+name: CapFrameX CI
+
+on:
+  push:
+
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-publish:
+    runs-on: windows-latest
+
+    env:
+      CONFIGURATION: Release
+      PLATFORM: x64
+      VS_VERSION: 18.0
+      AZURE_STORAGE_CONTAINER: builds
+      REF_NAME: ${{ github.head_ref || github.ref_name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Install WiX Toolset v3.14.1
+        shell: pwsh
+        run: |
+          $wixInstaller = Join-Path $env:RUNNER_TEMP "wix314.exe"
+          Invoke-WebRequest `
+            -Uri "https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314.exe" `
+            -OutFile $wixInstaller
+
+          Start-Process `
+            -FilePath $wixInstaller `
+            -ArgumentList "/quiet", "/norestart" `
+            -Wait
+
+          $wixBin = "${env:ProgramFiles(x86)}\WiX Toolset v3.14\bin"
+          if (-not (Test-Path $wixBin)) {
+            throw "WiX Toolset v3.14.1 installation failed; expected path not found: $wixBin"
+          }
+
+          "WIX=$wixBin" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Restore
+        shell: cmd
+        run: |
+          dotnet restore CapFrameX.sln
+          nuget restore -SolutionDirectory "%GITHUB_WORKSPACE%" source\CapFrameX.CustomInstallerActions\CapFrameX.CustomInstallerActions.csproj
+
+      - name: Build CX
+        shell: cmd
+        run: |
+          msbuild source\CapFrameX\CapFrameX.csproj /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
+
+      - name: Build HWInfo
+        shell: cmd
+        run: |
+          msbuild source\CapFrameX.Hwinfo\CapFrameX.Hwinfo.vcxproj /p:SolutionDir="%GITHUB_WORKSPACE%\\" /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
+
+      - name: Build IGCL
+        shell: cmd
+        run: |
+          msbuild source\CapFrameX.IGCL\CapFrameX.IGCL.vcxproj /p:SolutionDir="%GITHUB_WORKSPACE%\\" /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
+
+      - name: Build ADLX
+        shell: cmd
+        run: |
+          msbuild source\CapFrameX.ADLX\CapFrameX.ADLX.vcxproj /p:SolutionDir="%GITHUB_WORKSPACE%\\" /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
+
+      - name: Stage native DLLs
+        shell: cmd
+        run: |
+          copy /y source\CapFrameX\bin\x64\Release\CapFrameX.Hwinfo.dll source\CapFrameX\bin\x64\Release\net9.0-windows\
+          copy /y source\CapFrameX\bin\x64\Release\CapFrameX.IGCL.dll source\CapFrameX\bin\x64\Release\net9.0-windows\
+          copy /y source\CapFrameX\bin\x64\Release\CapFrameX.ADLX.dll source\CapFrameX\bin\x64\Release\net9.0-windows\
+
+      - name: Build Installer
+        shell: cmd
+        run: |
+          msbuild source\CapFrameXInstaller\CapFrameXInstaller.wixproj /p:SolutionDir="%GITHUB_WORKSPACE%\\" /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
+
+      - name: Build Bootstrapper
+        shell: cmd
+        run: |
+          msbuild source\CapFrameXBootstrapper\CapFrameXBootstrapper.wixproj /p:SolutionDir="%GITHUB_WORKSPACE%\\" /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
+
+      - name: Prepare portable config
+        shell: cmd
+        run: |
+          copy portable.json.sample source\CapFrameX\bin\x64\Release\net9.0-windows\portable.json
+
+      - name: Compute archive metadata
+        id: vars
+        shell: pwsh
+        run: |
+          if ("${{ github.ref }}".StartsWith("refs/tags/v")) {
+            $filename = "${{ github.ref_name }}"
+          } else {
+            $filename = "${{ github.sha }}"
+          }
+
+          "filename=$filename" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "branch=$env:REF_NAME" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Create archives
+        shell: pwsh
+        run: |
+          $filename = "${{ steps.vars.outputs.filename }}"
+
+          Compress-Archive `
+            -Path "source\CapFrameXBootstrapper\bin\x64\Release\CapFrameXBootstrapper.exe" `
+            -DestinationPath "${filename}_installer.zip" `
+            -Force
+
+          Compress-Archive `
+            -Path "source\CapFrameX\bin\x64\Release\net9.0-windows\*" `
+            -DestinationPath "${filename}_portable.zip" `
+            -Force
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: capframex-${{ steps.vars.outputs.filename }}
+          path: |
+            *.zip
+
+      - name: Upload archives to Azure Blob Storage
+        if: ${{ secrets.AZURE_STORAGE_ACCOUNT != '' && secrets.AZURE_STORAGE_KEY != '' }}
+        shell: pwsh
+        env:
+          AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+          AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
+        run: |
+          if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
+            throw "Azure CLI is not available on this runner."
+          }
+
+          az storage blob upload-batch `
+            --account-name "$env:AZURE_STORAGE_ACCOUNT" `
+            --destination "$env:AZURE_STORAGE_CONTAINER" `
+            --source "." `
+            --pattern "*.zip" `
+            --destination-path "${{ steps.vars.outputs.branch }}/${{ github.run_number }}" `
+            --account-key "$env:AZURE_STORAGE_KEY"
