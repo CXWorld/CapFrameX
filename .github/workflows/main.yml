@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 jobs:
-  build-and-publish:
+  build:
     runs-on: windows-latest
 
     env:
@@ -273,6 +273,20 @@ jobs:
           path: |
             *.zip
 
+  publish:
+    runs-on: windows-latest
+    needs: build
+
+    env:
+      AZURE_STORAGE_CONTAINER: builds
+      REF_NAME: ${{ github.head_ref || github.ref_name }}
+
+    steps:
+      - name: Download workflow artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
       - name: Upload archives to Azure Blob Storage
         shell: pwsh
         env:
@@ -291,7 +305,7 @@ jobs:
           az storage blob upload-batch `
             --account-name "$env:AZURE_STORAGE_ACCOUNT" `
             --destination "$env:AZURE_STORAGE_CONTAINER" `
-            --source "." `
+            --source "artifacts" `
             --pattern "*.zip" `
-            --destination-path "${{ steps.vars.outputs.branch }}/${{ github.run_number }}" `
+            --destination-path "$env:REF_NAME/${{ github.run_number }}" `
             --account-key "$env:AZURE_STORAGE_KEY"
