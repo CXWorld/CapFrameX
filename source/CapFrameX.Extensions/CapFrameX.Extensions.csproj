@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net9.0;net472</TargetFrameworks>
+    <TargetFramework>net9.0</TargetFramework>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
     <RootNamespace>CapFrameX.Extensions</RootNamespace>
@@ -11,35 +11,18 @@
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
-  <!-- Files only buildable on net472 (DryIoc/Serilog source-distribution + BinaryFormatter) -->
-  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
-    <Compile Remove="ContainerExtensions.cs" />
+  <ItemGroup>
+    <!-- ObjectCopier relies on BinaryFormatter, which no longer exists on modern .NET. It was only
+         ever compiled into the net472 target; with that target gone the file is never built. -->
     <Compile Remove="ObjectCopier.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Reactive" Version="6.1.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PackageReference Include="DryIoc.dll" Version="2.12.10" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.5" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />
+    <PackageReference Include="DryIoc.dll" Version="4.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Primitives" Version="6.0.0" />
     <PackageReference Include="Serilog" Version="2.9.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
-    <PackageReference Include="System.Buffers" Version="4.6.1" />
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="10.0.5" />
-    <PackageReference Include="System.Memory" Version="4.6.3" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.6.1" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
-    <PackageReference Include="System.ValueTuple" Version="4.6.1" />
-    <Reference Include="System.Net.Http" />
+    <PackageReference Include="System.Reactive" Version="6.1.0" />
   </ItemGroup>
 
 </Project>

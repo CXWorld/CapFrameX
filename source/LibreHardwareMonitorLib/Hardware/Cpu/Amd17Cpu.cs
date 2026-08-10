@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using CapFrameX.Monitoring.Contracts;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
@@ -30,7 +31,7 @@ internal sealed class Amd17Cpu : AmdCpu
 
     private static readonly Func<bool> _isCaptureActive = CreateCaptureStateAccessor();
 
-    public Amd17Cpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
+    public Amd17Cpu(int processorIndex, CpuId[][] cpuId, ISettings settings, ISensorConfig sensorConfig = null) : base(processorIndex, cpuId, settings, sensorConfig)
     {
         _pawnModule = new AmdFamily17();
 
@@ -105,6 +106,8 @@ internal sealed class Amd17Cpu : AmdCpu
         base.Update();
 
         _processor.UpdateSensors();
+        bool shouldPollCoreClocks = _processor.ShouldEvaluateCoreClocks();
+        bool shouldPollEffectiveClocks = _processor.ShouldEvaluateEffectiveClocks();
 
         foreach (NumaNode node in _processor.Nodes)
         {
@@ -112,11 +115,11 @@ internal sealed class Amd17Cpu : AmdCpu
 
             foreach (Core c in node.Cores)
             {
-                c.UpdateSensors();
+                c.UpdateSensors(shouldPollCoreClocks, shouldPollEffectiveClocks);
             }
         }
 
-        _processor.UpdateVirtualSensor();
+        _processor.UpdateVirtualSensor(shouldPollCoreClocks, shouldPollEffectiveClocks);
     }
 
     private static Func<bool> CreateCaptureStateAccessor()
@@ -178,6 +181,21 @@ internal sealed class Amd17Cpu : AmdCpu
 
             _smuDumpWriter.WriteLine(line.ToString());
         }
+    }
+
+    private bool IsSmuRawDumpCaptureActive()
+    {
+        return EnableSmuRawDump && _isCaptureActive();
+    }
+
+    internal static bool ShouldPollSmuTable(
+        ISensorConfig sensorConfig,
+        IEnumerable<ISensor> smuSensors,
+        bool isRawDumpCaptureActive)
+    {
+        bool shouldPoll = SensorPolling.ShouldEvaluateAny(sensorConfig, smuSensors);
+        shouldPoll |= isRawDumpCaptureActive;
+        return shouldPoll;
     }
 
     private void StartSmuDumpNoLock()
@@ -309,6 +327,34 @@ internal sealed class Amd17Cpu : AmdCpu
         }
 
         public List<NumaNode> Nodes { get; } = [];
+
+        public bool ShouldEvaluateCoreClocks()
+        {
+            bool evaluate = SensorPolling.ShouldEvaluate(_cpu._sensorConfig, _avgClock);
+            evaluate |= SensorPolling.ShouldEvaluate(_cpu._sensorConfig, _maxClock);
+
+            foreach (NumaNode node in Nodes)
+            {
+                foreach (Core core in node.Cores)
+                    evaluate |= SensorPolling.ShouldEvaluate(_cpu._sensorConfig, core.ClockSensor);
+            }
+
+            return evaluate;
+        }
+
+        public bool ShouldEvaluateEffectiveClocks()
+        {
+            bool evaluate = SensorPolling.ShouldEvaluate(_cpu._sensorConfig, _avgClockEffcetive);
+            evaluate |= SensorPolling.ShouldEvaluate(_cpu._sensorConfig, _maxEffectiveClock);
+
+            foreach (NumaNode node in Nodes)
+            {
+                foreach (Core core in node.Cores)
+                    evaluate |= SensorPolling.ShouldEvaluateAny(_cpu._sensorConfig, core.EffectiveClockSensors);
+            }
+
+            return evaluate;
+        }
 
         public void UpdateSensors()
         {
@@ -566,7 +612,12 @@ internal sealed class Amd17Cpu : AmdCpu
                 _cpu.ActivateSensor(_busClock);
             }
 
-            if (_cpu._smu.IsPmTableLayoutDefined())
+            bool shouldPollSmuTable = ShouldPollSmuTable(
+                _cpu._sensorConfig,
+                _smuSensors.Values,
+                _cpu.IsSmuRawDumpCaptureActive());
+
+            if (_cpu._smu.IsPmTableLayoutDefined() && shouldPollSmuTable)
             {
                 float[] smuData = _cpu._smu.GetPmTable();
                 _cpu.LogSmuDataIfCapturing(smuData);
@@ -586,24 +637,35 @@ internal sealed class Amd17Cpu : AmdCpu
             }
         }
 
-        public void UpdateVirtualSensor()
+        public void UpdateVirtualSensor(bool updateCoreClocks, bool updateEffectiveClocks)
         {
             if (Nodes == null || Nodes.Count == 0)
                 return;
 
-            // Average and max clock
-            double clock = Nodes.Average(x => x.CoreClock);
-            _avgClock.Value = (float)Math.Round(clock, 0);
+            if (updateCoreClocks)
+            {
+                // Average and max clock
+                double clock = Nodes.Average(x => x.CoreClock);
+                _avgClock.Value = (float)Math.Round(clock, 0);
 
-            clock = Nodes.SelectMany(x => x.Cores).Max(c => c.CoreClock);
-            _maxClock.Value = (float)Math.Round(clock, 0);
+                clock = Nodes.SelectMany(x => x.Cores).Max(c => c.CoreClock);
+                _maxClock.Value = (float)Math.Round(clock, 0);
+            }
 
-            // Average and max effective clock
-            clock = Nodes.SelectMany(x => x.EffectiveClocks).DefaultIfEmpty(0).Average();
-            _avgClockEffcetive.Value = (float)Math.Round(clock, 0);
-
-            clock = Nodes.SelectMany(x => x.EffectiveClocks).DefaultIfEmpty(0).Max();
-            _maxEffectiveClock.Value = (float)Math.Round(clock, 0);
+            if (updateEffectiveClocks)
+            {
+                double[] effectiveClocks = Nodes.SelectMany(x => x.EffectiveClocks).ToArray();
+                if (effectiveClocks.Length > 0)
+                {
+                    _avgClockEffcetive.Value = (float)Math.Round(effectiveClocks.Average(), 0);
+                    _maxEffectiveClock.Value = (float)Math.Round(effectiveClocks.Max(), 0);
+                }
+                else
+                {
+                    _avgClockEffcetive.Value = null;
+                    _maxEffectiveClock.Value = null;
+                }
+            }
         }
 
         private double GetTimeStampCounterMultiplier()
@@ -696,7 +758,10 @@ internal sealed class Amd17Cpu : AmdCpu
 
             if (core == null)
             {
-                core = new Core(_cpu, coreId);
+                // Append the hybrid core-type suffix (P/D/LP on Zen 6+) so all "Core #N"
+                // sensors (clock/power/VID/effective) carry the same label as the load sensors.
+                string coreLabel = thread != null ? _cpu.GetCoreLabel(thread) : string.Empty;
+                core = new Core(_cpu, coreId, coreLabel);
                 Cores.Add(core);
             }
 
@@ -797,6 +862,20 @@ internal sealed class Amd17Cpu : AmdCpu
         {
             return _mperfDelta > 0 && _aperfDelta > 0 && SampleDuration.Ticks > 0;
         }
+
+        public void ResetPerformanceCounter()
+        {
+            _sampleTime = default;
+            _lastSampleTime = default;
+            _mperf = 0;
+            _aperf = 0;
+            _mperfLast = 0;
+            _aperfLast = 0;
+            _mperfDelta = 0;
+            _aperfDelta = 0;
+            SampleDuration = TimeSpan.Zero;
+            EffectiveClock = 0;
+        }
     }
 
     private class Core
@@ -810,20 +889,25 @@ internal sealed class Amd17Cpu : AmdCpu
         private ISensor _busClock;
         private DateTime _lastSampleTime = new(0);
         private uint _lastPwrValue = 0;
+        private bool _effectiveClockPollingActive;
 
         public double CoreClock { get; set; } = 0;
         public double[] EffectiveClocks { get; set; } = [];
 
-        public Core(Amd17Cpu cpu, int id)
+        // "Core #N" plus the hybrid type suffix (e.g. "Core #3 LP"); empty suffix on non-hybrid parts.
+        private readonly string _coreName;
+
+        public Core(Amd17Cpu cpu, int id, string coreLabel = "")
         {
             _cpu = cpu;
             CoreId = id;
-            _clock = new Sensor("Core #" + CoreId, _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu._settings)
+            _coreName = "Core #" + CoreId + (string.IsNullOrEmpty(coreLabel) ? string.Empty : " " + coreLabel);
+            _clock = new Sensor(_coreName, _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu._settings)
             { IsPresentationDefault = true, PresentationSortKey = $"0_0_0_{id}" };
-            // _multiplier = new Sensor("Core #" + CoreId, cpu._sensorTypeIndex[SensorType.Factor]++, SensorType.Factor, cpu, cpu._settings);
-            _power = new Sensor("Core #" + CoreId + " (SMU)", cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, cpu, cpu._settings)
+            // _multiplier = new Sensor(_coreName, cpu._sensorTypeIndex[SensorType.Factor]++, SensorType.Factor, cpu, cpu._settings);
+            _power = new Sensor(_coreName + " (SMU)", cpu._sensorTypeIndex[SensorType.Power]++, SensorType.Power, cpu, cpu._settings)
             { PresentationSortKey = $"2_0_{id}" };
-            _vcore = new Sensor("Core #" + CoreId + " VID", cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, cpu, cpu._settings)
+            _vcore = new Sensor(_coreName + " VID", cpu._sensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, cpu, cpu._settings)
             { PresentationSortKey = $"4_0_{id}" };
 
             cpu.ActivateSensor(_clock);
@@ -834,6 +918,10 @@ internal sealed class Amd17Cpu : AmdCpu
 
         public int CoreId { get; }
 
+        public ISensor ClockSensor => _clock;
+
+        public IEnumerable<ISensor> EffectiveClockSensors => _clocksEffective;
+
         public List<CpuThread> Threads { get; } = [];
 
         public void AppendThread(CpuId cpuId)
@@ -843,16 +931,24 @@ internal sealed class Amd17Cpu : AmdCpu
             Threads.Add(t);
 
             // Create effective clock sensor for this thread
-            var sensor = new Sensor($"Core #{CoreId} Thread #{threadIndex + 1} (Effective)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings)
+            var sensor = new Sensor($"{_coreName} Thread #{threadIndex + 1} (Effective)", _cpu._sensorTypeIndex[SensorType.Clock]++, SensorType.Clock, _cpu, _cpu._settings)
             { PresentationSortKey = $"0_0_1_{CoreId}_{threadIndex}" };
             _clocksEffective.Add(sensor);
             _cpu.ActivateSensor(sensor);
         }
 
-        public void UpdateSensors()
+        public void UpdateSensors(bool updateCoreClocks, bool updateEffectiveClocks)
         {
             if (Threads.Count == 0)
                 return;
+
+            bool effectiveClockPollingStarted = updateEffectiveClocks && !_effectiveClockPollingActive;
+            if (effectiveClockPollingStarted)
+            {
+                EffectiveClocks = [];
+                foreach (Sensor sensor in _clocksEffective)
+                    sensor.Value = null;
+            }
 
             CpuThread thread = Threads[0];
             GroupAffinity previousAffinity = ThreadAffinity.Set(thread.Cpu.Affinity);
@@ -881,9 +977,13 @@ internal sealed class Amd17Cpu : AmdCpu
             uint msrPstate = eax;
             int curCpuVid = (int)((eax >> 14) & 0xff);
 
-            foreach (var t in Threads)
+            for (int i = 0; i < Threads.Count; i++)
             {
-                t.ReadPerformanceCounter();
+                CpuThread currentThread = Threads[i];
+                if (updateEffectiveClocks || (updateCoreClocks && i == 0))
+                    currentThread.ReadPerformanceCounter();
+                else
+                    currentThread.ResetPerformanceCounter();
             }
 
             // MSRC001_0063[P - state Status](PStateStat)
@@ -904,8 +1004,13 @@ internal sealed class Amd17Cpu : AmdCpu
 
             ThreadAffinity.Set(previousAffinity);
 
-            // Update clock counter and effective clock calculation
-            Threads.ForEach(t => t.UpdateMeasurements());
+            // Update only counters which were sampled. The first thread is shared with the
+            // normal core-clock calculation; additional SMT threads are effective-clock-only.
+            for (int i = 0; i < Threads.Count; i++)
+            {
+                if (updateEffectiveClocks || (updateCoreClocks && i == 0))
+                    Threads[i].UpdateMeasurements();
+            }
 
             if (thread.HasValidCounters())
             {
@@ -951,14 +1056,38 @@ internal sealed class Amd17Cpu : AmdCpu
                 CoreClock = Math.Round(coreClock);
                 _clock.Value = (float)CoreClock;
 
-                EffectiveClocks = [.. Threads.Select(x => x.EffectiveClock)];
-                for (int i = 0; i < _clocksEffective.Count && i < EffectiveClocks.Length; i++)
+                if (updateEffectiveClocks && !effectiveClockPollingStarted)
                 {
-                    // Clamping must consider BCLK oc (max 10%) and Spread Spectrum Clocking (SSC) (1-2%)
-                    var effectiveClock = (float)Math.Max(0, Math.Min(EffectiveClocks[i], CoreClock * 1.12));
-                    _clocksEffective[i].Value = effectiveClock;
+                    List<double> validEffectiveClocks = [];
+                    for (int i = 0; i < _clocksEffective.Count && i < Threads.Count; i++)
+                    {
+                        if (Threads[i].HasValidCounters())
+                        {
+                            // Clamping must consider BCLK oc (max 10%) and Spread Spectrum Clocking (SSC) (1-2%)
+                            double effectiveClock = Math.Max(0, Math.Min(Threads[i].EffectiveClock, CoreClock * 1.12));
+                            _clocksEffective[i].Value = (float)effectiveClock;
+                            validEffectiveClocks.Add(effectiveClock);
+                        }
+                        else
+                        {
+                            _clocksEffective[i].Value = null;
+                        }
+                    }
+
+                    EffectiveClocks = [.. validEffectiveClocks];
                 }
             }
+            else if (updateEffectiveClocks)
+            {
+                EffectiveClocks = [];
+                foreach (Sensor sensor in _clocksEffective)
+                    sensor.Value = null;
+            }
+
+            if (!updateEffectiveClocks)
+                EffectiveClocks = [];
+
+            _effectiveClockPollingActive = updateEffectiveClocks;
 
             // Vcore voltage
             const double vidStep = 0.00625;

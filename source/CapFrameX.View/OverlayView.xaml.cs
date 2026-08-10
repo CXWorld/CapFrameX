@@ -8,7 +8,6 @@ using CapFrameX.ViewModel;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -248,12 +247,6 @@ namespace CapFrameX.View
 		private void MetricIntervalComboBox_MouseLeave(object sender, MouseEventArgs e)
 		{
 			Keyboard.ClearFocus();
-		}
-
-		private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
-		{
-			Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
-			e.Handled = true;
 		}
 
 		private void SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e) { }

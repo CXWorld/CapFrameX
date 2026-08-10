@@ -1,7 +1,6 @@
 ﻿using CapFrameX.Contracts.MVVM;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
-using CapFrameX.Extensions;
 using LiveCharts.Wpf;
 using OxyPlot;
 using Prism.Commands;
@@ -10,39 +9,48 @@ using Prism.Mvvm;
 using System.Linq;
 using System.Windows.Input;
 using System.Windows.Media;
+// Aliased instead of imported: the namespace also holds a LineSeries, which would collide with
+// the LiveCharts one used for the L-shapes below.
+using SeriesHighlightAnnotation = CapFrameX.Statistics.PlotBuilder.SeriesHighlightAnnotation;
 
 namespace CapFrameX.ViewModel
 {
     public class ComparisonRecordInfoWrapper : BindableBase, IMouseEventHandler
     {
+        private const double HIGHLIGHT_STROKE_DELTA = 2;
+
         private PubSubEvent<ViewMessages.SetFileRecordInfoExternal> _setFileRecordInfoExternalEvent;
 
         private Color? _frametimeGraphColor;
-        private SolidColorBrush _color;
+        private SolidColorBrush _color = Brushes.Transparent;
         private ComparisonViewModel _viewModel;
         private bool _isHideModeSelected;
+        private bool _isHighlighted;
 
         public Color? FrametimeGraphColor
         {
             get { return _frametimeGraphColor; }
             set
             {
-                bool onChanged = _frametimeGraphColor != null;
+                Color? previousColor = _frametimeGraphColor;
                 _frametimeGraphColor = value;
+                _color = CreateBrush(value);
                 RaisePropertyChanged();
-                if (onChanged)
-                    OnColorChanged();
+                RaisePropertyChanged(nameof(Color));
+
+                if (previousColor.HasValue)
+                    OnColorChanged(previousColor.Value);
             }
         }
 
+        /// <summary>
+        /// Brush view of <see cref="FrametimeGraphColor"/>, used by the L-shape series while the
+        /// OxyPlot series use the color itself. It is derived and not stored separately: a second
+        /// stored copy only stays in sync while every chart it is written to happens to exist.
+        /// </summary>
         public SolidColorBrush Color
         {
             get { return _color; }
-            set
-            {
-                _color = value;
-                RaisePropertyChanged();
-            }
         }
 
         private bool _myBool;
@@ -103,7 +111,6 @@ namespace CapFrameX.ViewModel
         {
             return new ComparisonRecordInfoWrapper(WrappedRecordInfo, _viewModel)
             {
-                Color = Color,
                 FrametimeGraphColor = FrametimeGraphColor,
             };
         }
@@ -111,13 +118,23 @@ namespace CapFrameX.ViewModel
 
         private void OnHideModeChanged()
         {
-            UpdateChartsColor(FrametimeGraphColor, hideMode: IsHideModeSelected, updateBrush: false);
+            UpdateChartsColor(hideMode: IsHideModeSelected);
         }
 
-        private void OnColorChanged()
+        private void OnColorChanged(Color previousColor)
         {
-            UpdateChartsColor(FrametimeGraphColor, hideMode: false, updateBrush: true);
+            // The palette bookkeeping must not depend on which charts happen to be built. The
+            // color picker is shown on the distribution tab too, where no L-shape series exist -
+            // doing this only when they do leaves the released color marked as used and hands the
+            // same color out a second time for the next record.
+            _viewModel.ComparisonColorManager.FreeColor(CreateBrush(previousColor));
+
+            if (_frametimeGraphColor.HasValue)
+                _viewModel.ComparisonColorManager.LockColorOnChange(Color);
+
+            UpdateChartsColor(hideMode: IsHideModeSelected);
         }
+
         void IMouseEventHandler.OnMouseEnter()
         {
             UpdateMouseInteraction(isEntering: true);
@@ -128,99 +145,94 @@ namespace CapFrameX.ViewModel
             UpdateMouseInteraction(isEntering: false);
         }
 
-
-
-        private void UpdateChartsColor(Color? colorOverride, bool hideMode, bool updateBrush)
+        private static SolidColorBrush CreateBrush(Color? color)
         {
-            if (!colorOverride.HasValue || !_viewModel.ComparisonRecords.Any())
+            if (!color.HasValue)
+                return Brushes.Transparent;
+
+            var brush = new SolidColorBrush(color.Value);
+            brush.Freeze();
+            return brush;
+        }
+
+        private void UpdateChartsColor(bool hideMode)
+        {
+            if (!_frametimeGraphColor.HasValue || !_viewModel.ComparisonRecords.Any())
                 return;
 
             _viewModel.SetChartUpdateFlags();
 
-            var color = colorOverride.Value;
+            var color = _frametimeGraphColor.Value;
             var tag = WrappedRecordInfo.FileRecordInfo.Id;
-            var oxyColor = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
-            var solidBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
-            var chartTitle = _viewModel.GetChartLabel(WrappedRecordInfo).Context;
+            var oxyColor = hideMode
+                ? OxyColors.Transparent : OxyColor.FromArgb(color.A, color.R, color.G, color.B);
+            var solidBrush = hideMode ? Brushes.Transparent : Color;
+            var chartTitle = hideMode
+                ? string.Empty : _viewModel.GetChartLabel(WrappedRecordInfo).Context;
 
-            // Frametime + LShape + FPS
-            if (_viewModel.ComparisonFrametimesModel.Series.Any() && _viewModel.ComparisonLShapeCollection.Any())
+            // Every chart is updated on its own: they are built lazily per tab, so requiring all
+            // of them to exist would silently skip the ones that do.
+            var frametimesChart = _viewModel.ComparisonFrametimesModel.Series
+                .FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+
+            if (frametimesChart != null)
             {
-                var frametimesChart = _viewModel.ComparisonFrametimesModel.Series
-                    .FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
-
-                var fpsChart = _viewModel.ComparisonFpsModel.Series
-                    .FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
-
-                var lShapeChart = _viewModel.ComparisonLShapeCollection
-                    .FirstOrDefault(chart => chart.Id == tag) as LineSeries;
-
-                if (frametimesChart != null && fpsChart != null && lShapeChart != null)
-                {
-                    if (hideMode)
-                    {
-                        frametimesChart.Color = OxyColors.Transparent;
-                        fpsChart.Color = OxyColors.Transparent;
-                        lShapeChart.Stroke = Brushes.Transparent;
-                        lShapeChart.PointForeground = Brushes.Transparent;
-                        frametimesChart.Title = string.Empty;
-                        fpsChart.Title = string.Empty;
-                    }
-                    else
-                    {
-                        frametimesChart.Color = oxyColor;
-                        fpsChart.Color = oxyColor;
-                        lShapeChart.Stroke = solidBrush;
-                        lShapeChart.PointForeground = solidBrush;
-                        frametimesChart.Title = chartTitle;
-                        fpsChart.Title = chartTitle;
-
-                        if (updateBrush)
-                        {
-                            _viewModel.ComparisonColorManager.FreeColor(Color);
-                            Color = solidBrush;
-                            _viewModel.ComparisonColorManager.LockColorOnChange(Color);
-                        }
-                    }
-
-                    _viewModel.ComparisonFrametimesModel.InvalidatePlot(true);
-                    _viewModel.ComparisonFpsModel.InvalidatePlot(true);
-                }
+                frametimesChart.Color = oxyColor;
+                frametimesChart.Title = chartTitle;
+                _viewModel.ComparisonFrametimesModel.InvalidatePlot(true);
             }
 
-            // Distribution
-            if (_viewModel.ComparisonDistributionModel.Series.Any())
+            var fpsChart = _viewModel.ComparisonFpsModel.Series
+                .FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+
+            if (fpsChart != null)
             {
-                var distributionChart = _viewModel.ComparisonDistributionModel.Series
-                    .FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+                fpsChart.Color = oxyColor;
+                fpsChart.Title = chartTitle;
+                _viewModel.ComparisonFpsModel.InvalidatePlot(true);
+            }
 
-                if (distributionChart != null)
-                {
-                    if (hideMode)
-                    {
-                        distributionChart.Color = OxyColors.Transparent;
-                        distributionChart.Title = string.Empty;
-                    }
-                    else
-                    {
-                        distributionChart.Color = oxyColor;
-                        distributionChart.Title = chartTitle;
-                    }
+            var lShapeChart = _viewModel.ComparisonLShapeCollection
+                .FirstOrDefault(chart => chart.Id == tag) as LineSeries;
 
-                    _viewModel.ComparisonDistributionModel.InvalidatePlot(true);
-                }
+            if (lShapeChart != null)
+            {
+                lShapeChart.Stroke = solidBrush;
+                lShapeChart.PointForeground = solidBrush;
+            }
+
+            var distributionChart = _viewModel.ComparisonDistributionModel.Series
+                .FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
+
+            if (distributionChart != null)
+            {
+                distributionChart.Color = oxyColor;
+                distributionChart.Title = chartTitle;
+                _viewModel.ComparisonDistributionModel.InvalidatePlot(true);
             }
         }
 
 
         private void UpdateMouseInteraction(bool isEntering)
         {
+            // Enter and leave can arrive unbalanced: the item containers are regenerated while the
+            // mouse sits on them (sorting) and the charts are rebuilt underneath. Tracking the
+            // state here and writing absolute thicknesses keeps a stray leave from thinning a
+            // freshly built series below zero, which stops OxyPlot from drawing it at all.
+            if (_isHighlighted == isEntering)
+                return;
+
+            _isHighlighted = isEntering;
+
             if (!_viewModel.ComparisonRecords.Any())
                 return;
 
+            // The series are brought to the front through an overlay annotation instead of being
+            // moved inside the series collection: that collection also drives the order of the
+            // legend entries, which must stay aligned with the record list.
             var tag = WrappedRecordInfo.FileRecordInfo.Id;
             var index = _viewModel.ComparisonRecords.IndexOf(this);
-            int delta = isEntering ? 2 : -2;
+            double delta = isEntering ? HIGHLIGHT_STROKE_DELTA : 0;
 
             // Frametimes + FPS
             if (_viewModel.ComparisonFrametimesModel.Series.Any())
@@ -233,17 +245,13 @@ namespace CapFrameX.ViewModel
 
                 if (frametimesChart != null && fpsChart != null)
                 {
-                    frametimesChart.StrokeThickness += delta;
-                    fpsChart.StrokeThickness += delta;
+                    frametimesChart.StrokeThickness = _viewModel.FrametimeSeriesStrokeThickness + delta;
+                    fpsChart.StrokeThickness = _viewModel.FpsSeriesStrokeThickness + delta;
 
-                    if (isEntering)
-                    {
-                        int indexFrametimes = _viewModel.ComparisonFrametimesModel.Series.IndexOf(frametimesChart);
-                        int indexFps = _viewModel.ComparisonFpsModel.Series.IndexOf(fpsChart);
-
-                        _viewModel.ComparisonFrametimesModel.Series.Move(indexFrametimes, _viewModel.ComparisonFrametimesModel.Series.Count - 1);
-                        _viewModel.ComparisonFpsModel.Series.Move(indexFps, _viewModel.ComparisonFpsModel.Series.Count - 1);
-                    }
+                    SeriesHighlightAnnotation.SetHighlight(_viewModel.ComparisonFrametimesModel,
+                        isEntering ? frametimesChart : null);
+                    SeriesHighlightAnnotation.SetHighlight(_viewModel.ComparisonFpsModel,
+                        isEntering ? fpsChart : null);
 
                     _viewModel.ComparisonFrametimesModel.InvalidatePlot(true);
                     _viewModel.ComparisonFpsModel.InvalidatePlot(true);
@@ -258,13 +266,10 @@ namespace CapFrameX.ViewModel
 
                 if (distributionChart != null)
                 {
-                    distributionChart.StrokeThickness += delta;
+                    distributionChart.StrokeThickness = _viewModel.DistributionSeriesStrokeThickness + delta;
 
-                    if (isEntering)
-                    {
-                        int indexDist = _viewModel.ComparisonDistributionModel.Series.IndexOf(distributionChart);
-                        _viewModel.ComparisonDistributionModel.Series.Move(indexDist, _viewModel.ComparisonDistributionModel.Series.Count - 1);
-                    }
+                    SeriesHighlightAnnotation.SetHighlight(_viewModel.ComparisonDistributionModel,
+                        isEntering ? distributionChart : null);
 
                     _viewModel.ComparisonDistributionModel.InvalidatePlot(true);
                 }

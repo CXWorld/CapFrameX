@@ -143,7 +143,7 @@ namespace CapFrameX.SystemInfo.NetStandard
                 const string gameBar = "SOFTWARE\\Microsoft\\GameBar";
                 using (RegistryKey gameBarKey = Registry.CurrentUser.OpenSubKey(gameBar, true))
                 {
-                    var val = gameBarKey.GetValue("AutoGameModeEnabled");
+                    var val = gameBarKey?.GetValue("AutoGameModeEnabled");
                     if (val != null)
                     {
                         bool valConverted = Convert.ToBoolean(val);
@@ -249,9 +249,157 @@ namespace CapFrameX.SystemInfo.NetStandard
             }
             catch { propertyDataValueManufacturer = string.Empty; propertyDataValueProduct = string.Empty; }
 
-            //Manufacturer + Product
-            string result = $"{propertyDataValueManufacturer} {propertyDataValueProduct}";
-            return result.Replace(",", "");
+            //Manufacturer + Product, shortened to the brand people actually use
+            return MainboardNameShortener.Shorten(propertyDataValueManufacturer, propertyDataValueProduct);
+        }
+
+        public string GetMotherboardManufacturerBrand()
+        {
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher("select Manufacturer from Win32_BaseBoard"))
+                {
+                    foreach (ManagementBaseObject managementBaseObject in searcher.Get())
+                    {
+                        var manufacturer = managementBaseObject["Manufacturer"] as string;
+                        var brand = MainboardNameShortener.ToBrand(manufacturer);
+
+                        if (!string.IsNullOrEmpty(brand))
+                            return brand;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while getting mainboard manufacturer.");
+            }
+
+            return string.Empty;
+        }
+
+        public string GetBiosVersion()
+        {
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher("select SMBIOSBIOSVersion from Win32_BIOS"))
+                {
+                    foreach (ManagementBaseObject managementBaseObject in searcher.Get())
+                    {
+                        var version = managementBaseObject["SMBIOSBIOSVersion"] as string;
+
+                        if (!string.IsNullOrWhiteSpace(version))
+                            return version.Trim();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while getting BIOS version.");
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Many boards report the module vendor as its raw JEDEC manufacturer ID
+        /// instead of a name. Best-effort map of the codes common on consumer DDR4/DDR5.
+        /// </summary>
+        private static readonly Dictionary<string, string> JedecManufacturerIds =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "802C", "Micron" },
+                { "2C00", "Micron" },
+                { "80AD", "SK Hynix" },
+                { "AD00", "SK Hynix" },
+                { "80CE", "Samsung" },
+                { "CE00", "Samsung" },
+                { "859B", "Crucial" },
+                { "029E", "Corsair" },
+                { "04CB", "ADATA" },
+                { "04CD", "G.Skill" },
+                { "04EF", "Team Group" },
+                { "0198", "Kingston" },
+                { "7F98", "Kingston" },
+            };
+
+        public string GetSystemRAMManufacturer()
+        {
+            var manufacturers = new List<string>();
+
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher("select Manufacturer from Win32_PhysicalMemory"))
+                {
+                    foreach (ManagementBaseObject managementBaseObject in searcher.Get())
+                    {
+                        var raw = (managementBaseObject["Manufacturer"] as string)?.Trim() ?? string.Empty;
+
+                        string brand;
+                        if (JedecManufacturerIds.TryGetValue(raw, out var mapped))
+                            brand = mapped;
+                        else if (LooksLikeJedecId(raw))
+                            brand = string.Empty; // unmapped raw ID carries no display value
+                        else
+                            // ToBrand also drops the placeholder strings modules ship with
+                            // ("Unknown", "To be filled by O.E.M.", ...).
+                            brand = MainboardNameShortener.ToBrand(raw);
+
+                        if (brand.Length > 0 && !manufacturers.Contains(brand))
+                            manufacturers.Add(brand);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while getting RAM manufacturer.");
+            }
+
+            return string.Join(" / ", manufacturers);
+        }
+
+        private static bool LooksLikeJedecId(string value)
+        {
+            if (value.Length != 4)
+                return false;
+
+            bool hasDigit = false;
+            foreach (var c in value)
+            {
+                if (!Uri.IsHexDigit(c))
+                    return false;
+                hasDigit |= char.IsDigit(c);
+            }
+
+            // All-letter strings ("ADATA") are names, not IDs.
+            return hasDigit;
+        }
+
+        public string GetProcessorCoreCountInfo()
+        {
+            try
+            {
+                uint cores = 0;
+                uint threads = 0;
+
+                using (var searcher = new ManagementObjectSearcher(
+                    "select NumberOfCores, NumberOfLogicalProcessors from Win32_Processor"))
+                {
+                    foreach (ManagementBaseObject managementBaseObject in searcher.Get())
+                    {
+                        cores += Convert.ToUInt32(managementBaseObject["NumberOfCores"]);
+                        threads += Convert.ToUInt32(managementBaseObject["NumberOfLogicalProcessors"]);
+                    }
+                }
+
+                if (cores > 0 && threads > 0)
+                    return $"{cores} Cores / {threads} Threads";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while getting processor core count.");
+            }
+
+            return string.Empty;
         }
 
         public string GetSystemRAMInfoName()

@@ -354,6 +354,34 @@ namespace CapFrameX.Test.Sensor
                 Assert.IsTrue(entryIds.Contains(configEntry.Identifier),
                     $"Entry '{configEntry.Identifier}' should be present.");
             }
+
+            var amdFlmEntry = entries.Single(entry => entry.Identifier == "OnlineAmdFlmLatency");
+            Assert.IsFalse(amdFlmEntry.IsEntryEnabled,
+                "Disabled FLM should remain in migrated configs without being activated.");
+            Assert.IsFalse(amdFlmEntry.ShowOnOverlayIsEnabled,
+                "The FLM overlay toggle should remain disabled until FLM is enabled.");
+        }
+
+        [TestMethod]
+        public async Task IdenticalHardware_DisabledPcLatency_StaysInListDeactivated()
+        {
+            // PC latency off: like FLM, the entry has to survive the load filter so the
+            // live config toggle can enable it in place without a restart.
+            _appConfigMock.Setup(x => x.UsePcLatency).Returns(false);
+            PopulateOverlayEntryCoreFromConfig();
+
+            var provider = CreateProvider();
+            await Task.Delay(500);
+
+            var entries = await provider.GetOverlayEntries(updateFormats: false);
+
+            var pcLatencyEntry = entries.Single(entry => entry.Identifier == "OnlinePcLatency");
+            Assert.IsFalse(pcLatencyEntry.IsEntryEnabled,
+                "Disabled PC latency should remain in migrated configs without being activated.");
+            Assert.IsFalse(pcLatencyEntry.ShowOnOverlayIsEnabled,
+                "The PC latency overlay toggle should remain disabled until the feature is enabled.");
+            Assert.IsFalse(pcLatencyEntry.ShowOnOverlay,
+                "A disabled PC latency entry must not be shown on the overlay.");
         }
 
         [TestMethod]
@@ -760,13 +788,23 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
-        public void SensorEntryProvider_DefaultActiveSensors_IncludeGpuProcessMemoryDedicated()
+        public void SensorEntryProvider_DefaultActiveSensors_IncludeGpuMemoryDedicatedGame()
         {
             var sensorEntryProvider = new SensorEntryProvider(_mockSensorService, _sensorConfigMock.Object);
 
-            var sensor = new MockSensorEntry("/gpu/0/data/processdedicated", "GPU Process Memory Dedicated", "GpuNvidia", "Data");
+            var sensor = new MockSensorEntry("/gpu/0/data/processdedicated", "GPU Memory Dedicated Game", "GpuNvidia", "Data");
             Assert.IsTrue(sensorEntryProvider.GetIsDefaultActiveSensor(sensor),
-                "GPU Process Memory Dedicated should be a default active sensor.");
+                "GPU Memory Dedicated Game should be a default active sensor.");
+        }
+
+        [TestMethod]
+        public void SensorEntryProvider_DefaultActiveSensors_IncludeGpuMemoryAllocated()
+        {
+            var sensorEntryProvider = new SensorEntryProvider(_mockSensorService, _sensorConfigMock.Object);
+
+            var sensor = new MockSensorEntry("/gpu/0/data/allocated", "GPU Memory Allocated", "GpuNvidia", "Data");
+            Assert.IsTrue(sensorEntryProvider.GetIsDefaultActiveSensor(sensor),
+                "GPU Memory Allocated should be a default active sensor.");
         }
 
         [TestMethod]

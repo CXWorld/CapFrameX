@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Text;
 using HidSharp;
 
+#pragma warning disable CS1591 // file exempt from XML documentation
+
 namespace LibreHardwareMonitor.Hardware.Controller.AeroCool;
 
 public class AeroCoolGroup : IGroup

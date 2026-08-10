@@ -1,7 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <!-- Despite the project name this is not a portable library: it queries WMI and the Windows
+         setup API, and its only consumer is the net9.0-windows app. Targeting netstandard2.0 left
+         CapFrameX.Contracts (net9.0-windows;net472) without a matching TFM, so the whole reference
+         graph below it fell back to net472 (NU1702 + MSB3277 conflicts). -->
+    <TargetFramework>net9.0-windows</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
@@ -15,18 +19,13 @@
     <PackageReference Include="System.Memory" Version="4.6.3" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
     <PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
+    <PackageReference Include="System.Management" Version="10.0.3" />
     <PackageReference Include="System.Text.Json" Version="10.0.5" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="System.Management">
-      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Management.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

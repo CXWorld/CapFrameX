@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "SDK/ADLXHelper/Windows/Cpp/ADLXHelper.h"
 #include "SDK/Include/IPerformanceMonitoring3.h"
+#include "SDK/Include/ISystem2.h"
 #include "ADLXManager.h"
 #include <exception>
 
@@ -16,6 +17,15 @@ static ADLXHelper g_ADLXHelp;
 
 IADLXPerformanceMonitoringServicesPtr _perfMonitoringService;
 IADLXGPUListPtr _gpus;
+
+// Release all globally held ADLX interfaces. Must run before g_ADLXHelp.Terminate();
+// a Release() after Terminate() - e.g. via the atexit destructors on process
+// shutdown - crashes inside amdadlx64.dll.
+static void ReleaseAdlxInterfaces()
+{
+	_gpus = nullptr;
+	_perfMonitoringService = nullptr;
+}
 
 void GetTimeStamp(IADLXGPUMetricsPtr gpuMetrics)
 {
@@ -363,17 +373,20 @@ bool IntializeAdlx()
 
 		if (!check)
 		{
+			ReleaseAdlxInterfaces();
 			g_ADLXHelp.Terminate();
 		}
 	}
 	catch (const std::exception& e)
 	{
+		ReleaseAdlxInterfaces();
 		g_ADLXHelp.Terminate();  // Clean up resources
 		return false; // Return false on any exception
 	}
 	catch (...)
 	{
 		// Catch any other types of exceptions
+		ReleaseAdlxInterfaces();
 		g_ADLXHelp.Terminate();  // Clean up resources
 		return false; // Return false on any unknown exception
 	}
@@ -383,7 +396,10 @@ bool IntializeAdlx()
 
 void CloseAdlx()
 {
-	_perfMonitoringService->StopPerformanceMetricsTracking();
+	if (_perfMonitoringService != nullptr)
+		_perfMonitoringService->StopPerformanceMetricsTracking();
+
+	ReleaseAdlxInterfaces();
 	g_ADLXHelp.Terminate();
 }
 
@@ -399,6 +415,9 @@ adlx_uint GetAtiAdpaterCount()
 
 bool GetAdlxTelemetry(const adlx_uint index, const adlx_uint historyLength, AdlxTelemetryData* adlxTelemetryData)
 {
+	if (_gpus == nullptr || _perfMonitoringService == nullptr)
+		return false;
+
 	bool check = false;
 
 	try
@@ -495,6 +514,9 @@ bool GetAdlxTelemetry(const adlx_uint index, const adlx_uint historyLength, Adlx
 
 bool GetAdlxTelemetrySupport(const adlx_uint index, AdlxTelemetrySupport* adlxTelemetrySupport)
 {
+	if (_gpus == nullptr || _perfMonitoringService == nullptr)
+		return false;
+
 	bool check = false;
 
 	try
@@ -593,6 +615,14 @@ bool GetAdlxTelemetrySupport(const adlx_uint index, AdlxTelemetrySupport* adlxTe
 
 bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
 {
+	if (adlxDeviceInfo == nullptr)
+		return false;
+
+	*adlxDeviceInfo = {};
+
+	if (_gpus == nullptr)
+		return false;
+
 	ADLX_RESULT res = ADLX_FAIL;
 	ADLX_RESULT ret;
 	bool check = false;
@@ -606,7 +636,8 @@ bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
 		{
 			const char* vendorId = nullptr;
 			ret = gpu->VendorId(&vendorId);
-			strcpy_s(adlxDeviceInfo->VendorId, vendorId);
+			if (ADLX_SUCCEEDED(ret) && vendorId != nullptr)
+				strcpy_s(adlxDeviceInfo->VendorId, vendorId);
 
 			ADLX_GPU_TYPE gpuType = GPUTYPE_UNDEFINED;
 			ret = gpu->Type(&gpuType);
@@ -615,15 +646,35 @@ bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
 
 			const char* gpuName = nullptr;
 			ret = gpu->Name(&gpuName);
-			strcpy_s(adlxDeviceInfo->GpuName, gpuName);
+			if (ADLX_SUCCEEDED(ret) && gpuName != nullptr)
+				strcpy_s(adlxDeviceInfo->GpuName, gpuName);
 
 			const char* driverPath = nullptr;
 			ret = gpu->DriverPath(&driverPath);
-			strcpy_s(adlxDeviceInfo->DriverPath, driverPath);
+			if (ADLX_SUCCEEDED(ret) && driverPath != nullptr)
+				strcpy_s(adlxDeviceInfo->DriverPath, driverPath);
+
+			const char* pnpString = nullptr;
+			ret = gpu->PNPString(&pnpString);
+			if (ADLX_SUCCEEDED(ret) && pnpString != nullptr)
+				strcpy_s(adlxDeviceInfo->PnpString, pnpString);
 
 			adlx_int id;
 			ret = gpu->UniqueId(&id);
-			adlxDeviceInfo->Id = id;
+			if (ADLX_SUCCEEDED(ret))
+				adlxDeviceInfo->Id = id;
+
+			IADLXGPU2Ptr gpu2;
+			if (ADLX_SUCCEEDED(gpu->QueryInterface(IADLXGPU2::IID(), reinterpret_cast<void**>(&gpu2))))
+			{
+				ADLX_LUID luid = {};
+				if (ADLX_SUCCEEDED(gpu2->LUID(&luid)))
+				{
+					adlxDeviceInfo->LuidLowPart = static_cast<uint32_t>(luid.lowPart);
+					adlxDeviceInfo->LuidHighPart = static_cast<int32_t>(luid.highPart);
+					adlxDeviceInfo->LuidValid = 1;
+				}
+			}
 
 			check = true;
 		}

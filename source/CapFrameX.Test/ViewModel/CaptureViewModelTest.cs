@@ -1,9 +1,7 @@
 using CapFrameX.Contracts.Configuration;
-using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Logging;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
-using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Monitoring.Contracts;
@@ -208,19 +206,6 @@ namespace CapFrameX.Test.ViewModel
 
             Assert.AreEqual("Third", _appConfigurationMock.Object.RelatedMetricOverlay);
             _overlayServiceMock.Verify(x => x.ResetHistory(), Times.Once);
-
-            DisposeHeartbeat(sut);
-        }
-
-        [TestMethod]
-        public void CaptureTimeString_WhenUseGlobalCaptureTime_UpdatesAppConfiguration()
-        {
-            var sut = CreateSut();
-            sut.UseGlobalCaptureTime = true;
-
-            sut.CaptureTimeString = "42.5";
-
-            Assert.AreEqual(42.5d, _appConfigurationMock.Object.CaptureTime, 0.001d);
 
             DisposeHeartbeat(sut);
         }

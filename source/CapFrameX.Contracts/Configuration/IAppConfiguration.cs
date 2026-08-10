@@ -23,10 +23,6 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool UseSingleRecordP95QuantileStatisticParameter { get; set; }
 
-		bool UseSingleRecordFrametimeP1QuantileStatisticParameter { get; set; }
-
-		bool UseSingleRecordFrametimeP5QuantileStatisticParameter { get; set; }
-
 		bool UseSingleRecordAverageStatisticParameter { get; set; }
 
         bool UseSingleRecordGpuActiveAverageStatisticParameter { get; set; }
@@ -129,8 +125,10 @@ namespace CapFrameX.Contracts.Configuration
 
 		string CustomGpuDescription { get; set; }
 
-		string CustomRamDescription { get; set; }	
-		
+		string CustomRamDescription { get; set; }
+
+		string CustomMainboardDescription { get; set; }
+
 		bool IsOverlayActive { get; set; }
 
 		string ResetHistoryHotkey { get; set; }
@@ -159,6 +157,85 @@ namespace CapFrameX.Contracts.Configuration
 		/// Set to disable RTSS output but keeping the overlay service up and running to pull values via webservice
 		/// </summary>
 		bool HideOverlay { get; set; }
+
+		/// <summary>
+		/// Use the hook-free DWM/DirectComposition overlay (CapFrameX.OSD) instead of RTSS.
+		/// </summary>
+		bool EnableHookFreeOverlay { get; set; }
+
+		/// <summary>
+		/// Windows display device name used by the hook-free overlay, for example
+		/// <c>\\.\DISPLAY1</c>. An empty or unavailable device falls back to the primary display.
+		/// </summary>
+		string HookFreeDisplayDeviceName { get; set; }
+
+		/// <summary>
+		/// Maximum visible refresh rate of the hook-free overlay charts in Hz.
+		/// Supported values are 1, 2, 5, 10, 20, and 30; default is 1.
+		/// </summary>
+		int HookFreeRefreshRate { get; set; }
+
+		/// <summary>
+		/// Inject the in-game hook overlay (cfx_osd_hook.dll) into the detected game process
+		/// for smooth in-swapchain graphs. Opt-in, per detected process; injection targets the
+		/// PID CapFrameX already detected via <see cref="CapFrameX.Monitoring.Contracts.IProcessService.ProcessIdStream"/>.
+		/// </summary>
+		bool EnableHookOverlay { get; set; }
+
+		/// <summary>
+		/// In-game hook overlay graph data source. false (default) = the hook's own local
+		/// present-to-present ring (low latency, frametime only). true = CapFrameX's PresentMon
+		/// frame-data stream (frametime AND display-time), delivered via a shared-memory ring and
+		/// replayed by the renderer's buffer/replay clock. The two sources are kept strictly
+		/// separate: PresentMon data carries pipeline latency and isn't comparable to the in-game ring.
+		/// </summary>
+		bool HookOverlayUsePresentMonFrametimes { get; set; }
+
+		/// <summary>
+		/// Minimum buffer duration in milliseconds for replaying the bursty PresentMon frame
+		/// stream in the hook-free and in-game CapFrameX renderers. Larger values tolerate wider
+		/// delivery gaps at the cost of additional graph latency. Range 500..10000; default 750.
+		/// The renderer may still increase the delay when it detects a wider delivery wave.
+		/// </summary>
+		int OsdReplayBufferSize { get; set; }
+
+		/// <summary>
+		/// OSD background (panel + chart area) opacity in percent, 0..100. Applies to BOTH
+		/// cfx-OSD backends: the hook-free window overlay (directly via the C API) and the
+		/// in-game hook overlay (published through the metrics shared-memory header flags).
+		/// Text and graph lines are unaffected. Default 97 matches the theme's built-in look.
+		/// </summary>
+		int OsdBackgroundOpacity { get; set; }
+
+		/// <summary>
+		/// Uniform size of the CapFrameX overlay in percent (50..200, default 100). Reaches the
+		/// same two cfx-OSD backends as <see cref="OsdBackgroundOpacity"/> — the hook-free window
+		/// overlay directly through the C API, the in-game hook through the metrics shared-memory
+		/// header flags. Scales fonts, paddings, row gaps and the graphs alike; it does NOT affect
+		/// the RTSS renderer, which has its own zoom in the RTSS settings.
+		/// </summary>
+		int OsdZoom { get; set; }
+
+		/// <summary>
+		/// Corner the CapFrameX overlay is anchored to, as <c>cfx_osd_anchor</c>:
+		/// 0 = top left, 1 = top right, 2 = bottom left, 3 = bottom right, 4 = top center.
+		/// Applies to all three CapFrameX renderers (hook-free, in-game hook, Vulkan layer);
+		/// RTSS is positioned by its own settings.
+		/// </summary>
+		int OsdAnchor { get; set; }
+
+		/// <summary>Horizontal distance from the anchored corner in px (0..2000).</summary>
+		int OsdMarginX { get; set; }
+
+		/// <summary>Vertical distance from the anchored corner in px (0..2000).</summary>
+		int OsdMarginY { get; set; }
+
+		/// <summary>
+		/// Smooth numeric values between OSD data updates. When disabled, the CapFrameX
+		/// renderers display each newly published value immediately without generated
+		/// intermediate values. Enabled by default for backward compatibility.
+		/// </summary>
+		bool UseOsdValueSmoothing { get; set; }
 
 		bool ShowSystemTimeSeconds { get; set; }
 
@@ -250,6 +327,12 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool AppNotificationsActive { get; set; }
 
+		/// <summary>
+		/// Whether the update service asks the update server for a newer version on app start.
+		/// The manual check in the options popup works regardless of this setting.
+		/// </summary>
+		bool AutoUpdateCheckActive { get; set; }
+
 		string WebservicePort { get; set; }
 
 		bool CaptureRTSSFrameTimes { get; set; }
@@ -267,6 +350,16 @@ namespace CapFrameX.Contracts.Configuration
 		bool UseDisplayChangeMetrics { get; set; }
 
 		bool UsePcLatency { get; set; }
+
+		/// <summary>
+		/// Size of PresentMon's present event circular buffer (--set_circular_buffer_size).
+		/// PresentMon only accepts powers of two; CapFrameX offers 2048, 4096 and 8192.
+		/// </summary>
+		int PresentMonCircularBufferSize { get; set; }
+
+		bool UseAmdFlmLatency { get; set; }
+
+		bool AmdFlmFrameGeneration { get; set; }
 
         bool UseAdlFallback { get; set; }
 

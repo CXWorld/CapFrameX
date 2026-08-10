@@ -17,7 +17,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
@@ -706,6 +708,84 @@ namespace CapFrameX.Test.Data
         #endregion
 
         #region Helper Methods
+
+        /// <summary>
+        /// Field regression: a second StartCapture that slipped past the IsCapturing guard
+        /// subscribed to the frame stream again and orphaned the first subscription, because the
+        /// handle was simply overwritten. Every frame then reached the capture buffer once per
+        /// orphan — and NormalizeTimes, which rewrote the caller's rows in place, subtracted the
+        /// start time once per copy. Captures came out with ~10x the frames and timestamps hours
+        /// before the run, and no longer loaded.
+        ///
+        /// This pins the half that turned duplicates into corruption: reading a row must not
+        /// change it.
+        /// </summary>
+        [TestMethod]
+        public void NormalizeTimes_LeavesTheSourceRowsUntouched()
+        {
+            var rows = CreateRecordLines(startTimeMs: 11_848_037, frameCount: 5);
+            var before = rows.Select(row => string.Join(",", row)).ToList();
+
+            _captureManager.NormalizeTimes(rows).ToList();
+
+            var after = rows.Select(row => string.Join(",", row)).ToList();
+            CollectionAssert.AreEqual(before, after,
+                "NormalizeTimes rewrote its input; a row normalized twice loses its start time twice");
+        }
+
+        [TestMethod]
+        public void NormalizeTimes_IsRepeatable()
+        {
+            var rows = CreateRecordLines(startTimeMs: 11_848_037, frameCount: 5);
+
+            var first = _captureManager.NormalizeTimes(rows).ToList();
+            var second = _captureManager.NormalizeTimes(rows).ToList();
+
+            CollectionAssert.AreEqual(first, second, "normalizing the same rows twice gave different results");
+        }
+
+        [TestMethod]
+        public void NormalizeTimes_KeepsADuplicatedRowFromPoisoningTheTimeline()
+        {
+            // Exactly what the orphaned subscription produced: the same row instance more than
+            // once in the capture buffer. It may come out as a duplicate — it must not come out
+            // as -k * startTime.
+            const double startTimeMs = 11_848_037;
+            var rows = CreateRecordLines(startTimeMs, frameCount: 3);
+            var withDuplicates = new List<string[]> { rows[0], rows[1], rows[1], rows[1], rows[2] };
+
+            var normalized = _captureManager.NormalizeTimes(withDuplicates).ToList();
+
+            int timeIndex = ((ICaptureService)_mockCaptureService).CPUStartQPCTimeInMs_Index;
+            foreach (var line in normalized)
+            {
+                double time = double.Parse(line.Split(',')[timeIndex], CultureInfo.InvariantCulture);
+                Assert.IsTrue(time >= 0,
+                    $"negative timestamp {time} — the row was normalized against the start time more than once");
+                Assert.IsTrue(time < startTimeMs,
+                    $"timestamp {time} is still on the raw timeline, not rebased onto the capture start");
+            }
+        }
+
+        // Rows shaped like the capture service's own layout, with a raw CPUStartQPCTime that is
+        // far from zero — the field data is a machine-uptime timeline, which is what made the
+        // repeated subtraction so visible.
+        private List<string[]> CreateRecordLines(double startTimeMs, int frameCount)
+        {
+            int timeIndex = ((ICaptureService)_mockCaptureService).CPUStartQPCTimeInMs_Index;
+            int columnCount = _mockCaptureService.ColumnHeader.Split(',').Length;
+
+            var rows = new List<string[]>();
+            for (int i = 0; i < frameCount; i++)
+            {
+                var row = new string[columnCount];
+                for (int c = 0; c < columnCount; c++) row[c] = "0";
+                row[timeIndex] = (startTimeMs + i * 16.67)
+                    .ToString(CultureInfo.InvariantCulture);
+                rows.Add(row);
+            }
+            return rows;
+        }
 
         private CaptureOptions CreateValidCaptureOptions()
         {

@@ -13,7 +13,7 @@
 			 xmlns:prism="http://prismlibrary.com/"
              mc:Ignorable="d" 
              d:DesignHeight="1000" d:DesignWidth="1200"
-             Background="{DynamicResource MaterialDesignBackground}"
+             Background="{DynamicResource MaterialDesign.Brush.Card.Background}"
 			 prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -25,6 +25,7 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.GridSplitter.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Flipper.xaml" />
+                <ResourceDictionary Source="Styles/CxCards.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
@@ -44,10 +45,10 @@
             <ColumnDefinition Width="10"/>
             <ColumnDefinition Width="460"/>
         </Grid.ColumnDefinitions>
-        <Border BorderBrush="{DynamicResource MaterialDesignBody}" BorderThickness="0.3" Grid.Row="1" Grid.Column="0" >
+        <Border Style="{StaticResource SectionCard}" Grid.Row="1" Grid.Column="0" >
             <DockPanel Margin="0 10 0 10">
                 <Grid DockPanel.Dock="Top">
-                    <TextBlock Margin="15 0 0 10" HorizontalAlignment="Left" Text="Sensor items" FontSize="16" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
+                    <TextBlock Margin="15 0 0 10" HorizontalAlignment="Left" Text="Sensor items" FontSize="16" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                 </Grid>
                 <Grid>
                     <Grid.RowDefinitions>
@@ -60,7 +61,7 @@
 					         materialDesign:DataGridAssist.CellPadding="15 5 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="15 5 0 10" IsSynchronizedWithCurrentItem="False"
 					         ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
                              Style="{StaticResource MaterialDesignDataGrid}"
-                             Background="{DynamicResource MaterialDesignBackground}">
+                             Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
                         <DataGrid.Resources>
                             <Style TargetType="{x:Type DataGridRow}">
                                 <Setter Property="DataGrid.Height" Value="25" />
@@ -113,7 +114,7 @@
                                         <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}" />
                                     </Trigger>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="{DynamicResource MaterialDesignDataGridRowHoverBackground}" />
+                                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.DataGrid.RowHoverBackground}" />
                                     </Trigger>
                                     <Trigger Property="IsNewItem" Value="True">
                                         <Setter Property="Margin" Value="{Binding NewItemMargin, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
@@ -170,15 +171,15 @@
                                         </ToolTip>
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <TextBlock Margin="10 0 20 0" VerticalAlignment="Center" Text="Log sensors" Foreground="{DynamicResource MaterialDesignBody}"/>
+                                <TextBlock Margin="10 0 20 0" VerticalAlignment="Center" Text="Log sensors" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                             </StackPanel>
-                            <ComboBox Margin="15 0 0 0" materialDesign:ComboBoxAssist.ClassicMode="True"
+                            <ComboBox Margin="15 0 0 0"
 					              materialDesign:HintAssist.Hint="Sensor polling [ms]" materialDesign:HintAssist.HintOpacity=".8"
 					              materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110"
 					              MouseLeave="LoggingPeriodComboBox_MouseLeave" FontSize="14"
 					              ItemsSource="{Binding Path=LoggingPeriodItemsSource}"
                                   IsEnabled="{Binding UseSensorLogging}"
-                                  Foreground="{DynamicResource MaterialDesignBody}">
+                                  Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                                 <ComboBox.Text>
                                     <Binding Path="LoggingPeriod"
 							 Mode="TwoWay"
@@ -190,17 +191,28 @@
                                 </ComboBox.ToolTip>
                             </ComboBox>
                             <Grid Width="210">
-                                <Button Width="28" Height="28" Margin="20 10 15 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                <Button Width="28" Height="28" Margin="20 10 15 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
                                 ToolTip="Reset to defaults" Command="{Binding ResetToDefaultCommand}" IsEnabled="{Binding Path=UseSensorLogging}"
                                 materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="Restore" Height="22" Width="22" />
                                 </Button>
-                                <Button Width="28" Height="28" Margin="0 10 60 0" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                <Button Width="28" Height="28" Margin="0 10 100 0" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
+                                    Command="{Binding ResyncPerfmonCommand}"
+                                    materialDesign:RippleAssist.Feedback="#DD000000">
+                                    <materialDesign:PackIcon Kind="Update" Height="22" Width="22" />
+                                    <Button.ToolTip>
+                                        <ToolTip>
+                                            <TextBlock Width="275" TextWrapping="Wrap"
+                                                       Text="Resync Windows performance monitor when you have issues with 0 memory counter. Restart CX after execution."/>
+                                        </ToolTip>
+                                    </Button.ToolTip>
+                                </Button>
+                                <Button Width="28" Height="28" Margin="0 10 60 0" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
                                     ToolTip="Open configuration folder" Command="{Binding OpenConfigFolderCommand}"
                                     materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="Folder" Height="22" Width="22" />
                                 </Button>
-                                <Button Width="28" Height="28" Margin="0 10 20 0" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                <Button Width="28" Height="28" Margin="0 10 20 0" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
                                     ToolTip="Save selected sensors for logging" Command="{Binding SaveConfigCommand}" IsEnabled="{Binding SaveButtonIsEnable}"
                                     materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="ContentSaveSettings" Height="22" Width="22" />
@@ -208,7 +220,7 @@
                             </Grid>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="5 0 0 0" ToolTip="Check or uncheck groups of sensors" ToolTipService.Placement="Top">
-                            <materialDesign:PopupBox StaysOpen="True" IsEnabled="{Binding Path=UseSensorLogging}" Foreground="{DynamicResource MaterialDesignBody}">
+                            <materialDesign:PopupBox StaysOpen="True" IsEnabled="{Binding Path=UseSensorLogging}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                                 <materialDesign:Card Width="220" Margin="0 0 0 -10">
                                     <StackPanel>
                                         <Grid Margin="8 8 8 8">
@@ -217,7 +229,7 @@
 											BasedOn="{StaticResource MaterialDesignCheckBox}">
                                                     <Setter Property="Margin" Value="8,8,10,8" />
                                                 </Style>
-                                                <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
+                                                <Style TargetType="TextBox" BasedOn="{StaticResource CxTextBox}">
                                                     <Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
                                                     <Setter Property="Margin" Value="8,8,8,8" />
                                                 </Style>
@@ -287,18 +299,18 @@
                                     </StackPanel>
                                 </materialDesign:Card>
                             </materialDesign:PopupBox>
-                            <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Group control</TextBlock>
+                            <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Group control</TextBlock>
                         </StackPanel>
                     </StackPanel>
                 </Grid>
             </DockPanel>
         </Border>
 
-        <Border BorderBrush="{DynamicResource MaterialDesignBody}" BorderThickness="0.3" Grid.Row="1" Grid.Column="2" >
+        <Border Style="{StaticResource SectionCard}" Grid.Row="1" Grid.Column="2" >
             <DockPanel Margin="0 10 0 10">
                 <Grid DockPanel.Dock="Top">
                     <TextBlock Margin="15 0 0 10" HorizontalAlignment="Left" Text="{Binding SensorStatisticsText}" FontSize="16" VerticalAlignment="Center"
-                               Foreground="{DynamicResource MaterialDesignBody}"/>
+                               Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                 </Grid>
                 <Grid>
                     <Grid.RowDefinitions>
@@ -312,7 +324,7 @@
 					            ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
                                 Tag="{Binding ElementName=SensorViewUserControl, Path=DataContext}"
                                 Style="{StaticResource MaterialDesignDataGrid}"
-                                Background="{DynamicResource MaterialDesignBackground}">
+                                Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
                         <DataGrid.ContextMenu>
                             <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                 <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding CopySensorInfoCommand}"/>
@@ -322,14 +334,14 @@
                         <DataGrid.Resources>
                             <Style TargetType="{x:Type DataGridRow}">
                                 <Setter Property="Height" Value="25" />
-                                <Setter Property="Background" Value="{DynamicResource MaterialDesignBackground}"/>
+                                <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Card.Background}"/>
                             </Style>
                             <Style x:Key="CellStyle" TargetType="DataGridCell">
                                 <Setter Property="Padding" Value="5 5 5 0" />
-                                <Setter Property="Background" Value="{DynamicResource MaterialDesignBackground}"/>
+                                <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Card.Background}"/>
                                 <Setter Property="BorderBrush" Value="Transparent"/>
                                 <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
-                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
                                 <Setter Property="BorderThickness" Value="0"/>
                                 <Setter Property="Template">
                                     <Setter.Value>
@@ -374,7 +386,7 @@
                     </DataGrid>
                     <Button Grid.Row="1" Width="150" Height="45" BorderBrush="Transparent"
 					        Command="{Binding AggregateSensorEntriesCommand}" IsEnabled="{Binding AggregateButtonIsEnable}"
-                            ToolTipService.ShowDuration="25000" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}"> 
+                            ToolTipService.ShowDuration="25000" Foreground="White" Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}"> 
                         <TextBlock Text="{Binding AggregateButtonText}" TextWrapping="Wrap" TextAlignment="Center"/>
                         <Button.ToolTip>
                             <ToolTip MaxWidth="250">
@@ -391,7 +403,7 @@
                                   ToolTipService.ShowDuration="25000"
 					              MouseLeave="EvaluationComboBox_MouseLeave" FontSize="14"
 					              ItemsSource="{Binding Path=EvaluationMethodItemsSource}"
-                                  Foreground="{DynamicResource MaterialDesignBody}">
+                                  Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                         <ComboBox.Text>
                             <Binding Path="EvaluationMethod"
 							 Mode="TwoWay"

@@ -227,8 +227,12 @@ namespace CapFrameX.ViewModel
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
                 .Subscribe(msg =>
                 {
-                    _pmdAnalysisChartManager.UseDarkMode = _appConfiguration.UseDarkMode;
+                    bool useDarkMode = _appConfiguration.UseDarkMode;
+
+                    _pmdAnalysisChartManager.UseDarkMode = useDarkMode;
                     _pmdAnalysisChartManager.UpdateChartsTheme();
+                    PoweneticsViewModel.UpdateChartsTheme(useDarkMode);
+                    BenchlabViewModel.UpdateChartsTheme(useDarkMode);
                 });
         }
 

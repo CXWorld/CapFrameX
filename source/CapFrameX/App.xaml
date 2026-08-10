@@ -6,9 +6,16 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <materialDesign:BundledTheme BaseTheme="Inherit" PrimaryColor="Blue" SecondaryColor="Lime" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <materialDesign:CustomColorTheme BaseTheme="Inherit" PrimaryColor="#0271F9" SecondaryColor="Lime" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign3.Defaults.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/CapFrameX.View;component/Styles/CxTextFields.xaml" />
+                <ResourceDictionary Source="Themes/CxScrollBar.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <SolidColorBrush x:Key="Cx.Brush.OutlinedAction.Foreground" Color="#0271F9" />
+            <!-- Global default for ToggleButtons: switch look with uniform 32px height -->
+            <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource MaterialDesignSwitchToggleButton}">
+                <Setter Property="Height" Value="32" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

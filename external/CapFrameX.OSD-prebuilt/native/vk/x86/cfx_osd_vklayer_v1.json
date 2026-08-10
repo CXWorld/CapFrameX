@@ -1,0 +1,17 @@
+{
+    "file_format_version": "1.2.0",
+    "layer": {
+        "name": "VK_LAYER_CAPFRAMEX_overlay",
+        "type": "GLOBAL",
+        "library_path": ".\\cfx_osd_vklayer.dll",
+        "api_version": "1.3.0",
+        "implementation_version": "1",
+        "description": "CapFrameX in-game OSD (Vulkan present-time composite)",
+        "functions": {
+            "vkNegotiateLoaderLayerInterfaceVersion": "vkNegotiateLoaderLayerInterfaceVersion"
+        },
+        "disable_environment": {
+            "DISABLE_CAPFRAMEX_VULKAN_LAYER": "1"
+        }
+    }
+}

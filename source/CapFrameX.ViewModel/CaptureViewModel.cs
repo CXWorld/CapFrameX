@@ -62,7 +62,6 @@ namespace CapFrameX.ViewModel
         private string _captureStartDelayString = "0";
         private PlotModel _frametimeModel;
         private string _lastCapturedProcess;
-        private bool _hotkeyLocked = false;
         private string _currentGameNameToCapture = string.Empty;
         private string _currentProcessToCapture = string.Empty;
         private bool _isLoggerOutputEmpty = true;
@@ -230,21 +229,21 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool UseGlobalCaptureTime
-        {
-            get { return _appConfiguration.UseGlobalCaptureTime; }
-            set
-            {
-                _appConfiguration.UseGlobalCaptureTime = value;
+        public bool UseGlobalCaptureTime => true;
+        //{
+        //    get { return _appConfiguration.UseGlobalCaptureTime; }
+        //    set
+        //    {
+        //        _appConfiguration.UseGlobalCaptureTime = value;
 
-                if (value)
-                    CaptureTimeString = Convert.ToString(_appConfiguration.CaptureTime, CultureInfo.InvariantCulture);
-                else
-                    UdateCustomCaptureTime(_currentProcessToCapture);
+        //        if (value)
+        //            CaptureTimeString = Convert.ToString(_appConfiguration.CaptureTime, CultureInfo.InvariantCulture);
+        //        else
+        //            UdateCustomCaptureTime(_currentProcessToCapture);
 
-                RaisePropertyChanged();
-            }
-        }
+        //        RaisePropertyChanged();
+        //    }
+        //}
 
         // Run history and aggregation options
         public string ResetHistoryHotkeyString
@@ -569,7 +568,7 @@ namespace CapFrameX.ViewModel
             SubscribeToGlobalCaptureHookEvent();
             SetGlobalHookEventResetHistoryHotkey();
 
-            bool captureServiceStarted = StartCaptureService();
+            bool captureServiceStarted = _captureManager.RestartCaptureService();
 
             if (captureServiceStarted)
                 _overlayService.SetCaptureServiceStatus("Capture service ready...");
@@ -625,19 +624,18 @@ namespace CapFrameX.ViewModel
             if (!CXHotkey.IsValidHotkey(CaptureHotkeyString))
                 return;
 
+            // No local re-trigger lock: key repeat is filtered centrally for every hotkey now
+            // (KeyRepeatFilter). The 500 ms lock this replaces also swallowed deliberate double
+            // presses; a start immediately followed by a stop is legitimate and is already
+            // guarded by LockCaptureService and the capture state checks in SetCaptureMode.
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.Capture,
                 () =>
                 {
-                    if (!_hotkeyLocked)
+                    _logger.LogInformation("Hotkey ({captureHotkeyString}) callback triggered. Lock capture service state is {lockCaptureServiceState}.", CaptureHotkeyString, _captureManager.LockCaptureService);
+                    _logger.LogInformation("IsCapturing state: {isCapturingState}", _captureManager.IsCapturing);
+                    if (!_captureManager.LockCaptureService)
                     {
-                        _hotkeyLocked = true;
-                        Task.Run(async () => await Task.Delay(500)).ContinueWith(t => _hotkeyLocked = false);
-                        _logger.LogInformation("Hotkey ({captureHotkeyString}) callback triggered. Lock capture service state is {lockCaptureServiceState}.", CaptureHotkeyString, _captureManager.LockCaptureService);
-                        _logger.LogInformation("IsCapturing state: {isCapturingState}", _captureManager.IsCapturing);
-                        if (!_captureManager.LockCaptureService)
-                        {
-                            SetCaptureMode();
-                        }
+                        SetCaptureMode();
                     }
                 });
         }
@@ -707,40 +705,12 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        private bool StartCaptureService()
-        {
-            bool success;
-            var serviceConfig = GetRedirectedServiceConfig();
-            var startInfo = CaptureServiceConfiguration
-                .GetServiceStartInfo(serviceConfig.ConfigParameterToArguments());
-            success = _captureManager.StartCaptureService(startInfo);
-
-            _captureManager.StartFillArchive();
-
-            return success;
-        }
-
-        private void StopCaptureService()
-        {
-            _captureManager.StopFillArchive();
-        }
-
-        private PresentMonServiceConfiguration GetRedirectedServiceConfig()
-        {
-            return new PresentMonServiceConfiguration
-            {
-                RedirectOutputStream = true,
-                ExcludeProcesses = _processList.GetIgnoredProcessNames().ToList(),
-                TrackPcLatency = _appConfiguration.UsePcLatency
-            };
-        }
-
+        // The ignore list reaches PresentMon as --exclude arguments, so every change to it has to
+        // go through a restart of the capture service - which reads the list back in.
         private void OnAddToIgonreList()
         {
             if (SelectedProcessToCapture == null)
                 return;
-
-            StopCaptureService();
 
             var process = _processList.Processes
                 .FirstOrDefault(p => p.Name == SelectedProcessToCapture);
@@ -755,7 +725,7 @@ namespace CapFrameX.ViewModel
             _processList?.Save();
 
             SelectedProcessToCapture = null;
-            StartCaptureService();
+            _captureManager.RestartCaptureService();
         }
 
         private void OnAddToProcessList()
@@ -763,7 +733,6 @@ namespace CapFrameX.ViewModel
             if (SelectedProcessToIgnore == null)
                 return;
 
-            StopCaptureService();
             var process = _processList.Processes
                 .FirstOrDefault(p => p.Name == SelectedProcessToIgnore);
 
@@ -773,14 +742,13 @@ namespace CapFrameX.ViewModel
                 _processList?.Save();
             }
 
-            StartCaptureService();
+            _captureManager.RestartCaptureService();
         }
 
         private void OnResetCaptureProcess()
         {
             SelectedProcessToCapture = null;
-            StopCaptureService();
-            StartCaptureService();
+            _captureManager.RestartCaptureService();
         }
 
         public void OnSaveCaptureTime(string captureTimeString, string process)
@@ -840,7 +808,6 @@ namespace CapFrameX.ViewModel
         private void UpdateProcessToCaptureList()
         {
             var selectedProcessToCapture = SelectedProcessToCapture;
-            var backupProcessList = new List<string>(ProcessesToCapture);
 
             ProcessesToCapture.Clear();
             ProcessesInfo.Clear();
@@ -862,11 +829,10 @@ namespace CapFrameX.ViewModel
                 }
             }
 
-            // fire update global hook if new process is detected
-            if (backupProcessList.Count != ProcessesToCapture.Count)
-            {
-                SetGlobalHookEventCaptureHotkey();
-            }
+            // The capture hotkey is deliberately NOT re-registered here. Its action is a closure
+            // over this view model and always reads the current process list, so a detected
+            // process never invalidated the registration — while re-registering once per process
+            // change used to tear down and re-install the global hook, which drops keystrokes.
 
             if (!processList.Contains(selectedProcessToCapture))
                 SelectedProcessToCapture = null;

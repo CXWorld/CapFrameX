@@ -8,7 +8,6 @@ using CapFrameX.Extensions;
 using CapFrameX.Webservice.Data.DTO;
 using GongSolutions.Wpf.DragDrop;
 using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Prism.Commands;
@@ -341,17 +340,12 @@ namespace CapFrameX.ViewModel
 
 		public void OnSelectDownloadFolder()
 		{
-			var dialog = new CommonOpenFileDialog
-			{
-				IsFolderPicker = true
-			};
+			var dialog = new Microsoft.Win32.OpenFolderDialog();
 
-			CommonFileDialogResult result = dialog.ShowDialog();
-
-			if (result == CommonFileDialogResult.Ok)
+			if (dialog.ShowDialog() == true)
 			{
-				_appConfiguration.CloudDownloadDirectory = dialog.FileName;
-				CloudDownloadDirectory = dialog.FileName;
+				_appConfiguration.CloudDownloadDirectory = dialog.FolderName;
+				CloudDownloadDirectory = dialog.FolderName;
 				_cloudFolderChanged.Publish(new AppMessages.CloudFolderChanged());
 			}
 		}

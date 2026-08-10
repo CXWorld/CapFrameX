@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading;
 using System.Threading.Tasks;
 using LibreHardwareMonitor.Hardware;
 
@@ -174,6 +175,7 @@ namespace CapFrameX.PmcReader.Plugin
         private MonitoringConfig _dramConfig;
         private List<ISensorEntry> _ccxL3HitRateEntries;
         private List<ISensorEntry> _ccxDramLatencyEntries;
+        private IDisposable _updateIntervalSubscription;
         private bool _disposed;
 
         // Gaming config (Arrow Lake, Alder Lake, Raptor Lake)
@@ -184,13 +186,34 @@ namespace CapFrameX.PmcReader.Plugin
 
         public string Name => "PmcReader";
 
+        public PmcReaderSensorPlugin()
+        {
+            // Route PmcReader diagnostics into the CapFrameX application log (Serilog).
+            PmcReaderLogging.Initialize();
+        }
+
         public IObservable<(DateTime, Dictionary<ISensorEntry, float>)> SensorSnapshotStream { get; private set; }
 
         public async Task InitializeAsync(IObservable<TimeSpan> updateIntervalStream)
         {
-            TryInitializeMonitoring();
+            if (updateIntervalStream == null)
+                throw new ArgumentNullException(nameof(updateIntervalStream));
+            if (_disposed)
+                throw new ObjectDisposedException(nameof(PmcReaderSensorPlugin));
 
-            updateIntervalStream.Subscribe(_updateIntervalSubject);
+            // PMC discovery performs blocking WMI/native calls and changes the current thread's
+            // affinity while configuring counters. A dedicated thread keeps both costs completely
+            // outside the UI thread and prevents a ThreadPool thread from retaining that affinity.
+            await Task.Factory.StartNew(
+                TryInitializeMonitoring,
+                CancellationToken.None,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default).ConfigureAwait(false);
+
+            if (_disposed)
+                return;
+
+            _updateIntervalSubscription = updateIntervalStream.Subscribe(_updateIntervalSubject);
 
             SensorSnapshotStream = _updateIntervalSubject
                 .Select(timespan => Observable.Interval(timespan).StartWith(0L))
@@ -198,8 +221,6 @@ namespace CapFrameX.PmcReader.Plugin
                 .Select(_ => CaptureSnapshot())
                 .Publish()
                 .RefCount();
-
-            await Task.CompletedTask;
         }
 
         public Task<IEnumerable<ISensorEntry>> GetSensorEntriesAsync()
@@ -247,27 +268,45 @@ namespace CapFrameX.PmcReader.Plugin
                 return;
 
             _disposed = true;
+            _updateIntervalSubscription?.Dispose();
             _updateIntervalSubject.Dispose();
             PmcReaderInterop.Close();
         }
 
         private void TryInitializeMonitoring()
         {
+            PmcDiagnostics.Info("PmcReader: starting PMC monitoring initialization.");
+
             try
             {
                 PmcReaderInterop.Open();
             }
-            catch
+            catch (Exception ex)
             {
+                PmcDiagnostics.Error("PmcReader: failed to open the kernel interface.", ex);
+                return;
+            }
+
+            if (!PmcReaderInterop.IsKernelDriverOpen())
+            {
+                string report = PmcReaderInterop.GetKernelDriverReport();
+                PmcDiagnostics.Warning("PmcReader: PMC sensors disabled - WinRing0 kernel driver could not be loaded."
+                    + (string.IsNullOrEmpty(report)
+                        ? string.Empty
+                        : " " + report.Replace(Environment.NewLine, " ").Trim()));
                 return;
             }
 
             string manufacturer = PmcReaderInterop.GetManufacturerId();
             if (!string.Equals(manufacturer, "GenuineIntel", StringComparison.Ordinal)
                 && !string.Equals(manufacturer, "AuthenticAMD", StringComparison.Ordinal))
+            {
+                PmcDiagnostics.Info("PmcReader: PMC sensors disabled - unsupported CPU manufacturer '" + manufacturer + "'.");
                 return;
+            }
 
             PmcReaderInterop.GetProcessorVersion(out byte family, out byte model, out _);
+            PmcDiagnostics.Info("PmcReader: detected {0} CPU (family 0x{1:X2}, model 0x{2:X2}).", manufacturer, family, model);
 
             L3ConfigInfo l3ConfigInfo = TryCreateL3Config(manufacturer, family, model);
             if (l3ConfigInfo != null)
@@ -295,6 +334,23 @@ namespace CapFrameX.PmcReader.Plugin
                     _gamingHasECores = gamingConfigInfo.HasECores;
                     _gamingConfig.Initialize();
                 }
+            }
+
+            if (_l3Config == null && _dramConfig == null && _gamingConfig == null)
+            {
+                PmcDiagnostics.Info("PmcReader: no PMC configuration available for this CPU (family 0x{0:X2}, model 0x{1:X2}); no PMC sensors enabled.",
+                    family, model);
+            }
+            else
+            {
+                string gamingState = _gamingConfig == null ? "off"
+                    : _gamingHasPCores && _gamingHasECores ? "P+E cores"
+                    : _gamingHasPCores ? "P-cores"
+                    : _gamingHasECores ? "E-cores" : "on";
+                PmcDiagnostics.Info("PmcReader: PMC sensors enabled - L3 hitrate={0}, DRAM bandwidth={1}, gaming config={2}.",
+                    _l3Config != null ? "on" : "off",
+                    _dramConfig != null ? "on" : "off",
+                    gamingState);
             }
         }
 

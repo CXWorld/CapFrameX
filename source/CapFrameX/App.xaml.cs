@@ -9,6 +9,7 @@ using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Remote;
+using CapFrameX.Updater;
 using DryIoc;
 using EmbedIO;
 using Newtonsoft.Json;
@@ -36,15 +37,33 @@ namespace CapFrameX
         private Bootstrapper _bootstrapper;
         private WebServer _webServer;
         private bool _isSingleInstance = true;
+        // Set when the app exits before the bootstrapper ran, so the shutdown sequence below has
+        // nothing to tear down.
+        private bool _skipShutdownSequence;
+        // Set when startup is aborted (e.g. missing admin rights) while OnStartup still runs
+        // to completion; the splash flow must not reveal the main window in that case.
+        private bool _startupAborted;
         private Mutex _mutex;
 #if DEBUG
         private DebugMonitorWindow _debugMonitorWindow;
 #endif
 
-        protected override void OnStartup(StartupEventArgs e)
+        public App()
         {
+            StartupPerformanceLogger.Start();
+        }
+
+        protected override async void OnStartup(StartupEventArgs e)
+        {
+            StartupPerformanceLogger.Mark("App.OnStartup entered (application resources loaded)");
+
             const string appName = "CapFrameX";
-            _mutex = new Mutex(true, appName, out bool createdNew);
+            bool createdNew;
+            using (StartupPerformanceLogger.Measure("Single-instance mutex initialization"))
+            {
+                _mutex = new Mutex(true, appName, out createdNew);
+            }
+
             if (!createdNew)
             {
                 Process current = Process.GetCurrentProcess();
@@ -60,6 +79,7 @@ namespace CapFrameX
                         catch (Exception ex)
                         {
                             InitializeLogger();
+                            StartupPerformanceLogger.LoggerReady();
                             Log.Logger.Fatal(ex, "Exception in ShowWindowInCorrectState");
                         }
                         break;
@@ -72,87 +92,256 @@ namespace CapFrameX
             else
             {
                 // We need to check for .NET Framework presence and C++ redistributables.
-                try
+                using (StartupPerformanceLogger.Measure("Runtime dependency check"))
                 {
-                    var checkReport = AppDependencyChecker.CheckAndNotifyMissingDependencies();
-
-                    if (!checkReport.Valid)
+                    try
                     {
-                        var netFrameWorkMessage = checkReport.MissingDotNetFrameworkVersion != null
-                            ? $"- .NET Framework {checkReport.MissingDotNetFrameworkVersion} is not installed.\n"
-                            : string.Empty;
+                        var checkReport = AppDependencyChecker.CheckAndNotifyMissingDependencies();
 
-                        var vcRedistMessage = checkReport.MissingVCRedistVersions != null
-                            ? $"- Visual C++ Redistributables missing: {string.Join(", ", checkReport.MissingVCRedistVersions)}\n"
-                            : string.Empty;
+                        if (!checkReport.Valid)
+                        {
+                            var netFrameWorkMessage = checkReport.MissingDotNetFrameworkVersion != null
+                                ? $"- .NET Framework {checkReport.MissingDotNetFrameworkVersion} is not installed.\n"
+                                : string.Empty;
 
-                        // Show info message to user
-                        MessageBox.Show($"CapFrameX requires certain dependencies to be installed on the system.\n\n" +
-                            $"The following dependencies are missing:\n" +
-                            $"{netFrameWorkMessage}" +
-                            $"{vcRedistMessage}" +
-                            $"\nPlease install the missing dependencies and restart CapFrameX.",
-                            "Missing Dependencies",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Error);
+                            var vcRedistMessage = checkReport.MissingVCRedistVersions != null
+                                ? $"- Visual C++ Redistributables missing: {string.Join(", ", checkReport.MissingVCRedistVersions)}\n"
+                                : string.Empty;
 
-                        // Missing dependencies, exit application
+                            // Show info message to user
+                            MessageBox.Show($"CapFrameX requires certain dependencies to be installed on the system.\n\n" +
+                                $"The following dependencies are missing:\n" +
+                                $"{netFrameWorkMessage}" +
+                                $"{vcRedistMessage}" +
+                                $"\nPlease install the missing dependencies and restart CapFrameX.",
+                                "Missing Dependencies",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error);
+
+                            // Missing dependencies, exit application
+                            Current.Shutdown();
+                            return;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log error
+                        Log.Logger.Fatal(ex, "Exception in AppDependencyChecker");
+                    }
+                }
+
+                // Initialize portable mode detection before anything else
+                using (StartupPerformanceLogger.Measure("Portable mode detection"))
+                {
+                    PortableModeDetector.Initialize();
+                }
+
+                using (StartupPerformanceLogger.Measure("Logging initialization"))
+                {
+                    InitializeLogger();
+                }
+                StartupPerformanceLogger.LoggerReady();
+
+                // An update staged by a previous session is installed here, before anything else
+                // is built: the installer replaces the files of the running app, so CapFrameX has
+                // to be on its way out by the time it starts.
+                using (StartupPerformanceLogger.Measure("Pending update installation"))
+                {
+                    var installerStarted = UpdateInstaller.TryStartPendingUpdate(
+                        PathService.GetUpdatesFolder(),
+                        System.Reflection.Assembly.GetExecutingAssembly().GetName().Version,
+                        message => Log.Logger.Information(message),
+                        (exception, message) =>
+                        {
+                            if (exception == null)
+                                Log.Logger.Error(message);
+                            else
+                                Log.Logger.Error(exception, message);
+                        });
+
+                    if (installerStarted)
+                    {
+                        // Nothing has been started yet, so there is nothing to shut down either.
+                        _skipShutdownSequence = true;
                         Current.Shutdown();
                         return;
                     }
                 }
-                catch (Exception ex)
+
+                using (StartupPerformanceLogger.Measure("Global exception handling setup"))
                 {
-                    // Log error
-                    Log.Logger.Fatal(ex, "Exception in AppDependencyChecker");
+                    SetupExceptionHandling();
                 }
 
-                // Initialize portable mode detection before anything else
-                PortableModeDetector.Initialize();
+                using (StartupPerformanceLogger.Measure("WPF startup event processing"))
+                {
+                    base.OnStartup(e);
+                }
 
-                InitializeLogger();
-                SetupExceptionHandling();
-                base.OnStartup(e);
-                _bootstrapper = new Bootstrapper();
-                _bootstrapper.Run(true);
+                bool showSplash;
+                using (StartupPerformanceLogger.Measure("Splash screen initialization"))
+                {
+                    // A tray/minimized autostart has to stay headless. The configuration
+                    // service only exists inside the container, so peek the flag from
+                    // the settings file directly.
+                    showSplash = !_startupAborted && !PeekStartMinimized();
+                    if (showSplash)
+                        SplashScreenHost.Show();
+                }
+
+                using (StartupPerformanceLogger.Measure("Prism/DryIoc bootstrapper total"))
+                {
+                    SplashScreenHost.SetStatus("Loading user interface...");
+                    _bootstrapper = new Bootstrapper { DeferMainWindowRestore = showSplash };
+                    _bootstrapper.Run(true);
+                }
+
+                using (StartupPerformanceLogger.Measure("Sensor initialization wait and main window reveal"))
+                {
+                    await RevealMainWindowAsync(showSplash);
+                }
 
                 // Check for conflicting ETW sessions (FrameViewService)
-                try
-                {
-                    var appConfiguration = _bootstrapper.Container.Resolve<IAppConfiguration>();
-                    if (!appConfiguration.SuppressFrameViewServiceWarning)
-                    {
-                        Current.Dispatcher.BeginInvoke(
-                            new Action(() => _ = CheckFrameViewServiceAsync(appConfiguration)),
-                            DispatcherPriority.ApplicationIdle);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Logger.Error(ex, "Error checking for ETW services");
-                }
-
-                Task.Run(async () =>
+                using (StartupPerformanceLogger.Measure("ETW conflict check scheduling"))
                 {
                     try
                     {
-                        _webServer = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://*", false);
-                        await _webServer.RunAsync().ConfigureAwait(false);
+                        var appConfiguration = _bootstrapper.Container.Resolve<IAppConfiguration>();
+                        if (!appConfiguration.SuppressFrameViewServiceWarning)
+                        {
+                            _ = Current.Dispatcher.BeginInvoke(
+                                new Action(() => _ = CheckFrameViewServiceAsync(appConfiguration)),
+                                DispatcherPriority.ApplicationIdle);
+                        }
                     }
-                    catch (System.Net.HttpListenerException)
+                    catch (Exception ex)
                     {
-                        _webServer?.Dispose();
-                        _webServer = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://*", true);
-                        await _webServer.RunAsync().ConfigureAwait(false);
+                        Log.Logger.Error(ex, "Error checking for ETW services");
                     }
-                });
+                }
+
+                using (StartupPerformanceLogger.Measure("Embedded web server task scheduling"))
+                {
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            using (StartupPerformanceLogger.Measure("Embedded web server creation"))
+                            {
+                                _webServer = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://*", false);
+                            }
+                            await _webServer.RunAsync().ConfigureAwait(false);
+                        }
+                        catch (System.Net.HttpListenerException)
+                        {
+                            _webServer?.Dispose();
+                            using (StartupPerformanceLogger.Measure("Embedded web server fallback creation"))
+                            {
+                                _webServer = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://*", true);
+                            }
+                            await _webServer.RunAsync().ConfigureAwait(false);
+                        }
+                    });
+                }
 
 #if DEBUG
                 // Open debug monitor window in Debug mode
-                var captureService = _bootstrapper.Container.Resolve<ICaptureService>();
-                _debugMonitorWindow = new DebugMonitorWindow(captureService);
-                _debugMonitorWindow.Show();
+                //var captureService = _bootstrapper.Container.Resolve<ICaptureService>();
+                //_debugMonitorWindow = new DebugMonitorWindow(captureService);
+                //_debugMonitorWindow.Show();
 #endif
+
+                StartupPerformanceLogger.Complete();
+            }
+        }
+
+        /// <summary>
+        /// Waits for the sensor service to finish hardware detection, then restores the
+        /// main window and closes the splash screen. A hanging sensor/driver init must
+        /// never lock the user out, hence the timeout.
+        /// </summary>
+        private async Task RevealMainWindowAsync(bool splashShown)
+        {
+            if (!splashShown)
+                return;
+
+            var pendingWindowState = _bootstrapper?.PendingMainWindowState;
+
+            try
+            {
+                if (pendingWindowState.HasValue && !_startupAborted)
+                {
+                    SplashScreenHost.SetStatus("Detecting hardware and sensors...");
+
+                    var sensorService = _bootstrapper.Container.Resolve<ISensorService>();
+                    await Task.WhenAny(
+                        sensorService.SensorServiceCompletionSource.Task,
+                        Task.Delay(TimeSpan.FromSeconds(20)));
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while waiting for sensor initialization.");
+            }
+            finally
+            {
+                try
+                {
+                    if (pendingWindowState.HasValue && !_startupAborted && Current.MainWindow != null)
+                    {
+                        Current.MainWindow.WindowState = pendingWindowState.Value;
+                        Current.MainWindow.Activate();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Logger.Error(ex, "Error while revealing the main window.");
+                }
+
+                SplashScreenHost.Close();
+            }
+        }
+
+        /// <summary>
+        /// Reads StartMinimized straight from AppSettings.json - at splash time the
+        /// container and with it the real configuration service do not exist yet.
+        /// </summary>
+        private static bool PeekStartMinimized()
+        {
+            try
+            {
+                string configFolder;
+                if (PortableModeDetector.IsPortableMode && PortableModeDetector.Config?.Paths != null)
+                {
+                    var appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                    var relativePath = PortableModeDetector.Config.Paths.Config;
+
+                    if (string.IsNullOrWhiteSpace(relativePath))
+                        configFolder = appDirectory;
+                    else
+                    {
+                        if (relativePath.StartsWith("./") || relativePath.StartsWith(".\\"))
+                            relativePath = relativePath.Substring(2);
+                        configFolder = Path.GetFullPath(Path.Combine(appDirectory, relativePath));
+                    }
+                }
+                else
+                {
+                    configFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                        "CapFrameX", "Configuration");
+                }
+
+                var settingsFile = Path.Combine(configFolder, "AppSettings.json");
+                if (!File.Exists(settingsFile))
+                    return false;
+
+                var settings = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(settingsFile));
+                return settings.Value<bool?>("StartMinimized") ?? false;
+            }
+            catch
+            {
+                // When in doubt, show the splash - it closes on its own.
+                return false;
             }
         }
 
@@ -202,6 +391,8 @@ namespace CapFrameX
             };
             DispatcherUnhandledException += (s, e) =>
             {
+                // The topmost splash must never mask an error state.
+                SplashScreenHost.Close();
                 LogUnhandledException(e.Exception, "Application.Current.DispatcherUnhandledException");
                 e.Handled = true;
             };
@@ -233,6 +424,9 @@ namespace CapFrameX
 
         private void ShowCrashLogUploaderMessagebox()
         {
+            // The topmost splash must never sit above the crash dialog.
+            SplashScreenHost.Close();
+
             if (MessageBox.Show("An unexpected Error occured. Do you want to upload the CapFrameX Log for further analysis?", "Fatal Error", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
                 using (var client = new HttpClient()
@@ -250,7 +444,8 @@ namespace CapFrameX
 
                     Log.Logger.Information("Uploading Logs. Report-ID is {reportId}", reportId);
                     MessageBox.Show($"Your Report-ID is {reportId}.\nPlease include this Id in your support inquiry. Visit https://www.capframex.com/support for further information.");
-                    Process.Start(string.Format(ConfigurationManager.AppSettings.Get("ContactFormUriTemplate"),
+                    // UseShellExecute is required to open a URL in the default browser on .NET Core+
+                    Process.Start(new ProcessStartInfo(string.Format(ConfigurationManager.AppSettings.Get("ContactFormUriTemplate"),
                         HttpUtility.UrlEncode($"Crashlog-Report: {reportId}"),
                         HttpUtility.UrlEncode($@"Dear CapframeX Team,
                         I encountered a fatal Crash.
@@ -259,7 +454,8 @@ namespace CapFrameX
                         <<< Please describe briefly what you did when the error occurred >>>
 
                         Feel free to contact me by mail."),
-                        string.Empty));
+                        string.Empty))
+                    { UseShellExecute = true });
                 }
             }
 
@@ -273,8 +469,12 @@ namespace CapFrameX
                 _mutex.Dispose();
             }
 
-            if (!_isSingleInstance)
+            if (!_isSingleInstance || _skipShutdownSequence)
                 return;
+
+            // Note: the in-game hook disables itself when it sees CapFrameX exit (it holds a
+            // SYNCHRONIZE handle to this process, polled from its Present hook), so no
+            // explicit shutdown signal is needed here.
 
 #if DEBUG
             try
@@ -355,76 +555,86 @@ namespace CapFrameX
 
         private void ApplicationStartup(object sender, StartupEventArgs e)
         {
-            if (!IsAdministrator)
+            using (StartupPerformanceLogger.Measure("Administrator privilege check"))
             {
-                MessageBox.Show("Run CapFrameX as administrator. Right click on desktop shortcut" + Environment.NewLine
-                    + "and got to Properties -> Shortcut -> Advanced then check option Run as administrator.");
-                Current.Shutdown();
+                if (!IsAdministrator)
+                {
+                    MessageBox.Show("Run CapFrameX as administrator. Right click on desktop shortcut" + Environment.NewLine
+                        + "and got to Properties -> Shortcut -> Advanced then check option Run as administrator.");
+                    _startupAborted = true;
+                    Current.Shutdown();
+                }
             }
 
             // Skip config migration in portable mode - only relevant for installed mode upgrades
-            if (!PortableModeDetector.IsPortableMode)
+            using (StartupPerformanceLogger.Measure("Legacy configuration migration"))
             {
-                // unify old config folders
-                try
+                if (!PortableModeDetector.IsPortableMode)
                 {
-                    var configFolderV1 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                            @"CapFrameX\Configuration\");
-                    var configFolderV2 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                            @"CapFrameX\Configuration\");
-
-                    if (!Directory.Exists(configFolderV2))
+                    // unify old config folders
+                    try
                     {
-                        Directory.CreateDirectory(configFolderV2);
-                    }
+                        var configFolderV1 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                                @"CapFrameX\Configuration\");
+                        var configFolderV2 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                                @"CapFrameX\Configuration\");
 
-                    if (Directory.Exists(configFolderV1))
-                    {
-                        var oldSettingsFileName = Path.Combine(configFolderV1, "settings.json");
-                        var newSettingsFileName = Path.Combine(configFolderV1, "AppSettings.json");
-                        if (File.Exists(oldSettingsFileName))
+                        if (!Directory.Exists(configFolderV2))
                         {
-                            if (!File.Exists(newSettingsFileName))
-                                File.Move(oldSettingsFileName, newSettingsFileName);
-
-                            File.Delete(oldSettingsFileName);
+                            Directory.CreateDirectory(configFolderV2);
                         }
 
-                        CleanupOldConfigStorage(configFolderV1, configFolderV2);
+                        if (Directory.Exists(configFolderV1))
+                        {
+                            var oldSettingsFileName = Path.Combine(configFolderV1, "settings.json");
+                            var newSettingsFileName = Path.Combine(configFolderV1, "AppSettings.json");
+                            if (File.Exists(oldSettingsFileName))
+                            {
+                                if (!File.Exists(newSettingsFileName))
+                                    File.Move(oldSettingsFileName, newSettingsFileName);
+
+                                File.Delete(oldSettingsFileName);
+                            }
+
+                            CleanupOldConfigStorage(configFolderV1, configFolderV2);
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Log.Logger.Error(ex, "Error while creating config folder.");
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Error(ex, "Error while creating config folder.");
+                    }
                 }
             }
 
             // create capture folder
-            try
+            using (StartupPerformanceLogger.Measure("Capture directory initialization"))
             {
-                string captureFolder;
-                if (PortableModeDetector.IsPortableMode && PortableModeDetector.Config != null)
+                try
                 {
-                    var appDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                    var relativePath = PortableModeDetector.Config.Paths.Captures;
-                    if (relativePath.StartsWith("./") || relativePath.StartsWith(".\\"))
-                        relativePath = relativePath.Substring(2);
-                    captureFolder = Path.GetFullPath(Path.Combine(appDirectory, relativePath));
-                }
-                else
-                {
-                    captureFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                        @"CapFrameX\Captures\");
-                }
+                    string captureFolder;
+                    if (PortableModeDetector.IsPortableMode && PortableModeDetector.Config != null)
+                    {
+                        var appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                        var relativePath = PortableModeDetector.Config.Paths.Captures;
+                        if (relativePath.StartsWith("./") || relativePath.StartsWith(".\\"))
+                            relativePath = relativePath.Substring(2);
+                        captureFolder = Path.GetFullPath(Path.Combine(appDirectory, relativePath));
+                    }
+                    else
+                    {
+                        captureFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                            @"CapFrameX\Captures\");
+                    }
 
-                if (!Directory.Exists(captureFolder))
-                {
-                    Directory.CreateDirectory(captureFolder);
+                    if (!Directory.Exists(captureFolder))
+                    {
+                        Directory.CreateDirectory(captureFolder);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Error(ex, "Error while creating capture folder.");
+                catch (Exception ex)
+                {
+                    Log.Logger.Error(ex, "Error while creating capture folder.");
+                }
             }
         }
 
@@ -510,35 +720,44 @@ namespace CapFrameX
         {
             string logPath;
 
-            if (PortableModeDetector.IsPortableMode && PortableModeDetector.Config?.Paths != null)
+            using (StartupPerformanceLogger.Measure("Log path resolution"))
             {
-                // Portable mode: resolve log path relative to app directory
-                var appDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                var relativePath = PortableModeDetector.Config.Paths.Logs;
-                if (relativePath.StartsWith("./") || relativePath.StartsWith(".\\"))
-                    relativePath = relativePath.Substring(2);
-                logPath = Path.GetFullPath(Path.Combine(appDirectory, relativePath));
-            }
-            else
-            {
-                // Installed mode: use AppData
-                logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"CapFrameX\Logs");
+                if (PortableModeDetector.IsPortableMode && PortableModeDetector.Config?.Paths != null)
+                {
+                    // Portable mode: resolve log path relative to app directory
+                    var appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                    var relativePath = PortableModeDetector.Config.Paths.Logs;
+                    if (relativePath.StartsWith("./") || relativePath.StartsWith(".\\"))
+                        relativePath = relativePath.Substring(2);
+                    logPath = Path.GetFullPath(Path.Combine(appDirectory, relativePath));
+                }
+                else
+                {
+                    // Installed mode: use AppData
+                    logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"CapFrameX\Logs");
+                }
             }
 
             // Ensure log directory exists
-            if (!Directory.Exists(logPath))
-                Directory.CreateDirectory(logPath);
+            using (StartupPerformanceLogger.Measure("Log directory initialization"))
+            {
+                if (!Directory.Exists(logPath))
+                    Directory.CreateDirectory(logPath);
+            }
 
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .Enrich.FromLogContext()
-                .AuditTo.Sink<InMemorySink>()
-                .WriteTo.File(
-                    path: Path.Combine(logPath, "CapFrameX.log"),
-                    fileSizeLimitBytes: 1024 * 10000, // approx 10MB
-                    rollOnFileSizeLimit: true, // if filesize is reached, it created a new file
-                    retainedFileCountLimit: 10, // it keeps max 10 files
-                    formatter: new CompactJsonFormatter()).CreateLogger();
+            using (StartupPerformanceLogger.Measure("Serilog pipeline creation"))
+            {
+                Log.Logger = new LoggerConfiguration()
+                    .MinimumLevel.Debug()
+                    .Enrich.FromLogContext()
+                    .AuditTo.Sink<InMemorySink>()
+                    .WriteTo.File(
+                        path: Path.Combine(logPath, "CapFrameX.log"),
+                        fileSizeLimitBytes: 1024 * 10000, // approx 10MB
+                        rollOnFileSizeLimit: true, // if filesize is reached, it created a new file
+                        retainedFileCountLimit: 10, // it keeps max 10 files
+                        formatter: new CompactJsonFormatter()).CreateLogger();
+            }
         }
 
     }

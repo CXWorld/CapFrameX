@@ -20,7 +20,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Extensions", "..\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibreHardwareMonitorLib", "..\source\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj", "{408C6E18-8EC6-42B2-BBA6-C70BF7E5DE2B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.PmcReader.Merged", "CapFrameX.PmcReader.Merged.csproj", "{D8F1A2B3-4C5D-6E7F-8A9B-0C1D2E3F4A5B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.PmcReader.Plugin", "CapFrameX.PmcReader.Plugin.csproj", "{D8F1A2B3-4C5D-6E7F-8A9B-0C1D2E3F4A5B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

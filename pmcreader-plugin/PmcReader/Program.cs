@@ -12,6 +12,10 @@ namespace PmcReader
         [STAThread]
         static void Main()
         {
+            // Was configured through App.config's System.Windows.Forms.ApplicationConfigurationSection
+            // on .NET Framework. That section is ignored on .NET, so the mode is set here instead -
+            // before anything can create a window, which is what makes the call take effect.
+            Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
             Ring0.Open();
             OpCode.Open();
             Application.EnableVisualStyles();

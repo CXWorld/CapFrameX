@@ -48,10 +48,20 @@ namespace CapFrameX.Overlay
         private static readonly HashSet<string> ONLINE_METRIC_NAMES = new HashSet<string>()
         {
             "OnlineAverage", "OnlineP1","OnlineP0dot1", "OnlineP0dot2", "Online1PercentLow", "Online0dot1PercentLow", "Online0dot2PercentLow",
-            "OnlineGpuActiveTimeAverage", "OnlineCpuActiveTimeAverage", "OnlineFrameTimeAverage", "OnlinePcLatency", "OnlineAnimationError",
+            "OnlineGpuActiveTimeAverage", "OnlineCpuActiveTimeAverage", "OnlineFrameTimeAverage", "OnlinePcLatency", "OnlineAmdFlmLatency", "OnlineAnimationError",
             "OnlineGpuActiveTimePercentageDeviation", "OnlineStutteringPercentage", "PmdGpuPowerCurrent",
             "PmdCpuPowerCurrent", "PmdSystemPowerCurrent"
         };
+
+        // Feature-toggle gated online metrics. These entries always stay in the overlay entry
+        // list: the constructor subscribes to their config keys and flips the existing entry
+        // in place, which requires the entry to be present even while the feature is off.
+        private static readonly IReadOnlyDictionary<string, (string ConfigKey, Func<IAppConfiguration, bool> GetIsEnabled)>
+            CONFIG_GATED_ONLINE_METRICS = new Dictionary<string, (string, Func<IAppConfiguration, bool>)>()
+            {
+                { "OnlinePcLatency", (nameof(IAppConfiguration.UsePcLatency), config => config.UsePcLatency) },
+                { "OnlineAmdFlmLatency", (nameof(IAppConfiguration.UseAmdFlmLatency), config => config.UseAmdFlmLatency) },
+            };
 
         private readonly ISensorService _sensorService;
         private readonly IAppConfiguration _appConfiguration;
@@ -114,6 +124,15 @@ namespace CapFrameX.Overlay
             .Select(x => x.value)
             .Subscribe(value => ShowSystemTimeSeconds = (bool)value);
 
+            foreach (var gatedMetric in CONFIG_GATED_ONLINE_METRICS)
+            {
+                string identifier = gatedMetric.Key;
+                _appConfiguration.OnValueChanged
+                .Where(x => x.key == gatedMetric.Value.ConfigKey)
+                .Select(x => x.value)
+                .Subscribe(value => UpdateConfigGatedEntryState(identifier, (bool)value));
+            }
+
             rTSSService.ProcessIdStream.Subscribe(id =>
             {
                 // update process ID
@@ -132,6 +151,7 @@ namespace CapFrameX.Overlay
             await UpdateSensorData();
             UpdateOnlineMetrics();
             UpdateAppInfo();
+            UpdateResolution();
             UpdateThreadAffinityState();
             UpdateNetworkPing();
 
@@ -407,7 +427,7 @@ namespace CapFrameX.Overlay
             string json = File.ReadAllText(GetConfigurationFileName(_appConfiguration.OverlayEntryConfigurationFile));
             var overlayEntriesFromJson = JsonConvert.DeserializeObject<OverlayEntryPersistence>(json)
                 .OverlayEntries
-                .Where(entry => GetIsEntryEnabled(entry))
+                .Where(entry => GetIsEntryKeptInList(entry))
                 .Cast<IOverlayEntry>()
                 .ToList();
 
@@ -603,12 +623,13 @@ namespace CapFrameX.Overlay
 
             // Manage default entries from Utils list
             var utilsDefaults = OverlayUtils.GetOverlayEntryDefaults(_appConfiguration)
-                .Where(item => item.IsEntryEnabled)
+                .Where(item => item.IsEntryEnabled || CONFIG_GATED_ONLINE_METRICS.ContainsKey(item.Identifier))
                 .ToList();
 
             foreach (var defaultEntry in utilsDefaults)
             {
-                if (configOverlayEntries.FirstOrDefault(entry => entry.Identifier == defaultEntry.Identifier) == null)
+                var existingConfigEntry = configOverlayEntries.FirstOrDefault(entry => entry.Identifier == defaultEntry.Identifier);
+                if (existingConfigEntry == null)
                 {
                     int index = utilsDefaults.IndexOf(defaultEntry) - 1;
 
@@ -619,6 +640,14 @@ namespace CapFrameX.Overlay
                         int predecessorConfigOverlayEntryIndex = configOverlayEntries.IndexOf(predecessorConfigOverlayEntry);
                         configOverlayEntries.Insert(predecessorConfigOverlayEntryIndex + 1, defaultEntry);
                     }
+                }
+                else if (CONFIG_GATED_ONLINE_METRICS.ContainsKey(defaultEntry.Identifier)
+                    && existingConfigEntry is OverlayEntryWrapper existingWrapper)
+                {
+                    // The description is a fixed label (not user-editable) but persists in the
+                    // config JSON — refresh it so renamed metrics don't keep stale wording.
+                    // GroupName stays untouched: users may have customized it.
+                    existingWrapper.Description = defaultEntry.Description;
                 }
             }
 
@@ -666,13 +695,35 @@ namespace CapFrameX.Overlay
             return !(oldHasThreadMarker && !currentHasThreadMarker);
         }
 
-        private bool GetIsEntryEnabled(OverlayEntryWrapper entry)
+        /// <summary>
+        /// Applies config-driven enabled state to a persisted entry and decides whether it
+        /// stays in the overlay entry list when a configuration is loaded from JSON.
+        /// </summary>
+        private bool GetIsEntryKeptInList(OverlayEntryWrapper entry)
         {
-            // Manage enabled state special cases (get state from sources like config)
-            // PC Latency (coofig)
-            if (entry.Identifier == "OnlinePcLatency")
+            // Feature-toggle gated online metrics: sync all state flags from the config
+            // toggle, but always keep the entry so the live toggle subscription in the
+            // constructor can flip it in place later.
+            if (CONFIG_GATED_ONLINE_METRICS.TryGetValue(entry.Identifier, out var gatedMetric))
             {
-                entry.IsEntryEnabled = _appConfiguration.UsePcLatency;
+                SetConfigGatedEntryState(entry, gatedMetric.GetIsEnabled(_appConfiguration));
+                return true;
+            }
+
+            // Displaytime graph (config): needs a display-time source (MsBetweenDisplayChange).
+            // The hook-free OSD provides it, and so does the in-game hook overlay in PresentMon
+            // graph mode (both feed display times); RTSS has no display-time source.
+            if (entry.Identifier == "DisplayTime")
+            {
+                entry.IsEntryEnabled = _appConfiguration.EnableHookFreeOverlay
+                    || (_appConfiguration.EnableHookOverlay
+                        && _appConfiguration.HookOverlayUsePresentMonFrametimes);
+            }
+
+            // Only RTSS and the in-game API hook have a trustworthy render-resolution source.
+            if (entry.Identifier == "Resolution")
+            {
+                entry.IsEntryEnabled = !_appConfiguration.EnableHookFreeOverlay;
             }
 
             // Return true by default
@@ -723,7 +774,9 @@ namespace CapFrameX.Overlay
 
             if (mainboardEntry != null)
             {
-                mainboardEntry.Value = _systemInfo.GetMotherboardName();
+                mainboardEntry.Value =
+                    _appConfiguration.HardwareInfoSource == "Auto" ? _systemInfo.GetMotherboardName()
+                    : _appConfiguration.CustomMainboardDescription;
             }
 
             _identifierOverlayEntryDict.TryGetValue("CustomRAM", out IOverlayEntry customRAMEntry); ;
@@ -739,7 +792,7 @@ namespace CapFrameX.Overlay
         private async Task<BlockingCollection<IOverlayEntry>> CreateDefaultOverlayEntries()
         {
             var overlayEntries = OverlayUtils.GetOverlayEntryDefaults(_appConfiguration)
-                .Where(item => item.IsEntryEnabled)
+                .Where(item => item.IsEntryEnabled || CONFIG_GATED_ONLINE_METRICS.ContainsKey(item.Identifier))
                 .Select(item => (item as IOverlayEntry).Clone())
                 .ToBlockingCollection();
 
@@ -777,6 +830,22 @@ namespace CapFrameX.Overlay
                     }
                 }).ThenBy(entry => entry.SortKey, new SortKeyComparer())
                 .ToBlockingCollection());
+        }
+
+        private void UpdateConfigGatedEntryState(string identifier, bool enabled)
+        {
+            if (!_identifierOverlayEntryDict.TryGetValue(identifier, out IOverlayEntry entry))
+                return;
+
+            SetConfigGatedEntryState(entry, enabled);
+        }
+
+        private static void SetConfigGatedEntryState(IOverlayEntry entry, bool enabled)
+        {
+            entry.IsEntryEnabled = enabled;
+            entry.ShowOnOverlayIsEnabled = enabled;
+            if (!enabled)
+                entry.ShowOnOverlay = false;
         }
 
         private async Task UpdateSensorData()
@@ -932,6 +1001,14 @@ namespace CapFrameX.Overlay
                 pcLatency.Value = Math.Round(_onlineMetricService.GetOnlinePcLatencyAverageValue(), 1, MidpointRounding.AwayFromZero);
             }
 
+            // AMD Frame Latency Meter
+            _identifierOverlayEntryDict.TryGetValue("OnlineAmdFlmLatency", out IOverlayEntry amdFlmLatency);
+
+            if (amdFlmLatency != null && amdFlmLatency.ShowOnOverlay)
+            {
+                amdFlmLatency.Value = Math.Round(_onlineMetricService.GetOnlineAmdFlmLatencyAverageValue(), 1, MidpointRounding.AwayFromZero);
+            }
+
             // Animation Error
             _identifierOverlayEntryDict.TryGetValue("OnlineAnimationError", out IOverlayEntry animationError);
 
@@ -978,6 +1055,27 @@ namespace CapFrameX.Overlay
             if (cxCpuUsage != null)
             {
                 cxCpuUsage.Value = _systemInfo.GetCapFrameXAppCpuUsage();
+            }
+        }
+
+        private void UpdateResolution()
+        {
+            _identifierOverlayEntryDict.TryGetValue("Resolution", out IOverlayEntry resolution);
+
+            if (resolution != null && resolution.ShowOnOverlay)
+            {
+                // The in-game renderer replaces this placeholder with the hooked swapchain's
+                // backbuffer extent. Querying RTSS here would publish a stale/unrelated value.
+                if (_appConfiguration.EnableHookOverlay)
+                {
+                    resolution.Value = "N/A";
+                    return;
+                }
+
+                // render resolution of the currently active 3D app, read from RTSS shared memory
+                // (same source as the capture file's ResolutionInfo); empty until RTSS measured it
+                var resolutionInfo = _rTSSService.GetResolution(_currentProcessId);
+                resolution.Value = string.IsNullOrEmpty(resolutionInfo) ? "N/A" : resolutionInfo;
             }
         }
 
@@ -1138,6 +1236,15 @@ namespace CapFrameX.Overlay
                 pcLatency.ValueAlignmentAndDigits = "{0,5:F1}";
             }
 
+            // AMD Frame Latency Meter
+            _identifierOverlayEntryDict.TryGetValue("OnlineAmdFlmLatency", out IOverlayEntry amdFlmLatency);
+
+            if (amdFlmLatency != null)
+            {
+                amdFlmLatency.ValueUnitFormat = "ms";
+                amdFlmLatency.ValueAlignmentAndDigits = "{0,5:F1}";
+            }
+
             // Animation Error
             _identifierOverlayEntryDict.TryGetValue("OnlineAnimationError", out IOverlayEntry animationError);
 
@@ -1177,7 +1284,7 @@ namespace CapFrameX.Overlay
         private void SetRTSSMetricIsNumericState()
         {
             foreach (var entry in _overlayEntries.Where(x =>
-                x.Identifier == "Framerate" || x.Identifier == "Frametime"))
+                x.Identifier == "Framerate" || x.Identifier == "Frametime" || x.Identifier == "DisplayTime"))
             {
                 entry.IsNumeric = true;
             }
@@ -1221,6 +1328,15 @@ namespace CapFrameX.Overlay
             {
                 frametimeEntry.ValueUnitFormat = "ms ";
                 frametimeEntry.ValueAlignmentAndDigits = "{0,5:F1}";
+            }
+
+            // display time (hook-free OSD only)
+            _identifierOverlayEntryDict.TryGetValue("DisplayTime", out IOverlayEntry displayTimeEntry);
+
+            if (displayTimeEntry != null)
+            {
+                displayTimeEntry.ValueUnitFormat = "ms ";
+                displayTimeEntry.ValueAlignmentAndDigits = "{0,5:F1}";
             }
         }
 

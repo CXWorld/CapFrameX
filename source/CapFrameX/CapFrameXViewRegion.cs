@@ -1,27 +1,54 @@
-﻿using CapFrameX.PresentMonInterface;
+using System;
+using CapFrameX.PresentMonInterface;
 using CapFrameX.View;
+using Prism.Ioc;
 using Prism.Modularity;
 
 namespace CapFrameX
 {
     public class CapFrameXViewRegion : IModule
     {
-        public void Initialize()
+        public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            RegionManagerWrapper.Singleton.RegisterViewWithRegion("ColorbarRegion", typeof(ColorbarView));
-            RegionManagerWrapper.Singleton.RegisterViewWithRegion("ControlRegion", typeof(ControlView));
-            if (CaptureServiceInfo.IsCompatibleWithRunningOS)
-                RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(CaptureView));
-            RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(OverlayView));
-            RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(DataView));
-            RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(AggregationView));
-            RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(ComparisonView));
-            RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(SensorView));
-            RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(PmdView));
-            RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(ReportView));
-            RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(SynchronizationView));
-            RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(CloudView));
-            RegionManagerWrapper.Singleton.RegisterViewWithRegion("StateRegion", typeof(StateView));
+        }
+
+        public void OnInitialized(IContainerProvider containerProvider)
+        {
+            using (StartupPerformanceLogger.Measure("CapFrameX view module initialization total"))
+            {
+                RegisterViewWithTiming("ColorbarRegion", typeof(ColorbarView));
+                RegisterViewWithTiming("ControlRegion", typeof(ControlView));
+
+                bool isCaptureServiceCompatible;
+                using (StartupPerformanceLogger.Measure("PresentMon OS compatibility check"))
+                {
+                    isCaptureServiceCompatible = CaptureServiceInfo.IsCompatibleWithRunningOS;
+                }
+
+                // First DataRegion registration = startup view; must match the
+                // ColorbarViewModel default (InfoIsChecked).
+                RegisterViewWithTiming("DataRegion", typeof(InfoView));
+                if (isCaptureServiceCompatible)
+                    RegisterViewWithTiming("DataRegion", typeof(CaptureView));
+                RegisterViewWithTiming("DataRegion", typeof(OverlayView));
+                RegisterViewWithTiming("DataRegion", typeof(DataView));
+                RegisterViewWithTiming("DataRegion", typeof(AggregationView));
+                RegisterViewWithTiming("DataRegion", typeof(ComparisonView));
+                RegisterViewWithTiming("DataRegion", typeof(SensorView));
+                RegisterViewWithTiming("DataRegion", typeof(PmdView));
+                RegisterViewWithTiming("DataRegion", typeof(ReportView));
+                RegisterViewWithTiming("DataRegion", typeof(SynchronizationView));
+                RegisterViewWithTiming("DataRegion", typeof(CloudView));
+                RegisterViewWithTiming("StateRegion", typeof(StateView));
+            }
+        }
+
+        private static void RegisterViewWithTiming(string regionName, Type viewType)
+        {
+            using (StartupPerformanceLogger.Measure("Region registration/activation: " + viewType.Name))
+            {
+                RegionManagerWrapper.Singleton.RegisterViewWithRegion(regionName, viewType);
+            }
         }
     }
 }

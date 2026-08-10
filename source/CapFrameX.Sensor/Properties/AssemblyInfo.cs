@@ -34,3 +34,10 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: InternalsVisibleTo("CapFrameX.Test")]
+
+// net9.0-windows implies this attribute, but the SDK only emits it when GenerateAssemblyInfo is
+// on, and this project keeps that off for the hand-written attributes above. Without it CA1416
+// treats every call site as platform neutral and flags each Windows-only API. 7.0 is the platform
+// minimum that net9.0-windows targets by default.
+[assembly: System.Runtime.Versioning.SupportedOSPlatform("windows7.0")]

@@ -4,19 +4,43 @@
 // All Rights Reserved.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
-using Windows.Win32.Storage.Nvme;
+using System.Threading;
 using LibreHardwareMonitor.Interop;
+using Serilog;
+using Windows.Win32.Storage.Nvme;
+
+#pragma warning disable CS1591 // file exempt from XML documentation
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
 public class NVMeSmart : IDisposable
 {
-    private readonly int _driveNumber;
-    private readonly SafeHandle _handle;
+    private const int CacheLifetimeMilliseconds = 5000;
+    private const int FailureBackoffMilliseconds = 5000;
+    private const int InitialReadWaitMilliseconds = 1500;
 
-    internal NVMeSmart(StorageInfo storageInfo)
+    private static readonly long CacheLifetimeTicks = MillisecondsToStopwatchTicks(CacheLifetimeMilliseconds);
+    private static readonly long FailureBackoffTicks = MillisecondsToStopwatchTicks(FailureBackoffMilliseconds);
+
+    private readonly int _driveNumber;
+    private readonly ManualResetEvent _firstHealthReadCompleted = new(false);
+    private readonly SafeHandle _handle;
+    private readonly AutoResetEvent _healthReadRequested = new(false);
+    private readonly object _healthSync = new();
+    private readonly Thread _healthWorker;
+
+    private Storage.NVMeHealthInfo _cachedHealthInfo;
+    private long _cacheTimestamp;
+    private bool _closeRequested;
+    private bool _hasCachedHealthInfo;
+    private bool _healthReadInProgress;
+    private bool _healthReadPending;
+    private long _lastHealthReadAttempt;
+
+    internal NVMeSmart(StorageInfo storageInfo, bool enableHealthReader = true)
     {
         _driveNumber = storageInfo.Index;
         NVMeDrive = null;
@@ -28,7 +52,7 @@ public class NVMeSmart : IDisposable
             _handle = NVMeWindows.IdentifyDevice(storageInfo);
             if (_handle != null)
             {
-                NVMeDrive = new NVMeWindows();
+                NVMeDrive = new NVMeWindows(storageInfo.DeviceId);
             }
         }
 
@@ -64,6 +88,25 @@ public class NVMeSmart : IDisposable
             {
                 NVMeDrive = new NVMeIntelRst();
             }
+        }
+
+        if (enableHealthReader && IsValid && NVMeDrive != null)
+        {
+            _healthWorker = CreateHealthWorker();
+            _healthWorker.Start();
+        }
+    }
+
+    internal NVMeSmart(int driveNumber, SafeHandle handle, INVMeDrive nvmeDrive)
+    {
+        _driveNumber = driveNumber;
+        _handle = handle;
+        NVMeDrive = nvmeDrive;
+
+        if (IsValid && NVMeDrive != null)
+        {
+            _healthWorker = CreateHealthWorker();
+            _healthWorker.Start();
         }
     }
 
@@ -105,9 +148,33 @@ public class NVMeSmart : IDisposable
 
     protected void Dispose(bool disposing)
     {
-        if (disposing && _handle is { IsClosed: false })
+        if (!disposing)
+            return;
+
+        lock (_healthSync)
+        {
+            if (_closeRequested)
+                return;
+
+            _closeRequested = true;
+            _healthReadPending = false;
+        }
+
+        if (_healthWorker != null)
+        {
+            _healthReadRequested.Set();
+            _healthWorker.Join(InitialReadWaitMilliseconds);
+        }
+
+        if (_handle is { IsClosed: false })
         {
             _handle.Close();
+        }
+
+        if (_healthWorker == null || !_healthWorker.IsAlive)
+        {
+            _healthReadRequested.Dispose();
+            _firstHealthReadCompleted.Dispose();
         }
     }
 
@@ -129,6 +196,65 @@ public class NVMeSmart : IDisposable
 
     public Storage.NVMeHealthInfo GetHealthInfo()
     {
+        RequestHealthInfo();
+        return TryGetHealthInfo(out Storage.NVMeHealthInfo health, out _) ? health : null;
+    }
+
+    internal Storage.NVMeHealthInfo GetInitialHealthInfo()
+    {
+        RequestHealthInfo(force: true);
+        _firstHealthReadCompleted.WaitOne(InitialReadWaitMilliseconds);
+        return TryGetHealthInfo(out Storage.NVMeHealthInfo health, out _) ? health : null;
+    }
+
+    internal void RequestHealthInfo()
+    {
+        RequestHealthInfo(force: false);
+    }
+
+    internal bool TryGetHealthInfo(out Storage.NVMeHealthInfo health, out TimeSpan age)
+    {
+        lock (_healthSync)
+        {
+            if (!_hasCachedHealthInfo)
+            {
+                health = null;
+                age = TimeSpan.MaxValue;
+                return false;
+            }
+
+            health = _cachedHealthInfo;
+            age = StopwatchTicksToTimeSpan(Stopwatch.GetTimestamp() - _cacheTimestamp);
+            return true;
+        }
+    }
+
+    private void RequestHealthInfo(bool force)
+    {
+        bool requestRead = false;
+
+        lock (_healthSync)
+        {
+            if (_closeRequested || _healthWorker == null || _healthReadInProgress || _healthReadPending)
+                return;
+
+            long now = Stopwatch.GetTimestamp();
+            bool cacheIsFresh = _hasCachedHealthInfo && now - _cacheTimestamp < CacheLifetimeTicks;
+            bool failureBackoffActive = !_hasCachedHealthInfo && _lastHealthReadAttempt != 0 && now - _lastHealthReadAttempt < FailureBackoffTicks;
+
+            if (!force && (cacheIsFresh || failureBackoffActive))
+                return;
+
+            _healthReadPending = true;
+            requestRead = true;
+        }
+
+        if (requestRead)
+            _healthReadRequested.Set();
+    }
+
+    private Storage.NVMeHealthInfo ReadHealthInfo()
+    {
         if (_handle?.IsClosed != false)
             return null;
 
@@ -141,6 +267,68 @@ public class NVMeSmart : IDisposable
             return null;
 
         return new NVMeHealthInfo(data);
+    }
+
+    private Thread CreateHealthWorker()
+    {
+        return new Thread(HealthReadLoop)
+        {
+            IsBackground = true,
+            Name = $"NVMe health reader {_driveNumber}"
+        };
+    }
+
+    private void HealthReadLoop()
+    {
+        while (true)
+        {
+            _healthReadRequested.WaitOne();
+
+            lock (_healthSync)
+            {
+                if (_closeRequested)
+                    return;
+
+                _healthReadPending = false;
+                _healthReadInProgress = true;
+                _lastHealthReadAttempt = Stopwatch.GetTimestamp();
+            }
+
+            Storage.NVMeHealthInfo health = null;
+
+            try
+            {
+                health = ReadHealthInfo();
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "NVMe health read for drive {DriveNumber} failed.", _driveNumber);
+            }
+
+            lock (_healthSync)
+            {
+                _healthReadInProgress = false;
+
+                if (health != null && !_closeRequested)
+                {
+                    _cachedHealthInfo = health;
+                    _cacheTimestamp = Stopwatch.GetTimestamp();
+                    _hasCachedHealthInfo = true;
+                }
+            }
+
+            _firstHealthReadCompleted.Set();
+        }
+    }
+
+    private static long MillisecondsToStopwatchTicks(int milliseconds)
+    {
+        return (long)Math.Ceiling(milliseconds * (double)Stopwatch.Frequency / 1000);
+    }
+
+    private static TimeSpan StopwatchTicksToTimeSpan(long ticks)
+    {
+        return TimeSpan.FromSeconds(ticks / (double)Stopwatch.Frequency);
     }
 
     private class NVMeInfo : Storage.NVMeInfo

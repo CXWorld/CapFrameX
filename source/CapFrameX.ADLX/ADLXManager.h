@@ -4,6 +4,7 @@
 #define MAX_DRIVER_PATH_LEN  200
 #define MAX_GPU_NAME_LEN  100
 #define MAX_VENDOR_ID_LEN  20
+#define MAX_PNP_STRING_LEN  256
 
 // Struct for querying supported metrics only (no values needed)
 // Used for activating sensors before telemetry data is available
@@ -102,9 +103,19 @@ typedef struct AdlxDeviceInfo
 	int32_t Id;
 	char VendorId[MAX_VENDOR_ID_LEN];
 	char DriverPath[MAX_DRIVER_PATH_LEN];
+	char PnpString[MAX_PNP_STRING_LEN];
+	uint32_t LuidLowPart;
+	int32_t LuidHighPart;
+	uint32_t LuidValid;
 };
 
+static_assert(sizeof(AdlxDeviceInfo) == 596, "AdlxDeviceInfo ABI layout changed");
+
+#ifdef CAPFRAMEXADLX_EXPORTS
+#define ADLX_API __declspec(dllexport)
+#else
 #define ADLX_API __declspec(dllimport)
+#endif
 
 extern "C" ADLX_API bool IntializeAdlx();
 

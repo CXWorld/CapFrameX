@@ -174,8 +174,7 @@ namespace CapFrameX.ViewModel.SubModels
             ResetPmdMetricsCommand = new DelegateCommand(() => _pmdDataMetricsManager.ResetHistory());
             SelectedMonitoringInterval = _pmdService.MonitoringInterval;
 
-            _pmdDataChartManager.UseDarkMode = _appConfiguration.UseDarkMode;
-            _pmdDataChartManager.UpdateChartsTheme();
+            UpdateChartsTheme(_appConfiguration.UseDarkMode);
 
             _pmdService.PmdServiceStatusStream
                 .Subscribe(status =>
@@ -267,6 +266,12 @@ namespace CapFrameX.ViewModel.SubModels
                 _pmdDataChartManager.ResetRealTimePlotModels();
                 _chartaDataBuffer.Clear();
             }
+        }
+
+        internal void UpdateChartsTheme(bool useDarkMode)
+        {
+            _pmdDataChartManager.UseDarkMode = useDarkMode;
+            _pmdDataChartManager.UpdateChartsTheme();
         }
 
         internal void UpdatePmdDataWindow(int pmdDataWindowSeconds)

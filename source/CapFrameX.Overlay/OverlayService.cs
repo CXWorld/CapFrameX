@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Latency;
 using CapFrameX.Contracts.Logging;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
@@ -15,6 +16,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Overlay
@@ -39,10 +41,13 @@ namespace CapFrameX.Overlay
         private IDisposable _overlayActiveStreamDisposable;
 
         private IList<string> _runHistory = new List<string>();
+        private volatile string[] _runHistorySnapshot = Array.Empty<string>();
         private IList<ISessionRun> _captureDataHistory = new List<ISessionRun>();
         private IList<IList<double>> _frametimeHistory = new List<IList<double>>();
         private IList<IList<double>> _displaytimeHistory = new List<IList<double>>();
         private bool[] _runHistoryOutlierFlags;
+        private volatile bool[] _runHistoryOutlierFlagsSnapshot = Array.Empty<bool>();
+        private volatile string _runHistoryAggregation = string.Empty;
         private int _numberOfRuns;
         private IList<IMetricAnalysis> _metricAnalysis = new List<IMetricAnalysis>();
         private ISubject<IOverlayEntry[]> _onDictionaryUpdated = new Subject<IOverlayEntry[]>();
@@ -57,6 +62,12 @@ namespace CapFrameX.Overlay
         public string ThirdMetric { get; set; }
 
         public int RunHistoryCount => _runHistory.Count(run => run != "N/A");
+
+        public IReadOnlyList<string> RunHistory => _runHistorySnapshot;
+
+        public IReadOnlyList<bool> RunHistoryOutlierFlags => _runHistoryOutlierFlagsSnapshot;
+
+        public string RunHistoryAggregation => _runHistoryAggregation;
 
         public IObservable<IOverlayEntry[]> OnDictionaryUpdated => _onDictionaryUpdated;
 
@@ -104,18 +115,61 @@ namespace CapFrameX.Overlay
                         _rTSSService.ReleaseOSD();
                 });
 
+            // Overlay-renderer switch (RTSS / hook-free / in-game hook). React to BOTH flags and
+            // re-evaluate the COMBINED state — using the single changed value was wrong (turning one
+            // off while the other was on, or switching back to RTSS, was mishandled).
+            _appConfiguration.OnValueChanged
+                .Where(x => x.key == nameof(IAppConfiguration.EnableHookFreeOverlay)
+                         || x.key == nameof(IAppConfiguration.EnableHookOverlay))
+                .Select(_ => _appConfiguration.EnableHookFreeOverlay || _appConfiguration.EnableHookOverlay)
+                .DistinctUntilChanged()
+                .Subscribe(useHook =>
+                {
+                    _logger.LogInformation("Overlay renderer switch: hookFree={hf}, hook={h}, overlayActive={a} -> {mode}",
+                        _appConfiguration.EnableHookFreeOverlay, _appConfiguration.EnableHookOverlay,
+                        _appConfiguration.IsOverlayActive, useHook ? "hook (clear RTSS)" : "RTSS");
+                    if (useHook)
+                    {
+                        // Keep the RTSS slot owned while its renderer may still be reading it. Clearing
+                        // uses RTSS' dwBusy synchronization; ReleaseOSD zeroes the whole shared-memory
+                        // entry and is reserved for a real overlay shutdown.
+                        _rTSSService.ClearOSD();
+                    }
+                    else if (_appConfiguration.IsOverlayActive && _isServiceAlive)
+                    {
+                        // Switched back to the RTSS renderer while the overlay is active. Re-drive the
+                        // overlay-active pipeline (as an Alt+O toggle would) so it re-runs the RTSS init
+                        // (launch + OnOSDOn) AND rebuilds the entry feed via .Switch(). Nothing else
+                        // re-initializes RTSS after a hook path released it — that's why it looked
+                        // "stuck off"; a one-shot OnOSDOn wasn't enough because the feed wasn't re-driven.
+                        IsOverlayActiveStream.OnNext(true);
+                    }
+                });
+
             Task.Run(async () => await InitializeOverlayEntryDict())
                 .ContinueWith(t =>
                {
+                   int rtssFeedLogState = -1; // logs only when the RTSS-feed decision flips (avoids per-tick spam)
                    _overlayActiveStreamDisposable = IsOverlayActiveStream
                        .Where(_ => _isServiceAlive)
                        .Select(isActive =>
                        {
                            if (isActive)
                            {
-                               _rTSSService.CheckRTSSRunning().Wait();
-                               _rTSSService.OnOSDOn();
-                               _rTSSService.ClearOSD();
+                               if (!_appConfiguration.EnableHookFreeOverlay && !_appConfiguration.EnableHookOverlay)
+                               {
+                                   // Deferred instead of awaited inline: this selector runs on the
+                                   // thread that pushed the value — the WPF dispatcher for the
+                                   // overlay hotkey and for the checkbox — while the RTSS check
+                                   // enumerates processes and may start RTSS. FromAsync preserves
+                                   // the ordering (entries only flow once RTSS is up) without
+                                   // blocking the caller, which .Wait() did.
+                                   return Observable
+                                       .FromAsync(cancellationToken => InitializeRTSSAsync(cancellationToken))
+                                       .SelectMany(_ => _onDictionaryUpdated.
+                                           SelectMany(__ => _overlayEntryProvider.GetOverlayEntries()));
+                               }
+
                                return _onDictionaryUpdated.
                                    SelectMany(_ => _overlayEntryProvider.GetOverlayEntries());
                            }
@@ -131,9 +185,18 @@ namespace CapFrameX.Overlay
                            CurrentOverlayEntries = entries;
                            OSDUpdateNotifier(entries);
 
-                           if (!overlayOnAPIOnly)
+                           bool feedRtss = !overlayOnAPIOnly && !_appConfiguration.EnableHookFreeOverlay && !_appConfiguration.EnableHookOverlay;
+                           int feedState = feedRtss ? 1 : 0;
+                           if (feedState != rtssFeedLogState)
                            {
-                               _rTSSService.SetOverlayEntries(entries);
+                               rtssFeedLogState = feedState;
+                               _logger.LogInformation("RTSS feed {state} (apiOnly={api}, hookFree={hf}, hook={h})",
+                                   feedRtss ? "ON" : "OFF", overlayOnAPIOnly,
+                                   _appConfiguration.EnableHookFreeOverlay, _appConfiguration.EnableHookOverlay);
+                           }
+                           if (feedRtss)
+                           {
+                               _rTSSService.SetOverlayEntries(entries.Where(entry => entry.IsEntryEnabled).ToArray());
                                await _rTSSService.CheckRTSSRunningAndRefresh();
                            }
                        });
@@ -157,10 +220,37 @@ namespace CapFrameX.Overlay
                 });
 
             _runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
-            _rTSSService.SetRunHistory(_runHistory.ToArray());
-            _rTSSService.SetRunHistoryAggregation(string.Empty);
-            _rTSSService.SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+            PublishRunHistory();
+            PublishRunHistoryAggregation(string.Empty);
+            PublishRunHistoryOutlierFlags();
             _rTSSService.SetIsCaptureTimerActive(false);
+        }
+
+        /// <summary>
+        /// Brings RTSS up for an overlay that has just been activated.
+        ///
+        /// Failures are logged rather than propagated: an OnError here would travel through
+        /// Switch() to the subscriber and tear the overlay feed down for the rest of the session.
+        /// </summary>
+        private async Task InitializeRTSSAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _rTSSService.CheckRTSSRunning();
+
+                // The overlay can be switched off again while RTSS is starting. Switch() cancels
+                // this token when it drops the subscription, and turning the OSD on afterwards
+                // would leave it on against the user's last input.
+                if (cancellationToken.IsCancellationRequested)
+                    return;
+
+                _rTSSService.OnOSDOn();
+                _rTSSService.ClearOSD();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "RTSS initialization for the activated overlay failed.");
+            }
         }
 
         public void StartCountdown(double seconds)
@@ -256,9 +346,9 @@ namespace CapFrameX.Overlay
             _frametimeHistory.Clear();
             _displaytimeHistory.Clear();
             _metricAnalysis.Clear();
-            _rTSSService.SetRunHistory(_runHistory.ToArray());
-            _rTSSService.SetRunHistoryAggregation(string.Empty);
-            _rTSSService.SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+            PublishRunHistory();
+            PublishRunHistoryAggregation(string.Empty);
+            PublishRunHistoryOutlierFlags();
         }
 
         public void AddRunToHistory(ISessionRun sessionRun, string process, string recordDirectory)
@@ -292,9 +382,9 @@ namespace CapFrameX.Overlay
 
                     // local reset
                     _runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
-                    _rTSSService.SetRunHistory(_runHistory.ToArray());
-                    _rTSSService.SetRunHistoryAggregation(string.Empty);
-                    _rTSSService.SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+                    PublishRunHistory();
+                    PublishRunHistoryAggregation(string.Empty);
+                    PublishRunHistoryOutlierFlags();
                 }
                 else
                 {
@@ -310,7 +400,7 @@ namespace CapFrameX.Overlay
 
                 _metricAnalysis.Add(currentAnalysis);
                 _runHistory[RunHistoryCount] = currentAnalysis.ResultString;
-                _rTSSService.SetRunHistory(_runHistory.ToArray());
+                PublishRunHistory();
 
                 // capture data history
                 _captureDataHistory.Add(sessionRun);
@@ -331,13 +421,13 @@ namespace CapFrameX.Overlay
                             .GetOutlierAnalysis(_metricAnalysis,
                                 _appConfiguration.RelatedMetricOverlay,
                                 _appConfiguration.OutlierPercentageOverlay);
-                        _rTSSService.SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+                        PublishRunHistoryOutlierFlags();
 
                         if ((_runHistoryOutlierFlags.All(x => x == false)
                             && _appConfiguration.OutlierHandling == EOutlierHandling.Replace.ConvertToString())
                             || _appConfiguration.OutlierHandling == EOutlierHandling.Ignore.ConvertToString())
                         {
-                            _rTSSService.SetRunHistoryAggregation(GetAggregation());
+                            PublishRunHistoryAggregation(GetAggregation());
 
                             // write aggregated file
                             Task.Run(async () =>
@@ -364,6 +454,26 @@ namespace CapFrameX.Overlay
         {
             _numberOfRuns = numberOfRuns;
             ResetHistory();
+        }
+
+        private void PublishRunHistory()
+        {
+            var snapshot = _runHistory.ToArray();
+            _runHistorySnapshot = snapshot;
+            _rTSSService.SetRunHistory(snapshot);
+        }
+
+        private void PublishRunHistoryOutlierFlags()
+        {
+            var snapshot = _runHistoryOutlierFlags?.ToArray() ?? Array.Empty<bool>();
+            _runHistoryOutlierFlagsSnapshot = snapshot;
+            _rTSSService.SetRunHistoryOutlierFlags(snapshot);
+        }
+
+        private void PublishRunHistoryAggregation(string aggregation)
+        {
+            _runHistoryAggregation = aggregation ?? string.Empty;
+            _rTSSService.SetRunHistoryAggregation(_runHistoryAggregation);
         }
 
         public IOverlayEntry GetSensorOverlayEntry(string identifier)
@@ -409,6 +519,11 @@ namespace CapFrameX.Overlay
                 {
                     foreach (var sensor in sensors)
                     {
+                        // FLM already has a purpose-built live overlay metric. Keep its virtual
+                        // sensor for logging without presenting a duplicate overlay entry.
+                        if (sensor.Identifier == AmdFlmSensorMetadata.Identifier)
+                            continue;
+
                         var dictEntry = CreateOverlayEntry(sensor);
                         var id = sensor.Identifier.ToString();
                         if (!_overlayEntryCore.OverlayEntryDict.ContainsKey(id))
@@ -497,6 +612,9 @@ namespace CapFrameX.Overlay
                 case SensorType.Timing:
                     formatString = "{0,5:F1}";
                     break;
+                case SensorType.Latency:
+                    formatString = "{0,5:F1}";
+                    break;
             }
 
             return formatString;
@@ -555,6 +673,9 @@ namespace CapFrameX.Overlay
                     break;
                 case SensorType.Timing:
                     formatString = "ns ";
+                    break;
+                case SensorType.Latency:
+                    formatString = "ms ";
                     break;
             }
 
@@ -717,6 +838,9 @@ namespace CapFrameX.Overlay
                     break;
                 case SensorType.Timing:
                     description = $"{sensor.Name} (ns)";
+                    break;
+                case SensorType.Latency:
+                    description = $"{sensor.Name} (ms)";
                     break;
             }
 

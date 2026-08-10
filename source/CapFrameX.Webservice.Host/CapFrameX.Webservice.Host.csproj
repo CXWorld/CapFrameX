@@ -4,6 +4,13 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <Platforms>AnyCPU;x64;x86</Platforms>
+    <!-- Several referenced packages ship a buildTransitive target that warns they were never
+         tested on netcoreapp3.1, which has been out of support since December 2022. The notices
+         carry no warning code, so NoWarn cannot reach them - this property is the documented
+         switch. It silences the message, not the underlying risk: moving this service off
+         netcoreapp3.1 means migrating ASP.NET Core, MediatR and FluentValidation across several
+         major versions and is tracked separately. -->
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
 
   <ItemGroup>

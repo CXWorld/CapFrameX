@@ -58,7 +58,7 @@ internal abstract class SimulatedGpuBase : GenericGpu
 /// <summary>
 /// Simulates AMD Radeon RX 7900 XTX.
 /// Sensors match AmdGpu.cs: Temperature (Core, Memory, Hot Spot, Intake),
-/// Clock (Core, Memory), Load (Core), Power (GPU, TBP), Voltage, Fan, Data (Dedicated, Shared).
+/// Clock (Core, Memory), Load (Core), Power (GPU, TBP), Voltage, Fan, Data (Dedicated, Allocated, Shared).
 /// </summary>
 internal sealed class SimulatedAmdGpu : SimulatedGpuBase
 {
@@ -95,6 +95,7 @@ internal sealed class SimulatedAmdGpu : SimulatedGpuBase
 
         // Data sensors (category 6) - matches AmdGpu.cs
         AddSimulatedSensor("GPU Memory Dedicated", 0, SensorType.Data, 1f, 20f, 0.1f, 0.4f, true, $"{index}_6_0");
+        AddSimulatedSensor("GPU Memory Allocated", 4, SensorType.Data, 2f, 24f, 0.1f, 0.5f, false, $"{index}_6_0_1");
         AddSimulatedSensor("GPU Memory Shared", 3, SensorType.Data, 0.5f, 8f, 0.08f, 0.3f, false, $"{index}_6_1");
     }
 
@@ -105,7 +106,7 @@ internal sealed class SimulatedAmdGpu : SimulatedGpuBase
 /// Simulates NVIDIA GeForce RTX 4090.
 /// Sensors match NvidiaGpu.cs: Load (Core, Memory Controller, Video Engine, Bus),
 /// Clock (Core, Memory), Temperature (Core, Hot Spot, Memory Junction),
-/// Power, Voltage, Fan, Data (Dedicated, Shared).
+/// Power, Voltage, Fan, Data (Dedicated, Allocated, Shared).
 /// </summary>
 internal sealed class SimulatedNvidiaGpu : SimulatedGpuBase
 {
@@ -143,6 +144,7 @@ internal sealed class SimulatedNvidiaGpu : SimulatedGpuBase
 
         // Data sensors - matches NvidiaGpu.cs (D3D memory)
         AddSimulatedSensor("GPU Memory Dedicated", 0, SensorType.Data, 1f, 24f, 0.1f, 0.5f, true, $"{index}_8_0");
+        AddSimulatedSensor("GPU Memory Allocated", 5, SensorType.Data, 2f, 24f, 0.1f, 0.5f, false, $"{index}_8_0_1");
         AddSimulatedSensor("GPU Memory Shared", 1, SensorType.Data, 0.5f, 8f, 0.08f, 0.3f, false, $"{index}_8_1");
     }
 
@@ -200,7 +202,7 @@ internal sealed class SimulatedIntelGclGpu : SimulatedGpuBase
 
 /// <summary>
 /// Simulates Intel UHD 770 (integrated graphics).
-/// Sensors match IntelD3dGpu.cs: Power (GPU Power), Data (D3D Dedicated/Shared Memory).
+/// Sensors match IntelD3dGpu.cs: Power (GPU Power), Data (D3D Dedicated/Allocated/Shared Memory).
 /// Real IntelD3dGpu only has D3D memory sensors + optional power sensor for iGPU.
 /// </summary>
 internal sealed class SimulatedIntelD3DGpu : SimulatedGpuBase
@@ -218,6 +220,7 @@ internal sealed class SimulatedIntelD3DGpu : SimulatedGpuBase
 
         // Data sensors - matches IntelD3dGpu.cs (SensorType.Data, not SmallData)
         AddSimulatedSensor("D3D Dedicated Memory Used", 0, SensorType.Data, 0.2f, 1.5f, 0.1f, 0.1f, true, $"{index}_1");
+        AddSimulatedSensor("GPU Memory Allocated", 4, SensorType.Data, 0.3f, 1.8f, 0.1f, 0.1f, false, $"{index}_1_1");
         AddSimulatedSensor("D3D Shared Memory Used", 1, SensorType.Data, 0.5f, 6f, 0.1f, 0.2f, false, $"{index}_2_0");
         AddSimulatedSensor("D3D Shared Memory Free", 2, SensorType.Data, 0.5f, 6f, 0.1f, 0.2f, false, $"{index}_2_1");
         AddSimulatedSensor("D3D Shared Memory Total", 3, SensorType.Data, 6f, 12f, 0.05f, 0.1f, false, $"{index}_2_2");

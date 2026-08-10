@@ -24,12 +24,12 @@ internal class PawnIo
 
     static PawnIo()
     {
-        var driverPath = DriverInstaller.GetPawnIODriverPath();
+        var infPath = DriverInstaller.GetPawnIOInfPath();
 
         // Install and start the PawnIO driver
         DriverInstaller.EnsureDriverReady(
          serviceName: DriverInstaller.PAWNIO_SERVICE_NAME,
-         sysFilePath: driverPath);
+         infFilePath: infPath);
     }
 
     private PawnIo(SafeFileHandle handle) => _handle = handle;

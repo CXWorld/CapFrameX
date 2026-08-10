@@ -40,6 +40,7 @@ public:
 	BOOL						IsCaptureTimerActive;
 	BOOL						UpdateOSD(LPCSTR lpText);
 	CString						GetApiInfo(DWORD processId);
+	CString						GetResolution(DWORD processId);
 	std::vector<float>		    GetCurrentFramerate(DWORD processId);
 	std::vector<float>			GetFrameTimesInterval(DWORD processId, DWORD milliSeconds);
 	BOOL						ShowRunHistory;
@@ -52,7 +53,7 @@ protected:
 	DWORD						EmbedGraph(DWORD dwOffset, FLOAT* lpBuffer, DWORD dwBufferPos, DWORD dwBufferSize, LONG dwWidth, LONG dwHeight, LONG dwMargin, FLOAT fltMin, FLOAT fltMax, DWORD dwFlags);
 
 	DWORD						GetClientsNum();
-	DWORD						GetSharedMemoryVersion();
+	DWORD						GetSharedMemoryVersion(DWORD* lpOSDEntrySize = NULL);
 	void						IncProfileProperty(LPCSTR lpProfile, LPCSTR lpProfileProperty, LONG dwIncrement);
 	void						SetProfileProperty(LPCSTR lpProfile, LPCSTR lpProfileProperty, DWORD dwProperty);
 	void						AddOverlayEntry(CGroupedString* groupedString, OverlayEntry* entry, BOOL bFormatTagsSupported);

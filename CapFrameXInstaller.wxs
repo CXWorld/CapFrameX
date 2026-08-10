@@ -1,0 +1,1180 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Product Id="{53EF77C2-0644-45BC-99B6-9DEB0C0843ED}" Codepage="1252" Language="1033" Manufacturer="DevTechProfile" Name="CapFrameX Capture and Analysis Tool 1.8.7.0" UpgradeCode="{05DC3AB5-BC82-4FEB-8624-61C39D0AC204}" Version="1.8.7.0">
+        <Package Comments="This installer database contains the logic and data required to install CapFrameX Capture and Analysis Tool 1.8.7.0." Compressed="yes" Description="CapFrameX Capture and Analysis Tool 1.8.7.0" InstallerVersion="500" Languages="1033" Manufacturer="DevTechProfile" Platform="x64" />
+        <Binary Id="CapFrameX.CustomInstallerActions.CA.dll" SourceFile="E:\Code\CapFrameX\.tmp-msi-extract-refresh\Binary\CapFrameX.CustomInstallerActions.CA.dll" />
+        <CustomAction Id="ResourceManagement" BinaryKey="CapFrameX.CustomInstallerActions.CA.dll" DllEntry="CopyConfigResources" />
+        <CustomAction Id="CleanRegistry" BinaryKey="CapFrameX.CustomInstallerActions.CA.dll" DllEntry="RemoveAutoStartKey" />
+        <CustomAction Id="AppdataConfigFiles" BinaryKey="CapFrameX.CustomInstallerActions.CA.dll" DllEntry="RemoveAppdataConfigFiles" />
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="DesktopFolder" Name="Desktop">
+                <Component Id="ApplicationShortcutDesktop" Guid="{ECBC26F2-66B0-5E5A-88C0-371A13B15021}" Win64="yes">
+                    <Condition>INSTALLSHORTCUT="1"</Condition>
+                    <RegistryValue Id="regA037FDB64234DEDEDEEB7FC6E17648F5" Root="HKCU" Key="Software\CapFrameX" Name="installed" Value="1" Type="integer" KeyPath="yes" />
+                    <RemoveFolder Id="RemoveDesktopFolder" Directory="DesktopFolder" On="uninstall" />
+                    <Shortcut Id="ApplicationDesktopShortcut" Directory="DesktopFolder" Name="CapFrameX" ShortName="-3twhzm-" Description="Open Capture and Analytics Tool" Icon="ShortcutDesktopIconID" WorkingDirectory="INSTALLFOLDER" Advertise="yes" />
+                </Component>
+            </Directory>
+            <Directory Id="ProgramFiles64Folder">
+                <Directory Id="INSTALLFOLDER" Name="CapFrameX" ShortName="eym5g97l">
+                    <Component Id="cmpFD65F52CD5EC0B46A750F8EEFC3D4422" Guid="{E17040BB-E4F3-53E2-BC30-F915F283584B}" Win64="yes">
+                        <File Id="fil1F7E777B326B02F60B86F747002F8605" Name="AutoMapper.dll" KeyPath="yes" ShortName="yrs25q53.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil1F7E777B326B02F60B86F747002F8605" />
+                    </Component>
+                    <Component Id="cmp3FA3E043C67E501AF5D90725CBA9EA07" Guid="{BD41C590-A2AB-5224-851E-0E284AAE631C}" Win64="yes">
+                        <File Id="fil92741D310FD3D2D6E3992F483E00C520" Name="BlackSharp.Core.dll" KeyPath="yes" ShortName="5ocg0kbu.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil92741D310FD3D2D6E3992F483E00C520" />
+                    </Component>
+                    <Component Id="cmp010346265BD055915F2AF759DD155A33" Guid="{F798813A-2ADA-52E3-8DCD-0319F2DF302C}" Win64="yes">
+                        <File Id="filC36055874C8412817A8A62A3DD63255D" Name="CapFrameX.ADLX.dll" KeyPath="yes" ShortName="lobbp-ys.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filC36055874C8412817A8A62A3DD63255D" />
+                    </Component>
+                    <Component Id="cmp38FB2D846FB5A26B8F01D5155B71ADB5" Guid="{5D2A97B4-3632-5C7E-B9B0-D1838FAF0D1C}" Win64="yes">
+                        <File Id="fil55A807ADC7391DA20338EF97DF3F4767" Name="CapFrameX.ApiInterface.dll" KeyPath="yes" ShortName="ck8unp0u.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil55A807ADC7391DA20338EF97DF3F4767" />
+                    </Component>
+                    <Component Id="cmp8E6F0A41518F04985A00044A881AFAA3" Guid="{1BD9528C-ABED-580D-9102-A78ABB8BA29C}" Win64="yes">
+                        <File Id="filC61BB4011FA8A5D074FAB20E2DABFDEE" Name="CapFrameX.ApiInterface.pdb" KeyPath="yes" ShortName="mzaltzcv.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filC61BB4011FA8A5D074FAB20E2DABFDEE" />
+                    </Component>
+                    <Component Id="cmpFCC1F35455D5814F6F5D83CFB2CBB5EA" Guid="{FD3B6A99-857A-54A1-A323-9B7DBF733A40}" Win64="yes">
+                        <File Id="filBF5E6522ABF9B07B4C721A3F08328663" Name="CapFrameX.Capture.Contracts.dll" KeyPath="yes" ShortName="dcl4ufic.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filBF5E6522ABF9B07B4C721A3F08328663" />
+                    </Component>
+                    <Component Id="cmp367B18F442C629D69A743133694E4034" Guid="{5B21A1E5-5D5F-59A3-A8C0-5C10E22E7E64}" Win64="yes">
+                        <File Id="fil6E3A974E04E9C60370B37DB0E6CC632C" Name="CapFrameX.Capture.Contracts.pdb" KeyPath="yes" ShortName="4rvslpv1.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil6E3A974E04E9C60370B37DB0E6CC632C" />
+                    </Component>
+                    <Component Id="cmp8ACAADD5757BD9E933B8004451F42808" Guid="{054E9414-A11D-588B-BABB-696EEA2E00A7}" Win64="yes">
+                        <File Id="fil1D123DA33C13D338799627CD54B199E4" Name="CapFrameX.Configuration.dll" KeyPath="yes" ShortName="znfmnubr.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil1D123DA33C13D338799627CD54B199E4" />
+                    </Component>
+                    <Component Id="cmpCE5F8A81B8827D84BBA827B235B47111" Guid="{285F11ED-4DB5-5BEC-8F8A-77A7247655AF}" Win64="yes">
+                        <File Id="fil29CFBD10CFA03DCDF8575E4FDE0E8174" Name="CapFrameX.Configuration.pdb" KeyPath="yes" ShortName="jd9bx44q.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil29CFBD10CFA03DCDF8575E4FDE0E8174" />
+                    </Component>
+                    <Component Id="cmpA4C1EAD31D80CA7A469C61E5F7BF0BE7" Guid="{B22CAF43-8FA3-59DA-BA17-0EAD26B1DEAC}" Win64="yes">
+                        <File Id="filC5232FFF55D7F9A2D288A591C3B2723E" Name="CapFrameX.Contracts.dll" KeyPath="yes" ShortName="unwhfcez.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filC5232FFF55D7F9A2D288A591C3B2723E" />
+                    </Component>
+                    <Component Id="cmp829349182F4E01B742F1469B2F87C349" Guid="{E66AEB2E-3E02-55E3-93FD-A7AA0D1BBC33}" Win64="yes">
+                        <File Id="fil474CE805D5D9DC6A595C441785019BD7" Name="CapFrameX.Contracts.pdb" KeyPath="yes" ShortName="bywksb03.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil474CE805D5D9DC6A595C441785019BD7" />
+                    </Component>
+                    <Component Id="cmpBB82F84010B18BD471718A8F5192D809" Guid="{40569C8C-56F8-5C26-9137-63835FF9C827}" Win64="yes">
+                        <File Id="filF1AAE3D99497A2F202666A8EBE6BD1BE" Name="CapFrameX.Data.dll" KeyPath="yes" ShortName="enbpqa2-.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filF1AAE3D99497A2F202666A8EBE6BD1BE" />
+                    </Component>
+                    <Component Id="cmp1E647D9F8ECD25DE8456AFEFC9762EE2" Guid="{DEB082B7-47B5-557F-AC09-116818DB9C75}" Win64="yes">
+                        <File Id="fil8CE2EF8CF9DF7C299CB286FF7006DE00" Name="CapFrameX.Data.pdb" KeyPath="yes" ShortName="ary43xan.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil8CE2EF8CF9DF7C299CB286FF7006DE00" />
+                    </Component>
+                    <Component Id="cmpD1A5312A1B779CA613F64117D3873237" Guid="{349E5DA5-B22D-5E31-84FE-A7EECE8ACA02}" Win64="yes">
+                        <File Id="filEB5035C3BC5C3408D555A5EADE39865F" Name="CapFrameX.Data.Session.dll" KeyPath="yes" ShortName="bz2e7flu.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filEB5035C3BC5C3408D555A5EADE39865F" />
+                    </Component>
+                    <Component Id="cmpCDC3D9376CF1A1EB5905BD4C4CF063DE" Guid="{3E56E609-E867-56C5-975C-B83615F118F1}" Win64="yes">
+                        <File Id="fil3C8CC94DCFA26E8335F85F6F008A283C" Name="CapFrameX.Data.Session.pdb" KeyPath="yes" ShortName="0-u04ym9.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil3C8CC94DCFA26E8335F85F6F008A283C" />
+                    </Component>
+                    <Component Id="cmp7C9CAFF9FE2A171191AA280A316C5B90" Guid="{81D61342-0F7A-5292-8E93-275BCC25C8E4}" Win64="yes">
+                        <File Id="filE854C05B7FCBEF9D80C9CD3447FD3B5E" Name="CapFrameX.EventAggregation.dll" KeyPath="yes" ShortName="0j2q9_to.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filE854C05B7FCBEF9D80C9CD3447FD3B5E" />
+                    </Component>
+                    <Component Id="cmpF059BAC6B00657CE369D498012322954" Guid="{6D7FAF17-2E3F-54AA-8ACA-1971BB798809}" Win64="yes">
+                        <File Id="fil2F27B59821EEA3253D3972EAB753F556" Name="CapFrameX.EventAggregation.pdb" KeyPath="yes" ShortName="csqcdx2r.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil2F27B59821EEA3253D3972EAB753F556" />
+                    </Component>
+                    <Component Id="cmp82AD45B10466B02AA709E58F5BE28DFA" Guid="{1140A364-6354-5BAB-A032-23E13EDCCB78}" Win64="yes">
+                        <File Id="fil728C156E08C89BB8D6F48ADCA3FDB05E" Name="CapFrameX.exe" KeyPath="yes" ShortName="0b1jfdxf.exe" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil728C156E08C89BB8D6F48ADCA3FDB05E" />
+                    </Component>
+                    <Component Id="cmp2E59BC59B11729E95EB8C057C580BD11" Guid="{94145084-A040-5B2F-A7A6-DDE7D1719AFD}" Win64="yes">
+                        <File Id="fil4AD54877443A07448E8AA586A7801495" Name="CapFrameX.exe.config" KeyPath="yes" ShortName="w83jcyip.con" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil4AD54877443A07448E8AA586A7801495" />
+                    </Component>
+                    <Component Id="cmp197CCAFDD9C330A4C91CAF35F0619382" Guid="{983B92CC-D456-59EA-91C8-D242052D496B}" Win64="yes">
+                        <File Id="fil3C5B48255A95C26C6661A866ABBA9A94" Name="CapFrameX.Extensions.dll" KeyPath="yes" ShortName="qrizufvr.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil3C5B48255A95C26C6661A866ABBA9A94" />
+                    </Component>
+                    <Component Id="cmp946F72DFC650C4E5A49C51A838713428" Guid="{1E3DCBCD-258D-5AC0-AF41-A1100E935AB5}" Win64="yes">
+                        <File Id="fil8D5A202B59370A078AE09810437627E4" Name="CapFrameX.Extensions.NetStandard.dll" KeyPath="yes" ShortName="ckvyzksd.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil8D5A202B59370A078AE09810437627E4" />
+                    </Component>
+                    <Component Id="cmp4974650E9CE6F14031D0ABC8811B7A46" Guid="{2288CE51-14A6-5AE4-B3FB-037A98D1CF74}" Win64="yes">
+                        <File Id="fil96684E99AEF12A1E673F71F5AE99B36E" Name="CapFrameX.Extensions.NetStandard.pdb" KeyPath="yes" ShortName="zu9q-oz2.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil96684E99AEF12A1E673F71F5AE99B36E" />
+                    </Component>
+                    <Component Id="cmpF3D48399A0F13574BBC5D2D15C71B25C" Guid="{4EC1D409-7F7E-57AB-819B-B61FFE0A55C5}" Win64="yes">
+                        <File Id="fil804C4BD6BD64859B2C6C4826C2EDE7CC" Name="CapFrameX.Extensions.pdb" KeyPath="yes" ShortName="yxdud3au.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil804C4BD6BD64859B2C6C4826C2EDE7CC" />
+                    </Component>
+                    <Component Id="cmpB6667BCA4B65EF30DBEC87C6744D2AE9" Guid="{399437BE-7B6E-5853-BDD0-607C25350108}" Win64="yes">
+                        <File Id="filE95B34771D9FD2DF85704CB98AD42F0B" Name="CapFrameX.Hardware.Controller.dll" KeyPath="yes" ShortName="gr7z2jfk.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filE95B34771D9FD2DF85704CB98AD42F0B" />
+                    </Component>
+                    <Component Id="cmp6BEF906CB6FADDBDBA3AAF1A06E55843" Guid="{24B87E60-6F45-591C-9E7F-FE23FA49843E}" Win64="yes">
+                        <File Id="fil79534DD61D64FDF9D59AEC1B39995125" Name="CapFrameX.Hardware.Controller.pdb" KeyPath="yes" ShortName="uzj1ocml.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil79534DD61D64FDF9D59AEC1B39995125" />
+                    </Component>
+                    <Component Id="cmpC53D77F304B4523D70934DE3AA929A1B" Guid="{5E5BFCF5-BF26-5517-9ECD-F9B62C6DF3A3}" Win64="yes">
+                        <File Id="fil8AC734A3084D24BF22E7B1C315F35D80" Name="CapFrameX.Hotkey.dll" KeyPath="yes" ShortName="lagltoao.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil8AC734A3084D24BF22E7B1C315F35D80" />
+                    </Component>
+                    <Component Id="cmp6C8034C8386700B60102EFDA32EE9A7C" Guid="{3B00C7EF-78B6-5187-B4AF-F55F06CB9756}" Win64="yes">
+                        <File Id="fil77F82B04FB68B8A390A85D4423410FA1" Name="CapFrameX.Hotkey.pdb" KeyPath="yes" ShortName="nh1z0r5a.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil77F82B04FB68B8A390A85D4423410FA1" />
+                    </Component>
+                    <Component Id="cmp58A6D9654BB2BC6D1688D3E3B41884A9" Guid="{BFD9DE81-5470-5B56-88C1-2D0DDDE2C01E}" Win64="yes">
+                        <File Id="fil722BF3ED7108CA65E0196ECD23702B49" Name="CapFrameX.Hwinfo.dll" KeyPath="yes" ShortName="ylg-s2lt.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil722BF3ED7108CA65E0196ECD23702B49" />
+                    </Component>
+                    <Component Id="cmp46ECDD0C7AD9D4FBBE09ADEECDCCFDB7" Guid="{AF343C98-0190-529A-9C6A-59C3CD07F2ED}" Win64="yes">
+                        <File Id="fil85C3B6DBB9E77A4332828A454895E1E1" Name="CapFrameX.IGCL.dll" KeyPath="yes" ShortName="gqgirnja.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil85C3B6DBB9E77A4332828A454895E1E1" />
+                    </Component>
+                    <Component Id="cmpCE6407D64F3B32290FED3723C36974A4" Guid="{7329544F-0341-57BB-8A6E-8844B8959632}" Win64="yes">
+                        <File Id="fil47F33075B03F68CA7363910CEC4027AF" Name="CapFrameX.Mcp.dll" KeyPath="yes" ShortName="pendh188.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil47F33075B03F68CA7363910CEC4027AF" />
+                    </Component>
+                    <Component Id="cmp48FC6F843096B2C49CDC104336ABDEB7" Guid="{C5B4FCF7-6AC0-5D6B-B0DF-E978A052A089}" Win64="yes">
+                        <File Id="fil3E41C9CEE8A6FC045FEEFCCBFA6999D2" Name="CapFrameX.Mcp.pdb" KeyPath="yes" ShortName="p9pq-ouk.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil3E41C9CEE8A6FC045FEEFCCBFA6999D2" />
+                    </Component>
+                    <Component Id="cmp085F019DCFA91EA3CC69ED65224795C3" Guid="{DE0CC464-6EB0-5D80-81C1-F16AB8CCBD13}" Win64="yes">
+                        <File Id="fil956FF70D2C501EA324FFEF51A7CF20B8" Name="CapFrameX.Monitoring.Contracts.dll" KeyPath="yes" ShortName="hksxq-fe.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil956FF70D2C501EA324FFEF51A7CF20B8" />
+                    </Component>
+                    <Component Id="cmp0E8115A356A83702410D2B0E3834086E" Guid="{0132BC36-7EC1-52E1-B944-75148672A5BD}" Win64="yes">
+                        <File Id="fil34536046683FA008D4FD00468C194AD8" Name="CapFrameX.Monitoring.Contracts.pdb" KeyPath="yes" ShortName="4hzshwmw.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil34536046683FA008D4FD00468C194AD8" />
+                    </Component>
+                    <Component Id="cmp6AE09C2CACB08476BEF8E2E045F01AF5" Guid="{F76E3693-3972-5543-9DB0-66E1948066E5}" Win64="yes">
+                        <File Id="fil970CA0EB49AC8565BFF0E023FC623052" Name="CapFrameX.MVVM.dll" KeyPath="yes" ShortName="8c0o_5il.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil970CA0EB49AC8565BFF0E023FC623052" />
+                    </Component>
+                    <Component Id="cmpBF6C07EC81E07D571B517012C96B6F95" Guid="{18B1BEC8-6F0A-5874-B3BF-6A125333444D}" Win64="yes">
+                        <File Id="fil1FEEA8C508096E8CABD369038800AB55" Name="CapFrameX.MVVM.pdb" KeyPath="yes" ShortName="szml2pvk.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil1FEEA8C508096E8CABD369038800AB55" />
+                    </Component>
+                    <Component Id="cmp67CAF56941C08FD2A47A143DBDFF8710" Guid="{F1507457-89B5-5243-B9BB-D0F14863FA10}" Win64="yes">
+                        <File Id="filE7F0A56AEE51F3D68978D546586CA361" Name="CapFrameX.OSD.Integration.dll" KeyPath="yes" ShortName="vsqzrdwf.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filE7F0A56AEE51F3D68978D546586CA361" />
+                    </Component>
+                    <Component Id="cmp26CC0F3B24FE06539736D89388259776" Guid="{98E0C33F-EBF8-579E-A846-1F5ABCFA70CE}" Win64="yes">
+                        <File Id="filACF2F0CD6430E15FA552E0A2FC74D56E" Name="CapFrameX.OSD.Integration.pdb" KeyPath="yes" ShortName="2bydmn4d.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filACF2F0CD6430E15FA552E0A2FC74D56E" />
+                    </Component>
+                    <Component Id="cmp32505C2A362D54A9506AC670008D7B04" Guid="{F49AC806-1C10-5755-AB89-70B8D867A0B9}" Win64="yes">
+                        <File Id="filB837FA9A33C18891C69575F7705E8323" Name="CapFrameX.OSD.Interop.dll" KeyPath="yes" ShortName="hv3rlb5k.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filB837FA9A33C18891C69575F7705E8323" />
+                    </Component>
+                    <Component Id="cmpF034EE20FA31D2D0740E4422C9161BE8" Guid="{872251EB-6A57-5270-BC95-8907715B6C8E}" Win64="yes">
+                        <File Id="filE20C9AE9676B519602ACBB8B00D9E971" Name="CapFrameX.OSD.Interop.pdb" KeyPath="yes" ShortName="xfpb4inn.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filE20C9AE9676B519602ACBB8B00D9E971" />
+                    </Component>
+                    <Component Id="cmp4A1120ACC7AB1F1C62A70428177CC16C" Guid="{72686CD5-EB4C-5D40-A8AD-47717839CF0E}" Win64="yes">
+                        <File Id="filA94E134DD2F414A189752458876EE960" Name="CapFrameX.Overlay.dll" KeyPath="yes" ShortName="sshh5fq5.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filA94E134DD2F414A189752458876EE960" />
+                    </Component>
+                    <Component Id="cmp7AD1D5C5600756C1FEF250A34500A8B1" Guid="{C5ABE7D1-DFD5-5308-BDDA-7E4ECF63F06D}" Win64="yes">
+                        <File Id="filA37B94B62EA7F4E23ECCFDB730795BB5" Name="CapFrameX.Overlay.pdb" KeyPath="yes" ShortName="6zcukyuk.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filA37B94B62EA7F4E23ECCFDB730795BB5" />
+                    </Component>
+                    <Component Id="cmpD6952B19607ADA3C10FB639F21E3B84B" Guid="{E0E18A70-960F-537F-ABC3-AA32E85BA031}" Win64="yes">
+                        <File Id="filE5A830341BEE36630CD73D17C7D87C23" Name="CapFrameX.pdb" KeyPath="yes" ShortName="964fxn_b.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filE5A830341BEE36630CD73D17C7D87C23" />
+                    </Component>
+                    <Component Id="cmp82F7A2CA79FB4945DE735525DEA43440" Guid="{4F676275-9740-5FF9-B104-855869F6E14B}" Win64="yes">
+                        <File Id="fil61F1AF4F965762967E4DC7203AE4BC52" Name="CapFrameX.PMD.dll" KeyPath="yes" ShortName="xc2f4ayk.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil61F1AF4F965762967E4DC7203AE4BC52" />
+                    </Component>
+                    <Component Id="cmp14B77B6AF67D6C1BCC87252B412622A0" Guid="{57A62DD4-07B2-58C3-B06C-6CE2B07A11C9}" Win64="yes">
+                        <File Id="fil59146B7CD38A713A22C17DCC307CFF1F" Name="CapFrameX.PMD.pdb" KeyPath="yes" ShortName="s0u6hv9d.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil59146B7CD38A713A22C17DCC307CFF1F" />
+                    </Component>
+                    <Component Id="cmpDAC9A06508E623C2AE90DDABDC991D5D" Guid="{E26F3856-0771-5D73-862A-65FC7D73EC4D}" Win64="yes">
+                        <File Id="fil2C243491DA37F20C87730E667020244F" Name="CapFrameX.PresentMonInterface.dll" KeyPath="yes" ShortName="qnpzvr-w.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil2C243491DA37F20C87730E667020244F" />
+                    </Component>
+                    <Component Id="cmpC5B851C2B64D27369CA432F2572B188D" Guid="{02852733-F45E-5EEF-8430-958B2FD8F07F}" Win64="yes">
+                        <File Id="filF313A99FC58639D9D946E4799C4ED2B3" Name="CapFrameX.PresentMonInterface.pdb" KeyPath="yes" ShortName="gc7pycco.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filF313A99FC58639D9D946E4799C4ED2B3" />
+                    </Component>
+                    <Component Id="cmp7C05CDDFB82D6239D07041A7E6EB0982" Guid="{71F15715-49D8-5BFC-BA20-AEC38A50CB9B}" Win64="yes">
+                        <File Id="fil7AFFB42308C76B9846F5719763FD423F" Name="CapFrameX.RTSSIntegration.dll" KeyPath="yes" ShortName="b8ik0sag.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil7AFFB42308C76B9846F5719763FD423F" />
+                    </Component>
+                    <Component Id="cmpC975C67003B9C2814766B136E8C4FC52" Guid="{C84B2A81-4AA8-5C06-83C2-B3443CD668D5}" Win64="yes">
+                        <File Id="fil2A0787C05003272A91BB3065F904B85C" Name="CapFrameX.RTSSIntegration.pdb" KeyPath="yes" ShortName="m047r2mp.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil2A0787C05003272A91BB3065F904B85C" />
+                    </Component>
+                    <Component Id="cmp458D149F66896C1582130F4DAD13BA4A" Guid="{33DFC503-CA62-52E7-9149-A3171C54532E}" Win64="yes">
+                        <File Id="filDCAA7F5E2641CD0410CFA60223C12402" Name="CapFrameX.RTSSInterface.dll" KeyPath="yes" ShortName="whlvltto.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filDCAA7F5E2641CD0410CFA60223C12402" />
+                    </Component>
+                    <Component Id="cmpFAADD84CDCFEE6BE5EFFC794B81E0AF0" Guid="{283ED59D-4071-59F4-9292-8F632A20C822}" Win64="yes">
+                        <File Id="filCA23A77C17B80095E3B46C6A1CC58C29" Name="CapFrameX.RTSSInterface.pdb" KeyPath="yes" ShortName="t0turlzn.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filCA23A77C17B80095E3B46C6A1CC58C29" />
+                    </Component>
+                    <Component Id="cmp7F114E6DD3365A0AC42A526666770850" Guid="{8B055C44-ED62-53B7-AE41-FD40718F4D2D}" Win64="yes">
+                        <File Id="fil0FAC2DABBB2BB748786B533A5A014661" Name="CapFrameX.Sensor.dll" KeyPath="yes" ShortName="1p0cjqjc.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil0FAC2DABBB2BB748786B533A5A014661" />
+                    </Component>
+                    <Component Id="cmpB184919061A1CBB7B72F23D57EC1483D" Guid="{DA21EBD4-2048-5E6E-BFA7-A89298F8DBD3}" Win64="yes">
+                        <File Id="fil71E2DB45568184EC1A0348F412B4DBBE" Name="CapFrameX.Sensor.pdb" KeyPath="yes" ShortName="d1manitj.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil71E2DB45568184EC1A0348F412B4DBBE" />
+                    </Component>
+                    <Component Id="cmp0895AE10E5B3ECDA81D5DD888E741F15" Guid="{3D3E29EF-BC02-5A73-BB53-A3850479248F}" Win64="yes">
+                        <File Id="filB564A04F334751CB9A1730CE3C9409C0" Name="CapFrameX.Sensor.Reporting.dll" KeyPath="yes" ShortName="yiisiq54.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filB564A04F334751CB9A1730CE3C9409C0" />
+                    </Component>
+                    <Component Id="cmpCEE07CF2C179F250C81FE40D5FC8B25B" Guid="{96467EB7-D389-5626-9260-62A50013B040}" Win64="yes">
+                        <File Id="filF55E6A9827115A5634E116E79F45E250" Name="CapFrameX.Sensor.Reporting.pdb" KeyPath="yes" ShortName="8pe8lveq.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filF55E6A9827115A5634E116E79F45E250" />
+                    </Component>
+                    <Component Id="cmp4A14411E5B2D1C7D899B9637CD60A7CD" Guid="{5C5785C1-556C-5C9C-9208-66BE98298045}" Win64="yes">
+                        <File Id="fil16D7996D0A7821C067EFB1CE112D3697" Name="CapFrameX.Statistics.NetStandard.dll" KeyPath="yes" ShortName="9dzahe9p.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil16D7996D0A7821C067EFB1CE112D3697" />
+                    </Component>
+                    <Component Id="cmp85D186EDF7F89DDB5E56AD8740E47A05" Guid="{E8CA5969-DAC6-55EE-8C82-24B40088149A}" Win64="yes">
+                        <File Id="fil26A340C13C718F2BC28B4987DD7FABF7" Name="CapFrameX.Statistics.NetStandard.pdb" KeyPath="yes" ShortName="qdr9qs9q.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil26A340C13C718F2BC28B4987DD7FABF7" />
+                    </Component>
+                    <Component Id="cmpA370ED5AA85C29D5BFCB28B64725C072" Guid="{D1CC68A3-19E3-50C0-AA5E-55BA21A5E49F}" Win64="yes">
+                        <File Id="fil6B7F05642808F2CC0AC761685715D27B" Name="CapFrameX.Statistics.PlotBuilder.dll" KeyPath="yes" ShortName="824bg0de.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil6B7F05642808F2CC0AC761685715D27B" />
+                    </Component>
+                    <Component Id="cmpEB7F9240E4E285CF98AF15FFE7C29B86" Guid="{32E99B4F-653A-5D58-98C6-47BE95257721}" Win64="yes">
+                        <File Id="filE3142588FFAD791B370752E5C5C2423A" Name="CapFrameX.Statistics.PlotBuilder.pdb" KeyPath="yes" ShortName="ayuirgb0.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filE3142588FFAD791B370752E5C5C2423A" />
+                    </Component>
+                    <Component Id="cmp121D3C3CDE810BD7FE0A2B46DCAFA63E" Guid="{951A7232-1B7E-5FC6-B475-FE7591FAB97B}" Win64="yes">
+                        <File Id="fil8574361112192D6BB805FFE572589060" Name="CapFrameX.SystemInfo.NetStandard.dll" KeyPath="yes" ShortName="bqtja3_k.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil8574361112192D6BB805FFE572589060" />
+                    </Component>
+                    <Component Id="cmp5721D79609E10BF30F119B560AC992DA" Guid="{9D53C4CF-913D-5839-9D8A-36C292E04D8B}" Win64="yes">
+                        <File Id="filCAEA678FBCD8105EF0F9635429AFA5A3" Name="CapFrameX.SystemInfo.NetStandard.pdb" KeyPath="yes" ShortName="ylpwdggh.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filCAEA678FBCD8105EF0F9635429AFA5A3" />
+                    </Component>
+                    <Component Id="cmpF4AA3050A716E6F54BB951C2FD2122DC" Guid="{9C671CE2-C7F6-5947-8EF6-A64406A9EE4B}" Win64="yes">
+                        <File Id="fil5F66D1BA3F0735980723B32E1A79E0B1" Name="CapFrameX.Updater.dll" KeyPath="yes" ShortName="ypiwnmxs.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil5F66D1BA3F0735980723B32E1A79E0B1" />
+                    </Component>
+                    <Component Id="cmpC2BF4EDA100FB9224264FDE81B19197B" Guid="{7512AABE-07CB-5AE8-A13C-C9756DD30CFB}" Win64="yes">
+                        <File Id="fil7829DDDA24B0EC5E76963A6728142001" Name="CapFrameX.Updater.pdb" KeyPath="yes" ShortName="z-h4qgg0.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil7829DDDA24B0EC5E76963A6728142001" />
+                    </Component>
+                    <Component Id="cmp18FAC930D57ECB5DA84BC4EF8F1FF236" Guid="{14EE9046-6913-5AF4-9822-D75C677F0F26}" Win64="yes">
+                        <File Id="fil5A22FA3F9BADD87BBA07D3CFC2BB585C" Name="CapFrameX.View.dll" KeyPath="yes" ShortName="sfzl_-pd.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil5A22FA3F9BADD87BBA07D3CFC2BB585C" />
+                    </Component>
+                    <Component Id="cmp9E78940DE3E6DEF1FA8B22CFDB6CB974" Guid="{701F6E51-0701-5AF5-A157-8B09D655711D}" Win64="yes">
+                        <File Id="fil26152FE28C2CE2FEC39BF8E443DB0E6B" Name="CapFrameX.View.pdb" KeyPath="yes" ShortName="ikoso4wm.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil26152FE28C2CE2FEC39BF8E443DB0E6B" />
+                    </Component>
+                    <Component Id="cmpFEE96F5622FF620341562487C27BDBFE" Guid="{AED2F1AC-2025-57F9-B9D0-0599DE707E1A}" Win64="yes">
+                        <File Id="fil066CBEBC4329275FC279128989451D13" Name="CapFrameX.ViewModel.dll" KeyPath="yes" ShortName="qisu_ner.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil066CBEBC4329275FC279128989451D13" />
+                    </Component>
+                    <Component Id="cmp7208E56B684EFF6D86BA4E30F31A526F" Guid="{96847370-0B12-535D-B680-85DE77F9DEF8}" Win64="yes">
+                        <File Id="filD545A8CA427CB7E8F80D016D85327001" Name="CapFrameX.ViewModel.pdb" KeyPath="yes" ShortName="cbxdsuku.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filD545A8CA427CB7E8F80D016D85327001" />
+                    </Component>
+                    <Component Id="cmp65E830F64B198A56C158E8F21A46E482" Guid="{9FD26550-7F59-5140-879F-B6EA96822EFC}" Win64="yes">
+                        <File Id="filAB5F22C7C1A800EC57702D287A275AB9" Name="CapFrameX.Webservice.Data.dll" KeyPath="yes" ShortName="kmpq3be8.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filAB5F22C7C1A800EC57702D287A275AB9" />
+                    </Component>
+                    <Component Id="cmp9DD1286D83CFBB521DC0A94C03E27037" Guid="{225DD613-A2CB-5C87-94E9-9737A8183DC9}" Win64="yes">
+                        <File Id="fil3324512EC1877353CA1C697DA87398AA" Name="CapFrameX.Webservice.Data.pdb" KeyPath="yes" ShortName="_2u5qxfr.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil3324512EC1877353CA1C697DA87398AA" />
+                    </Component>
+                    <Component Id="cmp25EB44D8F5087FA0DC13491026DE588C" Guid="{78FE2827-1D43-5A4C-8A8F-5E5B146B74BF}" Win64="yes">
+                        <File Id="fil2DCC14B223F51BAF07CBBE21F84491A3" Name="cfx_osd_core.dll" KeyPath="yes" ShortName="5azadqob.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil2DCC14B223F51BAF07CBBE21F84491A3" />
+                    </Component>
+                    <Component Id="cmp9110E4565D76564E9BC2F34625854902" Guid="{96801B4E-9236-552E-BB9F-CB97B380AA77}" Win64="yes">
+                        <File Id="filAC751AB8116CEF372F8CFDA54B395D08" Name="ControlzEx.dll" KeyPath="yes" ShortName="lssdrpxy.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filAC751AB8116CEF372F8CFDA54B395D08" />
+                    </Component>
+                    <Component Id="cmp4DE861D215883636FECF0D07B8D443D7" Guid="{3BBFA93F-9402-51F6-B07C-0B8022F14553}" Win64="yes">
+                        <File Id="fil3206B90EA5541C5442934CA10AD49FF3" Name="ControlzEx.pdb" KeyPath="yes" ShortName="7sak_kow.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil3206B90EA5541C5442934CA10AD49FF3" />
+                    </Component>
+                    <Component Id="cmp471A60C7DB0BF5428D9A6BE2EF6D9976" Guid="{AA74B37C-8C55-50EC-ABBD-ABB068CB409F}" Win64="yes">
+                        <File Id="fil797E40D765838013F75C84F3A45F3E4D" Name="Cyotek.Drawing.BitmapFont.dll" KeyPath="yes" ShortName="8rdhra4e.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil797E40D765838013F75C84F3A45F3E4D" />
+                    </Component>
+                    <Component Id="cmp10D4FE83FFFEED879BCB90B5B3143ED1" Guid="{6411548B-512F-522B-8CB9-718A344F8B9C}" Win64="yes">
+                        <File Id="filD7E2F7A68CC73E3EF644425DC8FBC80D" Name="Cyotek.Drawing.BitmapFont.pdb" KeyPath="yes" ShortName="odh-tywt.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filD7E2F7A68CC73E3EF644425DC8FBC80D" />
+                    </Component>
+                    <Component Id="cmpB54AA7145F7DD7C9F4F5BCED9FE3DD87" Guid="{B824CA98-6FB6-56B3-B70C-E479F4C90B80}" Win64="yes">
+                        <File Id="fil8FE76221CE9B2192BFCA7754455FE6D0" Name="DryIoc.CommonServiceLocator.dll" KeyPath="yes" ShortName="uecmqroz.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil8FE76221CE9B2192BFCA7754455FE6D0" />
+                    </Component>
+                    <Component Id="cmp3A3DCB2CB767F63098FA411AE7BB90A7" Guid="{BFBE4C66-89F1-595B-A68A-D83E6C6164DA}" Win64="yes">
+                        <File Id="filC88A84AAA7679BB1CC51240EFA2EB406" Name="DryIoc.dll" KeyPath="yes" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filC88A84AAA7679BB1CC51240EFA2EB406" />
+                    </Component>
+                    <Component Id="cmp9FA13AD80A88A2237F460D513A2F1968" Guid="{7BD31753-C6F6-54BE-B403-916C75D3C7A2}" Win64="yes">
+                        <File Id="filA4C1E22C089DF7BCB008768D9AC16DEF" Name="EmbedIO.dll" KeyPath="yes" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filA4C1E22C089DF7BCB008768D9AC16DEF" />
+                    </Component>
+                    <Component Id="cmp461E1E7FBE4E607F33327C277F03BE7A" Guid="{B077EDE3-F39D-553F-AF44-1964B77087AF}" Win64="yes">
+                        <File Id="fil452E4A22939EC280C632FEA277D3B3A2" Name="FluentValidation.dll" KeyPath="yes" ShortName="sjzwcsg3.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil452E4A22939EC280C632FEA277D3B3A2" />
+                    </Component>
+                    <Component Id="cmpFDA802159822E5F335299869D8F57A96" Guid="{128B255C-A58A-56A4-835F-16E6921773B6}" Win64="yes">
+                        <File Id="fil4D5F85087EDF31C493CBC20A757D0BEE" Name="Gma.System.MouseKeyHook.dll" KeyPath="yes" ShortName="ucziwqlh.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil4D5F85087EDF31C493CBC20A757D0BEE" />
+                    </Component>
+                    <Component Id="cmp781EEA928029B571EC5B4E7090BD7946" Guid="{3BBB95FF-3DA0-5580-A2C2-6B882F32BCF3}" Win64="yes">
+                        <File Id="fil093D81EF2D0F558E4AF6DBB696C8B611" Name="GongSolutions.Wpf.DragDrop.dll" KeyPath="yes" ShortName="cmzdrg3k.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil093D81EF2D0F558E4AF6DBB696C8B611" />
+                    </Component>
+                    <Component Id="cmp247A5C6B2FC2255D2495669F4BBC5B13" Guid="{D2D81749-9B58-5D98-A233-6CB49AC76F8E}" Win64="yes">
+                        <File Id="fil5337173B3C652BB7E832CBB74A945243" Name="GongSolutions.Wpf.DragDrop.pdb" KeyPath="yes" ShortName="fguxosrt.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil5337173B3C652BB7E832CBB74A945243" />
+                    </Component>
+                    <Component Id="cmp2F5EED07769D01188B6E1DDA2EC5B3FB" Guid="{2A732C96-77C1-596C-B5AC-72F7AC600289}" Win64="yes">
+                        <File Id="filB15AFBDD7410AD56772D69B1FD1048A0" Name="Hardcodet.NotifyIcon.Wpf.dll" KeyPath="yes" ShortName="qsj7dcei.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filB15AFBDD7410AD56772D69B1FD1048A0" />
+                    </Component>
+                    <Component Id="cmp8B6B824170531DA4ACCB267F3B3F8FF6" Guid="{AE6AE1AA-66B3-5DC0-B243-1355015EF193}" Win64="yes">
+                        <File Id="fil2BAF226DFAE1DC393DCE2619AB133832" Name="HidSharp.dll" KeyPath="yes" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil2BAF226DFAE1DC393DCE2619AB133832" />
+                    </Component>
+                    <Component Id="cmpDF49FF1BBFC4DBBA940443AA48F221E9" Guid="{61123746-8B84-5F95-9060-35BC1F4BBB34}" Win64="yes">
+                        <File Id="fil8738EA1292C337E2EF06897AFF9E2FFC" Name="HidSharp.pdb" KeyPath="yes" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil8738EA1292C337E2EF06897AFF9E2FFC" />
+                    </Component>
+                    <Component Id="cmp12963553D08F263C4D654B75222572D0" Guid="{EC66C1E5-C299-50D9-8F65-C81AD347A5F3}" Win64="yes">
+                        <File Id="fil8368C9650D7ED77FEA2F26A8C9F1A8D6" Name="Jot.dll" KeyPath="yes" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil8368C9650D7ED77FEA2F26A8C9F1A8D6" />
+                    </Component>
+                    <Component Id="cmp692E0140D733544352A8979F188CDED8" Guid="{AD586D25-FEAF-59CA-AC1D-BAA492A0924F}" Win64="yes">
+                        <File Id="filA90B3C2B7644D53FCAF1013FD1C0444A" Name="LibreHardwareMonitorLib.dll" KeyPath="yes" ShortName="acth4yci.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filA90B3C2B7644D53FCAF1013FD1C0444A" />
+                    </Component>
+                    <Component Id="cmpBE129962DAD164AE9F278C8874CBF5F9" Guid="{5FC070D6-097A-5147-B79A-A3EE614BE020}" Win64="yes">
+                        <File Id="fil7F486F56DE6B397AD96F1A9589CB4E62" Name="LibreHardwareMonitorLib.pdb" KeyPath="yes" ShortName="po5kmt3t.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil7F486F56DE6B397AD96F1A9589CB4E62" />
+                    </Component>
+                    <Component Id="cmpE6F3483C369D2CFABDCB2AA8B75E6959" Guid="{5E795E2F-FD97-5350-AFE0-1DE73FE1B090}" Win64="yes">
+                        <File Id="fil2FD040EEC008499F18B1397AF5810979" Name="LICENSE" KeyPath="yes" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil2FD040EEC008499F18B1397AF5810979" />
+                    </Component>
+                    <Component Id="cmp60805430DA62A620ADC712537D30F06A" Guid="{A192B2AE-AAC7-554F-9681-A6942BC811EA}" Win64="yes">
+                        <File Id="filDB1D736833CDA4D30509594A7B6D0162" Name="LiveCharts.dll" KeyPath="yes" ShortName="atdmfjkh.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filDB1D736833CDA4D30509594A7B6D0162" />
+                    </Component>
+                    <Component Id="cmpB1EC42AB2EFCC8248CA692650E5CBA2C" Guid="{AD83BCF9-1D00-5BA1-B23E-6C5458CBE612}" Win64="yes">
+                        <File Id="filA587EF9EF76619C5A940052CC4292D0D" Name="LiveCharts.pdb" KeyPath="yes" ShortName="qn9sx4s3.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filA587EF9EF76619C5A940052CC4292D0D" />
+                    </Component>
+                    <Component Id="cmpB80EB57EF2904D1A74E508B15C150404" Guid="{D36AFFB4-AB1A-5656-8E68-5D2372503788}" Win64="yes">
+                        <File Id="filCBE997A6CD849E4DF004F21120DE6B94" Name="LiveCharts.Wpf.dll" KeyPath="yes" ShortName="twcah7ht.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filCBE997A6CD849E4DF004F21120DE6B94" />
+                    </Component>
+                    <Component Id="cmpD640FE63E82A6DF755F8660DDA0B7863" Guid="{83C79F03-01E6-5AE4-96F8-09EFCB278620}" Win64="yes">
+                        <File Id="filDA886BFA46B5C7075B3E38B7D4B3A798" Name="LiveCharts.Wpf.pdb" KeyPath="yes" ShortName="oikg2f2n.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filDA886BFA46B5C7075B3E38B7D4B3A798" />
+                    </Component>
+                    <Component Id="cmp223D4754378C01052DA8253A843FD297" Guid="{F180F2A7-FD10-54A9-B643-1E0C51983828}" Win64="yes">
+                        <File Id="filBC562C5B3D9848A2114F0AF7275FF1E6" Name="MahApps.Metro.dll" KeyPath="yes" ShortName="cj-weexu.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filBC562C5B3D9848A2114F0AF7275FF1E6" />
+                    </Component>
+                    <Component Id="cmp31541C871E68AFBC70137561BF857C7B" Guid="{E6B0CC7A-5B09-5C86-AA57-FE330BABFB03}" Win64="yes">
+                        <File Id="fil109901354A5E9C0DB4A287ECF7B10D9E" Name="MahApps.Metro.pdb" KeyPath="yes" ShortName="hcev31d5.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil109901354A5E9C0DB4A287ECF7B10D9E" />
+                    </Component>
+                    <Component Id="cmpF79A41B26948F126556619AD15586E53" Guid="{B52B0304-C99C-5A64-B3A2-3E5C81415C37}" Win64="yes">
+                        <File Id="filD65CB2C411B671E247C0C842FF9ED3FA" Name="MaterialDesignColors.dll" KeyPath="yes" ShortName="2tr-sjj1.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filD65CB2C411B671E247C0C842FF9ED3FA" />
+                    </Component>
+                    <Component Id="cmpBA69CF71075E6968218400B9F29844B5" Guid="{CC3CA703-575F-5D18-BD9D-84B01EA64D69}" Win64="yes">
+                        <File Id="fil5172DC83FB1D00BEBE5AC6D108D92FC9" Name="MaterialDesignColors.pdb" KeyPath="yes" ShortName="f105hpyh.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil5172DC83FB1D00BEBE5AC6D108D92FC9" />
+                    </Component>
+                    <Component Id="cmpBDFFFC10BC54483342036800228711F3" Guid="{CC45CF2B-8DA3-5364-99CB-9E215BAF16B6}" Win64="yes">
+                        <File Id="fil100896E49F4BD890D9C73FF2C805FF08" Name="MaterialDesignThemes.MahApps.dll" KeyPath="yes" ShortName="3uga8f2c.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil100896E49F4BD890D9C73FF2C805FF08" />
+                    </Component>
+                    <Component Id="cmp6491512287958DE136511A9501FC3EF8" Guid="{F728678D-9344-5E70-91D7-149ECB5A8028}" Win64="yes">
+                        <File Id="fil404F35427B3DFB3FBDE25E87F64FBBC3" Name="MaterialDesignThemes.MahApps.pdb" KeyPath="yes" ShortName="ql9qix_g.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil404F35427B3DFB3FBDE25E87F64FBBC3" />
+                    </Component>
+                    <Component Id="cmp6D59DB1C8695088F09FD7F0B07ECD487" Guid="{DD05881B-941D-5093-B2B5-E19176F2ECB6}" Win64="yes">
+                        <File Id="fil13620EBEA6F6420A02C733F8682CD641" Name="MaterialDesignThemes.Wpf.dll" KeyPath="yes" ShortName="wpsipxhs.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil13620EBEA6F6420A02C733F8682CD641" />
+                    </Component>
+                    <Component Id="cmpFA79922E3C67570896B863651A61DA4C" Guid="{064E8B5A-077A-58A9-B379-D09D56D87A16}" Win64="yes">
+                        <File Id="filB20099EC5073B1438BB86D3B5C19B317" Name="MaterialDesignThemes.Wpf.pdb" KeyPath="yes" ShortName="ygvplwpz.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filB20099EC5073B1438BB86D3B5C19B317" />
+                    </Component>
+                    <Component Id="cmp508010C135AF223EB87100427362C0F7" Guid="{BE7156D0-EB6D-57B6-A5B9-174BDF4EB231}" Win64="yes">
+                        <File Id="fil61C3AF32B1895314286CFDCFB37C0679" Name="MathNet.Filtering.dll" KeyPath="yes" ShortName="owrvqbid.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil61C3AF32B1895314286CFDCFB37C0679" />
+                    </Component>
+                    <Component Id="cmp3ED5A0A4D782A8BF371C8403342D615B" Guid="{7D91523E-ED97-57D7-BEFB-B2A21126A1D1}" Win64="yes">
+                        <File Id="fil7074B34CCDD7ABC6B6FDB40762FB4CF9" Name="MathNet.Numerics.dll" KeyPath="yes" ShortName="0xy0x1io.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil7074B34CCDD7ABC6B6FDB40762FB4CF9" />
+                    </Component>
+                    <Component Id="cmp257EA8281FB771B78FAEDC2CD80B4A5F" Guid="{B50C186B-6977-515A-8EC8-B42D477AA858}" Win64="yes">
+                        <File Id="filE0C20EAC9C3438F2434A2A5C4BB16C88" Name="MediatR.dll" KeyPath="yes" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filE0C20EAC9C3438F2434A2A5C4BB16C88" />
+                    </Component>
+                    <Component Id="cmpB785B661067DB1CA34160E239CB75395" Guid="{8F62E120-000A-55E7-967B-D116839293EB}" Win64="yes">
+                        <File Id="filB8FC2B616B6AB94D52B70B5BCCA8544A" Name="Microsoft.AspNetCore.Http.Abstractions.dll" KeyPath="yes" ShortName="eye3xidr.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filB8FC2B616B6AB94D52B70B5BCCA8544A" />
+                    </Component>
+                    <Component Id="cmp5AA201CA9529E78168BA0DB83D052443" Guid="{EB43BF71-E5E0-5A67-932F-57E7C5907E93}" Win64="yes">
+                        <File Id="filB1617F0F36FC063B8EF312503F17B36B" Name="Microsoft.AspNetCore.Http.dll" KeyPath="yes" ShortName="6ixyurrg.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filB1617F0F36FC063B8EF312503F17B36B" />
+                    </Component>
+                    <Component Id="cmp03A336BE1F43229AE0BC3ED221CB70B1" Guid="{9B83CAFC-D454-5F1D-B2D1-0FEBD4DB8193}" Win64="yes">
+                        <File Id="fil04F5F94C828D6EB6372C221FC95F059A" Name="Microsoft.AspNetCore.Http.Features.dll" KeyPath="yes" ShortName="c1lhgk_h.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil04F5F94C828D6EB6372C221FC95F059A" />
+                    </Component>
+                    <Component Id="cmp1CF42E9A734FD29AFCDB87758302FC1E" Guid="{1593D64F-63CB-5DBE-B57C-6C7FE62B8345}" Win64="yes">
+                        <File Id="fil98BF0CEE0E03C81EBDF3987E4F2B9F8F" Name="Microsoft.AspNetCore.WebUtilities.dll" KeyPath="yes" ShortName="betwk3ir.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil98BF0CEE0E03C81EBDF3987E4F2B9F8F" />
+                    </Component>
+                    <Component Id="cmp20E5A82EE1F53BB560782568696E50EF" Guid="{523BE126-86C4-50FF-9AB9-F635F6234F93}" Win64="yes">
+                        <File Id="fil2E537F5E44EFF72FBE1AF325D6F073A2" Name="Microsoft.Bcl.AsyncInterfaces.dll" KeyPath="yes" ShortName="cp2x6w9x.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil2E537F5E44EFF72FBE1AF325D6F073A2" />
+                    </Component>
+                    <Component Id="cmpE5877A64EB1EC28CBEB5738C9AC0FDA5" Guid="{347A0E31-0C8A-5E00-9CD6-5DBAFF2AC00F}" Win64="yes">
+                        <File Id="fil51E95113F53942FE2D0E2C542284533D" Name="Microsoft.Bcl.HashCode.dll" KeyPath="yes" ShortName="sx9yrgwj.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil51E95113F53942FE2D0E2C542284533D" />
+                    </Component>
+                    <Component Id="cmp40AAABF4A2CA017C2183FBB50AC02A0C" Guid="{5B42FF4E-ECAD-5E8E-B237-E627613A654F}" Win64="yes">
+                        <File Id="fil528E2D91D55E6490E2C7510C5449AED6" Name="Microsoft.Bcl.TimeProvider.dll" KeyPath="yes" ShortName="_mkbn4rd.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil528E2D91D55E6490E2C7510C5449AED6" />
+                    </Component>
+                    <Component Id="cmp8829932782E2062A8292EB806216CC80" Guid="{4E1FBCCA-FE92-5C73-8543-51EC1089B501}" Win64="yes">
+                        <File Id="fil7E65EF656EF556143E801F8F85E3AC17" Name="Microsoft.DotNet.PlatformAbstractions.dll" KeyPath="yes" ShortName="lf12a-vt.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil7E65EF656EF556143E801F8F85E3AC17" />
+                    </Component>
+                    <Component Id="cmp75E1D360F7F3BEA782095608B95EAF01" Guid="{78B05CB3-19B8-5B7E-A67A-E725F931B9AC}" Win64="yes">
+                        <File Id="filB2EC777A0DF3BC93E22F83FF2D6AA439" Name="Microsoft.Extensions.Caching.Abstractions.dll" KeyPath="yes" ShortName="typuxnby.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filB2EC777A0DF3BC93E22F83FF2D6AA439" />
+                    </Component>
+                    <Component Id="cmp47B9C1CDB4B766E8C1572505E98E4035" Guid="{224DBBA3-30E9-5DA5-9316-2CFA6FD52AC9}" Win64="yes">
+                        <File Id="fil64C18EEB612BDE1E8703C04B205ED0F6" Name="Microsoft.Extensions.Caching.Memory.dll" KeyPath="yes" ShortName="gqxkdxyx.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil64C18EEB612BDE1E8703C04B205ED0F6" />
+                    </Component>
+                    <Component Id="cmp198468A4AE980CD6955CB6EB86083726" Guid="{801F69AA-E364-5913-A255-66C0AE0C5EE8}" Win64="yes">
+                        <File Id="fil02E4E4D119BFC4831CEA5A71F1288443" Name="Microsoft.Extensions.DependencyInjection.Abstractions.dll" KeyPath="yes" ShortName="qfimxlk3.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil02E4E4D119BFC4831CEA5A71F1288443" />
+                    </Component>
+                    <Component Id="cmp493E9BC44885B6BC5C57BDB1302C40D9" Guid="{EC8F01EC-5025-5F50-9D8D-FCCB98F7E59B}" Win64="yes">
+                        <File Id="filA40291A4FBD4719B6995DEB783A39A65" Name="Microsoft.Extensions.DependencyInjection.dll" KeyPath="yes" ShortName="aas9cwjp.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filA40291A4FBD4719B6995DEB783A39A65" />
+                    </Component>
+                    <Component Id="cmp828BABCAA179DFEF8C123894E628FE4B" Guid="{D65D35C6-B2A1-5FDB-BFC4-C39055473024}" Win64="yes">
+                        <File Id="filF6E569B7A4467871DC459846AD8CAB0C" Name="Microsoft.Extensions.DependencyModel.dll" KeyPath="yes" ShortName="iowutgd9.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filF6E569B7A4467871DC459846AD8CAB0C" />
+                    </Component>
+                    <Component Id="cmp8C674FD6A69988A60A77A4CEE0F53781" Guid="{954CA58C-9FE4-5AC3-BB8C-9914E3EE5A94}" Win64="yes">
+                        <File Id="fil72342637E9F74EE945317D4603CEBA2F" Name="Microsoft.Extensions.Logging.Abstractions.dll" KeyPath="yes" ShortName="n1bqb2ik.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil72342637E9F74EE945317D4603CEBA2F" />
+                    </Component>
+                    <Component Id="cmp835034F744990576E31C2DBC7C9293BF" Guid="{3B280619-7A61-5F9A-875B-E40F9CE08F7E}" Win64="yes">
+                        <File Id="fil71DD299EE7649E964200A4127797D1C0" Name="Microsoft.Extensions.Logging.dll" KeyPath="yes" ShortName="bmtaliq7.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil71DD299EE7649E964200A4127797D1C0" />
+                    </Component>
+                    <Component Id="cmp33F6A38332D557045329F60C77B93E9F" Guid="{30ED684E-29ED-58CE-8A1E-C435F9B033B0}" Win64="yes">
+                        <File Id="fil3B8F8A8FF12321276B16B774E878E793" Name="Microsoft.Extensions.ObjectPool.dll" KeyPath="yes" ShortName="jythlzps.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil3B8F8A8FF12321276B16B774E878E793" />
+                    </Component>
+                    <Component Id="cmp3279C150AE8DF554FD7EEE2085672A2B" Guid="{7BBA743B-92D0-519A-AD26-3A045DD419C0}" Win64="yes">
+                        <File Id="filA8D1F5D61FD7BC25099F707CBF5B1F24" Name="Microsoft.Extensions.Options.dll" KeyPath="yes" ShortName="7p7cpo7s.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filA8D1F5D61FD7BC25099F707CBF5B1F24" />
+                    </Component>
+                    <Component Id="cmp946145B53A7DCDFA822B0EFD2314FAB6" Guid="{F61C01A2-94BC-5D87-B01C-1C3E4DFE8C1E}" Win64="yes">
+                        <File Id="fil773F29942324AAB2A7E1977E1AC63609" Name="Microsoft.Extensions.Primitives.dll" KeyPath="yes" ShortName="poc-wrlb.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil773F29942324AAB2A7E1977E1AC63609" />
+                    </Component>
+                    <Component Id="cmp7BA1E37A8D8BAAE58F97EBB1003527F0" Guid="{C93A49BC-EC59-5598-A616-76E42F3781C1}" Win64="yes">
+                        <File Id="filCC5FD97CB1AEA982CDECBF5BD215D4F5" Name="Microsoft.IdentityModel.Abstractions.dll" KeyPath="yes" ShortName="rgeurvw1.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filCC5FD97CB1AEA982CDECBF5BD215D4F5" />
+                    </Component>
+                    <Component Id="cmpA4D9C03869723FFBEE9F289352A1B069" Guid="{1EC9CA10-23EA-5146-9463-EC2E02610D90}" Win64="yes">
+                        <File Id="fil16D2CA7E816F03D234BCCE32B92E4CF4" Name="Microsoft.IdentityModel.JsonWebTokens.dll" KeyPath="yes" ShortName="zblopjhb.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil16D2CA7E816F03D234BCCE32B92E4CF4" />
+                    </Component>
+                    <Component Id="cmpCA0CA4D611B62983A5F22D7DB1142FB5" Guid="{09CCD020-386D-5C79-96F0-55366955BCB8}" Win64="yes">
+                        <File Id="filC5D0C88E7D913D0C810CF53291A3F75E" Name="Microsoft.IdentityModel.Logging.dll" KeyPath="yes" ShortName="jcw6zl2a.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filC5D0C88E7D913D0C810CF53291A3F75E" />
+                    </Component>
+                    <Component Id="cmp1CCC42FAF94D59D43A57B48070D20BFB" Guid="{C729985A-8205-5393-A476-3357F072E8D9}" Win64="yes">
+                        <File Id="filFC76E8ACD5E395C004E907381A1F22A7" Name="Microsoft.IdentityModel.Tokens.dll" KeyPath="yes" ShortName="4tc7xd91.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filFC76E8ACD5E395C004E907381A1F22A7" />
+                    </Component>
+                    <Component Id="cmp3F0D5A3DBF3BB5DEF4929A0ED0AD2EBA" Guid="{17892F7F-4C27-566A-B8FD-58BB9179CAFF}" Win64="yes">
+                        <File Id="filE17F1B3C88F6E971DB1D8FC6CC115C63" Name="Microsoft.Net.Http.Headers.dll" KeyPath="yes" ShortName="ss3f47ad.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filE17F1B3C88F6E971DB1D8FC6CC115C63" />
+                    </Component>
+                    <Component Id="cmpF2F1C15A47B64F045101B1AE5B4D6054" Guid="{9BC1252B-0138-5FD0-AB24-25BE62245B19}" Win64="yes">
+                        <File Id="filC342596B66E98254BB6E1CFFE50AE4AA" Name="Microsoft.Practices.ServiceLocation.dll" KeyPath="yes" ShortName="vdwiyk5s.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filC342596B66E98254BB6E1CFFE50AE4AA" />
+                    </Component>
+                    <Component Id="cmpC46009BA6A5B5F8DF9BEFCAD39146906" Guid="{82EA4536-C8F2-5907-8496-345DC83B5A57}" Win64="yes">
+                        <File Id="fil4E1754043F4A85422FD5FE1F7991ABCC" Name="Microsoft.Practices.ServiceLocation.pdb" KeyPath="yes" ShortName="axx2lqdj.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil4E1754043F4A85422FD5FE1F7991ABCC" />
+                    </Component>
+                    <Component Id="cmp3E4F3E4686A9B425B5812E5171CCDEEF" Guid="{718F8AFF-112B-537A-AD16-7AE9DDD5F0BE}" Win64="yes">
+                        <File Id="fil24DC60A8CFEFE326A0444D71C66806C1" Name="Microsoft.Win32.Registry.dll" KeyPath="yes" ShortName="ok_xxtpw.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil24DC60A8CFEFE326A0444D71C66806C1" />
+                    </Component>
+                    <Component Id="cmp43984E66F2A9DD89F93CF7035D8989A0" Guid="{8A811C71-FC7C-50BE-B3F1-BC3192F3E5E9}" Win64="yes">
+                        <File Id="filD88CABA6D1DF77999CB7D426C4B617A4" Name="Microsoft.Win32.TaskScheduler.dll" KeyPath="yes" ShortName="bvyoubey.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filD88CABA6D1DF77999CB7D426C4B617A4" />
+                    </Component>
+                    <Component Id="cmpBB1767D7C200C536ABB2D361F40F9D92" Guid="{8DD28A03-E00A-5BBD-BAE6-C5551A671F68}" Win64="yes">
+                        <File Id="fil4E0F4321F336BF83461A34116F3E30B7" Name="Microsoft.WindowsAPICodePack.dll" KeyPath="yes" ShortName="et69mkbl.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil4E0F4321F336BF83461A34116F3E30B7" />
+                    </Component>
+                    <Component Id="cmp702FCD8F941D530EED089ED86491F3AF" Guid="{6C669371-516C-522F-A013-B1C9F0DEA946}" Win64="yes">
+                        <File Id="filAAF0A287D1C4C9A238DFF053ADA2B1C8" Name="Microsoft.WindowsAPICodePack.Shell.dll" KeyPath="yes" ShortName="i3hnu8gm.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filAAF0A287D1C4C9A238DFF053ADA2B1C8" />
+                    </Component>
+                    <Component Id="cmp8AC833CFB7DC6722697152FE46DA157A" Guid="{70ABD8DF-3B7B-5F5A-AA4E-36341716AD9B}" Win64="yes">
+                        <File Id="filD3CAD095889A5DE7EAAE25C73BC9910A" Name="Microsoft.Xaml.Behaviors.dll" KeyPath="yes" ShortName="etinzlzc.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filD3CAD095889A5DE7EAAE25C73BC9910A" />
+                    </Component>
+                    <Component Id="cmpC391F13134AAE84A2F7D6ED96816E8DC" Guid="{9F94B043-A44D-55EF-A056-EC9D0B895CFE}" Win64="yes">
+                        <File Id="filF3DB15E0DC8DFF86397D5835711101EC" Name="Microsoft.Xaml.Behaviors.pdb" KeyPath="yes" ShortName="pzfc1ko5.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filF3DB15E0DC8DFF86397D5835711101EC" />
+                    </Component>
+                    <Component Id="cmpA5FE1A505BBA8478300711BD67EBDE34" Guid="{ED14694F-10A2-572A-BAEC-0BFA50863369}" Win64="yes">
+                        <File Id="fil769D814ECD0A1DD4513E66F25069B805" Name="Mixaill.HwInfo.Common.dll" KeyPath="yes" ShortName="itb2wk5f.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil769D814ECD0A1DD4513E66F25069B805" />
+                    </Component>
+                    <Component Id="cmpB1E57660305E5D4903E538B73B35E2B3" Guid="{85953586-753B-58E3-91A7-7518E7BBC672}" Win64="yes">
+                        <File Id="fil7628F898BD46CB66668ED53FA0B2ED0D" Name="Mixaill.HwInfo.D3D.dll" KeyPath="yes" ShortName="o9oo-pez.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil7628F898BD46CB66668ED53FA0B2ED0D" />
+                    </Component>
+                    <Component Id="cmpEDC0B008F4934A0A30DF3F837C2D494E" Guid="{9BF2233A-BC10-5CB1-A4A1-E756F76B11C3}" Win64="yes">
+                        <File Id="filFFC4710870DC274215AA09B7C4FEBC90" Name="Mixaill.HwInfo.SetupApi.dll" KeyPath="yes" ShortName="ux-g68ss.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filFFC4710870DC274215AA09B7C4FEBC90" />
+                    </Component>
+                    <Component Id="cmp084ACE6ADF4440B978ECA3EFB528FCCE" Guid="{CA854515-BAD8-5E86-996E-38BBA8B714E7}" Win64="yes">
+                        <File Id="fil03210B9F34FFC4A671A370AA26738ED5" Name="Mixaill.HwInfo.Vulkan.dll" KeyPath="yes" ShortName="zn5mqcat.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil03210B9F34FFC4A671A370AA26738ED5" />
+                    </Component>
+                    <Component Id="cmpBE98D3D44CB27E52FF8860E684F72B53" Guid="{6008891B-73F8-5D80-891A-BF7217061C44}" Win64="yes">
+                        <File Id="filCA140DBDB908CB183054BE126215BC0D" Name="NAudio.Core.dll" KeyPath="yes" ShortName="5x2vaiz8.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filCA140DBDB908CB183054BE126215BC0D" />
+                    </Component>
+                    <Component Id="cmp979BB5B2297816EF2D91624FE967267D" Guid="{17A7A107-3AAF-564E-A478-171B819D1676}" Win64="yes">
+                        <File Id="fil90ABFE40E18B3705156C760B3E7FFC87" Name="NAudio.dll" KeyPath="yes" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil90ABFE40E18B3705156C760B3E7FFC87" />
+                    </Component>
+                    <Component Id="cmp183508D134DC714113705228F00F150E" Guid="{098F4FEE-D762-56CB-B8FC-2D087386F262}" Win64="yes">
+                        <File Id="fil918A6A3B4801B84A9F653571D12DE1D1" Name="NAudio.Wasapi.dll" KeyPath="yes" ShortName="z-rovujf.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil918A6A3B4801B84A9F653571D12DE1D1" />
+                    </Component>
+                    <Component Id="cmpCE017872847B29F4C35A191DF46E0437" Guid="{F72BBF97-67C9-53AC-9D79-2281C9FAE1A4}" Win64="yes">
+                        <File Id="fil65F14F25D472E35D6B741BDF89FCC694" Name="NAudio.WinMM.dll" KeyPath="yes" ShortName="dflunj_q.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil65F14F25D472E35D6B741BDF89FCC694" />
+                    </Component>
+                    <Component Id="cmpBC4FC00A26E7D32479D42D3411317FC5" Guid="{BE196B3A-E123-5BE3-B469-4EA427D2C30B}" Win64="yes">
+                        <File Id="fil90A8AAD9FC612906D405476D61CEA3F4" Name="Newtonsoft.Json.dll" KeyPath="yes" ShortName="r3hbrpeb.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil90A8AAD9FC612906D405476D61CEA3F4" />
+                    </Component>
+                    <Component Id="cmp9867DD01B906E145D73B1AA12191B24D" Guid="{9C3AE55D-3B6A-5D95-8C8E-2672522E3A91}" Win64="yes">
+                        <File Id="filF3C7E1DBD3AD0BE68A0C0D000EC5A7D6" Name="OxyPlot.dll" KeyPath="yes" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filF3C7E1DBD3AD0BE68A0C0D000EC5A7D6" />
+                    </Component>
+                    <Component Id="cmp8F4FC608131CDC6A82B59CBB8B203778" Guid="{05A7A701-591B-5893-AE79-EC7C6C681285}" Win64="yes">
+                        <File Id="filE9CE96E94505AA7F35F51DF61E20A061" Name="OxyPlot.Wpf.dll" KeyPath="yes" ShortName="frctuaxe.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filE9CE96E94505AA7F35F51DF61E20A061" />
+                    </Component>
+                    <Component Id="cmp71D47CA7014DC1CFAF214C0EFDFEE866" Guid="{EBDA272E-D688-5086-8ACD-9B5E16DCE86E}" Win64="yes">
+                        <File Id="fil4E1620EB26E850D94B1F41BC420D5171" Name="OxyPlot.Wpf.Shared.dll" KeyPath="yes" ShortName="l-3hmd9k.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil4E1620EB26E850D94B1F41BC420D5171" />
+                    </Component>
+                    <Component Id="cmp567EF3D2C174A94284A1D444E56868FD" Guid="{C56DC3FF-A4E2-5F2E-8372-A11C7340747D}" Win64="yes">
+                        <File Id="filBD99B367731B0832FC2AF66E837737D5" Name="ParallelExtensionsExtras.dll" KeyPath="yes" ShortName="60-8rohj.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filBD99B367731B0832FC2AF66E837737D5" />
+                    </Component>
+                    <Component Id="cmp59564654D02343646998A8D6A6F0C25F" Guid="{E87DE4A4-2E2D-5C8D-82F9-4F8A7CC2C534}" Win64="yes">
+                        <File Id="fil86F2842A309A2CABD479166F2B4E0588" Name="Prism.dll" KeyPath="yes" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil86F2842A309A2CABD479166F2B4E0588" />
+                    </Component>
+                    <Component Id="cmp1D8C6ABF55C2B2B4242EE9F241074EAC" Guid="{4474669E-0BAF-54B6-8A0A-58CAE0ECF991}" Win64="yes">
+                        <File Id="fil4D3E845D168B89C1E51082CEE83971C8" Name="Prism.DryIoc.Wpf.dll" KeyPath="yes" ShortName="lahuh8gk.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil4D3E845D168B89C1E51082CEE83971C8" />
+                    </Component>
+                    <Component Id="cmpA9A2AB3353E22A8DA16EAAEE63473B2F" Guid="{6D35F28F-55D8-5A42-9519-E61FA304EC05}" Win64="yes">
+                        <File Id="fil88EDC55735A4B2968B2469EF3EB5D6E7" Name="Prism.Wpf.dll" KeyPath="yes" ShortName="acdrsqyd.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil88EDC55735A4B2968B2469EF3EB5D6E7" />
+                    </Component>
+                    <Component Id="cmpEA05E2C99539D54A5BAB3C1DBEC4D3DE" Guid="{9FFA970C-30C9-5562-AFB2-A24A8D12267E}" Win64="yes">
+                        <File Id="fil7BC0E2462B789A0E52C3FD5F0B6BFA1E" Name="RAMSPDToolkit-NDD.dll" KeyPath="yes" ShortName="3pgoj2gw.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil7BC0E2462B789A0E52C3FD5F0B6BFA1E" />
+                    </Component>
+                    <Component Id="cmp9CB00B4C0F13DCE7E766423C27121485" Guid="{1B4DEAB0-51DB-5AD1-B10F-63B8825264B0}" Win64="yes">
+                        <File Id="filE0A28EB0F634D1DA6030E99CC41A1E23" Name="RJCP.SerialPortStream.dll" KeyPath="yes" ShortName="qauvxx_q.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filE0A28EB0F634D1DA6030E99CC41A1E23" />
+                    </Component>
+                    <Component Id="cmpF318EA8E5B5EB7D6CB2BEE591C17796C" Guid="{DDC4B292-505B-5991-B866-40E01EA7A11D}" Win64="yes">
+                        <File Id="fil5EE9E7FCD47C4AC4A5E829A9A51C9D89" Name="RJCP.SerialPortStream.pdb" KeyPath="yes" ShortName="xvjmdxkq.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil5EE9E7FCD47C4AC4A5E829A9A51C9D89" />
+                    </Component>
+                    <Component Id="cmp74A2C73F11C177073B0A672936A0D5EB" Guid="{DC017043-CA5D-5929-A243-D7398DD77297}" Win64="yes">
+                        <File Id="fil1CF141D24266A4E5F331DDFE02166A27" Name="Serilog.dll" KeyPath="yes" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil1CF141D24266A4E5F331DDFE02166A27" />
+                    </Component>
+                    <Component Id="cmpA9CD02E2996345805AE749B403FD0E7A" Guid="{60EB03D6-2740-55C2-A035-218AB6204736}" Win64="yes">
+                        <File Id="fil56CB5FAFD9298B97D060AE19F2DB1B10" Name="Serilog.Extensions.Logging.dll" KeyPath="yes" ShortName="fb7wy5z8.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil56CB5FAFD9298B97D060AE19F2DB1B10" />
+                    </Component>
+                    <Component Id="cmpC08CEB1C24E4A6DA79EE83CFD8BDCD60" Guid="{AAA38C28-4DE4-5E40-BB93-0C3E54BD98D3}" Win64="yes">
+                        <File Id="filD89F64F083730E2B8CC0DEE7002EF506" Name="Serilog.Formatting.Compact.dll" KeyPath="yes" ShortName="onfs4-lj.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filD89F64F083730E2B8CC0DEE7002EF506" />
+                    </Component>
+                    <Component Id="cmp49818C715FF04B8E95F7B53BDDD323EF" Guid="{DA6C06AF-A859-541A-BF88-B51EC7A8C638}" Win64="yes">
+                        <File Id="fil1A12B15365165DDBE60433B150808BEE" Name="Serilog.Sinks.File.dll" KeyPath="yes" ShortName="hufto4co.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil1A12B15365165DDBE60433B150808BEE" />
+                    </Component>
+                    <Component Id="cmp1D3155C1D992D771CD1EE590B2BD51A5" Guid="{D5CF9807-C0AF-5FB6-A9B4-C606C1FA254B}" Win64="yes">
+                        <File Id="filB9A642D66D6A4CCA55F79EC84FE87BF1" Name="Serilog.Sinks.File.pdb" KeyPath="yes" ShortName="a4wxcern.pdb" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filB9A642D66D6A4CCA55F79EC84FE87BF1" />
+                    </Component>
+                    <Component Id="cmp1C6F6E58C51DCC0498E3584BA6509C70" Guid="{449E0F94-28EC-5D69-97C2-12A4B7365989}" Win64="yes">
+                        <File Id="fil571AC7CBE5B0D1A561EA56BA5DB666E4" Name="Silk.NET.Core.dll" KeyPath="yes" ShortName="oz0bo70v.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil571AC7CBE5B0D1A561EA56BA5DB666E4" />
+                    </Component>
+                    <Component Id="cmpD747263C0CC74F6E3F3049EEC4E5480C" Guid="{4B9E4A2F-BBE5-584C-BD0F-76D59142E349}" Win64="yes">
+                        <File Id="filE7B8D9680FF96B43BC8D9F0CF2BA18D8" Name="Silk.NET.Direct3D12.dll" KeyPath="yes" ShortName="gih5kcgd.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filE7B8D9680FF96B43BC8D9F0CF2BA18D8" />
+                    </Component>
+                    <Component Id="cmp609B1CFE4195028805411B060B83208B" Guid="{FAE3DBB8-FDA7-556E-938A-15D7A0570C17}" Win64="yes">
+                        <File Id="fil5DBFA85B6DCAC897AF7105803C266999" Name="Silk.NET.DXGI.dll" KeyPath="yes" ShortName="p1bq3cxb.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil5DBFA85B6DCAC897AF7105803C266999" />
+                    </Component>
+                    <Component Id="cmp28E1FF85CFD84830768D3E9A5E5EE156" Guid="{8B62583A-7C5B-59D3-9412-CE84A03C7090}" Win64="yes">
+                        <File Id="fil05B549932D7A2893B081C215D48DE2B0" Name="Silk.NET.Maths.dll" KeyPath="yes" ShortName="dhipx8id.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil05B549932D7A2893B081C215D48DE2B0" />
+                    </Component>
+                    <Component Id="cmp417BB047C679FC9F84F4083A063225E5" Guid="{F3396F66-FA1D-5501-8A26-761EBC8BCC61}" Win64="yes">
+                        <File Id="fil568F630BA0560FCAD3197AF49E5E9371" Name="Silk.NET.Vulkan.dll" KeyPath="yes" ShortName="o8js5pxs.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil568F630BA0560FCAD3197AF49E5E9371" />
+                    </Component>
+                    <Component Id="cmp29B124E05CCAD23A5A2E64AF36D0DB99" Guid="{8DCFD8D4-AEC9-569E-869E-B1FDE59F46FE}" Win64="yes">
+                        <File Id="fil3CFF4B652691B77DCC205953AB10F1DE" Name="Squidex.ClientLibrary.dll" KeyPath="yes" ShortName="qgfac4tm.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil3CFF4B652691B77DCC205953AB10F1DE" />
+                    </Component>
+                    <Component Id="cmp525502E9B65457F91935CD39242E7D55" Guid="{75401DDE-6954-5B93-AC9E-562720D91668}" Win64="yes">
+                        <File Id="filCBC19D51E0653A2E0BC3C1BD787789A7" Name="Swan.Lite.dll" KeyPath="yes" ShortName="zppfupja.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filCBC19D51E0653A2E0BC3C1BD787789A7" />
+                    </Component>
+                    <Component Id="cmpA748C45814948C0E47F0962CF5A9E2C5" Guid="{B0407B4B-F826-5EA9-8E02-AADB673BA01B}" Win64="yes">
+                        <File Id="filAF63FF48A59E0E5E7F49BFD1CBBB0CC3" Name="System.Buffers.dll" KeyPath="yes" ShortName="xs26jd3q.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filAF63FF48A59E0E5E7F49BFD1CBBB0CC3" />
+                    </Component>
+                    <Component Id="cmp627F95934DFE8795F8708045A2120F23" Guid="{AA5B4332-E124-5925-B9A5-A63ABB115585}" Win64="yes">
+                        <File Id="filAEAF8C61AA86723A95F0986173532954" Name="System.CodeDom.dll" KeyPath="yes" ShortName="85gsbyow.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filAEAF8C61AA86723A95F0986173532954" />
+                    </Component>
+                    <Component Id="cmp86FA15ED6758AB64222C7B872722AE2A" Guid="{0CD8F898-2C9B-55FC-ABCD-2A0188AE9A05}" Win64="yes">
+                        <File Id="fil4462620259C842921061439D47904D07" Name="System.ComponentModel.Annotations.dll" KeyPath="yes" ShortName="fmt8s23z.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil4462620259C842921061439D47904D07" />
+                    </Component>
+                    <Component Id="cmpE722E076AB8486E4A4F24B01268787A2" Guid="{F6843261-5712-5280-987E-6402BCBE3B8C}" Win64="yes">
+                        <File Id="fil92FE767CE7126933F4E9DEEEBAAE9354" Name="System.Diagnostics.DiagnosticSource.dll" KeyPath="yes" ShortName="7vlfzzga.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil92FE767CE7126933F4E9DEEEBAAE9354" />
+                    </Component>
+                    <Component Id="cmp28DA583D03D243568B9E8D67E28DC03E" Guid="{0FD45112-E699-55B7-BA55-67DB2769457C}" Win64="yes">
+                        <File Id="fil7F8EC318E9E8F0F09CC7C081378B6293" Name="System.Diagnostics.EventLog.dll" KeyPath="yes" ShortName="pf0hpoy8.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil7F8EC318E9E8F0F09CC7C081378B6293" />
+                    </Component>
+                    <Component Id="cmp28698F3E40E97D0D04ED87AE917B13C7" Guid="{C47750E4-F62B-5257-BBEA-1C4E5B6B8BC6}" Win64="yes">
+                        <File Id="fil07DA91370126729501EE3756F11EC693" Name="System.Diagnostics.PerformanceCounter.dll" KeyPath="yes" ShortName="7eorm3co.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil07DA91370126729501EE3756F11EC693" />
+                    </Component>
+                    <Component Id="cmp817DADD4F645A06A14E7CEFCE195AEAC" Guid="{023923A8-4065-5314-B9BF-A37ADE931083}" Win64="yes">
+                        <File Id="fil556EF176150B87793A1F7B3F04103BC6" Name="System.IdentityModel.Tokens.Jwt.dll" KeyPath="yes" ShortName="l5-051ht.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil556EF176150B87793A1F7B3F04103BC6" />
+                    </Component>
+                    <Component Id="cmpF88B96E5973E0D28B511DC6371DB06E0" Guid="{CB97291C-AA1E-5EA7-9E93-4E560530A7BB}" Win64="yes">
+                        <File Id="filA72770FDC08B6447ABAA326398A3C786" Name="System.IO.Pipelines.dll" KeyPath="yes" ShortName="tkwmxn1i.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filA72770FDC08B6447ABAA326398A3C786" />
+                    </Component>
+                    <Component Id="cmp642ED5B0D0BD1F16347D1310992C55A0" Guid="{D77E03D3-4A21-51C2-8E9F-8D2E1E2444A5}" Win64="yes">
+                        <File Id="filFA1D7EC932018D1CCB80F9F43D328009" Name="System.Memory.dll" KeyPath="yes" ShortName="zx-3l67r.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filFA1D7EC932018D1CCB80F9F43D328009" />
+                    </Component>
+                    <Component Id="cmp89AE5ECEB789ECF60BE6CC568D60B2F9" Guid="{9ED058C2-9E1B-53D1-87B2-479A5085AACA}" Win64="yes">
+                        <File Id="fil07CC506FCE6F39AF87379627460A5FFB" Name="System.Numerics.Vectors.dll" KeyPath="yes" ShortName="jdvzr8r0.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil07CC506FCE6F39AF87379627460A5FFB" />
+                    </Component>
+                    <Component Id="cmp8E100A18327D40D73A207E32DC2A5DF7" Guid="{957CBCEB-93E7-5B29-B0C1-291E6839A683}" Win64="yes">
+                        <File Id="fil3EB43006AD1D6A442A5059D2602A1B16" Name="System.Reactive.dll" KeyPath="yes" ShortName="eek0buwr.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil3EB43006AD1D6A442A5059D2602A1B16" />
+                    </Component>
+                    <Component Id="cmpAFCF21A15F6EDA45A32D147050609285" Guid="{FB3D00FD-F03F-57C4-AC24-4A16171E9B2A}" Win64="yes">
+                        <File Id="filAE286E96EA00902BC284AEBF3030D6E4" Name="System.Runtime.CompilerServices.Unsafe.dll" KeyPath="yes" ShortName="ode-gihm.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filAE286E96EA00902BC284AEBF3030D6E4" />
+                    </Component>
+                    <Component Id="cmpA79A142FCEA412B1ABBD7BE954692F65" Guid="{7D76CC17-6569-5AA3-B323-EFAF23FA0BC6}" Win64="yes">
+                        <File Id="fil0B3269E73A503751E3461F1BA6DEB094" Name="System.Security.AccessControl.dll" KeyPath="yes" ShortName="2itdqw-j.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil0B3269E73A503751E3461F1BA6DEB094" />
+                    </Component>
+                    <Component Id="cmp98A131703008D3AC809721FE16EEAFF8" Guid="{6D3A66E7-7F70-5C18-BD4F-FD9C8B944ADB}" Win64="yes">
+                        <File Id="fil50D3CD433FCD76F25C71E81C31B6DD3A" Name="System.Security.Principal.Windows.dll" KeyPath="yes" ShortName="py8z85lr.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil50D3CD433FCD76F25C71E81C31B6DD3A" />
+                    </Component>
+                    <Component Id="cmp3C5190B580EDFB87D0BC5E835BB950DE" Guid="{A227439B-B410-50A6-A908-74F2795F7CDF}" Win64="yes">
+                        <File Id="fil0B6369FF78F990F18A525D5F0CC6D1AB" Name="System.ServiceProcess.ServiceController.dll" KeyPath="yes" ShortName="s0wiph7m.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil0B6369FF78F990F18A525D5F0CC6D1AB" />
+                    </Component>
+                    <Component Id="cmpB8A7E5BEDFB4B8D0CC7AF759CF02E85C" Guid="{6823B1AF-DCD2-5069-9DAD-1D4A697FD774}" Win64="yes">
+                        <File Id="filA40308264694C0D9CFCDD77B25AB3F6A" Name="System.Text.Encodings.Web.dll" KeyPath="yes" ShortName="cuvmuvfw.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filA40308264694C0D9CFCDD77B25AB3F6A" />
+                    </Component>
+                    <Component Id="cmpA5817A2BB296EF3C39CAFA8A07CD6B59" Guid="{95F46AE4-E008-5B88-B2B0-B2F1C45154D4}" Win64="yes">
+                        <File Id="fil1FBF587862F484BB82A1D65565F935B6" Name="System.Text.Json.dll" KeyPath="yes" ShortName="oez23nki.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil1FBF587862F484BB82A1D65565F935B6" />
+                    </Component>
+                    <Component Id="cmp8E8EA57B48D2BD63C9E8D3EC582861D3" Guid="{A993B531-2E13-5A01-9705-A2327F85F339}" Win64="yes">
+                        <File Id="fil4B2D5661D53891DA830E6E4D5AB48714" Name="System.Threading.AccessControl.dll" KeyPath="yes" ShortName="eht7e5ui.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil4B2D5661D53891DA830E6E4D5AB48714" />
+                    </Component>
+                    <Component Id="cmpB3AE432D48BF3A5AB43C6DAF12AB454A" Guid="{35FD1AB3-D6D4-5094-B48F-2F512BBE025A}" Win64="yes">
+                        <File Id="filF7CF33617C2B93F6EEF50C0DEB533B07" Name="System.Threading.Tasks.Extensions.dll" KeyPath="yes" ShortName="sfiz1h0t.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filF7CF33617C2B93F6EEF50C0DEB533B07" />
+                    </Component>
+                    <Component Id="cmp017BFB3832A5B110A2B3A350E13F2A5C" Guid="{91F9E314-4789-5EF5-A4C1-58C4C406E018}" Win64="yes">
+                        <File Id="fil17E34524E8398461D615894C92558FE9" Name="System.Windows.Interactivity.dll" KeyPath="yes" ShortName="gyacugob.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil17E34524E8398461D615894C92558FE9" />
+                    </Component>
+                    <Component Id="cmp0ACFEC8BA7F4B219E9A7245FD06F097F" Guid="{8DAC0014-9360-5E3B-8376-E770F685EAF9}" Win64="yes">
+                        <File Id="fil7C35570FE42BD7BA589723E5A6452040" Name="Ultz.Bcl.Half.dll" KeyPath="yes" ShortName="qijmoxrr.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil7C35570FE42BD7BA589723E5A6452040" />
+                    </Component>
+                    <Component Id="cmpC85BD7478E073743A39F17DF06865203" Guid="{15BE5751-3085-5AF8-8556-4210C4132EFC}" Win64="yes">
+                        <File Id="fil3DAD59899DDA1B0FCEDF95F84CB3C475" Name="Xceed.Wpf.Toolkit.dll" KeyPath="yes" ShortName="wxfvgb4c.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil3DAD59899DDA1B0FCEDF95F84CB3C475" />
+                    </Component>
+                    <Component Id="VulkanLayerRegistration" Guid="{4B3D5A2F-E00E-4930-A9E1-9F4BE8E91D58}" Win64="yes">
+                        <RegistryValue Id="reg1993A0E228B95294D407444E19A088BA" Root="HKLM" Key="SOFTWARE\Khronos\Vulkan\ImplicitLayers" Name="[INSTALLFOLDER]vulkan\cfx_osd_vklayer_v1.json" Value="0" Type="integer" KeyPath="yes" />
+                    </Component>
+                    <Directory Id="dir2E8099A32CF49B98D4BA2150CF4B3627" Name="3d-test-app" ShortName="hj1jfkej">
+                        <Component Id="cmpBDF72E996B087D1367AD89DD1F55CCE1" Guid="{6E03B981-FDE4-55AD-AFD0-CBB0C753F430}" Win64="yes">
+                            <File Id="fil8EC37F66EBCC01D9658AE4DE432AF75B" Name="vkcube.exe" KeyPath="yes" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil8EC37F66EBCC01D9658AE4DE432AF75B" />
+                        </Component>
+                    </Directory>
+                    <Directory Id="dir87C56BA2227255E6E18036D4D0F6A4C1" Name="benchlab-service" ShortName="awvwbiwv">
+                        <Component Id="cmp95FB4709CCA218FC84A8C37D04D77DE5" Guid="{9FBEAFC6-C80B-5273-8C0C-4B71C8C8CCB0}" Win64="yes">
+                            <File Id="fil7851D1C78EA386C6471CC0E309C26DF5" Name="appsettings.Development.json" KeyPath="yes" ShortName="mz3-8dhz.jso" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil7851D1C78EA386C6471CC0E309C26DF5" />
+                        </Component>
+                        <Component Id="cmp2E1A49D025B6B976CF4AEE8CD7259CDB" Guid="{394C10DD-55E1-51D5-A177-B9FD4EE66AD6}" Win64="yes">
+                            <File Id="fil4A5F6A97EBECAD83EC560C15FDFC5E05" Name="appsettings.json" KeyPath="yes" ShortName="zthoxgdg.jso" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil4A5F6A97EBECAD83EC560C15FDFC5E05" />
+                        </Component>
+                        <Component Id="cmp102184F7AB62F389461D7FB444EA53BA" Guid="{A30D45B6-95ED-515B-A098-D7C05EBFE817}" Win64="yes">
+                            <File Id="fil8AA1E4AE92294F6DF521FEF4A31CA7C8" Name="BENCHLAB_Core.dll" KeyPath="yes" ShortName="oxw1t7ke.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil8AA1E4AE92294F6DF521FEF4A31CA7C8" />
+                        </Component>
+                        <Component Id="cmp1909D61D42D91542878F47D103B24FC5" Guid="{42ED8AA7-B6CC-5062-B07C-774F19345C71}" Win64="yes">
+                            <File Id="filDCD366FE50D31068E1158A0661E7CA8A" Name="Microsoft.Extensions.Configuration.Abstractions.dll" KeyPath="yes" ShortName="4vqdz9l-.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filDCD366FE50D31068E1158A0661E7CA8A" />
+                        </Component>
+                        <Component Id="cmpAE9CC1EA7F0BE9DFFE43E05A62D23000" Guid="{FEFD802B-3109-5A3C-9881-7183CEFE2A3F}" Win64="yes">
+                            <File Id="filCA52132C5ABC5EAF7206D30AEC611926" Name="Microsoft.Extensions.Configuration.Binder.dll" KeyPath="yes" ShortName="bc4qyeps.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filCA52132C5ABC5EAF7206D30AEC611926" />
+                        </Component>
+                        <Component Id="cmpADFBF9D746A392A7221EE0858FB0374D" Guid="{E54E771A-B5A3-5D99-8593-BD23AC1105A3}" Win64="yes">
+                            <File Id="fil0A5796B0CAC55F4D9EC2D4944964DAA6" Name="Microsoft.Extensions.Configuration.CommandLine.dll" KeyPath="yes" ShortName="zqd15s6d.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil0A5796B0CAC55F4D9EC2D4944964DAA6" />
+                        </Component>
+                        <Component Id="cmpF9915F42CA31D8E65D67173668D0358A" Guid="{F807D015-C25A-5F8C-BB04-516A50CEDE23}" Win64="yes">
+                            <File Id="fil111D06F31887532276C0DEE25AFE0687" Name="Microsoft.Extensions.Configuration.dll" KeyPath="yes" ShortName="gg9wmevy.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil111D06F31887532276C0DEE25AFE0687" />
+                        </Component>
+                        <Component Id="cmp042109B08BC1D670447BBC04ED112A85" Guid="{EDB5F7C7-2516-5314-A0D6-3A2679AB80E8}" Win64="yes">
+                            <File Id="filB25B799FD8742E9566404F680C51D4DB" Name="Microsoft.Extensions.Configuration.EnvironmentVariables.dll" KeyPath="yes" ShortName="jtpm75ad.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filB25B799FD8742E9566404F680C51D4DB" />
+                        </Component>
+                        <Component Id="cmp873A28565D878A57FB00F7D5B8A71933" Guid="{7928F293-CB42-58D6-99B8-F7D569ABDF8C}" Win64="yes">
+                            <File Id="fil9A00176850855C566A48AAFC5485BDDA" Name="Microsoft.Extensions.Configuration.FileExtensions.dll" KeyPath="yes" ShortName="dgs89qur.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil9A00176850855C566A48AAFC5485BDDA" />
+                        </Component>
+                        <Component Id="cmpF0C0A1839B1535792F33D24F93AE8980" Guid="{DC41E983-16AF-5702-AC89-2D13269EA286}" Win64="yes">
+                            <File Id="filF1FADD9626D340C1A7695A10AA96D899" Name="Microsoft.Extensions.Configuration.Json.dll" KeyPath="yes" ShortName="p29w8xby.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filF1FADD9626D340C1A7695A10AA96D899" />
+                        </Component>
+                        <Component Id="cmpEDAEC854BA510D1ECF074784A29DBA52" Guid="{50FABB87-0A1A-5053-AA07-7668E09A3C90}" Win64="yes">
+                            <File Id="filDDE0282C89A2D749CFE0489D1A916BA1" Name="Microsoft.Extensions.Configuration.UserSecrets.dll" KeyPath="yes" ShortName="cha34s0i.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filDDE0282C89A2D749CFE0489D1A916BA1" />
+                        </Component>
+                        <Component Id="cmp1ADE3220EC9857B13A54CBDA384A173E" Guid="{4A0A79D8-2E26-5070-BFA1-6D641455015A}" Win64="yes">
+                            <File Id="filA9D02EA815270C64C923F0F2B2A96DB4" Name="Microsoft.Extensions.DependencyInjection.Abstractions.dll" KeyPath="yes" ShortName="r-iulnyu.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filA9D02EA815270C64C923F0F2B2A96DB4" />
+                        </Component>
+                        <Component Id="cmp2A3ED5ADA49CC07F2DC45561742EBEEA" Guid="{3AFC1C7C-0FDB-528D-9060-DE2B400DA3F1}" Win64="yes">
+                            <File Id="fil943929B10C41CA51AD39089925A1F5BC" Name="Microsoft.Extensions.DependencyInjection.dll" KeyPath="yes" ShortName="na_ax8w8.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil943929B10C41CA51AD39089925A1F5BC" />
+                        </Component>
+                        <Component Id="cmp031D75F5CF12E86FD5C899AAC5BCD58A" Guid="{E9CEC4B3-A3D2-5202-AE8C-8E6F5A6ECF42}" Win64="yes">
+                            <File Id="filD8781D41B37BA0EA8D8CA48B862F69A2" Name="Microsoft.Extensions.Diagnostics.Abstractions.dll" KeyPath="yes" ShortName="wmict9mo.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filD8781D41B37BA0EA8D8CA48B862F69A2" />
+                        </Component>
+                        <Component Id="cmpC7D59968CDAD36A028B54AFEA747C5F1" Guid="{3483DC9C-EC86-55D6-8003-BCD7F1DB58F5}" Win64="yes">
+                            <File Id="filAC5607032B2B0BCB9BA94FC304801515" Name="Microsoft.Extensions.Diagnostics.dll" KeyPath="yes" ShortName="zu5izknr.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filAC5607032B2B0BCB9BA94FC304801515" />
+                        </Component>
+                        <Component Id="cmp004A919F08D462AF612728E9BEBBEA14" Guid="{81C0EAC0-2947-59EE-BB64-13BB6BD35575}" Win64="yes">
+                            <File Id="filA9F53CC85C2E683745B766143D6C90BC" Name="Microsoft.Extensions.FileProviders.Abstractions.dll" KeyPath="yes" ShortName="y793t3cw.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filA9F53CC85C2E683745B766143D6C90BC" />
+                        </Component>
+                        <Component Id="cmp33F0D702ECEA4A3D64093CDCD1F60E12" Guid="{677072BB-BAB8-561C-9B4F-060FD0993B12}" Win64="yes">
+                            <File Id="filEDD43C7951177CE649FC19AA4919B00E" Name="Microsoft.Extensions.FileProviders.Physical.dll" KeyPath="yes" ShortName="0mvwpatx.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filEDD43C7951177CE649FC19AA4919B00E" />
+                        </Component>
+                        <Component Id="cmpA7D283CC7E3964BD1225FDE6ECF7FF02" Guid="{D2FD374A-7C88-59F5-8740-9BD7FE0A09FD}" Win64="yes">
+                            <File Id="fil3821F5B032C9FA5B574C1B1187CA43FC" Name="Microsoft.Extensions.FileSystemGlobbing.dll" KeyPath="yes" ShortName="l2qwjxtb.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil3821F5B032C9FA5B574C1B1187CA43FC" />
+                        </Component>
+                        <Component Id="cmp097978A228E7B06DBF4E49AA01228276" Guid="{F9120164-AA0A-5D69-A046-1A0322076379}" Win64="yes">
+                            <File Id="fil002F4497F04D95C21806644E3489952B" Name="Microsoft.Extensions.Hosting.Abstractions.dll" KeyPath="yes" ShortName="zeebu_zx.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil002F4497F04D95C21806644E3489952B" />
+                        </Component>
+                        <Component Id="cmp305F8F845CE1EB40ED1D9BF9BBD82467" Guid="{ED24589A-1FAD-5BA5-8643-477B7FD1128B}" Win64="yes">
+                            <File Id="filD9047255B3B012B5D9C5AE1B6B1F88AD" Name="Microsoft.Extensions.Hosting.dll" KeyPath="yes" ShortName="9uer8ezn.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filD9047255B3B012B5D9C5AE1B6B1F88AD" />
+                        </Component>
+                        <Component Id="cmp1C6F2D9DD97B5A8BC1047B9FFA41F5E2" Guid="{58B36E85-39A8-5D06-8F0B-C19BA99FE615}" Win64="yes">
+                            <File Id="fil3FB48F763E68FD3E7BA0CE65AE963E4D" Name="Microsoft.Extensions.Hosting.WindowsServices.dll" KeyPath="yes" ShortName="ndvwhlkh.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil3FB48F763E68FD3E7BA0CE65AE963E4D" />
+                        </Component>
+                        <Component Id="cmp67508D6366DE8A24C811EAA6C843FE38" Guid="{FC296DCF-A519-50A3-BC0D-0039C2D13C10}" Win64="yes">
+                            <File Id="filCD3A0ECD4E0BA96C6844CE7BD557A286" Name="Microsoft.Extensions.Logging.Abstractions.dll" KeyPath="yes" ShortName="z-nfr5nk.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filCD3A0ECD4E0BA96C6844CE7BD557A286" />
+                        </Component>
+                        <Component Id="cmpFD04537DA92F5497D2BC29650FFED8BA" Guid="{04432C62-9A26-58A5-816E-026DF03FFB55}" Win64="yes">
+                            <File Id="fil14DB0C761E9A7FF9FAD83B42285CBED2" Name="Microsoft.Extensions.Logging.Configuration.dll" KeyPath="yes" ShortName="8imvp39_.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil14DB0C761E9A7FF9FAD83B42285CBED2" />
+                        </Component>
+                        <Component Id="cmpB9953D9C662280BB76B3A5CABF9B2578" Guid="{44E15D95-D242-5946-8DB3-6D6977A3A161}" Win64="yes">
+                            <File Id="filBE722B723916014FC3A4604A5211DD45" Name="Microsoft.Extensions.Logging.Console.dll" KeyPath="yes" ShortName="-nf889nj.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filBE722B723916014FC3A4604A5211DD45" />
+                        </Component>
+                        <Component Id="cmp376D819E55CB8EDDB3DE5A880A1D1717" Guid="{D3061EA3-B5BD-5976-B259-9B8BF9DBB0DC}" Win64="yes">
+                            <File Id="filC4210AE55DC9168D7113199087A1D96E" Name="Microsoft.Extensions.Logging.Debug.dll" KeyPath="yes" ShortName="lbah-ec5.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filC4210AE55DC9168D7113199087A1D96E" />
+                        </Component>
+                        <Component Id="cmpB3E5591973675FB9F9672AF42FAB9310" Guid="{48A36502-DB19-5B47-9722-F2837F5DA81E}" Win64="yes">
+                            <File Id="filC8F29A11CC6E7217467716A88770E153" Name="Microsoft.Extensions.Logging.dll" KeyPath="yes" ShortName="dqutkesm.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filC8F29A11CC6E7217467716A88770E153" />
+                        </Component>
+                        <Component Id="cmpC4B5B8D7587B1A8946560FA61B61E62C" Guid="{C54692C7-58E6-50F1-9C32-ED1D058B6C0C}" Win64="yes">
+                            <File Id="fil61A6D7717B7AA6B0BEACB62BDBF8ECBD" Name="Microsoft.Extensions.Logging.EventLog.dll" KeyPath="yes" ShortName="cxnfpxqj.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil61A6D7717B7AA6B0BEACB62BDBF8ECBD" />
+                        </Component>
+                        <Component Id="cmp73AB306AA00221222B923D17A8351625" Guid="{A332E000-DE52-5F31-A1F4-F3815252057A}" Win64="yes">
+                            <File Id="fil7EB096F993CB487CC7BE3EF6436DBDFC" Name="Microsoft.Extensions.Logging.EventSource.dll" KeyPath="yes" ShortName="2--zvr3z.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil7EB096F993CB487CC7BE3EF6436DBDFC" />
+                        </Component>
+                        <Component Id="cmp442354214FCB2554D6B4D74158852AA3" Guid="{9160D40E-51D0-5511-B42E-9A0F9191AC5E}" Win64="yes">
+                            <File Id="fil702274A26EF652CE25CB6C43D54B13A6" Name="Microsoft.Extensions.Options.ConfigurationExtensions.dll" KeyPath="yes" ShortName="gfys--tc.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil702274A26EF652CE25CB6C43D54B13A6" />
+                        </Component>
+                        <Component Id="cmp5D8B05F620C0CF863DB63E9B573696EE" Guid="{DE6205C3-2543-54CE-8949-9497CA1E72C8}" Win64="yes">
+                            <File Id="filA58E496CCD57CC39EA87B8910BC4FA6D" Name="Microsoft.Extensions.Options.dll" KeyPath="yes" ShortName="9s1osb9e.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filA58E496CCD57CC39EA87B8910BC4FA6D" />
+                        </Component>
+                        <Component Id="cmp1BB1B6C10A4EF500E8FDDF8AE31A858E" Guid="{22BEDFDB-5F01-59B1-9C3A-BDF1AFCD36EC}" Win64="yes">
+                            <File Id="fil13C906B7EE2B51E5DF916CC5EE5F153E" Name="Microsoft.Extensions.Primitives.dll" KeyPath="yes" ShortName="sddiu7pr.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil13C906B7EE2B51E5DF916CC5EE5F153E" />
+                        </Component>
+                        <Component Id="cmp59B2B2EDAC568BC6E39A634C1C2CD0FC" Guid="{045D76F1-C891-5889-A43E-FFE165CE6EC3}" Win64="yes">
+                            <File Id="filB90D5D756C7B3A330458BA3AC42567B9" Name="PMD_Service.deps.json" KeyPath="yes" ShortName="4b42_akd.jso" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filB90D5D756C7B3A330458BA3AC42567B9" />
+                        </Component>
+                        <Component Id="cmp930328E9EAE1D16C9EB767CF566ACC02" Guid="{DCC587D4-8820-5EE0-9843-3B95DBC9C091}" Win64="yes">
+                            <File Id="fil96306889CA5CC250171D5939EF54C669" Name="PMD_Service.dll" KeyPath="yes" ShortName="s9jcwlsz.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil96306889CA5CC250171D5939EF54C669" />
+                        </Component>
+                        <Component Id="cmp03880ECEAF0784CB569AFC16D3660EA1" Guid="{6F36CECD-3C36-5EEF-8E8D-E5287C1F58CB}" Win64="yes">
+                            <File Id="filF261323F5F65BD51CB4D8DDABB516919" Name="PMD_Service.exe" KeyPath="yes" ShortName="wavmoiss.exe" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filF261323F5F65BD51CB4D8DDABB516919" />
+                        </Component>
+                        <Component Id="cmp98BFFBC880D9F99AD43DC5FD8AF451AC" Guid="{283608BD-9DB3-5D72-AFD3-ADA454A8D8BF}" Win64="yes">
+                            <File Id="filBF330E66590B9AE5BF944321C42DBF20" Name="PMD_Service.runtimeconfig.json" KeyPath="yes" ShortName="uxf9l2f3.jso" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filBF330E66590B9AE5BF944321C42DBF20" />
+                        </Component>
+                        <Component Id="cmpA405A211715F5950263BFDA9FF52D387" Guid="{9FA4379C-96BD-5787-BBC9-C6E8B936370A}" Win64="yes">
+                            <File Id="fil37B98DAEE4988F12E1C8C54449960B1C" Name="System.Diagnostics.EventLog.dll" KeyPath="yes" ShortName="phaj3rsv.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil37B98DAEE4988F12E1C8C54449960B1C" />
+                        </Component>
+                        <Component Id="cmpF1D138294DBF4A90333EEBDC8C5A217F" Guid="{7B22CC09-85CD-59EE-B252-114E5E687F50}" Win64="yes">
+                            <File Id="filDCC3103F8471F8218C921B8ABB86592B" Name="System.IO.Ports.dll" KeyPath="yes" ShortName="hbi9frgf.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filDCC3103F8471F8218C921B8ABB86592B" />
+                        </Component>
+                        <Component Id="cmp65AD597F96F0309DDA05D85BF2BBF1DC" Guid="{45553D27-1E48-5FA1-869E-2895DCA8E2FF}" Win64="yes">
+                            <File Id="filFAD338009A0DEC1FCC457E231E2C2EDA" Name="System.ServiceProcess.ServiceController.dll" KeyPath="yes" ShortName="ioqp7qde.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filFAD338009A0DEC1FCC457E231E2C2EDA" />
+                        </Component>
+                        <Directory Id="dir13F958442B207F24D0629ABF54FE289C" Name="runtimes">
+                            <Directory Id="dir11B887ED46A2834675E4B237A0E0D1A5" Name="linux-arm" ShortName="bwj5acw-">
+                                <Directory Id="dirFB230AE901FFC7027FCC01EF7D116367" Name="native">
+                                    <Component Id="cmp6C6A3E6898D30709EC75431F629D6ED0" Guid="{7328ADFE-8D3F-5210-B060-06F8F61FFFC1}" Win64="yes">
+                                        <File Id="filC3DA8A4751B7591E637F8F96B0931FAB" Name="libSystem.IO.Ports.Native.so" KeyPath="yes" ShortName="aa4r4uk-.so" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filC3DA8A4751B7591E637F8F96B0931FAB" />
+                                    </Component>
+                                </Directory>
+                            </Directory>
+                            <Directory Id="dir3602C42472D0D8EFE1A59E229CA2FC89" Name="linux-arm64" ShortName="fyheyprm">
+                                <Directory Id="dir99BA36AF251C1BF1DC6AC5E83A0CB7F3" Name="native">
+                                    <Component Id="cmp0C71E936B1AA4369B009F3A576F40A0F" Guid="{F99B1A51-C00E-5C60-9D83-5871B79F9E6B}" Win64="yes">
+                                        <File Id="fil4C16AD2897B3F6B567ECB1B2C345A655" Name="libSystem.IO.Ports.Native.so" KeyPath="yes" ShortName="h9x-j-gw.so" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil4C16AD2897B3F6B567ECB1B2C345A655" />
+                                    </Component>
+                                </Directory>
+                            </Directory>
+                            <Directory Id="dir1B24F87B2FAB04330E358E0EEDE87703" Name="linux-x64" ShortName="2a4ea-_-">
+                                <Directory Id="dir4E9FEDAC7FB4E0D177F09127245CEC22" Name="native">
+                                    <Component Id="cmp127A2A04AD00EBB8E4C46D3FDFE9F41C" Guid="{5E840007-493F-53E5-ADE8-ACCA5ABD32D3}" Win64="yes">
+                                        <File Id="fil3E02201409D86DC6CB5FE6E09D3CF17F" Name="libSystem.IO.Ports.Native.so" KeyPath="yes" ShortName="v5nnsdlm.so" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil3E02201409D86DC6CB5FE6E09D3CF17F" />
+                                    </Component>
+                                </Directory>
+                            </Directory>
+                            <Directory Id="dirB18F8C8793249B96AB34427DCABC8C7F" Name="osx-arm64" ShortName="iyggzzja">
+                                <Directory Id="dir7CC340161AD83DB5C2AEBA13D957C7FB" Name="native">
+                                    <Component Id="cmpFE22BEDCCAF4FE6AC0FB1BCAF17A2094" Guid="{5436EA7B-AF35-5A61-91B8-0CD4D12E41EF}" Win64="yes">
+                                        <File Id="fil9055744F0DC2D4B9B9D0BCD95EF1A4E1" Name="libSystem.IO.Ports.Native.dylib" KeyPath="yes" ShortName="v-af8j8c.dyl" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil9055744F0DC2D4B9B9D0BCD95EF1A4E1" />
+                                    </Component>
+                                </Directory>
+                            </Directory>
+                            <Directory Id="dirD08368707633275AED80805B9292E77E" Name="osx-x64">
+                                <Directory Id="dir57C687D402B5DC7590012C2D59CCA1C2" Name="native">
+                                    <Component Id="cmpCE79E98C03E038F8B393EF44212C1F5D" Guid="{8CE9E527-EDB2-5A81-AEFD-D8DB8524A748}" Win64="yes">
+                                        <File Id="fil8180B5F3FB37AAA44FEF80438B4109A3" Name="libSystem.IO.Ports.Native.dylib" KeyPath="yes" ShortName="dioni5d6.dyl" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil8180B5F3FB37AAA44FEF80438B4109A3" />
+                                    </Component>
+                                </Directory>
+                            </Directory>
+                            <Directory Id="dirA352AB9793CB769F113E59AB08B9C488" Name="unix">
+                                <Directory Id="dir602720753D1BBEB9B1B0C1251E5B536B" Name="lib">
+                                    <Directory Id="dirEEFEB6838FE73BCA469AF7B91D7FE79A" Name="net7.0">
+                                        <Component Id="cmp3498A6ED622CDA1395FA2B33E87B8EF8" Guid="{55E39E3F-99D6-5442-9C3F-47FC3E3F70D9}" Win64="yes">
+                                            <File Id="fil53565768465199CA9702A0EE97C20AD0" Name="System.IO.Ports.dll" KeyPath="yes" ShortName="gaimyk6d.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil53565768465199CA9702A0EE97C20AD0" />
+                                        </Component>
+                                    </Directory>
+                                </Directory>
+                            </Directory>
+                            <Directory Id="dir94A4D98B51AB35B971233E2DFED288C9" Name="win">
+                                <Directory Id="dirBEDBE44C50DA84A6F05A8FC3D37B23DC" Name="lib">
+                                    <Directory Id="dir0B137E97240232DC9B58C41E224CA8B9" Name="net7.0">
+                                        <Component Id="cmp08A693DC8DF5FAFF1AC06B06B3A2B039" Guid="{7C2088E6-8FF2-5A0E-8E6B-8A05FFDF124F}" Win64="yes">
+                                            <File Id="fil895602E33FED232A6B7313D2EFC0B099" Name="System.IO.Ports.dll" KeyPath="yes" ShortName="epxcfvpc.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil895602E33FED232A6B7313D2EFC0B099" />
+                                        </Component>
+                                    </Directory>
+                                    <Directory Id="dirCB4F6E2C18376B25CB3922FB65BDE5D9" Name="net9.0">
+                                        <Component Id="cmpB2736CB29B2E9091CE1C46A1E5FA641D" Guid="{D7457D7A-01DB-515F-939B-61F340758C99}" Win64="yes">
+                                            <File Id="filD4FD722AF8467A752BA4E04C43C4D598" Name="System.Diagnostics.EventLog.dll" KeyPath="yes" ShortName="89ee7die.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filD4FD722AF8467A752BA4E04C43C4D598" />
+                                        </Component>
+                                        <Component Id="cmpDF3BBCD935812DF3C10C58CEAA49EFF2" Guid="{445BA082-60E2-5AE9-87E4-1A5A394FE6CE}" Win64="yes">
+                                            <File Id="fil8099E4C0D4A60FC95EDA36A362A75CEF" Name="System.Diagnostics.EventLog.Messages.dll" KeyPath="yes" ShortName="dc3hh_hv.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil8099E4C0D4A60FC95EDA36A362A75CEF" />
+                                        </Component>
+                                        <Component Id="cmp7A9FB47EE33B6D8D3B9B111257021ECB" Guid="{71DB30BA-5466-54B5-95E7-DED59CD32095}" Win64="yes">
+                                            <File Id="filC0FC7E64A6DCBEEB23A43C1BBCDA457C" Name="System.ServiceProcess.ServiceController.dll" KeyPath="yes" ShortName="mvsyy6vh.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filC0FC7E64A6DCBEEB23A43C1BBCDA457C" />
+                                        </Component>
+                                    </Directory>
+                                </Directory>
+                            </Directory>
+                        </Directory>
+                    </Directory>
+                    <Directory Id="dir242DC17B8DFC53C13CAF172FC08B730A" Name="de">
+                        <Component Id="cmp55E09061A1DF30E9878313719FAE6664" Guid="{7D4592DD-29DA-5BED-8543-7A596BC3BA96}" Win64="yes">
+                            <File Id="fil1424015000F4C871286F581C5375B980" Name="MahApps.Metro.resources.dll" KeyPath="yes" ShortName="rpetbgwb.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil1424015000F4C871286F581C5375B980" />
+                        </Component>
+                        <Component Id="cmp899508076A55BF753F74CB0DFA5743E3" Guid="{ADE39A92-2684-5A7E-9827-0DA6639C0170}" Win64="yes">
+                            <File Id="filD54B0D32E6618AD0E9082F3C7288DF3B" Name="Microsoft.Win32.TaskScheduler.resources.dll" KeyPath="yes" ShortName="2c9cimk9.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filD54B0D32E6618AD0E9082F3C7288DF3B" />
+                        </Component>
+                    </Directory>
+                    <Directory Id="dir9AE38F4F5CB5E565E774521E138F44FD" Name="es">
+                        <Component Id="cmp5A7026E0896D194B82895F7742EE8E12" Guid="{1DAAAE0B-F030-56B2-85C4-FD8023C80A22}" Win64="yes">
+                            <File Id="filD9A4BF39D17EB61C5211DDC46DB00008" Name="Microsoft.Win32.TaskScheduler.resources.dll" KeyPath="yes" ShortName="acwmg6jz.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filD9A4BF39D17EB61C5211DDC46DB00008" />
+                        </Component>
+                    </Directory>
+                    <Directory Id="dir69A81B71B3436B3F1BF22FB24CE6929D" Name="Files">
+                        <Component Id="cmp5BA55150B20FDB5D6A2679B4DDE154F0" Guid="{2F03B0DF-5879-58D2-98CD-6CB9BE780D41}" Win64="yes">
+                            <File Id="fil596E1F10777F520C99F1485337D49EFE" Name="bf0822e8-2e55-4b99-82ee-939d8ac2384e.bat" KeyPath="yes" ShortName="yqxtrewc.bat" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil596E1F10777F520C99F1485337D49EFE" />
+                        </Component>
+                    </Directory>
+                    <Directory Id="dirB55DFDA91FEE7CCCBC65CA7493B75748" Name="fr">
+                        <Component Id="cmpB448414C7B3963A581067103B898A290" Guid="{379ABB47-68D2-50AC-BFEE-139A71D17944}" Win64="yes">
+                            <File Id="filA5C066B28245C75C64533E4E70637BFD" Name="Microsoft.Win32.TaskScheduler.resources.dll" KeyPath="yes" ShortName="j8rzcu0s.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filA5C066B28245C75C64533E4E70637BFD" />
+                        </Component>
+                    </Directory>
+                    <Directory Id="dirED1C7BF395F6825C5E6AA296F629EF5A" Name="HelpTexts" ShortName="_otyzsvt">
+                        <Component Id="cmpEEF8583F33AC9DCDC349C22B5162CEF5" Guid="{EDE491A4-EF67-5E10-92CE-93A8EC085B26}" Win64="yes">
+                            <File Id="filE1F227BC37167083E8389BD7591F66D3" Name="ChartControls.rtf" KeyPath="yes" ShortName="rtnbiqjz.rtf" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filE1F227BC37167083E8389BD7591F66D3" />
+                        </Component>
+                    </Directory>
+                    <Directory Id="dir4E97C875431B6E3F43125C6EA19DB234" Name="hook">
+                        <Component Id="cmpFE4DB43903D5E98C8998C262D9986373" Guid="{B618681F-BAC5-50A8-BD34-FB780C0E2FF4}" Win64="yes">
+                            <File Id="filC62398BC67A23124C623F535B0898526" Name="cfx_osd_hook.dll" KeyPath="yes" ShortName="daxpm6e6.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filC62398BC67A23124C623F535B0898526" />
+                        </Component>
+                        <Directory Id="dir5B4F1D6B0A7085A89BDC9C1B43165D27" Name="x86">
+                            <Component Id="cmpBBEC6815F860569B81B6948537B74631" Guid="{C2FBF4C6-7F47-5A8A-8EBE-E02BDAA01202}" Win64="yes">
+                                <File Id="filCF0D6C9E6593EBB46EE00AF0C5C2B91B" Name="cfx_inject.exe" KeyPath="yes" ShortName="he-xiulf.exe" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filCF0D6C9E6593EBB46EE00AF0C5C2B91B" />
+                            </Component>
+                            <Component Id="cmp916768CCA957B024FA3E5120C4E792E2" Guid="{AEC38399-02DC-50AD-BD49-355B7066AB02}" Win64="yes">
+                                <File Id="filBE67009E71DE81E2327D5883737A10BC" Name="cfx_osd_hook.dll" KeyPath="yes" ShortName="mhwirdxu.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filBE67009E71DE81E2327D5883737A10BC" />
+                            </Component>
+                        </Directory>
+                    </Directory>
+                    <Directory Id="dir45DE18DD71F3E8DD6BE4A0E2B48778C8" Name="it">
+                        <Component Id="cmpA2349B128022FD9468B4B0472DF8814A" Guid="{1FE040FB-AF54-56F5-86D0-508BA40DD968}" Win64="yes">
+                            <File Id="filA9D742E425F8D28208EA368E72789A62" Name="Microsoft.Win32.TaskScheduler.resources.dll" KeyPath="yes" ShortName="vz1tm9om.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filA9D742E425F8D28208EA368E72789A62" />
+                        </Component>
+                    </Directory>
+                    <Directory Id="dir447EB06E547F3575E011CE0F1CF9028B" Name="PawnIo">
+                        <Component Id="cmpC39E25791A464CA675CEA5231C3504BD" Guid="{DEA2009F-2F81-54A0-BBF5-3EED76220EB4}" Win64="yes">
+                            <File Id="fil3559CD5AAC729FDF4FD72E1FFFC2032F" Name="PawnIO.sys" KeyPath="yes" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil3559CD5AAC729FDF4FD72E1FFFC2032F" />
+                        </Component>
+                        <Component Id="cmp51EF57F7972E2D0FB19D3F191FDB3643" Guid="{D83D45FB-B586-50E6-9DCA-A2027BEE7768}" Win64="yes">
+                            <File Id="filBDBFF3E31B8F4824A916308563ECECD2" Name="PawnIOLib.dll" KeyPath="yes" ShortName="d3z9zmum.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filBDBFF3E31B8F4824A916308563ECECD2" />
+                        </Component>
+                        <Component Id="cmpA3C39F2E722F5E7841B00911B47A0BF6" Guid="{C0DE0BA4-6AB5-56C9-A91F-9530C13F1FF8}" Win64="yes">
+                            <File Id="fil55D42EF91C4BC67ED9CA1FD25B710AA4" Name="PawnIOLib.h" KeyPath="yes" ShortName="klfs7w_a.h" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil55D42EF91C4BC67ED9CA1FD25B710AA4" />
+                        </Component>
+                    </Directory>
+                    <Directory Id="dirB6C57608593BDEA87B90E388CF59E0E8" Name="pl">
+                        <Component Id="cmp3A774BB34CD3664183116E92839E312E" Guid="{33028CC8-4598-5106-B145-7C119048AAA9}" Win64="yes">
+                            <File Id="filD9A2B76568404A4B8808FEB413DBCC95" Name="Microsoft.Win32.TaskScheduler.resources.dll" KeyPath="yes" ShortName="9qj6wujh.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filD9A2B76568404A4B8808FEB413DBCC95" />
+                        </Component>
+                    </Directory>
+                    <Directory Id="dir853772609C50C17748AF70C12E8A0818" Name="PresentMon" ShortName="uk0q9v_m">
+                        <Component Id="cmpA4F6ACC1ED64F9C0B54E2615B754768A" Guid="{B5C0543B-8D87-5262-81FE-F65E07BA51AA}" Win64="yes">
+                            <File Id="fil383D9183A0F92A32CC71C97E5FAED05B" Name="license.txt" KeyPath="yes" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil383D9183A0F92A32CC71C97E5FAED05B" />
+                        </Component>
+                        <Component Id="cmpF37BFD7D421F2D1E496A6D81AD8CD4CF" Guid="{086EFFE2-97C1-563D-A754-5159370A1266}" Win64="yes">
+                            <File Id="fil0723CC4E611BF50C221C8A48BA98DABC" Name="PresentMon-2.5.1-x64.exe" KeyPath="yes" ShortName="jlaxyypg.exe" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil0723CC4E611BF50C221C8A48BA98DABC" />
+                        </Component>
+                    </Directory>
+                    <Directory Id="dir7FED47FDBD11E3D1CBA94060517400E8" Name="ProcessList" ShortName="1ts_rn3n">
+                        <Component Id="cmpA6A9ED7D0D14A0EB3F1B6598611EC6CB" Guid="{2297823D-D6AB-5259-9CF7-22BDE45D4B75}" Win64="yes">
+                            <File Id="fil8F1140EE2A5793A1829F5F1D793662D9" Name="Processes.json" KeyPath="yes" ShortName="s0f-nwma.jso" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil8F1140EE2A5793A1829F5F1D793662D9" />
+                        </Component>
+                    </Directory>
+                    <Directory Id="dirE9205C68F964857267FD3312DBFF9A91" Name="ru">
+                        <Component Id="cmpC873D207335D245293F8991C675338F3" Guid="{19B2E4DC-CD31-58D7-9F42-43B2882904AD}" Win64="yes">
+                            <File Id="fil964FE21AB56A95D400514F68DB5347E8" Name="Microsoft.Win32.TaskScheduler.resources.dll" KeyPath="yes" ShortName="cusea7yu.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil964FE21AB56A95D400514F68DB5347E8" />
+                        </Component>
+                    </Directory>
+                    <Directory Id="dir267FDE00972E783C6EEB6037DC7B7302" Name="vulkan">
+                        <Component Id="cmp180F89399DB44A23AF038948269F5F1D" Guid="{9CF468E7-8300-5AF6-8BBC-F16E36461EBF}" Win64="yes">
+                            <File Id="fil8DFB7CCC5AC390844CDF3751846C4173" Name="cfx_osd_vklayer.dll" KeyPath="yes" ShortName="k5sobbcf.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil8DFB7CCC5AC390844CDF3751846C4173" />
+                        </Component>
+                        <Component Id="cmp4108CF02A0313094920AFAA8876964D5" Guid="{58BC679D-881A-5721-AF99-F93E61E52FA1}" Win64="yes">
+                            <File Id="fil8977FCBF612D230CFBE0AFC3AC6D63EC" Name="cfx_osd_vklayer_v1.json" KeyPath="yes" ShortName="kyi9vb7p.jso" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil8977FCBF612D230CFBE0AFC3AC6D63EC" />
+                        </Component>
+                    </Directory>
+                    <Directory Id="dir8C5E37FA87D1897FFB78337F53EB198C" Name="zh-CN">
+                        <Component Id="cmpFA6D9FD1AAA2046A7577475784CE8BCC" Guid="{B88B824C-CC69-5348-9025-AB404E260706}" Win64="yes">
+                            <File Id="fil9AE873A7FEB47AAC64F449F1E25BB97F" Name="Microsoft.Win32.TaskScheduler.resources.dll" KeyPath="yes" ShortName="80ekc22z.dll" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil9AE873A7FEB47AAC64F449F1E25BB97F" />
+                        </Component>
+                    </Directory>
+                    <Directory Id="dir1450B10CD9213F91984D1913F3B466A5" Name="Sounds">
+                        <Directory Id="dir63FE4520DB8A77385792872C2D485865" Name="Simple">
+                            <Component Id="cmp614D68FE53DA984A3D71375B620FF70E" Guid="{F9462612-6AB1-5A68-BD00-901BA45264F6}" Win64="yes">
+                                <File Id="filE2275B8617074DBC5897EEA95CA293BB" Name="CaptureStarted.mp3" KeyPath="yes" ShortName="bprsev1q.mp3" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filE2275B8617074DBC5897EEA95CA293BB" />
+                            </Component>
+                            <Component Id="cmpA044E6163633978606D91D3CED29FCBF" Guid="{F9258BD5-6CF7-564C-A4EF-FB582049DC14}" Win64="yes">
+                                <File Id="fil9EB0C482A6D2B02B0C822E8A998EC8E7" Name="CaptureStopped.mp3" KeyPath="yes" ShortName="662i6gy3.mp3" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil9EB0C482A6D2B02B0C822E8A998EC8E7" />
+                            </Component>
+                        </Directory>
+                        <Directory Id="dir11E6F1110AE0164582C31C75A4AEF5D6" Name="Voice">
+                            <Component Id="cmpCFB1EAE6489484870C9B4CB672B1494D" Guid="{896727FA-268E-5FEE-AC7F-1A2A0EC9757B}" Win64="yes">
+                                <File Id="fil1741DD2E38D6BEFC51664B29B43A18E2" Name="CaptureStarted.mp3" KeyPath="yes" ShortName="o2ju9vlv.mp3" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil1741DD2E38D6BEFC51664B29B43A18E2" />
+                            </Component>
+                            <Component Id="cmpCB9D5CA7463DAF6300BBC9DE8E3CC81D" Guid="{4ED6C384-5CAD-523C-81FA-D4648D80F485}" Win64="yes">
+                                <File Id="fil6A6B11074039F8D339C0B3828FE587E6" Name="CaptureStopped.mp3" KeyPath="yes" ShortName="ek0c19d7.mp3" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\fil6A6B11074039F8D339C0B3828FE587E6" />
+                            </Component>
+                            <Component Id="cmp27E6F79BFDC24D392F37F3C531E3B73E" Guid="{521EC975-B706-5896-9FCF-3E9EFFD2209F}" Win64="yes">
+                                <File Id="filBD4C51BF25EFE6DE164CA773E4219D22" Name="MoreThanOneProcess.mp3" KeyPath="yes" ShortName="n-izuaus.mp3" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filBD4C51BF25EFE6DE164CA773E4219D22" />
+                            </Component>
+                            <Component Id="cmp7C4098BF66F05EC6BE7C6AD21C4B08C0" Guid="{BA1332A8-495C-5D8A-B3A9-0DAA9AD83C1C}" Win64="yes">
+                                <File Id="filEE458BD8B9F790A82833481479B8221F" Name="NoProcess.mp3" KeyPath="yes" ShortName="0imtxkwl.mp3" DiskId="1" Source="E:\Code\CapFrameX\.tmp-msi-extract-refresh\File\filEE458BD8B9F790A82833481479B8221F" />
+                            </Component>
+                        </Directory>
+                    </Directory>
+                </Directory>
+                <Directory Id="BINFOLDER" Name="Bin" />
+            </Directory>
+            <Directory Id="ProgramMenuFolder">
+                <Directory Id="ApplicationProgramsFolder" Name="CapFrameX" ShortName="varqabwo">
+                    <Component Id="ApplicationShortcut" Guid="{4BC8770D-9292-58D1-83ED-2F7C902688D7}" Win64="yes">
+                        <RegistryValue Id="reg2089A8285E41857A62CDCF5A12B57BC0" Root="HKMU" Key="Software\CapFrameX" Name="installed" Value="1" Type="integer" KeyPath="yes" />
+                        <RegistryValue Id="reg8108DF1487F177CB84541C86D3E7AB9B" Root="HKMU" Key="Software\CapFrameX" Name="InstallDir" Value="[INSTALLFOLDER]" Type="string" />
+                        <RemoveFolder Id="ApplicationProgramsFolder" Directory="ApplicationProgramsFolder" On="uninstall" />
+                        <Shortcut Id="ApplicationStartMenuShortcut" Directory="ApplicationProgramsFolder" Name="CapFrameX" ShortName="4rkadgwe" Description="CapFrameX Capture and Analysis Tool" Icon="StartMenuShortcutIconID" WorkingDirectory="INSTALLFOLDER" Advertise="yes" />
+                    </Component>
+                </Directory>
+            </Directory>
+        </Directory>
+        <Feature Id="ProductFeature" Level="1" Title="CapFrameX">
+            <ComponentRef Id="cmpFD65F52CD5EC0B46A750F8EEFC3D4422" />
+            <ComponentRef Id="cmp3FA3E043C67E501AF5D90725CBA9EA07" />
+            <ComponentRef Id="cmp010346265BD055915F2AF759DD155A33" />
+            <ComponentRef Id="cmp38FB2D846FB5A26B8F01D5155B71ADB5" />
+            <ComponentRef Id="cmp8E6F0A41518F04985A00044A881AFAA3" />
+            <ComponentRef Id="cmpFCC1F35455D5814F6F5D83CFB2CBB5EA" />
+            <ComponentRef Id="cmp367B18F442C629D69A743133694E4034" />
+            <ComponentRef Id="cmp8ACAADD5757BD9E933B8004451F42808" />
+            <ComponentRef Id="cmpCE5F8A81B8827D84BBA827B235B47111" />
+            <ComponentRef Id="cmpA4C1EAD31D80CA7A469C61E5F7BF0BE7" />
+            <ComponentRef Id="cmp829349182F4E01B742F1469B2F87C349" />
+            <ComponentRef Id="cmpBB82F84010B18BD471718A8F5192D809" />
+            <ComponentRef Id="cmp1E647D9F8ECD25DE8456AFEFC9762EE2" />
+            <ComponentRef Id="cmpD1A5312A1B779CA613F64117D3873237" />
+            <ComponentRef Id="cmpCDC3D9376CF1A1EB5905BD4C4CF063DE" />
+            <ComponentRef Id="cmp7C9CAFF9FE2A171191AA280A316C5B90" />
+            <ComponentRef Id="cmpF059BAC6B00657CE369D498012322954" />
+            <ComponentRef Id="cmp82AD45B10466B02AA709E58F5BE28DFA" />
+            <ComponentRef Id="cmp2E59BC59B11729E95EB8C057C580BD11" />
+            <ComponentRef Id="cmp197CCAFDD9C330A4C91CAF35F0619382" />
+            <ComponentRef Id="cmp946F72DFC650C4E5A49C51A838713428" />
+            <ComponentRef Id="cmp4974650E9CE6F14031D0ABC8811B7A46" />
+            <ComponentRef Id="cmpF3D48399A0F13574BBC5D2D15C71B25C" />
+            <ComponentRef Id="cmpB6667BCA4B65EF30DBEC87C6744D2AE9" />
+            <ComponentRef Id="cmp6BEF906CB6FADDBDBA3AAF1A06E55843" />
+            <ComponentRef Id="cmpC53D77F304B4523D70934DE3AA929A1B" />
+            <ComponentRef Id="cmp6C8034C8386700B60102EFDA32EE9A7C" />
+            <ComponentRef Id="cmp58A6D9654BB2BC6D1688D3E3B41884A9" />
+            <ComponentRef Id="cmp46ECDD0C7AD9D4FBBE09ADEECDCCFDB7" />
+            <ComponentRef Id="cmpCE6407D64F3B32290FED3723C36974A4" />
+            <ComponentRef Id="cmp48FC6F843096B2C49CDC104336ABDEB7" />
+            <ComponentRef Id="cmp085F019DCFA91EA3CC69ED65224795C3" />
+            <ComponentRef Id="cmp0E8115A356A83702410D2B0E3834086E" />
+            <ComponentRef Id="cmp6AE09C2CACB08476BEF8E2E045F01AF5" />
+            <ComponentRef Id="cmpBF6C07EC81E07D571B517012C96B6F95" />
+            <ComponentRef Id="cmp67CAF56941C08FD2A47A143DBDFF8710" />
+            <ComponentRef Id="cmp26CC0F3B24FE06539736D89388259776" />
+            <ComponentRef Id="cmp32505C2A362D54A9506AC670008D7B04" />
+            <ComponentRef Id="cmpF034EE20FA31D2D0740E4422C9161BE8" />
+            <ComponentRef Id="cmp4A1120ACC7AB1F1C62A70428177CC16C" />
+            <ComponentRef Id="cmp7AD1D5C5600756C1FEF250A34500A8B1" />
+            <ComponentRef Id="cmpD6952B19607ADA3C10FB639F21E3B84B" />
+            <ComponentRef Id="cmp82F7A2CA79FB4945DE735525DEA43440" />
+            <ComponentRef Id="cmp14B77B6AF67D6C1BCC87252B412622A0" />
+            <ComponentRef Id="cmpDAC9A06508E623C2AE90DDABDC991D5D" />
+            <ComponentRef Id="cmpC5B851C2B64D27369CA432F2572B188D" />
+            <ComponentRef Id="cmp7C05CDDFB82D6239D07041A7E6EB0982" />
+            <ComponentRef Id="cmpC975C67003B9C2814766B136E8C4FC52" />
+            <ComponentRef Id="cmp458D149F66896C1582130F4DAD13BA4A" />
+            <ComponentRef Id="cmpFAADD84CDCFEE6BE5EFFC794B81E0AF0" />
+            <ComponentRef Id="cmp7F114E6DD3365A0AC42A526666770850" />
+            <ComponentRef Id="cmpB184919061A1CBB7B72F23D57EC1483D" />
+            <ComponentRef Id="cmp0895AE10E5B3ECDA81D5DD888E741F15" />
+            <ComponentRef Id="cmpCEE07CF2C179F250C81FE40D5FC8B25B" />
+            <ComponentRef Id="cmp4A14411E5B2D1C7D899B9637CD60A7CD" />
+            <ComponentRef Id="cmp85D186EDF7F89DDB5E56AD8740E47A05" />
+            <ComponentRef Id="cmpA370ED5AA85C29D5BFCB28B64725C072" />
+            <ComponentRef Id="cmpEB7F9240E4E285CF98AF15FFE7C29B86" />
+            <ComponentRef Id="cmp121D3C3CDE810BD7FE0A2B46DCAFA63E" />
+            <ComponentRef Id="cmp5721D79609E10BF30F119B560AC992DA" />
+            <ComponentRef Id="cmpF4AA3050A716E6F54BB951C2FD2122DC" />
+            <ComponentRef Id="cmpC2BF4EDA100FB9224264FDE81B19197B" />
+            <ComponentRef Id="cmp18FAC930D57ECB5DA84BC4EF8F1FF236" />
+            <ComponentRef Id="cmp9E78940DE3E6DEF1FA8B22CFDB6CB974" />
+            <ComponentRef Id="cmpFEE96F5622FF620341562487C27BDBFE" />
+            <ComponentRef Id="cmp7208E56B684EFF6D86BA4E30F31A526F" />
+            <ComponentRef Id="cmp65E830F64B198A56C158E8F21A46E482" />
+            <ComponentRef Id="cmp9DD1286D83CFBB521DC0A94C03E27037" />
+            <ComponentRef Id="cmp25EB44D8F5087FA0DC13491026DE588C" />
+            <ComponentRef Id="cmp9110E4565D76564E9BC2F34625854902" />
+            <ComponentRef Id="cmp4DE861D215883636FECF0D07B8D443D7" />
+            <ComponentRef Id="cmp471A60C7DB0BF5428D9A6BE2EF6D9976" />
+            <ComponentRef Id="cmp10D4FE83FFFEED879BCB90B5B3143ED1" />
+            <ComponentRef Id="cmpB54AA7145F7DD7C9F4F5BCED9FE3DD87" />
+            <ComponentRef Id="cmp3A3DCB2CB767F63098FA411AE7BB90A7" />
+            <ComponentRef Id="cmp9FA13AD80A88A2237F460D513A2F1968" />
+            <ComponentRef Id="cmp461E1E7FBE4E607F33327C277F03BE7A" />
+            <ComponentRef Id="cmpFDA802159822E5F335299869D8F57A96" />
+            <ComponentRef Id="cmp781EEA928029B571EC5B4E7090BD7946" />
+            <ComponentRef Id="cmp247A5C6B2FC2255D2495669F4BBC5B13" />
+            <ComponentRef Id="cmp2F5EED07769D01188B6E1DDA2EC5B3FB" />
+            <ComponentRef Id="cmp8B6B824170531DA4ACCB267F3B3F8FF6" />
+            <ComponentRef Id="cmpDF49FF1BBFC4DBBA940443AA48F221E9" />
+            <ComponentRef Id="cmp12963553D08F263C4D654B75222572D0" />
+            <ComponentRef Id="cmp692E0140D733544352A8979F188CDED8" />
+            <ComponentRef Id="cmpBE129962DAD164AE9F278C8874CBF5F9" />
+            <ComponentRef Id="cmpE6F3483C369D2CFABDCB2AA8B75E6959" />
+            <ComponentRef Id="cmp60805430DA62A620ADC712537D30F06A" />
+            <ComponentRef Id="cmpB1EC42AB2EFCC8248CA692650E5CBA2C" />
+            <ComponentRef Id="cmpB80EB57EF2904D1A74E508B15C150404" />
+            <ComponentRef Id="cmpD640FE63E82A6DF755F8660DDA0B7863" />
+            <ComponentRef Id="cmp223D4754378C01052DA8253A843FD297" />
+            <ComponentRef Id="cmp31541C871E68AFBC70137561BF857C7B" />
+            <ComponentRef Id="cmpF79A41B26948F126556619AD15586E53" />
+            <ComponentRef Id="cmpBA69CF71075E6968218400B9F29844B5" />
+            <ComponentRef Id="cmpBDFFFC10BC54483342036800228711F3" />
+            <ComponentRef Id="cmp6491512287958DE136511A9501FC3EF8" />
+            <ComponentRef Id="cmp6D59DB1C8695088F09FD7F0B07ECD487" />
+            <ComponentRef Id="cmpFA79922E3C67570896B863651A61DA4C" />
+            <ComponentRef Id="cmp508010C135AF223EB87100427362C0F7" />
+            <ComponentRef Id="cmp3ED5A0A4D782A8BF371C8403342D615B" />
+            <ComponentRef Id="cmp257EA8281FB771B78FAEDC2CD80B4A5F" />
+            <ComponentRef Id="cmpB785B661067DB1CA34160E239CB75395" />
+            <ComponentRef Id="cmp5AA201CA9529E78168BA0DB83D052443" />
+            <ComponentRef Id="cmp03A336BE1F43229AE0BC3ED221CB70B1" />
+            <ComponentRef Id="cmp1CF42E9A734FD29AFCDB87758302FC1E" />
+            <ComponentRef Id="cmp20E5A82EE1F53BB560782568696E50EF" />
+            <ComponentRef Id="cmpE5877A64EB1EC28CBEB5738C9AC0FDA5" />
+            <ComponentRef Id="cmp40AAABF4A2CA017C2183FBB50AC02A0C" />
+            <ComponentRef Id="cmp8829932782E2062A8292EB806216CC80" />
+            <ComponentRef Id="cmp75E1D360F7F3BEA782095608B95EAF01" />
+            <ComponentRef Id="cmp47B9C1CDB4B766E8C1572505E98E4035" />
+            <ComponentRef Id="cmp198468A4AE980CD6955CB6EB86083726" />
+            <ComponentRef Id="cmp493E9BC44885B6BC5C57BDB1302C40D9" />
+            <ComponentRef Id="cmp828BABCAA179DFEF8C123894E628FE4B" />
+            <ComponentRef Id="cmp8C674FD6A69988A60A77A4CEE0F53781" />
+            <ComponentRef Id="cmp835034F744990576E31C2DBC7C9293BF" />
+            <ComponentRef Id="cmp33F6A38332D557045329F60C77B93E9F" />
+            <ComponentRef Id="cmp3279C150AE8DF554FD7EEE2085672A2B" />
+            <ComponentRef Id="cmp946145B53A7DCDFA822B0EFD2314FAB6" />
+            <ComponentRef Id="cmp7BA1E37A8D8BAAE58F97EBB1003527F0" />
+            <ComponentRef Id="cmpA4D9C03869723FFBEE9F289352A1B069" />
+            <ComponentRef Id="cmpCA0CA4D611B62983A5F22D7DB1142FB5" />
+            <ComponentRef Id="cmp1CCC42FAF94D59D43A57B48070D20BFB" />
+            <ComponentRef Id="cmp3F0D5A3DBF3BB5DEF4929A0ED0AD2EBA" />
+            <ComponentRef Id="cmpF2F1C15A47B64F045101B1AE5B4D6054" />
+            <ComponentRef Id="cmpC46009BA6A5B5F8DF9BEFCAD39146906" />
+            <ComponentRef Id="cmp3E4F3E4686A9B425B5812E5171CCDEEF" />
+            <ComponentRef Id="cmp43984E66F2A9DD89F93CF7035D8989A0" />
+            <ComponentRef Id="cmpBB1767D7C200C536ABB2D361F40F9D92" />
+            <ComponentRef Id="cmp702FCD8F941D530EED089ED86491F3AF" />
+            <ComponentRef Id="cmp8AC833CFB7DC6722697152FE46DA157A" />
+            <ComponentRef Id="cmpC391F13134AAE84A2F7D6ED96816E8DC" />
+            <ComponentRef Id="cmpA5FE1A505BBA8478300711BD67EBDE34" />
+            <ComponentRef Id="cmpB1E57660305E5D4903E538B73B35E2B3" />
+            <ComponentRef Id="cmpEDC0B008F4934A0A30DF3F837C2D494E" />
+            <ComponentRef Id="cmp084ACE6ADF4440B978ECA3EFB528FCCE" />
+            <ComponentRef Id="cmpBE98D3D44CB27E52FF8860E684F72B53" />
+            <ComponentRef Id="cmp979BB5B2297816EF2D91624FE967267D" />
+            <ComponentRef Id="cmp183508D134DC714113705228F00F150E" />
+            <ComponentRef Id="cmpCE017872847B29F4C35A191DF46E0437" />
+            <ComponentRef Id="cmpBC4FC00A26E7D32479D42D3411317FC5" />
+            <ComponentRef Id="cmp9867DD01B906E145D73B1AA12191B24D" />
+            <ComponentRef Id="cmp8F4FC608131CDC6A82B59CBB8B203778" />
+            <ComponentRef Id="cmp71D47CA7014DC1CFAF214C0EFDFEE866" />
+            <ComponentRef Id="cmp567EF3D2C174A94284A1D444E56868FD" />
+            <ComponentRef Id="cmp59564654D02343646998A8D6A6F0C25F" />
+            <ComponentRef Id="cmp1D8C6ABF55C2B2B4242EE9F241074EAC" />
+            <ComponentRef Id="cmpA9A2AB3353E22A8DA16EAAEE63473B2F" />
+            <ComponentRef Id="cmpEA05E2C99539D54A5BAB3C1DBEC4D3DE" />
+            <ComponentRef Id="cmp9CB00B4C0F13DCE7E766423C27121485" />
+            <ComponentRef Id="cmpF318EA8E5B5EB7D6CB2BEE591C17796C" />
+            <ComponentRef Id="cmp74A2C73F11C177073B0A672936A0D5EB" />
+            <ComponentRef Id="cmpA9CD02E2996345805AE749B403FD0E7A" />
+            <ComponentRef Id="cmpC08CEB1C24E4A6DA79EE83CFD8BDCD60" />
+            <ComponentRef Id="cmp49818C715FF04B8E95F7B53BDDD323EF" />
+            <ComponentRef Id="cmp1D3155C1D992D771CD1EE590B2BD51A5" />
+            <ComponentRef Id="cmp1C6F6E58C51DCC0498E3584BA6509C70" />
+            <ComponentRef Id="cmpD747263C0CC74F6E3F3049EEC4E5480C" />
+            <ComponentRef Id="cmp609B1CFE4195028805411B060B83208B" />
+            <ComponentRef Id="cmp28E1FF85CFD84830768D3E9A5E5EE156" />
+            <ComponentRef Id="cmp417BB047C679FC9F84F4083A063225E5" />
+            <ComponentRef Id="cmp29B124E05CCAD23A5A2E64AF36D0DB99" />
+            <ComponentRef Id="cmp525502E9B65457F91935CD39242E7D55" />
+            <ComponentRef Id="cmpA748C45814948C0E47F0962CF5A9E2C5" />
+            <ComponentRef Id="cmp627F95934DFE8795F8708045A2120F23" />
+            <ComponentRef Id="cmp86FA15ED6758AB64222C7B872722AE2A" />
+            <ComponentRef Id="cmpE722E076AB8486E4A4F24B01268787A2" />
+            <ComponentRef Id="cmp28DA583D03D243568B9E8D67E28DC03E" />
+            <ComponentRef Id="cmp28698F3E40E97D0D04ED87AE917B13C7" />
+            <ComponentRef Id="cmp817DADD4F645A06A14E7CEFCE195AEAC" />
+            <ComponentRef Id="cmpF88B96E5973E0D28B511DC6371DB06E0" />
+            <ComponentRef Id="cmp642ED5B0D0BD1F16347D1310992C55A0" />
+            <ComponentRef Id="cmp89AE5ECEB789ECF60BE6CC568D60B2F9" />
+            <ComponentRef Id="cmp8E100A18327D40D73A207E32DC2A5DF7" />
+            <ComponentRef Id="cmpAFCF21A15F6EDA45A32D147050609285" />
+            <ComponentRef Id="cmpA79A142FCEA412B1ABBD7BE954692F65" />
+            <ComponentRef Id="cmp98A131703008D3AC809721FE16EEAFF8" />
+            <ComponentRef Id="cmp3C5190B580EDFB87D0BC5E835BB950DE" />
+            <ComponentRef Id="cmpB8A7E5BEDFB4B8D0CC7AF759CF02E85C" />
+            <ComponentRef Id="cmpA5817A2BB296EF3C39CAFA8A07CD6B59" />
+            <ComponentRef Id="cmp8E8EA57B48D2BD63C9E8D3EC582861D3" />
+            <ComponentRef Id="cmpB3AE432D48BF3A5AB43C6DAF12AB454A" />
+            <ComponentRef Id="cmp017BFB3832A5B110A2B3A350E13F2A5C" />
+            <ComponentRef Id="cmp0ACFEC8BA7F4B219E9A7245FD06F097F" />
+            <ComponentRef Id="cmpC85BD7478E073743A39F17DF06865203" />
+            <ComponentRef Id="cmpBDF72E996B087D1367AD89DD1F55CCE1" />
+            <ComponentRef Id="cmp95FB4709CCA218FC84A8C37D04D77DE5" />
+            <ComponentRef Id="cmp2E1A49D025B6B976CF4AEE8CD7259CDB" />
+            <ComponentRef Id="cmp102184F7AB62F389461D7FB444EA53BA" />
+            <ComponentRef Id="cmp1909D61D42D91542878F47D103B24FC5" />
+            <ComponentRef Id="cmpAE9CC1EA7F0BE9DFFE43E05A62D23000" />
+            <ComponentRef Id="cmpADFBF9D746A392A7221EE0858FB0374D" />
+            <ComponentRef Id="cmpF9915F42CA31D8E65D67173668D0358A" />
+            <ComponentRef Id="cmp042109B08BC1D670447BBC04ED112A85" />
+            <ComponentRef Id="cmp873A28565D878A57FB00F7D5B8A71933" />
+            <ComponentRef Id="cmpF0C0A1839B1535792F33D24F93AE8980" />
+            <ComponentRef Id="cmpEDAEC854BA510D1ECF074784A29DBA52" />
+            <ComponentRef Id="cmp1ADE3220EC9857B13A54CBDA384A173E" />
+            <ComponentRef Id="cmp2A3ED5ADA49CC07F2DC45561742EBEEA" />
+            <ComponentRef Id="cmp031D75F5CF12E86FD5C899AAC5BCD58A" />
+            <ComponentRef Id="cmpC7D59968CDAD36A028B54AFEA747C5F1" />
+            <ComponentRef Id="cmp004A919F08D462AF612728E9BEBBEA14" />
+            <ComponentRef Id="cmp33F0D702ECEA4A3D64093CDCD1F60E12" />
+            <ComponentRef Id="cmpA7D283CC7E3964BD1225FDE6ECF7FF02" />
+            <ComponentRef Id="cmp097978A228E7B06DBF4E49AA01228276" />
+            <ComponentRef Id="cmp305F8F845CE1EB40ED1D9BF9BBD82467" />
+            <ComponentRef Id="cmp1C6F2D9DD97B5A8BC1047B9FFA41F5E2" />
+            <ComponentRef Id="cmp67508D6366DE8A24C811EAA6C843FE38" />
+            <ComponentRef Id="cmpFD04537DA92F5497D2BC29650FFED8BA" />
+            <ComponentRef Id="cmpB9953D9C662280BB76B3A5CABF9B2578" />
+            <ComponentRef Id="cmp376D819E55CB8EDDB3DE5A880A1D1717" />
+            <ComponentRef Id="cmpB3E5591973675FB9F9672AF42FAB9310" />
+            <ComponentRef Id="cmpC4B5B8D7587B1A8946560FA61B61E62C" />
+            <ComponentRef Id="cmp73AB306AA00221222B923D17A8351625" />
+            <ComponentRef Id="cmp442354214FCB2554D6B4D74158852AA3" />
+            <ComponentRef Id="cmp5D8B05F620C0CF863DB63E9B573696EE" />
+            <ComponentRef Id="cmp1BB1B6C10A4EF500E8FDDF8AE31A858E" />
+            <ComponentRef Id="cmp59B2B2EDAC568BC6E39A634C1C2CD0FC" />
+            <ComponentRef Id="cmp930328E9EAE1D16C9EB767CF566ACC02" />
+            <ComponentRef Id="cmp03880ECEAF0784CB569AFC16D3660EA1" />
+            <ComponentRef Id="cmp98BFFBC880D9F99AD43DC5FD8AF451AC" />
+            <ComponentRef Id="cmpA405A211715F5950263BFDA9FF52D387" />
+            <ComponentRef Id="cmpF1D138294DBF4A90333EEBDC8C5A217F" />
+            <ComponentRef Id="cmp65AD597F96F0309DDA05D85BF2BBF1DC" />
+            <ComponentRef Id="cmp6C6A3E6898D30709EC75431F629D6ED0" />
+            <ComponentRef Id="cmp0C71E936B1AA4369B009F3A576F40A0F" />
+            <ComponentRef Id="cmp127A2A04AD00EBB8E4C46D3FDFE9F41C" />
+            <ComponentRef Id="cmpFE22BEDCCAF4FE6AC0FB1BCAF17A2094" />
+            <ComponentRef Id="cmpCE79E98C03E038F8B393EF44212C1F5D" />
+            <ComponentRef Id="cmp3498A6ED622CDA1395FA2B33E87B8EF8" />
+            <ComponentRef Id="cmp08A693DC8DF5FAFF1AC06B06B3A2B039" />
+            <ComponentRef Id="cmpB2736CB29B2E9091CE1C46A1E5FA641D" />
+            <ComponentRef Id="cmpDF3BBCD935812DF3C10C58CEAA49EFF2" />
+            <ComponentRef Id="cmp7A9FB47EE33B6D8D3B9B111257021ECB" />
+            <ComponentRef Id="cmp55E09061A1DF30E9878313719FAE6664" />
+            <ComponentRef Id="cmp899508076A55BF753F74CB0DFA5743E3" />
+            <ComponentRef Id="cmp5A7026E0896D194B82895F7742EE8E12" />
+            <ComponentRef Id="cmp5BA55150B20FDB5D6A2679B4DDE154F0" />
+            <ComponentRef Id="cmpB448414C7B3963A581067103B898A290" />
+            <ComponentRef Id="cmpEEF8583F33AC9DCDC349C22B5162CEF5" />
+            <ComponentRef Id="cmpFE4DB43903D5E98C8998C262D9986373" />
+            <ComponentRef Id="cmpBBEC6815F860569B81B6948537B74631" />
+            <ComponentRef Id="cmp916768CCA957B024FA3E5120C4E792E2" />
+            <ComponentRef Id="cmpA2349B128022FD9468B4B0472DF8814A" />
+            <ComponentRef Id="cmpC39E25791A464CA675CEA5231C3504BD" />
+            <ComponentRef Id="cmp51EF57F7972E2D0FB19D3F191FDB3643" />
+            <ComponentRef Id="cmpA3C39F2E722F5E7841B00911B47A0BF6" />
+            <ComponentRef Id="cmp3A774BB34CD3664183116E92839E312E" />
+            <ComponentRef Id="cmpA4F6ACC1ED64F9C0B54E2615B754768A" />
+            <ComponentRef Id="cmpF37BFD7D421F2D1E496A6D81AD8CD4CF" />
+            <ComponentRef Id="cmpA6A9ED7D0D14A0EB3F1B6598611EC6CB" />
+            <ComponentRef Id="cmpC873D207335D245293F8991C675338F3" />
+            <ComponentRef Id="cmp614D68FE53DA984A3D71375B620FF70E" />
+            <ComponentRef Id="cmpA044E6163633978606D91D3CED29FCBF" />
+            <ComponentRef Id="cmpCFB1EAE6489484870C9B4CB672B1494D" />
+            <ComponentRef Id="cmpCB9D5CA7463DAF6300BBC9DE8E3CC81D" />
+            <ComponentRef Id="cmp27E6F79BFDC24D392F37F3C531E3B73E" />
+            <ComponentRef Id="cmp7C4098BF66F05EC6BE7C6AD21C4B08C0" />
+            <ComponentRef Id="cmp180F89399DB44A23AF038948269F5F1D" />
+            <ComponentRef Id="cmp4108CF02A0313094920AFAA8876964D5" />
+            <ComponentRef Id="cmpFA6D9FD1AAA2046A7577475784CE8BCC" />
+            <ComponentRef Id="ApplicationShortcut" />
+            <ComponentRef Id="ApplicationShortcutDesktop" />
+            <ComponentRef Id="VulkanLayerRegistration" />
+        </Feature>
+        <Icon Id="StartMenuShortcutIconID" SourceFile="E:\Code\CapFrameX\.tmp-msi-extract-refresh\Icon\StartMenuShortcutIconID" />
+        <Icon Id="ShortcutDesktopIconID" SourceFile="E:\Code\CapFrameX\.tmp-msi-extract-refresh\Icon\ShortcutDesktopIconID" />
+        <MajorUpgrade AllowDowngrades="yes" Schedule="afterInstallValidate" />
+        <Media Id="1" Cabinet="CapFrameX.cab" EmbedCab="yes" />
+        <Property Id="ALLUSERS" Value="1" />
+        <Property Id="INSTALLSHORTCUT" Value="1" Secure="yes" />
+        <Property Id="WIX_UPGRADE_DETECTED" Secure="yes" />
+        <InstallExecuteSequence>
+            <Custom Action="AppdataConfigFiles" Before="CleanRegistry">Installed</Custom>
+            <Custom Action="CleanRegistry" Before="ResourceManagement">Installed OR NOT Installed</Custom>
+            <Custom Action="ResourceManagement" Before="InstallFinalize">NOT Installed</Custom>
+        </InstallExecuteSequence>
+        <CloseApplication Id="CloseCapFrameX" Target="CapFrameX.exe" CloseMessage="yes" ElevatedCloseMessage="no" RebootPrompt="no" xmlns="http://schemas.microsoft.com/wix/UtilExtension">Installed</CloseApplication>
+    </Product>
+</Wix>

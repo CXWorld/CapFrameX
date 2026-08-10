@@ -1,0 +1,61 @@
+{
+  "_comment": [
+    "Example response from the v2 UpdateCatalogUri.",
+    "All releases must be at least 1.9.0.0 and use canonical four-part versions.",
+    "Every release belongs to the release or beta channel.",
+    "Package URLs must stay on the catalog's HTTPS origin. SHA-256 and size are mandatory."
+  ],
+  "schemaVersion": 2,
+  "minimumVersion": "1.9.0.0",
+  "latestRelease": "1.9.1.0",
+  "latestBeta": "1.9.2.3",
+  "releases": [
+    {
+      "version": "1.9.2.3",
+      "channel": "beta",
+      "releaseDate": "2026-08-03T00:00:00Z",
+      "summary": "Preview build with the newest capture improvements.",
+      "highlights": [
+        "Early access to the latest fixes"
+      ],
+      "releaseNotesUrl": "https://www.capframex.com/news",
+      "package": {
+        "url": "/packages/1.9.2.3/CapFrameX-1.9.2.3-setup.exe",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "size": 78123456,
+        "arguments": "/passive /norestart"
+      }
+    },
+    {
+      "version": "1.9.1.0",
+      "channel": "release",
+      "releaseDate": "2026-08-02T00:00:00Z",
+      "summary": "Fixes PresentMon capture stalls and improves the overlay editor.",
+      "highlights": [
+        "Capture no longer stalls when a game loses focus",
+        "Improved overlay layout editor"
+      ],
+      "releaseNotesUrl": "https://www.capframex.com/news",
+      "package": {
+        "url": "/packages/1.9.1.0/CapFrameX-1.9.1.0-setup.exe",
+        "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "size": 78000000,
+        "arguments": "/passive /norestart"
+      }
+    },
+    {
+      "version": "1.9.0.0",
+      "channel": "release",
+      "releaseDate": "2026-08-01T00:00:00Z",
+      "summary": "First release supported by the rollback mechanism.",
+      "highlights": [],
+      "releaseNotesUrl": "https://www.capframex.com/news",
+      "package": {
+        "url": "/packages/1.9.0.0/CapFrameX-1.9.0.0-setup.exe",
+        "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+        "size": 77000000,
+        "arguments": "/passive /norestart"
+      }
+    }
+  ]
+}

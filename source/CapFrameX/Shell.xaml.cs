@@ -1,8 +1,11 @@
 ﻿using CapFrameX.Configuration;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.MVVM;
+using CapFrameX.EventAggregation.Messages;
 using CapFrameX.MVVM;
 using CapFrameX.View.UITracker;
+using CapFrameX.ViewModel;
+using Prism.Events;
 using Serilog;
 using System;
 using System.ComponentModel;
@@ -43,36 +46,57 @@ namespace CapFrameX
 
         private bool _isShuttingDown = false;
         private bool _isReadyToClose = false;
+        private bool _isTaskbarIconRefreshed = false;
 
         private readonly ISettingsStorage _settingsStorage;
         private readonly IPathService _pathService;
+        private readonly IEventAggregator _eventAggregator;
 
+        private bool? _lastPublishedContentVisibility;
 
         private GridLength ColumnAWidthSaved { get; set; }
 
-        public Shell(ISettingsStorage settingsStorage, IPathService pathService)
+        public Shell(ISettingsStorage settingsStorage, IPathService pathService,
+            UpdateViewModel updateViewModel, IEventAggregator eventAggregator)
         {
-            InitializeComponent();
+            _eventAggregator = eventAggregator;
+            using (StartupPerformanceLogger.Measure("Shell XAML and resource initialization"))
+            {
+                InitializeComponent();
+            }
+
             _settingsStorage = settingsStorage;
             _pathService = pathService;
             Closing += Shell_Closing;
+
+            // Only the DialogHost gets the update view model; the regions bring their own view
+            // models along, so nothing else in the shell is affected by this DataContext.
+            UpdateDialogHost.DataContext = updateViewModel;
 
             if (PortableModeDetector.IsPortableMode)
             {
                 Title = "CapFrameX Portable";
             }
 
-            // Start tracking the Window instance.
-            var windowStateTracker = new WindowStateTracker(_pathService.ConfigFolder);
-            windowStateTracker.Tracker.Track(this);
-            StateChanged += Resize;
+            using (StartupPerformanceLogger.Measure("Shell window state tracker initialization"))
+            {
+                // Start tracking the Window instance.
+                var windowStateTracker = new WindowStateTracker(_pathService.ConfigFolder);
+                windowStateTracker.Tracker.Track(this);
+                StateChanged += Resize;
 
-            // Start tracking column width
-            var columnAWidthTracker = new ColumnWidthTracker(this, _pathService.ConfigFolder);
-            var columnBWidthTracker = new ColumnWidthTracker(this, _pathService.ConfigFolder);
+                // Both hooks are needed: plain minimize only changes WindowState,
+                // minimize to tray additionally calls Hide() (IsVisible).
+                StateChanged += (s, e) => PublishContentVisibility();
+                IsVisibleChanged += (s, e) => PublishContentVisibility();
 
-            columnAWidthTracker.Tracker.Track(LeftColumn);
-            columnBWidthTracker.Tracker.Track(RightColumn);
+                // Start tracking column width
+                var columnAWidthTracker = new ColumnWidthTracker(this, _pathService.ConfigFolder);
+                var columnBWidthTracker = new ColumnWidthTracker(this, _pathService.ConfigFolder);
+
+                columnAWidthTracker.Tracker.Track(LeftColumn);
+                columnBWidthTracker.Tracker.Track(RightColumn);
+            }
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -89,6 +113,19 @@ namespace CapFrameX
             IconHelper.RemoveIcon(this);
         }
 
+        protected override void OnContentRendered(EventArgs e)
+        {
+            base.OnContentRendered(e);
+
+            if (_isTaskbarIconRefreshed)
+                return;
+
+            _isTaskbarIconRefreshed = true;
+            Dispatcher.BeginInvoke(
+                System.Windows.Threading.DispatcherPriority.ApplicationIdle,
+                new Action(() => IconHelper.RefreshTaskbarIcon(this)));
+        }
+
         private void Resize(object sender, EventArgs e)
         {
             if (WindowState == WindowState.Minimized && (ConfigurationProvider.AppConfiguration?.MinimizeToTray ?? true))
@@ -97,19 +134,21 @@ namespace CapFrameX
             }
         }
 
-        //private IntPtr HandleMessages(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-        //{
-        //    // 0x0112 == WM_SYSCOMMAND, 'Window' command message.
-        //    // 0xF020 == SC_MINIMIZE, command to minimize the window.
-        //    if (msg == 0x0112 && ((int)wParam & 0xFFF0) == 0xF020)
-        //    {
-        //        // Cancel the minimize.
-        //        handled = true;
-        //        Hide();
-        //    }
+        /// <summary>
+        /// Lets view models pause work whose output nobody can see (e.g. the info tab's
+        /// live telemetry). Visibility is the criterion, not focus: CapFrameX running on
+        /// a second monitor with a game focused on the first display must keep updating.
+        /// </summary>
+        private void PublishContentVisibility()
+        {
+            bool isContentVisible = IsVisible && WindowState != WindowState.Minimized;
+            if (_lastPublishedContentVisibility == isContentVisible)
+                return;
 
-        //    return IntPtr.Zero;
-        //}
+            _lastPublishedContentVisibility = isContentVisible;
+            _eventAggregator.GetEvent<PubSubEvent<AppMessages.ShellVisibilityChanged>>()
+                .Publish(new AppMessages.ShellVisibilityChanged(isContentVisible));
+        }
 
         private void SystemTray_TrayLeftMouseDownClick(object sender, RoutedEventArgs e)
         {
@@ -153,14 +192,19 @@ namespace CapFrameX
 
         private void GridSplitter_PreviewMouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+            // Drag-resizing keeps the column's MinWidth floor (so the control area
+            // can't be squeezed below its default width), but the double-click
+            // hide/show toggle deliberately bypasses that floor to fully collapse it.
             if (LeftColumn.ActualWidth > 8)
             {
                 ColumnAWidthSaved = LeftColumn.Width;
+                LeftColumn.MinWidth = 8;
                 LeftColumn.Width = new GridLength(8, GridUnitType.Pixel);
             }
             else
             {
                 LeftColumn.Width = ColumnAWidthSaved;
+                LeftColumn.MinWidth = 400;
             }
         }
 

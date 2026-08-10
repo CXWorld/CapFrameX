@@ -9,6 +9,9 @@ using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
+/// <summary>
+/// An NVMe storage device, monitored through its SMART health log.
+/// </summary>
 public sealed class NVMeGeneric : AbstractStorage
 {
     private const ulong Scale = 1000000;
@@ -31,7 +34,7 @@ public sealed class NVMeGeneric : AbstractStorage
 
     private static NVMeInfo GetDeviceInfo(StorageInfo storageInfo)
     {
-        var smart = new NVMeSmart(storageInfo);
+        using var smart = new NVMeSmart(storageInfo, enableHealthReader: false);
         return smart.GetInfo();
     }
 
@@ -41,9 +44,10 @@ public sealed class NVMeGeneric : AbstractStorage
         return nvmeInfo == null ? null : new NVMeGeneric(storageInfo, nvmeInfo, storageInfo.Index, settings);
     }
 
+    /// <inheritdoc />
     protected override void CreateSensors()
     {
-        NVMeHealthInfo log = Smart.GetHealthInfo();
+        NVMeHealthInfo log = Smart.GetInitialHealthInfo();
         if (log != null)
         {
             AddSensor("Temperature", 0, false, SensorType.Temperature, health => health.Temperature, $"{Index}_1_0");
@@ -85,16 +89,18 @@ public sealed class NVMeGeneric : AbstractStorage
         return Units * u / Scale;
     }
 
+    /// <inheritdoc />
     protected override void UpdateSensors()
     {
-        NVMeHealthInfo health = Smart.GetHealthInfo();
-        if (health == null)
+        Smart.RequestHealthInfo();
+        if (!Smart.TryGetHealthInfo(out NVMeHealthInfo health, out _))
             return;
 
         foreach (NVMeSensor sensor in _sensors)
             sensor.Update(health);
     }
 
+    /// <inheritdoc />
     protected override void GetReport(StringBuilder r)
     {
         if (_info == null)
@@ -110,9 +116,11 @@ public sealed class NVMeGeneric : AbstractStorage
         r.AppendLine("Controller ID: " + _info.ControllerId);
         r.AppendLine("Number of Namespaces: " + _info.NumberNamespaces);
 
-        NVMeHealthInfo health = Smart.GetHealthInfo();
-        if (health == null)
+        Smart.RequestHealthInfo();
+        if (!Smart.TryGetHealthInfo(out NVMeHealthInfo health, out System.TimeSpan age))
             return;
+
+        r.AppendLine("Health Data Age: " + age.TotalSeconds.ToString("F1") + " seconds");
 
         r.AppendLine("Temperature: " + health.Temperature + " Celsius");
         r.AppendLine("Available Spare: " + health.AvailableSpare + "%");
@@ -137,6 +145,7 @@ public sealed class NVMeGeneric : AbstractStorage
         }
     }
 
+    /// <inheritdoc />
     public override void Close()
     {
         Smart?.Close();

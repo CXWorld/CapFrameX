@@ -4,7 +4,7 @@ using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
-using CapFrameX.Contracts.UpdateCheck;
+using CapFrameX.Contracts.Update;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using Microsoft.Extensions.Logging;
@@ -14,7 +14,6 @@ using Prism.Mvvm;
 using System;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -29,29 +28,17 @@ namespace CapFrameX.ViewModel
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ICaptureService _captureService;
 		private readonly IOverlayService _overlayService;
-		private readonly IUpdateCheck _updateCheck;
 		private readonly IAppVersionProvider _appVersionProvider;
 		private readonly ISystemInfo _systemInfo;
 		private static ILogger<StateViewModel> _logger;
 
 		private bool _isCaptureModeActive;
 		private bool _isOverlayActive;
+		private HookOverlayStatus _hookOverlayStatus;
+		private bool _isHookOverlayStatusVisible;
 		private Task _systemInfoStatusUpdateTask;
-		private string _updateHyperlinkText;
 
-		private bool IsBeta => GetBetaState();
-
-		private bool GetBetaState()
-		{
-			Assembly assembly = GetAssemblyByName("CapFrameX");
-			var metaData = assembly.GetCustomAttributes(typeof(AssemblyMetadataAttribute));
-
-			if (metaData.FirstOrDefault(attribute => (attribute as AssemblyMetadataAttribute).Key == "IsBeta")
-				is AssemblyMetadataAttribute isBetaAttribute)
-				return Convert.ToBoolean(isBetaAttribute.Value);
-
-			return true;
-		}
+		private bool IsBeta => _appVersionProvider.GetReleaseChannel() == EUpdateChannel.Beta;
 
 		public bool IsOverlayActive
 		{
@@ -62,6 +49,62 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+
+		public bool IsHookOverlayStatusVisible
+		{
+			get { return _isHookOverlayStatusVisible; }
+			private set
+			{
+				_isHookOverlayStatusVisible = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string HookOverlayStatusText
+		{
+			get
+			{
+				if (_hookOverlayStatus == null) return "Waiting";
+				switch (_hookOverlayStatus.State)
+				{
+					case EHookOverlayStatus.Disabled: return "Off";
+					case EHookOverlayStatus.Waiting: return "Waiting";
+					case EHookOverlayStatus.Injecting: return "Injecting";
+					case EHookOverlayStatus.Injected: return "Injected";
+					case EHookOverlayStatus.Initializing: return "Initializing";
+					case EHookOverlayStatus.Active: return "Active";
+					case EHookOverlayStatus.Fallback: return "Fallback";
+					case EHookOverlayStatus.Hidden: return "Hidden";
+					case EHookOverlayStatus.Idle: return "Idle";
+					case EHookOverlayStatus.Error: return "Error";
+					case EHookOverlayStatus.Blocked: return "Blocked";
+					default: return "Waiting";
+				}
+			}
+		}
+
+		public string HookOverlayStatusColor
+		{
+			get
+			{
+				if (_hookOverlayStatus == null) return "Orange";
+				switch (_hookOverlayStatus.State)
+				{
+					case EHookOverlayStatus.Active: return "LimeGreen";
+					case EHookOverlayStatus.Fallback: return "DarkOrange";
+					// Needs the user to act (restart the game), so it must not read as a
+					// transient "Waiting" orange, but it is not a malfunction either.
+					case EHookOverlayStatus.Blocked: return "Goldenrod";
+					case EHookOverlayStatus.Error: return "OrangeRed";
+					case EHookOverlayStatus.Disabled:
+					case EHookOverlayStatus.Hidden: return "Gray";
+					default: return "Orange";
+				}
+			}
+		}
+
+		public string HookOverlayStatusToolTip => _hookOverlayStatus?.Detail ??
+			"Waiting for hook status.";
 
 		public bool IsCaptureModeActive
 		{
@@ -82,28 +125,22 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public string UpdateHyperlinkText
-		{
-			get { return _updateHyperlinkText; }
-			set
-			{
-				_updateHyperlinkText = value;
-				RaisePropertyChanged();
-			}
-		}
+		/// <summary>
+		/// Backs the update indicator on the right of the status bar. The shared instance also
+		/// backs the update tab in the options popup and the embedded dialog.
+		/// </summary>
+		public UpdateViewModel UpdateViewModel { get; }
 
 		public string VersionString
 		{
 			get
 			{
 				var version = _appVersionProvider.GetAppVersion();
-				var versionString = $"{version.Major}.{version.Minor}.{version.Build}";
+				var versionString = $"{version.Major}.{version.Minor}.{Math.Max(version.Build, 0)}.{Math.Max(version.Revision, 0)}";
 
 				return IsBeta ? $"{versionString} Beta" : versionString;
 			}
 		}
-
-		public bool IsUpdateAvailable { get; private set; }
 
 		public bool IsLoggedIn { get; private set; }
 
@@ -115,7 +152,8 @@ namespace CapFrameX.ViewModel
 			IAppConfiguration appConfiguration,
 			ICaptureService captureService,
 			IOverlayService overlayService,
-			IUpdateCheck updateCheck,
+			IHookOverlayStatusService hookOverlayStatusService,
+			UpdateViewModel updateViewModel,
 			IAppVersionProvider appVersionProvider,
 			LoginManager loginManager,
 			IRTSSService rTSSService,
@@ -127,7 +165,7 @@ namespace CapFrameX.ViewModel
 			_appConfiguration = appConfiguration;
 			_captureService = captureService;
 			_overlayService = overlayService;
-			_updateCheck = updateCheck;
+			UpdateViewModel = updateViewModel;
 			_appVersionProvider = appVersionProvider;
 			_systemInfo = systemInfo;
 			_logger = logger;
@@ -135,7 +173,28 @@ namespace CapFrameX.ViewModel
 			UpdateStatusInfoCommand = new DelegateCommand(RefreshSystemInfo);
 
 			IsCaptureModeActive = false;
-			IsOverlayActive = _appConfiguration.IsOverlayActive && rTSSService.IsRTSSInstalled();
+			IsOverlayActive = _appConfiguration.IsOverlayActive &&
+				(rTSSService.IsRTSSInstalled() || _appConfiguration.EnableHookFreeOverlay ||
+				 _appConfiguration.EnableHookOverlay);
+			IsHookOverlayStatusVisible = _appConfiguration.EnableHookOverlay;
+			ApplyHookOverlayStatus(hookOverlayStatusService.Current);
+			Dispatcher uiDispatcher = Dispatcher.CurrentDispatcher;
+
+			hookOverlayStatusService.StatusStream.Subscribe(status =>
+			{
+				Action apply = () => ApplyHookOverlayStatus(status);
+				if (uiDispatcher.CheckAccess()) apply();
+				else uiDispatcher.BeginInvoke(apply);
+			});
+
+			_appConfiguration.OnValueChanged
+				.Where(x => x.key == nameof(IAppConfiguration.EnableHookOverlay))
+				.Subscribe(x =>
+				{
+					Action apply = () => IsHookOverlayStatusVisible = (bool)x.value;
+					if (uiDispatcher.CheckAccess()) apply();
+					else uiDispatcher.BeginInvoke(apply);
+				});
 
 			_captureService.IsCaptureModeActiveStream
 				.Subscribe(state => IsCaptureModeActive = state);
@@ -159,26 +218,17 @@ namespace CapFrameX.ViewModel
 				UpdateSystemInfoStatus();
 			});
 
-			Task.Run(async () =>
-			{
-				var (updateAvailable, updateVersion) = await _updateCheck.IsUpdateAvailable();
-				Dispatcher.CurrentDispatcher.Invoke(() =>
-				{
-					IsUpdateAvailable = updateAvailable;
-					UpdateHyperlinkText = $"New version available on GitHub: v{updateVersion}";
-					RaisePropertyChanged(nameof(IsUpdateAvailable));
-				});
-			});
-
 			Dispatcher.CurrentDispatcher.BeginInvoke(
 				new Action(RefreshSystemInfo),
 				DispatcherPriority.ApplicationIdle);
 		}
 
-		private Assembly GetAssemblyByName(string name)
+		private void ApplyHookOverlayStatus(HookOverlayStatus status)
 		{
-			return AppDomain.CurrentDomain.GetAssemblies().
-				   SingleOrDefault(assembly => assembly.GetName().Name == name);
+			_hookOverlayStatus = status;
+			RaisePropertyChanged(nameof(HookOverlayStatusText));
+			RaisePropertyChanged(nameof(HookOverlayStatusColor));
+			RaisePropertyChanged(nameof(HookOverlayStatusToolTip));
 		}
 
 		public async void RefreshSystemInfo()
@@ -230,7 +280,7 @@ namespace CapFrameX.ViewModel
 			string info;
 			try
 			{
-				var version = GetAssemblyByName("CapFrameX").GetName().Version;
+				var version = _appVersionProvider.GetAppVersion();
 				info = $"Revision: {version.Revision}";
 			}
 			catch

@@ -5,7 +5,6 @@ using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Windows;
 
 namespace CapFrameX.Data
 {
@@ -13,8 +12,12 @@ namespace CapFrameX.Data
     {
         private readonly Dictionary<string, AudioFileReader> _audioFileDictionary
             = new Dictionary<string, AudioFileReader>(6);
+        private readonly object _playbackLock = new object();
         private readonly IAppConfiguration _configuration;
         private readonly ILogger<SoundManager> _logger;
+
+        /// <summary>Guarded by <see cref="_playbackLock"/>.</summary>
+        private WaveOutEvent _activeDevice;
 
         public SoundMode SoundMode
         {
@@ -108,25 +111,90 @@ namespace CapFrameX.Data
 
             var currentSoundMode = SoundMode;
             double currentVolume = Volume;
+            var path = Path.Combine("Sounds", currentSoundMode.ConvertToString(), $"{sound.ConvertToString()}.mp3");
 
-            Application.Current?.Dispatcher?.Invoke(() =>
+            // Missing when the file could not be loaded at construction time. Reported instead of
+            // thrown, so a missing sound file cannot take an ongoing capture with it.
+            if (!_audioFileDictionary.TryGetValue(path, out var audioFile))
             {
-                try
+                _logger.LogError("No audio file loaded for {path}.", path);
+                return;
+            }
+
+            // WaveOutEvent signals playback through its own thread and needs no message pump, so
+            // this no longer runs through the dispatcher: playing a sound is not the UI thread's
+            // business, and it used to block whoever asked for it — including the hotkey path.
+            try
+            {
+                lock (_playbackLock)
                 {
-                    var path = Path.Combine("Sounds", currentSoundMode.ConvertToString(), $"{sound.ConvertToString()}.mp3");
-                    var audioFile = _audioFileDictionary[path];
+                    // One announcement at a time. The readers are shared instances, so a second
+                    // device playing the same file would fight over its position — and the
+                    // previous device has to be released either way: every call used to leak a
+                    // WaveOut handle plus its playback thread.
+                    DisposeActiveDevice();
 
                     var outputDevice = new WaveOutEvent();
-                    audioFile.Position = 0;
-                    outputDevice.Init(audioFile);
-                    outputDevice.Volume = (float)currentVolume;
-                    outputDevice.Play();
+                    try
+                    {
+                        outputDevice.PlaybackStopped += (_, __) => OnPlaybackStopped(outputDevice);
+                        audioFile.Position = 0;
+                        outputDevice.Init(audioFile);
+                        outputDevice.Volume = (float)currentVolume;
+                        outputDevice.Play();
+                    }
+                    catch
+                    {
+                        // Nothing is playing, so nothing will raise PlaybackStopped to release it.
+                        // Without this, an unavailable audio device leaks one handle per press.
+                        DisposeDevice(outputDevice);
+                        throw;
+                    }
+
+                    _activeDevice = outputDevice;
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Error while playing sound {sound.ConvertToString()}.");
-                }
-            });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error while playing sound {sound.ConvertToString()}.");
+            }
+        }
+
+        private void OnPlaybackStopped(WaveOutEvent device)
+        {
+            lock (_playbackLock)
+            {
+                // A newer sound has already taken over and disposed this device.
+                if (!ReferenceEquals(_activeDevice, device))
+                    return;
+
+                _activeDevice = null;
+            }
+
+            DisposeDevice(device);
+        }
+
+        /// <summary>Caller holds <see cref="_playbackLock"/>.</summary>
+        private void DisposeActiveDevice()
+        {
+            var device = _activeDevice;
+            _activeDevice = null;
+
+            if (device != null)
+                DisposeDevice(device);
+        }
+
+        private void DisposeDevice(WaveOutEvent device)
+        {
+            try
+            {
+                // Stops playback as well.
+                device.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while releasing the audio output device.");
+            }
         }
     }
 

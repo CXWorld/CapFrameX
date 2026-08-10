@@ -3,6 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Platforms>AnyCPU;x64;x86</Platforms>
+    <!-- See CapFrameX.Webservice.Host.csproj: packages warn about the unsupported netcoreapp3.1
+         target through codeless buildTransitive notices that NoWarn cannot reach. -->
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
 
   <ItemGroup>
