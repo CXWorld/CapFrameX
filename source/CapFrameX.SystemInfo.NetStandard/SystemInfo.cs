@@ -332,7 +332,7 @@ namespace CapFrameX.SystemInfo.NetStandard
                 { "859B", "Crucial" },
                 { "029E", "Corsair" },
                 { "04CB", "ADATA" },
-                { "04CD", "G.Skill" },
+                { "04CD", "G.SKILL" },
                 { "04EF", "Team Group" },
                 { "0198", "Kingston" },
                 { "7F98", "Kingston" },

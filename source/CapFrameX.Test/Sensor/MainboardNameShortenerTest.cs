@@ -98,5 +98,16 @@ namespace CapFrameX.Test.Sensor
         {
             Assert.AreEqual(expected, MainboardNameShortener.ToBrand(manufacturer));
         }
+
+        [DataTestMethod]
+        [DataRow("G Skill In", "G.SKILL")]
+        [DataRow("G Skill Intl", "G.SKILL")]
+        [DataRow("G.Skill", "G.SKILL")]
+        [DataRow("G-Skill", "G.SKILL")]
+        [DataRow("GSkill", "G.SKILL")]
+        public void ToBrand_MapsMemoryVendorSpellings(string manufacturer, string expected)
+        {
+            Assert.AreEqual(expected, MainboardNameShortener.ToBrand(manufacturer));
+        }
     }
 }

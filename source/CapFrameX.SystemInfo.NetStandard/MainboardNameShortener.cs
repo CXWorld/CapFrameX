@@ -30,6 +30,12 @@ namespace CapFrameX.SystemInfo.NetStandard
                 ("Gigabyte", "Gigabyte"),
                 ("ASRock", "ASRock"),
                 ("Biostar", "Biostar"),
+                // Memory vendors reach ToBrand through the RAM manufacturer field, where SMBIOS
+                // spells G.SKILL every way but the official one ("G Skill Intl", "G Skill In", ...).
+                ("G.Skill", "G.SKILL"),
+                ("G Skill", "G.SKILL"),
+                ("G-Skill", "G.SKILL"),
+                ("GSkill", "G.SKILL"),
                 ("Elitegroup", "ECS"),
                 ("ECS", "ECS"),
                 ("Colorful", "Colorful"),
