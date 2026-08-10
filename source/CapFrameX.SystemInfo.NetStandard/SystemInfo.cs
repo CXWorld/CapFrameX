@@ -143,7 +143,7 @@ namespace CapFrameX.SystemInfo.NetStandard
                 const string gameBar = "SOFTWARE\\Microsoft\\GameBar";
                 using (RegistryKey gameBarKey = Registry.CurrentUser.OpenSubKey(gameBar, true))
                 {
-                    var val = gameBarKey.GetValue("AutoGameModeEnabled");
+                    var val = gameBarKey?.GetValue("AutoGameModeEnabled");
                     if (val != null)
                     {
                         bool valConverted = Convert.ToBoolean(val);
