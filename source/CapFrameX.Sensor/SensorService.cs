@@ -677,15 +677,11 @@ namespace CapFrameX.Sensor
 
         public string GetGpuDriverVersion()
         {
-            IHardware gpu = null;
-            lock (_lockComputer)
-            {
-                gpu = _computer?.Hardware
-               .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAmd
-                   || hdw.HardwareType == HardwareType.GpuNvidia
-                   || hdw.HardwareType == HardwareType.GpuIntel);
-            }
+            // Same adapter selection as the GPU sensor filter, so the reported driver
+            // matches the displayed adapter (auto mode: discrete GPU first).
+            var gpu = GetPrimaryGpuHardware();
 
+            // Driver I/O must not run under _lockComputer (see GetSensors).
             return gpu != null ? gpu.GetDriverVersion() : "Unknown";
         }
 
@@ -723,28 +719,9 @@ namespace CapFrameX.Sensor
                     return _appConfiguration.GraphicsAdapter;
                 }
 
-                List<IHardware> gpus = null;
-                lock (_lockComputer)
-                {
-                    gpus = _computer?.Hardware
-                       .Where(hdw => hdw.HardwareType == HardwareType.GpuAmd
-                           || hdw.HardwareType == HardwareType.GpuNvidia
-                           || hdw.HardwareType == HardwareType.GpuIntel).ToList();
-                }
-
-                if (gpus != null && gpus.Count == 1)
-                {
-                    return gpus[0].Name;
-                }
-                else if (gpus != null && gpus.Count > 1)
-                {
-                    var discreteGpu = gpus.FirstOrDefault(g => (g as GenericGpu)?.IsDiscreteGpu ?? true);
-                    if (discreteGpu != null)
-                        return discreteGpu.Name;
-                    return gpus[0].Name;
-                }
-
-                return "Unknown";
+                // Same adapter selection as the GPU sensor filter (auto mode: discrete GPU first)
+                var gpu = GetPrimaryGpuHardware();
+                return gpu != null ? gpu.Name : "Unknown";
             }
             else
             {

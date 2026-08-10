@@ -1,3 +1,4 @@
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Monitoring.Contracts;
@@ -27,6 +28,7 @@ namespace CapFrameX.ViewModel
         private readonly ISensorService _sensorService;
         private readonly ISensorConfig _sensorConfig;
         private readonly ISystemInfo _systemInfo;
+        private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<InfoViewModel> _logger;
 
         private string _cpuName = "Detecting...";
@@ -108,11 +110,13 @@ namespace CapFrameX.ViewModel
         public InfoViewModel(ISensorService sensorService,
                              ISensorConfig sensorConfig,
                              ISystemInfo systemInfo,
+                             IAppConfiguration appConfiguration,
                              ILogger<InfoViewModel> logger)
         {
             _sensorService = sensorService;
             _sensorConfig = sensorConfig;
             _systemInfo = systemInfo;
+            _appConfiguration = appConfiguration;
             _logger = logger;
 
             // This view is the startup page and the initial activation does not raise
@@ -137,10 +141,13 @@ namespace CapFrameX.ViewModel
                 CpuVendorBadge = VendorBadge.FromCpuVendor(_sensorService.GetCpuVendor());
                 CpuDetails = _systemInfo.GetProcessorCoreCountInfo();
 
-                GpuName = _systemInfo.GetGraphicCardName();
-                GpuVendorBadge = VendorBadge.FromGpuVendor(_sensorService.GetGpuVendor());
-                var driverVersion = _sensorService.GetGpuDriverVersion();
-                GpuDetails = IsUsable(driverVersion) ? $"Driver {driverVersion}" : string.Empty;
+                UpdateGpuInfo();
+
+                // Keep the GPU block in sync with the graphics adapter selection
+                // (auto mode: discrete GPU, otherwise the configured adapter).
+                _appConfiguration.OnValueChanged
+                    .Where(change => change.key == nameof(IAppConfiguration.GraphicsAdapter))
+                    .Subscribe(_ => UpdateGpuInfo());
 
                 MainboardName = _systemInfo.GetMotherboardName();
                 MainboardVendorBadge = VendorBadge.FromVendorName(_systemInfo.GetMotherboardManufacturerBrand());
@@ -157,6 +164,28 @@ namespace CapFrameX.ViewModel
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while collecting system information.");
+            }
+        }
+
+        /// <summary>
+        /// Resolves the GPU identity through the sensor service, which applies the same
+        /// adapter selection as the GPU sensor filter: auto mode picks the discrete GPU
+        /// on iGPU/dGPU systems, otherwise the configured adapter is used. Intentionally
+        /// bypasses <see cref="ISystemInfo.GetGraphicCardName"/> — its WMI fallback
+        /// reports the display-driving adapter, which is the iGPU on hybrid systems.
+        /// </summary>
+        private void UpdateGpuInfo()
+        {
+            try
+            {
+                GpuName = _sensorService.GetGpuName();
+                GpuVendorBadge = VendorBadge.FromGpuVendor(_sensorService.GetGpuVendor());
+                var driverVersion = _sensorService.GetGpuDriverVersion();
+                GpuDetails = IsUsable(driverVersion) ? $"Driver {driverVersion}" : string.Empty;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while updating GPU information.");
             }
         }
 

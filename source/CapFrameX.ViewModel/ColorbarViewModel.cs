@@ -711,6 +711,12 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged(nameof(GraphicsAdapters));
 
                 IsFlmSupported = sensorService.GetGpuVendor() == EGpuVendor.Amd;
+
+                // Seed the custom hardware descriptions only after GPU enumeration is
+                // complete: earlier, GetGraphicCardName() falls back to WMI, which
+                // reports the display-driving adapter - the iGPU on hybrid systems -
+                // and that wrong name would be persisted in the configuration.
+                SetHardwareInfoDefaultsFromConfig();
             });
 
             _captureManager.CaptureServiceRunningStream
@@ -743,7 +749,6 @@ namespace CapFrameX.ViewModel
 
             SetAggregatorEvents();
             SubscribeToAggregatorEvents();
-            SetHardwareInfoDefaultsFromConfig();
 
             System.Threading.Tasks.Task.Run(() =>
             {
