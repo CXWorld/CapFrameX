@@ -137,12 +137,16 @@ jobs:
             *.zip
 
       - name: Upload archives to Azure Blob Storage
-        if: ${{ secrets.AZURE_STORAGE_ACCOUNT != '' && secrets.AZURE_STORAGE_KEY != '' }}
         shell: pwsh
         env:
           AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
           AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
         run: |
+          if ([string]::IsNullOrWhiteSpace($env:AZURE_STORAGE_ACCOUNT) -or [string]::IsNullOrWhiteSpace($env:AZURE_STORAGE_KEY)) {
+            Write-Host "Skipping Azure Blob upload because AZURE_STORAGE_ACCOUNT or AZURE_STORAGE_KEY is not set."
+            exit 0
+          }
+
           if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
             throw "Azure CLI is not available on this runner."
           }
