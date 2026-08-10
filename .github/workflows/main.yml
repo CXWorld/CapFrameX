@@ -32,6 +32,137 @@ jobs:
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
+        with:
+          vs-version: '[18.0, 19.0)'
+
+      - name: Install Visual Studio Native Desktop + MFC
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          Write-Host "Starting VS native dependency setup..."
+
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsInstaller = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe"
+
+          Write-Host "vswhere path: $vswhere"
+          Write-Host "vs_installer path: $vsInstaller"
+
+          if (-not (Test-Path $vswhere)) {
+            throw "vswhere.exe not found at $vswhere"
+          }
+          if (-not (Test-Path $vsInstaller)) {
+            throw "vs_installer.exe not found at $vsInstaller"
+          }
+
+          $instanceJson = & $vswhere -latest -products * -version "[18.0, 19.0)" -requires Microsoft.Component.MSBuild -format json
+          $instance = ($instanceJson | ConvertFrom-Json | Select-Object -First 1)
+          if ($null -eq $instance) {
+            throw "No Visual Studio installation found on runner."
+          }
+
+          $installPath = $instance.installationPath
+          $productId = $instance.productId
+
+          if ([string]::IsNullOrWhiteSpace($installPath) -or [string]::IsNullOrWhiteSpace($productId)) {
+            throw "Could not resolve Visual Studio installPath/productId."
+          }
+
+          Write-Host "Visual Studio installPath: $installPath"
+          Write-Host "Visual Studio productId: $productId"
+          "VS_INSTALL_PATH=$installPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+          $beforeMfcInstance = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.ATLMFC -property installationPath
+          if ([string]::IsNullOrWhiteSpace($beforeMfcInstance)) {
+            Write-Host "MFC component not detected before install."
+          } else {
+            Write-Host "MFC component already detected before install at: $beforeMfcInstance"
+          }
+
+          $net472TargetingPack = Join-Path "${env:ProgramFiles(x86)}" "Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\mscorlib.dll"
+          $needsNet472Install = -not (Test-Path $net472TargetingPack)
+          if ($needsNet472Install) {
+            Write-Host ".NET Framework 4.7.2 targeting pack not found at: $net472TargetingPack"
+          } else {
+            Write-Host ".NET Framework 4.7.2 targeting pack found at: $net472TargetingPack"
+          }
+
+          $netFxRelease = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full' -ErrorAction SilentlyContinue).Release
+          if ($null -eq $netFxRelease) {
+            Write-Host ".NET Framework v4 Full Release key not found in registry."
+          } else {
+            Write-Host ".NET Framework v4 Full Release key: $netFxRelease"
+          }
+
+          $atlmfcDirsBefore = Get-ChildItem -Path (Join-Path $installPath "VC\Tools\MSVC") -Directory -ErrorAction SilentlyContinue |
+            ForEach-Object { Join-Path $_.FullName "atlmfc\lib\x64" } |
+            Where-Object { Test-Path $_ }
+          $mfcLibsBefore = @()
+          if ($atlmfcDirsBefore) {
+            $mfcLibsBefore = @(Get-ChildItem -Path $atlmfcDirsBefore -Filter "mfc*.lib" -ErrorAction SilentlyContinue)
+          }
+
+          $needsInstall = [string]::IsNullOrWhiteSpace($beforeMfcInstance) -or ($mfcLibsBefore.Count -eq 0) -or $needsNet472Install
+          if ($needsInstall) {
+            $installArgs = @(
+              "modify",
+              "--installPath", "$installPath",
+              "--add", "Microsoft.VisualStudio.Workload.NativeDesktop",
+              "--add", "Microsoft.VisualStudio.Component.VC.ATLMFC",
+              "--add", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+              "--add", "Microsoft.Net.Component.4.7.2.TargetingPack",
+              "--add", "Microsoft.Net.Component.4.7.2.SDK",
+              "--passive",
+              "--norestart",
+              "--wait"
+            )
+
+            Write-Host "Running vs_installer with args: $($installArgs -join ' ')"
+            $proc = Start-Process -FilePath $vsInstaller -ArgumentList $installArgs -Wait -PassThru -NoNewWindow
+            Write-Host "vs_installer exit code: $($proc.ExitCode)"
+
+            if (($proc.ExitCode -ne 0) -and ($proc.ExitCode -ne 3010)) {
+              throw "Failed to install Native Desktop/MFC components. Exit code: $($proc.ExitCode)"
+            }
+          } else {
+            Write-Host "Skipping vs_installer modify because MFC libraries are already present."
+          }
+
+          $afterMfcInstance = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.ATLMFC -property installationPath
+          if ([string]::IsNullOrWhiteSpace($afterMfcInstance)) {
+            throw "MFC component is still not detected by vswhere after installation."
+          }
+
+          Write-Host "MFC component detected after install at: $afterMfcInstance"
+
+          $atlmfcDirs = Get-ChildItem -Path (Join-Path $installPath "VC\Tools\MSVC") -Directory -ErrorAction SilentlyContinue |
+            ForEach-Object { Join-Path $_.FullName "atlmfc\lib\x64" } |
+            Where-Object { Test-Path $_ }
+
+          if (-not $atlmfcDirs) {
+            throw "No atlmfc\\lib\\x64 directories found under $installPath\\VC\\Tools\\MSVC"
+          }
+
+          Write-Host "Detected ATL/MFC library directories:"
+          $atlmfcDirs | ForEach-Object { Write-Host " - $_" }
+
+          $mfcLibs = Get-ChildItem -Path $atlmfcDirs -Filter "mfc*.lib" -ErrorAction SilentlyContinue
+          if (-not $mfcLibs) {
+            throw "No mfc*.lib files found in ATL/MFC x64 library directories."
+          }
+
+          Write-Host "Detected MFC library files (sample):"
+          $mfcLibs | Select-Object -First 10 | ForEach-Object { Write-Host " - $($_.FullName)" }
+
+          if (-not (Test-Path $net472TargetingPack)) {
+            throw ".NET Framework 4.7.2 targeting pack is missing after installation: $net472TargetingPack"
+          }
+
+          $netFxReleaseAfter = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full' -ErrorAction SilentlyContinue).Release
+          if (($null -eq $netFxReleaseAfter) -or ($netFxReleaseAfter -lt 461808)) {
+            throw ".NET Framework runtime 4.7.2 or newer is not installed (Release key: $netFxReleaseAfter)."
+          }
+
+          Write-Host ".NET Framework 4.7.2+ runtime and targeting pack are available."
 
       - name: Install WiX Toolset v3.14.1
         shell: pwsh
@@ -56,7 +187,7 @@ jobs:
       - name: Restore
         shell: cmd
         run: |
-          dotnet restore CapFrameX.sln
+          nuget restore CapFrameX.sln
           nuget restore -SolutionDirectory "%GITHUB_WORKSPACE%" source\CapFrameX.CustomInstallerActions\CapFrameX.CustomInstallerActions.csproj
 
       - name: Build CX
