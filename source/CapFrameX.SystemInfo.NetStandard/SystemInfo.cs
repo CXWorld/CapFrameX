@@ -164,6 +164,22 @@ namespace CapFrameX.SystemInfo.NetStandard
 
         #endregion
 
+        /// <summary>
+        /// The computer name, i.e. what Windows shows as "Device name" in Settings → System → About.
+        /// </summary>
+        public string GetDeviceName()
+        {
+            try
+            {
+                return Environment.MachineName;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while getting device name.");
+                return string.Empty;
+            }
+        }
+
         public string GetProcessorName() => _sensorService.GetCpuName();
 
         public string GetGraphicCardName()

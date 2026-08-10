@@ -10,6 +10,7 @@ namespace CapFrameX.Data.Session.Contracts
 		string GameName { get; set; }
 		string ProcessName { get; set; }
 		DateTime CreationDate { get; set; }
+		string DeviceName { get; set; }
 		string Motherboard { get; set; }
 		string OS { get; set; }
 		string SystemRam { get; set; }

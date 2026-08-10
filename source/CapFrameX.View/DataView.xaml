@@ -20,6 +20,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Styles/CustomRangeSliderStyle.xaml" />
+                <ResourceDictionary Source="Styles/CxExpander.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
             <mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
@@ -983,15 +984,9 @@
                 </StackPanel>
             </Grid>
             <!--System info expander-->
-            <Expander Margin="0 -6 0 0" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" ExpandDirection="Left" materialDesign:ExpanderAssist.VerticalHeaderPadding="5"
-                      Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
-                <Expander.Header>
-                    <TextBlock Text="System Info" RenderTransformOrigin=".5,.5" FontSize="14" HorizontalAlignment="Center">
-                        <TextBlock.LayoutTransform>
-                            <RotateTransform Angle="90" />
-                        </TextBlock.LayoutTransform>
-                    </TextBlock>
-                </Expander.Header>
+            <Expander Margin="0 -6 0 0" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1"
+                      Style="{StaticResource CxRailExpander}" Header="SYSTEM INFO"
+                      Tag="Show or hide the system info of this capture">
                 <ScrollViewer VerticalScrollBarVisibility="Hidden">
                     <ScrollViewer.Resources>
                         <sys:Double x:Key="{x:Static SystemParameters.VerticalScrollBarWidthKey}">3</sys:Double>

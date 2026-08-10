@@ -244,6 +244,8 @@ namespace CapFrameX.Data
                 systemInfos.Add(new SystemInfoEntry() { Key = "Creation Date & Time", Value = recordInfo.CreationDate + "  |  " + recordInfo.CreationTime });
             if (!string.IsNullOrWhiteSpace(recordInfo.Comment))
                 systemInfos.Add(new SystemInfoEntry() { Key = "Comment", Value = recordInfo.Comment });
+            if (!string.IsNullOrWhiteSpace(recordInfo.DeviceName))
+                systemInfos.Add(new SystemInfoEntry() { Key = "Device Name", Value = recordInfo.DeviceName });
             if (!string.IsNullOrWhiteSpace(recordInfo.ProcessorName))
                 systemInfos.Add(new SystemInfoEntry() { Key = "Processor", Value = recordInfo.ProcessorName });
             if (!string.IsNullOrWhiteSpace(recordInfo.SystemRamInfo))
@@ -557,6 +559,7 @@ namespace CapFrameX.Data
                     GpuCoreClock = recordedFileInfo.GPUCoreClock,
                     GPUCount = recordedFileInfo.NumberGPUs,
                     SystemRam = recordedFileInfo.SystemRamInfo,
+                    DeviceName = recordedFileInfo.DeviceName,
                     Motherboard = recordedFileInfo.MotherboardName,
                     DriverPackage = recordedFileInfo.DriverPackage,
                     GpuMemoryClock = recordedFileInfo.GPUMemoryClock,
@@ -933,6 +936,7 @@ namespace CapFrameX.Data
 
 
                 // manage system info
+                string deviceName = string.Empty;
                 string cpuInfo = string.Empty;
                 string gpuInfo = string.Empty;
                 string ramInfo = string.Empty;
@@ -949,6 +953,7 @@ namespace CapFrameX.Data
 
                 if (hwInfo != null)
                 {
+                    deviceName = hwInfo?.First().DeviceName;
                     cpuInfo = hwInfo?.First().Processor;
                     gpuInfo = hwInfo?.First().GPU;
                     ramInfo = hwInfo?.First().SystemRam;
@@ -983,6 +988,9 @@ namespace CapFrameX.Data
                         mbInfo = _systemInfo.GetMotherboardName();
                     }
 
+                    // Like the OS version, the device name identifies the machine rather than a
+                    // hardware component, so custom hardware labels do not override it.
+                    deviceName = _systemInfo.GetDeviceName();
                     osInfo = _systemInfo.GetOSVersion();
                     gpuDriverInfo = _sensorService.GetGpuDriverVersion();
                     appVersion = _appVersionProvider.GetAppVersion();
@@ -1030,6 +1038,7 @@ namespace CapFrameX.Data
                         ProcessName = processName.Contains(".exe") ? processName : $"{processName}.exe",
                         GameName = GetGameNameFromFileDescription(processName),
                         CreationDate = DateTime.UtcNow,
+                        DeviceName = deviceName,
                         Motherboard = mbInfo,
                         OS = osInfo,
                         Processor = cpuInfo,

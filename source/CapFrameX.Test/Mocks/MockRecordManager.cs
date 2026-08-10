@@ -196,6 +196,7 @@ namespace CapFrameX.Test.Mocks
 
             AddSystemInfoEntry(entries, "Game", recordInfo.GameName);
             AddSystemInfoEntry(entries, "Process", recordInfo.ProcessName);
+            AddSystemInfoEntry(entries, "Device Name", recordInfo.DeviceName);
             AddSystemInfoEntry(entries, "CPU", recordInfo.ProcessorName);
             AddSystemInfoEntry(entries, "GPU", recordInfo.GraphicCardName);
             AddSystemInfoEntry(entries, "RAM", recordInfo.SystemRamInfo);
@@ -383,6 +384,7 @@ namespace CapFrameX.Test.Mocks
                 ProcessName = processName,
                 GameName = processName,
                 Comment = comment,
+                DeviceName = Environment.MachineName,
                 AppVersion = new Version(1, 7, 7)
             };
 
@@ -390,6 +392,7 @@ namespace CapFrameX.Test.Mocks
             if (hwInfo?.Count > 0)
             {
                 var first = hwInfo[0];
+                info.DeviceName = first.DeviceName;
                 info.Processor = first.Processor;
                 info.GPU = first.GPU;
                 info.SystemRam = first.SystemRam;
@@ -485,6 +488,7 @@ namespace CapFrameX.Test.Mocks
         public string FullPath { get; private set; }
         public FileInfo FileInfo { get; private set; }
         public string CombinedInfo => $"{GameName} {ProcessName} {ProcessorName} {GraphicCardName}";
+        public string DeviceName { get; private set; }
         public string MotherboardName { get; private set; }
         public string OsVersion { get; private set; }
         public string BaseDriverVersion { get; private set; }
@@ -533,6 +537,7 @@ namespace CapFrameX.Test.Mocks
             _systemRamInfo = info.SystemRam;
             _comment = info.Comment;
 
+            DeviceName = info.DeviceName;
             MotherboardName = info.Motherboard;
             OsVersion = info.OS;
             GPUDriverVersion = info.GPUDriverVersion;

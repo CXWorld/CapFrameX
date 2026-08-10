@@ -18,6 +18,8 @@
 
         ESystemInfoTertiaryStatus HardwareAcceleratedGPUSchedulingStatus { get; }
 
+        string GetDeviceName();
+
         string GetProcessorName();
 
         string GetGraphicCardName();

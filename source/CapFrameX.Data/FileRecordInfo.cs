@@ -34,6 +34,7 @@ namespace CapFrameX.Data
 		public string FullPath { get; private set; }
 		public FileInfo FileInfo { get; private set; }
 		public string CombinedInfo { get; private set; }
+		public string DeviceName { get; private set; }
 		public string MotherboardName { get; private set; }
 		public string OsVersion { get; private set; }
 		public string ProcessorName { get; set; }
@@ -85,6 +86,7 @@ namespace CapFrameX.Data
 			ProcessorName = sessionInfo.Processor;
 			GraphicCardName = sessionInfo.GPU;
 			SystemRamInfo = sessionInfo.SystemRam;
+			DeviceName = sessionInfo.DeviceName;
 			MotherboardName = sessionInfo.Motherboard;
 			OsVersion = sessionInfo.OS;
 			GPUMemoryClock = sessionInfo.GpuMemoryClock;
@@ -327,6 +329,9 @@ namespace CapFrameX.Data
 
 				if (infoKeyValueDictionary.Keys.Contains("RecordTime"))
 					RecordTime = Convert.ToDouble(infoKeyValueDictionary["RecordTime"], CultureInfo.InvariantCulture);
+
+				if (infoKeyValueDictionary.Keys.Contains("Device Name"))
+					DeviceName = infoKeyValueDictionary["Device Name"];
 
 				if (infoKeyValueDictionary.Keys.Contains("Motherboard"))
 					MotherboardName = infoKeyValueDictionary["Motherboard"];
