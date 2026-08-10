@@ -8,6 +8,7 @@ pipeline {
             steps {
                 // Legacy packages.config projects (e.g. CapFrameX.CustomInstallerActions used by the installer)
                 bat "dotnet restore CapFrameX.sln"
+				bat "nuget restore -SolutionDirectory ${pwd()} source\\CapFrameX.CustomInstallerActions\\CapFrameX.CustomInstallerActions.csproj"
                 // SDK-style net9.0-windows project graph
                 //bat "msbuild source\\CapFrameX\\CapFrameX.csproj /t:Restore /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0"
             }
@@ -53,7 +54,6 @@ pipeline {
 
                         stage('Build Installer') {
                             steps {
-								bat "nuget restore source\\CapFrameX.CustomInstallerActions\\CapFrameX.CustomInstallerActions.csproj"
                                 bat "msbuild source\\CapFrameXInstaller\\CapFrameXInstaller.wixproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=18.0"
                             }
                         }
