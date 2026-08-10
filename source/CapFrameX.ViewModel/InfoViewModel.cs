@@ -1,9 +1,11 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Sensor;
+using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Monitoring.Contracts;
 using CapFrameX.ViewModel.SubModels;
 using Microsoft.Extensions.Logging;
+using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using System;
@@ -17,9 +19,12 @@ namespace CapFrameX.ViewModel
     /// <summary>
     /// System information landing page: static hardware identification (CPU, GPU,
     /// mainboard, memory) with vendor badges plus live base telemetry (load, power,
-    /// temperature, clocks). While this view is active it sets
+    /// temperature, clocks). While this view is visible it sets
     /// <see cref="ISensorConfig.EvaluateAllSensors"/> so the sensor snapshot stream
     /// keeps delivering values even when neither overlay nor logging is running.
+    /// Visible means: the info tab is the active view and the shell is neither
+    /// minimized nor hidden to the tray - otherwise the telemetry pauses so the
+    /// tab causes no CPU load in the background.
     /// </summary>
     public class InfoViewModel : BindableBase, INavigationAware
     {
@@ -30,6 +35,11 @@ namespace CapFrameX.ViewModel
         private readonly ISystemInfo _systemInfo;
         private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<InfoViewModel> _logger;
+
+        // This view is the startup page and the initial activation does not raise
+        // OnNavigatedTo, so both flags start as active.
+        private bool _isViewActive = true;
+        private bool _isShellVisible = true;
 
         private string _cpuName = "Detecting...";
         private string _cpuDetails = string.Empty;
@@ -111,6 +121,7 @@ namespace CapFrameX.ViewModel
                              ISensorConfig sensorConfig,
                              ISystemInfo systemInfo,
                              IAppConfiguration appConfiguration,
+                             IEventAggregator eventAggregator,
                              ILogger<InfoViewModel> logger)
         {
             _sensorService = sensorService;
@@ -119,16 +130,35 @@ namespace CapFrameX.ViewModel
             _appConfiguration = appConfiguration;
             _logger = logger;
 
-            // This view is the startup page and the initial activation does not raise
-            // OnNavigatedTo, so telemetry has to be armed here.
-            _sensorConfig.EvaluateAllSensors = true;
+            UpdateSensorEvaluationState();
+
+            // Pause the telemetry while the shell is minimized or hidden to the tray.
+            eventAggregator.GetEvent<PubSubEvent<AppMessages.ShellVisibilityChanged>>()
+                .Subscribe(msg =>
+                {
+                    _isShellVisible = msg.IsContentVisible;
+                    UpdateSensorEvaluationState();
+                });
 
             _ = Task.Run(InitializeStaticInfoAsync);
 
             _sensorService.SensorSnapshotStream
+                .Where(_ => IsLiveViewVisible)
                 .Sample(TimeSpan.FromMilliseconds(500))
                 .ObserveOnDispatcher()
                 .Subscribe(snapshot => UpdateLiveMetrics(snapshot.Item2));
+        }
+
+        /// <summary>
+        /// Live telemetry runs only while its output can actually be seen. Window focus
+        /// is deliberately not part of the criterion - CapFrameX may run on a second
+        /// monitor while a game holds the focus on the first display.
+        /// </summary>
+        private bool IsLiveViewVisible => _isViewActive && _isShellVisible;
+
+        private void UpdateSensorEvaluationState()
+        {
+            _sensorConfig.EvaluateAllSensors = IsLiveViewVisible;
         }
 
         private async Task InitializeStaticInfoAsync()
@@ -396,12 +426,14 @@ namespace CapFrameX.ViewModel
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            _sensorConfig.EvaluateAllSensors = false;
+            _isViewActive = false;
+            UpdateSensorEvaluationState();
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            _sensorConfig.EvaluateAllSensors = true;
+            _isViewActive = true;
+            UpdateSensorEvaluationState();
         }
     }
 }

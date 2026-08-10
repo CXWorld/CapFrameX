@@ -1,9 +1,11 @@
 ﻿using CapFrameX.Configuration;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.MVVM;
+using CapFrameX.EventAggregation.Messages;
 using CapFrameX.MVVM;
 using CapFrameX.View.UITracker;
 using CapFrameX.ViewModel;
+using Prism.Events;
 using Serilog;
 using System;
 using System.ComponentModel;
@@ -48,13 +50,16 @@ namespace CapFrameX
 
         private readonly ISettingsStorage _settingsStorage;
         private readonly IPathService _pathService;
+        private readonly IEventAggregator _eventAggregator;
 
+        private bool? _lastPublishedContentVisibility;
 
         private GridLength ColumnAWidthSaved { get; set; }
 
         public Shell(ISettingsStorage settingsStorage, IPathService pathService,
-            UpdateViewModel updateViewModel)
+            UpdateViewModel updateViewModel, IEventAggregator eventAggregator)
         {
+            _eventAggregator = eventAggregator;
             using (StartupPerformanceLogger.Measure("Shell XAML and resource initialization"))
             {
                 InitializeComponent();
@@ -79,6 +84,11 @@ namespace CapFrameX
                 var windowStateTracker = new WindowStateTracker(_pathService.ConfigFolder);
                 windowStateTracker.Tracker.Track(this);
                 StateChanged += Resize;
+
+                // Both hooks are needed: plain minimize only changes WindowState,
+                // minimize to tray additionally calls Hide() (IsVisible).
+                StateChanged += (s, e) => PublishContentVisibility();
+                IsVisibleChanged += (s, e) => PublishContentVisibility();
 
                 // Start tracking column width
                 var columnAWidthTracker = new ColumnWidthTracker(this, _pathService.ConfigFolder);
@@ -124,19 +134,21 @@ namespace CapFrameX
             }
         }
 
-        //private IntPtr HandleMessages(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-        //{
-        //    // 0x0112 == WM_SYSCOMMAND, 'Window' command message.
-        //    // 0xF020 == SC_MINIMIZE, command to minimize the window.
-        //    if (msg == 0x0112 && ((int)wParam & 0xFFF0) == 0xF020)
-        //    {
-        //        // Cancel the minimize.
-        //        handled = true;
-        //        Hide();
-        //    }
+        /// <summary>
+        /// Lets view models pause work whose output nobody can see (e.g. the info tab's
+        /// live telemetry). Visibility is the criterion, not focus: CapFrameX running on
+        /// a second monitor with a game focused on the first display must keep updating.
+        /// </summary>
+        private void PublishContentVisibility()
+        {
+            bool isContentVisible = IsVisible && WindowState != WindowState.Minimized;
+            if (_lastPublishedContentVisibility == isContentVisible)
+                return;
 
-        //    return IntPtr.Zero;
-        //}
+            _lastPublishedContentVisibility = isContentVisible;
+            _eventAggregator.GetEvent<PubSubEvent<AppMessages.ShellVisibilityChanged>>()
+                .Publish(new AppMessages.ShellVisibilityChanged(isContentVisible));
+        }
 
         private void SystemTray_TrayLeftMouseDownClick(object sender, RoutedEventArgs e)
         {
