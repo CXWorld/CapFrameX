@@ -53,7 +53,7 @@ pipeline {
 
                         stage('Build Installer') {
                             steps {
-								nuget restore source\\CapFrameX.CustomInstallerActions\\CapFrameX.CustomInstallerActions.csproj
+								bat "nuget restore source\\CapFrameX.CustomInstallerActions\\CapFrameX.CustomInstallerActions.csproj"
                                 bat "msbuild source\\CapFrameXInstaller\\CapFrameXInstaller.wixproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=18.0"
                             }
                         }
