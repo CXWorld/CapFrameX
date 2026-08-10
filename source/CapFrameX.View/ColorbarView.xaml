@@ -606,8 +606,8 @@
 											<Border Style="{StaticResource SettingsCard}">
 												<StackPanel>
 													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Capture and analysis"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Set the source of hardware labels, capture file format and power-analysis behavior."/>
-													<Grid Margin="0 14 0 10">
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="Set the source of hardware labels and the capture file format."/>
+													<Grid Margin="0 14 0 0">
 														<Grid.ColumnDefinitions>
 															<ColumnDefinition Width="*"/>
 															<ColumnDefinition Width="18"/>
@@ -640,28 +640,10 @@
 															</ComboBox.ItemTemplate>
 														</ComboBox>
 													</Grid>
-													<Separator Margin="0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
-													<Grid Margin="0 10 0 2" ToolTipService.ShowDuration="25000">
-														<Grid.ColumnDefinitions>
-															<ColumnDefinition Width="*"/>
-															<ColumnDefinition Width="Auto"/>
-														</Grid.ColumnDefinitions>
-														<StackPanel>
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Use TBP Sim values for analysis if available"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="Prefer simulated total-board-power data for supported RDNA and Intel Arc GPUs."/>
-														</StackPanel>
-														<CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}" IsChecked="{Binding UseTBPSim, Mode=TwoWay}">
-															<CheckBox.ToolTip>
-																<ToolTip MaxWidth="400">
-																	<TextBlock TextWrapping="Wrap" Text="If sensor data of a record contains &quot;TBP Sim&quot; values (RDNA + Intel Arc GPUs only), use these for analysis like FPS/W instead of &quot;GPU Total&quot;.&#10;For changes to take effect the analysis and comparison pages have to be reloaded and already inserted records on the report page need to be added again."/>
-																</ToolTip>
-															</CheckBox.ToolTip>
-														</CheckBox>
-													</Grid>
 												</StackPanel>
 											</Border>
 
-											<Border Style="{StaticResource SettingsCard}" Margin="0"
+											<Border Style="{StaticResource SettingsCard}"
 													Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
 												<StackPanel>
 													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Custom hardware labels"/>
@@ -704,6 +686,30 @@
 																<Binding Path="DataContext.CustomMainboardDescription" ElementName="ColorbarViewName" Mode="TwoWay" UpdateSourceTrigger="LostFocus"/>
 															</TextBox.Text>
 														</TextBox>
+													</Grid>
+												</StackPanel>
+											</Border>
+
+											<Border Style="{StaticResource SettingsCard}" Margin="0">
+												<StackPanel>
+													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Power analysis"/>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="Control which power sensor is used for power-related metrics."/>
+													<Grid Margin="0 14 0 0" ToolTipService.ShowDuration="25000">
+														<Grid.ColumnDefinitions>
+															<ColumnDefinition Width="*"/>
+															<ColumnDefinition Width="Auto"/>
+														</Grid.ColumnDefinitions>
+														<StackPanel>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Use TBP Sim values for analysis if available"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="Prefer simulated total-board-power data for supported RDNA and Intel Arc GPUs."/>
+														</StackPanel>
+														<CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}" IsChecked="{Binding UseTBPSim, Mode=TwoWay}">
+															<CheckBox.ToolTip>
+																<ToolTip MaxWidth="400">
+																	<TextBlock TextWrapping="Wrap" Text="If sensor data of a record contains &quot;TBP Sim&quot; values (RDNA + Intel Arc GPUs only), use these for analysis like FPS/W instead of &quot;GPU Total&quot;.&#10;For changes to take effect the analysis and comparison pages have to be reloaded and already inserted records on the report page need to be added again."/>
+																</ToolTip>
+															</CheckBox.ToolTip>
+														</CheckBox>
 													</Grid>
 												</StackPanel>
 											</Border>
