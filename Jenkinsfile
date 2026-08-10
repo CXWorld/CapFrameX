@@ -9,7 +9,7 @@ pipeline {
                 // Legacy packages.config projects (e.g. CapFrameX.CustomInstallerActions used by the installer)
                 bat "dotnet restore CapFrameX.sln"
                 // SDK-style net9.0-windows project graph
-                bat "msbuild source\\CapFrameX\\CapFrameX.csproj /t:Restore /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0"
+                //bat "msbuild source\\CapFrameX\\CapFrameX.csproj /t:Restore /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0"
             }
         }
 
