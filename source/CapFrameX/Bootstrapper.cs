@@ -59,6 +59,15 @@ namespace CapFrameX
         // Streams per-frame PresentMon frametimes/display-times to the hook (PresentMon graph mode).
         private CapFrameX.OSD.Integration.HookFrametimePublisher _hookFrametimePublisher;
 
+        /// <summary>
+        /// While the splash screen is up, the shell stays minimized after its warm-up
+        /// Show(); App reveals it via <see cref="PendingMainWindowState"/> once the
+        /// sensor service finished initializing.
+        /// </summary>
+        public bool DeferMainWindowRestore { get; set; }
+
+        public WindowState? PendingMainWindowState { get; private set; }
+
         protected override DependencyObject CreateShell()
         {
             using (StartupPerformanceLogger.Measure("Shell resolution and construction"))
@@ -210,6 +219,10 @@ namespace CapFrameX
                         Application.Current.MainWindow.Hide();
                     else
                         Application.Current.MainWindow.WindowState = WindowState.Minimized;
+                else if (DeferMainWindowRestore)
+                    // Splash screen active: hand the restore over to App, which reveals
+                    // the window once sensor initialization completed.
+                    PendingMainWindowState = startupWindowState;
                 else
                         Application.Current.MainWindow.WindowState = startupWindowState;
 

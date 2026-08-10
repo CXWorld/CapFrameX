@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <Resource Include="Icons\CapFrameXLogoOnly.png" />
+    <Resource Include="Icons\CX_Concepts\Production\cx_icon_BUC_256_preview.png" />
     <Resource Include="Icons\Empty.png" />
     <Resource Include="Icons\cx_icon_BUC.ico" />
     <Resource Include="Icons\CX_Icon.png" />
