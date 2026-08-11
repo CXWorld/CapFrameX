@@ -15,7 +15,8 @@ namespace CapFrameX.OSD.Integration
         Rendered = 1u << 6,
         Dormant = 1u << 7,
         Error = 1u << 8,
-        ForeignPresenter = 1u << 9
+        ForeignPresenter = 1u << 9,
+        EarlyInjectionRequired = 1u << 10
     }
 
     internal struct NativeHookStatusSnapshot

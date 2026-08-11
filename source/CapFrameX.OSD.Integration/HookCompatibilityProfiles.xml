@@ -19,4 +19,8 @@
   <Profile executable="DyingLightGame_TheBeast_x64_rwdi.exe"
            earlyInjectionModule="sl.interposer.dll"
            source="CapFrameX validation: inject after Streamline is mapped, never during the process CRT startup phase" />
+  <Profile executable="VoyageSteam-Win64-Shipping.exe"
+           disableDxgiSwapchainReleaseHook="true"
+           earlyInjectionModule="d3d12.dll"
+           source="CapFrameX validation: inject after D3D12 is mapped; disable the D3D11-only shared Release hook because Steam's DXGI interposer re-enters it" />
 </HookCompatibilityProfiles>

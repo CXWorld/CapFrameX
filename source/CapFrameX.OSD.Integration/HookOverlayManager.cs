@@ -38,7 +38,11 @@ namespace CapFrameX.OSD.Integration
         // the hook-free renderer take over instead.
         internal const ulong HookRendererReadyTimeoutMs = 10000;
         internal const int EarlyInjectionPollMs = 25;
-        private static readonly string[] SafeEarlyInjectionGateModules =
+        // Evidence used only to prove which frame-generation presenter caused a late attachment.
+        // It is deliberately separate from the module used on the next launch: waiting for a
+        // dynamically loaded XeSS-FG DLL is already too late when the title initializes it before
+        // the 25-ms process scan can inject the hook.
+        private static readonly string[] EarlyInjectionEvidenceModules =
         {
             "sl.interposer.dll",
             "libxess_fg.dll",
@@ -111,7 +115,8 @@ namespace CapFrameX.OSD.Integration
         private bool _firstPresentTimedOut;
         private ulong _rendererInitializingSinceTickMs;
         private bool _rendererInitializationStalled;
-        private bool _foreignPresenterDetected;
+        private bool _foreignPresenterActive;
+        private bool _earlyInjectionRequired;
         private int _injectionStatusPid;
         private string _lastInjectionError;
         private string _nativeFallbackReason;
@@ -251,7 +256,8 @@ namespace CapFrameX.OSD.Integration
                 _firstPresentTimedOut = false;
                 _rendererInitializingSinceTickMs = 0;
                 _rendererInitializationStalled = false;
-                _foreignPresenterDetected = false;
+                _foreignPresenterActive = false;
+                _earlyInjectionRequired = false;
                 _lastInjectionError = null;
                 _nativeFallbackReason = null;
                 _hookFreeFallbackReason = null;
@@ -410,6 +416,37 @@ namespace CapFrameX.OSD.Integration
             if (referenceTickMs == 0 || nowTickMs < referenceTickMs) return false;
 
             return nowTickMs - referenceTickMs >= HookHandshakeTimeoutMs;
+        }
+
+        internal static bool ResolveForeignPresenterActivity(bool previousActivity,
+            bool hasNativeStatus, bool reportedActivity)
+        {
+            // A missing status sample carries no new information. Once the native hook reports
+            // again, however, its flag is the current authoritative state and must clear as well
+            // as set; latching `true` makes an in-game FG toggle impossible to recover from.
+            return hasNativeStatus ? reportedActivity : previousActivity;
+        }
+
+        internal static bool ShouldRememberEarlyInjectionTarget(
+            bool previousRequirement, bool hasNativeStatus,
+            bool reportedRequirement)
+        {
+            // Learn once on the native transition that proves attachment missed a required API
+            // call. Module presence alone is deliberately insufficient: it says nothing about
+            // whether XeSS-FG owns the presenting swapchain or whether the queue was captured.
+            return hasNativeStatus && reportedRequirement && !previousRequirement;
+        }
+
+        internal static string ResolveLearnedEarlyInjectionGateModule(
+            string presenterEvidenceModule)
+        {
+            // D3D12 is a graphics-readiness precursor for XeSS-FG and is mapped before the
+            // optional runtime. Reusing libxess_fg.dll as the gate merely repeats the queue miss
+            // in titles that load and initialize XeSS in one uninterrupted startup path.
+            return string.Equals(presenterEvidenceModule, "libxess_fg.dll",
+                StringComparison.OrdinalIgnoreCase)
+                ? "d3d12.dll"
+                : presenterEvidenceModule;
         }
 
         /// <summary>
@@ -662,14 +699,19 @@ namespace CapFrameX.OSD.Integration
             }
 
             if (!HookTargetPolicy.TryFindLoadedModule(pid,
-                    SafeEarlyInjectionGateModules, out string gateModule,
-                    out string moduleError) || string.IsNullOrWhiteSpace(gateModule))
+                    EarlyInjectionEvidenceModules, out string presenterEvidenceModule,
+                    out string moduleError) ||
+                string.IsNullOrWhiteSpace(presenterEvidenceModule))
             {
                 Log.Warning(
                     "HookOverlay: not learning unsafe process-start injection for pid {pid} ('{process}'); no supported presenter module was found ({reason})",
                     pid, processName, moduleError ?? "no Streamline/XeSS-FG module loaded");
                 return;
             }
+
+            string gateModule = ResolveLearnedEarlyInjectionGateModule(
+                presenterEvidenceModule);
+            if (string.IsNullOrWhiteSpace(gateModule)) return;
 
             var target = new EarlyInjectionTarget(processName, executablePath,
                 gateModule);
@@ -682,8 +724,8 @@ namespace CapFrameX.OSD.Integration
             if (added)
             {
                 Log.Warning(
-                    "HookOverlay: learned early-injection target '{process}' at '{path}', gated by '{module}'; keep CapFrameX running and restart the game",
-                    processName, executablePath, gateModule);
+                    "HookOverlay: learned early-injection target '{process}' at '{path}', gated by precursor '{gateModule}' from presenter evidence '{presenterModule}'; keep CapFrameX running and restart the game",
+                    processName, executablePath, gateModule, presenterEvidenceModule);
                 ArmEarlyInjectionProbeAfterExit(pid);
             }
         }
@@ -1226,7 +1268,8 @@ namespace CapFrameX.OSD.Integration
         }
 
         private void UpdateNativeStatusFallback(int pid, bool hasNativeStatus,
-            EHookOverlayStatus? nativeState, ulong nowTickMs, bool foreignPresenter)
+            EHookOverlayStatus? nativeState, ulong nowTickMs, bool foreignPresenter,
+            bool earlyInjectionRequired)
         {
             bool changed = false;
             bool fallbackEnabled = false;
@@ -1239,18 +1282,22 @@ namespace CapFrameX.OSD.Integration
                 if (hasNativeStatus)
                 {
                     _lastNativeStatusTickMs = nowTickMs;
-                    // A frame-generation runtime (FSR FG / DLSS-G / XeSS-FG) wraps this game's
-                    // swapchain; the hook stands down by design. Latched so an in-game FG toggle
-                    // cannot flip the OSD path back and forth mid-session.
-                    if (foreignPresenter)
-                        _foreignPresenterDetected = true;
+                    rememberEarlyInjectionTarget = ShouldRememberEarlyInjectionTarget(
+                        _earlyInjectionRequired, hasNativeStatus,
+                        earlyInjectionRequired);
+                    _earlyInjectionRequired = earlyInjectionRequired;
+                    // This is the hook's confirmed current presentation state, not a module or
+                    // proxy-presence signal. Follow both transitions so turning FG off can leave
+                    // the hook-free fallback again; native-side confirmation prevents flapping.
+                    _foreignPresenterActive = ResolveForeignPresenterActivity(
+                        _foreignPresenterActive, hasNativeStatus, foreignPresenter);
 
                     // Track the two native startup phases independently. Waiting means the hook
                     // is armed but has not intercepted a Present yet; Initializing means Present
                     // is live but the renderer is not ready. Latch either timeout so hiding the
                     // hook for the fallback cannot flip the state back and forth.
                     if (!_firstPresentTimedOut && !_rendererInitializationStalled &&
-                        !_foreignPresenterDetected)
+                        !_foreignPresenterActive)
                     {
                         if (nativeState == EHookOverlayStatus.Waiting)
                         {
@@ -1281,7 +1328,19 @@ namespace CapFrameX.OSD.Integration
                         }
                     }
 
-                    if (_foreignPresenterDetected)
+                    if (_earlyInjectionRequired)
+                    {
+                        reason = "XeSS-FG was initialized before the hook captured its " +
+                            "authoritative D3D12 queue; early injection is required";
+                        if (!string.Equals(reason, _nativeFallbackReason,
+                            StringComparison.Ordinal))
+                        {
+                            _nativeFallbackReason = reason;
+                            changed = true;
+                            fallbackEnabled = true;
+                        }
+                    }
+                    else if (_foreignPresenterActive)
                     {
                         reason = "a frame-generation runtime (FSR FG / DLSS FG / XeSS FG) is " +
                             "presenting this game; the in-game overlay stands down";
@@ -1733,7 +1792,9 @@ namespace CapFrameX.OSD.Integration
                         : null;
                     UpdateNativeStatusFallback(pid, hasDxgiStatus, nativeStatus?.State,
                         nowTickMs, hasDxgiStatus &&
-                        (native.Flags & NativeHookStatusFlags.ForeignPresenter) != 0);
+                        (native.Flags & NativeHookStatusFlags.ForeignPresenter) != 0,
+                        hasDxgiStatus &&
+                        (native.Flags & NativeHookStatusFlags.EarlyInjectionRequired) != 0);
                     lock (_stateGate)
                     {
                         hookFreeFallbackActive = _hookFreeFallbackActive;

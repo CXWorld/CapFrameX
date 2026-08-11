@@ -55,6 +55,23 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void Catalog_RequiresEarlyInjectionForTheLastCaretaker()
+        {
+            Assert.IsTrue(HookCompatibilityProfileCatalog.TryGet(
+                "VoyageSteam-Win64-Shipping.exe",
+                out HookCompatibilityProfile profile));
+            Assert.IsTrue(profile.RequiresEarlyInjection);
+            Assert.AreEqual("d3d12.dll", profile.EarlyInjectionModule);
+            Assert.AreEqual(
+                NativeHookCompatibilityFlags.DisableDxgiSwapchainReleaseHook,
+                profile.NativeFlags);
+            Assert.AreEqual(TimeSpan.Zero, profile.InjectionDelay);
+            CollectionAssert.Contains(
+                new System.Collections.Generic.List<HookCompatibilityProfile>(
+                    HookCompatibilityProfileCatalog.GetEarlyInjectionProfiles()), profile);
+        }
+
+        [TestMethod]
         public void CompatibilityDelay_IsAppliedOncePerPid()
         {
             long timestamp = 1000;

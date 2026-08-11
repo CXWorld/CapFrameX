@@ -19,6 +19,12 @@ namespace CapFrameX.OSD.Integration
                     $"{target}: {DescribeError(native.LastError)}", heartbeatAge, native,
                     processId, runtime);
             }
+            if ((flags & NativeHookStatusFlags.EarlyInjectionRequired) != 0)
+            {
+                return Status(EHookOverlayStatus.Initializing,
+                    $"{target}: XeSS-FG owns the presenting swapchain, but its initialization queue was created before the hook attached; restart the game while CapFrameX remains open.",
+                    heartbeatAge, native, processId, runtime);
+            }
             if ((flags & NativeHookStatusFlags.ForeignPresenter) != 0)
             {
                 return Status(EHookOverlayStatus.Initializing,

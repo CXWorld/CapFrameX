@@ -14,6 +14,66 @@ namespace CapFrameX.Test.Integration
         private const ulong Now = 10000;
 
         [TestMethod]
+        public void ForeignPresenterActivity_FollowsCurrentNativeState()
+        {
+            Assert.IsTrue(HookOverlayManager.ResolveForeignPresenterActivity(
+                previousActivity: false, hasNativeStatus: true, reportedActivity: true));
+            Assert.IsFalse(HookOverlayManager.ResolveForeignPresenterActivity(
+                previousActivity: true, hasNativeStatus: true, reportedActivity: false));
+        }
+
+        [TestMethod]
+        public void ForeignPresenterActivity_PreservesStateWithoutNativeSample()
+        {
+            Assert.IsTrue(HookOverlayManager.ResolveForeignPresenterActivity(
+                previousActivity: true, hasNativeStatus: false, reportedActivity: false));
+        }
+
+        [TestMethod]
+        public void EarlyInjectionLearning_RequiresANativeQueueMissTransition()
+        {
+            Assert.IsTrue(HookOverlayManager.ShouldRememberEarlyInjectionTarget(
+                previousRequirement: false, hasNativeStatus: true,
+                reportedRequirement: true));
+            Assert.IsFalse(HookOverlayManager.ShouldRememberEarlyInjectionTarget(
+                previousRequirement: true, hasNativeStatus: true,
+                reportedRequirement: true));
+            Assert.IsFalse(HookOverlayManager.ShouldRememberEarlyInjectionTarget(
+                previousRequirement: false, hasNativeStatus: false,
+                reportedRequirement: true));
+            Assert.IsFalse(HookOverlayManager.ShouldRememberEarlyInjectionTarget(
+                previousRequirement: false, hasNativeStatus: true,
+                reportedRequirement: false));
+        }
+
+        [TestMethod]
+        public void EarlyInjectionLearning_UsesD3D12BeforeADynamicXeFgLoad()
+        {
+            Assert.AreEqual("d3d12.dll",
+                HookOverlayManager.ResolveLearnedEarlyInjectionGateModule(
+                    "LIBXESS_FG.DLL"));
+            Assert.AreEqual("sl.interposer.dll",
+                HookOverlayManager.ResolveLearnedEarlyInjectionGateModule(
+                    "sl.interposer.dll"));
+            Assert.IsNull(HookOverlayManager.ResolveLearnedEarlyInjectionGateModule(null));
+        }
+
+        [TestMethod]
+        public void EvaluateNative_ReportsMissedXeFgInitializationQueue()
+        {
+            NativeHookStatusSnapshot native = ReadySnapshot();
+            native.Flags |= NativeHookStatusFlags.ForeignPresenter |
+                            NativeHookStatusFlags.EarlyInjectionRequired;
+
+            HookOverlayStatus status = HookOverlayStatusEvaluator.EvaluateNative(
+                42, "DXGI", native, Now);
+
+            Assert.AreEqual(EHookOverlayStatus.Initializing, status.State);
+            StringAssert.Contains(status.Detail, "initialization queue");
+            StringAssert.Contains(status.Detail, "restart the game");
+        }
+
+        [TestMethod]
         public void EvaluateNative_ReturnsActiveForFreshRenderedHeartbeat()
         {
             NativeHookStatusSnapshot native = ReadySnapshot();

@@ -64,7 +64,8 @@ namespace CapFrameX.Test.Integration
                 view.Write(8, pid);
                 view.Write(12, unchecked((int)(uint)(NativeHookStatusFlags.Loaded |
                                                      NativeHookStatusFlags.HooksArmed |
-                                                     NativeHookStatusFlags.PresentSeen)));
+                                                     NativeHookStatusFlags.PresentSeen |
+                                                     NativeHookStatusFlags.EarlyInjectionRequired)));
                 view.Write(16, 4242L); // last heartbeat
                 view.Write(24, 4200L); // last state change
                 view.Write(32, 0);     // last error
@@ -82,7 +83,8 @@ namespace CapFrameX.Test.Integration
                 Assert.IsTrue(success);
                 Assert.IsNull(error);
                 Assert.AreEqual(NativeHookStatusFlags.Loaded | NativeHookStatusFlags.HooksArmed |
-                    NativeHookStatusFlags.PresentSeen, snapshot.Flags);
+                    NativeHookStatusFlags.PresentSeen |
+                    NativeHookStatusFlags.EarlyInjectionRequired, snapshot.Flags);
                 Assert.AreEqual(4242L, snapshot.LastHeartbeatTickMs);
                 Assert.AreEqual(4200L, snapshot.LastStateChangeTickMs);
                 Assert.AreEqual(3, snapshot.SteadyRefcount);
