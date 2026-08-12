@@ -53,7 +53,10 @@ namespace CapFrameX
             StartupPerformanceLogger.Start();
         }
 
-        protected override async void OnStartup(StartupEventArgs e)
+        // Runs to completion synchronously: with the window reveal no longer waiting on hardware
+        // detection there is nothing left to await, and an "async void" entry point would only
+        // reintroduce the awkward exception path it is known for.
+        protected override void OnStartup(StartupEventArgs e)
         {
             StartupPerformanceLogger.Mark("App.OnStartup entered (application resources loaded)");
 
@@ -196,9 +199,9 @@ namespace CapFrameX
                     _bootstrapper.Run(true);
                 }
 
-                using (StartupPerformanceLogger.Measure("Sensor initialization wait and main window reveal"))
+                using (StartupPerformanceLogger.Measure("Main window reveal"))
                 {
-                    await RevealMainWindowAsync(showSplash);
+                    RevealMainWindow(showSplash);
                 }
 
                 // Check for conflicting ETW sessions (FrameViewService)
@@ -256,48 +259,37 @@ namespace CapFrameX
         }
 
         /// <summary>
-        /// Waits for the sensor service to finish hardware detection, then restores the
-        /// main window and closes the splash screen. A hanging sensor/driver init must
-        /// never lock the user out, hence the timeout.
+        /// Restores the main window and closes the splash screen.
+        /// <para>
+        /// This deliberately does not wait for the sensor service. Hardware detection takes
+        /// roughly as long as the entire rest of the startup, and it used to hold the window
+        /// back for all of it. The landing page is built for its absence: CPU and GPU identity
+        /// arrive on their own once <see cref="ISensorService.SensorServiceCompletionSource"/>
+        /// completes, and everything else on it - board, memory, BIOS, OS - needs no sensor
+        /// service at all.
+        /// </para>
         /// </summary>
-        private async Task RevealMainWindowAsync(bool splashShown)
+        private void RevealMainWindow(bool splashShown)
         {
             if (!splashShown)
                 return;
 
-            var pendingWindowState = _bootstrapper?.PendingMainWindowState;
-
             try
             {
-                if (pendingWindowState.HasValue && !_startupAborted)
-                {
-                    SplashScreenHost.SetStatus("Detecting hardware and sensors...");
+                var pendingWindowState = _bootstrapper?.PendingMainWindowState;
 
-                    var sensorService = _bootstrapper.Container.Resolve<ISensorService>();
-                    await Task.WhenAny(
-                        sensorService.SensorServiceCompletionSource.Task,
-                        Task.Delay(TimeSpan.FromSeconds(20)));
+                if (pendingWindowState.HasValue && !_startupAborted && Current.MainWindow != null)
+                {
+                    Current.MainWindow.WindowState = pendingWindowState.Value;
+                    Current.MainWindow.Activate();
                 }
             }
             catch (Exception ex)
             {
-                Log.Logger.Error(ex, "Error while waiting for sensor initialization.");
+                Log.Logger.Error(ex, "Error while revealing the main window.");
             }
             finally
             {
-                try
-                {
-                    if (pendingWindowState.HasValue && !_startupAborted && Current.MainWindow != null)
-                    {
-                        Current.MainWindow.WindowState = pendingWindowState.Value;
-                        Current.MainWindow.Activate();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Logger.Error(ex, "Error while revealing the main window.");
-                }
-
                 SplashScreenHost.Close();
             }
         }

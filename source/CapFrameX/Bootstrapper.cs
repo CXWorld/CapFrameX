@@ -61,8 +61,9 @@ namespace CapFrameX
 
         /// <summary>
         /// While the splash screen is up, the shell stays minimized after its warm-up
-        /// Show(); App reveals it via <see cref="PendingMainWindowState"/> once the
-        /// sensor service finished initializing.
+        /// Show(); App reveals it via <see cref="PendingMainWindowState"/> as soon as the
+        /// bootstrapper is through, so the splash covers the shell construction and nothing
+        /// more.
         /// </summary>
         public bool DeferMainWindowRestore { get; set; }
 
@@ -220,8 +221,8 @@ namespace CapFrameX
                     else
                         Application.Current.MainWindow.WindowState = WindowState.Minimized;
                 else if (DeferMainWindowRestore)
-                    // Splash screen active: hand the restore over to App, which reveals
-                    // the window once sensor initialization completed.
+                    // Splash screen active: hand the restore over to App, which reveals the
+                    // window once this method returned.
                     PendingMainWindowState = startupWindowState;
                 else
                         Application.Current.MainWindow.WindowState = startupWindowState;
