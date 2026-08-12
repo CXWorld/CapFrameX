@@ -69,6 +69,33 @@ namespace CapFrameX.Contracts.Overlay
         public string RenderApi { get; }
     }
 
+    /// <summary>
+    /// The one-word label a status state gets in the UI. Both surfaces that show the state — the
+    /// status bar and the "Overlay hook status" overlay entry — read it from here, so an added or
+    /// renamed state cannot end up spelled differently depending on where the user looks.
+    /// </summary>
+    public static class HookOverlayStatusLabel
+    {
+        public static string ForState(EHookOverlayStatus state)
+        {
+            switch (state)
+            {
+                case EHookOverlayStatus.Disabled: return "Off";
+                case EHookOverlayStatus.Waiting: return "Waiting";
+                case EHookOverlayStatus.Injecting: return "Injecting";
+                case EHookOverlayStatus.Injected: return "Injected";
+                case EHookOverlayStatus.Initializing: return "Initializing";
+                case EHookOverlayStatus.Active: return "Active";
+                case EHookOverlayStatus.Fallback: return "Fallback";
+                case EHookOverlayStatus.Hidden: return "Hidden";
+                case EHookOverlayStatus.Idle: return "Idle";
+                case EHookOverlayStatus.Error: return "Error";
+                case EHookOverlayStatus.Blocked: return "Blocked";
+                default: return "Waiting";
+            }
+        }
+    }
+
     public interface IHookOverlayStatusService
     {
         HookOverlayStatus Current { get; }

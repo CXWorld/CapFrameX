@@ -99,6 +99,27 @@ namespace CapFrameX.Overlay
                         IsEntryEnabled = true
                     },
 
+					// HookOverlayStatus
+					// State of the in-game hook, mirroring the "Hook:" element in the status bar.
+					// Only meaningful while the in-game overlay is the selected renderer, hence the
+					// config gate — but the entry stays in the list either way (see
+					// OverlayEntryProvider.CONFIG_GATED_ENTRIES), so switching the OSD mode flips it
+					// in place instead of making it appear and disappear.
+					new OverlayEntryWrapper("HookOverlayStatus")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = appConfiguration.EnableHookOverlay,
+                        Description = "Overlay hook status",
+                        GroupName = "Hook",
+                        Value = "Off",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = appConfiguration.EnableHookOverlay
+                    },
+
 					// CaptureTimer
 					new OverlayEntryWrapper("CaptureTimer")
                     {

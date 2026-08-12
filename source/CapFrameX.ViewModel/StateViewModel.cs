@@ -61,27 +61,7 @@ namespace CapFrameX.ViewModel
 		}
 
 		public string HookOverlayStatusText
-		{
-			get
-			{
-				if (_hookOverlayStatus == null) return "Waiting";
-				switch (_hookOverlayStatus.State)
-				{
-					case EHookOverlayStatus.Disabled: return "Off";
-					case EHookOverlayStatus.Waiting: return "Waiting";
-					case EHookOverlayStatus.Injecting: return "Injecting";
-					case EHookOverlayStatus.Injected: return "Injected";
-					case EHookOverlayStatus.Initializing: return "Initializing";
-					case EHookOverlayStatus.Active: return "Active";
-					case EHookOverlayStatus.Fallback: return "Fallback";
-					case EHookOverlayStatus.Hidden: return "Hidden";
-					case EHookOverlayStatus.Idle: return "Idle";
-					case EHookOverlayStatus.Error: return "Error";
-					case EHookOverlayStatus.Blocked: return "Blocked";
-					default: return "Waiting";
-				}
-			}
-		}
+			=> HookOverlayStatusLabel.ForState(_hookOverlayStatus?.State ?? EHookOverlayStatus.Waiting);
 
 		public string HookOverlayStatusColor
 		{

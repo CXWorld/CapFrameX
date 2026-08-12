@@ -53,15 +53,18 @@ namespace CapFrameX.Overlay
             "PmdCpuPowerCurrent", "PmdSystemPowerCurrent"
         };
 
-        // Feature-toggle gated online metrics. These entries always stay in the overlay entry
-        // list: the constructor subscribes to their config keys and flips the existing entry
-        // in place, which requires the entry to be present even while the feature is off.
+        // Feature-toggle gated entries. These always stay in the overlay entry list: the
+        // constructor subscribes to their config keys and flips the existing entry in place,
+        // which requires the entry to be present even while the feature is off.
         private static readonly IReadOnlyDictionary<string, (string ConfigKey, Func<IAppConfiguration, bool> GetIsEnabled)>
-            CONFIG_GATED_ONLINE_METRICS = new Dictionary<string, (string, Func<IAppConfiguration, bool>)>()
+            CONFIG_GATED_ENTRIES = new Dictionary<string, (string, Func<IAppConfiguration, bool>)>()
             {
                 { "OnlinePcLatency", (nameof(IAppConfiguration.UsePcLatency), config => config.UsePcLatency) },
                 { "OnlineAmdFlmLatency", (nameof(IAppConfiguration.UseAmdFlmLatency), config => config.UseAmdFlmLatency) },
+                { HOOK_OVERLAY_STATUS_IDENTIFIER, (nameof(IAppConfiguration.EnableHookOverlay), config => config.EnableHookOverlay) },
             };
+
+        private const string HOOK_OVERLAY_STATUS_IDENTIFIER = "HookOverlayStatus";
 
         private readonly ISensorService _sensorService;
         private readonly IAppConfiguration _appConfiguration;
@@ -86,6 +89,9 @@ namespace CapFrameX.Overlay
         private BlockingCollection<IOverlayEntry> _overlayEntries;
         private double _ping = double.NaN;
         private int _currentProcessId;
+        // Written by the status stream, read by the overlay refresh: the entry itself must not be
+        // touched from the stream, it is replaced whenever a configuration is loaded or switched.
+        private volatile HookOverlayStatus _hookOverlayStatus;
         public bool HasHardwareChanged { get; set; }
         public bool ShowSystemTimeSeconds { get; set; }
 
@@ -99,6 +105,7 @@ namespace CapFrameX.Overlay
             IOverlayEntryCore overlayEntryCore,
             IThreadAffinityController threadAffinityController,
             IPathService pathService,
+            IHookOverlayStatusService hookOverlayStatusService,
             ILogger<OverlayEntryProvider> logger)
         {
             _sensorService = sensorService;
@@ -113,6 +120,10 @@ namespace CapFrameX.Overlay
             _overlayConfigFolder = pathService.ConfigFolder;
             _logger = logger;
 
+            _hookOverlayStatus = hookOverlayStatusService?.Current;
+            hookOverlayStatusService?.StatusStream
+                .Subscribe(status => _hookOverlayStatus = status);
+
             _ = Task.Run(async () => await LoadOrSetDefault())
                 .ContinueWith(task => _taskCompletionSource.SetResult(true));
 
@@ -124,11 +135,11 @@ namespace CapFrameX.Overlay
             .Select(x => x.value)
             .Subscribe(value => ShowSystemTimeSeconds = (bool)value);
 
-            foreach (var gatedMetric in CONFIG_GATED_ONLINE_METRICS)
+            foreach (var gatedEntry in CONFIG_GATED_ENTRIES)
             {
-                string identifier = gatedMetric.Key;
+                string identifier = gatedEntry.Key;
                 _appConfiguration.OnValueChanged
-                .Where(x => x.key == gatedMetric.Value.ConfigKey)
+                .Where(x => x.key == gatedEntry.Value.ConfigKey)
                 .Select(x => x.value)
                 .Subscribe(value => UpdateConfigGatedEntryState(identifier, (bool)value));
             }
@@ -154,6 +165,7 @@ namespace CapFrameX.Overlay
             UpdateResolution();
             UpdateThreadAffinityState();
             UpdateNetworkPing();
+            UpdateHookOverlayStatus();
 
             if (updateFormats)
             {
@@ -623,7 +635,7 @@ namespace CapFrameX.Overlay
 
             // Manage default entries from Utils list
             var utilsDefaults = OverlayUtils.GetOverlayEntryDefaults(_appConfiguration)
-                .Where(item => item.IsEntryEnabled || CONFIG_GATED_ONLINE_METRICS.ContainsKey(item.Identifier))
+                .Where(item => item.IsEntryEnabled || CONFIG_GATED_ENTRIES.ContainsKey(item.Identifier))
                 .ToList();
 
             foreach (var defaultEntry in utilsDefaults)
@@ -641,7 +653,7 @@ namespace CapFrameX.Overlay
                         configOverlayEntries.Insert(predecessorConfigOverlayEntryIndex + 1, defaultEntry);
                     }
                 }
-                else if (CONFIG_GATED_ONLINE_METRICS.ContainsKey(defaultEntry.Identifier)
+                else if (CONFIG_GATED_ENTRIES.ContainsKey(defaultEntry.Identifier)
                     && existingConfigEntry is OverlayEntryWrapper existingWrapper)
                 {
                     // The description is a fixed label (not user-editable) but persists in the
@@ -701,12 +713,12 @@ namespace CapFrameX.Overlay
         /// </summary>
         private bool GetIsEntryKeptInList(OverlayEntryWrapper entry)
         {
-            // Feature-toggle gated online metrics: sync all state flags from the config
-            // toggle, but always keep the entry so the live toggle subscription in the
-            // constructor can flip it in place later.
-            if (CONFIG_GATED_ONLINE_METRICS.TryGetValue(entry.Identifier, out var gatedMetric))
+            // Feature-toggle gated entries: sync all state flags from the config toggle, but
+            // always keep the entry so the live toggle subscription in the constructor can flip
+            // it in place later.
+            if (CONFIG_GATED_ENTRIES.TryGetValue(entry.Identifier, out var gatedEntry))
             {
-                SetConfigGatedEntryState(entry, gatedMetric.GetIsEnabled(_appConfiguration));
+                SetConfigGatedEntryState(entry, gatedEntry.GetIsEnabled(_appConfiguration));
                 return true;
             }
 
@@ -792,7 +804,7 @@ namespace CapFrameX.Overlay
         private async Task<BlockingCollection<IOverlayEntry>> CreateDefaultOverlayEntries()
         {
             var overlayEntries = OverlayUtils.GetOverlayEntryDefaults(_appConfiguration)
-                .Where(item => item.IsEntryEnabled || CONFIG_GATED_ONLINE_METRICS.ContainsKey(item.Identifier))
+                .Where(item => item.IsEntryEnabled || CONFIG_GATED_ENTRIES.ContainsKey(item.Identifier))
                 .Select(item => (item as IOverlayEntry).Clone())
                 .ToBlockingCollection();
 
@@ -1077,6 +1089,20 @@ namespace CapFrameX.Overlay
                 var resolutionInfo = _rTSSService.GetResolution(_currentProcessId);
                 resolution.Value = string.IsNullOrEmpty(resolutionInfo) ? "N/A" : resolutionInfo;
             }
+        }
+
+        private void UpdateHookOverlayStatus()
+        {
+            _identifierOverlayEntryDict.TryGetValue(HOOK_OVERLAY_STATUS_IDENTIFIER, out IOverlayEntry hookOverlayStatus);
+
+            if (hookOverlayStatus == null)
+                return;
+
+            // No status seen yet means the service has not published its initial state, which only
+            // happens before the composition root wired it up — not "the hook is off".
+            hookOverlayStatus.Value = _appConfiguration.EnableHookOverlay
+                ? HookOverlayStatusLabel.ForState(_hookOverlayStatus?.State ?? EHookOverlayStatus.Waiting)
+                : HookOverlayStatusLabel.ForState(EHookOverlayStatus.Disabled);
         }
 
         private void UpdateThreadAffinityState()
