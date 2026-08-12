@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management;
 using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CapFrameX.SystemInfo.NetStandard
 {
@@ -21,6 +23,15 @@ namespace CapFrameX.SystemInfo.NetStandard
         private readonly ISensorService _sensorService;
         private readonly ILogger<SystemInfo> _logger;
         private readonly double _processorCount = Environment.ProcessorCount;
+
+        /// <summary>
+        /// Mainboard, BIOS, memory modules, core count and OS caption cannot change while the
+        /// application runs, but they are asked for over and over - the info tab, the overlay's
+        /// static rows, the custom hardware descriptions, every saved capture and the MCP tools.
+        /// Collecting them costs a WMI round trip each, so the whole set is gathered once, with
+        /// the independent providers queried concurrently.
+        /// </summary>
+        private readonly Lazy<StaticHardwareInfo> _staticHardwareInfo;
 
         private DateTime _lastTime;
         private TimeSpan _lastTotalProcessorTime;
@@ -51,6 +62,9 @@ namespace CapFrameX.SystemInfo.NetStandard
             _sensorService = sensorService;
             _logger = logger;
 
+            _staticHardwareInfo = new Lazy<StaticHardwareInfo>(
+                () => StaticHardwareInfo.Collect(_logger), LazyThreadSafetyMode.ExecutionAndPublication);
+
             _cxProcess = Process.GetProcessesByName("CapFrameX").FirstOrDefault();
             _lastTime = DateTime.UtcNow;
             _lastTotalProcessorTime = _cxProcess == null ? new TimeSpan() : _cxProcess.TotalProcessorTime;
@@ -58,12 +72,18 @@ namespace CapFrameX.SystemInfo.NetStandard
 
         #region System Info
 
+        /// <summary>
+        /// The four probes address unrelated subsystems (setup API, D3D KMT, the Vulkan loader and
+        /// the registry) and write disjoint properties, so they run concurrently - creating the
+        /// Vulkan instance alone costs more than the other three together.
+        /// </summary>
         public void SetSystemInfosStatus()
         {
-            SetSystemInfoSetupApi();
-            SetSystemInfoD3D();
-            SetSystemInfoVulkan();
-            SetSystemInfoRegistry();
+            Task.WaitAll(
+                Task.Run(() => SetSystemInfoSetupApi()),
+                Task.Run(() => SetSystemInfoD3D()),
+                Task.Run(() => SetSystemInfoVulkan()),
+                Task.Run(() => SetSystemInfoRegistry()));
         }
 
         private void SetSystemInfoSetupApi()
@@ -189,132 +209,13 @@ namespace CapFrameX.SystemInfo.NetStandard
                 GetGraphicsCardNameFromWMI() : name;
         }
 
-        public string GetOSVersion()
-        {
-            string propertyDataValueCaption = string.Empty;
-            const string propertyDataNameCaption = "Caption";
-            string propertyDataValueBuildNumber = string.Empty;
-            const string propertyDataNameBuildNumber = "BuildNumber";
+        public string GetOSVersion() => _staticHardwareInfo.Value.OsVersion;
 
-            var win32DeviceClassName = "Win32_OperatingSystem";
-            var query = string.Format("select * from {0}", win32DeviceClassName);
+        public string GetMotherboardName() => _staticHardwareInfo.Value.MainboardName;
 
-            try
-            {
-                using (var searcher = new ManagementObjectSearcher(query))
-                {
-                    ManagementObjectCollection objectCollection = searcher.Get();
+        public string GetMotherboardManufacturerBrand() => _staticHardwareInfo.Value.MainboardBrand;
 
-                    foreach (ManagementBaseObject managementBaseObject in objectCollection)
-                    {
-                        foreach (PropertyData propertyData in managementBaseObject.Properties)
-                        {
-                            if (propertyData.Name == propertyDataNameCaption)
-                            {
-                                propertyDataValueCaption = (string)propertyData.Value;
-                            }
-
-                            if (propertyData.Name == propertyDataNameBuildNumber)
-                            {
-                                propertyDataValueBuildNumber = (string)propertyData.Value;
-
-                            }
-                        }
-                    }
-                }
-            }
-            catch { propertyDataValueCaption = "Windows OS"; }
-
-            return $"{propertyDataValueCaption} Build {propertyDataValueBuildNumber}";
-        }
-
-        public string GetMotherboardName()
-        {
-            string propertyDataValueManufacturer = string.Empty;
-            const string propertyDataNameManufacturer = "Manufacturer";
-            string propertyDataValueProduct = string.Empty;
-            const string propertyDataNameProduct = "Product";
-
-            var win32DeviceClassName = "Win32_BaseBoard";
-            var query = string.Format("select * from {0}", win32DeviceClassName);
-
-            try
-            {
-                //Manufacturer + Product
-                using (var searcher = new ManagementObjectSearcher(query))
-                {
-                    ManagementObjectCollection objectCollection = searcher.Get();
-
-                    foreach (ManagementBaseObject managementBaseObject in objectCollection)
-                    {
-                        foreach (PropertyData propertyData in managementBaseObject.Properties)
-                        {
-                            if (propertyData.Name == propertyDataNameManufacturer)
-                            {
-                                propertyDataValueManufacturer = (string)propertyData.Value;
-                            }
-
-                            if (propertyData.Name == propertyDataNameProduct)
-                            {
-                                propertyDataValueProduct = (string)propertyData.Value;
-
-                            }
-                        }
-                    }
-                }
-            }
-            catch { propertyDataValueManufacturer = string.Empty; propertyDataValueProduct = string.Empty; }
-
-            //Manufacturer + Product, shortened to the brand people actually use
-            return MainboardNameShortener.Shorten(propertyDataValueManufacturer, propertyDataValueProduct);
-        }
-
-        public string GetMotherboardManufacturerBrand()
-        {
-            try
-            {
-                using (var searcher = new ManagementObjectSearcher("select Manufacturer from Win32_BaseBoard"))
-                {
-                    foreach (ManagementBaseObject managementBaseObject in searcher.Get())
-                    {
-                        var manufacturer = managementBaseObject["Manufacturer"] as string;
-                        var brand = MainboardNameShortener.ToBrand(manufacturer);
-
-                        if (!string.IsNullOrEmpty(brand))
-                            return brand;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while getting mainboard manufacturer.");
-            }
-
-            return string.Empty;
-        }
-
-        public string GetBiosVersion()
-        {
-            try
-            {
-                using (var searcher = new ManagementObjectSearcher("select SMBIOSBIOSVersion from Win32_BIOS"))
-                {
-                    foreach (ManagementBaseObject managementBaseObject in searcher.Get())
-                    {
-                        var version = managementBaseObject["SMBIOSBIOSVersion"] as string;
-
-                        if (!string.IsNullOrWhiteSpace(version))
-                            return version.Trim();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while getting BIOS version.");
-            }
-
-            return string.Empty;
-        }
+        public string GetBiosVersion() => _staticHardwareInfo.Value.BiosVersion;
 
         /// <summary>
         /// Many boards report the module vendor as its raw JEDEC manufacturer ID
@@ -338,40 +239,7 @@ namespace CapFrameX.SystemInfo.NetStandard
                 { "7F98", "Kingston" },
             };
 
-        public string GetSystemRAMManufacturer()
-        {
-            var manufacturers = new List<string>();
-
-            try
-            {
-                using (var searcher = new ManagementObjectSearcher("select Manufacturer from Win32_PhysicalMemory"))
-                {
-                    foreach (ManagementBaseObject managementBaseObject in searcher.Get())
-                    {
-                        var raw = (managementBaseObject["Manufacturer"] as string)?.Trim() ?? string.Empty;
-
-                        string brand;
-                        if (JedecManufacturerIds.TryGetValue(raw, out var mapped))
-                            brand = mapped;
-                        else if (LooksLikeJedecId(raw))
-                            brand = string.Empty; // unmapped raw ID carries no display value
-                        else
-                            // ToBrand also drops the placeholder strings modules ship with
-                            // ("Unknown", "To be filled by O.E.M.", ...).
-                            brand = MainboardNameShortener.ToBrand(raw);
-
-                        if (brand.Length > 0 && !manufacturers.Contains(brand))
-                            manufacturers.Add(brand);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while getting RAM manufacturer.");
-            }
-
-            return string.Join(" / ", manufacturers);
-        }
+        public string GetSystemRAMManufacturer() => _staticHardwareInfo.Value.RamManufacturer;
 
         private static bool LooksLikeJedecId(string value)
         {
@@ -390,123 +258,21 @@ namespace CapFrameX.SystemInfo.NetStandard
             return hasDigit;
         }
 
-        public string GetProcessorCoreCountInfo()
-        {
-            try
-            {
-                uint cores = 0;
-                uint threads = 0;
+        public string GetProcessorCoreCountInfo() => _staticHardwareInfo.Value.ProcessorCoreCountInfo;
 
-                using (var searcher = new ManagementObjectSearcher(
-                    "select NumberOfCores, NumberOfLogicalProcessors from Win32_Processor"))
-                {
-                    foreach (ManagementBaseObject managementBaseObject in searcher.Get())
-                    {
-                        cores += Convert.ToUInt32(managementBaseObject["NumberOfCores"]);
-                        threads += Convert.ToUInt32(managementBaseObject["NumberOfLogicalProcessors"]);
-                    }
-                }
-
-                if (cores > 0 && threads > 0)
-                    return $"{cores} Cores / {threads} Threads";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while getting processor core count.");
-            }
-
-            return string.Empty;
-        }
-
-        public string GetSystemRAMInfoName()
-        {
-            const string propertyDataNameCapacity = "Capacity";
-            string propertyDataValueSpeed = "unknown";
-            const string propertyDataNameSpeed = "ConfiguredClockSpeed";
-
-            var win32DeviceClassName = "Win32_PhysicalMemory";
-            var query = string.Format("select * from {0}", win32DeviceClassName);
-            var moduleSetting = new Dictionary<long, int>();
-
-            try
-            {
-                //Manufacturer + Product
-                using (var searcher = new ManagementObjectSearcher(query))
-                {
-                    ManagementObjectCollection objectCollection = searcher.Get();
-
-                    foreach (ManagementBaseObject managementBaseObject in objectCollection)
-                    {
-                        foreach (PropertyData propertyData in managementBaseObject.Properties)
-                        {
-                            if (propertyDataNameSpeed == propertyData.Name)
-                            {
-                                var value = propertyData.Value;
-
-                                if (value != null)
-                                    propertyDataValueSpeed = value.ToString();
-                            }
-
-                            if (propertyDataNameCapacity == propertyData.Name)
-                            {
-                                var value = propertyData.Value;
-
-                                if (value != null)
-                                {
-                                    var currentCapacity = Convert.ToInt64(value);
-                                    if (moduleSetting.ContainsKey(currentCapacity))
-                                        moduleSetting[currentCapacity]++;
-                                    else
-                                        moduleSetting.Add(currentCapacity, 1);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch { propertyDataValueSpeed = "unknown"; moduleSetting.Add(0, 1); }
-
-            if (!moduleSetting.Any())
-                moduleSetting.Add(0, 0);
-
-            //RAM size + data rate
-            // example: 48GB (4x4GB+4x8GB)
-            var infoString = string.Empty;
-            long wholeCapacity = 0;
-
-            foreach (var item in moduleSetting)
-            {
-                wholeCapacity += item.Value * item.Key;
-                infoString += $"{item.Value}x{item.Key / ONE_GIB}GB+";
-            }
-
-            return $"{wholeCapacity / ONE_GIB}GB ({infoString.Remove(infoString.Length - 1)}) {propertyDataValueSpeed}MT/s";
-        }
+        public string GetSystemRAMInfoName() => _staticHardwareInfo.Value.RamName;
 
         private static string GetGraphicsCardNameFromWMI()
         {
             string propertyDataValue = string.Empty;
-            const string propertyDataName = "DeviceName";
-
-            var win32DeviceClassName = "Win32_DisplayConfiguration";
-            var query = string.Format("select * from {0}", win32DeviceClassName);
 
             try
             {
-                using (var searcher = new ManagementObjectSearcher(query))
+                using (var searcher = new ManagementObjectSearcher("select DeviceName from Win32_DisplayConfiguration"))
                 {
-                    ManagementObjectCollection objectCollection = searcher.Get();
-
-                    foreach (ManagementBaseObject managementBaseObject in objectCollection)
+                    foreach (ManagementBaseObject managementBaseObject in searcher.Get())
                     {
-                        foreach (PropertyData propertyData in managementBaseObject.Properties)
-                        {
-                            if (propertyData.Name == propertyDataName)
-                            {
-                                propertyDataValue = (string)propertyData.Value;
-                                break;
-                            }
-                        }
+                        propertyDataValue = managementBaseObject["DeviceName"] as string;
                     }
                 }
             }
@@ -514,6 +280,240 @@ namespace CapFrameX.SystemInfo.NetStandard
 
             //DeviceName
             return propertyDataValue;
+        }
+
+        /// <summary>
+        /// One-shot snapshot of the hardware identification WMI can report. Each provider is
+        /// queried exactly once and only for the columns actually used - <c>select *</c>
+        /// materializes every property of the class, which is what made the operating system
+        /// query an order of magnitude more expensive than the rest together.
+        /// </summary>
+        private sealed class StaticHardwareInfo
+        {
+            public string OsVersion { get; private set; } = string.Empty;
+
+            public string MainboardName { get; private set; } = string.Empty;
+
+            public string MainboardBrand { get; private set; } = string.Empty;
+
+            public string BiosVersion { get; private set; } = string.Empty;
+
+            public string RamName { get; private set; } = string.Empty;
+
+            public string RamManufacturer { get; private set; } = string.Empty;
+
+            public string ProcessorCoreCountInfo { get; private set; } = string.Empty;
+
+            public static StaticHardwareInfo Collect(ILogger logger)
+            {
+                var info = new StaticHardwareInfo();
+
+                // The WMI round trip dominates every one of these, and the providers are
+                // unrelated, so the four queries overlap instead of adding up. The caller takes
+                // one share itself: it would otherwise sit blocked while occupying a pool thread,
+                // which on a low core count is exactly the thread the others are waiting for.
+                try
+                {
+                    var mainboard = Task.Run(() => info.ReadMainboardAndBios(logger));
+                    var memory = Task.Run(() => info.ReadMemory(logger));
+                    var processor = Task.Run(() => info.ReadProcessor(logger));
+
+                    info.ReadOperatingSystem(logger);
+
+                    Task.WaitAll(mainboard, memory, processor);
+                }
+                catch (Exception ex)
+                {
+                    // The readers handle their own failures, so reaching here means WMI itself is
+                    // unusable. The snapshot is cached for the process lifetime, so it must be
+                    // returned half-filled rather than rethrown on every later call.
+                    logger?.LogError(ex, "Error while collecting static hardware information.");
+                }
+
+                return info;
+            }
+
+            private void ReadOperatingSystem(ILogger logger)
+            {
+                string caption = string.Empty;
+                string buildNumber = string.Empty;
+
+                try
+                {
+                    using (var searcher = new ManagementObjectSearcher(
+                        "select Caption, BuildNumber from Win32_OperatingSystem"))
+                    {
+                        foreach (ManagementBaseObject managementBaseObject in searcher.Get())
+                        {
+                            caption = managementBaseObject["Caption"] as string;
+                            buildNumber = managementBaseObject["BuildNumber"] as string;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error while getting OS version.");
+                    caption = "Windows OS";
+                }
+
+                OsVersion = $"{caption} Build {buildNumber}";
+            }
+
+            private void ReadMainboardAndBios(ILogger logger)
+            {
+                string manufacturer = string.Empty;
+                string product = string.Empty;
+
+                try
+                {
+                    using (var searcher = new ManagementObjectSearcher(
+                        "select Manufacturer, Product from Win32_BaseBoard"))
+                    {
+                        foreach (ManagementBaseObject managementBaseObject in searcher.Get())
+                        {
+                            manufacturer = managementBaseObject["Manufacturer"] as string;
+                            product = managementBaseObject["Product"] as string;
+
+                            if (MainboardBrand.Length == 0)
+                                MainboardBrand = MainboardNameShortener.ToBrand(manufacturer);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error while getting mainboard information.");
+                    manufacturer = string.Empty;
+                    product = string.Empty;
+                }
+
+                //Manufacturer + Product, shortened to the brand people actually use
+                MainboardName = MainboardNameShortener.Shorten(manufacturer, product);
+
+                // Same firmware table behind it, so it shares the mainboard's query slot.
+                try
+                {
+                    using (var searcher = new ManagementObjectSearcher(
+                        "select SMBIOSBIOSVersion from Win32_BIOS"))
+                    {
+                        foreach (ManagementBaseObject managementBaseObject in searcher.Get())
+                        {
+                            var version = managementBaseObject["SMBIOSBIOSVersion"] as string;
+
+                            if (!string.IsNullOrWhiteSpace(version))
+                            {
+                                BiosVersion = version.Trim();
+                                break;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error while getting BIOS version.");
+                }
+            }
+
+            private void ReadMemory(ILogger logger)
+            {
+                var moduleSetting = new Dictionary<long, int>();
+                var manufacturers = new List<string>();
+                string speed = "unknown";
+
+                try
+                {
+                    using (var searcher = new ManagementObjectSearcher(
+                        "select Capacity, ConfiguredClockSpeed, Manufacturer from Win32_PhysicalMemory"))
+                    {
+                        foreach (ManagementBaseObject managementBaseObject in searcher.Get())
+                        {
+                            var configuredClockSpeed = managementBaseObject["ConfiguredClockSpeed"];
+                            if (configuredClockSpeed != null)
+                                speed = configuredClockSpeed.ToString();
+
+                            var capacity = managementBaseObject["Capacity"];
+                            if (capacity != null)
+                            {
+                                var currentCapacity = Convert.ToInt64(capacity);
+                                if (moduleSetting.ContainsKey(currentCapacity))
+                                    moduleSetting[currentCapacity]++;
+                                else
+                                    moduleSetting.Add(currentCapacity, 1);
+                            }
+
+                            AddMemoryManufacturer(managementBaseObject["Manufacturer"] as string, manufacturers);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error while getting memory information.");
+                    speed = "unknown";
+                    moduleSetting.Clear();
+                    moduleSetting.Add(0, 1);
+                }
+
+                RamManufacturer = string.Join(" / ", manufacturers);
+
+                if (!moduleSetting.Any())
+                    moduleSetting.Add(0, 0);
+
+                //RAM size + data rate
+                // example: 48GB (4x4GB+4x8GB)
+                var infoString = string.Empty;
+                long wholeCapacity = 0;
+
+                foreach (var item in moduleSetting)
+                {
+                    wholeCapacity += item.Value * item.Key;
+                    infoString += $"{item.Value}x{item.Key / ONE_GIB}GB+";
+                }
+
+                RamName = $"{wholeCapacity / ONE_GIB}GB ({infoString.Remove(infoString.Length - 1)}) {speed}MT/s";
+            }
+
+            private static void AddMemoryManufacturer(string rawManufacturer, List<string> manufacturers)
+            {
+                var raw = rawManufacturer?.Trim() ?? string.Empty;
+
+                string brand;
+                if (JedecManufacturerIds.TryGetValue(raw, out var mapped))
+                    brand = mapped;
+                else if (LooksLikeJedecId(raw))
+                    brand = string.Empty; // unmapped raw ID carries no display value
+                else
+                    // ToBrand also drops the placeholder strings modules ship with
+                    // ("Unknown", "To be filled by O.E.M.", ...).
+                    brand = MainboardNameShortener.ToBrand(raw);
+
+                if (brand.Length > 0 && !manufacturers.Contains(brand))
+                    manufacturers.Add(brand);
+            }
+
+            private void ReadProcessor(ILogger logger)
+            {
+                try
+                {
+                    uint cores = 0;
+                    uint threads = 0;
+
+                    using (var searcher = new ManagementObjectSearcher(
+                        "select NumberOfCores, NumberOfLogicalProcessors from Win32_Processor"))
+                    {
+                        foreach (ManagementBaseObject managementBaseObject in searcher.Get())
+                        {
+                            cores += Convert.ToUInt32(managementBaseObject["NumberOfCores"]);
+                            threads += Convert.ToUInt32(managementBaseObject["NumberOfLogicalProcessors"]);
+                        }
+                    }
+
+                    if (cores > 0 && threads > 0)
+                        ProcessorCoreCountInfo = $"{cores} Cores / {threads} Threads";
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error while getting processor core count.");
+                }
+            }
         }
 
         public double GetCapFrameXAppCpuUsage()
