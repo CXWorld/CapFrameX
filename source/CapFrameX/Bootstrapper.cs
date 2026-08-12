@@ -408,7 +408,16 @@ namespace CapFrameX
                     return t;
                 });
 
-                ViewModelLocationProvider.SetDefaultViewModelFactory(type => Container.Resolve(type, IfUnresolved.Throw));
+                // Timed separately from the view registration around it: that step covers XAML
+                // parsing, the visual tree and the view model together, and only the split shows
+                // which of the two a slow tab actually pays for.
+                ViewModelLocationProvider.SetDefaultViewModelFactory(type =>
+                {
+                    using (StartupPerformanceLogger.Measure("ViewModel resolution: " + type.Name))
+                    {
+                        return Container.Resolve(type, IfUnresolved.Throw);
+                    }
+                });
             }
         }
 
