@@ -150,6 +150,18 @@ namespace CapFrameX.OSD.Integration
                     heartbeatAge, resolution);
             }
 
+            // A loaded layer with a live heartbeat is not the same as an overlay on screen. The
+            // compositor passes a queue family it cannot serve straight through, which used to be
+            // reported as Active: presents kept arriving, nothing failed, and nothing was drawn.
+            // This is not Error — the layer is healthy and the next present may composite again,
+            // which is what a title does when it moves between menu and gameplay.
+            if (native.CompositeState == VulkanCompositeState.UnsupportedQueueFamily)
+            {
+                return VulkanStatus(EHookOverlayStatus.Fallback, processId, runtime,
+                    $"{target}: the game presents from a queue family the Vulkan compositor cannot draw on; the hook-free overlay serves it.",
+                    heartbeatAge, resolution);
+            }
+
             return VulkanStatus(EHookOverlayStatus.Active, processId, runtime,
                 $"{target}: Vulkan layer active, Present heartbeat {heartbeatAge / 1000.0:F1} s.",
                 heartbeatAge, resolution);

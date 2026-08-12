@@ -172,6 +172,44 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void EvaluateVulkan_ReportsFallbackWhenTheCompositorCannotServeTheQueueFamily()
+        {
+            // The layer is healthy and presents keep arriving; it simply cannot draw on the
+            // family this title presents from. Reporting Active here claimed an overlay that was
+            // never on screen, which is how a whole class of missing-OSD reports stayed invisible.
+            var native = new VulkanActivitySnapshot
+            {
+                IsLayerLoaded = true,
+                LastVulkanPresentTickMs = (long)Now - 250,
+                CompositeState = VulkanCompositeState.UnsupportedQueueFamily
+            };
+
+            HookOverlayStatus status = HookOverlayStatusEvaluator.EvaluateVulkan(
+                42, "Vulkan", native, Now, overlayVisible: true);
+
+            Assert.AreEqual(EHookOverlayStatus.Fallback, status.State);
+            StringAssert.Contains(status.Detail, "queue family");
+        }
+
+        [TestMethod]
+        public void EvaluateVulkan_PrefersHiddenOverFallbackWhileTheOverlayIsOff()
+        {
+            // A switched-off overlay is not compositing by design. Surfacing the pass-through as
+            // a fallback there would report a problem the user created on purpose.
+            var native = new VulkanActivitySnapshot
+            {
+                IsLayerLoaded = true,
+                LastVulkanPresentTickMs = (long)Now - 250,
+                CompositeState = VulkanCompositeState.UnsupportedQueueFamily
+            };
+
+            HookOverlayStatus status = HookOverlayStatusEvaluator.EvaluateVulkan(
+                42, "Vulkan", native, Now, overlayVisible: false);
+
+            Assert.AreEqual(EHookOverlayStatus.Hidden, status.State);
+        }
+
+        [TestMethod]
         public void EvaluateVulkan_ReturnsHiddenForLiveLayerWhenOverlayIsHidden()
         {
             var native = new VulkanActivitySnapshot
