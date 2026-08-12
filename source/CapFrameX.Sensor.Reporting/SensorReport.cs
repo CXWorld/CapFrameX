@@ -34,7 +34,9 @@ namespace CapFrameX.Sensor.Reporting
             //Energy, // milliwatt-hour (mWh)
             //Noise, // dBA
             //Conductivity, // µS/cm
-            //Humidity // %
+            //Humidity, // %
+            //Latency, // ms
+            //DataRate // MT/s
 
             ["Voltage"] = 3,
             ["Current"] = 1,
@@ -59,7 +61,8 @@ namespace CapFrameX.Sensor.Reporting
             ["Conductivity"] = 1,
             ["Humidity"] = 0,
             ["Latency"] = 1,
-            ["LoadLimit"] = 0
+            ["LoadLimit"] = 0,
+            ["DataRate"] = 0
         };
 
         public static IEnumerable<ISensorReportItem> GetReportFromSessionSensorData(IEnumerable<ISessionSensorData> sessionsSensorData, double startTime = 0, double endTime = double.PositiveInfinity)
@@ -345,6 +348,8 @@ namespace CapFrameX.Sensor.Reporting
                         return "(ms)";
                     case "LoadLimit":
                         return "(%)";
+                    case "DataRate":
+                        return "(MT/s)";
                     default:
                         return string.Empty;
                 }

@@ -579,7 +579,7 @@ internal sealed class IntelCpu : GenericCpu
 
             _imcClock = new Sensor("IMC Clock (QCLK)", imcSensorBaseIndex, SensorType.Clock, this, settings)
             { PresentationSortKey = "0_4_0" };
-            _memoryDataRate = new Sensor("Memory Data Rate", imcSensorBaseIndex + 1, SensorType.Frequency, this, settings)
+            _memoryDataRate = new Sensor("Memory Data Rate", imcSensorBaseIndex + 1, SensorType.DataRate, this, settings)
             { PresentationSortKey = "0_4_1" };
             _dramFrequency = new Sensor("DRAM Frequency", imcSensorBaseIndex + 2, SensorType.Clock, this, settings)
             { PresentationSortKey = "0_4_2" };

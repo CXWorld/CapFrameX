@@ -609,6 +609,9 @@ namespace CapFrameX.Overlay
                 case SensorType.Frequency:
                     formatString = "{0,5:F0}";
                     break;
+                case SensorType.DataRate:
+                    formatString = "{0,5:F0}";
+                    break;
                 case SensorType.Timing:
                     formatString = "{0,5:F1}";
                     break;
@@ -670,6 +673,9 @@ namespace CapFrameX.Overlay
                     break;
                 case SensorType.Frequency:
                     formatString = "Hz ";
+                    break;
+                case SensorType.DataRate:
+                    formatString = "MT/s";
                     break;
                 case SensorType.Timing:
                     formatString = "ns ";
@@ -835,6 +841,9 @@ namespace CapFrameX.Overlay
                     break;
                 case SensorType.Frequency:
                     description = $"{sensor.Name} (Hz)";
+                    break;
+                case SensorType.DataRate:
+                    description = $"{sensor.Name} (MT/s)";
                     break;
                 case SensorType.Timing:
                     description = $"{sensor.Name} (ns)";
