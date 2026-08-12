@@ -31,6 +31,11 @@
 		  <Custom Action="CleanRegistry" Before="InstallFinalize">
         Installed OR NOT Installed
       </Custom>
+      <!-- Unconditional on purpose: install, repair, uninstall and both halves of a major upgrade
+           must all end with at most one layer registration. The anchor is load-bearing — running
+           after WriteRegistryValues would delete the registration this package just wrote. -->
+      <Custom Action="PurgeVulkanLayers" Before="WriteRegistryValues" />
+      <Custom Action="PurgeVulkanLayersPerUser" Before="InstallInitialize" />
       <Custom Action="AppdataConfigFiles" Before="InstallFinalize">
         Installed
       </Custom>
@@ -47,8 +52,19 @@
   </Fragment>
 
   <Fragment>
-    <CustomAction Id="CleanRegistry" BinaryKey="CapFrameX.CustomInstallerActions.CA.dll" DllEntry="RemoveAutoStartKey" Execute="immediate" Return="check"/>		
+    <CustomAction Id="CleanRegistry" BinaryKey="CapFrameX.CustomInstallerActions.CA.dll" DllEntry="RemoveAutoStartKey" Execute="immediate" Return="check"/>
 	</Fragment>
+
+  <Fragment>
+    <!-- Deferred and non-impersonated: writing HKLM needs the elevated service context, and an
+         immediate action would only be elevated by accident of how msiexec was launched. -->
+    <CustomAction Id="PurgeVulkanLayers" BinaryKey="CapFrameX.CustomInstallerActions.CA.dll" DllEntry="PurgeVulkanLayerRegistrations" Execute="deferred" Impersonate="no" Return="check"/>
+  </Fragment>
+
+  <Fragment>
+    <!-- The HKCU twin must stay impersonated, otherwise it addresses the SYSTEM hive. -->
+    <CustomAction Id="PurgeVulkanLayersPerUser" BinaryKey="CapFrameX.CustomInstallerActions.CA.dll" DllEntry="PurgeVulkanLayerRegistrationsPerUser" Execute="immediate" Return="check"/>
+  </Fragment>
   
   <Fragment>
     <CustomAction Id="ResourceManagement" BinaryKey="CapFrameX.CustomInstallerActions.CA.dll" DllEntry="CopyConfigResources" Execute="immediate" Return="check"/>
