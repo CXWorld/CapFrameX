@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Management;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Security.Cryptography;
@@ -38,6 +39,11 @@ namespace CapFrameX.OSD.Integration
         // the hook-free renderer take over instead.
         internal const ulong HookRendererReadyTimeoutMs = 10000;
         internal const int EarlyInjectionPollMs = 25;
+        // How long the 25 ms probe keeps running once no target process is present any more.
+        // The probe exists to catch a process BEFORE it creates its swapchain, so the fast rate
+        // is only worth paying for while such a process actually exists or is about to. A
+        // process-start subscription re-arms it; this bounds the tail after it goes quiet.
+        internal const int EarlyInjectionIdleTicksBeforeStandDown = 40; // ~1 s
         // Evidence used only to prove which frame-generation presenter caused a late attachment.
         // It is deliberately separate from the module used on the next launch: waiting for a
         // dynamically loaded XeSS-FG DLL is already too late when the title initializes it before
@@ -100,6 +106,11 @@ namespace CapFrameX.OSD.Integration
         private readonly Dictionary<string, EarlyInjectionTarget> _earlyInjectionTargets =
             new Dictionary<string, EarlyInjectionTarget>(StringComparer.OrdinalIgnoreCase);
         private int _earlyInjectionProbeActive;
+        // Written only from ProbeEarlyInjectionTargets, which _earlyInjectionProbeActive
+        // serializes, so a plain field is enough.
+        private int _earlyInjectionIdleTicks;
+        private ManagementEventWatcher _processStartWatcher;
+        private volatile bool _processStartWatcherActive;
         private volatile bool _enabled;
         private volatile bool _targetAllowed;
         private volatile int _currentPid;
@@ -184,6 +195,9 @@ namespace CapFrameX.OSD.Integration
             _runtimeSub = frameDataStream.Subscribe(OnFrameRow);
             _statusTimer = new Timer(_ => PublishStatus(), null, 1000, 1000);
             AddConfiguredEarlyInjectionTargets();
+            // Arm the subscription before the first probe tick so a target that starts during
+            // startup cannot slip through the gap between the two.
+            StartProcessStartWatcher();
             PublishStatus();
         }
 
@@ -207,9 +221,15 @@ namespace CapFrameX.OSD.Integration
             }
             _enabled = enabled;
             if (enabled)
+            {
+                StartProcessStartWatcher();
                 ArmEarlyInjectionProbe();
+            }
             else
+            {
                 StopEarlyInjectionProbe();
+                StopProcessStartWatcher();
+            }
             UpdateHookVisibility(); // disabling hides the resident hook immediately (no game restart)
             UpdateHookFreeFallback();
             if (_enabled && IsDxgiRuntime(_currentRuntime))
@@ -787,6 +807,77 @@ namespace CapFrameX.OSD.Integration
             }
         }
 
+        /// <summary>
+        /// Subscribes to process creation so the fast probe only has to run while a target is
+        /// actually starting. Win32_ProcessStartTrace is ETW-backed and delivers an event per
+        /// process start; unlike __InstanceCreationEvent it does not poll internally, so waiting
+        /// costs nothing. Failure is deliberately non-fatal: without the subscription the probe
+        /// simply keeps its old always-on cadence, which is slower but never misses a target.
+        /// </summary>
+        private void StartProcessStartWatcher()
+        {
+            if (_disposed || !_enabled || _processStartWatcher != null) return;
+            lock (_gate)
+            {
+                if (_earlyInjectionTargets.Count == 0) return;
+            }
+            try
+            {
+                var watcher = new ManagementEventWatcher(
+                    new WqlEventQuery("SELECT ProcessName FROM Win32_ProcessStartTrace"));
+                watcher.EventArrived += OnProcessStarted;
+                watcher.Start();
+                _processStartWatcher = watcher;
+                _processStartWatcherActive = true;
+            }
+            catch (Exception ex)
+            {
+                _processStartWatcherActive = false;
+                _processStartWatcher = null;
+                Log.Debug(ex, "HookOverlay: process start subscription unavailable, " +
+                    "early-injection probe stays on its polling cadence");
+            }
+        }
+
+        private void StopProcessStartWatcher()
+        {
+            ManagementEventWatcher watcher = _processStartWatcher;
+            _processStartWatcher = null;
+            _processStartWatcherActive = false;
+            if (watcher == null) return;
+            try
+            {
+                watcher.EventArrived -= OnProcessStarted;
+                watcher.Stop();
+                watcher.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "HookOverlay: process start subscription teardown failed");
+            }
+        }
+
+        private void OnProcessStarted(object sender, EventArrivedEventArgs e)
+        {
+            if (_disposed || !_enabled) return;
+            try
+            {
+                // Win32_ProcessStartTrace reports the image name including its extension, while
+                // the targets are keyed the way Process.ProcessName reports them - without it.
+                string processName = e.NewEvent?["ProcessName"] as string;
+                if (string.IsNullOrWhiteSpace(processName)) return;
+                if (!IsEarlyInjectionProcessName(
+                        Path.GetFileNameWithoutExtension(processName)))
+                    return;
+                _earlyInjectionIdleTicks = 0;
+                ArmEarlyInjectionProbe();
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "HookOverlay: process start event handling failed");
+            }
+        }
+
         private void ArmEarlyInjectionProbeAfterExit(int pid)
         {
             if (pid <= 0) return;
@@ -836,36 +927,74 @@ namespace CapFrameX.OSD.Integration
                 var targets = new List<EarlyInjectionTarget>();
                 lock (_gate)
                     targets.AddRange(_earlyInjectionTargets.Values);
-                foreach (EarlyInjectionTarget target in targets)
-                {
-                    Process[] processes;
-                    try { processes = Process.GetProcessesByName(target.ProcessName); }
-                    catch (Exception ex) when (ex is InvalidOperationException ||
-                                               ex is System.ComponentModel.Win32Exception ||
-                                               ex is NotSupportedException)
-                    {
-                        continue;
-                    }
+                if (targets.Count == 0) return;
 
-                    foreach (Process process in processes)
+                // ONE snapshot for all targets. Process.GetProcessesByName does not filter in the
+                // kernel: it takes a full NtQuerySystemInformation snapshot of every process AND
+                // every thread on the system, materialises managed objects for all of them, and
+                // only then compares the name. Calling it once per target multiplied that whole
+                // cost by the target count, on every tick of a 25 ms timer -- measured at ~55% of
+                // one core while merely waiting for a game that was not running.
+                Process[] snapshot;
+                try { snapshot = Process.GetProcesses(); }
+                catch (Exception ex) when (ex is InvalidOperationException ||
+                                           ex is System.ComponentModel.Win32Exception ||
+                                           ex is NotSupportedException)
+                {
+                    return;
+                }
+
+                bool sawCandidate = false;
+                try
+                {
+                    foreach (Process process in snapshot)
                     {
-                        using (process)
+                        // Reject on the cheap name first: this discards every unrelated process
+                        // without opening it, so the expensive identity read below runs only for
+                        // an actual candidate rather than once per (target, process) pair.
+                        string candidateName;
+                        try { candidateName = process.ProcessName; }
+                        catch (Exception ex) when (ex is InvalidOperationException ||
+                                                   ex is NotSupportedException)
                         {
-                            int pid;
-                            try { pid = process.Id; }
-                            catch (InvalidOperationException) { continue; }
-                            if (IsInjectionAttemptBlocked(pid)) continue;
-                            if (!TryReadProcessIdentity(process, out string actualName,
-                                out string actualPath) ||
-                                !IsEarlyInjectionTargetMatch(target.ProcessName,
+                            continue;
+                        }
+                        if (!IsEarlyInjectionProcessName(candidateName)) continue;
+                        sawCandidate = true;
+
+                        int pid;
+                        try { pid = process.Id; }
+                        catch (InvalidOperationException) { continue; }
+                        if (IsInjectionAttemptBlocked(pid)) continue;
+                        if (!TryReadProcessIdentity(process, out string actualName,
+                            out string actualPath))
+                            continue;
+
+                        foreach (EarlyInjectionTarget target in targets)
+                        {
+                            if (!IsEarlyInjectionTargetMatch(target.ProcessName,
                                     target.ExecutablePath, actualName, actualPath))
                                 continue;
-                            if (!IsEarlyInjectionGateSatisfied(pid, target,
-                                out _))
+                            if (!IsEarlyInjectionGateSatisfied(pid, target, out _))
                                 continue;
                             TryInjectEarlyAsync(pid, target);
                         }
                     }
+                }
+                finally
+                {
+                    foreach (Process process in snapshot) process.Dispose();
+                }
+
+                // Nothing to watch: let the fast timer stand down and leave the waiting to the
+                // process-start subscription. Without a live subscription this never trips, so a
+                // system where WMI is unavailable keeps the old always-polling behaviour.
+                if (sawCandidate) _earlyInjectionIdleTicks = 0;
+                else if (_processStartWatcherActive &&
+                         ++_earlyInjectionIdleTicks >= EarlyInjectionIdleTicksBeforeStandDown)
+                {
+                    _earlyInjectionIdleTicks = 0;
+                    StopEarlyInjectionProbe();
                 }
             }
             catch (Exception ex)
@@ -2082,6 +2211,7 @@ namespace CapFrameX.OSD.Integration
             }
             _statusTimer?.Dispose();
             _earlyInjectionTimer?.Dispose();
+            StopProcessStartWatcher();
             _pidSub?.Dispose();
             _enabledSub?.Dispose();
             _visibilitySub?.Dispose();
