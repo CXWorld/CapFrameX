@@ -762,7 +762,7 @@ namespace CapFrameX.Configuration
 
         public int OsdReplayBufferSize
         {
-            get => Get<int>(750);
+            get => Get<int>(2500);
             set => Set(Math.Max(500, Math.Min(10000, value)));
         }
 
