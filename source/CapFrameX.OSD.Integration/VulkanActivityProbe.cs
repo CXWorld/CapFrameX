@@ -4,6 +4,22 @@ using System.Runtime.InteropServices;
 
 namespace CapFrameX.OSD.Integration
 {
+    /// <summary>
+    /// What the Vulkan compositor did with the queue family of the most recent present.
+    /// Mirrors cfxarb::VulkanCompositeState in renderer_arbiter.h.
+    /// </summary>
+    internal enum VulkanCompositeState
+    {
+        Unknown = 0,
+        Compositing = 1,
+        /// <summary>
+        /// The layer passed the present straight through because it cannot composite on that
+        /// family. Distinct from <see cref="VulkanActivityProbe.PreferDxgiBackend"/>: it is a
+        /// property of the current family, and the next present may well composite again.
+        /// </summary>
+        UnsupportedQueueFamily = 2
+    }
+
     internal struct VulkanActivitySnapshot
     {
         public bool IsLayerLoaded;
@@ -12,6 +28,7 @@ namespace CapFrameX.OSD.Integration
         // Extent of the presenting Vulkan swapchain; 0 until a present established one.
         public int ResolutionX;
         public int ResolutionY;
+        public VulkanCompositeState CompositeState;
     }
 
     /// <summary>
@@ -27,16 +44,18 @@ namespace CapFrameX.OSD.Integration
         // and permanently yielded presentation to DXGI.
         internal const int PreferDxgiBackend = 1;
 
-        // Keep these values synchronized with renderer_arbiter.cpp::RendererState.
-        private const int StateVersion = 2;
-        private const int StateSize = 24;
+        // Keep these values synchronized with renderer_arbiter.cpp::RendererState. The layout is
+        // a cross-module contract: the DXGI hook and the Vulkan layer both create the mapping, so
+        // any change needs the version, the size, the offsets AND the mapping name to move
+        // together. A version mismatch is reported as an error rather than parsed optimistically.
+        private const int StateVersion = 3;
+        private const int StateSize = 32;
         private const int VersionOffset = 0;
         private const int LastVulkanPresentOffset = 8;
         private const int PreferredBackendOffset = 16;
-        // Packed as width | height << 16 into the padding the struct already had, so the block
-        // stays 24 bytes — the hook and the layer share it and a size change would break the
-        // module that maps it second. See renderer_arbiter.cpp::AnnounceVulkanResolution.
+        // Packed as width | height << 16. See renderer_arbiter.cpp::AnnounceVulkanResolution.
         private const int ResolutionPackedOffset = 20;
+        private const int VulkanCompositeOffset = 24;
         private const int ErrorFileNotFound = 2;
         private const uint FileMapRead = 0x0004;
 
@@ -135,7 +154,9 @@ namespace CapFrameX.OSD.Integration
                         view, LastVulkanPresentOffset),
                     PreferredBackend = Marshal.ReadInt32(view, PreferredBackendOffset),
                     ResolutionX = packedResolution & 0xFFFF,
-                    ResolutionY = (packedResolution >> 16) & 0xFFFF
+                    ResolutionY = (packedResolution >> 16) & 0xFFFF,
+                    CompositeState = ToCompositeState(
+                        Marshal.ReadInt32(view, VulkanCompositeOffset))
                 };
                 return true;
             }
@@ -154,8 +175,16 @@ namespace CapFrameX.OSD.Integration
             }
         }
 
+        // A value this build does not know is treated as Unknown rather than surfaced as a
+        // failure: the composite state only ever adds diagnosis, so an unfamiliar one must not
+        // downgrade an overlay that is working.
+        private static VulkanCompositeState ToCompositeState(int raw)
+            => Enum.IsDefined(typeof(VulkanCompositeState), raw)
+                ? (VulkanCompositeState)raw
+                : VulkanCompositeState.Unknown;
+
         internal static string GetMappingName(int pid)
-            => $"Local\\CfxOsdRendererStateV2_{pid}";
+            => $"Local\\CfxOsdRendererStateV3_{pid}";
 
         internal static bool IsRecent(ulong then, ulong now, ulong windowMs)
             => now < then || now - then <= windowMs;

@@ -12,7 +12,11 @@ namespace CapFrameX.Test.Integration
     [DoNotParallelize]
     public class VulkanActivityProbeTest
     {
-        private const long StateSize = 24;
+        // Mirrors renderer_arbiter.cpp::RendererState. Version and size move together with the
+        // mapping name, so a stale value here fails the probe instead of misreading the block.
+        private const long StateSize = 32;
+        private const int StateVersion = 3;
+        private const int VulkanCompositeOffset = 24;
         private static int _nextTestPid = 1500000000;
 
         [TestMethod]
@@ -60,7 +64,7 @@ namespace CapFrameX.Test.Integration
             using (MemoryMappedViewAccessor view = mapping.CreateViewAccessor(
                 0, StateSize, MemoryMappedFileAccess.ReadWrite))
             {
-                view.Write(0, 2);
+                view.Write(0, StateVersion);
                 view.Write(8, lastVulkanPresentTickMs);
                 view.Write(16, preferredBackend);
                 view.Flush();
@@ -90,7 +94,7 @@ namespace CapFrameX.Test.Integration
             using (MemoryMappedViewAccessor view = mapping.CreateViewAccessor(
                 0, StateSize, MemoryMappedFileAccess.ReadWrite))
             {
-                view.Write(0, 2);
+                view.Write(0, StateVersion);
                 view.Flush();
 
                 Assert.IsTrue(VulkanActivityProbe.TryHasRecentPresent(pid,
@@ -130,7 +134,7 @@ namespace CapFrameX.Test.Integration
             using (MemoryMappedViewAccessor view = mapping.CreateViewAccessor(
                 0, StateSize, MemoryMappedFileAccess.ReadWrite))
             {
-                view.Write(0, 2);
+                view.Write(0, StateVersion);
                 view.Write(8, 42L);
                 view.Write(20, unchecked((int)((1440u << 16) | 3440u)));
                 view.Flush();
@@ -139,6 +143,57 @@ namespace CapFrameX.Test.Integration
                     pid, out VulkanActivitySnapshot snapshot, out _));
                 Assert.AreEqual(3440, snapshot.ResolutionX);
                 Assert.AreEqual(1440, snapshot.ResolutionY);
+            }
+        }
+
+        [TestMethod]
+        public void TryRead_ReportsThatTheCompositorPassedTheQueueFamilyThrough()
+        {
+            int pid = NextTestPid();
+
+            using (MemoryMappedFile mapping = MemoryMappedFile.CreateNew(
+                VulkanActivityProbe.GetMappingName(pid), StateSize,
+                MemoryMappedFileAccess.ReadWrite))
+            using (MemoryMappedViewAccessor view = mapping.CreateViewAccessor(
+                0, StateSize, MemoryMappedFileAccess.ReadWrite))
+            {
+                view.Write(0, StateVersion);
+                view.Write(8, 42L);
+                view.Write(VulkanCompositeOffset, (int)VulkanCompositeState.UnsupportedQueueFamily);
+                view.Flush();
+
+                Assert.IsTrue(VulkanActivityProbe.TryRead(
+                    pid, out VulkanActivitySnapshot snapshot, out _));
+                Assert.AreEqual(VulkanCompositeState.UnsupportedQueueFamily,
+                    snapshot.CompositeState);
+                // Passing a family through is not the permanent yield PreferDxgi() publishes.
+                Assert.AreEqual(0, snapshot.PreferredBackend);
+            }
+        }
+
+        [TestMethod]
+        public void TryRead_TreatsAnUnknownCompositeStateAsUnknownRatherThanFailing()
+        {
+            // Forward compatibility: a newer layer may publish a state this build does not know.
+            // The field only ever adds diagnosis, so it must never invalidate the whole snapshot.
+            int pid = NextTestPid();
+
+            using (MemoryMappedFile mapping = MemoryMappedFile.CreateNew(
+                VulkanActivityProbe.GetMappingName(pid), StateSize,
+                MemoryMappedFileAccess.ReadWrite))
+            using (MemoryMappedViewAccessor view = mapping.CreateViewAccessor(
+                0, StateSize, MemoryMappedFileAccess.ReadWrite))
+            {
+                view.Write(0, StateVersion);
+                view.Write(8, 42L);
+                view.Write(VulkanCompositeOffset, 99);
+                view.Flush();
+
+                Assert.IsTrue(VulkanActivityProbe.TryRead(
+                    pid, out VulkanActivitySnapshot snapshot, out string error));
+                Assert.IsNull(error);
+                Assert.IsTrue(snapshot.IsLayerLoaded);
+                Assert.AreEqual(VulkanCompositeState.Unknown, snapshot.CompositeState);
             }
         }
 
@@ -155,7 +210,7 @@ namespace CapFrameX.Test.Integration
             using (MemoryMappedViewAccessor view = mapping.CreateViewAccessor(
                 0, StateSize, MemoryMappedFileAccess.ReadWrite))
             {
-                view.Write(0, 2);
+                view.Write(0, StateVersion);
                 view.Write(8, 42L);
                 view.Write(20, unchecked((int)((43200u << 16) | 7680u)));
                 view.Flush();
@@ -183,7 +238,7 @@ namespace CapFrameX.Test.Integration
             using (MemoryMappedViewAccessor view = mapping.CreateViewAccessor(
                 0, StateSize, MemoryMappedFileAccess.ReadWrite))
             {
-                view.Write(0, 2);
+                view.Write(0, StateVersion);
                 view.Write(8, 42L);
                 view.Flush();
 
