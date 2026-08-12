@@ -140,7 +140,12 @@ namespace CapFrameX.ViewModel
                     UpdateSensorEvaluationState();
                 });
 
-            _ = Task.Run(InitializeStaticInfoAsync);
+            // Two independent blocks: the board/memory/OS identification comes from WMI and is
+            // available right away, while CPU and GPU identity have to wait for the sensor
+            // service to finish hardware detection. Queuing the first behind the second only
+            // delayed the tab - they run side by side.
+            _ = Task.Run(InitializeBaseSystemInfo);
+            _ = Task.Run(InitializeSensorBoundInfoAsync);
 
             _sensorService.SensorSnapshotStream
                 .Where(_ => IsLiveViewVisible)
@@ -161,23 +166,16 @@ namespace CapFrameX.ViewModel
             _sensorConfig.EvaluateAllSensors = IsLiveViewVisible;
         }
 
-        private async Task InitializeStaticInfoAsync()
+        /// <summary>
+        /// Everything WMI can answer without the sensor service. The first call collects the
+        /// whole set in one go (see <c>SystemInfo</c>), so the individual getters below cost
+        /// a field read each.
+        /// </summary>
+        private void InitializeBaseSystemInfo()
         {
             try
             {
-                await _sensorService.SensorServiceCompletionSource.Task;
-
-                CpuName = _systemInfo.GetProcessorName();
-                CpuVendorBadge = VendorBadge.FromCpuVendor(_sensorService.GetCpuVendor());
                 CpuDetails = _systemInfo.GetProcessorCoreCountInfo();
-
-                UpdateGpuInfo();
-
-                // Keep the GPU block in sync with the graphics adapter selection
-                // (auto mode: discrete GPU, otherwise the configured adapter).
-                _appConfiguration.OnValueChanged
-                    .Where(change => change.key == nameof(IAppConfiguration.GraphicsAdapter))
-                    .Subscribe(_ => UpdateGpuInfo());
 
                 MainboardName = _systemInfo.GetMotherboardName();
                 MainboardVendorBadge = VendorBadge.FromVendorName(_systemInfo.GetMotherboardManufacturerBrand());
@@ -194,6 +192,33 @@ namespace CapFrameX.ViewModel
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while collecting system information.");
+            }
+        }
+
+        /// <summary>
+        /// CPU and GPU identity are resolved through the sensor service, so this block can only
+        /// run once hardware detection completed.
+        /// </summary>
+        private async Task InitializeSensorBoundInfoAsync()
+        {
+            try
+            {
+                await _sensorService.SensorServiceCompletionSource.Task;
+
+                CpuName = _systemInfo.GetProcessorName();
+                CpuVendorBadge = VendorBadge.FromCpuVendor(_sensorService.GetCpuVendor());
+
+                UpdateGpuInfo();
+
+                // Keep the GPU block in sync with the graphics adapter selection
+                // (auto mode: discrete GPU, otherwise the configured adapter).
+                _appConfiguration.OnValueChanged
+                    .Where(change => change.key == nameof(IAppConfiguration.GraphicsAdapter))
+                    .Subscribe(_ => UpdateGpuInfo());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while collecting processor and graphics card information.");
             }
         }
 
