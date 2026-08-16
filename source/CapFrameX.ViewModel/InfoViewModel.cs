@@ -41,6 +41,14 @@ namespace CapFrameX.ViewModel
         private bool _isViewActive = true;
         private bool _isShellVisible = true;
 
+        // Live-metrics subscription, attached only while the output is visible. Guarded because
+        // the shell-visibility event and the navigation callbacks can arrive on different threads.
+        private readonly object _liveMetricsLock = new object();
+        private IDisposable _liveMetricsSubscription;
+
+        // Repaint rate of the live telemetry on the Info tab.
+        private const int LiveMetricsSampleMs = 1000;
+
         private string _cpuName = "Detecting...";
         private string _cpuDetails = string.Empty;
         private VendorBadge _cpuVendorBadge;
@@ -147,11 +155,41 @@ namespace CapFrameX.ViewModel
             _ = Task.Run(InitializeBaseSystemInfo);
             _ = Task.Run(InitializeSensorBoundInfoAsync);
 
-            _sensorService.SensorSnapshotStream
-                .Where(_ => IsLiveViewVisible)
-                .Sample(TimeSpan.FromMilliseconds(500))
-                .ObserveOnDispatcher()
-                .Subscribe(snapshot => UpdateLiveMetrics(snapshot.Item2));
+            UpdateLiveMetricsSubscription();
+        }
+
+        /// <summary>
+        /// Attaches the live-metrics stream only while its output can actually be seen.
+        /// <para>
+        /// The subscription used to be created once in the constructor and never released. That is
+        /// not free while the tab is hidden: <c>Sample(TimeSpan)</c> is TIME driven, so its periodic
+        /// Rx timer belongs to the SUBSCRIPTION rather than to the data flow. It kept firing every
+        /// 500 ms even though the <see cref="IsLiveViewVisible"/> gate in front of it discarded
+        /// every element, and <c>ObserveOnDispatcher</c> put each of those ticks on the UI thread —
+        /// where the cost is a wake-up plus contention on the window manager's global lock, not
+        /// computation. Same shape as the PMD buffers in OnlineMetricService.
+        /// </para>
+        /// </summary>
+        private void UpdateLiveMetricsSubscription()
+        {
+            lock (_liveMetricsLock)
+            {
+                if (IsLiveViewVisible)
+                {
+                    if (_liveMetricsSubscription != null) return;
+                    _liveMetricsSubscription = _sensorService.SensorSnapshotStream
+                        // Kept as a guard: visibility can flip between attach and delivery.
+                        .Where(_ => IsLiveViewVisible)
+                        .Sample(TimeSpan.FromMilliseconds(LiveMetricsSampleMs))
+                        .ObserveOnDispatcher()
+                        .Subscribe(snapshot => UpdateLiveMetrics(snapshot.Item2));
+                }
+                else
+                {
+                    _liveMetricsSubscription?.Dispose();
+                    _liveMetricsSubscription = null;
+                }
+            }
         }
 
         /// <summary>
@@ -164,6 +202,7 @@ namespace CapFrameX.ViewModel
         private void UpdateSensorEvaluationState()
         {
             _sensorConfig.EvaluateAllSensors = IsLiveViewVisible;
+            UpdateLiveMetricsSubscription();
         }
 
         /// <summary>

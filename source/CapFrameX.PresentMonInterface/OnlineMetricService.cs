@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Latency;
 using CapFrameX.Contracts.Overlay;
+using CapFrameX.Contracts.PMD;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
@@ -79,16 +80,24 @@ namespace CapFrameX.PresentMonInterface
         private List<double> _reusableListBuffer5Seconds;
         private List<double> _reusableAmdFlmBuffer;
 
+        // Window length for aggregating PMD samples before they reach the overlay metrics.
+        private const int PMD_METRIC_BUFFER_MS = 50;
+
         // Disposable resources
         private IDisposable _frameDataSubscription;
         private IDisposable _poweneticsSubscription;
         private IDisposable _benchlabSubscription;
         private IDisposable _amdFlmSubscription;
         private IDisposable _amdFlmConfigurationSubscription;
+        private IDisposable _poweneticsStatusSubscription;
+        private IDisposable _benchlabStatusSubscription;
         private EventLoopScheduler _frameDataScheduler;
         private EventLoopScheduler _poweneticsScheduler;
         private EventLoopScheduler _benchlabScheduler;
         private EventLoopScheduler _amdFlmScheduler;
+        // Guards attach/detach of the PMD data subscriptions: the status streams deliver on the
+        // device threads, so both sides can race.
+        private readonly object _pmdStreamLock = new object();
         private bool _disposed;
 
         private string _currentProcess;
@@ -147,10 +156,10 @@ namespace CapFrameX.PresentMonInterface
 
         private void ConnectOnlineMetricDataStream()
         {
-            // Create schedulers that we can dispose later
+            // Create schedulers that we can dispose later. The two PMD ones are created on demand
+            // in AttachPoweneticsStream/AttachBenchlabStream instead: each EventLoopScheduler owns
+            // a dedicated thread, and without a device there is nothing for it to serve.
             _frameDataScheduler = new EventLoopScheduler();
-            _poweneticsScheduler = new EventLoopScheduler();
-            _benchlabScheduler = new EventLoopScheduler();
             _amdFlmScheduler = new EventLoopScheduler();
 
             _frameDataSubscription = _captureService
@@ -160,17 +169,7 @@ namespace CapFrameX.PresentMonInterface
                 .Where(x => EvaluateRealtimeMetrics())
                 .Subscribe(UpdateOnlineMetrics);
 
-            _poweneticsSubscription = _poweneticsService.PmdChannelStream
-                .ObserveOn(_poweneticsScheduler)
-                .Where(_ => EvaluatePmdMetrics())
-                .Buffer(TimeSpan.FromMilliseconds(50))
-                .Subscribe(metricsData => UpdatePmdMetrics(metricsData));
-
-            _benchlabSubscription = _benchlabService.PmdSensorStream
-                .ObserveOn(_benchlabScheduler)
-                .Where(_ => EvaluatePmdMetrics())
-                .Buffer(TimeSpan.FromMilliseconds(50))
-                .Subscribe(metricsData => UpdatePmdMetrics(metricsData));
+            ConnectPmdDataStreams();
 
             _amdFlmSubscription = _amdFlmService.SampleStream
                 .ObserveOn(_amdFlmScheduler)
@@ -181,6 +180,97 @@ namespace CapFrameX.PresentMonInterface
                     || change.key == nameof(IAppConfiguration.AmdFlmFrameGeneration))
                 .ObserveOn(_amdFlmScheduler)
                 .Subscribe(_ => ClearAmdFlmMetric());
+        }
+
+        /// <summary>
+        /// Attaches the PMD data streams only while a device actually reports itself.
+        /// <para>
+        /// The subscriptions used to be created unconditionally in the constructor, and that is
+        /// expensive on a machine without PMD hardware: <c>Buffer(TimeSpan)</c> is TIME driven, so
+        /// its periodic Rx timer belongs to the SUBSCRIPTION rather than to the data flow. It keeps
+        /// closing empty 50 ms windows even when no element ever arrives and the
+        /// <see cref="EvaluatePmdMetrics"/> gate in front of it discards everything. Measured with
+        /// no device connected: two such timers produced ~40 wake-ups per second, which cascaded
+        /// through the Rx scheduler into the .NET timer queue and on into the WPF dispatcher —
+        /// ~218 UI thread wake-ups per second whose cost is context switches and contention on the
+        /// window manager's global lock, not computation. It showed up as periodic CPU spikes while
+        /// the application sat idle.
+        /// </para>
+        /// Each attach also owns an <see cref="EventLoopScheduler"/>, i.e. a dedicated thread, so
+        /// both are created here and released again on detach.
+        /// </summary>
+        private void ConnectPmdDataStreams()
+        {
+            _poweneticsStatusSubscription = _poweneticsService.PmdStatusStream
+                .DistinctUntilChanged()
+                .Subscribe(status =>
+                {
+                    if (status == EPmdDriverStatus.Connected) AttachPoweneticsStream();
+                    else DetachPoweneticsStream();
+                });
+
+            _benchlabStatusSubscription = _benchlabService.PmdServiceStatusStream
+                .DistinctUntilChanged()
+                .Subscribe(status =>
+                {
+                    if (status == EPmdServiceStatus.Running) AttachBenchlabStream();
+                    else DetachBenchlabStream();
+                });
+
+            // Both status streams are plain Subjects and replay nothing, so a device that was
+            // already up before this service was constructed would never be picked up.
+            if (_poweneticsService.IsServiceRunning) AttachPoweneticsStream();
+            if (_benchlabService.IsServiceRunning) AttachBenchlabStream();
+        }
+
+        private void AttachPoweneticsStream()
+        {
+            lock (_pmdStreamLock)
+            {
+                if (_disposed || _poweneticsSubscription != null) return;
+                _poweneticsScheduler = new EventLoopScheduler();
+                _poweneticsSubscription = _poweneticsService.PmdChannelStream
+                    .ObserveOn(_poweneticsScheduler)
+                    .Where(_ => EvaluatePmdMetrics())
+                    .Buffer(TimeSpan.FromMilliseconds(PMD_METRIC_BUFFER_MS))
+                    .Subscribe(metricsData => UpdatePmdMetrics(metricsData));
+            }
+        }
+
+        private void DetachPoweneticsStream()
+        {
+            lock (_pmdStreamLock)
+            {
+                _poweneticsSubscription?.Dispose();
+                _poweneticsSubscription = null;
+                _poweneticsScheduler?.Dispose();
+                _poweneticsScheduler = null;
+            }
+        }
+
+        private void AttachBenchlabStream()
+        {
+            lock (_pmdStreamLock)
+            {
+                if (_disposed || _benchlabSubscription != null) return;
+                _benchlabScheduler = new EventLoopScheduler();
+                _benchlabSubscription = _benchlabService.PmdSensorStream
+                    .ObserveOn(_benchlabScheduler)
+                    .Where(_ => EvaluatePmdMetrics())
+                    .Buffer(TimeSpan.FromMilliseconds(PMD_METRIC_BUFFER_MS))
+                    .Subscribe(metricsData => UpdatePmdMetrics(metricsData));
+            }
+        }
+
+        private void DetachBenchlabStream()
+        {
+            lock (_pmdStreamLock)
+            {
+                _benchlabSubscription?.Dispose();
+                _benchlabSubscription = null;
+                _benchlabScheduler?.Dispose();
+                _benchlabScheduler = null;
+            }
         }
 
         private void UpdateAmdFlmMetric(AmdFlmSample sample)
@@ -248,7 +338,9 @@ namespace CapFrameX.PresentMonInterface
                     || (_overlayEntryCore.GetRealtimeMetricEntry("PmdSystemPowerCurrent")?.ShowOnOverlay ?? false);
 
             }
-            catch { return false; }
+            // Fail open, like EvaluateRealtimeMetrics: the entry store may not be populated yet
+            // during startup, and dropping samples then would silently blank the overlay metrics.
+            catch { return true; }
         }
 
         private void UpdateOnlineMetrics(string[] lineSplit)
@@ -793,17 +885,21 @@ namespace CapFrameX.PresentMonInterface
 
             if (disposing)
             {
+                // Stop reacting to device status BEFORE tearing the data streams down, otherwise a
+                // status event arriving mid-teardown could re-attach what we just released.
+                _poweneticsStatusSubscription?.Dispose();
+                _benchlabStatusSubscription?.Dispose();
+
                 // Dispose subscriptions
                 _frameDataSubscription?.Dispose();
-                _poweneticsSubscription?.Dispose();
-                _benchlabSubscription?.Dispose();
+                DetachPoweneticsStream();
+                DetachBenchlabStream();
                 _amdFlmSubscription?.Dispose();
                 _amdFlmConfigurationSubscription?.Dispose();
 
-                // Dispose schedulers (EventLoopScheduler implements IDisposable)
+                // Dispose schedulers (EventLoopScheduler implements IDisposable). The two PMD
+                // schedulers are owned by the detach methods above.
                 _frameDataScheduler?.Dispose();
-                _poweneticsScheduler?.Dispose();
-                _benchlabScheduler?.Dispose();
                 _amdFlmScheduler?.Dispose();
 
                 // Clear buffers

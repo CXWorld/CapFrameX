@@ -39,6 +39,8 @@ namespace CapFrameX.OSD.Integration
         // the hook-free renderer take over instead.
         internal const ulong HookRendererReadyTimeoutMs = 10000;
         internal const int EarlyInjectionPollMs = 25;
+        internal const string ProcessStartTraceQuery =
+            "SELECT * FROM Win32_ProcessStartTrace";
         // How long the 25 ms probe keeps running once no target process is present any more.
         // The probe exists to catch a process BEFORE it creates its swapchain, so the fast rate
         // is only worth paying for while such a process actually exists or is about to. A
@@ -106,11 +108,9 @@ namespace CapFrameX.OSD.Integration
         private readonly Dictionary<string, EarlyInjectionTarget> _earlyInjectionTargets =
             new Dictionary<string, EarlyInjectionTarget>(StringComparer.OrdinalIgnoreCase);
         private int _earlyInjectionProbeActive;
-        // Written only from ProbeEarlyInjectionTargets, which _earlyInjectionProbeActive
-        // serializes, so a plain field is enough.
+        // The process-start callback and the timer callback run on different threads.
         private int _earlyInjectionIdleTicks;
         private ManagementEventWatcher _processStartWatcher;
-        private volatile bool _processStartWatcherActive;
         private volatile bool _enabled;
         private volatile bool _targetAllowed;
         private volatile int _currentPid;
@@ -786,6 +786,7 @@ namespace CapFrameX.OSD.Integration
             int dueTimeMs = delayMs >= int.MaxValue
                 ? int.MaxValue
                 : (int)Math.Ceiling(delayMs);
+            Interlocked.Exchange(ref _earlyInjectionIdleTicks, 0);
             try
             {
                 _earlyInjectionTimer.Change(dueTimeMs, EarlyInjectionPollMs);
@@ -811,8 +812,8 @@ namespace CapFrameX.OSD.Integration
         /// Subscribes to process creation so the fast probe only has to run while a target is
         /// actually starting. Win32_ProcessStartTrace is ETW-backed and delivers an event per
         /// process start; unlike __InstanceCreationEvent it does not poll internally, so waiting
-        /// costs nothing. Failure is deliberately non-fatal: without the subscription the probe
-        /// simply keeps its old always-on cadence, which is slower but never misses a target.
+        /// costs nothing. Failure is deliberately non-fatal: the initial fast probe still runs
+        /// for a bounded startup window, then stands down instead of polling forever.
         /// </summary>
         private void StartProcessStartWatcher()
         {
@@ -823,27 +824,26 @@ namespace CapFrameX.OSD.Integration
             }
             try
             {
-                var watcher = new ManagementEventWatcher(
-                    new WqlEventQuery("SELECT ProcessName FROM Win32_ProcessStartTrace"));
+                var watcher = new ManagementEventWatcher(CreateProcessStartTraceQuery());
                 watcher.EventArrived += OnProcessStarted;
                 watcher.Start();
                 _processStartWatcher = watcher;
-                _processStartWatcherActive = true;
             }
             catch (Exception ex)
             {
-                _processStartWatcherActive = false;
                 _processStartWatcher = null;
                 Log.Debug(ex, "HookOverlay: process start subscription unavailable, " +
-                    "early-injection probe stays on its polling cadence");
+                    "early-injection fast probe will stop after its bounded startup window");
             }
         }
+
+        internal static WqlEventQuery CreateProcessStartTraceQuery()
+            => new WqlEventQuery(ProcessStartTraceQuery);
 
         private void StopProcessStartWatcher()
         {
             ManagementEventWatcher watcher = _processStartWatcher;
             _processStartWatcher = null;
-            _processStartWatcherActive = false;
             if (watcher == null) return;
             try
             {
@@ -869,7 +869,7 @@ namespace CapFrameX.OSD.Integration
                 if (!IsEarlyInjectionProcessName(
                         Path.GetFileNameWithoutExtension(processName)))
                     return;
-                _earlyInjectionIdleTicks = 0;
+                Interlocked.Exchange(ref _earlyInjectionIdleTicks, 0);
                 ArmEarlyInjectionProbe();
             }
             catch (Exception ex)
@@ -987,14 +987,22 @@ namespace CapFrameX.OSD.Integration
                 }
 
                 // Nothing to watch: let the fast timer stand down and leave the waiting to the
-                // process-start subscription. Without a live subscription this never trips, so a
-                // system where WMI is unavailable keeps the old always-polling behaviour.
-                if (sawCandidate) _earlyInjectionIdleTicks = 0;
-                else if (_processStartWatcherActive &&
-                         ++_earlyInjectionIdleTicks >= EarlyInjectionIdleTicksBeforeStandDown)
+                // process-start subscription. This limit is unconditional because a failed WMI
+                // subscription must never turn the 25-ms full process snapshot into an endless
+                // CPU load. Early injection is unavailable until the subscription can be armed,
+                // but the rest of the hook overlay keeps working normally.
+                if (sawCandidate)
                 {
-                    _earlyInjectionIdleTicks = 0;
-                    StopEarlyInjectionProbe();
+                    Interlocked.Exchange(ref _earlyInjectionIdleTicks, 0);
+                }
+                else
+                {
+                    int idleTicks = Interlocked.Increment(ref _earlyInjectionIdleTicks);
+                    if (!ShouldContinueFastEarlyInjectionProbe(sawCandidate, idleTicks))
+                    {
+                        Interlocked.Exchange(ref _earlyInjectionIdleTicks, 0);
+                        StopEarlyInjectionProbe();
+                    }
                 }
             }
             catch (Exception ex)
@@ -1006,6 +1014,10 @@ namespace CapFrameX.OSD.Integration
                 Interlocked.Exchange(ref _earlyInjectionProbeActive, 0);
             }
         }
+
+        internal static bool ShouldContinueFastEarlyInjectionProbe(bool sawCandidate,
+            int idleTicks)
+            => sawCandidate || idleTicks < EarlyInjectionIdleTicksBeforeStandDown;
 
         private void TryInjectEarlyAsync(int pid, EarlyInjectionTarget target)
         {
