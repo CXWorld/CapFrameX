@@ -109,14 +109,23 @@ namespace CapFrameX.Sensor
                .Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan)))
                .Switch()
                .Where(_ => _isServiceAlive)
-               .Where((_, idx) => idx == 0 || IsOverlayActive || (_isLoggingActive && UseSensorLogging)
-                    || IsSensorWebsocketActive() || _sensorConfig.EvaluateAllSensors)
+               .Where((_, idx) => idx == 0 || HasActiveSensorConsumer())
                .SelectMany(_ => GetTimeStampedSensorValues());
 
             _pmcReaderInitializationTask = InitializePmcReaderPluginAsync();
-            var pluginSensorStream = CreatePmcReaderSensorStream()
-                .Where(_ => _isServiceAlive)
-                .Where(_ => IsOverlayActive || (_isLoggingActive && UseSensorLogging) || IsSensorWebsocketActive());
+            var pluginPollingActivityStream = _sensorUpdateSubject
+                .Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan)))
+                .Switch()
+                .Select(_ => _isServiceAlive && HasActiveSensorConsumer());
+
+            // Filtering snapshots after subscribing to the plugin is too late: its interval has
+            // already read every PMC and changed thread affinity before Where can discard the
+            // result. Switch the subscription itself instead, so inactive consumers leave only
+            // the cheap activity timer running and perform no ring-0 counter reads.
+            var pluginSensorStream = SensorStreamGate.WhileActive(
+                pluginPollingActivityStream,
+                CreatePmcReaderSensorStream,
+                () => (DateTime.UtcNow, new Dictionary<ISensorEntry, float>()));
 
             SensorSnapshotStream = coreSensorStream
                .CombineLatest(
@@ -385,6 +394,14 @@ namespace CapFrameX.Sensor
             return Observable.FromAsync(() => _pmcReaderInitializationTask)
                 .SelectMany(plugin => plugin?.SensorSnapshotStream
                     ?? Observable.Empty<(DateTime, Dictionary<ISensorEntry, float>)>());
+        }
+
+        private bool HasActiveSensorConsumer()
+        {
+            return IsOverlayActive
+                || (_isLoggingActive && UseSensorLogging)
+                || IsSensorWebsocketActive()
+                || _sensorConfig.EvaluateAllSensors;
         }
 
         private async Task<IPmcReaderSensorPlugin> InitializePmcReaderPluginAsync()
