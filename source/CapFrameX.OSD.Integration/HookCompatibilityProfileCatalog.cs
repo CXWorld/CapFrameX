@@ -13,17 +13,23 @@ namespace CapFrameX.OSD.Integration
     internal enum NativeHookCompatibilityFlags : uint
     {
         None = 0,
-        DisableDxgiSwapchainReleaseHook = 1u << 0
+        DisableDxgiSwapchainReleaseHook = 1u << 0,
+        EnableXeFgNativePresentQueueRoute = 1u << 1,
+        EnableGenericD3D12PresentRoute = 1u << 2
     }
 
     internal sealed class HookCompatibilityProfile
     {
         internal HookCompatibilityProfile(string executableName,
-            bool disableDxgiSwapchainReleaseHook, TimeSpan injectionDelay,
+            bool disableDxgiSwapchainReleaseHook,
+            bool enableXeFgNativePresentQueueRoute,
+            bool enableGenericD3D12PresentRoute, TimeSpan injectionDelay,
             string earlyInjectionModule, string source)
         {
             ExecutableName = executableName;
             DisableDxgiSwapchainReleaseHook = disableDxgiSwapchainReleaseHook;
+            EnableXeFgNativePresentQueueRoute = enableXeFgNativePresentQueueRoute;
+            EnableGenericD3D12PresentRoute = enableGenericD3D12PresentRoute;
             InjectionDelay = injectionDelay;
             EarlyInjectionModule = earlyInjectionModule;
             Source = source;
@@ -31,16 +37,29 @@ namespace CapFrameX.OSD.Integration
 
         internal string ExecutableName { get; }
         internal bool DisableDxgiSwapchainReleaseHook { get; }
+        internal bool EnableXeFgNativePresentQueueRoute { get; }
+        internal bool EnableGenericD3D12PresentRoute { get; }
         internal TimeSpan InjectionDelay { get; }
         internal string EarlyInjectionModule { get; }
         internal bool RequiresEarlyInjection =>
             !string.IsNullOrWhiteSpace(EarlyInjectionModule);
         internal string Source { get; }
 
-        internal NativeHookCompatibilityFlags NativeFlags =>
-            DisableDxgiSwapchainReleaseHook
-                ? NativeHookCompatibilityFlags.DisableDxgiSwapchainReleaseHook
-                : NativeHookCompatibilityFlags.None;
+        internal NativeHookCompatibilityFlags NativeFlags
+        {
+            get
+            {
+                NativeHookCompatibilityFlags flags =
+                    NativeHookCompatibilityFlags.None;
+                if (DisableDxgiSwapchainReleaseHook)
+                    flags |= NativeHookCompatibilityFlags.DisableDxgiSwapchainReleaseHook;
+                if (EnableXeFgNativePresentQueueRoute)
+                    flags |= NativeHookCompatibilityFlags.EnableXeFgNativePresentQueueRoute;
+                if (EnableGenericD3D12PresentRoute)
+                    flags |= NativeHookCompatibilityFlags.EnableGenericD3D12PresentRoute;
+                return flags;
+            }
+        }
     }
 
     internal static class HookCompatibilityProfileCatalog
@@ -116,16 +135,24 @@ namespace CapFrameX.OSD.Integration
 
                 bool disableRelease = ParseBooleanAttribute(element,
                     "disableDxgiSwapchainReleaseHook");
+                bool enableXeFgNativePresentQueueRoute = ParseBooleanAttribute(element,
+                    "enableXeFgNativePresentQueueRoute");
+                bool enableGenericD3D12PresentRoute = ParseBooleanAttribute(element,
+                    "enableGenericD3D12PresentRoute");
                 string earlyInjectionModule = ParseModuleNameAttribute(element,
                     "earlyInjectionModule");
                 int delayMilliseconds = ParseNonNegativeIntegerAttribute(element,
                     "injectionDelayMilliseconds");
-                if (!disableRelease && delayMilliseconds == 0 &&
+                if (!disableRelease && !enableXeFgNativePresentQueueRoute &&
+                    !enableGenericD3D12PresentRoute &&
+                    delayMilliseconds == 0 &&
                     earlyInjectionModule == null)
                     throw new InvalidDataException($"Profile '{executable}' has no compatibility settings.");
 
                 var profile = new HookCompatibilityProfile(
                     Path.GetFileName(executable), disableRelease,
+                    enableXeFgNativePresentQueueRoute,
+                    enableGenericD3D12PresentRoute,
                     TimeSpan.FromMilliseconds(delayMilliseconds), earlyInjectionModule,
                     ((string)element.Attribute("source"))?.Trim());
                 if (profiles.ContainsKey(key))

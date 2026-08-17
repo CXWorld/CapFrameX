@@ -40,16 +40,22 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void Catalog_RequiresEarlyInjectionForDyingLightTheBeast()
+        public void Catalog_UsesGenericD3D12RouteForDyingLightTheBeast()
         {
             Assert.IsTrue(HookCompatibilityProfileCatalog.TryGet(
                 "DyingLightGame_TheBeast_x64_rwdi.exe",
                 out HookCompatibilityProfile profile));
-            Assert.IsTrue(profile.RequiresEarlyInjection);
-            Assert.AreEqual("sl.interposer.dll", profile.EarlyInjectionModule);
-            Assert.AreEqual(NativeHookCompatibilityFlags.None, profile.NativeFlags);
+            Assert.IsFalse(profile.RequiresEarlyInjection);
+            Assert.IsNull(profile.EarlyInjectionModule);
+            Assert.IsTrue(profile.DisableDxgiSwapchainReleaseHook);
+            Assert.IsFalse(profile.EnableXeFgNativePresentQueueRoute);
+            Assert.IsTrue(profile.EnableGenericD3D12PresentRoute);
+            Assert.AreEqual(
+                NativeHookCompatibilityFlags.DisableDxgiSwapchainReleaseHook |
+                NativeHookCompatibilityFlags.EnableGenericD3D12PresentRoute,
+                profile.NativeFlags);
             Assert.AreEqual(TimeSpan.Zero, profile.InjectionDelay);
-            CollectionAssert.Contains(
+            CollectionAssert.DoesNotContain(
                 new System.Collections.Generic.List<HookCompatibilityProfile>(
                     HookCompatibilityProfileCatalog.GetEarlyInjectionProfiles()), profile);
         }

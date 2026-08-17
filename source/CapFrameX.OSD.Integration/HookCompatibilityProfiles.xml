@@ -17,8 +17,9 @@
            injectionDelayMilliseconds="15000"
            source="RTSS 7.3.7 ProfileTemplates/dirt5.exe.cfg: InjectionDelayDirect3D12=1; Global: InjectionDelay=15000" />
   <Profile executable="DyingLightGame_TheBeast_x64_rwdi.exe"
-           earlyInjectionModule="sl.interposer.dll"
-           source="CapFrameX validation: inject after Streamline is mapped, never during the process CRT startup phase" />
+           disableDxgiSwapchainReleaseHook="true"
+           enableGenericD3D12PresentRoute="true"
+           source="CapFrameX validation and RTSS 7.3.7 routing model: hook native DXGI Present plus observed DIRECT command queues only; do not hook Streamline, XeSS-FG or FidelityFX control/proxy paths; the temporary startup swapchain must be released without the shared DXGI Release hook" />
   <Profile executable="VoyageSteam-Win64-Shipping.exe"
            disableDxgiSwapchainReleaseHook="true"
            earlyInjectionModule="d3d12.dll"
