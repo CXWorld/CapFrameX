@@ -61,15 +61,19 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void Catalog_RequiresEarlyInjectionForTheLastCaretaker()
+        public void Catalog_UsesGenericD3D12RouteAndEarlyInjectionForTheLastCaretaker()
         {
             Assert.IsTrue(HookCompatibilityProfileCatalog.TryGet(
                 "VoyageSteam-Win64-Shipping.exe",
                 out HookCompatibilityProfile profile));
             Assert.IsTrue(profile.RequiresEarlyInjection);
             Assert.AreEqual("d3d12.dll", profile.EarlyInjectionModule);
+            Assert.IsTrue(profile.DisableDxgiSwapchainReleaseHook);
+            Assert.IsFalse(profile.EnableXeFgNativePresentQueueRoute);
+            Assert.IsTrue(profile.EnableGenericD3D12PresentRoute);
             Assert.AreEqual(
-                NativeHookCompatibilityFlags.DisableDxgiSwapchainReleaseHook,
+                NativeHookCompatibilityFlags.DisableDxgiSwapchainReleaseHook |
+                NativeHookCompatibilityFlags.EnableGenericD3D12PresentRoute,
                 profile.NativeFlags);
             Assert.AreEqual(TimeSpan.Zero, profile.InjectionDelay);
             CollectionAssert.Contains(

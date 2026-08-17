@@ -22,6 +22,7 @@
            source="CapFrameX validation and RTSS 7.3.7 routing model: hook native DXGI Present plus observed DIRECT command queues only; do not hook Streamline, XeSS-FG or FidelityFX control/proxy paths; the temporary startup swapchain must be released without the shared DXGI Release hook" />
   <Profile executable="VoyageSteam-Win64-Shipping.exe"
            disableDxgiSwapchainReleaseHook="true"
+           enableGenericD3D12PresentRoute="true"
            earlyInjectionModule="d3d12.dll"
-           source="CapFrameX validation: inject after D3D12 is mapped; disable the D3D11-only shared Release hook because Steam's DXGI interposer re-enters it" />
+           source="CapFrameX validation and RTSS routing model: inject after D3D12 is mapped, use native DXGI Present plus observed DIRECT command queues instead of vendor proxy/status hooks, and disable the D3D11-only shared Release hook because Steam's DXGI interposer re-enters it" />
 </HookCompatibilityProfiles>
