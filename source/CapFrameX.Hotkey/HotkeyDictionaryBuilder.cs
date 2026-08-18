@@ -81,6 +81,7 @@ namespace CapFrameX.Hotkey
             AddToList(appConfiguration.CaptureHotKey, HotkeyAction.Capture, actionList);
             AddToList(appConfiguration.OverlayHotKey, HotkeyAction.Overlay, actionList);
             AddToList(appConfiguration.OverlayConfigHotKey, HotkeyAction.OverlayConfig, actionList);
+            AddToList(appConfiguration.OverlayPositionHotkey, HotkeyAction.OverlayPosition, actionList);
             AddToList(appConfiguration.ResetHistoryHotkey, HotkeyAction.ResetHistory, actionList);
             AddToList(appConfiguration.ThreadAffinityHotkey, HotkeyAction.ThreadAffinity, actionList);
             AddToList(appConfiguration.ResetMetricsHotkey, HotkeyAction.ResetMetrics, actionList);
@@ -221,6 +222,7 @@ namespace CapFrameX.Hotkey
         Capture,
         Overlay,
         OverlayConfig,
+        OverlayPosition,
         ThreadAffinity,
         ResetMetrics
     }

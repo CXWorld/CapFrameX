@@ -252,6 +252,7 @@ namespace CapFrameX.Test.ViewModel
             _appConfigurationMock.Object.CaptureHotKey = "F11";
             _appConfigurationMock.Object.OverlayHotKey = "Alt+O";
             _appConfigurationMock.Object.OverlayConfigHotKey = "Alt+C";
+            _appConfigurationMock.Object.OverlayPositionHotkey = "Alt+P";
             _appConfigurationMock.Object.ResetHistoryHotkey = "F10";
             _appConfigurationMock.Object.ThreadAffinityHotkey = "Control+A";
             _appConfigurationMock.Object.ResetMetricsHotkey = "Alt+M";

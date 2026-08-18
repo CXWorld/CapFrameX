@@ -338,6 +338,7 @@ namespace CapFrameX.Mcp.Tools
         [JsonProperty("useValueSmoothing")] public bool UseValueSmoothing { get; set; }
         [JsonProperty("overlayHotkey")] public string OverlayHotkey { get; set; }
         [JsonProperty("overlayConfigHotkey")] public string OverlayConfigHotkey { get; set; }
+        [JsonProperty("overlayPositionHotkey")] public string OverlayPositionHotkey { get; set; }
         [JsonProperty("resetMetricsHotkey")] public string ResetMetricsHotkey { get; set; }
         [JsonProperty("refreshPeriodMs")] public int RefreshPeriodMs { get; set; }
         [JsonProperty("metricIntervalSeconds")] public int MetricIntervalSeconds { get; set; }

@@ -180,6 +180,20 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public string OverlayPositionHotkeyString
+        {
+            get { return _appConfiguration.OverlayPositionHotkey; }
+            set
+            {
+                if (!CXHotkey.IsValidHotkey(value))
+                    return;
+
+                _appConfiguration.OverlayPositionHotkey = value;
+                SetGlobalHookEventOverlayPositionHotkey();
+                RaisePropertyChanged();
+            }
+        }
+
         public string ThreadAffinityHotkeyString
         {
             get { return _appConfiguration.ThreadAffinityHotkey; }
@@ -856,6 +870,7 @@ namespace CapFrameX.ViewModel
 
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventOverlayConfigHotkey();
+            SetGlobalHookEventOverlayPositionHotkey();
             SetGlobalHookEventThreadAffinityHotkey();
             SetGlobalHookEventResetMetricsHotkey();
 
@@ -959,6 +974,17 @@ namespace CapFrameX.ViewModel
             {
                 var nextConfig = GetNextConfig();
                 Task.Run(() => _configSubject.OnNext(nextConfig));
+            });
+        }
+
+        private void SetGlobalHookEventOverlayPositionHotkey()
+        {
+            if (!CXHotkey.IsValidHotkey(OverlayPositionHotkeyString))
+                return;
+
+            HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.OverlayPosition, () =>
+            {
+                OsdAnchor = OsdAnchorPositionCycle.GetNext(OsdAnchor);
             });
         }
 

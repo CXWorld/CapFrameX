@@ -40,6 +40,7 @@ namespace CapFrameX.Test.Mcp
             config.Object.UseOsdValueSmoothing = false;
             config.Object.OverlayHotKey = "Alt+O";
             config.Object.OverlayConfigHotKey = "Alt+C";
+            config.Object.OverlayPositionHotkey = "Alt+P";
             config.Object.ResetMetricsHotkey = "Alt+M";
             config.Object.OSDRefreshPeriod = 750;
             config.Object.MetricInterval = 30;
@@ -74,6 +75,7 @@ namespace CapFrameX.Test.Mcp
             Assert.IsFalse(result.UseValueSmoothing);
             Assert.AreEqual("Alt+O", result.OverlayHotkey);
             Assert.AreEqual("Alt+C", result.OverlayConfigHotkey);
+            Assert.AreEqual("Alt+P", result.OverlayPositionHotkey);
             Assert.AreEqual("Alt+M", result.ResetMetricsHotkey);
             Assert.AreEqual(750, result.RefreshPeriodMs);
             Assert.AreEqual(30, result.MetricIntervalSeconds);
@@ -120,6 +122,7 @@ namespace CapFrameX.Test.Mcp
                 marginY: 50,
                 zoom: 130,
                 useValueSmoothing: false,
+                overlayPositionHotkey: "Control+P",
                 refreshPeriodMs: 750,
                 metricIntervalSeconds: 30);
 
@@ -139,6 +142,7 @@ namespace CapFrameX.Test.Mcp
             Assert.AreEqual(50, config.Object.OsdMarginY);
             Assert.AreEqual(130, config.Object.OsdZoom);
             Assert.IsFalse(config.Object.UseOsdValueSmoothing);
+            Assert.AreEqual("Control+P", config.Object.OverlayPositionHotkey);
             Assert.AreEqual(750, config.Object.OSDRefreshPeriod);
             Assert.AreEqual(30, config.Object.MetricInterval);
             Assert.AreEqual(true, publishedActiveState);
@@ -153,9 +157,11 @@ namespace CapFrameX.Test.Mcp
             Assert.AreEqual("HookFree", result.Options.Renderer);
             Assert.AreEqual(1500, result.Options.ReplayBufferSizeMs);
             Assert.AreEqual(20, result.Options.HookFreeRefreshRate);
+            Assert.AreEqual("Control+P", result.Options.OverlayPositionHotkey);
             CollectionAssert.Contains(result.ChangedProperties, nameof(IAppConfiguration.IsOverlayActive));
             CollectionAssert.Contains(result.ChangedProperties, nameof(IAppConfiguration.EnableHookFreeOverlay));
             CollectionAssert.Contains(result.ChangedProperties, nameof(IAppConfiguration.HookFreeRefreshRate));
+            CollectionAssert.Contains(result.ChangedProperties, nameof(IAppConfiguration.OverlayPositionHotkey));
         }
 
         [TestMethod]
@@ -179,11 +185,14 @@ namespace CapFrameX.Test.Mcp
                 tool.SetOsdOptions(autoDisableOverlay: false, replayBufferSizeMs: 499));
             Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
                 tool.SetOsdOptions(autoDisableOverlay: false, hookFreeRefreshRate: 3));
+            Assert.ThrowsException<ArgumentException>(() =>
+                tool.SetOsdOptions(autoDisableOverlay: false, overlayPositionHotkey: "Alt+NotAKey"));
 
             Assert.IsTrue(config.Object.AutoDisableOverlay);
             Assert.AreEqual(100, config.Object.OsdZoom);
             Assert.AreEqual(750, config.Object.OsdReplayBufferSize);
             Assert.AreEqual(1, config.Object.HookFreeRefreshRate);
+            Assert.AreEqual("Alt+P", config.Object.OverlayPositionHotkey);
             Assert.AreEqual(0, publishedCount);
         }
 
@@ -331,6 +340,13 @@ namespace CapFrameX.Test.Mcp
             config.Object.OsdAnchor = 0;
             config.Object.OsdMarginX = 30;
             config.Object.OsdMarginY = 30;
+            config.Object.CaptureHotKey = "F11";
+            config.Object.OverlayHotKey = "Alt+O";
+            config.Object.OverlayConfigHotKey = "Alt+C";
+            config.Object.OverlayPositionHotkey = "Alt+P";
+            config.Object.ResetHistoryHotkey = "Alt+R";
+            config.Object.ThreadAffinityHotkey = "Control+A";
+            config.Object.ResetMetricsHotkey = "Alt+M";
             config.Object.OSDRefreshPeriod = 1000;
             config.Object.MetricInterval = 20;
             return config;

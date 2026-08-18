@@ -68,6 +68,7 @@ namespace CapFrameX.Mcp.Tools
             [Description("Smooth numeric values between OSD data updates.")] bool? useValueSmoothing = null,
             [Description("Global overlay toggle hotkey, for example Alt+O.")] string overlayHotkey = null,
             [Description("Global overlay-configuration switch hotkey, for example Alt+C.")] string overlayConfigHotkey = null,
+            [Description("Global hotkey that cycles through all CapFrameX overlay anchor positions, for example Alt+P.")] string overlayPositionHotkey = null,
             [Description("Global real-time metrics reset hotkey, for example Alt+M.")] string resetMetricsHotkey = null,
             [Description("OSD sensor refresh period in milliseconds; must be greater than zero.")] int? refreshPeriodMs = null,
             [Description("Real-time metric calculation interval in seconds; must be greater than zero.")] int? metricIntervalSeconds = null)
@@ -76,7 +77,7 @@ namespace CapFrameX.Mcp.Tools
                 hideOverlay, hookOverlayUsePresentMonFrametimes, replayBufferSizeMs, hookFreeRefreshRate,
                 osdCustomPosition, osdPositionX,
                 osdPositionY, backgroundOpacity, anchor, marginX, marginY, zoom,
-                useValueSmoothing, overlayHotkey, overlayConfigHotkey, resetMetricsHotkey,
+                useValueSmoothing, overlayHotkey, overlayConfigHotkey, overlayPositionHotkey, resetMetricsHotkey,
                 refreshPeriodMs, metricIntervalSeconds))
             {
                 throw new ArgumentException("Provide at least one OSD option to update.");
@@ -94,6 +95,7 @@ namespace CapFrameX.Mcp.Tools
             ValidatePositive(metricIntervalSeconds, nameof(metricIntervalSeconds));
             ValidateHotkey(overlayHotkey, nameof(overlayHotkey));
             ValidateHotkey(overlayConfigHotkey, nameof(overlayConfigHotkey));
+            ValidateHotkey(overlayPositionHotkey, nameof(overlayPositionHotkey));
             ValidateHotkey(resetMetricsHotkey, nameof(resetMetricsHotkey));
 
             bool activeAfterUpdate = isOverlayActive ?? _config.IsOverlayActive;
@@ -162,6 +164,8 @@ namespace CapFrameX.Mcp.Tools
                 () => _config.OverlayHotKey, value => _config.OverlayHotKey = value, changed);
             hotkeyChanged |= ApplyIfChanged(nameof(IAppConfiguration.OverlayConfigHotKey), overlayConfigHotkey,
                 () => _config.OverlayConfigHotKey, value => _config.OverlayConfigHotKey = value, changed);
+            hotkeyChanged |= ApplyIfChanged(nameof(IAppConfiguration.OverlayPositionHotkey), overlayPositionHotkey,
+                () => _config.OverlayPositionHotkey, value => _config.OverlayPositionHotkey = value, changed);
             hotkeyChanged |= ApplyIfChanged(nameof(IAppConfiguration.ResetMetricsHotkey), resetMetricsHotkey,
                 () => _config.ResetMetricsHotkey, value => _config.ResetMetricsHotkey = value, changed);
             if (hotkeyChanged)
@@ -228,6 +232,7 @@ namespace CapFrameX.Mcp.Tools
                 UseValueSmoothing = _config.UseOsdValueSmoothing,
                 OverlayHotkey = _config.OverlayHotKey,
                 OverlayConfigHotkey = _config.OverlayConfigHotKey,
+                OverlayPositionHotkey = _config.OverlayPositionHotkey,
                 ResetMetricsHotkey = _config.ResetMetricsHotkey,
                 RefreshPeriodMs = _config.OSDRefreshPeriod,
                 MetricIntervalSeconds = _config.MetricInterval,

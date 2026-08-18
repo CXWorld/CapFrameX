@@ -67,6 +67,8 @@ namespace CapFrameX.Contracts.Configuration
 
 		string OverlayConfigHotKey { get; set; }
 
+		string OverlayPositionHotkey { get; set; }
+
 		string ThreadAffinityHotkey { get; set; }
 
 		string ResetMetricsHotkey { get; set; }

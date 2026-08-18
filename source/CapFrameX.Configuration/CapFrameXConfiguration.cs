@@ -591,6 +591,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public string OverlayPositionHotkey
+        {
+            get => Get<string>("Alt+P");
+            set => Set(value);
+        }
+
         public string ThreadAffinityHotkey
         {
             get => Get<string>("Control+A");
@@ -785,7 +791,7 @@ namespace CapFrameX.Configuration
         public int OsdAnchor
         {
             get => Get<int>(0);
-            set => Set(Math.Max(0, Math.Min(4, value)));
+            set => Set(Math.Max(0, Math.Min(OsdAnchorPositionCycle.PositionCount - 1, value)));
         }
 
         public int OsdMarginX
