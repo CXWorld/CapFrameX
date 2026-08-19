@@ -20,18 +20,18 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 9.0.x
 
       - name: Setup NuGet
-        uses: nuget/setup-nuget@v2
+        uses: nuget/setup-nuget@v4
 
       - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@v3
         with:
           vs-version: '[18.0, 19.0)'
 
@@ -267,13 +267,13 @@ jobs:
             -Force
 
       - name: Upload installer artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: capframex-installer-${{ steps.vars.outputs.filename }}
           path: ${{ steps.vars.outputs.filename }}_installer.zip
 
       - name: Upload portable artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: capframex-portable-${{ steps.vars.outputs.filename }}
           path: ${{ steps.vars.outputs.filename }}_portable.zip
@@ -288,7 +288,7 @@ jobs:
 
     steps:
       - name: Download workflow artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: capframex-*
           merge-multiple: true
