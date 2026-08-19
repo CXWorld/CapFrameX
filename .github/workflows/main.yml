@@ -266,12 +266,17 @@ jobs:
             -DestinationPath "${filename}_portable.zip" `
             -Force
 
-      - name: Upload workflow artifacts
+      - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
-          name: capframex-${{ steps.vars.outputs.filename }}
-          path: |
-            *.zip
+          name: capframex-installer-${{ steps.vars.outputs.filename }}
+          path: ${{ steps.vars.outputs.filename }}_installer.zip
+
+      - name: Upload portable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: capframex-portable-${{ steps.vars.outputs.filename }}
+          path: ${{ steps.vars.outputs.filename }}_portable.zip
 
   publish:
     runs-on: windows-latest
@@ -285,6 +290,8 @@ jobs:
       - name: Download workflow artifacts
         uses: actions/download-artifact@v4
         with:
+          pattern: capframex-*
+          merge-multiple: true
           path: artifacts
 
       - name: Upload archives to Azure Blob Storage
