@@ -15,6 +15,7 @@ using CapFrameX.Monitoring.Contracts;
 using LibreHardwareMonitor.Interop;
 using LibreHardwareMonitor.PawnIo;
 using Microsoft.Win32;
+using Serilog;
 using static LibreHardwareMonitor.Interop.NvApi;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
@@ -48,6 +49,8 @@ internal sealed class NvidiaGpu : GenericGpu
     private const float Gddr6xDataRateMultiplier = 16f;
 
     private uint _lastBlankCounter;
+    private ulong _lastPowerSampleTimestamp;
+    private bool _powerSamplesFallbackLogged;
 
     private readonly Stopwatch _stopwatch;
     private readonly int _adapterIndex;
@@ -942,7 +945,19 @@ internal sealed class NvidiaGpu : GenericGpu
         {
             if (ShouldEvaluatePowerUsageSensor())
             {
-                int? result = NvidiaML.NvmlDeviceGetPowerUsage(_nvmlDevice.Value);
+                int? result = NvidiaML.NvmlDeviceGetPowerUsage(_nvmlDevice.Value, out NvidiaML.NvmlReturn powerUsageStatus);
+                if (!result.HasValue)
+                {
+                    result = NvidiaML.NvmlDeviceGetPowerUsageFromSamples(_nvmlDevice.Value, ref _lastPowerSampleTimestamp);
+                    if (result.HasValue && !_powerSamplesFallbackLogged)
+                    {
+                        Log.Logger.Information(
+                            "NVIDIA GPU power monitoring is using NVML samples because nvmlDeviceGetPowerUsage returned {Status}.",
+                            powerUsageStatus);
+                        _powerSamplesFallbackLogged = true;
+                    }
+                }
+
                 if (result.HasValue)
                 {
                     _powerUsage.Value = result.Value / 1000f;
