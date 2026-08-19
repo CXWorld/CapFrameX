@@ -271,12 +271,14 @@ jobs:
         with:
           name: capframex-installer-${{ steps.vars.outputs.filename }}
           path: ${{ steps.vars.outputs.filename }}_installer.zip
+          archive: false
 
       - name: Upload portable artifact
         uses: actions/upload-artifact@v7
         with:
           name: capframex-portable-${{ steps.vars.outputs.filename }}
           path: ${{ steps.vars.outputs.filename }}_portable.zip
+          archive: false
 
   publish:
     runs-on: windows-latest
@@ -290,8 +292,9 @@ jobs:
       - name: Download workflow artifacts
         uses: actions/download-artifact@v8
         with:
-          pattern: capframex-*
+          pattern: "*.zip"
           merge-multiple: true
+          skip-decompress: true
           path: artifacts
 
       - name: Upload archives to Azure Blob Storage
