@@ -27,6 +27,7 @@ namespace CapFrameX.Sensor
     public class SensorService : ISensorService
     {
         private GpuSensorCache _gpuSensorCache;
+        private string _gpuSensorCacheAdapterSelection;
         private readonly object _lockComputer = new object();
         private readonly object _lockSensorUpdate = new object();
         private readonly ISensorConfig _sensorConfig;
@@ -486,6 +487,8 @@ namespace CapFrameX.Sensor
             List<ISensor> sensors;
             GpuSensorCache gpuCache;
             List<IHardware> hardware;
+            List<IHardware> gpuHardware;
+            var selectedAdapter = _appConfiguration.GraphicsAdapter;
 
             lock (_lockSensorUpdate)
             {
@@ -498,21 +501,29 @@ namespace CapFrameX.Sensor
                 }
 
                 sensors = new List<ISensor>(capacity: 1024);
+                gpuHardware = hardware.Where(hw => IsGpu(hw.HardwareType)).ToList();
 
                 foreach (var hw in hardware)
                 {
-                    hw.Update();
-                    CollectSensors(hw, sensors);
+                    bool shouldUpdate = ShouldUpdateHardware(hw, gpuHardware, selectedAdapter);
+                    if (shouldUpdate)
+                        hw.Update();
+
+                    CollectSensors(hw, sensors, shouldUpdate);
                 }
 
                 lock (_lockComputer)
                 {
+                    if (!string.Equals(_gpuSensorCacheAdapterSelection, selectedAdapter, StringComparison.Ordinal))
+                    {
+                        _gpuSensorCache = null;
+                        _gpuSensorCacheAdapterSelection = selectedAdapter;
+                    }
+
                     // Cache GPU count + GPU sensors once while the Computer graph is stable.
                     gpuCache = GetOrBuildGpuCacheLocked();
                 }
             }
-
-            var selectedAdapter = _appConfiguration.GraphicsAdapter;
 
             // If a specific adapter was selected, filter GPU sensors to that adapter name.
             if (!string.Equals(selectedAdapter, "Auto", StringComparison.Ordinal))
@@ -533,8 +544,9 @@ namespace CapFrameX.Sensor
                 return sensors.Where(s => !IsGpu(s.Hardware.HardwareType));
             }
 
-            // Auto behavior: if only one GPU, do nothing.
-            if (gpuCache.SensorIdsByAdapterName.Count <= 1)
+            // Auto behavior: if there is no discrete GPU to prefer, keep every detected GPU.
+            // Otherwise expose only discrete-GPU sensors, matching ShouldUpdateHardware().
+            if (gpuHardware.Count <= 1 || !gpuHardware.Any(IsDiscreteGpu))
                 return sensors;
 
             // Auto behavior: filter iGPUs for GPU sensors only
@@ -615,17 +627,39 @@ namespace CapFrameX.Sensor
             }
         }
 
-        private static void CollectSensors(IHardware hardware, List<ISensor> target)
+        private static void CollectSensors(IHardware hardware, List<ISensor> target, bool updateSubHardware)
         {
             // hardware.Sensors is typically an array, so AddRange is efficient
             target.AddRange(hardware.Sensors);
 
             foreach (var sub in hardware.SubHardware)
             {
-                sub.Update();
+                if (updateSubHardware)
+                    sub.Update();
+
                 target.AddRange(sub.Sensors);
             }
         }
+
+        internal static bool ShouldUpdateHardware(
+            IHardware hardware,
+            IReadOnlyCollection<IHardware> gpuHardware,
+            string selectedAdapter)
+        {
+            if (!IsGpu(hardware.HardwareType))
+                return true;
+
+            if (!string.Equals(selectedAdapter, "Auto", StringComparison.Ordinal))
+                return string.Equals(hardware.Name, selectedAdapter, StringComparison.Ordinal);
+
+            if (gpuHardware.Count <= 1 || !gpuHardware.Any(IsDiscreteGpu))
+                return true;
+
+            return IsDiscreteGpu(hardware);
+        }
+
+        private static bool IsDiscreteGpu(IHardware hardware) =>
+            (hardware as GenericGpu)?.IsDiscreteGpu ?? true;
 
         private static bool IsGpu(HardwareType type) =>
             type is HardwareType.GpuAmd || type is HardwareType.GpuNvidia || type is HardwareType.GpuIntel;

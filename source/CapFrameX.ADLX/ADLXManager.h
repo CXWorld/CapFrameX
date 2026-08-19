@@ -8,7 +8,7 @@
 
 // Struct for querying supported metrics only (no values needed)
 // Used for activating sensors before telemetry data is available
-typedef struct AdlxTelemetrySupport
+struct AdlxTelemetrySupport
 {
 	bool gpuUsageSupported = false;
 	bool gpuClockSpeedSupported = false;
@@ -28,7 +28,9 @@ typedef struct AdlxTelemetrySupport
 	bool gpuFanDutySupported = false;
 };
 
-typedef struct AdlxTelemetryData
+static_assert(sizeof(AdlxTelemetrySupport) == 16, "AdlxTelemetrySupport ABI layout changed");
+
+struct AdlxTelemetryData
 {
 	// GPU Usage
 	bool gpuUsageSupported = false;
@@ -95,7 +97,9 @@ typedef struct AdlxTelemetryData
 	double gpuFanDutyValue;
 };
 
-typedef struct AdlxDeviceInfo
+static_assert(sizeof(AdlxTelemetryData) == 256, "AdlxTelemetryData ABI layout changed");
+
+struct AdlxDeviceInfo
 {
 	char GpuName[MAX_GPU_NAME_LEN];
 	// Undefinied = 0, Integrated = 1, Discrete = 2

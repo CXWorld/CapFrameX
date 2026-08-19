@@ -28,6 +28,7 @@ internal static class ADLX
 
     private static bool _dllLoaded;
     private static bool _dllLoadAttempted;
+    private static bool _initialized;
 
     /// <summary>
     /// GPU type enumeration matching ADLX_GPU_TYPE.
@@ -200,6 +201,7 @@ internal static class ADLX
     }
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "IntializeAdlx")]
+    [return: MarshalAs(UnmanagedType.I1)]
     private static extern bool IntializeAdlx_Native();
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "CloseAdlx")]
@@ -209,12 +211,15 @@ internal static class ADLX
     private static extern uint GetAtiAdapterCount_Native();
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "GetAdlxTelemetry")]
+    [return: MarshalAs(UnmanagedType.I1)]
     private static extern bool GetAdlxTelemetry_Native(uint index, uint historyLength, ref AdlxTelemetryData telemetryData);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "GetAdlxTelemetrySupport")]
+    [return: MarshalAs(UnmanagedType.I1)]
     private static extern bool GetAdlxTelemetrySupport_Native(uint index, ref AdlxTelemetrySupport telemetrySupport);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "GetAdlxDeviceInfo")]
+    [return: MarshalAs(UnmanagedType.I1)]
     private static extern bool GetAdlxDeviceInfo_Native(uint index, ref AdlxDeviceInfo deviceInfo);
 
     /// <summary>
@@ -263,19 +268,23 @@ internal static class ADLX
 
         try
         {
-            return IntializeAdlx_Native();
+            _initialized = IntializeAdlx_Native();
+            return _initialized;
         }
         catch (DllNotFoundException)
         {
             _dllLoaded = false;
+            _initialized = false;
             return false;
         }
         catch (EntryPointNotFoundException)
         {
+            _initialized = false;
             return false;
         }
         catch
         {
+            _initialized = false;
             return false;
         }
     }
@@ -285,7 +294,7 @@ internal static class ADLX
     /// </summary>
     public static void Close()
     {
-        if (!_dllLoaded)
+        if (!_initialized)
             return;
 
         try
@@ -296,6 +305,10 @@ internal static class ADLX
         {
             // Ignore exceptions during cleanup
         }
+        finally
+        {
+            _initialized = false;
+        }
     }
 
     /// <summary>
@@ -304,7 +317,7 @@ internal static class ADLX
     /// <returns>Number of AMD GPU adapters.</returns>
     public static uint GetAdapterCount()
     {
-        if (!_dllLoaded)
+        if (!_initialized)
             return 0;
 
         try
@@ -326,7 +339,7 @@ internal static class ADLX
     /// <returns>True if telemetry was retrieved successfully, false otherwise.</returns>
     public static bool GetTelemetry(uint index, uint historyLength, ref AdlxTelemetryData telemetryData)
     {
-        if (!_dllLoaded)
+        if (!_initialized)
             return false;
 
         try
@@ -349,7 +362,7 @@ internal static class ADLX
     /// <returns>True if support flags were retrieved successfully, false otherwise.</returns>
     public static bool GetTelemetrySupport(uint index, ref AdlxTelemetrySupport telemetrySupport)
     {
-        if (!_dllLoaded)
+        if (!_initialized)
             return false;
 
         try
@@ -370,7 +383,7 @@ internal static class ADLX
     /// <returns>True if device info was retrieved successfully, false otherwise.</returns>
     public static bool GetDeviceInfo(uint index, ref AdlxDeviceInfo deviceInfo)
     {
-        if (!_dllLoaded)
+        if (!_initialized)
             return false;
 
         try

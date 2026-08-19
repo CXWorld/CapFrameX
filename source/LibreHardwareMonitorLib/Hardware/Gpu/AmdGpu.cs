@@ -12,6 +12,9 @@ internal sealed class AmdGpu : GenericGpu
 {
     private readonly uint _adapterIndex;
     private readonly ADLX.AdlxDeviceInfo _deviceInfo;
+    private readonly object _telemetrySupportLock = new();
+    private bool _telemetrySupportChecked;
+    private bool _telemetryAvailable;
 
     // Temperature sensors
     private readonly Sensor _temperatureCore;
@@ -117,20 +120,33 @@ internal sealed class AmdGpu : GenericGpu
                 $"{index}_6_0_1");
         }
 
-        // Activate sensors based on support flags BEFORE calling Update()
-        // This ensures sensors are visible in the UI even if the first telemetry call returns no data
-        ActivateSensorsFromSupportFlags();
     }
 
     /// <summary>
-    /// Activates sensors based on what metrics the GPU supports, without needing actual telemetry data.
-    /// This is called in the constructor to ensure sensors are visible even before telemetry history is available.
+    /// Initializes ADLX telemetry once, when this adapter is first selected for polling.
+    /// A failed query leaves the adapter on the WDDM-only fallback path.
     /// </summary>
-    private void ActivateSensorsFromSupportFlags()
+    private bool EnsureTelemetrySupport()
     {
-        ADLX.AdlxTelemetrySupport support = new();
-        if (!ADLX.GetTelemetrySupport(_adapterIndex, ref support))
-            return;
+        lock (_telemetrySupportLock)
+        {
+            if (_telemetrySupportChecked)
+                return _telemetryAvailable;
+
+            _telemetrySupportChecked = true;
+
+            ADLX.AdlxTelemetrySupport support = new();
+            if (!ADLX.GetTelemetrySupport(_adapterIndex, ref support))
+                return false;
+
+            ActivateSensorsFromSupportFlags(support);
+            _telemetryAvailable = true;
+            return true;
+        }
+    }
+
+    private void ActivateSensorsFromSupportFlags(ADLX.AdlxTelemetrySupport support)
+    {
 
         // Temperature sensors
         if (support.GpuTemperatureSupported)
@@ -198,6 +214,12 @@ internal sealed class AmdGpu : GenericGpu
     {
         UpdateProcessMemorySensors();
         TryUpdateWddmMemorySensors(false, out _);
+
+        // ADLX is initialized lazily so merely detecting an unselected AMD iGPU does not enter
+        // its driver telemetry path. A failed support query disables ADLX for this adapter while
+        // the vendor-neutral WDDM sensors above remain available.
+        if (!EnsureTelemetrySupport())
+            return;
 
         // Get ADLX telemetry data
         ADLX.AdlxTelemetryData telemetry = new();
@@ -341,7 +363,7 @@ internal sealed class AmdGpu : GenericGpu
         r.AppendLine();
 
         ADLX.AdlxTelemetryData telemetry = new();
-        if (ADLX.GetTelemetry(_adapterIndex, 1000, ref telemetry))
+        if (EnsureTelemetrySupport() && ADLX.GetTelemetry(_adapterIndex, 1000, ref telemetry))
         {
             r.AppendFormat(" GPU Usage: Supported={0}, Value={1}%{2}", telemetry.GpuUsageSupported, telemetry.GpuUsageValue, Environment.NewLine);
             r.AppendFormat(" GPU Clock Speed: Supported={0}, Value={1} MHz{2}", telemetry.GpuClockSpeedSupported, telemetry.GpuClockSpeedValue, Environment.NewLine);

@@ -5,7 +5,9 @@
 #include "SDK/Include/IPerformanceMonitoring3.h"
 #include "SDK/Include/ISystem2.h"
 #include "ADLXManager.h"
+#include <atomic>
 #include <exception>
+#include <Windows.h>
 
 // Use ADLX namespace
 using namespace adlx;
@@ -17,6 +19,39 @@ static ADLXHelper g_ADLXHelp;
 
 IADLXPerformanceMonitoringServicesPtr _perfMonitoringService;
 IADLXGPUListPtr _gpus;
+
+namespace
+{
+	constexpr adlx_uint MAX_QUARANTINED_ADAPTERS = 64;
+	std::atomic_uint64_t g_quarantinedAdapters{ 0 };
+
+	bool IsAdapterQuarantined(const adlx_uint index)
+	{
+		return index < MAX_QUARANTINED_ADAPTERS &&
+			(g_quarantinedAdapters.load(std::memory_order_relaxed) & (1ull << index)) != 0;
+	}
+
+	void QuarantineAdapter(const adlx_uint index)
+	{
+		if (index < MAX_QUARANTINED_ADAPTERS)
+			g_quarantinedAdapters.fetch_or(1ull << index, std::memory_order_relaxed);
+	}
+
+	int AdlxDriverExceptionFilter(const DWORD exceptionCode)
+	{
+		switch (exceptionCode)
+		{
+		case EXCEPTION_ACCESS_VIOLATION:
+		case EXCEPTION_IN_PAGE_ERROR:
+		case EXCEPTION_DATATYPE_MISALIGNMENT:
+		case EXCEPTION_ILLEGAL_INSTRUCTION:
+		case EXCEPTION_PRIV_INSTRUCTION:
+			return EXCEPTION_EXECUTE_HANDLER;
+		default:
+			return EXCEPTION_CONTINUE_SEARCH;
+		}
+	}
+}
 
 // Release all globally held ADLX interfaces. Must run before g_ADLXHelp.Terminate();
 // a Release() after Terminate() - e.g. via the atexit destructors on process
@@ -334,7 +369,7 @@ void SetGPUFanDuty(IADLXGPUMetricsSupport3Ptr gpuMetricsSupport3, IADLXGPUMetric
 	}
 }
 
-bool IntializeAdlx()
+static bool IntializeAdlxImpl()
 {
 	ADLX_RESULT res = ADLX_FAIL;
 	bool check = false;
@@ -346,25 +381,29 @@ bool IntializeAdlx()
 
 		if (ADLX_SUCCEEDED(res))
 		{
-			// Get Performance Monitoring services
-			res = g_ADLXHelp.GetSystemServices()->GetPerformanceMonitoringServices(&_perfMonitoringService);
-			if (ADLX_SUCCEEDED(res))
+			IADLXSystem* systemServices = g_ADLXHelp.GetSystemServices();
+			if (systemServices != nullptr)
 			{
-				// Get GPU list
-				res = g_ADLXHelp.GetSystemServices()->GetGPUs(&_gpus);
-				if (ADLX_SUCCEEDED(res))
+				// Get Performance Monitoring services
+				res = systemServices->GetPerformanceMonitoringServices(&_perfMonitoringService);
+				if (ADLX_SUCCEEDED(res) && _perfMonitoringService != nullptr)
 				{
-					IADLXGPUPtr gpu;
-					// Use the first GPU in the list
-					res = _gpus->At(_gpus->Begin(), &gpu);
-					if (ADLX_SUCCEEDED(res))
+					// Get GPU list
+					res = systemServices->GetGPUs(&_gpus);
+					if (ADLX_SUCCEEDED(res) && _gpus != nullptr && _gpus->Size() > 0)
 					{
-						res = _perfMonitoringService->ClearPerformanceMetricsHistory();
-
-						if (ADLX_SUCCEEDED(res))
+						IADLXGPUPtr gpu;
+						// Use the first GPU in the list
+						res = _gpus->At(_gpus->Begin(), &gpu);
+						if (ADLX_SUCCEEDED(res) && gpu != nullptr)
 						{
-							res = _perfMonitoringService->StartPerformanceMetricsTracking();
-							check = true;
+							res = _perfMonitoringService->ClearPerformanceMetricsHistory();
+
+							if (ADLX_SUCCEEDED(res))
+							{
+								res = _perfMonitoringService->StartPerformanceMetricsTracking();
+								check = ADLX_SUCCEEDED(res);
+							}
 						}
 					}
 				}
@@ -377,7 +416,7 @@ bool IntializeAdlx()
 			g_ADLXHelp.Terminate();
 		}
 	}
-	catch (const std::exception& e)
+	catch (const std::exception&)
 	{
 		ReleaseAdlxInterfaces();
 		g_ADLXHelp.Terminate();  // Clean up resources
@@ -394,7 +433,23 @@ bool IntializeAdlx()
 	return check;
 }
 
-void CloseAdlx()
+bool IntializeAdlx()
+{
+	__try
+	{
+		const bool initialized = IntializeAdlxImpl();
+		if (initialized)
+			g_quarantinedAdapters.store(0, std::memory_order_relaxed);
+
+		return initialized;
+	}
+	__except (AdlxDriverExceptionFilter(GetExceptionCode()))
+	{
+		return false;
+	}
+}
+
+static void CloseAdlxImpl()
 {
 	if (_perfMonitoringService != nullptr)
 		_perfMonitoringService->StopPerformanceMetricsTracking();
@@ -403,20 +458,44 @@ void CloseAdlx()
 	g_ADLXHelp.Terminate();
 }
 
-adlx_uint GetAtiAdpaterCount()
+void CloseAdlx()
+{
+	__try
+	{
+		CloseAdlxImpl();
+	}
+	__except (AdlxDriverExceptionFilter(GetExceptionCode()))
+	{
+		// A driver fault during shutdown must not terminate the application.
+	}
+}
+
+static adlx_uint GetAtiAdpaterCountImpl()
 {
 	if (_gpus == nullptr)
 		return 0u;
 
-	adlx_uint size = 0;
-	size = _gpus->Size();
-	return size;
+	return _gpus->Size();
 }
 
-bool GetAdlxTelemetry(const adlx_uint index, const adlx_uint historyLength, AdlxTelemetryData* adlxTelemetryData)
+adlx_uint GetAtiAdpaterCount()
 {
-	if (_gpus == nullptr || _perfMonitoringService == nullptr)
+	__try
+	{
+		return GetAtiAdpaterCountImpl();
+	}
+	__except (AdlxDriverExceptionFilter(GetExceptionCode()))
+	{
+		return 0u;
+	}
+}
+
+static bool GetAdlxTelemetryImpl(const adlx_uint index, const adlx_uint historyLength, AdlxTelemetryData* adlxTelemetryData)
+{
+	if (adlxTelemetryData == nullptr || _gpus == nullptr || _perfMonitoringService == nullptr)
 		return false;
+
+	*adlxTelemetryData = {};
 
 	bool check = false;
 
@@ -425,31 +504,32 @@ bool GetAdlxTelemetry(const adlx_uint index, const adlx_uint historyLength, Adlx
 		IADLXGPUPtr gpu;
 		ADLX_RESULT resGetGPU = _gpus->At(index, &gpu);
 
-		if (ADLX_SUCCEEDED(resGetGPU))
+		if (ADLX_SUCCEEDED(resGetGPU) && gpu != nullptr)
 		{
 			IADLXGPUMetricsListPtr gpuMetricsList;
 			ADLX_RESULT resGetHistory = _perfMonitoringService->GetGPUMetricsHistory(gpu, historyLength, 0, &gpuMetricsList);
 
-			if (ADLX_SUCCEEDED(resGetHistory))
+			if (ADLX_SUCCEEDED(resGetHistory) && gpuMetricsList != nullptr)
 			{
 				// Take last element
 				// 
 				// Tests with sample code showed that gpuMetricsList
 				// only has 1 element, when history interval length
 				// <= 1000ms. No need to calculate an average.  
-				adlx_uint pos = gpuMetricsList->Size() - 1;
+				const adlx_uint metricsCount = gpuMetricsList->Size();
 
-				if (pos >= 0)
+				if (metricsCount > 0)
 				{
+					const adlx_uint pos = metricsCount - 1;
 					IADLXGPUMetricsSupportPtr gpuMetricsSupport;
 					ADLX_RESULT resGetSupportedMetrics = _perfMonitoringService->GetSupportedGPUMetrics(gpu, &gpuMetricsSupport);
 
-					if (ADLX_SUCCEEDED(resGetSupportedMetrics))
+					if (ADLX_SUCCEEDED(resGetSupportedMetrics) && gpuMetricsSupport != nullptr)
 					{
 						IADLXGPUMetricsPtr gpuMetrics;
 						ADLX_RESULT resGpuMetrics = gpuMetricsList->At(pos, &gpuMetrics);
 
-						if (ADLX_SUCCEEDED(resGpuMetrics))
+						if (ADLX_SUCCEEDED(resGpuMetrics) && gpuMetrics != nullptr)
 						{
 							GetTimeStamp(gpuMetrics);
 							SetGPUUsage(gpuMetricsSupport, gpuMetrics, adlxTelemetryData);
@@ -467,8 +547,10 @@ bool GetAdlxTelemetry(const adlx_uint index, const adlx_uint historyLength, Adlx
 							// Query for IADLXGPUMetricsSupport1 and IADLXGPUMetrics1 interfaces
 							IADLXGPUMetricsSupport1Ptr gpuMetricsSupport1;
 							IADLXGPUMetrics1Ptr gpuMetrics1;
-							if (ADLX_SUCCEEDED(gpuMetricsSupport->QueryInterface(IADLXGPUMetricsSupport1::IID(), reinterpret_cast<void**>(&gpuMetricsSupport1))) &&
-								ADLX_SUCCEEDED(gpuMetrics->QueryInterface(IADLXGPUMetrics1::IID(), reinterpret_cast<void**>(&gpuMetrics1))))
+							if (gpuMetricsSupport->QueryInterface(IADLXGPUMetricsSupport1::IID(), reinterpret_cast<void**>(&gpuMetricsSupport1)) == ADLX_OK &&
+								gpuMetricsSupport1 != nullptr &&
+								gpuMetrics->QueryInterface(IADLXGPUMetrics1::IID(), reinterpret_cast<void**>(&gpuMetrics1)) == ADLX_OK &&
+								gpuMetrics1 != nullptr)
 							{
 								SetGPUMemoryTemperature(gpuMetricsSupport1, gpuMetrics1, adlxTelemetryData);
 								SetNPUFrequency(gpuMetricsSupport1, gpuMetrics1, adlxTelemetryData);
@@ -477,16 +559,20 @@ bool GetAdlxTelemetry(const adlx_uint index, const adlx_uint historyLength, Adlx
 								// Query for IADLXGPUMetricsSupport2 and IADLXGPUMetrics2 interfaces
 								IADLXGPUMetricsSupport2Ptr gpuMetricsSupport2;
 								IADLXGPUMetrics2Ptr gpuMetrics2;
-								if (ADLX_SUCCEEDED(gpuMetricsSupport1->QueryInterface(IADLXGPUMetricsSupport2::IID(), reinterpret_cast<void**>(&gpuMetricsSupport2))) &&
-									ADLX_SUCCEEDED(gpuMetrics1->QueryInterface(IADLXGPUMetrics2::IID(), reinterpret_cast<void**>(&gpuMetrics2))))
+								if (gpuMetricsSupport1->QueryInterface(IADLXGPUMetricsSupport2::IID(), reinterpret_cast<void**>(&gpuMetricsSupport2)) == ADLX_OK &&
+									gpuMetricsSupport2 != nullptr &&
+									gpuMetrics1->QueryInterface(IADLXGPUMetrics2::IID(), reinterpret_cast<void**>(&gpuMetrics2)) == ADLX_OK &&
+									gpuMetrics2 != nullptr)
 								{
 									SetGPUSharedMemory(gpuMetricsSupport2, gpuMetrics2, adlxTelemetryData);
 
 									// Query for IADLXGPUMetricsSupport3 and IADLXGPUMetrics3 interfaces
 									IADLXGPUMetricsSupport3Ptr gpuMetricsSupport3;
 									IADLXGPUMetrics3Ptr gpuMetrics3;
-									if (ADLX_SUCCEEDED(gpuMetricsSupport2->QueryInterface(IADLXGPUMetricsSupport3::IID(), reinterpret_cast<void**>(&gpuMetricsSupport3))) &&
-										ADLX_SUCCEEDED(gpuMetrics2->QueryInterface(IADLXGPUMetrics3::IID(), reinterpret_cast<void**>(&gpuMetrics3))))
+									if (gpuMetricsSupport2->QueryInterface(IADLXGPUMetricsSupport3::IID(), reinterpret_cast<void**>(&gpuMetricsSupport3)) == ADLX_OK &&
+										gpuMetricsSupport3 != nullptr &&
+										gpuMetrics2->QueryInterface(IADLXGPUMetrics3::IID(), reinterpret_cast<void**>(&gpuMetrics3)) == ADLX_OK &&
+										gpuMetrics3 != nullptr)
 									{
 										SetGPUFanDuty(gpuMetricsSupport3, gpuMetrics3, adlxTelemetryData);
 									}
@@ -500,7 +586,7 @@ bool GetAdlxTelemetry(const adlx_uint index, const adlx_uint historyLength, Adlx
 			}
 		};
 	}
-	catch (const std::exception& e)
+	catch (const std::exception&)
 	{
 		return false; // Return false on any exception
 	}
@@ -512,10 +598,31 @@ bool GetAdlxTelemetry(const adlx_uint index, const adlx_uint historyLength, Adlx
 	return check;
 }
 
-bool GetAdlxTelemetrySupport(const adlx_uint index, AdlxTelemetrySupport* adlxTelemetrySupport)
+bool GetAdlxTelemetry(const adlx_uint index, const adlx_uint historyLength, AdlxTelemetryData* adlxTelemetryData)
 {
-	if (_gpus == nullptr || _perfMonitoringService == nullptr)
+	if (adlxTelemetryData == nullptr || IsAdapterQuarantined(index))
 		return false;
+
+	*adlxTelemetryData = {};
+
+	__try
+	{
+		return GetAdlxTelemetryImpl(index, historyLength, adlxTelemetryData);
+	}
+	__except (AdlxDriverExceptionFilter(GetExceptionCode()))
+	{
+		QuarantineAdapter(index);
+		*adlxTelemetryData = {};
+		return false;
+	}
+}
+
+static bool GetAdlxTelemetrySupportImpl(const adlx_uint index, AdlxTelemetrySupport* adlxTelemetrySupport)
+{
+	if (adlxTelemetrySupport == nullptr || _gpus == nullptr || _perfMonitoringService == nullptr)
+		return false;
+
+	*adlxTelemetrySupport = {};
 
 	bool check = false;
 
@@ -524,12 +631,12 @@ bool GetAdlxTelemetrySupport(const adlx_uint index, AdlxTelemetrySupport* adlxTe
 		IADLXGPUPtr gpu;
 		ADLX_RESULT resGetGPU = _gpus->At(index, &gpu);
 
-		if (ADLX_SUCCEEDED(resGetGPU))
+		if (ADLX_SUCCEEDED(resGetGPU) && gpu != nullptr)
 		{
 			IADLXGPUMetricsSupportPtr gpuMetricsSupport;
 			ADLX_RESULT resGetSupportedMetrics = _perfMonitoringService->GetSupportedGPUMetrics(gpu, &gpuMetricsSupport);
 
-			if (ADLX_SUCCEEDED(resGetSupportedMetrics))
+			if (ADLX_SUCCEEDED(resGetSupportedMetrics) && gpuMetricsSupport != nullptr)
 			{
 				adlx_bool supported = false;
 
@@ -569,7 +676,8 @@ bool GetAdlxTelemetrySupport(const adlx_uint index, AdlxTelemetrySupport* adlxTe
 
 				// Query IADLXGPUMetricsSupport1 for extended metrics
 				IADLXGPUMetricsSupport1Ptr gpuMetricsSupport1;
-				if (ADLX_SUCCEEDED(gpuMetricsSupport->QueryInterface(IADLXGPUMetricsSupport1::IID(), reinterpret_cast<void**>(&gpuMetricsSupport1))))
+				if (gpuMetricsSupport->QueryInterface(IADLXGPUMetricsSupport1::IID(), reinterpret_cast<void**>(&gpuMetricsSupport1)) == ADLX_OK &&
+					gpuMetricsSupport1 != nullptr)
 				{
 					if (ADLX_SUCCEEDED(gpuMetricsSupport1->IsSupportedGPUMemoryTemperature(&supported)))
 						adlxTelemetrySupport->gpuMemoryTemperatureSupported = supported;
@@ -582,14 +690,16 @@ bool GetAdlxTelemetrySupport(const adlx_uint index, AdlxTelemetrySupport* adlxTe
 
 					// Query IADLXGPUMetricsSupport2 for more extended metrics
 					IADLXGPUMetricsSupport2Ptr gpuMetricsSupport2;
-					if (ADLX_SUCCEEDED(gpuMetricsSupport1->QueryInterface(IADLXGPUMetricsSupport2::IID(), reinterpret_cast<void**>(&gpuMetricsSupport2))))
+					if (gpuMetricsSupport1->QueryInterface(IADLXGPUMetricsSupport2::IID(), reinterpret_cast<void**>(&gpuMetricsSupport2)) == ADLX_OK &&
+						gpuMetricsSupport2 != nullptr)
 					{
 						if (ADLX_SUCCEEDED(gpuMetricsSupport2->IsSupportedGPUSharedMemory(&supported)))
 							adlxTelemetrySupport->gpuSharedMemorySupported = supported;
 
 						// Query IADLXGPUMetricsSupport3 for more extended metrics
 						IADLXGPUMetricsSupport3Ptr gpuMetricsSupport3;
-						if (ADLX_SUCCEEDED(gpuMetricsSupport2->QueryInterface(IADLXGPUMetricsSupport3::IID(), reinterpret_cast<void**>(&gpuMetricsSupport3))))
+						if (gpuMetricsSupport2->QueryInterface(IADLXGPUMetricsSupport3::IID(), reinterpret_cast<void**>(&gpuMetricsSupport3)) == ADLX_OK &&
+							gpuMetricsSupport3 != nullptr)
 						{
 							if (ADLX_SUCCEEDED(gpuMetricsSupport3->IsSupportedGPUFanDuty(&supported)))
 								adlxTelemetrySupport->gpuFanDutySupported = supported;
@@ -601,7 +711,7 @@ bool GetAdlxTelemetrySupport(const adlx_uint index, AdlxTelemetrySupport* adlxTe
 			}
 		}
 	}
-	catch (const std::exception& e)
+	catch (const std::exception&)
 	{
 		return false;
 	}
@@ -613,9 +723,28 @@ bool GetAdlxTelemetrySupport(const adlx_uint index, AdlxTelemetrySupport* adlxTe
 	return check;
 }
 
-bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
+bool GetAdlxTelemetrySupport(const adlx_uint index, AdlxTelemetrySupport* adlxTelemetrySupport)
 {
-	if (adlxDeviceInfo == nullptr)
+	if (adlxTelemetrySupport == nullptr || IsAdapterQuarantined(index))
+		return false;
+
+	*adlxTelemetrySupport = {};
+
+	__try
+	{
+		return GetAdlxTelemetrySupportImpl(index, adlxTelemetrySupport);
+	}
+	__except (AdlxDriverExceptionFilter(GetExceptionCode()))
+	{
+		QuarantineAdapter(index);
+		*adlxTelemetrySupport = {};
+		return false;
+	}
+}
+
+static bool GetAdlxDeviceInfoImpl(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
+{
+	if (adlxDeviceInfo == nullptr || _gpus == nullptr)
 		return false;
 
 	*adlxDeviceInfo = {};
@@ -632,7 +761,7 @@ bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
 		IADLXGPUPtr gpu;
 		res = _gpus->At(index, &gpu);
 
-		if (ADLX_SUCCEEDED(res))
+		if (ADLX_SUCCEEDED(res) && gpu != nullptr)
 		{
 			const char* vendorId = nullptr;
 			ret = gpu->VendorId(&vendorId);
@@ -659,13 +788,13 @@ bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
 			if (ADLX_SUCCEEDED(ret) && pnpString != nullptr)
 				strcpy_s(adlxDeviceInfo->PnpString, pnpString);
 
-			adlx_int id;
+			adlx_int id = 0;
 			ret = gpu->UniqueId(&id);
 			if (ADLX_SUCCEEDED(ret))
 				adlxDeviceInfo->Id = id;
 
 			IADLXGPU2Ptr gpu2;
-			if (ADLX_SUCCEEDED(gpu->QueryInterface(IADLXGPU2::IID(), reinterpret_cast<void**>(&gpu2))))
+			if (gpu->QueryInterface(IADLXGPU2::IID(), reinterpret_cast<void**>(&gpu2)) == ADLX_OK && gpu2 != nullptr)
 			{
 				ADLX_LUID luid = {};
 				if (ADLX_SUCCEEDED(gpu2->LUID(&luid)))
@@ -679,7 +808,7 @@ bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
 			check = true;
 		}
 	}
-	catch (const std::exception& e)
+	catch (const std::exception&)
 	{
 		return false; // Return false on any exception
 	}
@@ -689,4 +818,23 @@ bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
 	}
 
 	return check;
+}
+
+bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
+{
+	if (adlxDeviceInfo == nullptr || IsAdapterQuarantined(index))
+		return false;
+
+	*adlxDeviceInfo = {};
+
+	__try
+	{
+		return GetAdlxDeviceInfoImpl(index, adlxDeviceInfo);
+	}
+	__except (AdlxDriverExceptionFilter(GetExceptionCode()))
+	{
+		QuarantineAdapter(index);
+		*adlxDeviceInfo = {};
+		return false;
+	}
 }

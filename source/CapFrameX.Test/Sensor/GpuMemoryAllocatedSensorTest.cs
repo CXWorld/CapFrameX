@@ -226,6 +226,13 @@ namespace CapFrameX.Test.Sensor
             Assert.AreEqual(592, Marshal.OffsetOf<ADLX.AdlxDeviceInfo>(nameof(ADLX.AdlxDeviceInfo.LuidValid)).ToInt32());
         }
 
+        [TestMethod]
+        public void AdlxTelemetryLayouts_MatchNativeAbi()
+        {
+            Assert.AreEqual(16, Marshal.SizeOf<ADLX.AdlxTelemetrySupport>());
+            Assert.AreEqual(256, Marshal.SizeOf<ADLX.AdlxTelemetryData>());
+        }
+
         private static void AssertAllocatedSensor(IHardware gpu, string expectedIdentifier)
         {
             ISensor sensor = gpu.Sensors.Single(item => item.Name == "GPU Memory Allocated");
