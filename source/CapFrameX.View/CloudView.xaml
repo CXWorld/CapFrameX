@@ -39,7 +39,7 @@
 			</Style>
 		</ResourceDictionary>
 	</UserControl.Resources>
-	<Grid Margin="16">
+	<Grid Margin="0 30 0 0">
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1*"/>
 			<ColumnDefinition Width="Auto"/>

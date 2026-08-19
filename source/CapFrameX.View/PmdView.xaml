@@ -20,28 +20,23 @@
 			 prism:ViewModelLocator.AutoWireViewModel="True">
 	<UserControl.Resources>
 		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="Styles/CxCards.xaml" />
+				<ResourceDictionary Source="Styles/CxTabHeaders.xaml" />
+			</ResourceDictionary.MergedDictionaries>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 			<mvvm:PmdStatusColorConverter x:Key="PmdStatusColorConverter"/>
 			<system:Double x:Key="FontSizeMetrics">17</system:Double>
 			<system:Double x:Key="LabelHeight">28</system:Double>
-			<Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource MaterialDesignNavigationRailTabItem}">
-				<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-				<Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-				<Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-				<Setter Property="Padding" Value="0"/>
-				<Setter Property="Height" Value="25" />
-			</Style>
+			<Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource CxTabHeaderItem}" />
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid>
-		<TabControl x:Name="GraphTab" Margin="0 2 0 0" FocusVisualStyle="{x:Null}" Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
+		<TabControl x:Name="GraphTab" Margin="10" FocusVisualStyle="{x:Null}" Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
 			<!--Powenetics-->
-			<TabItem Width="100">
-				<TabItem.Header>
-					<Label FontSize="12">Powenetics</Label>
-				</TabItem.Header>
-				<Grid>
+			<TabItem Width="100" Header="Powenetics">
+				<Grid Margin="{StaticResource CxTabContentMargin}">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="1*"/>
 						<RowDefinition Height="1*"/>
@@ -171,11 +166,12 @@
 								<RowDefinition Height="50"/>
 								<RowDefinition Height="1*"/>
 							</Grid.RowDefinitions>
-							<Grid Margin="0 0 0 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+							<Border Grid.RowSpan="2" Style="{StaticResource SectionCard}" />
+							<Grid Margin="0 0 0 0" Background="Transparent">
 								<TextBlock Text="{Binding GpuName, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
 									FontWeight="Bold" FontSize="18"/>
 							</Grid>
-							<controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" x:Name="PoweneticsPciExpressPlotViewMetrics" 
+							<controls:PlotViewCustomZoom Grid.Row="1" Background="Transparent" x:Name="PoweneticsPciExpressPlotViewMetrics"
                                 Model="{Binding PoweneticsViewModel.PciExpressModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 0"
 								MouseDoubleClick="ResetPoweneticsPciExpressChartMetrics_MouseDoubleClick">
 								<controls:PlotViewCustomZoom.DefaultTrackerTemplate>
@@ -196,11 +192,12 @@
 								<RowDefinition Height="50"/>
 								<RowDefinition Height="1*"/>
 							</Grid.RowDefinitions>
-							<Grid Margin="0 5 0 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+							<Border Grid.RowSpan="2" Margin="0 5 0 5" Style="{StaticResource SectionCard}" />
+							<Grid Margin="0 5 0 0" Background="Transparent">
 								<TextBlock Text="{Binding CpuName, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
 									FontWeight="Bold" FontSize="18"/>
 							</Grid>
-							<controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" x:Name="PoweneticsEPS12VPlotViewMetrics" 
+							<controls:PlotViewCustomZoom Grid.Row="1" Background="Transparent" x:Name="PoweneticsEPS12VPlotViewMetrics"
 								Model="{Binding PoweneticsViewModel.EPS12VModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 5"
 								MouseDoubleClick="ResetPoweneticsEPS12VChartMetrics_MouseDoubleClick">
 								<controls:PlotViewCustomZoom.DefaultTrackerTemplate>
@@ -219,10 +216,11 @@
 						Foreground="White" Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
 						Reset PMD Metrics
 					</Button>
-					<Grid Grid.Row="2" Grid.Column="1" Margin="0 0 0 2" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
-						<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="20 0 0 0">
+					<Grid Grid.Row="2" Grid.Column="1" Margin="0 0 0 2" Background="Transparent">
+						<Border Style="{StaticResource SectionCard}" />
+						<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="20 0 0 0">
 							<TextBlock Text="Start/Stop PMD" FontSize="14" VerticalAlignment="Center" Margin="0 0 0 0"/>
-							<ToggleButton Margin="10 0 0 0" IsChecked="{Binding PoweneticsViewModel.UsePmdService}"
+							<ToggleButton Margin="10 0 0 0" VerticalAlignment="Center" IsChecked="{Binding PoweneticsViewModel.UsePmdService}"
                               ToolTipService.ShowDuration="25000">
 								<ToggleButton.ToolTip>
 									<ToolTip MaxWidth="350">
@@ -233,7 +231,7 @@
 							</ToggleButton>
 
 							<TextBlock Text="COM Port" FontSize="14" VerticalAlignment="Center" Margin="30 0 0 0"/>
-							<ComboBox Margin="10 -20 0 0" Padding="0 10 0 0" FontSize="14" Style="{StaticResource CxComboBox}"
+							<ComboBox Margin="10 0 0 0" Padding="0" VerticalAlignment="Center" FontSize="14" Style="{StaticResource CxComboBox}"
 								materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="80" Height="40" materialDesign:HintAssist.HintOpacity=".8"
 								ItemsSource="{Binding PoweneticsViewModel.ComPortsItemsSource}" SelectedItem="{Binding PoweneticsViewModel.SelectedComPort}" IsEnabled="{Binding PoweneticsViewModel.IsComPortEnabled}"
 								ToolTipService.ShowDuration="25000">
@@ -245,23 +243,24 @@
 								</ComboBox.ToolTip>
 							</ComboBox>
 						</StackPanel>
-						<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 0 20 0">
+						<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 20 0">
 							<TextBlock VerticalAlignment="Center" FontSize="14">PMD Service Status:</TextBlock>
 							<TextBlock Margin="10 0 0 0" Width="Auto" VerticalAlignment="Center" Text="{Binding PmdCaptureStatus, Converter={StaticResource EnumDescriptionConverter}}" 
 								FontWeight="Bold" FontSize="14" Foreground="{Binding PoweneticsViewModel.PmdCaptureStatus, Converter={StaticResource PmdStatusColorConverter}}"/>
 						</StackPanel>
 					</Grid>
 					<!--PMD Options (right side menu)-->
-					<Grid Grid.RowSpan="3" Grid.Column="2" Margin="5 0 0 2" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+					<Grid Grid.RowSpan="3" Grid.Column="2" Margin="5 0 0 2" Background="Transparent">
 						<Grid.RowDefinitions>
 							<RowDefinition Height="1*"/>
-							<RowDefinition Height="50"/>
+							<RowDefinition Height="60"/>
 						</Grid.RowDefinitions>
+						<Border Grid.RowSpan="2" Style="{StaticResource SectionCard}" />
 						<StackPanel Grid.Row="0" Orientation="Vertical">
-							<Border Height="45" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" HorizontalAlignment="Stretch">
+							<Border Height="45" Margin="5 5 5 0" HorizontalAlignment="Stretch" Style="{StaticResource SectionCardInset}">
 								<CheckBox Margin="5 0 0 0" FontSize="13" Content="Log PMD Data" IsChecked="{Binding UseLogging}"></CheckBox>
 							</Border>
-							<Border Height="160" Margin="5 10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" HorizontalAlignment="Stretch">
+							<Border Height="160" Margin="5 10 5 0" HorizontalAlignment="Stretch" Style="{StaticResource SectionCardInset}">
 								<StackPanel>
 									<TextBlock Text="Downsampling Factor" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
 									<ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource CxComboBox}"
@@ -294,7 +293,7 @@
 									</ComboBox>
 								</StackPanel>
 							</Border>
-							<Border Height="80" Margin="5 10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" HorizontalAlignment="Stretch">
+							<Border Height="80" Margin="5 10 5 0" HorizontalAlignment="Stretch" Style="{StaticResource SectionCardInset}">
 								<StackPanel>
 									<TextBlock Text="Chart Length [s]" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
 									<ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource CxComboBox}"
@@ -310,11 +309,11 @@
 									</ComboBox>
 								</StackPanel>
 							</Border>
-							<Border Height="45" Margin="5 10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" HorizontalAlignment="Stretch">
+							<Border Height="45" Margin="5 10 5 0" HorizontalAlignment="Stretch" Style="{StaticResource SectionCardInset}">
 								<CheckBox Margin="5 0 0 0" FontSize="13" Content="Show Charts" IsChecked="{Binding PoweneticsViewModel.UpdateCharts}"></CheckBox>
 							</Border>
 						</StackPanel>
-						<Border Grid.Row="1" Height="50" Margin="5 -10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" HorizontalAlignment="Stretch">
+						<Border Grid.Row="1" Margin="5" HorizontalAlignment="Stretch" Style="{StaticResource SectionCardInset}">
 							<StackPanel Orientation="Vertical">
 								<StackPanel Margin="5 0 0 0" Orientation="Horizontal">
 									<Label Content="Lost Packets:" FontSize="13"/>
@@ -330,11 +329,8 @@
 				</Grid>
 			</TabItem>
 			<!--BENCHLAB-->
-			<TabItem Width="100">
-				<TabItem.Header>
-					<Label FontSize="12">BENCHLAB</Label>
-				</TabItem.Header>
-				<Grid>
+			<TabItem Width="100" Header="BENCHLAB">
+				<Grid Margin="{StaticResource CxTabContentMargin}">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="1*"/>
 						<RowDefinition Height="1*"/>
@@ -420,11 +416,12 @@
 								<RowDefinition Height="50"/>
 								<RowDefinition Height="1*"/>
 							</Grid.RowDefinitions>
-							<Grid Margin="0 0 0 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+							<Border Grid.RowSpan="2" Style="{StaticResource SectionCard}" />
+							<Grid Margin="0 0 0 0" Background="Transparent">
 								<TextBlock Text="{Binding GpuName, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
                                FontWeight="Bold" FontSize="18"/>
 							</Grid>
-							<controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" x:Name="BenchlabPciExpressPlotViewMetrics" 
+							<controls:PlotViewCustomZoom Grid.Row="1" Background="Transparent" x:Name="BenchlabPciExpressPlotViewMetrics"
 								 Model="{Binding BenchlabViewModel.PciExpressModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 0"
 								 MouseDoubleClick="ResetBenchlabPciExpressChartMetrics_MouseDoubleClick">
 								<controls:PlotViewCustomZoom.DefaultTrackerTemplate>
@@ -445,11 +442,12 @@
 								<RowDefinition Height="50"/>
 								<RowDefinition Height="1*"/>
 							</Grid.RowDefinitions>
-							<Grid Margin="0 5 0 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+							<Border Grid.RowSpan="2" Margin="0 5 0 5" Style="{StaticResource SectionCard}" />
+							<Grid Margin="0 5 0 0" Background="Transparent">
 								<TextBlock Text="{Binding CpuName, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
                              FontWeight="Bold" FontSize="18"/>
 							</Grid>
-							<controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" x:Name="BenchlabEPS12VPlotViewMetrics" 
+							<controls:PlotViewCustomZoom Grid.Row="1" Background="Transparent" x:Name="BenchlabEPS12VPlotViewMetrics"
 								 Model="{Binding BenchlabViewModel.EPS12VModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 5"
 								 MouseDoubleClick="ResetBenchlabEPS12VChartMetrics_MouseDoubleClick">
 								<controls:PlotViewCustomZoom.DefaultTrackerTemplate>
@@ -468,10 +466,11 @@
 						Foreground="White" Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
 							Reset PMD Metrics
 					</Button>
-					<Grid Grid.Row="2" Grid.Column="1" Margin="0 0 0 2" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
-						<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="20 0 0 0">
+					<Grid Grid.Row="2" Grid.Column="1" Margin="0 0 0 2" Background="Transparent">
+						<Border Style="{StaticResource SectionCard}" />
+						<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="20 0 0 0">
 							<TextBlock Text="Start/Stop PMD" FontSize="14" VerticalAlignment="Center" Margin="0 0 0 0"/>
-							<ToggleButton Margin="10 0 0 0" IsChecked="{Binding BenchlabViewModel.UsePmdService}"
+							<ToggleButton Margin="10 0 0 0" VerticalAlignment="Center" IsChecked="{Binding BenchlabViewModel.UsePmdService}"
 								ToolTipService.ShowDuration="25000">
 								<ToggleButton.ToolTip>
 									<ToolTip MaxWidth="350">
@@ -481,23 +480,24 @@
 								</ToggleButton.ToolTip>
 							</ToggleButton>
 						</StackPanel>
-						<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 0 20 0">
+						<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 20 0">
 							<TextBlock VerticalAlignment="Center" FontSize="14">PMD Service Status:</TextBlock>
 							<TextBlock Margin="10 0 0 0" Width="Auto" VerticalAlignment="Center" Text="{Binding BenchlabViewModel.PmdServiceStatus, Converter={StaticResource EnumDescriptionConverter}}" 
 								FontWeight="Bold" FontSize="14" Foreground="{Binding BenchlabViewModel.PmdServiceStatus, Converter={StaticResource PmdStatusColorConverter}}"/>
 						</StackPanel>
 					</Grid>
 					<!--PMD Options (right side menu)-->
-					<Grid Grid.RowSpan="3" Grid.Column="2" Margin="5 0 0 2" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+					<Grid Grid.RowSpan="3" Grid.Column="2" Margin="5 0 0 2" Background="Transparent">
 						<Grid.RowDefinitions>
 							<RowDefinition Height="1*"/>
 							<RowDefinition Height="50"/>
 						</Grid.RowDefinitions>
+						<Border Grid.RowSpan="2" Style="{StaticResource SectionCard}" />
 						<StackPanel Grid.Row="0" Orientation="Vertical">
-							<Border Height="45" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" HorizontalAlignment="Stretch">
+							<Border Height="45" Margin="5 5 5 0" HorizontalAlignment="Stretch" Style="{StaticResource SectionCardInset}">
 								<CheckBox Margin="5 0 0 0" FontSize="13" Content="Log PMD Data" IsChecked="{Binding UseLogging}"></CheckBox>
 							</Border>
-							<Border Height="80" Margin="5 10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" HorizontalAlignment="Stretch">
+							<Border Height="80" Margin="5 10 5 0" HorizontalAlignment="Stretch" Style="{StaticResource SectionCardInset}">
 								<StackPanel>
 									<TextBlock Text="Monitoring Interval [ms]" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
 									<ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource CxComboBox}"
@@ -513,7 +513,7 @@
 									</ComboBox>
 								</StackPanel>
 							</Border>
-							<Border Height="80" Margin="5 10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" HorizontalAlignment="Stretch">
+							<Border Height="80" Margin="5 10 5 0" HorizontalAlignment="Stretch" Style="{StaticResource SectionCardInset}">
 								<StackPanel>
 									<TextBlock Text="Chart Length [s]" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
 									<ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource CxComboBox}"
@@ -529,10 +529,10 @@
 									</ComboBox>
 								</StackPanel>
 							</Border>
-							<Border Height="45" Margin="5 10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" HorizontalAlignment="Stretch">
+							<Border Height="45" Margin="5 10 5 0" HorizontalAlignment="Stretch" Style="{StaticResource SectionCardInset}">
 								<CheckBox Margin="5 0 0 0" FontSize="13" Content="Show Charts" IsChecked="{Binding BenchlabViewModel.UpdateCharts}"></CheckBox>
 							</Border>
-							<Border Height="45" Margin="5 10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" HorizontalAlignment="Stretch">
+							<Border Height="45" Margin="5 10 5 0" HorizontalAlignment="Stretch" Style="{StaticResource SectionCardInset}">
 								<CheckBox Margin="5 0 0 0" FontSize="13" Content="Auto Start PMD" IsChecked="{Binding BenchlabViewModel.AutoStartPmd}"></CheckBox>
 							</Border>
 						</StackPanel>
@@ -540,11 +540,8 @@
 				</Grid>
 			</TabItem>
 			<!--PMD Analysis-->
-			<TabItem Width="100">
-				<TabItem.Header>
-					<Label FontSize="12">PMD Analysis</Label>
-				</TabItem.Header>
-				<Grid x:Name="AnalysisChartGrid">
+			<TabItem Width="100" Header="PMD Analysis">
+				<Grid x:Name="AnalysisChartGrid" Margin="{StaticResource CxTabContentMargin}">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="1*"/>
 						<RowDefinition Height="1*"/>
@@ -560,11 +557,12 @@
 								<RowDefinition Height="35"/>
 								<RowDefinition Height="1*"/>
 							</Grid.RowDefinitions>
-							<Grid Margin="0 0 0 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+							<Border Grid.RowSpan="2" Style="{StaticResource SectionCard}" />
+							<Grid Margin="0 0 0 0" Background="Transparent">
 								<TextBlock Text="{Binding SessionGpuName, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
 									FontWeight="Bold" FontSize="18"/>
 							</Grid>
-							<controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" x:Name="PciExpressPlotViewAnalysis" 
+							<controls:PlotViewCustomZoom Grid.Row="1" Background="Transparent" x:Name="PciExpressPlotViewAnalysis"
                                          Model="{Binding GpuAnalysisModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 4 0 0"
 										 MouseDoubleClick="ResetPciExpressChartAnalysis_MouseDoubleClick">
 								<controls:PlotViewCustomZoom.DefaultTrackerTemplate>
@@ -591,11 +589,12 @@
 							<RowDefinition Height="35"/>
 							<RowDefinition Height="1*"/>
 						</Grid.RowDefinitions>
-						<Grid Margin="0 4 0 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+						<Border Grid.RowSpan="2" Margin="0 4 0 2" Style="{StaticResource SectionCard}" />
+						<Grid Margin="0 4 0 0" Background="Transparent">
 							<TextBlock Text="{Binding SessionCpuName, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
 								FontWeight="Bold" FontSize="18"/>
 						</Grid>
-						<controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" x:Name="EPS12VPlotViewAnalysis" 
+						<controls:PlotViewCustomZoom Grid.Row="1" Background="Transparent" x:Name="EPS12VPlotViewAnalysis"
 							Model="{Binding CpuAnalysisModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 4 0 2"
 							MouseDoubleClick="ResetEPS12VChartAnalysis_MouseDoubleClick">
 							<controls:PlotViewCustomZoom.DefaultTrackerTemplate>
@@ -622,11 +621,12 @@
 							<RowDefinition Height="1*"/>
 							<RowDefinition Height="50"/>
 						</Grid.RowDefinitions>
-						<Grid Margin="0 2 0 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+						<Border Grid.RowSpan="3" Margin="0 2 0 2" Style="{StaticResource SectionCard}" />
+						<Grid Margin="0 2 0 0" Background="Transparent">
 							<TextBlock Text="Performance" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
 								FontWeight="Bold" FontSize="18"/>
 						</Grid>
-						<controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" x:Name="FrametimeAnalysis"
+						<controls:PlotViewCustomZoom Grid.Row="1" Background="Transparent" x:Name="FrametimeAnalysis"
                                                      Model="{Binding FrametimeModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 4 0 2"
 										             MouseDoubleClick="ResetFrametimeChart_MouseDoubleClick">
 							<controls:PlotViewCustomZoom.DefaultTrackerTemplate>
@@ -639,7 +639,7 @@
 								</ControlTemplate>
 							</controls:PlotViewCustomZoom.DefaultTrackerTemplate>
 						</controls:PlotViewCustomZoom>
-						<Grid Grid.Row="2" Margin="0 2 0 2" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+						<Grid Grid.Row="2" Margin="0 2 0 2" Background="Transparent">
 							<ComboBox Margin="10 0 0 5" HorizontalAlignment="Left" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Values"
 					                    materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="80" Height="40">
 								<ComboBoxItem IsSelected="True">Frametimes</ComboBoxItem>
@@ -653,7 +653,7 @@
 							</ComboBox>
 						</Grid>
 					</Grid>
-					<Grid Grid.RowSpan="3" Grid.Column="1" Margin="5 0 0 2" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+					<Grid Grid.RowSpan="3" Grid.Column="1" Margin="5 0 0 2" Background="Transparent">
 						<Grid.RowDefinitions>
 							<RowDefinition Height="180"/>
 							<RowDefinition Height="5"/>
@@ -661,7 +661,8 @@
 							<RowDefinition Height="5"/>
 							<RowDefinition Height="Auto"/>
 						</Grid.RowDefinitions>
-						<Border Grid.Row="0" Height="175" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}"
+						<Border Grid.RowSpan="5" Style="{StaticResource SectionCard}" />
+						<Border Grid.Row="0" Height="175" Margin="5 5 5 0" Style="{StaticResource SectionCardInset}"
                                 VerticalAlignment="Top" HorizontalAlignment="Stretch">
 							<StackPanel Orientation="Vertical">
 								<TextBlock Margin="10 10 0 0" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" Text="Graph Selection" ></TextBlock>
@@ -671,7 +672,7 @@
 								<CheckBox Margin="10 15 0 0" FontSize="13" Content="Performance" Background="MediumSeaGreen" IsChecked="{Binding DrawPerformanceChart}" Checked = "FrametimeCheckBox_Checked" Unchecked = "FrametimeCheckBox_Unchecked"></CheckBox>
 							</StackPanel>
 						</Border>
-						<Border Grid.Row="2" Height="Auto" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}"
+						<Border Grid.Row="2" Height="Auto" Margin="5 5 5 0" Style="{StaticResource SectionCardInset}"
                                 VerticalAlignment="Top" HorizontalAlignment="Stretch">
 							<Grid Margin="10">
 								<Grid.RowDefinitions>
@@ -708,7 +709,7 @@
 								<TextBlock Grid.Row="6" Grid.Column="1" Margin="0 0 0 5" Text="{Binding AvgFPS}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
 							</Grid>
 						</Border>
-						<Border Grid.Row="4" Height="Auto" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}"
+						<Border Grid.Row="4" Height="Auto" Margin="5 5 5 0" Style="{StaticResource SectionCardInset}"
                                 VerticalAlignment="Top" HorizontalAlignment="Stretch">
 							<Grid Margin="10">
 								<Grid.RowDefinitions>

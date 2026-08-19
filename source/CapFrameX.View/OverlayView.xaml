@@ -18,6 +18,9 @@
 			 prism:ViewModelLocator.AutoWireViewModel="True">
 	<UserControl.Resources>
 		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="Styles/CxTabHeaders.xaml" />
+			</ResourceDictionary.MergedDictionaries>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
@@ -25,13 +28,7 @@
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 			<mvvm:EnumShortDescriptionConverter x:Key="EnumShortDescriptionConverter"/>
 			<mvvm:StringColorConverter x:Key="StringColorConverter"/>
-			<Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource MaterialDesignNavigationRailTabItem}">
-				<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-				<Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-				<Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-				<Setter Property="Padding" Value="0"/>
-				<Setter Property="Height" Value="25" />
-			</Style>
+			<Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource CxTabHeaderItem}" />
 			<Style x:Key="OsdOptionsCard" TargetType="{x:Type Border}">
 				<Setter Property="Margin" Value="6"/>
 				<Setter Property="Padding" Value="18"/>
@@ -64,11 +61,8 @@
 	</UserControl.Resources>
 	<Grid HorizontalAlignment="Center">
 		<TabControl Width="940" Margin="10" Background="{DynamicResource MaterialDesign.Brush.Card.Background}" BorderThickness="0" FocusVisualStyle="{x:Null}">
-			<TabItem Width="140" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
-				<TabItem.Header>
-					<Label FontSize="12">Overlay items</Label>
-				</TabItem.Header>
-				<Grid>
+			<TabItem Width="140" Header="Overlay items">
+				<Grid Margin="{StaticResource CxTabContentMargin}">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="*"/>
 					</Grid.RowDefinitions>
@@ -78,7 +72,7 @@
 						<ColumnDefinition Width="460"/>
 					</Grid.ColumnDefinitions>
 		<!--Margin keeps the top edge level with the first card of the right column (spacer-less grid + 5px card margin)-->
-		<Border Style="{StaticResource SectionCard}" Margin="0 5 0 5" Grid.Row="0" Grid.Column="0" >
+		<Border Style="{StaticResource SectionCard}" Margin="0 0 0 5" Grid.Row="0" Grid.Column="0" >
 			<materialDesign:DialogHost IsOpen="{Binding ResetOverlayConfigContentIsOpen}"
 								        DialogContent="{Binding ResetOverlayConfigContent}"
 								        CloseOnClickAway="True">
@@ -550,7 +544,7 @@
 				</Grid.ColumnDefinitions>
 				<!--<TextBlock Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" Text="{Binding SelectedOverlayItemName}"/>-->
 				<!-- Overlay Template Picker -->
-				<Border Grid.Row="1" Grid.ColumnSpan="2" Margin="5" Style="{StaticResource SectionCard}">
+				<Border Grid.Row="1" Grid.ColumnSpan="2" Margin="5 0 5 5" Style="{StaticResource SectionCard}">
 					<Grid Margin="5 0 5 0">
 						<Grid.RowDefinitions>
 							<RowDefinition Height="55"/>
@@ -985,12 +979,9 @@
 		</Border>
 				</Grid>
 			</TabItem>
-			<TabItem Width="140" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
-				<TabItem.Header>
-					<Label FontSize="12">OSD options</Label>
-				</TabItem.Header>
-				<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-					<Grid Margin="8 8 8 14">
+			<TabItem Width="140" Header="OSD options">
+				<ScrollViewer Margin="{StaticResource CxTabContentMargin}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+					<Grid Margin="8 0 8 14">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="*"/>
 							<ColumnDefinition Width="*"/>
@@ -998,7 +989,7 @@
 
 						<!-- Independent vertical sections keep future options local to their topic. -->
 						<StackPanel Grid.Column="0">
-							<Border Style="{StaticResource OsdOptionsCard}">
+							<Border Margin="6 0 6 6" Style="{StaticResource OsdOptionsCard}">
 								<StackPanel>
 									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="General"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
@@ -1148,7 +1139,7 @@
 						</StackPanel>
 
 						<StackPanel Grid.Column="1">
-							<Border Style="{StaticResource OsdOptionsCard}">
+							<Border Margin="6 0 6 6" Style="{StaticResource OsdOptionsCard}">
 								<StackPanel>
 									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="Overlay renderer"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"

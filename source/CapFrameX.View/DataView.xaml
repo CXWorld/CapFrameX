@@ -21,6 +21,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Styles/CustomRangeSliderStyle.xaml" />
                 <ResourceDictionary Source="Styles/CxExpander.xaml" />
+                <ResourceDictionary Source="Styles/CxTabHeaders.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
             <mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
@@ -31,13 +32,7 @@
             <Style x:Key="CleanSeparator" TargetType="{x:Type lvc:Separator}">
                 <Setter Property="IsEnabled" Value="False"/>
             </Style>
-            <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource MaterialDesignNavigationRailTabItem}">
-                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-                <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-                <Setter Property="Padding" Value="0"/>
-                <Setter Property="Height" Value="25" />
-            </Style>
+            <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource CxTabHeaderItem}" />
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid Margin="0 6 0 0">
@@ -89,11 +84,8 @@
 					    DialogContent="{Binding MessageDialogContent}"
 					    CloseOnClickAway="True">
 						<TabControl x:Name="GraphTab" Grid.Row="0" SelectedItem="{Binding SelectedChartItem}" FocusVisualStyle="{x:Null}" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
-							<TabItem Width="80">
-                                <TabItem.Header>
-									<Label FontSize="12">Frame Times</Label>
-								</TabItem.Header>
-                                <Grid>
+							<TabItem Width="80" Header="Frame Times">
+                                <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <Grid Margin="0 0 0 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                                         <ComboBox Width="Auto" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10 0 0 10" materialDesign:HintAssist.Hint="Y-Axis scale"
 										          materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:HintAssist.HintOpacity=".8"
@@ -113,11 +105,8 @@
                                     <controls:FrametimeGraphControl DataContext="{Binding FrametimeGraphDataContext}" Background="{DynamicResource MaterialDesign.Brush.Card.Background}"/>
                                 </Grid>
                             </TabItem>
-                            <TabItem>
-                                <TabItem.Header>
-                                    <Label FontSize="12">FPS</Label>
-                                </TabItem.Header>
-                                <Grid>
+                            <TabItem Width="55" Header="FPS">
+                                <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <Grid Margin="-15 0 0 1" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                                         <ComboBox Width="96" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Filter Mode"
 										      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:HintAssist.HintOpacity=".8"
@@ -132,11 +121,8 @@
                                     <controls:FpsGraphControl DataContext="{Binding FpsGraphDataContext}" Background="{DynamicResource MaterialDesign.Brush.Card.Background}"/>
                                 </Grid>
                             </TabItem>
-                            <TabItem>
-                                <TabItem.Header>
-                                    <Label FontSize="12">L-shape</Label>
-                                </TabItem.Header>
-                                <Grid>
+                            <TabItem Width="70" Header="L-shape">
+                                <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <Grid Margin="-15 0 0 1" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                                         <ComboBox Width="96" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Metric"
 										      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:HintAssist.HintOpacity=".8"
@@ -172,11 +158,8 @@
                                     </lvc:CartesianChart>
                                 </Grid>
                             </TabItem>
-                            <TabItem Width="150">
-                                <TabItem.Header>
-                                    <Label FontSize="12">Frame Time Distribution</Label>
-                                </TabItem.Header>
-                                <Grid>
+                            <TabItem Width="150" Header="Frame Time Distribution">
+                                <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <Grid Margin="-15 0 0 1" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                                     </Grid>
                                     <controls:FrametimeDistributionGraphControl DataContext="{Binding FrametimeDistributionGraphDataContext}" Background="{DynamicResource MaterialDesign.Brush.Card.Background}"/>
@@ -278,11 +261,8 @@
                     <!--FPS thresholds and stuttering analysis-->
                     <Grid Grid.Column="4" Margin="5 0 0 0" >
                         <TabControl Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" FocusVisualStyle="{x:Null}" x:Name="StatisticsTabControl" >
-                            <TabItem Width="75">
-                                <TabItem.Header>
-                                    <Label FontSize="12">Stuttering</Label>
-                                </TabItem.Header>
-                                <Grid>
+                            <TabItem Width="75" Header="Stuttering">
+                                <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <lvc:PieChart HorizontalAlignment="Left" Margin="13 0 0 0" Width="180" Height="180" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
 								        LegendLocation="Left" DataClick="Chart_OnDataClick" DataTooltip="{x:Null}" StartingRotationAngle="0">
                                         <lvc:PieChart.ChartLegend>
@@ -341,11 +321,8 @@
                                     </Border>
                                 </Grid>
                             </TabItem>
-                            <TabItem Width="75">
-                                <TabItem.Header>
-                                    <Label FontSize="12">Variances</Label>
-                                </TabItem.Header>
-                                <Grid>
+                            <TabItem Width="75" Header="Variances">
+                                <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <TextBlock Margin="10 3 0 0" Text="Time differences between two&#xA;consecutive frametime values"></TextBlock>
                                     <lvc:PieChart Margin="10 5 115 5" MaxHeight="250" Hoverable="False" Series="{Binding VarianceStatisticCollection}" 
 								        LegendLocation="Left" DataClick="Chart_OnDataClick" DataTooltip="{x:Null}" StartingRotationAngle="0">
@@ -355,11 +332,8 @@
                                     </lvc:PieChart>
                                 </Grid>
                             </TabItem>
-                            <TabItem Width="105" x:Name="ThresholdTab">
-                                <TabItem.Header>
-                                    <Label FontSize="12">FPS thresholds</Label>
-                                </TabItem.Header>
-                                <Grid Margin="0 5 0 0">
+                            <TabItem Width="105" x:Name="ThresholdTab" Header="FPS thresholds">
+                                <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <RadioButton Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Top"
                                                  ToolTip="Show time above or below thresholds"
                                                  Style="{StaticResource MaterialDesignTabRadioButton}"
@@ -422,11 +396,8 @@
                                     </lvc:CartesianChart>
                                 </Grid>
                             </TabItem>
-                            <TabItem Width="75" x:Name="SensorDataTab" IsEnabled="{Binding AdditionalGraphsEnabled}">
-                                <TabItem.Header>
-                                    <Label FontSize="12">Sensor data</Label>
-                                </TabItem.Header>
-                                <DataGrid FontSize="13" ItemsSource="{Binding SensorReportItems}" ColumnHeaderHeight="25" SelectionUnit="FullRow"
+                            <TabItem Width="75" x:Name="SensorDataTab" Header="Sensor data" IsEnabled="{Binding AdditionalGraphsEnabled}">
+                                <DataGrid Margin="{StaticResource CxTabContentMargin}" FontSize="13" ItemsSource="{Binding SensorReportItems}" ColumnHeaderHeight="25" SelectionUnit="FullRow"
 										CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 										materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8 0 0 0" IsSynchronizedWithCurrentItem="False"
 										ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Tag="{Binding DataContext, ElementName=DataViewUserControl}">
@@ -498,11 +469,8 @@
 
                     <Grid Grid.Column="2" x:Name="SecondSensorTab" Margin="5 0 0 0" Width="450" Tag="{Binding DataContext, ElementName=DataViewUserControl}">
                         <TabControl Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" FocusVisualStyle="{x:Null}" >
-                            <TabItem Width="75" IsEnabled="{Binding AdditionalGraphsEnabled}">
-                                <TabItem.Header>
-                                    <Label FontSize="12">Sensor data</Label>
-                                </TabItem.Header>
-                                <DataGrid FontSize="13" ItemsSource="{Binding SensorReportItems}" ColumnHeaderHeight="25" SelectionUnit="FullRow"
+                            <TabItem Width="75" Header="Sensor data" IsEnabled="{Binding AdditionalGraphsEnabled}">
+                                <DataGrid Margin="{StaticResource CxTabContentMargin}" FontSize="13" ItemsSource="{Binding SensorReportItems}" ColumnHeaderHeight="25" SelectionUnit="FullRow"
 										CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 										materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8 0 0 0" IsSynchronizedWithCurrentItem="False"
 										ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True"
@@ -575,11 +543,8 @@
 
                     <Grid Grid.Column="3" x:Name="SecondThresholdTab" Margin="5 0 0 0" Width="500" >
                         <TabControl Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" FocusVisualStyle="{x:Null}" >
-                            <TabItem Width="105">
-                                <TabItem.Header>
-                                    <Label FontSize="12">FPS thresholds</Label>
-                                </TabItem.Header>
-                                <Grid Margin="0 5 0 0">
+                            <TabItem Width="105" Header="FPS thresholds">
+                                <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <RadioButton Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Top"
                                                  ToolTip="Show time above or below thresholds"
                                                  Style="{StaticResource MaterialDesignTabRadioButton}"

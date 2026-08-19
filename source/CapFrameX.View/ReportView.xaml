@@ -15,6 +15,9 @@
 			 prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
 		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="Styles/CxCards.xaml" />
+			</ResourceDictionary.MergedDictionaries>
             <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
 			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-75"/>
 		</ResourceDictionary>
@@ -265,25 +268,26 @@
                 </DataGrid.Columns>
             </DataGrid>
         </StackPanel>
-        <Grid Grid.Row="1" Margin="5" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
-            <Grid.ColumnDefinitions>
+        <Border Grid.Row="1" Margin="5" Style="{StaticResource SectionCard}">
+            <Grid>
+                <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*"></ColumnDefinition>
                 <ColumnDefinition Width="1*"></ColumnDefinition>
                 <ColumnDefinition Width="1*"></ColumnDefinition>
                 <ColumnDefinition Width="1*"></ColumnDefinition>
                 <ColumnDefinition Width="1*"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
-            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0 5 0 0" Orientation="Horizontal">
-                <TextBlock Margin="20 0 10 0" Text="Show average row" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"></TextBlock>
-                <ToggleButton IsChecked="{Binding ReportShowAverageRow}" ToolTip="Shows an additional row containing the averaged FPS metrics of all inserted records."/>
+                </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" VerticalAlignment="Center" Orientation="Horizontal">
+                <TextBlock Margin="20 0 10 0" VerticalAlignment="Center" Text="Show average row" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"></TextBlock>
+                <ToggleButton VerticalAlignment="Center" IsChecked="{Binding ReportShowAverageRow}" ToolTip="Shows an additional row containing the averaged FPS metrics of all inserted records."/>
             </StackPanel>
-            <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="0 5 0 0" Orientation="Horizontal">
-                <TextBlock Margin="20 0 10 0" Text="Use PMD values" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"></TextBlock>
-                <ToggleButton IsChecked="{Binding ReportUsePMDValues}" ToolTip="If available, use PMD values instead of the sensor readings for CPU/GPU power and efficiency."/>
+            <StackPanel Grid.Column="4" VerticalAlignment="Center" Orientation="Horizontal">
+                <TextBlock Margin="20 0 10 0" VerticalAlignment="Center" Text="Use PMD values" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"></TextBlock>
+                <ToggleButton VerticalAlignment="Center" IsChecked="{Binding ReportUsePMDValues}" ToolTip="If available, use PMD values instead of the sensor readings for CPU/GPU power and efficiency."/>
             </StackPanel>
-            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0 5 0 0" Orientation="Horizontal">
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal">
                 <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Metrics settings:</TextBlock>
-                <materialDesign:PopupBox StaysOpen="True" ToolTip="Select metrics to be shown" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
+                <materialDesign:PopupBox VerticalAlignment="Center" StaysOpen="True" ToolTip="Select metrics to be shown" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                     <materialDesign:Card Width="Auto" Margin="0 0 0 -10">
                         <Grid Margin="8 8 8 8">
                             <Grid.Resources>
@@ -422,6 +426,7 @@
                 Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
                 <materialDesign:PackIcon Kind="PlaylistRemove" Height="25" Width="25" />
             </Button>
-        </Grid>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>
