@@ -19,6 +19,9 @@
   <Profile executable="LEGOBatmanLotDK-Win64-Shipping.exe"
            enableGenericD3D12PresentRoute="true"
            source="CapFrameX validation: Streamline was already loaded at attach and exposed no authoritative creation queue; bypass vendor proxy/status hooks and draw on native DXGI Presents using observed DIRECT command queues" />
+  <Profile executable="witcher3.exe"
+           enableGenericD3D12PresentRoute="true"
+           source="CapFrameX validation: Streamline was already loaded at attach and its pass-through proxy exposed no authoritative creation queue; bypass vendor proxy/status hooks and draw on native DXGI Presents using observed DIRECT command queues" />
   <Profile executable="DyingLightGame_TheBeast_x64_rwdi.exe"
            disableDxgiSwapchainReleaseHook="true"
            enableGenericD3D12PresentRoute="true"
