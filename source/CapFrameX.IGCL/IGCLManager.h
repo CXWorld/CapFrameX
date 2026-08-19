@@ -4,7 +4,7 @@
 
 #define CTL_MAX_DRIVER_VERSION_LEN  25
 
-typedef struct IgclTelemetryData
+struct IgclTelemetryData
 {
 	// GPU TDP
 	bool gpuEnergySupported = false;
@@ -67,7 +67,7 @@ typedef struct IgclTelemetryData
 	double fanSpeedValue;
 };
 
-typedef struct IgclDeviceInfo
+struct IgclDeviceInfo
 {
 	char DeviceName[CTL_MAX_DEVICE_NAME_LEN];
 	DWORD AdapterID;
@@ -78,7 +78,7 @@ typedef struct IgclDeviceInfo
 	uint32_t Adapter_Property_Flag;
 };
 
-#define IGCL_API __declspec(dllimport)
+#define IGCL_API __declspec(dllexport)
 
 extern "C" IGCL_API bool IntializeIgcl();
 
@@ -91,4 +91,3 @@ extern "C" IGCL_API uint32_t GetBusWidth(const uint32_t index);
 extern "C" IGCL_API bool GetDeviceInfo(const uint32_t index, IgclDeviceInfo *igclDeviceInfo);
 
 extern "C" IGCL_API bool GetIgclTelemetryData(const uint32_t index, IgclTelemetryData *igclTelemetryData);
-
