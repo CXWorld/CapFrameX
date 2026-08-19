@@ -18,10 +18,14 @@
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
 				<ResourceDictionary Source="Styles/CxCards.xaml" />
+				<ResourceDictionary Source="Styles/CxVoiceSlider.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+			<Style x:Key="CxVoiceSlider" TargetType="{x:Type Slider}" BasedOn="{StaticResource MaterialDesign3.MaterialDesignSlider}">
+				<Setter Property="Template" Value="{StaticResource CxVoiceSliderTemplate}" />
+			</Style>
 
 			<Style TargetType="ItemsControl" x:Key="LogViewerStyle">
 				<Setter Property="Template">
@@ -272,15 +276,20 @@
 						</ComboBox.Text>
 					</ComboBox>
 
-					<Grid Grid.Row="1" Grid.Column="3" Margin="20 10 -5 0" Width="110" Visibility="{Binding ShowVolumeController, Converter={StaticResource FalseToCollapsedConverter}}">
-						<materialDesign:PackIcon Kind="VolumeMedium" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-						<Slider HorizontalAlignment="Center"
+					<Grid Grid.Row="1" Grid.Column="3" Margin="20 10 -5 0" Width="110" Height="26" Visibility="{Binding ShowVolumeController, Converter={StaticResource FalseToCollapsedConverter}}">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="18" />
+							<ColumnDefinition Width="70" />
+							<ColumnDefinition Width="22" />
+						</Grid.ColumnDefinitions>
+						<materialDesign:PackIcon Grid.Column="0" Kind="VolumeMedium" Width="18" Height="18" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+						<Slider Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource CxVoiceSlider}"
 							Minimum="0" 
 							Maximum="100" 
 							ToolTip="Sound level control"
 							Value="{Binding SliderSoundLevel}"
 							Width="65" Thumb.DragCompleted="Slider_DragCompleted" />
-						<TextBlock HorizontalAlignment="Right" Text="{Binding SliderSoundLevel}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+						<TextBlock Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" TextAlignment="Right" Text="{Binding SliderSoundLevel}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 					</Grid>
 				</Grid>
 				</StackPanel>
