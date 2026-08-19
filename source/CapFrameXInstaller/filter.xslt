@@ -29,9 +29,11 @@ xmlns:wix="http://schemas.microsoft.com/wix/2006/wi">
 	<xsl:key name="search" match="wix:Component[contains(wix:File/@Source, '.iobj')]" use="@Id" />
 	<xsl:key name="search" match="wix:Component[contains(wix:File/@Source, '.ipdb')]" use="@Id" />
 	<xsl:key name="search" match="wix:Component[contains(wix:File/@Source, '.dll.metagen')]" use="@Id" />
+	<!-- Extended.Wpf.Toolkit bundles AvalonDock, but CapFrameX only uses Xceed.Wpf.Toolkit. -->
+	<xsl:key name="search" match="wix:Component[contains(wix:File/@Source, 'Xceed.Wpf.AvalonDock')]" use="@Id" />
 	<!-- The PMC reader is an optional plugin and must not be shipped with the core installer. -->
-	<xsl:key name="pmcReaderPlugin" match="wix:Component[contains(wix:File/@Source, 'CapFrameX.PmcReader.Plugin.dll')]" use="@Id" />
-	<xsl:key name="search" match="wix:Component[contains(wix:File/@Source, 'CapFrameX.PmcReader.Plugin.dll')]" use="@Id" />
+	<xsl:key name="pmcReaderPlugin" match="wix:Component[contains(wix:File/@Source, 'CapFrameX.PmcReader.Plugin.')]" use="@Id" />
+	<xsl:key name="search" match="wix:Component[contains(wix:File/@Source, 'CapFrameX.PmcReader.Plugin.')]" use="@Id" />
 	<!-- Satellite assemblies bring their own copy of app.config, which nothing reads. The app's own
 	     config is exempt: since the move to net9.0 it is named CapFrameX.dll.config instead of
 	     CapFrameX.exe.config, and ConfigurationManager reads the update catalog and the webservice

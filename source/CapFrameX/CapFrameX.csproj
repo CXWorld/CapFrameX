@@ -183,4 +183,22 @@
           SkipUnchangedFiles="true" />
   </Target>
 
+  <!-- Extended.Wpf.Toolkit bundles AvalonDock and its satellite assemblies, but CapFrameX only
+       uses Xceed.Wpf.Toolkit. Keep the unused files out of portable and installer payloads. -->
+  <Target Name="RemoveUnusedAvalonDockBuildArtifacts" AfterTargets="Build" Condition="'$(TargetDir)' != ''">
+    <ItemGroup>
+      <CfxUnusedAvalonDockArtifact Include="$(TargetDir)Xceed.Wpf.AvalonDock*.dll" />
+      <CfxUnusedAvalonDockArtifact Include="$(TargetDir)**\Xceed.Wpf.AvalonDock*.dll" />
+    </ItemGroup>
+    <Delete Files="@(CfxUnusedAvalonDockArtifact)" />
+  </Target>
+
+  <Target Name="RemoveUnusedAvalonDockPublishArtifacts" AfterTargets="Publish" Condition="'$(PublishDir)' != ''">
+    <ItemGroup>
+      <CfxUnusedAvalonDockPublishArtifact Include="$(PublishDir)Xceed.Wpf.AvalonDock*.dll" />
+      <CfxUnusedAvalonDockPublishArtifact Include="$(PublishDir)**\Xceed.Wpf.AvalonDock*.dll" />
+    </ItemGroup>
+    <Delete Files="@(CfxUnusedAvalonDockPublishArtifact)" />
+  </Target>
+
 </Project>

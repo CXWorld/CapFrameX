@@ -551,18 +551,6 @@
             <Component Id="cmp017BFB3832A5B110A2B3A350E13F2A5C" Guid="*" Win64="yes">
                 <File Id="fil17E34524E8398461D615894C92558FE9" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.Windows.Interactivity.dll" />
             </Component>
-            <Component Id="cmpB5AC76F2952CC9DFFEAE55F2225097DA" Guid="*" Win64="yes">
-                <File Id="fil6AA069CB067F41A6BD8EE397FDA8959D" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Xceed.Wpf.AvalonDock.dll" />
-            </Component>
-            <Component Id="cmp2A23BAA07F6AEF1BAC39F167324A8F3A" Guid="*" Win64="yes">
-                <File Id="filBC3F4C1166E0142D06933250742EA7C2" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Xceed.Wpf.AvalonDock.Themes.Aero.dll" />
-            </Component>
-            <Component Id="cmpD2BBFD2B0371F68A1185CC644A1BEA64" Guid="*" Win64="yes">
-                <File Id="fil4DFF05E2DF20649A72E2FB5FBC3CBA2E" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Xceed.Wpf.AvalonDock.Themes.Metro.dll" />
-            </Component>
-            <Component Id="cmpFFB651FFCBD1B293A7B0FE113C056F8F" Guid="*" Win64="yes">
-                <File Id="filEFDE58C5ABCFCB31E073211560F487D2" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Xceed.Wpf.AvalonDock.Themes.VS2010.dll" />
-            </Component>
             <Component Id="cmpC85BD7478E073743A39F17DF06865203" Guid="*" Win64="yes">
                 <File Id="fil3DAD59899DDA1B0FCEDF95F84CB3C475" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Xceed.Wpf.Toolkit.dll" />
             </Component>
@@ -753,11 +741,6 @@
                     </Directory>
                 </Directory>
             </Directory>
-            <Directory Id="dir685A0806E2E8E14FA0BEED541D816845" Name="cs-CZ">
-                <Component Id="cmpE3F8869BEF0F274473285F8661074660" Guid="*" Win64="yes">
-                    <File Id="fil57FFEA7051D1BE22E52C873E503384B6" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\cs-CZ\Xceed.Wpf.AvalonDock.resources.dll" />
-                </Component>
-            </Directory>
             <Directory Id="dir242DC17B8DFC53C13CAF172FC08B730A" Name="de">
                 <Component Id="cmp55E09061A1DF30E9878313719FAE6664" Guid="*" Win64="yes">
                     <File Id="fil1424015000F4C871286F581C5375B980" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\de\MahApps.Metro.resources.dll" />
@@ -765,16 +748,10 @@
                 <Component Id="cmp899508076A55BF753F74CB0DFA5743E3" Guid="*" Win64="yes">
                     <File Id="filD54B0D32E6618AD0E9082F3C7288DF3B" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\de\Microsoft.Win32.TaskScheduler.resources.dll" />
                 </Component>
-                <Component Id="cmp5C894AE3FF956FCDDF4DFFE3BA89B9C1" Guid="*" Win64="yes">
-                    <File Id="filB1C9AEB28739722A7265C14C29D55B54" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\de\Xceed.Wpf.AvalonDock.resources.dll" />
-                </Component>
             </Directory>
             <Directory Id="dir9AE38F4F5CB5E565E774521E138F44FD" Name="es">
                 <Component Id="cmp5A7026E0896D194B82895F7742EE8E12" Guid="*" Win64="yes">
                     <File Id="filD9A4BF39D17EB61C5211DDC46DB00008" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\es\Microsoft.Win32.TaskScheduler.resources.dll" />
-                </Component>
-                <Component Id="cmp6EFE3E0288B5FA57D98FB920AB342897" Guid="*" Win64="yes">
-                    <File Id="fil87AEDF35E30560161D787B0A3BF3750B" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\es\Xceed.Wpf.AvalonDock.resources.dll" />
                 </Component>
             </Directory>
             <Directory Id="dir69A81B71B3436B3F1BF22FB24CE6929D" Name="Files">
@@ -785,9 +762,6 @@
             <Directory Id="dirB55DFDA91FEE7CCCBC65CA7493B75748" Name="fr">
                 <Component Id="cmpB448414C7B3963A581067103B898A290" Guid="*" Win64="yes">
                     <File Id="filA5C066B28245C75C64533E4E70637BFD" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\fr\Microsoft.Win32.TaskScheduler.resources.dll" />
-                </Component>
-                <Component Id="cmp3EB7F17B0DCBDF3729FDAAAF0CF6B665" Guid="*" Win64="yes">
-                    <File Id="fil894A87B41983376BAAE165DD02D4FB6C" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\fr\Xceed.Wpf.AvalonDock.resources.dll" />
                 </Component>
             </Directory>
             <Directory Id="dirED1C7BF395F6825C5E6AA296F629EF5A" Name="HelpTexts">
@@ -808,22 +782,9 @@
                     </Component>
                 </Directory>
             </Directory>
-            <Directory Id="dir937629FDAC3D30087170D6DA46E383A6" Name="hu">
-                <Component Id="cmpFB118A47202A6B98ED49B3C952C22F35" Guid="*" Win64="yes">
-                    <File Id="fil0686FF7DCF04C68D53BD45FE0C2A8BF6" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\hu\Xceed.Wpf.AvalonDock.resources.dll" />
-                </Component>
-            </Directory>
             <Directory Id="dir45DE18DD71F3E8DD6BE4A0E2B48778C8" Name="it">
                 <Component Id="cmpA2349B128022FD9468B4B0472DF8814A" Guid="*" Win64="yes">
                     <File Id="filA9D742E425F8D28208EA368E72789A62" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\it\Microsoft.Win32.TaskScheduler.resources.dll" />
-                </Component>
-                <Component Id="cmp0B9527E49327DF46736C8F6F58634C01" Guid="*" Win64="yes">
-                    <File Id="fil0B4AABB0E6DE194FF7BBE1F51933E675" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\it\Xceed.Wpf.AvalonDock.resources.dll" />
-                </Component>
-            </Directory>
-            <Directory Id="dir491F4D4E37AD7E1BE6B3D0E7F3A72AD8" Name="ja-JP">
-                <Component Id="cmp7746FE0DEDBE5684F977FE2DB4787E3E" Guid="*" Win64="yes">
-                    <File Id="fil191AFECD354E11F36FD7B9C3550A8C3C" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\ja-JP\Xceed.Wpf.AvalonDock.resources.dll" />
                 </Component>
             </Directory>
             <Directory Id="dir447EB06E547F3575E011CE0F1CF9028B" Name="PawnIo">
@@ -861,22 +822,9 @@
                     <File Id="fil8F1140EE2A5793A1829F5F1D793662D9" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\ProcessList\Processes.json" />
                 </Component>
             </Directory>
-            <Directory Id="dir339F53F3A11C56B053FD1FEC9B438810" Name="pt-BR">
-                <Component Id="cmp78E3AC4B6177179C5F50ECB1A8B16D85" Guid="*" Win64="yes">
-                    <File Id="fil449CD491C0135989D68E91371269A3B8" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\pt-BR\Xceed.Wpf.AvalonDock.resources.dll" />
-                </Component>
-            </Directory>
-            <Directory Id="dirBD3668345143F8EFDFB86A9B73810966" Name="ro">
-                <Component Id="cmp1540E6C17030090C628A142AB815893D" Guid="*" Win64="yes">
-                    <File Id="filA53F285204ABC84BDD30D704D3AD1488" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\ro\Xceed.Wpf.AvalonDock.resources.dll" />
-                </Component>
-            </Directory>
             <Directory Id="dirE9205C68F964857267FD3312DBFF9A91" Name="ru">
                 <Component Id="cmpC873D207335D245293F8991C675338F3" Guid="*" Win64="yes">
                     <File Id="fil964FE21AB56A95D400514F68DB5347E8" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\ru\Microsoft.Win32.TaskScheduler.resources.dll" />
-                </Component>
-                <Component Id="cmp0D4BE05FC1DE55590C9709CA01911525" Guid="*" Win64="yes">
-                    <File Id="fil4C2ED72F2BA64BA2A890779CC3B77DA4" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\ru\Xceed.Wpf.AvalonDock.resources.dll" />
                 </Component>
             </Directory>
             <Directory Id="dir58E8247E2885C01898CAD009F9EFD8BA" Name="runtimes">
@@ -1171,11 +1119,6 @@
                     </Component>
                 </Directory>
             </Directory>
-            <Directory Id="dir8FBB04D7AB5FE55FCF40758128EC763E" Name="sv">
-                <Component Id="cmpC21D9CCB5856693FB3CE2A23AFB7DD83" Guid="*" Win64="yes">
-                    <File Id="fil75EA045A69F3E238DA47EBBABBF5DCD8" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\sv\Xceed.Wpf.AvalonDock.resources.dll" />
-                </Component>
-            </Directory>
             <Directory Id="dir267FDE00972E783C6EEB6037DC7B7302" Name="vulkan">
                 <Component Id="cmp180F89399DB44A23AF038948269F5F1D" Guid="*" Win64="yes">
                     <File Id="fil8DFB7CCC5AC390844CDF3751846C4173" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\vulkan\cfx_osd_vklayer.dll" />
@@ -1195,11 +1138,6 @@
             <Directory Id="dir8C5E37FA87D1897FFB78337F53EB198C" Name="zh-CN">
                 <Component Id="cmpFA6D9FD1AAA2046A7577475784CE8BCC" Guid="*" Win64="yes">
                     <File Id="fil9AE873A7FEB47AAC64F449F1E25BB97F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\zh-CN\Microsoft.Win32.TaskScheduler.resources.dll" />
-                </Component>
-            </Directory>
-            <Directory Id="dir4A8DD77DBC79775EC39CACBC8AA06107" Name="zh-Hans">
-                <Component Id="cmp11A3FE50B66CC04F854A4486A5199C89" Guid="*" Win64="yes">
-                    <File Id="fil6EE1E4B1FB2A7DF0A95E3D283E73ADFA" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\zh-Hans\Xceed.Wpf.AvalonDock.resources.dll" />
                 </Component>
             </Directory>
         </DirectoryRef>
@@ -1403,10 +1341,6 @@
             <ComponentRef Id="cmpA5817A2BB296EF3C39CAFA8A07CD6B59" />
             <ComponentRef Id="cmp8E8EA57B48D2BD63C9E8D3EC582861D3" />
             <ComponentRef Id="cmp017BFB3832A5B110A2B3A350E13F2A5C" />
-            <ComponentRef Id="cmpB5AC76F2952CC9DFFEAE55F2225097DA" />
-            <ComponentRef Id="cmp2A23BAA07F6AEF1BAC39F167324A8F3A" />
-            <ComponentRef Id="cmpD2BBFD2B0371F68A1185CC644A1BEA64" />
-            <ComponentRef Id="cmpFFB651FFCBD1B293A7B0FE113C056F8F" />
             <ComponentRef Id="cmpC85BD7478E073743A39F17DF06865203" />
             <ComponentRef Id="cmpBDF72E996B087D1367AD89DD1F55CCE1" />
             <ComponentRef Id="cmp95FB4709CCA218FC84A8C37D04D77DE5" />
@@ -1457,23 +1391,16 @@
             <ComponentRef Id="cmpB2736CB29B2E9091CE1C46A1E5FA641D" />
             <ComponentRef Id="cmpDF3BBCD935812DF3C10C58CEAA49EFF2" />
             <ComponentRef Id="cmp7A9FB47EE33B6D8D3B9B111257021ECB" />
-            <ComponentRef Id="cmpE3F8869BEF0F274473285F8661074660" />
             <ComponentRef Id="cmp55E09061A1DF30E9878313719FAE6664" />
             <ComponentRef Id="cmp899508076A55BF753F74CB0DFA5743E3" />
-            <ComponentRef Id="cmp5C894AE3FF956FCDDF4DFFE3BA89B9C1" />
             <ComponentRef Id="cmp5A7026E0896D194B82895F7742EE8E12" />
-            <ComponentRef Id="cmp6EFE3E0288B5FA57D98FB920AB342897" />
             <ComponentRef Id="cmp5BA55150B20FDB5D6A2679B4DDE154F0" />
             <ComponentRef Id="cmpB448414C7B3963A581067103B898A290" />
-            <ComponentRef Id="cmp3EB7F17B0DCBDF3729FDAAAF0CF6B665" />
             <ComponentRef Id="cmpEEF8583F33AC9DCDC349C22B5162CEF5" />
             <ComponentRef Id="cmpFE4DB43903D5E98C8998C262D9986373" />
             <ComponentRef Id="cmp5846B05895F916FC3471933452E58AC2" />
             <ComponentRef Id="cmp916768CCA957B024FA3E5120C4E792E2" />
-            <ComponentRef Id="cmpFB118A47202A6B98ED49B3C952C22F35" />
             <ComponentRef Id="cmpA2349B128022FD9468B4B0472DF8814A" />
-            <ComponentRef Id="cmp0B9527E49327DF46736C8F6F58634C01" />
-            <ComponentRef Id="cmp7746FE0DEDBE5684F977FE2DB4787E3E" />
             <ComponentRef Id="cmp4E232508EC359C2D3789E0AA5CB2C43B" />
             <ComponentRef Id="cmpCC818C0081BEDC340AC78DEC9FCA17C4" />
             <ComponentRef Id="cmpC39E25791A464CA675CEA5231C3504BD" />
@@ -1483,10 +1410,7 @@
             <ComponentRef Id="cmpA4F6ACC1ED64F9C0B54E2615B754768A" />
             <ComponentRef Id="cmpF37BFD7D421F2D1E496A6D81AD8CD4CF" />
             <ComponentRef Id="cmpA6A9ED7D0D14A0EB3F1B6598611EC6CB" />
-            <ComponentRef Id="cmp78E3AC4B6177179C5F50ECB1A8B16D85" />
-            <ComponentRef Id="cmp1540E6C17030090C628A142AB815893D" />
             <ComponentRef Id="cmpC873D207335D245293F8991C675338F3" />
-            <ComponentRef Id="cmp0D4BE05FC1DE55590C9709CA01911525" />
             <ComponentRef Id="cmp8D120419F902CACAB21742932E1510C4" />
             <ComponentRef Id="cmp3040E05488B86DD2ADFC4DC1A19DB683" />
             <ComponentRef Id="cmp9B11D9A794FA6F1BE889B373008ACE41" />
@@ -1537,13 +1461,11 @@
             <ComponentRef Id="cmpCB9D5CA7463DAF6300BBC9DE8E3CC81D" />
             <ComponentRef Id="cmp27E6F79BFDC24D392F37F3C531E3B73E" />
             <ComponentRef Id="cmp7C4098BF66F05EC6BE7C6AD21C4B08C0" />
-            <ComponentRef Id="cmpC21D9CCB5856693FB3CE2A23AFB7DD83" />
             <ComponentRef Id="cmp180F89399DB44A23AF038948269F5F1D" />
             <ComponentRef Id="cmp4108CF02A0313094920AFAA8876964D5" />
             <ComponentRef Id="cmpE8ADFC154A21DB86EB329B9B79A19925" />
             <ComponentRef Id="cmp268C09BFFDE718BF682A093E549AE57D" />
             <ComponentRef Id="cmpFA6D9FD1AAA2046A7577475784CE8BCC" />
-            <ComponentRef Id="cmp11A3FE50B66CC04F854A4486A5199C89" />
         </ComponentGroup>
     </Fragment>
 </Wix>
