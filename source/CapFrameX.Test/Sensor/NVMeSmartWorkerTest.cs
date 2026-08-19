@@ -62,6 +62,35 @@ namespace CapFrameX.Test.Sensor
             }
         }
 
+        [TestMethod]
+        public void CloseCancelsPendingHealthRead()
+        {
+            var drive = new CancellableBlockingNvmeDrive();
+            var handle = new SafeFileHandle(new IntPtr(1), ownsHandle: false);
+            var smart = new NVMeSmart(2, handle, drive);
+
+            try
+            {
+                smart.RequestHealthInfo();
+                Assert.IsTrue(drive.ReadStarted.WaitOne(1000), "The health worker did not start its read.");
+
+                var stopwatch = Stopwatch.StartNew();
+                smart.Close();
+                stopwatch.Stop();
+
+                Assert.AreEqual(1, drive.CancellationCount, "Closing did not cancel the active NVMe request.");
+                Assert.IsTrue(drive.ReadCompleted.WaitOne(0), "The health worker did not leave the cancelled read.");
+                Assert.IsTrue(stopwatch.ElapsedMilliseconds < 1000, "Closing waited for the worker timeout instead of cancelling the request.");
+            }
+            finally
+            {
+                drive.AllowCompletion.Set();
+                smart.Close();
+                handle.Dispose();
+                drive.Dispose();
+            }
+        }
+
         private sealed class BlockingNvmeDrive : INVMeDrive, IDisposable
         {
             private int _healthReadCount;
@@ -84,6 +113,52 @@ namespace CapFrameX.Test.Sensor
                 ReadStarted.Set();
                 AllowCompletion.WaitOne();
                 data = new NVME_HEALTH_INFO_LOG();
+                return true;
+            }
+
+            public SafeHandle Identify(StorageInfo storageInfo)
+            {
+                return null;
+            }
+
+            public bool IdentifyController(SafeHandle hDevice, out NVME_IDENTIFY_CONTROLLER_DATA data)
+            {
+                data = new NVME_IDENTIFY_CONTROLLER_DATA();
+                return false;
+            }
+        }
+
+        private sealed class CancellableBlockingNvmeDrive : INVMeDrive, ICancellableNVMeDrive, IDisposable
+        {
+            private int _cancellationCount;
+
+            public ManualResetEvent AllowCompletion { get; } = new ManualResetEvent(false);
+
+            public int CancellationCount => Volatile.Read(ref _cancellationCount);
+
+            public ManualResetEvent ReadCompleted { get; } = new ManualResetEvent(false);
+
+            public ManualResetEvent ReadStarted { get; } = new ManualResetEvent(false);
+
+            public void CancelPendingIo()
+            {
+                Interlocked.Increment(ref _cancellationCount);
+                AllowCompletion.Set();
+            }
+
+            public void Dispose()
+            {
+                AllowCompletion.Dispose();
+                ReadCompleted.Dispose();
+                ReadStarted.Dispose();
+            }
+
+            public bool HealthInfoLog(SafeHandle hDevice, out NVME_HEALTH_INFO_LOG data)
+            {
+                ReadStarted.Set();
+                AllowCompletion.WaitOne();
+                data = new NVME_HEALTH_INFO_LOG();
+                ReadCompleted.Set();
                 return true;
             }
 

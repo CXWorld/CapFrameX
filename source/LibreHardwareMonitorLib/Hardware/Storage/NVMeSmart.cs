@@ -162,6 +162,9 @@ public class NVMeSmart : IDisposable
 
         if (_healthWorker != null)
         {
+            if (NVMeDrive is ICancellableNVMeDrive cancellableDrive)
+                cancellableDrive.CancelPendingIo();
+
             _healthReadRequested.Set();
             _healthWorker.Join(InitialReadWaitMilliseconds);
         }

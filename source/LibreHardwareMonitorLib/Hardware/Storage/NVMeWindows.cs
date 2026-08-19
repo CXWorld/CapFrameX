@@ -17,14 +17,18 @@ using Windows.Win32.System.Ioctl;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
-internal sealed class NVMeWindows : INVMeDrive
+internal sealed class NVMeWindows : INVMeDrive, ICancellableNVMeDrive
 {
     private const int CancelCompletionWaitMilliseconds = 250;
+    private const int CancellationRetryMilliseconds = 50;
     private const int ErrorIoPending = 997;
     private const int IoTimeoutMilliseconds = 1000;
 
     private readonly string _deviceId;
+    private readonly object _requestSync = new();
+    private PendingIo _activeRequest;
     private int _ioPending;
+    private int _shutdownRequested;
 
     public NVMeWindows(string deviceId)
     {
@@ -111,6 +115,16 @@ internal sealed class NVMeWindows : INVMeDrive
         return result;
     }
 
+    public void CancelPendingIo()
+    {
+        Interlocked.Exchange(ref _shutdownRequested, 1);
+
+        lock (_requestSync)
+        {
+            _activeRequest?.Cancel();
+        }
+    }
+
     public static SafeHandle IdentifyDevice(StorageInfo storageInfo)
     {
         SafeFileHandle handle = PInvoke.CreateFile(
@@ -139,6 +153,9 @@ internal sealed class NVMeWindows : INVMeDrive
         BufferHandler initializeBuffer,
         BufferHandler consumeBuffer)
     {
+        if (Volatile.Read(ref _shutdownRequested) != 0)
+            return false;
+
         if (Interlocked.CompareExchange(ref _ioPending, 1, 0) != 0)
             return false;
 
@@ -147,8 +164,34 @@ internal sealed class NVMeWindows : INVMeDrive
 
         try
         {
+            if (Volatile.Read(ref _shutdownRequested) != 0)
+                return false;
+
             request = new PendingIo(hDevice, bufferSize);
             initializeBuffer(request.Buffer);
+            request.ArmTimeout(
+                IoTimeoutMilliseconds,
+                () => Log.Warning(
+                    "NVMe {Operation} for {DeviceId} exceeded {TimeoutMilliseconds} ms; cancelling the outstanding I/O.",
+                    operation,
+                    _deviceId,
+                    IoTimeoutMilliseconds));
+
+            lock (_requestSync)
+            {
+                if (Volatile.Read(ref _shutdownRequested) != 0)
+                    return false;
+
+                _activeRequest = request;
+            }
+
+            // Cancellation can race with publishing the request. In that case no native I/O
+            // has been issued yet and the request can be completed locally.
+            if (request.IsCancellationRequested)
+            {
+                request.MarkCompleted();
+                return false;
+            }
 
             bool completed = DeviceIoControlNative(
                 request.DeviceHandle,
@@ -164,61 +207,86 @@ internal sealed class NVMeWindows : INVMeDrive
             {
                 int error = Marshal.GetLastWin32Error();
                 if (error != ErrorIoPending)
-                    return false;
-
-                if (!request.Completion.WaitOne(IoTimeoutMilliseconds))
                 {
-                    Log.Warning(
-                        "NVMe {Operation} for {DeviceId} exceeded {TimeoutMilliseconds} ms; cancelling the outstanding I/O.",
-                        operation,
-                        _deviceId,
-                        IoTimeoutMilliseconds);
+                    request.MarkCompleted();
+                    return false;
+                }
 
-                    CancelIoExNative(request.DeviceHandle, request.OverlappedPointer);
+                bool cancellationPending = request.IsCancellationRequested;
+                int completionWaitMilliseconds = cancellationPending
+                    ? CancelCompletionWaitMilliseconds
+                    : IoTimeoutMilliseconds;
+                bool completionSignalled = request.Completion.WaitOne(completionWaitMilliseconds);
+
+                if (!completionSignalled && !cancellationPending)
+                {
+                    request.CancelForTimeout();
+                    completionSignalled = request.Completion.WaitOne(CancelCompletionWaitMilliseconds);
+                }
+
+                if (!completionSignalled)
+                {
+                    request.Cancel();
 
                     // Cancellation normally completes immediately. If a faulty driver does not
                     // acknowledge it in time, retain all native state and clean it up only after
                     // the completion event is eventually signalled. The sensor worker can return
                     // now without freeing memory still owned by the kernel.
-                    if (!request.Completion.WaitOne(CancelCompletionWaitMilliseconds))
+                    Log.Warning(
+                        "NVMe {Operation} cancellation for {DeviceId} did not complete within {TimeoutMilliseconds} ms; suppressing further requests until the driver completes it.",
+                        operation,
+                        _deviceId,
+                        CancelCompletionWaitMilliseconds);
+
+                    request.RegisterDeferredCleanup(() =>
                     {
-                        Log.Warning(
-                            "NVMe {Operation} cancellation for {DeviceId} did not complete within {TimeoutMilliseconds} ms; suppressing further requests until the driver completes it.",
+                        Interlocked.Exchange(ref _ioPending, 0);
+                        Log.Debug(
+                            "NVMe {Operation} cancellation for {DeviceId} completed asynchronously; requests are enabled again.",
                             operation,
-                            _deviceId,
-                            CancelCompletionWaitMilliseconds);
-
-                        deferredCleanup = true;
-                        request.RegisterDeferredCleanup(() =>
-                        {
-                            Interlocked.Exchange(ref _ioPending, 0);
-                            Log.Debug(
-                                "NVMe {Operation} cancellation for {DeviceId} completed asynchronously; requests are enabled again.",
-                                operation,
-                                _deviceId);
-                        });
-                        request = null;
-                        return false;
-                    }
-
-                    GetOverlappedResultNative(request.DeviceHandle, request.OverlappedPointer, out _, false);
+                            _deviceId);
+                    });
+                    deferredCleanup = true;
                     return false;
                 }
 
-                if (!GetOverlappedResultNative(request.DeviceHandle, request.OverlappedPointer, out _, false))
+                bool ioSucceeded = GetOverlappedResultNative(request.DeviceHandle, request.OverlappedPointer, out _, false);
+                request.MarkCompleted();
+                if (!ioSucceeded)
                     return false;
             }
+            else
+            {
+                request.MarkCompleted();
+            }
+
+            if (request.IsCancellationRequested)
+                return false;
 
             consumeBuffer(request.Buffer);
             return true;
         }
         finally
         {
+            ClearActiveRequest(request);
+
             if (!deferredCleanup)
             {
                 request?.Dispose();
                 Interlocked.Exchange(ref _ioPending, 0);
             }
+        }
+    }
+
+    private void ClearActiveRequest(PendingIo request)
+    {
+        if (request == null)
+            return;
+
+        lock (_requestSync)
+        {
+            if (ReferenceEquals(_activeRequest, request))
+                _activeRequest = null;
         }
     }
 
@@ -252,10 +320,14 @@ internal sealed class NVMeWindows : INVMeDrive
     {
         private readonly object _lifetimeLock = new();
         private readonly SafeHandle _safeHandle;
+        private Timer _cancellationTimer;
+        private bool _cancellationRequested;
         private Action _deferredCleanup;
         private bool _disposed;
         private bool _handleReferenceAdded;
+        private bool _ioCompleted;
         private RegisteredWaitHandle _registeredWait;
+        private Action _timeoutCallback;
 
         public unsafe PendingIo(SafeHandle safeHandle, int bufferSize)
         {
@@ -292,9 +364,91 @@ internal sealed class NVMeWindows : INVMeDrive
 
         public unsafe NativeOverlapped* OverlappedPointer => (NativeOverlapped*)Overlapped;
 
+        public bool IsCancellationRequested
+        {
+            get
+            {
+                lock (_lifetimeLock)
+                {
+                    return _cancellationRequested;
+                }
+            }
+        }
+
+        public void ArmTimeout(int timeoutMilliseconds, Action timeoutCallback)
+        {
+            lock (_lifetimeLock)
+            {
+                if (_disposed)
+                    return;
+
+                _timeoutCallback = timeoutCallback;
+                _cancellationTimer = new Timer(
+                    _ => CancelForTimeout(),
+                    null,
+                    timeoutMilliseconds,
+                    Timeout.Infinite);
+            }
+        }
+
+        public unsafe void Cancel()
+        {
+            lock (_lifetimeLock)
+            {
+                if (_disposed)
+                    return;
+
+                _cancellationRequested = true;
+                _timeoutCallback = null;
+
+                if (_ioCompleted)
+                    return;
+
+                CancelIoExNative(DeviceHandle, OverlappedPointer);
+                ScheduleCancellationRetry();
+            }
+        }
+
+        public unsafe void CancelForTimeout()
+        {
+            Action timeoutCallback = null;
+
+            lock (_lifetimeLock)
+            {
+                if (_disposed || _ioCompleted)
+                    return;
+
+                if (!_cancellationRequested)
+                {
+                    _cancellationRequested = true;
+                    timeoutCallback = _timeoutCallback;
+                    _timeoutCallback = null;
+                }
+
+                CancelIoExNative(DeviceHandle, OverlappedPointer);
+                ScheduleCancellationRetry();
+            }
+
+            timeoutCallback?.Invoke();
+        }
+
+        public void MarkCompleted()
+        {
+            lock (_lifetimeLock)
+            {
+                if (_disposed)
+                    return;
+
+                _ioCompleted = true;
+                _timeoutCallback = null;
+                _cancellationTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+            }
+        }
+
         public void Dispose()
         {
             RegisteredWaitHandle registeredWait;
+            Timer cancellationTimer;
             EventWaitHandle completion;
             IntPtr buffer;
             IntPtr overlapped;
@@ -305,6 +459,8 @@ internal sealed class NVMeWindows : INVMeDrive
                     return;
 
                 _disposed = true;
+                cancellationTimer = _cancellationTimer;
+                _cancellationTimer = null;
                 registeredWait = _registeredWait;
                 _registeredWait = null;
                 completion = Completion;
@@ -315,6 +471,7 @@ internal sealed class NVMeWindows : INVMeDrive
                 Overlapped = IntPtr.Zero;
             }
 
+            cancellationTimer?.Dispose();
             registeredWait?.Unregister(null);
             completion?.Dispose();
 
@@ -353,6 +510,7 @@ internal sealed class NVMeWindows : INVMeDrive
             try
             {
                 GetOverlappedResultNative(DeviceHandle, OverlappedPointer, out _, false);
+                MarkCompleted();
             }
             finally
             {
@@ -360,6 +518,21 @@ internal sealed class NVMeWindows : INVMeDrive
                 Dispose();
                 cleanup?.Invoke();
             }
+        }
+
+        private void ScheduleCancellationRetry()
+        {
+            if (_cancellationTimer == null)
+            {
+                _cancellationTimer = new Timer(
+                    _ => CancelForTimeout(),
+                    null,
+                    CancellationRetryMilliseconds,
+                    CancellationRetryMilliseconds);
+                return;
+            }
+
+            _cancellationTimer.Change(CancellationRetryMilliseconds, CancellationRetryMilliseconds);
         }
     }
 }
