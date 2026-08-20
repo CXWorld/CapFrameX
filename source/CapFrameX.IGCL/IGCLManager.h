@@ -78,7 +78,11 @@ struct IgclDeviceInfo
 	uint32_t Adapter_Property_Flag;
 };
 
+#ifdef CAPFRAMEXIGCL_EXPORTS
 #define IGCL_API __declspec(dllexport)
+#else
+#define IGCL_API __declspec(dllimport)
+#endif
 
 extern "C" IGCL_API bool IntializeIgcl();
 
