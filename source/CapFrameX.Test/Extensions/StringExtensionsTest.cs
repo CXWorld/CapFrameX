@@ -1,4 +1,4 @@
-﻿using CapFrameX.Extensions;
+using CapFrameX.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CapFrameX.Test
@@ -18,6 +18,14 @@ namespace CapFrameX.Test
             Assert.AreEqual("ACOdyssey", gameName);
             Assert.AreEqual("2018-11-16", creationDate);
             Assert.AreEqual("220300", recordTime);
+        }
+
+        [TestMethod]
+        public void GetSha1_MatchesKnownValue()
+        {
+            Assert.AreEqual(
+                "A9993E364706816ABA3E25717850C26C9CD0D89D",
+                "abc".GetSha1());
         }
     }
 }
