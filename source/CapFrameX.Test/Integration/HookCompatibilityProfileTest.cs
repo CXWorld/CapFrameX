@@ -79,6 +79,26 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void Catalog_UsesGenericD3D12RouteForStalker2()
+        {
+            Assert.IsTrue(HookCompatibilityProfileCatalog.TryGet(
+                "Stalker2-Win64-Shipping.exe",
+                out HookCompatibilityProfile profile));
+            Assert.IsFalse(profile.RequiresEarlyInjection);
+            Assert.IsNull(profile.EarlyInjectionModule);
+            Assert.IsFalse(profile.DisableDxgiSwapchainReleaseHook);
+            Assert.IsFalse(profile.EnableXeFgNativePresentQueueRoute);
+            Assert.IsTrue(profile.EnableGenericD3D12PresentRoute);
+            Assert.AreEqual(
+                NativeHookCompatibilityFlags.EnableGenericD3D12PresentRoute,
+                profile.NativeFlags);
+            Assert.AreEqual(TimeSpan.Zero, profile.InjectionDelay);
+            CollectionAssert.DoesNotContain(
+                new System.Collections.Generic.List<HookCompatibilityProfile>(
+                    HookCompatibilityProfileCatalog.GetEarlyInjectionProfiles()), profile);
+        }
+
+        [TestMethod]
         public void Catalog_UsesGenericD3D12RouteForDyingLightTheBeast()
         {
             Assert.IsTrue(HookCompatibilityProfileCatalog.TryGet(
