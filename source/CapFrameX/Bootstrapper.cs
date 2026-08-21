@@ -32,6 +32,7 @@ using DryIoc;
 using Microsoft.Extensions.Logging;
 using Prism.DryIoc;
 using Prism.Events;
+using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Mvvm;
 using Prism.Regions;
@@ -46,7 +47,7 @@ using System.Windows;
 
 namespace CapFrameX
 {
-    public class Bootstrapper : DryIocBootstrapper
+    public partial class App
     {
         // Keeps the hook-free OSD bridge alive for the app lifetime.
         private CapFrameX.OSD.Integration.OsdOverlayBridge _osdOverlayBridge;
@@ -59,17 +60,33 @@ namespace CapFrameX
         // Streams per-frame PresentMon frametimes/display-times to the hook (PresentMon graph mode).
         private CapFrameX.OSD.Integration.HookFrametimePublisher _hookFrametimePublisher;
 
+        // The existing composition root uses DryIoc-specific registration APIs. PrismApplication
+        // exposes the container through Prism's abstraction, so unwrap it in one place.
+        private new IContainer Container => base.Container.GetContainer();
+
+        // Prism 7.2.0.1422 was compiled against DryIoc 4.0.7. DryIoc 4.1 changed the binary
+        // signature of Made.Of(), so PrismApplication's implementation throws a
+        // MissingMethodException before the container can be created. Recompile the equivalent
+        // rule set here against the DryIoc version referenced by this application.
+        protected override Rules CreateContainerRules()
+        {
+            return Rules.Default
+                .WithAutoConcreteTypeResolution()
+                .With(Made.Of(FactoryMethod.ConstructorWithResolvableArguments))
+                .WithDefaultIfAlreadyRegistered(IfAlreadyRegistered.Replace);
+        }
+
         /// <summary>
         /// While the splash screen is up, the shell stays minimized after its warm-up
         /// Show(); App reveals it via <see cref="PendingMainWindowState"/> as soon as the
-        /// bootstrapper is through, so the splash covers the shell construction and nothing
+        /// Prism initialization is through, so the splash covers the shell construction and nothing
         /// more.
         /// </summary>
         public bool DeferMainWindowRestore { get; set; }
 
         public WindowState? PendingMainWindowState { get; private set; }
 
-        protected override DependencyObject CreateShell()
+        protected override Window CreateShell()
         {
             using (StartupPerformanceLogger.Measure("Shell resolution and construction"))
             {
@@ -79,13 +96,13 @@ namespace CapFrameX
             }
         }
 
-        protected override void InitializeShell()
+        protected override void InitializeShell(Window shell)
         {
-            using (StartupPerformanceLogger.Measure("Bootstrapper.InitializeShell total"))
+            using (StartupPerformanceLogger.Measure("App.InitializeShell total"))
             {
                 using (StartupPerformanceLogger.Measure("Prism base shell initialization"))
                 {
-                    base.InitializeShell();
+                    base.InitializeShell(shell);
                 }
 
                 using (StartupPerformanceLogger.Measure("Application metadata logging"))
@@ -199,9 +216,9 @@ namespace CapFrameX
 
                 using (StartupPerformanceLogger.Measure("Shell configuration"))
                 {
-                    var shell = Container.Resolve<IShell>();
-                    shell.IsGpuAccelerationActive = config.IsGpuAccelerationActive;
-                    Application.Current.MainWindow = (Window)Shell;
+                    var shellContract = Container.Resolve<IShell>();
+                    shellContract.IsGpuAccelerationActive = config.IsGpuAccelerationActive;
+                    Application.Current.MainWindow = shell;
                 }
 
                 // get last tracked WindowState
@@ -231,15 +248,16 @@ namespace CapFrameX
             }
         }
 
-        protected override void ConfigureContainer()
+        protected override void OnInitialized()
         {
-            using (StartupPerformanceLogger.Measure("Bootstrapper.ConfigureContainer total"))
-            {
-                using (StartupPerformanceLogger.Measure("Prism base container configuration"))
-                {
-                    base.ConfigureContainer();
-                }
+            // InitializeShell already applies the persisted minimized/tray state. Prism's default
+            // implementation calls Show() and would reveal a window that was deliberately hidden.
+        }
 
+        protected override void RegisterTypes(IContainerRegistry containerRegistry)
+        {
+            using (StartupPerformanceLogger.Measure("App.RegisterTypes total"))
+            {
                 using (StartupPerformanceLogger.Measure("Powenetics channel initialization"))
                 {
                     PoweneticsChannelExtensions.Initialize();
@@ -422,14 +440,12 @@ namespace CapFrameX
             }
         }
 
-        protected override void ConfigureModuleCatalog()
+        protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
         {
             using (StartupPerformanceLogger.Measure("Module catalog configuration"))
             {
-                base.ConfigureModuleCatalog();
-
-                ModuleCatalog moduleCatalog = (ModuleCatalog)ModuleCatalog;
-                moduleCatalog.AddModule(typeof(CapFrameXViewRegion));
+                base.ConfigureModuleCatalog(moduleCatalog);
+                ((ModuleCatalog)moduleCatalog).AddModule(typeof(CapFrameXViewRegion));
             }
         }
 
@@ -438,7 +454,7 @@ namespace CapFrameX
             var loggerFactory = Container.Resolve<ILoggerFactory>();
             var version = Container.Resolve<IAppVersionProvider>().GetAppVersion().ToString();
             var utcTime = DateTime.UtcNow.TimeOfDay;
-            loggerFactory.CreateLogger<ILogger<Bootstrapper>>().LogInformation("CapFrameX {version} started at UTC {utcTime}", version, utcTime);
+            loggerFactory.CreateLogger<App>().LogInformation("CapFrameX {version} started at UTC {utcTime}", version, utcTime);
         }
 
         private void LogWindowState()
@@ -450,7 +466,7 @@ namespace CapFrameX
             double positionLeft = Application.Current.MainWindow.Left;
             double positionTop = Application.Current.MainWindow.Top;
 
-            loggerFactory.CreateLogger<ILogger<Bootstrapper>>().LogInformation("Window dimensions are {width} x {height}. Window position is {positionLeft} x {positionTop}", width, height, positionLeft, positionTop);
+            loggerFactory.CreateLogger<App>().LogInformation("Window dimensions are {width} x {height}. Window position is {positionLeft} x {positionTop}", width, height, positionLeft, positionTop);
         }
     }
 }
