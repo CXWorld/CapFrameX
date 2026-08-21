@@ -90,11 +90,15 @@
                             FontSize="18" PreviewKeyDown="CustomTitle_PreviewKeyDown" />
 
 						<!--Second bar chart with no values just to display the legend of the main bar chart without being inside the scrollviewer-->
-						<lvc:CartesianChart DockPanel.Dock="Top" Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Center" Width="600" MaxWidth="1000" 
-                            Margin="0 5 0 -20" FontSize="14" 
+						<lvc:CartesianChart DockPanel.Dock="Top" Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Center" Width="600" MaxWidth="1000"
+							Height="{Binding ElementName=ComparisonBarChartLegend, Path=ActualHeight}" MinHeight="50"
+							Margin="0 5 0 0" FontSize="14"
                             Series="{Binding ComparisonRowChartSeriesCollectionLegend}"
 						    Visibility="{Binding HasComparisonItems, Converter={StaticResource TrueToVisibleConverter}}" DisableAnimations="True"
 						    Hoverable="False" DataTooltip="{x:Null}" LegendLocation="Top">
+							<lvc:CartesianChart.ChartLegend>
+								<lvc:DefaultLegend x:Name="ComparisonBarChartLegend" />
+							</lvc:CartesianChart.ChartLegend>
 							<lvc:CartesianChart.AxisX>
 								<lvc:Axis Foreground="Transparent">
 									<lvc:Axis.Separator>
