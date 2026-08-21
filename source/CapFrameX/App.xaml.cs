@@ -13,6 +13,7 @@ using CapFrameX.Updater;
 using DryIoc;
 using EmbedIO;
 using Newtonsoft.Json;
+using Prism.DryIoc;
 using Serilog;
 using Serilog.Formatting.Compact;
 using System;
@@ -32,16 +33,15 @@ namespace CapFrameX
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application
+    public partial class App : PrismApplication
     {
-        private Bootstrapper _bootstrapper;
         private WebServer _webServer;
         private bool _isSingleInstance = true;
-        // Set when the app exits before the bootstrapper ran, so the shutdown sequence below has
+        // Set when the app exits before Prism initialization, so the shutdown sequence below has
         // nothing to tear down.
         private bool _skipShutdownSequence;
-        // Set when startup is aborted (e.g. missing admin rights) while OnStartup still runs
-        // to completion; the splash flow must not reveal the main window in that case.
+        // Set when startup is aborted (e.g. missing admin rights), so Prism and the splash flow
+        // are skipped.
         private bool _startupAborted;
         private Mutex _mutex;
 #if DEBUG
@@ -176,10 +176,13 @@ namespace CapFrameX
                     SetupExceptionHandling();
                 }
 
-                using (StartupPerformanceLogger.Measure("WPF startup event processing"))
+                using (StartupPerformanceLogger.Measure("Application startup preparation"))
                 {
-                    base.OnStartup(e);
+                    PrepareApplicationStartup();
                 }
+
+                if (_startupAborted)
+                    return;
 
                 bool showSplash;
                 using (StartupPerformanceLogger.Measure("Splash screen initialization"))
@@ -192,11 +195,11 @@ namespace CapFrameX
                         SplashScreenHost.Show();
                 }
 
-                using (StartupPerformanceLogger.Measure("Prism/DryIoc bootstrapper total"))
+                using (StartupPerformanceLogger.Measure("Prism/DryIoc application initialization"))
                 {
                     SplashScreenHost.SetStatus("Loading user interface...");
-                    _bootstrapper = new Bootstrapper { DeferMainWindowRestore = showSplash };
-                    _bootstrapper.Run(true);
+                    DeferMainWindowRestore = showSplash;
+                    base.OnStartup(e);
                 }
 
                 using (StartupPerformanceLogger.Measure("Main window reveal"))
@@ -209,7 +212,7 @@ namespace CapFrameX
                 {
                     try
                     {
-                        var appConfiguration = _bootstrapper.Container.Resolve<IAppConfiguration>();
+                        var appConfiguration = Container.Resolve<IAppConfiguration>();
                         if (!appConfiguration.SuppressFrameViewServiceWarning)
                         {
                             _ = Current.Dispatcher.BeginInvoke(
@@ -231,7 +234,7 @@ namespace CapFrameX
                         {
                             using (StartupPerformanceLogger.Measure("Embedded web server creation"))
                             {
-                                _webServer = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://*", false);
+                                _webServer = WebserverFactory.CreateWebServer(Container, "http://*", false);
                             }
                             await _webServer.RunAsync().ConfigureAwait(false);
                         }
@@ -240,7 +243,7 @@ namespace CapFrameX
                             _webServer?.Dispose();
                             using (StartupPerformanceLogger.Measure("Embedded web server fallback creation"))
                             {
-                                _webServer = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://*", true);
+                                _webServer = WebserverFactory.CreateWebServer(Container, "http://*", true);
                             }
                             await _webServer.RunAsync().ConfigureAwait(false);
                         }
@@ -249,7 +252,7 @@ namespace CapFrameX
 
 #if DEBUG
                 // Open debug monitor window in Debug mode
-                //var captureService = _bootstrapper.Container.Resolve<ICaptureService>();
+                //var captureService = Container.Resolve<ICaptureService>();
                 //_debugMonitorWindow = new DebugMonitorWindow(captureService);
                 //_debugMonitorWindow.Show();
 #endif
@@ -276,7 +279,7 @@ namespace CapFrameX
 
             try
             {
-                var pendingWindowState = _bootstrapper?.PendingMainWindowState;
+                var pendingWindowState = PendingMainWindowState;
 
                 if (pendingWindowState.HasValue && !_startupAborted && Current.MainWindow != null)
                 {
@@ -487,7 +490,7 @@ namespace CapFrameX
 
             try
             {
-                var sensorService = _bootstrapper.Container.Resolve<ISensorService>();
+                var sensorService = Container.Resolve<ISensorService>();
                 sensorService?.ShutdownSensorService();
             }
             catch (Exception ex)
@@ -497,7 +500,7 @@ namespace CapFrameX
 
             try
             {
-                var overlayService = _bootstrapper.Container.Resolve<IOverlayService>();
+                var overlayService = Container.Resolve<IOverlayService>();
                 overlayService?.ShutdownOverlayService();
             }
             catch (Exception ex)
@@ -507,7 +510,7 @@ namespace CapFrameX
 
             try
             {
-                var rtssService = _bootstrapper.Container.Resolve<IRTSSService>();
+                var rtssService = Container.Resolve<IRTSSService>();
                 rtssService?.ClearOSD();
             }
             catch (Exception ex)
@@ -517,7 +520,7 @@ namespace CapFrameX
 
             try
             {
-                var pmdDriver = _bootstrapper.Container.Resolve<IPoweneticsDriver>();
+                var pmdDriver = Container.Resolve<IPoweneticsDriver>();
                 pmdDriver?.Disconnect();
             }
             catch (Exception ex)
@@ -527,7 +530,7 @@ namespace CapFrameX
 
             try
             {
-                var benchlabSerivce = _bootstrapper.Container.Resolve<IBenchlabService>();
+                var benchlabSerivce = Container.Resolve<IBenchlabService>();
                 benchlabSerivce?.ShutDownService();
             }
             catch (Exception ex)
@@ -545,7 +548,7 @@ namespace CapFrameX
             }
         }
 
-        private void ApplicationStartup(object sender, StartupEventArgs e)
+        private void PrepareApplicationStartup()
         {
             using (StartupPerformanceLogger.Measure("Administrator privilege check"))
             {
@@ -554,7 +557,9 @@ namespace CapFrameX
                     MessageBox.Show("Run CapFrameX as administrator. Right click on desktop shortcut" + Environment.NewLine
                         + "and got to Properties -> Shortcut -> Advanced then check option Run as administrator.");
                     _startupAborted = true;
+                    _skipShutdownSequence = true;
                     Current.Shutdown();
+                    return;
                 }
             }
 

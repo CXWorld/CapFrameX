@@ -16,24 +16,24 @@
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
     <DefineConstants>Debug;CapFrameXInstaller.BinaryDir=$(RepoRoot)\source\CapFrameX\bin\x64\$(Configuration)\net9.0-windows</DefineConstants>
     <SuppressValidation>False</SuppressValidation>
-    <SuppressIces>ICE57</SuppressIces>
+    <SuppressIces>ICE57;ICE61</SuppressIces>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
     <DefineConstants>CapFrameXInstaller.BinaryDir=$(RepoRoot)\source\CapFrameX\bin\x64\$(Configuration)\net9.0-windows</DefineConstants>
-    <SuppressIces>ICE57</SuppressIces>
+    <SuppressIces>ICE57;ICE61</SuppressIces>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <DefineConstants>Debug;CapFrameXInstaller.BinaryDir=$(RepoRoot)\source\CapFrameX\bin\x64\$(Configuration)\net9.0-windows</DefineConstants>
     <SuppressValidation>False</SuppressValidation>
-    <SuppressIces>ICE57</SuppressIces>
+    <SuppressIces>ICE57;ICE61</SuppressIces>
     <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <DefineConstants>CapFrameXInstaller.BinaryDir=$(RepoRoot)\source\CapFrameX\bin\x64\$(Configuration)\net9.0-windows</DefineConstants>
-    <SuppressIces>ICE57</SuppressIces>
+    <SuppressIces>ICE57;ICE61</SuppressIces>
     <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
