@@ -106,5 +106,24 @@ namespace CapFrameX.Test.PMD
 
             Assert.IsFalse(foundPowerSensors);
         }
+
+        [DataTestMethod]
+        [DataRow("\"C:\\Services\\Benchlab_Service\\PMD_Service.exe\"")]
+        [DataRow("C:\\Services\\PMD_Service.exe --service")]
+        [DataRow("C:\\Services\\pmd_service.EXE")]
+        public void IsLegacyServiceImagePath_RecognizesFormerServiceExecutable(string imagePath)
+        {
+            Assert.IsTrue(BenchlabService.IsLegacyServiceImagePath(imagePath));
+        }
+
+        [DataTestMethod]
+        [DataRow(null)]
+        [DataRow("")]
+        [DataRow("\"C:\\Services\\Benchlab_Service\\BL_Service.exe\"")]
+        [DataRow("C:\\Services\\PMD_Service.exe.backup")]
+        public void IsLegacyServiceImagePath_RejectsCurrentOrInvalidExecutable(string imagePath)
+        {
+            Assert.IsFalse(BenchlabService.IsLegacyServiceImagePath(imagePath));
+        }
     }
 }

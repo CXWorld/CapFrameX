@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using CapFrameX.Contracts.PMD;
+using Microsoft.Win32;
 
 namespace CapFrameX.PMD.Benchlab
 {
@@ -21,6 +22,7 @@ namespace CapFrameX.PMD.Benchlab
         private const string SERVICE_PROCESS_NAME = "BL_Service";
         private const string SERVICE_FOLDER_NAME = "benchlab-service";
         private const string SERVICE_EXECUTABLE_NAME = "BL_Service.exe";
+        private const string LEGACY_SERVICE_EXECUTABLE_NAME = "PMD_Service.exe";
 
         private static readonly TimeSpan DiscoveryTimeout = TimeSpan.FromSeconds(30);
         private static readonly TimeSpan PipeRequestTimeout = TimeSpan.FromSeconds(2);
@@ -33,6 +35,7 @@ namespace CapFrameX.PMD.Benchlab
         private readonly SemaphoreSlim _pipeRequestLock = new SemaphoreSlim(1, 1);
         private IDisposable _pmdSensorStreamDisposable;
         private Process _benchlabProcess;
+        private ChildProcessJob _benchlabProcessJob;
         private string _devicePipeName;
         private string _selectedDeviceId;
 
@@ -106,6 +109,7 @@ namespace CapFrameX.PMD.Benchlab
                 }
 
                 _isServiceRunning = true;
+                PublishSensorSample(initialSensorList);
             }
             catch
             {
@@ -277,6 +281,56 @@ namespace CapFrameX.PMD.Benchlab
             }
         }
 
+        private static bool IsLegacyWindowsService(string serviceName)
+        {
+            try
+            {
+                using (var serviceKey = Registry.LocalMachine.OpenSubKey(
+                    $@"SYSTEM\CurrentControlSet\Services\{serviceName}"))
+                {
+                    return IsLegacyServiceImagePath(serviceKey?.GetValue("ImagePath") as string);
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        internal static bool IsLegacyServiceImagePath(string imagePath)
+        {
+            if (string.IsNullOrWhiteSpace(imagePath))
+            {
+                return false;
+            }
+
+            var expandedImagePath = Environment.ExpandEnvironmentVariables(imagePath).Trim();
+            string executablePath;
+
+            if (expandedImagePath.StartsWith("\"", StringComparison.Ordinal))
+            {
+                var closingQuoteIndex = expandedImagePath.IndexOf('\"', 1);
+                if (closingQuoteIndex < 0)
+                {
+                    return false;
+                }
+
+                executablePath = expandedImagePath.Substring(1, closingQuoteIndex - 1);
+            }
+            else
+            {
+                var argumentSeparatorIndex = expandedImagePath.IndexOfAny(new[] { ' ', '\t' });
+                executablePath = argumentSeparatorIndex < 0
+                    ? expandedImagePath
+                    : expandedImagePath.Substring(0, argumentSeparatorIndex);
+            }
+
+            return string.Equals(
+                Path.GetFileName(executablePath),
+                LEGACY_SERVICE_EXECUTABLE_NAME,
+                StringComparison.OrdinalIgnoreCase);
+        }
+
         private static bool IsBenchlabProcessRunning()
         {
             var processes = Process.GetProcessesByName(SERVICE_PROCESS_NAME);
@@ -300,6 +354,19 @@ namespace CapFrameX.PMD.Benchlab
 
         private bool EnsureBenchlabServiceStarted()
         {
+            // The former PMD_Service uses the same Windows service name but does not
+            // expose the discovery pipe. Starting it first would cost the complete
+            // compatibility timeout before the bundled service can take over.
+            if (IsLegacyWindowsService(SERVICE_NAME))
+            {
+                if (IsWindowsServiceRunning(SERVICE_NAME) && !TryStopWindowsService(SERVICE_NAME))
+                {
+                    return false;
+                }
+
+                return TryStartBundledService();
+            }
+
             if (IsBenchlabRunning())
             {
                 return true;
@@ -369,6 +436,8 @@ namespace CapFrameX.PMD.Benchlab
                 return false;
             }
 
+            Process process = null;
+            ChildProcessJob processJob = null;
             try
             {
                 var startInfo = new ProcessStartInfo
@@ -379,11 +448,37 @@ namespace CapFrameX.PMD.Benchlab
                     CreateNoWindow = true
                 };
 
-                _benchlabProcess = Process.Start(startInfo);
-                return _benchlabProcess != null;
+                process = Process.Start(startInfo);
+                if (process == null)
+                {
+                    return false;
+                }
+
+                processJob = ChildProcessJob.Attach(process);
+                _benchlabProcess = process;
+                _benchlabProcessJob = processJob;
+                return true;
             }
             catch
             {
+                processJob?.Dispose();
+
+                try
+                {
+                    if (process != null && !process.HasExited)
+                    {
+                        process.Kill(true);
+                        process.WaitForExit(2000);
+                    }
+                }
+                catch
+                {
+                }
+                finally
+                {
+                    process?.Dispose();
+                }
+
                 return false;
             }
         }
@@ -415,13 +510,18 @@ namespace CapFrameX.PMD.Benchlab
                         return;
                     }
 
-                    var sensorSample = new SensorSample
-                    {
-                        TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
-                        Sensors = sensorList
-                    };
-                    _pmdSensorStream.OnNext(sensorSample);
+                    PublishSensorSample(sensorList);
                 });
+        }
+
+        private void PublishSensorSample(IList<Sensor> sensorList)
+        {
+            var sensorSample = new SensorSample
+            {
+                TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                Sensors = sensorList
+            };
+            _pmdSensorStream.OnNext(sensorSample);
         }
 
         private void HandleServiceError()
@@ -462,11 +562,14 @@ namespace CapFrameX.PMD.Benchlab
             _pmdSensorStreamDisposable = null;
 
             _pmdServiceStatusStream.OnNext(EPmdServiceStatus.Stopped);
-            Task.Run(() => StopExternalService());
+            StopExternalService();
         }
 
         private void StopExternalService()
         {
+            _benchlabProcessJob?.Dispose();
+            _benchlabProcessJob = null;
+
             TryStopWindowsService(SERVICE_NAME);
 
             try
@@ -478,10 +581,11 @@ namespace CapFrameX.PMD.Benchlab
                     {
                         if (!process.HasExited)
                         {
-                            process.CloseMainWindow();
-                            if (!process.WaitForExit(2000))
+                            var closeRequested = process.CloseMainWindow();
+                            if ((!closeRequested || !process.WaitForExit(500)) && !process.HasExited)
                             {
-                                process.Kill();
+                                process.Kill(true);
+                                process.WaitForExit(2000);
                             }
                         }
                     }
