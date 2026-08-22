@@ -58,7 +58,8 @@ occluded stalls its presents.
 ## Architecture
 
 ### Solution Structure
-The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (.NET Framework 4.7.2 / .NET Standard / .NET Core 3.1) and C++ native code.
+The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (.NET 9, .NET Standard 2.0,
+.NET Core 3.1, and one .NET Framework 4.7.2 installer-action project) and C++ native code.
 
 ### Layer Organization
 
@@ -99,16 +100,16 @@ persistence layer was dropped. netcoreapp3.1 is out of support; the packages war
 `SuppressTfmSupportBuildWarnings` silences in Host and Implementation.
 
 **Charting**
-- `CapFrameX.Charts/Core40` - Core charting engine
-- `CapFrameX.Charts/OxyPlot` - OxyPlot library
-- `CapFrameX.Charts/WpfView` - WPF chart controls
+- `CapFrameX.Charts/Core40` - Vendored LiveCharts core
+- `CapFrameX.Charts/WpfView` - Vendored LiveCharts WPF controls
+- OxyPlot is consumed through NuGet packages rather than a repository project
 
 ### Key Dependencies
-- Prism 7.0 (MVVM framework)
+- Prism 7.x (MVVM framework)
 - DryIoc (IoC container)
 - MahApps.Metro + MaterialDesign (UI styling)
 - System.Reactive (Rx)
-- OxyPlot (charting)
+- OxyPlot 2.1 NuGet packages (charting)
 - Serilog (logging)
 
 ### Build Output
