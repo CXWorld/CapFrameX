@@ -12,11 +12,16 @@ the OSD is built from source instead and these files are ignored.
 - `net9.0-windows/` — `CapFrameX.OSD.Interop.dll` (managed P/Invoke bridge, x64)
 - `native/cfx_osd_core.dll` — native renderer (x64, RelWithDebInfo)
 - `native/cfx_osd_hook.dll` — x64 DXGI hook, including exact swapchain capture through
-  Streamline's factory methods and XeSS-FG's public `GetSwapChainPtr` API, with RTTI fallback.
+  Streamline's factory methods, FidelityFX frame-generation creation APIs, and XeSS-FG's public
+  `GetSwapChainPtr` API, with RTTI fallback. Before FidelityFX replaces a swapchain, the hook
+  releases every overlay reference to its backbuffers so the old chain can be destroyed cleanly.
   Proxy rendering is bound to the application queue supplied during initialization and rejects
   queues whose D3D12 device does not own the swapchain. The generic D3D12 route retires resources
   when its observed queue changes and waits for a bounded, buffer-count-sized run of subsequent
-  Presents before rebuilding and submitting on the replacement queue.
+  Presents before rebuilding and submitting on the replacement queue. It retains FidelityFX
+  creation/destruction hooks as swapchain-lifecycle boundaries even while other vendor presentation
+  and status hooks are disabled. Once a FidelityFX replacement swapchain exists, its proxy Present
+  and API-provided queue are exclusive; independently driven native output Presents are suppressed.
 - `native/x86/` — x86 DXGI hook. The hook DLL alone: `HookInjector` resolves the target's 32-bit
   `LoadLibraryW` from the x64 app, so no separate 32-bit injector is shipped
 - `native/MinHook.LICENSE.txt` — BSD license for MinHook, statically linked into both DXGI hooks

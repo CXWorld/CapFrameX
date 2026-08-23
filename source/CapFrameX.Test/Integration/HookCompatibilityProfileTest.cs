@@ -79,6 +79,26 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void Catalog_UsesEarlyGenericFidelityFxRouteForTheLastOfUsPartII()
+        {
+            Assert.IsTrue(HookCompatibilityProfileCatalog.TryGet(
+                "tlou-ii.exe", out HookCompatibilityProfile profile));
+            Assert.IsTrue(profile.RequiresEarlyInjection);
+            Assert.AreEqual("d3d12.dll", profile.EarlyInjectionModule);
+            Assert.IsTrue(profile.DisableDxgiSwapchainReleaseHook);
+            Assert.IsFalse(profile.EnableXeFgNativePresentQueueRoute);
+            Assert.IsTrue(profile.EnableGenericD3D12PresentRoute);
+            Assert.AreEqual(
+                NativeHookCompatibilityFlags.DisableDxgiSwapchainReleaseHook |
+                NativeHookCompatibilityFlags.EnableGenericD3D12PresentRoute,
+                profile.NativeFlags);
+            Assert.AreEqual(TimeSpan.Zero, profile.InjectionDelay);
+            CollectionAssert.Contains(
+                new System.Collections.Generic.List<HookCompatibilityProfile>(
+                    HookCompatibilityProfileCatalog.GetEarlyInjectionProfiles()), profile);
+        }
+
+        [TestMethod]
         public void Catalog_UsesGenericD3D12RouteForStalker2()
         {
             Assert.IsTrue(HookCompatibilityProfileCatalog.TryGet(

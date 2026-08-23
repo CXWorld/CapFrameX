@@ -22,6 +22,11 @@
   <Profile executable="witcher3.exe"
            enableGenericD3D12PresentRoute="true"
            source="CapFrameX validation: Streamline was already loaded at attach and its pass-through proxy exposed no authoritative creation queue; bypass vendor proxy/status hooks and draw on native DXGI Presents using observed DIRECT command queues" />
+  <Profile executable="tlou-ii.exe"
+           disableDxgiSwapchainReleaseHook="true"
+           enableGenericD3D12PresentRoute="true"
+           earlyInjectionModule="d3d12.dll"
+           source="CapFrameX validation: inject when D3D12 is mapped; avoid the shared Release hook so the old flip-model swapchain can reach terminal destruction, use native DXGI Presents with observed DIRECT queues while frame generation is off, and make the API-provided FidelityFX proxy swapchain plus queue the exclusive render path while frame generation owns presentation" />
   <Profile executable="Stalker2-Win64-Shipping.exe"
            enableGenericD3D12PresentRoute="true"
            source="CapFrameX validation: the late-attached XeSS-FG proxy remained in synchronous pass-through mode without an authoritative context or initialization queue; bypass vendor proxy/status hooks and draw on native DXGI Presents using observed DIRECT command queues" />
