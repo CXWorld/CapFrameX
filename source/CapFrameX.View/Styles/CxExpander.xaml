@@ -18,7 +18,12 @@
 				<ControlTemplate TargetType="{x:Type ToggleButton}">
 					<!--The whole rail stays clickable; Handle is only the part that shows.-->
 					<Border x:Name="Rail" Width="28" Background="{TemplateBinding Background}">
-						<Grid x:Name="Handle" VerticalAlignment="Center" Margin="3 0 0 0">
+						<!--The tooltip belongs to the visible handle instead of the full-height rail.
+						    This keeps Left placement beside the control the user is actually hovering
+						    and therefore inside the window without a size-dependent mouse offset.-->
+						<Grid x:Name="Handle" VerticalAlignment="Center" Margin="3 0 0 0"
+						      ToolTip="{TemplateBinding Tag}"
+						      ToolTipService.Placement="Left">
 							<!--Second helping of the same translucent overlay the rail uses. The
 							    theme's HoverBackground is no help here: in the dark theme it is the
 							    very same colour as FilledBackground, so stacking is what produces a
@@ -78,14 +83,14 @@
 						        Background="{TemplateBinding Background}">
 							<ContentPresenter/>
 						</Border>
-						<!--Tag carries the tab's tooltip. Setting it as the expander's ToolTip instead
-						    would also pop it up over the expanded content, since ToolTipService walks
-						    up the tree from whatever the mouse is over.-->
+						<!--Tag carries the tab's tooltip. Forward it to the ToggleButton so its
+						    template can attach the tooltip only to the visible handle; setting it on
+						    the expander would also trigger it over the expanded content.-->
 						<ToggleButton x:Name="HeaderSite" Grid.Column="1"
 						              Style="{StaticResource CxRailExpanderTab}"
 						              Content="{TemplateBinding Header}"
 						              Foreground="{TemplateBinding Foreground}"
-						              ToolTip="{TemplateBinding Tag}"
+						              Tag="{TemplateBinding Tag}"
 						              IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"/>
 					</Grid>
 					<ControlTemplate.Triggers>
