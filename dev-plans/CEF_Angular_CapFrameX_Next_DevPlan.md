@@ -6,7 +6,7 @@
 
 ## Implementation Status
 
-Last updated: 2026-05-21
+Last updated: 2026-08-23
 
 The first backend/frontend bridge slice is implemented in `CapFrameX.Service` and `CapFrameX.UI`:
 
@@ -156,6 +156,13 @@ records.list(filter: RecordFilter): Promise<RecordSummary[]>
 records.load(id: string): Promise<RecordDetails>
 records.delete(id: string): Promise<void>
 
+comparisons.list(): Promise<ComparisonSetSummary[]>
+comparisons.get(id: string): Promise<ComparisonSetDetails>
+comparisons.create(request: CreateComparisonSetRequest): Promise<ComparisonSetDetails>
+comparisons.update(id: string, request: UpdateComparisonSetRequest): Promise<ComparisonSetDetails>
+comparisons.duplicate(id: string, name: string): Promise<ComparisonSetDetails>
+comparisons.delete(id: string): Promise<void>
+
 settings.get(): Promise<AppSettingsDto>
 settings.update(patch: AppSettingsPatch): Promise<AppSettingsDto>
 
@@ -213,6 +220,32 @@ Recommended: start with the hybrid model if it can be implemented without adding
 - First-class keyboard and game-benchmark workflows.
 - Clear live/recorded state distinction.
 - Responsive enough for laptop screens, but optimized primarily for desktop.
+
+### Persistent comparison sets (v2.0 requirement)
+
+Users must be able to save complex comparison setups as named sets and restore them after an application or service restart. A saved set is a first-class backend resource, not temporary Angular state or browser local storage.
+
+Functional scope:
+
+- Create a comparison from selected records and save it under a user-defined name and optional description.
+- List, open, update, rename, duplicate, and delete saved sets.
+- Preserve the ordered record membership and allow the same record to participate in multiple sets.
+- Preserve comparison-specific presentation state needed to reconstruct the workspace, including selected metrics, primary and secondary label contexts, grouping and sort settings, active chart/view, range selection, and per-record label, color, and visibility overrides where supported.
+- Track whether the open comparison differs from its saved revision and provide explicit `Save` and `Save As` actions. Do not silently overwrite a named set.
+- Remember the last opened saved set and restore its saved revision when the Comparison view is opened after restart.
+
+Persistence model:
+
+```text
+ComparisonSet (1) --> (N) ComparisonSetItem (N) --> (1) Record
+```
+
+- Store sets in the service-owned SQLite database so every desktop frontend observes the same data and portable-mode/database backup rules apply consistently.
+- Reference records by stable service IDs rather than filenames or frontend object identity.
+- Use a separate ordered membership entity. The existing `Suite -> Session` ownership relationship must not be reused directly because it would re-parent a session and prevent one record from belonging to multiple comparison sets.
+- Store a schema version and timestamps with each set. Updates must be transactional.
+- Persist references and user configuration, not calculated statistics, chart series, or copied capture data; derive those again from the current record data when the set is opened.
+- Keep a set loadable when referenced records are missing or have been deleted. Return unresolved items explicitly so the UI can warn the user and let them remove or replace those entries.
 
 ### Angular module boundaries
 
@@ -312,6 +345,8 @@ Replace the main WPF analysis workflow.
 Scope:
 
 - comparison views
+- persistent named comparison sets
+- comparison-set library with save, save-as, rename, duplicate, delete, and reopen workflows
 - percentile charts
 - sensor correlation
 - aggregation tables
@@ -322,6 +357,10 @@ Acceptance criteria:
 - Results match current CapFrameX calculations.
 - Chart performance is acceptable for large real-world captures.
 - Export formats remain compatible.
+- A saved comparison survives a full frontend and service restart and reopens with the same record order and comparison-specific presentation state.
+- A record can belong to multiple saved comparison sets without being duplicated or moved in record storage.
+- Missing record references are reported per item without preventing the remaining set from loading.
+- Set persistence is covered by a database migration and remains backward compatible through an explicit schema version.
 
 ### Phase 5 - Productization
 
@@ -412,6 +451,7 @@ Initial budgets:
 - DTO serialization compatibility
 - capture lifecycle state machine
 - record loading and statistics parity
+- comparison-set repository CRUD, ordered membership, transactional updates, and missing-record handling
 - settings migration
 
 ### Frontend tests
@@ -419,6 +459,7 @@ Initial budgets:
 - bridge client contract tests
 - feature component tests for critical workflows
 - chart data adapter tests
+- comparison-set hydration, dirty-state, save/save-as, and restart restoration tests
 - accessibility smoke checks for dialogs, menus, and keyboard navigation
 
 ### Integration tests
@@ -428,6 +469,7 @@ Initial budgets:
 - call `app.getVersion`
 - list fixture records
 - open fixture record
+- save a multi-record comparison set, restart the service/frontend, and reopen the same set
 - start/stop mocked capture
 - validate event stream
 
