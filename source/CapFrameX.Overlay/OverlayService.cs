@@ -99,7 +99,25 @@ namespace CapFrameX.Overlay
             _numberOfRuns = _appConfiguration.SelectedHistoryRuns;
             SecondMetric = _appConfiguration.RunHistorySecondMetric;
             ThirdMetric = _appConfiguration.RunHistoryThirdMetric;
-            IsOverlayActiveStream = new BehaviorSubject<bool>(_appConfiguration.IsOverlayActive);
+
+            bool configuredOverlayActive = _appConfiguration.IsOverlayActive;
+            bool initialOverlayActive = GetInitialOverlayActiveState(
+                configuredOverlayActive,
+                _rTSSService.IsRTSSInstalled(),
+                _appConfiguration.EnableHookFreeOverlay,
+                _appConfiguration.EnableHookOverlay);
+
+            if (configuredOverlayActive && !initialOverlayActive)
+            {
+                // A fresh configuration defaults the overlay to on and the renderer to RTSS. Do
+                // not retain an impossible active state when RTSS is absent: all consumers of the
+                // BehaviorSubject (including StateViewModel) must observe the same persisted state.
+                _appConfiguration.IsOverlayActive = false;
+                _logger.LogWarning(
+                    "Overlay was configured active, but the selected RTSS renderer is unavailable. Disabling the overlay.");
+            }
+
+            IsOverlayActiveStream = new BehaviorSubject<bool>(initialOverlayActive);
             _runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
 
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
@@ -271,6 +289,13 @@ namespace CapFrameX.Overlay
                     _rTSSService.SetIsCaptureTimerActive(false);
 
             });
+        }
+
+        internal static bool GetInitialOverlayActiveState(bool configuredOverlayActive,
+            bool isRTSSInstalled, bool enableHookFreeOverlay, bool enableHookOverlay)
+        {
+            return configuredOverlayActive &&
+                (isRTSSInstalled || enableHookFreeOverlay || enableHookOverlay);
         }
 
         public void SetDelayCountdown(double seconds)

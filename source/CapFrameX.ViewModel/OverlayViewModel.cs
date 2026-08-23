@@ -97,9 +97,11 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.IsOverlayActive; }
             set
             {
-                // Alt+O drives the overlay: allow activation when RTSS is installed OR when a
-                // hook path (hook-free DWM or in-game hook) is selected — both need no RTSS.
-                if (IsRTSSInstalled || _appConfiguration.EnableHookFreeOverlay || _appConfiguration.EnableHookOverlay)
+                // Missing renderer dependencies may prevent activation, but they must never trap
+                // a stale active state. In particular, a portable configuration can still contain
+                // IsOverlayActive=true after being moved to a machine without RTSS.
+                if (CanSetOverlayActive(value, IsRTSSInstalled,
+                    _appConfiguration.EnableHookFreeOverlay, _appConfiguration.EnableHookOverlay))
                 {
                     _appConfiguration.IsOverlayActive = value;
                     _overlayService.IsOverlayActiveStream.OnNext(value);
@@ -107,6 +109,12 @@ namespace CapFrameX.ViewModel
 
                 RaisePropertyChanged();
             }
+        }
+
+        internal static bool CanSetOverlayActive(bool requestedActive, bool isRTSSInstalled,
+            bool enableHookFreeOverlay, bool enableHookOverlay)
+        {
+            return !requestedActive || isRTSSInstalled || enableHookFreeOverlay || enableHookOverlay;
         }
 
         //public bool ToggleGlobalRTSSOSD
