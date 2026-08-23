@@ -1,3 +1,14 @@
+# GitHub Actions update policy
+#
+# This workflow uses floating major-version tags (for example, @v7).
+# Action publishers may move these tags to compatible minor or patch releases,
+# so updates can be picked up without changing this file; these references are
+# not immutable.
+#
+# Review release notes and test the workflow before moving to a new major
+# version, especially for runtime or runner changes, changed inputs/outputs,
+# deprecations, or security advisories.
+
 name: CapFrameX CI
 
 on:
