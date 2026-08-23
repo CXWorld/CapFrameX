@@ -639,7 +639,7 @@ namespace CapFrameX.Overlay
                     formatString = "MHz";
                     break;
                 case SensorType.Temperature:
-                    formatString = $"{GetDegreeCelciusUnitByCulture()} ";
+                    formatString = "°C ";
                     break;
                 case SensorType.Load:
                     formatString = "%  ";
@@ -686,21 +686,6 @@ namespace CapFrameX.Overlay
             }
 
             return formatString;
-        }
-
-        private string GetDegreeCelciusUnitByCulture()
-        {
-            try
-            {
-                if (CultureInfo.CurrentCulture.Name == new CultureInfo("en-DE").Name)
-                    return "బC";
-                else
-                    return "°C";
-            }
-            catch
-            {
-                return "°C";
-            }
         }
 
         private string GetGroupName(ISensorEntry sensor)
