@@ -62,9 +62,13 @@ namespace CapFrameX.Overlay
                 { "OnlinePcLatency", (nameof(IAppConfiguration.UsePcLatency), config => config.UsePcLatency) },
                 { "OnlineAmdFlmLatency", (nameof(IAppConfiguration.UseAmdFlmLatency), config => config.UseAmdFlmLatency) },
                 { HOOK_OVERLAY_STATUS_IDENTIFIER, (nameof(IAppConfiguration.EnableHookOverlay), config => config.EnableHookOverlay) },
+                { FRAME_GENERATION_TECHNOLOGY_IDENTIFIER, (nameof(IAppConfiguration.EnableHookOverlay), config => config.EnableHookOverlay) },
+                { FRAME_GENERATION_STATUS_IDENTIFIER, (nameof(IAppConfiguration.EnableHookOverlay), config => config.EnableHookOverlay) },
             };
 
         private const string HOOK_OVERLAY_STATUS_IDENTIFIER = "HookOverlayStatus";
+        private const string FRAME_GENERATION_TECHNOLOGY_IDENTIFIER = "FrameGenerationTechnology";
+        private const string FRAME_GENERATION_STATUS_IDENTIFIER = "FrameGenerationStatus";
 
         private readonly ISensorService _sensorService;
         private readonly IAppConfiguration _appConfiguration;

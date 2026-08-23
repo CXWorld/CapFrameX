@@ -120,6 +120,41 @@ namespace CapFrameX.Overlay
                         IsEntryEnabled = appConfiguration.EnableHookOverlay
                     },
 
+                    // Frame generation technology is inferred only from signals the in-game hook
+                    // already observes. This item is telemetry-only and never changes routing.
+                    new OverlayEntryWrapper("FrameGenerationTechnology")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = appConfiguration.EnableHookOverlay,
+                        Description = "Frame generation technology",
+                        GroupName = "Frame Generation",
+                        Value = "N/A",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = appConfiguration.EnableHookOverlay
+                    },
+
+                    // Frame generation activity is already tracked by the in-game hook for its
+                    // presentation routing. The native OSD substitutes the live values for these
+                    // placeholders; RTSS and the hook-free renderer deliberately have no source.
+                    new OverlayEntryWrapper("FrameGenerationStatus")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = appConfiguration.EnableHookOverlay,
+                        Description = "Frame generation status",
+                        GroupName = "Frame Generation",
+                        Value = "N/A",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = appConfiguration.EnableHookOverlay
+                    },
+
 					// CaptureTimer
 					new OverlayEntryWrapper("CaptureTimer")
                     {

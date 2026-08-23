@@ -24,17 +24,18 @@ using System.Threading.Tasks;
 namespace CapFrameX.Test.Overlay
 {
     /// <summary>
-    /// The "Overlay hook status" entry mirrors the status bar's Hook element into the overlay entry
-    /// list. Two properties matter and neither is obvious from the entry definition alone: its value
-    /// follows <see cref="IHookOverlayStatusService"/> rather than any sensor, and the entry has to
-    /// survive in the list while the in-game overlay is *not* the selected renderer — a disabled
-    /// entry is otherwise dropped when a configuration is loaded (GetIsEntryKeptInList), which would
-    /// make it vanish for everyone who uses RTSS or the hook-free OSD.
+    /// The hook-only entries have to survive in the list while the in-game overlay is *not* the
+    /// selected renderer. A disabled entry is otherwise dropped when a configuration is loaded
+    /// (GetIsEntryKeptInList), which would make it vanish for everyone who uses RTSS or the hook-free
+    /// OSD. The hook status value additionally follows <see cref="IHookOverlayStatusService"/> rather
+    /// than any sensor.
     /// </summary>
     [TestClass]
     public class HookOverlayStatusEntryTest
     {
         private const string HookOverlayStatusIdentifier = "HookOverlayStatus";
+        private const string FrameGenerationTechnologyIdentifier = "FrameGenerationTechnology";
+        private const string FrameGenerationStatusIdentifier = "FrameGenerationStatus";
 
         private string _testConfigFolder;
         private MockSensorService _mockSensorService;
@@ -131,7 +132,7 @@ namespace CapFrameX.Test.Overlay
         }
 
         [TestMethod]
-        public void Defaults_HookStatusFollowsTheCaptureServiceStatus()
+        public void Defaults_HookOnlyEntriesFollowTheCaptureServiceStatus()
         {
             var configuration = new Mock<IAppConfiguration>();
             configuration.Setup(x => x.EnableHookOverlay).Returns(true);
@@ -142,44 +143,93 @@ namespace CapFrameX.Test.Overlay
 
             int captureServiceStatusIndex = identifiers.IndexOf("CaptureServiceStatus");
             int hookStatusIndex = identifiers.IndexOf(HookOverlayStatusIdentifier);
+            int frameGenerationTechnologyIndex = identifiers.IndexOf(
+                FrameGenerationTechnologyIdentifier);
+            int frameGenerationStatusIndex = identifiers.IndexOf(FrameGenerationStatusIdentifier);
 
             Assert.AreNotEqual(-1, hookStatusIndex, "the hook status entry is missing from the defaults");
+            Assert.AreNotEqual(-1, frameGenerationTechnologyIndex,
+                "the frame generation technology entry is missing from the defaults");
+            Assert.AreNotEqual(-1, frameGenerationStatusIndex,
+                "the frame generation status entry is missing from the defaults");
 
             // Position is not cosmetic: a configuration written before this entry existed gets it
             // inserted behind its predecessor in the defaults list (OverlayEntryProvider migration).
             Assert.AreEqual(captureServiceStatusIndex + 1, hookStatusIndex,
                 "the hook status entry has to follow the capture service status");
+            Assert.AreEqual(hookStatusIndex + 1, frameGenerationTechnologyIndex,
+                "the frame generation technology entry has to follow the hook status");
+            Assert.AreEqual(frameGenerationTechnologyIndex + 1, frameGenerationStatusIndex,
+                "the frame generation status entry has to follow the technology");
         }
 
         [TestMethod]
-        public async Task HookOverlayOff_EntryStaysInTheListButDisabled()
+        public async Task HookOverlayOff_HookOnlyEntriesStayInTheListButDisabled()
         {
             var provider = CreateProvider(hookOverlayEnabled: false);
             await Task.Delay(500);
 
             var entries = await provider.GetOverlayEntries(updateFormats: false);
             var hookStatus = entries.SingleOrDefault(entry => entry.Identifier == HookOverlayStatusIdentifier);
+            var frameGenerationTechnology = entries.SingleOrDefault(
+                entry => entry.Identifier == FrameGenerationTechnologyIdentifier);
+            var frameGenerationStatus = entries.SingleOrDefault(
+                entry => entry.Identifier == FrameGenerationStatusIdentifier);
 
             Assert.IsNotNull(hookStatus,
                 "the entry must stay in the list so switching the OSD mode can flip it in place");
             Assert.IsFalse(hookStatus.IsEntryEnabled, "without the in-game overlay there is no hook to report");
             Assert.IsFalse(hookStatus.ShowOnOverlayIsEnabled, "a disabled entry must not be selectable for the OSD");
             Assert.AreEqual("Off", hookStatus.Value, "a disabled hook reports Off, not a stale state");
+
+            Assert.IsNotNull(frameGenerationTechnology,
+                "the frame generation technology entry must stay available for renderer switches");
+            Assert.IsFalse(frameGenerationTechnology.IsEntryEnabled,
+                "without the in-game hook there is no frame generation technology source");
+            Assert.IsFalse(frameGenerationTechnology.ShowOnOverlayIsEnabled,
+                "RTSS and the hook-free OSD must not expose the unsupported entry");
+            Assert.AreEqual("N/A", frameGenerationTechnology.Value);
+
+            Assert.IsNotNull(frameGenerationStatus,
+                "the frame generation entry must stay available for renderer switches");
+            Assert.IsFalse(frameGenerationStatus.IsEntryEnabled,
+                "without the in-game hook there is no frame generation source");
+            Assert.IsFalse(frameGenerationStatus.ShowOnOverlayIsEnabled,
+                "RTSS and the hook-free OSD must not expose the unsupported entry");
+            Assert.AreEqual("N/A", frameGenerationStatus.Value);
         }
 
         [TestMethod]
-        public async Task HookOverlayOn_EntryIsEnabled()
+        public async Task HookOverlayOn_HookOnlyEntriesAreEnabled()
         {
             var provider = CreateProvider(hookOverlayEnabled: true);
             await Task.Delay(500);
 
             var entries = await provider.GetOverlayEntries(updateFormats: false);
             var hookStatus = entries.Single(entry => entry.Identifier == HookOverlayStatusIdentifier);
+            var frameGenerationTechnology = entries.Single(
+                entry => entry.Identifier == FrameGenerationTechnologyIdentifier);
+            var frameGenerationStatus = entries.Single(
+                entry => entry.Identifier == FrameGenerationStatusIdentifier);
 
             Assert.IsTrue(hookStatus.IsEntryEnabled);
             Assert.IsTrue(hookStatus.ShowOnOverlayIsEnabled);
             Assert.IsFalse(hookStatus.ShowOnOverlay,
                 "the entry ships hidden — it is a diagnostic, not a default overlay row");
+
+            Assert.IsTrue(frameGenerationTechnology.IsEntryEnabled);
+            Assert.IsTrue(frameGenerationTechnology.ShowOnOverlayIsEnabled);
+            Assert.IsFalse(frameGenerationTechnology.ShowOnOverlay,
+                "frame generation technology is selectable but ships hidden");
+            Assert.AreEqual("N/A", frameGenerationTechnology.Value,
+                "the native hook replaces the managed placeholder only inside the game");
+
+            Assert.IsTrue(frameGenerationStatus.IsEntryEnabled);
+            Assert.IsTrue(frameGenerationStatus.ShowOnOverlayIsEnabled);
+            Assert.IsFalse(frameGenerationStatus.ShowOnOverlay,
+                "frame generation status is selectable but ships hidden");
+            Assert.AreEqual("N/A", frameGenerationStatus.Value,
+                "the native hook replaces the managed placeholder only inside the game");
         }
 
         [TestMethod]
@@ -207,12 +257,14 @@ namespace CapFrameX.Test.Overlay
         }
 
         [TestMethod]
-        public async Task SavedConfigWithoutTheEntry_GetsItInsertedBehindTheCaptureServiceStatus()
+        public async Task SavedConfigWithoutTheHookOnlyEntries_GetsThemInsertedInDefaultOrder()
         {
             // Every configuration in the field was written before this entry existed. Without the
             // migration below the entry would only ever reach users who reset their overlay config.
             var legacyEntries = OverlayUtils.GetOverlayEntryDefaults(_appConfigMock.Object)
-                .Where(entry => entry.Identifier != HookOverlayStatusIdentifier)
+                .Where(entry => entry.Identifier != HookOverlayStatusIdentifier
+                    && entry.Identifier != FrameGenerationTechnologyIdentifier
+                    && entry.Identifier != FrameGenerationStatusIdentifier)
                 .ToList();
 
             File.WriteAllText(
@@ -227,11 +279,18 @@ namespace CapFrameX.Test.Overlay
                 .ToList();
 
             int hookStatusIndex = identifiers.IndexOf(HookOverlayStatusIdentifier);
+            int frameGenerationTechnologyIndex = identifiers.IndexOf(
+                FrameGenerationTechnologyIdentifier);
+            int frameGenerationStatusIndex = identifiers.IndexOf(FrameGenerationStatusIdentifier);
 
             Assert.AreNotEqual(-1, hookStatusIndex,
                 "a configuration saved before the entry existed has to receive it on load");
             Assert.AreEqual(identifiers.IndexOf("CaptureServiceStatus") + 1, hookStatusIndex,
                 "the migrated entry belongs behind its predecessor from the defaults list");
+            Assert.AreEqual(hookStatusIndex + 1, frameGenerationTechnologyIndex,
+                "the migrated technology entry belongs behind the hook status");
+            Assert.AreEqual(frameGenerationTechnologyIndex + 1, frameGenerationStatusIndex,
+                "the migrated status entry belongs behind the technology");
         }
 
         [TestMethod]
