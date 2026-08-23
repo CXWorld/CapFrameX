@@ -125,5 +125,20 @@ namespace CapFrameX.Test.PMD
         {
             Assert.IsFalse(BenchlabService.IsLegacyServiceImagePath(imagePath));
         }
+
+        [DataTestMethod]
+        [DataRow(2, true)]
+        [DataRow(3, false)]
+        [DataRow(4, false)]
+        public void ShouldConfigureDemandStart_OnlyMigratesAutomaticServices(int startType, bool expected)
+        {
+            Assert.AreEqual(expected, BenchlabService.ShouldConfigureDemandStart(startType));
+        }
+
+        [TestMethod]
+        public void ShouldConfigureDemandStart_DoesNotMigrateMissingService()
+        {
+            Assert.IsFalse(BenchlabService.ShouldConfigureDemandStart(null));
+        }
     }
 }

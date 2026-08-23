@@ -117,6 +117,22 @@ namespace CapFrameX
                     ConfigurationProvider.AppConfiguration = config;
                 }
 
+                using (StartupPerformanceLogger.Measure("BENCHLAB service demand-start configuration"))
+                {
+                    try
+                    {
+                        var benchlabService = Container.Resolve<IBenchlabService>();
+                        if (!benchlabService.EnsureDemandStartMode())
+                        {
+                            Log.Logger.Warning("Could not configure the BENCHLAB service for demand start.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Error(ex, "Error configuring the BENCHLAB service for demand start.");
+                    }
+                }
+
                 using (StartupPerformanceLogger.Measure("Path service resolution"))
                 {
                     var pathService = Container.Resolve<IPathService>();

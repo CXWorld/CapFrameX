@@ -6,6 +6,7 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Text;
 using System.Threading;
@@ -23,6 +24,11 @@ namespace CapFrameX.PMD.Benchlab
         private const string SERVICE_FOLDER_NAME = "benchlab-service";
         private const string SERVICE_EXECUTABLE_NAME = "BL_Service.exe";
         private const string LEGACY_SERVICE_EXECUTABLE_NAME = "PMD_Service.exe";
+        private const int SERVICE_AUTO_START = 2;
+        private const uint SC_MANAGER_CONNECT = 0x0001;
+        private const uint SERVICE_CHANGE_CONFIG = 0x0002;
+        private const uint SERVICE_NO_CHANGE = 0xFFFFFFFF;
+        private const uint SERVICE_DEMAND_START = 3;
 
         private static readonly TimeSpan DiscoveryTimeout = TimeSpan.FromSeconds(30);
         private static readonly TimeSpan PipeRequestTimeout = TimeSpan.FromSeconds(2);
@@ -50,6 +56,29 @@ namespace CapFrameX.PMD.Benchlab
         public int MinMonitoringInterval { get; set; } = 25;
 
         public bool IsServiceRunning => _isServiceRunning;
+
+        public bool EnsureDemandStartMode()
+        {
+            if (!TryGetWindowsServiceStartType(SERVICE_NAME, out var startType))
+            {
+                return false;
+            }
+
+            if (!ShouldConfigureDemandStart(startType))
+            {
+                return true;
+            }
+
+            // The legacy installer registered BENCHLAB Service as an automatic LocalSystem
+            // service. Stop that boot-started instance before changing its configuration; a
+            // manually configured/running service is deliberately left untouched.
+            if (IsWindowsServiceRunning(SERVICE_NAME) && !TryStopWindowsService(SERVICE_NAME))
+            {
+                return false;
+            }
+
+            return TrySetWindowsServiceDemandStart(SERVICE_NAME);
+        }
 
         public int MonitoringInterval
         {
@@ -83,7 +112,7 @@ namespace CapFrameX.PMD.Benchlab
 
             try
             {
-                if (!EnsureBenchlabServiceStarted())
+                if (!EnsureDemandStartMode() || !EnsureBenchlabServiceStarted())
                 {
                     throw new InvalidOperationException("The BENCHLAB service could not be started.");
                 }
@@ -278,6 +307,83 @@ namespace CapFrameX.PMD.Benchlab
             catch
             {
                 return false;
+            }
+        }
+
+        private static bool TryGetWindowsServiceStartType(string serviceName, out int? startType)
+        {
+            startType = null;
+
+            try
+            {
+                using (var serviceKey = Registry.LocalMachine.OpenSubKey(
+                    $@"SYSTEM\CurrentControlSet\Services\{serviceName}"))
+                {
+                    if (serviceKey == null)
+                    {
+                        return true;
+                    }
+
+                    var startValue = serviceKey.GetValue("Start");
+                    if (startValue == null)
+                    {
+                        return false;
+                    }
+
+                    startType = Convert.ToInt32(startValue);
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        internal static bool ShouldConfigureDemandStart(int? startType)
+        {
+            return startType == SERVICE_AUTO_START;
+        }
+
+        private static bool TrySetWindowsServiceDemandStart(string serviceName)
+        {
+            var serviceManager = OpenSCManager(null, null, SC_MANAGER_CONNECT);
+            if (serviceManager == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            try
+            {
+                var service = OpenService(serviceManager, serviceName, SERVICE_CHANGE_CONFIG);
+                if (service == IntPtr.Zero)
+                {
+                    return false;
+                }
+
+                try
+                {
+                    return ChangeServiceConfig(
+                        service,
+                        SERVICE_NO_CHANGE,
+                        SERVICE_DEMAND_START,
+                        SERVICE_NO_CHANGE,
+                        null,
+                        null,
+                        IntPtr.Zero,
+                        null,
+                        null,
+                        null,
+                        null);
+                }
+                finally
+                {
+                    CloseServiceHandle(service);
+                }
+            }
+            finally
+            {
+                CloseServiceHandle(serviceManager);
             }
         }
 
@@ -625,5 +731,36 @@ namespace CapFrameX.PMD.Benchlab
                 yield return new Point((sample.TimeStamp - minTimeStamp) * 1E-03, sample.Sensors[GpuPowerSensorIndex].Value);
             }
         }
+
+        [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern IntPtr OpenSCManager(
+            string machineName,
+            string databaseName,
+            uint desiredAccess);
+
+        [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern IntPtr OpenService(
+            IntPtr serviceManager,
+            string serviceName,
+            uint desiredAccess);
+
+        [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool ChangeServiceConfig(
+            IntPtr service,
+            uint serviceType,
+            uint startType,
+            uint errorControl,
+            string binaryPathName,
+            string loadOrderGroup,
+            IntPtr tagId,
+            string dependencies,
+            string serviceStartName,
+            string password,
+            string displayName);
+
+        [DllImport("advapi32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool CloseServiceHandle(IntPtr serviceHandle);
     }
 }

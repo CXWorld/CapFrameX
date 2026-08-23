@@ -26,6 +26,8 @@ namespace CapFrameX.PMD.Benchlab
 
         IObservable<EPmdServiceStatus> PmdServiceStatusStream { get; }
 
+        bool EnsureDemandStartMode();
+
         Task StartService();
 
         void ShutDownService();
