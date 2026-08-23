@@ -79,7 +79,7 @@ namespace CapFrameX.Remote
         [Route(HttpVerbs.Get, "/processes")]
         public async Task<IEnumerable<string>> GetProcesses()
         {
-            return await Task.FromResult( _captureManager.GetAllFilteredProcesses(new HashSet<string>()).Select(info => info.Item1));
+            return await Task.FromResult(_captureManager.GetAllNonBlacklistedProcesses().Select(info => info.Item1));
         }
     }
 }

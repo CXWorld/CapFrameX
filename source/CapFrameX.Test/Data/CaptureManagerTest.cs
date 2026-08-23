@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
@@ -30,6 +31,7 @@ namespace CapFrameX.Test.Data
     {
         private Container _container;
         private CaptureManager _captureManager;
+        private ProcessList _processList;
 
         // Custom mock services
         private MockCaptureService _mockCaptureService;
@@ -107,9 +109,8 @@ namespace CapFrameX.Test.Data
 
             // Register concrete dependencies
             _container.Register<SoundManager>(Reuse.Singleton);
-            _container.RegisterInstance<ProcessList>(
-                ProcessList.Create("Processes.json", Path.Combine(Path.GetTempPath(), "CapFrameXTest"),
-                    _appConfigurationMock.Object, _processListLoggerMock.Object));
+            _processList = CreateProcessListForTests();
+            _container.RegisterInstance(_processList);
             _container.Register<CaptureManager>(Reuse.Singleton);
 
             _captureManager = _container.Resolve<CaptureManager>();
@@ -136,6 +137,24 @@ namespace CapFrameX.Test.Data
             _appConfigurationMock.Setup(x => x.VoiceSoundLevel).Returns(0);
             _appConfigurationMock.Setup(x => x.SimpleSoundLevel).Returns(0);
             _appConfigurationMock.Setup(x => x.HotkeySoundMode).Returns("None");
+        }
+
+        private ProcessList CreateProcessListForTests()
+        {
+            string tempFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}-processes.json");
+            var constructor = typeof(ProcessList).GetConstructor(
+                BindingFlags.Instance | BindingFlags.NonPublic,
+                binder: null,
+                types: new[] { typeof(string), typeof(IAppConfiguration), typeof(ILogger<ProcessList>) },
+                modifiers: null);
+
+            Assert.IsNotNull(constructor);
+            return (ProcessList)constructor.Invoke(new object[]
+            {
+                tempFile,
+                _appConfigurationMock.Object,
+                _processListLoggerMock.Object
+            });
         }
 
         #region Constructor Tests
@@ -202,6 +221,18 @@ namespace CapFrameX.Test.Data
             var processList = new List<(string, int)>(processes);
             Assert.AreEqual(1, processList.Count);
             Assert.AreEqual("AnotherGame.exe", processList[0].Item1);
+        }
+
+        [TestMethod]
+        public async Task GetProcesses_WithBlacklistedProcessNameContainingSpaces_ExcludesProcess()
+        {
+            _processList.AddEntry("camera hub", null, blacklist: true);
+            _mockCaptureService.AddProcess("Camera Hub", 5678, "0x00000002");
+            var controller = new CapFrameX.Remote.CaptureController(_captureManager);
+
+            var processes = (await controller.GetProcesses()).ToArray();
+
+            CollectionAssert.AreEquivalent(new[] { "TestGame.exe" }, processes);
         }
 
         #endregion

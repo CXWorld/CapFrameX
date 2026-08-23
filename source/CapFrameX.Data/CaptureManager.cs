@@ -172,6 +172,15 @@ namespace CapFrameX.Data
         public IEnumerable<(string, int)> GetAllFilteredProcesses(HashSet<string> filter)
             => _captureService.GetAllFilteredProcesses(filter);
 
+        public IEnumerable<(string, int)> GetAllNonBlacklistedProcesses()
+        {
+            var filter = new HashSet<string>(
+                _processList.GetIgnoredProcessNames(),
+                StringComparer.OrdinalIgnoreCase);
+
+            return GetAllFilteredProcesses(filter);
+        }
+
         public async Task StartCapture(CaptureOptions options)
         {
             if (IsCapturing)
