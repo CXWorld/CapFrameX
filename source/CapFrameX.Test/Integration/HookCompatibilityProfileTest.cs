@@ -88,6 +88,7 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(profile.DisableDxgiSwapchainReleaseHook);
             Assert.IsFalse(profile.EnableXeFgNativePresentQueueRoute);
             Assert.IsTrue(profile.EnableGenericD3D12PresentRoute);
+            Assert.IsFalse(profile.DisableFidelityFxSwapchainLifecycleHooks);
             Assert.AreEqual(
                 NativeHookCompatibilityFlags.DisableDxgiSwapchainReleaseHook |
                 NativeHookCompatibilityFlags.EnableGenericD3D12PresentRoute,
@@ -106,11 +107,16 @@ namespace CapFrameX.Test.Integration
                 out HookCompatibilityProfile profile));
             Assert.IsFalse(profile.RequiresEarlyInjection);
             Assert.IsNull(profile.EarlyInjectionModule);
-            Assert.IsFalse(profile.DisableDxgiSwapchainReleaseHook);
+            Assert.IsTrue(profile.DisableDxgiSwapchainReleaseHook);
             Assert.IsFalse(profile.EnableXeFgNativePresentQueueRoute);
             Assert.IsTrue(profile.EnableGenericD3D12PresentRoute);
+            Assert.IsTrue(profile.DisableFidelityFxSwapchainLifecycleHooks);
+            Assert.IsTrue(profile.EnableDxgiFactorySwapchainLifecycleHooks);
             Assert.AreEqual(
-                NativeHookCompatibilityFlags.EnableGenericD3D12PresentRoute,
+                NativeHookCompatibilityFlags.DisableDxgiSwapchainReleaseHook |
+                NativeHookCompatibilityFlags.EnableGenericD3D12PresentRoute |
+                NativeHookCompatibilityFlags.DisableFidelityFxSwapchainLifecycleHooks |
+                NativeHookCompatibilityFlags.EnableDxgiFactorySwapchainLifecycleHooks,
                 profile.NativeFlags);
             Assert.AreEqual(TimeSpan.Zero, profile.InjectionDelay);
             CollectionAssert.DoesNotContain(

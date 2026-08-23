@@ -28,8 +28,11 @@
            earlyInjectionModule="d3d12.dll"
            source="CapFrameX validation: inject when D3D12 is mapped; avoid the shared Release hook so the old flip-model swapchain can reach terminal destruction, use native DXGI Presents with observed DIRECT queues while frame generation is off, and make the API-provided FidelityFX proxy swapchain plus queue the exclusive render path while frame generation owns presentation" />
   <Profile executable="Stalker2-Win64-Shipping.exe"
+           disableDxgiSwapchainReleaseHook="true"
            enableGenericD3D12PresentRoute="true"
-           source="CapFrameX validation: the late-attached XeSS-FG proxy remained in synchronous pass-through mode without an authoritative context or initialization queue; bypass vendor proxy/status hooks and draw on native DXGI Presents using observed DIRECT command queues" />
+           disableFidelityFxSwapchainLifecycleHooks="true"
+           enableDxgiFactorySwapchainLifecycleHooks="true"
+           source="CapFrameX validation and RTSS 7.3.7 lifecycle model: bypass the shared DXGI Release hook so the old flip-model swapchain can reach terminal destruction, bypass all optional vendor runtime hooks, keep native DXGI Presents plus observed DIRECT command queues authoritative, and release completed overlay backbuffer references before DXGI creates a replacement swapchain during a live frame-generation transition" />
   <Profile executable="DyingLightGame_TheBeast_x64_rwdi.exe"
            disableDxgiSwapchainReleaseHook="true"
            enableGenericD3D12PresentRoute="true"

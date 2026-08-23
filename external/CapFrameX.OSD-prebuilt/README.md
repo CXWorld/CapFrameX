@@ -20,8 +20,13 @@ the OSD is built from source instead and these files are ignored.
   when its observed queue changes and waits for a bounded, buffer-count-sized run of subsequent
   Presents before rebuilding and submitting on the replacement queue. It retains FidelityFX
   creation/destruction hooks as swapchain-lifecycle boundaries even while other vendor presentation
-  and status hooks are disabled. Once a FidelityFX replacement swapchain exists, its proxy Present
-  and API-provided queue are exclusive; independently driven native output Presents are suppressed.
+  and status hooks are disabled, unless a compatibility profile explicitly keeps the generic native
+  route authoritative across FidelityFX transitions. Such a profile can instead arm generic DXGI
+  factory lifecycle hooks: they wait for submitted overlay work and release all old backbuffer
+  references before `CreateSwapChain*` replaces the chain, while holding the Present lifecycle
+  lock across the original DXGI call. Once a captured FidelityFX replacement
+  swapchain exists, its proxy Present and API-provided queue are exclusive; independently driven
+  native output Presents are suppressed.
 - `native/x86/` — x86 DXGI hook. The hook DLL alone: `HookInjector` resolves the target's 32-bit
   `LoadLibraryW` from the x64 app, so no separate 32-bit injector is shipped
 - `native/MinHook.LICENSE.txt` — BSD license for MinHook, statically linked into both DXGI hooks

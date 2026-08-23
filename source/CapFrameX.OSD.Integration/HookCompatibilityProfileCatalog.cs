@@ -15,7 +15,9 @@ namespace CapFrameX.OSD.Integration
         None = 0,
         DisableDxgiSwapchainReleaseHook = 1u << 0,
         EnableXeFgNativePresentQueueRoute = 1u << 1,
-        EnableGenericD3D12PresentRoute = 1u << 2
+        EnableGenericD3D12PresentRoute = 1u << 2,
+        DisableFidelityFxSwapchainLifecycleHooks = 1u << 3,
+        EnableDxgiFactorySwapchainLifecycleHooks = 1u << 4
     }
 
     internal sealed class HookCompatibilityProfile
@@ -23,13 +25,20 @@ namespace CapFrameX.OSD.Integration
         internal HookCompatibilityProfile(string executableName,
             bool disableDxgiSwapchainReleaseHook,
             bool enableXeFgNativePresentQueueRoute,
-            bool enableGenericD3D12PresentRoute, TimeSpan injectionDelay,
+            bool enableGenericD3D12PresentRoute,
+            bool disableFidelityFxSwapchainLifecycleHooks,
+            bool enableDxgiFactorySwapchainLifecycleHooks,
+            TimeSpan injectionDelay,
             string earlyInjectionModule, string source)
         {
             ExecutableName = executableName;
             DisableDxgiSwapchainReleaseHook = disableDxgiSwapchainReleaseHook;
             EnableXeFgNativePresentQueueRoute = enableXeFgNativePresentQueueRoute;
             EnableGenericD3D12PresentRoute = enableGenericD3D12PresentRoute;
+            DisableFidelityFxSwapchainLifecycleHooks =
+                disableFidelityFxSwapchainLifecycleHooks;
+            EnableDxgiFactorySwapchainLifecycleHooks =
+                enableDxgiFactorySwapchainLifecycleHooks;
             InjectionDelay = injectionDelay;
             EarlyInjectionModule = earlyInjectionModule;
             Source = source;
@@ -39,6 +48,8 @@ namespace CapFrameX.OSD.Integration
         internal bool DisableDxgiSwapchainReleaseHook { get; }
         internal bool EnableXeFgNativePresentQueueRoute { get; }
         internal bool EnableGenericD3D12PresentRoute { get; }
+        internal bool DisableFidelityFxSwapchainLifecycleHooks { get; }
+        internal bool EnableDxgiFactorySwapchainLifecycleHooks { get; }
         internal TimeSpan InjectionDelay { get; }
         internal string EarlyInjectionModule { get; }
         internal bool RequiresEarlyInjection =>
@@ -57,6 +68,10 @@ namespace CapFrameX.OSD.Integration
                     flags |= NativeHookCompatibilityFlags.EnableXeFgNativePresentQueueRoute;
                 if (EnableGenericD3D12PresentRoute)
                     flags |= NativeHookCompatibilityFlags.EnableGenericD3D12PresentRoute;
+                if (DisableFidelityFxSwapchainLifecycleHooks)
+                    flags |= NativeHookCompatibilityFlags.DisableFidelityFxSwapchainLifecycleHooks;
+                if (EnableDxgiFactorySwapchainLifecycleHooks)
+                    flags |= NativeHookCompatibilityFlags.EnableDxgiFactorySwapchainLifecycleHooks;
                 return flags;
             }
         }
@@ -139,12 +154,20 @@ namespace CapFrameX.OSD.Integration
                     "enableXeFgNativePresentQueueRoute");
                 bool enableGenericD3D12PresentRoute = ParseBooleanAttribute(element,
                     "enableGenericD3D12PresentRoute");
+                bool disableFidelityFxSwapchainLifecycleHooks =
+                    ParseBooleanAttribute(element,
+                        "disableFidelityFxSwapchainLifecycleHooks");
+                bool enableDxgiFactorySwapchainLifecycleHooks =
+                    ParseBooleanAttribute(element,
+                        "enableDxgiFactorySwapchainLifecycleHooks");
                 string earlyInjectionModule = ParseModuleNameAttribute(element,
                     "earlyInjectionModule");
                 int delayMilliseconds = ParseNonNegativeIntegerAttribute(element,
                     "injectionDelayMilliseconds");
                 if (!disableRelease && !enableXeFgNativePresentQueueRoute &&
                     !enableGenericD3D12PresentRoute &&
+                    !disableFidelityFxSwapchainLifecycleHooks &&
+                    !enableDxgiFactorySwapchainLifecycleHooks &&
                     delayMilliseconds == 0 &&
                     earlyInjectionModule == null)
                     throw new InvalidDataException($"Profile '{executable}' has no compatibility settings.");
@@ -153,6 +176,8 @@ namespace CapFrameX.OSD.Integration
                     Path.GetFileName(executable), disableRelease,
                     enableXeFgNativePresentQueueRoute,
                     enableGenericD3D12PresentRoute,
+                    disableFidelityFxSwapchainLifecycleHooks,
+                    enableDxgiFactorySwapchainLifecycleHooks,
                     TimeSpan.FromMilliseconds(delayMilliseconds), earlyInjectionModule,
                     ((string)element.Attribute("source"))?.Trim());
                 if (profiles.ContainsKey(key))
