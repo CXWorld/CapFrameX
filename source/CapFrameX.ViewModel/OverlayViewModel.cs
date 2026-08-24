@@ -29,7 +29,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
-using WinForms = System.Windows.Forms;
 
 namespace CapFrameX.ViewModel
 {
@@ -794,6 +793,10 @@ namespace CapFrameX.ViewModel
             OverlaySubModelGroupControl = new OverlayGroupControl(this);
             OverlaySubModelGroupSeparating = new OverlayGroupSeparating(this);
 
+            _overlayEntryProvider.OverlayEntriesChanged
+                ?.ObserveOnDispatcher()
+                .Subscribe(ApplyReloadedOverlayEntries);
+
             ResetOverlayConfigContent = new ResetOverlayConfigDialog();
 
             ConfigSwitchCommand = new DelegateCommand<object>(_configSubject.OnNext);
@@ -812,7 +815,7 @@ namespace CapFrameX.ViewModel
                 .ObserveOnDispatcher()
                 .Subscribe(ApplyReloadedOverlayEntries);
 
-            // Renderer/source changes gate Displaytime and Resolution. Coalesce the two flag
+            // Renderer/source changes gate Displaytime and Present Resolution. Coalesce the two flag
             // writes made by a radio-button mode switch, then reload immediately even when the
             // overlay is inactive and therefore produces no dictionary tick.
             _appConfiguration.OnValueChanged
@@ -1314,23 +1317,21 @@ namespace CapFrameX.ViewModel
 
         private void RefreshHookFreeDisplayItems(bool notifyRenderer = false)
         {
-            var items = WinForms.Screen.AllScreens
-                .Select(screen =>
+            var displays = DisplayDetection.GetDisplays();
+            var items = displays
+                .Select(display =>
                 {
-                    string deviceName = screen.DeviceName ?? string.Empty;
-                    string shortName = deviceName.StartsWith(@"\\.\",
-                        StringComparison.OrdinalIgnoreCase)
-                        ? deviceName.Substring(4)
-                        : deviceName;
-                    string primarySuffix = screen.Primary ? " (Primary)" : string.Empty;
-                    string displayName = $"{shortName} — {screen.Bounds.Width} × " +
-                        $"{screen.Bounds.Height}{primarySuffix}";
+                    string deviceName = display.DeviceName;
+                    string primarySuffix = display.IsPrimary ? " (Primary)" : string.Empty;
+                    string displayName = $"{DisplayDetection.GetShortName(deviceName)} — " +
+                        $"{display.Width} × {display.Height}{primarySuffix}";
 
-                    return new HookFreeDisplayItem(deviceName, displayName, screen.Primary);
+                    return new HookFreeDisplayItem(deviceName, displayName, display.IsPrimary);
                 })
                 .ToArray();
 
             HookFreeDisplayItemsSource = items;
+            _overlayEntryProvider.RefreshDisplayEntries(displays);
 
             string selectedDeviceName = _appConfiguration.HookFreeDisplayDeviceName;
             bool selectionExists = items.Any(item =>

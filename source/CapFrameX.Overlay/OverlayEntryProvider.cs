@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -69,6 +70,8 @@ namespace CapFrameX.Overlay
         private const string HOOK_OVERLAY_STATUS_IDENTIFIER = "HookOverlayStatus";
         private const string FRAME_GENERATION_TECHNOLOGY_IDENTIFIER = "FrameGenerationTechnology";
         private const string FRAME_GENERATION_STATUS_IDENTIFIER = "FrameGenerationStatus";
+        private const string PRESENT_RESOLUTION_IDENTIFIER = "Resolution";
+        private const string DISPLAY_RESOLUTION_IDENTIFIER_PREFIX = "DisplayResolution:";
 
         private readonly ISensorService _sensorService;
         private readonly IAppConfiguration _appConfiguration;
@@ -79,10 +82,14 @@ namespace CapFrameX.Overlay
         private readonly ISensorConfig _sensorConfig;
         private readonly IOverlayEntryCore _overlayEntryCore;
         private readonly IThreadAffinityController _threadAffinityController;
+        private readonly Func<IReadOnlyList<DetectedDisplay>> _displayProvider;
 
         private readonly ILogger<OverlayEntryProvider> _logger;
+        private readonly object _overlayEntriesGate = new object();
         private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict
              = new ConcurrentDictionary<string, IOverlayEntry>();
+        private readonly Subject<IOverlayEntry[]> _overlayEntriesChanged
+             = new Subject<IOverlayEntry[]>();
         private readonly TaskCompletionSource<bool> _taskCompletionSource
             = new TaskCompletionSource<bool>();
         private readonly ConcurrentDictionary<string, int> _colorIndexDictionary
@@ -97,6 +104,7 @@ namespace CapFrameX.Overlay
         // touched from the stream, it is replaced whenever a configuration is loaded or switched.
         private volatile HookOverlayStatus _hookOverlayStatus;
         public bool HasHardwareChanged { get; set; }
+        public IObservable<IOverlayEntry[]> OverlayEntriesChanged => _overlayEntriesChanged;
         public bool ShowSystemTimeSeconds { get; set; }
 
         public OverlayEntryProvider(ISensorService sensorService,
@@ -111,6 +119,26 @@ namespace CapFrameX.Overlay
             IPathService pathService,
             IHookOverlayStatusService hookOverlayStatusService,
             ILogger<OverlayEntryProvider> logger)
+            : this(sensorService, appConfiguration, eventAggregator, onlineMetricService,
+                  systemInfo, rTSSService, sensorConfig, overlayEntryCore,
+                  threadAffinityController, pathService, hookOverlayStatusService, logger,
+                  DisplayDetection.GetDisplays)
+        {
+        }
+
+        internal OverlayEntryProvider(ISensorService sensorService,
+            IAppConfiguration appConfiguration,
+            IEventAggregator eventAggregator,
+            IOnlineMetricService onlineMetricService,
+            ISystemInfo systemInfo,
+            IRTSSService rTSSService,
+            ISensorConfig sensorConfig,
+            IOverlayEntryCore overlayEntryCore,
+            IThreadAffinityController threadAffinityController,
+            IPathService pathService,
+            IHookOverlayStatusService hookOverlayStatusService,
+            ILogger<OverlayEntryProvider> logger,
+            Func<IReadOnlyList<DetectedDisplay>> displayProvider)
         {
             _sensorService = sensorService;
             _appConfiguration = appConfiguration;
@@ -123,6 +151,7 @@ namespace CapFrameX.Overlay
             _threadAffinityController = threadAffinityController;
             _overlayConfigFolder = pathService.ConfigFolder;
             _logger = logger;
+            _displayProvider = displayProvider ?? (() => Array.Empty<DetectedDisplay>());
 
             _hookOverlayStatus = hookOverlayStatusService?.Current;
             hookOverlayStatusService?.StatusStream
@@ -163,6 +192,7 @@ namespace CapFrameX.Overlay
         public async Task<IOverlayEntry[]> GetOverlayEntries(bool updateFormats = true)
         {
             await _taskCompletionSource.Task;
+            RefreshDisplayEntries();
             await UpdateSensorData();
             UpdateOnlineMetrics();
             UpdateAppInfo();
@@ -188,16 +218,27 @@ namespace CapFrameX.Overlay
 
         public void MoveEntry(int sourceIndex, int targetIndex)
         {
-            _overlayEntries.Move(sourceIndex, targetIndex);
+            lock (_overlayEntriesGate)
+            {
+                _overlayEntries.Move(sourceIndex, targetIndex);
+            }
         }
 
         public async Task SaveOverlayEntriesToJson(int targetConfig)
         {
             try
             {
+                List<OverlayEntryWrapper> entries;
+                lock (_overlayEntriesGate)
+                {
+                    entries = _overlayEntries
+                        .Select(entry => entry as OverlayEntryWrapper)
+                        .ToList();
+                }
+
                 var persistence = new OverlayEntryPersistence()
                 {
-                    OverlayEntries = _overlayEntries.Select(entry => entry as OverlayEntryWrapper).ToList()
+                    OverlayEntries = entries
                 };
 
                 var json = JsonConvert.SerializeObject(persistence);
@@ -221,9 +262,13 @@ namespace CapFrameX.Overlay
 
         public async Task<IEnumerable<IOverlayEntry>> GetDefaultOverlayEntries()
         {
-            _overlayEntries = await CreateDefaultOverlayEntries();
-            UpdateStates(resetEvaluate: true);
-            return _overlayEntries.ToList();
+            var defaultEntries = await CreateDefaultOverlayEntries();
+            lock (_overlayEntriesGate)
+            {
+                _overlayEntries = defaultEntries;
+                UpdateStates(resetEvaluate: true);
+                return _overlayEntries.ToList();
+            }
         }
 
         public void SetFormatForGroupName(string groupName, IOverlayEntry selectedEntry, IOverlayEntryFormatChange checkboxes)
@@ -330,38 +375,44 @@ namespace CapFrameX.Overlay
 
         public void SortOverlayEntriesByType()
         {
-            var sortedEntries = _overlayEntries
-                .OrderBy(entry =>
-                {
-                    switch (entry.OverlayEntryType)
+            lock (_overlayEntriesGate)
+            {
+                var sortedEntries = _overlayEntries
+                    .OrderBy(entry =>
                     {
-                        case EOverlayEntryType.CX:
-                            return 1;
-                        case EOverlayEntryType.GPU:
-                            return 2;
-                        case EOverlayEntryType.CPU:
-                            return 3;
-                        case EOverlayEntryType.RAM:
-                            return 4;
-                        case EOverlayEntryType.HDD:
-                            return 5;
-                        case EOverlayEntryType.OnlineMetric:
-                            return 6;
-                        case EOverlayEntryType.Undefined:
-                            return 7;
-                        default:
-                            return 8;
-                    }
-                }).ThenBy(entry => entry.SortKey, new SortKeyComparer())
-                .ToList();
+                        switch (entry.OverlayEntryType)
+                        {
+                            case EOverlayEntryType.CX:
+                                return 1;
+                            case EOverlayEntryType.GPU:
+                                return 2;
+                            case EOverlayEntryType.CPU:
+                                return 3;
+                            case EOverlayEntryType.RAM:
+                                return 4;
+                            case EOverlayEntryType.HDD:
+                                return 5;
+                            case EOverlayEntryType.OnlineMetric:
+                                return 6;
+                            case EOverlayEntryType.Undefined:
+                                return 7;
+                            default:
+                                return 8;
+                        }
+                    }).ThenBy(entry => entry.SortKey, new SortKeyComparer())
+                    .ToList();
 
-            _overlayEntries = sortedEntries.ToBlockingCollection();
+                _overlayEntries = sortedEntries.ToBlockingCollection();
+            }
         }
 
         public void UpdateOverlayEntries(IEnumerable<IOverlayEntry> entries)
         {
-            _overlayEntries = entries.ToList().ToBlockingCollection();
-            UpdateStates(resetEvaluate: false);
+            lock (_overlayEntriesGate)
+            {
+                _overlayEntries = entries.ToList().ToBlockingCollection();
+                UpdateStates(resetEvaluate: false);
+            }
         }
 
         private void UpdateStates(bool resetEvaluate)
@@ -392,17 +443,24 @@ namespace CapFrameX.Overlay
 
         public async Task LoadOrSetDefault()
         {
+            BlockingCollection<IOverlayEntry> entries;
+            bool resetEvaluate;
             try
             {
-                _overlayEntries = await GetInitializedOverlayEntries();
-                UpdateStates(resetEvaluate: false);
+                entries = await GetInitializedOverlayEntries();
+                resetEvaluate = false;
             }
             catch
             {
-                _overlayEntries = await CreateDefaultOverlayEntries();
-                UpdateStates(resetEvaluate: true);
+                entries = await CreateDefaultOverlayEntries();
+                resetEvaluate = true;
             }
 
+            lock (_overlayEntriesGate)
+            {
+                _overlayEntries = entries;
+                UpdateStates(resetEvaluate);
+            }
         }
 
         private void UpdateSensorIsActive(string identifier, bool isShownOnOverlay)
@@ -486,6 +544,11 @@ namespace CapFrameX.Overlay
                 if (!isSensorType)
                 {
                     // Non-sensor entries (CX, OnlineMetric, etc.): keep as-is from config
+                    if (configEntry.Identifier == PRESENT_RESOLUTION_IDENTIFIER
+                        && RefreshPresentResolutionMetadata(configEntry))
+                    {
+                        hasChanges = true;
+                    }
                     configOverlayEntries.Add(configEntry);
                     continue;
                 }
@@ -619,6 +682,11 @@ namespace CapFrameX.Overlay
                     sensorEntry.Identifier, sensorEntry.Description);
             }
 
+            if (ReconcileDisplayResolutionEntries(configOverlayEntries, GetDetectedDisplays()))
+            {
+                hasChanges = true;
+            }
+
             HasHardwareChanged = hasChanges;
 
             // check separators
@@ -693,6 +761,260 @@ namespace CapFrameX.Overlay
             }
         }
 
+        public void RefreshDisplayEntries(IReadOnlyList<DetectedDisplay> displays = null)
+        {
+            displays ??= GetDetectedDisplays();
+            IOverlayEntry[] changedEntries = null;
+
+            lock (_overlayEntriesGate)
+            {
+                if (_overlayEntries == null)
+                {
+                    return;
+                }
+
+                var entries = _overlayEntries.ToList();
+                var previousDisplayEntries = entries
+                    .Where(entry => IsDisplayResolutionIdentifier(entry.Identifier))
+                    .ToArray();
+
+                if (!ReconcileDisplayResolutionEntries(entries, displays))
+                {
+                    return;
+                }
+
+                _overlayEntries = entries.ToBlockingCollection();
+                SynchronizeDisplayEntryState(previousDisplayEntries, entries);
+                HasHardwareChanged = true;
+                changedEntries = _overlayEntries.ToArray();
+            }
+
+            // Topology changes are rare. Publish only structural changes so the Overlay view can
+            // rebind its collection without doing that work on every value refresh.
+            _overlayEntriesChanged.OnNext(changedEntries);
+        }
+
+        private IReadOnlyList<DetectedDisplay> GetDetectedDisplays()
+        {
+            try
+            {
+                return _displayProvider() ?? Array.Empty<DetectedDisplay>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Unable to enumerate active displays for overlay items.");
+                return Array.Empty<DetectedDisplay>();
+            }
+        }
+
+        private void SynchronizeDisplayEntryState(IEnumerable<IOverlayEntry> previousDisplayEntries,
+            IEnumerable<IOverlayEntry> currentEntries)
+        {
+            var currentDisplayEntries = currentEntries
+                .Where(entry => IsDisplayResolutionIdentifier(entry.Identifier))
+                .ToArray();
+            var currentIdentifiers = new HashSet<string>(
+                currentDisplayEntries.Select(entry => entry.Identifier),
+                StringComparer.OrdinalIgnoreCase);
+
+            foreach (var previousEntry in previousDisplayEntries)
+            {
+                if (currentIdentifiers.Contains(previousEntry.Identifier))
+                {
+                    continue;
+                }
+
+                _identifierOverlayEntryDict.TryRemove(previousEntry.Identifier, out _);
+                _sensorConfig.SelectForOverlay(previousEntry.Identifier, false);
+            }
+
+            foreach (var entry in currentDisplayEntries)
+            {
+                entry.UpdateShowOnOverlay = UpdateSensorIsActive;
+                _sensorConfig.SelectForOverlay(entry.Identifier, entry.ShowOnOverlay);
+                _identifierOverlayEntryDict[entry.Identifier] = entry;
+                entry.FormatChanged = true;
+            }
+        }
+
+        internal static bool ReconcileDisplayResolutionEntries(List<IOverlayEntry> entries,
+            IReadOnlyList<DetectedDisplay> displays)
+        {
+            displays ??= Array.Empty<DetectedDisplay>();
+            var detectedByIdentifier = new Dictionary<string, DetectedDisplay>(
+                StringComparer.OrdinalIgnoreCase);
+            var detectedInOrder = new List<(string Identifier, DetectedDisplay Display)>();
+
+            foreach (var display in displays)
+            {
+                if (display == null || string.IsNullOrWhiteSpace(display.DeviceName)
+                    || display.Width <= 0 || display.Height <= 0)
+                {
+                    continue;
+                }
+
+                string identifier = GetDisplayResolutionIdentifier(display.DeviceName);
+                if (detectedByIdentifier.ContainsKey(identifier))
+                {
+                    continue;
+                }
+
+                detectedByIdentifier.Add(identifier, display);
+                detectedInOrder.Add((identifier, display));
+            }
+
+            bool structureChanged = false;
+            var matchedIdentifiers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            for (int index = entries.Count - 1; index >= 0; index--)
+            {
+                var entry = entries[index];
+                if (!IsDisplayResolutionIdentifier(entry.Identifier))
+                {
+                    continue;
+                }
+
+                if (!detectedByIdentifier.TryGetValue(entry.Identifier, out var display)
+                    || !matchedIdentifiers.Add(entry.Identifier))
+                {
+                    entries.RemoveAt(index);
+                    structureChanged = true;
+                    continue;
+                }
+
+                UpdateDisplayResolutionEntry(entry, display);
+            }
+
+            int insertIndex = GetDisplayResolutionInsertIndex(entries);
+            foreach (var detected in detectedInOrder)
+            {
+                if (matchedIdentifiers.Contains(detected.Identifier))
+                {
+                    continue;
+                }
+
+                entries.Insert(insertIndex++, CreateDisplayResolutionEntry(detected.Display));
+                matchedIdentifiers.Add(detected.Identifier);
+                structureChanged = true;
+            }
+
+            return structureChanged;
+        }
+
+        private static int GetDisplayResolutionInsertIndex(IReadOnlyList<IOverlayEntry> entries)
+        {
+            for (int index = entries.Count - 1; index >= 0; index--)
+            {
+                if (IsDisplayResolutionIdentifier(entries[index].Identifier))
+                {
+                    return index + 1;
+                }
+            }
+
+            for (int index = 0; index < entries.Count; index++)
+            {
+                if (entries[index].Identifier == PRESENT_RESOLUTION_IDENTIFIER)
+                {
+                    return index + 1;
+                }
+            }
+
+            return entries.Count;
+        }
+
+        internal static IOverlayEntry CreateDisplayResolutionEntry(DetectedDisplay display)
+        {
+            string label = DisplayDetection.GetLabel(display.DeviceName);
+            return new OverlayEntryWrapper(GetDisplayResolutionIdentifier(display.DeviceName))
+            {
+                StableIdentifier = display.DeviceName,
+                OverlayEntryType = EOverlayEntryType.CX,
+                ShowOnOverlay = false,
+                ShowOnOverlayIsEnabled = true,
+                Description = $"{label} Resolution",
+                GroupName = $"{label} Resolution",
+                Value = FormatDisplayResolution(display),
+                ValueFormat = default,
+                ShowGraph = false,
+                ShowGraphIsEnabled = false,
+                Color = string.Empty,
+                IsEntryEnabled = true
+            };
+        }
+
+        private static void UpdateDisplayResolutionEntry(IOverlayEntry entry,
+            DetectedDisplay display)
+        {
+            if (!string.Equals(entry.StableIdentifier, display.DeviceName,
+                    StringComparison.Ordinal))
+            {
+                entry.StableIdentifier = display.DeviceName;
+            }
+
+            if (entry is OverlayEntryWrapper wrapper)
+            {
+                wrapper.Description = $"{DisplayDetection.GetLabel(display.DeviceName)} Resolution";
+            }
+
+            entry.Value = FormatDisplayResolution(display);
+            if (!entry.IsEntryEnabled)
+            {
+                entry.IsEntryEnabled = true;
+            }
+            if (!entry.ShowOnOverlayIsEnabled)
+            {
+                entry.ShowOnOverlayIsEnabled = true;
+            }
+            if (entry.ShowGraph)
+            {
+                entry.ShowGraph = false;
+            }
+            if (entry.ShowGraphIsEnabled)
+            {
+                entry.ShowGraphIsEnabled = false;
+            }
+        }
+
+        private static string FormatDisplayResolution(DetectedDisplay display)
+            => $"{display.Width}x{display.Height}";
+
+        internal static string GetDisplayResolutionIdentifier(string deviceName)
+            => DISPLAY_RESOLUTION_IDENTIFIER_PREFIX + (deviceName ?? string.Empty);
+
+        internal static bool IsDisplayResolutionIdentifier(string identifier)
+            => !string.IsNullOrEmpty(identifier)
+                && identifier.StartsWith(DISPLAY_RESOLUTION_IDENTIFIER_PREFIX,
+                    StringComparison.OrdinalIgnoreCase);
+
+        internal static bool RefreshPresentResolutionMetadata(IOverlayEntry entry)
+        {
+            if (entry == null || entry.Identifier != PRESENT_RESOLUTION_IDENTIFIER)
+            {
+                return false;
+            }
+
+            bool changed = false;
+            if (entry is OverlayEntryWrapper wrapper)
+            {
+                changed = !string.Equals(wrapper.Description, "Present Resolution",
+                    StringComparison.Ordinal);
+                wrapper.Description = "Present Resolution";
+            }
+
+            bool hasLegacyDefaultGroup = string.Equals(entry.GroupName, "Resolution",
+                    StringComparison.OrdinalIgnoreCase)
+                || string.Equals(entry.GroupName, "App Resolution",
+                    StringComparison.OrdinalIgnoreCase)
+                || string.Equals(entry.GroupName, "Application Resolution",
+                    StringComparison.OrdinalIgnoreCase);
+            if (hasLegacyDefaultGroup)
+            {
+                entry.GroupName = "Present Resolution";
+                changed = true;
+            }
+
+            return changed;
+        }
+
         /// <summary>
         /// Decides whether a saved group name from an older config is still semantically
         /// compatible with the current sensor's description. Guards against stale
@@ -717,6 +1039,14 @@ namespace CapFrameX.Overlay
         /// </summary>
         private bool GetIsEntryKeptInList(OverlayEntryWrapper entry)
         {
+            // Display-resolution items are reconciled against the live Screen.AllScreens snapshot
+            // after loading. Keep them long enough to preserve user formatting for displays that
+            // are still connected, even if an older config persisted a disabled state.
+            if (IsDisplayResolutionIdentifier(entry.Identifier))
+            {
+                return true;
+            }
+
             // Feature-toggle gated entries: sync all state flags from the config toggle, but
             // always keep the entry so the live toggle subscription in the constructor can flip
             // it in place later.
@@ -807,10 +1137,13 @@ namespace CapFrameX.Overlay
 
         private async Task<BlockingCollection<IOverlayEntry>> CreateDefaultOverlayEntries()
         {
-            var overlayEntries = OverlayUtils.GetOverlayEntryDefaults(_appConfiguration)
+            var defaultEntries = OverlayUtils.GetOverlayEntryDefaults(_appConfiguration)
                 .Where(item => item.IsEntryEnabled || CONFIG_GATED_ENTRIES.ContainsKey(item.Identifier))
                 .Select(item => (item as IOverlayEntry).Clone())
-                .ToBlockingCollection();
+                .ToList();
+
+            ReconcileDisplayResolutionEntries(defaultEntries, GetDetectedDisplays());
+            var overlayEntries = defaultEntries.ToBlockingCollection();
 
             //log hardware configs
             _logger.LogInformation("Set overlay defaults");
@@ -1076,7 +1409,7 @@ namespace CapFrameX.Overlay
 
         private void UpdateResolution()
         {
-            _identifierOverlayEntryDict.TryGetValue("Resolution", out IOverlayEntry resolution);
+            _identifierOverlayEntryDict.TryGetValue(PRESENT_RESOLUTION_IDENTIFIER, out IOverlayEntry resolution);
 
             if (resolution != null && resolution.ShowOnOverlay)
             {

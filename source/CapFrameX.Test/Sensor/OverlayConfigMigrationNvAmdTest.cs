@@ -259,7 +259,8 @@ namespace CapFrameX.Test.Sensor
                 _threadAffinityMock.Object,
                 _pathServiceMock.Object,
                 _hookOverlayStatusMock.Object,
-                _loggerMock.Object);
+                _loggerMock.Object,
+                () => Array.Empty<DetectedDisplay>());
         }
 
         // ==================== TESTS ====================

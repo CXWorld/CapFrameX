@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Contracts.Overlay
@@ -6,6 +7,8 @@ namespace CapFrameX.Contracts.Overlay
 	public interface IOverlayEntryProvider
 	{
 		bool HasHardwareChanged { get; }
+
+		IObservable<IOverlayEntry[]> OverlayEntriesChanged { get; }
 
 		IOverlayEntry GetOverlayEntry(string identifier);
 
@@ -28,6 +31,8 @@ namespace CapFrameX.Contracts.Overlay
 		Task<IOverlayEntry[]> GetOverlayEntries(bool updateFormats = true);
 
 		Task<IEnumerable<IOverlayEntry>> GetDefaultOverlayEntries();
+
+		void RefreshDisplayEntries(IReadOnlyList<DetectedDisplay> displays = null);
 
 		void SortOverlayEntriesByType();
 

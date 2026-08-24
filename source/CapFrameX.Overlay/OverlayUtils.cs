@@ -369,15 +369,16 @@ namespace CapFrameX.Overlay
                         IsEntryEnabled = true
                     },
 
-                    // Resolution. RTSS reads its shared memory; the in-game API hook substitutes
-                    // the actual backbuffer extent. A hook-free window cannot determine it.
+                    // Present resolution. RTSS reads its shared memory; the in-game API hook
+                    // substitutes the actual swapchain/backbuffer extent. Keep the legacy
+                    // identifier because the native renderer uses it for that substitution.
                     new OverlayEntryWrapper("Resolution")
                     {
                         OverlayEntryType = EOverlayEntryType.CX,
                         ShowOnOverlay = false,
                         ShowOnOverlayIsEnabled = true,
-                        Description = "Resolution",
-                        GroupName = "Resolution",
+                        Description = "Present Resolution",
+                        GroupName = "Present Resolution",
                         Value = "N/A",
                         ValueFormat = default,
                         ShowGraph = false,
