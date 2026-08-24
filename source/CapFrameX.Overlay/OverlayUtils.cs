@@ -137,9 +137,10 @@ namespace CapFrameX.Overlay
                         IsEntryEnabled = appConfiguration.EnableHookOverlay
                     },
 
-                    // Frame generation activity is already tracked by the in-game hook for its
-                    // presentation routing. The native OSD substitutes the live values for these
-                    // placeholders; RTSS and the hook-free renderer deliberately have no source.
+                    // Frame generation activity comes from a telemetry-only channel in the
+                    // in-game hook. The native OSD substitutes the live values for these
+                    // placeholders; renderer routing never consumes them, while RTSS and the
+                    // hook-free renderer deliberately have no source.
                     new OverlayEntryWrapper("FrameGenerationStatus")
                     {
                         OverlayEntryType = EOverlayEntryType.CX,

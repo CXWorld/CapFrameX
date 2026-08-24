@@ -26,7 +26,12 @@ the OSD is built from source instead and these files are ignored.
   references before `CreateSwapChain*` replaces the chain, while holding the Present lifecycle
   lock across the original DXGI call. Once a captured FidelityFX replacement
   swapchain exists, its proxy Present and API-provided queue are exclusive; independently driven
-  native output Presents are suppressed.
+  native output Presents are suppressed. Frame-generation telemetry is a separately compiled
+  provider-control component with no DXGI, D3D, queue, or renderer dependency. It observes
+  Streamline DLSS-FG, FidelityFX FSR-FG, and XeSS-FG through their explicit control/status APIs;
+  Streamline late attach resolves the two documented DLSS-FG entry points and removes those hooks
+  at the documented feature-unload boundary. Compatibility profiles can therefore disable every
+  vendor factory, Present, Resize, or swapchain-lifecycle hook without suppressing telemetry.
 - `native/x86/` — x86 DXGI hook. The hook DLL alone: `HookInjector` resolves the target's 32-bit
   `LoadLibraryW` from the x64 app, so no separate 32-bit injector is shipped
 - `native/MinHook.LICENSE.txt` — BSD license for MinHook, statically linked into both DXGI hooks
