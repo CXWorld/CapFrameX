@@ -30,12 +30,13 @@ using CapFrameX.Updater;
 using CapFrameX.ViewModel;
 using DryIoc;
 using Microsoft.Extensions.Logging;
+using Prism.Container.DryIoc;
 using Prism.DryIoc;
 using Prism.Events;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Mvvm;
-using Prism.Regions;
+using Prism.Navigation.Regions;
 using Serilog;
 using System;
 using System.Configuration;
@@ -62,19 +63,7 @@ namespace CapFrameX
 
         // The existing composition root uses DryIoc-specific registration APIs. PrismApplication
         // exposes the container through Prism's abstraction, so unwrap it in one place.
-        private new IContainer Container => base.Container.GetContainer();
-
-        // Prism 7.2.0.1422 was compiled against DryIoc 4.0.7. DryIoc 4.1 changed the binary
-        // signature of Made.Of(), so PrismApplication's implementation throws a
-        // MissingMethodException before the container can be created. Recompile the equivalent
-        // rule set here against the DryIoc version referenced by this application.
-        protected override Rules CreateContainerRules()
-        {
-            return Rules.Default
-                .WithAutoConcreteTypeResolution()
-                .With(Made.Of(FactoryMethod.ConstructorWithResolvableArguments))
-                .WithDefaultIfAlreadyRegistered(IfAlreadyRegistered.Replace);
-        }
+        private new IContainer Container => ((DryIocContainerExtension)base.Container).Instance;
 
         /// <summary>
         /// While the splash screen is up, the shell stays minimized after its warm-up
@@ -91,7 +80,7 @@ namespace CapFrameX
             using (StartupPerformanceLogger.Measure("Shell resolution and construction"))
             {
                 var shell = Container.Resolve<Shell>();
-                Container.UseInstance<IShell>(shell);
+                Container.RegisterInstance<IShell>(shell);
                 return shell;
             }
         }

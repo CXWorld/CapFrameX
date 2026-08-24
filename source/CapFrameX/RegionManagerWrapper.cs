@@ -1,4 +1,4 @@
-﻿using Prism.Regions;
+﻿using Prism.Navigation.Regions;
 using System;
 using System.Windows;
 
@@ -12,7 +12,7 @@ namespace CapFrameX
 
         public RegionManagerWrapper()
         {
-            RegionManager = Prism.Regions.RegionManager.GetRegionManager(Application.Current.MainWindow);
+            RegionManager = Prism.Navigation.Regions.RegionManager.GetRegionManager(Application.Current.MainWindow);
         }
 
         public static void ActivateView(string region, string view)

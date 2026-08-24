@@ -19,7 +19,7 @@
     <PackageReference Include="OxyPlot.Core" Version="2.1.0" />
     <PackageReference Include="OxyPlot.Wpf" Version="2.1.0" />
     <PackageReference Include="OxyPlot.Wpf.Shared" Version="2.1.0" />
-    <PackageReference Include="Prism.Core" Version="7.0.0.396" />
+    <PackageReference Include="Prism.Core" Version="9.0.537" />
     <PackageReference Include="SerialPortStream" Version="2.4.0" />
     <PackageReference Include="System.Reactive" Version="6.1.0" />
   </ItemGroup>

@@ -73,7 +73,7 @@
   <Import Project="benchlab-service.items" Condition="Exists('benchlab-service.items')" />
 
   <ItemGroup>
-    <PackageReference Include="DryIoc.dll" Version="4.1.0" />
+    <PackageReference Include="DryIoc.dll" Version="5.4.3" />
     <PackageReference Include="EmbedIO" Version="3.4.3" />
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="2.0.1" />
     <PackageReference Include="Jot" Version="2.1.17" />
@@ -82,8 +82,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.9" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.9" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
-    <PackageReference Include="Prism.Core" Version="7.2.0.1422" />
-    <PackageReference Include="Prism.DryIoc" Version="7.2.0.1422" />
+    <PackageReference Include="Prism.Core" Version="9.0.537" />
+    <PackageReference Include="Prism.DryIoc" Version="9.0.537" />
     <PackageReference Include="Serilog" Version="2.9.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
     <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />

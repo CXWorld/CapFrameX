@@ -7,7 +7,7 @@ using CapFrameX.ViewModel.SubModels;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Mvvm;
-using Prism.Regions;
+using Prism.Navigation.Regions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
