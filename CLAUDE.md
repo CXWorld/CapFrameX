@@ -105,7 +105,7 @@ persistence layer was dropped. netcoreapp3.1 is out of support; the packages war
 - OxyPlot is consumed through NuGet packages rather than a repository project
 
 ### Key Dependencies
-- Prism 7.x (MVVM framework)
+- Prism 9.x (MVVM framework)
 - DryIoc (IoC container)
 - MahApps.Metro + MaterialDesign (UI styling)
 - System.Reactive (Rx)
