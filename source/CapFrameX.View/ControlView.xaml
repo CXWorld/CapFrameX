@@ -20,6 +20,7 @@
             <CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
             <mvvm:AddValueConverter x:Key="AddValueConverterExpander" Offset="-70"/>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
+            <mvvm:InvertBoolConverter x:Key="InvertBoolConverter"/>
             <mvvm:PathLeafConverter x:Key="PathLeafConverter"/>
             <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
@@ -67,9 +68,11 @@
                     <DockPanel Grid.Row="0" Margin="8 8 8 4" LastChildFill="True">
                         <!--Observed-directory breadcrumb: opens the folder tree in a floating
                             popup that overlays nothing in the layout, so the record list is
-                            never reflowed. Replaces the old side expander/drawer. -->
+                            never reflowed. While the popup is open, the button ignores mouse
+                            hit tests so the auto-close click cannot reopen it. -->
                         <Button x:Name="FolderChipButton" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0 0 0 0"
                             Click="FolderChipButton_Click" Cursor="Hand" Height="32" Padding="10 0"
+                            IsHitTestVisible="{Binding IsOpen, ElementName=FolderPopup, Converter={StaticResource InvertBoolConverter}}"
                             Style="{StaticResource MaterialDesignFlatButton}"
                             Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                             ToolTip="{Binding DataContext.RootDirectory, ElementName=ControlViewControl}" ToolTipService.ShowDuration="25000">
