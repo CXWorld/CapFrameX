@@ -19,10 +19,10 @@
     <PackageReference Include="MSTest.TestAdapter" Version="3.6.1" />
     <PackageReference Include="MSTest.TestFramework" Version="3.6.1" />
     <PackageReference Include="Moq" Version="4.13.1" />
-    <PackageReference Include="DryIoc.dll" Version="4.1.0" />
+    <PackageReference Include="DryIoc.dll" Version="5.4.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="OxyPlot.Core" Version="2.1.0" />
-    <PackageReference Include="Prism.Core" Version="7.2.0.1422" />
+    <PackageReference Include="Prism.Core" Version="9.0.537" />
     <PackageReference Include="System.Reactive" Version="6.1.0" />
   </ItemGroup>
 
