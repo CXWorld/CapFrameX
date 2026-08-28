@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.ExceptionServices;
 using CapFrameX.PMD.Benchlab;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using BenchlabSensor = CapFrameX.PMD.Benchlab.Sensor;
@@ -139,6 +141,32 @@ namespace CapFrameX.Test.PMD
         public void ShouldConfigureDemandStart_DoesNotMigrateMissingService()
         {
             Assert.IsFalse(BenchlabService.ShouldConfigureDemandStart(null));
+        }
+
+        [TestMethod]
+        public void IsWindowsServiceRunning_DoesNotQueryStatusForMissingService()
+        {
+            var serviceControllerExceptions = 0;
+            EventHandler<FirstChanceExceptionEventArgs> handler = (_, args) =>
+            {
+                if (args.Exception.Source == "System.ServiceProcess.ServiceController")
+                {
+                    serviceControllerExceptions++;
+                }
+            };
+
+            AppDomain.CurrentDomain.FirstChanceException += handler;
+            try
+            {
+                Assert.IsFalse(BenchlabService.IsWindowsServiceRunning(
+                    $"CapFrameX.Test.Missing.{Guid.NewGuid():N}"));
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.FirstChanceException -= handler;
+            }
+
+            Assert.AreEqual(0, serviceControllerExceptions);
         }
     }
 }

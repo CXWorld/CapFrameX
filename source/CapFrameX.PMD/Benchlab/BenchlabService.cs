@@ -295,8 +295,13 @@ namespace CapFrameX.PMD.Benchlab
             return true;
         }
 
-        private static bool IsWindowsServiceRunning(string serviceName)
+        internal static bool IsWindowsServiceRunning(string serviceName)
         {
+            if (!IsWindowsServiceInstalled(serviceName))
+            {
+                return false;
+            }
+
             try
             {
                 using (var sc = new ServiceController(serviceName))
@@ -308,6 +313,12 @@ namespace CapFrameX.PMD.Benchlab
             {
                 return false;
             }
+        }
+
+        private static bool IsWindowsServiceInstalled(string serviceName)
+        {
+            return TryGetWindowsServiceStartType(serviceName, out var startType)
+                && startType.HasValue;
         }
 
         private static bool TryGetWindowsServiceStartType(string serviceName, out int? startType)
@@ -455,7 +466,7 @@ namespace CapFrameX.PMD.Benchlab
 
         private static bool IsBenchlabRunning()
         {
-            return IsWindowsServiceRunning(SERVICE_NAME) || IsBenchlabProcessRunning();
+            return IsBenchlabProcessRunning() || IsWindowsServiceRunning(SERVICE_NAME);
         }
 
         private bool EnsureBenchlabServiceStarted()
@@ -483,6 +494,11 @@ namespace CapFrameX.PMD.Benchlab
 
         private static bool TryStartWindowsService(string serviceName)
         {
+            if (!IsWindowsServiceInstalled(serviceName))
+            {
+                return false;
+            }
+
             try
             {
                 using (var sc = new ServiceController(serviceName))
@@ -509,6 +525,11 @@ namespace CapFrameX.PMD.Benchlab
 
         private static bool TryStopWindowsService(string serviceName)
         {
+            if (!IsWindowsServiceInstalled(serviceName))
+            {
+                return true;
+            }
+
             try
             {
                 using (var sc = new ServiceController(serviceName))
