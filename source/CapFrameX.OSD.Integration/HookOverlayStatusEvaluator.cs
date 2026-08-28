@@ -73,8 +73,7 @@ namespace CapFrameX.OSD.Integration
             }
 
             return Status(EHookOverlayStatus.Active,
-                $"{target}: hook active, {native.MetricsEntryCount} metrics, heartbeat {heartbeatAge / 1000.0:F1} s; " +
-                $"swapchain steady {native.SteadyRefcount}, release threshold {native.ReleaseThreshold}.",
+                $"{target}: hook active, {native.MetricsEntryCount} metrics, heartbeat {heartbeatAge / 1000.0:F1} s.",
                 heartbeatAge, native, processId, runtime);
         }
 
@@ -167,7 +166,8 @@ namespace CapFrameX.OSD.Integration
                 heartbeatAge, resolution);
         }
 
-        // Vulkan carries no swapchain refcounts — those belong to the DXGI release policy.
+        // The V1 status contract retains two legacy DXGI refcount fields. Vulkan and the
+        // release-independent DXGI lifecycle both report zero there.
         private static HookOverlayStatus VulkanStatus(EHookOverlayStatus state, int processId,
             string runtime, string detail, long heartbeatAge, string renderResolution)
         {

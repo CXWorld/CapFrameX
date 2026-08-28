@@ -70,7 +70,7 @@ namespace CapFrameX.Test.Integration
                 view.Write(24, 4200L); // last state change
                 view.Write(32, 0);     // last error
                 view.Write(36, 3);     // steady refcount
-                view.Write(40, 2);     // release threshold
+                view.Write(40, 2);     // legacy release threshold
                 view.Write(44, 17);    // metrics entries
                 view.Write(48, 2560);  // resolution X
                 view.Write(52, 1440);  // resolution Y

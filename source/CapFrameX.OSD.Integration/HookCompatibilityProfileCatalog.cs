@@ -13,43 +13,36 @@ namespace CapFrameX.OSD.Integration
     internal enum NativeHookCompatibilityFlags : uint
     {
         None = 0,
-        DisableDxgiSwapchainReleaseHook = 1u << 0,
+        // V1 bits 0 and 4 were per-title DXGI lifetime switches. They stay vacant so an older
+        // host/native pair cannot reinterpret a routing flag after the lifecycle became universal.
         EnableXeFgNativePresentQueueRoute = 1u << 1,
         EnableGenericD3D12PresentRoute = 1u << 2,
-        DisableFidelityFxSwapchainLifecycleHooks = 1u << 3,
-        EnableDxgiFactorySwapchainLifecycleHooks = 1u << 4
+        DisableFidelityFxSwapchainLifecycleHooks = 1u << 3
     }
 
     internal sealed class HookCompatibilityProfile
     {
         internal HookCompatibilityProfile(string executableName,
-            bool disableDxgiSwapchainReleaseHook,
             bool enableXeFgNativePresentQueueRoute,
             bool enableGenericD3D12PresentRoute,
             bool disableFidelityFxSwapchainLifecycleHooks,
-            bool enableDxgiFactorySwapchainLifecycleHooks,
             TimeSpan injectionDelay,
             string earlyInjectionModule, string source)
         {
             ExecutableName = executableName;
-            DisableDxgiSwapchainReleaseHook = disableDxgiSwapchainReleaseHook;
             EnableXeFgNativePresentQueueRoute = enableXeFgNativePresentQueueRoute;
             EnableGenericD3D12PresentRoute = enableGenericD3D12PresentRoute;
             DisableFidelityFxSwapchainLifecycleHooks =
                 disableFidelityFxSwapchainLifecycleHooks;
-            EnableDxgiFactorySwapchainLifecycleHooks =
-                enableDxgiFactorySwapchainLifecycleHooks;
             InjectionDelay = injectionDelay;
             EarlyInjectionModule = earlyInjectionModule;
             Source = source;
         }
 
         internal string ExecutableName { get; }
-        internal bool DisableDxgiSwapchainReleaseHook { get; }
         internal bool EnableXeFgNativePresentQueueRoute { get; }
         internal bool EnableGenericD3D12PresentRoute { get; }
         internal bool DisableFidelityFxSwapchainLifecycleHooks { get; }
-        internal bool EnableDxgiFactorySwapchainLifecycleHooks { get; }
         internal TimeSpan InjectionDelay { get; }
         internal string EarlyInjectionModule { get; }
         internal bool RequiresEarlyInjection =>
@@ -62,16 +55,12 @@ namespace CapFrameX.OSD.Integration
             {
                 NativeHookCompatibilityFlags flags =
                     NativeHookCompatibilityFlags.None;
-                if (DisableDxgiSwapchainReleaseHook)
-                    flags |= NativeHookCompatibilityFlags.DisableDxgiSwapchainReleaseHook;
                 if (EnableXeFgNativePresentQueueRoute)
                     flags |= NativeHookCompatibilityFlags.EnableXeFgNativePresentQueueRoute;
                 if (EnableGenericD3D12PresentRoute)
                     flags |= NativeHookCompatibilityFlags.EnableGenericD3D12PresentRoute;
                 if (DisableFidelityFxSwapchainLifecycleHooks)
                     flags |= NativeHookCompatibilityFlags.DisableFidelityFxSwapchainLifecycleHooks;
-                if (EnableDxgiFactorySwapchainLifecycleHooks)
-                    flags |= NativeHookCompatibilityFlags.EnableDxgiFactorySwapchainLifecycleHooks;
                 return flags;
             }
         }
@@ -148,7 +137,10 @@ namespace CapFrameX.OSD.Integration
                 if (key == null)
                     throw new InvalidDataException("A hook compatibility profile has no executable name.");
 
-                bool disableRelease = ParseBooleanAttribute(element,
+                // V1 catalogs used these two attributes to opt individual games into what is now
+                // the universal DXGI lifecycle. Parse them only to retain strict validation of an
+                // older catalog, but never publish their retired protocol bits.
+                ParseBooleanAttribute(element,
                     "disableDxgiSwapchainReleaseHook");
                 bool enableXeFgNativePresentQueueRoute = ParseBooleanAttribute(element,
                     "enableXeFgNativePresentQueueRoute");
@@ -157,27 +149,24 @@ namespace CapFrameX.OSD.Integration
                 bool disableFidelityFxSwapchainLifecycleHooks =
                     ParseBooleanAttribute(element,
                         "disableFidelityFxSwapchainLifecycleHooks");
-                bool enableDxgiFactorySwapchainLifecycleHooks =
-                    ParseBooleanAttribute(element,
-                        "enableDxgiFactorySwapchainLifecycleHooks");
+                ParseBooleanAttribute(element,
+                    "enableDxgiFactorySwapchainLifecycleHooks");
                 string earlyInjectionModule = ParseModuleNameAttribute(element,
                     "earlyInjectionModule");
                 int delayMilliseconds = ParseNonNegativeIntegerAttribute(element,
                     "injectionDelayMilliseconds");
-                if (!disableRelease && !enableXeFgNativePresentQueueRoute &&
+                if (!enableXeFgNativePresentQueueRoute &&
                     !enableGenericD3D12PresentRoute &&
                     !disableFidelityFxSwapchainLifecycleHooks &&
-                    !enableDxgiFactorySwapchainLifecycleHooks &&
                     delayMilliseconds == 0 &&
                     earlyInjectionModule == null)
                     throw new InvalidDataException($"Profile '{executable}' has no compatibility settings.");
 
                 var profile = new HookCompatibilityProfile(
-                    Path.GetFileName(executable), disableRelease,
+                    Path.GetFileName(executable),
                     enableXeFgNativePresentQueueRoute,
                     enableGenericD3D12PresentRoute,
                     disableFidelityFxSwapchainLifecycleHooks,
-                    enableDxgiFactorySwapchainLifecycleHooks,
                     TimeSpan.FromMilliseconds(delayMilliseconds), earlyInjectionModule,
                     ((string)element.Attribute("source"))?.Trim());
                 if (profiles.ContainsKey(key))

@@ -10,20 +10,20 @@ namespace CapFrameX.Test.Integration
     public class HookCompatibilityProfileTest
     {
         [TestMethod]
-        public void Catalog_ContainsCuratedD3D11ReleaseHookExceptions()
+        public void Catalog_DoesNotContainDxgiLifecycleOnlyExceptions()
         {
             foreach (string executable in new[]
             {
                 "BF1.exe",
                 "BF1_CTE.exe",
                 "GearGame.exe",
-                "MetroExodus.exe"
+                "MetroExodus.exe",
+                "AoE2DE_s.exe",
+                "AoMRT_s.exe"
             })
             {
-                Assert.IsTrue(HookCompatibilityProfileCatalog.TryGet(executable,
-                    out HookCompatibilityProfile profile), executable);
-                Assert.IsTrue(profile.DisableDxgiSwapchainReleaseHook, executable);
-                Assert.AreEqual(TimeSpan.Zero, profile.InjectionDelay, executable);
+                Assert.IsFalse(HookCompatibilityProfileCatalog.TryGet(executable,
+                    out _), executable);
             }
         }
 
@@ -47,7 +47,6 @@ namespace CapFrameX.Test.Integration
                 out HookCompatibilityProfile profile));
             Assert.IsFalse(profile.RequiresEarlyInjection);
             Assert.IsNull(profile.EarlyInjectionModule);
-            Assert.IsFalse(profile.DisableDxgiSwapchainReleaseHook);
             Assert.IsFalse(profile.EnableXeFgNativePresentQueueRoute);
             Assert.IsTrue(profile.EnableGenericD3D12PresentRoute);
             Assert.AreEqual(
@@ -66,7 +65,6 @@ namespace CapFrameX.Test.Integration
                 "witcher3.exe", out HookCompatibilityProfile profile));
             Assert.IsFalse(profile.RequiresEarlyInjection);
             Assert.IsNull(profile.EarlyInjectionModule);
-            Assert.IsFalse(profile.DisableDxgiSwapchainReleaseHook);
             Assert.IsFalse(profile.EnableXeFgNativePresentQueueRoute);
             Assert.IsTrue(profile.EnableGenericD3D12PresentRoute);
             Assert.AreEqual(
@@ -85,12 +83,10 @@ namespace CapFrameX.Test.Integration
                 "tlou-ii.exe", out HookCompatibilityProfile profile));
             Assert.IsTrue(profile.RequiresEarlyInjection);
             Assert.AreEqual("d3d12.dll", profile.EarlyInjectionModule);
-            Assert.IsTrue(profile.DisableDxgiSwapchainReleaseHook);
             Assert.IsFalse(profile.EnableXeFgNativePresentQueueRoute);
             Assert.IsTrue(profile.EnableGenericD3D12PresentRoute);
             Assert.IsFalse(profile.DisableFidelityFxSwapchainLifecycleHooks);
             Assert.AreEqual(
-                NativeHookCompatibilityFlags.DisableDxgiSwapchainReleaseHook |
                 NativeHookCompatibilityFlags.EnableGenericD3D12PresentRoute,
                 profile.NativeFlags);
             Assert.AreEqual(TimeSpan.Zero, profile.InjectionDelay);
@@ -107,16 +103,12 @@ namespace CapFrameX.Test.Integration
                 out HookCompatibilityProfile profile));
             Assert.IsFalse(profile.RequiresEarlyInjection);
             Assert.IsNull(profile.EarlyInjectionModule);
-            Assert.IsTrue(profile.DisableDxgiSwapchainReleaseHook);
             Assert.IsFalse(profile.EnableXeFgNativePresentQueueRoute);
             Assert.IsTrue(profile.EnableGenericD3D12PresentRoute);
             Assert.IsTrue(profile.DisableFidelityFxSwapchainLifecycleHooks);
-            Assert.IsTrue(profile.EnableDxgiFactorySwapchainLifecycleHooks);
             Assert.AreEqual(
-                NativeHookCompatibilityFlags.DisableDxgiSwapchainReleaseHook |
                 NativeHookCompatibilityFlags.EnableGenericD3D12PresentRoute |
-                NativeHookCompatibilityFlags.DisableFidelityFxSwapchainLifecycleHooks |
-                NativeHookCompatibilityFlags.EnableDxgiFactorySwapchainLifecycleHooks,
+                NativeHookCompatibilityFlags.DisableFidelityFxSwapchainLifecycleHooks,
                 profile.NativeFlags);
             Assert.AreEqual(TimeSpan.Zero, profile.InjectionDelay);
             CollectionAssert.DoesNotContain(
@@ -132,11 +124,9 @@ namespace CapFrameX.Test.Integration
                 out HookCompatibilityProfile profile));
             Assert.IsFalse(profile.RequiresEarlyInjection);
             Assert.IsNull(profile.EarlyInjectionModule);
-            Assert.IsTrue(profile.DisableDxgiSwapchainReleaseHook);
             Assert.IsFalse(profile.EnableXeFgNativePresentQueueRoute);
             Assert.IsTrue(profile.EnableGenericD3D12PresentRoute);
             Assert.AreEqual(
-                NativeHookCompatibilityFlags.DisableDxgiSwapchainReleaseHook |
                 NativeHookCompatibilityFlags.EnableGenericD3D12PresentRoute,
                 profile.NativeFlags);
             Assert.AreEqual(TimeSpan.Zero, profile.InjectionDelay);
@@ -152,7 +142,6 @@ namespace CapFrameX.Test.Integration
                 "JediSurvivor.exe", out HookCompatibilityProfile profile));
             Assert.IsTrue(profile.RequiresEarlyInjection);
             Assert.AreEqual("d3d12.dll", profile.EarlyInjectionModule);
-            Assert.IsFalse(profile.DisableDxgiSwapchainReleaseHook);
             Assert.IsFalse(profile.EnableXeFgNativePresentQueueRoute);
             Assert.IsTrue(profile.EnableGenericD3D12PresentRoute);
             Assert.AreEqual(
@@ -172,11 +161,9 @@ namespace CapFrameX.Test.Integration
                 out HookCompatibilityProfile profile));
             Assert.IsTrue(profile.RequiresEarlyInjection);
             Assert.AreEqual("d3d12.dll", profile.EarlyInjectionModule);
-            Assert.IsTrue(profile.DisableDxgiSwapchainReleaseHook);
             Assert.IsFalse(profile.EnableXeFgNativePresentQueueRoute);
             Assert.IsTrue(profile.EnableGenericD3D12PresentRoute);
             Assert.AreEqual(
-                NativeHookCompatibilityFlags.DisableDxgiSwapchainReleaseHook |
                 NativeHookCompatibilityFlags.EnableGenericD3D12PresentRoute,
                 profile.NativeFlags);
             Assert.AreEqual(TimeSpan.Zero, profile.InjectionDelay);
@@ -210,7 +197,7 @@ namespace CapFrameX.Test.Integration
         {
             int processId = Process.GetCurrentProcess().Id;
             NativeHookCompatibilityFlags expected =
-                NativeHookCompatibilityFlags.DisableDxgiSwapchainReleaseHook;
+                NativeHookCompatibilityFlags.EnableGenericD3D12PresentRoute;
 
             Assert.IsTrue(HookCompatibilityChannel.TryCreate(processId, expected,
                 out HookCompatibilityChannel channel, out string error), error);
