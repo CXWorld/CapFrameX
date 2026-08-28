@@ -165,14 +165,21 @@ namespace CapFrameX.Data
             {
                 try
                 {
-                    try
+                    if (File.Exists(fullpath))
                     {
                         processList.ReadFromFile();
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        logger.LogError(ex, "Error while reading from file.");
+                        logger.LogDebug("Process list file not found at {Path}; starting from the bundled defaults.", fullpath);
                     }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error while reading from file.");
+                }
+                try
+                {
 
                     var defaultProcesslistFileInfo = new FileInfo(Path.Combine("ProcessList", "Processes.json"));
                     if (!defaultProcesslistFileInfo.Exists)

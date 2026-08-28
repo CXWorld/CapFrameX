@@ -208,7 +208,15 @@ namespace CapFrameX.Sensor
 
         private async Task<Dictionary<string, bool>> GetInitializedSensorEntryDictionary()
         {
-            string json = await ReadAllTextAsync(Path.Combine(_sensorConfigFolder, CONFIG_FILENAME));
+            var path = Path.Combine(_sensorConfigFolder, CONFIG_FILENAME);
+
+            if (!File.Exists(path))
+            {
+                Log.Logger.Debug("Sensor config file not found at {Path}; using defaults.", path);
+                return null;
+            }
+
+            string json = await ReadAllTextAsync(path);
             return JsonConvert.DeserializeObject<Dictionary<string, bool>>(json);
         }
 
