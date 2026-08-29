@@ -742,16 +742,17 @@ namespace CapFrameX.Configuration
 
         public int HookFreeRefreshRate
         {
-            get => NormalizeHookFreeRefreshRate(Get<int>(1));
+            get => NormalizeHookFreeRefreshRate(Get<int>(10));
             set => Set(NormalizeHookFreeRefreshRate(value));
         }
 
         private static int NormalizeHookFreeRefreshRate(int value)
         {
             return value == 1 || value == 2 || value == 5 ||
-                value == 10 || value == 20 || value == 30
+                value == 10 || value == 20 || value == 30 ||
+                value == 60 || value == 120
                 ? value
-                : 1;
+                : 10;
         }
 
         public bool EnableHookOverlay

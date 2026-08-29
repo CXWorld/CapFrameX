@@ -662,7 +662,29 @@ internal sealed class NvidiaGpu : GenericGpu
 
         NvApi.NvStatus status;
 
-        if (_temperatures is { Length: > 0 })
+        // Resolve the selection once per update. Most NVAPI entry points below are separate
+        // driver round-trips; merely having a sensor object must not make every group poll.
+        // Use non-short-circuiting aggregation so GetSensorEvaluate still sees every identifier
+        // during the one-time discovery pass.
+        bool shouldUpdateMemoryBandwidth = ShouldEvaluateMemoryBandwidthSensor();
+        bool shouldUpdateTemperatures = ShouldEvaluateAnySensor(_temperatures);
+        bool shouldUpdateHotSpot = ShouldEvaluateSensor(_hotSpotTemperature);
+        bool shouldUpdateMemoryJunction = ShouldEvaluateSensor(_memoryJunctionTemperature);
+        bool shouldUpdateDirectMemoryTemperatures = ShouldEvaluateAnySensor(_memoryTemperatures);
+        bool shouldReadDirectMemoryTemperatures = shouldUpdateDirectMemoryTemperatures ||
+            (shouldUpdateMemoryJunction && _thermalSensorsMask == 0);
+        bool shouldReadDirectHotSpot = _nvidiaThermal?.NeedsInitialSample == true;
+        shouldReadDirectHotSpot |= shouldUpdateHotSpot;
+        bool shouldUpdateClocks = ShouldEvaluateAnySensor(_clocks);
+        shouldUpdateClocks |= shouldUpdateMemoryBandwidth;
+        bool shouldUpdateFans = ShouldEvaluateAnySensor(_fans);
+        bool shouldUpdateControls = ShouldEvaluateAnySensor(_controls);
+        bool shouldUpdateLoads = ShouldEvaluateAnySensor(_loads);
+        shouldUpdateLoads |= shouldUpdateMemoryBandwidth;
+        bool shouldUpdateMemory = ShouldEvaluateMemorySensors();
+        bool shouldUpdateVoltage = ShouldEvaluateSensor(_voltage);
+
+        if (_temperatures is { Length: > 0 } && shouldUpdateTemperatures)
         {
             NvApi.NvThermalSettings settings = GetThermalSettings(out status);
             // settings.Count is 0 when no valid data available, this happens when you try to read out this value with a high polling interval.
@@ -676,8 +698,10 @@ internal sealed class NvidiaGpu : GenericGpu
         float? directHotSpot = null;
         float? directMemoryJunction = null;
         bool directMemoryReadSucceeded = false;
-        bool hasDirectThermalData = ShouldEvaluateDirectThermalSensors() &&
+        bool hasDirectThermalData = _nvidiaThermal != null &&
+            (shouldReadDirectHotSpot || shouldReadDirectMemoryTemperatures) &&
             _nvidiaThermal.TryRead(
+                shouldReadDirectMemoryTemperatures,
                 out directHotSpot,
                 out directMemoryJunction,
                 _directMemoryTemperatures,
@@ -704,7 +728,10 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        if (_thermalSensorsMask > 0)
+        bool shouldUpdateExtendedThermals = shouldUpdateHotSpot ||
+            shouldUpdateMemoryJunction ||
+            shouldUpdateDirectMemoryTemperatures;
+        if (_thermalSensorsMask > 0 && (shouldUpdateTemperatures || shouldUpdateExtendedThermals))
         {
             NvApi.NvThermalSensors thermalSensors = GetThermalSensors(_thermalSensorsMask, out status);
 
@@ -748,7 +775,7 @@ internal sealed class NvidiaGpu : GenericGpu
         if (_memoryJunctionTemperature.Value is > 0)
             ActivateSensor(_memoryJunctionTemperature);
 
-        if (_clocks is { Length: > 0 })
+        if (_clocks is { Length: > 0 } && shouldUpdateClocks)
         {
             NvApi.NvGpuClockFrequencies clockFrequencies = GetClockFrequencies(out status);
             if (status == NvApi.NvStatus.OK)
@@ -763,7 +790,7 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        if (_fans is { Length: > 0 })
+        if (_fans is { Length: > 0 } && shouldUpdateFans)
         {
             NvApi.NvFanCoolersStatus fanCoolers = GetFanCoolersStatus(out status);
             if (status == NvApi.NvStatus.OK && fanCoolers.Count > 0)
@@ -782,7 +809,7 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        if (_controls is { Length: > 0 })
+        if (_controls is { Length: > 0 } && shouldUpdateControls)
         {
             NvApi.NvFanCoolersStatus fanCoolers = GetFanCoolersStatus(out status);
             if (status == NvApi.NvStatus.OK && fanCoolers.Count > 0 && fanCoolers.Count == _controls.Length)
@@ -809,7 +836,7 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        if (_loads is { Length: > 0 })
+        if (_loads is { Length: > 0 } && shouldUpdateLoads)
         {
             NvApi.NvDynamicPStatesInfo pStatesInfo = GetDynamicPstatesInfoEx(out status);
             if (status == NvApi.NvStatus.OK)
@@ -848,7 +875,7 @@ internal sealed class NvidiaGpu : GenericGpu
                 ActivateSensor(_memoryControllerLoad);
         }
 
-        if (_memoryBandwidth != null && ShouldEvaluateMemoryBandwidthSensor())
+        if (_memoryBandwidth != null && shouldUpdateMemoryBandwidth)
         {
             // _memoryClock holds the reported memory clock in MHz, _memoryControllerLoad the
             // memory-controller utilization in %. Compute the momentary bandwidth in GB/s
@@ -889,7 +916,7 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        if (_displayHandle is not null)
+        if (_displayHandle is not null && shouldUpdateMemory)
         {
             NvApi.NvMemoryInfo memoryInfo = GetMemoryInfo(out status);
             if (status == NvApi.NvStatus.OK)
@@ -912,7 +939,7 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        if (_voltage is not null)
+        if (_voltage is not null && shouldUpdateVoltage)
         {
             NvApi.NvGpuVoltageStatus voltageStatus = GetVoltageStatus(out status);
             if (status == NvApi.NvStatus.OK)
@@ -1059,39 +1086,9 @@ internal sealed class NvidiaGpu : GenericGpu
         return evaluate;
     }
 
-    private bool ShouldEvaluateDirectThermalSensors()
-    {
-        if (_nvidiaThermal == null)
-            return false;
-
-        if (_sensorConfig == null)
-            return true;
-
-        // GetSensorEvaluate permits the initial discovery read; NeedsInitialSample keeps the
-        // asynchronous reader eligible until a valid result has been consumed. Afterwards,
-        // polling requires logging or overlay usage.
-        bool evaluate = _nvidiaThermal.NeedsInitialSample;
-        evaluate |= _sensorConfig.GetSensorEvaluate(_hotSpotTemperature.Identifier.ToString());
-        evaluate |= _sensorConfig.GetSensorEvaluate(_memoryJunctionTemperature.Identifier.ToString());
-
-        foreach (Sensor memoryTemperature in _memoryTemperatures)
-            evaluate |= _sensorConfig.GetSensorEvaluate(memoryTemperature.Identifier.ToString());
-
-        return evaluate;
-    }
-
     private bool ShouldEvaluateAnyPowerSensor()
     {
-        if (_sensorConfig == null)
-            return true;
-
-        foreach (Sensor sensor in _powers)
-        {
-            if (sensor != null && _sensorConfig.GetSensorEvaluate(sensor.Identifier.ToString()))
-                return true;
-        }
-
-        return false;
+        return ShouldEvaluateAnySensor(_powers);
     }
 
     private bool ShouldEvaluatePowerUsageSensor()
@@ -1143,16 +1140,17 @@ internal sealed class NvidiaGpu : GenericGpu
         if (_sensorConfig == null)
             return true;
 
-        if (_powerLimit != null && _sensorConfig.GetSensorEvaluate(_powerLimit.Identifier.ToString()))
-            return true;
+        bool evaluate = false;
+        if (_powerLimit != null)
+            evaluate |= _sensorConfig.GetSensorEvaluate(_powerLimit.Identifier.ToString());
 
-        if (_temperatureLimit != null && _sensorConfig.GetSensorEvaluate(_temperatureLimit.Identifier.ToString()))
-            return true;
+        if (_temperatureLimit != null)
+            evaluate |= _sensorConfig.GetSensorEvaluate(_temperatureLimit.Identifier.ToString());
 
-        if (_voltageLimit != null && _sensorConfig.GetSensorEvaluate(_voltageLimit.Identifier.ToString()))
-            return true;
+        if (_voltageLimit != null)
+            evaluate |= _sensorConfig.GetSensorEvaluate(_voltageLimit.Identifier.ToString());
 
-        return false;
+        return evaluate;
     }
 
     private bool ShouldEvaluateMonitorRefreshRateSensor()
@@ -1175,6 +1173,34 @@ internal sealed class NvidiaGpu : GenericGpu
             return true;
 
         return _sensorConfig.GetSensorEvaluate(_memoryBandwidth.Identifier.ToString());
+    }
+
+    private bool ShouldEvaluateAnySensor(IEnumerable<Sensor> sensors)
+    {
+        if (sensors == null)
+            return false;
+
+        bool evaluate = false;
+        foreach (Sensor sensor in sensors)
+            evaluate |= ShouldEvaluateSensor(sensor);
+
+        return evaluate;
+    }
+
+    private bool ShouldEvaluateSensor(Sensor sensor)
+    {
+        return sensor != null &&
+               (_sensorConfig == null || _sensorConfig.GetSensorEvaluate(sensor.Identifier.ToString()));
+    }
+
+    private bool ShouldEvaluateMemorySensors()
+    {
+        bool evaluate = false;
+        evaluate |= ShouldEvaluateSensor(_memoryTotal);
+        evaluate |= ShouldEvaluateSensor(_memoryFree);
+        evaluate |= ShouldEvaluateSensor(_memoryUsed);
+        evaluate |= ShouldEvaluateSensor(_memoryLoad);
+        return evaluate;
     }
 
     public override string GetReport()

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Sensor
@@ -31,7 +32,25 @@ namespace CapFrameX.Sensor
         private readonly HashSet<string> _sensorEvaluateFirstCallSeen
             = new HashSet<string>();
 
-        public bool IsCapturing { get; set; } = false;
+        private volatile bool _isCapturing;
+        private volatile bool _isSensorLoggingActive;
+        private volatile bool _wsSensorsEnabled;
+        private volatile bool _wsActiveSensorsEnabled;
+        private int _selectedOverlaySensorCount;
+        private int _selectedPmcLoggingSensorCount;
+        private int _selectedPmcOverlaySensorCount;
+
+        public bool IsCapturing
+        {
+            get => _isCapturing;
+            set => _isCapturing = value;
+        }
+
+        public bool IsSensorLoggingActive
+        {
+            get => _isSensorLoggingActive;
+            set => _isSensorLoggingActive = value;
+        }
 
         public bool HasConfigFile
             => File.Exists(Path.Combine(_sensorConfigFolder, CONFIG_FILENAME));
@@ -39,9 +58,26 @@ namespace CapFrameX.Sensor
         public int SensorEntryCount
             => _loggingSelectionDict == null ? 0 : _loggingSelectionDict.Count;
 
-        public bool WsSensorsEnabled { get; set; }
+        public bool WsSensorsEnabled
+        {
+            get => _wsSensorsEnabled;
+            set => _wsSensorsEnabled = value;
+        }
 
-        public bool WsActiveSensorsEnabled { get; set; }
+        public bool WsActiveSensorsEnabled
+        {
+            get => _wsActiveSensorsEnabled;
+            set => _wsActiveSensorsEnabled = value;
+        }
+
+        public bool HasSelectedOverlaySensors
+            => Volatile.Read(ref _selectedOverlaySensorCount) > 0;
+
+        public bool HasSelectedPmcOverlaySensors
+            => Volatile.Read(ref _selectedPmcOverlaySensorCount) > 0;
+
+        public bool HasSelectedPmcLoggingSensors
+            => Volatile.Read(ref _selectedPmcLoggingSensorCount) > 0;
 
         // Written from the UI thread, read from the sensor update loop.
         private volatile bool _evaluateAllSensors;
@@ -72,11 +108,16 @@ namespace CapFrameX.Sensor
 
         public void SelectForLogging(string identifier, bool isActive)
         {
+            bool wasSelected = _loggingSelectionDict.TryGetValue(identifier, out bool selected) && selected;
+            _loggingSelectionDict[identifier] = isActive;
 
-            if (_loggingSelectionDict.ContainsKey(identifier))
-                _loggingSelectionDict[identifier] = isActive;
+            if (!IsPmcSensorIdentifier(identifier) || wasSelected == isActive)
+                return;
+
+            if (isActive)
+                Interlocked.Increment(ref _selectedPmcLoggingSensorCount);
             else
-                _loggingSelectionDict.Add(identifier, isActive);
+                Interlocked.Decrement(ref _selectedPmcLoggingSensorCount);
         }
 
         public bool IsSelectedForLoggingByStableId(string stableIdentifier)
@@ -118,10 +159,24 @@ namespace CapFrameX.Sensor
 
         public void SelectForOverlay(string identifier, bool evaluate)
         {
-            if (_overlaySelectionDict.ContainsKey(identifier))
-                _overlaySelectionDict[identifier] = evaluate;
+            bool wasSelected = _overlaySelectionDict.TryGetValue(identifier, out bool selected) && selected;
+            _overlaySelectionDict[identifier] = evaluate;
+
+            if (!IsHardwareSensorIdentifier(identifier) || wasSelected == evaluate)
+                return;
+
+            if (evaluate)
+                Interlocked.Increment(ref _selectedOverlaySensorCount);
             else
-                _overlaySelectionDict.Add(identifier, evaluate);
+                Interlocked.Decrement(ref _selectedOverlaySensorCount);
+
+            if (IsPmcSensorIdentifier(identifier))
+            {
+                if (evaluate)
+                    Interlocked.Increment(ref _selectedPmcOverlaySensorCount);
+                else
+                    Interlocked.Decrement(ref _selectedPmcOverlaySensorCount);
+            }
         }
 
         public bool GetSensorEvaluate(string identifier)
@@ -134,8 +189,13 @@ namespace CapFrameX.Sensor
                 return true;
             }
 
+            // A saved logging selection describes what a capture should contain; it must not
+            // keep vendor APIs, SMU/PMC counters and storage SMART queries active between
+            // captures. The active-sensors websocket intentionally uses that same selection.
             return _evaluateAllSensors
-                || IsSelectedForLogging(identifier) || IsSelectedForOverlay(identifier);
+                || _wsSensorsEnabled
+                || ((_isSensorLoggingActive || _wsActiveSensorsEnabled) && IsSelectedForLogging(identifier))
+                || IsSelectedForOverlay(identifier);
         }
 
         public async Task Save()
@@ -172,13 +232,23 @@ namespace CapFrameX.Sensor
         {
             _loggingSelectionDict?.Clear();
             _stableLoggingSelectionDict?.Clear();
+            Interlocked.Exchange(ref _selectedPmcLoggingSensorCount, 0);
         }
 
         public void ResetEvaluate()
         {
             _overlaySelectionDict?.Clear();
             _sensorEvaluateFirstCallSeen.Clear();
+            Interlocked.Exchange(ref _selectedOverlaySensorCount, 0);
+            Interlocked.Exchange(ref _selectedPmcOverlaySensorCount, 0);
         }
+
+        private static bool IsHardwareSensorIdentifier(string identifier)
+            => !string.IsNullOrEmpty(identifier) &&
+               (identifier[0] == '/' || IsPmcSensorIdentifier(identifier));
+
+        private static bool IsPmcSensorIdentifier(string identifier)
+            => identifier?.StartsWith("pmcreader/", StringComparison.Ordinal) == true;
 
         private async Task LoadOrSetDefault()
         {
@@ -194,13 +264,22 @@ namespace CapFrameX.Sensor
 
                 // Load stable config (non-fatal if missing)
                 _stableLoggingSelectionDict = await LoadStableConfig();
+                UpdatePmcLoggingSensorCount();
             }
             catch (Exception ex)
             {
                 _loggingSelectionDict = new Dictionary<string, bool>(_defaultLoggingSelectionDict);
                 _stableLoggingSelectionDict = new Dictionary<string, bool>();
+                UpdatePmcLoggingSensorCount();
                 Log.Logger.Error(ex, "Error while loading sensor config. Default config loading instead...");
             }
+        }
+
+        private void UpdatePmcLoggingSensorCount()
+        {
+            int count = _loggingSelectionDict?.Count(entry =>
+                entry.Value && IsPmcSensorIdentifier(entry.Key)) ?? 0;
+            Interlocked.Exchange(ref _selectedPmcLoggingSensorCount, count);
         }
 
         private Dictionary<string, bool> GetSensorEntryDefaults()

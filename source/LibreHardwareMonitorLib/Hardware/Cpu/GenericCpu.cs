@@ -436,6 +436,12 @@ public class GenericCpu : Hardware
     {
         if (_cpuLoad.IsAvailable)
         {
+            bool shouldUpdateLoads = SensorPolling.ShouldEvaluateAny(_sensorConfig, _threadLoads);
+            shouldUpdateLoads |= SensorPolling.ShouldEvaluate(_sensorConfig, _totalLoad);
+            shouldUpdateLoads |= SensorPolling.ShouldEvaluate(_sensorConfig, _maxLoad);
+            if (!shouldUpdateLoads)
+                return;
+
             _cpuLoad.Update();
 
             float maxLoad = 0;

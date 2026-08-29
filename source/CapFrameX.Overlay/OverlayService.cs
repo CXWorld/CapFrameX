@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
@@ -34,11 +35,13 @@ namespace CapFrameX.Overlay
         private readonly IRTSSService _rTSSService;
         private readonly IOverlayEntryCore _overlayEntryCore;
         private readonly ILogEntryManager _logEntryManager;
+        private readonly EventLoopScheduler _overlayRefreshScheduler;
 
         private IDisposable _disposableCaptureTimer;
         private IDisposable _disposableDelayCountdown;
         private IDisposable _disposableCountdown;
         private IDisposable _overlayActiveStreamDisposable;
+        private IDisposable _sensorRefreshDisposable;
 
         private IList<string> _runHistory = new List<string>();
         private volatile string[] _runHistorySnapshot = Array.Empty<string>();
@@ -51,7 +54,7 @@ namespace CapFrameX.Overlay
         private int _numberOfRuns;
         private IList<IMetricAnalysis> _metricAnalysis = new List<IMetricAnalysis>();
         private ISubject<IOverlayEntry[]> _onDictionaryUpdated = new Subject<IOverlayEntry[]>();
-        private bool _isServiceAlive = true;
+        private volatile bool _isServiceAlive = true;
 
         public bool IsOverlayActive => _appConfiguration.IsOverlayActive;
 
@@ -95,6 +98,16 @@ namespace CapFrameX.Overlay
             _logEntryManager = logEntryManager;
             _rTSSService = rTSSService;
             _overlayEntryCore = overlayEntryCore;
+            _overlayRefreshScheduler = new EventLoopScheduler(start =>
+            {
+                var thread = new Thread(start)
+                {
+                    IsBackground = true,
+                    Name = "CapFrameX overlay refresh",
+                    Priority = ThreadPriority.BelowNormal
+                };
+                return thread;
+            });
 
             _numberOfRuns = _appConfiguration.SelectedHistoryRuns;
             SecondMetric = _appConfiguration.RunHistorySecondMetric;
@@ -223,8 +236,16 @@ namespace CapFrameX.Overlay
             Task.Run(async () => await _overlayEntryCore.OverlayEntryCoreCompletionSource.Task)
                 .ContinueWith(t =>
                 {
-                    _sensorService.SensorSnapshotStream
-                       .Sample(_sensorService.OsdUpdateStream.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
+                    var refreshTicks = _sensorService.OsdUpdateStream
+                       .Select(timespan => Observable.Concat(
+                            Observable.Return(-1L, _overlayRefreshScheduler),
+                            Observable.Interval(timespan, _overlayRefreshScheduler)))
+                       .Switch();
+
+                    _sensorRefreshDisposable = RefreshFromLatest(
+                        _sensorService.SensorSnapshotStream,
+                        refreshTicks,
+                        (DateTime.UtcNow, new Dictionary<ISensorEntry, float>()))
                        .Where(_ => _isServiceAlive)
                        .Where((_, idx) => idx == 0 || IsOverlayActive)
                        .Subscribe(sensorData =>
@@ -296,6 +317,26 @@ namespace CapFrameX.Overlay
         {
             return configuredOverlayActive &&
                 (isRTSSInstalled || enableHookFreeOverlay || enableHookOverlay);
+        }
+
+        /// <summary>
+        /// Drives consumers from their own refresh clock and reads only the latest completed
+        /// producer value. A slow producer therefore causes a repeated stale value, never a
+        /// delayed refresh or a queue of catch-up work.
+        /// </summary>
+        internal static IObservable<T> RefreshFromLatest<T>(
+            IObservable<T> values,
+            IObservable<long> refreshTicks,
+            T initialValue)
+        {
+            if (values == null)
+                throw new ArgumentNullException(nameof(values));
+            if (refreshTicks == null)
+                throw new ArgumentNullException(nameof(refreshTicks));
+
+            return refreshTicks.WithLatestFrom(
+                values.StartWith(initialValue),
+                (_, latestValue) => latestValue);
         }
 
         public void SetDelayCountdown(double seconds)
@@ -530,7 +571,9 @@ namespace CapFrameX.Overlay
         public void ShutdownOverlayService()
         {
             _isServiceAlive = false;
+            _sensorRefreshDisposable?.Dispose();
             _overlayActiveStreamDisposable?.Dispose();
+            _overlayRefreshScheduler?.Dispose();
         }
 
         private async Task InitializeOverlayEntryDict()

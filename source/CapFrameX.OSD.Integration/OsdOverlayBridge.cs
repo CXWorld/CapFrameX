@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reactive.Linq;
+using System.Threading;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.OSD.Interop;
@@ -15,7 +16,7 @@ namespace CapFrameX.OSD.Integration
     ///    SORTED, value-populated display list (the same one RTSS renders); the raw
     ///    OnDictionaryUpdated payload is only used as the per-tick trigger,
     ///  - per-present frametimes and display times (MsBetweenDisplayChange) from the
-    ///    capture service's frame-data stream → PushFrame / PushDisplayChange,
+    ///    capture service's frame-data stream → batched PushSample,
     ///  - runs when the overlay is active AND either the user enabled the hook-free overlay
     ///    (<c>IAppConfiguration.EnableHookFreeOverlay</c>) or the in-game renderer requested a
     ///    transient fallback for an unsupported runtime; RTSS is gated off in OverlayService
@@ -27,7 +28,7 @@ namespace CapFrameX.OSD.Integration
         private readonly OsdHost _osd;
         private readonly IDisposable _activeSub;
         private readonly IDisposable _entriesSub;
-        private readonly IDisposable _frameSub;
+        private IDisposable _frameSub;
         private readonly IDisposable _enabledSub;
         private readonly IDisposable _fallbackSub;
         private readonly IDisposable _valueSmoothingSub;
@@ -39,6 +40,8 @@ namespace CapFrameX.OSD.Integration
         private readonly int _ftIndex;
         private readonly int _runtimeIndex;
         private readonly int _displayChangedIndex;
+        private readonly IObservable<string[]> _frameDataStream;
+        private readonly object _frameSubscriptionLock = new object();
         // StartTimeInMs (CPUStartQPCTimeInMs) sits AFTER the optional PC-latency column, so
         // its index is layout-dependent — resolve it lazily instead of caching a stale int.
         private readonly Func<int> _startTimeIndexProvider;
@@ -46,6 +49,19 @@ namespace CapFrameX.OSD.Integration
         private volatile bool _enabled;
         private volatile bool _fallbackEnabled;
         private volatile bool _started;
+
+        // The PresentMon row stream can run hundreds or thousands of times per second. Keep the
+        // bridge completely out of that path unless the currently visible layout actually needs
+        // one of its values. In particular, a profile without charts must not keep filling the
+        // native replay queue merely because Frametime is available in the capture schema.
+        private const int NeedFramerateValue = 1 << 0;
+        private const int NeedFrametimeValue = 1 << 1;
+        private const int NeedDisplayTimeValue = 1 << 2;
+        private const int NeedFrametimeGraph = 1 << 3;
+        private const int NeedDisplayTimeGraph = 1 << 4;
+        private const int NeedRuntimeLabel = 1 << 5;
+        private const int NeedFrametimeScalar = NeedFramerateValue | NeedFrametimeValue;
+        private int _frameFeedRequirements;
 
         // Current <APP> framerate/frametime derived from the PresentMon frame-data stream
         // (RTSS resolves these in the classic path; hook-free we compute them ourselves).
@@ -96,6 +112,7 @@ namespace CapFrameX.OSD.Integration
             _ftIndex = frametimeColumnIndex;
             _runtimeIndex = presentRuntimeColumnIndex;
             _displayChangedIndex = displayChangedColumnIndex;
+            _frameDataStream = frameDataStream;
             _startTimeIndexProvider = startTimeIndexProvider;
             _enabled = appConfiguration.EnableHookFreeOverlay;
             _osd.SetValueSmoothing(appConfiguration.UseOsdValueSmoothing);
@@ -129,8 +146,6 @@ namespace CapFrameX.OSD.Integration
                 _fallbackSub = hookFreeFallbackStream
                     .DistinctUntilChanged()
                     .Subscribe(OnFallbackChanged);
-            if (frameDataStream != null && frametimeColumnIndex >= 0)
-                _frameSub = frameDataStream.Subscribe(OnFrameRow);
         }
 
         /// <summary>Configure the fixed overlay position (call from CapFrameX settings UI).</summary>
@@ -155,8 +170,10 @@ namespace CapFrameX.OSD.Integration
             if (exist && !_started)
             {
                 ApplyPosition(force: true);
+                UpdateFrameFeedRequirements(_overlayService.CurrentOverlayEntries);
                 _osd.Start();
                 _started = true;
+                UpdateFrameSubscription(visible);
                 // Start creates the native handle asynchronously. These calls apply immediately
                 // if it is ready; otherwise OnEntries retries without poisoning the caches.
                 ApplyBackgroundOpacity();
@@ -172,6 +189,7 @@ namespace CapFrameX.OSD.Integration
             }
 
             // Old prebuilt core without the hidden API: fall back to the historic full stop.
+            UpdateFrameSubscription(visible);
             if (!_osd.SetHidden(!visible) && !visible)
                 StopOsd();
         }
@@ -184,6 +202,8 @@ namespace CapFrameX.OSD.Integration
             _lastZoom = -1;
             _lastAnchor = -1; _lastMonitor = -1; _lastMarginX = -1; _lastMarginY = -1;
             _curRuntime = null;
+            Interlocked.Exchange(ref _frameFeedRequirements, 0);
+            UpdateFrameSubscription(false);
             lock (_fpsLock)
             {
                 _ftWindow.Clear();
@@ -202,6 +222,7 @@ namespace CapFrameX.OSD.Integration
             // Use the processed, CapFrameX-sorted display list (same data + order as RTSS)
             // rather than the unordered raw dictionary values from OnDictionaryUpdated.
             var entries = _overlayService.CurrentOverlayEntries;
+            UpdateFrameFeedRequirements(entries);
             if (entries == null || entries.Length == 0) return;
 
             var list = OverlayEntryAdapter.ToOsdEntries(entries,
@@ -240,6 +261,99 @@ namespace CapFrameX.OSD.Integration
             ApplyPosition();
 
             _osd.UpdateEntries(list);
+        }
+
+        private void UpdateFrameFeedRequirements(IEnumerable<IOverlayEntry> entries)
+        {
+            int requirements = 0;
+            if (entries != null)
+            {
+                foreach (var entry in entries)
+                {
+                    if (entry == null || !entry.IsEntryEnabled || !entry.ShowOnOverlay)
+                    {
+                        continue;
+                    }
+
+                    switch (entry.Identifier)
+                    {
+                        case "Framerate":
+                            requirements |= NeedFramerateValue;
+                            break;
+                        case "Frametime":
+                            requirements |= NeedFrametimeValue;
+                            if (entry.ShowGraph)
+                            {
+                                requirements |= NeedFrametimeGraph;
+                            }
+                            break;
+                        case "DisplayTime":
+                            requirements |= NeedDisplayTimeValue;
+                            if (entry.ShowGraph)
+                            {
+                                requirements |= NeedDisplayTimeGraph;
+                            }
+                            break;
+                    }
+
+                    if (entry.GroupName?.IndexOf("<APP>", StringComparison.Ordinal) >= 0)
+                    {
+                        requirements |= NeedRuntimeLabel;
+                    }
+                }
+            }
+
+            int previous = Interlocked.Exchange(ref _frameFeedRequirements, requirements);
+            UpdateFrameSubscription(_active && (_enabled || _fallbackEnabled));
+            bool enableFrametimeScalar = (previous & NeedFrametimeScalar) == 0 &&
+                (requirements & NeedFrametimeScalar) != 0;
+            bool enableDisplayTimeScalar = (previous & NeedDisplayTimeValue) == 0 &&
+                (requirements & NeedDisplayTimeValue) != 0;
+            if (!enableFrametimeScalar && !enableDisplayTimeScalar)
+            {
+                return;
+            }
+
+            // Do not expose an old window when a profile re-enables a scalar after it has spent
+            // time disabled. The next completed frame repopulates it immediately.
+            lock (_fpsLock)
+            {
+                if (enableFrametimeScalar)
+                {
+                    _ftWindow.Clear();
+                    _ftWindowSumMs = 0;
+                    _curFps = 0;
+                    _curFrametimeMs = 0;
+                }
+
+                if (enableDisplayTimeScalar)
+                {
+                    _dtWindow.Clear();
+                    _dtWindowSumMs = 0;
+                    _curDisplayTimeMs = 0;
+                }
+            }
+        }
+
+        private void UpdateFrameSubscription(bool visible)
+        {
+            bool shouldSubscribe = visible && _started && _frameDataStream != null &&
+                _ftIndex >= 0 && Volatile.Read(ref _frameFeedRequirements) != 0;
+            lock (_frameSubscriptionLock)
+            {
+                if (shouldSubscribe)
+                {
+                    if (_frameSub == null)
+                    {
+                        _frameSub = _frameDataStream.Subscribe(OnFrameRow);
+                    }
+                }
+                else
+                {
+                    _frameSub?.Dispose();
+                    _frameSub = null;
+                }
+            }
         }
 
         private void ApplyPosition(bool force = false)
@@ -301,62 +415,99 @@ namespace CapFrameX.OSD.Integration
         {
             if (!_started || row == null || _ftIndex < 0 || row.Length <= _ftIndex) return;
 
+            int requirements = Volatile.Read(ref _frameFeedRequirements);
+            if (requirements == 0) return;
+
             // graphics runtime/API of the presenting app -> label for the <APP> line
-            if (_runtimeIndex >= 0 && row.Length > _runtimeIndex)
+            if ((requirements & NeedRuntimeLabel) != 0 &&
+                _runtimeIndex >= 0 && row.Length > _runtimeIndex)
             {
                 var rt = row[_runtimeIndex]?.Trim();
                 if (!string.IsNullOrEmpty(rt) && rt != "<error>") _curRuntime = rt;
             }
 
-            if (!double.TryParse(row[_ftIndex], NumberStyles.Any, CultureInfo.InvariantCulture, out var ms)
-                || ms <= 0 || ms >= 10000) return;
+            bool needFrametimeSample = (requirements &
+                (NeedFrametimeScalar | NeedFrametimeGraph)) != 0;
+            bool needDisplayTimeSample = (requirements &
+                (NeedDisplayTimeValue | NeedDisplayTimeGraph)) != 0;
+            if (!needFrametimeSample && !needDisplayTimeSample) return;
+
+            double ms = 0;
+            bool hasFrametimeSample = needFrametimeSample &&
+                double.TryParse(row[_ftIndex], NumberStyles.Any, CultureInfo.InvariantCulture, out ms) &&
+                ms > 0 && ms < 10000;
 
             // per-present sample for the frametime graph, timestamped with StartTimeInMs
             // (QPC ms) so the renderer replays the bursty stream smoothly over the window
             double t = 0;
-            int startIdx = _startTimeIndexProvider?.Invoke() ?? -1;
-            bool hasTimestamp = startIdx >= 0 && row.Length > startIdx &&
+            bool needGraphSample = (requirements &
+                (NeedFrametimeGraph | NeedDisplayTimeGraph)) != 0;
+            int startIdx = needGraphSample ? _startTimeIndexProvider?.Invoke() ?? -1 : -1;
+            bool hasTimestamp = needGraphSample && startIdx >= 0 && row.Length > startIdx &&
                 double.TryParse(row[startIdx], NumberStyles.Any, CultureInfo.InvariantCulture, out t) && t > 0;
-            if (hasTimestamp)
-                _osd.PushFrame(t, ms);
-            else
-                _osd.PushFrametime(ms);   // no timestamp available: synthetic fallback
-
             // Display time (MsBetweenDisplayChange) for the "Displaytime" graph: same
             // buffer + replay path as the frametimes. Dropped frames report 0 and are
             // skipped, so only frames that actually reached the display produce a sample.
             double dc = 0;
             bool hasDisplaySample =
-                _displayChangedIndex >= 0 && row.Length > _displayChangedIndex &&
+                needDisplayTimeSample && _displayChangedIndex >= 0 && row.Length > _displayChangedIndex &&
                 double.TryParse(row[_displayChangedIndex], NumberStyles.Any, CultureInfo.InvariantCulture, out dc)
                 && dc > 0 && dc < 10000;
-            if (hasDisplaySample)
+
+            bool pushFrametimeGraph = (requirements & NeedFrametimeGraph) != 0 &&
+                hasFrametimeSample;
+            bool pushDisplayTimeGraph = (requirements & NeedDisplayTimeGraph) != 0 &&
+                hasDisplaySample;
+            if (hasTimestamp && pushFrametimeGraph && pushDisplayTimeGraph)
             {
-                if (hasTimestamp)
-                    _osd.PushDisplayChange(t, dc);
-                else
-                    _osd.PushDisplayTime(dc);
+                // Queue the complete PresentMon row once. OsdHost drains all rows collected
+                // during a render slice through cfx_osd_push_samples, allowing the native replay
+                // clock to measure delivery waves and preventing per-row P/Invoke/mutex traffic.
+                _osd.PushSample(t, ms, dc);
+            }
+            else if (hasTimestamp && pushFrametimeGraph)
+            {
+                _osd.PushFrame(t, ms);
+            }
+            else if (hasTimestamp && pushDisplayTimeGraph)
+            {
+                _osd.PushDisplayChange(t, dc);
+            }
+            else if (!hasTimestamp)
+            {
+                // No source timestamp is available: retain the legacy synthetic timelines.
+                if (pushFrametimeGraph) _osd.PushFrametime(ms);
+                if (pushDisplayTimeGraph) _osd.PushDisplayTime(dc);
             }
 
             // Current framerate/frametime for the <APP> entries: mean frametime over a ~1s
             // window; FPS = 1000 * frames / window_ms  (equivalently 1000 / mean_frametime).
             // The Displaytime entry uses the same windowed mean over its own samples.
+            bool updateFrametimeScalar = (requirements & NeedFrametimeScalar) != 0 &&
+                hasFrametimeSample;
+            bool updateDisplayTimeScalar = (requirements & NeedDisplayTimeValue) != 0 &&
+                hasDisplaySample;
+            if (!updateFrametimeScalar && !updateDisplayTimeScalar) return;
+
             lock (_fpsLock)
             {
-                _ftWindow.Enqueue(ms);
-                _ftWindowSumMs += ms;
-                // keep ~1s of history, but hard-cap the sample count so pathologically small
-                // frametimes (very high FPS) can't grow the queue without bound
-                while (_ftWindow.Count > 1 && (_ftWindowSumMs > FpsWindowMs || _ftWindow.Count > 4000))
-                    _ftWindowSumMs -= _ftWindow.Dequeue();
-                int n = _ftWindow.Count;
-                if (n > 0 && _ftWindowSumMs > 0)
+                if (updateFrametimeScalar)
                 {
-                    _curFrametimeMs = _ftWindowSumMs / n;
-                    _curFps = 1000.0 * n / _ftWindowSumMs;
+                    _ftWindow.Enqueue(ms);
+                    _ftWindowSumMs += ms;
+                    // keep ~1s of history, but hard-cap the sample count so pathologically small
+                    // frametimes (very high FPS) can't grow the queue without bound
+                    while (_ftWindow.Count > 1 && (_ftWindowSumMs > FpsWindowMs || _ftWindow.Count > 4000))
+                        _ftWindowSumMs -= _ftWindow.Dequeue();
+                    int n = _ftWindow.Count;
+                    if (n > 0 && _ftWindowSumMs > 0)
+                    {
+                        _curFrametimeMs = _ftWindowSumMs / n;
+                        _curFps = 1000.0 * n / _ftWindowSumMs;
+                    }
                 }
 
-                if (hasDisplaySample)
+                if (updateDisplayTimeScalar)
                 {
                     _dtWindow.Enqueue(dc);
                     _dtWindowSumMs += dc;
@@ -372,7 +523,7 @@ namespace CapFrameX.OSD.Integration
         {
             _activeSub?.Dispose();
             _entriesSub?.Dispose();
-            _frameSub?.Dispose();
+            UpdateFrameSubscription(false);
             _enabledSub?.Dispose();
             _fallbackSub?.Dispose();
             _valueSmoothingSub?.Dispose();

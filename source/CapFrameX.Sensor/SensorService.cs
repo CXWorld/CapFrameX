@@ -11,7 +11,6 @@ using LibreHardwareMonitor.Hardware;
 using LibreHardwareMonitor.Hardware.Gpu;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -35,13 +34,16 @@ namespace CapFrameX.Sensor
         private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<SensorService> _logger;
         private readonly IDisposable _logDisposable;
+        private readonly IDisposable _sensorPollTimerDisposable;
         private readonly Task<IPmcReaderSensorPlugin> _pmcReaderInitializationTask;
         private readonly AmdFlmSensorSource _amdFlmSensorSource;
+        private readonly BehaviorSubject<(DateTime, Dictionary<ISensorEntry, float>)> _coreSensorSnapshotSubject;
+        private readonly SingleFlightSensorPoller<(DateTime, Dictionary<ISensorEntry, float>)> _sensorPoller;
 
         private Computer _computer;
         private SessionSensorDataLive _sessionSensorDataLive;
-        private bool _isLoggingActive = false;
-        private bool _isServiceAlive = true;
+        private volatile bool _isLoggingActive = false;
+        private volatile bool _isServiceAlive = true;
 
         // Upper bound for the LibreHardwareMonitor computer teardown at shutdown. Vendor GPU
         // libraries (AMD ADLX, Intel IGCL) can deadlock in their COM teardown on some systems;
@@ -56,14 +58,11 @@ namespace CapFrameX.Sensor
 
         private TimeSpan CurrentSensorTimespan
         {
-            get
-            {
-                if (_currentLoggingTimespan < _currentOSDTimespan)
-                {
-                    return _currentLoggingTimespan;
-                }
-                return _currentOSDTimespan;
-            }
+            get => SelectSensorTimespan(
+                _currentLoggingTimespan,
+                _currentOSDTimespan,
+                _isLoggingActive,
+                UseSensorLogging);
         }
 
         public IObservable<(DateTime, Dictionary<ISensorEntry, float>)> SensorSnapshotStream { get; private set; }
@@ -106,18 +105,20 @@ namespace CapFrameX.Sensor
                    SensorServiceCompletionSource.SetResult(true);
                });
 
-            var coreSensorStream = _sensorUpdateSubject
-               .Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan)))
-               .Switch()
-               .Where(_ => _isServiceAlive)
-               .Where((_, idx) => idx == 0 || HasActiveSensorConsumer())
-               .SelectMany(_ => GetTimeStampedSensorValues());
+            _coreSensorSnapshotSubject = new BehaviorSubject<(DateTime, Dictionary<ISensorEntry, float>)>(
+                (DateTime.UtcNow, new Dictionary<ISensorEntry, float>()));
+            _sensorPoller = new SingleFlightSensorPoller<(DateTime, Dictionary<ISensorEntry, float>)>(
+                GetTimeStampedSensorValues,
+                snapshot => _coreSensorSnapshotSubject.OnNext(snapshot),
+                exception => _logger.LogError(exception, "Hardware sensor polling failed."),
+                "CapFrameX hardware sensor polling",
+                ThreadPriority.Lowest);
 
             _pmcReaderInitializationTask = InitializePmcReaderPluginAsync();
             var pluginPollingActivityStream = _sensorUpdateSubject
                 .Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan)))
                 .Switch()
-                .Select(_ => _isServiceAlive && HasActiveSensorConsumer());
+                .Select(_ => _isServiceAlive && ShouldPollPmcReaderSensors());
 
             // Filtering snapshots after subscribing to the plugin is too late: its interval has
             // already read every PMC and changed thread affinity before Where can discard the
@@ -128,11 +129,14 @@ namespace CapFrameX.Sensor
                 CreatePmcReaderSensorStream,
                 () => (DateTime.UtcNow, new Dictionary<ISensorEntry, float>()));
 
-            SensorSnapshotStream = coreSensorStream
+            SensorSnapshotStream = _coreSensorSnapshotSubject
                .CombineLatest(
                     pluginSensorStream.StartWith((DateTime.UtcNow, new Dictionary<ISensorEntry, float>())),
                     MergeSensorSnapshots)
-               .Replay(0)
+               // The overlay refresh reads this replayed, immutable-after-publication snapshot.
+               // Sensor I/O is never part of the refresh call stack; an unfinished poll simply
+               // leaves this value unchanged for another display cycle.
+               .Replay(1)
                .RefCount();
 
             _logDisposable = SensorSnapshotStream
@@ -141,6 +145,16 @@ namespace CapFrameX.Sensor
                  .Where(_ => _isLoggingActive && UseSensorLogging)
                  .SubscribeOn(Scheduler.Default)
                  .Subscribe(sensorData => LogCurrentValues(sensorData.Item2, sensorData.Item1));
+
+            _sensorPollTimerDisposable = _sensorUpdateSubject
+               .Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan)))
+               .Switch()
+               .Where(_ => _isServiceAlive)
+               .Select((_, index) => index)
+               .Where(index => index == 0 || HasActiveSensorConsumer())
+               .Subscribe(
+                    index => _sensorPoller.TryRequest(forcePoll: index == 0),
+                    exception => _logger.LogError(exception, "Hardware sensor polling timer failed."));
 
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
         }
@@ -264,7 +278,12 @@ namespace CapFrameX.Sensor
                 // Logging must be activated after creating a session data object
                 // because of time stamp consistency
                 _isLoggingActive = true;
+                _sensorConfig.IsSensorLoggingActive = true;
                 _sensorUpdateSubject.OnNext(CurrentSensorTimespan);
+            }
+            else
+            {
+                _sensorConfig.IsSensorLoggingActive = false;
             }
         }
 
@@ -272,6 +291,8 @@ namespace CapFrameX.Sensor
         {
             await Task.Delay(_currentLoggingTimespan);
             _isLoggingActive = false;
+            _sensorConfig.IsSensorLoggingActive = false;
+            _sensorUpdateSubject.OnNext(CurrentSensorTimespan);
         }
 
         public async Task<IEnumerable<ISensorEntry>> GetSensorEntries()
@@ -351,28 +372,62 @@ namespace CapFrameX.Sensor
             _sessionSensorDataLive.CompleteMeasure();
         }
 
-        private async Task<(DateTime, Dictionary<ISensorEntry, float>)> GetTimeStampedSensorValues()
+        private (DateTime, Dictionary<ISensorEntry, float>) GetTimeStampedSensorValues(
+            bool forceHardwarePoll)
         {
-            await SensorServiceCompletionSource.Task;
-            var dict = new ConcurrentDictionary<ISensorEntry, float>();
+            // Waiting for one-time hardware discovery is safe here because this method is called
+            // exclusively by the dedicated polling worker, never by an OSD/UI refresh thread.
+            SensorServiceCompletionSource.Task.GetAwaiter().GetResult();
+            var dict = new Dictionary<ISensorEntry, float>();
+            Thread currentThread = Thread.CurrentThread;
+            ThreadPriority previousPriority = ThreadPriority.Normal;
+            bool priorityChanged = false;
             try
             {
-                var sensors = GetSensors();
-                if (sensors != null)
+                if (forceHardwarePoll || ShouldPollHardwareSensors())
                 {
-                    foreach (var sensor in sensors)
+                    // Ryzen clock collection moves this polling thread across the physical
+                    // cores. It must never displace a game thread on each core in one burst.
+                    // Lowest priority plus the worker's Win32 background mode deliberately
+                    // trades sensor freshness for frame-time stability under load.
+                    try
                     {
-                        if (sensor.Value != null)
-                            dict.TryAdd(new SensorEntry()
+                        previousPriority = currentThread.Priority;
+                        if (previousPriority > ThreadPriority.Lowest)
+                        {
+                            currentThread.Priority = ThreadPriority.Lowest;
+                            priorityChanged = true;
+                        }
+                    }
+                    catch
+                    {
+                        // Priority lowering is best-effort. Sensor acquisition must still work
+                        // on runtimes which do not expose a mutable native thread priority.
+                    }
+
+                    var sensors = GetSensors();
+                    if (sensors != null)
+                    {
+                        foreach (var sensor in sensors)
+                        {
+                            if (sensor.Value != null)
                             {
-                                Identifier = sensor.Identifier.ToString(),
-                                Value = sensor.Value,
-                                Name = sensor.Name,
-                                SensorType = sensor.SensorType.ToString(),
-                                HardwareType = sensor.Hardware.HardwareType.ToString(),
-                                HardwareName = sensor.Hardware.Name
-                            },
-                            sensor.Value.Value);
+                                string identifier = sensor.Identifier.ToString();
+                                if (!_sensorConfig.GetSensorEvaluate(identifier))
+                                    continue;
+
+                                dict.Add(new SensorEntry()
+                                {
+                                    Identifier = identifier,
+                                    Value = sensor.Value,
+                                    Name = sensor.Name,
+                                    SensorType = sensor.SensorType.ToString(),
+                                    HardwareType = sensor.Hardware.HardwareType.ToString(),
+                                    HardwareName = sensor.Hardware.Name
+                                },
+                                sensor.Value.Value);
+                            }
+                        }
                     }
                 }
             }
@@ -380,14 +435,29 @@ namespace CapFrameX.Sensor
             {
                 // Don't write periodic log entries
             }
+            finally
+            {
+                if (priorityChanged)
+                {
+                    try
+                    {
+                        currentThread.Priority = previousPriority;
+                    }
+                    catch
+                    {
+                        // The work item is complete; failure to restore a terminating scheduler
+                        // thread must not tear down the sensor stream.
+                    }
+                }
+            }
 
             if (_appConfiguration.UseAmdFlmLatency)
             {
                 var amdFlmEntry = _amdFlmSensorSource.CreateEntry();
-                dict.TryAdd(amdFlmEntry, (float)amdFlmEntry.Value);
+                dict.Add(amdFlmEntry, (float)amdFlmEntry.Value);
             }
 
-            return (DateTime.UtcNow, dict.ToDictionary(x => x.Key, x => x.Value));
+            return (DateTime.UtcNow, dict);
         }
 
         private IObservable<(DateTime, Dictionary<ISensorEntry, float>)> CreatePmcReaderSensorStream()
@@ -403,6 +473,61 @@ namespace CapFrameX.Sensor
                 || (_isLoggingActive && UseSensorLogging)
                 || IsSensorWebsocketActive()
                 || _sensorConfig.EvaluateAllSensors;
+        }
+
+        private bool ShouldPollHardwareSensors()
+        {
+            return (IsOverlayActive && _sensorConfig.HasSelectedOverlaySensors)
+                || (_isLoggingActive && UseSensorLogging)
+                || IsSensorWebsocketActive()
+                || _sensorConfig.EvaluateAllSensors;
+        }
+
+        private bool ShouldPollPmcReaderSensors()
+        {
+            bool websocketActive = IsSensorWebsocketActive();
+            return SelectPmcReaderPollingState(
+                IsOverlayActive,
+                _sensorConfig.HasSelectedPmcOverlaySensors,
+                _isLoggingActive,
+                UseSensorLogging,
+                _sensorConfig.HasSelectedPmcLoggingSensors,
+                websocketActive,
+                _sensorConfig.WsSensorsEnabled,
+                _sensorConfig.WsActiveSensorsEnabled,
+                _sensorConfig.EvaluateAllSensors);
+        }
+
+        internal static bool SelectPmcReaderPollingState(
+            bool overlayActive,
+            bool hasSelectedOverlayPmcSensors,
+            bool loggingActive,
+            bool useSensorLogging,
+            bool hasSelectedLoggingPmcSensors,
+            bool websocketActive,
+            bool websocketAllSensors,
+            bool websocketActiveSensors,
+            bool evaluateAllSensors)
+        {
+            bool selectedLoggingConsumer = (loggingActive && useSensorLogging)
+                || (websocketActive && websocketActiveSensors);
+
+            return (overlayActive && hasSelectedOverlayPmcSensors)
+                || (selectedLoggingConsumer && hasSelectedLoggingPmcSensors)
+                || (websocketActive && websocketAllSensors)
+                || evaluateAllSensors;
+        }
+
+        internal static TimeSpan SelectSensorTimespan(
+            TimeSpan loggingTimespan,
+            TimeSpan osdTimespan,
+            bool isLoggingActive,
+            bool useSensorLogging)
+        {
+            if (!isLoggingActive || !useSensorLogging)
+                return osdTimespan;
+
+            return loggingTimespan < osdTimespan ? loggingTimespan : osdTimespan;
         }
 
         private async Task<IPmcReaderSensorPlugin> InitializePmcReaderPluginAsync()
@@ -667,7 +792,11 @@ namespace CapFrameX.Sensor
         public void ShutdownSensorService()
         {
             _isServiceAlive = false;
+            _sensorPollTimerDisposable?.Dispose();
+            _sensorPoller?.Dispose();
             _logDisposable?.Dispose();
+            _coreSensorSnapshotSubject?.OnCompleted();
+            _coreSensorSnapshotSubject?.Dispose();
             _amdFlmSensorSource.Dispose();
 
             // Initialization may still be running when the application closes. Dispose the plugin

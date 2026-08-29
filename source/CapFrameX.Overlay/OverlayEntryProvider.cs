@@ -99,7 +99,7 @@ namespace CapFrameX.Overlay
 
         private BlockingCollection<IOverlayEntry> _overlayEntries;
         private double _ping = double.NaN;
-        private int _currentProcessId;
+        private volatile int _currentProcessId;
         // Written by the status stream, read by the overlay refresh: the entry itself must not be
         // touched from the stream, it is replaced whenever a configuration is loaded or switched.
         private volatile HookOverlayStatus _hookOverlayStatus;
@@ -193,7 +193,7 @@ namespace CapFrameX.Overlay
         {
             await _taskCompletionSource.Task;
             RefreshDisplayEntries();
-            await UpdateSensorData();
+            UpdateSensorData();
             UpdateOnlineMetrics();
             UpdateAppInfo();
             UpdateResolution();
@@ -1197,9 +1197,13 @@ namespace CapFrameX.Overlay
                 entry.ShowOnOverlay = false;
         }
 
-        private async Task UpdateSensorData()
+        private void UpdateSensorData()
         {
-            var currentFramerate = _rTSSService.GetCurrentFramerate(await _rTSSService.ProcessIdStream.Take(1));
+            // ProcessIdStream already maintains this atomic cache in the constructor. Waiting on
+            // Take(1) here coupled every overlay refresh to another observable and could leave a
+            // refresh pending when no PID value was available. Sensor values are likewise copied
+            // from OverlayEntryCore's latest completed snapshot below; no hardware I/O occurs.
+            var currentFramerate = _rTSSService.GetCurrentFramerate(_currentProcessId);
 
             foreach (var entry in _overlayEntries)
             {

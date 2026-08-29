@@ -112,7 +112,7 @@ namespace CapFrameX.Test.Mcp
                 autoDisableOverlay: false,
                 showSystemTimeSeconds: true,
                 replayBufferSizeMs: 1500,
-                hookFreeRefreshRate: 20,
+                hookFreeRefreshRate: 120,
                 osdCustomPosition: true,
                 osdPositionX: 100,
                 osdPositionY: 200,
@@ -132,7 +132,7 @@ namespace CapFrameX.Test.Mcp
             Assert.IsFalse(config.Object.AutoDisableOverlay);
             Assert.IsTrue(config.Object.ShowSystemTimeSeconds);
             Assert.AreEqual(1500, config.Object.OsdReplayBufferSize);
-            Assert.AreEqual(20, config.Object.HookFreeRefreshRate);
+            Assert.AreEqual(120, config.Object.HookFreeRefreshRate);
             Assert.IsTrue(config.Object.OSDCustomPosition);
             Assert.AreEqual(100, config.Object.OSDPositionX);
             Assert.AreEqual(200, config.Object.OSDPositionY);
@@ -156,7 +156,7 @@ namespace CapFrameX.Test.Mcp
             Assert.AreEqual(result.ChangedProperties.Count, result.ChangedCount);
             Assert.AreEqual("HookFree", result.Options.Renderer);
             Assert.AreEqual(1500, result.Options.ReplayBufferSizeMs);
-            Assert.AreEqual(20, result.Options.HookFreeRefreshRate);
+            Assert.AreEqual(120, result.Options.HookFreeRefreshRate);
             Assert.AreEqual("Control+P", result.Options.OverlayPositionHotkey);
             CollectionAssert.Contains(result.ChangedProperties, nameof(IAppConfiguration.IsOverlayActive));
             CollectionAssert.Contains(result.ChangedProperties, nameof(IAppConfiguration.EnableHookFreeOverlay));

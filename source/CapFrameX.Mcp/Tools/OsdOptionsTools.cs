@@ -56,7 +56,7 @@ namespace CapFrameX.Mcp.Tools
             [Description("Suppress RTSS output while keeping overlay data available to APIs.")] bool? hideOverlay = null,
             [Description("For the in-game renderer, use CapFrameX PresentMon frame/display times instead of the hook-local frame times.")] bool? hookOverlayUsePresentMonFrametimes = null,
             [Description("PresentMon replay buffer in milliseconds for the in-game PresentMon source and hook-free renderer, 500..10000.")] int? replayBufferSizeMs = null,
-            [Description("Maximum hook-free chart refresh rate in Hz; one of 1, 2, 5, 10, 20, or 30.")] int? hookFreeRefreshRate = null,
+            [Description("Maximum hook-free chart refresh rate in Hz; one of 1, 2, 5, 10, 20, 30, 60, or 120.")] int? hookFreeRefreshRate = null,
             [Description("Enable RTSS custom coordinates.")] bool? osdCustomPosition = null,
             [Description("RTSS custom X coordinate.")] int? osdPositionX = null,
             [Description("RTSS custom Y coordinate.")] int? osdPositionY = null,
@@ -329,10 +329,11 @@ namespace CapFrameX.Mcp.Tools
                 return;
 
             int rate = value.Value;
-            if (rate != 1 && rate != 2 && rate != 5 && rate != 10 && rate != 20 && rate != 30)
+            if (rate != 1 && rate != 2 && rate != 5 && rate != 10 && rate != 20 &&
+                rate != 30 && rate != 60 && rate != 120)
             {
                 throw new ArgumentOutOfRangeException(parameterName, rate,
-                    "Value must be one of 1, 2, 5, 10, 20, or 30 Hz.");
+                    "Value must be one of 1, 2, 5, 10, 20, 30, 60, or 120 Hz.");
             }
         }
 

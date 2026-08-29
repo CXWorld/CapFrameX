@@ -47,6 +47,7 @@ internal sealed class NvidiaThermal
     private bool _hasCachedData;
     private bool _hasDeliveredData;
     private bool _readInProgress;
+    private bool _readMemoryTemperaturesPending;
     private bool _readPending;
     private long _readStartedTimestamp;
     private bool _memoryFailureLogged;
@@ -64,7 +65,8 @@ internal sealed class NvidiaThermal
             _worker = new Thread(ReadLoop)
             {
                 IsBackground = true,
-                Name = $"NVIDIA thermal reader {_deviceAddress}"
+                Name = $"NVIDIA thermal reader {_deviceAddress}",
+                Priority = ThreadPriority.BelowNormal
             };
             _worker.Start();
         }
@@ -82,6 +84,7 @@ internal sealed class NvidiaThermal
     }
 
     public bool TryRead(
+        bool readMemoryTemperatures,
         out float? hotSpot,
         out float? memoryJunction,
         float?[] memoryTemperatures,
@@ -110,10 +113,18 @@ internal sealed class NvidiaThermal
                 timedOut = true;
             }
 
-            if (!_closeRequested && !_disabled && _worker != null && !_readInProgress && !_readPending)
+            if (!_closeRequested && !_disabled && _worker != null && !_readInProgress)
             {
-                _readPending = true;
-                requestRead = true;
+                // A normal OSD needs only the six thermal registers for the hot-spot
+                // value. The optional per-chip path scans up to 48 VRAM locations and
+                // several registers per location, so request it only for an explicitly
+                // selected per-chip temperature sensor.
+                _readMemoryTemperaturesPending |= readMemoryTemperatures;
+                if (!_readPending)
+                {
+                    _readPending = true;
+                    requestRead = true;
+                }
             }
 
             hasData = _hasCachedData && !HasElapsed(now, _cacheTimestamp, CacheLifetimeTicks);
@@ -238,6 +249,7 @@ internal sealed class NvidiaThermal
             while (true)
             {
                 _readRequested.WaitOne();
+                bool readMemoryTemperatures;
 
                 lock (_sync)
                 {
@@ -246,17 +258,22 @@ internal sealed class NvidiaThermal
 
                     if (_disabled)
                     {
+                        _readMemoryTemperaturesPending = false;
                         _readPending = false;
                         continue;
                     }
 
+                    readMemoryTemperatures = _readMemoryTemperaturesPending;
+                    _readMemoryTemperaturesPending = false;
                     _readPending = false;
                     _readInProgress = true;
                     _readStartedTimestamp = Stopwatch.GetTimestamp();
                 }
 
                 bool thermalSuccess = TryReadThermalHardware(out float? hotSpot);
-                bool memorySuccess = TryReadMemoryHardware(out float? memoryJunction, _workerMemoryTemperatures);
+                float? memoryJunction = null;
+                bool memorySuccess = readMemoryTemperatures &&
+                    TryReadMemoryHardware(out memoryJunction, _workerMemoryTemperatures);
                 bool success = thermalSuccess || memorySuccess;
                 bool disableAfterFailures = false;
                 bool closeRequested;
@@ -265,19 +282,28 @@ internal sealed class NvidiaThermal
                 {
                     _readInProgress = false;
                     _readStartedTimestamp = 0;
-                    _consecutiveMemoryFailures = memorySuccess
-                        ? 0
-                        : Math.Min(_consecutiveMemoryFailures + 1, MaxConsecutiveFailures);
+                    if (readMemoryTemperatures)
+                    {
+                        _consecutiveMemoryFailures = memorySuccess
+                            ? 0
+                            : Math.Min(_consecutiveMemoryFailures + 1, MaxConsecutiveFailures);
+                    }
 
                     if (success && !_disabled && !_closeRequested)
                     {
                         _cachedHotSpot = thermalSuccess ? hotSpot : null;
-                        _cachedMemoryJunction = memorySuccess ? memoryJunction : null;
-                        _cachedMemoryReadSucceeded = memorySuccess;
-                        if (memorySuccess)
+                        _cachedMemoryJunction = readMemoryTemperatures && memorySuccess ? memoryJunction : null;
+                        _cachedMemoryReadSucceeded = readMemoryTemperatures && memorySuccess;
+                        if (_cachedMemoryReadSucceeded)
+                        {
                             Array.Copy(_workerMemoryTemperatures, _cachedMemoryTemperatures, MemoryTemperatureSensorCount);
+                        }
                         else
+                        {
                             Array.Clear(_cachedMemoryTemperatures, 0, MemoryTemperatureSensorCount);
+                            if (thermalSuccess && !readMemoryTemperatures)
+                                _hasDeliveredData = true;
+                        }
 
                         _cacheTimestamp = Stopwatch.GetTimestamp();
                         _consecutiveFailures = 0;

@@ -271,6 +271,8 @@ internal sealed class Amd17Cpu : AmdCpu
 
         private Sensor _ccdsAverageTemperature;
         private Sensor _ccdsMaxTemperature;
+        private bool _ccdTemperatureDiscoveryComplete;
+        private int? _detectedCcdCount;
         private DateTime _lastSampleTime = new(0);
         private uint _lastPwrValue;
 
@@ -365,38 +367,69 @@ internal sealed class Amd17Cpu : AmdCpu
             if (cpuId == null)
                 return;
 
+            bool shouldPollPackagePower = SensorPolling.ShouldEvaluate(_cpu._sensorConfig, _packagePower);
+            bool shouldPollPackageTemperature = false;
+            shouldPollPackageTemperature |= SensorPolling.ShouldEvaluate(_cpu._sensorConfig, _coreTemperatureTctl);
+            shouldPollPackageTemperature |= SensorPolling.ShouldEvaluate(_cpu._sensorConfig, _coreTemperatureTdie);
+            shouldPollPackageTemperature |= SensorPolling.ShouldEvaluate(_cpu._sensorConfig, _coreTemperatureTctlTdie);
+
+            bool shouldPollVoltage = false;
+            shouldPollVoltage |= SensorPolling.ShouldEvaluate(_cpu._sensorConfig, _coreVoltage);
+            shouldPollVoltage |= SensorPolling.ShouldEvaluate(_cpu._sensorConfig, _socVoltage);
+
+            bool shouldPollCcdTemperatures = !_ccdTemperatureDiscoveryComplete;
+            shouldPollCcdTemperatures |= SensorPolling.ShouldEvaluateAny(_cpu._sensorConfig, _ccdTemperatures);
+            shouldPollCcdTemperatures |= SensorPolling.ShouldEvaluate(_cpu._sensorConfig, _ccdsMaxTemperature);
+            shouldPollCcdTemperatures |= SensorPolling.ShouldEvaluate(_cpu._sensorConfig, _ccdsAverageTemperature);
+
+            bool shouldPollBusClock = SensorPolling.ShouldEvaluate(_cpu._sensorConfig, _busClock);
+            bool shouldPollPciSensors = shouldPollPackageTemperature || shouldPollVoltage || shouldPollCcdTemperatures;
+
             GroupAffinity previousAffinity = ThreadAffinity.Set(cpuId.Affinity);
 
             // MSRC001_0299
             // TU [19:16]
             // ESU [12:8] -> Unit 15.3 micro Joule per increment (default), 1/2^ESU micro Joule
             // PU [3:0]
-            _cpu._pawnModule.ReadMsr(MSR_PWR_UNIT, out uint eax, out uint _);
-            int esu = (int)((eax >> 8) & 0x1F);
-            double energyBaseUnit = Math.Pow(0.5, esu);
+            uint eax = 0;
+            double energyBaseUnit = 0;
+            DateTime sampleTime = new(0);
+            uint totalEnergy = 0;
+            if (shouldPollPackagePower)
+            {
+                _cpu._pawnModule.ReadMsr(MSR_PWR_UNIT, out eax, out uint _);
+                int esu = (int)((eax >> 8) & 0x1F);
+                energyBaseUnit = Math.Pow(0.5, esu);
 
-
-            // MSRC001_029B
-            // total_energy [31:0]
-            DateTime sampleTime = DateTime.UtcNow;
-            _cpu._pawnModule.ReadMsr(MSR_PKG_ENERGY_STAT, out eax, out _);
-
-            uint totalEnergy = eax;
+                // MSRC001_029B
+                // total_energy [31:0]
+                sampleTime = DateTime.UtcNow;
+                _cpu._pawnModule.ReadMsr(MSR_PKG_ENERGY_STAT, out eax, out _);
+                totalEnergy = eax;
+            }
+            else
+            {
+                _lastSampleTime = new(0);
+            }
 
             uint smuSvi0Tfn = 0;
             uint smuSvi0TelPlane0 = 0;
             uint smuSvi0TelPlane1 = 0;
-            int? detectedCcdCount = null;
+            bool pciSensorsRead = false;
 
-            if (Mutexes.WaitPciBus(10))
+            if (shouldPollPciSensors && Mutexes.WaitPciBus(10))
             {
+                pciSensorsRead = true;
                 // THM_TCON_CUR_TMP
                 // CUR_TEMP [31:21]
-                uint temperature = _cpu._pawnModule.ReadSmn(F17H_M01H_THM_TCON_CUR_TMP);
+                uint temperature = shouldPollPackageTemperature
+                    ? _cpu._pawnModule.ReadSmn(F17H_M01H_THM_TCON_CUR_TMP)
+                    : 0;
 
                 // SVI0_TFN_PLANE0 [0]
                 // SVI0_TFN_PLANE1 [1]
-                smuSvi0Tfn = _cpu._pawnModule.ReadSmn(F17H_M01H_SVI + 0x8);
+                if (shouldPollVoltage)
+                    smuSvi0Tfn = _cpu._pawnModule.ReadSmn(F17H_M01H_SVI + 0x8);
 
                 bool supportsPerCcdTemperatures = false;
 
@@ -436,85 +469,55 @@ internal sealed class Amd17Cpu : AmdCpu
 
                 // SVI0_PLANE0_VDDCOR [24:16]
                 // SVI0_PLANE0_IDDCOR [7:0]
-                smuSvi0TelPlane0 = _cpu._pawnModule.ReadSmn(sviPlane0Offset);
+                if (shouldPollVoltage)
+                    smuSvi0TelPlane0 = _cpu._pawnModule.ReadSmn(sviPlane0Offset);
 
                 // SVI0_PLANE1_VDDCOR [24:16]
                 // SVI0_PLANE1_IDDCOR [7:0]
-                smuSvi0TelPlane1 = _cpu._pawnModule.ReadSmn(sviPlane1Offset);
+                if (shouldPollVoltage)
+                    smuSvi0TelPlane1 = _cpu._pawnModule.ReadSmn(sviPlane1Offset);
 
-                ThreadAffinity.Set(previousAffinity);
-
-                TimeSpan deltaTime = sampleTime - _lastSampleTime;
-                if (_lastSampleTime.Ticks == 0)
+                if (shouldPollPackageTemperature)
                 {
-                    deltaTime = new(0);
-                    _lastSampleTime = sampleTime;
-                    _lastPwrValue = totalEnergy;
-                }
+                    // current temp Bit [31:21]
+                    // If bit 19 of the Temperature Control register is set, there is an additional offset of 49 degrees C.
+                    bool tempOffsetFlag = (temperature & F17H_TEMP_OFFSET_FLAG) != 0;
+                    temperature = (temperature >> 21) * 125;
 
-                _lastSampleTime = sampleTime;
+                    float offset = 0.0f;
 
-                // ticks diff
-                // power consumption
-                // power.Value = (float) ((double)pu * 0.125);
-                // energyBaseUnit = micro Joule per increment, from [ESU]
+                    // Offset table: https://github.com/torvalds/linux/blob/master/drivers/hwmon/k10temp.c#L78
+                    if (string.IsNullOrWhiteSpace(cpuId.Name))
+                        offset = 0;
+                    else if (cpuId.Name.Contains("1600X") || cpuId.Name.Contains("1700X") || cpuId.Name.Contains("1800X"))
+                        offset = -20.0f;
+                    else if (cpuId.Name.Contains("Threadripper 19") || cpuId.Name.Contains("Threadripper 29"))
+                        offset = -27.0f;
+                    else if (cpuId.Name.Contains("2700X"))
+                        offset = -10.0f;
 
-                long pwr;
-                if (_lastPwrValue <= totalEnergy)
-                    pwr = totalEnergy - _lastPwrValue;
-                else
-                    pwr = (0xffffffff - _lastPwrValue) + totalEnergy;
+                    float t = temperature * 0.001f;
+                    if (tempOffsetFlag)
+                        t += -49.0f;
 
-                // update for next sample
-                _lastPwrValue = totalEnergy;
+                    if (offset < 0)
+                    {
+                        _coreTemperatureTctl.Value = t;
+                        _coreTemperatureTdie.Value = t + offset;
 
-                if (deltaTime.Ticks > 0)
-                {
-                    double energy = energyBaseUnit * pwr;
-                    energy /= deltaTime.TotalSeconds;
-
-                    if (!double.IsNaN(energy))
-                        _packagePower.Value = (float)energy;
-                }
-
-                // current temp Bit [31:21]
-                // If bit 19 of the Temperature Control register is set, there is an additional offset of 49 degrees C.
-                bool tempOffsetFlag = (temperature & F17H_TEMP_OFFSET_FLAG) != 0;
-                temperature = (temperature >> 21) * 125;
-
-                float offset = 0.0f;
-
-                // Offset table: https://github.com/torvalds/linux/blob/master/drivers/hwmon/k10temp.c#L78
-                if (string.IsNullOrWhiteSpace(cpuId.Name))
-                    offset = 0;
-                else if (cpuId.Name.Contains("1600X") || cpuId.Name.Contains("1700X") || cpuId.Name.Contains("1800X"))
-                    offset = -20.0f;
-                else if (cpuId.Name.Contains("Threadripper 19") || cpuId.Name.Contains("Threadripper 29"))
-                    offset = -27.0f;
-                else if (cpuId.Name.Contains("2700X"))
-                    offset = -10.0f;
-
-                float t = temperature * 0.001f;
-                if (tempOffsetFlag)
-                    t += -49.0f;
-
-                if (offset < 0)
-                {
-                    _coreTemperatureTctl.Value = t;
-                    _coreTemperatureTdie.Value = t + offset;
-
-                    _cpu.ActivateSensor(_coreTemperatureTctl);
-                    _cpu.ActivateSensor(_coreTemperatureTdie);
-                }
-                else
-                {
-                    // Zen 2 doesn't have an offset so Tdie and Tctl are the same.
-                    _coreTemperatureTctlTdie.Value = t;
-                    _cpu.ActivateSensor(_coreTemperatureTctlTdie);
+                        _cpu.ActivateSensor(_coreTemperatureTctl);
+                        _cpu.ActivateSensor(_coreTemperatureTdie);
+                    }
+                    else
+                    {
+                        // Zen 2 doesn't have an offset so Tdie and Tctl are the same.
+                        _coreTemperatureTctlTdie.Value = t;
+                        _cpu.ActivateSensor(_coreTemperatureTctlTdie);
+                    }
                 }
 
                 // Tested only on R5 3600 & Threadripper 3960X, 5900X, 7900X
-                if (supportsPerCcdTemperatures)
+                if (supportsPerCcdTemperatures && shouldPollCcdTemperatures)
                 {
                     for (uint i = 0; i < _ccdTemperatures.Length; i++)
                     {
@@ -544,7 +547,7 @@ internal sealed class Amd17Cpu : AmdCpu
                     }
 
                     Sensor[] activeCcds = _ccdTemperatures.Where(x => x != null).ToArray();
-                    detectedCcdCount = activeCcds.Length;
+                    _detectedCcdCount = activeCcds.Length;
                     if (activeCcds.Length > 1)
                     {
                         // No need to get the max / average ccds temp if there is only one CCD.
@@ -574,42 +577,82 @@ internal sealed class Amd17Cpu : AmdCpu
                     }
                 }
 
+                if (shouldPollCcdTemperatures)
+                    _ccdTemperatureDiscoveryComplete = true;
+
                 Mutexes.ReleasePciBus();
             }
 
-            // voltage
-            const double vidStep = 0.00625;
-            double vcc;
-            uint svi0PlaneXVddCor;
+            ThreadAffinity.Set(previousAffinity);
 
-            if (cpuId.Model is 0x61 or 0x44 or 0xE0) // Readout not working for Ryzen 7000/9000; assumed same for Olympic Ridge (Zen 6 Desktop).
-                smuSvi0Tfn |= 0x01 | 0x02;
-
-            // Core (0x01).
-            if ((smuSvi0Tfn & 0x01) == 0)
+            if (shouldPollPackagePower)
             {
-                svi0PlaneXVddCor = (smuSvi0TelPlane0 >> 16) & 0xff;
-                vcc = 1.550 - (vidStep * svi0PlaneXVddCor);
-                _coreVoltage.Value = (float)vcc;
+                TimeSpan deltaTime = sampleTime - _lastSampleTime;
+                if (_lastSampleTime.Ticks == 0)
+                {
+                    deltaTime = new(0);
+                    _lastPwrValue = totalEnergy;
+                }
 
-                _cpu.ActivateSensor(_coreVoltage);
+                _lastSampleTime = sampleTime;
+
+                long pwr;
+                if (_lastPwrValue <= totalEnergy)
+                    pwr = totalEnergy - _lastPwrValue;
+                else
+                    pwr = (0xffffffff - _lastPwrValue) + totalEnergy;
+
+                _lastPwrValue = totalEnergy;
+
+                if (deltaTime.Ticks > 0)
+                {
+                    double energy = energyBaseUnit * pwr;
+                    energy /= deltaTime.TotalSeconds;
+
+                    if (!double.IsNaN(energy))
+                        _packagePower.Value = (float)energy;
+                }
             }
 
-            // SoC (0x02), not every Zen cpu has this voltage.
-            if (cpuId.Model is 0x11 or 0x21 or 0x71 or 0x31 || (smuSvi0Tfn & 0x02) == 0)
+            if (shouldPollVoltage && pciSensorsRead)
             {
-                svi0PlaneXVddCor = (smuSvi0TelPlane1 >> 16) & 0xff;
-                vcc = 1.550 - (vidStep * svi0PlaneXVddCor);
-                _socVoltage.Value = (float)vcc;
+                // voltage
+                const double vidStep = 0.00625;
+                double vcc;
+                uint svi0PlaneXVddCor;
 
-                _cpu.ActivateSensor(_socVoltage);
+                if (cpuId.Model is 0x61 or 0x44 or 0xE0) // Readout not working for Ryzen 7000/9000; assumed same for Olympic Ridge (Zen 6 Desktop).
+                    smuSvi0Tfn |= 0x01 | 0x02;
+
+                // Core (0x01).
+                if ((smuSvi0Tfn & 0x01) == 0)
+                {
+                    svi0PlaneXVddCor = (smuSvi0TelPlane0 >> 16) & 0xff;
+                    vcc = 1.550 - (vidStep * svi0PlaneXVddCor);
+                    _coreVoltage.Value = (float)vcc;
+
+                    _cpu.ActivateSensor(_coreVoltage);
+                }
+
+                // SoC (0x02), not every Zen cpu has this voltage.
+                if (cpuId.Model is 0x11 or 0x21 or 0x71 or 0x31 || (smuSvi0Tfn & 0x02) == 0)
+                {
+                    svi0PlaneXVddCor = (smuSvi0TelPlane1 >> 16) & 0xff;
+                    vcc = 1.550 - (vidStep * svi0PlaneXVddCor);
+                    _socVoltage.Value = (float)vcc;
+
+                    _cpu.ActivateSensor(_socVoltage);
+                }
             }
 
-            double timeStampCounterMultiplier = GetTimeStampCounterMultiplier();
-            if (timeStampCounterMultiplier > 0)
+            if (shouldPollBusClock)
             {
-                _busClock.Value = (float)(_cpu.TimeStampCounterFrequency / timeStampCounterMultiplier);
-                _cpu.ActivateSensor(_busClock);
+                double timeStampCounterMultiplier = GetTimeStampCounterMultiplier();
+                if (timeStampCounterMultiplier > 0)
+                {
+                    _busClock.Value = (float)(_cpu.TimeStampCounterFrequency / timeStampCounterMultiplier);
+                    _cpu.ActivateSensor(_busClock);
+                }
             }
 
             bool shouldPollSmuTable = ShouldPollSmuTable(
@@ -624,7 +667,7 @@ internal sealed class Amd17Cpu : AmdCpu
 
                 foreach (KeyValuePair<KeyValuePair<uint, RyzenSMU.SmuSensorType>, Sensor> sensor in _smuSensors)
                 {
-                    if (detectedCcdCount == 1 && sensor.Key.Value.Name == "L3 (CCD2)")
+                    if (_detectedCcdCount == 1 && sensor.Key.Value.Name == "L3 (CCD2)")
                         continue;
 
                     if (smuData.Length > sensor.Key.Key)
@@ -942,6 +985,21 @@ internal sealed class Amd17Cpu : AmdCpu
             if (Threads.Count == 0)
                 return;
 
+            bool updatePower = SensorPolling.ShouldEvaluate(_cpu._sensorConfig, _power);
+            bool updateVoltage = SensorPolling.ShouldEvaluate(_cpu._sensorConfig, _vcore);
+            bool updateClockCounters = updateCoreClocks || updateEffectiveClocks;
+
+            if (!updateClockCounters && !updatePower && !updateVoltage)
+            {
+                foreach (CpuThread currentThread in Threads)
+                    currentThread.ResetPerformanceCounter();
+
+                EffectiveClocks = [];
+                _effectiveClockPollingActive = false;
+                _lastSampleTime = new(0);
+                return;
+            }
+
             bool effectiveClockPollingStarted = updateEffectiveClocks && !_effectiveClockPollingActive;
             if (effectiveClockPollingStarted)
             {
@@ -953,19 +1011,31 @@ internal sealed class Amd17Cpu : AmdCpu
             CpuThread thread = Threads[0];
             GroupAffinity previousAffinity = ThreadAffinity.Set(thread.Cpu.Affinity);
 
+            uint eax = 0;
+            double energyBaseUnit = 0;
+            DateTime sampleTime = new(0);
+            uint totalEnergy = 0;
+
             // MSRC001_0299
             // TU [19:16]
             // ESU [12:8] -> Unit 15.3 micro Joule per increment (default), 1/2^ESU micro Joule
             // PU [3:0]
-            _cpu._pawnModule.ReadMsr(MSR_PWR_UNIT, out uint eax, out uint _);
-            int esu = (int)((eax >> 8) & 0x1F);
-            double energyBaseUnit = Math.Pow(0.5, esu);
+            if (updatePower)
+            {
+                _cpu._pawnModule.ReadMsr(MSR_PWR_UNIT, out eax, out uint _);
+                int esu = (int)((eax >> 8) & 0x1F);
+                energyBaseUnit = Math.Pow(0.5, esu);
 
-            // MSRC001_029A
-            // total_energy [31:0]
-            DateTime sampleTime = DateTime.UtcNow;
-            _cpu._pawnModule.ReadMsr(MSR_CORE_ENERGY_STAT, out eax, out _);
-            uint totalEnergy = eax;
+                // MSRC001_029A
+                // total_energy [31:0]
+                sampleTime = DateTime.UtcNow;
+                _cpu._pawnModule.ReadMsr(MSR_CORE_ENERGY_STAT, out eax, out _);
+                totalEnergy = eax;
+            }
+            else
+            {
+                _lastSampleTime = new(0);
+            }
 
             // MSRC001_0293
             // CurHwPstate [24:22]
@@ -973,9 +1043,14 @@ internal sealed class Amd17Cpu : AmdCpu
             // CurCpuDfsId [13:8]
             // CurCpuFid [7:0] zen1..4
             // CurCpuFid [11:0] zen5
-            _cpu._pawnModule.ReadMsr(MSR_HARDWARE_PSTATE_STATUS, out eax, out _);
-            uint msrPstate = eax;
-            int curCpuVid = (int)((eax >> 14) & 0xff);
+            uint msrPstate = 0;
+            int curCpuVid = 0;
+            if (updateClockCounters || updateVoltage)
+            {
+                _cpu._pawnModule.ReadMsr(MSR_HARDWARE_PSTATE_STATUS, out eax, out _);
+                msrPstate = eax;
+                curCpuVid = (int)((eax >> 14) & 0xff);
+            }
 
             for (int i = 0; i < Threads.Count; i++)
             {
@@ -1012,7 +1087,7 @@ internal sealed class Amd17Cpu : AmdCpu
                     Threads[i].UpdateMeasurements();
             }
 
-            if (thread.HasValidCounters())
+            if (updateClockCounters && thread.HasValidCounters())
             {
                 double coreClock = 0;
                 double busClock = 100.0; //bus speed in MHz
@@ -1089,41 +1164,47 @@ internal sealed class Amd17Cpu : AmdCpu
 
             _effectiveClockPollingActive = updateEffectiveClocks;
 
-            // Vcore voltage
-            const double vidStep = 0.00625;
-            double vcc = 1.550 - (vidStep * curCpuVid);
-            _vcore.Value = (float)vcc;
+            if (updateVoltage)
+            {
+                // Vcore voltage
+                const double vidStep = 0.00625;
+                double vcc = 1.550 - (vidStep * curCpuVid);
+                _vcore.Value = (float)vcc;
+            }
 
             // core power consumption
             //current delta time
-            TimeSpan deltaTime = sampleTime - _lastSampleTime;
-            if (_lastSampleTime.Ticks == 0)
+            if (updatePower)
             {
-                deltaTime = new(0);
+                TimeSpan deltaTime = sampleTime - _lastSampleTime;
+                if (_lastSampleTime.Ticks == 0)
+                {
+                    deltaTime = new(0);
+                    _lastSampleTime = sampleTime;
+                    _lastPwrValue = totalEnergy;
+                }
                 _lastSampleTime = sampleTime;
-                _lastPwrValue = totalEnergy;
-            }
-            _lastSampleTime = sampleTime;
 
-            if (deltaTime.Ticks > 0)
-            {
-                // power.Value = (float) ((double)pu * 0.125);
-                // energyBaseUnit = micro Joule per increment, from [ESU]
-                // ticks diff
-                long pwr;
-                if (_lastPwrValue <= totalEnergy)
-                    pwr = totalEnergy - _lastPwrValue;
-                else
-                    pwr = (0xffffffff - _lastPwrValue) + totalEnergy;
+                if (deltaTime.Ticks > 0)
+                {
+                    // power.Value = (float) ((double)pu * 0.125);
+                    // energyBaseUnit = micro Joule per increment, from [ESU]
+                    // ticks diff
+                    long pwr;
+                    if (_lastPwrValue <= totalEnergy)
+                        pwr = totalEnergy - _lastPwrValue;
+                    else
+                        pwr = (0xffffffff - _lastPwrValue) + totalEnergy;
 
-                // update for next sample
-                _lastPwrValue = totalEnergy;
+                    // update for next sample
+                    _lastPwrValue = totalEnergy;
 
-                double energy = energyBaseUnit * pwr;
-                energy /= deltaTime.TotalSeconds;
+                    double energy = energyBaseUnit * pwr;
+                    energy /= deltaTime.TotalSeconds;
 
-                if (!double.IsNaN(energy))
-                    _power.Value = (float)energy;
+                    if (!double.IsNaN(energy))
+                        _power.Value = (float)energy;
+                }
             }
         }
     }

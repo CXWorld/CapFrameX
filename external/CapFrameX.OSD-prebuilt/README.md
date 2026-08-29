@@ -7,13 +7,18 @@ The build uses these automatically when the `external/CapFrameX.OSD` submodule i
 checked out (developers without access to the private repo). With the submodule present,
 the OSD is built from source instead and these files are ignored.
 
-## Hook build provenance
+## Build provenance
 
-The current x64/x86 `cfx_osd_hook.dll` pair was built in `RelWithDebInfo` with the VS 2026/v145
-toolset from private CapFrameX.OSD revision `8acd5c055ede6213fee3f156489a237d34f86cec`.
+The current managed bridge, core, x64/x86 hook pair, and x64/x86 Vulkan layer pair were built in
+`Release` / `RelWithDebInfo` with the VS 2026/v145 toolset from private CapFrameX.OSD revision
+`afbea54974ccd32d384e7f399a86544d1ab23ec5`.
 
-- x64 SHA-256: `AB9ED629CDFE7BFE8C4C7D9D4492805C2D87072DCB8CDBCADBAFFCD53D547E4E`
-- x86 SHA-256: `66A3CE6A877BA2664ADD88D9E37FC46E9958E83F4C1623CA9B02B1AD2151DB43`
+- managed bridge SHA-256: `4D0193BB1E53938F8E96DF66FCF76AF55C16590CF58EF988ABA3D47F50634973`
+- core SHA-256: `FBF1354B0E3DD8DAA75031B20F25028A8280235B3FE3AEA95195D55D12C6D617`
+- hook x64 SHA-256: `79E704B8CBB9BE74BC811ADD0B2B075FFB6566EC81CEE8C261529AA8709F3B2F`
+- hook x86 SHA-256: `2A6E1A788EECE44912DF03E6B953C935ADF3E74397E132C6928C5066AE096E81`
+- Vulkan x64 SHA-256: `B0DF499C10D13638E704CF9E851A6AE6322D6CFC012C2F552DA43855A04AE578`
+- Vulkan x86 SHA-256: `2EEFF2E857BC867EDCDA0EC74619C5149EE6167FDCF2C721127247E2677E96AA`
 
 ## Contents
 

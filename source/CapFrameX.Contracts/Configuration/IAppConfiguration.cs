@@ -173,7 +173,7 @@ namespace CapFrameX.Contracts.Configuration
 
 		/// <summary>
 		/// Maximum visible refresh rate of the hook-free overlay charts in Hz.
-		/// Supported values are 1, 2, 5, 10, 20, and 30; default is 1.
+		/// Supported values are 1, 2, 5, 10, 20, 30, 60, and 120; default is 1.
 		/// </summary>
 		int HookFreeRefreshRate { get; set; }
 

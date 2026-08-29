@@ -7,6 +7,8 @@ namespace CapFrameX.Monitoring.Contracts
     {
         bool IsCapturing { get; set; }
 
+        bool IsSensorLoggingActive { get; set; }
+
         bool HasConfigFile { get; }
 
         int SensorEntryCount { get; }
@@ -14,6 +16,22 @@ namespace CapFrameX.Monitoring.Contracts
         bool WsSensorsEnabled { get; set; }
 
         bool WsActiveSensorsEnabled { get; set; }
+
+        /// <summary>
+        /// Indicates whether the current OSD layout contains at least one hardware-sensor
+        /// identifier. Online metrics and other synthetic OSD rows do not count.
+        /// </summary>
+        bool HasSelectedOverlaySensors { get; }
+
+        /// <summary>
+        /// Indicates whether the current OSD layout contains a selected PmcReader sensor.
+        /// </summary>
+        bool HasSelectedPmcOverlaySensors { get; }
+
+        /// <summary>
+        /// Indicates whether the capture configuration contains a selected PmcReader sensor.
+        /// </summary>
+        bool HasSelectedPmcLoggingSensors { get; }
 
         /// <summary>
         /// Forces evaluation of every sensor regardless of the logging/overlay selection.
