@@ -10,7 +10,7 @@
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
-    <!-- MouseKeyHook/KeyMouseHook ship .NET Framework assets only; the IL is compatible with modern .NET. -->
+    <!-- MouseKeyHook ships .NET Framework assets only; the IL is compatible with modern .NET. -->
     <NoWarn>$(NoWarn);NU1701</NoWarn>
   </PropertyGroup>
 
@@ -20,10 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ParallelExtensionsExtras" Version="1.2.0" />
     <PackageReference Include="DynamicData" Version="6.14.8" />
     <PackageReference Include="gong-wpf-dragdrop" Version="3.2.1" />
-    <PackageReference Include="KeyMouseHook" Version="1.0.6" />
     <PackageReference Include="MaterialDesignColors" Version="5.2.1" />
     <PackageReference Include="MaterialDesignThemes" Version="5.2.1" />
     <PackageReference Include="MathNet.Filtering" Version="0.7.0" />
@@ -34,9 +32,9 @@
     <PackageReference Include="MouseKeyHook" Version="5.6.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="OxyPlot.Core" Version="2.1.0" />
+    <PackageReference Include="ParallelExtensionsExtras" Version="1.2.0" />
     <PackageReference Include="Prism.Core" Version="9.0.537" />
     <PackageReference Include="Prism.Wpf" Version="9.0.537" />
-    <PackageReference Include="Splat" Version="9.3.11" />
     <PackageReference Include="System.Reactive" Version="6.1.0" />
     <PackageReference Include="TaskScheduler" Version="2.9.1" />
   </ItemGroup>
