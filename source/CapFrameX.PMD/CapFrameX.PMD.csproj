@@ -13,15 +13,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
-    <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="OxyPlot.Core" Version="2.1.0" />
-    <PackageReference Include="OxyPlot.Wpf" Version="2.1.0" />
-    <PackageReference Include="OxyPlot.Wpf.Shared" Version="2.1.0" />
-    <PackageReference Include="Prism.Core" Version="9.0.537" />
-    <PackageReference Include="SerialPortStream" Version="2.4.0" />
-    <PackageReference Include="System.Reactive" Version="6.1.0" />
+    <PackageReference Include="MathNet.Numerics" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="OxyPlot.Core" />
+    <PackageReference Include="OxyPlot.Wpf" />
+    <PackageReference Include="OxyPlot.Wpf.Shared" />
+    <PackageReference Include="Prism.Core" />
+    <PackageReference Include="SerialPortStream" />
+    <PackageReference Include="System.Reactive" />
   </ItemGroup>
 
   <ItemGroup>
