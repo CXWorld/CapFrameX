@@ -9,11 +9,11 @@ the OSD is built from source instead and these files are ignored.
 
 ## Hook build provenance
 
-The current x64/x86 `cfx_osd_hook.dll` pair was built in `RelWithDebInfo` from private
-CapFrameX.OSD revision `aff9358202ae9089aad2a6589167169f0714fe50`.
+The current x64/x86 `cfx_osd_hook.dll` pair was built in `RelWithDebInfo` with the VS 2026/v145
+toolset from private CapFrameX.OSD revision `8acd5c055ede6213fee3f156489a237d34f86cec`.
 
-- x64 SHA-256: `935D12E9218D12DB38A67F78DB9DBBA4F394824344EDF3000768B86BEBE05F16`
-- x86 SHA-256: `C5058AAF02A4110FE45A86D370DDB2A924262C109CD093C933B8251C791F64E5`
+- x64 SHA-256: `AB9ED629CDFE7BFE8C4C7D9D4492805C2D87072DCB8CDBCADBAFFCD53D547E4E`
+- x86 SHA-256: `66A3CE6A877BA2664ADD88D9E37FC46E9958E83F4C1623CA9B02B1AD2151DB43`
 
 ## Contents
 
