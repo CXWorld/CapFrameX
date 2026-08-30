@@ -113,10 +113,24 @@ namespace CapFrameX.Overlay
             SecondMetric = _appConfiguration.RunHistorySecondMetric;
             ThirdMetric = _appConfiguration.RunHistoryThirdMetric;
 
+            bool isRTSSInstalled = _rTSSService.IsRTSSInstalled();
+            if (ShouldDefaultToHookFreeOverlay(isRTSSInstalled,
+                _appConfiguration.EnableHookFreeOverlay,
+                _appConfiguration.EnableHookOverlay))
+            {
+                // With neither CapFrameX renderer selected, the two false flags mean "RTSS".
+                // Do not leave a fresh or migrated configuration on a renderer that cannot exist:
+                // persist hook-free as the selected mode so the UI and every downstream consumer
+                // observe the same usable default. Explicit in-game/hook-free choices are preserved.
+                _appConfiguration.EnableHookFreeOverlay = true;
+                _logger.LogInformation(
+                    "RTSS is not installed. Selecting the CapFrameX hook-free overlay as the default renderer.");
+            }
+
             bool configuredOverlayActive = _appConfiguration.IsOverlayActive;
             bool initialOverlayActive = GetInitialOverlayActiveState(
                 configuredOverlayActive,
-                _rTSSService.IsRTSSInstalled(),
+                isRTSSInstalled,
                 _appConfiguration.EnableHookFreeOverlay,
                 _appConfiguration.EnableHookOverlay);
 
@@ -317,6 +331,12 @@ namespace CapFrameX.Overlay
         {
             return configuredOverlayActive &&
                 (isRTSSInstalled || enableHookFreeOverlay || enableHookOverlay);
+        }
+
+        internal static bool ShouldDefaultToHookFreeOverlay(bool isRTSSInstalled,
+            bool enableHookFreeOverlay, bool enableHookOverlay)
+        {
+            return !isRTSSInstalled && !enableHookFreeOverlay && !enableHookOverlay;
         }
 
         /// <summary>

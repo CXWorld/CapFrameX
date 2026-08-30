@@ -25,6 +25,21 @@ namespace CapFrameX.Test.Overlay
         }
 
         [DataTestMethod]
+        [DataRow(false, false, false, true)]
+        [DataRow(true, false, false, false)]
+        [DataRow(false, true, false, false)]
+        [DataRow(false, false, true, false)]
+        [DataRow(false, true, true, false)]
+        public void ShouldDefaultToHookFreeOverlay_OnlyReplacesUnavailableRtss(
+            bool rtssInstalled, bool hookFreeEnabled, bool hookEnabled, bool expected)
+        {
+            bool actual = OverlayService.ShouldDefaultToHookFreeOverlay(
+                rtssInstalled, hookFreeEnabled, hookEnabled);
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [DataTestMethod]
         [DataRow(false, false, false, false, true)]
         [DataRow(true, false, false, false, false)]
         [DataRow(true, true, false, false, true)]

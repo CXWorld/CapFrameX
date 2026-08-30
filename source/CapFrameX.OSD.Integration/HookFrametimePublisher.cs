@@ -21,6 +21,7 @@ namespace CapFrameX.OSD.Integration
     public sealed class HookFrametimePublisher : IDisposable
     {
         private readonly IAppConfiguration _appConfiguration;
+        private readonly int _processIdIndex;
         private readonly int _ftIndex;
         private readonly int _displayChangedIndex;
         private readonly Func<int> _startTimeIndexProvider;
@@ -35,11 +36,15 @@ namespace CapFrameX.OSD.Integration
         public HookFrametimePublisher(IAppConfiguration appConfiguration,
                                       IObservable<string[]> frameDataStream,
                                       IObservable<int> processIdStream,
+                                      int processIdColumnIndex,
                                       int frametimeColumnIndex,
                                       int displayChangedColumnIndex,
                                       Func<int> startTimeIndexProvider)
         {
             _appConfiguration = appConfiguration ?? throw new ArgumentNullException(nameof(appConfiguration));
+            if (processIdColumnIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(processIdColumnIndex));
+            _processIdIndex = processIdColumnIndex;
             _ftIndex = frametimeColumnIndex;
             _displayChangedIndex = displayChangedColumnIndex;
             _startTimeIndexProvider = startTimeIndexProvider;
@@ -99,7 +104,8 @@ namespace CapFrameX.OSD.Integration
             HookFrametimeChannel channel = _channel; // capture; PushSample no-ops if disposed concurrently
             if (channel == null || row == null || _ftIndex < 0 || row.Length <= _ftIndex) return;
             int targetPid = _targetPid;
-            if (targetPid <= 0 || !HookTargetPolicy.IsAllowed(targetPid, out _)) return;
+            if (!PresentMonFrameFilter.IsForTargetProcess(row, _processIdIndex, targetPid) ||
+                !HookTargetPolicy.IsAllowed(targetPid, out _)) return;
 
             if (!double.TryParse(row[_ftIndex], NumberStyles.Any, CultureInfo.InvariantCulture, out var ms)
                 || ms <= 0 || ms >= 10000) return;

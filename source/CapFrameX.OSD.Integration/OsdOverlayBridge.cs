@@ -40,7 +40,10 @@ namespace CapFrameX.OSD.Integration
         private readonly int _ftIndex;
         private readonly int _runtimeIndex;
         private readonly int _displayChangedIndex;
+        private readonly int _processIdIndex;
         private readonly IObservable<string[]> _frameDataStream;
+        private readonly bool _filterFrameRowsByTarget;
+        private readonly IDisposable _targetPidSub;
         private readonly object _frameSubscriptionLock = new object();
         // StartTimeInMs (CPUStartQPCTimeInMs) sits AFTER the optional PC-latency column, so
         // its index is layout-dependent — resolve it lazily instead of caching a stale int.
@@ -49,6 +52,7 @@ namespace CapFrameX.OSD.Integration
         private volatile bool _enabled;
         private volatile bool _fallbackEnabled;
         private volatile bool _started;
+        private int _targetPid;
 
         // The PresentMon row stream can run hundreds or thousands of times per second. Keep the
         // bridge completely out of that path unless the currently visible layout actually needs
@@ -96,10 +100,16 @@ namespace CapFrameX.OSD.Integration
                                 int presentRuntimeColumnIndex = -1,
                                 int displayChangedColumnIndex = -1,
                                 Func<int> startTimeIndexProvider = null,
-                                IObservable<bool> hookFreeFallbackStream = null)
+                                IObservable<bool> hookFreeFallbackStream = null,
+                                IObservable<int> processIdStream = null,
+                                int processIdColumnIndex = -1)
         {
             if (overlayService == null) throw new ArgumentNullException(nameof(overlayService));
             if (appConfiguration == null) throw new ArgumentNullException(nameof(appConfiguration));
+            if (processIdStream != null && processIdColumnIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(processIdColumnIndex));
+            if (processIdStream == null && processIdColumnIndex >= 0)
+                throw new ArgumentNullException(nameof(processIdStream));
 
             _overlayService = overlayService;
             _appConfiguration = appConfiguration;
@@ -112,12 +122,22 @@ namespace CapFrameX.OSD.Integration
             _ftIndex = frametimeColumnIndex;
             _runtimeIndex = presentRuntimeColumnIndex;
             _displayChangedIndex = displayChangedColumnIndex;
+            _processIdIndex = processIdColumnIndex;
             _frameDataStream = frameDataStream;
             _startTimeIndexProvider = startTimeIndexProvider;
+            _filterFrameRowsByTarget = processIdStream != null;
             _enabled = appConfiguration.EnableHookFreeOverlay;
             _osd.SetValueSmoothing(appConfiguration.UseOsdValueSmoothing);
             _osd.SetReplayBuffer(appConfiguration.OsdReplayBufferSize);
             _osd.SetHookFreeRefreshRate(appConfiguration.HookFreeRefreshRate);
+
+            // FrameDataStream contains rows for every ETW process. Capture the selected game's PID
+            // before activating the feed so foreign desktop/process rows cannot alter the runtime
+            // label, graph timeline or scalar windows.
+            if (_filterFrameRowsByTarget)
+                _targetPidSub = processIdStream
+                    .DistinctUntilChanged()
+                    .Subscribe(OnTargetPidChanged);
 
             _activeSub = overlayService.IsOverlayActiveStream.Subscribe(OnActiveChanged);
             _entriesSub = overlayService.OnDictionaryUpdated.Subscribe(_ => OnEntries());
@@ -155,6 +175,27 @@ namespace CapFrameX.OSD.Integration
         private void OnActiveChanged(bool active) { _active = active; UpdateRunState(); }
         private void OnEnabledChanged(bool enabled) { _enabled = enabled; UpdateRunState(); }
         private void OnFallbackChanged(bool enabled) { _fallbackEnabled = enabled; UpdateRunState(); }
+
+        private void OnTargetPidChanged(int processId)
+        {
+            int targetPid = processId > 0 ? processId : 0;
+            if (Interlocked.Exchange(ref _targetPid, targetPid) == targetPid)
+            {
+                return;
+            }
+
+            _curRuntime = null;
+            lock (_fpsLock)
+            {
+                _ftWindow.Clear();
+                _ftWindowSumMs = 0;
+                _curFps = 0;
+                _curFrametimeMs = 0;
+                _dtWindow.Clear();
+                _dtWindowSumMs = 0;
+                _curDisplayTimeMs = 0;
+            }
+        }
 
         private void UpdateRunState()
         {
@@ -415,6 +456,14 @@ namespace CapFrameX.OSD.Integration
         {
             if (!_started || row == null || _ftIndex < 0 || row.Length <= _ftIndex) return;
 
+            int targetPid = 0;
+            if (_filterFrameRowsByTarget)
+            {
+                targetPid = Volatile.Read(ref _targetPid);
+                if (!PresentMonFrameFilter.IsForTargetProcess(
+                    row, _processIdIndex, targetPid)) return;
+            }
+
             int requirements = Volatile.Read(ref _frameFeedRequirements);
             if (requirements == 0) return;
 
@@ -453,6 +502,10 @@ namespace CapFrameX.OSD.Integration
                 needDisplayTimeSample && _displayChangedIndex >= 0 && row.Length > _displayChangedIndex &&
                 double.TryParse(row[_displayChangedIndex], NumberStyles.Any, CultureInfo.InvariantCulture, out dc)
                 && dc > 0 && dc < 10000;
+
+            // A target switch can race an in-flight PresentMon callback. Drop the parsed row before
+            // publishing if its selection generation changed meanwhile.
+            if (_filterFrameRowsByTarget && targetPid != Volatile.Read(ref _targetPid)) return;
 
             bool pushFrametimeGraph = (requirements & NeedFrametimeGraph) != 0 &&
                 hasFrametimeSample;
@@ -532,6 +585,7 @@ namespace CapFrameX.OSD.Integration
             _displaySub?.Dispose();
             _backgroundOpacitySub?.Dispose();
             _zoomSub?.Dispose();
+            _targetPidSub?.Dispose();
             _osd?.Dispose();
         }
     }

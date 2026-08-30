@@ -31,7 +31,6 @@ using CapFrameX.ViewModel;
 using DryIoc;
 using Microsoft.Extensions.Logging;
 using Prism.Container.DryIoc;
-using Prism.DryIoc;
 using Prism.Events;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -51,15 +50,15 @@ namespace CapFrameX
     public partial class App
     {
         // Keeps the hook-free OSD bridge alive for the app lifetime.
-        private CapFrameX.OSD.Integration.OsdOverlayBridge _osdOverlayBridge;
+        private OSD.Integration.OsdOverlayBridge _osdOverlayBridge;
         // Manages in-game hook injection into the detected game process.
-        private CapFrameX.OSD.Integration.HookOverlayManager _hookOverlayManager;
+        private OSD.Integration.HookOverlayManager _hookOverlayManager;
         // Publishes the hook's native handshake/heartbeat to view models.
-        private CapFrameX.OSD.Integration.HookOverlayStatusService _hookOverlayStatusService;
+        private OSD.Integration.HookOverlayStatusService _hookOverlayStatusService;
         // Publishes CapFrameX's overlay entries to the in-game hook via shared memory.
-        private CapFrameX.OSD.Integration.HookMetricsPublisher _hookMetricsPublisher;
+        private OSD.Integration.HookMetricsPublisher _hookMetricsPublisher;
         // Streams per-frame PresentMon frametimes/display-times to the hook (PresentMon graph mode).
-        private CapFrameX.OSD.Integration.HookFrametimePublisher _hookFrametimePublisher;
+        private OSD.Integration.HookFrametimePublisher _hookFrametimePublisher;
 
         // The existing composition root uses DryIoc-specific registration APIs. PrismApplication
         // exposes the container through Prism's abstraction, so unwrap it in one place.
@@ -135,16 +134,16 @@ namespace CapFrameX
                     ProcessServiceProvider.ProcessService = rtssService;
                 }
 
-                CapFrameX.Contracts.Overlay.IOverlayService osdOverlayService;
+                IOverlayService osdOverlayService;
                 using (StartupPerformanceLogger.Measure("Overlay service dependency graph initialization"))
                 {
                     osdOverlayService = Container.Resolve<CapFrameX.Contracts.Overlay.IOverlayService>();
                 }
 
-                CapFrameX.Capture.Contracts.ICaptureService osdCaptureService;
+                ICaptureService osdCaptureService;
                 using (StartupPerformanceLogger.Measure("Capture service dependency graph initialization"))
                 {
-                    osdCaptureService = Container.Resolve<CapFrameX.Capture.Contracts.ICaptureService>();
+                    osdCaptureService = Container.Resolve<ICaptureService>();
                 }
 
                 // Resolve the opt-in FLM service at startup so it can measure independently of
@@ -158,7 +157,7 @@ namespace CapFrameX
                 // title it can only do harm — the implicit layer it would need is bound at
                 // vkCreateInstance and cannot be added afterwards.
                 rtssService.VulkanPresentationProbe =
-                    CapFrameX.OSD.Integration.VulkanPresentation.IsActive;
+                    OSD.Integration.VulkanPresentation.IsActive;
 
                 // In-game hook overlay: inject cfx_osd_hook.dll into the game CapFrameX already
                 // detected. The PID flows through IRTSSService.ProcessIdStream (IProcessService),
@@ -167,12 +166,12 @@ namespace CapFrameX
                 // state when injection is unsafe, fails its handshake, or the runtime is unsupported.
                 using (StartupPerformanceLogger.Measure("Hook overlay manager initialization"))
                 {
-                    _hookOverlayManager = new CapFrameX.OSD.Integration.HookOverlayManager(
+                    _hookOverlayManager = new OSD.Integration.HookOverlayManager(
                         config,
                         rtssService.ProcessIdStream,
                         osdCaptureService.FrameDataStream,
-                        CapFrameX.PresentMonInterface.PresentMonCaptureService.ProcessID_INDEX,
-                        CapFrameX.PresentMonInterface.PresentMonCaptureService.PresentRuntime_INDEX,
+                        PresentMonCaptureService.ProcessID_INDEX,
+                        PresentMonCaptureService.PresentRuntime_INDEX,
                         statusService: _hookOverlayStatusService);
                 }
 
@@ -182,15 +181,18 @@ namespace CapFrameX
                 // selected in-game renderer cannot safely become operational (including D3D9).
                 using (StartupPerformanceLogger.Measure("OSD overlay bridge initialization"))
                 {
-                    _osdOverlayBridge = new CapFrameX.OSD.Integration.OsdOverlayBridge(
+                    _osdOverlayBridge = new OSD.Integration.OsdOverlayBridge(
                         osdOverlayService,
                         config, // IAppConfiguration (resolved above) — gates OSD vs RTSS
                         osdCaptureService.FrameDataStream,
-                        CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenPresents_INDEX,
-                        CapFrameX.PresentMonInterface.PresentMonCaptureService.PresentRuntime_INDEX,
-                        CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
+                        PresentMonCaptureService.MsBetweenPresents_INDEX,
+                        PresentMonCaptureService.PresentRuntime_INDEX,
+                        PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
                         () => osdCaptureService.CPUStartQPCTimeInMs_Index,
-                        _hookOverlayManager.HookFreeFallbackStream);
+                        _hookOverlayManager.HookFreeFallbackStream,
+                        processIdStream: rtssService.ProcessIdStream,
+                        processIdColumnIndex:
+                            PresentMonCaptureService.ProcessID_INDEX);
                 }
 
                 // While the in-game hook overlay is on, mirror CapFrameX's processed overlay entries
@@ -198,7 +200,7 @@ namespace CapFrameX
                 // so the injected hook shows authoritative values, not just its local frame ring.
                 using (StartupPerformanceLogger.Measure("Hook metrics publisher initialization"))
                 {
-                    _hookMetricsPublisher = new CapFrameX.OSD.Integration.HookMetricsPublisher(
+                    _hookMetricsPublisher = new OSD.Integration.HookMetricsPublisher(
                         osdOverlayService,
                         config,
                         rtssService.ProcessIdStream);
@@ -210,12 +212,13 @@ namespace CapFrameX
                 // hook otherwise uses its own local present ring (the two sources stay strictly separate).
                 using (StartupPerformanceLogger.Measure("Hook frametime publisher initialization"))
                 {
-                    _hookFrametimePublisher = new CapFrameX.OSD.Integration.HookFrametimePublisher(
+                    _hookFrametimePublisher = new OSD.Integration.HookFrametimePublisher(
                         config,
                         osdCaptureService.FrameDataStream,
                         rtssService.ProcessIdStream,
-                        CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenPresents_INDEX,
-                        CapFrameX.PresentMonInterface.PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
+                        PresentMonCaptureService.ProcessID_INDEX,
+                        PresentMonCaptureService.MsBetweenPresents_INDEX,
+                        PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
                         () => osdCaptureService.CPUStartQPCTimeInMs_Index);
                 }
 
@@ -223,31 +226,31 @@ namespace CapFrameX
                 {
                     var shellContract = Container.Resolve<IShell>();
                     shellContract.IsGpuAccelerationActive = config.IsGpuAccelerationActive;
-                    Application.Current.MainWindow = shell;
+                    Current.MainWindow = shell;
                 }
 
                 // get last tracked WindowState
-                var startupWindowState = Application.Current.MainWindow.WindowState;
+                var startupWindowState = Current.MainWindow.WindowState;
 
                 // initial startup with minimized window
                 using (StartupPerformanceLogger.Measure("Main window first show"))
                 {
-                    Application.Current.MainWindow.WindowState = WindowState.Minimized;
-                    Application.Current.MainWindow.Show();
+                    Current.MainWindow.WindowState = WindowState.Minimized;
+                    Current.MainWindow.Show();
                 }
 
                 // set window to tray or revert back to last tracked WindowState
                 if (config.StartMinimized)
                     if(config.MinimizeToTray)
-                        Application.Current.MainWindow.Hide();
+                        Current.MainWindow.Hide();
                     else
-                        Application.Current.MainWindow.WindowState = WindowState.Minimized;
+                        Current.MainWindow.WindowState = WindowState.Minimized;
                 else if (DeferMainWindowRestore)
                     // Splash screen active: hand the restore over to App, which reveals the
                     // window once this method returned.
                     PendingMainWindowState = startupWindowState;
                 else
-                        Application.Current.MainWindow.WindowState = startupWindowState;
+                        Current.MainWindow.WindowState = startupWindowState;
 
                 LogWindowState();
             }
@@ -295,7 +298,7 @@ namespace CapFrameX
 
                     Container.RegisterInstance<IFrametimeStatisticProviderOptions>(appConfiguration);
                     Container.RegisterInstance(new ApplicationState());
-                    _hookOverlayStatusService = new CapFrameX.OSD.Integration.HookOverlayStatusService();
+                    _hookOverlayStatusService = new OSD.Integration.HookOverlayStatusService();
                     Container.RegisterInstance<IHookOverlayStatusService>(
                         _hookOverlayStatusService);
                 }
@@ -466,10 +469,10 @@ namespace CapFrameX
         {
             var loggerFactory = Container.Resolve<ILoggerFactory>();
 
-            double height = Application.Current.MainWindow.Height;
-            double width = Application.Current.MainWindow.Width;
-            double positionLeft = Application.Current.MainWindow.Left;
-            double positionTop = Application.Current.MainWindow.Top;
+            double height = Current.MainWindow.Height;
+            double width = Current.MainWindow.Width;
+            double positionLeft = Current.MainWindow.Left;
+            double positionTop = Current.MainWindow.Top;
 
             loggerFactory.CreateLogger<App>().LogInformation("Window dimensions are {width} x {height}. Window position is {positionLeft} x {positionTop}", width, height, positionLeft, positionTop);
         }
