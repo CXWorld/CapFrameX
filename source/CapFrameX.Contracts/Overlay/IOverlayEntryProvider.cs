@@ -8,11 +8,15 @@ namespace CapFrameX.Contracts.Overlay
 	{
 		bool HasHardwareChanged { get; }
 
+		bool HasPendingChanges { get; }
+
 		IObservable<IOverlayEntry[]> OverlayEntriesChanged { get; }
 
 		IOverlayEntry GetOverlayEntry(string identifier);
 
 		void MoveEntry(int sourceIndex, int targetIndex);
+
+		void MarkPendingChanges();
 
 		void ResetColorAndLimits(IOverlayEntry selectedEntry);
 

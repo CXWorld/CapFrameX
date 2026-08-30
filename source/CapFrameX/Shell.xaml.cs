@@ -1,15 +1,19 @@
 ﻿using CapFrameX.Configuration;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.MVVM;
+using CapFrameX.Contracts.Overlay;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.MVVM;
+using CapFrameX.MVVM.Dialogs;
 using CapFrameX.View.UITracker;
 using CapFrameX.ViewModel;
+using MaterialDesignThemes.Wpf;
 using Prism.Events;
 using Serilog;
 using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
@@ -31,6 +35,7 @@ namespace CapFrameX
         private const uint MF_BYCOMMAND = 0x00000000;
         private const uint MF_GRAYED = 0x00000001;
         private const uint MF_ENABLED = 0x00000000;
+        private const string ShellDialogHostIdentifier = "ShellDialogHost";
 
         private void SetCloseButtonEnabled(bool enabled)
         {
@@ -49,17 +54,26 @@ namespace CapFrameX
         private bool _isTaskbarIconRefreshed = false;
 
         private readonly ISettingsStorage _settingsStorage;
+        private readonly IAppConfiguration _appConfiguration;
         private readonly IPathService _pathService;
         private readonly IEventAggregator _eventAggregator;
+        private readonly IOverlayProfileChangeTracker _overlayProfileChangeTracker;
+        private readonly Lazy<IOverlayEntryProvider> _overlayEntryProvider;
 
         private bool? _lastPublishedContentVisibility;
 
         private GridLength ColumnAWidthSaved { get; set; }
 
-        public Shell(ISettingsStorage settingsStorage, IPathService pathService,
-            UpdateViewModel updateViewModel, IEventAggregator eventAggregator)
+        public Shell(ISettingsStorage settingsStorage, IAppConfiguration appConfiguration,
+            IPathService pathService,
+            UpdateViewModel updateViewModel, IEventAggregator eventAggregator,
+            IOverlayProfileChangeTracker overlayProfileChangeTracker,
+            Lazy<IOverlayEntryProvider> overlayEntryProvider)
         {
             _eventAggregator = eventAggregator;
+            _appConfiguration = appConfiguration;
+            _overlayProfileChangeTracker = overlayProfileChangeTracker;
+            _overlayEntryProvider = overlayEntryProvider;
             using (StartupPerformanceLogger.Measure("Shell XAML and resource initialization"))
             {
                 InitializeComponent();
@@ -223,31 +237,141 @@ namespace CapFrameX
                 return;
             }
 
+            bool saveOverlayProfile = false;
+            bool closeWasDeferred = false;
+            if (_overlayProfileChangeTracker.HasPendingChanges)
+            {
+                BeginDeferredClose(e);
+                closeWasDeferred = true;
+
+                if (!IsVisible)
+                    Show();
+                if (WindowState == WindowState.Minimized)
+                    WindowState = WindowState.Normal;
+                this.ShowAndFocus();
+
+                UnsavedOverlayProfileDialogResult result;
+                try
+                {
+                    result = await ShowUnsavedOverlayProfileDialogAsync();
+                }
+                catch (Exception ex)
+                {
+                    Log.Logger.Error(ex, "Error while showing the unsaved overlay profile dialog.");
+                    AbortDeferredClose();
+                    return;
+                }
+
+                if (result == UnsavedOverlayProfileDialogResult.Cancel)
+                {
+                    AbortDeferredClose();
+                    return;
+                }
+
+                saveOverlayProfile = result == UnsavedOverlayProfileDialogResult.SaveAndExit;
+            }
+
+            Task pendingSave = Task.CompletedTask;
             if (_settingsStorage is JsonSettingsStorage jsonStorage)
             {
-                var pendingSave = jsonStorage.WaitForPendingSaveAsync();
+                pendingSave = jsonStorage.WaitForPendingSaveAsync();
+            }
 
-                if (!pendingSave.IsCompleted)
+            if (!saveOverlayProfile && pendingSave.IsCompleted)
+            {
+                if (closeWasDeferred)
+                    CompleteDeferredClose();
+
+                return;
+            }
+
+            if (!closeWasDeferred)
+                BeginDeferredClose(e);
+
+            if (saveOverlayProfile)
+            {
+                try
                 {
-                    e.Cancel = true;
-                    _isShuttingDown = true;
-                    SetCloseButtonEnabled(false);
+                    await _overlayEntryProvider.Value.SaveOverlayEntriesToJson(
+                        _appConfiguration.OverlayEntryConfigurationFile);
+                }
+                catch (Exception ex)
+                {
+                    Log.Logger.Error(ex, "Error while saving the overlay profile during shutdown.");
+                }
 
+                if (_overlayProfileChangeTracker.HasPendingChanges)
+                {
                     try
                     {
-                        await pendingSave;
+                        await ShowOverlayProfileSaveErrorDialogAsync();
                     }
                     catch (Exception ex)
                     {
-                        Log.Logger.Error(ex, "Error while waiting for settings to save.");
+                        Log.Logger.Error(ex, "Error while showing the overlay profile save failure dialog.");
                     }
 
-                    _isReadyToClose = true;
-                    SetCloseButtonEnabled(true);
-
-                    Close();  // Retry closing now that save is complete
+                    AbortDeferredClose();
+                    return;
                 }
             }
+
+            try
+            {
+                await pendingSave;
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while waiting for settings to save.");
+            }
+
+            CompleteDeferredClose();
+        }
+
+        private static async Task<UnsavedOverlayProfileDialogResult> ShowUnsavedOverlayProfileDialogAsync()
+        {
+            object result = await DialogHost.Show(
+                new UnsavedOverlayProfileDialog(), ShellDialogHostIdentifier);
+
+            return result is UnsavedOverlayProfileDialogResult dialogResult
+                ? dialogResult
+                : UnsavedOverlayProfileDialogResult.Cancel;
+        }
+
+        private static async Task ShowOverlayProfileSaveErrorDialogAsync()
+        {
+            var dialog = new MessageDialog
+            {
+                DataContext = new
+                {
+                    MessageText = "The overlay profile could not be saved. CapFrameX will remain " +
+                        "open so your changes are not lost."
+                }
+            };
+
+            await DialogHost.Show(dialog, ShellDialogHostIdentifier);
+        }
+
+        private void BeginDeferredClose(CancelEventArgs e)
+        {
+            e.Cancel = true;
+            _isShuttingDown = true;
+            SetCloseButtonEnabled(false);
+        }
+
+        private void AbortDeferredClose()
+        {
+            _isShuttingDown = false;
+            SetCloseButtonEnabled(true);
+        }
+
+        private void CompleteDeferredClose()
+        {
+            _isReadyToClose = true;
+            _isShuttingDown = false;
+            SetCloseButtonEnabled(true);
+
+            Close();  // Retry closing after asynchronous saves complete
         }
     }
 }

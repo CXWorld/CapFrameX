@@ -17,7 +17,6 @@ using Prism.Events;
 using System;
 using System.IO;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
@@ -51,6 +50,10 @@ namespace CapFrameX.Test.Overlay
         private Mock<IHookOverlayStatusService> _hookOverlayStatusMock;
         private Mock<ILogger<OverlayEntryProvider>> _loggerMock;
         private Subject<HookOverlayStatus> _statusStream;
+        private Subject<(string key, object value)> _configurationChanges;
+        private bool _enableHookOverlay;
+        private bool _enableHookFreeOverlay;
+        private bool _hookOverlayUsePresentMonFrametimes;
 
         [TestInitialize]
         public void Setup()
@@ -67,7 +70,12 @@ namespace CapFrameX.Test.Overlay
             _appConfigMock = new Mock<IAppConfiguration>();
             _appConfigMock.Setup(x => x.OverlayEntryConfigurationFile).Returns(0);
             _appConfigMock.Setup(x => x.HardwareInfoSource).Returns("Auto");
-            _appConfigMock.Setup(x => x.OnValueChanged).Returns(Observable.Never<(string key, object value)>());
+            _configurationChanges = new Subject<(string key, object value)>();
+            _appConfigMock.Setup(x => x.OnValueChanged).Returns(_configurationChanges);
+            _appConfigMock.SetupGet(x => x.EnableHookOverlay).Returns(() => _enableHookOverlay);
+            _appConfigMock.SetupGet(x => x.EnableHookFreeOverlay).Returns(() => _enableHookFreeOverlay);
+            _appConfigMock.SetupGet(x => x.HookOverlayUsePresentMonFrametimes)
+                .Returns(() => _hookOverlayUsePresentMonFrametimes);
 
             _sensorConfigMock = new Mock<ISensorConfig>();
 
@@ -103,6 +111,7 @@ namespace CapFrameX.Test.Overlay
         {
             _mockSensorService?.Dispose();
             _statusStream?.Dispose();
+            _configurationChanges?.Dispose();
 
             try
             {
@@ -114,7 +123,7 @@ namespace CapFrameX.Test.Overlay
 
         private OverlayEntryProvider CreateProvider(bool hookOverlayEnabled)
         {
-            _appConfigMock.Setup(x => x.EnableHookOverlay).Returns(hookOverlayEnabled);
+            _enableHookOverlay = hookOverlayEnabled;
 
             return new OverlayEntryProvider(
                 _mockSensorService,
@@ -234,6 +243,125 @@ namespace CapFrameX.Test.Overlay
         }
 
         [TestMethod]
+        public async Task RendererSwitch_PreservesUnsavedOverlayItemOptions()
+        {
+            _enableHookFreeOverlay = false;
+            _hookOverlayUsePresentMonFrametimes = false;
+            var provider = CreateProvider(hookOverlayEnabled: true);
+
+            var entries = await provider.GetOverlayEntries(updateFormats: false);
+            var framerate = entries.Single(entry => entry.Identifier == "Framerate");
+            var displayTime = entries.Single(entry => entry.Identifier == "DisplayTime");
+            var resolution = entries.Single(entry => entry.Identifier == "Resolution");
+            var hookStatus = entries.Single(
+                entry => entry.Identifier == HookOverlayStatusIdentifier);
+
+            framerate.GroupName = "Unsaved framerate group";
+            framerate.Color = "123456";
+            displayTime.GroupName = "Unsaved displaytime group";
+            resolution.ShowOnOverlay = true;
+            hookStatus.ShowOnOverlay = true;
+            bool availabilityMarkedProfileDirty = false;
+            displayTime.PropertyChangedAction = () => availabilityMarkedProfileDirty = true;
+            resolution.PropertyChangedAction = () => availabilityMarkedProfileDirty = true;
+            hookStatus.PropertyChangedAction = () => availabilityMarkedProfileDirty = true;
+
+            Assert.IsFalse(displayTime.IsEntryEnabled,
+                "the local hook source has no display-time data");
+
+            // Match OverlayViewModel.SetOverlayMode: arm the destination before releasing the
+            // current hook so there is no transient RTSS mode between the two writes.
+            _enableHookFreeOverlay = true;
+            _configurationChanges.OnNext(
+                (nameof(IAppConfiguration.EnableHookFreeOverlay), true));
+            _enableHookOverlay = false;
+            _configurationChanges.OnNext(
+                (nameof(IAppConfiguration.EnableHookOverlay), false));
+
+            var hookFreeEntries = await provider.GetOverlayEntries(updateFormats: false);
+            Assert.AreSame(framerate,
+                hookFreeEntries.Single(entry => entry.Identifier == "Framerate"));
+            Assert.AreEqual("Unsaved framerate group", framerate.GroupName);
+            Assert.AreEqual("123456", framerate.Color);
+            Assert.AreSame(displayTime,
+                hookFreeEntries.Single(entry => entry.Identifier == "DisplayTime"));
+            Assert.AreEqual("Unsaved displaytime group", displayTime.GroupName);
+            Assert.IsTrue(displayTime.IsEntryEnabled);
+            Assert.AreSame(resolution,
+                hookFreeEntries.Single(entry => entry.Identifier == "Resolution"));
+            Assert.IsFalse(resolution.IsEntryEnabled);
+            Assert.IsTrue(resolution.ShowOnOverlay,
+                "renderer gating must preserve the user's profile selection");
+            Assert.IsFalse(hookStatus.IsEntryEnabled);
+            Assert.IsTrue(hookStatus.ShowOnOverlay,
+                "hook-only selections must survive a temporary renderer switch too");
+            Assert.IsFalse(availabilityMarkedProfileDirty,
+                "derived renderer availability is not a profile edit");
+
+            _enableHookOverlay = true;
+            _configurationChanges.OnNext(
+                (nameof(IAppConfiguration.EnableHookOverlay), true));
+            _enableHookFreeOverlay = false;
+            _configurationChanges.OnNext(
+                (nameof(IAppConfiguration.EnableHookFreeOverlay), false));
+
+            var hookEntries = await provider.GetOverlayEntries(updateFormats: false);
+            Assert.AreSame(framerate,
+                hookEntries.Single(entry => entry.Identifier == "Framerate"));
+            Assert.AreEqual("Unsaved framerate group", framerate.GroupName);
+            Assert.AreEqual("123456", framerate.Color);
+            Assert.IsFalse(displayTime.IsEntryEnabled);
+            Assert.IsTrue(resolution.IsEntryEnabled);
+            Assert.IsTrue(resolution.ShowOnOverlay);
+            Assert.IsTrue(hookStatus.IsEntryEnabled);
+            Assert.IsTrue(hookStatus.ShowOnOverlay);
+        }
+
+        [TestMethod]
+        public async Task InitialFormattingPass_DoesNotLookLikeAProfileEdit()
+        {
+            var provider = CreateProvider(hookOverlayEnabled: true);
+            var entries = await provider.GetOverlayEntries(updateFormats: false);
+            bool profileChanged = false;
+
+            foreach (var entry in entries)
+            {
+                entry.PropertyChangedAction = () => profileChanged = true;
+            }
+
+            // OverlayViewModel marks every format stale after loading. The first regular OSD
+            // refresh then generates GroupNameFormat for every entry. This is derived output,
+            // not a user edit, and therefore must leave the Save button disabled.
+            provider.UpdateOverlayEntryFormats();
+            await provider.GetOverlayEntries(updateFormats: true);
+
+            Assert.IsFalse(profileChanged,
+                "the generated formatting pass must not enable saving after startup");
+
+            entries.Single(entry => entry.Identifier == "Framerate").Color = "123456";
+            Assert.IsTrue(profileChanged,
+                "a real Overlay Items edit must still enable saving");
+        }
+
+        [TestMethod]
+        public async Task SaveProfile_ClearsPendingChangesOnlyForTheActiveSlot()
+        {
+            var provider = CreateProvider(hookOverlayEnabled: true);
+            await provider.GetOverlayEntries(updateFormats: false);
+
+            provider.MarkPendingChanges();
+            Assert.IsTrue(provider.HasPendingChanges);
+
+            await provider.SaveOverlayEntriesToJson(targetConfig: 1);
+            Assert.IsTrue(provider.HasPendingChanges,
+                "saving a copy must not mark the active profile as saved");
+
+            await provider.SaveOverlayEntriesToJson(targetConfig: 0);
+            Assert.IsFalse(provider.HasPendingChanges,
+                "saving the active profile must clear the shutdown warning");
+        }
+
+        [TestMethod]
         public async Task StatusStream_DrivesTheEntryValue()
         {
             var provider = CreateProvider(hookOverlayEnabled: true);
@@ -258,14 +386,16 @@ namespace CapFrameX.Test.Overlay
         }
 
         [TestMethod]
-        public async Task SavedConfigWithoutTheHookOnlyEntries_GetsThemInsertedInDefaultOrder()
+        public async Task SavedConfigWithoutConditionalEntries_GetsThemInsertedInDefaultOrder()
         {
-            // Every configuration in the field was written before this entry existed. Without the
-            // migration below the entry would only ever reach users who reset their overlay config.
+            // Older configurations can predate hook-only entries and can also have renderer-gated
+            // rows omitted by the old load filter. All of them need to rejoin the shared profile.
             var legacyEntries = OverlayUtils.GetOverlayEntryDefaults(_appConfigMock.Object)
                 .Where(entry => entry.Identifier != HookOverlayStatusIdentifier
                     && entry.Identifier != FrameGenerationTechnologyIdentifier
-                    && entry.Identifier != FrameGenerationStatusIdentifier)
+                    && entry.Identifier != FrameGenerationStatusIdentifier
+                    && entry.Identifier != "DisplayTime"
+                    && entry.Identifier != "Resolution")
                 .ToList();
 
             File.WriteAllText(
@@ -292,6 +422,29 @@ namespace CapFrameX.Test.Overlay
                 "the migrated technology entry belongs behind the hook status");
             Assert.AreEqual(frameGenerationTechnologyIndex + 1, frameGenerationStatusIndex,
                 "the migrated status entry belongs behind the technology");
+            CollectionAssert.Contains(identifiers, "DisplayTime",
+                "the renderer-gated Displaytime entry must be restored to the shared profile");
+            CollectionAssert.Contains(identifiers, "Resolution",
+                "the renderer-gated resolution entry must be restored to the shared profile");
+            Assert.IsFalse(provider.HasPendingChanges,
+                "automatic profile migration during load is the clean startup baseline");
+        }
+
+        [TestMethod]
+        public async Task RuntimeDisplayTopologyChange_MarksTheLoadedProfilePending()
+        {
+            var provider = CreateProvider(hookOverlayEnabled: true);
+            await provider.GetOverlayEntries(updateFormats: false);
+
+            Assert.IsFalse(provider.HasPendingChanges);
+
+            provider.RefreshDisplayEntries(new[]
+            {
+                new DetectedDisplay(@"\\.\DISPLAY1", 2560, 1440, isPrimary: true)
+            });
+
+            Assert.IsTrue(provider.HasPendingChanges,
+                "a structural change after loading must still enable saving and the shutdown prompt");
         }
 
         [TestMethod]

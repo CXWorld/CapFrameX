@@ -102,6 +102,7 @@ namespace CapFrameX.Overlay
         private readonly IOverlayEntryCore _overlayEntryCore;
         private readonly IThreadAffinityController _threadAffinityController;
         private readonly Func<IReadOnlyList<DetectedDisplay>> _displayProvider;
+        private readonly IOverlayProfileChangeTracker _profileChangeTracker;
 
         private readonly ILogger<OverlayEntryProvider> _logger;
         private readonly object _overlayEntriesGate = new object();
@@ -123,6 +124,7 @@ namespace CapFrameX.Overlay
         // touched from the stream, it is replaced whenever a configuration is loaded or switched.
         private volatile HookOverlayStatus _hookOverlayStatus;
         public bool HasHardwareChanged { get; set; }
+        public bool HasPendingChanges => _profileChangeTracker.HasPendingChanges;
         public IObservable<IOverlayEntry[]> OverlayEntriesChanged => _overlayEntriesChanged;
         public bool ShowSystemTimeSeconds { get; set; }
 
@@ -137,11 +139,12 @@ namespace CapFrameX.Overlay
             IThreadAffinityController threadAffinityController,
             IPathService pathService,
             IHookOverlayStatusService hookOverlayStatusService,
-            ILogger<OverlayEntryProvider> logger)
+            ILogger<OverlayEntryProvider> logger,
+            IOverlayProfileChangeTracker profileChangeTracker)
             : this(sensorService, appConfiguration, eventAggregator, onlineMetricService,
                   systemInfo, rTSSService, sensorConfig, overlayEntryCore,
                   threadAffinityController, pathService, hookOverlayStatusService, logger,
-                  DisplayDetection.GetDisplays)
+                  DisplayDetection.GetDisplays, profileChangeTracker)
         {
         }
 
@@ -157,7 +160,8 @@ namespace CapFrameX.Overlay
             IPathService pathService,
             IHookOverlayStatusService hookOverlayStatusService,
             ILogger<OverlayEntryProvider> logger,
-            Func<IReadOnlyList<DetectedDisplay>> displayProvider)
+            Func<IReadOnlyList<DetectedDisplay>> displayProvider,
+            IOverlayProfileChangeTracker profileChangeTracker = null)
         {
             _sensorService = sensorService;
             _appConfiguration = appConfiguration;
@@ -171,6 +175,7 @@ namespace CapFrameX.Overlay
             _overlayConfigFolder = pathService.ConfigFolder;
             _logger = logger;
             _displayProvider = displayProvider ?? (() => Array.Empty<DetectedDisplay>());
+            _profileChangeTracker = profileChangeTracker ?? new OverlayProfileChangeTracker();
 
             _hookOverlayStatus = hookOverlayStatusService?.Current;
             hookOverlayStatusService?.StatusStream
@@ -245,7 +250,12 @@ namespace CapFrameX.Overlay
             {
                 _overlayEntries.Move(sourceIndex, targetIndex);
             }
+
+            MarkPendingChanges();
         }
+
+        public void MarkPendingChanges()
+            => _profileChangeTracker.MarkPendingChanges();
 
         public async Task SaveOverlayEntriesToJson(int targetConfig)
         {
@@ -273,8 +283,17 @@ namespace CapFrameX.Overlay
                 {
                     await outputFile.WriteAsync(json);
                 }
+
+                if (targetConfig == _appConfiguration.OverlayEntryConfigurationFile)
+                {
+                    HasHardwareChanged = false;
+                    _profileChangeTracker.ResetPendingChanges();
+                }
             }
-            catch { return; }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unable to save overlay profile {profile}.", targetConfig + 1);
+            }
         }
 
         public async Task SwitchConfigurationTo(int index)
@@ -290,6 +309,7 @@ namespace CapFrameX.Overlay
             {
                 _overlayEntries = defaultEntries;
                 UpdateStates(resetEvaluate: true);
+                MarkPendingChanges();
                 return _overlayEntries.ToList();
             }
         }
@@ -427,6 +447,8 @@ namespace CapFrameX.Overlay
 
                 _overlayEntries = sortedEntries.ToBlockingCollection();
             }
+
+            MarkPendingChanges();
         }
 
         public void UpdateOverlayEntries(IEnumerable<IOverlayEntry> entries)
@@ -436,6 +458,8 @@ namespace CapFrameX.Overlay
                 _overlayEntries = entries.ToList().ToBlockingCollection();
                 UpdateStates(resetEvaluate: false);
             }
+
+            MarkPendingChanges();
         }
 
         private void UpdateStates(bool resetEvaluate)
@@ -466,6 +490,7 @@ namespace CapFrameX.Overlay
 
         public async Task LoadOrSetDefault()
         {
+            HasHardwareChanged = false;
             BlockingCollection<IOverlayEntry> entries;
             bool resetEvaluate;
             try
@@ -484,6 +509,12 @@ namespace CapFrameX.Overlay
                 _overlayEntries = entries;
                 UpdateStates(resetEvaluate);
             }
+
+            // Loading a profile establishes the working baseline. Hardware/sensor reconciliation
+            // is automatic and must not look like an unsaved user edit immediately after startup.
+            // Structural changes detected later (for example display hot-plug) explicitly mark the
+            // profile dirty in RefreshDisplayEntries.
+            _profileChangeTracker.ResetPendingChanges();
         }
 
         private void UpdateSensorIsActive(string identifier, bool isShownOnOverlay)
@@ -815,6 +846,7 @@ namespace CapFrameX.Overlay
                 _overlayEntries = entries.ToBlockingCollection();
                 SynchronizeDisplayEntryState(previousDisplayEntries, entries);
                 HasHardwareChanged = true;
+                MarkPendingChanges();
                 changedEntries = _overlayEntries.ToArray();
             }
 

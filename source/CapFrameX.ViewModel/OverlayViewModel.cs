@@ -846,10 +846,13 @@ namespace CapFrameX.ViewModel
                    {
                        SaveButtonIsEnable = false;
                        await _overlayEntryProvider.SaveOverlayEntriesToJson(_appConfiguration.OverlayEntryConfigurationFile);
+                       SaveButtonIsEnable = _overlayEntryProvider.HasPendingChanges;
                    }
                    else
                    {
                        await _overlayEntryProvider.SaveOverlayEntriesToJson(index);
+                       if (index == _appConfiguration.OverlayEntryConfigurationFile)
+                           SaveButtonIsEnable = _overlayEntryProvider.HasPendingChanges;
                    }
                });
 
@@ -903,7 +906,7 @@ namespace CapFrameX.ViewModel
             _overlayEntryProvider.UpdateOverlayEntryFormats();
 
             SetSaveButtonIsEnableAction();
-            SaveButtonIsEnable = _overlayEntryProvider.HasHardwareChanged;
+            SaveButtonIsEnable = _overlayEntryProvider.HasPendingChanges;
         }
 
         private void SetSaveButtonIsEnableAction()
@@ -913,7 +916,10 @@ namespace CapFrameX.ViewModel
         }
 
         private void SetSaveButtonIsEnable()
-            => SaveButtonIsEnable = true;
+        {
+            _overlayEntryProvider.MarkPendingChanges();
+            SaveButtonIsEnable = true;
+        }
 
         private async Task OnResetDefaults()
         {
@@ -939,7 +945,7 @@ namespace CapFrameX.ViewModel
                 _overlayEntryProvider.UpdateOverlayEntryFormats();
 
                 await _overlayEntryProvider.SaveOverlayEntriesToJson(_appConfiguration.OverlayEntryConfigurationFile);
-                SaveButtonIsEnable = false;
+                SaveButtonIsEnable = _overlayEntryProvider.HasPendingChanges;
                 ResetOverlayConfigContentIsOpen = false;
             }
             finally

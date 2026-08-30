@@ -324,6 +324,7 @@ namespace CapFrameX
                     // We don't use a sensor config for new LibreHardwareMonitor based sensor service
                     Container.RegisterInstance<ISensorConfig>(new SensorConfig(sensorConfigFolder));
                     Container.Register<ISensorEntryProvider, SensorEntryProvider>(Reuse.Singleton);
+                    Container.Register<IOverlayProfileChangeTracker, OverlayProfileChangeTracker>(Reuse.Singleton);
                     Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
                     Container.Register<IOverlayTemplateService, OverlayTemplateService>(Reuse.Singleton);
                     Container.Register<IRecordManager, RecordManager>(Reuse.Singleton);

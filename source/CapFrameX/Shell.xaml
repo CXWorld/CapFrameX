@@ -19,6 +19,11 @@
         </ResourceDictionary>
     </Window.Resources>
     <Grid>
+        <!-- A dedicated outer host keeps shell-level prompts independent from dialogs owned by
+             individual regions, including the update dialog immediately below. -->
+        <materialDesign:DialogHost x:Name="ShellDialogHost"
+                                   Identifier="ShellDialogHost">
+        <Grid>
         <!-- NotifyIcon -->
         <tb:TaskbarIcon x:Name="SystemTray"
                         IconSource="/Icons/cx_icon_BUC.ico"
@@ -76,6 +81,8 @@
             <ContentControl x:Name="ScreenshotArea" Grid.Column="2" Grid.Row="1" prism:RegionManager.RegionName="DataRegion" />
 			<ContentControl Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2" prism:RegionManager.RegionName="StateRegion" />
 		</Grid>
+        </materialDesign:DialogHost>
+	</Grid>
         </materialDesign:DialogHost>
 	</Grid>
 </Window>

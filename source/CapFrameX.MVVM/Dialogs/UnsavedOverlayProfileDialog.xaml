@@ -1,0 +1,68 @@
+<UserControl x:Class="CapFrameX.MVVM.Dialogs.UnsavedOverlayProfileDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:CapFrameX.MVVM.Dialogs"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d"
+             d:DesignHeight="260" d:DesignWidth="540">
+    <Grid Width="500" Margin="24 20 24 18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <materialDesign:PackIcon Kind="AlertOutline"
+                                     Width="26" Height="26"
+                                     VerticalAlignment="Center"
+                                     Foreground="#FFB300"/>
+            <TextBlock Margin="10 0 0 0"
+                       FontSize="18"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       Text="Unsaved overlay profile"/>
+        </StackPanel>
+
+        <TextBlock Grid.Row="1"
+                   Margin="0 16 0 0"
+                   FontSize="14"
+                   LineHeight="20"
+                   TextWrapping="Wrap"
+                   Text="The current Overlay Items profile contains unsaved changes. Save them before closing CapFrameX?"/>
+
+        <TextBlock Grid.Row="2"
+                   Margin="0 10 0 0"
+                   FontSize="12"
+                   Opacity="0.7"
+                   TextWrapping="Wrap"
+                   Text="Closing without saving permanently discards the current changes."/>
+
+        <StackPanel Grid.Row="3"
+                    Margin="0 22 0 0"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button Padding="10 0"
+                    Style="{DynamicResource MaterialDesignFlatButton}"
+                    Content="Exit without saving"
+                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                    CommandParameter="{x:Static local:UnsavedOverlayProfileDialogResult.ExitWithoutSaving}"/>
+            <Button Margin="8 0 0 0"
+                    Padding="10 0"
+                    IsCancel="True"
+                    Style="{DynamicResource MaterialDesignFlatButton}"
+                    Content="Cancel"
+                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                    CommandParameter="{x:Static local:UnsavedOverlayProfileDialogResult.Cancel}"/>
+            <Button Margin="8 0 0 0"
+                    MinWidth="112"
+                    IsDefault="True"
+                    Content="Save and exit"
+                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                    CommandParameter="{x:Static local:UnsavedOverlayProfileDialogResult.SaveAndExit}"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

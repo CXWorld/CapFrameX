@@ -159,6 +159,9 @@ namespace CapFrameX.Mcp.Tools
                 changed.Add(nameof(OverlayEntryInfo.OrderIndex));
             }
 
+            if (changed.Count > 0)
+                _overlayEntryProvider.MarkPendingChanges();
+
             bool persisted = persist && changed.Count > 0;
             if (persisted)
                 await _overlayEntryProvider.SaveOverlayEntriesToJson(_config.OverlayEntryConfigurationFile)
