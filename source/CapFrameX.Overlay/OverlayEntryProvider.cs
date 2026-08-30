@@ -62,14 +62,33 @@ namespace CapFrameX.Overlay
             {
                 { "OnlinePcLatency", (nameof(IAppConfiguration.UsePcLatency), config => config.UsePcLatency) },
                 { "OnlineAmdFlmLatency", (nameof(IAppConfiguration.UseAmdFlmLatency), config => config.UseAmdFlmLatency) },
-                { HOOK_OVERLAY_STATUS_IDENTIFIER, (nameof(IAppConfiguration.EnableHookOverlay), config => config.EnableHookOverlay) },
-                { FRAME_GENERATION_TECHNOLOGY_IDENTIFIER, (nameof(IAppConfiguration.EnableHookOverlay), config => config.EnableHookOverlay) },
-                { FRAME_GENERATION_STATUS_IDENTIFIER, (nameof(IAppConfiguration.EnableHookOverlay), config => config.EnableHookOverlay) },
             };
+
+        // Renderer-gated entries are part of the overlay profile, not of a renderer-specific
+        // profile. Keep them in the working set while unavailable so switching renderers cannot
+        // discard unsaved formatting or selection changes.
+        private static readonly IReadOnlyDictionary<string, Func<IAppConfiguration, bool>>
+            RENDERER_GATED_ENTRIES = new Dictionary<string, Func<IAppConfiguration, bool>>()
+            {
+                { HOOK_OVERLAY_STATUS_IDENTIFIER, config => config.EnableHookOverlay },
+                { FRAME_GENERATION_TECHNOLOGY_IDENTIFIER, config => config.EnableHookOverlay },
+                { FRAME_GENERATION_STATUS_IDENTIFIER, config => config.EnableHookOverlay },
+                { DISPLAY_TIME_IDENTIFIER, config => config.EnableHookFreeOverlay
+                    || (config.EnableHookOverlay && config.HookOverlayUsePresentMonFrametimes) },
+                { PRESENT_RESOLUTION_IDENTIFIER, config => !config.EnableHookFreeOverlay },
+            };
+
+        private static readonly HashSet<string> RENDERER_GATING_CONFIG_KEYS = new HashSet<string>()
+        {
+            nameof(IAppConfiguration.EnableHookFreeOverlay),
+            nameof(IAppConfiguration.EnableHookOverlay),
+            nameof(IAppConfiguration.HookOverlayUsePresentMonFrametimes),
+        };
 
         private const string HOOK_OVERLAY_STATUS_IDENTIFIER = "HookOverlayStatus";
         private const string FRAME_GENERATION_TECHNOLOGY_IDENTIFIER = "FrameGenerationTechnology";
         private const string FRAME_GENERATION_STATUS_IDENTIFIER = "FrameGenerationStatus";
+        private const string DISPLAY_TIME_IDENTIFIER = "DisplayTime";
         private const string PRESENT_RESOLUTION_IDENTIFIER = "Resolution";
         private const string DISPLAY_RESOLUTION_IDENTIFIER_PREFIX = "DisplayResolution:";
 
@@ -176,6 +195,10 @@ namespace CapFrameX.Overlay
                 .Select(x => x.value)
                 .Subscribe(value => UpdateConfigGatedEntryState(identifier, (bool)value));
             }
+
+            _appConfiguration.OnValueChanged
+                .Where(x => RENDERER_GATING_CONFIG_KEYS.Contains(x.key))
+                .Subscribe(_ => UpdateRendererGatedEntryStates());
 
             rTSSService.ProcessIdStream.Subscribe(id =>
             {
@@ -687,8 +710,6 @@ namespace CapFrameX.Overlay
                 hasChanges = true;
             }
 
-            HasHardwareChanged = hasChanges;
-
             // check separators
             var separatorDict = new Dictionary<string, int>();
 
@@ -707,7 +728,7 @@ namespace CapFrameX.Overlay
 
             // Manage default entries from Utils list
             var utilsDefaults = OverlayUtils.GetOverlayEntryDefaults(_appConfiguration)
-                .Where(item => item.IsEntryEnabled || CONFIG_GATED_ENTRIES.ContainsKey(item.Identifier))
+                .Where(item => item.IsEntryEnabled || IsConditionallyAvailableEntry(item.Identifier))
                 .ToList();
 
             foreach (var defaultEntry in utilsDefaults)
@@ -723,17 +744,25 @@ namespace CapFrameX.Overlay
                         var predecessorConfigOverlayEntry = configOverlayEntries.FirstOrDefault(entry => entry.Identifier == predecessorEntry.Identifier);
                         int predecessorConfigOverlayEntryIndex = configOverlayEntries.IndexOf(predecessorConfigOverlayEntry);
                         configOverlayEntries.Insert(predecessorConfigOverlayEntryIndex + 1, defaultEntry);
+                        hasChanges = true;
                     }
                 }
-                else if (CONFIG_GATED_ENTRIES.ContainsKey(defaultEntry.Identifier)
+                else if (IsConditionallyAvailableEntry(defaultEntry.Identifier)
                     && existingConfigEntry is OverlayEntryWrapper existingWrapper)
                 {
                     // The description is a fixed label (not user-editable) but persists in the
                     // config JSON — refresh it so renamed metrics don't keep stale wording.
                     // GroupName stays untouched: users may have customized it.
-                    existingWrapper.Description = defaultEntry.Description;
+                    if (!string.Equals(existingWrapper.Description, defaultEntry.Description,
+                        StringComparison.Ordinal))
+                    {
+                        existingWrapper.Description = defaultEntry.Description;
+                        hasChanges = true;
+                    }
                 }
             }
+
+            HasHardwareChanged = hasChanges;
 
             return configOverlayEntries.ToBlockingCollection();
         }
@@ -1056,20 +1085,12 @@ namespace CapFrameX.Overlay
                 return true;
             }
 
-            // Displaytime graph (config): needs a display-time source (MsBetweenDisplayChange).
-            // The hook-free OSD provides it, and so does the in-game hook overlay in PresentMon
-            // graph mode (both feed display times); RTSS has no display-time source.
-            if (entry.Identifier == "DisplayTime")
+            // Renderer capability changes only affect whether these entries can currently be fed.
+            // They remain in the profile so a mode switch does not replace their working copies.
+            if (RENDERER_GATED_ENTRIES.TryGetValue(entry.Identifier, out var getIsEnabled))
             {
-                entry.IsEntryEnabled = _appConfiguration.EnableHookFreeOverlay
-                    || (_appConfiguration.EnableHookOverlay
-                        && _appConfiguration.HookOverlayUsePresentMonFrametimes);
-            }
-
-            // Only RTSS and the in-game API hook have a trustworthy render-resolution source.
-            if (entry.Identifier == "Resolution")
-            {
-                entry.IsEntryEnabled = !_appConfiguration.EnableHookFreeOverlay;
+                SetRendererGatedEntryState(entry, getIsEnabled(_appConfiguration));
+                return true;
             }
 
             // Return true by default
@@ -1138,7 +1159,7 @@ namespace CapFrameX.Overlay
         private async Task<BlockingCollection<IOverlayEntry>> CreateDefaultOverlayEntries()
         {
             var defaultEntries = OverlayUtils.GetOverlayEntryDefaults(_appConfiguration)
-                .Where(item => item.IsEntryEnabled || CONFIG_GATED_ENTRIES.ContainsKey(item.Identifier))
+                .Where(item => item.IsEntryEnabled || IsConditionallyAvailableEntry(item.Identifier))
                 .Select(item => (item as IOverlayEntry).Clone())
                 .ToList();
 
@@ -1195,6 +1216,33 @@ namespace CapFrameX.Overlay
             entry.ShowOnOverlayIsEnabled = enabled;
             if (!enabled)
                 entry.ShowOnOverlay = false;
+        }
+
+        private static bool IsConditionallyAvailableEntry(string identifier)
+            => CONFIG_GATED_ENTRIES.ContainsKey(identifier)
+                || RENDERER_GATED_ENTRIES.ContainsKey(identifier);
+
+        private void UpdateRendererGatedEntryStates()
+        {
+            foreach (var gatedEntry in RENDERER_GATED_ENTRIES)
+            {
+                if (_identifierOverlayEntryDict.TryGetValue(gatedEntry.Key, out IOverlayEntry entry))
+                {
+                    SetRendererGatedEntryState(entry, gatedEntry.Value(_appConfiguration));
+                }
+            }
+        }
+
+        private static void SetRendererGatedEntryState(IOverlayEntry entry, bool enabled)
+        {
+            entry.IsEntryEnabled = enabled;
+            if (entry.ShowOnOverlayIsEnabled != enabled)
+            {
+                entry.ShowOnOverlayIsEnabled = enabled;
+            }
+
+            // ShowOnOverlay is the user's profile choice. IsEntryEnabled prevents unsupported
+            // renderers from consuming it while leaving that choice intact for the next switch.
         }
 
         private void UpdateSensorData()
@@ -1415,7 +1463,7 @@ namespace CapFrameX.Overlay
         {
             _identifierOverlayEntryDict.TryGetValue(PRESENT_RESOLUTION_IDENTIFIER, out IOverlayEntry resolution);
 
-            if (resolution != null && resolution.ShowOnOverlay)
+            if (resolution != null && resolution.IsEntryEnabled && resolution.ShowOnOverlay)
             {
                 // The in-game renderer replaces this placeholder with the hooked swapchain's
                 // backbuffer extent. Querying RTSS here would publish a stale/unrelated value.

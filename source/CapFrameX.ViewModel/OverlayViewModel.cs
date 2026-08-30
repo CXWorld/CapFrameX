@@ -625,12 +625,18 @@ namespace CapFrameX.ViewModel
                     _appConfiguration.EnableHookFreeOverlay = false;
             }
 
+            RaiseOverlayRendererProperties();
+        }
+
+        private void RaiseOverlayRendererProperties()
+        {
             RaisePropertyChanged(nameof(OverlayModeRtss));
             RaisePropertyChanged(nameof(OverlayModeHook));
             RaisePropertyChanged(nameof(OverlayModeHookFree));
             RaisePropertyChanged(nameof(CanConfigureHookFreeOptions));
             RaisePropertyChanged(nameof(EnableHookOverlay));
             RaisePropertyChanged(nameof(EnableHookFreeOverlay));
+            RaisePropertyChanged(nameof(HookOverlayUsePresentMonFrametimes));
             RaisePropertyChanged(nameof(ShowRtssHiddenHint));
         }
 
@@ -815,19 +821,15 @@ namespace CapFrameX.ViewModel
                 .ObserveOnDispatcher()
                 .Subscribe(ApplyReloadedOverlayEntries);
 
-            // Renderer/source changes gate Displaytime and Present Resolution. Coalesce the two flag
-            // writes made by a radio-button mode switch, then reload immediately even when the
-            // overlay is inactive and therefore produces no dictionary tick.
+            // The provider gates renderer-dependent items in place. A renderer change must not use
+            // the profile-switch path: that reloads JSON and discards unsaved item edits.
             _appConfiguration.OnValueChanged
                 .Where(x => x.key == nameof(IAppConfiguration.EnableHookFreeOverlay)
                          || x.key == nameof(IAppConfiguration.EnableHookOverlay)
                          || x.key == nameof(IAppConfiguration.HookOverlayUsePresentMonFrametimes))
                 .Throttle(TimeSpan.FromMilliseconds(50))
-                .SelectMany(_ => Observable.FromAsync(() =>
-                    Task.Run(() => _overlayEntryProvider.SwitchConfigurationTo(_appConfiguration.OverlayEntryConfigurationFile))))
-                .SelectMany(_ => overlayEntryProvider.GetOverlayEntries(false))
                 .ObserveOnDispatcher()
-                .Subscribe(ApplyReloadedOverlayEntries);
+                .Subscribe(_ => RaiseOverlayRendererProperties());
 
             // Keep the "RTSS output is hidden" hint (ShowRtssHiddenHint) in sync when the user
             // toggles "Hide OSD on RTSS" from the other settings view.
@@ -888,8 +890,8 @@ namespace CapFrameX.ViewModel
             InitializeOSDCustomPosition();
         }
 
-        // Shared refresh path after the provider re-read its entry list (config switch,
-        // hook-free toggle): rebind the view collection and re-apply formats.
+        // Shared refresh path after the provider re-read its entry list (profile switch or display
+        // topology change): rebind the view collection and re-apply formats.
         private void ApplyReloadedOverlayEntries(IOverlayEntry[] entries)
         {
             entries.ForEach(entry => entry.UpdateGroupName = OverlaySubModelGroupSeparating.UpdateGroupName);

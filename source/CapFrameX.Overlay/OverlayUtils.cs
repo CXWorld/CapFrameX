@@ -253,8 +253,8 @@ namespace CapFrameX.Overlay
                         IsEntryEnabled = true
                     },
 
-					// Displaytime (MsBetweenDisplayChange). CX renderers only:
-					// RTSS cannot render this graph, so the entry is hidden in RTSS mode.
+					// Displaytime (MsBetweenDisplayChange). CX renderers only. The entry stays
+					// in the profile while unavailable so renderer switches preserve its options.
 					new OverlayEntryWrapper("DisplayTime")
                     {
                         OverlayEntryType = EOverlayEntryType.CX,
@@ -269,7 +269,7 @@ namespace CapFrameX.Overlay
                         Color = string.Empty,
                         // Enabled for any renderer that has a display-time source: the hook-free OSD,
                         // or the in-game hook in PresentMon graph mode. Must match OverlayEntryProvider
-                        // .GetIsEntryKeptInList so the defaults-merge adds it and the load-filter keeps it.
+                        // renderer gate so it is disabled without being removed from the profile.
                         IsEntryEnabled = appConfiguration.EnableHookFreeOverlay
                             || (appConfiguration.EnableHookOverlay && appConfiguration.HookOverlayUsePresentMonFrametimes)
                     },

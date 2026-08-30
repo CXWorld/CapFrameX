@@ -283,7 +283,17 @@ namespace CapFrameX.Overlay
         public OverlayEntryWrapper(string identifier)
         {
             Identifier = identifier;
-            _propertyChangedHandler = (s, e) => PropertyChangedAction?.Invoke();
+            _propertyChangedHandler = (s, e) =>
+            {
+                // Availability and rendered formatting are derived at runtime. Updating them must
+                // not make an otherwise unchanged overlay profile appear dirty.
+                if (e.PropertyName != nameof(ShowOnOverlayIsEnabled)
+                    && e.PropertyName != nameof(ShowGraphIsEnabled)
+                    && e.PropertyName != nameof(GroupNameFormat))
+                {
+                    PropertyChangedAction?.Invoke();
+                }
+            };
             PropertyChanged += _propertyChangedHandler;
         }
 

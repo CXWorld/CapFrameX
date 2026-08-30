@@ -284,10 +284,9 @@ namespace CapFrameX.Overlay
         /// <remarks>
         /// MsBetweenDisplayChange is delivered by the CapFrameX overlay fed from PresentMon: the
         /// hook-free OSD, or the in-game hook in PresentMon graph mode. RTSS has no such source.
-        /// <c>OverlayEntryProvider.GetIsEntryEnabled</c> already encodes exactly that condition (and
-        /// even drops the entry from the list entirely under RTSS), and the view model reloads the
-        /// entries whenever the renderer or the data source changes — so gating on IsEntryEnabled
-        /// keeps the templates in step with the configuration instead of duplicating the rule here.
+        /// <c>OverlayEntryProvider</c> already encodes exactly that condition and updates
+        /// <c>IsEntryEnabled</c> in place whenever the renderer or data source changes. Gating on
+        /// that state keeps templates in step without replacing the profile's working copy.
         /// </remarks>
         private void EnableDisplayTimeIfSourceAvailable(List<IOverlayEntry> entries)
         {
