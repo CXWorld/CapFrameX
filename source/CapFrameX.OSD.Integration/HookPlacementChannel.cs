@@ -73,7 +73,13 @@ namespace CapFrameX.OSD.Integration
         private static extern IntPtr LocalFree(IntPtr handle);
 
         public static HookPlacementChannel Create()
+            => Create(MapName);
+
+        internal static HookPlacementChannel Create(string mapName)
         {
+            if (string.IsNullOrWhiteSpace(mapName))
+                throw new ArgumentException("A mapping name is required.", nameof(mapName));
+
             var ch = new HookPlacementChannel();
             try
             {
@@ -91,10 +97,11 @@ namespace CapFrameX.OSD.Integration
                         lpSecurityDescriptor = psd,
                         bInheritHandle = 0
                     };
-                    ch._mapHandle = CreateFileMappingW(INVALID_HANDLE_VALUE, ref sa, PAGE_READWRITE, 0, MapSize, MapName);
+                    ch._mapHandle = CreateFileMappingW(INVALID_HANDLE_VALUE, ref sa, PAGE_READWRITE,
+                        0, MapSize, mapName);
                     if (ch._mapHandle == IntPtr.Zero)
                     {
-                        Log.Warning("HookOverlay: CreateFileMapping('{name}') failed ({err})", MapName,
+                        Log.Warning("HookOverlay: CreateFileMapping('{name}') failed ({err})", mapName,
                             Marshal.GetLastWin32Error());
                         return ch;
                     }
@@ -113,7 +120,7 @@ namespace CapFrameX.OSD.Integration
                     Thread.MemoryBarrier();
                     ch._seq++;
                     Marshal.WriteInt32(ch._view, OffSeq, ch._seq);
-                    Log.Information("HookOverlay: placement channel '{name}' created", MapName);
+                    Log.Information("HookOverlay: placement channel '{name}' created", mapName);
                 }
                 finally
                 {
@@ -129,14 +136,16 @@ namespace CapFrameX.OSD.Integration
 
         /// <summary>
         /// Seqlock-publish anchor + margins. Writing only on change keeps the readers' change
-        /// detection cheap — a placement write makes the renderer re-place the panel.
+        /// detection cheap — a placement write makes the renderer re-place the panel. A forced
+        /// write re-seeds a newly created native OSD instance after a visibility toggle.
         /// </summary>
-        public void Publish(int anchor, int marginX, int marginY)
+        public void Publish(int anchor, int marginX, int marginY, bool force = false)
         {
             lock (_gate)
             {
                 if (_view == IntPtr.Zero) return;
-                if (anchor == _lastAnchor && marginX == _lastMarginX && marginY == _lastMarginY) return;
+                if (!force && anchor == _lastAnchor && marginX == _lastMarginX &&
+                    marginY == _lastMarginY) return;
                 _lastAnchor = anchor; _lastMarginX = marginX; _lastMarginY = marginY;
 
                 _seq++; // odd => write in progress

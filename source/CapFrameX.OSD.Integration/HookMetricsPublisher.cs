@@ -47,6 +47,7 @@ namespace CapFrameX.OSD.Integration
             {
                 _channel = HookMetricsChannel.Create(EffectiveTargetPidLocked());
                 _placement = HookPlacementChannel.Create();
+                PublishPlacement();
             }
 
             _pidSub = processIdStream
@@ -78,6 +79,7 @@ namespace CapFrameX.OSD.Integration
                         _channel = HookMetricsChannel.Create(EffectiveTargetPidLocked());
                     if (_placement == null)
                         _placement = HookPlacementChannel.Create();
+                    PublishPlacement();
                 }
                 else
                 {
@@ -109,8 +111,19 @@ namespace CapFrameX.OSD.Integration
                 _overlayActive = active;
                 if (active) RefreshTargetPolicyLocked();
                 _channel?.SetTargetPid(EffectiveTargetPidLocked());
+                if (active)
+                {
+                    // A hide tears down the native OSD instance, whose replacement starts at
+                    // top-left. Advance the sequence even when the configured placement itself
+                    // did not change so the replacement consumes it again.
+                    PublishPlacement(force: true);
+                }
             }
         }
+
+        private void PublishPlacement(bool force = false)
+            => _placement?.Publish(_appConfiguration.OsdAnchor,
+                _appConfiguration.OsdMarginX, _appConfiguration.OsdMarginY, force);
 
         private int EffectiveTargetPidLocked()
             => _enabled && _overlayActive && _targetAllowed && _selectedPid > 0 ? _selectedPid : 0;
@@ -182,8 +195,7 @@ namespace CapFrameX.OSD.Integration
                            | (replayBufferUnits << HookMetricsChannel.ReplayBufferShift);
                     _channel.Publish(list, flags, targetPid);
                     // Publishes only on change; the renderers re-place the panel on every write.
-                    _placement?.Publish(_appConfiguration.OsdAnchor,
-                        _appConfiguration.OsdMarginX, _appConfiguration.OsdMarginY);
+                    PublishPlacement();
                 }
             }
             catch (Exception ex)
