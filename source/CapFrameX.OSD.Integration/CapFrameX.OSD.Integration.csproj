@@ -50,13 +50,13 @@
 
   <ItemGroup>
     <!-- IObservable.Subscribe extensions (matches CapFrameX.Contracts' version) -->
-    <PackageReference Include="System.Reactive" Version="6.1.0" />
+    <PackageReference Include="System.Reactive" />
     <!-- structured logging for the hook injection manager (same Serilog the app uses) -->
-    <PackageReference Include="Serilog" Version="2.9.0" />
+    <PackageReference Include="Serilog" />
     <!-- Win32_ProcessStartTrace subscription, so waiting for an early-injection target costs
          nothing instead of polling the full process list 40x per second. Same version the
          app already ships through CapFrameX.SystemInfo.NetStandard and LibreHardwareMonitorLib. -->
-    <PackageReference Include="System.Management" Version="10.0.3" />
+    <PackageReference Include="System.Management" />
   </ItemGroup>
 
   <!-- Stage the in-game hook renderer (cfx_osd_hook.dll) into a 'hook' SUBFOLDER of the
