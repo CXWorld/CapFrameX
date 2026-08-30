@@ -1136,6 +1136,26 @@
 									</DockPanel>
 								</StackPanel>
 							</Border>
+
+							<Border Style="{StaticResource OsdOptionsCard}">
+								<StackPanel>
+									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="Diagnostics"/>
+									<TextBlock Style="{StaticResource OsdOptionsDescription}"
+											   Text="Collect detailed data for troubleshooting CapFrameX overlay renderers."/>
+									<Separator Margin="0 10 0 8" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
+
+									<CheckBox Content="Extended OSD logging"
+											  IsChecked="{Binding EnableExtendedOsdLogging, Mode=TwoWay}"
+											  Style="{StaticResource MaterialDesignCheckBox}"/>
+									<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
+											   Text="Enables logs for the DirectX hook, Vulkan layer, and per-present statistics."/>
+									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#E0A020" TextWrapping="Wrap"
+											   Text="&#x26A0; Restart CapFrameX after changing this option."/>
+									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#D95050" TextWrapping="Wrap"
+											   Visibility="{Binding HasExtendedOsdLoggingError, Converter={StaticResource TrueToVisibleConverter}}"
+											   Text="{Binding ExtendedOsdLoggingError}"/>
+								</StackPanel>
+							</Border>
 						</StackPanel>
 
 						<StackPanel Grid.Column="1">
