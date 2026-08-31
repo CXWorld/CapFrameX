@@ -575,8 +575,19 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void HookTargetPolicy_BlacklistsProtectedProcessesForInjectionOnly()
+        public void HookTargetPolicy_BlacklistsConfiguredProcessesForInjectionOnly()
         {
+            Assert.IsTrue(HookTargetPolicy.IsInjectionBlacklisted(
+                "AoE2DE_s.exe", out string aoeReason));
+            StringAssert.Contains(aoeReason, "in-game injection blacklist");
+            Assert.IsTrue(HookOverlayManager.ShouldUseHookFreeFallback(
+                hookEnabled: true, processId: 4711, runtime: "DXGI",
+                targetBlockReason: aoeReason));
+            Assert.IsTrue(HookTargetPolicy.IsInjectionBlacklisted(
+                "AoMRT_s.exe", out string aomReason));
+            Assert.IsTrue(HookOverlayManager.ShouldUseHookFreeFallback(
+                hookEnabled: true, processId: 4712, runtime: "DXGI",
+                targetBlockReason: aomReason));
             Assert.IsTrue(HookTargetPolicy.IsInjectionBlacklisted("CS2.exe", out string reason));
             StringAssert.Contains(reason, "in-game injection blacklist");
             Assert.IsTrue(HookTargetPolicy.IsInjectionBlacklisted(

@@ -28,6 +28,13 @@ namespace CapFrameX.OSD.Integration
         };
         private static readonly string[] InjectionBlacklist =
         {
+            // AoE II: Definitive Edition terminates during the D3D9-to-DXGI transition when the
+            // native in-game hook is present. Keep capture and the hook-free overlay available.
+            "AoE2DE_s",
+
+            // Age of Mythology: Retold (DX12)
+            "AoMRT_s",
+
             // CS2's default Trusted Mode rejects/ejects third-party hook DLLs. Keep the game
             // detectable so capture and the hook-free overlay continue to work; only native
             // injection is denied here.
