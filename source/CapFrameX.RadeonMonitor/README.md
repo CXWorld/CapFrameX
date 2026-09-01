@@ -1,11 +1,12 @@
 # CapFrameX Radeon SMU Monitor
 
-This is a standalone x64 WPF test application for reading the public Radeon
-SMU metrics table through PawnIO. It is intentionally independent from the
-CapFrameX ADLX monitoring path and does not install or modify CapFrameX
-configuration.
+This is a standalone x64 WPF test application for Radeon monitoring. It reads
+the public SMU metrics table through PawnIO when the table address is available
+and automatically falls back to the AMD driver's ADL PMLog interface on RDNA3.
+It is independent from the CapFrameX ADLX monitoring path and does not install
+or modify CapFrameX configuration.
 
-The application supports these table families:
+The parser supports these table families:
 
 - RDNA2 / SMU11: `SmuMetrics_t`, `SmuMetrics_V2_t`, `SmuMetrics_V3_t`, and
   `SmuMetrics_V4_t` from `smu11_driver_if_sienna_cichlid.h`.
@@ -14,11 +15,24 @@ The application supports these table families:
 - RDNA4 / SMU14: the 260-byte `SmuMetrics_t` from
   `smu14_driver_if_v14_0.h`.
 
-It exposes clocks, activity, voltage/current planes, board and socket power,
+When the firmware exposes a readable table address, the application shows
+clocks, activity, voltage/current planes, board and socket power,
 the extra temperature channels, fan data, per-cause throttling percentages,
 PCIe state/busy data, energy and D3Hot counters, and SmartShift fields. Every
 decoded value is accompanied by its raw value and the complete DWORD table can
 be inspected in the UI.
+
+On RDNA3 systems where C2PMSG_80/81 do not expose the table address, or where
+the raw read reports `STATUS_DEVICE_NOT_READY`, the
+[AMD Display Library](https://github.com/GPUOpen-LibrariesAndSDKs/display-library)
+PMLog fallback returns the sensor set supported by the installed Radeon driver.
+The application matches the ADL adapter to the PawnIO-selected GPU by PCI bus,
+device, and function. Supported values are displayed even when their current
+value is zero, and the raw ADL sensor IDs and integer values can be inspected
+in the UI. This path commonly provides clocks, utilization, voltages,
+temperatures, fan data, PCIe state, board power, and per-cause throttling
+percentages. Fields that exist only in `SmuMetrics_t`, such as its counters and
+serial fields, remain unavailable without the raw table address.
 
 ## Build the test application
 
@@ -28,38 +42,41 @@ From the repository root:
 dotnet build source\CapFrameX.RadeonMonitor\CapFrameX.RadeonMonitor.csproj -c Debug -p:Platform=x64
 ```
 
-`PawnIOLib.dll` and the signed PawnIO 2.x driver package are copied from the
-existing `LibreHardwareMonitorLib\PawnIo` directory into the application output.
-The application does not install the driver. Install the signed package on the
-test system first, for example from an elevated terminal in the output folder:
+`PawnIOLib.dll` is copied from the existing `LibreHardwareMonitorLib\PawnIo`
+directory into the application output. The application does not install a
+driver. Its bundled module has no PawnIO module signature, so the test system
+must already run a development build of PawnIO 2.x compiled with
+`PAWNIO_UNRESTRICTED=ON`. Windows test-signing requirements still apply to that
+driver package. The normal signed driver under `LibreHardwareMonitorLib\PawnIo`
+correctly rejects this development module and is therefore not copied into the
+application output.
 
-```powershell
-pnputil /add-driver PawnIO\PawnIO.inf /install
-```
+## Compile the PawnIO module
 
-## Compile the PawnIO module on the target build system
-
-[`PawnIO/RadeonSMU.p`](PawnIO/RadeonSMU.p) is source-only in this repository.
-No compiled module is checked in or produced by the C# project.
-It retains the upstream LGPL-2.1-or-later license; the corresponding license
-text is already stored at
+[`PawnIO/RadeonSMU.p`](PawnIO/RadeonSMU.p) retains the upstream
+LGPL-2.1-or-later license; the corresponding license text is stored at
 [`../LibreHardwareMonitorLib/Resources/PawnIO/COPYING`](../LibreHardwareMonitorLib/Resources/PawnIO/COPYING).
 
-Use the Pawn compiler and `include` directory from `PawnIO.Modules`. From a
-PowerShell prompt where those files are available, a matching command is:
+The compiled [`PawnIO/RadeonSMU.bin`](PawnIO/RadeonSMU.bin) is included in the
+project and copied to the application output with the same name. That is the
+module path selected by default; the file picker and first command-line
+argument can still override it.
+
+To regenerate the module, use the Pawn compiler and `include` directory from
+`PawnIO.Modules`. From the `PawnIO` source directory, a matching command is:
 
 ```powershell
-pawncc.exe RadeonSMU.p -iinclude --% -C64 -;+ -(+ -p
+& 'C:\Program Files (x86)\Pawn\bin\pawncc.exe' RadeonSMU.p `
+    -iE:\Code\CX.PawnIO.Modules\include -C64 -p
+& 'C:\Program Files\PawnIO\PawnIOUtil.exe' sign RadeonSMU.amx RadeonSMU.bin
+Remove-Item RadeonSMU.amx
 ```
 
-The compiler normally produces `RadeonSMU.amx`. The application accepts both
-`.amx` and `.bin`, either through the file picker or as its first command-line
-argument. Renaming the output to `RadeonSMU.bin` and placing it next to the EXE
-makes it the default module:
-
-```powershell
-Copy-Item RadeonSMU.amx <app-output>\RadeonSMU.bin
-```
+The include path is only an example; point it at the local
+`PawnIO.Modules\include` directory. Calling `PawnIOUtil sign` without a key
+adds the zero-length signature header required by `pawnio_load`; loading that
+module requires the unrestricted development driver. The application also
+adds this header in memory when a raw `.amx` override is selected.
 
 ## Module ABI 2
 
@@ -80,12 +97,22 @@ and preserves its original `ioctl_read_smn`, `ioctl_write_smn`,
 The new read calls accept no address. The module reads C2PMSG_80/81 itself,
 requires a stable pair, translates from the Radeon discrete-GPU VRAM MC base,
 and verifies the complete read against the selected BAR0 aperture. The test
-application calls only the ABI 2 device-info and metrics-read functions; it
-never calls the generic SMN write function.
+application checks that translation before issuing a metrics read and calls
+only the ABI 2 device-info and metrics-read functions; it never calls the
+generic SMN write function.
 
-The module does not send a firmware command to refresh the table, avoiding
-mailbox races with the AMD display driver. A read can therefore report
-`STATUS_DEVICE_NOT_READY` until the driver has published its table address.
+The C2PMSG_80/81 address-discovery mechanism comes from the original PawnIO
+module and was validated there on Navi 44. It is not a general RDNA protocol.
+On a tested Navi 31 system both registers remain zero even while AMD telemetry
+is active. SMU13 normally receives the driver's buffer address as
+the parameter of the one-time `SetDriverDramAddrHigh` and
+`SetDriverDramAddrLow` initialization messages; the later metrics transfer
+does not make that address recoverable. In this state the application skips
+the PawnIO read IOCTL and uses the read-only ADL PMLog fallback instead.
+
+The module deliberately does not scan VRAM, accept a caller-selected physical
+address, replace the driver's buffer, or send firmware commands. Each of those
+alternatives could read unrelated allocations or race the AMD display driver.
 
 ## Selection and overrides
 

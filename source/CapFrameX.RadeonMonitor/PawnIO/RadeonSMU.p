@@ -23,13 +23,16 @@
  * This is an extension of the RadeonSMU module proposed in
  * PawnIO.Modules pull request #110. The legacy IOCTLs remain available for
  * compatibility. ABI 2 adds device identity and fixed-size, read-only metrics
- * calls for the public SMU11 (RDNA2), SMU13.0.0/13.0.7 (RDNA3), and SMU14
- * (RDNA4) layouts. Those calls recover and validate the current table address
- * inside the module; a caller cannot choose a physical address.
+ * calls sized for the public SMU11 (RDNA2), SMU13.0.0/13.0.7 (RDNA3), and
+ * SMU14 (RDNA4) layouts. Those calls recover and validate the current table
+ * address inside the module when the firmware exposes it through the register
+ * pair used by the original Navi 44 implementation; a caller cannot choose a
+ * physical address.
  *
  * The module deliberately does not send an SMU message to refresh the table.
- * It reads the address already published by the AMD display driver in
- * C2PMSG_80/81 and fails closed while no usable address is present.
+ * It reads C2PMSG_80/81 and fails closed while no usable address is present.
+ * This address-discovery mechanism is not universal: Navi 31 was verified to
+ * leave both registers at zero even while AMD telemetry is active.
  */
 
 #include <pawnio.inc>
@@ -54,7 +57,7 @@ const SMU13_0_0_METRICS_DWORDS = 61;  /* 244 bytes, Navi 31/32 */
 const SMU13_0_7_METRICS_DWORDS = 60;  /* 240 bytes, Navi 33    */
 const SMU14_METRICS_DWORDS = 65;  /* 260 bytes */
 
-/* Radeon discrete-GPU addresses published by PMFW use this VRAM MC base.
+/* Radeon discrete-GPU addresses exposed by this protocol use this VRAM MC base.
  * The derived offset must still fit the selected PCI BAR0 aperture. */
 const GPU_VRAM_MC_BASE = 0x8000000000;
 
@@ -248,8 +251,9 @@ NTSTATUS:smn_write(smn_address, value) {
     return status;
 }
 
-/* Resolve the current PMFW metrics pointer and translate it into the selected
- * BAR0 aperture. Reading high/low/high rejects a torn register pair. */
+/* Resolve the current metrics pointer exposed through the Navi 44 register
+ * protocol and translate it into the selected BAR0 aperture. Reading
+ * high/low/high rejects a torn register pair. */
 NTSTATUS:resolve_metrics_buffer(length, &gpu_address, &vram_offset, &physical_address) {
     gpu_address = 0;
     vram_offset = 0;
@@ -405,8 +409,9 @@ DEFINE_IOCTL_SIZED(ioctl_get_bounds, 1, 5) {
  *  15 SMU11, 16 SMU13.0.0/13.0.10, 17 SMU13.0.7, and 18 SMU14
  *  metrics DWORD counts.
  *
- * Address fields are zero when the AMD driver has not published a usable
- * table pointer. Device identity and bounds remain available in that state. */
+ * Address fields are zero when this firmware/driver combination does not
+ * expose a usable table pointer through C2PMSG_80/81. Device identity and
+ * bounds remain available in that state. */
 DEFINE_IOCTL_SIZED(ioctl_get_device_info, 0, 19) {
     if (!g_ready)
         return STATUS_DEVICE_NOT_READY;

@@ -47,7 +47,7 @@
             <TextBlock FontSize="22" FontWeight="SemiBold" Text="Radeon SMU Monitoring Test" />
             <TextBlock Margin="0,3,0,0"
                        Foreground="#9AA3B2"
-                       Text="Read-only metrics-table probe for RDNA2, RDNA3 and RDNA4 via PawnIO" />
+                       Text="Raw SMU metrics via PawnIO with AMD ADL PMLog fallback for RDNA3" />
         </StackPanel>
 
         <GroupBox Grid.Row="1" Header="PawnIO module" Margin="0,0,0,10">
@@ -62,7 +62,7 @@
                          Height="31"
                          Padding="8,5"
                          VerticalContentAlignment="Center"
-                         ToolTip="Path to the externally compiled RadeonSMU module" />
+                         ToolTip="Path to the bundled RadeonSMU module or a module override" />
                 <Button Grid.Column="1" Content="Browse..." Click="BrowseButton_Click" />
                 <Button x:Name="LoadModuleButton"
                         Grid.Column="2"
@@ -164,7 +164,8 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <Expander Grid.Row="4"
+        <Expander x:Name="RawDumpExpander"
+                  Grid.Row="4"
                   Margin="0,8,0,0"
                   Header="Raw DWORD dump"
                   Foreground="#D8DEE9"

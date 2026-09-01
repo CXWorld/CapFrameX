@@ -14,17 +14,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Update="PawnIO\RadeonSMU.bin"
+          Link="RadeonSMU.bin"
+          CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\LibreHardwareMonitorLib\PawnIo\PawnIOLib.dll"
              Link="PawnIOLib.dll"
-             CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\LibreHardwareMonitorLib\PawnIo\PawnIO.cat"
-             Link="PawnIO\PawnIO.cat"
-             CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\LibreHardwareMonitorLib\PawnIo\PawnIO.inf"
-             Link="PawnIO\PawnIO.inf"
-             CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\LibreHardwareMonitorLib\PawnIo\PawnIO.sys"
-             Link="PawnIO\PawnIO.sys"
              CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

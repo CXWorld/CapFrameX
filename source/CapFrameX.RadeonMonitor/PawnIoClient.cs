@@ -22,7 +22,7 @@ namespace CapFrameX.RadeonMonitor
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(modulePath);
 
-            byte[] module = File.ReadAllBytes(modulePath);
+            byte[] module = ReadModuleBlob(modulePath);
             if (module.Length == 0)
             {
                 throw new InvalidDataException("The PawnIO module is empty.");
@@ -43,6 +43,26 @@ namespace CapFrameX.RadeonMonitor
                 NativeMethods.pawnio_close(handle);
                 throw;
             }
+        }
+
+        private static byte[] ReadModuleBlob(string modulePath)
+        {
+            byte[] module = File.ReadAllBytes(modulePath);
+
+            // Raw AMX files start with their image size followed by the AMX
+            // magic. pawnio_load expects a signature-length DWORD in front of
+            // that image, even when the unrestricted driver ignores signatures.
+            if (module.Length >= 6 &&
+                BitConverter.ToUInt32(module, 0) == (uint)module.Length &&
+                module[4] == 0xE1 &&
+                module[5] == 0xF1)
+            {
+                byte[] blob = new byte[module.Length + sizeof(uint)];
+                Buffer.BlockCopy(module, 0, blob, sizeof(uint), module.Length);
+                return blob;
+            }
+
+            return module;
         }
 
         public ulong[] Execute(string functionName, int outputCount)

@@ -11,11 +11,14 @@ namespace CapFrameX.RadeonMonitor
 {
     public partial class MainWindow : Window
     {
+        private const int HResultDeviceNotReady = unchecked((int)0x80070015);
+
         private readonly DispatcherTimer pollingTimer;
         private readonly ObservableCollection<MetricReading> readings = new();
 
         private RadeonSmuMonitor? monitor;
         private RadeonDeviceInfo? deviceInfo;
+        private AdlPmLogClient? adlPmLogClient;
         private bool readInProgress;
 
         public MainWindow()
@@ -215,7 +218,39 @@ namespace CapFrameX.RadeonMonitor
             ReadOnceButton.IsEnabled = false;
             try
             {
-                uint[] raw = await Task.Run(() => monitor.ReadMetrics(generation, rdna3Layout));
+                if (deviceInfo.MetricsPhysicalAddress == 0)
+                {
+                    RadeonDeviceInfo refreshedInfo = await Task.Run(monitor.GetDeviceInfo);
+                    deviceInfo = refreshedInfo;
+                    DeviceInfoText.Text = FormatDeviceInfo(refreshedInfo);
+
+                    if (refreshedInfo.MetricsPhysicalAddress == 0)
+                    {
+                        if (generation == RadeonGeneration.Rdna3)
+                        {
+                            await PollAdlPmLogAsync(refreshedInfo);
+                            return;
+                        }
+
+                        StopPolling();
+                        SetStatus(DescribeUnavailableMetricsAddress(generation), isError: true);
+                        return;
+                    }
+                }
+
+                uint[] raw;
+                try
+                {
+                    raw = await Task.Run(() => monitor.ReadMetrics(generation, rdna3Layout));
+                }
+                catch (PawnIoException ex) when (
+                    generation == RadeonGeneration.Rdna3 &&
+                    ex.HResult == HResultDeviceNotReady)
+                {
+                    await PollAdlPmLogAsync(deviceInfo);
+                    return;
+                }
+
                 IReadOnlyList<MetricReading> parsed =
                     MetricsParser.Parse(raw, generation, rdna2Layout, rdna3Layout);
 
@@ -226,6 +261,7 @@ namespace CapFrameX.RadeonMonitor
                 }
 
                 RawDumpTextBox.Text = FormatRawDump(raw);
+                RawDumpExpander.Header = "Raw DWORD dump";
                 LastUpdateText.Text =
                     $"{DateTime.Now:HH:mm:ss.fff} · {generation.ToString().ToUpperInvariant()}" +
                     (generation == RadeonGeneration.Rdna2 ? $" {rdna2Layout}" : string.Empty) +
@@ -240,14 +276,52 @@ namespace CapFrameX.RadeonMonitor
             catch (Exception ex)
             {
                 StopPolling();
-                SetStatus(
-                    $"Metrics read failed: {ex.Message} The AMD driver may not have published a metrics-table address yet.",
-                    isError: true);
+                SetStatus($"Metrics read failed: {ex.Message}", isError: true);
             }
             finally
             {
                 readInProgress = false;
                 ReadOnceButton.IsEnabled = monitor is not null;
+            }
+        }
+
+        private async Task PollAdlPmLogAsync(RadeonDeviceInfo info)
+        {
+            try
+            {
+                if (adlPmLogClient is null)
+                {
+                    adlPmLogClient = await Task.Run(() => AdlPmLogClient.Open(info));
+                }
+
+                DeviceInfoText.Text =
+                    $"{FormatDeviceInfo(info)} · ADL PMLog adapter {adlPmLogClient.AdapterIndex}: " +
+                    adlPmLogClient.AdapterName;
+
+                AdlPmLogSnapshot snapshot = await Task.Run(adlPmLogClient.ReadMetrics);
+                readings.Clear();
+                foreach (MetricReading reading in snapshot.Readings)
+                {
+                    readings.Add(reading);
+                }
+
+                RawDumpTextBox.Text = snapshot.SensorDump;
+                RawDumpExpander.Header = "ADL PMLog sensor dump";
+                LastUpdateText.Text =
+                    $"{DateTime.Now:HH:mm:ss.fff} · RDNA3 · AMD ADL PMLog · {snapshot.Readings.Count} sensors";
+
+                if (!pollingTimer.IsEnabled)
+                {
+                    SetStatus(
+                        $"Read {snapshot.Readings.Count} AMD ADL PMLog values; the raw SMU table address is unavailable.");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    "The Radeon driver does not expose the raw RDNA3 table address, and the ADL PMLog fallback failed: " +
+                    ex.Message,
+                    ex);
             }
         }
 
@@ -380,13 +454,24 @@ namespace CapFrameX.RadeonMonitor
             RadeonGeneration? detected = RadeonDeviceClassifier.DetectGeneration(info.DeviceId);
             string generation = detected?.ToString().ToUpperInvariant() ?? "unknown generation";
             string metricsAddress = info.MetricsGpuAddress == 0
-                ? "not published"
+                ? "not exposed through C2PMSG_80/81"
                 : $"GPU 0x{info.MetricsGpuAddress:X} / VRAM +0x{info.MetricsVramOffset:X}";
 
             return
                 $"AMD 1002:{info.DeviceId:X4} rev {info.RevisionId:X2}, subsystem {info.SubsystemVendorId:X4}:{info.SubsystemDeviceId:X4}, " +
                 $"PCI {info.PciAddress}, {generation} · VRAM BAR 0x{info.VramBar:X} ({FormatByteSize(info.VramBarSize)}) · " +
                 $"metrics {metricsAddress} · module ABI {info.ModuleAbi}, PawnIOLib {info.PawnIoVersion}";
+        }
+
+        private static string DescribeUnavailableMetricsAddress(RadeonGeneration generation)
+        {
+            if (generation is RadeonGeneration.Rdna2 or RadeonGeneration.Rdna3)
+            {
+                return $"Metrics unavailable: this {generation.ToString().ToUpperInvariant()} driver does not expose " +
+                    "the table address through C2PMSG_80/81.";
+            }
+
+            return "Metrics unavailable: C2PMSG_80/81 do not currently contain a valid table address.";
         }
 
         private static string FormatByteSize(ulong bytes)
@@ -432,11 +517,14 @@ namespace CapFrameX.RadeonMonitor
 
         private void DisposeMonitor()
         {
+            adlPmLogClient?.Dispose();
+            adlPmLogClient = null;
             monitor?.Dispose();
             monitor = null;
             deviceInfo = null;
             readings.Clear();
             RawDumpTextBox.Clear();
+            RawDumpExpander.Header = "Raw DWORD dump";
             LastUpdateText.Text = string.Empty;
             DeviceInfoText.Text = "No module loaded.";
             ReadOnceButton.IsEnabled = false;
