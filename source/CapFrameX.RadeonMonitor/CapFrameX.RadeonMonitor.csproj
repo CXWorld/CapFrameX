@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Platform>x64</Platform>
+    <PlatformTarget>x64</PlatformTarget>
+    <Platforms>x64</Platforms>
+    <LangVersion>latest</LangVersion>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="..\LibreHardwareMonitorLib\PawnIo\PawnIOLib.dll"
+             Link="PawnIOLib.dll"
+             CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\LibreHardwareMonitorLib\PawnIo\PawnIO.cat"
+             Link="PawnIO\PawnIO.cat"
+             CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\LibreHardwareMonitorLib\PawnIo\PawnIO.inf"
+             Link="PawnIO\PawnIO.inf"
+             CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\LibreHardwareMonitorLib\PawnIo\PawnIO.sys"
+             Link="PawnIO\PawnIO.sys"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
