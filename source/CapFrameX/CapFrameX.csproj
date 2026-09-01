@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
     <RootNamespace>CapFrameX</RootNamespace>
     <AssemblyName>CapFrameX</AssemblyName>
@@ -154,7 +154,7 @@
 
   <!-- The native C++ projects are built by solution dependencies and their post-build steps
        stage the DLLs in the configuration directory ABOVE the target-framework-specific app
-       output — the layout that existed before the net9.0-windows migration. Copy them next to
+       output — the layout that existed before the SDK-style .NET migration. Copy them next to
        CapFrameX.exe, otherwise every P/Invoke into them throws DllNotFoundException.
        That failure is silent: the sensor groups catch it and fall back, so the only symptom is
        missing hardware. Without CapFrameX.IGCL.dll an Intel Arc drops to LibreHardwareMonitor's

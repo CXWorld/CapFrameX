@@ -49,7 +49,7 @@ All paths are relative to the application directory. You can use `./` or `.\` pr
 
 When running in portable mode, the following dependencies must be installed on the system:
 
-- **.NET 9.0 Desktop Runtime (x64)** - [Download](https://dotnet.microsoft.com/download/dotnet/9.0)
+- **.NET 10.0 Desktop Runtime (x64)** - [Download](https://dotnet.microsoft.com/download/dotnet/10.0)
 - **Visual C++ 2015-2022 Redistributable (x64)** - [Download](https://aka.ms/vs/17/release/vc_redist.x64.exe)
 
 The application will check for these dependencies on startup and display a message if any are missing.

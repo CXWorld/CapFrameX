@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
     <RootNamespace>CapFrameX.OSD.Integration</RootNamespace>
@@ -44,7 +44,10 @@
 
   <ItemGroup Condition="'$(CfxOsdFromSource)' != 'true'">
     <Reference Include="CapFrameX.OSD.Interop">
-      <HintPath>$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\$(TargetFramework)\CapFrameX.OSD.Interop.dll</HintPath>
+      <!-- The prebuilt OSD bridge currently ships in a net9.0-windows folder. The assembly is
+           compatible with a net10.0-windows consumer, so keep this physical path pinned until
+           the OSD repository publishes a matching net10.0-windows artifact. -->
+      <HintPath>$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\net9.0-windows\CapFrameX.OSD.Interop.dll</HintPath>
     </Reference>
   </ItemGroup>
 

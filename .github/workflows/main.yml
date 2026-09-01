@@ -36,7 +36,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 9.0.x
+          dotnet-version: 10.0.x
 
       - name: Setup NuGet
         uses: nuget/setup-nuget@v4
@@ -230,9 +230,9 @@ jobs:
       - name: Stage native DLLs
         shell: cmd
         run: |
-          copy /y source\CapFrameX\bin\x64\Release\CapFrameX.Hwinfo.dll source\CapFrameX\bin\x64\Release\net9.0-windows\
-          copy /y source\CapFrameX\bin\x64\Release\CapFrameX.IGCL.dll source\CapFrameX\bin\x64\Release\net9.0-windows\
-          copy /y source\CapFrameX\bin\x64\Release\CapFrameX.ADLX.dll source\CapFrameX\bin\x64\Release\net9.0-windows\
+          copy /y source\CapFrameX\bin\x64\Release\CapFrameX.Hwinfo.dll source\CapFrameX\bin\x64\Release\net10.0-windows\
+          copy /y source\CapFrameX\bin\x64\Release\CapFrameX.IGCL.dll source\CapFrameX\bin\x64\Release\net10.0-windows\
+          copy /y source\CapFrameX\bin\x64\Release\CapFrameX.ADLX.dll source\CapFrameX\bin\x64\Release\net10.0-windows\
 
       - name: Build Installer
         shell: cmd
@@ -247,7 +247,7 @@ jobs:
       - name: Prepare portable config
         shell: cmd
         run: |
-          copy portable.json.sample source\CapFrameX\bin\x64\Release\net9.0-windows\portable.json
+          copy portable.json.sample source\CapFrameX\bin\x64\Release\net10.0-windows\portable.json
 
       - name: Compute archive metadata
         id: vars
@@ -273,7 +273,7 @@ jobs:
             -Force
 
           Compress-Archive `
-            -Path "source\CapFrameX\bin\x64\Release\net9.0-windows\*" `
+            -Path "source\CapFrameX\bin\x64\Release\net10.0-windows\*" `
             -DestinationPath "${filename}_portable.zip" `
             -Force
 

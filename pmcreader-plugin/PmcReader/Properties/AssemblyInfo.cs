@@ -35,7 +35,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
-// net9.0-windows implies this attribute, but the SDK only emits it when GenerateAssemblyInfo is
+// The Windows-specific target framework implies this attribute, but the SDK only emits it when GenerateAssemblyInfo is
 // on, and both projects that compile this file keep that off for the hand-written attributes
 // above. Without it CA1416 treats every call site as platform neutral and flags each Windows-only
 // API - WinForms, WMI and the driver interop are all Windows-only here.

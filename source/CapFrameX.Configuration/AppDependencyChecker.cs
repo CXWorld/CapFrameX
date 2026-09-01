@@ -40,7 +40,7 @@ namespace CapFrameX.Configuration
     /// </summary>
     public static class AppDependencyChecker
     {
-        public const int MajorDotNetVersionRequired = 9;
+        public const int MajorDotNetVersionRequired = 10;
 
         // Registry keys for VC++ 2015-2022 Redistributable detection (from Bundle.wxs)
         private const string VCRedistx64RegistryKey = @"SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64";
@@ -63,11 +63,11 @@ namespace CapFrameX.Configuration
                 Valid = true
             };
 
-            // Check for .NET 9.0
-            if (!IsDotNet9Installed())
+            // Check for the required .NET runtime.
+            if (!IsRequiredDotNetInstalled())
             {
                 report.Valid = false;
-                report.MissingDotNetFrameworkVersion = "9.0 (x64)";
+                report.MissingDotNetFrameworkVersion = $"{MajorDotNetVersionRequired}.0 (x64)";
             }
 
             // Check for Visual C++ Redistributables
@@ -88,17 +88,17 @@ namespace CapFrameX.Configuration
         }
 
         /// <summary>
-        /// Pr�ft, ob mindestens eine .NET 9 Komponente installiert ist.
+        /// Checks whether at least one component of the required .NET version is installed.
         /// </summary>
-        private static bool IsDotNet9Installed()
+        private static bool IsRequiredDotNetInstalled()
         {
-            return GetInstalledDotNet9Components() != DotNetComponents.None;
+            return GetInstalledRequiredDotNetComponents() != DotNetComponents.None;
         }
 
         /// <summary>
         /// Gets all installed .NET components for the required major version.
         /// </summary>
-        private static DotNetComponents GetInstalledDotNet9Components()
+        private static DotNetComponents GetInstalledRequiredDotNetComponents()
         {
             var result = DotNetComponents.None;
 
@@ -122,7 +122,7 @@ namespace CapFrameX.Configuration
 
         /// <summary>
         /// Checks if a .NET component is installed at the specified path with at least the required major version.
-        /// Looks for version folders (e.g., "9.0.0", "9.0.1") in the component directory.
+        /// Looks for version folders (e.g., "10.0.0", "10.0.1") in the component directory.
         /// </summary>
         private static bool IsDotNetComponentInstalled(string componentPath, int requiredMajorVersion)
         {
@@ -152,7 +152,7 @@ namespace CapFrameX.Configuration
         }
 
         /// <summary>
-        /// Tries to parse the major version from a version string (e.g., "9.0.0" -> 9).
+        /// Tries to parse the major version from a version string (e.g., "10.0.0" -> 10).
         /// </summary>
         private static bool TryParseMajorVersion(string version, out int majorVersion)
         {
@@ -170,7 +170,7 @@ namespace CapFrameX.Configuration
         /// </summary>
         public static string GetInstalledComponentsDescription()
         {
-            var components = GetInstalledDotNet9Components();
+            var components = GetInstalledRequiredDotNetComponents();
 
             if (components == DotNetComponents.None)
                 return $".NET {MajorDotNetVersionRequired} ist nicht installiert.";

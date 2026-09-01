@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
     <Platforms>AnyCPU;x64</Platforms>
@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <!-- WMI moved out of the platform on .NET; MainWindow queries it directly. -->
-    <PackageReference Include="System.Management" Version="10.0.3" />
+    <PackageReference Include="System.Management" Version="10.0.11" />
     <PackageReference Include="System.Reactive" Version="6.1.0" />
   </ItemGroup>
 

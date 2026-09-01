@@ -35,7 +35,7 @@ xmlns:wix="http://schemas.microsoft.com/wix/2006/wi">
 	<xsl:key name="pmcReaderPlugin" match="wix:Component[contains(wix:File/@Source, 'CapFrameX.PmcReader.Plugin.')]" use="@Id" />
 	<xsl:key name="search" match="wix:Component[contains(wix:File/@Source, 'CapFrameX.PmcReader.Plugin.')]" use="@Id" />
 	<!-- Satellite assemblies bring their own copy of app.config, which nothing reads. The app's own
-	     config is exempt: since the move to net9.0 it is named CapFrameX.dll.config instead of
+	     config is exempt: since the move to SDK-style .NET it is named CapFrameX.dll.config instead of
 	     CapFrameX.exe.config, and ConfigurationManager reads the update catalog and the webservice
 	     endpoints from it, so dropping it disables those features in the installed build. -->
 	<xsl:key name="search" match="wix:Component[contains(wix:File/@Source, '.dll.config') and not(contains(wix:File/@Source, '\CapFrameX.dll.config'))]" use="@Id" />

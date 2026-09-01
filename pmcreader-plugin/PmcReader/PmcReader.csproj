@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <Platforms>AnyCPU;x64</Platforms>
     <!-- The interop layer loads an x64 kernel driver and issues raw MSR opcodes, so the
@@ -19,7 +19,7 @@
   <ItemGroup>
     <!-- WMI moved out of the platform on .NET; GenericMonitoringArea queries Win32_Processor.
          Version kept in step with LibreHardwareMonitorLib to avoid a downgrade in consumers. -->
-    <PackageReference Include="System.Management" Version="10.0.3" />
+    <PackageReference Include="System.Management" Version="10.0.11" />
   </ItemGroup>
 
   <ItemGroup>

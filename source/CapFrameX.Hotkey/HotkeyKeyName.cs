@@ -12,10 +12,10 @@ namespace CapFrameX.Hotkey
     /// carry two names in both enums — <c>Keys.OemBackslash</c> and <c>Keys.Oem102</c> are both
     /// 226 — and <c>Enum.ToString</c> returns one of them without either enum promising which.
     ///
-    /// .NET Framework and .NET 9 disagree for nine of those values, VK 226 and VK 13
-    /// (Return/Enter) among them: .NET Framework reported "OemBackslash", .NET 9 reports
+    /// .NET Framework and modern .NET disagree for nine of those values, VK 226 and VK 13
+    /// (Return/Enter) among them: .NET Framework reported "OemBackslash", modern .NET reports
     /// "Oem102". Since the WPF side kept its naming, a config written before the
-    /// net9.0-windows migration holds a name the hook no longer produces, the string comparison
+    /// SDK-style .NET migration holds a name the hook no longer produces, the string comparison
     /// in <see cref="GlobalHotkeyHook"/> never matches, and the hotkey silently stops firing.
     ///
     /// Parsing accepts every alias, so routing a name through the parsed value yields the single

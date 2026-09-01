@@ -35,7 +35,7 @@ msbuild source\CapFrameXBootstrapper\CapFrameXBootstrapper.wixproj /p:SolutionDi
 ### Run Tests
 Tests use MSTest framework:
 ```bash
-vstest.console source\CapFrameX.Test\bin\x64\Release\net9.0-windows\CapFrameX.Test.dll /Platform:x64
+vstest.console source\CapFrameX.Test\bin\x64\Release\net10.0-windows\CapFrameX.Test.dll /Platform:x64
 ```
 
 This skips the `Integration` category, which drives the **real** PresentMon capture service and
@@ -44,7 +44,7 @@ app output). Those tests report themselves as *skipped* — not failed — whene
 are missing, so a green run is no evidence that they executed. Run them explicitly, **from an
 elevated shell**:
 ```bash
-vstest.console source\CapFrameX.Test\bin\x64\Release\net9.0-windows\CapFrameX.Test.dll /Platform:x64 /TestCaseFilter:TestCategory=Integration
+vstest.console source\CapFrameX.Test\bin\x64\Release\net10.0-windows\CapFrameX.Test.dll /Platform:x64 /TestCaseFilter:TestCategory=Integration
 ```
 Prerequisites, each of which turns into a skip instead of a failure:
 - administrator privileges (ETW),
@@ -58,7 +58,7 @@ occluded stalls its presents.
 ## Architecture
 
 ### Solution Structure
-The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (.NET 9, .NET Standard 2.0,
+The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (.NET 10, .NET Standard 2.0,
 .NET Core 3.1, and one .NET Framework 4.7.2 installer-action project) and C++ native code.
 
 ### Layer Organization
@@ -114,8 +114,8 @@ persistence layer was dropped. netcoreapp3.1 is out of support; the packages war
 
 ### Build Output
 - Platform: x64
-- Target framework (1.9+): `net9.0-windows` (SDK-style projects; legacy 1.8.x was .NET Framework 4.7.2)
-- Main output: `source\CapFrameX\bin\x64\Release\net9.0-windows\`
+- Target framework (1.9+): `net10.0-windows` (SDK-style projects; legacy 1.8.x was .NET Framework 4.7.2)
+- Main output: `source\CapFrameX\bin\x64\Release\net10.0-windows\`
 - Installer output: `source\CapFrameXBootstrapper\bin\x64\Release\CapFrameXBootstrapper.exe`
 
 ## Hook-free OSD (external source)

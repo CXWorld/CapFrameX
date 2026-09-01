@@ -14,8 +14,8 @@ namespace CapFrameX.OSD.Integration
     ///
     /// The event gets a permissive security descriptor: a DACL granting Everyone access plus a LOW
     /// mandatory-integrity label (no-write-up), so a sandboxed/low-integrity game can still open it.
-    /// Raw P/Invoke (not <c>EventWaitHandleSecurity</c>) keeps this identical across the project's
-    /// net472 and net9.0-windows targets, whose ACL APIs differ.
+    /// Raw P/Invoke (not <c>EventWaitHandleSecurity</c>) keeps the implementation independent of
+    /// target-framework-specific ACL APIs.
     /// </summary>
     internal sealed class HookVisibilityChannel : IDisposable
     {

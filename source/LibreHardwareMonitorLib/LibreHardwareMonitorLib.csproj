@@ -4,8 +4,8 @@
          found no matching TFM in the referenced CapFrameX projects and silently fell back to
          net472, which dragged the .NET Framework dependency graph into a .NET Core compilation
          (NU1702 + MSB3277 conflicts on Microsoft.Extensions.Logging.Abstractions and
-         System.Net.Http). net472 itself became unused once the PmcReader plugin moved to .NET 9. -->
-    <TargetFramework>net9.0</TargetFramework>
+         System.Net.Http). net472 itself became unused once the PmcReader plugin moved to modern .NET. -->
+    <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>LibreHardwareMonitorLib</AssemblyName>
     <RootNamespace>LibreHardwareMonitor</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

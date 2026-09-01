@@ -94,7 +94,7 @@ namespace CapFrameX
             }
             else
             {
-                // We need to check for .NET Framework presence and C++ redistributables.
+                // We need to check for the .NET Desktop Runtime and C++ redistributables.
                 using (StartupPerformanceLogger.Measure("Runtime dependency check"))
                 {
                     try
@@ -103,8 +103,8 @@ namespace CapFrameX
 
                         if (!checkReport.Valid)
                         {
-                            var netFrameWorkMessage = checkReport.MissingDotNetFrameworkVersion != null
-                                ? $"- .NET Framework {checkReport.MissingDotNetFrameworkVersion} is not installed.\n"
+                            var netRuntimeMessage = checkReport.MissingDotNetFrameworkVersion != null
+                                ? $"- .NET Desktop Runtime {checkReport.MissingDotNetFrameworkVersion} is not installed.\n"
                                 : string.Empty;
 
                             var vcRedistMessage = checkReport.MissingVCRedistVersions != null
@@ -114,7 +114,7 @@ namespace CapFrameX
                             // Show info message to user
                             MessageBox.Show($"CapFrameX requires certain dependencies to be installed on the system.\n\n" +
                                 $"The following dependencies are missing:\n" +
-                                $"{netFrameWorkMessage}" +
+                                $"{netRuntimeMessage}" +
                                 $"{vcRedistMessage}" +
                                 $"\nPlease install the missing dependencies and restart CapFrameX.",
                                 "Missing Dependencies",

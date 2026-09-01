@@ -9,7 +9,7 @@ namespace CapFrameX.Test.Hotkey
     {
         /// <summary>
         /// The regression that motivated <see cref="HotkeyKeyName"/>: a capture hotkey stored as
-        /// "OemBackslash" by a .NET Framework build stopped firing after the net9.0-windows
+        /// "OemBackslash" by a .NET Framework build stopped firing after the SDK-style .NET
         /// migration, because the hook now reports the same virtual key as "Oem102".
         /// </summary>
         [TestMethod]
@@ -27,7 +27,7 @@ namespace CapFrameX.Test.Hotkey
         public void Canonicalize_CoversEveryKeyTheTwoFrameworksNameDifferently()
         {
             // The full set of virtual keys whose canonical Keys name changed between
-            // .NET Framework 4.7.2 and .NET 9, with both spellings as they occur in stored
+            // .NET Framework 4.7.2 and modern .NET, with both spellings as they occur in stored
             // configurations. Enter/Return (13) matters as much as the OEM block: it is a
             // plausible capture hotkey.
             var aliasPairs = new[]

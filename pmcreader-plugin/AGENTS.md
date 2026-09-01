@@ -8,7 +8,7 @@
   `PmcReaderInterop.Forwarder.cs` and `PmcReaderLogging.cs`.
 
 ## Build, Test, and Development Commands
-All projects are SDK-style and target `net9.0-windows`; dependencies come from `PackageReference`,
+All projects are SDK-style and target `net10.0-windows`; dependencies come from `PackageReference`,
 so `/restore` replaces the former `nuget restore` step.
 - `msbuild PmcReader.TestApp.sln /restore /p:Configuration=Release /p:Platform=x64` builds the WPF test app.
 - `msbuild PmcReader\\PmcReader.sln /restore /p:Configuration=Release /p:Platform=x64` builds the core reader solution.
