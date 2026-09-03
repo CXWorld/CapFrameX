@@ -112,8 +112,9 @@
 				  Size="14327344" />
 			</ExePackage>
 
-			<!-- .NET desktop runtime is not chained here: the application performs
-			     its own dependency check at startup and guides the user. -->
+			<!-- .NET desktop runtime is not chained here. The MSI checks it before
+			     installation; the native .NET apphost handles portable launches before
+			     managed application startup. -->
 
 			<!--CapFrameX Msi package-->
 			<MsiPackage Id="CapFrameXPackage" SourceFile="$(var.CapFrameXInstaller.TargetPath)" DisplayInternalUI="no" Compressed="yes" Vital="yes">

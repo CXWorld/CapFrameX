@@ -68,6 +68,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\CapFrameX.Configuration\DotNetRuntimeDetector.cs">
+      <Link>DotNetRuntimeDetector.cs</Link>
+    </Compile>
     <Compile Include="InstallerCustomActions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Content Include="CustomAction.config" />

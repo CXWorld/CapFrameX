@@ -1,7 +1,6 @@
-using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.IO;
+using Microsoft.Win32;
 
 namespace CapFrameX.Configuration
 {
@@ -26,31 +25,17 @@ namespace CapFrameX.Configuration
         public List<string> MissingVCRedistVersions { get; set; }
     }
 
-    [Flags]
-    public enum DotNetComponents
-    {
-        None = 0,
-        Runtime = 1,
-        DesktopRuntime = 2,
-        Sdk = 4
-    }
-
     /// <summary>
     /// Checks for required runtime dependencies in portable mode.
     /// </summary>
     public static class AppDependencyChecker
     {
-        public const int MajorDotNetVersionRequired = 10;
+        public const int MajorDotNetVersionRequired = DotNetRuntimeDetector.RequiredMajorVersion;
 
         // Registry keys for VC++ 2015-2022 Redistributable detection (from Bundle.wxs)
         private const string VCRedistx64RegistryKey = @"SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64";
 
-        // File system paths for .NET installation detection
-        private static readonly string DotNetBasePath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet");
-        private static readonly string DotNetRuntimePath = Path.Combine(DotNetBasePath, "shared", "Microsoft.NETCore.App");
-        private static readonly string DotNetDesktopRuntimePath = Path.Combine(DotNetBasePath, "shared", "Microsoft.WindowsDesktop.App");
-        private static readonly string DotNetSdkPath = Path.Combine(DotNetBasePath, "sdk");
+        private static readonly string DotNetBasePath = DotNetRuntimeDetector.GetSystemWideDotNetBasePath();
 
         /// <summary>
         /// Checks for missing dependencies and returns a report.
@@ -58,13 +43,26 @@ namespace CapFrameX.Configuration
         /// <returns>A report containing information about missing dependencies.</returns>
         public static DependencyCheckReport CheckAndNotifyMissingDependencies()
         {
+            return CheckMissingDependencies(DotNetBasePath, IsVCRedistx64Installed());
+        }
+
+        /// <summary>
+        /// Checks dependencies using explicit probe results so the decision logic can be tested
+        /// without depending on the development machine's installed runtimes or registry.
+        /// </summary>
+        internal static DependencyCheckReport CheckMissingDependencies(
+            string dotNetBasePath,
+            bool isVCRedistx64Installed)
+        {
             var report = new DependencyCheckReport
             {
                 Valid = true
             };
 
-            // Check for the required .NET runtime.
-            if (!IsRequiredDotNetInstalled())
+            // A WPF application needs Microsoft.WindowsDesktop.App. Microsoft.NETCore.App on its
+            // own is insufficient, and a later major version is not used by the default .NET
+            // roll-forward policy.
+            if (!IsRequiredDotNetInstalled(dotNetBasePath))
             {
                 report.Valid = false;
                 report.MissingDotNetFrameworkVersion = $"{MajorDotNetVersionRequired}.0 (x64)";
@@ -73,7 +71,7 @@ namespace CapFrameX.Configuration
             // Check for Visual C++ Redistributables
             var missingVCRedist = new List<string>();
 
-            if (!IsVCRedistx64Installed())
+            if (!isVCRedistx64Installed)
             {
                 missingVCRedist.Add("2015-2022 (x64)");
             }
@@ -88,11 +86,11 @@ namespace CapFrameX.Configuration
         }
 
         /// <summary>
-        /// Checks whether at least one component of the required .NET version is installed.
+        /// Checks whether the required .NET Desktop Runtime is installed.
         /// </summary>
-        private static bool IsRequiredDotNetInstalled()
+        internal static bool IsRequiredDotNetInstalled(string dotNetBasePath)
         {
-            return GetInstalledRequiredDotNetComponents() != DotNetComponents.None;
+            return DotNetRuntimeDetector.IsRequiredDesktopRuntimeInstalled(dotNetBasePath);
         }
 
         /// <summary>
@@ -100,69 +98,12 @@ namespace CapFrameX.Configuration
         /// </summary>
         private static DotNetComponents GetInstalledRequiredDotNetComponents()
         {
-            var result = DotNetComponents.None;
-
-            if (IsDotNetComponentInstalled(DotNetRuntimePath, MajorDotNetVersionRequired))
-            {
-                result |= DotNetComponents.Runtime;
-            }
-
-            if (IsDotNetComponentInstalled(DotNetDesktopRuntimePath, MajorDotNetVersionRequired))
-            {
-                result |= DotNetComponents.DesktopRuntime;
-            }
-
-            if (IsDotNetComponentInstalled(DotNetSdkPath, MajorDotNetVersionRequired))
-            {
-                result |= DotNetComponents.Sdk;
-            }
-
-            return result;
+            return GetInstalledRequiredDotNetComponents(DotNetBasePath);
         }
 
-        /// <summary>
-        /// Checks if a .NET component is installed at the specified path with at least the required major version.
-        /// Looks for version folders (e.g., "10.0.0", "10.0.1") in the component directory.
-        /// </summary>
-        private static bool IsDotNetComponentInstalled(string componentPath, int requiredMajorVersion)
+        internal static DotNetComponents GetInstalledRequiredDotNetComponents(string dotNetBasePath)
         {
-            try
-            {
-                if (!Directory.Exists(componentPath))
-                    return false;
-
-                var versionDirectories = Directory.GetDirectories(componentPath);
-
-                foreach (var versionDir in versionDirectories)
-                {
-                    var folderName = Path.GetFileName(versionDir);
-                    if (TryParseMajorVersion(folderName, out int majorVersion) &&
-                        majorVersion >= requiredMajorVersion)
-                    {
-                        return true;
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                // File system access failed
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Tries to parse the major version from a version string (e.g., "10.0.0" -> 10).
-        /// </summary>
-        private static bool TryParseMajorVersion(string version, out int majorVersion)
-        {
-            majorVersion = 0;
-
-            if (string.IsNullOrEmpty(version))
-                return false;
-
-            var versionParts = version.Split('.');
-            return versionParts.Length > 0 && int.TryParse(versionParts[0], out majorVersion);
+            return DotNetRuntimeDetector.GetInstalledRequiredComponents(dotNetBasePath);
         }
 
         /// <summary>

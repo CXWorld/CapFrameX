@@ -1,10 +1,11 @@
-using WixToolset.Dtf.WindowsInstaller;
-using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.Win32.TaskScheduler;
 using System.Linq;
+using CapFrameX.Configuration;
+using Microsoft.Win32;
+using Microsoft.Win32.TaskScheduler;
+using WixToolset.Dtf.WindowsInstaller;
 
 namespace CapFrameX.CustomInstallerActions
 {
@@ -24,6 +25,8 @@ namespace CapFrameX.CustomInstallerActions
 
         private const string APPNAME = "CapFrameX";
 
+        private const string DOTNET_DESKTOP_RUNTIME_PROPERTY = "DOTNETDESKTOPRUNTIMEX64FOUND";
+
         private const string VULKAN_IMPLICIT_LAYERS = @"SOFTWARE\Khronos\Vulkan\ImplicitLayers";
 
         // Every manifest this product has ever shipped is named cfx_osd_vklayer*.json, and nothing
@@ -31,6 +34,26 @@ namespace CapFrameX.CustomInstallerActions
         // purge version- and location-agnostic: it catches _v1/_v2/..., an install folder from an
         // earlier version, and a developer's build tree registered by vk_layer\register_layer.cmd.
         private const string LAYER_MANIFEST_PREFIX = "cfx_osd_vklayer";
+
+        /// <summary>
+        /// Detects the required Desktop Runtime before the MSI launch conditions are evaluated.
+        /// This custom action targets .NET Framework 4.7.2, so it can run before the .NET 10 WPF
+        /// application and avoids relying on managed application startup for the prerequisite UX.
+        /// </summary>
+        [CustomAction]
+        public static ActionResult DetectDotNetDesktopRuntime(Session session)
+        {
+            string dotNetBasePath = DotNetRuntimeDetector.GetSystemWideDotNetBasePath();
+            bool isInstalled = DotNetRuntimeDetector.IsRequiredDesktopRuntimeInstalled(dotNetBasePath);
+
+            session[DOTNET_DESKTOP_RUNTIME_PROPERTY] = isInstalled ? "1" : string.Empty;
+            session.Log(
+                ".NET Desktop Runtime {0}.0 (x64) detected: {1}",
+                DotNetRuntimeDetector.RequiredMajorVersion,
+                isInstalled);
+
+            return ActionResult.Success;
+        }
 
         /// <summary>
         /// Removes every CapFrameX Vulkan layer registration from HKLM, in BOTH registry views.

@@ -21,8 +21,22 @@
 		</Feature>
 
     <Property Id="INSTALLSHORTCUT" Value="1" Secure="yes"/>
+    <Property Id="DOTNETDESKTOPRUNTIMEX64FOUND" Secure="yes" />
+
+    <Condition Message="CapFrameX requires the .NET 10 Desktop Runtime (x64). Install it from https://dotnet.microsoft.com/download/dotnet/10.0 and run setup again.">
+      Installed OR DOTNETDESKTOPRUNTIMEX64FOUND
+    </Condition>
+
+    <InstallUISequence>
+      <Custom Action="DetectDotNetDesktopRuntime" Before="LaunchConditions">
+        NOT Installed AND NOT DOTNETDESKTOPRUNTIMEX64FOUND
+      </Custom>
+    </InstallUISequence>
 
     <InstallExecuteSequence>
+		  <Custom Action="DetectDotNetDesktopRuntime" Before="LaunchConditions">
+		    NOT Installed AND NOT DOTNETDESKTOPRUNTIMEX64FOUND
+		  </Custom>
 		  <Custom Action="WixCloseApplications" Before="InstallValidate">
 			  Installed
 		  </Custom>
@@ -47,6 +61,10 @@
 		  Installed
 	  </util:CloseApplication>
 	</Product>
+
+  <Fragment>
+    <CustomAction Id="DetectDotNetDesktopRuntime" BinaryKey="CustomActionsBin" DllEntry="DetectDotNetDesktopRuntime" Execute="immediate" Return="check" />
+  </Fragment>
 
   <Fragment>
     <CustomAction Id="AppdataConfigFiles" BinaryKey="CustomActionsBin" DllEntry="RemoveAppdataConfigFiles" Execute="immediate" Return="check"/>
