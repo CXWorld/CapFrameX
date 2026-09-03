@@ -90,12 +90,7 @@ namespace CapFrameX.RadeonMonitor
             MetricBuilder metrics = new();
 
             ReadCurrentClocks(reader, metrics, Rdna2ClockNames);
-            metrics.AddFrequency("Average clocks", "GFXCLK before deep sleep", reader.ReadUInt16());
-            metrics.AddFrequency("Average clocks", "GFXCLK after deep sleep", reader.ReadUInt16());
-            metrics.AddFrequency("Average clocks", "FCLK before deep sleep", reader.ReadUInt16());
-            metrics.AddFrequency("Average clocks", "FCLK after deep sleep", reader.ReadUInt16());
-            metrics.AddFrequency("Average clocks", "UCLK before deep sleep", reader.ReadUInt16());
-            metrics.AddFrequency("Average clocks", "UCLK after deep sleep", reader.ReadUInt16());
+            reader.Skip(6 * sizeof(ushort));
 
             metrics.AddPercent("Activity", "GFX activity", reader.ReadUInt16());
             metrics.AddPercent("Activity", "UCLK activity", reader.ReadUInt16());
@@ -105,7 +100,7 @@ namespace CapFrameX.RadeonMonitor
             AddRdna2Voltage(metrics, "Memory VID", reader.ReadByte());
             reader.Skip(1);
 
-            metrics.AddInteger("Power", "Average socket power", reader.ReadUInt16(), "W");
+            metrics.AddInteger("Power", "Socket power", reader.ReadUInt16(), "W");
 
             string[] temperatureNames =
             {
@@ -131,10 +126,7 @@ namespace CapFrameX.RadeonMonitor
 
             ReadByteD3HotCounters(reader, metrics);
             metrics.AddInteger("Counters", "Energy accumulator", reader.ReadUInt32(), "raw");
-            metrics.AddFrequency("Video", "Average VCLK0", reader.ReadUInt16());
-            metrics.AddFrequency("Video", "Average DCLK0", reader.ReadUInt16());
-            metrics.AddFrequency("Video", "Average VCLK1", reader.ReadUInt16());
-            metrics.AddFrequency("Video", "Average DCLK1", reader.ReadUInt16());
+            reader.Skip(4 * sizeof(ushort));
 
             if (layout is Rdna2MetricsLayout.V3 or Rdna2MetricsLayout.V4)
             {
@@ -148,7 +140,7 @@ namespace CapFrameX.RadeonMonitor
 
             metrics.AddPcieRate(reader.ReadByte(), isZeroBased: true);
             metrics.AddPcieWidth(reader.ReadByte());
-            metrics.AddFrequency("Average clocks", "GFXCLK target", reader.ReadUInt16());
+            reader.Skip(sizeof(ushort));
 
             switch (layout)
             {
@@ -161,7 +153,7 @@ namespace CapFrameX.RadeonMonitor
                     break;
                 case Rdna2MetricsLayout.V4:
                     metrics.AddInteger("SmartShift", "APU STAPM SmartShift limit", reader.ReadByte(), "%");
-                    metrics.AddInteger("SmartShift", "Average APU socket power", reader.ReadByte(), "W");
+                    metrics.AddInteger("SmartShift", "APU socket power", reader.ReadByte(), "W");
                     metrics.AddInteger("SmartShift", "APU STAPM limit", reader.ReadByte(), "%");
                     reader.Skip(1);
                     break;
@@ -194,7 +186,7 @@ namespace CapFrameX.RadeonMonitor
             MetricBuilder metrics = new();
 
             ReadCurrentClocks(reader, metrics, Rdna3ClockNames);
-            ReadCommonRdna3And4Averages(reader, metrics, "PCIe busy");
+            SkipCommonRdna3And4Averages(reader, metrics);
             metrics.AddInteger("Counters", "Metrics counter", reader.ReadUInt32(), string.Empty);
 
             ReadVoltageAndCurrentPlanes(
@@ -207,8 +199,8 @@ namespace CapFrameX.RadeonMonitor
             metrics.AddPercent("Video", "VCN 0 activity", reader.ReadUInt16());
             metrics.AddPercent("Video", "VCN 1 activity", reader.ReadUInt16());
             metrics.AddInteger("Counters", "Energy accumulator", reader.ReadUInt32(), "raw");
-            metrics.AddInteger("Power", "Average socket power", reader.ReadUInt16(), "W");
-            metrics.AddInteger("Power", "Average total board power", reader.ReadUInt16(), "W");
+            metrics.AddInteger("Power", "Socket power", reader.ReadUInt16(), "W");
+            metrics.AddInteger("Power", "Total board power", reader.ReadUInt16(), "W");
 
             ReadTemperatures(
                 reader,
@@ -236,7 +228,7 @@ namespace CapFrameX.RadeonMonitor
 
             metrics.AddInteger("SmartShift", "APU STAPM SmartShift limit", reader.ReadUInt16(), "W");
             metrics.AddInteger("SmartShift", "APU STAPM limit", reader.ReadUInt16(), "W");
-            metrics.AddInteger("SmartShift", "Average APU socket power", reader.ReadUInt16(), "W");
+            metrics.AddInteger("SmartShift", "APU socket power", reader.ReadUInt16(), "W");
             metrics.AddPercent("Activity", "Maximum UCLK activity", reader.ReadUInt16());
             metrics.AddSerial(reader.ReadUInt32(), reader.ReadUInt32());
 
@@ -249,26 +241,11 @@ namespace CapFrameX.RadeonMonitor
         {
             MetricsReader reader = new(data);
             MetricBuilder metrics = new();
+            MetricBuilder clocks = new();
 
-            ReadCurrentClocks(reader, metrics, Rdna4ClockNames);
-            ReadCommonRdna3And4Averages(reader, metrics, "Average PCIe busy");
-
-            metrics.AddFrequency("Moving averages", "GFXCLK target", reader.ReadUInt16());
-            metrics.AddFrequency("Moving averages", "GFXCLK before deep sleep", reader.ReadUInt16());
-            metrics.AddFrequency("Moving averages", "GFXCLK after deep sleep", reader.ReadUInt16());
-            metrics.AddFrequency("Moving averages", "FCLK before deep sleep", reader.ReadUInt16());
-            metrics.AddFrequency("Moving averages", "FCLK after deep sleep", reader.ReadUInt16());
-            metrics.AddFrequency("Moving averages", "UCLK before deep sleep", reader.ReadUInt16());
-            metrics.AddFrequency("Moving averages", "UCLK after deep sleep", reader.ReadUInt16());
-            metrics.AddFrequency("Moving averages", "VCLK0", reader.ReadUInt16());
-            metrics.AddFrequency("Moving averages", "DCLK0", reader.ReadUInt16());
-            metrics.AddPercent("Moving averages", "GFX activity", reader.ReadUInt16());
-            metrics.AddPercent("Moving averages", "UCLK activity", reader.ReadUInt16());
-            metrics.AddPercent("Moving averages", "VCN 0 activity", reader.ReadUInt16());
-            metrics.AddPercent("Moving averages", "PCIe busy", reader.ReadUInt16());
-            metrics.AddPercent("Moving averages", "Maximum UCLK activity", reader.ReadUInt16());
-            metrics.AddInteger("Moving averages", "Socket power", reader.ReadUInt16(), "W");
-            reader.Skip(2);
+            uint[] currentClocks = ReadClockValues(reader, Rdna4ClockNames.Length);
+            CommonClockValues clockValues = ReadCommonClockValues(reader, metrics);
+            reader.Skip(16 * sizeof(ushort));
 
             metrics.AddInteger("Counters", "Metrics counter", reader.ReadUInt32(), string.Empty);
             ReadVoltageAndCurrentPlanes(
@@ -276,13 +253,16 @@ namespace CapFrameX.RadeonMonitor
                 metrics,
                 new[] { "GFX", "SOC", "VDDCI memory", "VDDIO memory" });
 
-            metrics.AddPercent("Activity", "GFX activity", reader.ReadUInt16());
-            metrics.AddPercent("Activity", "UCLK activity", reader.ReadUInt16());
+            ushort gfxActivity = reader.ReadUInt16();
+            ushort uclkActivity = reader.ReadUInt16();
+            AddRdna4Clocks(clocks, currentClocks, clockValues, gfxActivity, uclkActivity);
+            metrics.AddPercent("Activity", "GFX activity", gfxActivity);
+            metrics.AddPercent("Activity", "UCLK activity", uclkActivity);
             metrics.AddPercent("Video", "VCN 0 activity", reader.ReadUInt16());
             metrics.AddPercent("Video", "VCN 1 activity", reader.ReadUInt16());
             metrics.AddInteger("Counters", "Energy accumulator", reader.ReadUInt32(), "raw");
-            metrics.AddInteger("Power", "Average socket power", reader.ReadUInt16(), "W");
-            metrics.AddInteger("Power", "Average total board power", reader.ReadUInt16(), "W");
+            metrics.AddInteger("Power", "Socket power", reader.ReadUInt16(), "W");
+            metrics.AddInteger("Power", "Total board power", reader.ReadUInt16(), "W");
 
             ReadTemperatures(
                 reader,
@@ -307,12 +287,69 @@ namespace CapFrameX.RadeonMonitor
 
             metrics.AddInteger("SmartShift", "APU STAPM SmartShift limit", reader.ReadUInt16(), "W");
             metrics.AddInteger("SmartShift", "APU STAPM limit", reader.ReadUInt16(), "W");
-            metrics.AddInteger("SmartShift", "Average APU socket power", reader.ReadUInt16(), "W");
+            metrics.AddInteger("SmartShift", "APU socket power", reader.ReadUInt16(), "W");
             metrics.AddPercent("Activity", "Maximum UCLK activity", reader.ReadUInt16());
             metrics.AddSerial(reader.ReadUInt32(), reader.ReadUInt32());
 
             reader.AssertPosition(260, "RDNA4");
-            return metrics.Items;
+            return clocks.Items.Concat(metrics.Items).ToArray();
+        }
+
+        private static uint[] ReadClockValues(MetricsReader reader, int count)
+        {
+            uint[] values = new uint[count];
+            for (int index = 0; index < values.Length; index++)
+            {
+                values[index] = reader.ReadUInt32();
+            }
+
+            return values;
+        }
+
+        private static CommonClockValues ReadCommonClockValues(
+            MetricsReader reader,
+            MetricBuilder metrics)
+        {
+            CommonClockValues values = new(
+                reader.ReadUInt16(),
+                reader.ReadUInt16(),
+                reader.ReadUInt16(),
+                reader.ReadUInt16(),
+                reader.ReadUInt16(),
+                reader.ReadUInt16(),
+                reader.ReadUInt16(),
+                reader.ReadUInt16(),
+                reader.ReadUInt16(),
+                reader.ReadUInt16(),
+                reader.ReadUInt16());
+            reader.Skip(sizeof(ushort));
+            metrics.AddInteger("Power", "dGPU W_MAX", reader.ReadUInt16(), "W");
+            reader.Skip(sizeof(ushort));
+            return values;
+        }
+
+        private static void AddRdna4Clocks(
+            MetricBuilder metrics,
+            IReadOnlyList<uint> current,
+            CommonClockValues values,
+            ushort gfxActivity,
+            ushort uclkActivity)
+        {
+            const ushort busyThreshold = 5;
+            uint[] selected = current.ToArray();
+            selected[0] = gfxActivity <= busyThreshold
+                ? values.GfxAfterDeepSleep
+                : values.GfxBeforeDeepSleep;
+            selected[2] = uclkActivity <= busyThreshold
+                ? values.UclkAfterDeepSleep
+                : values.UclkBeforeDeepSleep;
+            selected[4] = values.Dclk0;
+            selected[5] = values.Vclk0;
+
+            for (int index = 0; index < selected.Length; index++)
+            {
+                metrics.AddFrequency("Current clocks", Rdna4ClockNames[index], selected[index]);
+            }
         }
 
         private static void ReadCurrentClocks(
@@ -326,26 +363,28 @@ namespace CapFrameX.RadeonMonitor
             }
         }
 
-        private static void ReadCommonRdna3And4Averages(
+        private static void SkipCommonRdna3And4Averages(
             MetricsReader reader,
-            MetricBuilder metrics,
-            string pcieBusyName)
+            MetricBuilder metrics)
         {
-            metrics.AddFrequency("Average clocks", "GFXCLK target", reader.ReadUInt16());
-            metrics.AddFrequency("Average clocks", "GFXCLK before deep sleep", reader.ReadUInt16());
-            metrics.AddFrequency("Average clocks", "GFXCLK after deep sleep", reader.ReadUInt16());
-            metrics.AddFrequency("Average clocks", "FCLK before deep sleep", reader.ReadUInt16());
-            metrics.AddFrequency("Average clocks", "FCLK after deep sleep", reader.ReadUInt16());
-            metrics.AddFrequency("Average clocks", "UCLK before deep sleep", reader.ReadUInt16());
-            metrics.AddFrequency("Average clocks", "UCLK after deep sleep", reader.ReadUInt16());
-            metrics.AddFrequency("Average clocks", "VCLK0", reader.ReadUInt16());
-            metrics.AddFrequency("Average clocks", "DCLK0", reader.ReadUInt16());
-            metrics.AddFrequency("Average clocks", "VCLK1", reader.ReadUInt16());
-            metrics.AddFrequency("Average clocks", "DCLK1", reader.ReadUInt16());
-            metrics.AddPercent("PCI Express", pcieBusyName, reader.ReadUInt16());
+            // Eleven average clocks plus PCIe busy.
+            reader.Skip(12 * sizeof(ushort));
             metrics.AddInteger("Power", "dGPU W_MAX", reader.ReadUInt16(), "W");
             reader.Skip(2);
         }
+
+        private readonly record struct CommonClockValues(
+            ushort GfxTarget,
+            ushort GfxBeforeDeepSleep,
+            ushort GfxAfterDeepSleep,
+            ushort FclkBeforeDeepSleep,
+            ushort FclkAfterDeepSleep,
+            ushort UclkBeforeDeepSleep,
+            ushort UclkAfterDeepSleep,
+            ushort Vclk0,
+            ushort Dclk0,
+            ushort Vclk1,
+            ushort Dclk1);
 
         private static void ReadVoltageAndCurrentPlanes(
             MetricsReader reader,
@@ -354,12 +393,19 @@ namespace CapFrameX.RadeonMonitor
         {
             foreach (string plane in planeNames)
             {
-                metrics.AddInteger("Voltage", $"Average {plane} voltage", reader.ReadUInt16(), "mV");
+                metrics.AddInteger("Voltage", $"{plane} voltage", reader.ReadUInt16(), "mV");
             }
 
             foreach (string plane in planeNames)
             {
-                metrics.AddInteger("Current", $"Average {plane} current", reader.ReadUInt16(), "A");
+                ushort raw = reader.ReadUInt16();
+                metrics.AddScaled(
+                    "Current",
+                    $"{plane} current",
+                    raw / 1000.0,
+                    "A",
+                    raw,
+                    decimalPlaces: 3);
             }
         }
 
@@ -424,7 +470,7 @@ namespace CapFrameX.RadeonMonitor
         private static void AddRdna2Voltage(MetricBuilder metrics, string name, byte raw)
         {
             double millivolts = 1550.0 - (6.25 * raw);
-            metrics.AddScaled("Voltage", name, millivolts, "mV", raw, "F2");
+            metrics.AddScaled("Voltage", name, millivolts, "mV", raw, decimalPlaces: 2);
         }
 
         private sealed class MetricsReader
@@ -507,7 +553,8 @@ namespace CapFrameX.RadeonMonitor
                     name,
                     raw.ToString(CultureInfo.InvariantCulture),
                     unit,
-                    $"0x{raw:X}"));
+                    $"0x{raw:X}",
+                    (double)raw));
             }
 
             public void AddScaled(
@@ -516,14 +563,16 @@ namespace CapFrameX.RadeonMonitor
                 double value,
                 string unit,
                 ulong raw,
-                string format)
+                int decimalPlaces)
             {
                 items.Add(new MetricReading(
                     group,
                     name,
-                    value.ToString(format, CultureInfo.InvariantCulture),
+                    value.ToString($"F{decimalPlaces}", CultureInfo.InvariantCulture),
                     unit,
-                    $"0x{raw:X}"));
+                    $"0x{raw:X}",
+                    value,
+                    decimalPlaces));
             }
 
             public void AddHex(string group, string name, ulong raw)
@@ -533,7 +582,8 @@ namespace CapFrameX.RadeonMonitor
 
             public void AddFanPwm(byte raw)
             {
-                AddScaled("Fan", "Fan PWM", raw * 100.0 / byte.MaxValue, "%", raw, "F1");
+                // PMFW reports percent; hwmon uses a 0..255 scale.
+                AddScaled("Fan", "Fan PWM", raw, "%", raw, decimalPlaces: 1);
             }
 
             public void AddPcieRate(byte raw, bool isZeroBased)
@@ -547,7 +597,9 @@ namespace CapFrameX.RadeonMonitor
                     "Link rate",
                     value,
                     string.Empty,
-                    $"0x{raw:X2}"));
+                    $"0x{raw:X2}",
+                    generation,
+                    ValueKind: MetricValueKind.PcieGeneration));
             }
 
             public void AddPcieWidth(byte raw)
@@ -555,7 +607,14 @@ namespace CapFrameX.RadeonMonitor
                 string value = raw is 1 or 2 or 4 or 8 or 12 or 16 or 32
                     ? $"x{raw}"
                     : $"Encoding {raw}";
-                items.Add(new MetricReading("PCI Express", "Link width", value, string.Empty, $"0x{raw:X2}"));
+                items.Add(new MetricReading(
+                    "PCI Express",
+                    "Link width",
+                    value,
+                    string.Empty,
+                    $"0x{raw:X2}",
+                    raw,
+                    ValueKind: MetricValueKind.PcieWidth));
             }
 
             public void AddSerial(uint lower, uint upper)

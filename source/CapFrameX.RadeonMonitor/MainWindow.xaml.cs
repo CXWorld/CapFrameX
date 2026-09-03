@@ -11,14 +11,72 @@ namespace CapFrameX.RadeonMonitor
 {
     public partial class MainWindow : Window
     {
-        private const int HResultDeviceNotReady = unchecked((int)0x80070015);
+        private static readonly HashSet<(string Group, string Name)> AdlMetricsSupersededByNavi21ToolTable =
+            new()
+            {
+                ("Clocks", "GFX clock"),
+                ("Clocks", "Memory clock"),
+                ("Temperature", "Edge"),
+                ("Temperature", "Memory"),
+                ("Temperature", "VR VDDC"),
+                ("Temperature", "VR memory"),
+                ("Temperature", "VR SOC"),
+                ("Temperature", "VR memory 0"),
+                ("Temperature", "VR memory 1"),
+                ("Temperature", "Hotspot"),
+                ("Fan", "Fan speed"),
+                ("Activity", "GFX activity"),
+                ("Voltage", "SOC voltage"),
+                ("Voltage", "GFX voltage"),
+                ("Voltage", "Memory voltage"),
+                ("Power", "SOC power"),
+                ("Power", "GFX power"),
+                ("Power", "Board power"),
+                ("Current", "SOC current"),
+                ("Current", "GFX current")
+            };
+
+        private static readonly HashSet<(string Group, string Name)> AdlMetricsSupersededByRdna3ToolTable =
+            new()
+            {
+                ("Clocks", "Memory clock"),
+                ("Clocks", "SOC clock"),
+                ("Clocks", "Fabric clock"),
+                ("Temperature", "Edge"),
+                ("Temperature", "Memory"),
+                ("Temperature", "VR VDDC"),
+                ("Temperature", "VR memory"),
+                ("Temperature", "VR SOC"),
+                ("Temperature", "VR memory 0"),
+                ("Temperature", "VR memory 1"),
+                ("Temperature", "Hotspot"),
+                ("Temperature", "Hotspot GCD"),
+                ("Temperature", "Hotspot MCD"),
+                ("Fan", "Fan speed"),
+                ("Activity", "GFX activity"),
+                ("Voltage", "SOC voltage"),
+                ("Voltage", "GFX voltage"),
+                ("Voltage", "Memory voltage"),
+                ("Power", "SOC power"),
+                ("Power", "GFX power"),
+                ("Power", "Board power"),
+                ("Current", "SOC current"),
+                ("Current", "GFX current")
+            };
+
+        private static readonly HashSet<(string Group, string Name)> AdlMetricsSupersededByRdna4ToolTable =
+            new();
 
         private readonly DispatcherTimer pollingTimer;
         private readonly ObservableCollection<MetricReading> readings = new();
+        private readonly MetricStatisticsTracker statisticsTracker = new();
 
         private RadeonSmuMonitor? monitor;
         private RadeonDeviceInfo? deviceInfo;
         private AdlPmLogClient? adlPmLogClient;
+        private RadeonToolTableTelemetry? lastRdna4ToolTableTelemetry;
+        private uint? lastRdna4ToolTableVersion;
+        private string? statisticsScope;
         private bool readInProgress;
 
         public MainWindow()
@@ -33,7 +91,7 @@ namespace CapFrameX.RadeonMonitor
                 "RDNA4 / SMU14"
             };
             Rdna2LayoutComboBox.ItemsSource = new[] { "Auto", "Base", "V2", "V3", "V4" };
-            Rdna3LayoutComboBox.ItemsSource = new[] { "Auto", "SMU 13.0.0 / 13.0.10", "SMU 13.0.7" };
+            Rdna3LayoutComboBox.ItemsSource = new[] { "Auto", "SMU 13.0.0 layout (Navi 31/32)", "SMU 13.0.7" };
             GenerationComboBox.SelectedIndex = 0;
             Rdna2LayoutComboBox.SelectedIndex = 0;
             Rdna3LayoutComboBox.SelectedIndex = 0;
@@ -115,7 +173,8 @@ namespace CapFrameX.RadeonMonitor
                 UpdateLayoutState();
                 ReadOnceButton.IsEnabled = true;
                 StartButton.IsEnabled = true;
-                SetStatus("Module loaded. No SMN writes are issued by this application.");
+                SetStatus(
+                    "Module loaded. RDNA tool-table reads use fixed, bounded SMU mailbox commands.");
 
                 if (ResolveGeneration(throwIfUnknown: false) is not null)
                 {
@@ -168,6 +227,7 @@ namespace CapFrameX.RadeonMonitor
                 return;
             }
 
+            ResetStatistics();
             pollingTimer.Interval = interval;
             pollingTimer.Start();
             StartButton.IsEnabled = false;
@@ -182,9 +242,48 @@ namespace CapFrameX.RadeonMonitor
             SetStatus("Polling stopped.");
         }
 
+        private void ResetStatisticsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (readings.Count == 0)
+            {
+                return;
+            }
+
+            MetricReading[] currentReadings = readings
+                .Select(reading => reading with
+                {
+                    MinimumValue = "\u2014",
+                    MaximumValue = "\u2014",
+                    AverageValue = "\u2014"
+                })
+                .ToArray();
+            statisticsTracker.Reset();
+            IReadOnlyList<MetricReading> resetReadings = statisticsTracker.Update(currentReadings);
+
+            readings.Clear();
+            foreach (MetricReading reading in resetReadings)
+            {
+                readings.Add(reading);
+            }
+
+            SetStatus("Statistics reset to the current values.");
+        }
+
         private void GenerationComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             UpdateLayoutState();
+            if (monitor is not null)
+            {
+                ResetStatistics();
+            }
+        }
+
+        private void LayoutComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (monitor is not null)
+            {
+                ResetStatistics();
+            }
         }
 
         private async void PollingTimer_Tick(object? sender, EventArgs e)
@@ -226,9 +325,9 @@ namespace CapFrameX.RadeonMonitor
 
                     if (refreshedInfo.MetricsPhysicalAddress == 0)
                     {
-                        if (generation == RadeonGeneration.Rdna3)
+                        if (SupportsAdlPmLogFallback(generation))
                         {
-                            await PollAdlPmLogAsync(refreshedInfo);
+                            await PollAdlPmLogAsync(refreshedInfo, generation);
                             return;
                         }
 
@@ -238,39 +337,102 @@ namespace CapFrameX.RadeonMonitor
                     }
                 }
 
-                uint[] raw;
-                try
+                string? refreshError = await RefreshPublicMetricsAsync(deviceInfo, generation);
+                uint[]? raw = await Task.Run(() => monitor.TryReadMetrics(generation, rdna3Layout));
+                if (raw is null)
                 {
-                    raw = await Task.Run(() => monitor.ReadMetrics(generation, rdna3Layout));
-                }
-                catch (PawnIoException ex) when (
-                    generation == RadeonGeneration.Rdna3 &&
-                    ex.HResult == HResultDeviceNotReady)
-                {
-                    await PollAdlPmLogAsync(deviceInfo);
+                    if (SupportsAdlPmLogFallback(generation))
+                    {
+                        await PollAdlPmLogAsync(deviceInfo, generation);
+                        return;
+                    }
+
+                    StopPolling();
+                    SetStatus(DescribeUnavailableMetricsAddress(generation), isError: true);
                     return;
                 }
 
                 IReadOnlyList<MetricReading> parsed =
                     MetricsParser.Parse(raw, generation, rdna2Layout, rdna3Layout);
 
-                readings.Clear();
-                foreach (MetricReading reading in parsed)
+                RadeonToolTableSnapshot? toolTableSnapshot = null;
+                RadeonToolTableTelemetry? toolTableTelemetry = null;
+                string? toolTableError = null;
+                if (generation == RadeonGeneration.Rdna4 &&
+                    RadeonDeviceClassifier.IsRdna4(deviceInfo.DeviceId))
                 {
-                    readings.Add(reading);
+                    try
+                    {
+                        toolTableSnapshot = await Task.Run(monitor.ReadToolTable);
+                        toolTableTelemetry = Rdna4ToolTableParser.Parse(toolTableSnapshot);
+                        lastRdna4ToolTableTelemetry = toolTableTelemetry;
+                        lastRdna4ToolTableVersion = toolTableSnapshot.Version;
+                    }
+                    catch (Exception ex)
+                    {
+                        toolTableError = ex.Message;
+                        if (lastRdna4ToolTableTelemetry is not null)
+                        {
+                            toolTableTelemetry = MarkTelemetryUnavailable(lastRdna4ToolTableTelemetry);
+                        }
+                    }
                 }
 
-                RawDumpTextBox.Text = FormatRawDump(raw);
-                RawDumpExpander.Header = "Raw DWORD dump";
+                IReadOnlyList<MetricReading> combinedReadings = toolTableTelemetry is null
+                    ? parsed
+                    : MergeToolTableReadings(parsed, toolTableTelemetry.Readings, generation);
+                string toolScope = generation == RadeonGeneration.Rdna4 &&
+                    RadeonDeviceClassifier.IsRdna4(deviceInfo.DeviceId)
+                        ? $":Tool:{lastRdna4ToolTableVersion?.ToString("X8", CultureInfo.InvariantCulture) ?? "pending"}"
+                        : string.Empty;
+
+                UpdateReadings(
+                    combinedReadings,
+                    $"PawnIO:{generation}:{rdna2Layout}:{rdna3Layout}{toolScope}");
+
+                if (toolTableSnapshot is null)
+                {
+                    RawDumpTextBox.Text = toolTableError is null
+                        ? FormatRawDump(raw)
+                        : $"RDNA4 private SMU tool table unavailable: {toolTableError}{Environment.NewLine}{Environment.NewLine}" +
+                            FormatRawDump(raw);
+                    RawDumpExpander.Header = "Raw DWORD dump";
+                }
+                else
+                {
+                    RawDumpTextBox.Text =
+                        $"RDNA4 private SMU tool table{Environment.NewLine}" +
+                        $"Version 0x{toolTableSnapshot.Version:X8}, layout {toolTableSnapshot.Layout}, " +
+                        $"GPU/MC 0x{toolTableSnapshot.GpuAddress:X}, " +
+                        $"framebuffer [0x{toolTableSnapshot.FramebufferBase:X}, " +
+                        $"0x{toolTableSnapshot.FramebufferTop:X}){Environment.NewLine}" +
+                        FormatRawDump(toolTableSnapshot.Dwords) +
+                        Environment.NewLine + Environment.NewLine +
+                        "RDNA4 public SMU metrics" + Environment.NewLine +
+                        FormatRawDump(raw);
+                    RawDumpExpander.Header = "RDNA4 SMU tool table + public metrics dump";
+                }
                 LastUpdateText.Text =
                     $"{DateTime.Now:HH:mm:ss.fff} · {generation.ToString().ToUpperInvariant()}" +
                     (generation == RadeonGeneration.Rdna2 ? $" {rdna2Layout}" : string.Empty) +
                     (generation == RadeonGeneration.Rdna3 ? $" {rdna3Layout}" : string.Empty) +
-                    $" · {raw.Length} DWORDs";
+                    $" · {combinedReadings.Count} sensors";
 
-                if (!pollingTimer.IsEnabled)
+                if (refreshError is not null)
                 {
-                    SetStatus($"Read {parsed.Count} decoded values.");
+                    SetStatus(
+                        $"Read {combinedReadings.Count} decoded values. Driver refresh failed: {refreshError}",
+                        isError: true);
+                }
+                else if (toolTableError is not null)
+                {
+                    SetStatus(
+                        $"Read {parsed.Count} public values. Effective clocks unavailable: {toolTableError}",
+                        isError: true);
+                }
+                else if (!pollingTimer.IsEnabled)
+                {
+                    SetStatus($"Read {combinedReadings.Count} decoded values.");
                 }
             }
             catch (Exception ex)
@@ -285,7 +447,34 @@ namespace CapFrameX.RadeonMonitor
             }
         }
 
-        private async Task PollAdlPmLogAsync(RadeonDeviceInfo info)
+        private async Task<string?> RefreshPublicMetricsAsync(
+            RadeonDeviceInfo info,
+            RadeonGeneration generation)
+        {
+            if (generation != RadeonGeneration.Rdna4)
+            {
+                return null;
+            }
+
+            try
+            {
+                if (adlPmLogClient is null)
+                {
+                    adlPmLogClient = await Task.Run(() => AdlPmLogClient.Open(info));
+                }
+
+                await Task.Run(adlPmLogClient.RefreshMetrics);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                adlPmLogClient?.Dispose();
+                adlPmLogClient = null;
+                return ex.Message;
+            }
+        }
+
+        private async Task PollAdlPmLogAsync(RadeonDeviceInfo info, RadeonGeneration generation)
         {
             try
             {
@@ -299,30 +488,349 @@ namespace CapFrameX.RadeonMonitor
                     adlPmLogClient.AdapterName;
 
                 AdlPmLogSnapshot snapshot = await Task.Run(adlPmLogClient.ReadMetrics);
-                readings.Clear();
-                foreach (MetricReading reading in snapshot.Readings)
+                List<MetricReading> combinedReadings = new(snapshot.Readings);
+                RadeonToolTableSnapshot? toolTableSnapshot = null;
+                string? toolTableError = null;
+                RadeonToolTableTelemetry? toolTableTelemetry = null;
+                string? toolTableDecodeError = null;
+                Navi21SviSnapshot? sviSnapshot = null;
+                string? sviError = null;
+                string toolTableName = generation switch
                 {
-                    readings.Add(reading);
+                    RadeonGeneration.Rdna3 => "RDNA3",
+                    RadeonGeneration.Rdna4 => "RDNA4",
+                    _ => "Navi21"
+                };
+                bool navi21Supported =
+                    generation == RadeonGeneration.Rdna2 &&
+                    Navi21SviTelemetry.IsSupportedDevice(info.DeviceId);
+                bool toolTableSupported =
+                    (generation == RadeonGeneration.Rdna2 &&
+                        RadeonDeviceClassifier.IsNavi21(info.DeviceId)) ||
+                    (generation == RadeonGeneration.Rdna3 &&
+                        RadeonDeviceClassifier.IsRdna3(info.DeviceId)) ||
+                    (generation == RadeonGeneration.Rdna4 &&
+                        RadeonDeviceClassifier.IsRdna4(info.DeviceId));
+
+                if (toolTableSupported)
+                {
+                    RadeonSmuMonitor currentMonitor = monitor ?? throw new InvalidOperationException(
+                        "The Radeon monitor was closed while reading private SMU telemetry.");
+
+                    try
+                    {
+                        toolTableSnapshot = await Task.Run(currentMonitor.ReadToolTable);
+                        if (navi21Supported)
+                        {
+                            try
+                            {
+                                toolTableTelemetry = Navi21ToolTableParser.Parse(toolTableSnapshot);
+                                combinedReadings = MergeToolTableReadings(
+                                    snapshot.Readings,
+                                    toolTableTelemetry.Readings,
+                                    generation);
+                            }
+                            catch (Exception ex)
+                            {
+                                // Keep raw data for unmapped firmware layouts.
+                                toolTableDecodeError = ex.Message;
+                            }
+                        }
+                        else if (generation == RadeonGeneration.Rdna3)
+                        {
+                            try
+                            {
+                                toolTableTelemetry = Rdna3ToolTableParser.Parse(toolTableSnapshot);
+                                combinedReadings = MergeToolTableReadings(
+                                    snapshot.Readings,
+                                    toolTableTelemetry.Readings,
+                                    generation);
+                            }
+                            catch (Exception ex)
+                            {
+                                // Keep ADL and raw data for unmapped layouts.
+                                toolTableDecodeError = ex.Message;
+                            }
+                        }
+                        else if (generation == RadeonGeneration.Rdna4)
+                        {
+                            try
+                            {
+                                toolTableTelemetry = Rdna4ToolTableParser.Parse(toolTableSnapshot);
+                                lastRdna4ToolTableTelemetry = toolTableTelemetry;
+                                lastRdna4ToolTableVersion = toolTableSnapshot.Version;
+                                combinedReadings = MergeToolTableReadings(
+                                    snapshot.Readings,
+                                    toolTableTelemetry.Readings,
+                                    generation);
+                            }
+                            catch (Exception ex)
+                            {
+                                // Keep ADL and raw data for unmapped layouts.
+                                toolTableDecodeError = ex.Message;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        toolTableError = ex.Message;
+                    }
                 }
 
-                RawDumpTextBox.Text = snapshot.SensorDump;
-                RawDumpExpander.Header = "ADL PMLog sensor dump";
-                LastUpdateText.Text =
-                    $"{DateTime.Now:HH:mm:ss.fff} · RDNA3 · AMD ADL PMLog · {snapshot.Readings.Count} sensors";
+                if (generation == RadeonGeneration.Rdna4 &&
+                    toolTableSnapshot is null &&
+                    lastRdna4ToolTableTelemetry is not null)
+                {
+                    toolTableTelemetry = MarkTelemetryUnavailable(lastRdna4ToolTableTelemetry);
+                    combinedReadings = MergeToolTableReadings(
+                        snapshot.Readings,
+                        toolTableTelemetry.Readings,
+                        generation);
+                }
+
+                if (navi21Supported)
+                {
+                    RadeonSmuMonitor currentMonitor = monitor ?? throw new InvalidOperationException(
+                        "The Radeon monitor was closed while reading Navi21 SVI telemetry.");
+                    try
+                    {
+                        uint[] sviRegisters = await Task.Run(currentMonitor.ReadNavi21SviTelemetry);
+                        sviSnapshot = Navi21SviTelemetry.Parse(sviRegisters, info);
+                        if (toolTableTelemetry is null)
+                        {
+                            combinedReadings.AddRange(sviSnapshot.Readings);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Optional telemetry must not disable ADL.
+                        sviError = ex.Message;
+                    }
+                }
+
+                uint? displayedToolTableVersion = toolTableSnapshot?.Version ??
+                    (generation == RadeonGeneration.Rdna4 ? lastRdna4ToolTableVersion : null);
+                string statisticsSource = toolTableTelemetry is not null
+                    ? $"ADL+{toolTableName}Tool:{displayedToolTableVersion:X8}"
+                    : navi21Supported
+                        ? "ADL+Navi21SVI"
+                        : "ADL";
+                UpdateReadings(combinedReadings, $"{statisticsSource}:{generation}");
+
+                StringBuilder rawDump = new();
+                if (toolTableSnapshot is not null)
+                {
+                    rawDump.AppendLine($"{toolTableName} private SMU tool table");
+                    rawDump.AppendLine(
+                        $"Version 0x{toolTableSnapshot.Version:X8}, layout {toolTableSnapshot.Layout}, " +
+                        $"GPU/MC 0x{toolTableSnapshot.GpuAddress:X}, " +
+                        $"framebuffer [0x{toolTableSnapshot.FramebufferBase:X}, " +
+                        $"0x{toolTableSnapshot.FramebufferTop:X})");
+                    rawDump.AppendLine(FormatRawDump(toolTableSnapshot.Dwords));
+                    if (toolTableDecodeError is not null)
+                    {
+                        rawDump.AppendLine();
+                        rawDump.Append("Sensor decoding unavailable: ");
+                        rawDump.AppendLine(toolTableDecodeError);
+                    }
+                    rawDump.AppendLine();
+                    rawDump.AppendLine();
+                }
+                else if (toolTableError is not null)
+                {
+                    rawDump.Append($"{toolTableName} private SMU tool table unavailable: ");
+                    rawDump.AppendLine(toolTableError);
+                    rawDump.AppendLine();
+                }
+
+                rawDump.Append(snapshot.SensorDump);
+                if (sviSnapshot is not null)
+                {
+                    rawDump.AppendLine();
+                    rawDump.AppendLine();
+                    rawDump.Append(sviSnapshot.RegisterDump);
+                    RawDumpExpander.Header = toolTableSnapshot is null
+                        ? "ADL PMLog + Navi21 SVI sensor dump"
+                        : "Navi21 SMU tool table + ADL/SVI dump";
+
+                    string calibration = sviSnapshot.IsCurrentCalibrated
+                        ? $"calibrated ({sviSnapshot.CalibrationProfileName})"
+                        : "uncalibrated physical-plane voltages";
+                    DeviceInfoText.Text += $" · direct Navi21 SVI {calibration}";
+                    LastUpdateText.Text =
+                        $"{DateTime.Now:HH:mm:ss.fff} · {generation.ToString().ToUpperInvariant()} · " +
+                        $"{snapshot.Readings.Count} ADL + {sviSnapshot.Readings.Count} SVI sensors";
+                }
+                else
+                {
+                    RawDumpExpander.Header = toolTableSnapshot is null
+                        ? "ADL PMLog sensor dump"
+                        : $"{toolTableName} SMU tool table + ADL PMLog dump";
+                    LastUpdateText.Text =
+                        $"{DateTime.Now:HH:mm:ss.fff} · {generation.ToString().ToUpperInvariant()} · " +
+                        $"AMD ADL PMLog · {snapshot.Readings.Count} sensors" +
+                        (toolTableSnapshot is null
+                            ? string.Empty
+                            : $" · raw SMU table 0x{toolTableSnapshot.Version:X8}");
+
+                    if (sviError is not null)
+                    {
+                        rawDump.AppendLine();
+                        rawDump.AppendLine();
+                        rawDump.Append("Navi21 SVI telemetry unavailable: ");
+                        rawDump.Append(sviError);
+                    }
+                }
+
+                if (toolTableTelemetry is not null)
+                {
+                    DeviceInfoText.Text =
+                        $"{FormatDeviceInfo(info)} \u00B7 ADL PMLog adapter {adlPmLogClient.AdapterIndex}: " +
+                        $"{adlPmLogClient.AdapterName} \u00B7 {toolTableName} SMU table " +
+                        $"0x{displayedToolTableVersion:X8}";
+                    LastUpdateText.Text =
+                        $"{DateTime.Now:HH:mm:ss.fff} \u00B7 {generation.ToString().ToUpperInvariant()} \u00B7 " +
+                        $"{toolTableTelemetry.Readings.Count} SMU table + " +
+                        $"{combinedReadings.Count - toolTableTelemetry.Readings.Count} ADL sensors";
+                }
+                else if (toolTableSnapshot is not null)
+                {
+                    DeviceInfoText.Text =
+                        $"{FormatDeviceInfo(info)} \u00B7 ADL PMLog adapter {adlPmLogClient.AdapterIndex}: " +
+                        $"{adlPmLogClient.AdapterName} \u00B7 {toolTableName} SMU table " +
+                        $"0x{toolTableSnapshot.Version:X8}";
+                }
+
+                RawDumpTextBox.Text = rawDump.ToString();
 
                 if (!pollingTimer.IsEnabled)
                 {
-                    SetStatus(
-                        $"Read {snapshot.Readings.Count} AMD ADL PMLog values; the raw SMU table address is unavailable.");
+                    if (toolTableTelemetry is not null)
+                    {
+                        string invalidDescription = toolTableTelemetry.InvalidValueCount == 0
+                            ? string.Empty
+                            : $" {toolTableTelemetry.InvalidValueCount} temporarily invalid rows remain visible as unavailable.";
+                        SetStatus(
+                            $"Read {toolTableTelemetry.Readings.Count} mapped values from {toolTableName} SMU table " +
+                            $"0x{displayedToolTableVersion:X8} and retained " +
+                            $"{combinedReadings.Count - toolTableTelemetry.Readings.Count} complementary ADL values." +
+                            invalidDescription);
+                    }
+                    else if (sviSnapshot is not null)
+                    {
+                        string sviDescription = sviSnapshot.IsCurrentCalibrated
+                            ? "voltage, calibrated current, and derived rail power"
+                            : "physical-plane voltage";
+                        string tableDescription = DescribeToolTableStatus(
+                            toolTableSnapshot,
+                            toolTableError,
+                            toolTableDecodeError);
+                        SetStatus(
+                            $"Read {snapshot.Readings.Count} ADL PMLog and {sviSnapshot.Readings.Count} direct " +
+                            $"Navi21 SVI values ({sviDescription})." + tableDescription);
+                    }
+                    else
+                    {
+                        string suffix = sviError is null ? string.Empty : $" Navi21 SVI failed: {sviError}";
+                        string tableSuffix = DescribeToolTableStatus(
+                            toolTableSnapshot,
+                            toolTableError,
+                            toolTableDecodeError);
+                        SetStatus(
+                            $"Read {snapshot.Readings.Count} AMD ADL PMLog values." +
+                            tableSuffix + suffix);
+                    }
                 }
             }
             catch (Exception ex)
             {
                 throw new InvalidOperationException(
-                    "The Radeon driver does not expose the raw RDNA3 table address, and the ADL PMLog fallback failed: " +
+                    $"The Radeon driver does not expose the raw {generation.ToString().ToUpperInvariant()} " +
+                    "table address, and the ADL PMLog fallback failed: " +
                     ex.Message,
                     ex);
             }
+        }
+
+        private static bool SupportsAdlPmLogFallback(RadeonGeneration generation)
+        {
+            return generation is RadeonGeneration.Rdna2 or RadeonGeneration.Rdna3 or RadeonGeneration.Rdna4;
+        }
+
+        private static List<MetricReading> MergeToolTableReadings(
+            IReadOnlyList<MetricReading> adlReadings,
+            IReadOnlyList<MetricReading> toolTableReadings,
+            RadeonGeneration generation)
+        {
+            IReadOnlySet<(string Group, string Name)> supersededMetrics =
+                generation switch
+                {
+                    RadeonGeneration.Rdna3 => AdlMetricsSupersededByRdna3ToolTable,
+                    RadeonGeneration.Rdna4 => AdlMetricsSupersededByRdna4ToolTable,
+                    _ => AdlMetricsSupersededByNavi21ToolTable
+                };
+            List<MetricReading> result = new(toolTableReadings.Count + adlReadings.Count);
+            result.AddRange(toolTableReadings);
+            result.AddRange(adlReadings.Where(reading =>
+                !supersededMetrics.Contains((reading.Group, reading.Name))));
+            return result;
+        }
+
+        private static RadeonToolTableTelemetry MarkTelemetryUnavailable(
+            RadeonToolTableTelemetry telemetry)
+        {
+            MetricReading[] readings = telemetry.Readings
+                .Select(reading => reading with
+                {
+                    CurrentValue = "\u2014",
+                    Raw = "unavailable",
+                    NumericValue = null
+                })
+                .ToArray();
+            return new RadeonToolTableTelemetry(readings, readings.Length);
+        }
+
+        private static string DescribeToolTableStatus(
+            RadeonToolTableSnapshot? snapshot,
+            string? readError,
+            string? decodeError)
+        {
+            if (snapshot is not null)
+            {
+                return decodeError is null
+                    ? $" Private SMU table 0x{snapshot.Version:X8}, layout {snapshot.Layout}, was read successfully."
+                    : $" Private SMU table 0x{snapshot.Version:X8} was read, but decoding is unavailable: {decodeError}";
+            }
+
+            return readError is null ? string.Empty : $" Private SMU table failed: {readError}";
+        }
+
+        private void UpdateReadings(IReadOnlyList<MetricReading> samples, string scope)
+        {
+            if (!string.Equals(statisticsScope, scope, StringComparison.Ordinal))
+            {
+                statisticsTracker.Reset();
+                statisticsScope = scope;
+            }
+
+            IReadOnlyList<MetricReading> updatedReadings = statisticsTracker.Update(samples);
+            readings.Clear();
+            foreach (MetricReading reading in updatedReadings)
+            {
+                readings.Add(reading);
+            }
+
+            ResetStatisticsButton.IsEnabled = readings.Count > 0;
+        }
+
+        private void ResetStatistics()
+        {
+            statisticsTracker.Reset();
+            lastRdna4ToolTableTelemetry = null;
+            lastRdna4ToolTableVersion = null;
+            statisticsScope = null;
+            readings.Clear();
+            ResetStatisticsButton.IsEnabled = false;
         }
 
         private RadeonGeneration? ResolveGeneration(bool throwIfUnknown)
@@ -435,6 +943,7 @@ namespace CapFrameX.RadeonMonitor
                 ReadOnceButton.IsEnabled = false;
                 StartButton.IsEnabled = false;
                 StopButton.IsEnabled = false;
+                ResetStatisticsButton.IsEnabled = false;
             }
             else if (monitor is not null)
             {
@@ -522,7 +1031,7 @@ namespace CapFrameX.RadeonMonitor
             monitor?.Dispose();
             monitor = null;
             deviceInfo = null;
-            readings.Clear();
+            ResetStatistics();
             RawDumpTextBox.Clear();
             RawDumpExpander.Header = "Raw DWORD dump";
             LastUpdateText.Text = string.Empty;

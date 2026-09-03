@@ -4,13 +4,20 @@ namespace CapFrameX.RadeonMonitor
 {
     internal sealed class RadeonSmuMonitor : IDisposable
     {
-        public const ulong RequiredModuleAbi = 2;
+        public const ulong RequiredModuleAbi = 5;
 
-        private const int DeviceInfoEntryCount = 19;
+        private const int DeviceInfoEntryCount = 21;
         private const int Rdna2DwordCount = 41;
         private const int Smu13_0_0DwordCount = 61;
         private const int Smu13_0_7DwordCount = 60;
         private const int Rdna4DwordCount = 65;
+        private const int Navi21SviDwordCount = 4;
+        private const int RdnaToolTableQwordCount = 0x2000 / sizeof(ulong);
+        private const int RdnaToolMetadataQwordCount = 4;
+        private const int RdnaToolOutputQwordCount =
+            RdnaToolMetadataQwordCount + RdnaToolTableQwordCount;
+        private const int HResultDeviceNotReady = unchecked((int)0x80070015);
+        private const int HResultAccessDenied = unchecked((int)0x80070005);
 
         private readonly PawnIoClient client;
 
@@ -21,7 +28,8 @@ namespace CapFrameX.RadeonMonitor
 
         public RadeonDeviceInfo GetDeviceInfo()
         {
-            ulong[] values = client.Execute("ioctl_get_device_info", DeviceInfoEntryCount);
+            ulong[] values = PciBusSynchronization.Execute(() =>
+                client.Execute("ioctl_get_device_info", DeviceInfoEntryCount));
             RadeonDeviceInfo info = new(
                 ModuleAbi: values[0],
                 Bus: checked((byte)values[1]),
@@ -42,6 +50,8 @@ namespace CapFrameX.RadeonMonitor
                 Smu13_0_0DwordCount: checked((int)values[16]),
                 Smu13_0_7DwordCount: checked((int)values[17]),
                 Rdna4DwordCount: checked((int)values[18]),
+                Navi21SviDwordCount: checked((int)values[19]),
+                RdnaToolTableQwordCount: checked((int)values[20]),
                 PawnIoLibraryVersion: client.LibraryVersion);
 
             if (info.ModuleAbi < RequiredModuleAbi)
@@ -53,7 +63,9 @@ namespace CapFrameX.RadeonMonitor
             if (info.Rdna2DwordCount != Rdna2DwordCount ||
                 info.Smu13_0_0DwordCount != Smu13_0_0DwordCount ||
                 info.Smu13_0_7DwordCount != Smu13_0_7DwordCount ||
-                info.Rdna4DwordCount != Rdna4DwordCount)
+                info.Rdna4DwordCount != Rdna4DwordCount ||
+                info.Navi21SviDwordCount != Navi21SviDwordCount ||
+                info.RdnaToolTableQwordCount != RdnaToolTableQwordCount)
             {
                 throw new InvalidDataException(
                     "The RadeonSMU metrics sizes do not match this test application's ABI.");
@@ -63,6 +75,27 @@ namespace CapFrameX.RadeonMonitor
         }
 
         public uint[] ReadMetrics(RadeonGeneration generation, Rdna3MetricsLayout rdna3Layout)
+        {
+            PawnIoExecutionResult execution = ExecuteMetricsRead(generation, rdna3Layout);
+            PawnIoClient.ThrowIfFailed(execution.HResult, $"execute {execution.FunctionName}");
+            return ConvertToDwords(execution.Output);
+        }
+
+        public uint[]? TryReadMetrics(RadeonGeneration generation, Rdna3MetricsLayout rdna3Layout)
+        {
+            PawnIoExecutionResult execution = ExecuteMetricsRead(generation, rdna3Layout);
+            if (!execution.Succeeded && IsRawMetricsAddressUnavailable(execution.HResult))
+            {
+                return null;
+            }
+
+            PawnIoClient.ThrowIfFailed(execution.HResult, $"execute {execution.FunctionName}");
+            return ConvertToDwords(execution.Output);
+        }
+
+        private PawnIoExecutionResult ExecuteMetricsRead(
+            RadeonGeneration generation,
+            Rdna3MetricsLayout rdna3Layout)
         {
             (string functionName, int dwordCount) = generation switch
             {
@@ -78,7 +111,12 @@ namespace CapFrameX.RadeonMonitor
                 _ => throw new ArgumentOutOfRangeException(nameof(generation))
             };
 
-            ulong[] values = client.Execute(functionName, dwordCount);
+            return PciBusSynchronization.Execute(() =>
+                client.ExecuteWithStatus(functionName, dwordCount));
+        }
+
+        private static uint[] ConvertToDwords(ulong[] values)
+        {
             uint[] result = new uint[values.Length];
             for (int i = 0; i < values.Length; i++)
             {
@@ -86,6 +124,47 @@ namespace CapFrameX.RadeonMonitor
             }
 
             return result;
+        }
+
+        public uint[] ReadNavi21SviTelemetry()
+        {
+            ulong[] values = PciBusSynchronization.Execute(() =>
+                client.Execute("ioctl_read_navi21_svi", Navi21SviDwordCount));
+            uint[] result = new uint[values.Length];
+            for (int i = 0; i < values.Length; i++)
+            {
+                result[i] = checked((uint)values[i]);
+            }
+
+            return result;
+        }
+
+        private static bool IsRawMetricsAddressUnavailable(int hResult)
+        {
+            return hResult is HResultDeviceNotReady or HResultAccessDenied;
+        }
+
+        public RadeonToolTableSnapshot ReadToolTable()
+        {
+            ulong[] values = PciBusSynchronization.Execute(() =>
+                client.Execute(
+                    "ioctl_read_rdna_tool_table",
+                    RdnaToolOutputQwordCount));
+
+            uint[] dwords = new uint[RdnaToolTableQwordCount * 2];
+            for (int i = 0; i < RdnaToolTableQwordCount; i++)
+            {
+                ulong value = values[RdnaToolMetadataQwordCount + i];
+                dwords[i * 2] = (uint)value;
+                dwords[i * 2 + 1] = (uint)(value >> 32);
+            }
+
+            return new RadeonToolTableSnapshot(
+                Version: checked((uint)values[0]),
+                GpuAddress: values[1],
+                FramebufferBase: values[2],
+                FramebufferTop: values[3],
+                Dwords: dwords);
         }
 
         public void Dispose()
@@ -114,11 +193,37 @@ namespace CapFrameX.RadeonMonitor
         int Smu13_0_0DwordCount,
         int Smu13_0_7DwordCount,
         int Rdna4DwordCount,
+        int Navi21SviDwordCount,
+        int RdnaToolTableQwordCount,
         uint PawnIoLibraryVersion)
     {
         public string PciAddress => $"{Bus:X2}:{Device:X2}.{Function}";
 
         public string PawnIoVersion =>
             $"{PawnIoLibraryVersion >> 16}.{(PawnIoLibraryVersion >> 8) & 0xFF}.{PawnIoLibraryVersion & 0xFF}";
+    }
+
+    internal sealed record RadeonToolTableSnapshot(
+        uint Version,
+        ulong GpuAddress,
+        ulong FramebufferBase,
+        ulong FramebufferTop,
+        uint[] Dwords)
+    {
+        public int Layout => ((Version >> 16) & 0xFFFF) switch
+        {
+            0x0000 => 1,
+            0x0027 => 2,
+            0x0028 => 3,
+            0x0029 => 4,
+            0x0034 => 5,
+            0x003A => 6,
+            0x004E => 7,
+            0x0066 => 8,
+            0x0044 => 9,
+            0x0055 => 10,
+            0x0056 => 11,
+            _ => 0
+        };
     }
 }

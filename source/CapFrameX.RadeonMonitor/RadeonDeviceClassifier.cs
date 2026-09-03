@@ -4,14 +4,12 @@ namespace CapFrameX.RadeonMonitor
     {
         public static RadeonGeneration? DetectGeneration(ushort deviceId)
         {
-            if (IsInRange(deviceId, 0x7550, 0x756F) ||
-                IsInRange(deviceId, 0x7590, 0x75AF))
+            if (IsRdna4(deviceId))
             {
                 return RadeonGeneration.Rdna4;
             }
 
-            if (IsInRange(deviceId, 0x7440, 0x745F) ||
-                IsInRange(deviceId, 0x7470, 0x749F))
+            if (IsRdna3(deviceId))
             {
                 return RadeonGeneration.Rdna3;
             }
@@ -27,8 +25,7 @@ namespace CapFrameX.RadeonMonitor
 
         public static Rdna2MetricsLayout DetectRdna2Layout(ushort deviceId)
         {
-            // Current Navi 21 firmware uses V3. Navi 22/23/24 use V2.
-            // The UI keeps all four layouts selectable for old firmware.
+            // Navi 21 defaults to V3; other RDNA2 devices default to V2.
             return IsInRange(deviceId, 0x73A0, 0x73BF)
                 ? Rdna2MetricsLayout.V3
                 : Rdna2MetricsLayout.V2;
@@ -36,11 +33,27 @@ namespace CapFrameX.RadeonMonitor
 
         public static Rdna3MetricsLayout DetectRdna3Layout(ushort deviceId)
         {
-            // Navi 33 uses the SMU 13.0.7 interface. Navi 31 (13.0.0) and
-            // Navi 32 (13.0.10) share the 13.0.0 metrics layout in amdgpu.
+            // Navi 33 uses 13.0.7; Navi 31/32 share the 13.0.0 layout.
             return IsInRange(deviceId, 0x7480, 0x749F)
                 ? Rdna3MetricsLayout.Smu13_0_7
                 : Rdna3MetricsLayout.Smu13_0_0;
+        }
+
+        public static bool IsNavi21(ushort deviceId)
+        {
+            return IsInRange(deviceId, 0x73A0, 0x73BF);
+        }
+
+        public static bool IsRdna3(ushort deviceId)
+        {
+            return IsInRange(deviceId, 0x7440, 0x746F) ||
+                IsInRange(deviceId, 0x7470, 0x749F);
+        }
+
+        public static bool IsRdna4(ushort deviceId)
+        {
+            return IsInRange(deviceId, 0x7550, 0x756F) ||
+                IsInRange(deviceId, 0x7590, 0x75AF);
         }
 
         private static bool IsInRange(ushort value, ushort minimum, ushort maximum)

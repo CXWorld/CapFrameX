@@ -68,23 +68,7 @@ namespace CapFrameX.RadeonMonitor
         {
             lock (syncRoot)
             {
-                ObjectDisposedException.ThrowIf(context == IntPtr.Zero, this);
-
-                AdlNative.PmLogDataOutput output = new()
-                {
-                    Size = Marshal.SizeOf<AdlNative.PmLogDataOutput>(),
-                    Sensors = new AdlNative.SingleSensorData[SensorCount]
-                };
-
-                ThrowIfFailed(
-                    AdlNative.ADL2_New_QueryPMLogData_Get(context, AdapterIndex, ref output),
-                    nameof(AdlNative.ADL2_New_QueryPMLogData_Get));
-
-                if (output.Sensors is null || output.Sensors.Length != SensorCount)
-                {
-                    throw new InvalidOperationException(
-                        $"ADL returned {output.Sensors?.Length ?? 0} PMLog sensor slots; expected {SensorCount}.");
-                }
+                AdlNative.PmLogDataOutput output = QueryMetrics();
 
                 List<MetricReading> readings = new();
                 List<AdlPmLogValue> values = new();
@@ -112,6 +96,14 @@ namespace CapFrameX.RadeonMonitor
                     AdapterName,
                     readings,
                     FormatSensorDump(values));
+            }
+        }
+
+        public void RefreshMetrics()
+        {
+            lock (syncRoot)
+            {
+                _ = QueryMetrics();
             }
         }
 
@@ -182,6 +174,28 @@ namespace CapFrameX.RadeonMonitor
             }
         }
 
+        private AdlNative.PmLogDataOutput QueryMetrics()
+        {
+            ObjectDisposedException.ThrowIf(context == IntPtr.Zero, this);
+
+            AdlNative.PmLogDataOutput output = new()
+            {
+                Size = Marshal.SizeOf<AdlNative.PmLogDataOutput>(),
+                Sensors = new AdlNative.SingleSensorData[SensorCount]
+            };
+            ThrowIfFailed(
+                AdlNative.ADL2_New_QueryPMLogData_Get(context, AdapterIndex, ref output),
+                nameof(AdlNative.ADL2_New_QueryPMLogData_Get));
+
+            if (output.Sensors is null || output.Sensors.Length != SensorCount)
+            {
+                throw new InvalidOperationException(
+                    $"ADL returned {output.Sensors?.Length ?? 0} PMLog sensor slots; expected {SensorCount}.");
+            }
+
+            return output;
+        }
+
         private static MetricReading CreateReading(SensorDescriptor descriptor, int rawValue)
         {
             uint unsignedRaw = unchecked((uint)rawValue);
@@ -196,7 +210,22 @@ namespace CapFrameX.RadeonMonitor
                 _ => rawValue.ToString(CultureInfo.InvariantCulture)
             };
 
-            return new MetricReading(descriptor.Group, descriptor.Name, value, descriptor.Unit, raw);
+            double? numericValue = descriptor.Kind == SensorValueKind.Hex ? null : rawValue;
+            MetricValueKind valueKind = descriptor.Kind switch
+            {
+                SensorValueKind.PcieGeneration => MetricValueKind.PcieGeneration,
+                SensorValueKind.PcieWidth => MetricValueKind.PcieWidth,
+                _ => MetricValueKind.Numeric
+            };
+
+            return new MetricReading(
+                descriptor.Group,
+                descriptor.Name,
+                value,
+                descriptor.Unit,
+                raw,
+                numericValue,
+                ValueKind: valueKind);
         }
 
         private static string FormatSensorDump(IReadOnlyList<AdlPmLogValue> values)

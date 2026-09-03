@@ -41,13 +41,14 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Margin="0,0,0,12">
             <TextBlock FontSize="22" FontWeight="SemiBold" Text="Radeon SMU Monitoring Test" />
             <TextBlock Margin="0,3,0,0"
                        Foreground="#9AA3B2"
-                       Text="Raw SMU metrics via PawnIO with AMD ADL PMLog fallback for RDNA3" />
+                       Text="Raw SMU metrics via PawnIO with ADL PMLog and direct Navi21 SVI fallback" />
         </StackPanel>
 
         <GroupBox Grid.Row="1" Header="PawnIO module" Margin="0,0,0,10">
@@ -90,9 +91,13 @@
                               Margin="0,0,18,0"
                               SelectionChanged="GenerationComboBox_SelectionChanged" />
                     <TextBlock Margin="0,0,6,0" VerticalAlignment="Center" Text="RDNA2 layout:" />
-                    <ComboBox x:Name="Rdna2LayoutComboBox" Margin="0,0,18,0" />
+                    <ComboBox x:Name="Rdna2LayoutComboBox"
+                              Margin="0,0,18,0"
+                              SelectionChanged="LayoutComboBox_SelectionChanged" />
                     <TextBlock Margin="0,0,6,0" VerticalAlignment="Center" Text="RDNA3 layout:" />
-                    <ComboBox x:Name="Rdna3LayoutComboBox" Margin="0,0,18,0" />
+                    <ComboBox x:Name="Rdna3LayoutComboBox"
+                              Margin="0,0,18,0"
+                              SelectionChanged="LayoutComboBox_SelectionChanged" />
                     <TextBlock Margin="0,0,6,0" VerticalAlignment="Center" Text="Interval:" />
                     <TextBox x:Name="IntervalTextBox"
                              Width="72"
@@ -110,7 +115,6 @@
                             IsEnabled="False"
                             Click="StartButton_Click" />
                     <Button x:Name="StopButton"
-                            Margin="0"
                             Content="Stop"
                             IsEnabled="False"
                             Click="StopButton_Click" />
@@ -156,16 +160,27 @@
                 </Style>
             </DataGrid.CellStyle>
             <DataGrid.Columns>
-                <DataGridTextColumn Width="145" Binding="{Binding Group}" Header="Group" />
-                <DataGridTextColumn Width="*" MinWidth="260" Binding="{Binding Name}" Header="Metric" />
-                <DataGridTextColumn Width="130" Binding="{Binding Value}" Header="Value" />
-                <DataGridTextColumn Width="85" Binding="{Binding Unit}" Header="Unit" />
-                <DataGridTextColumn Width="150" Binding="{Binding Raw}" Header="Raw" />
+                <DataGridTextColumn Width="130" Binding="{Binding Group}" Header="Group" />
+                <DataGridTextColumn Width="*" MinWidth="220" Binding="{Binding Name}" Header="Metric" />
+                <DataGridTextColumn Width="100" Binding="{Binding CurrentValue}" Header="Current" />
+                <DataGridTextColumn Width="100" Binding="{Binding MinimumValue}" Header="Minimum" />
+                <DataGridTextColumn Width="100" Binding="{Binding MaximumValue}" Header="Maximum" />
+                <DataGridTextColumn Width="100" Binding="{Binding AverageValue}" Header="Average" />
+                <DataGridTextColumn Width="70" Binding="{Binding Unit}" Header="Unit" />
+                <DataGridTextColumn Width="120" Binding="{Binding Raw}" Header="Raw" />
             </DataGrid.Columns>
         </DataGrid>
 
+        <Button x:Name="ResetStatisticsButton"
+                Grid.Row="4"
+                Margin="0,8,0,0"
+                HorizontalAlignment="Right"
+                Content="Reset stats"
+                IsEnabled="False"
+                Click="ResetStatisticsButton_Click" />
+
         <Expander x:Name="RawDumpExpander"
-                  Grid.Row="4"
+                  Grid.Row="5"
                   Margin="0,8,0,0"
                   Header="Raw DWORD dump"
                   Foreground="#D8DEE9"
@@ -182,7 +197,7 @@
                      VerticalScrollBarVisibility="Auto" />
         </Expander>
 
-        <Grid Grid.Row="5" Margin="0,10,0,0">
+        <Grid Grid.Row="6" Margin="0,10,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />

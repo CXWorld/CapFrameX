@@ -33,9 +33,9 @@ namespace CapFrameX.RadeonMonitor
 
             try
             {
-                ThrowIfFailed(
-                    NativeMethods.pawnio_load(handle, module, (nuint)module.Length),
-                    "load RadeonSMU module");
+                int loadResult = PciBusSynchronization.Execute(() =>
+                    NativeMethods.pawnio_load(handle, module, (nuint)module.Length));
+                ThrowIfFailed(loadResult, "load RadeonSMU module");
                 return new PawnIoClient(handle, version);
             }
             catch
@@ -49,9 +49,7 @@ namespace CapFrameX.RadeonMonitor
         {
             byte[] module = File.ReadAllBytes(modulePath);
 
-            // Raw AMX files start with their image size followed by the AMX
-            // magic. pawnio_load expects a signature-length DWORD in front of
-            // that image, even when the unrestricted driver ignores signatures.
+            // pawnio_load expects a signature-length DWORD before raw AMX images.
             if (module.Length >= 6 &&
                 BitConverter.ToUInt32(module, 0) == (uint)module.Length &&
                 module[4] == 0xE1 &&
@@ -72,6 +70,21 @@ namespace CapFrameX.RadeonMonitor
 
         public ulong[] Execute(string functionName, ulong[] input, int outputCount)
         {
+            PawnIoExecutionResult result = ExecuteWithStatus(functionName, input, outputCount);
+            ThrowIfFailed(result.HResult, $"execute {result.FunctionName}");
+            return result.Output;
+        }
+
+        public PawnIoExecutionResult ExecuteWithStatus(string functionName, int outputCount)
+        {
+            return ExecuteWithStatus(functionName, Array.Empty<ulong>(), outputCount);
+        }
+
+        public PawnIoExecutionResult ExecuteWithStatus(
+            string functionName,
+            ulong[] input,
+            int outputCount)
+        {
             ObjectDisposedException.ThrowIf(disposed, this);
             ArgumentException.ThrowIfNullOrWhiteSpace(functionName);
             ArgumentNullException.ThrowIfNull(input);
@@ -80,25 +93,23 @@ namespace CapFrameX.RadeonMonitor
             ulong[] output = new ulong[outputCount];
             lock (syncRoot)
             {
-                ThrowIfFailed(
-                    NativeMethods.pawnio_execute(
-                        handle,
-                        functionName,
-                        input,
-                        (nuint)input.Length,
-                        output,
-                        (nuint)output.Length,
-                        out nuint returnSize),
-                    $"execute {functionName}");
+                int hResult = NativeMethods.pawnio_execute(
+                    handle,
+                    functionName,
+                    input,
+                    (nuint)input.Length,
+                    output,
+                    (nuint)output.Length,
+                    out nuint returnSize);
 
-                if (returnSize != (nuint)outputCount)
+                if (hResult >= 0 && returnSize != (nuint)outputCount)
                 {
                     throw new InvalidDataException(
                         $"{functionName} returned {returnSize} entries; {outputCount} were expected.");
                 }
-            }
 
-            return output;
+                return new PawnIoExecutionResult(functionName, hResult, output);
+            }
         }
 
         public void Dispose()
@@ -120,7 +131,7 @@ namespace CapFrameX.RadeonMonitor
             }
         }
 
-        private static void ThrowIfFailed(int hResult, string operation)
+        internal static void ThrowIfFailed(int hResult, string operation)
         {
             if (hResult >= 0)
             {
@@ -165,6 +176,14 @@ namespace CapFrameX.RadeonMonitor
             [DllImport(LibraryName, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
             internal static extern int pawnio_close(IntPtr handle);
         }
+    }
+
+    internal readonly record struct PawnIoExecutionResult(
+        string FunctionName,
+        int HResult,
+        ulong[] Output)
+    {
+        public bool Succeeded => HResult >= 0;
     }
 
     internal sealed class PawnIoException : Exception
