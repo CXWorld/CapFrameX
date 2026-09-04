@@ -54,7 +54,7 @@ internal class NvidiaGroup : IGroup
         IDictionary<NvApi.NvPhysicalGpuHandle, List<NvDisplayHandleInfo>> displayHandles = new Dictionary<NvApi.NvPhysicalGpuHandle, List<NvDisplayHandleInfo>>();
         if (NvApi.NvAPI_EnumNvidiaDisplayHandle != null && NvApi.NvAPI_GetPhysicalGPUsFromDisplay != null)
         {
-            Log.Logger.Information("NvidiaGroup: Starting display handle enumeration");
+            Log.Logger.Debug("NvidiaGroup: Starting display handle enumeration");
             status = NvApi.NvStatus.OK;
             int i = 0;
             while (status == NvApi.NvStatus.OK)
@@ -64,7 +64,7 @@ internal class NvidiaGroup : IGroup
 
                 if (status == NvApi.NvStatus.OK)
                 {
-                    Log.Logger.Information("NvidiaGroup: Found display handle at index {Index}, Handle pointer: {HandlePtr}", i, displayHandle);
+                    Log.Logger.Debug("NvidiaGroup: Found display handle at index {Index}, Handle pointer: {HandlePtr}", i, displayHandle);
 
                     string displayName = null;
                     if (NvApi.NvAPI_GetAssociatedDisplayName != null)
@@ -73,7 +73,7 @@ internal class NvidiaGroup : IGroup
                         if (nameStatus == NvApi.NvStatus.OK)
                         {
                             displayName = associatedDisplayName;
-                            Log.Logger.Information("NvidiaGroup: Display {Index} name: {DisplayName}", i, displayName);
+                            Log.Logger.Debug("NvidiaGroup: Display {Index} name: {DisplayName}", i, displayName);
                         }
                         else
                         {
@@ -89,10 +89,10 @@ internal class NvidiaGroup : IGroup
                     var gpuFromDisplayStatus = NvApi.NvAPI_GetPhysicalGPUsFromDisplay(displayHandle, handlesFromDisplay, out uint countFromDisplay);
                     if (gpuFromDisplayStatus == NvApi.NvStatus.OK)
                     {
-                        Log.Logger.Information("NvidiaGroup: Display {Index} is associated with {GpuCount} GPU(s)", i, countFromDisplay);
+                        Log.Logger.Debug("NvidiaGroup: Display {Index} is associated with {GpuCount} GPU(s)", i, countFromDisplay);
                         for (int j = 0; j < countFromDisplay; j++)
                         {
-                            Log.Logger.Information("NvidiaGroup: Display {DisplayIndex} -> GPU handle {GpuIndex}: {GpuHandle}", i, j, handlesFromDisplay[j]);
+                            Log.Logger.Debug("NvidiaGroup: Display {DisplayIndex} -> GPU handle {GpuIndex}: {GpuHandle}", i, j, handlesFromDisplay[j]);
                             if (!displayHandles.TryGetValue(handlesFromDisplay[j], out List<NvDisplayHandleInfo> handlesForGpu))
                             {
                                 handlesForGpu = [];
@@ -114,7 +114,7 @@ internal class NvidiaGroup : IGroup
 
                 i++;
             }
-            Log.Logger.Information("NvidiaGroup: Display handle enumeration complete. Found {DisplayCount} display handle mappings for {GpuCount} GPU(s)",
+            Log.Logger.Debug("NvidiaGroup: Display handle enumeration complete. Found {DisplayCount} display handle mappings for {GpuCount} GPU(s)",
                 displayHandles.Values.Sum(list => list.Count), displayHandles.Count);
         }
         else
@@ -130,13 +130,13 @@ internal class NvidiaGroup : IGroup
         {
             displayHandles.TryGetValue(handles[i], out List<NvDisplayHandleInfo> displayHandleInfos);
             int displayCount = displayHandleInfos?.Count ?? 0;
-            Log.Logger.Information("NvidiaGroup: Creating NvidiaGpu {GpuIndex} with handle {GpuHandle}, DisplayHandles count: {DisplayCount}",
+            Log.Logger.Debug("NvidiaGroup: Creating NvidiaGpu {GpuIndex} with handle {GpuHandle}, DisplayHandles count: {DisplayCount}",
                 i, handles[i], displayCount);
             if (displayHandleInfos != null)
             {
                 foreach (var displayInfo in displayHandleInfos)
                 {
-                    Log.Logger.Information("NvidiaGroup: GPU {GpuIndex} has display: {DisplayName}, Handle: {DisplayHandle}",
+                    Log.Logger.Debug("NvidiaGroup: GPU {GpuIndex} has display: {DisplayName}, Handle: {DisplayHandle}",
                         i, displayInfo.DisplayName ?? "(no name)", displayInfo.Handle);
                 }
             }

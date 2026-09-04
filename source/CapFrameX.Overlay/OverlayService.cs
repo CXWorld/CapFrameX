@@ -138,8 +138,8 @@ namespace CapFrameX.Overlay
 
             if (configuredOverlayActive && !initialOverlayActive)
             {
-                // A fresh configuration defaults the overlay to on and the renderer to RTSS. Do
-                // not retain an impossible active state when RTSS is absent: all consumers of the
+                // A saved configuration can still select RTSS. Do not retain an impossible
+                // active state when RTSS is absent: all consumers of the
                 // BehaviorSubject (including StateViewModel) must observe the same persisted state.
                 _appConfiguration.IsOverlayActive = false;
                 _logger.LogWarning(

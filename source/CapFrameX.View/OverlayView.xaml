@@ -1148,9 +1148,9 @@
 											  IsChecked="{Binding EnableExtendedOsdLogging, Mode=TwoWay}"
 											  Style="{StaticResource MaterialDesignCheckBox}"/>
 									<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
-											   Text="Enables logs for the DirectX hook, Vulkan layer, and per-present statistics."/>
+											   Text="Enables detailed logs for the DirectX hook, Vulkan layer, native renderer, and per-present statistics."/>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#E0A020" TextWrapping="Wrap"
-											   Text="&#x26A0; Restart CapFrameX after changing this option."/>
+											   Text="&#x26A0; Restart CapFrameX and the game after changing this option."/>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#D95050" TextWrapping="Wrap"
 											   Visibility="{Binding HasExtendedOsdLoggingError, Converter={StaticResource TrueToVisibleConverter}}"
 											   Text="{Binding ExtendedOsdLoggingError}"/>
@@ -1182,7 +1182,7 @@
 
 									<Separator Margin="0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 									<StackPanel Margin="0 8">
-										<RadioButton GroupName="OverlayModeHook" Content="CapFrameX in-game"
+										<RadioButton GroupName="OverlayModeHook" Content="CapFrameX in-game (Experimental)"
 													 IsChecked="{Binding OverlayModeHook, Mode=TwoWay}"
 													 Style="{StaticResource MaterialDesignRadioButton}"/>
 										<TextBlock Margin="26 0 0 0" Style="{StaticResource OsdOptionsDescription}"

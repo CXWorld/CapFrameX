@@ -730,7 +730,8 @@ namespace CapFrameX.Configuration
 
         public bool EnableHookFreeOverlay
         {
-            get => Get<bool>(false);
+            // Use hook-free by default while preserving an existing in-game selection.
+            get => Get<bool>(!EnableHookOverlay);
             set => Set(value);
         }
 

@@ -639,7 +639,7 @@ namespace CapFrameX.Overlay
                         configOverlayEntries.Add(sensorEntry);
                         exactMatchHandled = true;
 
-                        _logger.LogInformation(
+                        _logger.LogDebug(
                             "Sensor '{identifier}' description changed but ID/Type/SortKey match. Reusing sensor; group name resolved to '{groupName}'.",
                             configEntry.Identifier, sensorEntry.GroupName);
                     }
@@ -648,7 +648,7 @@ namespace CapFrameX.Overlay
                         // ID matches but description AND (type or sort key) differ —
                         // sensor indices likely shifted. Don't claim this ID so fallback
                         // paths (StableIdentifier / Description+Type) can find the correct sensor.
-                        _logger.LogInformation(
+                        _logger.LogDebug(
                             "Sensor '{identifier}' ID match rejected (description: '{oldDescription}' -> '{newDescription}', type/sortKey mismatch). Trying fallback paths.",
                             configEntry.Identifier, configEntry.Description, sensorEntry.Description);
                     }
@@ -672,7 +672,7 @@ namespace CapFrameX.Overlay
                         hasChanges = true;
                         matched = true;
 
-                        _logger.LogInformation(
+                        _logger.LogDebug(
                             "Sensor '{oldIdentifier}' migrated to '{newIdentifier}' via StableIdentifier '{stableId}'.",
                             configEntry.Identifier, stableMatchSensor.Identifier, configEntry.StableIdentifier);
                     }
@@ -692,7 +692,7 @@ namespace CapFrameX.Overlay
                             hasChanges = true;
                             matched = true;
 
-                            _logger.LogInformation(
+                            _logger.LogDebug(
                                 "Sensor '{oldIdentifier}' migrated to '{newIdentifier}' via description match '{description}'.",
                                 configEntry.Identifier, fallbackSensor.Identifier, configEntry.Description);
                         }
@@ -702,7 +702,7 @@ namespace CapFrameX.Overlay
                     if (!matched)
                     {
                         hasChanges = true;
-                        _logger.LogInformation(
+                        _logger.LogDebug(
                             "Sensor '{identifier}' ('{description}') no longer available. Removing from overlay config.",
                             configEntry.Identifier, configEntry.Description);
                     }
@@ -735,7 +735,7 @@ namespace CapFrameX.Overlay
                 else
                     configOverlayEntries.Add(sensorEntry);
 
-                _logger.LogInformation(
+                _logger.LogDebug(
                     "New sensor '{identifier}' ('{description}') detected. Added to overlay config (hidden).",
                     sensorEntry.Identifier, sensorEntry.Description);
             }

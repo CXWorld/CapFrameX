@@ -631,8 +631,8 @@ namespace CapFrameX.ViewModel
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.Capture,
                 () =>
                 {
-                    _logger.LogInformation("Hotkey ({captureHotkeyString}) callback triggered. Lock capture service state is {lockCaptureServiceState}.", CaptureHotkeyString, _captureManager.LockCaptureService);
-                    _logger.LogInformation("IsCapturing state: {isCapturingState}", _captureManager.IsCapturing);
+                    _logger.LogDebug("Hotkey ({captureHotkeyString}) callback triggered. Lock capture service state is {lockCaptureServiceState}.", CaptureHotkeyString, _captureManager.LockCaptureService);
+                    _logger.LogDebug("IsCapturing state: {isCapturingState}", _captureManager.IsCapturing);
                     if (!_captureManager.LockCaptureService)
                     {
                         SetCaptureMode();

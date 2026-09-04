@@ -15,7 +15,6 @@ using EmbedIO;
 using Newtonsoft.Json;
 using Prism.DryIoc;
 using Serilog;
-using Serilog.Formatting.Compact;
 using System;
 using System.Configuration;
 using System.Diagnostics;
@@ -744,16 +743,7 @@ namespace CapFrameX
 
             using (StartupPerformanceLogger.Measure("Serilog pipeline creation"))
             {
-                Log.Logger = new LoggerConfiguration()
-                    .MinimumLevel.Debug()
-                    .Enrich.FromLogContext()
-                    .AuditTo.Sink<InMemorySink>()
-                    .WriteTo.File(
-                        path: Path.Combine(logPath, "CapFrameX.log"),
-                        fileSizeLimitBytes: 1024 * 10000, // approx 10MB
-                        rollOnFileSizeLimit: true, // if filesize is reached, it created a new file
-                        retainedFileCountLimit: 10, // it keeps max 10 files
-                        formatter: new CompactJsonFormatter()).CreateLogger();
+                Log.Logger = ApplicationLogging.CreateLogger(logPath);
             }
         }
 
