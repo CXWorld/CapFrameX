@@ -16,6 +16,7 @@ namespace CapFrameX.Test.Overlay
         private Dictionary<string, string> _environment;
         private Dictionary<string, string> _processEnvironment;
         private List<(string name, string value)> _setCalls;
+        private int _environmentNotifications;
 
         [TestInitialize]
         public void Initialize()
@@ -27,6 +28,7 @@ namespace CapFrameX.Test.Overlay
             _environment = new Dictionary<string, string>(StringComparer.Ordinal);
             _processEnvironment = new Dictionary<string, string>(StringComparer.Ordinal);
             _setCalls = new List<(string name, string value)>();
+            _environmentNotifications = 0;
         }
 
         [TestCleanup]
@@ -59,6 +61,7 @@ namespace CapFrameX.Test.Overlay
             Assert.IsTrue(result.Value<bool>("presentStats"));
             Assert.IsTrue(result.Value<bool>("verboseLog"));
             Assert.IsTrue(controller.IsEnabled());
+            Assert.AreEqual(1, _environmentNotifications);
         }
 
         [TestMethod]
@@ -114,14 +117,16 @@ namespace CapFrameX.Test.Overlay
         [DataRow("CFX_VKLAYER_LOG", true)]
         [DataRow("CFX_OSD_PRESENT_STATS", true)]
         [DataRow("CFX_OSD_VERBOSE_LOG", true)]
-        public void IsEnabled_DetectsEachLegacyOrInheritedSwitch(string name, bool inherited)
+        public void IsEnabled_LegacyEnvironmentCannotEnableDefaultLogging(string name, bool inherited)
         {
             (inherited ? _processEnvironment : _environment)[name] = "1";
             ExtendedOsdLoggingController controller = CreateController();
 
-            Assert.IsTrue(controller.IsEnabled());
+            Assert.IsFalse(controller.IsEnabled());
+            Assert.AreEqual(0, _environmentNotifications);
             controller.SetEnabled(false);
             Assert.IsFalse(controller.IsEnabled());
+            Assert.AreEqual(1, _environmentNotifications);
         }
 
         [DataTestMethod]
@@ -143,6 +148,61 @@ namespace CapFrameX.Test.Overlay
             Assert.IsFalse(CreateController().IsEnabled());
             Assert.IsFalse(File.Exists(_debugConfigurationPath));
             Assert.AreEqual(0, _setCalls.Count);
+            Assert.AreEqual(0, _environmentNotifications);
+        }
+
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void ApplyProcessSettings_RestartUsesSavedSelectionDespiteStaleLauncherEnvironment(bool enabled)
+        {
+            CreateController().SetEnabled(enabled);
+            string savedJson = File.ReadAllText(_debugConfigurationPath);
+            _setCalls.Clear();
+            _environmentNotifications = 0;
+            foreach (string name in _environment.Keys)
+                _processEnvironment[name] = enabled ? "0" : "1";
+
+            ExtendedOsdLoggingController restartedController = CreateController();
+            Assert.AreEqual(enabled, restartedController.IsEnabled());
+            restartedController.ApplyProcessSettings();
+
+            foreach (string name in _environment.Keys)
+                Assert.AreEqual(enabled ? "1" : "0", _processEnvironment[name], name);
+            Assert.AreEqual(savedJson, File.ReadAllText(_debugConfigurationPath));
+            Assert.AreEqual(0, _setCalls.Count, "Startup must not rewrite user environment variables.");
+            Assert.AreEqual(0, _environmentNotifications, "Startup must not wait on a Windows broadcast.");
+        }
+
+        [TestMethod]
+        public void ApplyProcessSettings_MissingConfiguration_ClearsInheritedDiagnostics()
+        {
+            _processEnvironment[ExtendedOsdLoggingController.HookLogEnvironmentVariable] = "1";
+            _processEnvironment[ExtendedOsdLoggingController.VulkanLayerLogEnvironmentVariable] = "1";
+            _processEnvironment[ExtendedOsdLoggingController.PresentStatsEnvironmentVariable] = "1";
+            _processEnvironment[ExtendedOsdLoggingController.VerboseLogEnvironmentVariable] = "1";
+
+            CreateController().ApplyProcessSettings();
+
+            foreach (var pair in _processEnvironment)
+                Assert.AreEqual("0", pair.Value, pair.Key);
+            Assert.IsFalse(File.Exists(_debugConfigurationPath));
+            Assert.AreEqual(0, _setCalls.Count);
+            Assert.AreEqual(0, _environmentNotifications);
+        }
+
+        [TestMethod]
+        public void ApplyProcessSettings_MalformedConfiguration_DisablesInheritedDiagnosticsAndReportsError()
+        {
+            _processEnvironment[ExtendedOsdLoggingController.HookLogEnvironmentVariable] = "1";
+            File.WriteAllText(_debugConfigurationPath, "{ not valid json");
+
+            Assert.ThrowsException<JsonReaderException>(() => CreateController().ApplyProcessSettings());
+
+            Assert.AreEqual(4, _processEnvironment.Count);
+            foreach (var pair in _processEnvironment)
+                Assert.AreEqual("0", pair.Value, pair.Key);
+            Assert.AreEqual(0, _environmentNotifications);
         }
 
         [TestMethod]
@@ -164,6 +224,20 @@ namespace CapFrameX.Test.Overlay
                 Assert.AreEqual("1", _environment[name]);
                 Assert.AreEqual("1", _processEnvironment[name]);
             }
+            Assert.AreEqual(0, _environmentNotifications);
+        }
+
+        [TestMethod]
+        public void SetEnabled_FailedFirstSave_RemovesNewUserVariables()
+        {
+            Directory.CreateDirectory(_debugConfigurationPath);
+
+            Assert.ThrowsException<UnauthorizedAccessException>(() => CreateController().SetEnabled(true));
+
+            Assert.AreEqual(0, _environment.Count,
+                "Rollback must restore missing variables without leaving new diagnostic settings behind.");
+            Assert.AreEqual(0, _environmentNotifications);
+            Assert.IsFalse(CreateController().IsEnabled());
         }
 
         [TestMethod]
@@ -187,10 +261,14 @@ namespace CapFrameX.Test.Overlay
                 (name, value) =>
                 {
                     _setCalls.Add((name, value));
-                    _environment[name] = value;
+                    if (value == null)
+                        _environment.Remove(name);
+                    else
+                        _environment[name] = value;
                 },
                 name => _processEnvironment.TryGetValue(name, out string value) ? value : null,
-                (name, value) => _processEnvironment[name] = value);
+                (name, value) => _processEnvironment[name] = value,
+                () => _environmentNotifications++);
         }
     }
 }

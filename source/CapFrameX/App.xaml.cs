@@ -10,6 +10,7 @@ using CapFrameX.PMD.Powenetics;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Remote;
 using CapFrameX.Updater;
+using CapFrameX.ViewModel;
 using DryIoc;
 using EmbedIO;
 using Newtonsoft.Json;
@@ -182,6 +183,19 @@ namespace CapFrameX
 
                 if (_startupAborted)
                     return;
+
+                using (StartupPerformanceLogger.Measure("OSD logging configuration"))
+                {
+                    try
+                    {
+                        // Apply the saved selection before Prism creates any native overlay services.
+                        new ExtendedOsdLoggingController().ApplyProcessSettings();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Warning(ex, "Could not apply the saved OSD logging configuration.");
+                    }
+                }
 
                 bool showSplash;
                 using (StartupPerformanceLogger.Measure("Splash screen initialization"))

@@ -1145,15 +1145,19 @@
 									<Separator Margin="0 10 0 8" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 
 									<CheckBox Content="Extended OSD logging"
-											  IsChecked="{Binding EnableExtendedOsdLogging, Mode=TwoWay}"
+											  IsChecked="{Binding ExtendedOsdLogging.IsEnabled, Mode=TwoWay}"
+											  IsEnabled="{Binding ExtendedOsdLogging.IsUpdating, Converter={StaticResource InvertBoolConverter}}"
 											  Style="{StaticResource MaterialDesignCheckBox}"/>
+									<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
+											   Visibility="{Binding ExtendedOsdLogging.IsUpdating, Converter={StaticResource TrueToVisibleConverter}}"
+											   Text="Saving..."/>
 									<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
 											   Text="Enables detailed logs for the DirectX hook, Vulkan layer, native renderer, and per-present statistics."/>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#E0A020" TextWrapping="Wrap"
 											   Text="&#x26A0; Restart CapFrameX and the game after changing this option."/>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#D95050" TextWrapping="Wrap"
-											   Visibility="{Binding HasExtendedOsdLoggingError, Converter={StaticResource TrueToVisibleConverter}}"
-											   Text="{Binding ExtendedOsdLoggingError}"/>
+											   Visibility="{Binding ExtendedOsdLogging.HasError, Converter={StaticResource TrueToVisibleConverter}}"
+											   Text="{Binding ExtendedOsdLogging.Error}"/>
 								</StackPanel>
 							</Border>
 						</StackPanel>
