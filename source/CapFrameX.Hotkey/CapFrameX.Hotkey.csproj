@@ -9,6 +9,8 @@
     <Deterministic>true</Deterministic>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
     <UseWindowsForms>true</UseWindowsForms>
+    <!-- Dispatcher access: hotkey actions are posted to the WPF dispatcher at Send priority. -->
+    <UseWPF>true</UseWPF>
     <!-- MouseKeyHook ships .NET Framework assets only; the IL is compatible with modern .NET. -->
     <NoWarn>$(NoWarn);NU1701</NoWarn>
   </PropertyGroup>

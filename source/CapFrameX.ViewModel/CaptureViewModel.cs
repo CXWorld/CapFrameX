@@ -640,6 +640,18 @@ namespace CapFrameX.ViewModel
                 });
         }
 
+        /// <summary>
+        /// Runs a capture start/stop on a thread of its own. Task.Run queues onto the thread pool,
+        /// and when the pool is saturated by blocking work (sensor polling, WMI, PresentMon I/O) it
+        /// adds threads at roughly one per second, so the hotkey action sat in that queue for
+        /// seconds while nothing in the log said why. LongRunning starts a dedicated thread now.
+        /// </summary>
+        private static void StartCaptureWork(Func<Task> work)
+        {
+            Task.Factory.StartNew(work, System.Threading.CancellationToken.None,
+                TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        }
+
         private void SetCaptureMode()
         {
             if (!ProcessesToCapture.Any())
@@ -659,7 +671,7 @@ namespace CapFrameX.ViewModel
                 string processToCapture = SelectedProcessToCapture ?? ProcessesToCapture.FirstOrDefault();
                 var processInfo = ProcessesInfo.FirstOrDefault(info => info.Item1 == processToCapture);
 
-                Task.Run(async () =>
+                StartCaptureWork(async () =>
                 {
                     try
                     {
@@ -684,7 +696,7 @@ namespace CapFrameX.ViewModel
             }
             else
             {
-                Task.Run(async () =>
+                StartCaptureWork(async () =>
                 {
                     try
                     {

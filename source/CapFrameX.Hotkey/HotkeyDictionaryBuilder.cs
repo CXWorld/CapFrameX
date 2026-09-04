@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Windows.Threading;
 
 namespace CapFrameX.Hotkey
 {
@@ -46,7 +47,7 @@ namespace CapFrameX.Hotkey
                 // dispatcher for every current caller), and the action is later posted back to
                 // it. That keeps the actions running exactly where they used to run while the
                 // hook procedure itself returns immediately — see GlobalHotkeyHook.
-                _registeredActions[hotkeyAction] = new Registration(actionToRegister, SynchronizationContext.Current);
+                _registeredActions[hotkeyAction] = new Registration(actionToRegister, CaptureContext());
 
                 GlobalHotkeyHook.SetRegistrations(BuildRegistrations(appConfiguration));
             }
@@ -71,6 +72,21 @@ namespace CapFrameX.Hotkey
 
                 GlobalHotkeyHook.SetRegistrations(BuildRegistrations(appConfiguration));
             }
+        }
+
+        /// <summary>
+        /// The context the action is posted back to. On a WPF dispatcher thread the post goes in
+        /// at Send priority: a hotkey is a user action and must not queue behind the backlog the
+        /// sensor and telemetry streams marshal onto the UI thread. Those items sit at Normal,
+        /// which is also the priority SynchronizationContext.Current would post at, so a busy
+        /// second of ObserveOnDispatcher traffic used to run ahead of the keypress.
+        /// </summary>
+        private static SynchronizationContext CaptureContext()
+        {
+            var dispatcher = Dispatcher.FromThread(Thread.CurrentThread);
+            return dispatcher != null
+                ? new DispatcherSynchronizationContext(dispatcher, DispatcherPriority.Send)
+                : SynchronizationContext.Current;
         }
 
         private static HotkeyRegistration[] BuildRegistrations(IAppConfiguration appConfiguration)
