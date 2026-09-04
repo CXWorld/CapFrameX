@@ -69,7 +69,10 @@ C2PMSG_98 the argument/result register. It sends
 only the four compile-time services needed to query the version (`0x14`),
 query the high and low table address (`0x07`/`0x08`), and refresh the table
 (`0x09`, selector `4`). No message ID or address is supplied by the
-application.
+application. These service IDs belong to AMD's private PMFW monitoring
+protocol and are not declared by the public Linux interface. The module keeps
+them in a fixed allowlist; the public C2PMSG register definitions and the live
+validation records are linked under **Implementation references** below.
 
 The returned GPU/MC address is accepted only for allowlisted Navi 21, RDNA3,
 or RDNA4
@@ -77,11 +80,21 @@ PCI IDs, only for a known table family, and only when the complete 8-KiB range
 fits both the hardware framebuffer interval and the selected BAR0 aperture.
 Navi 21 normally uses framebuffer registers `0xE54C/0xE550`; RDNA3 and RDNA4
 use `0xE4D4/0xE4D8`. Version, address query, refresh, validation, and copy occur
-inside one IOCTL. If a cold-start refresh returns a uniform or otherwise
+inside one IOCTL. Mailbox responses are polled with at most 8,096 immediate
+MMIO reads, matching the existing `RyzenSMU.p` pattern. There is no short
+`microsleep`: PawnIO implements that native with `KeDelayExecutionThread`, so
+its actual delay is scheduler-granularity rather than a 100-microsecond polling
+interval. If a cold-start refresh returns a uniform or otherwise
 invalid table, the module repeats the fixed refresh-and-copy sequence up to
 five times with a 10-ms delay. The module does not scan VRAM or replace the
 driver's allocation. Its fixed 512-KiB BAR5 mapping covers all mailbox and
 framebuffer-bound registers used by this path and fits the RDNA4 aperture.
+
+Public metrics and the private tool table now use the same address translation:
+the module reads the generation-specific `MC_VM_FB_LOCATION_BASE/TOP`, verifies
+the complete GPU/MC range, subtracts that hardware framebuffer base, and adds
+the resulting offset to BAR0. There is no separate hard-coded VRAM MC base for
+the public path.
 
 The application serializes each low-level PCI/SMN operation with the
 cross-process `Global\Access_PCI` mutex also used by established hardware
@@ -284,6 +297,18 @@ The field layouts follow these headers:
 - [SMU14 v14.0](https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/pm/swsmu/inc/pmfw_if/smu14_driver_if_v14_0.h)
 - [SMUIO 11.0.0 register offsets](https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/include/asic_reg/smuio/smuio_11_0_0_offset.h)
 - [ATOM firmware board tables](https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/include/atomfirmware.h)
+
+### Implementation references
+
+- [Linux MP 13.0.0 C2PMSG register definitions](https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/include/asic_reg/mp/mp_13_0_0_offset.h)
+- [Linux MP 14.0.2 C2PMSG register definitions](https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/include/asic_reg/mp/mp_14_0_2_offset.h)
+- [Linux MMHUB framebuffer-bound decoding](https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/amdgpu/mmhub_v1_7.c)
+- [Linux MC-to-physical translation](https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/amdgpu/amdgpu_gmc.c)
+- [PawnIO.Modules `RyzenSMU.p` bounded polling](https://github.com/namazso/PawnIO.Modules/blob/main/RyzenSMU.p)
+- [PawnIO `microsleep` implementation](https://github.com/namazso/PawnIO/blob/master/PawnIO/src/natives_impl_windows.cpp)
+- [Private-protocol versions and Navi 21/Navi 31/Navi 48 validation](https://github.com/miklebel/PawnIO.Modules/pull/1)
+- [RDNA3 comparison against HWiNFO](https://github.com/namazso/PawnIO.Modules/pull/110#issuecomment-5528416120)
+- [RDNA4 comparison against HWiNFO](https://github.com/namazso/PawnIO.Modules/pull/110#issuecomment-5529590343)
 
 This remains experimental low-level code. Validate the raw table and selected
 layout on each GPU/firmware combination before integrating any field into the

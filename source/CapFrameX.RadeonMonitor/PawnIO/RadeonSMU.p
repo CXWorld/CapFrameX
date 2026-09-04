@@ -26,8 +26,38 @@
  * RDNA2/RDNA3/RDNA4 monitoring table. No general physical-memory access or
  * framebuffer writes are exposed.
  *
- * Register and layout references: Linux amdgpu smu_cmn.c, amdgpu_device.c,
- * the SMU11/13/14 driver interfaces, and smuio_11_0_0_offset.h.
+ * Public references (paths below are in torvalds/linux):
+ * - Mailbox transaction and tool-table setup:
+ *   drivers/gpu/drm/amd/pm/swsmu/smu_cmn.c,
+ *   drivers/gpu/drm/amd/pm/swsmu/smu13/smu_v13_0.c, and
+ *   drivers/gpu/drm/amd/pm/swsmu/smu14/smu_v14_0.c.
+ * - MP1 C2PMSG register numbering:
+ *   drivers/gpu/drm/amd/include/asic_reg/mp/mp_13_0_0_offset.h and
+ *   drivers/gpu/drm/amd/include/asic_reg/mp/mp_14_0_2_offset.h.
+ * - Framebuffer bounds and MC-address translation:
+ *   drivers/gpu/drm/amd/amdgpu/mmhub_v1_7.c and
+ *   drivers/gpu/drm/amd/amdgpu/amdgpu_gmc.c (amdgpu_gmc_vram_mc2pa).
+ * - Public metrics layouts: the SMU11/13/14 headers under
+ *   drivers/gpu/drm/amd/pm/swsmu/inc/pmfw_if.
+ *
+ * Source links:
+ * https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/pm/swsmu/smu_cmn.c
+ * https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/pm/swsmu/smu13/smu_v13_0.c
+ * https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/pm/swsmu/smu14/smu_v14_0.c
+ * https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/include/asic_reg/mp/mp_13_0_0_offset.h
+ * https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/include/asic_reg/mp/mp_14_0_2_offset.h
+ * https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/amdgpu/mmhub_v1_7.c
+ * https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/amdgpu/amdgpu_gmc.c
+ * https://github.com/namazso/PawnIO.Modules/blob/main/RyzenSMU.p
+ * https://github.com/namazso/PawnIO/blob/master/PawnIO/src/natives_impl_windows.cpp
+ *
+ * AMD's public Linux interface does not publish the private service ids or
+ * private version-to-layout map below. They remain a strict allowlist based on
+ * observed PMFW behavior. Live Navi 21, Navi 31, and Navi 48 validation is
+ * recorded at:
+ * https://github.com/miklebel/PawnIO.Modules/pull/1
+ * https://github.com/namazso/PawnIO.Modules/pull/110#issuecomment-5528416120
+ * https://github.com/namazso/PawnIO.Modules/pull/110#issuecomment-5529590343
  */
 
 #include <pawnio.inc>
@@ -57,7 +87,8 @@ const RDNA4_DEVICE_ID_MAX_0 = 0x756F;
 const RDNA4_DEVICE_ID_MIN_1 = 0x7590;
 const RDNA4_DEVICE_ID_MAX_1 = 0x75AF;
 
-// Private tool mailbox: MP1 C2PMSG 72/96/98/109.
+// Private tool mailbox: MP1 C2PMSG 72/96/98/109. Register numbers come from
+// the generated Linux MP 13.0.0/14.0.2 headers cited above; service ids do not.
 const RDNA_TOOL_MESSAGE_OFFSET = 0x58A20;
 const RDNA_TOOL_RESPONSE_OFFSET = 0x58A80;
 const RDNA_TOOL_ARGUMENT_OFFSET = 0x58A88;
@@ -71,8 +102,8 @@ const RDNA_TOOL_RESPONSE_OK = 1;
 const RDNA_TOOL_RESPONSE_BUSY = 0xFC;
 const RDNA_TOOL_RSP_PREREQ = 0xFD;
 const RDNA_TOOL_RESPONSE_UNKNOWN = 0xFE;
-const RDNA_TOOL_POLL_ATTEMPTS = 10000;
-const RDNA_TOOL_POLL_DELAY_US = 100;
+// Match RyzenSMU's bounded register polling without sleeping between reads.
+const RDNA_TOOL_POLL_ATTEMPTS = 8096;
 const RDNA_TOOL_READ_ATTEMPTS = 5;
 const RDNA_TOOL_READ_RETRY_DELAY_US = 10000;
 
@@ -104,9 +135,6 @@ const SMU14_METRICS_DWORDS = 65;  /* 260 bytes */
 // Require two stable pointer snapshots before mapping the table.
 const METRICS_ADDRESS_READ_ATTEMPTS = 5;
 const METRICS_ADDRESS_RETRY_DELAY_US = 10000;
-
-// Radeon discrete-GPU VRAM MC base.
-const GPU_VRAM_MC_BASE = 0x8000000000;
 
 // Fallback BAR5 span when size probing is inconclusive.
 const REG_SPAN = 0x100000;
@@ -315,7 +343,9 @@ bool:is_rdna_tool_device(device_id) {
             is_rdna4_tool_device(device_id));
 }
 
-// Map supported PM-table families; unknown versions fail closed.
+// Map observed private PM-table families; unknown versions fail closed. The
+// public Linux interface has no equivalent version-to-layout table; provenance
+// and the live-tested full versions are documented in the header above.
 rdna_tool_layout(version) {
     switch ((version >>> 16) & 0xFFFF) {
         case 0x0000: return 1;
@@ -356,10 +386,6 @@ NTSTATUS:rdna_tool_wait_response(VA:registers, &response) {
             return status;
         if ((response & 0xFFFFFFFF) != 0)
             return STATUS_SUCCESS;
-
-        status = microsleep(RDNA_TOOL_POLL_DELAY_US);
-        if (status != STATUS_SUCCESS)
-            return status;
     }
     return STATUS_IO_TIMEOUT;
 }
@@ -409,16 +435,34 @@ NTSTATUS:rdna_tool_send(
     return STATUS_SUCCESS;
 }
 
-// Read the generation-specific framebuffer interval.
-NTSTATUS:rdna_tool_framebuffer_bounds(VA:registers, &fb_base, &fb_top) {
-    new base_offset = NAVI21_FB_BASE_OFFSET;
-    new top_offset = NAVI21_FB_TOP_OFFSET;
+// Select the generation-specific framebuffer registers.
+framebuffer_register_offsets(&base_offset, &top_offset) {
+    base_offset = NAVI21_FB_BASE_OFFSET;
+    top_offset = NAVI21_FB_TOP_OFFSET;
     if (is_rdna3_tool_device(g_device_id) ||
         is_rdna4_tool_device(g_device_id) ||
         (g_device_id == 0x73BF && g_revision_id == 0xD5)) {
         base_offset = RDNA3_FB_BASE_OFFSET;
         top_offset = RDNA3_FB_TOP_OFFSET;
     }
+}
+
+// Decode MC_VM_FB_LOCATION_BASE/TOP as amdgpu's MMHUB code does.
+NTSTATUS:decode_framebuffer_bounds(base_value, top_value, &fb_base, &fb_top) {
+    fb_base = (base_value & 0x00FFFFFF) << 24;
+    fb_top = (top_value & 0x00FFFFFF) << 24;
+    if (fb_top <= fb_base)
+        return STATUS_INVALID_ADDRESS;
+    return STATUS_SUCCESS;
+}
+
+// Read the framebuffer interval from an existing BAR5 mapping.
+NTSTATUS:rdna_tool_framebuffer_bounds(VA:registers, &fb_base, &fb_top) {
+    new base_offset = 0, top_offset = 0;
+    framebuffer_register_offsets(base_offset, top_offset);
+    if (!in_window(base_offset, 4, 0, RDNA_TOOL_MMIO_MAP_SIZE) ||
+        !in_window(top_offset, 4, 0, RDNA_TOOL_MMIO_MAP_SIZE))
+        return STATUS_NOT_SUPPORTED;
 
     new base_value = 0, top_value = 0;
     new NTSTATUS:status = virtual_read_dword(registers + base_offset, base_value);
@@ -427,11 +471,66 @@ NTSTATUS:rdna_tool_framebuffer_bounds(VA:registers, &fb_base, &fb_top) {
     status = virtual_read_dword(registers + top_offset, top_value);
     if (status != STATUS_SUCCESS)
         return status;
+    return decode_framebuffer_bounds(base_value, top_value, fb_base, fb_top);
+}
 
-    fb_base = (base_value & 0x00FFFFFF) << 24;
-    fb_top = (top_value & 0x00FFFFFF) << 24;
-    if (fb_top <= fb_base)
+// Read the same interval for public metrics without mapping the full BAR5 span.
+NTSTATUS:read_framebuffer_bounds(&fb_base, &fb_top) {
+    new base_offset = 0, top_offset = 0;
+    framebuffer_register_offsets(base_offset, top_offset);
+    if (top_offset != base_offset + 4 ||
+        !in_window(base_offset, 8, 0, g_reg_size))
+        return STATUS_NOT_SUPPORTED;
+
+    new VA:registers = io_space_map(g_reg_bar + base_offset, 8);
+    if (registers == NULL)
+        return STATUS_INSUFFICIENT_RESOURCES;
+
+    new base_value = 0, top_value = 0;
+    new NTSTATUS:status = virtual_read_dword(registers, base_value);
+    if (status == STATUS_SUCCESS)
+        status = virtual_read_dword(registers + 4, top_value);
+    io_space_unmap(registers, 8);
+    if (status != STATUS_SUCCESS)
+        return status;
+    return decode_framebuffer_bounds(base_value, top_value, fb_base, fb_top);
+}
+
+/* Translate a GPU/MC VRAM address through the framebuffer base into BAR0.
+ * This is the single translation used by both public and private tables. It
+ * follows amdgpu_gmc_vram_mc2pa's subtract-source-base/add-destination-base
+ * form, with the PCI BAR0 aperture as the CPU-visible destination here. */
+NTSTATUS:translate_vram_address(
+    gpu_address,
+    length,
+    fb_base,
+    fb_top,
+    &vram_offset,
+    &physical_address) {
+    vram_offset = 0;
+    physical_address = 0;
+
+    if (length <= 0)
+        return STATUS_INVALID_PARAMETER;
+    if ((gpu_address & 0x3) != 0 || fb_top <= fb_base)
         return STATUS_INVALID_ADDRESS;
+    if (!in_window(gpu_address, length, fb_base, fb_top - fb_base))
+        return STATUS_ACCESS_DENIED;
+
+    new candidate_offset = gpu_address - fb_base;
+    if (!in_window(candidate_offset, length, 0, g_vram_size))
+        return STATUS_ACCESS_DENIED;
+
+    new candidate_physical = g_vram_bar + candidate_offset;
+    if (!in_window(
+            candidate_physical,
+            length,
+            g_vram_bar,
+            g_vram_size))
+        return STATUS_ACCESS_DENIED;
+
+    vram_offset = candidate_offset;
+    physical_address = candidate_physical;
     return STATUS_SUCCESS;
 }
 
@@ -495,10 +594,6 @@ NTSTATUS:read_rdna_tool_table(result[]) {
 
     new gpu_address =
         ((address_high & 0xFFFFFFFF) << 32) | (address_low & 0xFFFFFFFF);
-    if ((gpu_address & 0x3) != 0) {
-        io_space_unmap(registers, RDNA_TOOL_MMIO_MAP_SIZE);
-        return STATUS_INVALID_ADDRESS;
-    }
 
     new fb_base = 0, fb_top = 0;
     status = rdna_tool_framebuffer_bounds(registers, fb_base, fb_top);
@@ -506,28 +601,17 @@ NTSTATUS:read_rdna_tool_table(result[]) {
         io_space_unmap(registers, RDNA_TOOL_MMIO_MAP_SIZE);
         return status;
     }
-    if (!in_window(
-            gpu_address,
-            RDNA_TOOL_TABLE_BYTES,
-            fb_base,
-            fb_top - fb_base)) {
+    new vram_offset = 0, physical_address = 0;
+    status = translate_vram_address(
+        gpu_address,
+        RDNA_TOOL_TABLE_BYTES,
+        fb_base,
+        fb_top,
+        vram_offset,
+        physical_address);
+    if (status != STATUS_SUCCESS) {
         io_space_unmap(registers, RDNA_TOOL_MMIO_MAP_SIZE);
-        return STATUS_ACCESS_DENIED;
-    }
-
-    new vram_offset = gpu_address - fb_base;
-    if (!in_window(vram_offset, RDNA_TOOL_TABLE_BYTES, 0, g_vram_size)) {
-        io_space_unmap(registers, RDNA_TOOL_MMIO_MAP_SIZE);
-        return STATUS_ACCESS_DENIED;
-    }
-    new physical_address = g_vram_bar + vram_offset;
-    if (!in_window(
-            physical_address,
-            RDNA_TOOL_TABLE_BYTES,
-            g_vram_bar,
-            g_vram_size)) {
-        io_space_unmap(registers, RDNA_TOOL_MMIO_MAP_SIZE);
-        return STATUS_ACCESS_DENIED;
+        return status;
     }
 
     new VA:table = io_space_map(physical_address, RDNA_TOOL_TABLE_BYTES);
@@ -666,6 +750,11 @@ NTSTATUS:resolve_metrics_buffer(length, &gpu_address, &vram_offset, &physical_ad
     if (length <= 0 || length > SMU14_METRICS_DWORDS * 4)
         return STATUS_INVALID_PARAMETER;
 
+    new fb_base = 0, fb_top = 0;
+    new NTSTATUS:bounds_status = read_framebuffer_bounds(fb_base, fb_top);
+    if (bounds_status != STATUS_SUCCESS)
+        return bounds_status;
+
     new NTSTATUS:last_status = STATUS_RETRY;
     for (new attempt = 0; attempt < METRICS_ADDRESS_READ_ATTEMPTS; attempt++) {
         new first_address = 0, second_address = 0;
@@ -679,26 +768,16 @@ NTSTATUS:resolve_metrics_buffer(length, &gpu_address, &vram_offset, &physical_ad
             return status;
 
         if (status == STATUS_SUCCESS && first_address == second_address) {
-            if ((first_address & 0x3) != 0) {
-                last_status = STATUS_INVALID_ADDRESS;
-            } else if (first_address < GPU_VRAM_MC_BASE) {
-                last_status = STATUS_DEVICE_NOT_READY;
-            } else {
-                new candidate_offset = first_address - GPU_VRAM_MC_BASE;
-                new candidate_physical = g_vram_bar + candidate_offset;
-                if (!in_window(candidate_offset, length, 0, g_vram_size) ||
-                    !in_window(
-                        candidate_physical,
-                        length,
-                        g_vram_bar,
-                        g_vram_size)) {
-                    last_status = STATUS_ACCESS_DENIED;
-                } else {
-                    gpu_address = first_address;
-                    vram_offset = candidate_offset;
-                    physical_address = candidate_physical;
-                    return STATUS_SUCCESS;
-                }
+            last_status = translate_vram_address(
+                first_address,
+                length,
+                fb_base,
+                fb_top,
+                vram_offset,
+                physical_address);
+            if (last_status == STATUS_SUCCESS) {
+                gpu_address = first_address;
+                return STATUS_SUCCESS;
             }
         } else {
             last_status = STATUS_RETRY;
