@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -54,6 +55,7 @@ namespace CapFrameX.Overlay
         private int _numberOfRuns;
         private IList<IMetricAnalysis> _metricAnalysis = new List<IMetricAnalysis>();
         private ISubject<IOverlayEntry[]> _onDictionaryUpdated = new Subject<IOverlayEntry[]>();
+        private readonly ISubject<Unit> _refreshRequested = Subject.Synchronize(new Subject<Unit>());
         private volatile bool _isServiceAlive = true;
 
         public bool IsOverlayActive => _appConfiguration.IsOverlayActive;
@@ -201,6 +203,14 @@ namespace CapFrameX.Overlay
                        {
                            if (isActive)
                            {
+                               // Serialize profile changes and regular ticks on the refresh thread.
+                               // FromAsync defers each read until the previous one has completed.
+                               var entryUpdates = _refreshRequested
+                                   .StartWith(Unit.Default)
+                                   .ObserveOn(_overlayRefreshScheduler)
+                                   .Select(_ => Observable.FromAsync(() => _overlayEntryProvider.GetOverlayEntries()))
+                                   .Concat();
+
                                if (!_appConfiguration.EnableHookFreeOverlay && !_appConfiguration.EnableHookOverlay)
                                {
                                    // Deferred instead of awaited inline: this selector runs on the
@@ -211,12 +221,10 @@ namespace CapFrameX.Overlay
                                    // blocking the caller, which .Wait() did.
                                    return Observable
                                        .FromAsync(cancellationToken => InitializeRTSSAsync(cancellationToken))
-                                       .SelectMany(_ => _onDictionaryUpdated.
-                                           SelectMany(__ => _overlayEntryProvider.GetOverlayEntries()));
+                                       .SelectMany(_ => entryUpdates);
                                }
 
-                               return _onDictionaryUpdated.
-                                   SelectMany(_ => _overlayEntryProvider.GetOverlayEntries());
+                               return entryUpdates;
                            }
                            else
                            {
@@ -229,6 +237,9 @@ namespace CapFrameX.Overlay
                        {
                            CurrentOverlayEntries = entries;
                            OSDUpdateNotifier(entries);
+                           // Both CapFrameX renderers read CurrentOverlayEntries from this event.
+                           // Publishing the raw tick first could make them render the old profile.
+                           _onDictionaryUpdated.OnNext(entries);
 
                            bool feedRtss = !overlayOnAPIOnly && !_appConfiguration.EnableHookFreeOverlay && !_appConfiguration.EnableHookOverlay;
                            int feedState = feedRtss ? 1 : 0;
@@ -267,8 +278,7 @@ namespace CapFrameX.Overlay
                            if (sensorData.Item2.Any())
                                UpdateOverlayEntries(sensorData.Item2);
 
-                           if (_overlayEntryCore.OverlayEntryDict.Values.Any())
-                               _onDictionaryUpdated.OnNext(_overlayEntryCore.OverlayEntryDict.Values.ToArray());
+                           RequestRefresh();
                        });
                 });
 
@@ -594,6 +604,12 @@ namespace CapFrameX.Overlay
             _sensorRefreshDisposable?.Dispose();
             _overlayActiveStreamDisposable?.Dispose();
             _overlayRefreshScheduler?.Dispose();
+        }
+
+        public void RequestRefresh()
+        {
+            if (_isServiceAlive)
+                _refreshRequested.OnNext(Unit.Default);
         }
 
         private async Task InitializeOverlayEntryDict()

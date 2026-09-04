@@ -871,12 +871,11 @@ namespace CapFrameX.ViewModel
                 {
                     return Convert.ToInt32(obj);
                 })
-                .SelectMany(index =>
-                {
-                    return Observable.FromAsync(() => Task.Run(() => _overlayEntryProvider.SwitchConfigurationTo(index)))
-                        .SelectMany(_ => _overlayService.OnDictionaryUpdated.Take(1));
-                })
-                .StartWith(Enumerable.Empty<IOverlayEntry>())
+                .Select(index => Observable.FromAsync(() =>
+                    Task.Run(() => _overlayEntryProvider.SwitchConfigurationTo(index))))
+                .Concat()
+                .Do(_ => _overlayService.RequestRefresh())
+                .StartWith(System.Reactive.Unit.Default)
                 .SelectMany(_ => overlayEntryProvider.GetOverlayEntries(false))
                 .ObserveOnDispatcher()
                 .Subscribe(ApplyReloadedOverlayEntries);
@@ -941,8 +940,8 @@ namespace CapFrameX.ViewModel
             SortByEntryTypeCommand = new DelegateCommand(OnSortByEntryType);
             ClearFilterCommand = new DelegateCommand(OnClearFilter);
             LaunchOverlayPreviewAppCommand = new DelegateCommand(OnLaunchOverlayPreviewApp);
-            ApplyOverlayTemplateCommand = new DelegateCommand(async () => await OnApplyOverlayTemplate());
-            RevertOverlayTemplateCommand = new DelegateCommand(async () => await OnRevertOverlayTemplate());
+            ApplyOverlayTemplateCommand = new DelegateCommand(OnApplyOverlayTemplate);
+            RevertOverlayTemplateCommand = new DelegateCommand(OnRevertOverlayTemplate);
 
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventOverlayConfigHotkey();
@@ -1147,16 +1146,8 @@ namespace CapFrameX.ViewModel
             catch { }
         }
 
-        private async Task OnApplyOverlayTemplate()
+        private void OnApplyOverlayTemplate()
         {
-            bool wasOverlayActive = _appConfiguration.IsOverlayActive;
-            if (wasOverlayActive)
-            {
-                IsOverlayActive = false;
-                // give overlay management a bit time to disable overlay
-                await Task.Delay(100);
-            }
-
             // Store current state before applying template
             _overlayTemplateService.StoreCurrentState(OverlayEntries);
             var clonedEntries = OverlayEntries.Select(entry => entry.Clone()).ToList();
@@ -1182,20 +1173,11 @@ namespace CapFrameX.ViewModel
 
             SetSaveButtonIsEnable();
 
-            if (wasOverlayActive)
-                IsOverlayActive = true;
+            _overlayService.RequestRefresh();
         }
 
-        private async Task OnRevertOverlayTemplate()
+        private void OnRevertOverlayTemplate()
         {
-            bool wasOverlayActive = _appConfiguration.IsOverlayActive;
-            if (wasOverlayActive)
-            {
-                IsOverlayActive = false;
-                // give overlay management a bit time to disable overlay
-                await Task.Delay(100);
-            }
-
             var storedOverlayEntries = _overlayTemplateService.GetStoredOverlayEntries();
 
             OverlayEntries.ForEach(entry => entry.Dispose());
@@ -1211,8 +1193,7 @@ namespace CapFrameX.ViewModel
 
             SetSaveButtonIsEnable();
 
-            if (wasOverlayActive)
-                IsOverlayActive = true;
+            _overlayService.RequestRefresh();
         }
 
         private void OnSortByEntryType()

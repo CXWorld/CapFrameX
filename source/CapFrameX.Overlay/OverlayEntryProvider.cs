@@ -220,21 +220,25 @@ namespace CapFrameX.Overlay
         public async Task<IOverlayEntry[]> GetOverlayEntries(bool updateFormats = true)
         {
             await _taskCompletionSource.Task;
-            RefreshDisplayEntries();
-            UpdateSensorData();
-            UpdateOnlineMetrics();
-            UpdateAppInfo();
-            UpdateResolution();
-            UpdateThreadAffinityState();
-            UpdateNetworkPing();
-            UpdateHookOverlayStatus();
-
-            if (updateFormats)
+            // A live profile replacement must finish wiring its entries before a renderer reads it.
+            lock (_overlayEntriesGate)
             {
-                UpdateFormatting();
-            }
+                RefreshDisplayEntries();
+                UpdateSensorData();
+                UpdateOnlineMetrics();
+                UpdateAppInfo();
+                UpdateResolution();
+                UpdateThreadAffinityState();
+                UpdateNetworkPing();
+                UpdateHookOverlayStatus();
 
-            return _overlayEntries.ToArray();
+                if (updateFormats)
+                {
+                    UpdateFormatting();
+                }
+
+                return _overlayEntries.ToArray();
+            }
         }
 
         public IOverlayEntry GetOverlayEntry(string identifier)

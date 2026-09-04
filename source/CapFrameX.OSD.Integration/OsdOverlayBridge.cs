@@ -13,8 +13,8 @@ namespace CapFrameX.OSD.Integration
     /// Drives the hook-free DWM/DirectComposition overlay from CapFrameX's existing data,
     /// as an alternative to RTSS:
     ///  - entries come from <c>IOverlayService.CurrentOverlayEntries</c> — the processed,
-    ///    SORTED, value-populated display list (the same one RTSS renders); the raw
-    ///    OnDictionaryUpdated payload is only used as the per-tick trigger,
+    ///    SORTED, value-populated display list (the same one RTSS renders);
+    ///    OnDictionaryUpdated fires once that list has been refreshed,
     ///  - per-present frametimes and display times (MsBetweenDisplayChange) from the
     ///    capture service's frame-data stream → batched PushSample,
     ///  - runs when the overlay is active AND either the user enabled the hook-free overlay
@@ -260,8 +260,7 @@ namespace CapFrameX.OSD.Integration
         private void OnEntries()
         {
             if (!_started) return;
-            // Use the processed, CapFrameX-sorted display list (same data + order as RTSS)
-            // rather than the unordered raw dictionary values from OnDictionaryUpdated.
+            // OnDictionaryUpdated is published after this processed display list is ready.
             var entries = _overlayService.CurrentOverlayEntries;
             UpdateFrameFeedRequirements(entries);
             if (entries == null || entries.Length == 0) return;

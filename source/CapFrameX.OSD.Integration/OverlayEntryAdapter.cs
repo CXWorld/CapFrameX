@@ -54,8 +54,8 @@ namespace CapFrameX.OSD.Integration
 
                 // Data type comes from IOverlayEntry.IsNumeric ("value consists only of int or
                 // double") — the same flag CapFrameX's own RTSS/websocket OSD (OSDController)
-                // formats on, and it IS reliable here because we read CurrentOverlayEntries (the
-                // processed, IsNumeric-populated list) rather than the raw OnDictionaryUpdated dict.
+                // formats on, and it is reliable here because the display list has already been
+                // processed and its IsNumeric flags populated before publication.
                 // Refinement: also accept a genuinely boxed number when the flag is off, so numeric
                 // sensors the flag doesn't cover (Fan/Mainboard aren't in SetHardwareIsNumericState)
                 // still format; but a text value that only looks numeric (driver "551.86") stays text
