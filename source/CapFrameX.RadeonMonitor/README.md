@@ -300,6 +300,9 @@ The field layouts follow these headers:
 
 ### Implementation references
 
+- [Linux generic SMU mailbox transaction](https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/pm/swsmu/smu_cmn.c)
+- [Linux SMU13 tool-table setup](https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/pm/swsmu/smu13/smu_v13_0.c)
+- [Linux SMU14 tool-table setup](https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/pm/swsmu/smu14/smu_v14_0.c)
 - [Linux MP 13.0.0 C2PMSG register definitions](https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/include/asic_reg/mp/mp_13_0_0_offset.h)
 - [Linux MP 14.0.2 C2PMSG register definitions](https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/include/asic_reg/mp/mp_14_0_2_offset.h)
 - [Linux MMHUB framebuffer-bound decoding](https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/amdgpu/mmhub_v1_7.c)
@@ -309,6 +312,11 @@ The field layouts follow these headers:
 - [Private-protocol versions and Navi 21/Navi 31/Navi 48 validation](https://github.com/miklebel/PawnIO.Modules/pull/1)
 - [RDNA3 comparison against HWiNFO](https://github.com/namazso/PawnIO.Modules/pull/110#issuecomment-5528416120)
 - [RDNA4 comparison against HWiNFO](https://github.com/namazso/PawnIO.Modules/pull/110#issuecomment-5529590343)
+
+AMD's public Linux interface does not publish the private service IDs or the
+private version-to-layout map. Those values therefore remain a strict allowlist
+based on observed PMFW behavior and the linked Navi 21, Navi 31, and Navi 48
+validation rather than being presented as publicly specified interfaces.
 
 This remains experimental low-level code. Validate the raw table and selected
 layout on each GPU/firmware combination before integrating any field into the

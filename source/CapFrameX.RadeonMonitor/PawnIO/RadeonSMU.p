@@ -17,49 +17,6 @@
 //
 //  SPDX-License-Identifier: LGPL-2.1-or-later
 
-/*
- * Bounded SMU telemetry for Radeon RDNA GPUs.
- *
- * Selects the AMD display adapter with the largest VRAM BAR. SMN access is
- * limited to MP1 C2PMSG, and every physical read is bounded to the selected
- * BAR. Fixed IOCTLs expose public metrics, Navi 21 SVI, and the private
- * RDNA2/RDNA3/RDNA4 monitoring table. No general physical-memory access or
- * framebuffer writes are exposed.
- *
- * Public references (paths below are in torvalds/linux):
- * - Mailbox transaction and tool-table setup:
- *   drivers/gpu/drm/amd/pm/swsmu/smu_cmn.c,
- *   drivers/gpu/drm/amd/pm/swsmu/smu13/smu_v13_0.c, and
- *   drivers/gpu/drm/amd/pm/swsmu/smu14/smu_v14_0.c.
- * - MP1 C2PMSG register numbering:
- *   drivers/gpu/drm/amd/include/asic_reg/mp/mp_13_0_0_offset.h and
- *   drivers/gpu/drm/amd/include/asic_reg/mp/mp_14_0_2_offset.h.
- * - Framebuffer bounds and MC-address translation:
- *   drivers/gpu/drm/amd/amdgpu/mmhub_v1_7.c and
- *   drivers/gpu/drm/amd/amdgpu/amdgpu_gmc.c (amdgpu_gmc_vram_mc2pa).
- * - Public metrics layouts: the SMU11/13/14 headers under
- *   drivers/gpu/drm/amd/pm/swsmu/inc/pmfw_if.
- *
- * Source links:
- * https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/pm/swsmu/smu_cmn.c
- * https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/pm/swsmu/smu13/smu_v13_0.c
- * https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/pm/swsmu/smu14/smu_v14_0.c
- * https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/include/asic_reg/mp/mp_13_0_0_offset.h
- * https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/include/asic_reg/mp/mp_14_0_2_offset.h
- * https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/amdgpu/mmhub_v1_7.c
- * https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/amdgpu/amdgpu_gmc.c
- * https://github.com/namazso/PawnIO.Modules/blob/main/RyzenSMU.p
- * https://github.com/namazso/PawnIO/blob/master/PawnIO/src/natives_impl_windows.cpp
- *
- * AMD's public Linux interface does not publish the private service ids or
- * private version-to-layout map below. They remain a strict allowlist based on
- * observed PMFW behavior. Live Navi 21, Navi 31, and Navi 48 validation is
- * recorded at:
- * https://github.com/miklebel/PawnIO.Modules/pull/1
- * https://github.com/namazso/PawnIO.Modules/pull/110#issuecomment-5528416120
- * https://github.com/namazso/PawnIO.Modules/pull/110#issuecomment-5529590343
- */
-
 #include <pawnio.inc>
 
 const MODULE_ABI_VERSION = 5;
@@ -87,8 +44,7 @@ const RDNA4_DEVICE_ID_MAX_0 = 0x756F;
 const RDNA4_DEVICE_ID_MIN_1 = 0x7590;
 const RDNA4_DEVICE_ID_MAX_1 = 0x75AF;
 
-// Private tool mailbox: MP1 C2PMSG 72/96/98/109. Register numbers come from
-// the generated Linux MP 13.0.0/14.0.2 headers cited above; service ids do not.
+// Private tool mailbox: MP1 C2PMSG 72/96/98/109. See README.md for provenance.
 const RDNA_TOOL_MESSAGE_OFFSET = 0x58A20;
 const RDNA_TOOL_RESPONSE_OFFSET = 0x58A80;
 const RDNA_TOOL_ARGUMENT_OFFSET = 0x58A88;
@@ -345,7 +301,7 @@ bool:is_rdna_tool_device(device_id) {
 
 // Map observed private PM-table families; unknown versions fail closed. The
 // public Linux interface has no equivalent version-to-layout table; provenance
-// and the live-tested full versions are documented in the header above.
+// and the live-tested full versions are documented in README.md.
 rdna_tool_layout(version) {
     switch ((version >>> 16) & 0xFFFF) {
         case 0x0000: return 1;
