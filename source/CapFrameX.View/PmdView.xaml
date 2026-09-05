@@ -474,7 +474,7 @@
 								ToolTipService.ShowDuration="25000">
 								<ToggleButton.ToolTip>
 									<ToolTip MaxWidth="350">
-										<TextBlock Text="Connect to a compatible BENCHLAB service installed separately. CapFrameX does not include the service."
+										<TextBlock Text="Start or stop BENCHLAB monitoring. Uses an existing compatible service or starts the bundled service."
 											TextWrapping="Wrap"/>
 									</ToolTip>
 								</ToggleButton.ToolTip>

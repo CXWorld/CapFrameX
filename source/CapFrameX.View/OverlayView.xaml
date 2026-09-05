@@ -1070,7 +1070,7 @@
 
 									<TextBlock Margin="0 8 0 0" FontWeight="SemiBold" Text="Background opacity"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
-											   Text="Applies to the hook-free renderer; RTSS uses its own setting."/>
+											   Text="Applies to the in-game and hook-free CapFrameX renderers; RTSS uses its own setting."/>
 									<Grid Margin="0 8 0 0">
 										<Grid.ColumnDefinitions>
 											<ColumnDefinition Width="*"/>
@@ -1084,7 +1084,7 @@
 
 									<TextBlock Margin="0 8 0 0" FontWeight="SemiBold" Text="Overlay position"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
-											   Text="Anchor corner and distance in pixels for the hook-free renderer; RTSS is positioned in the RTSS settings."/>
+											   Text="Corner the in-game and hook-free CapFrameX renderers anchor to, and the distance from it in pixels; RTSS is positioned in the RTSS settings."/>
 									<Grid Margin="0 8 0 0">
 										<Grid.ColumnDefinitions>
 											<ColumnDefinition Width="*"/>
@@ -1111,7 +1111,7 @@
 
 									<TextBlock Margin="0 8 0 0" FontWeight="SemiBold" Text="Overlay size"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
-											   Text="Scales text, spacing and graphs of the hook-free renderer; RTSS uses its own zoom."/>
+											   Text="Scales text, spacing and graphs of the in-game and hook-free CapFrameX renderers; RTSS uses its own zoom."/>
 									<Grid Margin="0 8 0 0">
 										<Grid.ColumnDefinitions>
 											<ColumnDefinition Width="*"/>
@@ -1152,7 +1152,7 @@
 											   Visibility="{Binding ExtendedOsdLogging.IsUpdating, Converter={StaticResource TrueToVisibleConverter}}"
 											   Text="Saving..."/>
 									<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
-											   Text="Enables detailed logs for the native renderer and per-present statistics."/>
+											   Text="Enables detailed logs for the DirectX hook, Vulkan layer, native renderer, and per-present statistics."/>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#E0A020" TextWrapping="Wrap"
 											   Text="&#x26A0; Restart CapFrameX and the game after changing this option."/>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#D95050" TextWrapping="Wrap"
@@ -1213,7 +1213,7 @@
 											<StackPanel>
 												<TextBlock Text="Hook-free output display"/>
 												<TextBlock Style="{StaticResource OsdOptionsDescription}"
-														   Text="Display used by the hook-free overlay"/>
+														   Text="Used by hook-free mode and the in-game fallback"/>
 											</StackPanel>
 											<ComboBox Margin="0 8 0 0" Height="40" FontSize="14"
 													  HorizontalContentAlignment="Stretch"
@@ -1258,7 +1258,7 @@
 									<StackPanel Margin="0 8 0 4">
 										<TextBlock FontWeight="SemiBold" Text="PresentMon replay buffer"/>
 										<TextBlock Style="{StaticResource OsdOptionsDescription}"
-												   Text="Minimum buffering used to smooth bursty PresentMon frame data. Increase it if graphs pause between updates; higher values add latency. Applies to the hook-free renderer."/>
+												   Text="Minimum buffering used to smooth bursty PresentMon frame data. Increase it if graphs pause between updates; higher values add latency. Applies to hook-free and the in-game PresentMon source."/>
 										<Grid Margin="0 8 0 0">
 											<Grid.ColumnDefinitions>
 												<ColumnDefinition Width="*"/>

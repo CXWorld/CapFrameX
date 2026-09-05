@@ -234,18 +234,22 @@ jobs:
           copy /y source\CapFrameX\bin\x64\Release\CapFrameX.IGCL.dll source\CapFrameX\bin\x64\Release\net10.0-windows\
           copy /y source\CapFrameX\bin\x64\Release\CapFrameX.ADLX.dll source\CapFrameX\bin\x64\Release\net10.0-windows\
 
-      - name: Verify v1.9.0 release payload
+      - name: Verify overlay and BENCHLAB payloads
         shell: pwsh
         run: |
           $appOutput = Join-Path $env:GITHUB_WORKSPACE "source\CapFrameX\bin\x64\Release\net10.0-windows"
-          $excludedPaths = @("hook", "vulkan", "benchlab-service", "cfx_osd_hook.dll", "cfx_osd_vklayer.dll", "BL_Service.exe")
-          foreach ($relativePath in $excludedPaths) {
-            if (Test-Path -LiteralPath (Join-Path $appOutput $relativePath)) {
-              throw "Excluded release component is present: $relativePath"
+          $requiredPaths = @(
+            "cfx_osd_core.dll",
+            "hook\cfx_osd_hook.dll", "hook\x86\cfx_osd_hook.dll", "hook\MinHook.LICENSE.txt",
+            "vulkan\cfx_osd_vklayer.dll", "vulkan\cfx_osd_vklayer_v1.json",
+            "vulkan\x86\cfx_osd_vklayer.dll", "vulkan\x86\cfx_osd_vklayer_v1.json",
+            "benchlab-service\BL_Service.exe", "benchlab-service\appsettings.json",
+            "benchlab-service\LICENSE-BENCHLAB-Service.txt", "benchlab-service\VERSION"
+          )
+          foreach ($relativePath in $requiredPaths) {
+            if (-not (Test-Path -LiteralPath (Join-Path $appOutput $relativePath) -PathType Leaf)) {
+              throw "Required package component is missing: $relativePath"
             }
-          }
-          if (-not (Test-Path -LiteralPath (Join-Path $appOutput "cfx_osd_core.dll"))) {
-            throw "The hook-free renderer is missing."
           }
 
       - name: Build Installer

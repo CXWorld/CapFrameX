@@ -5,8 +5,8 @@
        management from here. -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <!-- In-game payloads remain excluded until the code-signing certificate is available. -->
-    <CfxEnableInGameOverlay Condition="'$(CfxEnableInGameOverlay)' == ''">false</CfxEnableInGameOverlay>
+    <!-- In-game rendering and its native payloads are enabled for 1.9.1 development. -->
+    <CfxEnableInGameOverlay Condition="'$(CfxEnableInGameOverlay)' == ''">true</CfxEnableInGameOverlay>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(CfxEnableInGameOverlay)' == 'true'">
