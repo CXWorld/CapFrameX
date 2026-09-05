@@ -22,6 +22,11 @@
 
     <Property Id="INSTALLSHORTCUT" Value="1" Secure="yes"/>
     <Property Id="DOTNETDESKTOPRUNTIMEX64FOUND" Secure="yes" />
+    <!-- LAUNCHAPP=1 starts CapFrameX once the files are in place. The in-app updater passes it,
+         because the app shuts itself down to let the installer replace it and would otherwise
+         stay closed. WixShellExecTarget is the path WixShellExec opens. -->
+    <Property Id="LAUNCHAPP" Secure="yes" />
+    <Property Id="WixShellExecTarget" Value="[INSTALLFOLDER]CapFrameX.exe" />
 
     <Condition Message="CapFrameX requires the .NET 10 Desktop Runtime (x64). Install it from https://dotnet.microsoft.com/download/dotnet/10.0 and run setup again.">
       Installed OR DOTNETDESKTOPRUNTIMEX64FOUND
@@ -53,6 +58,11 @@
       <Custom Action="PurgeVulkanLayersPerUser" Before="InstallInitialize" />
       <Custom Action="AppdataConfigFiles" Before="InstallFinalize">
         Installed
+      </Custom>
+      <!-- Immediate and therefore in the client process: launched from the elevated in-app
+           updater, CapFrameX starts elevated without a further prompt, as its manifest demands. -->
+      <Custom Action="LaunchCapFrameX" After="InstallFinalize">
+        NOT Installed AND LAUNCHAPP="1"
       </Custom>
 	  </InstallExecuteSequence>
 
@@ -87,6 +97,10 @@
   
   <Fragment>
     <CustomAction Id="ResourceManagement" BinaryKey="CustomActionsBin" DllEntry="CopyConfigResources" Execute="immediate" Return="check"/>
+  </Fragment>
+
+  <Fragment>
+    <CustomAction Id="LaunchCapFrameX" BinaryKey="WixCA" DllEntry="WixShellExec" Execute="immediate" Impersonate="yes" Return="check"/>
   </Fragment>
   
   <Fragment>
