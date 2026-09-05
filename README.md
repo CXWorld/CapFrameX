@@ -98,8 +98,11 @@ Choose which available CPU, GPU, memory, and storage sensors to record. Version 
 
 ![CapFrameX 1.9.0 sensor selection](images/1.9.0/sensor.png)
 
-# Report table (Excel)
-![Screenshot](images/09_report.png)
+# Report
+
+Collect selected captures in a table, choose the reported metrics, and display an average row. Copy the results from the context menu to use them in Excel or other tools.
+
+![CapFrameX 1.9.0 report of Cyberpunk 2077 captures](images/1.9.0/report.png)
 
 # Cloud
 
