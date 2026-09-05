@@ -46,10 +46,17 @@ namespace CapFrameX.Overlay
 
         private readonly string _overlayConfigFolder;
 
+        // Only retained to remove obsolete items from existing overlay profiles.
+        private static readonly HashSet<string> RETIRED_ENTRY_IDENTIFIERS = new HashSet<string>()
+        {
+            "OnlineAmdFlmLatency", "OnlineClickToPhotonLatency",
+            "/capframex/amd-flm/0/latency/0", "/capframex/presentmon/0/latency/0"
+        };
+
         private static readonly HashSet<string> ONLINE_METRIC_NAMES = new HashSet<string>()
         {
             "OnlineAverage", "OnlineP1","OnlineP0dot1", "OnlineP0dot2", "Online1PercentLow", "Online0dot1PercentLow", "Online0dot2PercentLow",
-            "OnlineGpuActiveTimeAverage", "OnlineCpuActiveTimeAverage", "OnlineFrameTimeAverage", "OnlinePcLatency", "OnlineAmdFlmLatency", "OnlineAnimationError",
+            "OnlineGpuActiveTimeAverage", "OnlineCpuActiveTimeAverage", "OnlineFrameTimeAverage", "OnlinePcLatency", "OnlineAnimationError",
             "OnlineGpuActiveTimePercentageDeviation", "OnlineStutteringPercentage", "PmdGpuPowerCurrent",
             "PmdCpuPowerCurrent", "PmdSystemPowerCurrent"
         };
@@ -61,7 +68,6 @@ namespace CapFrameX.Overlay
             CONFIG_GATED_ENTRIES = new Dictionary<string, (string, Func<IAppConfiguration, bool>)>()
             {
                 { "OnlinePcLatency", (nameof(IAppConfiguration.UsePcLatency), config => config.UsePcLatency) },
-                { "OnlineAmdFlmLatency", (nameof(IAppConfiguration.UseAmdFlmLatency), config => config.UseAmdFlmLatency) },
             };
 
         // Renderer-gated entries are part of the overlay profile, not of a renderer-specific
@@ -1104,6 +1110,12 @@ namespace CapFrameX.Overlay
         /// </summary>
         private bool GetIsEntryKeptInList(OverlayEntryWrapper entry)
         {
+            if (RETIRED_ENTRY_IDENTIFIERS.Contains(entry.Identifier)
+                || RETIRED_ENTRY_IDENTIFIERS.Contains(entry.StableIdentifier))
+            {
+                return false;
+            }
+
             // Display-resolution items are reconciled against the live Screen.AllScreens snapshot
             // after loading. Keep them long enough to preserve user formatting for displays that
             // are still connected, even if an older config persisted a disabled state.
@@ -1438,14 +1450,6 @@ namespace CapFrameX.Overlay
                 pcLatency.Value = Math.Round(_onlineMetricService.GetOnlinePcLatencyAverageValue(), 1, MidpointRounding.AwayFromZero);
             }
 
-            // AMD Frame Latency Meter
-            _identifierOverlayEntryDict.TryGetValue("OnlineAmdFlmLatency", out IOverlayEntry amdFlmLatency);
-
-            if (amdFlmLatency != null && amdFlmLatency.ShowOnOverlay)
-            {
-                amdFlmLatency.Value = Math.Round(_onlineMetricService.GetOnlineAmdFlmLatencyAverageValue(), 1, MidpointRounding.AwayFromZero);
-            }
-
             // Animation Error
             _identifierOverlayEntryDict.TryGetValue("OnlineAnimationError", out IOverlayEntry animationError);
 
@@ -1685,15 +1689,6 @@ namespace CapFrameX.Overlay
             {
                 pcLatency.ValueUnitFormat = "ms";
                 pcLatency.ValueAlignmentAndDigits = "{0,5:F1}";
-            }
-
-            // AMD Frame Latency Meter
-            _identifierOverlayEntryDict.TryGetValue("OnlineAmdFlmLatency", out IOverlayEntry amdFlmLatency);
-
-            if (amdFlmLatency != null)
-            {
-                amdFlmLatency.ValueUnitFormat = "ms";
-                amdFlmLatency.ValueAlignmentAndDigits = "{0,5:F1}";
             }
 
             // Animation Error

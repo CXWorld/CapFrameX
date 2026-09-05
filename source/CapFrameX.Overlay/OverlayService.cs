@@ -1,6 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
-using CapFrameX.Contracts.Latency;
 using CapFrameX.Contracts.Logging;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
@@ -623,11 +622,6 @@ namespace CapFrameX.Overlay
                 {
                     foreach (var sensor in sensors)
                     {
-                        // FLM already has a purpose-built live overlay metric. Keep its virtual
-                        // sensor for logging without presenting a duplicate overlay entry.
-                        if (sensor.Identifier == AmdFlmSensorMetadata.Identifier)
-                            continue;
-
                         var dictEntry = CreateOverlayEntry(sensor);
                         var id = sensor.Identifier.ToString();
                         if (!_overlayEntryCore.OverlayEntryDict.ContainsKey(id))

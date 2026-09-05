@@ -41,18 +41,6 @@
       <Link>LICENSE</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\CapFrameX.FLM\ThirdParty\FLM\LICENSE-FLM.txt">
-      <Link>AMD-FLM-LICENSE.txt</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\CapFrameX.FLM\ThirdParty\FLM\external\amf\LICENSE.txt">
-      <Link>AMD-AMF-LICENSE.txt</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\CapFrameX.FLM\ThirdParty\FLM\external\ini\LICENCE.txt">
-      <Link>SIMPLEINI-LICENSE.txt</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Files\bf0822e8-2e55-4b99-82ee-939d8ac2384e.bat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -109,7 +97,6 @@
     <ProjectReference Include="..\CapFrameX.Overlay\CapFrameX.Overlay.csproj" />
     <ProjectReference Include="..\CapFrameX.PMD\CapFrameX.PMD.csproj" />
     <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj" />
-    <ProjectReference Include="..\CapFrameX.FLM\CapFrameX.FLM.vcxproj" ReferenceOutputAssembly="false" Condition="'$(Platform)' == 'x64'" />
     <ProjectReference Include="..\CapFrameX.OSD.Integration\CapFrameX.OSD.Integration.csproj" />
     <ProjectReference Include="..\..\external\CapFrameX.OSD\CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj" Condition="'$(CfxOsdFromSource)' == 'true'">
       <!-- The optional submodule project is not listed in CapFrameX.sln, so Visual Studio
@@ -175,20 +162,6 @@
     <Copy SourceFiles="@(CfxNativeRuntimeSource)"
           DestinationFolder="$(TargetDir)"
           SkipUnchangedFiles="true" />
-  </Target>
-
-  <!-- FLM is a required runtime component. Copy from its actual project output, including
-       for project-only builds; never silently reuse a DLL from the legacy output folder. -->
-  <ItemGroup Condition="'$(Platform)' == 'x64'">
-    <Content Include="..\CapFrameX.FLM\$(Platform)\$(Configuration)\CapFrameX.FLM.dll"
-             Link="CapFrameX.FLM.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
-  </ItemGroup>
-  <Target Name="StageCapFrameXFlm" AfterTargets="Build" Condition="'$(Platform)' == 'x64'">
-    <PropertyGroup>
-      <CfxFlmDll>$(MSBuildProjectDirectory)\..\CapFrameX.FLM\$(Platform)\$(Configuration)\CapFrameX.FLM.dll</CfxFlmDll>
-    </PropertyGroup>
-    <Error Condition="!Exists('$(CfxFlmDll)')" Text="Required FLM runtime is missing. Build CapFrameX.FLM before packaging CapFrameX." />
-    <Copy SourceFiles="$(CfxFlmDll)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
   </Target>
 
   <!-- Extended.Wpf.Toolkit bundles AvalonDock and its satellite assemblies, but CapFrameX only

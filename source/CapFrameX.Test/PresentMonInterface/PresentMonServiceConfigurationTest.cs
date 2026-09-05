@@ -9,6 +9,21 @@ namespace CapFrameX.Test.PresentMonInterface
     [TestClass]
     public class PresentMonServiceConfigurationTest
     {
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void ConfigParameterToArguments_DisablesInputTracking(bool redirected)
+        {
+            var configuration = new PresentMonServiceConfiguration
+            {
+                RedirectOutputStream = redirected,
+                ProcessName = "game.exe",
+                OutputFilename = "capture.csv"
+            };
+
+            StringAssert.Contains(configuration.ConfigParameterToArguments(), "--no_track_input");
+        }
+
         [TestMethod]
         public void ConfigParameterToArguments_DefaultsToTheShippedCircularBufferSize()
         {

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using CapFrameX.Contracts.Overlay;
-using CapFrameX.Contracts.Latency;
 using CapFrameX.OSD.Interop;
 
 namespace CapFrameX.OSD.Integration
@@ -77,14 +76,7 @@ namespace CapFrameX.OSD.Integration
                     // Unflagged: only a real boxed number, never a numeric-looking string.
                     numeric = TryUnboxNumber(e.Value, out dv);
                 }
-                if (AmdFlmSensorMetadata.IsUnavailable(e))
-                {
-                    o.IsNumeric = false;
-                    o.ValueText = "N/A";
-                    o.Unit = string.Empty;
-                    o.ShowGraph = false;
-                }
-                else if (numeric)
+                if (numeric)
                 {
                     o.IsNumeric = true;
                     // No-data / unsupported online metrics (Average FPS, PC Latency, Animation
@@ -231,11 +223,11 @@ namespace CapFrameX.OSD.Integration
             if (string.IsNullOrEmpty(unitFormat)) return string.Empty;
             var sb = new StringBuilder();
             bool inTag = false;
-            foreach (var ch in unitFormat)
+            foreach (var ch in unitFormat.Replace("{0}", string.Empty))
             {
                 if (ch == '<') inTag = true;
                 else if (ch == '>') inTag = false;
-                else if (!inTag && ch != '{' && ch != '}' && ch != '0') sb.Append(ch);
+                else if (!inTag && ch != '{' && ch != '}') sb.Append(ch);
             }
             return sb.ToString().Trim();
         }

@@ -212,13 +212,6 @@ jobs:
         run: |
           msbuild source\CapFrameX\CapFrameX.csproj /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
 
-      - name: Test passive FLM detection
-        shell: cmd
-        run: |
-          msbuild source\CapFrameX.FLM.Tests\CapFrameX.FLM.Tests.vcxproj /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=%VS_VERSION%
-          if errorlevel 1 exit /b 1
-          source\CapFrameX.FLM.Tests\x64\Release\CapFrameX.FLM.Tests.exe
-
       - name: Build HWInfo
         shell: cmd
         run: |
@@ -246,7 +239,6 @@ jobs:
         run: |
           $appOutput = Join-Path $env:GITHUB_WORKSPACE "source\CapFrameX\bin\x64\Release\net10.0-windows"
           $requiredPaths = @(
-            "CapFrameX.FLM.dll", "AMD-FLM-LICENSE.txt",
             "cfx_osd_core.dll",
             "hook\cfx_osd_hook.dll", "hook\x86\cfx_osd_hook.dll", "hook\MinHook.LICENSE.txt",
             "vulkan\cfx_osd_vklayer.dll", "vulkan\cfx_osd_vklayer_v1.json",
@@ -258,14 +250,6 @@ jobs:
             if (-not (Test-Path -LiteralPath (Join-Path $appOutput $relativePath) -PathType Leaf)) {
               throw "Required package component is missing: $relativePath"
             }
-          }
-          $flmLibrary = [System.Runtime.InteropServices.NativeLibrary]::Load((Join-Path $appOutput "CapFrameX.FLM.dll"))
-          try {
-            foreach ($export in @("FlmCreate", "FlmStart", "FlmStop", "FlmTryGetSample", "FlmGetDiagnostics", "FlmGetLastError", "FlmDestroy")) {
-              [System.Runtime.InteropServices.NativeLibrary]::GetExport($flmLibrary, $export) | Out-Null
-            }
-          } finally {
-            [System.Runtime.InteropServices.NativeLibrary]::Free($flmLibrary)
           }
 
       - name: Build Installer

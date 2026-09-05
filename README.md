@@ -100,9 +100,7 @@ Compare captures using bar charts, time series, distributions, and variance view
 
 # Sensor
 
-Choose which available CPU, GPU, memory, and storage sensors to record. Version 1.9.0 adds GPU memory allocation telemetry, NVIDIA memory temperature and estimated bandwidth readings, and AMD Anti-Lag/FLM integration on supported hardware.
-
-The 1.9.1 development branch includes FLM packaging and passive click-detection fixes, measurement status, and adjustable capture area, output and sensitivity. See the [FLM setup and measurement notes](source/CapFrameX.FLM/ThirdParty/FLM/README.CapFrameX.md). FLM needs real left-clicks with a visible response in the selected area; missing live measurements appear as `N/A`.
+Choose which available CPU, GPU, memory, and storage sensors to record. Version 1.9.0 adds GPU memory allocation telemetry, NVIDIA memory temperature and estimated bandwidth readings, and AMD Anti-Lag integration on supported hardware.
 
 ![CapFrameX 1.9.0 sensor selection](images/1.9.0/sensor.png)
 

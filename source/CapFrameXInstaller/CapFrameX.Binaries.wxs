@@ -2,12 +2,6 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Fragment>
         <DirectoryRef Id="INSTALLFOLDER">
-            <Component Id="cmp6B7ACE5822A45CF03FDF93CE7FC9F22D" Guid="*" Win64="yes">
-                <File Id="fil6733F62FB0AEAF3E605F7D518E185666" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\AMD-AMF-LICENSE.txt" />
-            </Component>
-            <Component Id="cmp658DEB2F840A3CF70441A777477903ED" Guid="*" Win64="yes">
-                <File Id="fil98E328FFA0443BA51CF6B0EA94ED95E7" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\AMD-FLM-LICENSE.txt" />
-            </Component>
             <Component Id="cmpFD65F52CD5EC0B46A750F8EEFC3D4422" Guid="*" Win64="yes">
                 <File Id="fil1F7E777B326B02F60B86F747002F8605" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\AutoMapper.dll" />
             </Component>
@@ -82,9 +76,6 @@
             </Component>
             <Component Id="cmpF3D48399A0F13574BBC5D2D15C71B25C" Guid="*" Win64="yes">
                 <File Id="fil804C4BD6BD64859B2C6C4826C2EDE7CC" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Extensions.pdb" />
-            </Component>
-            <Component Id="cmpA1BCC1E17242DA16AC4FDC7FA12F6C3A" Guid="*" Win64="yes">
-                <File Id="filA2C7DE2E14D81D137691C097ED1F8A7C" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.FLM.dll" />
             </Component>
             <Component Id="cmpB6667BCA4B65EF30DBEC87C6744D2AE9" Guid="*" Win64="yes">
                 <File Id="filE95B34771D9FD2DF85704CB98AD42F0B" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Hardware.Controller.dll" />
@@ -487,9 +478,6 @@
             </Component>
             <Component Id="cmp417BB047C679FC9F84F4083A063225E5" Guid="*" Win64="yes">
                 <File Id="fil568F630BA0560FCAD3197AF49E5E9371" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Silk.NET.Vulkan.dll" />
-            </Component>
-            <Component Id="cmp67A263E88600FEDAB57F34640E148AB4" Guid="*" Win64="yes">
-                <File Id="fil7B5AD7ED77FCB7E3606E13BC73C5E8FC" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\SIMPLEINI-LICENSE.txt" />
             </Component>
             <Component Id="cmp29B124E05CCAD23A5A2E64AF36D0DB99" Guid="*" Win64="yes">
                 <File Id="fil3CFF4B652691B77DCC205953AB10F1DE" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Squidex.ClientLibrary.dll" />
@@ -913,8 +901,6 @@
     </Fragment>
     <Fragment>
         <ComponentGroup Id="CapFrameXBinaries">
-            <ComponentRef Id="cmp6B7ACE5822A45CF03FDF93CE7FC9F22D" />
-            <ComponentRef Id="cmp658DEB2F840A3CF70441A777477903ED" />
             <ComponentRef Id="cmpFD65F52CD5EC0B46A750F8EEFC3D4422" />
             <ComponentRef Id="cmp3FA3E043C67E501AF5D90725CBA9EA07" />
             <ComponentRef Id="cmp010346265BD055915F2AF759DD155A33" />
@@ -944,7 +930,6 @@
             <ComponentRef Id="cmp946F72DFC650C4E5A49C51A838713428" />
             <ComponentRef Id="cmp4974650E9CE6F14031D0ABC8811B7A46" />
             <ComponentRef Id="cmpF3D48399A0F13574BBC5D2D15C71B25C" />
-            <ComponentRef Id="cmpA1BCC1E17242DA16AC4FDC7FA12F6C3A" />
             <ComponentRef Id="cmpB6667BCA4B65EF30DBEC87C6744D2AE9" />
             
             <ComponentRef Id="cmp6BEF906CB6FADDBDBA3AAF1A06E55843" />
@@ -1089,7 +1074,6 @@
             <ComponentRef Id="cmp609B1CFE4195028805411B060B83208B" />
             <ComponentRef Id="cmp28E1FF85CFD84830768D3E9A5E5EE156" />
             <ComponentRef Id="cmp417BB047C679FC9F84F4083A063225E5" />
-            <ComponentRef Id="cmp67A263E88600FEDAB57F34640E148AB4" />
             <ComponentRef Id="cmp29B124E05CCAD23A5A2E64AF36D0DB99" />
             <ComponentRef Id="cmp525502E9B65457F91935CD39242E7D55" />
             <ComponentRef Id="cmp817DADD4F645A06A14E7CEFCE195AEAC" />

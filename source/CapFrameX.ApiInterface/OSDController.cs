@@ -39,8 +39,6 @@ namespace CapFrameX.ApiInterface
 
         private static string FormatEntry(IOverlayEntry entry)
         {
-            if (CapFrameX.Contracts.Latency.AmdFlmSensorMetadata.IsUnavailable(entry))
-                return "N/A";
             try
             {
                 double entryValue = 0;

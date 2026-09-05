@@ -98,8 +98,7 @@ namespace CapFrameX.Overlay
 
         [JsonIgnore]
         public string FormattedValue
-            => CapFrameX.Contracts.Latency.AmdFlmSensorMetadata.IsUnavailable(this) ? "N/A" :
-            string.IsNullOrWhiteSpace(ValueFormat) ?
+            => string.IsNullOrWhiteSpace(ValueFormat) ?
             (Value == null ? string.Empty : Value.ToString())
             : string.Format(CultureInfo.InvariantCulture, ValueFormat, Value);
 

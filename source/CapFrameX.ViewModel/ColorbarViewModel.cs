@@ -70,7 +70,6 @@ namespace CapFrameX.ViewModel
         private bool _helpViewSelected;
         private bool _showNotification;
         private DateTime _notificationTimestamp = DateTime.MinValue;
-        private bool _isFlmSupported;
         private bool _isCaptureServiceRunning;
         private bool _isCapturing;
 
@@ -579,27 +578,6 @@ namespace CapFrameX.ViewModel
         /// </summary>
         public bool IsCaptureServiceReady => _isCaptureServiceRunning && !_isCapturing;
 
-        public bool IsFlmSupported
-        {
-            get { return _isFlmSupported; }
-            private set
-            {
-                _isFlmSupported = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public bool UseAmdFlmLatency
-        {
-            get { return _appConfiguration.UseAmdFlmLatency; }
-            set
-            {
-                _appConfiguration.UseAmdFlmLatency = value;
-                RaisePropertyChanged();
-            }
-        }
-
-
         public string PingURL
         {
             get { return _appConfiguration.PingURL; }
@@ -653,8 +631,6 @@ namespace CapFrameX.ViewModel
         /// </summary>
         public UpdateViewModel UpdateViewModel { get; }
 
-        public AmdFlmViewModel FlmSettings { get; }
-
         public string ResolveDocumentsPath(string path) => _pathService.ResolveDocumentsPlaceholder(path);
 
         public ColorbarViewModel(IRegionManager regionManager,
@@ -667,7 +643,6 @@ namespace CapFrameX.ViewModel
             ISystemInfo systemInfo,
             LoginManager loginManager,
             UpdateViewModel updateViewModel,
-            AmdFlmViewModel flmSettings,
             CaptureManager captureManager)
         {
             _regionManager = regionManager;
@@ -681,7 +656,6 @@ namespace CapFrameX.ViewModel
             _loginManager = loginManager;
             _captureManager = captureManager;
             UpdateViewModel = updateViewModel;
-            FlmSettings = flmSettings;
 
             RoundingDigits = new List<int>(Enumerable.Range(0, 8));
             SelectScreenshotFolderCommand = new DelegateCommand(OnSelectScreenshotFolder);
@@ -703,8 +677,6 @@ namespace CapFrameX.ViewModel
                     .ToArray();
 
                 RaisePropertyChanged(nameof(GraphicsAdapters));
-
-                IsFlmSupported = sensorService.GetGpuVendor() == EGpuVendor.Amd;
 
                 // Seed the custom hardware descriptions only after GPU enumeration is
                 // complete: earlier, GetGraphicCardName() falls back to WMI, which
@@ -729,16 +701,6 @@ namespace CapFrameX.ViewModel
                 {
                     _isCapturing = status.Status != null && status.Status != ECaptureStatus.Stopped;
                     RaisePropertyChanged(nameof(IsCaptureServiceReady));
-                });
-
-            // AmdFlmService resets UseAmdFlmLatency when a copied config enables it on a
-            // non-AMD system; mirror such external changes into the checkbox bindings.
-            _appConfiguration.OnValueChanged
-                .Where(change => change.key == nameof(IAppConfiguration.UseAmdFlmLatency))
-                .ObserveOnDispatcher()
-                .Subscribe(_ =>
-                {
-                    RaisePropertyChanged(nameof(UseAmdFlmLatency));
                 });
 
             SetAggregatorEvents();

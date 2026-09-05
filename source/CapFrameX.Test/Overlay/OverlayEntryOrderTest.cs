@@ -62,23 +62,6 @@ namespace CapFrameX.Test.Overlay
         [DataTestMethod]
         [DataRow(false)]
         [DataRow(true)]
-        public void Defaults_AmdFlmLatencyFollowsFeatureToggle(bool enabled)
-        {
-            var configuration = new Mock<IAppConfiguration>();
-            configuration.SetupGet(value => value.UseAmdFlmLatency).Returns(enabled);
-
-            var entry = OverlayUtils.GetOverlayEntryDefaults(configuration.Object)
-                .Single(value => value.Identifier == "OnlineAmdFlmLatency");
-
-            Assert.AreEqual(enabled, entry.IsEntryEnabled);
-            Assert.AreEqual(enabled, entry.ShowOnOverlayIsEnabled);
-            Assert.AreEqual("Click-to-Screen-Response Latency (ms)", entry.Description);
-            Assert.AreEqual("AMD FLM Latency", entry.GroupName);
-        }
-
-        [DataTestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
         public void Defaults_PcLatencyFollowsFeatureToggle(bool enabled)
         {
             var configuration = new Mock<IAppConfiguration>();
