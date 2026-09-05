@@ -57,7 +57,7 @@ starts, its dependency checker validates the expected .NET 10 Desktop Runtime an
 
 ## 1.9.1 development builds
 
-Installer and portable builds of **1.9.1.0-beta** include the in-game overlay again: keep the `hook` and `vulkan` folders, including their x86 subfolders, alongside the application. The `benchlab-service` folder contains the bundled service, which CapFrameX starts when needed; compatible separately installed services are also supported.
+Installer and portable builds of **1.9.1.1-beta** include the in-game overlay again: keep the `hook` and `vulkan` folders, including their x86 subfolders, alongside the application. The `benchlab-service` folder contains the bundled service, which CapFrameX starts when needed; compatible separately installed services are also supported.
 
 The installer registers the Vulkan layers for x64 and x86 in their respective HKLM registry views. Portable extraction does not register them; Vulkan integration requires the matching layers to be registered separately.
 

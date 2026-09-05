@@ -4,7 +4,7 @@ Capture, analyze, and compare game performance on Windows. CapFrameX combines In
 
 Version **1.9.0** introduces a refreshed interface, a system information dashboard, a built-in hook-free overlay, expanded GPU telemetry, and lower background polling overhead. The application now runs on **.NET 10**.
 
-This branch develops **1.9.1.0-beta**. It enables the experimental in-game overlay again and includes the DirectX hook and Vulkan layer DLLs for both x64 and x86, plus the bundled BENCHLAB service, in installer and portable builds. Compatible separately installed BENCHLAB services remain supported. The installer registers each Vulkan layer in its matching HKLM registry view.
+This branch develops **1.9.1.1-beta**. It enables the experimental in-game overlay again and includes the DirectX hook and Vulkan layer DLLs for both x64 and x86, plus the bundled BENCHLAB service, in installer and portable builds. Compatible separately installed BENCHLAB services remain supported. The installer registers each Vulkan layer in its matching HKLM registry view.
 
 # Remark in our own interest
 If you are a reviewer or a youtuber using CapFrameX to get your data, it would be nice to mention us and link to our software.
