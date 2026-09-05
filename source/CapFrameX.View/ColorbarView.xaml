@@ -270,7 +270,8 @@
 				<materialDesign:PopupBox Grid.Column="1" DataContext="{Binding Path=DataContext, ElementName=ColorbarViewName}"
 					materialDesign:Closed="PopupBox_Closed" RequestBringIntoView="PopupBox_RequestBringIntoView"
 					Margin="16,0,16,0" Padding="0" PopupUniformCornerRadius="10"
-					StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right" Opened="PopupBoxOpened">
+					StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right" Opened="PopupBoxOpened"
+					x:Name="OptionsPopupBox">
 					<materialDesign:PopupBox.ToggleContent>
 						<materialDesign:PackIcon Kind="Cog" Width="30" Height="30" Foreground="White"/>
 					</materialDesign:PopupBox.ToggleContent>
@@ -992,6 +993,7 @@
 																ToolTip="Ask the CapFrameX update server whether a newer version is available"/>
 														<Button Width="145" Height="36" Margin="10 0 0 0" Content="SHOW UPDATE"
 																Style="{StaticResource MaterialDesignOutlinedButton}"
+																Click="ShowUpdate_Click"
 																Command="{Binding UpdateViewModel.ShowUpdateDialogCommand}"
 																ToolTip="Show what the available update contains"/>
 													</StackPanel>
