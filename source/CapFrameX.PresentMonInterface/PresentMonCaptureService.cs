@@ -37,13 +37,16 @@ namespace CapFrameX.PresentMonInterface
         private static readonly PresentMonColumnLayout ColumnLayoutWithoutPcLatency =
             new PresentMonColumnLayout(COLUMN_HEADER_WITHOUT_PC_LATENCY, false);
 
-        // Fixed indices before the optional PC latency column. MsPCLatency is only available in the PC latency layout.
+        // Fixed indices before the optional PC latency column — identical in both layouts.
+        // MsPCLatency itself has no fixed index; use the dynamic MsPcLatency_Index instead.
         public static readonly int ApplicationName_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "Application");
         public static readonly int ProcessID_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "ProcessID");
         public static readonly int SwapChainAddress_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "SwapChainAddress");
+        // Graphics runtime/API of the presenting app (e.g. "DXGI", "D3D9") — index 3; used to
+        // label the hook-free OSD's <APP> line (RTSS gets this from the 3D API, we get it from PresentMon).
+        public static readonly int PresentRuntime_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "PresentRuntime");
         public static readonly int MsBetweenPresents_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "MsBetweenPresents");
         public static readonly int MsBetweenDisplayChange_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "MsBetweenDisplayChange");
-        public static readonly int MsPCLatency_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "MsPCLatency");
 
         private readonly IAppConfiguration _appConfiguration;
 
@@ -58,6 +61,8 @@ namespace CapFrameX.PresentMonInterface
         public int CpuBusy_Index => Array.IndexOf(CurrentColumnLayout.Columns, "MsCPUBusy");
         public int GpuBusy_Index => Array.IndexOf(CurrentColumnLayout.Columns, "MsGPUBusy");
         public int AnimationError_Index => Array.IndexOf(CurrentColumnLayout.Columns, "MsAnimationError");
+        // -1 when the running session was started without PC latency tracking
+        public int MsPcLatency_Index => Array.IndexOf(CurrentColumnLayout.Columns, "MsPCLatency");
 
         // Custom PresentMon build - ETW tracking columns
         public int EtwBufferFillPct_Index => Array.IndexOf(CurrentColumnLayout.Columns, "EtwBufferFillPct");
@@ -69,19 +74,34 @@ namespace CapFrameX.PresentMonInterface
 
         public string ColumnHeader => CurrentColumnLayout.ColumnHeader;
 
+        // PresentMon exits within milliseconds when it cannot open its ETW session, so an instance
+        // that is still alive after this window is up for good.
+        private static readonly TimeSpan PRESENT_MON_SETTLE_TIME = TimeSpan.FromSeconds(2);
+
+        // Upper bound for --terminate_existing_session to do its work, see StartCaptureService.
+        private const int PRESENT_MON_TERMINATE_TIMEOUT_MS = 3000;
+
         private readonly ISubject<string[]> _outputDataStream;
+        private readonly BehaviorSubject<bool> _captureServiceRunning = new BehaviorSubject<bool>(false);
         private readonly object _listLock = new object();
         private readonly ILogger<PresentMonCaptureService> _logger;
         private HashSet<(string, int)> _presentMonProcesses;
         private bool _isUpdating;
         private IDisposable _hearBeatDisposable;
         private IDisposable _processNameDisposable;
+        private IDisposable _settleDisposable;
+        private Process _presentMonProcess;
 
         public Dictionary<string, int> ParameterNameIndexMapping { get; }
 
         public IObservable<string[]> FrameDataStream
             => _outputDataStream.AsObservable();
         public Subject<bool> IsCaptureModeActiveStream { get; }
+
+        public bool IsCaptureServiceRunning => _captureServiceRunning.Value;
+
+        public IObservable<bool> CaptureServiceRunningStream
+            => _captureServiceRunning.AsObservable();
 
         public PresentMonCaptureService(ILogger<PresentMonCaptureService> logger, IAppConfiguration appConfiguration)
         {
@@ -101,12 +121,13 @@ namespace CapFrameX.PresentMonInterface
 
             try
             {
-                TryKillPresentMon();
+                SetCaptureServiceRunning(false);
+                TerminateRunningPresentMon();
                 SubscribeToPresentMonCapturedProcesses();
                 var captureColumnLayout = GetColumnLayout(IsPcLatencyTrackingEnabled(startinfo));
                 _activeColumnLayout = captureColumnLayout;
 
-                Process process = new Process
+                var process = new Process
                 {
                     StartInfo = new ProcessStartInfo
                     {
@@ -126,6 +147,10 @@ namespace CapFrameX.PresentMonInterface
                 {
                     if (!string.IsNullOrWhiteSpace(e.Data))
                     {
+                        // The first line is the CSV header, written once the ETW session is up:
+                        // data on stdout is the earliest proof that PresentMon runs properly.
+                        SetCaptureServiceRunning(true);
+
                         var lineSplit = e.Data.Split(',');
                         if (HasValidLineLength(lineSplit, captureColumnLayout))
                         {
@@ -137,9 +162,24 @@ namespace CapFrameX.PresentMonInterface
                     }
                 };
 
+                process.Exited += (sender, e) =>
+                {
+                    // A later start already replaced this instance: its exit says nothing about
+                    // the service that is running now.
+                    if (ReferenceEquals(_presentMonProcess, process))
+                        SetCaptureServiceRunning(false);
+                };
+
+                _presentMonProcess = process;
                 process.Start();
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
+
+                // Nothing is written to stdout before the first present on an idle system, so
+                // surviving the settle window is the fallback proof that the service is up.
+                _settleDisposable?.Dispose();
+                _settleDisposable = Observable.Timer(PRESENT_MON_SETTLE_TIME)
+                    .Subscribe(_ => SetCaptureServiceRunning(IsAlive(process)));
 
                 _logger.LogInformation("PresentMon successfully started");
                 return true;
@@ -147,6 +187,7 @@ namespace CapFrameX.PresentMonInterface
             catch (Exception e)
             {
                 _activeColumnLayout = null;
+                SetCaptureServiceRunning(false);
                 _logger.LogError(e, "Failed to start CaptureService");
                 return false;
             }
@@ -156,18 +197,99 @@ namespace CapFrameX.PresentMonInterface
         {
             _hearBeatDisposable?.Dispose();
             _processNameDisposable?.Dispose();
+            _settleDisposable?.Dispose();
+            _settleDisposable = null;
+            _presentMonProcess = null;
             _activeColumnLayout = null;
+            SetCaptureServiceRunning(false);
 
             try
             {
                 lock (_listLock)
                     _presentMonProcesses?.Clear();
 
-                TryKillPresentMon();
+                TerminateRunningPresentMon();
                 return true;
             }
             catch { return false; }
 
+        }
+
+        private void SetCaptureServiceRunning(bool isRunning)
+        {
+            if (_captureServiceRunning.Value != isRunning)
+                _captureServiceRunning.OnNext(isRunning);
+        }
+
+        private static bool IsAlive(Process process)
+        {
+            try
+            {
+                return process != null && !process.HasExited;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Stops a running PresentMon instance and waits for the termination to finish.
+        /// </summary>
+        /// <remarks>
+        /// --terminate_existing_session runs in a process of its own and only asks the running
+        /// instance to stop, so a termination left in flight can take down the *next* instance
+        /// instead of its predecessor - which is what a restart of the capture service does. With
+        /// no instance running there is nothing to terminate and starting the terminator would
+        /// only create that race: an ETW session orphaned by a crash is cleaned up by the
+        /// --stop_existing_session every start carries anyway.
+        /// </remarks>
+        private static void TerminateRunningPresentMon()
+        {
+            if (!IsPresentMonRunning())
+                return;
+
+            var terminator = TryKillPresentMon();
+            if (terminator == null)
+                return;
+
+            try
+            {
+                terminator.WaitForExit(PRESENT_MON_TERMINATE_TIMEOUT_MS);
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while waiting for the PresentMon session to terminate.");
+            }
+            finally
+            {
+                terminator.Dispose();
+            }
+        }
+
+        private static bool IsPresentMonRunning()
+        {
+            Process[] processes;
+
+            try
+            {
+                processes = Process.GetProcessesByName(CaptureServiceConfiguration.PresentMonAppName);
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while looking for a running PresentMon process.");
+                return true;
+            }
+
+            try
+            {
+                return processes.Length > 0;
+            }
+            finally
+            {
+                foreach (var process in processes)
+                    process.Dispose();
+            }
         }
 
         public IEnumerable<(string, int)> GetAllFilteredProcesses(HashSet<string> filter)
@@ -178,7 +300,11 @@ namespace CapFrameX.PresentMonInterface
             }
         }
 
-        public static void TryKillPresentMon()
+        /// <summary>
+        /// Asks a running PresentMon instance to stop. Returns the terminating process so callers
+        /// that start a new instance right after can wait for it, or null when it failed to start.
+        /// </summary>
+        public static Process TryKillPresentMon()
         {
             try
             {
@@ -195,10 +321,12 @@ namespace CapFrameX.PresentMonInterface
                 };
 
                 process.Start();
+                return process;
             }
             catch (Exception ex)
             {
                 Log.Logger.Error(ex, "Error while killing PresentMon process.");
+                return null;
             }
         }
 
@@ -291,16 +419,6 @@ namespace CapFrameX.PresentMonInterface
         private static bool HasValidLineLength(string[] lineSplit, PresentMonColumnLayout columnLayout)
         {
             return lineSplit?.Length == columnLayout.ValidLineLength;
-        }
-
-        private void LogInvalidLineLength(int actualLineLength, PresentMonColumnLayout columnLayout, string line)
-        {
-            _logger.LogError(
-                "Received PresentMon output line with invalid column count. Expected {ExpectedLineLength}, actual {ActualLineLength}, UsePcLatency {UsePcLatency}. Line: {Line}",
-                columnLayout.ValidLineLength,
-                actualLineLength,
-                columnLayout.UsePcLatency,
-                line);
         }
 
         private sealed class PresentMonColumnLayout

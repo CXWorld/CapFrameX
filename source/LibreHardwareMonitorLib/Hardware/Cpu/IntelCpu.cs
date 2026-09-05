@@ -10,6 +10,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using CapFrameX.Monitoring.Contracts;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
@@ -66,9 +67,10 @@ internal sealed class IntelCpu : GenericCpu
     private readonly Sensor _d2dClock;
     private readonly bool _hasOobmsmClocks;
     private readonly bool _hasOcMailboxClocks;
+    private bool _effectiveClockPollingActive;
 
-    public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) 
-        : base(processorIndex, cpuId, settings)
+    public IntelCpu(int processorIndex, CpuId[][] cpuId, ISettings settings, ISensorConfig sensorConfig = null)
+        : base(processorIndex, cpuId, settings, sensorConfig)
     {
         _msrModule = new IntelMsr();
         _imcModule = new IntelImc();
@@ -577,7 +579,7 @@ internal sealed class IntelCpu : GenericCpu
 
             _imcClock = new Sensor("IMC Clock (QCLK)", imcSensorBaseIndex, SensorType.Clock, this, settings)
             { PresentationSortKey = "0_4_0" };
-            _memoryDataRate = new Sensor("Memory Data Rate", imcSensorBaseIndex + 1, SensorType.Frequency, this, settings)
+            _memoryDataRate = new Sensor("Memory Data Rate", imcSensorBaseIndex + 1, SensorType.DataRate, this, settings)
             { PresentationSortKey = "0_4_1" };
             _dramFrequency = new Sensor("DRAM Frequency", imcSensorBaseIndex + 2, SensorType.Clock, this, settings)
             { PresentationSortKey = "0_4_2" };
@@ -620,7 +622,15 @@ internal sealed class IntelCpu : GenericCpu
             // ARL-S relocated the VR Mailbox to MSR 0x607/0x608. OOBMSM PMT
             // doesn't expose D2D/NGU on ARL-S, so when the PMT path failed
             // above, try the MSR-mailbox path. (See IntelOcMailbox.cs.)
-            _ocMailbox = new IntelOcMailbox(_msrModule);
+            // Only the validated ARL-S CPUID model 0xC6 may resolve the
+            // 0x3F NGU sentinel to its stock 26x ratio. Other mailbox
+            // platforms suppress an unresolved sentinel instead of
+            // presenting an assumed clock.
+            uint? nguSentinelFallbackRatio =
+                _microArchitecture == MicroArchitecture.ArrowLake && _model == 0xC6
+                    ? 26U
+                    : null;
+            _ocMailbox = new IntelOcMailbox(_msrModule, nguSentinelFallbackRatio);
             if (_ocMailbox.IsReady)
             {
                 int sensorBaseIndex = _hasAperfMperf
@@ -954,40 +964,44 @@ internal sealed class IntelCpu : GenericCpu
     {
         base.Update();
 
-        float coreMax = float.MinValue;
-        float coreAvg = 0;
         uint eax;
 
-        for (int i = 0; i < _coreTemperatures.Length; i++)
+        if (ShouldEvaluateCoreTemperatures())
         {
-            // if reading is valid
-            if (_msrModule.ReadMsr(IA32_THERM_STATUS_MSR, out eax, out _, _cpuId[i][0].Affinity) && (eax & 0x80000000) != 0)
+            float coreMax = float.MinValue;
+            float coreAvg = 0;
+
+            for (int i = 0; i < _coreTemperatures.Length; i++)
             {
-                // get the dist from tjMax from bits 22:16
-                float deltaT = (eax & 0x007F0000) >> 16;
-                float tjMax = _coreTemperatures[i].Parameters[0].Value;
-                float tSlope = _coreTemperatures[i].Parameters[1].Value;
-                _coreTemperatures[i].Value = tjMax - (tSlope * deltaT);
+                // if reading is valid
+                if (_msrModule.ReadMsr(IA32_THERM_STATUS_MSR, out eax, out _, _cpuId[i][0].Affinity) && (eax & 0x80000000) != 0)
+                {
+                    // get the dist from tjMax from bits 22:16
+                    float deltaT = (eax & 0x007F0000) >> 16;
+                    float tjMax = _coreTemperatures[i].Parameters[0].Value;
+                    float tSlope = _coreTemperatures[i].Parameters[1].Value;
+                    _coreTemperatures[i].Value = tjMax - (tSlope * deltaT);
 
-                coreAvg += (float)_coreTemperatures[i].Value;
-                if (coreMax < _coreTemperatures[i].Value)
-                    coreMax = (float)_coreTemperatures[i].Value;
+                    coreAvg += (float)_coreTemperatures[i].Value;
+                    if (coreMax < _coreTemperatures[i].Value)
+                        coreMax = (float)_coreTemperatures[i].Value;
 
-                _distToTjMaxTemperatures[i].Value = deltaT;
+                    _distToTjMaxTemperatures[i].Value = deltaT;
+                }
+                else
+                {
+                    _coreTemperatures[i].Value = null;
+                    _distToTjMaxTemperatures[i].Value = null;
+                }
             }
-            else
+
+            //calculate average cpu temperature over all cores
+            if (_coreMax != null && coreMax != float.MinValue)
             {
-                _coreTemperatures[i].Value = null;
-                _distToTjMaxTemperatures[i].Value = null;
+                _coreMax.Value = coreMax;
+                coreAvg /= _coreTemperatures.Length;
+                _coreAvg.Value = coreAvg;
             }
-        }
-
-        //calculate average cpu temperature over all cores
-        if (_coreMax != null && coreMax != float.MinValue)
-        {
-            _coreMax.Value = coreMax;
-            coreAvg /= _coreTemperatures.Length;
-            _coreAvg.Value = coreAvg;
         }
 
         if (_packageTemperature != null)
@@ -1006,6 +1020,10 @@ internal sealed class IntelCpu : GenericCpu
                 _packageTemperature.Value = null;
             }
         }
+
+        bool shouldPollUncoreClock = SensorPolling.ShouldEvaluate(_sensorConfig, _uncoreClock);
+        bool shouldPollImcSensors = ShouldEvaluateImcSensors();
+        bool shouldPollFabricClocks = ShouldEvaluateFabricClocks();
 
         if (HasTimeStampCounter && _timeStampCounterMultiplier > 0)
         {
@@ -1072,7 +1090,7 @@ internal sealed class IntelCpu : GenericCpu
                 ActivateSensor(_busClock);
             }
 
-            if (_hasUncoreClock && newBusClock > 0 &&
+            if (_hasUncoreClock && shouldPollUncoreClock && newBusClock > 0 &&
                 _msrModule.ReadMsr(MSR_UNCORE_PERF_STATUS, out uint uncoreEax, out _))
             {
                 // CUR_RATIO (bits [6:0]) * BCLK is the instantaneous uncore/ring
@@ -1084,7 +1102,7 @@ internal sealed class IntelCpu : GenericCpu
                     _uncoreClock.Value = null;
             }
 
-            if (_hasImc && newBusClock > 0)
+            if (_hasImc && shouldPollImcSensors && newBusClock > 0)
             {
                 // Prefer the live SA_PERF workpoint where the kernel module
                 // exposes one (Core Ultra MTL/LNL/PTL). On Arrow Lake the live
@@ -1145,115 +1163,61 @@ internal sealed class IntelCpu : GenericCpu
                 }
             }
 
-            if (_hasOobmsmClocks)
+            if (shouldPollFabricClocks)
             {
-                // PMT NGU/D2D fields use absolute MHz multipliers
-                // baked into the platform table (e.g. ratio × 50 MHz on
-                // LNL/PTL D2D, ratio × 100 MHz on MTL NGU). No BCLK
-                // scaling is involved, so the IMC reference-clock path
-                // doesn't apply here.
-                if (_oobmsmClocks.TryRead(out IntelOobmsmClocks.Sample oobmsmSample))
+                if (_hasOobmsmClocks)
                 {
-                    if (_nguClock != null)
-                        _nguClock.Value = oobmsmSample.HasNgu ? (float?)oobmsmSample.NguMhz : null;
-                    if (_d2dClock != null)
-                        _d2dClock.Value = oobmsmSample.HasD2d ? (float?)oobmsmSample.D2dMhz : null;
+                    // PMT NGU/D2D fields use absolute MHz multipliers
+                    // baked into the platform table (e.g. ratio × 50 MHz on
+                    // LNL/PTL D2D, ratio × 100 MHz on MTL NGU). No BCLK
+                    // scaling is involved, so the IMC reference-clock path
+                    // doesn't apply here.
+                    if (_oobmsmClocks.TryRead(out IntelOobmsmClocks.Sample oobmsmSample))
+                    {
+                        if (_nguClock != null)
+                            _nguClock.Value = oobmsmSample.HasNgu ? (float?)oobmsmSample.NguMhz : null;
+                        if (_d2dClock != null)
+                            _d2dClock.Value = oobmsmSample.HasD2d ? (float?)oobmsmSample.D2dMhz : null;
+                    }
+                    else
+                    {
+                        if (_nguClock != null) _nguClock.Value = null;
+                        if (_d2dClock != null) _d2dClock.Value = null;
+                    }
                 }
-                else
+                else if (_hasOcMailboxClocks)
                 {
-                    if (_nguClock != null) _nguClock.Value = null;
-                    if (_d2dClock != null) _d2dClock.Value = null;
-                }
-            }
-            else if (_hasOcMailboxClocks)
-            {
-                // ARL-S path: D2D/NGU come from VR Mailbox on MSR 0x607/0x608.
-                // Both ratios decode to MHz with a × 100 MHz multiplier baked
-                // into IntelOcMailbox.
-                if (_ocMailbox.TryRead(out IntelOcMailbox.Sample mboxSample))
-                {
-                    if (_nguClock != null)
-                        _nguClock.Value = mboxSample.HasNgu ? (float?)mboxSample.NguMhz : null;
-                    if (_d2dClock != null)
-                        _d2dClock.Value = mboxSample.HasD2d ? (float?)mboxSample.D2dMhz : null;
-                }
-                else
-                {
-                    if (_nguClock != null) _nguClock.Value = null;
-                    if (_d2dClock != null) _d2dClock.Value = null;
+                    // ARL-S path: D2D/NGU come from VR Mailbox on MSR 0x607/0x608.
+                    // Both ratios decode to MHz with a × 100 MHz multiplier baked
+                    // into IntelOcMailbox.
+                    if (_ocMailbox.TryRead(out IntelOcMailbox.Sample mboxSample))
+                    {
+                        if (_nguClock != null)
+                            _nguClock.Value = mboxSample.HasNgu ? (float?)mboxSample.NguMhz : null;
+                        if (_d2dClock != null)
+                            _d2dClock.Value = mboxSample.HasD2d ? (float?)mboxSample.D2dMhz : null;
+                    }
+                    else
+                    {
+                        if (_nguClock != null) _nguClock.Value = null;
+                        if (_d2dClock != null) _d2dClock.Value = null;
+                    }
                 }
             }
         }
 
         if (_hasAperfMperf)
         {
-            double effectiveSum = 0;
-            double effectiveMax = 0;
-            int effectiveCount = 0;
-
-            for (int i = 0; i < _threadEffectiveClocks.Length; i++)
+            bool shouldPollEffectiveClocks = ShouldEvaluateEffectiveClocks();
+            if (shouldPollEffectiveClocks)
             {
-                for (int j = 0; j < _threadEffectiveClocks[i].Length; j++)
-                {
-                    DateTime sampleTime = DateTime.UtcNow;
-
-                    if (!TryReadPerfCounters(_cpuId[i][j].Affinity, out ulong aperf, out ulong mperf))
-                    {
-                        _threadEffectiveClocks[i][j].Value = null;
-                        continue;
-                    }
-
-                    if (aperf < _lastAperf[i][j] ||
-                        mperf < _lastMperf[i][j])
-                    {
-                        // Counter overflow - reset
-                        _lastAperf[i][j] = aperf;
-                        _lastMperf[i][j] = mperf;
-                        _lastSampleTime[i][j] = sampleTime;
-                        _threadEffectiveClocks[i][j].Value = null;
-                        continue;
-                    }
-
-                    TimeSpan sampleDuration = sampleTime - _lastSampleTime[i][j];
-                    ulong aperfDelta = aperf - _lastAperf[i][j];
-                    ulong mperfDelta = mperf - _lastMperf[i][j];
-                    _lastAperf[i][j] = aperf;
-                    _lastMperf[i][j] = mperf;
-                    _lastSampleTime[i][j] = sampleTime;
-
-                    if (aperfDelta == 0 || mperfDelta == 0 || sampleDuration.Ticks == 0)
-                    {
-                        _threadEffectiveClocks[i][j].Value = null;
-                        continue;
-                    }
-
-                    // Effective clock = APERF cycles / elapsed time (same approach as AMD)
-                    double freq = aperfDelta / (sampleDuration.TotalMilliseconds * 1000.0);
-
-                    // Clamp effective clock between 0 and core clock
-                    float maxClock = _coreClocks[i].Value ?? (float)TimeStampCounterFrequency;
-
-                    // Clamping must consider BCLK oc (max 10%) and Spread Spectrum Clocking (SSC) (1-2%)
-                    freq = Math.Max(0, Math.Min(freq, maxClock * 1.12));
-                    _threadEffectiveClocks[i][j].Value = (float)Math.Round(freq, 0);
-
-                    effectiveSum += freq;
-                    effectiveCount++;
-                    if (freq > effectiveMax)
-                        effectiveMax = freq;
-                }
+                if (_effectiveClockPollingActive)
+                    UpdateEffectiveClocks();
+                else
+                    PrimeEffectiveClockCounters();
             }
 
-            if (effectiveCount > 0)
-            {
-                _coreEffectiveAvg.Value = (float)Math.Round(effectiveSum / effectiveCount, 0);
-                _coreEffectiveMax.Value = (float)Math.Round(effectiveMax, 0);
-            }
-            else
-            {
-                _coreEffectiveAvg.Value = null;
-                _coreEffectiveMax.Value = null;
-            }
+            _effectiveClockPollingActive = shouldPollEffectiveClocks;
         }
 
         if (_powerSensors != null)
@@ -1279,7 +1243,9 @@ internal sealed class IntelCpu : GenericCpu
         }
 
         // Read package-level core voltage
-        if (_coreVoltage != null && _msrModule.ReadMsr(IA32_PERF_STATUS, out eax, out uint edx))
+        if (_coreVoltage != null &&
+            SensorPolling.ShouldEvaluate(_sensorConfig, _coreVoltage) &&
+            _msrModule.ReadMsr(IA32_PERF_STATUS, out eax, out uint edx))
         {
             // Voltage is in bits 47:32 of the 64-bit MSR (IA32_PERF_STATUS)
             // ReadMsr returns: eax = bits 31:0, edx = bits 63:32
@@ -1311,6 +1277,9 @@ internal sealed class IntelCpu : GenericCpu
         // Read per-core VIDs
         for (int i = 0; i < _coreVIDs.Length; i++)
         {
+            if (!SensorPolling.ShouldEvaluate(_sensorConfig, _coreVIDs[i]))
+                continue;
+
             if (_msrModule.ReadMsr(IA32_PERF_STATUS, out eax, out edx, _cpuId[i][0].Affinity))
             {
                 uint vid = edx & 0xFFFF;
@@ -1338,6 +1307,141 @@ internal sealed class IntelCpu : GenericCpu
             {
                 DeactivateSensor(_coreVIDs[i]);
             }
+        }
+    }
+
+    private bool ShouldEvaluateCoreTemperatures()
+    {
+        bool evaluate = SensorPolling.ShouldEvaluate(_sensorConfig, _coreMax);
+        evaluate |= SensorPolling.ShouldEvaluate(_sensorConfig, _coreAvg);
+        evaluate |= SensorPolling.ShouldEvaluateAny(_sensorConfig, _coreTemperatures);
+        evaluate |= SensorPolling.ShouldEvaluateAny(_sensorConfig, _distToTjMaxTemperatures);
+        return evaluate;
+    }
+
+    private bool ShouldEvaluateImcSensors()
+    {
+        bool evaluate = SensorPolling.ShouldEvaluate(_sensorConfig, _imcClock);
+        evaluate |= SensorPolling.ShouldEvaluate(_sensorConfig, _memoryDataRate);
+        evaluate |= SensorPolling.ShouldEvaluate(_sensorConfig, _dramFrequency);
+        evaluate |= SensorPolling.ShouldEvaluate(_sensorConfig, _memoryGear);
+        return evaluate;
+    }
+
+    private bool ShouldEvaluateFabricClocks()
+    {
+        bool evaluate = SensorPolling.ShouldEvaluate(_sensorConfig, _nguClock);
+        evaluate |= SensorPolling.ShouldEvaluate(_sensorConfig, _d2dClock);
+        return evaluate;
+    }
+
+    private bool ShouldEvaluateEffectiveClocks()
+    {
+        bool evaluate = SensorPolling.ShouldEvaluate(_sensorConfig, _coreEffectiveAvg);
+        evaluate |= SensorPolling.ShouldEvaluate(_sensorConfig, _coreEffectiveMax);
+
+        foreach (Sensor[] coreSensors in _threadEffectiveClocks)
+            evaluate |= SensorPolling.ShouldEvaluateAny(_sensorConfig, coreSensors);
+
+        return evaluate;
+    }
+
+    private void PrimeEffectiveClockCounters()
+    {
+        for (int i = 0; i < _threadEffectiveClocks.Length; i++)
+        {
+            for (int j = 0; j < _threadEffectiveClocks[i].Length; j++)
+            {
+                if (TryReadPerfCounters(_cpuId[i][j].Affinity, out ulong aperf, out ulong mperf))
+                {
+                    _lastAperf[i][j] = aperf;
+                    _lastMperf[i][j] = mperf;
+                    _lastSampleTime[i][j] = DateTime.UtcNow;
+                }
+                else
+                {
+                    _lastAperf[i][j] = 0;
+                    _lastMperf[i][j] = 0;
+                    _lastSampleTime[i][j] = default;
+                }
+
+                _threadEffectiveClocks[i][j].Value = null;
+            }
+        }
+
+        _coreEffectiveAvg.Value = null;
+        _coreEffectiveMax.Value = null;
+    }
+
+    private void UpdateEffectiveClocks()
+    {
+        double effectiveSum = 0;
+        double effectiveMax = 0;
+        int effectiveCount = 0;
+
+        for (int i = 0; i < _threadEffectiveClocks.Length; i++)
+        {
+            for (int j = 0; j < _threadEffectiveClocks[i].Length; j++)
+            {
+                DateTime sampleTime = DateTime.UtcNow;
+
+                if (!TryReadPerfCounters(_cpuId[i][j].Affinity, out ulong aperf, out ulong mperf))
+                {
+                    _lastSampleTime[i][j] = default;
+                    _threadEffectiveClocks[i][j].Value = null;
+                    continue;
+                }
+
+                if (_lastSampleTime[i][j].Ticks == 0 ||
+                    aperf < _lastAperf[i][j] ||
+                    mperf < _lastMperf[i][j])
+                {
+                    // First sample after polling resumes, or counter overflow: re-prime.
+                    _lastAperf[i][j] = aperf;
+                    _lastMperf[i][j] = mperf;
+                    _lastSampleTime[i][j] = sampleTime;
+                    _threadEffectiveClocks[i][j].Value = null;
+                    continue;
+                }
+
+                TimeSpan sampleDuration = sampleTime - _lastSampleTime[i][j];
+                ulong aperfDelta = aperf - _lastAperf[i][j];
+                ulong mperfDelta = mperf - _lastMperf[i][j];
+                _lastAperf[i][j] = aperf;
+                _lastMperf[i][j] = mperf;
+                _lastSampleTime[i][j] = sampleTime;
+
+                if (aperfDelta == 0 || mperfDelta == 0 || sampleDuration.Ticks == 0)
+                {
+                    _threadEffectiveClocks[i][j].Value = null;
+                    continue;
+                }
+
+                // Effective clock = APERF cycles / elapsed time (same approach as AMD)
+                double freq = aperfDelta / (sampleDuration.TotalMilliseconds * 1000.0);
+
+                // Clamp effective clock between 0 and core clock. BCLK overclocking and
+                // spread-spectrum clocking require a small margin above the sampled clock.
+                float maxClock = _coreClocks[i].Value ?? (float)TimeStampCounterFrequency;
+                freq = Math.Max(0, Math.Min(freq, maxClock * 1.12));
+                _threadEffectiveClocks[i][j].Value = (float)Math.Round(freq, 0);
+
+                effectiveSum += freq;
+                effectiveCount++;
+                if (freq > effectiveMax)
+                    effectiveMax = freq;
+            }
+        }
+
+        if (effectiveCount > 0)
+        {
+            _coreEffectiveAvg.Value = (float)Math.Round(effectiveSum / effectiveCount, 0);
+            _coreEffectiveMax.Value = (float)Math.Round(effectiveMax, 0);
+        }
+        else
+        {
+            _coreEffectiveAvg.Value = null;
+            _coreEffectiveMax.Value = null;
         }
     }
 

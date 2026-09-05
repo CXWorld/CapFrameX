@@ -12,7 +12,8 @@ namespace CapFrameX.Contracts.Data
 		Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName, string comment, string recordDirectory, List<ISessionInfo> HWInfo);
 
 		void UpdateCustomData(IFileRecordInfo recordInfo, string customCpuInfo,
-			string customGpuInfo, string customRamInfo, string customGameName, string customComment);
+			string customGpuInfo, string customRamInfo, string customMainboardInfo,
+			string customGameName, string customComment, string customResolution = null);
 
 		List<ISystemInfoEntry> GetSystemInfos(IFileRecordInfo recordInfo);
 

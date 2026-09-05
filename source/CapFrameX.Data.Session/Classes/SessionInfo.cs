@@ -16,6 +16,9 @@ namespace CapFrameX.Data.Session.Classes
 		public string GameName { get; set; }
 		public string ProcessName { get; set; }
 		public DateTime CreationDate { get; set; }
+		// No [Description]: the attribute is what publishes a field to the cloud session
+		// detail view (GetSessionDetailByFileIdHandler), and the machine name is local info.
+		public string DeviceName { get; set; }
 		[Description("Mainboard")]
 		public string Motherboard { get; set; }
 		[Description("OS")]

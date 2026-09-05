@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Data;
+using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Sensor.Reporting;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
@@ -26,6 +27,12 @@ namespace CapFrameX.ViewModel
             var wrappedComparisonRecordInfo = GetWrappedRecordInfo(comparisonRecordInfo);
 
             // Insert into list (sorted)
+            bool sourceChanged = UpdateComparisonMetricSource(wrappedComparisonRecordInfo);
+            if (sourceChanged)
+            {
+                foreach (ComparisonRecordInfoWrapper existingRecord in ComparisonRecords)
+                    SetMetrics(existingRecord);
+            }
             SetMetrics(wrappedComparisonRecordInfo);
             InsertComparisonRecordsSorted(wrappedComparisonRecordInfo);
 
@@ -55,11 +62,24 @@ namespace CapFrameX.ViewModel
         private void SetMetrics(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
         {
             double startTime = FirstSeconds;
-            double lastFrameStart = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
-            double endTime = LastSeconds > lastFrameStart ? lastFrameStart : lastFrameStart + LastSeconds;
+            double lastFrameStart;
+            if (!TryGetLastFrameStart(wrappedComparisonRecordInfo.WrappedRecordInfo.Session, out lastFrameStart))
+            {
+                wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric = double.NaN;
+                wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric = double.NaN;
+                wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric = double.NaN;
+                wrappedComparisonRecordInfo.WrappedRecordInfo.SortingVariances = 0;
+                return;
+            }
+
+            double endTime = LastSeconds <= 0 || LastSeconds > lastFrameStart
+                ? lastFrameStart : LastSeconds;
 
             var frametimeTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
-            var displayChangeTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetDisplayChangeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
+            var displayChangeTimeWindow = _useDisplayChangeSamplesForComparison
+                ? wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetDisplayChangeTimeWindow(
+                    startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None)
+                : null;
             var gpuActiveTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetGpuActiveTimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
 
             double GeMetricValue(IList<double> sequence, EMetric metric) =>
@@ -94,7 +114,7 @@ namespace CapFrameX.ViewModel
                 }
                 else
                 {
-                    var samples = _appConfiguration.UseDisplayChangeMetrics
+                    var samples = _useDisplayChangeSamplesForComparison
                         ? displayChangeTimeWindow : frametimeTimeWindow;
 
                     wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric =
@@ -131,7 +151,7 @@ namespace CapFrameX.ViewModel
                 }
                 else
                 {
-                    var samples = _appConfiguration.UseDisplayChangeMetrics
+                    var samples = _useDisplayChangeSamplesForComparison
                         ? displayChangeTimeWindow : frametimeTimeWindow;
 
                     wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric =
@@ -168,7 +188,7 @@ namespace CapFrameX.ViewModel
                 }
                 else
                 {
-                    var samples = _appConfiguration.UseDisplayChangeMetrics
+                    var samples = _useDisplayChangeSamplesForComparison
                         ? displayChangeTimeWindow : frametimeTimeWindow;
 
                     wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric =
@@ -176,19 +196,51 @@ namespace CapFrameX.ViewModel
                 }
             }
 
-            IList<double> variances;
-
-            if (_appConfiguration.UseDisplayChangeMetrics)
-            {
-                variances = _frametimeStatisticProvider.GetDisplayTimeVariancePercentages(wrappedComparisonRecordInfo.WrappedRecordInfo.Session);
-            }
-            else
-            {
-                variances = _frametimeStatisticProvider.GetFrametimeVariancePercentages(wrappedComparisonRecordInfo.WrappedRecordInfo.Session);
-            }
+            var varianceSequences = GetVarianceSequences(
+                wrappedComparisonRecordInfo.WrappedRecordInfo.Session,
+                _useDisplayChangeSamplesForComparison, startTime, endTime);
+            var variances = _frametimeStatisticProvider.GetVariancePercentages(varianceSequences);
 
             wrappedComparisonRecordInfo.WrappedRecordInfo.SortingVariances
                 = variances[0] + variances[1];
+        }
+
+        private static IEnumerable<IList<double>> GetVarianceSequences(ISession session,
+            bool useDisplayChangeSamples, double startTime, double endTime)
+        {
+            foreach (ISessionRun run in session.Runs)
+            {
+                ISessionCaptureData captureData = run?.CaptureData;
+                if (captureData == null)
+                {
+                    yield return new double[0];
+                    continue;
+                }
+
+                IList<double> times = captureData.TimeInSeconds ?? new double[0];
+                IList<double> values = useDisplayChangeSamples
+                    ? captureData.MsBetweenDisplayChange : captureData.MsBetweenPresents;
+                if (values == null)
+                {
+                    yield return new double[0];
+                    continue;
+                }
+
+                int count = Math.Min(times.Count, values.Count);
+                var sequence = new List<double>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    double time = times[i];
+                    double value = values[i];
+                    if (time >= startTime && time <= endTime && value > 0
+                        && !double.IsNaN(value) && !double.IsInfinity(value))
+                    {
+                        sequence.Add(value);
+                    }
+                }
+
+                yield return sequence;
+            }
         }
 
         private void InsertComparisonRecordsSorted(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
@@ -523,6 +575,11 @@ namespace CapFrameX.ViewModel
                 {
                     ComparisonRecords.Add(item);
                 }
+
+                // The records are replaced by clones, so every series still holds a wrapper that
+                // is no longer in the list. Without this the line charts keep the series built for
+                // the previous order until some unrelated change happens to set the flags.
+                SetChartUpdateFlags();
 
                 //Draw charts and performance parameter
                 UpdateCharts();

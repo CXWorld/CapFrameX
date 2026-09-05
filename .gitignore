@@ -16,6 +16,9 @@
 [Rr]eleases/
 x64/
 x86/
+# Prebuilt 32-bit binaries must be tracked despite the generic x86/ rule
+!external/CapFrameX.OSD-prebuilt/native/x86/
+!external/CapFrameX.OSD-prebuilt/native/vk/x86/
 bld/
 [Bb]in/
 [Oo]bj/
@@ -270,4 +273,6 @@ nul
 
 # Crash reports
 crash-report/
+/memory-dumps/
 /pmcreader-plugin/Zen5Log.txt
+/temp/

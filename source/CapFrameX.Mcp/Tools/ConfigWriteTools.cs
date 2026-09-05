@@ -54,7 +54,8 @@ namespace CapFrameX.Mcp.Tools
 
         [McpServerTool(Name = "cfx_get_config",
             Description = "Returns the current AppSettings values. Optional `nameFilter` does a case-insensitive substring match against property names " +
-                "to scope the response to a single area (e.g. 'overlay', 'capture', 'sensor').")]
+                "to scope the response to a single area (e.g. 'overlay', 'capture', 'sensor'). Use cfx_get_osd_options for the complete typed OSD snapshot; " +
+                "one name filter cannot cover every OSD property.")]
         public ConfigGetResult GetConfig(
             [Description("Optional case-insensitive substring filter on the property name.")] string nameFilter = null)
         {
@@ -85,7 +86,8 @@ namespace CapFrameX.Mcp.Tools
 
         [McpServerTool(Name = "cfx_set_config",
             Description = "Mutates a single AppSettings property. Pass the property name (e.g. 'IsOverlayActive', 'OSDRefreshPeriod') and the new value as JSON " +
-                "(true / 250 / \"value\"). Returns the old and new values; the change is hot-applied where the property's setter triggers it.")]
+                "(true / 250 / \"value\"). Returns the old and new values; the change is hot-applied where the property's setter triggers it. " +
+                "Use cfx_set_osd_options for OSD properties so validation and all required runtime notifications are applied.")]
         public ConfigSetResult SetConfig(
             [Description("Property name on IAppConfiguration (case-sensitive)")] string name,
             [Description("New value as JSON: true/false, number, or quoted string. Use null to skip.")] string valueJson)
@@ -195,7 +197,7 @@ namespace CapFrameX.Mcp.Tools
         [McpServerTool(Name = "cfx_toggle_overlay_entry",
             Description = "Toggles a single overlay entry's enabled / show-on-overlay flag in the live overlay state — finer grained than cfx_set_overlay_config. " +
                 "Pass at least one of showOnOverlay or isEntryEnabled. " +
-                "Note: applies in-memory only; the change is reverted when CapFrameX restarts. Use cfx_set_overlay_config to persist.")]
+                "Note: applies in-memory only; the change is reverted when CapFrameX restarts. Use cfx_set_overlay_entry for validated, optionally persisted changes.")]
         public ToggleOverlayEntryResult ToggleOverlayEntry(
             [Description("Entry identifier as returned by cfx_get_overlay_entries.identifier")] string identifier,
             [Description("New ShowOnOverlay value. Omit to leave unchanged.")] bool? showOnOverlay = null,
@@ -289,6 +291,7 @@ namespace CapFrameX.Mcp.Tools
                 customCpuInfo: info.ProcessorName,
                 customGpuInfo: info.GraphicCardName,
                 customRamInfo: info.SystemRamInfo,
+                customMainboardInfo: info.MotherboardName,
                 customGameName: info.GameName,
                 customComment: comment ?? string.Empty);
 

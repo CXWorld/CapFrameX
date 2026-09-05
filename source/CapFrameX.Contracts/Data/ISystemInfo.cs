@@ -18,6 +18,8 @@
 
         ESystemInfoTertiaryStatus HardwareAcceleratedGPUSchedulingStatus { get; }
 
+        string GetDeviceName();
+
         string GetProcessorName();
 
         string GetGraphicCardName();
@@ -26,7 +28,15 @@
 
         string GetMotherboardName();
 
+        string GetMotherboardManufacturerBrand();
+
+        string GetBiosVersion();
+
         string GetSystemRAMInfoName();
+
+        string GetSystemRAMManufacturer();
+
+        string GetProcessorCoreCountInfo();
 
         void SetSystemInfosStatus();
 

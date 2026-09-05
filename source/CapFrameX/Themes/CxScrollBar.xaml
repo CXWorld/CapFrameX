@@ -1,0 +1,219 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--Rounded scrollbar restyle, applied app-wide via the implicit ScrollBar
+        style below. Brush values here are dark-theme fallbacks only; the
+        theme-aware values are (re)applied on every theme switch by the
+        BrandPalette table in ColorbarView.xaml.cs (direct application
+        resources win over this merged dictionary).-->
+    <SolidColorBrush x:Key="Cx.Brush.ScrollBar.Thumb" Color="#5A5A60"/>
+    <SolidColorBrush x:Key="Cx.Brush.ScrollBar.ThumbHover" Color="#8A8A92"/>
+    <SolidColorBrush x:Key="Cx.Brush.ScrollBar.Glyph" Color="#9A9AA2"/>
+    <SolidColorBrush x:Key="Cx.Brush.ScrollBar.GlyphHover" Color="#E0E0E0"/>
+
+    <Geometry x:Key="Cx.Geometry.ChevronUp">M 0 4 L 4 0 L 8 4 Z</Geometry>
+    <Geometry x:Key="Cx.Geometry.ChevronDown">M 0 0 L 4 4 L 8 0 Z</Geometry>
+    <Geometry x:Key="Cx.Geometry.ChevronLeft">M 4 0 L 0 4 L 4 8 Z</Geometry>
+    <Geometry x:Key="Cx.Geometry.ChevronRight">M 0 0 L 4 4 L 0 8 Z</Geometry>
+
+    <!--Invisible page-up/down area of the track-->
+    <Style x:Key="CxScrollBarPageButton" TargetType="{x:Type RepeatButton}">
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="IsTabStop" Value="False"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type RepeatButton}">
+                    <Border Background="Transparent"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--Rounded pill thumb (shared by both orientations)-->
+    <Style x:Key="CxScrollBarThumb" TargetType="{x:Type Thumb}">
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="IsTabStop" Value="False"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Thumb}">
+                    <!--Rectangle instead of Border: its corner radii are clamped to half
+                        the actual size, so very short thumbs stay symmetric ovals instead
+                        of clipped capsules. The Track ignores a Thumb Min length anyway
+                        (it computes and clips the slot itself), so none is set.-->
+                    <Rectangle x:Name="Pill" Fill="{DynamicResource Cx.Brush.ScrollBar.Thumb}"
+                            RadiusX="4" RadiusY="4" Margin="2"/>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Pill" Property="Fill" Value="{DynamicResource Cx.Brush.ScrollBar.ThumbHover}"/>
+                        </Trigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="Pill" Property="Fill" Value="{DynamicResource Cx.Brush.ScrollBar.ThumbHover}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--Line (arrow) buttons: flat chevron glyph, rounded hover highlight-->
+    <Style x:Key="CxScrollBarLineButtonBase" TargetType="{x:Type RepeatButton}">
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="IsTabStop" Value="False"/>
+        <Setter Property="Focusable" Value="False"/>
+    </Style>
+
+    <Style x:Key="CxScrollBarLineUpButton" TargetType="{x:Type RepeatButton}" BasedOn="{StaticResource CxScrollBarLineButtonBase}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type RepeatButton}">
+                    <Border x:Name="Bg" Background="Transparent" CornerRadius="4" Margin="2">
+                        <Path x:Name="Glyph" Width="8" Height="4" Stretch="Uniform"
+                              Data="{StaticResource Cx.Geometry.ChevronUp}"
+                              Fill="{DynamicResource Cx.Brush.ScrollBar.Glyph}"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Glyph" Property="Fill" Value="{DynamicResource Cx.Brush.ScrollBar.GlyphHover}"/>
+                            <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Cx.Brush.ScrollBar.Thumb}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="CxScrollBarLineDownButton" TargetType="{x:Type RepeatButton}" BasedOn="{StaticResource CxScrollBarLineButtonBase}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type RepeatButton}">
+                    <Border x:Name="Bg" Background="Transparent" CornerRadius="4" Margin="2">
+                        <Path x:Name="Glyph" Width="8" Height="4" Stretch="Uniform"
+                              Data="{StaticResource Cx.Geometry.ChevronDown}"
+                              Fill="{DynamicResource Cx.Brush.ScrollBar.Glyph}"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Glyph" Property="Fill" Value="{DynamicResource Cx.Brush.ScrollBar.GlyphHover}"/>
+                            <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Cx.Brush.ScrollBar.Thumb}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="CxScrollBarLineLeftButton" TargetType="{x:Type RepeatButton}" BasedOn="{StaticResource CxScrollBarLineButtonBase}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type RepeatButton}">
+                    <Border x:Name="Bg" Background="Transparent" CornerRadius="4" Margin="2">
+                        <Path x:Name="Glyph" Width="4" Height="8" Stretch="Uniform"
+                              Data="{StaticResource Cx.Geometry.ChevronLeft}"
+                              Fill="{DynamicResource Cx.Brush.ScrollBar.Glyph}"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Glyph" Property="Fill" Value="{DynamicResource Cx.Brush.ScrollBar.GlyphHover}"/>
+                            <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Cx.Brush.ScrollBar.Thumb}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="CxScrollBarLineRightButton" TargetType="{x:Type RepeatButton}" BasedOn="{StaticResource CxScrollBarLineButtonBase}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type RepeatButton}">
+                    <Border x:Name="Bg" Background="Transparent" CornerRadius="4" Margin="2">
+                        <Path x:Name="Glyph" Width="4" Height="8" Stretch="Uniform"
+                              Data="{StaticResource Cx.Geometry.ChevronRight}"
+                              Fill="{DynamicResource Cx.Brush.ScrollBar.Glyph}"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Glyph" Property="Fill" Value="{DynamicResource Cx.Brush.ScrollBar.GlyphHover}"/>
+                            <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Cx.Brush.ScrollBar.Thumb}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--Implicit app-wide scrollbar style-->
+    <Style TargetType="{x:Type ScrollBar}">
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Width" Value="12"/>
+        <Setter Property="MinWidth" Value="12"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ScrollBar}">
+                    <Grid Background="{TemplateBinding Background}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="14"/>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="14"/>
+                        </Grid.RowDefinitions>
+                        <RepeatButton Grid.Row="0" Style="{StaticResource CxScrollBarLineUpButton}" Command="{x:Static ScrollBar.LineUpCommand}"/>
+                        <Track x:Name="PART_Track" Grid.Row="1" IsDirectionReversed="True">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Style="{StaticResource CxScrollBarPageButton}" Command="{x:Static ScrollBar.PageUpCommand}"/>
+                            </Track.DecreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb Style="{StaticResource CxScrollBarThumb}"/>
+                            </Track.Thumb>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Style="{StaticResource CxScrollBarPageButton}" Command="{x:Static ScrollBar.PageDownCommand}"/>
+                            </Track.IncreaseRepeatButton>
+                        </Track>
+                        <RepeatButton Grid.Row="2" Style="{StaticResource CxScrollBarLineDownButton}" Command="{x:Static ScrollBar.LineDownCommand}"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="Orientation" Value="Horizontal">
+                <Setter Property="Width" Value="Auto"/>
+                <Setter Property="MinWidth" Value="0"/>
+                <Setter Property="Height" Value="12"/>
+                <Setter Property="MinHeight" Value="12"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ScrollBar}">
+                            <Grid Background="{TemplateBinding Background}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="14"/>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="14"/>
+                                </Grid.ColumnDefinitions>
+                                <RepeatButton Grid.Column="0" Style="{StaticResource CxScrollBarLineLeftButton}" Command="{x:Static ScrollBar.LineLeftCommand}"/>
+                                <Track x:Name="PART_Track" Grid.Column="1">
+                                    <Track.DecreaseRepeatButton>
+                                        <RepeatButton Style="{StaticResource CxScrollBarPageButton}" Command="{x:Static ScrollBar.PageLeftCommand}"/>
+                                    </Track.DecreaseRepeatButton>
+                                    <Track.Thumb>
+                                        <Thumb Style="{StaticResource CxScrollBarThumb}"/>
+                                    </Track.Thumb>
+                                    <Track.IncreaseRepeatButton>
+                                        <RepeatButton Style="{StaticResource CxScrollBarPageButton}" Command="{x:Static ScrollBar.PageRightCommand}"/>
+                                    </Track.IncreaseRepeatButton>
+                                </Track>
+                                <RepeatButton Grid.Column="2" Style="{StaticResource CxScrollBarLineRightButton}" Command="{x:Static ScrollBar.LineRightCommand}"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+</ResourceDictionary>

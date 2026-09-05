@@ -58,6 +58,7 @@ namespace CapFrameX.Test.Mocks
             "MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,MsInstrumentedLatency,EtwBufferFillPct,EtwBuffersInUse,EtwTotalBuffers,EtwEventsLost,EtwBuffersLost";
 
         private readonly Subject<string[]> _frameDataSubject;
+        private readonly BehaviorSubject<bool> _captureServiceRunning = new BehaviorSubject<bool>(false);
         private readonly Random _random;
         private readonly List<MockProcess> _processes;
         private readonly object _lock = new object();
@@ -78,11 +79,16 @@ namespace CapFrameX.Test.Mocks
         public IObservable<string[]> FrameDataStream => _frameDataSubject.AsObservable();
         public Subject<bool> IsCaptureModeActiveStream { get; }
 
+        public bool IsCaptureServiceRunning => _captureServiceRunning.Value;
+
+        public IObservable<bool> CaptureServiceRunningStream => _captureServiceRunning.AsObservable();
+
         // ICaptureService dynamic index properties (mock uses fixed 32-column format)
         int ICaptureService.CPUStartQPCTimeInMs_Index => StartTimeInMs_INDEX;
         int ICaptureService.CpuBusy_Index => CpuBusy_INDEX;
         int ICaptureService.GpuBusy_Index => GpuBusy_INDEX;
         int ICaptureService.AnimationError_Index => MsAnimationError_INDEX;
+        int ICaptureService.MsPcLatency_Index => MsPCLatency_INDEX;
         int ICaptureService.EtwBufferFillPct_Index => EtwBufferFillPct_INDEX;
         int ICaptureService.EtwBuffersInUse_Index => EtwBuffersInUse_INDEX;
         int ICaptureService.EtwTotalBuffers_Index => EtwTotalBuffers_INDEX;
@@ -168,6 +174,7 @@ namespace CapFrameX.Test.Mocks
 
             // Emit header first
             EmitHeader();
+            _captureServiceRunning.OnNext(true);
 
             if (EmissionIntervalMs > 0)
             {
@@ -190,6 +197,7 @@ namespace CapFrameX.Test.Mocks
             _emissionTimer?.Dispose();
             _emissionTimer = null;
 
+            _captureServiceRunning.OnNext(false);
             IsCaptureModeActiveStream.OnNext(false);
             return true;
         }
@@ -559,6 +567,7 @@ namespace CapFrameX.Test.Mocks
         {
             StopCaptureService();
             _frameDataSubject?.Dispose();
+            _captureServiceRunning?.Dispose();
             IsCaptureModeActiveStream?.Dispose();
         }
 

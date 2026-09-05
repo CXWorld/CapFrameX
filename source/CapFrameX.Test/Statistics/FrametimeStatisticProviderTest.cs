@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace CapFrameX.Test.Statistics
@@ -92,6 +93,37 @@ namespace CapFrameX.Test.Statistics
 
             // P1 should be close to the outlier FPS value
             Assert.IsTrue(result < 60);
+        }
+
+        [TestMethod]
+        public void GetFpsAdaptiveStandardDeviation_UsesFrametimesForTimeWindow()
+        {
+            var frametimes = new List<double> { 300, 300, 300 };
+            var fps = new List<double> { 10, 20, 30 };
+
+            var result = _provider.GetFpsAdaptiveStandardDeviation(frametimes, fps, 500);
+
+            Assert.AreEqual(5, result, 0.001);
+        }
+
+        [TestMethod]
+        public void GetFpsAdaptiveStandardDeviation_DifferentSampleCounts_Throws()
+        {
+            var frametimes = new List<double> { 10, 20 };
+            var fps = new List<double> { 100 };
+
+            Assert.ThrowsException<InvalidDataException>(
+                () => _provider.GetFpsAdaptiveStandardDeviation(frametimes, fps, 500));
+        }
+
+        [TestMethod]
+        public void GetFpsMetricValue_AdaptiveStd_UsesFpsWithinFrametimeWindow()
+        {
+            var frametimes = new List<double> { 400, 100, 400 };
+
+            var result = _provider.GetFpsMetricValue(frametimes, EMetric.AdaptiveStd);
+
+            Assert.AreEqual(3.75, result, 0.001);
         }
 
         #endregion
@@ -298,6 +330,47 @@ namespace CapFrameX.Test.Statistics
             Assert.IsFalse(result.Contains(10000));
         }
 
+        [TestMethod]
+        public void GetOutlierAdjustedSequence_DeciPercentile_RetainsConstantSequence()
+        {
+            var sequence = Enumerable.Repeat(16.67, 1000).ToList();
+
+            var result = _provider.GetOutlierAdjustedSequence(sequence, ERemoveOutlierMethod.DeciPercentile);
+
+            Assert.AreEqual(sequence.Count, result.Count);
+            CollectionAssert.AreEqual(sequence, result.ToList());
+        }
+
+        [TestMethod]
+        public void GetOutlierAdjustedSequence_DeciPercentile_ExactThousandSamples_RemovesExactlyOne()
+        {
+            var sequence = Enumerable.Repeat(10.0, 999).Concat(new[] { 500.0 }).ToList();
+
+            var result = _provider.GetOutlierAdjustedSequence(sequence, ERemoveOutlierMethod.DeciPercentile);
+
+            Assert.AreEqual(999, result.Count);
+            Assert.IsFalse(result.Contains(500.0));
+        }
+
+        [TestMethod]
+        public void GetOutlierAdjustedSequence_UnimplementedMethods_ReturnSequenceUnchanged()
+        {
+            var sequence = new List<double> { 10, 20, 30 };
+
+            foreach (var method in new[]
+            {
+                ERemoveOutlierMethod.InterquartileRange,
+                ERemoveOutlierMethod.ThreeSigma,
+                ERemoveOutlierMethod.TwoDotFiveSigma
+            })
+            {
+                var result = _provider.GetOutlierAdjustedSequence(sequence, method);
+
+                Assert.IsNotNull(result, $"Null returned for {method}");
+                CollectionAssert.AreEqual(sequence.ToList(), result.ToList(), $"Sequence changed for {method}");
+            }
+        }
+
         #endregion
 
         #region GetFpsThresholdCounts Tests
@@ -360,6 +433,38 @@ namespace CapFrameX.Test.Statistics
             var result = _provider.GetPercentageHighIntegralSequence(sequence, 0.99);
 
             Assert.IsFalse(double.IsNaN(result));
+        }
+
+        [TestMethod]
+        public void GetVariancePercentages_ClassifiesEachThresholdExactlyOnce()
+        {
+            var sequence = new List<double> { 0, 1, 4, 10, 20, 35 };
+
+            var result = _provider.GetVariancePercentages(sequence);
+
+            CollectionAssert.AreEqual(new[] { 0.2, 0.2, 0.2, 0.2, 0.2 }, result.ToArray());
+        }
+
+        [TestMethod]
+        public void GetVariancePercentages_NoValidPairs_ReturnsZeroes()
+        {
+            var result = _provider.GetVariancePercentages(new List<double> { 10, double.NaN, 11 });
+
+            CollectionAssert.AreEqual(new double[5], result.ToArray());
+        }
+
+        [TestMethod]
+        public void GetVariancePercentages_MultipleRuns_DoesNotCreateBoundaryPair()
+        {
+            var runs = new IList<double>[]
+            {
+                new List<double> { 10, 11 },
+                new List<double> { 100, 101 }
+            };
+
+            var result = _provider.GetVariancePercentages(runs);
+
+            CollectionAssert.AreEqual(new[] { 1d, 0d, 0d, 0d, 0d }, result.ToArray());
         }
 
         [TestMethod]

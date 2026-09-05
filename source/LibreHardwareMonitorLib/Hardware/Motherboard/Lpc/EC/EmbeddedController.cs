@@ -11,6 +11,10 @@ using System.Text;
 
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC;
 
+/// <summary>
+/// The ACPI embedded controller of the mainboard, exposing the sensors that are known for the
+/// detected board model.
+/// </summary>
 public abstract class EmbeddedController : Hardware
 {
     // If you are updating board information, please consider sharing your changes with the corresponding Linux driver.
@@ -409,6 +413,11 @@ public abstract class EmbeddedController : Hardware
 
     private readonly IReadOnlyList<EmbeddedControllerSource> _sources;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EmbeddedController" /> class.
+    /// </summary>
+    /// <param name="sources">The registers to read, one per sensor.</param>
+    /// <param name="settings">Additional settings passed by the <see cref="IComputer" />.</param>
     protected EmbeddedController(IEnumerable<EmbeddedControllerSource> sources, ISettings settings) : base("Embedded Controller", new Identifier("lpc", "ec"), settings)
     {
         // sorting by address, which implies sorting by bank, for optimized EC access
@@ -440,6 +449,7 @@ public abstract class EmbeddedController : Hardware
         _data = new byte[_registers.Length];
     }
 
+    /// <inheritdoc />
     public override HardwareType HardwareType => HardwareType.EmbeddedController;
 
     internal static EmbeddedController Create(Model model, ISettings settings)
@@ -463,6 +473,7 @@ public abstract class EmbeddedController : Hardware
         };
     }
 
+    /// <inheritdoc />
     public override void Update()
     {
         if (!TryUpdateData())
@@ -487,6 +498,7 @@ public abstract class EmbeddedController : Hardware
         }
     }
 
+    /// <inheritdoc />
     public override string GetReport()
     {
         StringBuilder r = new();
@@ -531,6 +543,11 @@ public abstract class EmbeddedController : Hardware
         return r.ToString();
     }
 
+    /// <summary>
+    /// Opens the platform-specific interface used to talk to the embedded controller.
+    /// </summary>
+    /// <returns>The I/O interface. The caller owns it and has to dispose it.</returns>
+    /// <exception cref="IOException">The interface could not be acquired.</exception>
     protected abstract IEmbeddedControllerIO AcquireIOInterface();
 
     private bool TryUpdateData()
@@ -638,20 +655,41 @@ public abstract class EmbeddedController : Hardware
         public ECSensor[] Sensors { get; }
     }
 
+    /// <summary>
+    /// The exception that is thrown when the embedded controller cannot be accessed.
+    /// </summary>
     public class IOException : System.IO.IOException
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IOException" /> class.
+        /// </summary>
+        /// <param name="message">A description of what went wrong.</param>
         public IOException(string message) : base($"ACPI embedded controller I/O error: {message}")
         { }
     }
 
+    /// <summary>
+    /// The exception that is thrown when the board description of the embedded controller is inconsistent.
+    /// </summary>
     public class BadConfigurationException : Exception
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BadConfigurationException" /> class.
+        /// </summary>
+        /// <param name="message">A description of what is inconsistent.</param>
         public BadConfigurationException(string message) : base(message)
         { }
     }
 
+    /// <summary>
+    /// The exception that is thrown when more than one board record refers to the same model.
+    /// </summary>
     public class MultipleBoardRecordsFoundException : BadConfigurationException
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MultipleBoardRecordsFoundException" /> class.
+        /// </summary>
+        /// <param name="model">The model the duplicate records refer to.</param>
         public MultipleBoardRecordsFoundException(string model) : base($"Multiple board records refer to the same model '{model}'")
         { }
     }

@@ -8,7 +8,6 @@ using CapFrameX.ViewModel;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -30,6 +29,10 @@ namespace CapFrameX.View
 			DependencyProperty.Register(nameof(OverlayConfigHotkey), typeof(CXHotkey), typeof(OverlayView),
 			new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
+		public static readonly DependencyProperty OverlayPositionHotkeyProperty =
+			DependencyProperty.Register(nameof(OverlayPositionHotkey), typeof(CXHotkey), typeof(OverlayView),
+			new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
 		public static readonly DependencyProperty ThreadAffinityConfigHotkeyProperty =
 			DependencyProperty.Register(nameof(ThreadAffinityHotkey), typeof(CXHotkey), typeof(OverlayView),
 			new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
@@ -49,6 +52,12 @@ namespace CapFrameX.View
 		{
 			get => (CXHotkey)GetValue(OverlayConfigHotkeyProperty);
 			set => SetValue(OverlayConfigHotkeyProperty, value);
+		}
+
+		public CXHotkey OverlayPositionHotkey
+		{
+			get => (CXHotkey)GetValue(OverlayPositionHotkeyProperty);
+			set => SetValue(OverlayPositionHotkeyProperty, value);
 		}
 
 		public CXHotkey ThreadAffinityHotkey
@@ -86,6 +95,16 @@ namespace CapFrameX.View
 				OverlayConfigHotkey = CXHotkey.Create(keyStrings, Key.C, ModifierKeys.Alt);
 			}
 			catch { OverlayConfigHotkey = new CXHotkey(Key.C, ModifierKeys.Alt); }
+
+			// Overlay position hotkey
+			try
+			{
+				var overlayPositionHotkeyString = (DataContext as OverlayViewModel).AppConfiguration.OverlayPositionHotkey;
+				var keyStrings = overlayPositionHotkeyString.Split('+');
+
+				OverlayPositionHotkey = CXHotkey.Create(keyStrings, Key.P, ModifierKeys.Alt);
+			}
+			catch { OverlayPositionHotkey = new CXHotkey(Key.P, ModifierKeys.Alt); }
 
 			// Thread affinity hotkey
 			try
@@ -174,6 +193,39 @@ namespace CapFrameX.View
 			Keyboard.ClearFocus();
 		}
 
+		private void OverlayPositionHotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			e.Handled = true;
+
+			var modifiers = Keyboard.Modifiers;
+			var key = e.Key;
+
+			if (key == Key.System)
+			{
+				key = e.SystemKey;
+			}
+
+			if (modifiers == ModifierKeys.None && key.IsEither(Key.Delete, Key.Back, Key.Escape))
+			{
+				OverlayPositionHotkey = null;
+				return;
+			}
+
+			if (key.IsEither(
+				Key.LeftCtrl, Key.RightCtrl, Key.LeftAlt, Key.RightAlt,
+				Key.LeftShift, Key.RightShift, Key.LWin, Key.RWin,
+				Key.Clear, Key.OemClear, Key.Apps))
+			{
+				return;
+			}
+
+			OverlayPositionHotkey = new CXHotkey(key, modifiers);
+			var dataContext = DataContext as OverlayViewModel;
+			dataContext.OverlayPositionHotkeyString = OverlayPositionHotkey.ToString();
+
+			Keyboard.ClearFocus();
+		}
+
 		private void ThreadAffinityHotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
 		{
 			e.Handled = true;
@@ -248,12 +300,6 @@ namespace CapFrameX.View
 		private void MetricIntervalComboBox_MouseLeave(object sender, MouseEventArgs e)
 		{
 			Keyboard.ClearFocus();
-		}
-
-		private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
-		{
-			Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
-			e.Handled = true;
 		}
 
 		private void SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e) { }

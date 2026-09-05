@@ -21,6 +21,96 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// RTSS OSD text slots. The server keeps three of them per OSD entry, each newer one larger:
+// szOSD (256 B), szOSDEx (4 KB, shared memory v2.7+) and szOSDEx2 (32 KB, v2.20+ / RTSS 2021).
+// We used szOSDEx, whose 4 KB silently truncated the OSD as soon as a profile enabled per-core
+// rows — and because the graph markup is appended AFTER the entry text, the framerate/frametime
+// graphs were the first thing to fall off the end. RTSS' author recommends szOSDEx2; picking the
+// largest slot the running server actually offers is what the helpers below do.
+typedef RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_OSD_ENTRY RTSS_OSD_ENTRY;
+
+enum EOSDTextSlot { OSD_SLOT_LEGACY, OSD_SLOT_EX, OSD_SLOT_EX2 };
+
+// The entry is shared memory owned by the server, so a field at the wrong offset would not fail
+// loudly — it would scribble over a neighbouring OSD slot. Pin the layout against the official
+// RTSS SDK header (v2.20) so a botched merge of RTSSSharedMemory.h breaks the build instead.
+static_assert(offsetof(RTSS_OSD_ENTRY, szOSD) == 0, "RTSS OSD entry layout changed");
+static_assert(offsetof(RTSS_OSD_ENTRY, szOSDOwner) == 256, "RTSS OSD entry layout changed");
+static_assert(offsetof(RTSS_OSD_ENTRY, szOSDEx) == 512, "RTSS OSD entry layout changed");
+static_assert(offsetof(RTSS_OSD_ENTRY, buffer) == 4608, "RTSS OSD entry layout changed");
+static_assert(offsetof(RTSS_OSD_ENTRY, szOSDEx2) == 266752, "RTSS OSD entry layout changed");
+static_assert(sizeof(RTSS_OSD_ENTRY) == 299520, "RTSS OSD entry layout changed");
+
+#define RTSS_SHM_VERSION_OSD_EX		0x00020007	// v2.7:  szOSDEx
+#define RTSS_SHM_VERSION_OSD_EX2	0x00020014	// v2.20: szOSDEx2
+
+// Deciding on the version ALONE would be unsafe: the entry stride comes from the running server
+// (dwOSDEntrySize), so on a server whose entries are shorter than our struct, writing szOSDEx2
+// would run past the entry and corrupt the next OSD slot. Require the field to physically fit.
+static EOSDTextSlot GetOSDTextSlot(DWORD dwVersion, DWORD dwOSDEntrySize)
+{
+	if (dwVersion >= RTSS_SHM_VERSION_OSD_EX2 &&
+		dwOSDEntrySize >= offsetof(RTSS_OSD_ENTRY, szOSDEx2) + sizeof(RTSS_OSD_ENTRY().szOSDEx2))
+		return OSD_SLOT_EX2;
+
+	if (dwVersion >= RTSS_SHM_VERSION_OSD_EX &&
+		dwOSDEntrySize >= offsetof(RTSS_OSD_ENTRY, szOSDEx) + sizeof(RTSS_OSD_ENTRY().szOSDEx))
+		return OSD_SLOT_EX;
+
+	return OSD_SLOT_LEGACY;
+}
+
+static DWORD GetOSDTextCapacity(EOSDTextSlot slot)
+{
+	switch (slot)
+	{
+	case OSD_SLOT_EX2:	return sizeof(RTSS_OSD_ENTRY().szOSDEx2);
+	case OSD_SLOT_EX:	return sizeof(RTSS_OSD_ENTRY().szOSDEx);
+	default:			return sizeof(RTSS_OSD_ENTRY().szOSD);
+	}
+}
+
+static void WriteOSDText(RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY pEntry,
+	EOSDTextSlot slot, LPCSTR lpText)
+{
+	switch (slot)
+	{
+	case OSD_SLOT_EX2:
+		// Write ONLY this slot and leave the smaller ones untouched — that is what the RTSS SDK's
+		// own client does (SDK\Plugins\Client\OverlayEditor\RTSSSharedMemoryInterface.cpp). An
+		// earlier version here also zeroed szOSDEx/szOSD to keep a stale slot from shadowing this
+		// one; that is a deviation from the reference, and if the server treats an empty szOSD /
+		// szOSDEx as "slot carries no text" it suppresses the whole OSD.
+		strncpy_s(pEntry->szOSDEx2, sizeof(pEntry->szOSDEx2), lpText, sizeof(pEntry->szOSDEx2) - 1);
+		break;
+	case OSD_SLOT_EX:
+		strncpy_s(pEntry->szOSDEx, sizeof(pEntry->szOSDEx), lpText, sizeof(pEntry->szOSDEx) - 1);
+		break;
+	default:
+		strncpy_s(pEntry->szOSD, sizeof(pEntry->szOSD), lpText, sizeof(pEntry->szOSD) - 1);
+		break;
+	}
+}
+
+// Removes RTSS OSD format tags (e.g. <S1>, <C100>, <A0>) from a string, leaving
+// the plain text. Used to reuse an already formatted overlay entry value (which
+// carries the CapFrameX computed value) as a graph label instead of RTSS' own
+// <FR>/<FT> macros.
+static CString StripOSDFormatTags(const CString& input)
+{
+	CString output;
+	bool insideTag = false;
+	for (int i = 0; i < input.GetLength(); i++)
+	{
+		TCHAR ch = input[i];
+		if (ch == '<') { insideTag = true; continue; }
+		if (ch == '>') { insideTag = false; continue; }
+		if (!insideTag) output += ch;
+	}
+	output.Trim();
+	return output;
+}
+
 RTSSCoreControl::RTSSCoreControl()
 {
 	m_strInstallPath = "";
@@ -85,6 +175,48 @@ CString RTSSCoreControl::GetApiInfo(DWORD processId)
 	return api;
 }
 
+CString RTSSCoreControl::GetResolution(DWORD processId)
+{
+	// returns the render resolution of the given 3D application as "WxH"
+	// (e.g. "2560x1440") or an empty string when it cannot be determined
+	CString resolution = "";
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
+
+	if (hMapFile)
+	{
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
+
+		if (pMem)
+		{
+			// dwResolutionX / dwResolutionY are valid for v2.20 (0x00020014) and
+			// newer shared memory format only. Reading them on older RTSS versions
+			// would point beyond the actual (smaller) app entry, so guard the version.
+			if ((pMem->dwSignature == 'RTSS') && (pMem->dwVersion >= 0x00020014))
+			{
+				for (DWORD dwEntry = 0; dwEntry < pMem->dwAppArrSize; dwEntry++)
+				{
+					RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY)((LPBYTE)pMem + pMem->dwAppArrOffset + dwEntry * pMem->dwAppEntrySize);
+
+					if (pEntry->dwProcessID == processId)
+					{
+						// resolution stays 0 until RTSS has hooked and measured the
+						// swapchain, so only format it once both dimensions are valid
+						if (pEntry->dwResolutionX > 0 && pEntry->dwResolutionY > 0)
+							resolution.Format("%ux%u", pEntry->dwResolutionX, pEntry->dwResolutionY);
+
+						break;
+					}
+				}
+			}
+			UnmapViewOfFile(pMapAddr);
+		}
+		CloseHandle(hMapFile);
+	}
+
+	return resolution;
+}
+
 std::vector<float> RTSSCoreControl::GetCurrentFramerate(DWORD processId)
 {
 	std::vector<float> result;
@@ -110,10 +242,17 @@ std::vector<float> RTSSCoreControl::GetCurrentFramerate(DWORD processId)
 					{
 						if (pEntry->dwProcessID == processId)
 						{
-							// & 1023 enforces upper limit = 1023 = max index
-							DWORD frameTimePos = pEntry->dwStatFrameTimeBufPos;
-							currentFrametime = pEntry->dwStatFrameTimeBuf[(frameTimePos - 1) & 1023] / 1000.0f;
 							currentFramerate = pEntry->dwStatFrameTimeBufFramerate / 10.0f;
+
+							// Derive the frametime from the same statistical framerate that the
+							// framerate value and the framerate/frametime graphs are based on.
+							// Previously the frametime was read from the last single sample in
+							// dwStatFrameTimeBuf, which made the frametime text value jitter and
+							// read several ms higher than both the frametime graph and the
+							// 1000 / FPS value (see issue #394). Using the reciprocal of the
+							// framerate keeps the frametime text consistent with the FPS value
+							// and the graph (frametime text == 1000 / framerate text).
+							currentFrametime = currentFramerate > 0.0f ? 1000.0f / currentFramerate : 0.0f;
 
 							break;
 						}
@@ -186,9 +325,15 @@ std::vector<float> RTSSCoreControl::GetFrameTimesInterval(DWORD processId, DWORD
 	return frameTimes;
 }
 
-DWORD RTSSCoreControl::GetSharedMemoryVersion()
+// lpOSDEntrySize optionally receives the running server's OSD entry stride, which decides
+// together with the version which text slot may be written (see GetOSDTextSlot).
+DWORD RTSSCoreControl::GetSharedMemoryVersion(DWORD* lpOSDEntrySize)
 {
 	DWORD dwResult = 0;
+
+	if (lpOSDEntrySize)
+		*lpOSDEntrySize = 0;
+
 	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
 
 	if (hMapFile)
@@ -200,7 +345,12 @@ DWORD RTSSCoreControl::GetSharedMemoryVersion()
 		{
 			if ((pMem->dwSignature == 'RTSS') &&
 				(pMem->dwVersion >= 0x00020000))
+			{
 				dwResult = pMem->dwVersion;
+
+				if (lpOSDEntrySize)
+					*lpOSDEntrySize = pMem->dwOSDEntrySize;
+			}
 
 			UnmapViewOfFile(pMapAddr);
 		}
@@ -301,6 +451,12 @@ DWORD RTSSCoreControl::EmbedGraph(DWORD dwOffset, FLOAT* lpBuffer, DWORD dwBuffe
 	return dwResult;
 }
 
+// C4793: _interlockedbittestandset below is a compiler intrinsic with no MSIL equivalent, so the
+// compiler emits this whole function as native code and reports that it did. That is required, not
+// incidental - the bit it sets is RTSS's shared-memory OSD lock, which is only correct if the test
+// and the set are one atomic instruction. Silenced here because there is nothing to repair.
+#pragma warning(push)
+#pragma warning(disable : 4793)
 BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
 {
 	BOOL bResult = FALSE;
@@ -334,30 +490,27 @@ BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
 
 						if (!strcmp(pEntry->szOSDOwner, "CapFrameX"))
 						{
-							if (pMem->dwVersion >= 0x00020007)
-								//use extended text slot for v2.7 and higher shared memory, it allows displaying 4096 symbols
-								//instead of 256 for regular text slot
+							//write the largest text slot this server offers: szOSDEx2 (32768 symbols) on
+							//v2.20 and higher, szOSDEx (4096) on v2.7, szOSD (256) otherwise. Must agree
+							//with the capacity Refresh() budgeted the text for.
+							const EOSDTextSlot osdSlot = GetOSDTextSlot(pMem->dwVersion, pMem->dwOSDEntrySize);
+
+							if (pMem->dwVersion >= 0x0002000e)
+								//OSD locking is supported on v2.14 and higher shared memory
 							{
-								if (pMem->dwVersion >= 0x0002000e)
-									//OSD locking is supported on v2.14 and higher shared memory
+								DWORD dwBusy = _interlockedbittestandset(&pMem->dwBusy, 0);
+								//bit 0 of this variable will be set if OSD is locked by renderer and cannot be refreshed
+								//at the moment
+
+								if (!dwBusy)
 								{
-									DWORD dwBusy = _interlockedbittestandset(&pMem->dwBusy, 0);
-									//bit 0 of this variable will be set if OSD is locked by renderer and cannot be refreshed
-									//at the moment
+									WriteOSDText(pEntry, osdSlot, lpText);
 
-									if (!dwBusy)
-									{
-										strncpy_s(pEntry->szOSDEx, sizeof(pEntry->szOSDEx), lpText, sizeof(pEntry->szOSDEx) - 1);
-
-										pMem->dwBusy = 0;
-									}
+									pMem->dwBusy = 0;
 								}
-								else
-									strncpy_s(pEntry->szOSDEx, sizeof(pEntry->szOSDEx), lpText, sizeof(pEntry->szOSDEx) - 1);
-
 							}
 							else
-								strncpy_s(pEntry->szOSD, sizeof(pEntry->szOSD), lpText, sizeof(pEntry->szOSD) - 1);
+								WriteOSDText(pEntry, osdSlot, lpText);
 
 							pMem->dwOSDFrame++;
 
@@ -378,6 +531,7 @@ BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
 
 	return bResult;
 }
+#pragma warning(pop)
 
 void RTSSCoreControl::ReleaseOSD()
 {
@@ -477,15 +631,14 @@ void RTSSCoreControl::Refresh()
 			m_profileInterface.Init(m_strInstallPath);
 	}
 
-	//init shared memory version
-	DWORD dwSharedMemoryVersion = GetSharedMemoryVersion();
+	//init shared memory version and OSD entry stride
+	DWORD dwOSDEntrySize = 0;
+	DWORD dwSharedMemoryVersion = GetSharedMemoryVersion(&dwOSDEntrySize);
 
-	//init max OSD text size, we'll use extended text slot for v2.7 and higher shared memory, 
-	//it allows displaying 4096 symbols /instead of 256 for regular text slot
-	DWORD dwMaxTextSize = (dwSharedMemoryVersion >= 0x00020007) ? sizeof(RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_OSD_ENTRY().szOSDEx)
-		: sizeof(RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_OSD_ENTRY().szOSD);
+	//init max OSD text size from the largest text slot this server offers: 32768 symbols on
+	//shared memory v2.20 and higher (szOSDEx2), 4096 on v2.7 (szOSDEx), 256 otherwise
+	DWORD dwMaxTextSize = GetOSDTextCapacity(GetOSDTextSlot(dwSharedMemoryVersion, dwOSDEntrySize));
 
-	CGroupedString groupedString(dwMaxTextSize - 1);
 	// RivaTuner based products use similar CGroupedString object for convenient OSD text formatting and length control
 	// You may use it to format your OSD similar to RivaTuner's one or just use your own routines to format OSD text
 
@@ -529,7 +682,7 @@ void RTSSCoreControl::Refresh()
 		strOSD += "<C200=FFFFFF>"; // White
 		////define color variable C[1] as R=FF,G=FF and B=FF
 		// CX blue
-		strOSD += "<C250=2297F3>"; //CX Blue
+		strOSD += "<C250=0271F9>"; //CX Blue
 		////define color variable C[1] as R=FF,G=FF and B=FF
 		//// CX orange
 		//strOSD += "<C4=F17D20>"; //CX Orange
@@ -543,6 +696,20 @@ void RTSSCoreControl::Refresh()
 	}
 	else
 		strOSD = "";
+
+	//The entry text shares the slot with the format-variable header written above and with the
+	//graph section appended below, so budget the grouped string for what is actually left. The
+	//graphs are appended LAST and were therefore the first thing the slot limit cut off; keeping
+	//their markup reserved means a long entry list drops a sensor row instead of a whole graph.
+	//A slot too small to hold even the reserve (the legacy 256 byte one) gives the text priority.
+	const int nGraphReserve = 512;
+	int nGroupedStringMaxLen = (int)dwMaxTextSize - 1 - strOSD.GetLength();
+	if (nGroupedStringMaxLen - nGraphReserve >= 1)
+		nGroupedStringMaxLen -= nGraphReserve;
+	if (nGroupedStringMaxLen < 1)
+		nGroupedStringMaxLen = 1;
+
+	CGroupedString groupedString(nGroupedStringMaxLen);
 
 	if (OverlayEntries.size() > 0)
 	{
@@ -588,9 +755,9 @@ void RTSSCoreControl::Refresh()
 					int indexEnd = (indexStart >= 0) ? OverlayEntries[i].GroupName.Find('>', indexStart) : -1;
 					CString color = (indexStart >= 0 && indexEnd > indexStart)
 						? OverlayEntries[i].GroupName.Mid(indexStart, indexEnd + 1 - indexStart)
-						: "<C>";
+						: CString("<C>");
 					CString string;
-					string.Format("%s<S1>Framerate\n<S><C>", color);
+					string.Format("%s<S1>Framerate\n<S><C>", (LPCSTR)color);
 					strOSD += string;
 
 					//embed framerate graph object into the buffer
@@ -602,9 +769,9 @@ void RTSSCoreControl::Refresh()
 						int indexEnd = (indexStart >= 0) ? OverlayEntries[i].Value.Find('>', indexStart) : -1;
 						CString color = (indexStart >= 0 && indexEnd > indexStart)
 							? OverlayEntries[i].Value.Mid(indexStart, indexEnd + 1 - indexStart)
-							: "<C>";
+							: CString("<C>");
 
-						strObj.Format("%s<OBJ=%08X><A0><S1><FR><A> FPS<S><C>\n", color, dwObjectOffset);
+						strObj.Format("%s<OBJ=%08X><A0><S1><FR><A> FPS<S><C>\n", (LPCSTR)color, dwObjectOffset);
 						//print embedded object
 						strOSD += strObj;
 						//modify object offset
@@ -619,9 +786,9 @@ void RTSSCoreControl::Refresh()
 					int indexEnd = (indexStart >= 0) ? OverlayEntries[i].GroupName.Find('>', indexStart) : -1;
 					CString color = (indexStart >= 0 && indexEnd > indexStart)
 						? OverlayEntries[i].GroupName.Mid(indexStart, indexEnd + 1 - indexStart)
-						: "<C>";
+						: CString("<C>");
 					CString string;
-					string.Format("%s<S1>Frametime\n<S><C>", color);
+					string.Format("%s<S1>Frametime\n<S><C>", (LPCSTR)color);
 					strOSD += string;
 
 					//embed frametime graph object into the buffer
@@ -633,9 +800,21 @@ void RTSSCoreControl::Refresh()
 						int indexEnd = (indexStart >= 0) ? OverlayEntries[i].Value.Find('>', indexStart) : -1;
 						CString color = (indexStart >= 0 && indexEnd > indexStart)
 							? OverlayEntries[i].Value.Mid(indexStart, indexEnd + 1 - indexStart)
-							: "<C>";
+							: CString("<C>");
 
-						strObj.Format("%s<OBJ=%08X><A0><S1><FT><A> ms<S><C>\n", color, dwObjectOffset);
+						// Show CapFrameX's own frametime value (consistent with the FPS value
+						// and the frametime text entry) next to the graph instead of RTSS' <FT>
+						// macro, which reflects the noisy last single frame and reads several ms
+						// higher than the FPS / 1000 value (see issue #394). The "ms" unit is
+						// appended separately so the label mirrors the framerate graph label
+						// style ("8.3 ms" like "120 FPS").
+						CString frametimeValue = StripOSDFormatTags(OverlayEntries[i].Value);
+						if (frametimeValue.GetLength() >= 2 && frametimeValue.Right(2) == "ms")
+						{
+							frametimeValue = frametimeValue.Left(frametimeValue.GetLength() - 2);
+							frametimeValue.Trim();
+						}
+						strObj.Format("%s<OBJ=%08X><A0><S1>%s<A> ms<S><C>\n", (LPCSTR)color, dwObjectOffset, (LPCSTR)frametimeValue);
 						//print embedded object
 						strOSD += strObj;
 						//modify object offset

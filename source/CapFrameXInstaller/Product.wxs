@@ -1,23 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
 	 xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
-	<?define VersionNumber="!(bind.FileVersion.fil728C156E08C89BB8D6F48ADCA3FDB05E)" ?>
-  <Product Id="*" Name="CapFrameX Capture and Analysis Tool $(var.VersionNumber)" Language="1033" Version="$(var.VersionNumber)" Manufacturer="DevTechProfile" UpgradeCode="05dc3ab5-bc82-4feb-8624-61c39d0ac204">
+	<Product Id="*" Name="CapFrameX Capture and Analysis Tool $(var.CapFrameXVersion)" Language="1033" Version="$(var.CapFrameXInstallerVersion)" Manufacturer="DevTechProfile" UpgradeCode="05dc3ab5-bc82-4feb-8624-61c39d0ac204">
 		<Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" Platform="x64"/>
 
-		<!--<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />-->
-		<MajorUpgrade AllowDowngrades="yes"/>
+		<!-- Downgrades are intentionally supported. This makes the WIX_UPGRADE_DETECTED
+		     range include newer products as well, so ICE61 is suppressed in the project. -->
+		<MajorUpgrade AllowDowngrades="yes" />
 		<Media Id="1" Cabinet="CapFrameX.cab" EmbedCab="yes" CompressionLevel="high" />		
+		<Icon Id="CapFrameXProductIcon" SourceFile="..\CapFrameX\Icons\cx_icon_BUC.ico" />
+		<Property Id="ARPPRODUCTICON" Value="CapFrameXProductIcon" />
+
 
 		<Feature Id="ProductFeature" Title="CapFrameX" Level="1">
 			<ComponentGroupRef Id="CapFrameXBinaries" />
 			<ComponentRef Id="ApplicationShortcut"/>
 			<ComponentRef Id="ApplicationShortcutDesktop" />
+			<ComponentRef Id="VulkanLayerRegistration" />
+			<ComponentRef Id="VulkanLayerRegistrationX86" />
 		</Feature>
 
     <Property Id="INSTALLSHORTCUT" Value="1" Secure="yes"/>
+    <Property Id="DOTNETDESKTOPRUNTIMEX64FOUND" Secure="yes" />
+
+    <Condition Message="CapFrameX requires the .NET 10 Desktop Runtime (x64). Install it from https://dotnet.microsoft.com/download/dotnet/10.0 and run setup again.">
+      Installed OR DOTNETDESKTOPRUNTIMEX64FOUND
+    </Condition>
+
+    <InstallUISequence>
+      <Custom Action="DetectDotNetDesktopRuntime" Before="LaunchConditions">
+        NOT Installed AND NOT DOTNETDESKTOPRUNTIMEX64FOUND
+      </Custom>
+    </InstallUISequence>
 
     <InstallExecuteSequence>
+		  <Custom Action="DetectDotNetDesktopRuntime" Before="LaunchConditions">
+		    NOT Installed AND NOT DOTNETDESKTOPRUNTIMEX64FOUND
+		  </Custom>
 		  <Custom Action="WixCloseApplications" Before="InstallValidate">
 			  Installed
 		  </Custom>
@@ -27,6 +46,11 @@
 		  <Custom Action="CleanRegistry" Before="InstallFinalize">
         Installed OR NOT Installed
       </Custom>
+      <!-- Unconditional on purpose: install, repair, uninstall and both halves of a major upgrade
+           must all end with at most one layer registration. The anchor is load-bearing — running
+           after WriteRegistryValues would delete the registration this package just wrote. -->
+      <Custom Action="PurgeVulkanLayers" Before="WriteRegistryValues" />
+      <Custom Action="PurgeVulkanLayersPerUser" Before="InstallInitialize" />
       <Custom Action="AppdataConfigFiles" Before="InstallFinalize">
         Installed
       </Custom>
@@ -39,19 +63,69 @@
 	</Product>
 
   <Fragment>
-    <CustomAction Id="AppdataConfigFiles" BinaryKey="CapFrameX.CustomInstallerActions.CA.dll" DllEntry="RemoveAppdataConfigFiles" Execute="immediate" Return="check"/>
+    <CustomAction Id="DetectDotNetDesktopRuntime" BinaryKey="CustomActionsBin" DllEntry="DetectDotNetDesktopRuntime" Execute="immediate" Return="check" />
   </Fragment>
 
   <Fragment>
-    <CustomAction Id="CleanRegistry" BinaryKey="CapFrameX.CustomInstallerActions.CA.dll" DllEntry="RemoveAutoStartKey" Execute="immediate" Return="check"/>		
-	</Fragment>
-  
+    <CustomAction Id="AppdataConfigFiles" BinaryKey="CustomActionsBin" DllEntry="RemoveAppdataConfigFiles" Execute="immediate" Return="check"/>
+  </Fragment>
+
   <Fragment>
-    <CustomAction Id="ResourceManagement" BinaryKey="CapFrameX.CustomInstallerActions.CA.dll" DllEntry="CopyConfigResources" Execute="immediate" Return="check"/>
+    <CustomAction Id="CleanRegistry" BinaryKey="CustomActionsBin" DllEntry="RemoveAutoStartKey" Execute="immediate" Return="check"/>
+	</Fragment>
+
+  <Fragment>
+    <!-- Deferred and non-impersonated: writing HKLM needs the elevated service context, and an
+         immediate action would only be elevated by accident of how msiexec was launched. -->
+    <CustomAction Id="PurgeVulkanLayers" BinaryKey="CustomActionsBin" DllEntry="PurgeVulkanLayerRegistrations" Execute="deferred" Impersonate="no" Return="check"/>
+  </Fragment>
+
+  <Fragment>
+    <!-- The HKCU twin must stay impersonated, otherwise it addresses the SYSTEM hive. -->
+    <CustomAction Id="PurgeVulkanLayersPerUser" BinaryKey="CustomActionsBin" DllEntry="PurgeVulkanLayerRegistrationsPerUser" Execute="immediate" Return="check"/>
   </Fragment>
   
   <Fragment>
-    <Binary Id="CapFrameX.CustomInstallerActions.CA.dll" SourceFile="$(var.CapFrameX.CustomInstallerActions.TargetDir)$(var.CapFrameX.CustomInstallerActions.TargetName).CA.dll" />
+    <CustomAction Id="ResourceManagement" BinaryKey="CustomActionsBin" DllEntry="CopyConfigResources" Execute="immediate" Return="check"/>
+  </Fragment>
+  
+  <Fragment>
+    <Binary Id="CustomActionsBin" SourceFile="$(var.CapFrameX.CustomInstallerActions.TargetDir)$(var.CapFrameX.CustomInstallerActions.TargetName).CA.dll" />
+  </Fragment>
+
+  <Fragment>
+    <DirectoryRef Id="INSTALLFOLDER">
+      <!-- One implicit-layer registration per bitness, each in its OWN registry view. The
+           Vulkan loader identifies a layer by the name inside the manifest, so a manifest
+           registered in a view whose processes cannot load its DLL does not merely fail —
+           it shadows the correct registration and disables the layer for that bitness.
+           Win64="yes" writes the 64-bit view, Win64="no" writes WOW6432Node.
+           A future manifest filename/version must get a new component GUID as well. The major
+           upgrade then removes this component and its old path-valued registry entry. -->
+      <Component Id="VulkanLayerRegistration" Guid="4B3D5A2F-E00E-4930-A9E1-9F4BE8E91D58" Win64="yes">
+        <RegistryValue Root="HKLM"
+                       Key="SOFTWARE\Khronos\Vulkan\ImplicitLayers"
+                       Name="[INSTALLFOLDER]vulkan\cfx_osd_vklayer_v1.json"
+                       Type="integer"
+                       Value="0"
+                       KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <!-- The 32-bit twin cannot be anchored under INSTALLFOLDER: that sits below
+         ProgramFiles64Folder, and ICE80 rejects a 32-bit component in a 64-bit directory. It
+         carries nothing but a registry value, so the bitness-neutral TARGETDIR is the correct
+         anchor — [INSTALLFOLDER] in the value name is a property reference and resolves to the
+         real install path regardless of where the component lives. -->
+    <DirectoryRef Id="TARGETDIR">
+      <Component Id="VulkanLayerRegistrationX86" Guid="D4B42033-310B-40B4-9CE3-D56FBE4A3F42" Win64="no">
+        <RegistryValue Root="HKLM"
+                       Key="SOFTWARE\Khronos\Vulkan\ImplicitLayers"
+                       Name="[INSTALLFOLDER]vulkan\x86\cfx_osd_vklayer_v1.json"
+                       Type="integer"
+                       Value="0"
+                       KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
   </Fragment>
 
   <!--https://stackoverflow.com/questions/4658220/create-shortcut-checkbox-->
@@ -85,7 +159,7 @@
 						  Description="CapFrameX Capture and Analysis Tool"
 						  Target="[INSTALLFOLDER]\CapFrameX.exe"
 						  WorkingDirectory="INSTALLFOLDER">
-					<Icon Id="StartMenuShortcutIconID" SourceFile="..\CapFrameX\Icons\cx_icon_BUC.ico"></Icon>
+					<Icon Id="StartMenuIcon" SourceFile="..\CapFrameX\Icons\cx_icon_BUC.ico"></Icon>
 				</Shortcut>			
 				<RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
 				<RegistryValue Root="HKMU" Key="Software\CapFrameX" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
@@ -96,7 +170,7 @@
 			<Component Id="ApplicationShortcutDesktop" Guid="*">
         <Condition>INSTALLSHORTCUT="1"</Condition>
 				<Shortcut Id="ApplicationDesktopShortcut" Name="CapFrameX" Description="Open Capture and Analytics Tool" Target="[INSTALLFOLDER]\CapFrameX.exe" WorkingDirectory="INSTALLFOLDER">
-					<Icon Id="ShortcutDesktopIconID" SourceFile="..\CapFrameX\Icons\cx_icon_BUC.ico"></Icon>
+					<Icon Id="DesktopIcon" SourceFile="..\CapFrameX\Icons\cx_icon_BUC.ico"></Icon>
 				</Shortcut>
 				<RemoveFolder Id="RemoveDesktopFolder" Directory="DesktopFolder" On="uninstall" />
 				<RegistryValue Root="HKCU" Key="Software\CapFrameX" Name="installed" Type="integer" Value="1" KeyPath="yes" />

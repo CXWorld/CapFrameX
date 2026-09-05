@@ -16,6 +16,23 @@ namespace PmcReader
             Ring0.Close();
         }
 
+        /// <summary>
+        /// True when the WinRing0 kernel device is open and MSR/PCI access is available.
+        /// </summary>
+        public static bool IsKernelDriverOpen()
+        {
+            return Ring0.IsOpen;
+        }
+
+        /// <summary>
+        /// Human-readable status of the last driver open attempt (null when the driver
+        /// opened successfully).
+        /// </summary>
+        public static string GetKernelDriverReport()
+        {
+            return Ring0.GetReport();
+        }
+
         public static string GetManufacturerId()
         {
             return OpCode.GetManufacturerId();

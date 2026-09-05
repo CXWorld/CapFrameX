@@ -283,7 +283,17 @@ namespace CapFrameX.Overlay
         public OverlayEntryWrapper(string identifier)
         {
             Identifier = identifier;
-            _propertyChangedHandler = (s, e) => PropertyChangedAction?.Invoke();
+            _propertyChangedHandler = (s, e) =>
+            {
+                // Availability and rendered formatting are derived at runtime. Updating them must
+                // not make an otherwise unchanged overlay profile appear dirty.
+                if (e.PropertyName != nameof(ShowOnOverlayIsEnabled)
+                    && e.PropertyName != nameof(ShowGraphIsEnabled)
+                    && e.PropertyName != nameof(GroupNameFormat))
+                {
+                    PropertyChangedAction?.Invoke();
+                }
+            };
             PropertyChanged += _propertyChangedHandler;
         }
 
@@ -337,13 +347,13 @@ namespace CapFrameX.Overlay
         {
             //strOSD += "<C1=AEEA00>"; //CX Green
             //strOSD += "<C2=FFFFFF>"; // White
-            //strOSD += "<C3=2297F3>"; //CX Blue
+            //strOSD += "<C3=0271F9>"; //CX Blue
             //strOSD += "<C4=F17D20>"; //CX Orange
 
-            return Identifier == "RunHistory" ? "2297F3"
-                : Identifier == "CaptureServiceStatus" ? "2297F3"
+            return Identifier == "RunHistory" ? "0271F9"
+                : Identifier == "CaptureServiceStatus" ? "0271F9"
                 : Identifier == "CaptureTimer" ? "F17D20"
-                : Identifier == "SystemTime" ? "2297F3"
+                : Identifier == "SystemTime" ? "0271F9"
                 : Identifier == "Framerate" ? "AEEA00"
                 : Identifier == "Frametime" ? "AEEA00"
                 // all other items
@@ -359,7 +369,7 @@ namespace CapFrameX.Overlay
         {
             //strOSD += "<C1=AEEA00>"; //CX Green
             //strOSD += "<C2=FFFFFF>"; // White
-            //strOSD += "<C3=2297F3>"; //CX Blue
+            //strOSD += "<C3=0271F9>"; //CX Blue
             //strOSD += "<C4=F17D20>"; //CX Orange
 
             return Identifier == "RunHistory" ? "FFFFFF"

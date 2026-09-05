@@ -5,6 +5,8 @@
 
 using System.Collections.Generic;
 
+#pragma warning disable CS1591 // file exempt from XML documentation
+
 namespace LibreHardwareMonitor.Hardware.Motherboard.Lpc.EC;
 
 public class WindowsEmbeddedController : EmbeddedController

@@ -76,6 +76,11 @@ namespace CapFrameX.Test.Mocks
         public IObservable<BenchlabSensorSample> PmdSensorStream => _pmdSensorStream.AsObservable();
         public IObservable<EPmdServiceStatus> PmdServiceStatusStream => _pmdServiceStatusStream.AsObservable();
 
+        public bool EnsureDemandStartMode()
+        {
+            return true;
+        }
+
         /// <summary>
         /// Creates a new MockBenchlabService with specified profile and optional deterministic seed.
         /// </summary>

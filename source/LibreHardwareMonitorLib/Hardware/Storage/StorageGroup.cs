@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Management;
+using CapFrameX.Monitoring.Contracts;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
@@ -16,13 +17,13 @@ internal class StorageGroup : IGroup
 {
     private readonly List<AbstractStorage> _hardware = new();
 
-    public StorageGroup(ISettings settings)
+    public StorageGroup(ISettings settings, ISensorConfig sensorConfig)
     {
         if (Software.OperatingSystem.IsUnix)
             return;
 
         Dictionary<uint, List<(uint, ulong)>> storageSpaceDiskToPhysicalDiskMap = GetStorageSpaceDiskToPhysicalDiskMap();
-        AddHardware(settings, storageSpaceDiskToPhysicalDiskMap);
+        AddHardware(settings, sensorConfig, storageSpaceDiskToPhysicalDiskMap);
     }
 
     public IReadOnlyList<IHardware> Hardware => _hardware;
@@ -32,7 +33,7 @@ internal class StorageGroup : IGroup
     /// </summary>
     /// <param name="settings">The settings.</param>
     /// <param name="storageSpaceDiskToPhysicalDiskMap">The storage space disk to physical disk map.</param>
-    private void AddHardware(ISettings settings, Dictionary<uint, List<(uint, ulong)>> storageSpaceDiskToPhysicalDiskMap)
+    private void AddHardware(ISettings settings, ISensorConfig sensorConfig, Dictionary<uint, List<(uint, ulong)>> storageSpaceDiskToPhysicalDiskMap)
     {
         try
         {
@@ -50,7 +51,10 @@ internal class StorageGroup : IGroup
                 {
                     var instance = AbstractStorage.CreateInstance(deviceId, index, diskSize, scsi, settings);
                     if (instance != null)
+                    {
+                        instance.SetSensorConfig(sensorConfig);
                         _hardware.Add(instance);
+                    }
 
                     if (storageSpaceDiskToPhysicalDiskMap.ContainsKey(index))
                     {
@@ -58,7 +62,10 @@ internal class StorageGroup : IGroup
                         {
                             var physicalDiskInstance = AbstractStorage.CreateInstance(@$"\\.\PHYSICALDRIVE{physicalDisk.Item1}", physicalDisk.Item1, physicalDisk.Item2, scsi, settings);
                             if (physicalDiskInstance != null)
+                            {
+                                physicalDiskInstance.SetSensorConfig(sensorConfig);
                                 _hardware.Add(physicalDiskInstance);
+                            }
                         }
                     }
                 }

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<HookCompatibilityProfiles version="1">
+  <!-- Only routing/timing exceptions belong here. DXGI lifetime handling is universal. -->
+  <Profile executable="dirt5.exe"
+           injectionDelayMilliseconds="15000"
+           source="RTSS 7.3.7 ProfileTemplates/dirt5.exe.cfg: InjectionDelayDirect3D12=1; Global: InjectionDelay=15000" />
+  <Profile executable="LEGOBatmanLotDK-Win64-Shipping.exe"
+           enableGenericD3D12PresentRoute="true"
+           source="CapFrameX validation: Streamline was already loaded at attach and exposed no authoritative creation queue; bypass vendor presentation hooks and draw on native DXGI Presents using observed DIRECT command queues; control/status telemetry remains isolated from routing" />
+  <Profile executable="witcher3.exe"
+           enableGenericD3D12PresentRoute="true"
+           source="CapFrameX validation: Streamline was already loaded at attach and its pass-through proxy exposed no authoritative creation queue; bypass vendor presentation hooks and draw on native DXGI Presents using observed DIRECT command queues; control/status telemetry remains isolated from routing" />
+  <Profile executable="tlou-ii.exe"
+           enableGenericD3D12PresentRoute="true"
+           earlyInjectionModule="d3d12.dll"
+           source="CapFrameX validation: inject when D3D12 is mapped, use native DXGI Presents with observed DIRECT queues while frame generation is off, and make the API-provided FidelityFX proxy swapchain plus queue the exclusive render path while frame generation owns presentation" />
+  <Profile executable="Stalker2-Win64-Shipping.exe"
+           enableGenericD3D12PresentRoute="true"
+           disableFidelityFxSwapchainLifecycleHooks="true"
+           source="CapFrameX validation: bypass all optional vendor presentation/lifecycle hooks, keep native DXGI Presents plus observed DIRECT command queues authoritative, and permit only swapchain-independent Streamline control/status telemetry" />
+  <Profile executable="DyingLightGame_TheBeast_x64_rwdi.exe"
+           enableGenericD3D12PresentRoute="true"
+           source="CapFrameX validation and RTSS 7.3.7 routing model: hook native DXGI Present plus observed DIRECT command queues only; do not hook Streamline, XeSS-FG or FidelityFX presentation paths; swapchain-independent Streamline control/status telemetry is allowed" />
+  <Profile executable="JediSurvivor.exe"
+           enableGenericD3D12PresentRoute="true"
+           earlyInjectionModule="d3d12.dll"
+           source="CapFrameX validation and RTSS NVPresent routing model: inject when D3D12 is mapped, bypass Streamline proxy rendering, and draw on eligible native DXGI Presents using observed DIRECT command queues" />
+  <Profile executable="VoyageSteam-Win64-Shipping.exe"
+           enableGenericD3D12PresentRoute="true"
+           earlyInjectionModule="d3d12.dll"
+           source="CapFrameX validation and RTSS routing model: inject after D3D12 is mapped, use native DXGI Present plus observed DIRECT command queues instead of vendor presentation hooks, and keep control/status telemetry isolated" />
+</HookCompatibilityProfiles>

@@ -4,10 +4,11 @@
 #define MAX_DRIVER_PATH_LEN  200
 #define MAX_GPU_NAME_LEN  100
 #define MAX_VENDOR_ID_LEN  20
+#define MAX_PNP_STRING_LEN  256
 
 // Struct for querying supported metrics only (no values needed)
 // Used for activating sensors before telemetry data is available
-typedef struct AdlxTelemetrySupport
+struct AdlxTelemetrySupport
 {
 	bool gpuUsageSupported = false;
 	bool gpuClockSpeedSupported = false;
@@ -27,7 +28,9 @@ typedef struct AdlxTelemetrySupport
 	bool gpuFanDutySupported = false;
 };
 
-typedef struct AdlxTelemetryData
+static_assert(sizeof(AdlxTelemetrySupport) == 16, "AdlxTelemetrySupport ABI layout changed");
+
+struct AdlxTelemetryData
 {
 	// GPU Usage
 	bool gpuUsageSupported = false;
@@ -94,7 +97,9 @@ typedef struct AdlxTelemetryData
 	double gpuFanDutyValue;
 };
 
-typedef struct AdlxDeviceInfo
+static_assert(sizeof(AdlxTelemetryData) == 256, "AdlxTelemetryData ABI layout changed");
+
+struct AdlxDeviceInfo
 {
 	char GpuName[MAX_GPU_NAME_LEN];
 	// Undefinied = 0, Integrated = 1, Discrete = 2
@@ -102,9 +107,19 @@ typedef struct AdlxDeviceInfo
 	int32_t Id;
 	char VendorId[MAX_VENDOR_ID_LEN];
 	char DriverPath[MAX_DRIVER_PATH_LEN];
+	char PnpString[MAX_PNP_STRING_LEN];
+	uint32_t LuidLowPart;
+	int32_t LuidHighPart;
+	uint32_t LuidValid;
 };
 
+static_assert(sizeof(AdlxDeviceInfo) == 596, "AdlxDeviceInfo ABI layout changed");
+
+#ifdef CAPFRAMEXADLX_EXPORTS
+#define ADLX_API __declspec(dllexport)
+#else
 #define ADLX_API __declspec(dllimport)
+#endif
 
 extern "C" ADLX_API bool IntializeAdlx();
 

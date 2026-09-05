@@ -142,9 +142,10 @@ uint32_t GetBusWidth(const uint32_t index)
 
 					if (res == CTL_RESULT_SUCCESS)
 					{
-						if (memoryProperties.busWidth > busWidth)
+						if (memoryProperties.busWidth > 0 &&
+                            static_cast<uint32_t>(memoryProperties.busWidth) > busWidth)
 						{
-							busWidth = memoryProperties.busWidth;
+							busWidth = static_cast<uint32_t>(memoryProperties.busWidth);
 						}
 					}
 				}

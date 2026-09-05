@@ -1,11 +1,83 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CapFrameX.Overlay
 {
     public static class OverlayUtils
     {
+        /// <summary>
+        /// Position of an entry in the list an overlay template produces. The framerate block always
+        /// closes the overlay, and DisplayTime belongs directly beneath the framerate rows — the same
+        /// order <see cref="GetOverlayEntryDefaults"/> lays out, so applying a template never moves it
+        /// somewhere else than "Reset to default" does.
+        /// </summary>
+        /// <remarks>
+        /// Framerate, Frametime and DisplayTime deliberately get THREE DISTINCT ranks rather than one
+        /// shared rank. Callers sort ties by SortKey, which is identical ("0_0_0_0_0") for all CX
+        /// entries, so a shared rank would leave the stable sort to inherit whatever order the
+        /// incoming list happens to have — and a configuration written before DisplayTime was ranked
+        /// here has it sitting at the very TOP of the list. Distinct ranks repair such a list instead
+        /// of preserving it.
+        /// </remarks>
+        public static int GetTemplateSortOrder(IOverlayEntry entry)
+        {
+            if (entry.Identifier == "Framerate")
+                return 80;
+            if (entry.Identifier == "Frametime")
+                return 81;
+            if (entry.Identifier == "DisplayTime")
+                return 82;
+
+            // Group entries by type so that sort keys from different hardware
+            // namespaces never mix. Within each type group the SortKey (derived
+            // from PresentationSortKey) controls the order, regardless of
+            // whether the entry is enabled or disabled.
+
+            switch (entry.OverlayEntryType)
+            {
+                case EOverlayEntryType.CX:
+                    // CustomCPU/CustomRAM act as section headers when template-enabled
+                    if (entry.Identifier == "CustomCPU")
+                        return entry.ShowOnOverlay ? 30 : 10;
+                    if (entry.Identifier == "CustomRAM")
+                        return entry.ShowOnOverlay ? 50 : 10;
+                    return 10;
+
+                case EOverlayEntryType.GPU:
+                    return 20;
+
+                case EOverlayEntryType.CPU:
+                    return 40;
+
+                case EOverlayEntryType.RAM:
+                    return 60;
+
+                case EOverlayEntryType.HDD:
+                    return 65;
+
+                case EOverlayEntryType.OnlineMetric:
+                    return 70;
+
+                default:
+                    return 90;
+            }
+        }
+
+        /// <summary>
+        /// Orders the entries an overlay template produced: by section (<see cref="GetTemplateSortOrder"/>),
+        /// then by SortKey within a section so sort keys from different hardware namespaces never mix.
+        /// </summary>
+        public static List<IOverlayEntry> SortForTemplate(IEnumerable<IOverlayEntry> entries)
+        {
+            return entries
+                .GroupBy(entry => GetTemplateSortOrder(entry))
+                .OrderBy(group => group.Key)
+                .SelectMany(group => group.OrderBy(entry => entry.SortKey, AlphanumericComparer.Instance))
+                .ToList();
+        }
+
         public static List<OverlayEntryWrapper> GetOverlayEntryDefaults(IAppConfiguration appConfiguration)
         {
             return new List<OverlayEntryWrapper>
@@ -25,6 +97,63 @@ namespace CapFrameX.Overlay
                         ShowGraphIsEnabled = false,
                         Color = string.Empty,
                         IsEntryEnabled = true
+                    },
+
+					// HookOverlayStatus
+					// State of the in-game hook, mirroring the "Hook:" element in the status bar.
+					// Only meaningful while the in-game overlay is the selected renderer, hence the
+					// config gate — but the entry stays in the list either way (see
+					// OverlayEntryProvider.CONFIG_GATED_ENTRIES), so switching the OSD mode flips it
+					// in place instead of making it appear and disappear.
+					new OverlayEntryWrapper("HookOverlayStatus")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = appConfiguration.EnableHookOverlay,
+                        Description = "Overlay hook status",
+                        GroupName = "Hook",
+                        Value = "Off",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = appConfiguration.EnableHookOverlay
+                    },
+
+                    // Frame generation technology is inferred only from signals the in-game hook
+                    // already observes. This item is telemetry-only and never changes routing.
+                    new OverlayEntryWrapper("FrameGenerationTechnology")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = appConfiguration.EnableHookOverlay,
+                        Description = "Frame generation technology",
+                        GroupName = "Frame Generation",
+                        Value = "N/A",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = appConfiguration.EnableHookOverlay
+                    },
+
+                    // Frame generation activity comes from a telemetry-only channel in the
+                    // in-game hook. The native OSD substitutes the live values for these
+                    // placeholders; renderer routing never consumes them, while RTSS and the
+                    // hook-free renderer deliberately have no source.
+                    new OverlayEntryWrapper("FrameGenerationStatus")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = appConfiguration.EnableHookOverlay,
+                        Description = "Frame generation status",
+                        GroupName = "Frame Generation",
+                        Value = "N/A",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = appConfiguration.EnableHookOverlay
                     },
 
 					// CaptureTimer
@@ -124,6 +253,27 @@ namespace CapFrameX.Overlay
                         IsEntryEnabled = true
                     },
 
+					// Displaytime (MsBetweenDisplayChange). CX renderers only. The entry stays
+					// in the profile while unavailable so renderer switches preserve its options.
+					new OverlayEntryWrapper("DisplayTime")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = true,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Displaytime",
+                        GroupName = "Displaytime",
+                        Value = 0d,
+                        ValueFormat = default,
+                        ShowGraph = true,
+                        ShowGraphIsEnabled = true,
+                        Color = string.Empty,
+                        // Enabled for any renderer that has a display-time source: the hook-free OSD,
+                        // or the in-game hook in PresentMon graph mode. Must match OverlayEntryProvider
+                        // renderer gate so it is disabled without being removed from the profile.
+                        IsEntryEnabled = appConfiguration.EnableHookFreeOverlay
+                            || (appConfiguration.EnableHookOverlay && appConfiguration.HookOverlayUsePresentMonFrametimes)
+                    },
+
                     // Custom CPU
 					new OverlayEntryWrapper("CustomCPU")
                     {
@@ -219,12 +369,30 @@ namespace CapFrameX.Overlay
                         IsEntryEnabled = true
                     },
 
+                    // Present resolution. RTSS reads its shared memory; the in-game API hook
+                    // substitutes the actual swapchain/backbuffer extent. Keep the legacy
+                    // identifier because the native renderer uses it for that substitution.
+                    new OverlayEntryWrapper("Resolution")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Present Resolution",
+                        GroupName = "Present Resolution",
+                        Value = "N/A",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = !appConfiguration.EnableHookFreeOverlay
+                    },
+
                     // PC Latency
                     new OverlayEntryWrapper("OnlinePcLatency")
                     {
                         OverlayEntryType = EOverlayEntryType.OnlineMetric,
                         ShowOnOverlay = false,
-                        ShowOnOverlayIsEnabled = true,
+                        ShowOnOverlayIsEnabled = appConfiguration.UsePcLatency,
                         Description = "PC Latency (ms)",
                         GroupName = "PC Latency",
                         Value = "0",
@@ -234,6 +402,23 @@ namespace CapFrameX.Overlay
                         Color = string.Empty,
                         IsEntryEnabled = appConfiguration.UsePcLatency,
                         SortKey = "1_1"
+                    },
+
+                    // AMD Frame Latency Meter
+                    new OverlayEntryWrapper("OnlineAmdFlmLatency")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = appConfiguration.UseAmdFlmLatency,
+                        Description = "Click-to-Screen-Response Latency (ms)",
+                        GroupName = "AMD FLM Latency",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = appConfiguration.UseAmdFlmLatency,
+                        SortKey = "1_2"
                     },
 
                     // Animation Error
@@ -250,7 +435,7 @@ namespace CapFrameX.Overlay
                         ShowGraphIsEnabled = false,
                         Color = string.Empty,
                         IsEntryEnabled = true,
-                        SortKey = "1_2"
+                        SortKey = "1_3"
                     },
 
                     // Online metrics

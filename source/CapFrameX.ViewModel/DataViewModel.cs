@@ -18,7 +18,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
-using Prism.Regions;
+using Prism.Navigation.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -1050,9 +1050,9 @@ namespace CapFrameX.ViewModel
             {
                 if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
                     builder.Append("Min" + "\t" + min.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-                if (_appConfiguration.UseSingleRecordFrametimeP1QuantileStatisticParameter)
+                if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
                     builder.Append("P1" + "\t" + p99_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-                if (_appConfiguration.UseSingleRecordFrametimeP5QuantileStatisticParameter)
+                if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
                     builder.Append("P5" + "\t" + p95_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
                 if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
                     builder.Append("Median" + "\t" + median.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
@@ -1680,9 +1680,9 @@ namespace CapFrameX.ViewModel
                         values.Add(gpuActiveAverage);
                     if (_appConfiguration.UseSingleRecordAverageStatisticParameter && !double.IsNaN(average))
                         values.Add(average);
-                    if (_appConfiguration.UseSingleRecordFrametimeP5QuantileStatisticParameter && !double.IsNaN(p95_quantile))
+                    if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter && !double.IsNaN(p95_quantile))
                         values.Add(p95_quantile);
-                    if (_appConfiguration.UseSingleRecordFrametimeP1QuantileStatisticParameter && !double.IsNaN(p99_quantile))
+                    if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter && !double.IsNaN(p99_quantile))
                         values.Add(p99_quantile);
                     if (_appConfiguration.UseSingleRecordMaxStatisticParameter && !double.IsNaN(min))
                         values.Add(min);
@@ -1779,10 +1779,10 @@ namespace CapFrameX.ViewModel
                         parameterLabelList.Add("Gpu-Busy 1% High Avg.");
                     if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
                         parameterLabelList.Add("1% High Average");
-                    if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter && !double.IsNaN(p1_quantile))
-                        parameterLabelList.Add("P99");
                     if (_appConfiguration.UseSingleRecordGpuActiveP1QuantileStatisticParameter && !double.IsNaN(gpuActiveP1_quantile))
                         parameterLabelList.Add("GPU-Busy P99");
+                    if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter && !double.IsNaN(p1_quantile))
+                        parameterLabelList.Add("P99");
                     if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter && !double.IsNaN(p5_quantile))
                         parameterLabelList.Add("P95");
                     if (_appConfiguration.UseSingleRecordMedianStatisticParameter && !double.IsNaN(median))
@@ -1791,9 +1791,9 @@ namespace CapFrameX.ViewModel
                         parameterLabelList.Add("GPU-Busy Average");
                     if (_appConfiguration.UseSingleRecordAverageStatisticParameter && !double.IsNaN(average))
                         parameterLabelList.Add("Average");
-                    if (_appConfiguration.UseSingleRecordFrametimeP5QuantileStatisticParameter && !double.IsNaN(p95_quantile))
+                    if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter && !double.IsNaN(p95_quantile))
                         parameterLabelList.Add("P5");
-                    if (_appConfiguration.UseSingleRecordFrametimeP1QuantileStatisticParameter && !double.IsNaN(p99_quantile))
+                    if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter && !double.IsNaN(p99_quantile))
                         parameterLabelList.Add("P1");
                     if (_appConfiguration.UseSingleRecordMaxStatisticParameter && !double.IsNaN(min))
                         parameterLabelList.Add("Min");

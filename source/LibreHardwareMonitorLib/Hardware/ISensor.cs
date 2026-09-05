@@ -35,7 +35,18 @@ public enum SensorType
     Energy, // milliwatt-hour (mWh)
     Noise, // dBA
     Conductivity, // µS/cm
-    Humidity // %
+    Humidity, // %
+    Latency, // ms
+
+    /// <summary>
+    /// Transfer rate of a double/quad data rate interface in MT/s (megatransfers per second).
+    /// <para>
+    /// Not a frequency: DDR memory transfers on both clock edges, so DDR5-5600 runs a 2800 MHz
+    /// I/O clock and moves 5600 MT/s. JEDEC therefore grades memory in MT/s, not in MHz/Hz.
+    /// The clock itself belongs in <see cref="Clock"/>.
+    /// </para>
+    /// </summary>
+    DataRate // MT/s
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }
 

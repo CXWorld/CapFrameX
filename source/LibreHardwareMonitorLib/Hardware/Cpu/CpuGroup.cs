@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using CapFrameX.Monitoring.Contracts;
 
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
@@ -16,7 +17,7 @@ internal class CpuGroup : IGroup
     private readonly List<GenericCpu> _hardware = new();
     private readonly CpuId[][][] _threads;
 
-    public CpuGroup(ISettings settings)
+    public CpuGroup(ISettings settings, ISensorConfig sensorConfig = null)
     {
         CpuId[][] processorThreads = GetProcessorThreads();
         _threads = new CpuId[processorThreads.Length][][];
@@ -33,7 +34,7 @@ internal class CpuGroup : IGroup
             switch (threads[0].Vendor)
             {
                 case Vendor.Intel:
-                    _hardware.Add(new IntelCpu(index, coreThreads, settings));
+                    _hardware.Add(new IntelCpu(index, coreThreads, settings, sensorConfig));
                     break;
                 case Vendor.AMD:
                     switch (threads[0].Family)
@@ -54,16 +55,16 @@ internal class CpuGroup : IGroup
                         case 0x19:
                         case 0x1A: // Zen 5 + Zen 6 mainstream (Olympic Ridge, Medusa Point 1/2, Weisshorn)
                         case 0x1B: // Zen 6 Medusa Point 3 + Zen 7 Rosenhorn
-                            _hardware.Add(new Amd17Cpu(index, coreThreads, settings));
+                            _hardware.Add(new Amd17Cpu(index, coreThreads, settings, sensorConfig));
                             break;
                         default:
-                            _hardware.Add(new GenericCpu(index, coreThreads, settings));
+                            _hardware.Add(new GenericCpu(index, coreThreads, settings, sensorConfig));
                             break;
                     }
 
                     break;
                 default:
-                    _hardware.Add(new GenericCpu(index, coreThreads, settings));
+                    _hardware.Add(new GenericCpu(index, coreThreads, settings, sensorConfig));
                     break;
             }
 

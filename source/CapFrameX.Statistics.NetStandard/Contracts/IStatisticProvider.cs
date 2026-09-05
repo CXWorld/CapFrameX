@@ -9,6 +9,8 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
 
         double GetAdaptiveStandardDeviation(IList<double> sequence, double timeWindow);
 
+        double GetFpsAdaptiveStandardDeviation(IList<double> frametimes, IList<double> fps, double timeWindow);
+
         double GetStutteringCountPercentage(IList<double> sequence, double stutteringFactor);
 
         double GetOnlineStutteringTimePercentage(IList<double> sequence, double stutteringFactor);
@@ -38,6 +40,10 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
         IList<int> GetFpsThresholdCounts(IList<double> frametimes, bool isReversed);
 
         IList<double> GetFpsThresholdTimes(IList<double> frametimes, bool isReversed);
+
+        IList<double> GetVariancePercentages(IList<double> sequence);
+
+        IList<double> GetVariancePercentages(IEnumerable<IList<double>> sequences);
 
         IList<double> GetFrametimeVariancePercentages(ISession session);
 

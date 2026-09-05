@@ -72,7 +72,10 @@ namespace CapFrameX.ViewModel.SubModels
             foreach (var entry in _sensorViewModel.SensorEntries
                  .Where(item => item.Name.Contains("GPU")))
             {
-                if (entry.Name.Contains("GPU Core") || entry.Name == "GPU Memory Dedicated" || entry.SensorType == "Power")
+                if (entry.Name.Contains("GPU Core") ||
+                    entry.Name == "GPU Memory Dedicated" ||
+                    entry.Name == "GPU Memory Allocated" ||
+                    entry.SensorType == "Power")
                     entry.UseForLogging = logEntry;
             }
         }

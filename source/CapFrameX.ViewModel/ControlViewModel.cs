@@ -9,7 +9,6 @@ using CapFrameX.MVVM.Dialogs;
 using DynamicData;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic.FileIO;
-using Microsoft.WindowsAPICodePack.Dialogs;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
@@ -24,6 +23,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
@@ -46,6 +46,7 @@ namespace CapFrameX.ViewModel
         private string _customCpuDescription;
         private string _customGpuDescription;
         private string _customRamDescription;
+        private string _customMainboardDescription;
         private string _customGameName;
         private string _customComment;
         private int _recordDataGridSelectedIndex;
@@ -57,8 +58,15 @@ namespace CapFrameX.ViewModel
         private bool _customCpuDescriptionChanged = false;
         private bool _customGpuDescriptionChanged = false;
         private bool _customRamDescriptionChanged = false;
+        private bool _customMainboardDescriptionChanged = false;
         private bool _customGameNameChanged = false;
         private bool _customCommentChanged = false;
+        private string _customResolution;
+        private bool _customResolutionChanged = false;
+        private readonly SemaphoreSlim _selectionLoadSemaphore = new SemaphoreSlim(1, 1);
+        private Task<ISession> _selectedSessionTask = Task.FromResult<ISession>(null);
+        private CancellationTokenSource _selectionLoadCancellation = new CancellationTokenSource();
+        private int _selectionVersion;
 
         public bool ShowCreationDate
         {
@@ -124,6 +132,8 @@ namespace CapFrameX.ViewModel
             get { return _selectedRecordInfo; }
             set
             {
+                if (ReferenceEquals(_selectedRecordInfo, value))
+                    return;
 
                 _selectedRecordInfo = value;
                 OnSelectedRecordInfoChanged();
@@ -176,6 +186,17 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public string CustomMainboardDescription
+        {
+            get { return _customMainboardDescription; }
+            set
+            {
+                _customMainboardDescription = value;
+                _customMainboardDescriptionChanged = true;
+                RaisePropertyChanged();
+            }
+        }
+
         public string CustomGameName
         {
             get { return _customGameName; }
@@ -194,6 +215,17 @@ namespace CapFrameX.ViewModel
             {
                 _customComment = value;
                 _customCommentChanged = true;
+                RaisePropertyChanged();
+            }
+        }
+
+        public string CustomResolution
+        {
+            get { return _customResolution; }
+            set
+            {
+                _customResolution = value;
+                _customResolutionChanged = true;
                 RaisePropertyChanged();
             }
         }
@@ -415,16 +447,11 @@ namespace CapFrameX.ViewModel
 
         public bool OnSelectRootFolder()
         {
-            var dialog = new CommonOpenFileDialog
-            {
-                IsFolderPicker = true
-            };
+            var dialog = new Microsoft.Win32.OpenFolderDialog();
 
-            CommonFileDialogResult result = dialog.ShowDialog();
-
-            if (result == CommonFileDialogResult.Ok)
+            if (dialog.ShowDialog() == true)
             {
-                RootDirectory = dialog.FileName;
+                RootDirectory = dialog.FolderName;
                 _appConfiguration.ObservedDirectory = RootDirectory;
                 return true;
             }
@@ -436,7 +463,8 @@ namespace CapFrameX.ViewModel
             try
             {
                 var path = _pathService.ResolveDocumentsPlaceholder(_appConfiguration.ObservedDirectory);
-                Process.Start(path);
+                // UseShellExecute is required to open a folder in Explorer on .NET Core+
+                Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
             }
             catch (Exception ex) { _logger.LogError(ex, "Error while opening observed folder."); }
         }
@@ -561,18 +589,11 @@ namespace CapFrameX.ViewModel
             if (!wasDropped)
             {
 
-                var dialog = new CommonOpenFileDialog
+                var dialog = new Microsoft.Win32.OpenFolderDialog();
+
+                if (dialog.ShowDialog() == true)
                 {
-                    IsFolderPicker = true
-                };
-
-                CommonFileDialogResult result = dialog.ShowDialog();
-
-
-                if (result == CommonFileDialogResult.Ok)
-                {
-                    destinationfolder = dialog.FileName;
-
+                    destinationfolder = dialog.FolderName;
                 }
             }
             else
@@ -629,16 +650,11 @@ namespace CapFrameX.ViewModel
             if (!RecordInfoList.Any())
                 return;
 
-            var dialog = new CommonOpenFileDialog
-            {
-                IsFolderPicker = true
-            };
+            var dialog = new Microsoft.Win32.OpenFolderDialog();
 
-            CommonFileDialogResult result = dialog.ShowDialog();
-
-            if (result == CommonFileDialogResult.Ok)
+            if (dialog.ShowDialog() == true)
             {
-                string destinationfolder = dialog.FileName;
+                string destinationfolder = dialog.FolderName;
                 try
                 {
 
@@ -681,8 +697,10 @@ namespace CapFrameX.ViewModel
             CustomCpuDescription = string.Empty;
             CustomGpuDescription = string.Empty;
             CustomRamDescription = string.Empty;
+            CustomMainboardDescription = string.Empty;
             CustomGameName = string.Empty;
             CustomComment = string.Empty;
+            CustomResolution = string.Empty;
         }
 
         private void ResetDescriptionChangedFlags()
@@ -690,8 +708,10 @@ namespace CapFrameX.ViewModel
             _customCpuDescriptionChanged = false;
             _customGpuDescriptionChanged = false;
             _customRamDescriptionChanged = false;
+            _customMainboardDescriptionChanged = false;
             _customGameNameChanged = false;
             _customCommentChanged = false;
+            _customResolutionChanged = false;
         }
 
         private void OnAcceptEditingDialog() => SaveDescriptions();
@@ -699,14 +719,15 @@ namespace CapFrameX.ViewModel
         public void SaveDescriptions()
         {
             if (!ObjectExtensions.IsAllNotNull(CustomCpuDescription,
-                CustomGpuDescription, CustomRamDescription, CustomGameName,
-                CustomComment, _selectedRecordInfo, _applicationState.SelectedRecords))
+                CustomGpuDescription, CustomRamDescription, CustomMainboardDescription,
+                CustomGameName, CustomComment, _selectedRecordInfo, _applicationState.SelectedRecords))
                 return;
 
             if (_applicationState.SelectedRecords.Count == 1)
             {
                 _recordManager.UpdateCustomData(_selectedRecordInfo, CustomCpuDescription,
-                    CustomGpuDescription, CustomRamDescription, CustomGameName, CustomComment);
+                    CustomGpuDescription, CustomRamDescription, CustomMainboardDescription,
+                    CustomGameName, CustomComment, CustomResolution);
             }
             else if (_applicationState.SelectedRecords.Count > 1)
             {
@@ -719,8 +740,10 @@ namespace CapFrameX.ViewModel
                         _customCpuDescriptionChanged ? CustomCpuDescription : session.Info.Processor,
                         _customGpuDescriptionChanged ? CustomGpuDescription : session.Info.GPU,
                         _customRamDescriptionChanged ? CustomRamDescription : session.Info.SystemRam,
+                        _customMainboardDescriptionChanged ? CustomMainboardDescription : session.Info.Motherboard,
                         _customGameNameChanged ? CustomGameName : session.Info.GameName,
-                        _customCommentChanged ? CustomComment : session.Info.Comment);
+                        _customCommentChanged ? CustomComment : session.Info.Comment,
+                        _customResolutionChanged ? CustomResolution : session.Info.ResolutionInfo);
                 }
             }
 
@@ -769,40 +792,109 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public void OnRecordSelectByDoubleClick()
+        public async void OnRecordSelectByDoubleClick()
         {
-            if (SelectedRecordInfo != null && _selectSessionEvent != null)
+            var selectedRecordInfo = SelectedRecordInfo;
+            if (selectedRecordInfo != null && _selectSessionEvent != null)
             {
-                var session = _recordManager.LoadData(SelectedRecordInfo.FullPath);
-                _selectSessionEvent.Publish(new ViewMessages.SelectSession(session, SelectedRecordInfo));
+                try
+                {
+                    // Reuse the selection load and retain UpdateSession-before-SelectSession ordering.
+                    var session = await _selectedSessionTask;
+                    if (session != null && ReferenceEquals(_selectedRecordInfo, selectedRecordInfo))
+                    {
+                        _selectSessionEvent.Publish(new ViewMessages.SelectSession(session, selectedRecordInfo));
+                    }
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogError(exception, "Error selecting record {RecordPath}.", selectedRecordInfo.FullPath);
+                }
             }
         }
 
         private void OnSelectedRecordInfoChanged()
         {
-            if (_selectedRecordInfo is null)
+            int selectionVersion = Interlocked.Increment(ref _selectionVersion);
+            var newCancellation = new CancellationTokenSource();
+            var previousCancellation = Interlocked.Exchange(ref _selectionLoadCancellation, newCancellation);
+            previousCancellation?.Cancel();
+            previousCancellation?.Dispose();
+            var selectedRecordInfo = _selectedRecordInfo;
+
+            if (selectedRecordInfo is null)
             {
+                _selectedSessionTask = Task.FromResult<ISession>(null);
                 ResetInfoEditBoxes();
+                ResetDescriptionChangedFlags();
             }
             else
             {
-                var session = _recordManager.LoadData(_selectedRecordInfo.FullPath);
-                if (session is ISession)
+                // FileRecordInfo already contains these fields, so the editor can update without
+                // waiting for the complete capture to be parsed on the background thread.
+                CustomCpuDescription = selectedRecordInfo.ProcessorName ?? string.Empty;
+                CustomGpuDescription = selectedRecordInfo.GraphicCardName ?? string.Empty;
+                CustomRamDescription = selectedRecordInfo.SystemRamInfo ?? string.Empty;
+                CustomMainboardDescription = selectedRecordInfo.MotherboardName ?? string.Empty;
+                CustomGameName = selectedRecordInfo.GameName ?? string.Empty;
+                CustomComment = selectedRecordInfo.Comment ?? string.Empty;
+                CustomResolution = selectedRecordInfo.Resolution ?? string.Empty;
+                ResetDescriptionChangedFlags();
+                _selectedSessionTask = LoadSelectedSessionAsync(selectedRecordInfo, selectionVersion,
+                    newCancellation.Token);
+            }
+        }
+
+        private async Task<ISession> LoadSelectedSessionAsync(IFileRecordInfo selectedRecordInfo,
+            int selectionVersion, CancellationToken cancellationToken)
+        {
+            bool lockTaken = false;
+            try
+            {
+                await _selectionLoadSemaphore.WaitAsync(cancellationToken);
+                lockTaken = true;
+
+                // Rapid navigation can queue several records behind an active HDD read. Only the
+                // newest queued selection is allowed to start another read.
+                if (cancellationToken.IsCancellationRequested
+                    || !IsCurrentSelection(selectedRecordInfo, selectionVersion))
+                {
+                    return null;
+                }
+
+                var session = await Task.Run(
+                    () => _recordManager.LoadData(selectedRecordInfo.FullPath), cancellationToken);
+                if (session != null && !cancellationToken.IsCancellationRequested
+                    && IsCurrentSelection(selectedRecordInfo, selectionVersion))
                 {
                     if (_updateSessionEvent != null)
                     {
-                        _updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, SelectedRecordInfo));
+                        _updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, selectedRecordInfo));
                     }
-                    CustomCpuDescription = string.Copy(SelectedRecordInfo.ProcessorName ?? string.Empty);
-                    CustomGpuDescription = string.Copy(SelectedRecordInfo.GraphicCardName ?? string.Empty);
-                    CustomRamDescription = string.Copy(SelectedRecordInfo.SystemRamInfo ?? string.Empty);
-                    CustomGameName = string.Copy(SelectedRecordInfo.GameName ?? string.Empty);
-                    CustomComment = string.Copy(SelectedRecordInfo.Comment ?? string.Empty);
+                    return session;
                 }
-            }
 
-            ResetDescriptionChangedFlags();
+                return null;
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, "Error loading selected record {RecordPath}.", selectedRecordInfo.FullPath);
+                return null;
+            }
+            finally
+            {
+                if (lockTaken)
+                    _selectionLoadSemaphore.Release();
+            }
         }
+
+        private bool IsCurrentSelection(IFileRecordInfo selectedRecordInfo, int selectionVersion)
+            => Volatile.Read(ref _selectionVersion) == selectionVersion
+                && ReferenceEquals(_selectedRecordInfo, selectedRecordInfo);
 
         private void OnPressDeleteKey()
             => OnDeleteRecordFile();

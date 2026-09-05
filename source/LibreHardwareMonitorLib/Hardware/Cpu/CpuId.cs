@@ -58,7 +58,12 @@ public enum CpuCoreType
     /// <summary>
     /// Dense core (D-core) - AMD.
     /// </summary>
-    DenseCore = 4
+    DenseCore = 4,
+
+    /// <summary>
+    /// Low-Power core (LP-core) - AMD (Zen 6 and later).
+    /// </summary>
+    LowPowerCore = 5
 }
 
 /// <summary>

@@ -196,20 +196,22 @@ namespace CapFrameX.Statistics.PlotBuilder
             }
         };
 
-        public void Reset()
+        public void Reset(bool invalidatePlot = true)
         {
             PlotModel.Series.Clear();
             PlotModel.Axes.Clear();
-            PlotModel.InvalidatePlot(true);
+            if (invalidatePlot)
+                PlotModel.InvalidatePlot(true);
         }
 
-        public void UpdateAxis(EPlotAxis axisType, Action<Axis> action)
+        public void UpdateAxis(EPlotAxis axisType, Action<Axis> action, bool invalidatePlot = true)
         {
             var axis = PlotModel.GetAxisOrDefault(axisType.GetDescription(), null);
             if (axis != null)
             {
                 action(axis);
-                PlotModel.InvalidatePlot(false);
+                if (invalidatePlot)
+                    PlotModel.InvalidatePlot(false);
             }
         }
 

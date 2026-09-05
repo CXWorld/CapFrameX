@@ -1,8 +1,10 @@
-using LibreHardwareMonitor.Interop;
-using Microsoft.Win32;
 using System;
 using System.Globalization;
 using System.Text;
+
+using CapFrameX.Monitoring.Contracts;
+using LibreHardwareMonitor.Interop;
+using Microsoft.Win32;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
 
@@ -10,7 +12,9 @@ internal sealed class AmdGpu : GenericGpu
 {
     private readonly uint _adapterIndex;
     private readonly ADLX.AdlxDeviceInfo _deviceInfo;
-    private readonly string _d3dDeviceId;
+    private readonly object _telemetrySupportLock = new();
+    private bool _telemetrySupportChecked;
+    private bool _telemetryAvailable;
 
     // Temperature sensors
     private readonly Sensor _temperatureCore;
@@ -42,10 +46,13 @@ internal sealed class AmdGpu : GenericGpu
     private readonly Sensor _memoryUsed;
     private readonly Sensor _sharedMemory;
 
-    public AmdGpu(uint adapterIndex, ADLX.AdlxDeviceInfo deviceInfo, ISettings settings)
+    public AmdGpu(uint adapterIndex, ADLX.AdlxDeviceInfo deviceInfo, ISettings settings, ISensorConfig sensorConfig = null)
         : base(deviceInfo.GpuName?.Trim() ?? "AMD GPU",
                new Identifier("gpu-amd", adapterIndex.ToString(CultureInfo.InvariantCulture)),
-               settings)
+               settings,
+               sensorConfig: sensorConfig,
+               dedicatedMemoryPresentationSortKey: $"{adapterIndex}_6_0",
+               sharedMemoryPresentationSortKey: $"{adapterIndex}_6_1")
     {
         _adapterIndex = adapterIndex;
         _deviceInfo = deviceInfo;
@@ -101,20 +108,45 @@ internal sealed class AmdGpu : GenericGpu
         _sharedMemory = new Sensor("GPU Memory Shared", 3, SensorType.Data, this, settings)
         { PresentationSortKey = $"{index}_6_1" };
 
-        // Activate sensors based on support flags BEFORE calling Update()
-        // This ensures sensors are visible in the UI even if the first telemetry call returns no data
-        ActivateSensorsFromSupportFlags();
+        if (TryResolveWddmDevice(deviceInfo, out string deviceId, out D3DDisplayDevice.D3DDeviceInfo wddmDeviceInfo))
+        {
+            bool hasDedicatedMemory = IsDiscreteGpu ||
+                                      wddmDeviceInfo.GpuDedicatedLimit > 0 ||
+                                      wddmDeviceInfo.GpuVideoMemoryLimit > 0;
+            InitializeWddmDevice(
+                deviceId,
+                wddmDeviceInfo.AdapterLuidInstanceName,
+                hasDedicatedMemory ? 4 : null,
+                $"{index}_6_0_1");
+        }
+
     }
 
     /// <summary>
-    /// Activates sensors based on what metrics the GPU supports, without needing actual telemetry data.
-    /// This is called in the constructor to ensure sensors are visible even before telemetry history is available.
+    /// Initializes ADLX telemetry once, when this adapter is first selected for polling.
+    /// A failed query leaves the adapter on the WDDM-only fallback path.
     /// </summary>
-    private void ActivateSensorsFromSupportFlags()
+    private bool EnsureTelemetrySupport()
     {
-        ADLX.AdlxTelemetrySupport support = new();
-        if (!ADLX.GetTelemetrySupport(_adapterIndex, ref support))
-            return;
+        lock (_telemetrySupportLock)
+        {
+            if (_telemetrySupportChecked)
+                return _telemetryAvailable;
+
+            _telemetrySupportChecked = true;
+
+            ADLX.AdlxTelemetrySupport support = new();
+            if (!ADLX.GetTelemetrySupport(_adapterIndex, ref support))
+                return false;
+
+            ActivateSensorsFromSupportFlags(support);
+            _telemetryAvailable = true;
+            return true;
+        }
+    }
+
+    private void ActivateSensorsFromSupportFlags(ADLX.AdlxTelemetrySupport support)
+    {
 
         // Temperature sensors
         if (support.GpuTemperatureSupported)
@@ -163,13 +195,31 @@ internal sealed class AmdGpu : GenericGpu
             ActivateSensor(_sharedMemory);
     }
 
-    public override string DeviceId => _deviceInfo.DriverPath ?? string.Empty;
+    public override string DeviceId
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(WddmDeviceId))
+                return D3DDisplayDevice.GetActualDeviceIdentifier(WddmDeviceId);
+
+            return !string.IsNullOrEmpty(_deviceInfo.PnpString)
+                ? _deviceInfo.PnpString
+                : _deviceInfo.DriverPath ?? string.Empty;
+        }
+    }
 
     public override HardwareType HardwareType => HardwareType.GpuAmd;
 
     public override void Update()
     {
         UpdateProcessMemorySensors();
+        TryUpdateWddmMemorySensors(false, out _);
+
+        // ADLX is initialized lazily so merely detecting an unselected AMD iGPU does not enter
+        // its driver telemetry path. A failed support query disables ADLX for this adapter while
+        // the vendor-neutral WDDM sensors above remain available.
+        if (!EnsureTelemetrySupport())
+            return;
 
         // Get ADLX telemetry data
         ADLX.AdlxTelemetryData telemetry = new();
@@ -299,6 +349,12 @@ internal sealed class AmdGpu : GenericGpu
         r.AppendLine(_deviceInfo.VendorId);
         r.Append("DriverPath: ");
         r.AppendLine(_deviceInfo.DriverPath);
+        r.Append("PnpString: ");
+        r.AppendLine(_deviceInfo.PnpString);
+        r.Append("Luid: ");
+        r.AppendLine(_deviceInfo.LuidValid != 0
+            ? D3DDisplayDevice.GetAdapterLuidInstanceName(_deviceInfo.LuidHighPart, _deviceInfo.LuidLowPart)
+            : "Unavailable");
         r.Append("UniqueId: ");
         r.AppendLine(_deviceInfo.Id.ToString(CultureInfo.InvariantCulture));
         r.AppendLine();
@@ -307,7 +363,7 @@ internal sealed class AmdGpu : GenericGpu
         r.AppendLine();
 
         ADLX.AdlxTelemetryData telemetry = new();
-        if (ADLX.GetTelemetry(_adapterIndex, 1000, ref telemetry))
+        if (EnsureTelemetrySupport() && ADLX.GetTelemetry(_adapterIndex, 1000, ref telemetry))
         {
             r.AppendFormat(" GPU Usage: Supported={0}, Value={1}%{2}", telemetry.GpuUsageSupported, telemetry.GpuUsageValue, Environment.NewLine);
             r.AppendFormat(" GPU Clock Speed: Supported={0}, Value={1} MHz{2}", telemetry.GpuClockSpeedSupported, telemetry.GpuClockSpeedValue, Environment.NewLine);
@@ -333,13 +389,40 @@ internal sealed class AmdGpu : GenericGpu
 
         r.AppendLine();
 
-        if (_d3dDeviceId != null)
+        if (WddmDeviceId != null)
         {
             r.AppendLine("D3D");
             r.AppendLine();
-            r.AppendLine(" Id: " + _d3dDeviceId);
+            r.AppendLine(" Id: " + WddmDeviceId);
         }
 
         return r.ToString();
+    }
+
+    private static bool TryResolveWddmDevice(
+        ADLX.AdlxDeviceInfo deviceInfo,
+        out string deviceId,
+        out D3DDisplayDevice.D3DDeviceInfo wddmDeviceInfo)
+    {
+        if (deviceInfo.LuidValid != 0)
+        {
+            string adapterLuidInstanceName = D3DDisplayDevice.GetAdapterLuidInstanceName(
+                deviceInfo.LuidHighPart,
+                deviceInfo.LuidLowPart);
+            if (D3DDisplayDevice.TryGetDeviceInfoByAdapterLuid(
+                adapterLuidInstanceName,
+                "VEN_1002",
+                out deviceId,
+                out wddmDeviceInfo))
+            {
+                return true;
+            }
+        }
+
+        return D3DDisplayDevice.TryGetDeviceInfoByPnpIdentifier(
+            deviceInfo.PnpString,
+            "VEN_1002",
+            out deviceId,
+            out wddmDeviceInfo);
     }
 }

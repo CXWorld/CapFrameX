@@ -329,17 +329,17 @@ This doesn't affect any processes you already have on your list. If our online l
 * Report: parameter table
 * Synchronization: display changed times(dc), histogram data
 
-Potential conflicts with the Nuget packages can be solved via Package Manger Console. Just type "Update-Package -reinstall". The calling application must run as administrator. See "MonitoringLibTestApp" example code how to integrate the customized library.
+Potential conflicts with the Nuget packages can be solved via Package Manger Console. Just type "Update-Package -reinstall". The calling application must run as administrator. See `source/CapFrameX.Sensor/SensorService.cs` and `SensorConfig.cs` for how the customized library is integrated.
 
 # Requirements
-* .NET 9.0 (no installer check, must be installed manually)
+* .NET 10.0 Desktop Runtime (no installer check, must be installed manually)
 * .NET 4.7.2 (installer check)
 * Microsoft Visual C++ Redistributable Package (installer check)
 
 # Build requirements
-* MS Visual Studio 2022
+* MS Visual Studio 2026
 * WiX V3.14.1
-* WiX Toolset Visual Studio 2022 Extension
+* WiX Toolset Visual Studio Extension (optional, IDE integration only)
 * WiX Toolset and VS Extension: http://wixtoolset.org/releases/
 * C++ MFC build tools
 

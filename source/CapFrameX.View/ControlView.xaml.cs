@@ -30,10 +30,6 @@ namespace CapFrameX.View
         private const int SEARCH_REFRESH_DELAY_MS = 100;
         private readonly CollectionViewSource _recordInfoCollection;
 
-        private bool CreateFolderDialogIsOpen;
-
-        private bool FixedExpanderPosition => _viewModel.FixedExpanderPosition;
-
         private bool RecordInfoExpanderinitialPosition => _viewModel.AppConfiguration.IsRecordInfoExpanded;
 
         private string ObservedDirectory
@@ -51,9 +47,6 @@ namespace CapFrameX.View
             InitializeComponent();
             SetHeaders();
 
-            if (FixedExpanderPosition)
-                Expander.IsExpanded = true;
-
             if (RecordInfoExpanderinitialPosition)
                 RecordInfoExpander.IsExpanded = true;
 
@@ -65,30 +58,15 @@ namespace CapFrameX.View
 
             _viewModel.TreeViewUpdateStream.Subscribe(_ => BuildTreeView());
 
+            // The create-folder dialog is shown by a view-level DialogHost, so the
+            // folder popup closes when the dialog opens (it would float above it).
             _viewModel.CreateFolderdialogIsOpenStream
-                .SelectMany(isOpen =>
-                {
-                    if (isOpen)
-                    {
-                        return Observable.Return(true);
-                    }
-                    return Observable.Return(false).Delay(TimeSpan.FromMilliseconds(500));
-                })
-                .Subscribe(isOpen => CreateFolderDialogIsOpen = isOpen);
+                .Where(isOpen => isOpen)
+                .ObserveOnDispatcher()
+                .Subscribe(_ => FolderPopup.IsOpen = false);
 
             BuildTreeView();
             SetSortSettings(_viewModel.AppConfiguration);
-
-            Observable.FromEventPattern(Expander, "MouseLeave")
-                .Where(_ => !TrvStructure.ContextMenu.IsOpen)
-                .Where(_ => Expander.IsExpanded)
-                .Where(isOpen => !CreateFolderDialogIsOpen)
-                .Where(_ => !FixedExpanderPosition)
-                .ObserveOnDispatcher()
-                .Subscribe(_ =>
-                {
-                    Expander.IsExpanded = false;
-                });
         }
 
         private void BuildTreeView()
@@ -159,7 +137,9 @@ namespace CapFrameX.View
                 {
                     foreach (DirectoryInfo subDir in expandedDir.GetDirectories())
                     {
-                        var subItem = CreateTreeItem(subDir, subDir.ToString());
+                        // DirectoryInfo.ToString() returns the full path on .NET Core+
+                        // (it returned just the name on .NET Framework), so use Name here.
+                        var subItem = CreateTreeItem(subDir, subDir.Name);
                         item.Items.Add(subItem);
                         CreateTreeViewRecursive(subItem);
                     }
@@ -302,6 +282,11 @@ namespace CapFrameX.View
             }
         }
 
+        private void FolderChipButton_Click(object sender, RoutedEventArgs e)
+        {
+            FolderPopup.IsOpen = !FolderPopup.IsOpen;
+        }
+
         private void TreeView_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             TreeViewItem treeViewItem = VisualUpwardSearch(e.OriginalSource as DependencyObject);
@@ -337,6 +322,11 @@ namespace CapFrameX.View
                 return;
 
             var myCell = (sender as MultiSelectionDataGrid).CurrentCell;
+            // CurrentCell.Column is null when no cell ever had keyboard focus (e.g. a
+            // row was only selected and focus then moves to a button elsewhere)
+            if (myCell.Column == null)
+                return;
+
             if (myCell.Column.Header.ToString() == "Comment")
             {
                 if (_viewModel.CustomComment != _viewModel.SelectedRecordInfo.Comment)
@@ -380,6 +370,9 @@ namespace CapFrameX.View
                 return;
 
             var myCell = (sender as MultiSelectionDataGrid).CurrentCell;
+            if (myCell.Column == null)
+                return;
+
             if (myCell.Column.Header.ToString() == "Comment")
             {
                 if (_viewModel.CustomComment != _viewModel.SelectedRecordInfo.Comment)

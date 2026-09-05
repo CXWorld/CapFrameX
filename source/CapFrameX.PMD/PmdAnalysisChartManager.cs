@@ -13,6 +13,9 @@ namespace CapFrameX.PMD
 {
     public class PmdAnalysisChartManager
     {
+        private const double DefaultCpuPowerAxisMaximum = 150;
+        private const double DefaultGpuPowerAxisMaximum = 300;
+
         private List<double> _ePS12VModelMaxYValueBuffer = new List<double>(10);
         private List<double> _pciExpressModelMaxYValueBuffer = new List<double>(10);
 
@@ -92,12 +95,15 @@ namespace CapFrameX.PMD
 
         public void DrawEps12VChart(IEnumerable<DataPoint> powerDrawPoints)
         {
-            if (!powerDrawPoints.Any()) return;
+            var points = powerDrawPoints.ToList();
+            if (points.Count == 0) return;
 
             // Set maximum y-axis
             if (_ePS12VModelMaxYValueBuffer.Count == 10) _ePS12VModelMaxYValueBuffer.RemoveAt(0);
-            _ePS12VModelMaxYValueBuffer.Add((int)Math.Ceiling(1.05 * powerDrawPoints.Max(pnt => pnt.Y) / 20.0) * 20);
-            var y_Axis_CPU_W_Max = _ePS12VModelMaxYValueBuffer.Max();
+            _ePS12VModelMaxYValueBuffer.Add(CalculatePowerAxisMaximum(points));
+            var y_Axis_CPU_W_Max = GetValidAxisMaximum(
+                _ePS12VModelMaxYValueBuffer.Max(),
+                DefaultCpuPowerAxisMaximum);
             AxisDefinitions["Y_Axis_CPU_W"].Maximum = y_Axis_CPU_W_Max;
             AxisDefinitions["Y_Axis_CPU_W"].AbsoluteMaximum = y_Axis_CPU_W_Max;
 
@@ -112,7 +118,7 @@ namespace CapFrameX.PMD
                     EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
                 };
 
-                eps12VPowerSeries.Points.AddRange(powerDrawPoints);
+                eps12VPowerSeries.Points.AddRange(points);
                 Eps12VModel.Series.Add(eps12VPowerSeries);
                 Eps12VModel.InvalidatePlot(true);
             });
@@ -120,14 +126,17 @@ namespace CapFrameX.PMD
 
         public void DrawPciExpressChart(IEnumerable<DataPoint> powerDrawPoints)
         {
-            if (!powerDrawPoints.Any()) return;
+            var points = powerDrawPoints.ToList();
+            if (points.Count == 0) return;
 
             // Set maximum y-axis
             if (_pciExpressModelMaxYValueBuffer.Count == 10) _pciExpressModelMaxYValueBuffer.RemoveAt(0);
-            _pciExpressModelMaxYValueBuffer.Add((int)Math.Ceiling(1.05 * powerDrawPoints.Max(pnt => pnt.Y) / 20.0) * 20);
-            var y_Axis_GPU_W_Max = _pciExpressModelMaxYValueBuffer.Max();
+            _pciExpressModelMaxYValueBuffer.Add(CalculatePowerAxisMaximum(points));
+            var y_Axis_GPU_W_Max = GetValidAxisMaximum(
+                _pciExpressModelMaxYValueBuffer.Max(),
+                DefaultGpuPowerAxisMaximum);
             AxisDefinitions["Y_Axis_GPU_W"].Maximum = y_Axis_GPU_W_Max;
-            AxisDefinitions["Y_Axis_GPU_W"].AbsoluteMaximum = y_Axis_GPU_W_Max > 0 ? y_Axis_GPU_W_Max : 300;
+            AxisDefinitions["Y_Axis_GPU_W"].AbsoluteMaximum = y_Axis_GPU_W_Max;
 
             PciExpressModel.Series.Clear();
             Dispatcher.CurrentDispatcher.Invoke(() =>
@@ -140,10 +149,32 @@ namespace CapFrameX.PMD
                     EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
                 };
 
-                pciExpressPowerSeries.Points.AddRange(powerDrawPoints);
+                pciExpressPowerSeries.Points.AddRange(points);
                 PciExpressModel.Series.Add(pciExpressPowerSeries);
                 PciExpressModel.InvalidatePlot(true);
             });
+        }
+
+        private static double CalculatePowerAxisMaximum(IEnumerable<DataPoint> points)
+        {
+            var maximum = points
+                .Where(point => double.IsFinite(point.Y))
+                .Select(point => point.Y)
+                .DefaultIfEmpty(0)
+                .Max();
+
+            if (maximum <= 0)
+            {
+                return 0;
+            }
+
+            var roundedMaximum = Math.Ceiling(1.05 * maximum / 20.0) * 20;
+            return double.IsFinite(roundedMaximum) ? roundedMaximum : 0;
+        }
+
+        private static double GetValidAxisMaximum(double maximum, double fallback)
+        {
+            return double.IsFinite(maximum) && maximum > 0 ? maximum : fallback;
         }
 
         public Dictionary<string, LinearAxis> AxisDefinitions { get; }

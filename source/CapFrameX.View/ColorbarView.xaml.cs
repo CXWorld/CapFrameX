@@ -1,5 +1,4 @@
 ﻿using CapFrameX.EventAggregation.Messages;
-using CapFrameX.View.Themes;
 using CapFrameX.ViewModel;
 using MaterialDesignThemes.Wpf;
 using Microsoft.Extensions.Logging;
@@ -37,12 +36,13 @@ namespace CapFrameX.View
 
         private void GitHubButton_Click(object sender, RoutedEventArgs e)
         {
-            _ = Process.Start("https://github.com/DevTechProfile/CapFrameX#capframex");
+            // UseShellExecute is required to open a URL in the default browser on .NET Core+
+            _ = Process.Start(new ProcessStartInfo("https://github.com/DevTechProfile/CapFrameX#capframex") { UseShellExecute = true });
         }
 
         private void Donate_Button_Click(object sender, RoutedEventArgs e)
         {
-            _ = Process.Start("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=A4VJPT9NB7G28&source=url");
+            _ = Process.Start(new ProcessStartInfo("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=A4VJPT9NB7G28&source=url") { UseShellExecute = true });
         }
 
         /// <summary>
@@ -144,15 +144,15 @@ namespace CapFrameX.View
 
                 // Add upper rectangle
                 AddFillRectangle(bitmap, new System.Drawing.Point(0, 0),
-                    new System.Drawing.Size(imageWidth, upperRectangleHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
+                    new System.Drawing.Size(imageWidth, upperRectangleHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 2, 113, 249)));
 
                 // Add lower rectangle
                 AddFillRectangle(bitmap, new System.Drawing.Point(0, imageHeight - lowerRectangleHeight),
-                    new System.Drawing.Size(imageWidth, lowerRectangleHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
+                    new System.Drawing.Size(imageWidth, lowerRectangleHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 2, 113, 249)));
 
                 // Add frame
                 AddRectangle(bitmap, new System.Drawing.Point(1, 1),
-                    new System.Drawing.Size(imageWidth - 2, imageHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
+                    new System.Drawing.Size(imageWidth - 2, imageHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 2, 113, 249)));
 
                 // Add CX logos
                 AddLogo(bitmap, logoName, new System.Drawing.Point(20, imageHeight - logoName.Height - (lowerRectangleHeight - logoName.Height) / 2));
@@ -236,7 +236,11 @@ namespace CapFrameX.View
 
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
-            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+            _ = Process.Start(new ProcessStartInfo
+            {
+                FileName = e.Uri.AbsoluteUri,
+                UseShellExecute = true
+            });
             e.Handled = true;
         }
 
@@ -256,13 +260,67 @@ namespace CapFrameX.View
             ModifyTheme(toggleButton.IsChecked == true);
         }
 
+        // CapFrameX brand palette, carried over from the pre-5.x custom IBaseTheme
+        // implementations (VS-code-like greys in dark mode). Keys follow the
+        // MaterialDesign 5.x brush names; entries are (key, dark, light).
+        private static readonly (string Key, string Dark, string Light)[] BrandPalette =
+        {
+            ("MaterialDesign.Brush.Card.Background", "#252526", "#f8f8f8"),
+            ("MaterialDesign.Brush.ForegroundLight", "#89FFFFFF", "#89000000"),
+            ("MaterialDesign.Brush.Header.Foreground", "#BCFFFFFF", "#BC000000"),
+            ("MaterialDesign.Brush.TextBox.FilledBackground", "#2d2d30", "#ededed"),
+            ("MaterialDesign.Brush.TextBox.HoverBackground", "#1FFFFFFF", "#14000000"),
+            ("MaterialDesign.Brush.TextBox.DisabledBackground", "#0DFFFFFF", "#08000000"),
+            ("MaterialDesign.Brush.TextBox.OutlineInactiveBorder", "#1AFFFFFF", "#0F000000"),
+            ("MaterialDesign.Brush.DataGrid.RowHoverBackground", "#14FFFFFF", "#0A000000"),
+            ("MaterialDesign.Brush.ToolBar.Background", "#FF212121", "#FFF5F5F5"),
+            ("MaterialDesign.Brush.ToolBar.Item.Background", "#0271F9", "#0271F9"),
+            ("MaterialDesign.Brush.ToolBar.Item.Foreground", "#FF616161", "#FF616161"),
+            ("MaterialDesign.Brush.Button.FlatClick", "#19757575", "#FFDEDEDE"),
+            ("MaterialDesign.Brush.Button.Ripple", "#FFB6B6B6", "#FFB6B6B6"),
+            ("MaterialDesign.Brush.ToolTip.Background", "#eeeeee", "#757575"),
+            ("MaterialDesign.Brush.Chip.Background", "#FF2E3C43", "#12000000"),
+            ("MaterialDesign.Brush.SnackBar.Background", "#FFCDCDCD", "#FF323232"),
+            ("MaterialDesign.Brush.SnackBar.MouseOver", "#FFB9B9BD", "#FF464642"),
+            ("MaterialDesign.Brush.CheckBox.Disabled", "#FF647076", "#FFBDBDBD"),
+            ("MaterialDesign.Brush.ValidationError", "#f44336", "#F44336"),
+            // Not part of the 5.x obsolete-alias set, but still used by the views.
+            ("MaterialDesignSelection", "#757575", "#FFDEDEDE"),
+
+            // Outlined actions use strong contrast in dark mode and brand blue in light mode.
+            ("Cx.Brush.OutlinedAction.Foreground", "#FFFFFFFF", "#FF0271F9"),
+
+            // Rounded scrollbar restyle (templates in CapFrameX/Themes/CxScrollBar.xaml)
+            ("Cx.Brush.ScrollBar.Thumb", "#5A5A60", "#C4C4CA"),
+            ("Cx.Brush.ScrollBar.ThumbHover", "#8A8A92", "#9B9BA2"),
+            ("Cx.Brush.ScrollBar.Glyph", "#9A9AA2", "#8A8A90"),
+            ("Cx.Brush.ScrollBar.GlyphHover", "#E0E0E0", "#3A3A40"),
+        };
+
         private static void ModifyTheme(bool isDarkTheme)
         {
             PaletteHelper paletteHelper = new PaletteHelper();
-            ITheme theme = paletteHelper.GetTheme();
-            theme.SetBaseTheme(isDarkTheme ? new DarkTheme() : (IBaseTheme)new LightTheme());
+            Theme theme = paletteHelper.GetTheme();
+            theme.SetBaseTheme(isDarkTheme ? BaseTheme.Dark : BaseTheme.Light);
+
+            // Base surfaces and text via the Theme API so derived colors stay consistent.
+            theme.Background = ParseColor(isDarkTheme ? "#2d2d30" : "#fafbfc");
+            theme.Foreground = ParseColor(isDarkTheme ? "#DDFFFFFF" : "#DD000000");
+
             paletteHelper.SetTheme(theme);
+
+            // Surface fine-tuning: override the brand-specific brushes after every
+            // SetTheme call, since SetTheme rewrites the application resources.
+            foreach (var (key, dark, light) in BrandPalette)
+            {
+                var brush = new System.Windows.Media.SolidColorBrush(ParseColor(isDarkTheme ? dark : light));
+                brush.Freeze();
+                Application.Current.Resources[key] = brush;
+            }
         }
+
+        private static System.Windows.Media.Color ParseColor(string value)
+            => (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(value);
 
         private void HorizontalRes_PreviewMouseDown(object sender, MouseButtonEventArgs e) { }
 

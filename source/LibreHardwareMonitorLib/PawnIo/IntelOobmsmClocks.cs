@@ -42,6 +42,11 @@ public class IntelOobmsmClocks
         /// <summary><c>true</c> when this field is configured (non-zero).</summary>
         public bool IsConfigured => ContainerOffset != 0 && MultiplierMhz != 0 && BitMsb >= BitLsb;
 
+        /// <summary>Initializes a new instance of the <see cref="ClockField"/> struct.</summary>
+        /// <param name="containerOffset">Byte offset of the 8-byte container within the discovery aperture.</param>
+        /// <param name="bitLsb">Bit lsb within the 64-bit container (0..63).</param>
+        /// <param name="bitMsb">Bit msb (inclusive) within the 64-bit container (0..63).</param>
+        /// <param name="multiplierMhz">Frequency unit per ratio step, in MHz.</param>
         public ClockField(uint containerOffset, byte bitLsb, byte bitMsb, ushort multiplierMhz)
         {
             ContainerOffset = containerOffset;

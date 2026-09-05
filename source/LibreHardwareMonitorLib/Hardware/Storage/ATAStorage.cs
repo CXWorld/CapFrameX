@@ -15,6 +15,9 @@ using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
+/// <summary>
+/// Base class for ATA and SATA storage devices, turning their SMART attributes into sensors.
+/// </summary>
 public abstract class AtaStorage : AbstractStorage
 {
     // array of all hard drive types, matching type is searched in this order
@@ -160,6 +163,7 @@ public abstract class AtaStorage : AbstractStorage
         return null;
     }
 
+    /// <inheritdoc />
     protected sealed override void CreateSensors()
     {
         _sensors = new Dictionary<SmartAttribute, Sensor>();
@@ -198,6 +202,9 @@ public abstract class AtaStorage : AbstractStorage
         base.CreateSensors();
     }
 
+    /// <summary>
+    /// Gets or sets the minimum interval between two SMART reads. Reads that arrive earlier are skipped.
+    /// </summary>
     public static TimeSpan ThrottleInterval
     {
         get
@@ -210,8 +217,13 @@ public abstract class AtaStorage : AbstractStorage
         }
     }
 
+    /// <summary>
+    /// Updates the sensors that a derived class maintains beyond the generic SMART attributes.
+    /// </summary>
+    /// <param name="values">The SMART attributes that have just been read.</param>
     protected virtual void UpdateAdditionalSensors(AtaSmart.SMART_ATTRIBUTE[] values) { }
 
+    /// <inheritdoc />
     protected override void UpdateSensors()
     {
         if (DateTime.UtcNow - _lastUpdate < ThrottleInterval)
@@ -241,6 +253,7 @@ public abstract class AtaStorage : AbstractStorage
         }
     }
 
+    /// <inheritdoc />
     protected override unsafe void GetReport(StringBuilder r)
     {
         if (Smart.IsValid)
@@ -310,6 +323,13 @@ public abstract class AtaStorage : AbstractStorage
         }
     }
 
+    /// <summary>
+    /// Reads the first four raw bytes of a SMART attribute as a little-endian integer.
+    /// </summary>
+    /// <param name="raw">The six raw bytes of the attribute.</param>
+    /// <param name="value">The normalized current value of the attribute. Unused.</param>
+    /// <param name="parameters">The parameters of the sensor. Unused.</param>
+    /// <returns>The raw value as an integer.</returns>
     protected static float RawToInt(byte[] raw, byte value, IReadOnlyList<IParameter> parameters)
     {
         return (raw[3] << 24) | (raw[2] << 16) | (raw[1] << 8) | raw[0];
@@ -328,6 +348,7 @@ public abstract class AtaStorage : AbstractStorage
         }
     }
 
+    /// <inheritdoc />
     public override void Close()
     {
         Smart.Close();

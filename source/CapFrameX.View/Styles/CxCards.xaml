@@ -1,0 +1,16 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<!--The Overlay tab's grouping idiom, shared across views: no outline frames or shadow
+	    cards — a filled rounded surface groups related controls visually.-->
+	<Style x:Key="SectionCard" TargetType="{x:Type Border}">
+		<Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"/>
+		<Setter Property="BorderThickness" Value="0"/>
+		<Setter Property="CornerRadius" Value="6"/>
+	</Style>
+	<!--Nested grouping INSIDE a SectionCard: one tone up so it still reads on the filled surface.-->
+	<Style x:Key="SectionCardInset" TargetType="{x:Type Border}">
+		<Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
+		<Setter Property="BorderThickness" Value="0"/>
+		<Setter Property="CornerRadius" Value="4"/>
+	</Style>
+</ResourceDictionary>

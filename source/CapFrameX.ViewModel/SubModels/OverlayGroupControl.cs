@@ -104,6 +104,7 @@ namespace CapFrameX.ViewModel.SubModels
                        || item.Identifier == "OnlineGpuActiveTimePercentageDeviation"
                        || item.Identifier == "OnlineStutteringPercentage"
                        || item.Identifier == "OnlinePcLatency"
+                       || item.Identifier == "OnlineAmdFlmLatency"
                        || item.Identifier == "OnlineAnimationError"
                        || item.Identifier == "PmdGpuPowerCurrent"
                        || item.Identifier == "PmdCpuPowerCurrent"

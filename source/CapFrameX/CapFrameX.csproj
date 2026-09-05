@@ -1,347 +1,63 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{AAA73D26-5CD6-4066-B84C-5BD34057B346}</ProjectGuid>
     <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Platforms>AnyCPU;x64</Platforms>
     <RootNamespace>CapFrameX</RootNamespace>
     <AssemblyName>CapFrameX</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WarningLevel>4</WarningLevel>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>1</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <PublishWizardCompleted>true</PublishWizardCompleted>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-    <WarningLevel>2</WarningLevel>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <!-- General assembly attributes remain in Properties\AssemblyInfo.cs. Version and
+         release-channel attributes are generated from the files under version\. -->
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyTrademarkAttribute>false</GenerateAssemblyTrademarkAttribute>
+    <Deterministic>true</Deterministic>
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestCertificateThumbprint>D5AD35FA1660347E3B6FC92BD4BF2C70BE0890AB</ManifestCertificateThumbprint>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestKeyFile>capframex.pfx</ManifestKeyFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <GenerateManifests>false</GenerateManifests>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignManifests>false</SignManifests>
-  </PropertyGroup>
-  <PropertyGroup>
+    <ApplicationIcon>Icons\cx_icon_BUC.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
-  <PropertyGroup>
-    <TargetZone>Internet</TargetZone>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationIcon>Icons\cx_icon_BUC.ico</ApplicationIcon>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
-  </PropertyGroup>
+
+  <Import Project="..\..\version\Version.props" />
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Design" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Windows" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xaml">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="WindowsBase" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-  </ItemGroup>
-  <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
-    <Compile Include="AppHelper.cs" />
-    <Compile Include="IconHelper.cs" />
-    <Compile Include="InMemorySink.cs" />
-    <Compile Include="RegionManagerWrapper.cs" />
-    <Compile Include="Shell.xaml.cs">
-      <DependentUpon>Shell.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="DebugMonitorWindow.xaml.cs">
-      <DependentUpon>DebugMonitorWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Bootstrapper.cs" />
-    <Compile Include="CapFrameXViewRegion.cs" />
-    <Compile Include="WindowStateTracker.cs" />
-    <Page Include="Shell.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="DebugMonitorWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <Resource Include="Icons\CapFrameXLogoOnly.png">
+    <Resource Include="Icons\CapFrameXLogoOnly.png" />
+    <Resource Include="Icons\CX_Concepts\Production\cx_icon_BUC_256_preview.png" />
+    <Resource Include="Icons\Empty.png" />
+    <Resource Include="Icons\cx_icon_BUC.ico" />
+    <Resource Include="Icons\CX_Icon.png" />
+    <Resource Include="Icons\CX_Screen_Logo_Name.png" />
+    <Content Include="HelpTexts\ChartControls.rtf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Icons\Empty.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    </Content>
     <None Include="..\..\LICENSE">
       <Link>LICENSE</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="app.manifest">
-      <SubType>Designer</SubType>
+    <None Include="..\CapFrameX.FLM\ThirdParty\FLM\LICENSE-FLM.txt">
+      <Link>AMD-FLM-LICENSE.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Resource Include="Icons\cx_icon_BUC.ico">
+    <None Include="..\CapFrameX.FLM\ThirdParty\FLM\external\amf\LICENSE.txt">
+      <Link>AMD-AMF-LICENSE.txt</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Content Include="HelpTexts\ChartControls.rtf">
+    </None>
+    <None Include="..\CapFrameX.FLM\ThirdParty\FLM\external\ini\LICENCE.txt">
+      <Link>SIMPLEINI-LICENSE.txt</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
     <None Include="Files\bf0822e8-2e55-4b99-82ee-939d8ac2384e.bat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <Import Project="benchlab-service.items" Condition="Exists('benchlab-service.items')" />
-  <ItemGroup>
-    <ProjectReference Include="..\CapFrameX.ApiInterface\CapFrameX.Remote.csproj">
-      <Project>{A692A512-627A-4896-9D2D-4412FDD8C78C}</Project>
-      <Name>CapFrameX.Remote</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Mcp\CapFrameX.Mcp.csproj">
-      <Project>{AAE73890-13EE-43C3-AC76-444B8F4E6EC2}</Project>
-      <Name>CapFrameX.Mcp</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Capture.Contracts\CapFrameX.Capture.Contracts.csproj">
-      <Project>{5742c860-6313-4477-bf11-839c35ae5588}</Project>
-      <Name>CapFrameX.Capture.Contracts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Configuration\CapFrameX.Configuration.csproj">
-      <Project>{D0A09FA9-D19E-4CCC-BF0E-104893CFE48B}</Project>
-      <Name>CapFrameX.Configuration</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj">
-      <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
-      <Name>CapFrameX.Contracts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Data\CapFrameX.Data.csproj">
-      <Project>{D328B391-432C-4A0E-9A7E-57A58AA592D4}</Project>
-      <Name>CapFrameX.Data</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.EventAggregation\CapFrameX.EventAggregation.csproj">
-      <Project>{C3D082AE-BF05-4C83-B414-33CF7C420D4A}</Project>
-      <Name>CapFrameX.EventAggregation</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj">
-      <Project>{a4559b99-7fcb-40ef-bf97-d293a2b7d6d3}</Project>
-      <Name>CapFrameX.Extensions</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Hardware.Controller\CapFrameX.Hardware.Controller.csproj">
-      <Project>{62E9AEEB-B322-48D0-B69B-FE64E62C461B}</Project>
-      <Name>CapFrameX.Hardware.Controller</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Monitoring.Contracts\CapFrameX.Monitoring.Contracts.csproj">
-      <Project>{2F0D1227-BE4F-4501-B3A2-66A753ED742C}</Project>
-      <Name>CapFrameX.Monitoring.Contracts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.MVVM\CapFrameX.MVVM.csproj">
-      <Project>{cfb57d81-1886-45d2-aa16-ede1dd17a9ca}</Project>
-      <Name>CapFrameX.MVVM</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Overlay\CapFrameX.Overlay.csproj">
-      <Project>{624777C2-6AF6-46D5-A019-1285F699B8A7}</Project>
-      <Name>CapFrameX.Overlay</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.PMD\CapFrameX.PMD.csproj">
-      <Project>{8a0eff6f-a7bc-450a-ac29-d0f5ccd96bc3}</Project>
-      <Name>CapFrameX.PMD</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj">
-      <Project>{ADFBAECE-B74F-4A80-87D1-84BC990527B0}</Project>
-      <Name>CapFrameX.PresentMonInterface</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.RTSSIntegration\CapFrameX.RTSSIntegration.csproj">
-      <Project>{AE3BDF42-2F21-4CC3-9171-6CF2FDFDAB7A}</Project>
-      <Name>CapFrameX.RTSSIntegration</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.RTSSInterface\CapFrameX.RTSSInterface.vcxproj">
-      <Project>{9c46d3f3-72e0-4e6c-ad3e-54a5ee121475}</Project>
-      <Name>CapFrameX.RTSSInterface</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Sensor\CapFrameX.Sensor.csproj">
-      <Project>{B1B0E5F1-942A-476C-BEA4-8B9FFBCA04C6}</Project>
-      <Name>CapFrameX.Sensor</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
-      <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>
-      <Name>CapFrameX.Statistics.NetStandard</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.SystemInfo.NetStandard\CapFrameX.SystemInfo.NetStandard.csproj">
-      <Project>{6CDB7AB8-0A71-4950-8EC3-A5D8F43CB074}</Project>
-      <Name>CapFrameX.SystemInfo.NetStandard</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Updater\CapFrameX.Updater.csproj">
-      <Project>{5D12AA37-CC30-4476-94AD-11C15DC65518}</Project>
-      <Name>CapFrameX.Updater</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.ViewModel\CapFrameX.ViewModel.csproj">
-      <Project>{ad4536b2-c977-4cb8-8540-866928671c2d}</Project>
-      <Name>CapFrameX.ViewModel</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.View\CapFrameX.View.csproj">
-      <Project>{5cb56a44-8340-48f5-a9ec-ddf9ad3e10f0}</Project>
-      <Name>CapFrameX.View</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj">
-      <Project>{51e4211c-f281-11a3-9390-a6b54f703498}</Project>
-      <Name>LibreHardwareMonitorLib</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Icons\CX_Icon.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.7">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4.7 %28x86 und x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Icons\CX_Screen_Logo_Name.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-  </ItemGroup>
+
   <ItemGroup>
     <COMReference Include="Shell32">
       <Guid>{50A7E9B0-70EF-11D1-B75A-00A0C90564FE}</Guid>
@@ -353,111 +69,130 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
+
+  <Import Project="benchlab-service.items" Condition="Exists('benchlab-service.items')" />
+
   <ItemGroup>
-    <WCFMetadata Include="Connected Services\" />
+    <PackageReference Include="DryIoc.dll" />
+    <PackageReference Include="EmbedIO" />
+    <PackageReference Include="Hardcodet.NotifyIcon.Wpf" />
+    <PackageReference Include="Jot" />
+    <PackageReference Include="MaterialDesignColors" />
+    <PackageReference Include="MaterialDesignThemes" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Prism.Core" />
+    <PackageReference Include="Prism.DryIoc" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
+    <PackageReference Include="Serilog.Formatting.Compact" />
+    <PackageReference Include="Serilog.Sinks.File" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+    <PackageReference Include="System.Reactive" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
+
   <ItemGroup>
-    <PackageReference Include="AutoMapper">
-      <Version>16.1.1</Version>
-    </PackageReference>
-    <PackageReference Include="ControlzEx">
-      <Version>4.4.0</Version>
-    </PackageReference>
-    <PackageReference Include="Cyotek.Drawing.BitmapFont">
-      <Version>1.3.4</Version>
-    </PackageReference>
-    <PackageReference Include="DryIoc.dll">
-      <Version>2.12.10</Version>
-    </PackageReference>
-    <PackageReference Include="EmbedIO">
-      <Version>3.4.3</Version>
-    </PackageReference>
-    <PackageReference Include="gong-wpf-dragdrop">
-      <Version>1.1.0</Version>
-    </PackageReference>
-    <PackageReference Include="Hardcodet.NotifyIcon.Wpf">
-      <Version>1.1.0</Version>
-    </PackageReference>
-    <PackageReference Include="Jot">
-      <Version>2.1.17</Version>
-    </PackageReference>
-    <PackageReference Include="MahApps.Metro">
-      <Version>2.4.3</Version>
-    </PackageReference>
-    <PackageReference Include="MaterialDesignColors">
-      <Version>1.2.7</Version>
-    </PackageReference>
-    <PackageReference Include="MaterialDesignThemes">
-      <Version>3.2.0</Version>
-    </PackageReference>
-    <PackageReference Include="MaterialDesignThemes.MahApps">
-      <Version>0.1.5</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft-WindowsAPICodePack-Shell">
-      <Version>1.1.3.3</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.Http">
-      <Version>2.3.9</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions">
-      <Version>2.3.9</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions">
-      <Version>10.0.5</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Win32.Registry">
-      <Version>5.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="Prism.Core">
-      <Version>7.0.0.396</Version>
-    </PackageReference>
-    <PackageReference Include="Prism.DryIoc">
-      <Version>6.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="Serilog">
-      <Version>2.9.0</Version>
-    </PackageReference>
-    <PackageReference Include="Serilog.Extensions.Logging">
-      <Version>3.0.1</Version>
-    </PackageReference>
-    <PackageReference Include="Serilog.Formatting.Compact">
-      <Version>1.1.0</Version>
-    </PackageReference>
-    <PackageReference Include="Serilog.Sinks.File">
-      <Version>4.1.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt">
-      <Version>8.17.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Net.Http">
-      <Version>4.3.4</Version>
-    </PackageReference>
-    <PackageReference Include="System.Reactive">
-      <Version>6.1.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe">
-      <Version>6.1.2</Version>
-    </PackageReference>
-    <PackageReference Include="System.Security.Principal.Windows">
-      <Version>5.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Text.Json">
-      <Version>10.0.5</Version>
-    </PackageReference>
-    <PackageReference Include="System.Text.RegularExpressions">
-      <Version>4.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.Threading.Tasks.Extensions">
-      <Version>4.6.3</Version>
-    </PackageReference>
+    <ProjectReference Include="..\CapFrameX.ApiInterface\CapFrameX.Remote.csproj" />
+    <ProjectReference Include="..\CapFrameX.Mcp\CapFrameX.Mcp.csproj" />
+    <ProjectReference Include="..\CapFrameX.Capture.Contracts\CapFrameX.Capture.Contracts.csproj" />
+    <ProjectReference Include="..\CapFrameX.Configuration\CapFrameX.Configuration.csproj" />
+    <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj" />
+    <ProjectReference Include="..\CapFrameX.Data\CapFrameX.Data.csproj" />
+    <ProjectReference Include="..\CapFrameX.EventAggregation\CapFrameX.EventAggregation.csproj" />
+    <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj" />
+    <ProjectReference Include="..\CapFrameX.Hardware.Controller\CapFrameX.Hardware.Controller.csproj" />
+    <ProjectReference Include="..\CapFrameX.Hotkey\CapFrameX.Hotkey.csproj" />
+    <ProjectReference Include="..\CapFrameX.Monitoring.Contracts\CapFrameX.Monitoring.Contracts.csproj" />
+    <ProjectReference Include="..\CapFrameX.MVVM\CapFrameX.MVVM.csproj" />
+    <ProjectReference Include="..\CapFrameX.Overlay\CapFrameX.Overlay.csproj" />
+    <ProjectReference Include="..\CapFrameX.PMD\CapFrameX.PMD.csproj" />
+    <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj" />
+    <ProjectReference Include="..\CapFrameX.OSD.Integration\CapFrameX.OSD.Integration.csproj" />
+    <ProjectReference Include="..\..\external\CapFrameX.OSD\CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj" Condition="'$(CfxOsdFromSource)' == 'true'">
+      <!-- The optional submodule project is not listed in CapFrameX.sln, so Visual Studio
+           cannot apply a solution platform mapping to this x64-only reference. -->
+      <SetPlatform>Platform=x64</SetPlatform>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.RTSSIntegration\CapFrameX.RTSSIntegration.csproj" />
+    <ProjectReference Include="..\CapFrameX.RTSSInterface\CapFrameX.RTSSInterface.vcxproj" />
+    <ProjectReference Include="..\CapFrameX.Sensor\CapFrameX.Sensor.csproj" />
+    <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj" />
+    <ProjectReference Include="..\CapFrameX.SystemInfo.NetStandard\CapFrameX.SystemInfo.NetStandard.csproj" />
+    <ProjectReference Include="..\CapFrameX.Updater\CapFrameX.Updater.csproj" />
+    <ProjectReference Include="..\CapFrameX.ViewModel\CapFrameX.ViewModel.csproj" />
+    <ProjectReference Include="..\CapFrameX.View\CapFrameX.View.csproj" />
+    <ProjectReference Include="..\LibreHardwareMonitorLib\LibreHardwareMonitorLib.csproj" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
   <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
+    <!-- CapFrameX.OSD lives in a private repo, consumed as an optional submodule under
+         external\CapFrameX.OSD. With the submodule checked out the OSD is built from
+         source; otherwise the prebuilt binaries in external\CapFrameX.OSD-prebuilt
+         are used so the app always builds with full OSD functionality. -->
+    <CfxOsdFromSource Condition="'$(CfxOsdFromSource)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD\CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj')">true</CfxOsdFromSource>
+    <!-- Preserve the explicit x64 mapping on the optional project reference. Visual Studio
+         otherwise removes the platform for projects that are not listed in the solution. -->
+    <ShouldUnsetParentConfigurationAndPlatform Condition="'$(CfxOsdFromSource)' == 'true' And '$(ShouldUnsetParentConfigurationAndPlatform)' == ''">false</ShouldUnsetParentConfigurationAndPlatform>
   </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
-  </PropertyGroup>
+
+  <ItemGroup Condition="'$(CfxOsdFromSource)' != 'true'">
+    <Reference Include="CapFrameX.OSD.Interop">
+      <HintPath>..\..\external\CapFrameX.OSD-prebuilt\net9.0-windows\CapFrameX.OSD.Interop.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Native renderer: staged from the submodule's CMake output when built from source
+       (via the Interop project's content items); otherwise use the prebuilt DLL. -->
+  <ItemGroup Condition="!Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD\CapFrameX.OSD\build\bin\RelWithDebInfo\cfx_osd_core.dll')">
+    <Content Include="..\..\external\CapFrameX.OSD-prebuilt\native\cfx_osd_core.dll">
+      <Link>cfx_osd_core.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- The native C++ projects are built by solution dependencies and their post-build steps
+       stage the DLLs in the configuration directory ABOVE the target-framework-specific app
+       output — the layout that existed before the SDK-style .NET migration. Copy them next to
+       CapFrameX.exe, otherwise every P/Invoke into them throws DllNotFoundException.
+       That failure is silent: the sensor groups catch it and fall back, so the only symptom is
+       missing hardware. Without CapFrameX.IGCL.dll an Intel Arc drops to LibreHardwareMonitor's
+       integrated-GPU path (two D3D memory counters, no temperature/power/clock/load and an
+       unknown driver version); without CapFrameX.ADLX.dll the same happens to AMD cards. -->
+  <ItemGroup>
+    <CfxNativeRuntimeDll Include="CapFrameX.Hwinfo.dll" />
+    <CfxNativeRuntimeDll Include="CapFrameX.IGCL.dll" />
+    <CfxNativeRuntimeDll Include="CapFrameX.ADLX.dll" />
+    <CfxNativeRuntimeDll Include="CapFrameX.FLM.dll" />
+  </ItemGroup>
+
+  <Target Name="StageCapFrameXNativeRuntime" AfterTargets="Build" Condition="'$(Platform)' == 'x64'">
+    <ItemGroup>
+      <CfxNativeRuntimeSource Include="$(OutputPath)..\%(CfxNativeRuntimeDll.Identity)"
+                              Condition="Exists('$(OutputPath)..\%(CfxNativeRuntimeDll.Identity)')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(CfxNativeRuntimeSource)"
+          DestinationFolder="$(TargetDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <!-- Extended.Wpf.Toolkit bundles AvalonDock and its satellite assemblies, but CapFrameX only
+       uses Xceed.Wpf.Toolkit. Keep the unused files out of portable and installer payloads. -->
+  <Target Name="RemoveUnusedAvalonDockBuildArtifacts" AfterTargets="Build" Condition="'$(TargetDir)' != ''">
+    <ItemGroup>
+      <CfxUnusedAvalonDockArtifact Include="$(TargetDir)Xceed.Wpf.AvalonDock*.dll" />
+      <CfxUnusedAvalonDockArtifact Include="$(TargetDir)**\Xceed.Wpf.AvalonDock*.dll" />
+    </ItemGroup>
+    <Delete Files="@(CfxUnusedAvalonDockArtifact)" />
+  </Target>
+
+  <Target Name="RemoveUnusedAvalonDockPublishArtifacts" AfterTargets="Publish" Condition="'$(PublishDir)' != ''">
+    <ItemGroup>
+      <CfxUnusedAvalonDockPublishArtifact Include="$(PublishDir)Xceed.Wpf.AvalonDock*.dll" />
+      <CfxUnusedAvalonDockPublishArtifact Include="$(PublishDir)**\Xceed.Wpf.AvalonDock*.dll" />
+    </ItemGroup>
+    <Delete Files="@(CfxUnusedAvalonDockPublishArtifact)" />
+  </Target>
+
 </Project>

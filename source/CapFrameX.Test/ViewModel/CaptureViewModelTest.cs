@@ -1,9 +1,7 @@
 using CapFrameX.Contracts.Configuration;
-using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Logging;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
-using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Monitoring.Contracts;
@@ -213,19 +211,6 @@ namespace CapFrameX.Test.ViewModel
         }
 
         [TestMethod]
-        public void CaptureTimeString_WhenUseGlobalCaptureTime_UpdatesAppConfiguration()
-        {
-            var sut = CreateSut();
-            sut.UseGlobalCaptureTime = true;
-
-            sut.CaptureTimeString = "42.5";
-
-            Assert.AreEqual(42.5d, _appConfigurationMock.Object.CaptureTime, 0.001d);
-
-            DisposeHeartbeat(sut);
-        }
-
-        [TestMethod]
         public void OnSaveCaptureTime_WithVkcube_UpdatesProcessListEntry()
         {
             var sut = CreateSut();
@@ -267,6 +252,7 @@ namespace CapFrameX.Test.ViewModel
             _appConfigurationMock.Object.CaptureHotKey = "F11";
             _appConfigurationMock.Object.OverlayHotKey = "Alt+O";
             _appConfigurationMock.Object.OverlayConfigHotKey = "Alt+C";
+            _appConfigurationMock.Object.OverlayPositionHotkey = "Alt+P";
             _appConfigurationMock.Object.ResetHistoryHotkey = "F10";
             _appConfigurationMock.Object.ThreadAffinityHotkey = "Control+A";
             _appConfigurationMock.Object.ResetMetricsHotkey = "Alt+M";

@@ -6,8 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading;
 using System.Threading.Tasks;
 using LibreHardwareMonitor.Hardware;
 
@@ -167,14 +170,19 @@ namespace CapFrameX.PmcReader.Plugin
 
         private readonly BehaviorSubject<TimeSpan> _updateIntervalSubject
             = new BehaviorSubject<TimeSpan>(TimeSpan.FromSeconds(1));
+        private readonly ReplaySubject<(DateTime, Dictionary<ISensorEntry, float>)> _sensorSnapshotSubject
+            = new ReplaySubject<(DateTime, Dictionary<ISensorEntry, float>)>(1);
 
+        private EventLoopScheduler _captureScheduler;
         private MonitoringConfig _l3Config;
         private int? _l3HitrateMetricIndex;
         private int? _dramLatencyMetricIndex;
         private MonitoringConfig _dramConfig;
         private List<ISensorEntry> _ccxL3HitRateEntries;
         private List<ISensorEntry> _ccxDramLatencyEntries;
-        private bool _disposed;
+        private IDisposable _updateIntervalSubscription;
+        private int _captureQueuedOrRunning;
+        private volatile bool _disposed;
 
         // Gaming config (Arrow Lake, Alder Lake, Raptor Lake)
         private MonitoringConfig _gamingConfig;
@@ -184,22 +192,64 @@ namespace CapFrameX.PmcReader.Plugin
 
         public string Name => "PmcReader";
 
+        public PmcReaderSensorPlugin()
+        {
+            // Route PmcReader diagnostics into the CapFrameX application log (Serilog).
+            PmcReaderLogging.Initialize();
+            SensorSnapshotStream = Observable.Empty<(DateTime, Dictionary<ISensorEntry, float>)>();
+        }
+
         public IObservable<(DateTime, Dictionary<ISensorEntry, float>)> SensorSnapshotStream { get; private set; }
 
         public async Task InitializeAsync(IObservable<TimeSpan> updateIntervalStream)
         {
-            TryInitializeMonitoring();
+            if (updateIntervalStream == null)
+                throw new ArgumentNullException(nameof(updateIntervalStream));
+            if (_disposed)
+                throw new ObjectDisposedException(nameof(PmcReaderSensorPlugin));
 
-            updateIntervalStream.Subscribe(_updateIntervalSubject);
+            // PMC discovery performs blocking WMI/native calls and changes the current thread's
+            // affinity while configuring counters. A dedicated thread keeps both costs completely
+            // outside the UI thread and prevents a ThreadPool thread from retaining that affinity.
+            await Task.Factory.StartNew(
+                TryInitializeMonitoring,
+                CancellationToken.None,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default).ConfigureAwait(false);
 
-            SensorSnapshotStream = _updateIntervalSubject
-                .Select(timespan => Observable.Interval(timespan).StartWith(0L))
-                .Switch()
-                .Select(_ => CaptureSnapshot())
+            if (_disposed)
+                return;
+
+            _captureScheduler = new EventLoopScheduler(start =>
+            {
+                var thread = new Thread(start)
+                {
+                    IsBackground = true,
+                    Name = "CapFrameX PMC sensor polling",
+                    Priority = ThreadPriority.BelowNormal
+                };
+                return thread;
+            });
+
+            _updateIntervalSubscription = updateIntervalStream.Subscribe(
+                interval => _updateIntervalSubject.OnNext(interval),
+                exception => PmcDiagnostics.Error("PmcReader: update interval stream failed.", exception));
+
+            // Keep the timer cold. SensorService gates the subscription based on actual PMC
+            // consumers; starting it here would perform ring-0 reads even with no PMC row active.
+            SensorSnapshotStream = Observable.Create<(DateTime, Dictionary<ISensorEntry, float>)>(observer =>
+                {
+                    var snapshotSubscription = _sensorSnapshotSubject.Subscribe(observer);
+                    var pollingSubscription = _updateIntervalSubject
+                        .Select(timespan => Observable.Interval(timespan).StartWith(0L))
+                        .Switch()
+                        .Subscribe(
+                            _ => TryQueueCapture(),
+                            exception => PmcDiagnostics.Error("PmcReader: polling timer failed.", exception));
+                    return new CompositeDisposable(snapshotSubscription, pollingSubscription);
+                })
                 .Publish()
                 .RefCount();
-
-            await Task.CompletedTask;
         }
 
         public Task<IEnumerable<ISensorEntry>> GetSensorEntriesAsync()
@@ -247,27 +297,81 @@ namespace CapFrameX.PmcReader.Plugin
                 return;
 
             _disposed = true;
+            _updateIntervalSubscription?.Dispose();
+            _captureScheduler?.Dispose();
+            _sensorSnapshotSubject.OnCompleted();
+            _sensorSnapshotSubject.Dispose();
             _updateIntervalSubject.Dispose();
             PmcReaderInterop.Close();
         }
 
+        private void TryQueueCapture()
+        {
+            if (_disposed || Interlocked.CompareExchange(ref _captureQueuedOrRunning, 1, 0) != 0)
+                return;
+
+            try
+            {
+                _captureScheduler.Schedule(() =>
+                {
+                    try
+                    {
+                        var snapshot = CaptureSnapshotAtBackgroundPriority();
+                        if (!_disposed)
+                            _sensorSnapshotSubject.OnNext(snapshot);
+                    }
+                    catch (Exception exception)
+                    {
+                        PmcDiagnostics.Error("PmcReader: sensor polling failed.", exception);
+                    }
+                    finally
+                    {
+                        Volatile.Write(ref _captureQueuedOrRunning, 0);
+                    }
+                });
+            }
+            catch (Exception exception)
+            {
+                Volatile.Write(ref _captureQueuedOrRunning, 0);
+                if (!_disposed)
+                    PmcDiagnostics.Error("PmcReader: failed to queue sensor polling.", exception);
+            }
+        }
+
         private void TryInitializeMonitoring()
         {
+            PmcDiagnostics.Info("PmcReader: starting PMC monitoring initialization.");
+
             try
             {
                 PmcReaderInterop.Open();
             }
-            catch
+            catch (Exception ex)
             {
+                PmcDiagnostics.Error("PmcReader: failed to open the kernel interface.", ex);
+                return;
+            }
+
+            if (!PmcReaderInterop.IsKernelDriverOpen())
+            {
+                string report = PmcReaderInterop.GetKernelDriverReport();
+                PmcDiagnostics.Warning("PmcReader: PMC sensors disabled - WinRing0 kernel driver could not be loaded."
+                    + (string.IsNullOrEmpty(report)
+                        ? string.Empty
+                        : " " + report.Replace(Environment.NewLine, " ").Trim()));
                 return;
             }
 
             string manufacturer = PmcReaderInterop.GetManufacturerId();
             if (!string.Equals(manufacturer, "GenuineIntel", StringComparison.Ordinal)
                 && !string.Equals(manufacturer, "AuthenticAMD", StringComparison.Ordinal))
+            {
+                PmcDiagnostics.Info("PmcReader: PMC sensors disabled - unsupported CPU manufacturer '" + manufacturer + "'.");
                 return;
+            }
 
             PmcReaderInterop.GetProcessorVersion(out byte family, out byte model, out _);
+            PmcDiagnostics.Info("PmcReader: detected {0} CPU (family 0x{1:X2}, model 0x{2:X2}).", manufacturer, family, model);
 
             L3ConfigInfo l3ConfigInfo = TryCreateL3Config(manufacturer, family, model);
             if (l3ConfigInfo != null)
@@ -295,6 +399,23 @@ namespace CapFrameX.PmcReader.Plugin
                     _gamingHasECores = gamingConfigInfo.HasECores;
                     _gamingConfig.Initialize();
                 }
+            }
+
+            if (_l3Config == null && _dramConfig == null && _gamingConfig == null)
+            {
+                PmcDiagnostics.Info("PmcReader: no PMC configuration available for this CPU (family 0x{0:X2}, model 0x{1:X2}); no PMC sensors enabled.",
+                    family, model);
+            }
+            else
+            {
+                string gamingState = _gamingConfig == null ? "off"
+                    : _gamingHasPCores && _gamingHasECores ? "P+E cores"
+                    : _gamingHasPCores ? "P-cores"
+                    : _gamingHasECores ? "E-cores" : "on";
+                PmcDiagnostics.Info("PmcReader: PMC sensors enabled - L3 hitrate={0}, DRAM bandwidth={1}, gaming config={2}.",
+                    _l3Config != null ? "on" : "off",
+                    _dramConfig != null ? "on" : "off",
+                    gamingState);
             }
         }
 
@@ -546,6 +667,45 @@ namespace CapFrameX.PmcReader.Plugin
             }
 
             return (DateTime.UtcNow, result);
+        }
+
+        private (DateTime, Dictionary<ISensorEntry, float>) CaptureSnapshotAtBackgroundPriority()
+        {
+            Thread currentThread = Thread.CurrentThread;
+            ThreadPriority previousPriority = ThreadPriority.Normal;
+            bool priorityChanged = false;
+
+            try
+            {
+                previousPriority = currentThread.Priority;
+                if (previousPriority > ThreadPriority.BelowNormal)
+                {
+                    currentThread.Priority = ThreadPriority.BelowNormal;
+                    priorityChanged = true;
+                }
+            }
+            catch
+            {
+                // Priority lowering is best-effort; keep the selected PMC sensor functional.
+            }
+
+            try
+            {
+                return CaptureSnapshot();
+            }
+            finally
+            {
+                if (priorityChanged)
+                {
+                    try
+                    {
+                        currentThread.Priority = previousPriority;
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
         }
 
         private void TryInitializeCcxEntries()

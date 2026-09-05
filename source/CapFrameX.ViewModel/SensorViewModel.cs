@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
-using Prism.Regions;
+using Prism.Navigation.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -177,6 +177,8 @@ namespace CapFrameX.ViewModel
 
         public ICommand OpenConfigFolderCommand { get; }
 
+        public ICommand ResyncPerfmonCommand { get; }
+
         public SensorGroupControl SensorSubModelGroupControl { get; }
 
         public SensorViewModel(IAppConfiguration appConfiguration,
@@ -213,6 +215,7 @@ namespace CapFrameX.ViewModel
             CopyRawSensorInfoCommand = new DelegateCommand(OnCopyRawSensorInfo);
             ResetToDefaultCommand = new DelegateCommand(OnResetToDefault);
             OpenConfigFolderCommand = new DelegateCommand(OnOpenConfigFolder);
+            ResyncPerfmonCommand = new DelegateCommand(OnResyncPerfmon);
             AggregateSensorEntriesCommand = new DelegateCommand(() =>
             {
                 Task.Run(() =>
@@ -382,11 +385,33 @@ namespace CapFrameX.ViewModel
             Clipboard.SetDataObject(builder.ToString(), false);
         }
 
+        // Rebuilds the Windows performance counters; the memory counters CapFrameX reads come up
+        // as 0 when their registry registration is damaged. Needs elevation ("runas"), so the UAC
+        // prompt is expected, and the counters are only picked up on the next CapFrameX start.
+        private void OnResyncPerfmon()
+        {
+            ProcessStartInfo processStartInfo = new ProcessStartInfo("cmd.exe", "/c " + @"Files\bf0822e8-2e55-4b99-82ee-939d8ac2384e.bat")
+            {
+                CreateNoWindow = false,
+                WindowStyle = ProcessWindowStyle.Normal,
+                Verb = "runas"
+            };
+
+            Process p = new Process
+            {
+                StartInfo = processStartInfo
+            };
+
+            p.Start();
+            p.WaitForExit();
+        }
+
         private void OnOpenConfigFolder()
         {
             try
             {
-                Process.Start(_pathService.ConfigFolder);
+                // UseShellExecute is required to open a folder in Explorer on .NET Core+
+                Process.Start(new ProcessStartInfo(_pathService.ConfigFolder) { UseShellExecute = true });
             }
             catch { }
         }

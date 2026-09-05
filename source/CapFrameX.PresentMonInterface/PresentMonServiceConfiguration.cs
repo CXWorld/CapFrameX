@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CapFrameX.Contracts.Configuration;
+using System;
+using System.Globalization;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -21,6 +23,12 @@ namespace CapFrameX.PresentMonInterface
 
         public bool TrackPcLatency { get; set; } = true;
 
+        /// <summary>
+        /// Present event circular buffer size handed to --set_circular_buffer_size. Normalized on
+        /// use: PresentMon only accepts powers of two and refuses to start on anything else.
+        /// </summary>
+        public int CircularBufferSize { get; set; } = PresentMonCircularBuffer.DefaultSize;
+
         public string ConfigParameterToArguments()
         {
             var arguments = string.Empty;
@@ -35,6 +43,11 @@ namespace CapFrameX.PresentMonInterface
                 arguments += "--no_track_input";
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--qpc_time_ms";
+                arguments += PARAMETER_SEPARATOR;
+                arguments += "--set_circular_buffer_size";
+                arguments += PARAMETER_SEPARATOR;
+                arguments += PresentMonCircularBuffer.Normalize(CircularBufferSize)
+                    .ToString(CultureInfo.InvariantCulture);
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--track_frame_type";
                 arguments += PARAMETER_SEPARATOR;
@@ -80,6 +93,11 @@ namespace CapFrameX.PresentMonInterface
                 arguments += "--no_track_input";
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--qpc_time_ms";
+                arguments += PARAMETER_SEPARATOR;
+                arguments += "--set_circular_buffer_size";
+                arguments += PARAMETER_SEPARATOR;
+                arguments += PresentMonCircularBuffer.Normalize(CircularBufferSize)
+                    .ToString(CultureInfo.InvariantCulture);
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--track_frame_type";
                 arguments += PARAMETER_SEPARATOR;

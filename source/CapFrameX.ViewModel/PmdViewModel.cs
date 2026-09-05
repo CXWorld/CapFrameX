@@ -14,7 +14,7 @@ using OxyPlot;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
-using Prism.Regions;
+using Prism.Navigation.Regions;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -227,8 +227,12 @@ namespace CapFrameX.ViewModel
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
                 .Subscribe(msg =>
                 {
-                    _pmdAnalysisChartManager.UseDarkMode = _appConfiguration.UseDarkMode;
+                    bool useDarkMode = _appConfiguration.UseDarkMode;
+
+                    _pmdAnalysisChartManager.UseDarkMode = useDarkMode;
                     _pmdAnalysisChartManager.UpdateChartsTheme();
+                    PoweneticsViewModel.UpdateChartsTheme(useDarkMode);
+                    BenchlabViewModel.UpdateChartsTheme(useDarkMode);
                 });
         }
 

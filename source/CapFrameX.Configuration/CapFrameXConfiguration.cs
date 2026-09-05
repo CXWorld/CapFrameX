@@ -86,6 +86,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public string CustomMainboardDescription
+        {
+            get => Get<string>("Mainboard");
+            set => Set(value);
+        }
+
         public bool StartMinimized
         {
             get => Get<bool>(false);
@@ -146,6 +152,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool AutoUpdateCheckActive
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
         public string WebservicePort
         {
             get => Get<string>("1337");
@@ -185,6 +197,26 @@ namespace CapFrameX.Configuration
         public bool UsePcLatency
         {
             get => Get<bool>(true);
+            set => Set(value);
+        }
+
+        // PresentMon rejects anything that is not a power of two, and a rejected argument keeps
+        // the capture service from starting at all - so an unknown value falls back to the default.
+        public int PresentMonCircularBufferSize
+        {
+            get => PresentMonCircularBuffer.Normalize(Get<int>(PresentMonCircularBuffer.DefaultSize));
+            set => Set(PresentMonCircularBuffer.Normalize(value));
+        }
+
+        public bool UseAmdFlmLatency
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool AmdFlmFrameGeneration
+        {
+            get => Get<bool>(false);
             set => Set(value);
         }
 
@@ -362,18 +394,6 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
-        public bool UseSingleRecordFrametimeP1QuantileStatisticParameter
-        {
-            get => Get<bool>(true);
-            set => Set(value);
-        }
-
-        public bool UseSingleRecordFrametimeP5QuantileStatisticParameter
-        {
-            get => Get<bool>(false);
-            set => Set(value);
-        }
-
         public bool UseSingleRecordAverageStatisticParameter
         {
             get => Get<bool>(true);
@@ -484,7 +504,9 @@ namespace CapFrameX.Configuration
 
         public bool UseSingleRecordAnimationErrorP99StatisticParameter
         {
-            get => Get<bool>(true);
+            // Opt-in like the Average variant: this metric only renders in frametime (ms) mode,
+            // so a default of true makes an unselected row appear when switching units.
+            get => Get<bool>(false);
             set => Set(value);
         }
 
@@ -566,6 +588,12 @@ namespace CapFrameX.Configuration
         public string OverlayConfigHotKey
         {
             get => Get<string>("Alt+C");
+            set => Set(value);
+        }
+
+        public string OverlayPositionHotkey
+        {
+            get => Get<string>("Alt+P");
             set => Set(value);
         }
 
@@ -700,6 +728,92 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool EnableHookFreeOverlay
+        {
+            // Use hook-free by default while preserving an existing in-game selection.
+            get => Get<bool>(!EnableHookOverlay);
+            set => Set(value);
+        }
+
+        public string HookFreeDisplayDeviceName
+        {
+            get => Get<string>(string.Empty);
+            set => Set(value ?? string.Empty);
+        }
+
+        public int HookFreeRefreshRate
+        {
+            get => NormalizeHookFreeRefreshRate(Get<int>(10));
+            set => Set(NormalizeHookFreeRefreshRate(value));
+        }
+
+        private static int NormalizeHookFreeRefreshRate(int value)
+        {
+            return value == 1 || value == 2 || value == 5 ||
+                value == 10 || value == 20 || value == 30 ||
+                value == 60 || value == 120
+                ? value
+                : 10;
+        }
+
+        public bool EnableHookOverlay
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool HookOverlayUsePresentMonFrametimes
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public int OsdReplayBufferSize
+        {
+            get => Get<int>(2500);
+            set => Set(Math.Max(500, Math.Min(10000, value)));
+        }
+
+        public int OsdBackgroundOpacity
+        {
+            get => Get<int>(97);
+            set => Set(Math.Max(0, Math.Min(100, value)));
+        }
+
+        // Clamped to the range the metrics shared memory can carry: the hook receives the zoom as
+        // a single byte in the header flags, so anything outside 50..200 could not be published.
+        public int OsdZoom
+        {
+            get => Get<int>(100);
+            set => Set(Math.Max(50, Math.Min(200, value)));
+        }
+
+        // 0..4 = cfx_osd_anchor. The native reader rejects anything outside that range and keeps
+        // the previous placement, so clamping here is what makes a bad value visible as "no move".
+        public int OsdAnchor
+        {
+            get => Get<int>(0);
+            set => Set(Math.Max(0, Math.Min(OsdAnchorPositionCycle.PositionCount - 1, value)));
+        }
+
+        public int OsdMarginX
+        {
+            get => Get<int>(30);
+            set => Set(Math.Max(0, Math.Min(2000, value)));
+        }
+
+        public int OsdMarginY
+        {
+            get => Get<int>(30);
+            set => Set(Math.Max(0, Math.Min(2000, value)));
+        }
+
+        public bool UseOsdValueSmoothing
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
         public bool ShowSystemTimeSeconds
         {
             get => Get<bool>(false);
@@ -737,17 +851,17 @@ namespace CapFrameX.Configuration
 
         public string FirstMetricBarColor
         {
-            get => Get<string>("#3AA0FF");
+            get => Get<string>("#0271F9");
             set => Set(value);
         }
         public string SecondMetricBarColor
         {
-            get => Get<string>("#E879F9");
+            get => Get<string>("#7B8794");
             set => Set(value);
         }
         public string ThirdMetricBarColor
         {
-            get => Get<string>("#FBBF24");
+            get => Get<string>("#00B8D9");
             set => Set(value);
         }
         public bool ComparisonRangeSliderRealTime

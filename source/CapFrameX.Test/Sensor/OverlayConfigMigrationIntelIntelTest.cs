@@ -41,6 +41,7 @@ namespace CapFrameX.Test.Sensor
         private Mock<IRTSSService> _rtssServiceMock;
         private Mock<IThreadAffinityController> _threadAffinityMock;
         private Mock<IPathService> _pathServiceMock;
+        private Mock<IHookOverlayStatusService> _hookOverlayStatusMock;
         private Mock<ILogger<OverlayEntryProvider>> _loggerMock;
 
         private List<OverlayEntryWrapper> _loadedConfigEntries;
@@ -90,6 +91,12 @@ namespace CapFrameX.Test.Sensor
             _threadAffinityMock = new Mock<IThreadAffinityController>();
             _pathServiceMock = new Mock<IPathService>();
             _pathServiceMock.Setup(x => x.ConfigFolder).Returns(_testConfigFolder);
+
+            _hookOverlayStatusMock = new Mock<IHookOverlayStatusService>();
+            _hookOverlayStatusMock.Setup(x => x.Current)
+                .Returns(new HookOverlayStatus(EHookOverlayStatus.Disabled));
+            _hookOverlayStatusMock.Setup(x => x.StatusStream)
+                .Returns(Observable.Never<HookOverlayStatus>());
 
             _loggerMock = new Mock<ILogger<OverlayEntryProvider>>();
         }
@@ -234,7 +241,9 @@ namespace CapFrameX.Test.Sensor
                 _overlayEntryCore,
                 _threadAffinityMock.Object,
                 _pathServiceMock.Object,
-                _loggerMock.Object);
+                _hookOverlayStatusMock.Object,
+                _loggerMock.Object,
+                () => Array.Empty<DetectedDisplay>());
         }
 
         /// <summary>
