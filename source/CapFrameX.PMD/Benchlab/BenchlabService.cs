@@ -21,8 +21,6 @@ namespace CapFrameX.PMD.Benchlab
     {
         private const string SERVICE_NAME = "BENCHLAB Service";
         private const string SERVICE_PROCESS_NAME = "BL_Service";
-        private const string SERVICE_FOLDER_NAME = "benchlab-service";
-        private const string SERVICE_EXECUTABLE_NAME = "BL_Service.exe";
         private const string LEGACY_SERVICE_EXECUTABLE_NAME = "PMD_Service.exe";
         private const int SERVICE_AUTO_START = 2;
         private const uint SC_MANAGER_CONNECT = 0x0001;
@@ -40,8 +38,7 @@ namespace CapFrameX.PMD.Benchlab
         private readonly ISubject<EPmdServiceStatus> _pmdServiceStatusStream = new Subject<EPmdServiceStatus>();
         private readonly SemaphoreSlim _pipeRequestLock = new SemaphoreSlim(1, 1);
         private IDisposable _pmdSensorStreamDisposable;
-        private Process _benchlabProcess;
-        private ChildProcessJob _benchlabProcessJob;
+        private bool _startedWindowsService;
         private string _devicePipeName;
         private string _selectedDeviceId;
 
@@ -112,12 +109,12 @@ namespace CapFrameX.PMD.Benchlab
 
             try
             {
-                if (!EnsureDemandStartMode() || !EnsureBenchlabServiceStarted())
+                if (!EnsureBenchlabServiceStarted())
                 {
-                    throw new InvalidOperationException("The BENCHLAB service could not be started.");
+                    throw new InvalidOperationException("Install a compatible BENCHLAB service separately before starting monitoring.");
                 }
 
-                var devices = await GetDevicesFromCompatibleServiceAsync();
+                var devices = await GetDevicesWhenReadyAsync();
                 var device = BenchlabProtocol.SelectDevice(devices);
                 if (device == null)
                 {
@@ -149,28 +146,6 @@ namespace CapFrameX.PMD.Benchlab
 
             StartSensorStream();
             _pmdServiceStatusStream.OnNext(EPmdServiceStatus.Running);
-        }
-
-        private async Task<IList<BenchlabDeviceInfo>> GetDevicesFromCompatibleServiceAsync()
-        {
-            try
-            {
-                return await GetDevicesWhenReadyAsync();
-            }
-            catch
-            {
-                // An installed pre-2.0 service can be running under the same Windows service
-                // name but does not expose the discovery pipe. Replace it for this session
-                // with the bundled service that implements the current protocol.
-                if (!IsWindowsServiceRunning(SERVICE_NAME)
-                    || !TryStopWindowsService(SERVICE_NAME)
-                    || !TryStartBundledService())
-                {
-                    throw;
-                }
-
-                return await GetDevicesWhenReadyAsync();
-            }
         }
 
         private async Task<IList<BenchlabDeviceInfo>> GetDevicesWhenReadyAsync()
@@ -471,17 +446,11 @@ namespace CapFrameX.PMD.Benchlab
 
         private bool EnsureBenchlabServiceStarted()
         {
-            // The former PMD_Service uses the same Windows service name but does not
-            // expose the discovery pipe. Starting it first would cost the complete
-            // compatibility timeout before the bundled service can take over.
+            // The old PMD_Service does not support discovery. Never stop or replace a
+            // separately installed service with a bundled executable.
             if (IsLegacyWindowsService(SERVICE_NAME))
             {
-                if (IsWindowsServiceRunning(SERVICE_NAME) && !TryStopWindowsService(SERVICE_NAME))
-                {
-                    return false;
-                }
-
-                return TryStartBundledService();
+                return false;
             }
 
             if (IsBenchlabRunning())
@@ -489,7 +458,8 @@ namespace CapFrameX.PMD.Benchlab
                 return true;
             }
 
-            return TryStartWindowsService(SERVICE_NAME) || TryStartBundledService();
+            _startedWindowsService = TryStartWindowsService(SERVICE_NAME);
+            return _startedWindowsService;
         }
 
         private static bool TryStartWindowsService(string serviceName)
@@ -546,66 +516,6 @@ namespace CapFrameX.PMD.Benchlab
             }
             catch
             {
-                return false;
-            }
-        }
-
-        private bool TryStartBundledService()
-        {
-            if (IsBenchlabProcessRunning())
-            {
-                return true;
-            }
-
-            var executablePath = GetBundledServicePath();
-            if (string.IsNullOrWhiteSpace(executablePath) || !File.Exists(executablePath))
-            {
-                return false;
-            }
-
-            Process process = null;
-            ChildProcessJob processJob = null;
-            try
-            {
-                var startInfo = new ProcessStartInfo
-                {
-                    FileName = executablePath,
-                    WorkingDirectory = Path.GetDirectoryName(executablePath),
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-
-                process = Process.Start(startInfo);
-                if (process == null)
-                {
-                    return false;
-                }
-
-                processJob = ChildProcessJob.Attach(process);
-                _benchlabProcess = process;
-                _benchlabProcessJob = processJob;
-                return true;
-            }
-            catch
-            {
-                processJob?.Dispose();
-
-                try
-                {
-                    if (process != null && !process.HasExited)
-                    {
-                        process.Kill(true);
-                        process.WaitForExit(2000);
-                    }
-                }
-                catch
-                {
-                }
-                finally
-                {
-                    process?.Dispose();
-                }
-
                 return false;
             }
         }
@@ -673,12 +583,6 @@ namespace CapFrameX.PMD.Benchlab
             StartSensorStream();
         }
 
-        private static string GetBundledServicePath()
-        {
-            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            return Path.Combine(baseDirectory, SERVICE_FOLDER_NAME, SERVICE_EXECUTABLE_NAME);
-        }
-
         public void ShutDownService()
         {
             _isServiceRunning = false;
@@ -694,44 +598,12 @@ namespace CapFrameX.PMD.Benchlab
 
         private void StopExternalService()
         {
-            _benchlabProcessJob?.Dispose();
-            _benchlabProcessJob = null;
-
-            TryStopWindowsService(SERVICE_NAME);
-
-            try
+            // Only stop the Windows service if this instance started it. An independently
+            // running service or desktop process belongs to the user.
+            if (_startedWindowsService)
             {
-                var processes = Process.GetProcessesByName(SERVICE_PROCESS_NAME);
-                foreach (var process in processes)
-                {
-                    try
-                    {
-                        if (!process.HasExited)
-                        {
-                            var closeRequested = process.CloseMainWindow();
-                            if ((!closeRequested || !process.WaitForExit(500)) && !process.HasExited)
-                            {
-                                process.Kill(true);
-                                process.WaitForExit(2000);
-                            }
-                        }
-                    }
-                    catch
-                    {
-                    }
-                    finally
-                    {
-                        process.Dispose();
-                    }
-                }
-            }
-            catch
-            {
-            }
-            finally
-            {
-                _benchlabProcess?.Dispose();
-                _benchlabProcess = null;
+                TryStopWindowsService(SERVICE_NAME);
+                _startedWindowsService = false;
             }
         }
 

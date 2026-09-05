@@ -1152,7 +1152,7 @@
 											   Visibility="{Binding ExtendedOsdLogging.IsUpdating, Converter={StaticResource TrueToVisibleConverter}}"
 											   Text="Saving..."/>
 									<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
-											   Text="Enables detailed logs for the DirectX hook, Vulkan layer, native renderer, and per-present statistics."/>
+											   Text="Enables detailed logs for the native renderer and per-present statistics."/>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#E0A020" TextWrapping="Wrap"
 											   Text="&#x26A0; Restart CapFrameX and the game after changing this option."/>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#D95050" TextWrapping="Wrap"
@@ -1187,10 +1187,12 @@
 									<Separator Margin="0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 									<StackPanel Margin="0 8">
 										<RadioButton GroupName="OverlayModeHook" Content="CapFrameX in-game (Experimental)"
+                                                     IsEnabled="{Binding IsInGameOverlayAvailable}"
+                                                     ToolTip="{Binding InGameOverlayDescription}" ToolTipService.ShowOnDisabled="True"
 													 IsChecked="{Binding OverlayModeHook, Mode=TwoWay}"
 													 Style="{StaticResource MaterialDesignRadioButton}"/>
 										<TextBlock Margin="26 0 0 0" Style="{StaticResource OsdOptionsDescription}"
-												   Text="Injected into the game for the smoothest in-swapchain graphs. Use only with titles where injection is safe."/>
+												   Text="{Binding InGameOverlayDescription}"/>
 										<StackPanel Margin="26 8 0 0" IsEnabled="{Binding OverlayModeHook}">
 											<CheckBox Content="Use PresentMon frame times"
 													  IsChecked="{Binding HookOverlayUsePresentMonFrametimes, Mode=TwoWay}"
@@ -1211,7 +1213,7 @@
 											<StackPanel>
 												<TextBlock Text="Hook-free output display"/>
 												<TextBlock Style="{StaticResource OsdOptionsDescription}"
-														   Text="Used by hook-free mode and the in-game fallback"/>
+														   Text="Display used by the hook-free overlay"/>
 											</StackPanel>
 											<ComboBox Margin="0 8 0 0" Height="40" FontSize="14"
 													  HorizontalContentAlignment="Stretch"
@@ -1256,7 +1258,7 @@
 									<StackPanel Margin="0 8 0 4">
 										<TextBlock FontWeight="SemiBold" Text="PresentMon replay buffer"/>
 										<TextBlock Style="{StaticResource OsdOptionsDescription}"
-												   Text="Minimum buffering used to smooth bursty PresentMon frame data. Increase it if graphs pause between updates; higher values add latency. Applies to hook-free and the in-game PresentMon source."/>
+												   Text="Minimum buffering used to smooth bursty PresentMon frame data. Increase it if graphs pause between updates; higher values add latency. Applies to the hook-free renderer."/>
 										<Grid Margin="0 8 0 0">
 											<Grid.ColumnDefinitions>
 												<ColumnDefinition Width="*"/>

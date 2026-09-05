@@ -5,6 +5,12 @@
        management from here. -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- In-game payloads remain excluded until the code-signing certificate is available. -->
+    <CfxEnableInGameOverlay Condition="'$(CfxEnableInGameOverlay)' == ''">false</CfxEnableInGameOverlay>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(CfxEnableInGameOverlay)' == 'true'">
+    <DefineConstants>$(DefineConstants);CFX_INGAME_OVERLAY</DefineConstants>
   </PropertyGroup>
 
 </Project>

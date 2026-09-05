@@ -474,7 +474,7 @@
 								ToolTipService.ShowDuration="25000">
 								<ToggleButton.ToolTip>
 									<ToolTip MaxWidth="350">
-										<TextBlock Text="Start or stop the PMD service."
+										<TextBlock Text="Connect to a compatible BENCHLAB service installed separately. CapFrameX does not include the service."
 											TextWrapping="Wrap"/>
 									</ToolTip>
 								</ToggleButton.ToolTip>

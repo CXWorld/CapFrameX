@@ -31,6 +31,11 @@
     <Compile Remove="PresentMonInterface\SystemInfoTest.cs" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(CfxEnableInGameOverlay)' != 'true'">
+    <!-- Tests for the optional implementation are retained for future signed builds. -->
+    <Compile Remove="Integration\ForeignOverlayGateTest.cs;Integration\HookInjectorTest.cs;Integration\HookMetricsChannelTest.cs;Integration\HookOverlayManagerPollingTest.cs;Integration\HookCompatibilityProfileTest.cs;Integration\HookOverlayStatusEvaluatorTest.cs;Integration\HookPlacementChannelTest.cs;Integration\HookStatusProbeTest.cs;Integration\InjectionRetryBackoffTest.cs;Integration\VulkanLayerModuleProbeTest.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <Reference Include="CapFrameX.OSD.Interop">
       <HintPath>..\..\external\CapFrameX.OSD-prebuilt\net9.0-windows\CapFrameX.OSD.Interop.dll</HintPath>

@@ -2,7 +2,7 @@
 # CapFrameX
 Capture, analyze, and compare game performance on Windows. CapFrameX combines Intel's [PresentMon](https://github.com/GameTechDev/PresentMon) with hardware monitoring, frametime and FPS charts, and configurable overlays.
 
-Version **1.9.0** introduces a refreshed interface, a system information dashboard, built-in hook-free and experimental in-game overlays, expanded GPU telemetry, and lower background polling overhead. The application now runs on **.NET 10**.
+Version **1.9.0** introduces a refreshed interface, a system information dashboard, a built-in hook-free overlay, expanded GPU telemetry, and lower background polling overhead. The application now runs on **.NET 10**.
 
 # Remark in our own interest
 If you are a reviewer or a youtuber using CapFrameX to get your data, it would be nice to mention us and link to our software.
@@ -12,9 +12,13 @@ If you want to use images of the CapFrameX analysis, you could use the built in 
 
 Download **[CapFrameX v1.9.0](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.0)**:
 
+The revised packages contain application version **1.9.0.8**. The CapFrameX in-game overlay is disabled and its injection components are omitted until our code-signing certificate is available. BENCHLAB monitoring remains available with a separately installed compatible service; the service is no longer bundled.
+
+When replacing an earlier 1.9.0 portable package, extract this revision into a **new folder** and copy over your `Portable` data folder if needed. This prevents old hook, Vulkan, or service files from remaining beside the new application.
+
 | Package | Use |
 | --- | --- |
-| [Installer](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.0/release_1.9.0_installer.zip) | Extract the ZIP and run `CapFrameXBootstrapper.exe`. Setup installs the application and registers the Vulkan overlay layers. |
+| [Installer](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.0/release_1.9.0_installer.zip) | Extract the ZIP and run `CapFrameXBootstrapper.exe`. Setup installs the application and removes obsolete CapFrameX Vulkan layer registrations. |
 | [Portable](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.0/release_1.9.0_portable.zip) | Extract the complete ZIP and run `CapFrameX.exe`. Keep `portable.json` beside it to store settings, captures, and logs in the portable folder. |
 
 Install the **[.NET 10 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/10.0)** before running setup or the portable application. The Desktop Runtime is required even if another .NET version or the plain .NET Runtime is already installed.
@@ -68,10 +72,10 @@ Choose a renderer under **Overlay → OSD options**:
 | Renderer | Behavior |
 | --- | --- |
 | **CapFrameX hook-free** | Built-in overlay without injecting into the game. This is the default for new configurations and offers an output-display picker and chart refresh control. |
-| **CapFrameX in-game (Experimental)** | Injected overlay with DirectX and Vulkan integration, game compatibility profiles, and fallback routing. Compatibility depends on the game and other active overlays. |
+| **CapFrameX in-game (Experimental)** | **Unavailable in v1.9.0.** The option remains disabled and will be delivered in a later update once our code-signing certificate is available. |
 | **RTSS** | Uses [RivaTuner Statistics Server](https://www.guru3d.com/content-page/rivatuner.html), which must be installed separately. |
 
-Configure individual entries, colors, groups, and three profiles in **Overlay items**. OSD options include opacity, zoom, placement, a position hotkey, and PresentMon replay buffering. Existing renderer selections are preserved when upgrading.
+Configure individual entries, colors, groups, and three profiles in **Overlay items**. OSD options include opacity, zoom, placement, a position hotkey, and PresentMon replay buffering. Existing RTSS and hook-free selections are preserved. An earlier in-game selection is migrated to hook-free.
 
 ![CapFrameX 1.9.0 overlay entries](images/1.9.0/overlay.png)
 ![CapFrameX 1.9.0 renderer and OSD options](images/1.9.0/overlay-options.png)

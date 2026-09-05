@@ -70,7 +70,7 @@
     </COMReference>
   </ItemGroup>
 
-  <Import Project="benchlab-service.items" Condition="Exists('benchlab-service.items')" />
+  <!-- BENCHLAB requires a separately installed compatible service. Do not bundle our service. -->
 
   <ItemGroup>
     <PackageReference Include="DryIoc.dll" />

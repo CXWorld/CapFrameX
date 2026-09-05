@@ -51,14 +51,15 @@ namespace CapFrameX
     {
         // Keeps the hook-free OSD bridge alive for the app lifetime.
         private OSD.Integration.OsdOverlayBridge _osdOverlayBridge;
+#if CFX_INGAME_OVERLAY
         // Manages in-game hook injection into the detected game process.
         private OSD.Integration.HookOverlayManager _hookOverlayManager;
-        // Publishes the hook's native handshake/heartbeat to view models.
-        private OSD.Integration.HookOverlayStatusService _hookOverlayStatusService;
         // Publishes CapFrameX's overlay entries to the in-game hook via shared memory.
         private OSD.Integration.HookMetricsPublisher _hookMetricsPublisher;
         // Streams per-frame PresentMon frametimes/display-times to the hook (PresentMon graph mode).
         private OSD.Integration.HookFrametimePublisher _hookFrametimePublisher;
+#endif
+        private OSD.Integration.HookOverlayStatusService _hookOverlayStatusService;
 
         // The existing composition root uses DryIoc-specific registration APIs. PrismApplication
         // exposes the container through Prism's abstraction, so unwrap it in one place.
@@ -105,22 +106,6 @@ namespace CapFrameX
                     ConfigurationProvider.AppConfiguration = config;
                 }
 
-                using (StartupPerformanceLogger.Measure("BENCHLAB service demand-start configuration"))
-                {
-                    try
-                    {
-                        var benchlabService = Container.Resolve<IBenchlabService>();
-                        if (!benchlabService.EnsureDemandStartMode())
-                        {
-                            Log.Logger.Warning("Could not configure the BENCHLAB service for demand start.");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Logger.Error(ex, "Error configuring the BENCHLAB service for demand start.");
-                    }
-                }
-
                 using (StartupPerformanceLogger.Measure("Path service resolution"))
                 {
                     var pathService = Container.Resolve<IPathService>();
@@ -159,6 +144,7 @@ namespace CapFrameX
                 rtssService.VulkanPresentationProbe =
                     OSD.Integration.VulkanPresentation.IsActive;
 
+#if CFX_INGAME_OVERLAY
                 // In-game hook overlay: inject cfx_osd_hook.dll into the game CapFrameX already
                 // detected. The PID flows through IRTSSService.ProcessIdStream (IProcessService),
                 // the same stream the overlay/capture pipeline uses — so we address the process
@@ -175,6 +161,8 @@ namespace CapFrameX
                         statusService: _hookOverlayStatusService);
                 }
 
+#endif
+
                 // CapFrameX.OSD: hook-free DWM/DirectComposition overlay. Scalars come from the
                 // same IOverlayEntry[] stream RTSS uses; per-present frametimes from the capture
                 // service. Besides the explicit hook-free mode, it takes over transiently when the
@@ -189,12 +177,15 @@ namespace CapFrameX
                         PresentMonCaptureService.PresentRuntime_INDEX,
                         PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
                         () => osdCaptureService.CPUStartQPCTimeInMs_Index,
-                        _hookOverlayManager.HookFreeFallbackStream,
+#if CFX_INGAME_OVERLAY
+                        hookFreeFallbackStream: _hookOverlayManager.HookFreeFallbackStream,
+#endif
                         processIdStream: rtssService.ProcessIdStream,
                         processIdColumnIndex:
                             PresentMonCaptureService.ProcessID_INDEX);
                 }
 
+#if CFX_INGAME_OVERLAY
                 // While the in-game hook overlay is on, mirror CapFrameX's processed overlay entries
                 // (fps/lows/sensors/static rows — the same set RTSS/hook-free render) into shared memory
                 // so the injected hook shows authoritative values, not just its local frame ring.
@@ -221,6 +212,8 @@ namespace CapFrameX
                         PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
                         () => osdCaptureService.CPUStartQPCTimeInMs_Index);
                 }
+
+#endif
 
                 using (StartupPerformanceLogger.Measure("Shell configuration"))
                 {
