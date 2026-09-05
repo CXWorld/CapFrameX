@@ -1,27 +1,39 @@
-![Screenshot](images/CX_Header_Logo_Wide.jpg)
+![CapFrameX](images/CX_Header_Logo_Wide.jpg)
 # CapFrameX
-Frametimes capture and analysis tool based on Intel's [PresentMon](https://github.com/GameTechDev/PresentMon). Overlay provided by [Rivatuner Statistics Server](https://www.guru3d.com/content-page/rivatuner.html). 
+Capture, analyze, and compare game performance on Windows. CapFrameX combines Intel's [PresentMon](https://github.com/GameTechDev/PresentMon) with hardware monitoring, frametime and FPS charts, and configurable overlays.
+
+Version **1.9.0** introduces a refreshed interface, a system information dashboard, built-in hook-free and experimental in-game overlays, expanded GPU telemetry, and lower background polling overhead. The application now runs on **.NET 10**.
 
 # Remark in our own interest
 If you are a reviewer or a youtuber using CapFrameX to get your data, it would be nice to mention us and link to our software.
 If you want to use images of the CapFrameX analysis, you could use the built in screenshot function so that our logo and name gets added to the images.
 
 # Release
-Download link: https://github.com/DevTechProfile/CapFrameX/releases
+
+Download **[CapFrameX v1.9.0](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.0)**:
+
+| Package | Use |
+| --- | --- |
+| [Installer](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.0/release_1.9.0_installer.zip) | Extract the ZIP and run `CapFrameXBootstrapper.exe`. Setup installs the application and registers the Vulkan overlay layers. |
+| [Portable](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.0/release_1.9.0_portable.zip) | Extract the complete ZIP and run `CapFrameX.exe`. Keep `portable.json` beside it to store settings, captures, and logs in the portable folder. |
+
+Install the **[.NET 10 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/10.0)** before running setup or the portable application. The Desktop Runtime is required even if another .NET version or the plain .NET Runtime is already installed.
+
+See the [release notes](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.0) for changes and package checksums, [Portable Mode](PORTABLE_MODE.md) for configuration, and [all releases](https://github.com/CXWorld/CapFrameX/releases) for older versions. Development builds are available from the [build archive](https://archive.capframex.com/).
 
 # Troubleshooting & Known Issues
 The following tips address the most common issues reported by users and can help resolve stability, overlay, and capture-related problems efficiently. We recommend working through them in order if you encounter unexpected behavior.
 
 1. **Ensure you are running the latest version**  
-   If you experience application crashes or unstable behavior, verify that you have installed **CapFrameX v1.7.8 Patch 1** or newer. Many known issues have been resolved in this patch. If you were previously using version 1.7.7, we recommend uninstalling CapFrameX before installing the new version.
+   Install the latest [stable release](https://github.com/CXWorld/CapFrameX/releases/latest) and its required .NET Desktop Runtime. Version 1.9.0 requires **.NET 10 Desktop Runtime (x64)**; the installer checks for it before proceeding.
 
 2. **Reset application settings**  
-   In some cases, corrupted or outdated configuration files may cause problems. Deleting  
+   In some cases, corrupted or outdated configuration files may cause problems. Close CapFrameX, back up your configuration, and rename
    `%appdata%/CapFrameX/Configuration/AppSettings.json`  
-   will reset CapFrameX to its default settings and often resolves startup or UI-related issues.
+   to let CapFrameX recreate its default settings on the next start. In portable mode, use the configuration folder specified in `portable.json` instead.
 
 3. **Reset overlay configuration files**  
-   If overlay-related problems persist, try deleting the overlay configuration files located at  
+   If overlay-related problems persist, close CapFrameX and back up or rename the overlay configuration files located at
    `%appdata%/CapFrameX/Configuration/OverlayEntryConfiguration_(0/1/2).json`.  
    These files will be recreated automatically on the next application start.
 
@@ -32,39 +44,72 @@ The following tips address the most common issues reported by users and can help
    If the order of overlay entries appears inconsistent or unintentionally rearranged, use the **Sort** button in the **Overlay** tab to restore a clean and logical ordering.
 
 6. **Resolve frametime anomalies after updates**  
-   In rare cases, existing background capture processes can interfere with CapFrameX after an update. If you encounter frametime issues, close all running **PresentMon** processes before installing or launching CapFrameX v1.7.8.
+   Close CapFrameX and any other capture tools before updating. If a capture service remains running after an application has exited, close its leftover **PresentMon** process before starting a new capture session.
 
 7. **Avoid conflicts with other monitoring tools**  
    Applications such as **HWiNFO** or **AIDA64** that implement their own FPS or frametime metrics may conflict with CapFrameX’s capture service, as they also rely on PresentMon-based mechanisms. Disabling overlapping FPS or frametime monitoring features in those tools is strongly recommended when using CapFrameX.
 
 # Capture frametimes
-![Screenshot](images/02_capture.png)
+
+Configure the capture hotkey, duration, sensor logging, and run history. The process list determines which application is captured.
+
+![CapFrameX 1.9.0 capture settings and run history](images/1.9.0/capture.png)
+
+# System information
+
+The Info tab brings together CPU, GPU, memory, and mainboard details with live telemetry and system features such as Resizable BAR, HAGS, and Windows Game Mode.
+
+![CapFrameX 1.9.0 system information dashboard](images/1.9.0/info.png)
 
 # Overlay
-![Screenshot](images/04_overlay_options.png)
+
+Choose a renderer under **Overlay → OSD options**:
+
+| Renderer | Behavior |
+| --- | --- |
+| **CapFrameX hook-free** | Built-in overlay without injecting into the game. This is the default for new configurations and offers an output-display picker and chart refresh control. |
+| **CapFrameX in-game (Experimental)** | Injected overlay with DirectX and Vulkan integration, game compatibility profiles, and fallback routing. Compatibility depends on the game and other active overlays. |
+| **RTSS** | Uses [RivaTuner Statistics Server](https://www.guru3d.com/content-page/rivatuner.html), which must be installed separately. |
+
+Configure individual entries, colors, groups, and three profiles in **Overlay items**. OSD options include opacity, zoom, placement, a position hotkey, and PresentMon replay buffering. Existing renderer selections are preserved when upgrading.
+
+![CapFrameX 1.9.0 overlay entries](images/1.9.0/overlay.png)
+![CapFrameX 1.9.0 renderer and OSD options](images/1.9.0/overlay-options.png)
 
 # Analysis
-![Screenshot](images/05_analysis.png)
+
+Inspect frametimes, FPS, percentiles, stuttering, distributions, and recorded sensor data for an individual capture.
+
+![CapFrameX 1.9.0 frametime analysis](images/1.9.0/analysis.png)
 
 # Aggregation
-![Screenshot](images/06_aggregation.png)
+
+Combine multiple runs using their raw frametimes, with configurable outlier handling. Aggregation is available for recorded captures and directly from the capture run history.
 
 # Comparison
-![Screenshot](images/07_comparison_bar.png)
-![Screenshot](images/08_comparison_graph.png)
+
+Compare captures using bar charts, time series, distributions, and variance views. Select metrics and labels, sort results, and highlight individual series.
+
+![CapFrameX 1.9.0 comparison of Cyberpunk 2077 captures](images/1.9.0/comparison.png)
 
 # Sensor
-![Screenshot](images/08b_sensor.png)
+
+Choose which available CPU, GPU, memory, and storage sensors to record. Version 1.9.0 adds GPU memory allocation telemetry, NVIDIA memory temperature and estimated bandwidth readings, and AMD Anti-Lag/FLM integration on supported hardware.
+
+![CapFrameX 1.9.0 sensor selection](images/1.9.0/sensor.png)
 
 # Report table (Excel)
 ![Screenshot](images/09_report.png)
 
 # Cloud
-![Screenshot](images/12_cloud.png)
+
+Share captures through upload IDs and download shared records for local analysis.
+
+![CapFrameX 1.9.0 cloud sharing](images/1.9.0/cloud.png)
 
 # MCP Server (AI integration)
 
-CapFrameX ships an in-process MCP server that lets AI clients (Claude Code, Claude Desktop, MCP Inspector) read recorded captures, compute statistics, diagnose issues, and query the live system. The server runs only while CapFrameX is running and is reachable on `http://localhost:<WebservicePort>/mcp` (default port `1337`; if taken, CapFrameX falls back to a free port and persists the choice in `AppSettings.json`).
+CapFrameX ships an in-process MCP server that lets compatible AI clients read recorded captures, compute statistics, diagnose issues, and query the live system. It also exposes tools to start and stop captures and update application, overlay, and sensor settings. The server runs only while CapFrameX is running and is reachable on `http://localhost:<WebservicePort>/mcp` (default port `1337`; if taken, CapFrameX falls back to a free port and persists the choice in `AppSettings.json`).
 
 No additional install. The MCP server is part of `CapFrameX.exe`.
 
@@ -128,7 +173,7 @@ Restart Claude Desktop. The CapFrameX tools appear in the MCP picker.
 | `cfx_get_current_system` | Live system info: CPU, GPU, RAM, OS, motherboard, Resizable BAR (HW + D3D + Vulkan), HAGS, GameMode, PCI BAR sizes. |
 | `cfx_get_capture_status` | Read-only capture state: isCapturing, isLocked, current state (Started, Processing, Stopped, …). |
 
-All tools are read-only. They do not start or stop captures and do not modify settings.
+The table above covers analysis and diagnostics. Additional tools include `cfx_list_processes`, `cfx_start_capture`, `cfx_stop_capture`, `cfx_get_config`, `cfx_set_config`, `cfx_get_overlay_entries`, `cfx_set_overlay_entry`, and `cfx_set_logged_sensors`. Capture-control and configuration tools change application state; the MCP interface is not read-only.
 
 ## Example interactions
 
@@ -167,8 +212,8 @@ It constantly observes the output directory so every capture will show up here a
 This also includes every OCAT or PresentMon capture you put into that directory.
 
 Changing directories:  
-To change the directory, use the expander on the left where you can select your main folder by double clicking on the address line and get a tree view of all subfolders within that main folder.
-Using the right click context menu you can create or delete folders directly in the tree view and also open any selected folder in explorer. You can also move record files to other folders through the context menu in the record list itself.
+Click the folder breadcrumb above the record list to open the folder popup. Select the root capture folder or browse its subfolders without resizing the record list.
+Use the tree view's context menu to create or delete subfolders or open a folder in Explorer. You can also move record files through the context menu in the record list itself.
 
 Changing record info:  
 At the bottom of the record list you can see and change the CPU, GPU and RAM description and add a custom comment to every capture.
@@ -181,18 +226,18 @@ Contains all the different views, a screenshot button, a login button (for addit
 The screenshot button takes a screenshot of the current view excluding the record list.
 
 ## Settings (Options)
-![Screenshot](images/01_global_options.png)
+
 * Graph filter window size = The time period in which the filtered FPS graphs are being averaged (Analysis & Comparison View)
 * FPS values decimals = The number of decimals for the FPS values
 * Screenshot directory = The directory in which your screenshots are saved. 
-* Use "MsBetweenDisplayChange" metrics. Uses diplay times for metric calculation. Enble this option when using Frame Generation.
+* Use "MsBetweenDisplayChange" metrics. Uses display times for metric calculation. Enable this option when analyzing displayed frames with Frame Generation.
 * Use PC Latency. Still beta state. Disable if you encounter frame time issues. Restart CapFameX after changing the option.
 * Capture file mode = How capture files are saved  
   JSON: Standard JSON file  
   JSON + CSV: Additional CSV file that won't be used by CX but can be opened to get a better view on the raw PresentMon data  
 
 ## Settings (Hardware)
-![Screenshot](images/01_global_options_hardware.png)
+
 * Primary Graphics Adapter. Select the primary graphics adapter for sensor and overlay management. Auto (default) removes iGPU when it least one dGPU is detected.
 * Hardware info source = What will be written into the capture file as your CPU, GPU and RAM config.  
   Automatic detection: What's delivered by the system  
@@ -200,7 +245,7 @@ The screenshot button takes a screenshot of the current view excluding the recor
 * Use "TBP Sim" sensor values (AMD graphics cards) if available
 
 ## Settings (App)
-![Screenshot](images/01_global_options_app.png)
+
 * Start with windows & Start minimized = Autostart option and starting in tray
 * "Dark Mode" UI color mode
 * Receive notifications to get important information about the software and the project
@@ -244,7 +289,7 @@ Contains the settings for the items displayed in the OSD as well as the settings
 Left side  
 Overlay items list where you can set the items you want to see in the OSD and change their order by drag and drop. Items with the same group name will be displayed within a single line.
 Three profiles to save different overlay configurations.
-Overlay hotkey to show or hide CX items in OSD. This doesn't hide RTSS completely like the Afterburner hotkey does. If you have AB or any other App that uses RTSS running together with CX, only CX items will disappear.
+The overlay hotkey shows or hides CapFrameX's OSD. With the RTSS renderer, it controls CapFrameX's entries without hiding entries provided by other applications.
 
 Right side  
 Overlay items options  
@@ -329,12 +374,15 @@ This doesn't affect any processes you already have on your list. If our online l
 * Report: parameter table
 * Synchronization: display changed times(dc), histogram data
 
-Potential conflicts with the Nuget packages can be solved via Package Manger Console. Just type "Update-Package -reinstall". The calling application must run as administrator. See `source/CapFrameX.Sensor/SensorService.cs` and `SensorConfig.cs` for how the customized library is integrated.
+NuGet package versions are managed centrally in `source/Directory.Packages.props`. Restore the solution's dependencies with `nuget restore CapFrameX.sln`. See `source/CapFrameX.Sensor/SensorService.cs` and `SensorConfig.cs` for how the customized hardware-monitoring library is integrated.
 
 # Requirements
-* .NET 10.0 Desktop Runtime (no installer check, must be installed manually)
-* .NET 4.7.2 (installer check)
-* Microsoft Visual C++ Redistributable Package (installer check)
+
+* Windows x64
+* [.NET 10 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/10.0), installed separately; checked by setup and the portable application host
+* Microsoft Visual C++ Redistributable (x64); setup checks for it. See [portable requirements](PORTABLE_MODE.md#requirements) when running without setup.
+* .NET Framework 4.7.2 or later for the installer's custom actions
+* RTSS only when selecting the RTSS overlay renderer
 
 # Build requirements
 * MS Visual Studio 2026

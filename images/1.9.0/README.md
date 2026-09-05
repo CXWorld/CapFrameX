@@ -1,0 +1,9 @@
+# CapFrameX 1.9.0 screenshots
+
+Captured from the application at version 1.9.0.7 with the release channel, built from commit `4456e732130479b9fc874c578e6a752149e7dd70`.
+
+- `comparison.png` shows the Cyberpunk 2077 comparison prepared by the maintainer for this release.
+- The other screenshots use a separate portable configuration and the public capture fixtures in `source/CapFrameX.Test/TestRecordFiles`.
+- `info.png` shows the live hardware dashboard of the screenshot system.
+
+These are direct window captures of the application. The header banner in `images/CX_Header_Logo_Wide.jpg` uses the current branding from `source/CapFrameX/Icons/X_Banner.jpg`.
