@@ -65,7 +65,10 @@ namespace CapFrameX.RadeonMonitor
             };
 
         private static readonly HashSet<(string Group, string Name)> AdlMetricsSupersededByRdna4ToolTable =
-            new();
+            new()
+            {
+                ("Current", "GFX current")
+            };
 
         private readonly DispatcherTimer pollingTimer;
         private readonly ObservableCollection<MetricReading> readings = new();
@@ -371,10 +374,7 @@ namespace CapFrameX.RadeonMonitor
                     catch (Exception ex)
                     {
                         toolTableError = ex.Message;
-                        if (lastRdna4ToolTableTelemetry is not null)
-                        {
-                            toolTableTelemetry = MarkTelemetryUnavailable(lastRdna4ToolTableTelemetry);
-                        }
+                        toolTableTelemetry = GetUnavailableRdna4Telemetry();
                     }
                 }
 
@@ -427,7 +427,14 @@ namespace CapFrameX.RadeonMonitor
                 else if (toolTableError is not null)
                 {
                     SetStatus(
-                        $"Read {parsed.Count} public values. Effective clocks unavailable: {toolTableError}",
+                        $"Read {combinedReadings.Count} values. Private RDNA4 sensors unavailable: {toolTableError}",
+                        isError: true);
+                }
+                else if (toolTableTelemetry is { InvalidValueCount: > 0 })
+                {
+                    SetStatus(
+                        $"Read {combinedReadings.Count} values. " +
+                        $"{toolTableTelemetry.InvalidValueCount} invalid private RDNA4 values remain unavailable.",
                         isError: true);
                 }
                 else if (!pollingTimer.IsEnabled)
@@ -578,10 +585,10 @@ namespace CapFrameX.RadeonMonitor
                 }
 
                 if (generation == RadeonGeneration.Rdna4 &&
-                    toolTableSnapshot is null &&
-                    lastRdna4ToolTableTelemetry is not null)
+                    toolTableSupported &&
+                    toolTableTelemetry is null)
                 {
-                    toolTableTelemetry = MarkTelemetryUnavailable(lastRdna4ToolTableTelemetry);
+                    toolTableTelemetry = GetUnavailableRdna4Telemetry();
                     combinedReadings = MergeToolTableReadings(
                         snapshot.Readings,
                         toolTableTelemetry.Readings,
@@ -610,6 +617,9 @@ namespace CapFrameX.RadeonMonitor
 
                 uint? displayedToolTableVersion = toolTableSnapshot?.Version ??
                     (generation == RadeonGeneration.Rdna4 ? lastRdna4ToolTableVersion : null);
+                string displayedToolTable = displayedToolTableVersion is uint version
+                    ? $"0x{version:X8}"
+                    : "unavailable";
                 string statisticsSource = toolTableTelemetry is not null
                     ? $"ADL+{toolTableName}Tool:{displayedToolTableVersion:X8}"
                     : navi21Supported
@@ -687,7 +697,7 @@ namespace CapFrameX.RadeonMonitor
                     DeviceInfoText.Text =
                         $"{FormatDeviceInfo(info)} \u00B7 ADL PMLog adapter {adlPmLogClient.AdapterIndex}: " +
                         $"{adlPmLogClient.AdapterName} \u00B7 {toolTableName} SMU table " +
-                        $"0x{displayedToolTableVersion:X8}";
+                        displayedToolTable;
                     LastUpdateText.Text =
                         $"{DateTime.Now:HH:mm:ss.fff} \u00B7 {generation.ToString().ToUpperInvariant()} \u00B7 " +
                         $"{toolTableTelemetry.Readings.Count} SMU table + " +
@@ -703,7 +713,15 @@ namespace CapFrameX.RadeonMonitor
 
                 RawDumpTextBox.Text = rawDump.ToString();
 
-                if (!pollingTimer.IsEnabled)
+                if (generation == RadeonGeneration.Rdna4 &&
+                    (toolTableError is not null || toolTableDecodeError is not null))
+                {
+                    SetStatus(
+                        $"Read {combinedReadings.Count} values. Private RDNA4 sensors unavailable: " +
+                        (toolTableError ?? toolTableDecodeError),
+                        isError: true);
+                }
+                else if (!pollingTimer.IsEnabled)
                 {
                     if (toolTableTelemetry is not null)
                     {
@@ -712,7 +730,7 @@ namespace CapFrameX.RadeonMonitor
                             : $" {toolTableTelemetry.InvalidValueCount} temporarily invalid rows remain visible as unavailable.";
                         SetStatus(
                             $"Read {toolTableTelemetry.Readings.Count} mapped values from {toolTableName} SMU table " +
-                            $"0x{displayedToolTableVersion:X8} and retained " +
+                            $"{displayedToolTable} and retained " +
                             $"{combinedReadings.Count - toolTableTelemetry.Readings.Count} complementary ADL values." +
                             invalidDescription);
                     }
@@ -757,7 +775,7 @@ namespace CapFrameX.RadeonMonitor
             return generation is RadeonGeneration.Rdna2 or RadeonGeneration.Rdna3 or RadeonGeneration.Rdna4;
         }
 
-        private static List<MetricReading> MergeToolTableReadings(
+        internal static List<MetricReading> MergeToolTableReadings(
             IReadOnlyList<MetricReading> adlReadings,
             IReadOnlyList<MetricReading> toolTableReadings,
             RadeonGeneration generation)
@@ -788,6 +806,15 @@ namespace CapFrameX.RadeonMonitor
                 })
                 .ToArray();
             return new RadeonToolTableTelemetry(readings, readings.Length);
+        }
+
+        private RadeonToolTableTelemetry GetUnavailableRdna4Telemetry()
+        {
+            // Never substitute the range-limited public/ADL GFX current or a stale
+            // private sample, including when the first read or version check fails.
+            return lastRdna4ToolTableTelemetry is null
+                ? Rdna4ToolTableParser.CreateUnavailable()
+                : MarkTelemetryUnavailable(lastRdna4ToolTableTelemetry);
         }
 
         private static string DescribeToolTableStatus(

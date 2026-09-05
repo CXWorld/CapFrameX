@@ -10,8 +10,8 @@ read the private 8-KiB monitoring-tool table through a fixed SMU mailbox
 protocol. The
 exact Navi 21 `0x003A0010` layout is decoded into 38 sensors and the Navi 31
 `0x004E000C` layout into 66 sensors. RDNA4 tool-table versions
-`0x00660001..0x00660006` supply effective GFX and FCLK values; ADL and the
-public table supply complementary driver values.
+`0x00660001..0x00660006` supply effective GFX and FCLK values and GPU Core
+Current (VDDCR_GFX); ADL and the public table supply complementary driver values.
 Direct Navi 21 SMUIO SVI telemetry remains available as a fallback for an
 unknown private-table layout, without using the GPU I2C bus.
 It is independent from the CapFrameX ADLX monitoring path and does not install
@@ -250,12 +250,59 @@ ADL PMLog in the application instead of losing all RDNA4 monitoring.
 The public SMU14 path was tested live on an RX 9070 XT (`1002:7550`, revision
 `C0`): its published address `0x83F6DC6000` resolved inside the 16-GiB BAR0
 aperture, 1,000 consecutive reads completed successfully, and all 260 bytes
-matched AMD's `SmuMetrics_t` layout. SMU14 `AvgCurrent` values are milliamperes
-and are displayed as amperes with three decimal places. `AvgFanPwm` is already
-a percentage; it is not incorrectly rescaled from a 0..255 value.
+matched AMD's `SmuMetrics_t` layout. The public parser divides `AvgCurrent`
+by 1,000 to display amperes with three decimal places, limiting these uint16
+fields to 65.535 A. This public GFX current is not validated under high load
+and is replaced in the RDNA4 UI by the private float sensor described below.
+`AvgFanPwm` is already a percentage; it is not rescaled from a 0..255 value.
 The same card returned private table version `0x00660006` at GPU/MC address
 `0x83F6DAB000`. Effective GFX and FCLK values decoded from offsets `0x1F8` and
 `0x1CC`; the bounded refresh and 8-KiB copy completed in about 56 ms.
+
+### RDNA4 GPU Core Current (VDDCR_GFX)
+
+The private current mapping follows the RDNA4 sensor getter in HWiNFO
+8.32-5840, verified with Ghidra. It reads a 32-bit IEEE-754 float directly in
+amperes, without dividing by 1,000 or calculating current from power/voltage:
+
+| Full private table version | Core-current byte offset |
+| --- | --- |
+| `0x00660001`, `0x00660002`, `0x00660003` | `0x188` |
+| `0x00660004` | `0x184` |
+| `0x00660005`, `0x00660006` | `0x11C` |
+
+This is current on the GPU core rail, not the board's 12-V input current.
+The private `GPU Core Current (VDDCR_GFX)` row replaces `GFX current` in
+both public-SMU and ADL views. Other current rails are unchanged, and the
+public raw field remains available in the DWORD dump.
+
+The parser accepts finite values from 0 through 2,000 A, using the same
+plausibility range as the other private current parsers. Zero remains a
+valid sample. Invalid values, read failures, short tables, and unverified
+versions leave the private sensors unavailable, including before the first
+successful read; they do not silently restore the limited public/ADL current
+or reuse an old value in session statistics. HWiNFO's legacy cached-register
+fallback has not been verified on RDNA4 and is not implemented here.
+
+The mapping was traced from `GPU Core Current (VDDCR_GFX)` to getter
+`FUN_14024755C` in the unpacked HWiNFO image (base `0x140000000`). Version
+`0x00660005/06` loads `[table + 0x11C]` at `0x140248782`, converts float to
+double at `0x1402487A1`, and stores it without scaling. The installed packed
+8.32-5840 executable had SHA-256
+`A594AC4591DB4DE16A310819ED5EFEF7431B9038FBD296C170C73E97B6FA60B3`.
+The public uint16 range limitation alone does not prove a firmware overflow
+or establish an alternative scale factor.
+
+The updated parser was tested on the RX 9070 XT with version `0x00660006`:
+400 consecutive private reads, including a bounded 20-second D3D11 workload,
+produced valid core-current values from 3.225 to 241.119 A. In the polling
+cycle containing the private peak (`+0x11C=0x43711E93`), the public parser
+reported 44.540 A. The tables were read sequentially, not atomically, and
+this was not a synchronized comparison with HWiNFO's UI. Regression tests
+cover all six offsets, values above 65.535 A, invalid/missing data, merging,
+and session statistics in `CapFrameX.Test/RadeonMonitor`.
+
+### Public-address availability on Navi 21 and RDNA3
 
 On the tested Navi 21 RX 6800 XT and Navi 31 RX 7900 XTX, both registers remain
 zero even while AMD telemetry is active. SMU11 and SMU13 normally receive the

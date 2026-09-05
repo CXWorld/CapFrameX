@@ -14,6 +14,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="CapFrameX.Test" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="PawnIO\RadeonSMU.bin"
           Link="RadeonSMU.bin"
           CopyToOutputDirectory="PreserveNewest" />

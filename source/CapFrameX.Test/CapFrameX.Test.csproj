@@ -68,6 +68,7 @@
     <ProjectReference Include="..\CapFrameX.Overlay\CapFrameX.Overlay.csproj" />
     <ProjectReference Include="..\CapFrameX.PMD\CapFrameX.PMD.csproj" />
     <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj" />
+    <ProjectReference Include="..\CapFrameX.RadeonMonitor\CapFrameX.RadeonMonitor.csproj" />
     <ProjectReference Include="..\CapFrameX.Sensor\CapFrameX.Sensor.csproj" />
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj" />
     <ProjectReference Include="..\CapFrameX.Statistics.PlotBuilder\CapFrameX.Statistics.PlotBuilder.csproj" />
