@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cstring>
+#include <cmath>
 #include <memory>
 #include <mutex>
 #include <new>
@@ -42,6 +43,7 @@ namespace
                 options.captureHeight = std::clamp(config.captureHeight, 0.01f, 1.0f);
                 options.captureAverageFilterFrames = std::clamp(config.averageFilterFrames, 1, 99999);
                 options.captureFilmGrainThreshold = std::clamp(config.filmGrainThreshold, 0, 255);
+                options.captureOutputIndex = config.captureOutputIndex;
                 options.thresholdCoefficient[FLM_MOUSE_EVENT_TYPE::MOUSE_MOVE] =
                     std::max(0.1f, config.thresholdCoefficient);
                 options.thresholdCoefficient[FLM_MOUSE_EVENT_TYPE::MOUSE_CLICK] =
@@ -65,7 +67,6 @@ namespace
                 // the measured latency low. Scoped to the session lifetime.
                 m_timerPeriodActive = timeBeginPeriod(1) == TIMERR_NOERROR;
 
-                m_worker = std::thread(&FlmSession::ProcessLoop, this);
                 return FLM_INTEROP_OK;
             }
             catch (const std::exception& exception)
@@ -88,8 +89,21 @@ namespace
             if (!m_pipeline || m_shutdownRequested)
                 return FLM_INTEROP_INVALID_STATE;
 
+            std::lock_guard<std::mutex> processLock(m_processMutex);
             m_pipeline->StartMeasurements();
             m_measuring = true;
+            try
+            {
+                if (!m_worker.joinable())
+                    m_worker = std::thread(&FlmSession::ProcessLoop, this);
+            }
+            catch (const std::exception& exception)
+            {
+                m_pipeline->StopMeasurements();
+                m_measuring = false;
+                SetLastError(exception.what());
+                return FLM_INTEROP_INTERNAL_ERROR;
+            }
             return FLM_INTEROP_OK;
         }
 
@@ -99,6 +113,7 @@ namespace
             if (!m_pipeline || m_shutdownRequested)
                 return FLM_INTEROP_INVALID_STATE;
 
+            std::lock_guard<std::mutex> processLock(m_processMutex);
             m_pipeline->StopMeasurements();
             m_measuring = false;
             return FLM_INTEROP_OK;
@@ -134,6 +149,21 @@ namespace
             return m_lastError;
         }
 
+        int32_t GetDiagnostics(FlmInteropDiagnostics& output)
+        {
+            if (!m_pipeline || m_shutdownRequested)
+                return FLM_INTEROP_INVALID_STATE;
+            const auto status = m_pipeline->GetClickStatus();
+            output.structSize = sizeof(FlmInteropDiagnostics);
+            output.state = static_cast<int32_t>(status.state);
+            output.clicks = status.clicks;
+            output.rejectedClicks = status.rejectedClicks;
+            output.timeouts = status.timeouts;
+            output.frames = status.frames;
+            output.lastFrameQpc = status.lastFrameQpc;
+            return FLM_INTEROP_OK;
+        }
+
         void Shutdown()
         {
             {
@@ -142,6 +172,8 @@ namespace
                     return;
 
                 m_shutdownRequested = true;
+                m_pipeline->RequestShutdown();
+                std::lock_guard<std::mutex> processLock(m_processMutex);
                 if (m_measuring)
                 {
                     m_pipeline->StopMeasurements();
@@ -167,12 +199,28 @@ namespace
         {
             while (!m_shutdownRequested)
             {
-                if (m_pipeline->Process() == FLM_PROCESS_STATUS::CLOSE)
                 {
-                    SetLastError(DrainBackendError("FLM processing stopped"));
-                    m_shutdownRequested = true;
-                    break;
+                    std::lock_guard<std::mutex> processLock(m_processMutex);
+                    if (m_shutdownRequested)
+                        break;
+                    try
+                    {
+                        if (m_pipeline->Process() == FLM_PROCESS_STATUS::CLOSE)
+                        {
+                            SetLastError(DrainBackendError("FLM processing stopped"));
+                            m_shutdownRequested = true;
+                            break;
+                        }
+                    }
+                    catch (const std::exception& exception)
+                    {
+                        SetLastError(exception.what());
+                        m_shutdownRequested = true;
+                        break;
+                    }
                 }
+                // Give a pending start/stop a chance to acquire the processing lock.
+                std::this_thread::yield();
             }
         }
 
@@ -204,6 +252,7 @@ namespace
         bool m_measuring = false;
         bool m_timerPeriodActive = false;
         std::mutex m_lifecycleMutex;
+        std::mutex m_processMutex;
         std::mutex m_errorMutex;
         std::string m_lastError;
     };
@@ -214,15 +263,28 @@ namespace
             config->structSize >= sizeof(FlmInteropConfig) &&
             config->codec >= static_cast<int32_t>(FLM_CAPTURE_CODEC_TYPE::AUTO) &&
             config->codec <= static_cast<int32_t>(FLM_CAPTURE_CODEC_TYPE::DXGI) &&
-            config->mouseEventType >= 0 &&
-            config->mouseEventType <= 1;
+            config->mouseEventType == 1 &&
+            config->captureOutputIndex >= 0 && config->captureOutputIndex < 32 &&
+            std::isfinite(config->captureStartX) && std::isfinite(config->captureStartY) &&
+            std::isfinite(config->captureWidth) && std::isfinite(config->captureHeight) &&
+            std::isfinite(config->thresholdCoefficient) &&
+            config->captureStartX >= 0 && config->captureStartY >= 0 &&
+            config->captureWidth >= 0.01f && config->captureHeight >= 0.01f &&
+            config->captureStartX + config->captureWidth <= 1.000001f &&
+            config->captureStartY + config->captureHeight <= 1.000001f &&
+            config->thresholdCoefficient >= 1 && config->thresholdCoefficient <= 10;
     }
 }
 
 int32_t __cdecl FlmCreate(const FlmInteropConfig* config, void** handle)
 {
+    if (handle)
+        *handle = nullptr;
     if (handle == nullptr || !IsValidConfig(config))
+    {
+        g_creationError = "Invalid FLM configuration or incompatible struct size (passive click mode required)";
         return FLM_INTEROP_INVALID_ARGUMENT;
+    }
 
     *handle = nullptr;
     g_creationError.clear();
@@ -272,6 +334,13 @@ int32_t __cdecl FlmGetLastError(void* handle, char* buffer, uint32_t bufferSize)
     std::memcpy(buffer, error.data(), charactersToCopy);
     buffer[charactersToCopy] = '\0';
     return FLM_INTEROP_OK;
+}
+
+int32_t __cdecl FlmGetDiagnostics(void* handle, FlmInteropDiagnostics* diagnostics)
+{
+    if (!handle || !diagnostics || diagnostics->structSize < sizeof(FlmInteropDiagnostics))
+        return FLM_INTEROP_INVALID_ARGUMENT;
+    return static_cast<FlmSession*>(handle)->GetDiagnostics(*diagnostics);
 }
 
 void __cdecl FlmDestroy(void* handle)

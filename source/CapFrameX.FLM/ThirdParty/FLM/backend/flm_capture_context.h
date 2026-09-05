@@ -14,6 +14,7 @@
 
 #include "ini/SimpleIni.h"
 #include <atomic>
+#include "../../../FlmSadFilter.h"
 
 extern ProgressCallback* g_pUserCallBack;
 
@@ -86,7 +87,7 @@ public:
     void ClearCaptureRegion();
     void RedrawMainScreen();
     void DisplayThreadFunction();
-    int  GetThresholdedSAD(int64_t frameIdx, int iSAD, float fThresholdMultiplierCoeff);
+    int  GetThresholdedSAD(int64_t frameIdx, int iSAD, float fThresholdMultiplierCoeff, bool updateBaseline = true);
     bool InitCapture(FLM_Timer_AMF& m_timer);
     void InitSettings();
     void ResetState();
@@ -96,6 +97,9 @@ public:
     void UpdateAverageFrameTime(int64_t iiTimeStamp, int64_t iiFrameIdx);
 
 private:
+    FlmSadFilter m_sadFilter;
+    int64_t m_previousFrameTimestamp = 0;
+    int64_t m_previousFrameIndex = 0;
     FLM_STATUS   LoadUserSettings();
     FLM_STATUS   SaveUserSettings();
     static float CalculateFilterAlpha(int iNumIterations);

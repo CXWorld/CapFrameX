@@ -176,8 +176,7 @@ namespace CapFrameX.PresentMonInterface
                 .Subscribe(UpdateAmdFlmMetric);
 
             _amdFlmConfigurationSubscription = _appConfiguration.OnValueChanged
-                .Where(change => change.key == nameof(IAppConfiguration.UseAmdFlmLatency)
-                    || change.key == nameof(IAppConfiguration.AmdFlmFrameGeneration))
+                .Where(change => AmdFlmSettings.IsConfigurationKey(change.key))
                 .ObserveOn(_amdFlmScheduler)
                 .Subscribe(_ => ClearAmdFlmMetric());
         }

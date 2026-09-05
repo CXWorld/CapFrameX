@@ -282,7 +282,7 @@ FLM_STATUS FLM_Capture_DXGI::GetFrame()
     }
 
     // check incremental time stamp
-    static int64_t lastTimeStamp = 0;
+    int64_t& lastTimeStamp = m_lastAcquiredTimestamp;
     int64_t        lapTime       = m_frameInfo.LastPresentTime.QuadPart - lastTimeStamp;
 
     // No change in frame
@@ -476,8 +476,8 @@ int FLM_Capture_DXGI::CalculateSAD()
 
 bool FLM_Capture_DXGI::GetConverterOutput(int64_t* pTimeStamp, int64_t* pFrameIdx)
 {
-    static int64_t frameIDX      = 0;
-    static int64_t lastTimeStamp = 0;
+    int64_t& frameIDX = m_convertedFrameIndex;
+    int64_t& lastTimeStamp = m_lastConvertedTimestamp;
 
     if (pTimeStamp)
     {
@@ -488,7 +488,11 @@ bool FLM_Capture_DXGI::GetConverterOutput(int64_t* pTimeStamp, int64_t* pFrameId
             frameIDX++;
         }
 
-        UpdateAverageFrameTime(*pTimeStamp, frameIDX);
+        // The shared average estimator expects AMF's 100 ns timebase; the sample
+        // itself keeps the unmodified QPC timestamp.
+        const int64_t amfTimestamp = *pTimeStamp / m_iiFreqCountPerSecond * AMF_SECOND +
+            *pTimeStamp % m_iiFreqCountPerSecond * AMF_SECOND / m_iiFreqCountPerSecond;
+        UpdateAverageFrameTime(amfTimestamp, frameIDX);
 
         if (pFrameIdx)
             *pFrameIdx = frameIDX;

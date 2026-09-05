@@ -28,7 +28,11 @@
 #include "flm_utils.h"
 #include "flm_capture_context.h"
 
+#ifdef CAPFRAMEX_FLM_EMBEDDED
+#define ACQUIRE_FRAME_CAPTURE_TIMEOUT 100
+#else
 #define ACQUIRE_FRAME_CAPTURE_TIMEOUT 1000
+#endif
 
 extern HRESULT SystemTransitionsExpectedErrors[];
 extern HRESULT CreateDuplicationExpectedErrors[];
@@ -60,6 +64,9 @@ private:
     FLM_PIXEL_DATA          m_pixelData[2]             = {};
     int                     m_iGetFrameInstance        = 0;  // Tracks AcquireNextFrame increments on success
     int64_t                 m_iiFreqCountPerSecond     = 0;
+    int64_t                 m_lastAcquiredTimestamp   = 0;
+    int64_t                 m_lastConvertedTimestamp  = 0;
+    int64_t                 m_convertedFrameIndex     = 0;
     int32_t                 m_iImagePitch              = 0;
     IDXGIResource*          m_pDesktopResource         = nullptr;
     ID3D11Device*           m_pD3D11Device             = nullptr;             // DirectX adapter object created to interface with GPU

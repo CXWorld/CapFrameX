@@ -37,7 +37,8 @@ int64_t FLM_Timer_AMF::UpdateAmfTimeToPerformanceCounterOffset()
     int64_t iiNow = (iiTime1 + iiTime2 + 1) / 2;  // Average time to compare to iiAmfNow
 
     // Note: for the current amf version, m_iiFreqCountPerSecond == AMF_SECOND...
-    int64_t iiAmfNowInTicks = (iiAmfNow * m_iiFreqCountPerSecond + AMF_SECOND / 2) / AMF_SECOND;  //with rounding...
+    int64_t iiAmfNowInTicks = iiAmfNow / AMF_SECOND * m_iiFreqCountPerSecond +
+        (iiAmfNow % AMF_SECOND * m_iiFreqCountPerSecond + AMF_SECOND / 2) / AMF_SECOND;
 
     m_iiAmfTimeToPerformanceCounterTimeOffset = iiNow - iiAmfNowInTicks;
 
@@ -49,7 +50,8 @@ int64_t FLM_Timer_AMF::UpdateAmfTimeToPerformanceCounterOffset()
 
 int64_t FLM_Timer_AMF::TranslateAmfTimeToPerformanceCounter(int64_t iiAmfTime)
 {
-    int64_t iiAmfTimeInTicks = (iiAmfTime * m_iiFreqCountPerSecond + AMF_SECOND / 2) / AMF_SECOND;  //with rounding...
+    int64_t iiAmfTimeInTicks = iiAmfTime / AMF_SECOND * m_iiFreqCountPerSecond +
+        (iiAmfTime % AMF_SECOND * m_iiFreqCountPerSecond + AMF_SECOND / 2) / AMF_SECOND;
     int64_t iiTime           = iiAmfTimeInTicks + m_iiAmfTimeToPerformanceCounterTimeOffset;
     return iiTime;
 }

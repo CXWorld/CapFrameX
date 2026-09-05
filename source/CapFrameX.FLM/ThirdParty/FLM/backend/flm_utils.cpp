@@ -6,13 +6,16 @@
 //=============================================================================
 
 #include "flm_utils.h"
+#include <mutex>
 
 static std::vector<std::string> g_flm_error_message;  // shared across multiple classes and accessible in FLM_Pipeline class
+static std::mutex g_flm_error_mutex;
 static HANDLE                   g_hConsoleOutput = GetStdHandle(STD_OUTPUT_HANDLE);
 
 // Last In Fist Out (LIFO) instance of an errors, remove the errors from list until empty
 std::string FlmGetErrorStr()
 {
+    std::lock_guard<std::mutex> lock(g_flm_error_mutex);
     std::string flm_err;
     if (g_flm_error_message.size() > 0)
     {
@@ -26,6 +29,7 @@ std::string FlmGetErrorStr()
 
 void FlmClearErrorStr()
 {
+    std::lock_guard<std::mutex> lock(g_flm_error_mutex);
     g_flm_error_message.clear();
 }
 
@@ -86,7 +90,12 @@ void FlmPrintError(const char* Format, ...)
 #endif
     va_end(args);
 
-    g_flm_error_message.push_back(buff);
+    {
+        std::lock_guard<std::mutex> lock(g_flm_error_mutex);
+        if (g_flm_error_message.size() >= 64)
+            g_flm_error_message.erase(g_flm_error_message.begin());
+        g_flm_error_message.push_back(buff);
+    }
 
     // Use FLMPrint for this, if its a none exit print message
     // printf("FLM Error: ");

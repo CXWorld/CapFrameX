@@ -618,6 +618,21 @@ void FLM_Pipeline::MouseEventThreadFunction()
 {
     PIPELINE_DEBUG_PRINT_MouseEventThreadFunction("%-38s\n", __FUNCTION__);
     m_bExitMouseThread   = false;
+#ifdef CAPFRAMEX_FLM_EMBEDDED
+    // Poll edges continuously, including while the scene moves or a response is pending.
+    // No synthetic input and no blocking wait for a frame on the input thread.
+    if (m_runtimeOptions.mouseEventType == FLM_MOUSE_EVENT_TYPE::MOUSE_CLICK)
+    {
+        while (!m_bTerminateMouseThread)
+        {
+            m_clickTracker.ObserveButton(m_mouse.IsButtonDown(MOUSE_LEFT_BUTTON),
+                GetTimeStamp().QuadPart, m_bMeasuringInProgress);
+            Sleep(1);
+        }
+        m_bExitMouseThread = true;
+        return;
+    }
+#endif
     const int CYCLE_SIZE = m_setting.iNumMeasurementsPerLine;
     for (; m_bTerminateMouseThread == false;)
     {
@@ -1135,7 +1150,15 @@ void FLM_Pipeline::ResetState()
     m_iMeasurementPhaseCounter     = 0;
     m_iiMouseMoveEventTime         = 0;
     m_iiMouseClickEventTime        = 0;
-    m_iSkipMeasurementsOnInitCount = 1; // = 2; // Skip a few initial measurements, just in case
+    LARGE_INTEGER frequency;
+    QueryPerformanceFrequency(&frequency);
+    m_qpcFrequency = frequency.QuadPart;
+    m_lastCaptureQpc = 0;
+    m_iiFrameTimeStamp = m_iiFrameTimeStampPrev = 0;
+    m_iiFrameIdx = m_iiFrameIdxPrev = 0;
+    m_clickTracker.Reset(m_qpcFrequency, m_mouse.IsButtonDown(MOUSE_LEFT_BUTTON),
+        m_capture->m_setting.iAVGFilterFrames);
+    m_iSkipMeasurementsOnInitCount = m_runtimeOptions.mouseEventType == FLM_MOUSE_EVENT_TYPE::MOUSE_CLICK ? 0 : 1; // = 2; // Skip a few initial measurements, just in case
     m_telemetry.Reset();
     m_capture->ResetState();
 
@@ -1277,6 +1300,37 @@ FLM_PROCESS_STATUS FLM_Pipeline::Process()
 
         if (m_capture->AcquireFrameAndDownscaleToHost(&m_iiFrameTimeStamp, &m_iiFrameIdx))
         {
+#ifdef CAPFRAMEX_FLM_EMBEDDED
+            if (m_runtimeOptions.mouseEventType == FLM_MOUSE_EVENT_TYPE::MOUSE_CLICK)
+            {
+                const int64_t frameQpc = m_codec == FLM_CAPTURE_CODEC_TYPE::AMF
+                    ? m_timer.TranslateAmfTimeToPerformanceCounter(m_iiFrameTimeStamp)
+                    : m_iiFrameTimeStamp;
+                const int64_t now = GetTimeStamp().QuadPart;
+                // Reject repeated, old or future timestamps before updating the baseline.
+                if (frameQpc <= m_lastCaptureQpc || frameQpc > now)
+                    return FLM_PROCESS_STATUS::PROCESSING;
+                m_lastCaptureQpc = frameQpc;
+                m_iSAD = m_capture->CalculateSAD();
+                m_iThSAD = m_capture->GetThresholdedSAD(0, m_iSAD,
+                    m_runtimeOptions.thresholdCoefficient[FLM_MOUSE_EVENT_TYPE::MOUSE_CLICK],
+                    !m_clickTracker.HasPendingClick());
+                int64_t inputQpc = 0;
+                if (m_bMeasuringInProgress && m_clickTracker.ObserveFrame(frameQpc, now, m_iThSAD > 0, inputQpc))
+                {
+                    FLM_LATENCY_SAMPLE sample;
+                    sample.sequence = ++m_latencySampleSequence;
+                    sample.inputQpc = inputQpc;
+                    sample.frameQpc = frameQpc;
+                    sample.latencyMs = static_cast<float>((frameQpc - inputQpc) * 1000.0 / m_qpcFrequency);
+                    const float frameTime = m_capture->m_fMovingAverageFrameTimeMS;
+                    sample.latencyFrames = frameTime > 0 ? sample.latencyMs / frameTime : 0;
+                    sample.fps = frameTime > 0 ? 1000.0f / frameTime : 0;
+                    PushLatencySample(sample);
+                }
+                return m_bMeasuringInProgress ? FLM_PROCESS_STATUS::PROCESSING : FLM_PROCESS_STATUS::WAIT_FOR_START;
+            }
+#endif
             m_iSAD          = m_capture->CalculateSAD();
             m_iThSAD        = m_capture->GetThresholdedSAD(m_runtimeOptions.printLevel == FLM_PRINT_LEVEL::PRINT_DEBUG ? m_iiFrameIdx : 0,
                                                            m_iSAD, m_runtimeOptions.thresholdCoefficient[m_runtimeOptions.mouseEventType]);
@@ -1292,6 +1346,9 @@ FLM_PROCESS_STATUS FLM_Pipeline::Process()
         else
         {
             // No frames captured, check if we need to rebuild pipeline
+#ifdef CAPFRAMEX_FLM_EMBEDDED
+            Sleep(1); // Failed capture calls can return immediately; avoid a retry spin.
+#endif
             m_iSAD   = 0;
             m_iThSAD = 0;
 
@@ -1313,6 +1370,8 @@ FLM_PROCESS_STATUS FLM_Pipeline::Process()
                 else
                     PrintStream("\n");
 
+                if (!bRes)
+                    return FLM_PROCESS_STATUS::CLOSE;
                 if (hold_startMeasurements)
                     StartMeasurements();
 
@@ -1484,4 +1543,21 @@ FLM_Context* CreateFLMContext()
 {
     FLM_Pipeline* flame = new (std::nothrow) FLM_Pipeline();
     return (FLM_Context*)flame;
+}
+
+FlmPassiveClickTracker::Snapshot FLM_Pipeline::GetClickStatus()
+{
+    return m_clickTracker.GetSnapshot(GetTimeStamp().QuadPart);
+}
+
+void FLM_Pipeline::RequestShutdown()
+{
+    m_bExitApp = true;
+    m_bTerminateMouseThread = true;
+    if (m_capture)
+    {
+        m_capture->m_bTerminateCaptureThread = true;
+        SetEvent(m_capture->m_hEventFrameReady);
+    }
+    SetEvent(m_eventMovementDetected);
 }

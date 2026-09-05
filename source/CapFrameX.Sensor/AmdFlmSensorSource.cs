@@ -33,8 +33,7 @@ namespace CapFrameX.Sensor
             _configurationSubscription = configurationChanges == null
                 ? Disposable.Empty
                 : configurationChanges
-                    .Where(change => change.key == nameof(IAppConfiguration.UseAmdFlmLatency)
-                        || change.key == nameof(IAppConfiguration.AmdFlmFrameGeneration))
+                    .Where(change => AmdFlmSettings.IsConfigurationKey(change.key))
                     .Subscribe(_ => ClearSample());
         }
 

@@ -69,10 +69,6 @@
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>d3d11.lib;d3d12.lib;dxgi.lib;winmm.lib;user32.lib;gdi32.lib;ole32.lib;uuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
-      <Command>if not exist "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\" mkdir "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\"
-xcopy /y /d "$(TargetPath)" "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -96,13 +92,11 @@ xcopy /y /d "$(TargetPath)" "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Co
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>d3d11.lib;d3d12.lib;dxgi.lib;winmm.lib;user32.lib;gdi32.lib;ole32.lib;uuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
-      <Command>if not exist "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\" mkdir "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\"
-xcopy /y /d "$(TargetPath)" "$(SolutionDir)source\CapFrameX\bin\$(Platform)\$(Configuration)\"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CapFrameXFLM.h" />
+    <ClInclude Include="FlmPassiveClickTracker.h" />
+    <ClInclude Include="FlmSadFilter.h" />
     <ClInclude Include="ThirdParty\FLM\backend\flm.h" />
     <ClInclude Include="ThirdParty\FLM\backend\flm_capture_amf.h" />
     <ClInclude Include="ThirdParty\FLM\backend\flm_capture_context.h" />

@@ -33,6 +33,18 @@ struct FlmInteropConfig
     int32_t  averageFilterFrames;
     int32_t  filmGrainThreshold;
     int32_t  mouseEventType;  // 0 = synthetic mouse move (injects input), 1 = passive click-to-photon
+    int32_t  captureOutputIndex;
+};
+
+struct FlmInteropDiagnostics
+{
+    uint32_t structSize;
+    int32_t state;
+    uint64_t clicks;
+    uint64_t rejectedClicks;
+    uint64_t timeouts;
+    uint64_t frames;
+    int64_t lastFrameQpc;
 };
 
 struct FlmInteropSample
@@ -54,6 +66,7 @@ extern "C"
     CAPFRAMEX_FLM_API int32_t __cdecl FlmStart(void* handle);
     CAPFRAMEX_FLM_API int32_t __cdecl FlmStop(void* handle);
     CAPFRAMEX_FLM_API int32_t __cdecl FlmTryGetSample(void* handle, FlmInteropSample* sample);
+    CAPFRAMEX_FLM_API int32_t __cdecl FlmGetDiagnostics(void* handle, FlmInteropDiagnostics* diagnostics);
     CAPFRAMEX_FLM_API int32_t __cdecl FlmGetLastError(void* handle, char* buffer, uint32_t bufferSize);
     CAPFRAMEX_FLM_API void __cdecl FlmDestroy(void* handle);
 }

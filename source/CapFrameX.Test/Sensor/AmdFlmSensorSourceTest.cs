@@ -39,8 +39,15 @@ namespace CapFrameX.Test.Sensor
 
             Assert.AreEqual(12.75f, source.GetCurrentValue(), 0.001f);
 
-            configurationChanges.OnNext((nameof(IAppConfiguration.AmdFlmFrameGeneration), true));
-            Assert.IsTrue(float.IsNaN(source.GetCurrentValue()));
+            foreach (string key in new[] { nameof(IAppConfiguration.AmdFlmCaptureStartX),
+                nameof(IAppConfiguration.AmdFlmCaptureStartY), nameof(IAppConfiguration.AmdFlmCaptureWidth),
+                nameof(IAppConfiguration.AmdFlmCaptureHeight), nameof(IAppConfiguration.AmdFlmCaptureOutputIndex),
+                nameof(IAppConfiguration.AmdFlmCaptureMode), nameof(IAppConfiguration.AmdFlmThresholdCoefficient) })
+            {
+                samples.OnNext(new AmdFlmSample(1, 10, Stopwatch.GetTimestamp(), 12.75, 1.5, 120));
+                configurationChanges.OnNext((key, 1));
+                Assert.IsTrue(float.IsNaN(source.GetCurrentValue()), key);
+            }
 
             samples.OnNext(new AmdFlmSample(
                 2, 10, Stopwatch.GetTimestamp() - (Stopwatch.Frequency * 3), 25, 2, 120));

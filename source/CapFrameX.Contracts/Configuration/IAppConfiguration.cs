@@ -363,6 +363,20 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool AmdFlmFrameGeneration { get; set; }
 
+        int AmdFlmCaptureOutputIndex { get; set; }
+
+        int AmdFlmCaptureMode { get; set; }
+
+        double AmdFlmCaptureStartX { get; set; }
+
+        double AmdFlmCaptureStartY { get; set; }
+
+        double AmdFlmCaptureWidth { get; set; }
+
+        double AmdFlmCaptureHeight { get; set; }
+
+        double AmdFlmThresholdCoefficient { get; set; }
+
         bool UseAdlFallback { get; set; }
 
 		string FirstMetricBarColor { get; set; }

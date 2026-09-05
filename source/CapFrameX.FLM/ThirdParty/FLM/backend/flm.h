@@ -175,6 +175,7 @@ struct FLM_RUNTIME_OPTIONS
     float captureHeight             = 0.0149f;
     int   captureAverageFilterFrames = 100;
     int   captureFilmGrainThreshold  = 4;
+    int   captureOutputIndex         = 0;
 #endif
 
 };
@@ -210,6 +211,10 @@ public:
 // Class Factory Interface
 extern "C" FLM_Context* CreateFLMContext();
 
+// The embedded host owns a capture worker already. Keep acquisition, conversion,
+// reset and rebuild on that worker to avoid racing over the backend frame buffers.
+#ifndef CAPFRAMEX_FLM_EMBEDDED
 #define CAPTURE_FRAMES_ON_SEPARATE_THREAD 1
+#endif
 
 #endif

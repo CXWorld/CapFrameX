@@ -6,6 +6,10 @@ namespace CapFrameX.Contracts.Latency
     {
         IObservable<AmdFlmSample> SampleStream { get; }
 
+        IObservable<AmdFlmStatus> StatusStream { get; }
+
+        AmdFlmStatus Status { get; }
+
         bool IsRunning { get; }
 
         string LastError { get; }

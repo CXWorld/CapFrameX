@@ -4,6 +4,7 @@ using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
@@ -30,7 +31,9 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
         private AmdFlmNative.SessionHandle _session;
         private CancellationTokenSource _pollCancellation;
         private Task _pollTask;
-        private bool? _activeFrameGeneration;
+        private AmdFlmNative.Config? _activeConfig;
+        private readonly BehaviorSubject<AmdFlmStatus> _statusSubject = new BehaviorSubject<AmdFlmStatus>(
+            new AmdFlmStatus(AmdFlmState.Disabled, "AMD FLM is disabled."));
         private bool? _isAmdGpuSystem;
         private volatile bool _isRunning;
         private bool _disposed;
@@ -38,6 +41,12 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
         public IObservable<AmdFlmSample> SampleStream => _sampleSubject.AsObservable();
 
         public bool IsRunning => _isRunning;
+
+        public IObservable<AmdFlmStatus> StatusStream => _statusSubject.AsObservable();
+
+        public AmdFlmStatus Status => _statusSubject.Value;
+
+        private void PublishStatus(AmdFlmStatus status) => _statusSubject.OnNext(status);
 
         public string LastError { get; private set; } = string.Empty;
 
@@ -60,8 +69,8 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
             });
 
             var relevantConfigurationChanges = _appConfiguration.OnValueChanged
-                .Where(change => change.key == nameof(IAppConfiguration.UseAmdFlmLatency)
-                    || change.key == nameof(IAppConfiguration.AmdFlmFrameGeneration))
+                .Where(change => AmdFlmSettings.IsConfigurationKey(change.key))
+                .Throttle(TimeSpan.FromMilliseconds(300))
                 .Select(_ => Unit.Default);
 
             _configurationSubscription = Observable.Return(Unit.Default)
@@ -76,6 +85,8 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
             if (!_appConfiguration.UseAmdFlmLatency)
             {
                 StopNativeSession();
+                LastError = string.Empty;
+                PublishStatus(new AmdFlmStatus(AmdFlmState.Disabled, "AMD FLM is disabled."));
                 return;
             }
 
@@ -89,12 +100,12 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
                 return;
             }
 
-            bool useFrameGenerationTiming = _appConfiguration.AmdFlmFrameGeneration;
-            if (_session != null && _activeFrameGeneration == useFrameGenerationTiming)
+            var config = AmdFlmNative.Config.Create(AmdFlmSettings.FromConfiguration(_appConfiguration));
+            if (_session != null && _isRunning && _activeConfig.HasValue && _activeConfig.Value.Equals(config))
                 return;
 
             StopNativeSession();
-            StartNativeSession(useFrameGenerationTiming);
+            StartNativeSession(config);
         }
 
         private bool IsAmdGpuSystem()
@@ -112,7 +123,7 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
             return _isAmdGpuSystem.Value;
         }
 
-        private void StartNativeSession(bool useFrameGenerationTiming)
+        private void StartNativeSession(AmdFlmNative.Config config)
         {
             lock (_lifecycleLock)
             {
@@ -123,7 +134,7 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
                 CancellationTokenSource pendingPollCancellation = null;
                 try
                 {
-                    var config = AmdFlmNative.Config.CreateDefault(useFrameGenerationTiming);
+                    PublishStatus(new AmdFlmStatus(AmdFlmState.Starting, "Starting screen capture..."));
                     int status = AmdFlmNative.FlmCreate(ref config, out IntPtr nativeHandle);
                     if (status != AmdFlmNative.Ok || nativeHandle == IntPtr.Zero)
                     {
@@ -157,10 +168,11 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
                     _pollTask = pollTask;
                     pendingSession = null;
                     pendingPollCancellation = null;
-                    _activeFrameGeneration = useFrameGenerationTiming;
+                    _activeConfig = config;
                     _logger.LogInformation(
-                        "AMD FLM continuous latency measurement started (frameGeneration={FrameGeneration})",
-                        useFrameGenerationTiming);
+                        "AMD FLM started (codec={Codec}, dx12={Dx12}, output={Output}, region={X},{Y},{Width},{Height}, threshold={Threshold})",
+                        config.Codec, config.InitAmfUsingDx12, config.CaptureOutputIndex,
+                        config.CaptureStartX, config.CaptureStartY, config.CaptureWidth, config.CaptureHeight, config.ThresholdCoefficient);
                 }
                 catch (Exception exception) when (exception is DllNotFoundException ||
                                                   exception is EntryPointNotFoundException ||
@@ -171,6 +183,8 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
                     pendingSession?.Dispose();
                     _isRunning = false;
                     LastError = exception.Message;
+                    PublishStatus(new AmdFlmStatus(AmdFlmState.Error,
+                        "FLM runtime is missing or incompatible. Reinstall CapFrameX. " + LastError));
                     _logger.LogError(exception, "CapFrameX.FLM.dll could not be loaded");
                 }
                 catch (Exception exception)
@@ -180,6 +194,7 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
                     pendingSession?.Dispose();
                     _isRunning = false;
                     LastError = exception.Message;
+                    PublishStatus(new AmdFlmStatus(AmdFlmState.Error, LastError));
                     _logger.LogError(exception, "AMD FLM latency measurement failed to start");
                 }
             }
@@ -190,6 +205,8 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
             try
             {
                 bool firstSampleLogged = false;
+                long nextDiagnostics = 0;
+                AmdFlmState? previousState = null;
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     int status;
@@ -218,10 +235,36 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
                     }
                     while (status == AmdFlmNative.Ok && !cancellationToken.IsCancellationRequested);
 
+                    if (cancellationToken.IsCancellationRequested)
+                        break;
+
+                    if (status == AmdFlmNative.NoSample && Stopwatch.GetTimestamp() >= nextDiagnostics)
+                    {
+                        var diagnostics = AmdFlmNative.Diagnostics.Create();
+                        int diagnosticStatus = AmdFlmNative.FlmGetDiagnostics(session, ref diagnostics);
+                        if (diagnosticStatus == AmdFlmNative.Ok)
+                        {
+                            var currentStatus = diagnostics.ToStatus();
+                            PublishStatus(currentStatus);
+                            if (currentStatus.State != previousState)
+                            {
+                                _logger.LogDebug("AMD FLM {State}: frames={Frames}, clicks={Clicks}, rejected={Rejected}, timeouts={Timeouts}",
+                                    currentStatus.State, currentStatus.Frames, currentStatus.Clicks,
+                                    currentStatus.RejectedClicks, currentStatus.Timeouts);
+                                previousState = currentStatus.State;
+                            }
+                        }
+                        else
+                            status = diagnosticStatus;
+                        nextDiagnostics = Stopwatch.GetTimestamp() + Stopwatch.Frequency / 4;
+                    }
+
                     if (status != AmdFlmNative.NoSample)
                     {
                         LastError = AmdFlmNative.GetLastError(session);
                         _isRunning = false;
+                        PublishStatus(new AmdFlmStatus(AmdFlmState.Error,
+                            string.IsNullOrWhiteSpace(LastError) ? $"FLM stopped (status {status}). Toggle FLM to retry." : LastError));
                         _logger.LogError("AMD FLM sample polling stopped with status {Status}: {Error}", status, LastError);
                         return;
                     }
@@ -239,6 +282,7 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
             {
                 _isRunning = false;
                 LastError = exception.Message;
+                PublishStatus(new AmdFlmStatus(AmdFlmState.Error, LastError));
                 _logger.LogError(exception, "AMD FLM sample polling failed");
             }
         }
@@ -250,7 +294,7 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
                 if (_session == null)
                 {
                     _isRunning = false;
-                    _activeFrameGeneration = null;
+                    _activeConfig = null;
                     return;
                 }
 
@@ -272,7 +316,7 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
                 _pollTask = null;
                 _session.Dispose();
                 _session = null;
-                _activeFrameGeneration = null;
+                _activeConfig = null;
                 _isRunning = false;
                 _logger.LogInformation("AMD FLM continuous latency measurement stopped");
             }
@@ -282,6 +326,7 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
         {
             _isRunning = false;
             LastError = string.IsNullOrWhiteSpace(error) ? $"Native status {status}" : error;
+            PublishStatus(new AmdFlmStatus(AmdFlmState.Error, LastError));
             _logger.LogError("AMD FLM latency measurement failed to start with status {Status}: {Error}", status, LastError);
         }
 
@@ -299,6 +344,8 @@ namespace CapFrameX.PresentMonInterface.AmdFlm
             _lifecycleScheduler.Dispose();
             _sampleSubject.OnCompleted();
             _sampleSubject.Dispose();
+            _statusSubject.OnCompleted();
+            _statusSubject.Dispose();
         }
     }
 }

@@ -221,6 +221,21 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public int AmdFlmCaptureOutputIndex { get => Get<int>(0); set => Set(value); }
+
+        // 0: AMF/DX12 (includes Vulkan), 1: AMF/DX11 compatibility, 2: DXGI desktop capture.
+        public int AmdFlmCaptureMode { get => Get<int>(0); set => Set(value); }
+
+        public double AmdFlmCaptureStartX { get => Get<double>(0.40); set => Set(value); }
+
+        public double AmdFlmCaptureStartY { get => Get<double>(0.45); set => Set(value); }
+
+        public double AmdFlmCaptureWidth { get => Get<double>(0.20); set => Set(value); }
+
+        public double AmdFlmCaptureHeight { get => Get<double>(0.25); set => Set(value); }
+
+        public double AmdFlmThresholdCoefficient { get => Get<double>(3.0); set => Set(value); }
+
         public bool UseAdlFallback
         {
             get => Get<bool>(false);

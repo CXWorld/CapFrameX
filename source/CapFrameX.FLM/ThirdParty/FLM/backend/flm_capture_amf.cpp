@@ -134,13 +134,18 @@ FLM_STATUS FLM_Capture_AMF::GetFrame()
     amf_int64       iiFrameIdx;
     AMF_RESULT      res;
 
+    const ULONGLONG captureStarted = GetTickCount64();
     for (;;)  // Get access to the back buffer
     {
+#ifdef CAPFRAMEX_FLM_EMBEDDED
+        if (m_bTerminateCaptureThread || GetTickCount64() - captureStarted >= 100)
+            return FLM_STATUS::CAPTURE_TIMEOUT;
+#endif
         {
             //FLM_Profile_Timer profile_timer("GetFrame");
             res = m_pDisplayCapture->QueryOutput(&pDisplayCaptureData);
         }
-        if (res == AMF_OK)
+        if (res == AMF_OK && pDisplayCaptureData)
             break;
         else if (res == AMF_REPEAT)
         {
@@ -156,6 +161,9 @@ FLM_STATUS FLM_Capture_AMF::GetFrame()
         }
         else if (res == AMF_FAIL)
         {
+#ifdef CAPFRAMEX_FLM_EMBEDDED
+            Sleep(10); // Also back off when no console callback is installed.
+#endif
             if (g_pUserCallBack)
             {
                 g_pUserCallBack(FLM_PROCESS_MESSAGE_TYPE::ERROR_MESSAGE, "CaptureFrame() failed!");
@@ -524,15 +532,12 @@ void FLM_Capture_AMF::Release()
 {
     AMF_DEBUG_PRINT_STACK()
 
-    if (m_bDoCaptureFrames)
-    {
-        m_bDoCaptureFrames = false;
-        Sleep(100);  // Delay for for capture thread to terminate
-
-        ReleaseSurfaces();
-        ReleaseConverters();
-        ReleaseDisplay();
-    }
+    m_bDoCaptureFrames = false;
+    // Also release partially initialized pipelines. The embedded host serializes
+    // rebuild/close with capture; a successful InitCapture is not required here.
+    ReleaseSurfaces();
+    ReleaseConverters();
+    ReleaseDisplay();
 
     if (m_pContext.GetPtr() != nullptr)
     {
@@ -566,6 +571,11 @@ bool FLM_Capture_AMF::InitContext(FLM_GPU_VENDOR_TYPE vendor)
         }
 
         amf::AMFContext2Ptr context2(m_pContext);
+        if (!context2)
+        {
+            FlmPrintError("AMF runtime does not provide the required capture context");
+            return false;
+        }
 
         try
         {
@@ -636,10 +646,18 @@ AMF_RESULT FLM_Capture_AMF::UpdateFormat()
     AMF_RESULT res = AMF_FAIL;
 
     int numRetries = 10;
+    const ULONGLONG formatStarted = GetTickCount64();
     for(;;)
     {
+#ifdef CAPFRAMEX_FLM_EMBEDDED
+        if (m_bTerminateCaptureThread || GetTickCount64() - formatStarted >= 2000)
+        {
+            res = AMF_REPEAT;
+            break;
+        }
+#endif
         res = m_pDisplayCapture->QueryOutput(&pTempCaptureData);
-        if (res == AMF_OK)
+        if (res == AMF_OK && pTempCaptureData)
             break;
         else
         if (res == AMF_REPEAT)
@@ -783,8 +801,11 @@ void FLM_Capture_AMF::ReleaseConverters()
     {
         amf::AMFComponentPtr& pConverter = m_ppConverters[i];  // name aliasing
 
-        pConverter->Drain();
-        pConverter->Terminate();
+        if (pConverter)
+        {
+            pConverter->Drain();
+            pConverter->Terminate();
+        }
         pConverter              = NULL;
         m_ppConverterOutputs[i] = 0;
     }
@@ -829,5 +850,6 @@ void FLM_Capture_AMF::ReleaseSurfaces()
 
     m_pHostSurface0.Release();
     m_pHostSurface1.Release();
+    m_pTargetHostSurface.Release();
     m_bHostSurfaceInit = false;
 }

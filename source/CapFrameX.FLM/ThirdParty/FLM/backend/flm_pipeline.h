@@ -21,6 +21,7 @@
 #include <array>
 #include <atomic>
 #include <mutex>
+#include "../../../FlmPassiveClickTracker.h"
 #include "ini/SimpleIni.h"
 
 struct FLM_PIPELINE_SETTINGS
@@ -73,12 +74,17 @@ public:
     void                StartMeasurements();
     void                StopMeasurements();
     bool                TryGetLatencySample(FLM_LATENCY_SAMPLE& sample);
+    FlmPassiveClickTracker::Snapshot GetClickStatus();
+    void                RequestShutdown();
 
     FLM_PIPELINE_SETTINGS m_setting;
 
     HWND                 m_hWnd = GetConsoleWindow();
 
 private:
+    FlmPassiveClickTracker m_clickTracker;
+    int64_t m_qpcFrequency = 1;
+    int64_t m_lastCaptureQpc = 0;
     FLM_STATUS InitSettings();
     FLM_STATUS SetCodec(std::string codec);
     void       UpdateAverageLatency(float fLatencyMS);

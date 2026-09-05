@@ -62,6 +62,7 @@ FLM_STATUS FLM_Capture_Context::SaveUserSettings()
 void FLM_Capture_Context::InitSettings()
 {
 #ifdef CAPFRAMEX_FLM_EMBEDDED
+    m_iUserSetOutputAdapter = m_pRuntimeOptions->captureOutputIndex;
     m_iOutputAdapter = m_iUserSetOutputAdapter;
     m_setting.fStartX = std::clamp(m_pRuntimeOptions->captureStartX, 0.0f, 1.0f);
     m_setting.fStartY = std::clamp(m_pRuntimeOptions->captureStartY, 0.0f, 1.0f);
@@ -170,49 +171,13 @@ float FLM_Capture_Context::CalculateFilterAlpha(int iNumIterations)
     return fAlpha;
 }
 
-int FLM_Capture_Context::GetThresholdedSAD(int64_t frameIdx, int iSAD, float fThresholdMultiplierCoeff)
+int FLM_Capture_Context::GetThresholdedSAD(int64_t frameIdx, int iSAD, float coefficient, bool updateBaseline)
 {
-    // 1. Calculate the thresholded SAD
-    // First - calculate the thresh hold value
-    int iThreshold      = (int)(m_fBackgroundSAD * fThresholdMultiplierCoeff);
-    int iThresholdedSAD = std::max<int>(0, iSAD - iThreshold);
-
-    // 2. Printout SAD values for each frame - very useful as a sanity check
-    if( frameIdx != 0 ) // It will be non-zero only for FLM_PRINT_LEVEL::PRINT_DEBUG
-        if( KEY_DOWN(VK_LMENU) )
-            FlmPrint( frameIdx % 32 == 0 ? "%i \n" : "%i ", iSAD);
-    
-    // 3. Estimate the "background SAD" - these will be unrelated to mouse click/movement, and are usually due
-    //    to in-game animations and/or film grain noise effect happening in the monitored region.
-    {
-        static int iPrevSAD         = 0;
-        static int iPrevPrevSAD     = 0;
-        static int iPrevPrevPrevSAD = 0;
-
-        // A workaround for situations where the SAD for even frames is significantly different from SAD for odd frames.
-        // For example, a pathological framegen case where every frame is duplicated, therefore every other SAD is zero.
-        iSAD =  iSAD + iPrevSAD / 4; // Note: the way this works is not straightforward to understand...................
-
-        // iSAD needs to be at least 1 to avoid quantization problems
-        iSAD = std::max<int>(1, iSAD);
-
-        // Second - update statistics. Filter out the large SADs caused by the mouse move
-        if ((iSAD <= iPrevSAD         * fThresholdMultiplierCoeff) &&
-            (iSAD <= iPrevPrevSAD     * fThresholdMultiplierCoeff) &&
-            (iSAD <= iPrevPrevPrevSAD * fThresholdMultiplierCoeff))
-        {
-            m_fBackgroundSAD = m_fBackgroundSAD * m_fAVGFilterAlpha + (1 - m_fAVGFilterAlpha) * iSAD;
-        }
-
-        // Advance history
-        iPrevPrevPrevSAD = iPrevPrevSAD;
-        iPrevPrevSAD     = iPrevSAD;
-        iPrevSAD         = iSAD;
-    }
-
-
-    // Return the thresh hold result
-    return iThresholdedSAD;
+    if (frameIdx != 0 && KEY_DOWN(VK_LMENU))
+        FlmPrint(frameIdx % 32 == 0 ? "%i \n" : "%i ", iSAD);
+    const int thresholded = m_sadFilter.Process(iSAD, coefficient, m_fAVGFilterAlpha, updateBaseline);
+    m_fBackgroundSAD = m_sadFilter.Background();
+    return thresholded;
 }
 
 bool FLM_Capture_Context::InitCapture(FLM_Timer_AMF& m_timer)
@@ -229,6 +194,10 @@ bool FLM_Capture_Context::InitCapture(FLM_Timer_AMF& m_timer)
 
 void FLM_Capture_Context::ResetState()
 {
+    m_sadFilter.Reset();
+    m_fBackgroundSAD = 0;
+    m_previousFrameTimestamp = 0;
+    m_previousFrameIndex = 0;
     m_fCumulativeFrameTimesMS        = 0.0f;
     m_iCumulativeFrameTimeSamples    = 0;
     m_fMovingAverageFrameTimeMS      = 0;
@@ -256,7 +225,8 @@ bool FLM_Capture_Context::AcquireFrameAndDownscaleToHost(int64_t* pTimeStamp, in
         return false;
     }
 #else
-    GetFrame();
+    if (GetFrame() != FLM_STATUS::CAPTURE_PROCESS_FRAME)
+        return false;
 #endif
 
     CONTEXT_DEBUG_PRINT_STACK()
@@ -347,8 +317,8 @@ void FLM_Capture_Context::DisplayThreadFunction()
 
 void FLM_Capture_Context::UpdateAverageFrameTime(int64_t iiTimeStamp, int64_t iiFrameIdx)
 {
-    static int64_t iiPrevTimeStamp = 0;
-    static int64_t iiPrevFrameIdx  = 0;
+    int64_t& iiPrevTimeStamp = m_previousFrameTimestamp;
+    int64_t& iiPrevFrameIdx = m_previousFrameIndex;
 
     // Update m_fMovingAverageFrameTimeMS
     if (iiFrameIdx != iiPrevFrameIdx)                              // Not a repeating frame

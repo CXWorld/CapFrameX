@@ -1,4 +1,4 @@
-﻿using CapFrameX.Configuration;
+using CapFrameX.Configuration;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.MVVM;
@@ -596,19 +596,9 @@ namespace CapFrameX.ViewModel
             {
                 _appConfiguration.UseAmdFlmLatency = value;
                 RaisePropertyChanged();
-                RaisePropertyChanged(nameof(AmdFlmFrameGeneration));
             }
         }
 
-        public bool AmdFlmFrameGeneration
-        {
-            get { return _appConfiguration.AmdFlmFrameGeneration; }
-            set
-            {
-                _appConfiguration.AmdFlmFrameGeneration = value;
-                RaisePropertyChanged();
-            }
-        }
 
         public string PingURL
         {
@@ -663,6 +653,8 @@ namespace CapFrameX.ViewModel
         /// </summary>
         public UpdateViewModel UpdateViewModel { get; }
 
+        public AmdFlmViewModel FlmSettings { get; }
+
         public string ResolveDocumentsPath(string path) => _pathService.ResolveDocumentsPlaceholder(path);
 
         public ColorbarViewModel(IRegionManager regionManager,
@@ -675,6 +667,7 @@ namespace CapFrameX.ViewModel
             ISystemInfo systemInfo,
             LoginManager loginManager,
             UpdateViewModel updateViewModel,
+            AmdFlmViewModel flmSettings,
             CaptureManager captureManager)
         {
             _regionManager = regionManager;
@@ -688,6 +681,7 @@ namespace CapFrameX.ViewModel
             _loginManager = loginManager;
             _captureManager = captureManager;
             UpdateViewModel = updateViewModel;
+            FlmSettings = flmSettings;
 
             RoundingDigits = new List<int>(Enumerable.Range(0, 8));
             SelectScreenshotFolderCommand = new DelegateCommand(OnSelectScreenshotFolder);
@@ -741,10 +735,10 @@ namespace CapFrameX.ViewModel
             // non-AMD system; mirror such external changes into the checkbox bindings.
             _appConfiguration.OnValueChanged
                 .Where(change => change.key == nameof(IAppConfiguration.UseAmdFlmLatency))
+                .ObserveOnDispatcher()
                 .Subscribe(_ =>
                 {
                     RaisePropertyChanged(nameof(UseAmdFlmLatency));
-                    RaisePropertyChanged(nameof(AmdFlmFrameGeneration));
                 });
 
             SetAggregatorEvents();
