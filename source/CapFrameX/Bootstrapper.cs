@@ -176,7 +176,11 @@ namespace CapFrameX
 #endif
                         processIdStream: rtssService.ProcessIdStream,
                         processIdColumnIndex:
-                            PresentMonCaptureService.ProcessID_INDEX);
+                            PresentMonCaptureService.ProcessID_INDEX,
+                        swapChainColumnIndex:
+                            PresentMonCaptureService.SwapChainAddress_INDEX,
+                        frameTypeColumnIndex:
+                            PresentMonCaptureService.FrameType_INDEX);
                 }
 
 #if CFX_INGAME_OVERLAY

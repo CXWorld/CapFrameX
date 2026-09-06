@@ -9,13 +9,16 @@ the OSD is built from source instead and these files are ignored.
 
 ## Build provenance
 
-The current managed bridge was built in `Release` with the VS 2026/v145 toolset from private
-CapFrameX.OSD revision `f9a8f15558d72cd1109d4444d108a9c44d4d06fa`. The core, x64/x86 hook pair,
-and x64/x86 Vulkan layer pair were rebuilt in `RelWithDebInfo` from the same revision, every
-native tree configured with `-G "Visual Studio 18 2026"` (toolset v145).
+The current managed bridge and the core were built (`Release` / `RelWithDebInfo`, VS 2026/v145
+toolset) from private CapFrameX.OSD revision `a2b5bb831990b477485c8b8dc26a0cfa7cf0c464`
+(hook-free stall diagnostics: `src/core/Diagnostics.h`, timestamped `[diag]` log lines,
+`cfx_osd_set_verbose_log`, `OsdHost.Diagnostic`). The x64/x86 hook pair and the x64/x86 Vulkan
+layer pair are still the `f9a8f15558d72cd1109d4444d108a9c44d4d06fa` builds: the diagnostics
+change compiles into those trees (verified) but only affects the hook-free window, so they were
+not reshipped. Every native tree is configured with `-G "Visual Studio 18 2026"` (toolset v145).
 
-- managed bridge SHA-256: `3B64068AC0CD9FC62B68C126B0F780C1E7A6D30A231F1A69F293F790FBB66B09`
-- core SHA-256: `C0B54E5F35403EC82B9111FE1EAE27CEEB0B7C8C5585E6EA6E47B6BD4F6475CE`
+- managed bridge SHA-256: `0268C5543F99E730CA67179A4F0F3662954186036BE5AA2DDF294F2DF881DD94`
+- core SHA-256: `901E5332D308D2AFF2A2C154607FC9A79778CDF424A7CA656A9D74A78FE928A9`
 - hook x64 SHA-256: `87DBE384C14951051EEFC4F5F9F37F57F981C6D9075E3E7028815B93D2ABEFA8`
 - hook x86 SHA-256: `4629037F4E72AB6C53EB64C3E9228514572A3BCC9A0EB6671DA8E4241B73A155`
 - Vulkan x64 SHA-256: `3EF02787FE2C45F0D1C329E3726D56398022D2F63D63A723DFE75527AB4A7CC7`

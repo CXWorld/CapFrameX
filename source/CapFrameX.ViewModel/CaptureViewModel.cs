@@ -64,6 +64,7 @@ namespace CapFrameX.ViewModel
         private string _lastCapturedProcess;
         private string _currentGameNameToCapture = string.Empty;
         private string _currentProcessToCapture = string.Empty;
+        private int _lastPublishedProcessId;
         private bool _isLoggerOutputEmpty = true;
         private Dictionary<string, string> _gameFileDescriptionCache = new Dictionary<string, string>();
 
@@ -884,6 +885,20 @@ namespace CapFrameX.ViewModel
             _currentProcessToCapture = currentProcess;
 
             var processId = ProcessesInfo.FirstOrDefault(info => info.Item1 == currentProcess).Item2;
+            if (processId != _lastPublishedProcessId)
+            {
+                // Every overlay renderer keys its frame feed on this PID; a flicker to 0 silences
+                // the hook-free graph and renames its <APP> group, so each change is logged once
+                // while extended OSD logging is on.
+                if (ExtendedOsdLoggingController.IsVerboseLoggingEnabledInProcess())
+                {
+                    _logger.LogInformation(
+                        "Overlay target process: '{process}' PID {previous} -> {current} (detected {count}, selected '{selected}')",
+                        currentProcess ?? "<none>", _lastPublishedProcessId, processId,
+                        ProcessesToCapture.Count, SelectedProcessToCapture ?? "<auto>");
+                }
+                _lastPublishedProcessId = processId;
+            }
             _rTSSService.ProcessIdStream.OnNext(processId);
 
             _updateCurrentProcess?.Publish(new ViewMessages.CurrentProcessToCapture(currentProcess, processId));

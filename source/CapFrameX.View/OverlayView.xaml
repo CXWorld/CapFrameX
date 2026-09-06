@@ -1152,9 +1152,9 @@
 											   Visibility="{Binding ExtendedOsdLogging.IsUpdating, Converter={StaticResource TrueToVisibleConverter}}"
 											   Text="Saving..."/>
 									<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
-											   Text="Enables detailed logs for the DirectX hook, Vulkan layer, native renderer, and per-present statistics."/>
+											   Text="Enables detailed logs for the DirectX hook, Vulkan layer, native renderer, hook-free stall diagnostics, and per-present statistics."/>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#E0A020" TextWrapping="Wrap"
-											   Text="&#x26A0; Restart CapFrameX and the game after changing this option."/>
+											   Text="&#x26A0; The hook-free overlay follows this option live. Restart CapFrameX and the game for the in-game hook and Vulkan layer."/>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#D95050" TextWrapping="Wrap"
 											   Visibility="{Binding ExtendedOsdLogging.HasError, Converter={StaticResource TrueToVisibleConverter}}"
 											   Text="{Binding ExtendedOsdLogging.Error}"/>
