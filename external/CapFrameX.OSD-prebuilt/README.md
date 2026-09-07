@@ -9,20 +9,26 @@ the OSD is built from source instead and these files are ignored.
 
 ## Build provenance
 
-The current managed bridge and the core were built (`Release` / `RelWithDebInfo`, VS 2026/v145
-toolset) from private CapFrameX.OSD revision `a2b5bb831990b477485c8b8dc26a0cfa7cf0c464`
-(hook-free stall diagnostics: `src/core/Diagnostics.h`, timestamped `[diag]` log lines,
-`cfx_osd_set_verbose_log`, `OsdHost.Diagnostic`). The x64/x86 hook pair and the x64/x86 Vulkan
-layer pair are still the `f9a8f15558d72cd1109d4444d108a9c44d4d06fa` builds: the diagnostics
-change compiles into those trees (verified) but only affects the hook-free window, so they were
-not reshipped. Every native tree is configured with `-G "Visual Studio 18 2026"` (toolset v145).
+The current managed bridge was built in `Release` with the VS 2026/v145 toolset from private
+CapFrameX.OSD revision `a2b5bb831990b477485c8b8dc26a0cfa7cf0c464` (hook-free stall diagnostics:
+`src/core/Diagnostics.h`, timestamped `[diag]` log lines, `cfx_osd_set_verbose_log`,
+`OsdHost.Diagnostic`). The core, x64/x86 hook pair, and x64/x86 Vulkan layer pair were rebuilt
+on 2026-09-07 in `RelWithDebInfo` from the same revision, every native tree configured with
+`-G "Visual Studio 18 2026" -T v145` (MSVC 19.51.36256, Windows SDK 10.0.26100.0).
+
+The Vulkan build used Khronos Vulkan-Headers `vulkan-sdk-1.4.357.0` (commit
+`e3b1eec08173d6b825cd3ac88c885a63b621504a`) and glslang `16.5.0` from the official
+`main-tot` Windows x64 release archive, SHA-256
+`6BA807EF1D697EC66A34D9D666F842F863FFF4F5612EE95C1CC88F5DE5A362C2`.
+All 37 native CTest cases passed (7 core, 15 per hook architecture). PE architectures,
+preservation of existing DLL exports, and identical Vulkan manifests were verified.
 
 - managed bridge SHA-256: `0268C5543F99E730CA67179A4F0F3662954186036BE5AA2DDF294F2DF881DD94`
-- core SHA-256: `901E5332D308D2AFF2A2C154607FC9A79778CDF424A7CA656A9D74A78FE928A9`
-- hook x64 SHA-256: `87DBE384C14951051EEFC4F5F9F37F57F981C6D9075E3E7028815B93D2ABEFA8`
-- hook x86 SHA-256: `4629037F4E72AB6C53EB64C3E9228514572A3BCC9A0EB6671DA8E4241B73A155`
-- Vulkan x64 SHA-256: `3EF02787FE2C45F0D1C329E3726D56398022D2F63D63A723DFE75527AB4A7CC7`
-- Vulkan x86 SHA-256: `AF017D09D50E706820055F319221776E91F343A938B0CAFB47233773697B7683`
+- core SHA-256: `620935B482D0735FA5062AC84C882943FB3BB767C4E7F724430633ECD1EFBEB8`
+- hook x64 SHA-256: `A90F5116F115B47478A33707C92A496EC9FBA0ABA525C9239FFA16DE5E714051`
+- hook x86 SHA-256: `F8A7279A7832647826CE2DD2F861D80102BCE1CB083AAA87C502803FC4CA4AAC`
+- Vulkan x64 SHA-256: `CC1B2134651B706E38ECA29A7832B6A8A62FED8E329B8F819C44D35BC06A83AA`
+- Vulkan x86 SHA-256: `082286190E70E04EC522FC89E0551147E80A9E738A0FBA84216F868C0BB174DB`
 
 ## Contents
 
