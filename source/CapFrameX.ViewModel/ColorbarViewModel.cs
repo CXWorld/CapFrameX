@@ -903,18 +903,22 @@ namespace CapFrameX.ViewModel
 
         public void OnAutostartChanged(bool cleanup = false)
         {
+            if (PortableModeDetector.IsPortableMode)
+                return;
+
             const string appName = "CapFrameX";
 
             try
             {
                 using (TaskService ts = new TaskService())
                 {
-                    var taskExists = ts.RootFolder.GetTasks().Any(t => t.Name == appName);
-
-                    if (Autostart && !taskExists)
+                    // Refresh existing tasks as well to repair DLL targets and stale installation paths.
+                    if (Autostart)
                     {
-                        string appPath = System.Reflection.Assembly.GetEntryAssembly().Location;
-
+                        // On modern .NET, the entry assembly is CapFrameX.dll; Windows must launch the apphost EXE.
+                        string appDirectory = AppContext.BaseDirectory;
+                        string appPath = Path.Combine(appDirectory, appName + ".exe");
+                        string userId = Environment.UserDomainName + "\\" + Environment.UserName;
 
                         TaskDefinition td = ts.NewTask();
                         td.RegistrationInfo.Description = "Autostart";
@@ -923,21 +927,18 @@ namespace CapFrameX.ViewModel
                         td.Principal.RunLevel = TaskRunLevel.Highest;
 
                         var trigger = new LogonTrigger();
-                        trigger.UserId = Environment.UserName;
+                        trigger.UserId = userId;
                         trigger.Delay = TimeSpan.FromSeconds(20);
 
                         td.Triggers.Add(trigger);
+                        td.Actions.Add(new ExecAction(appPath, workingDirectory: appDirectory));
 
-
-                        td.Actions.Add(new ExecAction(appPath));
-
-                        ts.RootFolder.RegisterTaskDefinition(appName, td, TaskCreation.CreateOrUpdate,
-                        Environment.UserDomainName + "\\" + Environment.UserName, null, TaskLogonType.InteractiveToken);
-
+                        using var task = ts.RootFolder.RegisterTaskDefinition(appName, td, TaskCreation.CreateOrUpdate,
+                            userId, null, TaskLogonType.InteractiveToken);
+                        _logger.LogInformation("Registered autostart task for {AppPath}.", appPath);
                     }
-                    else if (!Autostart && taskExists)
+                    else if (ts.RootFolder.GetTasks().Any(t => t.Name == appName))
                     {
-
                         ts.RootFolder.DeleteTask(appName);
                     }
                 }
