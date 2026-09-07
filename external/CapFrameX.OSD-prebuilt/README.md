@@ -12,9 +12,15 @@ the OSD is built from source instead and these files are ignored.
 The current managed bridge was built in `Release` with the VS 2026/v145 toolset from private
 CapFrameX.OSD revision `a2b5bb831990b477485c8b8dc26a0cfa7cf0c464` (hook-free stall diagnostics:
 `src/core/Diagnostics.h`, timestamped `[diag]` log lines, `cfx_osd_set_verbose_log`,
-`OsdHost.Diagnostic`). The core, x64/x86 hook pair, and x64/x86 Vulkan layer pair were rebuilt
-on 2026-09-07 in `RelWithDebInfo` from the same revision, every native tree configured with
-`-G "Visual Studio 18 2026" -T v145` (MSVC 19.51.36256, Windows SDK 10.0.26100.0).
+`OsdHost.Diagnostic`). The x64/x86 hook pair and x64/x86 Vulkan layer pair were rebuilt on
+2026-09-07 in `RelWithDebInfo` from the same revision, every native tree configured with
+`-G "Visual Studio 18 2026" -T v145` (MSVC 19.51.36256, Windows SDK 10.0.26100.0). The core was
+rebuilt later that day from that revision plus the hook-free pacing fix (`ConsumeRepaintSlots` in
+`src/core/RenderPacing.h`: `OsdInstance::tick` handed the replay clock the whole accumulator while
+also retaining the sub-slot remainder, so the clock ran at 1.0-2.0x wall time, drained its
+cushion and froze the chart in a rebuffering hold every few seconds) — OSD revision
+`2da4f0a695954d0d3bd72108f133a833bd464c5d`. The fix compiles into the hook and layer trees
+(verified) but only affects the hook-free window, so those were not reshipped.
 
 The Vulkan build used Khronos Vulkan-Headers `vulkan-sdk-1.4.357.0` (commit
 `e3b1eec08173d6b825cd3ac88c885a63b621504a`) and glslang `16.5.0` from the official
@@ -24,7 +30,7 @@ All 37 native CTest cases passed (7 core, 15 per hook architecture). PE architec
 preservation of existing DLL exports, and identical Vulkan manifests were verified.
 
 - managed bridge SHA-256: `0268C5543F99E730CA67179A4F0F3662954186036BE5AA2DDF294F2DF881DD94`
-- core SHA-256: `620935B482D0735FA5062AC84C882943FB3BB767C4E7F724430633ECD1EFBEB8`
+- core SHA-256: `EE483C91D249F64AD069C84DD0952DF66A6D62BD62968CBC4D57439BE504255F`
 - hook x64 SHA-256: `A90F5116F115B47478A33707C92A496EC9FBA0ABA525C9239FFA16DE5E714051`
 - hook x86 SHA-256: `F8A7279A7832647826CE2DD2F861D80102BCE1CB083AAA87C502803FC4CA4AAC`
 - Vulkan x64 SHA-256: `CC1B2134651B706E38ECA29A7832B6A8A62FED8E329B8F819C44D35BC06A83AA`
