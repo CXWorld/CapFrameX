@@ -308,17 +308,7 @@ namespace CapFrameX.Sensor
                     {
                         if (sensor != null)
                         {
-                            entries.Add(new SensorEntry()
-                            {
-                                Identifier = sensor.Identifier.ToString(),
-                                SortKey = sensor.PresentationSortKey,
-                                Value = sensor.Value,
-                                Name = sensor.Name,
-                                SensorType = sensor.SensorType.ToString(),
-                                HardwareType = sensor.Hardware.HardwareType.ToString(),
-                                HardwareName = sensor.Hardware.Name,
-                                IsPresentationDefault = sensor.IsPresentationDefault
-                            });
+                            entries.Add(SensorEntry.FromSensor(sensor));
                         }
                     }
                 }
