@@ -120,7 +120,7 @@ persistence layer was dropped. netcoreapp3.1 is out of support; the packages war
 
 ## Hook-free OSD (external source)
 
-The hook-free OSD lives in the **private** repo [CXWorld/CapFrameX.OSD](https://github.com/CXWorld/CapFrameX.OSD) (local checkout: `E:\Code\CapFrameX.OSD`), consumed as an *optional* git submodule at `external/CapFrameX.OSD` with prebuilt-binary fallback in `external/CapFrameX.OSD-prebuilt/` — the public repo builds either way:
+The hook-free OSD lives in the **private** repo [CXWorld/CapFrameX.OSD](https://github.com/CXWorld/CapFrameX.OSD) (local checkout: `..\CapFrameX.OSD`, a sibling of this repository), consumed as an *optional* git submodule at `external/CapFrameX.OSD` with prebuilt-binary fallback in `external/CapFrameX.OSD-prebuilt/` — the public repo builds either way:
 
 - With the submodule checked out, `CapFrameX.csproj` and `CapFrameX.OSD.Integration.csproj` set `CfxOsdFromSource=true` and build `CapFrameX.OSD.Interop` from source; without it they reference the prebuilt DLLs. Force the fallback with `/p:CfxOsdFromSource=false`.
 - The native renderer `cfx_osd_core.dll` is staged from the submodule's CMake output if built (`external/CapFrameX.OSD/CapFrameX.OSD/build/bin/RelWithDebInfo`), else from the prebuilt folder.
