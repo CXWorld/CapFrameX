@@ -110,6 +110,11 @@ Then copy the managed bridge, core, x64/x86 hooks, and both Vulkan layers/manife
 commit. The Vulkan manifest is renamed on the way in: the build emits `cfx_osd_vklayer.json`,
 this tree keeps the versioned `cfx_osd_vklayer_v1.json`.
 
+Copy those files one by one, never a whole `RelWithDebInfo` folder: the build outputs also
+hold the ctest executables and `cfx_inject.exe`. That injector was deliberately dropped when
+`HookInjector` learned to resolve the target's 32-bit `LoadLibraryW` itself, and a bulk copy
+is how it silently reappeared under `native/x86/` once already.
+
 Configure every native tree with the **same** toolset the core preset pins (`-G "Visual Studio 18
 2026"`, toolset v145, matching the `.vcxproj` projects in this repo). `hook_poc` and `vk_layer`
 take no preset, so passing `-G` explicitly is what keeps them in step: core, hook and layer all end
