@@ -39,6 +39,56 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(1, result.Digits);
         }
 
+        /// <summary>
+        /// The group-name and value font sizes are RTSS percentages whose sign selects super- or
+        /// subscript. The CX renderers scale the text by the magnitude only, an unset size (0) is
+        /// the 100 % default, and the range is clamped so a row still fits the panel.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow(0, 100)]
+        [DataRow(100, 100)]
+        [DataRow(150, 150)]
+        [DataRow(-150, 150)]
+        [DataRow(75, 75)]
+        [DataRow(-30, 50)]
+        [DataRow(500, 200)]
+        public void ToOsdEntries_MapsFontSizesToTextScales_MagnitudeOnlyAndClamped(int fontSize, int expectedPercent)
+        {
+            var entry = new OverlayEntryWrapper("/intelcpu/0/clock/1")
+            {
+                Description = "Core #1 P (MHz)",
+                GroupName = "Core #1 P",
+                OverlayEntryType = EOverlayEntryType.CPU,
+                IsEntryEnabled = true,
+                ShowOnOverlay = true,
+                IsNumeric = true,
+                Value = 5200d,
+                GroupFontSize = fontSize,
+                ValueFontSize = fontSize
+            };
+
+            var result = OverlayEntryAdapter.ToOsdEntries(new[] { entry }).Single();
+
+            Assert.AreEqual(expectedPercent, result.GroupScalePercent);
+            Assert.AreEqual(expectedPercent, result.ValueScalePercent);
+        }
+
+        [TestMethod]
+        public void ToOsdEntries_RunHistoryRowsInheritTheTemplateFontSizes()
+        {
+            var template = CreateRunHistoryEntry();
+            template.GroupFontSize = 120;
+            template.ValueFontSize = -80;
+
+            var rows = OverlayEntryAdapter.ToOsdEntries(new[] { template },
+                showRunHistory: true, runHistory: new[] { "120 FPS", "118 FPS" },
+                runHistoryAggregation: "119 FPS");
+
+            Assert.AreEqual(3, rows.Count);
+            Assert.IsTrue(rows.All(row => row.GroupScalePercent == 120), "group scale");
+            Assert.IsTrue(rows.All(row => row.ValueScalePercent == 80), "value scale (magnitude)");
+        }
+
         [TestMethod]
         public void ToOsdEntries_TextNullValue_DoesNotLeakRtssHypertext()
         {

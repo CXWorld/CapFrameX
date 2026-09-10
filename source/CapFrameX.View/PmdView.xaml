@@ -474,7 +474,7 @@
 								ToolTipService.ShowDuration="25000">
 								<ToggleButton.ToolTip>
 									<ToolTip MaxWidth="350">
-										<TextBlock Text="Start or stop the PMD service."
+										<TextBlock Text="Start or stop BENCHLAB monitoring. Uses an existing compatible service or starts the bundled service."
 											TextWrapping="Wrap"/>
 									</ToolTip>
 								</ToggleButton.ToolTip>

@@ -288,7 +288,7 @@ namespace CapFrameX.Data
 
         public ISession LoadData(string path)
         {
-            _logger.LogInformation("Loading data from: {path}", path);
+            _logger.LogDebug("Loading data from: {path}", path);
             if (string.IsNullOrWhiteSpace(path))
             {
                 return null;
@@ -1762,13 +1762,15 @@ namespace CapFrameX.Data
 
             var selectedSwapChain = selectedDominant.SwapChain;
 
-            _logger.LogInformation($"SwapChain filtering: Selected process '{selectedProcessName}' with SwapChain '{selectedSwapChain}' " +
-                $"({selectedDominant.Count} frames out of {processTotals[selectedProcessName]} total for this process)");
+            _logger.LogDebug("SwapChain filtering: Selected process {process} with SwapChain {swapChain} " +
+                "({selectedFrames} frames out of {totalFrames} total for this process)",
+                selectedProcessName, selectedSwapChain, selectedDominant.Count, processTotals[selectedProcessName]);
 
             // Log if we're filtering out other processes or swap chains
             if (processOrder.Count > 1)
             {
-                _logger.LogInformation($"SwapChain filtering: Filtered out {processOrder.Count - 1} other process(es)");
+                _logger.LogDebug("SwapChain filtering: Filtered out {processCount} other process(es)",
+                    processOrder.Count - 1);
             }
 
             var otherSwapChainsForProcess = processSwapChainCounts
@@ -1778,7 +1780,9 @@ namespace CapFrameX.Data
             if (otherSwapChainsForProcess.Any())
             {
                 var filteredCount = otherSwapChainsForProcess.Sum(x => x.Value);
-                _logger.LogInformation($"SwapChain filtering: Filtered out {filteredCount} frames from {otherSwapChainsForProcess.Count} other SwapChain(s) for process '{selectedProcessName}'");
+                _logger.LogDebug("SwapChain filtering: Filtered out {frameCount} frames from " +
+                    "{swapChainCount} other SwapChain(s) for process {process}",
+                    filteredCount, otherSwapChainsForProcess.Count, selectedProcessName);
             }
 
             // Filter lines to only include the selected process and SwapChain

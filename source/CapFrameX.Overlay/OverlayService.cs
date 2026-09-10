@@ -1,6 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
-using CapFrameX.Contracts.Latency;
 using CapFrameX.Contracts.Logging;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
@@ -14,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -54,6 +54,7 @@ namespace CapFrameX.Overlay
         private int _numberOfRuns;
         private IList<IMetricAnalysis> _metricAnalysis = new List<IMetricAnalysis>();
         private ISubject<IOverlayEntry[]> _onDictionaryUpdated = new Subject<IOverlayEntry[]>();
+        private readonly ISubject<Unit> _refreshRequested = Subject.Synchronize(new Subject<Unit>());
         private volatile bool _isServiceAlive = true;
 
         public bool IsOverlayActive => _appConfiguration.IsOverlayActive;
@@ -136,8 +137,8 @@ namespace CapFrameX.Overlay
 
             if (configuredOverlayActive && !initialOverlayActive)
             {
-                // A fresh configuration defaults the overlay to on and the renderer to RTSS. Do
-                // not retain an impossible active state when RTSS is absent: all consumers of the
+                // A saved configuration can still select RTSS. Do not retain an impossible
+                // active state when RTSS is absent: all consumers of the
                 // BehaviorSubject (including StateViewModel) must observe the same persisted state.
                 _appConfiguration.IsOverlayActive = false;
                 _logger.LogWarning(
@@ -201,6 +202,14 @@ namespace CapFrameX.Overlay
                        {
                            if (isActive)
                            {
+                               // Serialize profile changes and regular ticks on the refresh thread.
+                               // FromAsync defers each read until the previous one has completed.
+                               var entryUpdates = _refreshRequested
+                                   .StartWith(Unit.Default)
+                                   .ObserveOn(_overlayRefreshScheduler)
+                                   .Select(_ => Observable.FromAsync(() => _overlayEntryProvider.GetOverlayEntries()))
+                                   .Concat();
+
                                if (!_appConfiguration.EnableHookFreeOverlay && !_appConfiguration.EnableHookOverlay)
                                {
                                    // Deferred instead of awaited inline: this selector runs on the
@@ -211,12 +220,10 @@ namespace CapFrameX.Overlay
                                    // blocking the caller, which .Wait() did.
                                    return Observable
                                        .FromAsync(cancellationToken => InitializeRTSSAsync(cancellationToken))
-                                       .SelectMany(_ => _onDictionaryUpdated.
-                                           SelectMany(__ => _overlayEntryProvider.GetOverlayEntries()));
+                                       .SelectMany(_ => entryUpdates);
                                }
 
-                               return _onDictionaryUpdated.
-                                   SelectMany(_ => _overlayEntryProvider.GetOverlayEntries());
+                               return entryUpdates;
                            }
                            else
                            {
@@ -229,6 +236,9 @@ namespace CapFrameX.Overlay
                        {
                            CurrentOverlayEntries = entries;
                            OSDUpdateNotifier(entries);
+                           // Both CapFrameX renderers read CurrentOverlayEntries from this event.
+                           // Publishing the raw tick first could make them render the old profile.
+                           _onDictionaryUpdated.OnNext(entries);
 
                            bool feedRtss = !overlayOnAPIOnly && !_appConfiguration.EnableHookFreeOverlay && !_appConfiguration.EnableHookOverlay;
                            int feedState = feedRtss ? 1 : 0;
@@ -267,8 +277,7 @@ namespace CapFrameX.Overlay
                            if (sensorData.Item2.Any())
                                UpdateOverlayEntries(sensorData.Item2);
 
-                           if (_overlayEntryCore.OverlayEntryDict.Values.Any())
-                               _onDictionaryUpdated.OnNext(_overlayEntryCore.OverlayEntryDict.Values.ToArray());
+                           RequestRefresh();
                        });
                 });
 
@@ -596,6 +605,12 @@ namespace CapFrameX.Overlay
             _overlayRefreshScheduler?.Dispose();
         }
 
+        public void RequestRefresh()
+        {
+            if (_isServiceAlive)
+                _refreshRequested.OnNext(Unit.Default);
+        }
+
         private async Task InitializeOverlayEntryDict()
         {
             _overlayEntryCore.OverlayEntryDict.Clear();
@@ -607,11 +622,6 @@ namespace CapFrameX.Overlay
                 {
                     foreach (var sensor in sensors)
                     {
-                        // FLM already has a purpose-built live overlay metric. Keep its virtual
-                        // sensor for logging without presenting a duplicate overlay entry.
-                        if (sensor.Identifier == AmdFlmSensorMetadata.Identifier)
-                            continue;
-
                         var dictEntry = CreateOverlayEntry(sensor);
                         var id = sensor.Identifier.ToString();
                         if (!_overlayEntryCore.OverlayEntryDict.ContainsKey(id))
@@ -629,339 +639,7 @@ namespace CapFrameX.Overlay
 
         private IOverlayEntry CreateOverlayEntry(ISensorEntry sensor)
         {
-            return new OverlayEntryWrapper(sensor.Identifier.ToString())
-            {
-                StableIdentifier = SensorIdentifierHelper.BuildStableIdentifier(sensor),
-                SortKey = sensor.SortKey,
-                Description = GetDescription(sensor),
-                OverlayEntryType = MapType(sensor.HardwareType),
-                GroupName = GetGroupName(sensor),
-                ShowGraph = false,
-                ShowGraphIsEnabled = false,
-                ShowOnOverlayIsEnabled = true,
-                ShowOnOverlay = sensor.IsPresentationDefault,
-                Value = 0,
-                ValueUnitFormat = GetValueUnitString(sensor.SensorType),
-                ValueAlignmentAndDigits = GetValueAlignmentAndDigitsString(sensor.SensorType)
-            };
-        }
-
-        private string GetValueAlignmentAndDigitsString(string sensorTypeString)
-        {
-            string formatString = "{0}";
-            Enum.TryParse(sensorTypeString, out SensorType sensorType);
-            switch (sensorType)
-            {
-                case SensorType.Current:
-                    formatString = "{0,5:F1}";
-                    break;
-                case SensorType.Voltage:
-                    formatString = "{0,5:F2}";
-                    break;
-                case SensorType.Clock:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Temperature:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Load:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Fan:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Flow:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Control:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Level:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Factor:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Power:
-                    formatString = "{0,5:F1}";
-                    break;
-                case SensorType.Data:
-                    formatString = "{0,5:F2}";
-                    break;
-                case SensorType.SmallData:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Throughput:
-                    formatString = "{0,5:F1}";
-                    break;
-                case SensorType.Frequency:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.DataRate:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Timing:
-                    formatString = "{0,5:F1}";
-                    break;
-                case SensorType.Latency:
-                    formatString = "{0,5:F1}";
-                    break;
-            }
-
-            return formatString;
-        }
-
-        private string GetValueUnitString(string sensorTypeString)
-        {
-            string formatString = "{0}";
-            Enum.TryParse(sensorTypeString, out SensorType sensorType);
-            switch (sensorType)
-            {
-                case SensorType.Current:
-                    formatString = "A  ";
-                    break;  
-                case SensorType.Voltage:
-                    formatString = "V  ";
-                    break;
-                case SensorType.Clock:
-                    formatString = "MHz";
-                    break;
-                case SensorType.Temperature:
-                    formatString = "°C ";
-                    break;
-                case SensorType.Load:
-                    formatString = "%  ";
-                    break;
-                case SensorType.Fan:
-                    formatString = "RPM";
-                    break;
-                case SensorType.Flow:
-                    formatString = "L/h";
-                    break;
-                case SensorType.Control:
-                    formatString = "%  ";
-                    break;
-                case SensorType.Level:
-                    formatString = "%  ";
-                    break;
-                case SensorType.Factor:
-                    formatString = "   ";
-                    break;
-                case SensorType.Power:
-                    formatString = "W  ";
-                    break;
-                case SensorType.Data:
-                    formatString = "GB ";
-                    break;
-                case SensorType.SmallData:
-                    formatString = "MB ";
-                    break;
-                case SensorType.Throughput:
-                    formatString = "GB/s";
-                    break;
-                case SensorType.Frequency:
-                    formatString = "Hz ";
-                    break;
-                case SensorType.DataRate:
-                    formatString = "MT/s";
-                    break;
-                case SensorType.Timing:
-                    formatString = "ns ";
-                    break;
-                case SensorType.Latency:
-                    formatString = "ms ";
-                    break;
-            }
-
-            return formatString;
-        }
-
-        private string GetGroupName(ISensorEntry sensor)
-        {
-            var name = sensor.Name;
-            if (name.Contains("CPU Core #"))
-            {
-                name = name.Replace("Core #", "").Trim();
-            }
-            else if (name.Contains("CPU Max Clock"))
-            {
-                name = name.Replace("CPU Max Clock", "CPU Max");
-            }
-            else if (name.Contains("CPU Max Core Temp"))
-            {
-                name = name.Replace("Max Core Temp", "Max");
-            }
-            else if (name.Contains("GPU Core"))
-            {
-                name = name.Replace(" Core", "");
-            }
-            else if (name.Contains("Memory Controller"))
-            {
-                name = name.Replace("Memory Controller", "MemCtrl");
-            }
-            else if (name.Contains("Memory"))
-            {
-                name = name.Replace("Memory", "Mem");
-
-                if (name.Contains("Dedicated"))
-                    name = name.Replace("GPU Mem Dedicated", "GPU Mem");
-
-                else if (name.Contains("Shared"))
-                    name = name.Replace("GPU Mem Shared", "GPU Mem");
-            }
-            else if (name.Contains("Power Limit"))
-            {
-                name = name.Replace("Power Limit", "PL");
-            }
-            else if (name.Contains("Thermal Limit"))
-            {
-                name = name.Replace("Thermal Limit", "TL");
-            }
-            else if (name.Contains("Voltage Limit"))
-            {
-                name = name.Replace("Voltage Limit", "VL");
-            }
-
-            if (name.Contains("D3D"))
-            {
-                if (name.Contains("D3D Dedicated"))
-                    name = name.Replace("D3D Dedicated", "Dedicated");
-
-                if (name.Contains("D3D Shared"))
-                    name = name.Replace("D3D Shared", "Shared");
-            }
-
-            if (name.Contains(" - Thread #1"))
-            {
-                name = name.Replace(" - Thread #1", "").Trim();
-            }
-
-            if (name.Contains(" - Thread #2"))
-            {
-                name = name.Replace(" - Thread #2", "").Trim();
-            }
-
-            if (name.Contains("Thread #1"))
-            {
-                name = name.Replace("Thread #1", "").Trim();
-            }
-
-            if (name.Contains("Thread #2"))
-            {
-                name = name.Replace("Thread #2", "").Trim();
-            }
-
-            if (name.Contains("Monitor Refresh Rate"))
-            {
-                name = "MRR";
-            }
-
-            if (name.Contains("GPU Mem Junction"))
-            {
-                name = "VRAM Hot Spot";
-            }
-
-            return name;
-        }
-
-        private string GetDescription(ISensorEntry sensor)
-        {
-            string description = string.Empty;
-            Enum.TryParse(sensor.SensorType, out SensorType sensorType);
-            switch (sensorType)
-            {
-                case SensorType.Current:
-                    description = $"{sensor.Name} (A)";
-                    break;
-                case SensorType.Voltage:
-                    description = $"{sensor.Name} (V)";
-                    break;
-                case SensorType.Clock:
-                    description = $"{sensor.Name} (MHz)";
-                    break;
-                case SensorType.Temperature:
-                    description = $"{sensor.Name} (°C)";
-                    break;
-                case SensorType.Load:
-                    description = $"{sensor.Name} (%)";
-                    break;
-                case SensorType.Fan:
-                    description = $"{sensor.Name} (RPM)";
-                    break;
-                case SensorType.Flow:
-                    description = $"{sensor.Name} (L/h)";
-                    break;
-                case SensorType.Control:
-                    description = $"{sensor.Name} (%)";
-                    break;
-                case SensorType.Level:
-                    description = $"{sensor.Name} (%)";
-                    break;
-                case SensorType.Factor:
-                    description = sensor.Name;
-                    break;
-                case SensorType.Power:
-                    description = $"{sensor.Name} (W)";
-                    break;
-                case SensorType.Data:
-                    description = $"{sensor.Name} (GB)";
-                    break;
-                case SensorType.SmallData:
-                    description = $"{sensor.Name} (MB)";
-                    break;
-                case SensorType.Throughput:
-                    description = $"{sensor.Name} (GB/s)";
-                    break;
-                case SensorType.Frequency:
-                    description = $"{sensor.Name} (Hz)";
-                    break;
-                case SensorType.DataRate:
-                    description = $"{sensor.Name} (MT/s)";
-                    break;
-                case SensorType.Timing:
-                    description = $"{sensor.Name} (ns)";
-                    break;
-                case SensorType.Latency:
-                    description = $"{sensor.Name} (ms)";
-                    break;
-            }
-
-            return description;
-        }
-
-        private EOverlayEntryType MapType(string hardwareTypeString)
-        {
-            EOverlayEntryType type = EOverlayEntryType.Undefined;
-            Enum.TryParse(hardwareTypeString, out HardwareType hardwareType);
-            switch (hardwareType)
-            {
-                case HardwareType.Motherboard:
-                    type = EOverlayEntryType.Mainboard;
-                    break;
-                case HardwareType.SuperIO:
-                    type = EOverlayEntryType.Undefined;
-                    break;
-                case HardwareType.Cpu:
-                    type = EOverlayEntryType.CPU;
-                    break;
-                case HardwareType.Memory:
-                    type = EOverlayEntryType.RAM;
-                    break;
-                case HardwareType.GpuNvidia:
-                    type = EOverlayEntryType.GPU;
-                    break;
-                case HardwareType.GpuAmd:
-                    type = EOverlayEntryType.GPU;
-                    break;
-                case HardwareType.GpuIntel:
-                    type = EOverlayEntryType.GPU;
-                    break;
-                case HardwareType.Storage:
-                    type = EOverlayEntryType.HDD;
-                    break;
-            }
-
-            return type;
+            return SensorOverlayEntryFactory.Create(sensor);
         }
 
         private IDisposable GetCaptureTimer()

@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using Microsoft.Extensions.Logging;
+using CapFrameX.Contracts.Overlay;
 using System;
 using System.Collections.Generic;
 using LibreHardwareMonitor.Hardware.Simulation;
@@ -206,18 +207,6 @@ namespace CapFrameX.Configuration
         {
             get => PresentMonCircularBuffer.Normalize(Get<int>(PresentMonCircularBuffer.DefaultSize));
             set => Set(PresentMonCircularBuffer.Normalize(value));
-        }
-
-        public bool UseAmdFlmLatency
-        {
-            get => Get<bool>(false);
-            set => Set(value);
-        }
-
-        public bool AmdFlmFrameGeneration
-        {
-            get => Get<bool>(false);
-            set => Set(value);
         }
 
         public bool UseAdlFallback
@@ -730,7 +719,8 @@ namespace CapFrameX.Configuration
 
         public bool EnableHookFreeOverlay
         {
-            get => Get<bool>(false);
+            // Use hook-free by default while preserving an existing in-game selection.
+            get => Get<bool>(!EnableHookOverlay);
             set => Set(value);
         }
 
@@ -757,8 +747,8 @@ namespace CapFrameX.Configuration
 
         public bool EnableHookOverlay
         {
-            get => Get<bool>(false);
-            set => Set(value);
+            get => OverlayAvailability.IsInGameAvailable && Get<bool>(false);
+            set => Set(value && OverlayAvailability.IsInGameAvailable);
         }
 
         public bool HookOverlayUsePresentMonFrametimes
@@ -1044,6 +1034,13 @@ namespace CapFrameX.Configuration
             try
             {
                 _settingsStorage.Load().Wait();
+                if (!OverlayAvailability.IsInGameAvailable &&
+                    Get<bool>(false, nameof(EnableHookOverlay)))
+                {
+                    // Migrate the earlier 1.9.0 selection before any renderer subscribes.
+                    EnableHookFreeOverlay = true;
+                    EnableHookOverlay = false;
+                }
             }
             catch (Exception ex)
             {

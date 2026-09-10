@@ -279,9 +279,12 @@ namespace CapFrameX.ViewModel
 			if (SelectedVersion == null)
 				return;
 
+			// The button in the options popup is the confirmation: the popup already shows the
+			// selected version, the rollback warning and the download progress. Opening the shell
+			// dialog here would put it underneath the popup and demand a second confirmation.
 			var status = _updateService.SelectVersion(SelectedVersion.Version);
 			if (status.State == EUpdateState.UpdateAvailable && status.Package != null)
-				IsUpdateDialogOpen = true;
+				_ = DownloadUpdateAsync();
 		}
 
 		private void OnShowUpdateDialog()

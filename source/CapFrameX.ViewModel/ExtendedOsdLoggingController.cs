@@ -1,30 +1,49 @@
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace CapFrameX.ViewModel
 {
-    internal sealed class ExtendedOsdLoggingController
+    public sealed class ExtendedOsdLoggingController
     {
         internal const string HookLogEnvironmentVariable = "CFX_HOOK_LOG";
         internal const string VulkanLayerLogEnvironmentVariable = "CFX_VKLAYER_LOG";
+        internal const string PresentStatsEnvironmentVariable = "CFX_OSD_PRESENT_STATS";
+        internal const string VerboseLogEnvironmentVariable = "CFX_OSD_VERBOSE_LOG";
 
         private const string PresentStatsPropertyName = "presentStats";
+        private const string VerboseLogPropertyName = "verboseLog";
+        private static readonly string[] LoggingEnvironmentVariables =
+        {
+            HookLogEnvironmentVariable, VulkanLayerLogEnvironmentVariable,
+            PresentStatsEnvironmentVariable, VerboseLogEnvironmentVariable
+        };
         private readonly string _debugConfigurationPath;
         private readonly Func<string, string> _getUserEnvironmentVariable;
         private readonly Action<string, string> _setUserEnvironmentVariable;
+        private readonly Func<string, string> _getProcessEnvironmentVariable;
+        private readonly Action<string, string> _setProcessEnvironmentVariable;
+        private readonly Action _notifyEnvironmentChanged;
 
-        internal ExtendedOsdLoggingController()
+        public ExtendedOsdLoggingController()
             : this(GetDefaultDebugConfigurationPath(), GetUserEnvironmentVariable,
-                SetUserEnvironmentVariableWithSetx)
+                SetUserEnvironmentVariable,
+                name => Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Process),
+                (name, value) => Environment.SetEnvironmentVariable(name, value, EnvironmentVariableTarget.Process),
+                NotifyEnvironmentChanged)
         {
         }
 
         internal ExtendedOsdLoggingController(string debugConfigurationPath,
             Func<string, string> getUserEnvironmentVariable,
-            Action<string, string> setUserEnvironmentVariable)
+            Action<string, string> setUserEnvironmentVariable,
+            Func<string, string> getProcessEnvironmentVariable,
+            Action<string, string> setProcessEnvironmentVariable,
+            Action notifyEnvironmentChanged)
         {
             _debugConfigurationPath = debugConfigurationPath ??
                 throw new ArgumentNullException(nameof(debugConfigurationPath));
@@ -32,54 +51,92 @@ namespace CapFrameX.ViewModel
                 throw new ArgumentNullException(nameof(getUserEnvironmentVariable));
             _setUserEnvironmentVariable = setUserEnvironmentVariable ??
                 throw new ArgumentNullException(nameof(setUserEnvironmentVariable));
+            _getProcessEnvironmentVariable = getProcessEnvironmentVariable ??
+                throw new ArgumentNullException(nameof(getProcessEnvironmentVariable));
+            _setProcessEnvironmentVariable = setProcessEnvironmentVariable ??
+                throw new ArgumentNullException(nameof(setProcessEnvironmentVariable));
+            _notifyEnvironmentChanged = notifyEnvironmentChanged ??
+                throw new ArgumentNullException(nameof(notifyEnvironmentChanged));
+        }
+
+        /// <summary>
+        /// Whether this process currently runs with extended OSD logging, i.e. the switch as
+        /// applied by <see cref="ApplyProcessSettings"/> or <see cref="SetEnabled"/>. Cheap enough
+        /// for rare events (a target-PID change); per-row consumers cache it once per second.
+        /// </summary>
+        public static bool IsVerboseLoggingEnabledInProcess()
+        {
+            return Environment.GetEnvironmentVariable(VerboseLogEnvironmentVariable,
+                EnvironmentVariableTarget.Process) == "1";
         }
 
         internal bool IsEnabled()
         {
-            bool hookLogEnabled = IsEnabledValue(
-                _getUserEnvironmentVariable(HookLogEnvironmentVariable));
-            bool vulkanLayerLogEnabled = IsEnabledValue(
-                _getUserEnvironmentVariable(VulkanLayerLogEnvironmentVariable));
-            bool presentStatsEnabled =
-                ReadDebugConfiguration().Value<bool?>(PresentStatsPropertyName) == true;
+            // The JSON stores the user's selection. A launcher or IDE can retain old environment
+            // values across app restarts; those must never turn a saved "off" back into "on".
+            JObject configuration = ReadDebugConfiguration();
+            return configuration.Value<bool?>(PresentStatsPropertyName) == true ||
+                configuration.Value<bool?>(VerboseLogPropertyName) == true;
+        }
 
-            // Treat a legacy/manually configured partial state as enabled. The user can then turn
-            // the bundle off with one click and bring all three diagnostics back into sync.
-            return hookLogEnabled || vulkanLayerLogEnabled || presentStatsEnabled;
+        public void ApplyProcessSettings()
+        {
+            bool enabled = false;
+            try
+            {
+                enabled = IsEnabled();
+            }
+            finally
+            {
+                // Run before loading native overlay modules, which cache these flags. If the
+                // configuration cannot be read, keep diagnostics off and report the read error.
+                string value = enabled ? "1" : "0";
+                foreach (string name in LoggingEnvironmentVariables)
+                    _setProcessEnvironmentVariable(name, value);
+            }
         }
 
         internal void SetEnabled(bool enabled)
         {
             // Parse before changing the environment so malformed hand-edited diagnostics are never
-            // silently discarded and cannot leave the three logging switches partially updated.
+            // silently discarded and cannot leave the logging switches partially updated.
             JObject debugConfiguration = ReadDebugConfiguration();
             debugConfiguration[PresentStatsPropertyName] = enabled;
+            debugConfiguration[VerboseLogPropertyName] = enabled;
 
             string value = enabled ? "1" : "0";
-            string previousHookValue = _getUserEnvironmentVariable(HookLogEnvironmentVariable);
-            string previousVulkanValue = _getUserEnvironmentVariable(VulkanLayerLogEnvironmentVariable);
-            bool hookValueChanged = false;
-            bool vulkanValueChanged = false;
+            var changedVariables = new List<(string Name, string UserValue, string ProcessValue)>();
 
             try
             {
-                _setUserEnvironmentVariable(HookLogEnvironmentVariable, value);
-                hookValueChanged = true;
-                _setUserEnvironmentVariable(VulkanLayerLogEnvironmentVariable, value);
-                vulkanValueChanged = true;
+                foreach (string name in LoggingEnvironmentVariables)
+                {
+                    changedVariables.Add((name, _getUserEnvironmentVariable(name),
+                        _getProcessEnvironmentVariable(name)));
+                    _setUserEnvironmentVariable(name, value);
+                    _setProcessEnvironmentVariable(name, value);
+                }
                 WriteDebugConfiguration(debugConfiguration);
             }
             catch
             {
-                // Best-effort rollback keeps the two persistent variables aligned if setx or the
-                // atomic JSON write fails. An unset previous value is equivalent to logging off.
-                if (vulkanValueChanged)
-                    TryRestoreEnvironmentVariable(VulkanLayerLogEnvironmentVariable, previousVulkanValue);
-                if (hookValueChanged)
-                    TryRestoreEnvironmentVariable(HookLogEnvironmentVariable, previousHookValue);
+                // No environment notification has been sent yet. Restore the previous values
+                // if a registry update or the atomic JSON write fails.
+                for (int index = changedVariables.Count - 1; index >= 0; index--)
+                {
+                    var previous = changedVariables[index];
+                    TryRestoreEnvironmentVariable(_setProcessEnvironmentVariable,
+                        previous.Name, previous.ProcessValue);
+                    TryRestoreEnvironmentVariable(_setUserEnvironmentVariable,
+                        previous.Name, previous.UserValue);
+                }
 
                 throw;
             }
+
+            // Notify the shell only once, after all four variables and the JSON are consistent.
+            // The view model performs this entire operation on a worker thread.
+            _notifyEnvironmentChanged();
         }
 
         private JObject ReadDebugConfiguration()
@@ -112,22 +169,18 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        private void TryRestoreEnvironmentVariable(string name, string previousValue)
+        private static void TryRestoreEnvironmentVariable(Action<string, string> setter,
+            string name, string previousValue)
         {
             try
             {
-                _setUserEnvironmentVariable(name, previousValue ?? "0");
+                setter(name, previousValue);
             }
             catch
             {
                 // Preserve the original error. The UI reports that the update failed and a retry
                 // writes a consistent value to every logging switch.
             }
-        }
-
-        private static bool IsEnabledValue(string value)
-        {
-            return string.Equals(value, "1", StringComparison.Ordinal);
         }
 
         private static string GetDefaultDebugConfigurationPath()
@@ -143,35 +196,29 @@ namespace CapFrameX.ViewModel
             return Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.User);
         }
 
-        private static void SetUserEnvironmentVariableWithSetx(string name, string value)
+        private static void SetUserEnvironmentVariable(string name, string value)
         {
-            // setx persists at user scope and broadcasts the environment change. As intended, it
-            // only affects processes started after the change; the UI therefore shows a restart hint.
-            string setxPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.System), "setx.exe");
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = setxPath,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
-            startInfo.ArgumentList.Add(name);
-            startInfo.ArgumentList.Add(value);
-
-            using Process process = Process.Start(startInfo) ??
-                throw new InvalidOperationException("setx.exe could not be started.");
-            string output = process.StandardOutput.ReadToEnd();
-            string error = process.StandardError.ReadToEnd();
-            process.WaitForExit();
-
-            if (process.ExitCode == 0)
-                return;
-
-            string details = string.IsNullOrWhiteSpace(error) ? output : error;
-            throw new InvalidOperationException(
-                $"setx.exe could not update {name} (exit code {process.ExitCode}). {details}".Trim());
+            // Persist directly so each variable does not launch setx and broadcast separately.
+            using RegistryKey environment = Registry.CurrentUser.CreateSubKey("Environment", true) ??
+                throw new InvalidOperationException("The user environment could not be opened.");
+            if (value == null)
+                environment.DeleteValue(name, false);
+            else
+                environment.SetValue(name, value, RegistryValueKind.String);
         }
+
+        private static void NotifyEnvironmentChanged()
+        {
+            const uint wmSettingChange = 0x001A;
+            const uint smtoAbortIfHung = 0x0002;
+            // A timeout in another application must not undo successfully saved settings.
+            // Native modules already loaded in a game still require a restart.
+            SendMessageTimeout(new IntPtr(0xffff), wmSettingChange, UIntPtr.Zero,
+                "Environment", smtoAbortIfHung, 1000, out _);
+        }
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern IntPtr SendMessageTimeout(IntPtr window, uint message, UIntPtr wParam,
+            string lParam, uint flags, uint timeout, out UIntPtr result);
     }
 }

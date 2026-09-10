@@ -50,12 +50,14 @@ namespace CapFrameX.OSD.Integration
                     ShowGraph = e.ShowGraph,
                     Digits = ExtractDigits(e.ValueAlignmentAndDigits),
                     Separators = e.GroupSeparators,
+                    GroupScalePercent = ToScalePercent(e.GroupFontSize),
+                    ValueScalePercent = ToScalePercent(e.ValueFontSize),
                 };
 
                 // Data type comes from IOverlayEntry.IsNumeric ("value consists only of int or
                 // double") — the same flag CapFrameX's own RTSS/websocket OSD (OSDController)
-                // formats on, and it IS reliable here because we read CurrentOverlayEntries (the
-                // processed, IsNumeric-populated list) rather than the raw OnDictionaryUpdated dict.
+                // formats on, and it is reliable here because the display list has already been
+                // processed and its IsNumeric flags populated before publication.
                 // Refinement: also accept a genuinely boxed number when the flag is off, so numeric
                 // sensors the flag doesn't cover (Fan/Mainboard aren't in SetHardwareIsNumericState)
                 // still format; but a text value that only looks numeric (driver "551.86") stays text
@@ -132,7 +134,9 @@ namespace CapFrameX.OSD.Integration
                     IsNumeric = false,
                     Color = isOutlier ? outlierColor : valueColor,
                     GroupColor = groupColor,
-                    Separators = i == 0 ? template.GroupSeparators : 0
+                    Separators = i == 0 ? template.GroupSeparators : 0,
+                    GroupScalePercent = ToScalePercent(template.GroupFontSize),
+                    ValueScalePercent = ToScalePercent(template.ValueFontSize)
                 });
             }
 
@@ -146,9 +150,24 @@ namespace CapFrameX.OSD.Integration
                     ValueText = aggregation,
                     IsNumeric = false,
                     Color = valueColor,
-                    GroupColor = groupColor
+                    GroupColor = groupColor,
+                    GroupScalePercent = ToScalePercent(template.GroupFontSize),
+                    ValueScalePercent = ToScalePercent(template.ValueFontSize)
                 });
             }
+        }
+
+        // CapFrameX font sizes are RTSS percentages whose sign selects super- or subscript. The
+        // CX renderers have no baseline shift, so only the magnitude scales the text; 0 (never
+        // set) is the 100 % default, and the range is clamped to what still fits a panel row.
+        internal const int MinScalePercent = 50;
+        internal const int MaxScalePercent = 200;
+
+        internal static int ToScalePercent(int fontSizePercent)
+        {
+            if (fontSizePercent == 0) return 100;
+            long magnitude = fontSizePercent < 0 ? -(long)fontSizePercent : fontSizePercent;
+            return (int)Math.Max(MinScalePercent, Math.Min(MaxScalePercent, magnitude));
         }
 
         private static bool TryToDouble(object value, out double result)
@@ -223,11 +242,11 @@ namespace CapFrameX.OSD.Integration
             if (string.IsNullOrEmpty(unitFormat)) return string.Empty;
             var sb = new StringBuilder();
             bool inTag = false;
-            foreach (var ch in unitFormat)
+            foreach (var ch in unitFormat.Replace("{0}", string.Empty))
             {
                 if (ch == '<') inTag = true;
                 else if (ch == '>') inTag = false;
-                else if (!inTag && ch != '{' && ch != '}' && ch != '0') sb.Append(ch);
+                else if (!inTag && ch != '{' && ch != '}') sb.Append(ch);
             }
             return sb.ToString().Trim();
         }

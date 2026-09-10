@@ -234,6 +234,24 @@ jobs:
           copy /y source\CapFrameX\bin\x64\Release\CapFrameX.IGCL.dll source\CapFrameX\bin\x64\Release\net10.0-windows\
           copy /y source\CapFrameX\bin\x64\Release\CapFrameX.ADLX.dll source\CapFrameX\bin\x64\Release\net10.0-windows\
 
+      - name: Verify native runtime payloads
+        shell: pwsh
+        run: |
+          $appOutput = Join-Path $env:GITHUB_WORKSPACE "source\CapFrameX\bin\x64\Release\net10.0-windows"
+          $requiredPaths = @(
+            "cfx_osd_core.dll",
+            "hook\cfx_osd_hook.dll", "hook\x86\cfx_osd_hook.dll", "hook\MinHook.LICENSE.txt",
+            "vulkan\cfx_osd_vklayer.dll", "vulkan\cfx_osd_vklayer_v1.json",
+            "vulkan\x86\cfx_osd_vklayer.dll", "vulkan\x86\cfx_osd_vklayer_v1.json",
+            "benchlab-service\BL_Service.exe", "benchlab-service\appsettings.json",
+            "benchlab-service\LICENSE-BENCHLAB-Service.txt", "benchlab-service\VERSION"
+          )
+          foreach ($relativePath in $requiredPaths) {
+            if (-not (Test-Path -LiteralPath (Join-Path $appOutput $relativePath) -PathType Leaf)) {
+              throw "Required package component is missing: $relativePath"
+            }
+          }
+
       - name: Build Installer
         shell: cmd
         run: |

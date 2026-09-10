@@ -10,12 +10,12 @@ using CapFrameX.PMD.Powenetics;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Remote;
 using CapFrameX.Updater;
+using CapFrameX.ViewModel;
 using DryIoc;
 using EmbedIO;
 using Newtonsoft.Json;
 using Prism.DryIoc;
 using Serilog;
-using Serilog.Formatting.Compact;
 using System;
 using System.Configuration;
 using System.Diagnostics;
@@ -183,6 +183,19 @@ namespace CapFrameX
 
                 if (_startupAborted)
                     return;
+
+                using (StartupPerformanceLogger.Measure("OSD logging configuration"))
+                {
+                    try
+                    {
+                        // Apply the saved selection before Prism creates any native overlay services.
+                        new ExtendedOsdLoggingController().ApplyProcessSettings();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Warning(ex, "Could not apply the saved OSD logging configuration.");
+                    }
+                }
 
                 bool showSplash;
                 using (StartupPerformanceLogger.Measure("Splash screen initialization"))
@@ -744,16 +757,7 @@ namespace CapFrameX
 
             using (StartupPerformanceLogger.Measure("Serilog pipeline creation"))
             {
-                Log.Logger = new LoggerConfiguration()
-                    .MinimumLevel.Debug()
-                    .Enrich.FromLogContext()
-                    .AuditTo.Sink<InMemorySink>()
-                    .WriteTo.File(
-                        path: Path.Combine(logPath, "CapFrameX.log"),
-                        fileSizeLimitBytes: 1024 * 10000, // approx 10MB
-                        rollOnFileSizeLimit: true, // if filesize is reached, it created a new file
-                        retainedFileCountLimit: 10, // it keeps max 10 files
-                        formatter: new CompactJsonFormatter()).CreateLogger();
+                Log.Logger = ApplicationLogging.CreateLogger(logPath);
             }
         }
 

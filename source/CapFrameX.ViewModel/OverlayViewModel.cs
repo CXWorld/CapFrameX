@@ -43,7 +43,6 @@ namespace CapFrameX.ViewModel
         private readonly IThreadAffinityController _threadAffinityController;
         private readonly IOnlineMetricService _onlineMetricService;
         private readonly IOverlayTemplateService _overlayTemplateService;
-        private readonly ExtendedOsdLoggingController _extendedOsdLoggingController;
         private int _selectedOverlayEntryIndex = -1;
         private IOverlayEntry _selectedOverlayEntry;
         private IOverlayEntryFormatChange _checkboxes = new OverlayEntryFormatChange();
@@ -61,8 +60,6 @@ namespace CapFrameX.ViewModel
         private IReadOnlyList<HookFreeDisplayItem> _hookFreeDisplayItemsSource =
             Array.Empty<HookFreeDisplayItem>();
         private bool _displaySettingsChangedSubscribed;
-        private bool _enableExtendedOsdLogging;
-        private string _extendedOsdLoggingError = string.Empty;
 
         public bool OverlayItemsOptionsEnabled
         {
@@ -501,51 +498,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool EnableExtendedOsdLogging
-        {
-            get { return _enableExtendedOsdLogging; }
-            set
-            {
-                if (_enableExtendedOsdLogging == value &&
-                    string.IsNullOrEmpty(_extendedOsdLoggingError))
-                {
-                    return;
-                }
-
-                try
-                {
-                    _extendedOsdLoggingController.SetEnabled(value);
-                    _enableExtendedOsdLogging = value;
-                    ExtendedOsdLoggingError = string.Empty;
-                }
-                catch (Exception ex)
-                {
-                    ExtendedOsdLoggingError =
-                        $"Extended OSD logging could not be updated: {ex.Message}";
-                    Trace.TraceError("Failed to update extended OSD logging: {0}", ex);
-                }
-
-                // Also notify after a failure so the CheckBox returns to the effective state.
-                RaisePropertyChanged();
-            }
-        }
-
-        public string ExtendedOsdLoggingError
-        {
-            get { return _extendedOsdLoggingError; }
-            private set
-            {
-                if (_extendedOsdLoggingError == value)
-                    return;
-
-                _extendedOsdLoggingError = value;
-                RaisePropertyChanged();
-                RaisePropertyChanged(nameof(HasExtendedOsdLoggingError));
-            }
-        }
-
-        public bool HasExtendedOsdLoggingError =>
-            !string.IsNullOrWhiteSpace(_extendedOsdLoggingError);
+        public ExtendedOsdLoggingViewModel ExtendedOsdLogging { get; }
 
         // OSD background (panel + chart area) opacity in percent for BOTH CapFrameX renderers
         // (in-game hook via the metrics SHM, hook-free via the C API). Applies live: the hook
@@ -631,8 +584,14 @@ namespace CapFrameX.ViewModel
         public bool OverlayModeHook
         {
             get { return _appConfiguration.EnableHookOverlay; }
-            set { if (value) SetOverlayMode(hook: true, hookFree: false); }
+            set { if (value && IsInGameOverlayAvailable) SetOverlayMode(hook: true, hookFree: false); }
         }
+
+        public bool IsInGameOverlayAvailable => OverlayAvailability.IsInGameAvailable;
+
+        public string InGameOverlayDescription => IsInGameOverlayAvailable
+            ? "Injected into the game for in-swapchain graphs."
+            : OverlayAvailability.InGameUnavailableMessage;
 
         public bool OverlayModeHookFree
         {
@@ -842,17 +801,7 @@ namespace CapFrameX.ViewModel
             _overlayTemplateService = overlayTemplateService;
             _threadAffinityController = threadAffinityController;
             _onlineMetricService = onlineMetricService;
-            _extendedOsdLoggingController = new ExtendedOsdLoggingController();
-            try
-            {
-                _enableExtendedOsdLogging = _extendedOsdLoggingController.IsEnabled();
-            }
-            catch (Exception ex)
-            {
-                _extendedOsdLoggingError =
-                    $"Extended OSD logging could not be read: {ex.Message}";
-                Trace.TraceError("Failed to read extended OSD logging state: {0}", ex);
-            }
+            ExtendedOsdLogging = new ExtendedOsdLoggingViewModel(new ExtendedOsdLoggingController());
             RefreshHookFreeDisplayItems();
 
             // Define submodels
@@ -871,12 +820,11 @@ namespace CapFrameX.ViewModel
                 {
                     return Convert.ToInt32(obj);
                 })
-                .SelectMany(index =>
-                {
-                    return Observable.FromAsync(() => Task.Run(() => _overlayEntryProvider.SwitchConfigurationTo(index)))
-                        .SelectMany(_ => _overlayService.OnDictionaryUpdated.Take(1));
-                })
-                .StartWith(Enumerable.Empty<IOverlayEntry>())
+                .Select(index => Observable.FromAsync(() =>
+                    Task.Run(() => _overlayEntryProvider.SwitchConfigurationTo(index))))
+                .Concat()
+                .Do(_ => _overlayService.RequestRefresh())
+                .StartWith(System.Reactive.Unit.Default)
                 .SelectMany(_ => overlayEntryProvider.GetOverlayEntries(false))
                 .ObserveOnDispatcher()
                 .Subscribe(ApplyReloadedOverlayEntries);
@@ -941,8 +889,8 @@ namespace CapFrameX.ViewModel
             SortByEntryTypeCommand = new DelegateCommand(OnSortByEntryType);
             ClearFilterCommand = new DelegateCommand(OnClearFilter);
             LaunchOverlayPreviewAppCommand = new DelegateCommand(OnLaunchOverlayPreviewApp);
-            ApplyOverlayTemplateCommand = new DelegateCommand(async () => await OnApplyOverlayTemplate());
-            RevertOverlayTemplateCommand = new DelegateCommand(async () => await OnRevertOverlayTemplate());
+            ApplyOverlayTemplateCommand = new DelegateCommand(OnApplyOverlayTemplate);
+            RevertOverlayTemplateCommand = new DelegateCommand(OnRevertOverlayTemplate);
 
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventOverlayConfigHotkey();
@@ -1147,16 +1095,8 @@ namespace CapFrameX.ViewModel
             catch { }
         }
 
-        private async Task OnApplyOverlayTemplate()
+        private void OnApplyOverlayTemplate()
         {
-            bool wasOverlayActive = _appConfiguration.IsOverlayActive;
-            if (wasOverlayActive)
-            {
-                IsOverlayActive = false;
-                // give overlay management a bit time to disable overlay
-                await Task.Delay(100);
-            }
-
             // Store current state before applying template
             _overlayTemplateService.StoreCurrentState(OverlayEntries);
             var clonedEntries = OverlayEntries.Select(entry => entry.Clone()).ToList();
@@ -1182,20 +1122,11 @@ namespace CapFrameX.ViewModel
 
             SetSaveButtonIsEnable();
 
-            if (wasOverlayActive)
-                IsOverlayActive = true;
+            _overlayService.RequestRefresh();
         }
 
-        private async Task OnRevertOverlayTemplate()
+        private void OnRevertOverlayTemplate()
         {
-            bool wasOverlayActive = _appConfiguration.IsOverlayActive;
-            if (wasOverlayActive)
-            {
-                IsOverlayActive = false;
-                // give overlay management a bit time to disable overlay
-                await Task.Delay(100);
-            }
-
             var storedOverlayEntries = _overlayTemplateService.GetStoredOverlayEntries();
 
             OverlayEntries.ForEach(entry => entry.Dispose());
@@ -1211,8 +1142,7 @@ namespace CapFrameX.ViewModel
 
             SetSaveButtonIsEnable();
 
-            if (wasOverlayActive)
-                IsOverlayActive = true;
+            _overlayService.RequestRefresh();
         }
 
         private void OnSortByEntryType()

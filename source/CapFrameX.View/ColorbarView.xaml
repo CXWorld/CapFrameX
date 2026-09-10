@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="CapFrameX.View.ColorbarView"
+<UserControl x:Class="CapFrameX.View.ColorbarView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -270,7 +270,8 @@
 				<materialDesign:PopupBox Grid.Column="1" DataContext="{Binding Path=DataContext, ElementName=ColorbarViewName}"
 					materialDesign:Closed="PopupBox_Closed" RequestBringIntoView="PopupBox_RequestBringIntoView"
 					Margin="16,0,16,0" Padding="0" PopupUniformCornerRadius="10"
-					StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right" Opened="PopupBoxOpened">
+					StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right" Opened="PopupBoxOpened"
+					x:Name="OptionsPopupBox">
 					<materialDesign:PopupBox.ToggleContent>
 						<materialDesign:PackIcon Kind="Cog" Width="30" Height="30" Foreground="White"/>
 					</materialDesign:PopupBox.ToggleContent>
@@ -503,52 +504,7 @@
 												</StackPanel>
 											</Border>
 
-											<Border Style="{StaticResource SettingsCard}" IsEnabled="{Binding IsFlmSupported}">
-												<StackPanel>
-													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="AMD Frame Latency Meter"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Measure click-to-screen-response latency from real mouse input on supported AMD systems."/>
-													<Separator Margin="0 12 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
-													<Grid Margin="0 8">
-														<Grid.ColumnDefinitions>
-															<ColumnDefinition Width="*"/>
-															<ColumnDefinition Width="Auto"/>
-														</Grid.ColumnDefinitions>
-														<StackPanel>
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Use AMD FLM latency"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="Continuously poll FLM and expose results as a sensor and overlay metric."/>
-														</StackPanel>
-														<CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}"
-																  IsChecked="{Binding UseAmdFlmLatency, Mode=TwoWay}"
-																  ToolTipService.ShowDuration="25000" ToolTipService.ShowOnDisabled="True">
-															<CheckBox.ToolTip>
-																<ToolTip MaxWidth="440">
-																	<TextBlock TextWrapping="Wrap" Text="Enable continuous AMD Frame Latency Meter polling. FLM measures the click-to-screen-response latency of your real mouse clicks via screen capture — no synthetic input is injected. Values appear after clicks once the capture region has settled. The result is exposed as a loggable sensor and live overlay metric, independent of PresentMon and Anti-Lag 2 markers. Requires an AMD GPU — on other systems this option is unavailable."/>
-																</ToolTip>
-															</CheckBox.ToolTip>
-														</CheckBox>
-													</Grid>
-													<Border Margin="0 4 0 0" Padding="12"
-															Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"
-															CornerRadius="5" IsEnabled="{Binding UseAmdFlmLatency}">
-														<Grid>
-															<Grid.ColumnDefinitions>
-																<ColumnDefinition Width="*"/>
-																<ColumnDefinition Width="Auto"/>
-															</Grid.ColumnDefinitions>
-															<StackPanel>
-																<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Frame Generation"/>
-																<TextBlock Style="{StaticResource SettingsDescription}" Text="Optimize FLM detection for games using Frame Generation."/>
-															</StackPanel>
-															<CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}"
-																	  IsChecked="{Binding AmdFlmFrameGeneration, Mode=TwoWay}"
-																	  ToolTipService.ShowOnDisabled="True"
-																	  ToolTip="Optimize FLM's detection for games with Frame Generation enabled. Takes effect immediately (FLM restarts)."/>
-														</Grid>
-													</Border>
-												</StackPanel>
-											</Border>
-
-											<Border Style="{StaticResource SettingsCard}" Margin="0">
+                                            <Border Style="{StaticResource SettingsCard}" Margin="0">
 												<StackPanel>
 													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Screenshots"/>
 													<TextBlock Style="{StaticResource SettingsDescription}" Text="Choose where screenshots created from the toolbar are saved."/>
@@ -992,6 +948,7 @@
 																ToolTip="Ask the CapFrameX update server whether a newer version is available"/>
 														<Button Width="145" Height="36" Margin="10 0 0 0" Content="SHOW UPDATE"
 																Style="{StaticResource MaterialDesignOutlinedButton}"
+																Click="ShowUpdate_Click"
 																Command="{Binding UpdateViewModel.ShowUpdateDialogCommand}"
 																ToolTip="Show what the available update contains"/>
 													</StackPanel>

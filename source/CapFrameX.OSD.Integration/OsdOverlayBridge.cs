@@ -6,6 +6,7 @@ using System.Threading;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.OSD.Interop;
+using Serilog;
 
 namespace CapFrameX.OSD.Integration
 {
@@ -13,8 +14,8 @@ namespace CapFrameX.OSD.Integration
     /// Drives the hook-free DWM/DirectComposition overlay from CapFrameX's existing data,
     /// as an alternative to RTSS:
     ///  - entries come from <c>IOverlayService.CurrentOverlayEntries</c> — the processed,
-    ///    SORTED, value-populated display list (the same one RTSS renders); the raw
-    ///    OnDictionaryUpdated payload is only used as the per-tick trigger,
+    ///    SORTED, value-populated display list (the same one RTSS renders);
+    ///    OnDictionaryUpdated fires once that list has been refreshed,
     ///  - per-present frametimes and display times (MsBetweenDisplayChange) from the
     ///    capture service's frame-data stream → batched PushSample,
     ///  - runs when the overlay is active AND either the user enabled the hook-free overlay
@@ -41,6 +42,9 @@ namespace CapFrameX.OSD.Integration
         private readonly int _runtimeIndex;
         private readonly int _displayChangedIndex;
         private readonly int _processIdIndex;
+        private readonly int _swapChainIndex;
+        private readonly int _frameTypeIndex;
+        private readonly HookFreeFeedDiagnostics _feedDiagnostics;
         private readonly IObservable<string[]> _frameDataStream;
         private readonly bool _filterFrameRowsByTarget;
         private readonly IDisposable _targetPidSub;
@@ -102,7 +106,9 @@ namespace CapFrameX.OSD.Integration
                                 Func<int> startTimeIndexProvider = null,
                                 IObservable<bool> hookFreeFallbackStream = null,
                                 IObservable<int> processIdStream = null,
-                                int processIdColumnIndex = -1)
+                                int processIdColumnIndex = -1,
+                                int swapChainColumnIndex = -1,
+                                int frameTypeColumnIndex = -1)
         {
             if (overlayService == null) throw new ArgumentNullException(nameof(overlayService));
             if (appConfiguration == null) throw new ArgumentNullException(nameof(appConfiguration));
@@ -119,10 +125,19 @@ namespace CapFrameX.OSD.Integration
                 marginX: appConfiguration.OsdMarginX, marginY: appConfiguration.OsdMarginY,
                 monitor: DisplayMonitorResolver.GetMonitorIndex(
                     appConfiguration.HookFreeDisplayDeviceName));
+            // Stall diagnostics (Extended OSD logging only): the render loop reports its own stalls
+            // (managed side, GC), the feed diagnostics report what the PresentMon stream delivered.
+            // Both land in CapFrameX.log next to the native "[diag]" lines in %TEMP%\cfx_osd.log.
+            _osd.Diagnostic += message => Log.Information("HookFree OSD: {Message}", message);
+            _feedDiagnostics = new HookFreeFeedDiagnostics(
+                message => Log.Information("HookFree feed: {Message}", message));
+            ApplyDiagnosticsSwitch();
             _ftIndex = frametimeColumnIndex;
             _runtimeIndex = presentRuntimeColumnIndex;
             _displayChangedIndex = displayChangedColumnIndex;
             _processIdIndex = processIdColumnIndex;
+            _swapChainIndex = swapChainColumnIndex;
+            _frameTypeIndex = frameTypeColumnIndex;
             _frameDataStream = frameDataStream;
             _startTimeIndexProvider = startTimeIndexProvider;
             _filterFrameRowsByTarget = processIdStream != null;
@@ -179,11 +194,13 @@ namespace CapFrameX.OSD.Integration
         private void OnTargetPidChanged(int processId)
         {
             int targetPid = processId > 0 ? processId : 0;
-            if (Interlocked.Exchange(ref _targetPid, targetPid) == targetPid)
+            int previousPid = Interlocked.Exchange(ref _targetPid, targetPid);
+            if (previousPid == targetPid)
             {
                 return;
             }
 
+            _feedDiagnostics.OnTargetPidChanged(previousPid, targetPid, HookFreeFeedDiagnostics.Now());
             _curRuntime = null;
             lock (_fpsLock)
             {
@@ -212,6 +229,7 @@ namespace CapFrameX.OSD.Integration
             {
                 ApplyPosition(force: true);
                 UpdateFrameFeedRequirements(_overlayService.CurrentOverlayEntries);
+                ApplyDiagnosticsSwitch(); // applied natively right after the instance is created
                 _osd.Start();
                 _started = true;
                 UpdateFrameSubscription(visible);
@@ -260,8 +278,7 @@ namespace CapFrameX.OSD.Integration
         private void OnEntries()
         {
             if (!_started) return;
-            // Use the processed, CapFrameX-sorted display list (same data + order as RTSS)
-            // rather than the unordered raw dictionary values from OnDictionaryUpdated.
+            // OnDictionaryUpdated is published after this processed display list is ready.
             var entries = _overlayService.CurrentOverlayEntries;
             UpdateFrameFeedRequirements(entries);
             if (entries == null || entries.Length == 0) return;
@@ -302,6 +319,24 @@ namespace CapFrameX.OSD.Integration
             ApplyPosition();
 
             _osd.UpdateEntries(list);
+
+            // The OSD refresh (~1 Hz) doubles as the diagnostics heartbeat: follow the "Extended OSD
+            // logging" switch live and flush a due feed summary even when no rows arrive.
+            ApplyDiagnosticsSwitch();
+            _feedDiagnostics.Tick(HookFreeFeedDiagnostics.Now());
+        }
+
+        /// <summary>
+        /// Propagates the "Extended OSD logging" switch to every diagnostics consumer: the managed
+        /// render-loop monitor, the native core (via the host) and the feed diagnostics.
+        /// ExtendedOsdLoggingController mirrors the OsdDebug.json verboseLog flag into this process
+        /// environment variable when the user toggles the option.
+        /// </summary>
+        private void ApplyDiagnosticsSwitch()
+        {
+            bool enabled = Environment.GetEnvironmentVariable("CFX_OSD_VERBOSE_LOG") == "1";
+            _osd.VerboseDiagnostics = enabled;
+            _feedDiagnostics.Enabled = enabled;
         }
 
         private void UpdateFrameFeedRequirements(IEnumerable<IOverlayEntry> entries)
@@ -461,18 +496,37 @@ namespace CapFrameX.OSD.Integration
             {
                 targetPid = Volatile.Read(ref _targetPid);
                 if (!PresentMonFrameFilter.IsForTargetProcess(
-                    row, _processIdIndex, targetPid)) return;
+                    row, _processIdIndex, targetPid))
+                {
+                    if (Volatile.Read(ref _frameFeedRequirements) != 0)
+                    {
+                        int.TryParse(row[_processIdIndex], NumberStyles.Integer,
+                            CultureInfo.InvariantCulture, out int rowPid);
+                        _feedDiagnostics.OnRowRejected(rowPid, targetPid, HookFreeFeedDiagnostics.Now());
+                    }
+                    return;
+                }
             }
 
             int requirements = Volatile.Read(ref _frameFeedRequirements);
             if (requirements == 0) return;
 
             // graphics runtime/API of the presenting app -> label for the <APP> line
-            if ((requirements & NeedRuntimeLabel) != 0 &&
-                _runtimeIndex >= 0 && row.Length > _runtimeIndex)
+            string runtime = null;
+            if (_runtimeIndex >= 0 && row.Length > _runtimeIndex)
             {
-                var rt = row[_runtimeIndex]?.Trim();
-                if (!string.IsNullOrEmpty(rt) && rt != "<error>") _curRuntime = rt;
+                runtime = row[_runtimeIndex]?.Trim();
+                if ((requirements & NeedRuntimeLabel) != 0 &&
+                    !string.IsNullOrEmpty(runtime) && runtime != "<error>")
+                {
+                    string previousRuntime = _curRuntime;
+                    if (!string.Equals(previousRuntime, runtime, StringComparison.Ordinal))
+                    {
+                        _curRuntime = runtime;
+                        _feedDiagnostics.OnRuntimeLabelChanged(previousRuntime, runtime,
+                            HookFreeFeedDiagnostics.Now());
+                    }
+                }
             }
 
             bool needFrametimeSample = (requirements &
@@ -506,6 +560,13 @@ namespace CapFrameX.OSD.Integration
             // A target switch can race an in-flight PresentMon callback. Drop the parsed row before
             // publishing if its selection generation changed meanwhile.
             if (_filterFrameRowsByTarget && targetPid != Volatile.Read(ref _targetPid)) return;
+
+            _feedDiagnostics.OnRowAccepted(
+                _swapChainIndex >= 0 && row.Length > _swapChainIndex ? row[_swapChainIndex] : null,
+                runtime,
+                _frameTypeIndex >= 0 && row.Length > _frameTypeIndex ? row[_frameTypeIndex] : null,
+                hasFrametimeSample ? ms : 0.0, hasTimestamp ? t : 0.0, hasDisplaySample ? dc : 0.0,
+                HookFreeFeedDiagnostics.Now());
 
             bool pushFrametimeGraph = (requirements & NeedFrametimeGraph) != 0 &&
                 hasFrametimeSample;

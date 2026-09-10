@@ -1,5 +1,5 @@
-﻿using CapFrameX.Statistics.NetStandard.Contracts;
-using System;
+﻿using System;
+using CapFrameX.Statistics.NetStandard.Contracts;
 
 namespace CapFrameX.PresentMonInterface
 {
@@ -18,8 +18,6 @@ namespace CapFrameX.PresentMonInterface
         double GetOnlineStutteringPercentageValue();
 
         double GetOnlinePcLatencyAverageValue();
-
-        double GetOnlineAmdFlmLatencyAverageValue();
 
         double GetOnlineAnimationErrorValue();
 

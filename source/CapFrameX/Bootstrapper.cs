@@ -2,7 +2,6 @@
 using CapFrameX.Configuration;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
-using CapFrameX.Contracts.Latency;
 using CapFrameX.Contracts.Logging;
 using CapFrameX.Contracts.MVVM;
 using CapFrameX.Contracts.Overlay;
@@ -21,7 +20,6 @@ using CapFrameX.Overlay;
 using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
 using CapFrameX.PresentMonInterface;
-using CapFrameX.PresentMonInterface.AmdFlm;
 using CapFrameX.RTSSIntegration;
 using CapFrameX.Sensor;
 using CapFrameX.Statistics.NetStandard;
@@ -51,14 +49,15 @@ namespace CapFrameX
     {
         // Keeps the hook-free OSD bridge alive for the app lifetime.
         private OSD.Integration.OsdOverlayBridge _osdOverlayBridge;
+#if CFX_INGAME_OVERLAY
         // Manages in-game hook injection into the detected game process.
         private OSD.Integration.HookOverlayManager _hookOverlayManager;
-        // Publishes the hook's native handshake/heartbeat to view models.
-        private OSD.Integration.HookOverlayStatusService _hookOverlayStatusService;
         // Publishes CapFrameX's overlay entries to the in-game hook via shared memory.
         private OSD.Integration.HookMetricsPublisher _hookMetricsPublisher;
         // Streams per-frame PresentMon frametimes/display-times to the hook (PresentMon graph mode).
         private OSD.Integration.HookFrametimePublisher _hookFrametimePublisher;
+#endif
+        private OSD.Integration.HookOverlayStatusService _hookOverlayStatusService;
 
         // The existing composition root uses DryIoc-specific registration APIs. PrismApplication
         // exposes the container through Prism's abstraction, so unwrap it in one place.
@@ -105,22 +104,6 @@ namespace CapFrameX
                     ConfigurationProvider.AppConfiguration = config;
                 }
 
-                using (StartupPerformanceLogger.Measure("BENCHLAB service demand-start configuration"))
-                {
-                    try
-                    {
-                        var benchlabService = Container.Resolve<IBenchlabService>();
-                        if (!benchlabService.EnsureDemandStartMode())
-                        {
-                            Log.Logger.Warning("Could not configure the BENCHLAB service for demand start.");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Logger.Error(ex, "Error configuring the BENCHLAB service for demand start.");
-                    }
-                }
-
                 using (StartupPerformanceLogger.Measure("Path service resolution"))
                 {
                     var pathService = Container.Resolve<IPathService>();
@@ -146,10 +129,6 @@ namespace CapFrameX
                     osdCaptureService = Container.Resolve<ICaptureService>();
                 }
 
-                // Resolve the opt-in FLM service at startup so it can measure independently of
-                // PresentMon captures and feed both the live metric and sensor pipelines.
-                Container.Resolve<IAmdFlmService>();
-
                 // Only the composition root sees both the RTSS integration and the OSD's Vulkan
                 // probes, so the "is this target presenting through Vulkan?" answer is handed over
                 // here. RTSS uses it to decide whether it may still be launched into a running
@@ -159,6 +138,7 @@ namespace CapFrameX
                 rtssService.VulkanPresentationProbe =
                     OSD.Integration.VulkanPresentation.IsActive;
 
+#if CFX_INGAME_OVERLAY
                 // In-game hook overlay: inject cfx_osd_hook.dll into the game CapFrameX already
                 // detected. The PID flows through IRTSSService.ProcessIdStream (IProcessService),
                 // the same stream the overlay/capture pipeline uses — so we address the process
@@ -175,6 +155,8 @@ namespace CapFrameX
                         statusService: _hookOverlayStatusService);
                 }
 
+#endif
+
                 // CapFrameX.OSD: hook-free DWM/DirectComposition overlay. Scalars come from the
                 // same IOverlayEntry[] stream RTSS uses; per-present frametimes from the capture
                 // service. Besides the explicit hook-free mode, it takes over transiently when the
@@ -189,12 +171,19 @@ namespace CapFrameX
                         PresentMonCaptureService.PresentRuntime_INDEX,
                         PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
                         () => osdCaptureService.CPUStartQPCTimeInMs_Index,
-                        _hookOverlayManager.HookFreeFallbackStream,
+#if CFX_INGAME_OVERLAY
+                        hookFreeFallbackStream: _hookOverlayManager.HookFreeFallbackStream,
+#endif
                         processIdStream: rtssService.ProcessIdStream,
                         processIdColumnIndex:
-                            PresentMonCaptureService.ProcessID_INDEX);
+                            PresentMonCaptureService.ProcessID_INDEX,
+                        swapChainColumnIndex:
+                            PresentMonCaptureService.SwapChainAddress_INDEX,
+                        frameTypeColumnIndex:
+                            PresentMonCaptureService.FrameType_INDEX);
                 }
 
+#if CFX_INGAME_OVERLAY
                 // While the in-game hook overlay is on, mirror CapFrameX's processed overlay entries
                 // (fps/lows/sensors/static rows — the same set RTSS/hook-free render) into shared memory
                 // so the injected hook shows authoritative values, not just its local frame ring.
@@ -221,6 +210,8 @@ namespace CapFrameX
                         PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
                         () => osdCaptureService.CPUStartQPCTimeInMs_Index);
                 }
+
+#endif
 
                 using (StartupPerformanceLogger.Measure("Shell configuration"))
                 {
@@ -313,7 +304,6 @@ namespace CapFrameX
                     Container.Register<IRTSSService, RTSSService>(Reuse.Singleton);
                     Container.Register<IOverlayEntryCore, OverlayEntryCore>(Reuse.Singleton);
                     Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
-                    Container.Register<IAmdFlmService, AmdFlmService>(Reuse.Singleton);
                     Container.Register<IOnlineMetricService, OnlineMetricService>(Reuse.Singleton);
                     Container.Register<ISensorService, SensorService>(Reuse.Singleton);
                 }

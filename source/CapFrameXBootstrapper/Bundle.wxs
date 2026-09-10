@@ -17,6 +17,9 @@
 
 		<Variable Name="InstallFolder" Type="string" Value="[ProgramFilesFolder]CapFrameX" />
 		<Variable Name="OriginalSourceFolder" Type="string" Value="[WixBundleOriginalSourceFolder]" />
+		<!-- Overridable from the command line (LAUNCHAPP=1) and forwarded to the MSI, which
+		     starts CapFrameX after the install; see Product.wxs. -->
+		<Variable Name="LAUNCHAPP" Type="string" Value="0" bal:Overridable="yes" />
 
 		<!-- v6.0 Service Pack 2 -->
 		<bal:Condition Message="This application requires Service Pack 2 for Windows Vista / Server 2008.">
@@ -121,6 +124,7 @@
 				<MsiProperty Name="INSTALLFOLDER" Value="[InstallFolder]" />
 				<!--https://stackoverflow.com/questions/24068798/how-to-access-the-folder-where-the-exe-is-running-wix-bootstrapper-->
 				<MsiProperty Name="INSTALLLOCATION" Value="[OriginalSourceFolder]" />
+				<MsiProperty Name="LAUNCHAPP" Value="[LAUNCHAPP]" />
 			</MsiPackage>
 
 			<!--Nvidia FrameView SDK package-->

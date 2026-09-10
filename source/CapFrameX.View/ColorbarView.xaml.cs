@@ -329,6 +329,13 @@ namespace CapFrameX.View
             ScreenshotPopupBox.IsPopupOpen = true;
         }
 
+        private void ShowUpdate_Click(object sender, RoutedEventArgs e)
+        {
+            // The update dialog is hosted by the shell (see Shell.xaml), and a WPF Popup renders
+            // above it, so the popup has to go before the dialog can be reached.
+            OptionsPopupBox.IsPopupOpen = false;
+        }
+
         private void HardwareDescription_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             var key = e.Key;

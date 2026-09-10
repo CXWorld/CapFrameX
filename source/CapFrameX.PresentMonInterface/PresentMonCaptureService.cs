@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Runtime.InteropServices;
 
 namespace CapFrameX.PresentMonInterface
 {
@@ -45,6 +46,9 @@ namespace CapFrameX.PresentMonInterface
         // Graphics runtime/API of the presenting app (e.g. "DXGI", "D3D9") — index 3; used to
         // label the hook-free OSD's <APP> line (RTSS gets this from the 3D API, we get it from PresentMon).
         public static readonly int PresentRuntime_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "PresentRuntime");
+        // "Application" or a generated-frame source (--track_frame_type); index 8, before the
+        // optional PC latency column. Consumed by the hook-free feed diagnostics only.
+        public static readonly int FrameType_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "FrameType");
         public static readonly int MsBetweenPresents_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "MsBetweenPresents");
         public static readonly int MsBetweenDisplayChange_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "MsBetweenDisplayChange");
 
@@ -382,6 +386,9 @@ namespace CapFrameX.PresentMonInterface
         {
             _isUpdating = true;
             var updatedList = new List<(string, int)>();
+            // Extended OSD logging (the switch ExtendedOsdLoggingController mirrors into the
+            // process environment); evaluated once per 1 s pass, never per entry.
+            bool logRemovals = Environment.GetEnvironmentVariable("CFX_OSD_VERBOSE_LOG") == "1";
 
             lock (_listLock)
             {
@@ -392,6 +399,15 @@ namespace CapFrameX.PresentMonInterface
                         if (ProcessHelper.IsProcessAlive(processInfo.Item2))
                         {
                             updatedList.Add(processInfo);
+                        }
+                        else if (logRemovals)
+                        {
+                            // IsProcessAlive also returns false when OpenProcess is denied for a
+                            // live (protected) process; such an entry would be re-added by its next
+                            // row and flicker the detected list, so every removal is worth a line.
+                            _logger.LogInformation(
+                                "Process list: removed '{process}' (PID {pid}) - exited or not queryable (Win32 error {error})",
+                                processInfo.Item1, processInfo.Item2, Marshal.GetLastWin32Error());
                         }
                     }
                     catch (Exception ex)

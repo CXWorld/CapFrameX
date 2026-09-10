@@ -127,6 +127,33 @@ The hook-free OSD lives in the **private** repo [CXWorld/CapFrameX.OSD](https://
 - `source/CapFrameX.OSD.Integration` (adapter mapping `IOverlayEntry` onto the OSD, references `CapFrameX.Contracts`) intentionally stays in this repo; everything CapFrameX-independent (native core, Interop, WPF editor controls) lives in the OSD repo.
 - After OSD changes: update the DLLs in `external/CapFrameX.OSD-prebuilt/` (see its README) and bump the submodule commit.
 
+### Hook-free stall diagnostics
+
+Chart pauses/hitches in the hook-free overlay have three unrelated possible causes — the render
+thread not running, the replay clock holding, or PresentMon rows never reaching the feed — and
+the logs are laid out to tell them apart with the **Extended OSD logging** switch (Overlay tab;
+`ExtendedOsdLoggingController` sets `verboseLog` in `OsdDebug.json` and `CFX_OSD_VERBOSE_LOG=1`
+in the user and process environment). Nothing below is written while the switch is off. The
+hook-free overlay follows the toggle live: `OsdOverlayBridge.ApplyDiagnosticsSwitch` re-reads the
+process variable once per OSD refresh and pushes it to the feed diagnostics, the managed render
+loop and, through `OsdHost.VerboseDiagnostics` → `cfx_osd_set_verbose_log`, the native core.
+Only the in-game hook and the Vulkan layer still read it at load:
+
+- `%TEMP%\cfx_osd.log` — the native core's `[diag]` lines (timestamped): host tick gaps, slow
+  ticks with a phase breakdown, replay holds/snaps, feed arrival vs. source gaps, scene rebuilds
+  with the entries that changed, window placement, topmost fights, scale changes, Present
+  HRESULT changes. Documented in the OSD repo's CLAUDE.md.
+- `CapFrameX.log` — `HookFree OSD: render loop stall/slow step/10s` (the managed render loop:
+  iteration gaps, wake latency, pump/drain/tick durations, GC collection and pause deltas — the
+  one thing native code cannot see) and `HookFree feed: ...` from
+  `CapFrameX.OSD.Integration/HookFreeFeedDiagnostics.cs`: target PID changes, streaks of rows
+  rejected for a foreign PID while the target is silent, additional swapchains inside the
+  target process (the hook-free feed does not filter by swapchain, unlike captures), runtime
+  label flips (they rename the `<APP>` group and rebuild the scene), frametime outliers, source
+  and arrival gaps, backdated rows; one summary per 10 s. `Overlay target process: ... PID a -> b`
+  (`CaptureViewModel`) and `Process list: removed ...` (`PresentMonCaptureService`) show why a
+  PID changed. Repeating lines are rate-limited; summaries come once per 10 s.
+
 ### Vulkan titles: implicit layer instead of injection
 
 Vulkan games present through the driver's ICD, so the DXGI Present hook never fires. They are served by an implicit loader layer (`VK_LAYER_CAPFRAMEX_overlay`) staged one folder per bitness — `vulkan\cfx_osd_vklayer.dll` and `vulkan\x86\cfx_osd_vklayer.dll`, mirroring the hook's `hook\` / `hook\x86\` split. Both manifests are byte-identical; `library_path` inside them is relative, so only the folder decides which DLL the loader picks up. The x86 layer comes from its own CMake tree in the OSD repo (`vk_layer`, `cmake -B build-x86 -A Win32`).

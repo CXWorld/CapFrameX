@@ -9,7 +9,10 @@ namespace CapFrameX.Contracts.Overlay
 	{
 		ISubject<bool> IsOverlayActiveStream { get; }
 
+		/// <summary>Published after CurrentOverlayEntries contains the processed display list.</summary>
 		IObservable<IOverlayEntry[]> OnDictionaryUpdated { get; }
+
+		void RequestRefresh();
 
 		string SecondMetric { get; set; }
 

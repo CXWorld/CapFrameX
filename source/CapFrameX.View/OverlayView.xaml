@@ -1145,15 +1145,19 @@
 									<Separator Margin="0 10 0 8" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 
 									<CheckBox Content="Extended OSD logging"
-											  IsChecked="{Binding EnableExtendedOsdLogging, Mode=TwoWay}"
+											  IsChecked="{Binding ExtendedOsdLogging.IsEnabled, Mode=TwoWay}"
+											  IsEnabled="{Binding ExtendedOsdLogging.IsUpdating, Converter={StaticResource InvertBoolConverter}}"
 											  Style="{StaticResource MaterialDesignCheckBox}"/>
 									<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
-											   Text="Enables logs for the DirectX hook, Vulkan layer, and per-present statistics."/>
+											   Visibility="{Binding ExtendedOsdLogging.IsUpdating, Converter={StaticResource TrueToVisibleConverter}}"
+											   Text="Saving..."/>
+									<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
+											   Text="Enables detailed logs for the DirectX hook, Vulkan layer, native renderer, hook-free stall diagnostics, and per-present statistics."/>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#E0A020" TextWrapping="Wrap"
-											   Text="&#x26A0; Restart CapFrameX after changing this option."/>
+											   Text="&#x26A0; The hook-free overlay follows this option live. Restart CapFrameX and the game for the in-game hook and Vulkan layer."/>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#D95050" TextWrapping="Wrap"
-											   Visibility="{Binding HasExtendedOsdLoggingError, Converter={StaticResource TrueToVisibleConverter}}"
-											   Text="{Binding ExtendedOsdLoggingError}"/>
+											   Visibility="{Binding ExtendedOsdLogging.HasError, Converter={StaticResource TrueToVisibleConverter}}"
+											   Text="{Binding ExtendedOsdLogging.Error}"/>
 								</StackPanel>
 							</Border>
 						</StackPanel>
@@ -1182,11 +1186,13 @@
 
 									<Separator Margin="0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 									<StackPanel Margin="0 8">
-										<RadioButton GroupName="OverlayModeHook" Content="CapFrameX in-game"
+										<RadioButton GroupName="OverlayModeHook" Content="CapFrameX in-game (Experimental)"
+                                                     IsEnabled="{Binding IsInGameOverlayAvailable}"
+                                                     ToolTip="{Binding InGameOverlayDescription}" ToolTipService.ShowOnDisabled="True"
 													 IsChecked="{Binding OverlayModeHook, Mode=TwoWay}"
 													 Style="{StaticResource MaterialDesignRadioButton}"/>
 										<TextBlock Margin="26 0 0 0" Style="{StaticResource OsdOptionsDescription}"
-												   Text="Injected into the game for the smoothest in-swapchain graphs. Use only with titles where injection is safe."/>
+												   Text="{Binding InGameOverlayDescription}"/>
 										<StackPanel Margin="26 8 0 0" IsEnabled="{Binding OverlayModeHook}">
 											<CheckBox Content="Use PresentMon frame times"
 													  IsChecked="{Binding HookOverlayUsePresentMonFrametimes, Mode=TwoWay}"

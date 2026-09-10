@@ -183,6 +183,11 @@ namespace CapFrameX.Data
 
         public async Task StartCapture(CaptureOptions options)
         {
+            // Logged first thing: next to the hotkey log lines this shows how long the request
+            // waited between the hotkey callback and the thread that runs it.
+            _logger.LogInformation("Capture start requested for {process} (PID {pid}).",
+                options.ProcessInfo.Item1, options.ProcessInfo.Item2);
+
             if (IsCapturing)
                 throw new Exception("Capture already running.");
 

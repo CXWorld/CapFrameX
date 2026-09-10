@@ -40,6 +40,7 @@ namespace CapFrameX.PMD.Benchlab
         private readonly ISubject<EPmdServiceStatus> _pmdServiceStatusStream = new Subject<EPmdServiceStatus>();
         private readonly SemaphoreSlim _pipeRequestLock = new SemaphoreSlim(1, 1);
         private IDisposable _pmdSensorStreamDisposable;
+        private bool _startedWindowsService;
         private Process _benchlabProcess;
         private ChildProcessJob _benchlabProcessJob;
         private string _devicePipeName;
@@ -112,7 +113,7 @@ namespace CapFrameX.PMD.Benchlab
 
             try
             {
-                if (!EnsureDemandStartMode() || !EnsureBenchlabServiceStarted())
+                if (!EnsureBenchlabServiceStarted())
                 {
                     throw new InvalidOperationException("The BENCHLAB service could not be started.");
                 }
@@ -169,6 +170,7 @@ namespace CapFrameX.PMD.Benchlab
                     throw;
                 }
 
+                _startedWindowsService = false;
                 return await GetDevicesWhenReadyAsync();
             }
         }
@@ -489,7 +491,8 @@ namespace CapFrameX.PMD.Benchlab
                 return true;
             }
 
-            return TryStartWindowsService(SERVICE_NAME) || TryStartBundledService();
+            _startedWindowsService = TryStartWindowsService(SERVICE_NAME);
+            return _startedWindowsService || TryStartBundledService();
         }
 
         private static bool TryStartWindowsService(string serviceName)
@@ -697,32 +700,12 @@ namespace CapFrameX.PMD.Benchlab
             _benchlabProcessJob?.Dispose();
             _benchlabProcessJob = null;
 
-            TryStopWindowsService(SERVICE_NAME);
-
             try
             {
-                var processes = Process.GetProcessesByName(SERVICE_PROCESS_NAME);
-                foreach (var process in processes)
+                if (_benchlabProcess != null && !_benchlabProcess.HasExited)
                 {
-                    try
-                    {
-                        if (!process.HasExited)
-                        {
-                            var closeRequested = process.CloseMainWindow();
-                            if ((!closeRequested || !process.WaitForExit(500)) && !process.HasExited)
-                            {
-                                process.Kill(true);
-                                process.WaitForExit(2000);
-                            }
-                        }
-                    }
-                    catch
-                    {
-                    }
-                    finally
-                    {
-                        process.Dispose();
-                    }
+                    _benchlabProcess.Kill(true);
+                    _benchlabProcess.WaitForExit(2000);
                 }
             }
             catch
@@ -732,6 +715,14 @@ namespace CapFrameX.PMD.Benchlab
             {
                 _benchlabProcess?.Dispose();
                 _benchlabProcess = null;
+            }
+
+            // Only stop the Windows service if this instance started it. An independently
+            // running service or desktop process belongs to the user.
+            if (_startedWindowsService)
+            {
+                TryStopWindowsService(SERVICE_NAME);
+                _startedWindowsService = false;
             }
         }
 

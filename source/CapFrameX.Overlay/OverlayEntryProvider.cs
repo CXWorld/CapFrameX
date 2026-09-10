@@ -46,10 +46,17 @@ namespace CapFrameX.Overlay
 
         private readonly string _overlayConfigFolder;
 
+        // Only retained to remove obsolete items from existing overlay profiles.
+        private static readonly HashSet<string> RETIRED_ENTRY_IDENTIFIERS = new HashSet<string>()
+        {
+            "OnlineAmdFlmLatency", "OnlineClickToPhotonLatency",
+            "/capframex/amd-flm/0/latency/0", "/capframex/presentmon/0/latency/0"
+        };
+
         private static readonly HashSet<string> ONLINE_METRIC_NAMES = new HashSet<string>()
         {
             "OnlineAverage", "OnlineP1","OnlineP0dot1", "OnlineP0dot2", "Online1PercentLow", "Online0dot1PercentLow", "Online0dot2PercentLow",
-            "OnlineGpuActiveTimeAverage", "OnlineCpuActiveTimeAverage", "OnlineFrameTimeAverage", "OnlinePcLatency", "OnlineAmdFlmLatency", "OnlineAnimationError",
+            "OnlineGpuActiveTimeAverage", "OnlineCpuActiveTimeAverage", "OnlineFrameTimeAverage", "OnlinePcLatency", "OnlineAnimationError",
             "OnlineGpuActiveTimePercentageDeviation", "OnlineStutteringPercentage", "PmdGpuPowerCurrent",
             "PmdCpuPowerCurrent", "PmdSystemPowerCurrent"
         };
@@ -61,7 +68,6 @@ namespace CapFrameX.Overlay
             CONFIG_GATED_ENTRIES = new Dictionary<string, (string, Func<IAppConfiguration, bool>)>()
             {
                 { "OnlinePcLatency", (nameof(IAppConfiguration.UsePcLatency), config => config.UsePcLatency) },
-                { "OnlineAmdFlmLatency", (nameof(IAppConfiguration.UseAmdFlmLatency), config => config.UseAmdFlmLatency) },
             };
 
         // Renderer-gated entries are part of the overlay profile, not of a renderer-specific
@@ -220,21 +226,25 @@ namespace CapFrameX.Overlay
         public async Task<IOverlayEntry[]> GetOverlayEntries(bool updateFormats = true)
         {
             await _taskCompletionSource.Task;
-            RefreshDisplayEntries();
-            UpdateSensorData();
-            UpdateOnlineMetrics();
-            UpdateAppInfo();
-            UpdateResolution();
-            UpdateThreadAffinityState();
-            UpdateNetworkPing();
-            UpdateHookOverlayStatus();
-
-            if (updateFormats)
+            // A live profile replacement must finish wiring its entries before a renderer reads it.
+            lock (_overlayEntriesGate)
             {
-                UpdateFormatting();
-            }
+                RefreshDisplayEntries();
+                UpdateSensorData();
+                UpdateOnlineMetrics();
+                UpdateAppInfo();
+                UpdateResolution();
+                UpdateThreadAffinityState();
+                UpdateNetworkPing();
+                UpdateHookOverlayStatus();
 
-            return _overlayEntries.ToArray();
+                if (updateFormats)
+                {
+                    UpdateFormatting();
+                }
+
+                return _overlayEntries.ToArray();
+            }
         }
 
         public IOverlayEntry GetOverlayEntry(string identifier)
@@ -635,7 +645,7 @@ namespace CapFrameX.Overlay
                         configOverlayEntries.Add(sensorEntry);
                         exactMatchHandled = true;
 
-                        _logger.LogInformation(
+                        _logger.LogDebug(
                             "Sensor '{identifier}' description changed but ID/Type/SortKey match. Reusing sensor; group name resolved to '{groupName}'.",
                             configEntry.Identifier, sensorEntry.GroupName);
                     }
@@ -644,7 +654,7 @@ namespace CapFrameX.Overlay
                         // ID matches but description AND (type or sort key) differ —
                         // sensor indices likely shifted. Don't claim this ID so fallback
                         // paths (StableIdentifier / Description+Type) can find the correct sensor.
-                        _logger.LogInformation(
+                        _logger.LogDebug(
                             "Sensor '{identifier}' ID match rejected (description: '{oldDescription}' -> '{newDescription}', type/sortKey mismatch). Trying fallback paths.",
                             configEntry.Identifier, configEntry.Description, sensorEntry.Description);
                     }
@@ -668,7 +678,7 @@ namespace CapFrameX.Overlay
                         hasChanges = true;
                         matched = true;
 
-                        _logger.LogInformation(
+                        _logger.LogDebug(
                             "Sensor '{oldIdentifier}' migrated to '{newIdentifier}' via StableIdentifier '{stableId}'.",
                             configEntry.Identifier, stableMatchSensor.Identifier, configEntry.StableIdentifier);
                     }
@@ -688,7 +698,7 @@ namespace CapFrameX.Overlay
                             hasChanges = true;
                             matched = true;
 
-                            _logger.LogInformation(
+                            _logger.LogDebug(
                                 "Sensor '{oldIdentifier}' migrated to '{newIdentifier}' via description match '{description}'.",
                                 configEntry.Identifier, fallbackSensor.Identifier, configEntry.Description);
                         }
@@ -698,23 +708,53 @@ namespace CapFrameX.Overlay
                     if (!matched)
                     {
                         hasChanges = true;
-                        _logger.LogInformation(
+                        _logger.LogDebug(
                             "Sensor '{identifier}' ('{description}') no longer available. Removing from overlay config.",
                             configEntry.Identifier, configEntry.Description);
                     }
                 }
             }
 
-            // Phase 2: Add new sensors that weren't in the loaded config.
-            // Insert after the last entry of the same type to maintain grouping.
+            // Phase 2: Add new sensors that weren't in the loaded config. Per-core CPU rows are placed
+            // next to their siblings; everything else goes after the last entry of the same type.
+            // Per-core families the saved profile showed for every core ("all core clocks", "all
+            // core loads"): after a CPU swap the section has to stay complete, so the cores the new
+            // CPU adds are shown like their siblings instead of being parked hidden.
+            var completeCoreFamilies = GetCompletelyShownCoreFamilies(overlayEntriesFromJson);
+
             foreach (var sensorEntry in sensorOverlayEntryClones)
             {
                 if (matchedSensorIds.Contains(sensorEntry.Identifier))
                     continue;
 
+                hasChanges = true;
+
+                if (sensorEntry.OverlayEntryType == EOverlayEntryType.CPU
+                    && CpuCoreRow.TryParse(sensorEntry.Description, out var coreRow))
+                {
+                    if (completeCoreFamilies.TryGetValue(coreRow.Family, out var sibling))
+                    {
+                        CopyFormatting(sibling, sensorEntry);
+                        sensorEntry.ShowOnOverlay = true;
+                    }
+                    else
+                    {
+                        sensorEntry.ShowOnOverlay = false;
+                    }
+
+                    // Next to its neighbours, not at the end of the section.
+                    configOverlayEntries.Insert(
+                        GetCoreEntryInsertIndex(configOverlayEntries, sensorEntry, coreRow), sensorEntry);
+
+                    _logger.LogDebug(
+                        "New core sensor '{identifier}' ('{description}') detected. Added to overlay config ({visibility}).",
+                        sensorEntry.Identifier, sensorEntry.Description,
+                        sensorEntry.ShowOnOverlay ? "shown like its siblings" : "hidden");
+                    continue;
+                }
+
                 // New sensor not present in saved config — add but don't show on overlay
                 sensorEntry.ShowOnOverlay = false;
-                hasChanges = true;
 
                 int insertIndex = -1;
                 for (int i = configOverlayEntries.Count - 1; i >= 0; i--)
@@ -731,7 +771,7 @@ namespace CapFrameX.Overlay
                 else
                     configOverlayEntries.Add(sensorEntry);
 
-                _logger.LogInformation(
+                _logger.LogDebug(
                     "New sensor '{identifier}' ('{description}') detected. Added to overlay config (hidden).",
                     sensorEntry.Identifier, sensorEntry.Description);
             }
@@ -804,6 +844,20 @@ namespace CapFrameX.Overlay
         private static void CopyUserConfig(IOverlayEntry source, IOverlayEntry target)
         {
             target.ShowOnOverlay = source.ShowOnOverlay;
+            CopyFormatting(source, target);
+
+            if (IsGroupNameCompatible(source.GroupName, target.Description))
+            {
+                target.GroupName = source.GroupName;
+            }
+        }
+
+        /// <summary>
+        /// Copies the presentation of one entry onto another: colors, font sizes, limits, graph and
+        /// separators. Visibility and group name are left alone.
+        /// </summary>
+        private static void CopyFormatting(IOverlayEntry source, IOverlayEntry target)
+        {
             target.ShowGraph = source.ShowGraph;
             target.Color = source.Color;
             target.ValueFontSize = source.ValueFontSize;
@@ -814,11 +868,78 @@ namespace CapFrameX.Overlay
             target.GroupSeparators = source.GroupSeparators;
             target.UpperLimitColor = source.UpperLimitColor;
             target.LowerLimitColor = source.LowerLimitColor;
+        }
 
-            if (IsGroupNameCompatible(source.GroupName, target.Description))
+        /// <summary>
+        /// The per-core families ("(MHz)", "(%)", "Thread #1 (%)") a saved profile shows for every
+        /// core it knew, each with the entry a newly appearing core takes its formatting from. A
+        /// family with even one hidden core is a deliberate selection and is not returned.
+        /// </summary>
+        private static Dictionary<string, IOverlayEntry> GetCompletelyShownCoreFamilies(IEnumerable<IOverlayEntry> savedEntries)
+        {
+            var representatives = new Dictionary<string, IOverlayEntry>();
+            var incomplete = new HashSet<string>();
+
+            foreach (var entry in savedEntries)
             {
-                target.GroupName = source.GroupName;
+                if (entry.OverlayEntryType != EOverlayEntryType.CPU
+                    || !CpuCoreRow.TryParse(entry.Description, out var coreRow))
+                    continue;
+
+                if (entry.ShowOnOverlay)
+                    representatives[coreRow.Family] = entry;
+                else
+                    incomplete.Add(coreRow.Family);
             }
+
+            foreach (var family in incomplete)
+                representatives.Remove(family);
+
+            return representatives;
+        }
+
+        /// <summary>
+        /// Where a per-core entry belongs in the list: behind the last row of the same family with a
+        /// lower core number, else in front of the first one with a higher number. A family without
+        /// any rows falls back to SortKey order within the CPU section (the order the templates
+        /// establish), and a profile without CPU entries appends.
+        /// </summary>
+        private static int GetCoreEntryInsertIndex(List<IOverlayEntry> entries, IOverlayEntry coreEntry, CpuCoreRow coreRow)
+        {
+            int afterLowerSibling = -1;
+            int beforeHigherSibling = -1;
+            int afterLowerSortKey = -1;
+            int firstCpuIndex = -1;
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                var entry = entries[i];
+                if (entry.OverlayEntryType != EOverlayEntryType.CPU)
+                    continue;
+
+                if (firstCpuIndex < 0)
+                    firstCpuIndex = i;
+
+                if (AlphanumericComparer.Instance.Compare(entry.SortKey, coreEntry.SortKey) <= 0)
+                    afterLowerSortKey = i + 1;
+
+                if (!CpuCoreRow.TryParse(entry.Description, out var sibling) || sibling.Family != coreRow.Family)
+                    continue;
+
+                if (sibling.Index < coreRow.Index)
+                    afterLowerSibling = i + 1;
+                else if (sibling.Index > coreRow.Index && beforeHigherSibling < 0)
+                    beforeHigherSibling = i;
+            }
+
+            if (afterLowerSibling >= 0)
+                return afterLowerSibling;
+            if (beforeHigherSibling >= 0)
+                return beforeHigherSibling;
+            if (afterLowerSortKey >= 0)
+                return afterLowerSortKey;
+
+            return firstCpuIndex >= 0 ? firstCpuIndex : entries.Count;
         }
 
         public void RefreshDisplayEntries(IReadOnlyList<DetectedDisplay> displays = null)
@@ -1088,6 +1209,16 @@ namespace CapFrameX.Overlay
             if (string.IsNullOrEmpty(oldGroupName) || string.IsNullOrEmpty(currentDescription))
                 return true;
 
+            // A saved core label ("Core #7 P") on a sensor that now describes another core identity
+            // ("Core #7 E (MHz)"): the CPU was swapped for one whose core #7 has a different type.
+            // Carrying the label over would mislabel the core, so the sensor's own group name wins.
+            if (CpuCoreRow.TryParse(oldGroupName, out var savedCore)
+                && CpuCoreRow.TryParse(currentDescription, out var currentCore)
+                && savedCore.Label != currentCore.Label)
+            {
+                return false;
+            }
+
             bool oldHasThreadMarker = oldGroupName.IndexOf("Thread #", StringComparison.OrdinalIgnoreCase) >= 0;
             bool currentHasThreadMarker = currentDescription.IndexOf("Thread #", StringComparison.OrdinalIgnoreCase) >= 0;
 
@@ -1100,6 +1231,12 @@ namespace CapFrameX.Overlay
         /// </summary>
         private bool GetIsEntryKeptInList(OverlayEntryWrapper entry)
         {
+            if (RETIRED_ENTRY_IDENTIFIERS.Contains(entry.Identifier)
+                || RETIRED_ENTRY_IDENTIFIERS.Contains(entry.StableIdentifier))
+            {
+                return false;
+            }
+
             // Display-resolution items are reconciled against the live Screen.AllScreens snapshot
             // after loading. Keep them long enough to preserve user formatting for displays that
             // are still connected, even if an older config persisted a disabled state.
@@ -1434,14 +1571,6 @@ namespace CapFrameX.Overlay
                 pcLatency.Value = Math.Round(_onlineMetricService.GetOnlinePcLatencyAverageValue(), 1, MidpointRounding.AwayFromZero);
             }
 
-            // AMD Frame Latency Meter
-            _identifierOverlayEntryDict.TryGetValue("OnlineAmdFlmLatency", out IOverlayEntry amdFlmLatency);
-
-            if (amdFlmLatency != null && amdFlmLatency.ShowOnOverlay)
-            {
-                amdFlmLatency.Value = Math.Round(_onlineMetricService.GetOnlineAmdFlmLatencyAverageValue(), 1, MidpointRounding.AwayFromZero);
-            }
-
             // Animation Error
             _identifierOverlayEntryDict.TryGetValue("OnlineAnimationError", out IOverlayEntry animationError);
 
@@ -1681,15 +1810,6 @@ namespace CapFrameX.Overlay
             {
                 pcLatency.ValueUnitFormat = "ms";
                 pcLatency.ValueAlignmentAndDigits = "{0,5:F1}";
-            }
-
-            // AMD Frame Latency Meter
-            _identifierOverlayEntryDict.TryGetValue("OnlineAmdFlmLatency", out IOverlayEntry amdFlmLatency);
-
-            if (amdFlmLatency != null)
-            {
-                amdFlmLatency.ValueUnitFormat = "ms";
-                amdFlmLatency.ValueAlignmentAndDigits = "{0,5:F1}";
             }
 
             // Animation Error

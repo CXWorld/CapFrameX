@@ -64,6 +64,7 @@ namespace CapFrameX.ViewModel
         private string _lastCapturedProcess;
         private string _currentGameNameToCapture = string.Empty;
         private string _currentProcessToCapture = string.Empty;
+        private int _lastPublishedProcessId;
         private bool _isLoggerOutputEmpty = true;
         private Dictionary<string, string> _gameFileDescriptionCache = new Dictionary<string, string>();
 
@@ -631,13 +632,25 @@ namespace CapFrameX.ViewModel
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.Capture,
                 () =>
                 {
-                    _logger.LogInformation("Hotkey ({captureHotkeyString}) callback triggered. Lock capture service state is {lockCaptureServiceState}.", CaptureHotkeyString, _captureManager.LockCaptureService);
-                    _logger.LogInformation("IsCapturing state: {isCapturingState}", _captureManager.IsCapturing);
+                    _logger.LogDebug("Hotkey ({captureHotkeyString}) callback triggered. Lock capture service state is {lockCaptureServiceState}.", CaptureHotkeyString, _captureManager.LockCaptureService);
+                    _logger.LogDebug("IsCapturing state: {isCapturingState}", _captureManager.IsCapturing);
                     if (!_captureManager.LockCaptureService)
                     {
                         SetCaptureMode();
                     }
                 });
+        }
+
+        /// <summary>
+        /// Runs a capture start/stop on a thread of its own. Task.Run queues onto the thread pool,
+        /// and when the pool is saturated by blocking work (sensor polling, WMI, PresentMon I/O) it
+        /// adds threads at roughly one per second, so the hotkey action sat in that queue for
+        /// seconds while nothing in the log said why. LongRunning starts a dedicated thread now.
+        /// </summary>
+        private static void StartCaptureWork(Func<Task> work)
+        {
+            Task.Factory.StartNew(work, System.Threading.CancellationToken.None,
+                TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
         private void SetCaptureMode()
@@ -659,7 +672,7 @@ namespace CapFrameX.ViewModel
                 string processToCapture = SelectedProcessToCapture ?? ProcessesToCapture.FirstOrDefault();
                 var processInfo = ProcessesInfo.FirstOrDefault(info => info.Item1 == processToCapture);
 
-                Task.Run(async () =>
+                StartCaptureWork(async () =>
                 {
                     try
                     {
@@ -684,7 +697,7 @@ namespace CapFrameX.ViewModel
             }
             else
             {
-                Task.Run(async () =>
+                StartCaptureWork(async () =>
                 {
                     try
                     {
@@ -872,6 +885,20 @@ namespace CapFrameX.ViewModel
             _currentProcessToCapture = currentProcess;
 
             var processId = ProcessesInfo.FirstOrDefault(info => info.Item1 == currentProcess).Item2;
+            if (processId != _lastPublishedProcessId)
+            {
+                // Every overlay renderer keys its frame feed on this PID; a flicker to 0 silences
+                // the hook-free graph and renames its <APP> group, so each change is logged once
+                // while extended OSD logging is on.
+                if (ExtendedOsdLoggingController.IsVerboseLoggingEnabledInProcess())
+                {
+                    _logger.LogInformation(
+                        "Overlay target process: '{process}' PID {previous} -> {current} (detected {count}, selected '{selected}')",
+                        currentProcess ?? "<none>", _lastPublishedProcessId, processId,
+                        ProcessesToCapture.Count, SelectedProcessToCapture ?? "<auto>");
+                }
+                _lastPublishedProcessId = processId;
+            }
             _rTSSService.ProcessIdStream.OnNext(processId);
 
             _updateCurrentProcess?.Publish(new ViewMessages.CurrentProcessToCapture(currentProcess, processId));
