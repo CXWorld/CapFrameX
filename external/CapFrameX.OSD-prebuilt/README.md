@@ -10,31 +10,24 @@ the OSD is built from source instead and these files are ignored.
 ## Build provenance
 
 The current managed bridge was built in `Release` with the VS 2026/v145 toolset from private
-CapFrameX.OSD revision `a2b5bb831990b477485c8b8dc26a0cfa7cf0c464` (hook-free stall diagnostics:
-`src/core/Diagnostics.h`, timestamped `[diag]` log lines, `cfx_osd_set_verbose_log`,
-`OsdHost.Diagnostic`). The x64/x86 hook pair and x64/x86 Vulkan layer pair were rebuilt on
-2026-09-07 in `RelWithDebInfo` from the same revision, every native tree configured with
-`-G "Visual Studio 18 2026" -T v145` (MSVC 19.51.36256, Windows SDK 10.0.26100.0). The core was
-rebuilt later that day from that revision plus the hook-free pacing fix (`ConsumeRepaintSlots` in
-`src/core/RenderPacing.h`: `OsdInstance::tick` handed the replay clock the whole accumulator while
-also retaining the sub-slot remainder, so the clock ran at 1.0-2.0x wall time, drained its
-cushion and froze the chart in a rebuffering hold every few seconds) — OSD revision
-`2da4f0a695954d0d3bd72108f133a833bd464c5d`. The fix compiles into the hook and layer trees
-(verified) but only affects the hook-free window, so those were not reshipped.
+CapFrameX.OSD revision `e907ea965fb28cb56d82f59064a58579329c6568` (per-entry text scales; it
+also carries the hook-free stall diagnostics of `a2b5bb83` and the replay pacing fix of
+`2da4f0a6`). The core, x64/x86 hook pair, and x64/x86 Vulkan layer pair were rebuilt on
+2026-09-09 in `RelWithDebInfo` from the same revision, every native tree configured with
+`-G "Visual Studio 18 2026"` (toolset v145).
 
-The Vulkan build used Khronos Vulkan-Headers `vulkan-sdk-1.4.357.0` (commit
-`e3b1eec08173d6b825cd3ac88c885a63b621504a`) and glslang `16.5.0` from the official
-`main-tot` Windows x64 release archive, SHA-256
-`6BA807EF1D697EC66A34D9D666F842F863FFF4F5612EE95C1CC88F5DE5A362C2`.
-All 37 native CTest cases passed (7 core, 15 per hook architecture). PE architectures,
-preservation of existing DLL exports, and identical Vulkan manifests were verified.
+The Vulkan trees are unchanged since the 2026-09-07 build and still pin Khronos Vulkan-Headers
+`vulkan-sdk-1.4.357.0` (commit `e3b1eec08173d6b825cd3ac88c885a63b621504a`) and glslang `16.5.0`
+from the official `main-tot` Windows x64 release archive, SHA-256
+`6BA807EF1D697EC66A34D9D666F842F863FFF4F5612EE95C1CC88F5DE5A362C2`; the layer binaries change
+with the core because `hook_poc` and `vk_layer` compile the core sources into themselves.
 
-- managed bridge SHA-256: `0268C5543F99E730CA67179A4F0F3662954186036BE5AA2DDF294F2DF881DD94`
-- core SHA-256: `EE483C91D249F64AD069C84DD0952DF66A6D62BD62968CBC4D57439BE504255F`
-- hook x64 SHA-256: `A90F5116F115B47478A33707C92A496EC9FBA0ABA525C9239FFA16DE5E714051`
-- hook x86 SHA-256: `F8A7279A7832647826CE2DD2F861D80102BCE1CB083AAA87C502803FC4CA4AAC`
-- Vulkan x64 SHA-256: `CC1B2134651B706E38ECA29A7832B6A8A62FED8E329B8F819C44D35BC06A83AA`
-- Vulkan x86 SHA-256: `082286190E70E04EC522FC89E0551147E80A9E738A0FBA84216F868C0BB174DB`
+- managed bridge SHA-256: `615838E43AADFEBEB009B17DA3ABBC53A0B47BE1969F5CD75D2BF96B04C21DA9`
+- core SHA-256: `F851659EF7F8A41154E39B2CB1446BD8E8C5B3DBA2A8471F29573A9DC84896B6`
+- hook x64 SHA-256: `040721103E81A1515FF02503370902C407400015FD75474DBA5A8C9BE39F9CCE`
+- hook x86 SHA-256: `0FC7229362DC8D92206BBF84E5805D2092086C273767C7519E9F928EC1D916D6`
+- Vulkan x64 SHA-256: `654B8750E132F17962A72A3947BE07EA4D3A9F596D8C92647F7E3B53C578646E`
+- Vulkan x86 SHA-256: `4F71DCDCF9DC5580BD7980785E3CB73D7907C52AE0D439E0A2DAE4379B16ABE6`
 
 ## Contents
 
