@@ -38,6 +38,15 @@ namespace CapFrameX.OSD.Integration
         // past that stage the overlay would silently stay invisible forever, so bound it and let
         // the hook-free renderer take over instead.
         internal const ulong HookRendererReadyTimeoutMs = 10000;
+        // A game that switches its frame-generation setup at runtime rewrites which runtime owns
+        // presentation, and that can invalidate a stage the probe already verified minutes ago.
+        // While the overlay is standing down, re-scan the target's modules and re-plan when the
+        // evidence signature really changed. All three bounds exist so a title whose runtimes
+        // come and go cannot keep the ladder restarting: the overlay has to be down for a while,
+        // scans stay rare, and a process gets only so many re-plans.
+        internal const ulong ProbeRearmStandDownMs = 3000;
+        internal const ulong ProbeEvidenceRescanIntervalMs = 2000;
+        internal const int MaxProbeRearmsPerProcess = 4;
         internal const int EarlyInjectionPollMs = 25;
         internal const string ProcessStartTraceQuery =
             "SELECT * FROM Win32_ProcessStartTrace";
@@ -122,12 +131,24 @@ namespace CapFrameX.OSD.Integration
         private bool _hookFreeFallbackActive;
         private ulong _injectionSucceededTickMs;
         private ulong _lastNativeStatusTickMs;
-        private ulong _firstPresentWaitingSinceTickMs;
-        private bool _firstPresentTimedOut;
-        private ulong _rendererInitializingSinceTickMs;
-        private bool _rendererInitializationStalled;
         private bool _foreignPresenterActive;
         private bool _earlyInjectionRequired;
+        // The compatibility stage ladder under observation for the selected PID. Planned when
+        // an injection is attempted, replaced on every PID change; it owns the stage clocks
+        // that used to be latched per PID in this class.
+        private HookCompatibilityProbeSession _probeSession;
+        // The evidence signature that session was planned from, how long the overlay has been
+        // standing down since it settled, and how often this PID was already re-planned.
+        private string _probeEvidenceSignature;
+        private ulong _probeStandDownSinceTickMs;
+        private ulong _nextEvidenceRescanTickMs;
+        private int _probeRearmCount;
+        private readonly IHookLearnedProfileStore _learnedStore;
+        private readonly IDisposable _autoCompatibilitySub;
+        private readonly IDisposable _learnedStoreSub;
+        private readonly Lazy<string> _hookBuildHash;
+        private volatile bool _autoCompatibility;
+        private volatile int _statusPollIntervalMs = HookCompatibilityProbeSession.IdlePollIntervalMs;
         private int _injectionStatusPid;
         private string _lastInjectionError;
         private string _nativeFallbackReason;
@@ -147,9 +168,11 @@ namespace CapFrameX.OSD.Integration
 
         /// <param name="processIdStream">The detected-game PID stream (IProcessService.ProcessIdStream).</param>
         /// <param name="dllPathOverride">Optional explicit path to cfx_osd_hook.dll.</param>
+        /// <param name="learnedStore">Learned compatibility profiles; null keeps them in memory.</param>
         public HookOverlayManager(IAppConfiguration appConfiguration, IObservable<int> processIdStream,
             IObservable<string[]> frameDataStream, int processIdColumnIndex, int runtimeColumnIndex,
-            string dllPathOverride = null, HookOverlayStatusService statusService = null)
+            string dllPathOverride = null, HookOverlayStatusService statusService = null,
+            HookLearnedProfileStore learnedStore = null)
         {
             _appConfiguration = appConfiguration ?? throw new ArgumentNullException(nameof(appConfiguration));
             if (processIdStream == null) throw new ArgumentNullException(nameof(processIdStream));
@@ -164,6 +187,15 @@ namespace CapFrameX.OSD.Integration
             _dllPathX86 = ResolveHookAsset(Path.Combine("x86", HookDllName), "CFX_HOOK_DLL_X86");
             _enabled = appConfiguration.EnableHookOverlay;
             _statusService = statusService ?? new HookOverlayStatusService();
+            _learnedStore = learnedStore ?? new HookLearnedProfileStore(null);
+            _autoCompatibility = appConfiguration.HookOverlayAutoCompatibility;
+            // A learned entry is only trusted for the hook build that produced it.
+            _hookBuildHash = new Lazy<string>(() => ComputeHookTag(_dllPath));
+            _autoCompatibilitySub = appConfiguration.OnValueChanged
+                .Where(x => x.key == nameof(IAppConfiguration.HookOverlayAutoCompatibility))
+                .Subscribe(x => _autoCompatibility = (bool)x.value);
+            _learnedStoreSub = _learnedStore.Changes
+                .Subscribe(_ => AddConfiguredEarlyInjectionTargets());
 
             // Mirror the hook overlay's effective visibility to the in-game hook via a named event;
             // the hook reads it each present and skips drawing while it is reset. The hook must draw
@@ -272,12 +304,16 @@ namespace CapFrameX.OSD.Integration
                 _injectionSucceeded = false;
                 _injectionSucceededTickMs = 0;
                 _lastNativeStatusTickMs = 0;
-                _firstPresentWaitingSinceTickMs = 0;
-                _firstPresentTimedOut = false;
-                _rendererInitializingSinceTickMs = 0;
-                _rendererInitializationStalled = false;
                 _foreignPresenterActive = false;
                 _earlyInjectionRequired = false;
+                // An early injection plans its session before PresentMon selects the process;
+                // keep that one, drop anything that belonged to a different PID.
+                if (_probeSession != null && _probeSession.ProcessId != pid)
+                    _probeSession = null;
+                _probeEvidenceSignature = _probeSession?.Evidence?.Signature;
+                _probeStandDownSinceTickMs = 0;
+                _nextEvidenceRescanTickMs = 0;
+                _probeRearmCount = 0;
                 _lastInjectionError = null;
                 _nativeFallbackReason = null;
                 _hookFreeFallbackReason = null;
@@ -557,19 +593,26 @@ namespace CapFrameX.OSD.Integration
             if (IsInjectionAttemptBlocked(pid)) return;
             if (!RefreshVulkanInjectionGate(pid)) return;
             if (!RefreshForeignOverlayGate(pid)) return;
-            HookCompatibilityProfileCatalog.TryGetForProcess(pid,
-                out HookCompatibilityProfile compatibilityProfile);
             if (!TryReserveInjection(pid)) return;
+            HookCompatibilityStage stage = ResolveStage(pid, HookAttachMode.Late);
+            if (stage == null)
+            {
+                // Every stage failed for this title on this hook build. Keep the reservation so
+                // the frame rows stop re-planning; the hook-free fallback serves the session and
+                // the status says how to probe again.
+                SetExhaustedFallback(pid);
+                return;
+            }
             if (IsEarlyInjectionProcessName(_currentProcessName))
                 StopEarlyInjectionProbe();
             TimeSpan compatibilityDelay;
             lock (_gate)
             {
                 compatibilityDelay = _compatibilityDelay.GetRemainingDelay(pid,
-                    compatibilityProfile?.InjectionDelay ?? TimeSpan.Zero);
+                    stage.InjectionDelay);
             }
             SetInjectionStatus(pid, inProgress: true, succeeded: false, error: null);
-            SetInjectionDelayStatus(pid, compatibilityProfile, compatibilityDelay);
+            SetInjectionDelayStatus(pid, stage, compatibilityDelay);
 
             Task.Run(async () =>
             {
@@ -590,9 +633,8 @@ namespace CapFrameX.OSD.Integration
                     if (compatibilityDelay > TimeSpan.Zero)
                     {
                         Log.Information(
-                            "HookOverlay: compatibility profile {profile} delays injection into pid {pid} by {delaySeconds:0.#} s",
-                            compatibilityProfile.ExecutableName, pid,
-                            compatibilityDelay.TotalSeconds);
+                            "HookOverlay: compatibility stage {stage} delays injection into pid {pid} by {delaySeconds:0.#} s",
+                            stage.DisplayName, pid, compatibilityDelay.TotalSeconds);
                         await Task.Delay(compatibilityDelay).ConfigureAwait(false);
                         ClearInjectionDelayStatus(pid);
                         if (!IsInjectionStillEligible(pid) || !IsProcessAlive(pid))
@@ -659,8 +701,7 @@ namespace CapFrameX.OSD.Integration
                         ReleaseInjectionReservation(pid);
                         return;
                     }
-                    if (!TryPublishCompatibilityProfile(pid, compatibilityProfile,
-                        out string compatibilityError))
+                    if (!TryPublishStage(pid, stage, out string compatibilityError))
                     {
                         TimeSpan retryDelay = RegisterInjectionFailure(pid,
                             compatibilityError);
@@ -707,46 +748,233 @@ namespace CapFrameX.OSD.Integration
                 IsDxgiRuntime(_currentRuntime);
         }
 
-        private void RememberEarlyInjectionTarget(int pid)
+        /// <summary>
+        /// Plans the stage ladder for <paramref name="pid"/> from its pre-injection evidence,
+        /// the shipped catalog and the learned store, installs the session for it, and returns
+        /// the stage to inject with — or null when the learned profile says every stage already
+        /// failed on this hook build.
+        /// </summary>
+        private HookCompatibilityStage ResolveStage(int pid, HookAttachMode attachMode)
         {
-            if (!TryReadProcessIdentity(pid, out string processName,
-                out string executablePath))
+            string runtime = attachMode == HookAttachMode.Late ? _currentRuntime : null;
+            HookTargetEvidence evidence = HookTargetEvidenceProbe.Probe(pid, runtime, attachMode);
+            HookCompatibilityProfileCatalog.TryGetForProcess(pid,
+                out HookCompatibilityProfile catalog);
+            HookLearnedProfileEntry learned = null;
+            string processName = null;
+            if (TryReadProcessIdentity(pid, out processName, out _) &&
+                !_learnedStore.TryGet(processName, evidence.Signature, out learned) &&
+                attachMode == HookAttachMode.Early)
+            {
+                _learnedStore.TryGetByEarlySignature(processName, evidence.Signature,
+                    out learned);
+            }
+
+            HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Plan(evidence,
+                catalog, learned, _hookBuildHash.Value, _autoCompatibility);
+            var session = new HookCompatibilityProbeSession(pid, plan);
+            lock (_stateGate)
+            {
+                _probeSession = session;
+                _probeEvidenceSignature = evidence.Signature;
+                _probeStandDownSinceTickMs = 0;
+                _nextEvidenceRescanTickMs = 0;
+            }
+
+            HookCompatibilityStage stage = plan.StartStage;
+            Log.Information(
+                "HookOverlay: compatibility plan for pid {pid} ('{process}', {attach} attach) — evidence [{evidence}], signature {signature}; " +
+                "stage {index}/{count} {stage}; {reason}",
+                pid, processName ?? _currentProcessName ?? "unknown", attachMode,
+                evidence.Describe(), evidence.Signature,
+                plan.IsEmpty ? 0 : plan.StartIndex + 1, plan.Ladder.Count,
+                stage == null ? "none" : $"{stage.DisplayName} [{stage.Source}]", plan.Reason);
+            return stage;
+        }
+
+        private void SetExhaustedFallback(int pid)
+        {
+            string reason;
+            lock (_stateGate)
+            {
+                if (pid != _currentPid) return;
+                reason = _probeSession?.Plan.Reason ??
+                    "every compatibility stage failed for this title";
+                _nativeFallbackReason = reason;
+            }
+            Log.Warning(
+                "HookOverlay: in-game renderer unusable for pid {pid} ('{process}', {reason}); enabling hook-free fallback",
+                pid, _currentProcessName ?? "unknown", reason);
+            UpdateHookFreeFallback();
+            PublishStatus();
+        }
+
+        // The session decided; make it so. Runs outside _stateGate: store writes, the fallback
+        // stream and the status publication all take their own locks.
+        private void ExecuteProbeActions(int pid, HookCompatibilityProbeSession session,
+            IReadOnlyList<HookProbeAction> actions)
+        {
+            if (session == null || actions == null || actions.Count == 0) return;
+            foreach (HookProbeAction action in actions)
+            {
+                try
+                {
+                    switch (action.Kind)
+                    {
+                        case HookProbeActionKind.LogVerdict:
+                            Log.Information(
+                                "HookOverlay: compatibility stage {index}/{count} ({stage}) for pid {pid} ('{process}') ended with {verdict}: {detail}",
+                                session.StageNumber, session.StageCount,
+                                action.Stage?.DisplayName ?? "none", pid,
+                                _currentProcessName ?? "unknown", action.Verdict,
+                                HookCompatibilityVerdictClassifier.DescribeVerdict(
+                                    action.Verdict, session.LastSnapshot, 1));
+                            break;
+                        case HookProbeActionKind.Learn:
+                            RecordStageOutcome(pid, session, action.Stage, verified: true,
+                                pending: null, exhausted: false, verdict: "Success",
+                                detail: null);
+                            break;
+                        case HookProbeActionKind.ScheduleRestart:
+                            RecordStageOutcome(pid, session, session.CurrentStage,
+                                verified: false, pending: action.Stage, exhausted: false,
+                                verdict: action.Verdict.ToString(), detail: action.Reason);
+                            if (action.Stage != null && action.Stage.RequiresEarlyInjection)
+                                AddLearnedEarlyInjectionTarget(pid, action.Stage);
+                            ArmEarlyInjectionProbeAfterExit(pid);
+                            break;
+                        case HookProbeActionKind.GiveUp:
+                            RecordStageOutcome(pid, session, session.CurrentStage,
+                                verified: false, pending: null, exhausted: action.Exhausted,
+                                verdict: action.Verdict.ToString(), detail: action.Reason);
+                            break;
+                        case HookProbeActionKind.SetFallback:
+                            SetNativeFallbackReason(pid, action.Reason);
+                            break;
+                        case HookProbeActionKind.SetPollInterval:
+                            SetStatusPollInterval(action.PollIntervalMs);
+                            break;
+                        case HookProbeActionKind.EscalateLive:
+                            Log.Information(
+                                "HookOverlay: escalating pid {pid} ('{process}') live to compatibility stage {index}/{count} ({stage})",
+                                pid, _currentProcessName ?? "unknown", session.StageNumber,
+                                session.StageCount, action.Stage?.DisplayName ?? "none");
+                            break;
+                        case HookProbeActionKind.PublishStage:
+                            if (!TryPublishStage(pid, action.Stage, out string publishError))
+                            {
+                                Log.Warning(
+                                    "HookOverlay: could not publish compatibility stage {stage} for pid {pid} — {error}",
+                                    action.Stage?.DisplayName ?? "none", pid, publishError);
+                            }
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, "HookOverlay: compatibility action {action} for pid {pid} failed",
+                        action.Kind, pid);
+                }
+            }
+        }
+
+        private void SetNativeFallbackReason(int pid, string reason)
+        {
+            bool changed;
+            lock (_stateGate)
+            {
+                if (pid != _currentPid) return;
+                changed = !string.Equals(reason, _nativeFallbackReason, StringComparison.Ordinal);
+                _nativeFallbackReason = reason;
+            }
+            if (!changed) return;
+            if (!string.IsNullOrWhiteSpace(reason))
             {
                 Log.Warning(
-                    "HookOverlay: could not remember pid {pid} for early injection because its executable identity is unavailable",
+                    "HookOverlay: in-game renderer unusable for pid {pid} ('{process}', {reason}); enabling hook-free fallback",
+                    pid, _currentProcessName ?? "unknown", reason);
+            }
+            else
+            {
+                Log.Information(
+                    "HookOverlay: native status healthy for pid {pid}; clearing native-failure fallback",
+                    pid);
+            }
+            UpdateHookFreeFallback();
+        }
+
+        private void RecordStageOutcome(int pid, HookCompatibilityProbeSession session,
+            HookCompatibilityStage stage, bool verified, HookCompatibilityStage pending,
+            bool exhausted, string verdict, string detail)
+        {
+            if (!TryReadProcessIdentity(pid, out string processName, out string executablePath))
+            {
+                Log.Debug("HookOverlay: not recording the compatibility outcome for pid {pid}; its identity is unavailable",
                     pid);
                 return;
             }
+            // Re-scan now that every runtime the title uses is resident; the plan-time scan of an
+            // early attach saw only the gate module.
+            HookTargetEvidence planned = session.Evidence;
+            HookTargetEvidence current = HookTargetEvidenceProbe.Probe(pid, _currentRuntime,
+                planned.AttachMode);
+            string signature = current.IsKnown ? current.Signature : planned.Signature;
+            string earlySignature = planned.AttachMode == HookAttachMode.Early
+                ? planned.Signature
+                : null;
+            string[] ladder = new string[session.Plan.Ladder.Count];
+            for (int i = 0; i < ladder.Length; i++)
+                ladder[i] = session.Plan.Ladder[i].DisplayName;
 
-            if (!HookTargetPolicy.TryFindLoadedModule(pid,
-                    EarlyInjectionEvidenceModules, out string presenterEvidenceModule,
-                    out string moduleError) ||
-                string.IsNullOrWhiteSpace(presenterEvidenceModule))
-            {
-                Log.Warning(
-                    "HookOverlay: not learning unsafe process-start injection for pid {pid} ('{process}'); no supported presenter module was found ({reason})",
-                    pid, processName, moduleError ?? "no Streamline/XeSS-FG module loaded");
+            HookLearnedProfileEntry entry = _learnedStore.Upsert(processName, executablePath,
+                signature, earlySignature, _hookBuildHash.Value, e =>
+                {
+                    if (stage != null) e.SetStage(stage);
+                    e.Verified = verified;
+                    e.Exhausted = exhausted;
+                    e.SetPending(pending, detail);
+                    e.LastVerdict = verdict;
+                    e.LastVerdictDetail = detail;
+                    e.Attempts++;
+                    e.Ladder = ladder;
+                });
+            Log.Information(
+                "HookOverlay: learned profile for '{process}' ({signature}) is now stage {stage}, verified {verified}, exhausted {exhausted}, pending {pending}",
+                entry.ExecutableName, entry.EvidenceSignature, entry.ToStage().DisplayName,
+                entry.Verified, entry.Exhausted, entry.PendingStage()?.DisplayName ?? "none");
+        }
+
+        private void AddLearnedEarlyInjectionTarget(int pid, HookCompatibilityStage stage)
+        {
+            if (!TryReadProcessIdentity(pid, out string processName, out string executablePath))
                 return;
-            }
-
-            string gateModule = ResolveLearnedEarlyInjectionGateModule(
-                presenterEvidenceModule);
-            if (string.IsNullOrWhiteSpace(gateModule)) return;
-
             var target = new EarlyInjectionTarget(processName, executablePath,
-                gateModule);
+                stage.EarlyInjectionModule);
             bool added;
             lock (_gate)
             {
-                added = !_earlyInjectionTargets.ContainsKey(executablePath);
-                _earlyInjectionTargets[executablePath] = target;
+                string key = $"learned:{processName}";
+                added = !_earlyInjectionTargets.ContainsKey(key);
+                _earlyInjectionTargets[key] = target;
             }
             if (added)
             {
                 Log.Warning(
-                    "HookOverlay: learned early-injection target '{process}' at '{path}', gated by precursor '{gateModule}' from presenter evidence '{presenterModule}'; keep CapFrameX running and restart the game",
-                    processName, executablePath, gateModule, presenterEvidenceModule);
-                ArmEarlyInjectionProbeAfterExit(pid);
+                    "HookOverlay: learned early-injection target '{process}' at '{path}', gated by precursor '{gateModule}'; keep CapFrameX running and restart the game",
+                    processName, executablePath, stage.EarlyInjectionModule);
+            }
+        }
+
+        private void SetStatusPollInterval(int intervalMs)
+        {
+            if (intervalMs <= 0 || intervalMs == _statusPollIntervalMs) return;
+            _statusPollIntervalMs = intervalMs;
+            try
+            {
+                _statusTimer?.Change(intervalMs, intervalMs);
+            }
+            catch (ObjectDisposedException)
+            {
             }
         }
 
@@ -767,6 +995,23 @@ namespace CapFrameX.OSD.Integration
                         new EarlyInjectionTarget(processName, executablePath: null,
                             profile.EarlyInjectionModule));
                     added = true;
+                }
+                // Learned entries whose next (or verified) stage needs the early path.
+                if (_autoCompatibility)
+                {
+                    foreach (HookLearnedProfileEntry entry in _learnedStore.Snapshot())
+                    {
+                        if (!entry.MatchesHookBuild(_hookBuildHash.Value)) continue;
+                        HookCompatibilityStage stage = entry.PendingStage() ??
+                            (entry.Verified ? entry.ToStage() : null);
+                        if (stage == null || !stage.RequiresEarlyInjection) continue;
+                        string key = $"learned:{entry.ExecutableName}";
+                        if (_earlyInjectionTargets.ContainsKey(key)) continue;
+                        _earlyInjectionTargets.Add(key,
+                            new EarlyInjectionTarget(entry.ExecutableName,
+                                entry.ExecutablePath, stage.EarlyInjectionModule));
+                        added = true;
+                    }
                 }
             }
             if (added) ArmEarlyInjectionProbe();
@@ -1055,9 +1300,13 @@ namespace CapFrameX.OSD.Integration
                         return;
                     }
 
-                    HookCompatibilityProfileCatalog.TryGetForProcess(pid,
-                        out HookCompatibilityProfile compatibilityProfile);
-                    TimeSpan delay = compatibilityProfile?.InjectionDelay ?? TimeSpan.Zero;
+                    HookCompatibilityStage stage = ResolveStage(pid, HookAttachMode.Early);
+                    if (stage == null)
+                    {
+                        ReleaseEarlyInjectionReservation(pid);
+                        return;
+                    }
+                    TimeSpan delay = stage.InjectionDelay;
                     if (delay > TimeSpan.Zero)
                     {
                         await Task.Delay(delay).ConfigureAwait(false);
@@ -1098,8 +1347,7 @@ namespace CapFrameX.OSD.Integration
                             arch, pid, retryDelay.TotalSeconds);
                         return;
                     }
-                    if (!TryPublishCompatibilityProfile(pid, compatibilityProfile,
-                        out string compatibilityError))
+                    if (!TryPublishStage(pid, stage, out string compatibilityError))
                     {
                         TimeSpan retryDelay = RegisterEarlyInjectionFailure(pid,
                             compatibilityError);
@@ -1237,10 +1485,10 @@ namespace CapFrameX.OSD.Integration
             }
         }
 
-        private void SetInjectionDelayStatus(int pid, HookCompatibilityProfile profile,
+        private void SetInjectionDelayStatus(int pid, HookCompatibilityStage stage,
             TimeSpan delay)
         {
-            if (profile == null || delay <= TimeSpan.Zero) return;
+            if (stage == null || delay <= TimeSpan.Zero) return;
             ulong delayMs = (ulong)Math.Ceiling(delay.TotalMilliseconds);
             ulong now = HookStatusProbe.CurrentTickCount;
             lock (_stateGate)
@@ -1249,7 +1497,7 @@ namespace CapFrameX.OSD.Integration
                 _injectionDelayUntilTickMs = now > ulong.MaxValue - delayMs
                     ? ulong.MaxValue
                     : now + delayMs;
-                _injectionDelayProfile = profile.ExecutableName;
+                _injectionDelayProfile = stage.DisplayName;
             }
             PublishStatus();
         }
@@ -1265,8 +1513,10 @@ namespace CapFrameX.OSD.Integration
             PublishStatus();
         }
 
-        private bool TryPublishCompatibilityProfile(int pid,
-            HookCompatibilityProfile profile, out string error)
+        // Publishes the stage to the hook: creates the channel before the first injection and
+        // rewrites it (new sequence) for a live escalation. Always, even for flags None — a
+        // version-2 hook needs the mapping to exist so a later stage change can reach it.
+        private bool TryPublishStage(int pid, HookCompatibilityStage stage, out string error)
         {
             error = null;
             if (_disposed)
@@ -1274,10 +1524,24 @@ namespace CapFrameX.OSD.Integration
                 error = "hook overlay manager is disposed";
                 return false;
             }
-            NativeHookCompatibilityFlags flags = profile?.NativeFlags ??
+            NativeHookCompatibilityFlags flags = stage?.Flags ??
                 NativeHookCompatibilityFlags.None;
-            if (flags == NativeHookCompatibilityFlags.None) return true;
+            int stageIndex = 1;
+            int stageCount = 1;
+            bool probeActive = false;
+            lock (_stateGate)
+            {
+                if (_probeSession != null && _probeSession.ProcessId == pid)
+                {
+                    stageIndex = _probeSession.StageNumber;
+                    stageCount = _probeSession.StageCount;
+                    probeActive = _probeSession.ProbingEnabled;
+                }
+            }
+            int hostFlags = (_autoCompatibility ? HookCompatibilityChannel.HostFlagAutoCompatibility : 0) |
+                HookCompatibilityChannel.HostFlagLiveEscalationAllowed;
 
+            int sequence;
             lock (_gate)
             {
                 if (_disposed)
@@ -1285,20 +1549,34 @@ namespace CapFrameX.OSD.Integration
                     error = "hook overlay manager is disposed";
                     return false;
                 }
-                if (_compatibilityChannels.ContainsKey(pid)) return true;
-                if (!HookCompatibilityChannel.TryCreate(pid, flags,
-                    out HookCompatibilityChannel channel, out error))
+                if (_compatibilityChannels.TryGetValue(pid, out HookCompatibilityChannel existing))
                 {
-                    error = $"could not publish native compatibility flags ({error})";
-                    return false;
+                    if (!existing.TryPublish(flags, (int)(stage?.Id ?? 0), stageIndex, stageCount,
+                        probeActive, hostFlags, out error))
+                    {
+                        error = $"could not republish native compatibility flags ({error})";
+                        return false;
+                    }
+                    sequence = existing.Sequence;
                 }
-
-                _compatibilityChannels.Add(pid, channel);
+                else
+                {
+                    if (!HookCompatibilityChannel.TryCreate(pid, flags, (int)(stage?.Id ?? 0),
+                        stageIndex, stageCount, probeActive, hostFlags,
+                        out HookCompatibilityChannel channel, out error))
+                    {
+                        error = $"could not publish native compatibility flags ({error})";
+                        return false;
+                    }
+                    _compatibilityChannels.Add(pid, channel);
+                    sequence = channel.Sequence;
+                }
             }
 
             Log.Information(
-                "HookOverlay: compatibility profile {profile} published flags {flags} for pid {pid}",
-                profile.ExecutableName, flags, pid);
+                "HookOverlay: compatibility stage {index}/{count} {stage} [{source}] published flags {flags} for pid {pid} (sequence {sequence})",
+                stageIndex, stageCount, stage?.DisplayName ?? "none", stage?.Source ?? "none",
+                flags, pid, sequence);
             return true;
         }
 
@@ -1375,6 +1653,15 @@ namespace CapFrameX.OSD.Integration
                 _successfulInjections.Add(pid);
             }
             SetInjectionStatus(pid, inProgress: false, succeeded: true, error: null);
+            HookCompatibilityProbeSession session;
+            IReadOnlyList<HookProbeAction> actions = null;
+            lock (_stateGate)
+            {
+                session = _probeSession;
+                if (session != null && session.ProcessId == pid)
+                    actions = session.OnInjectionSucceeded(HookStatusProbe.CurrentTickCount);
+            }
+            ExecuteProbeActions(pid, session, actions);
         }
 
         private void SetInjectionStatus(int pid, bool inProgress, bool succeeded, string error)
@@ -1390,6 +1677,11 @@ namespace CapFrameX.OSD.Integration
                 {
                     _injectionSucceededTickMs = HookStatusProbe.CurrentTickCount;
                     _lastNativeStatusTickMs = 0;
+                    // A retried injection that now worked: the stage verdict decides from here.
+                    if (_nativeFallbackReason != null &&
+                        _nativeFallbackReason.StartsWith("in-game hook injection failed",
+                            StringComparison.Ordinal))
+                        _nativeFallbackReason = null;
                 }
                 else if (!inProgress)
                 {
@@ -1409,13 +1701,11 @@ namespace CapFrameX.OSD.Integration
         }
 
         private void UpdateNativeStatusFallback(int pid, bool hasNativeStatus,
-            EHookOverlayStatus? nativeState, ulong nowTickMs, bool foreignPresenter,
-            bool earlyInjectionRequired)
+            NativeHookStatusSnapshot native, EHookOverlayStatus? nativeState, ulong nowTickMs)
         {
-            bool changed = false;
-            bool fallbackEnabled = false;
-            bool rememberEarlyInjectionTarget = false;
-            string reason = null;
+            HookCompatibilityProbeSession session = null;
+            IReadOnlyList<HookProbeAction> actions = null;
+            string legacyReason = null;
             lock (_stateGate)
             {
                 if (pid != _currentPid) return;
@@ -1423,139 +1713,130 @@ namespace CapFrameX.OSD.Integration
                 if (hasNativeStatus)
                 {
                     _lastNativeStatusTickMs = nowTickMs;
-                    rememberEarlyInjectionTarget = ShouldRememberEarlyInjectionTarget(
-                        _earlyInjectionRequired, hasNativeStatus,
-                        earlyInjectionRequired);
-                    _earlyInjectionRequired = earlyInjectionRequired;
+                    _earlyInjectionRequired =
+                        (native.Flags & NativeHookStatusFlags.EarlyInjectionRequired) != 0;
                     // This is the hook's confirmed current presentation state, not a module or
                     // proxy-presence signal. Follow both transitions so turning FG off can leave
                     // the hook-free fallback again; native-side confirmation prevents flapping.
                     _foreignPresenterActive = ResolveForeignPresenterActivity(
-                        _foreignPresenterActive, hasNativeStatus, foreignPresenter);
-
-                    // Track the two native startup phases independently. Waiting means the hook
-                    // is armed but has not intercepted a Present yet; Initializing means Present
-                    // is live but the renderer is not ready. Latch either timeout so hiding the
-                    // hook for the fallback cannot flip the state back and forth.
-                    if (!_firstPresentTimedOut && !_rendererInitializationStalled &&
-                        !_foreignPresenterActive)
-                    {
-                        if (nativeState == EHookOverlayStatus.Waiting)
-                        {
-                            if (_firstPresentWaitingSinceTickMs == 0)
-                                _firstPresentWaitingSinceTickMs = nowTickMs;
-                            bool timedOut = HasFirstPresentTimedOut(
-                                _firstPresentWaitingSinceTickMs, nowTickMs);
-                            if (timedOut && !_firstPresentTimedOut)
-                                rememberEarlyInjectionTarget = true;
-                            _firstPresentTimedOut = timedOut;
-                            _rendererInitializingSinceTickMs = 0;
-                        }
-                        else
-                        {
-                            _firstPresentWaitingSinceTickMs = 0;
-                        }
-
-                        if (nativeState == EHookOverlayStatus.Initializing)
-                        {
-                            if (_rendererInitializingSinceTickMs == 0)
-                                _rendererInitializingSinceTickMs = nowTickMs;
-                            _rendererInitializationStalled = HasRendererInitializationStalled(
-                                _rendererInitializingSinceTickMs, nowTickMs);
-                        }
-                        else
-                        {
-                            _rendererInitializingSinceTickMs = 0;
-                        }
-                    }
-
-                    if (_earlyInjectionRequired)
-                    {
-                        reason = "XeSS-FG was initialized before the hook captured its " +
-                            "authoritative D3D12 queue; early injection is required";
-                        if (!string.Equals(reason, _nativeFallbackReason,
-                            StringComparison.Ordinal))
-                        {
-                            _nativeFallbackReason = reason;
-                            changed = true;
-                            fallbackEnabled = true;
-                        }
-                    }
-                    else if (_foreignPresenterActive)
-                    {
-                        reason = "a frame-generation runtime (FSR FG / DLSS FG / XeSS FG) is " +
-                            "presenting this game; the in-game overlay stands down";
-                        if (!string.Equals(reason, _nativeFallbackReason,
-                            StringComparison.Ordinal))
-                        {
-                            _nativeFallbackReason = reason;
-                            changed = true;
-                            fallbackEnabled = true;
-                        }
-                    }
-                    else if (_firstPresentTimedOut)
-                    {
-                        reason = "the in-game hook did not observe a DXGI Present within " +
-                            $"{HookFirstPresentTimeoutMs / 1000} seconds after it was armed";
-                        if (!string.Equals(reason, _nativeFallbackReason,
-                            StringComparison.Ordinal))
-                        {
-                            _nativeFallbackReason = reason;
-                            changed = true;
-                            fallbackEnabled = true;
-                        }
-                    }
-                    else if (_rendererInitializationStalled)
-                    {
-                        reason = "the in-game renderer did not initialize within " +
-                            $"{HookRendererReadyTimeoutMs / 1000} seconds";
-                        if (!string.Equals(reason, _nativeFallbackReason,
-                            StringComparison.Ordinal))
-                        {
-                            _nativeFallbackReason = reason;
-                            changed = true;
-                            fallbackEnabled = true;
-                        }
-                    }
-                    else if (!string.IsNullOrEmpty(_nativeFallbackReason))
-                    {
-                        _nativeFallbackReason = null;
-                        changed = true;
-                    }
+                        _foreignPresenterActive, hasNativeStatus,
+                        (native.Flags & NativeHookStatusFlags.ForeignPresenter) != 0);
                 }
-                else if (HasHookStatusTimedOut(_injectionSucceeded,
+
+                if (_probeSession != null && _probeSession.ProcessId == pid)
+                {
+                    // The session owns the stage clocks and every verdict; it hands back the
+                    // fallback reason, the store writes and the poll cadence as actions.
+                    session = _probeSession;
+                    actions = session.Observe(hasNativeStatus, native, nativeState, nowTickMs);
+                }
+                else if (!hasNativeStatus && HasHookStatusTimedOut(_injectionSucceeded,
                     _injectionSucceededTickMs, _lastNativeStatusTickMs,
                     hasNativeStatus: false, nowTickMs))
                 {
-                    reason = _lastNativeStatusTickMs > 0
+                    // An injection that predates any session (the process was already injected
+                    // when this manager started) still gets the handshake timeout.
+                    legacyReason = _lastNativeStatusTickMs > 0
                         ? $"native hook status was unavailable for more than {HookHandshakeTimeoutMs / 1000} seconds"
                         : $"native hook did not publish status within {HookHandshakeTimeoutMs / 1000} seconds after injection";
-                    if (!string.Equals(reason, _nativeFallbackReason, StringComparison.Ordinal))
-                    {
-                        _nativeFallbackReason = reason;
-                        changed = true;
-                        fallbackEnabled = true;
-                    }
                 }
             }
 
-            if (rememberEarlyInjectionTarget)
-                RememberEarlyInjectionTarget(pid);
-            if (!changed) return;
+            if (legacyReason != null) SetNativeFallbackReason(pid, legacyReason);
+            ExecuteProbeActions(pid, session, actions);
+        }
 
-            if (fallbackEnabled)
+        /// <summary>
+        /// A verified stage can stop working when the game changes its frame-generation setup at
+        /// runtime: another runtime takes over presentation and the hook stands down. The probe
+        /// settled long before that and would never look again, so re-scan the modules while the
+        /// overlay is down and, when the evidence signature really changed, re-plan from the
+        /// stage currently in effect and let the ordinary escalation take it from there.
+        /// </summary>
+        private void TryRearmProbeOnEvidenceChange(int pid, EHookOverlayStatus? nativeState,
+            ulong nowTickMs)
+        {
+            HookCompatibilityProbeSession session;
+            HookCompatibilityStage applied;
+            string knownSignature;
+            HookAttachMode attachMode;
+            lock (_stateGate)
+            {
+                if (pid != _currentPid || !_autoCompatibility) return;
+                session = _probeSession;
+                if (session == null || session.ProcessId != pid || !session.ProbingEnabled ||
+                    session.Plan.IsEmpty)
+                    return;
+                // Only a session that already concluded. While it still walks the ladder it
+                // re-evaluates anyway, and a pending restart is advice the user already has.
+                bool settled = session.Settlement == HookProbeSettlement.Learned ||
+                               session.Settlement == HookProbeSettlement.GaveUp;
+                if (!settled || nativeState == EHookOverlayStatus.Active)
+                {
+                    _probeStandDownSinceTickMs = 0;
+                    return;
+                }
+                if (_probeStandDownSinceTickMs == 0)
+                {
+                    _probeStandDownSinceTickMs = nowTickMs;
+                    return;
+                }
+                if (nowTickMs - _probeStandDownSinceTickMs < ProbeRearmStandDownMs) return;
+                if (nowTickMs < _nextEvidenceRescanTickMs) return;
+                _nextEvidenceRescanTickMs = nowTickMs + ProbeEvidenceRescanIntervalMs;
+                if (_probeRearmCount >= MaxProbeRearmsPerProcess) return;
+                applied = session.CurrentStage;
+                knownSignature = _probeEvidenceSignature;
+                attachMode = session.Evidence?.AttachMode ?? HookAttachMode.Late;
+            }
+
+            // A ToolHelp snapshot never runs under the state lock.
+            HookTargetEvidence current = HookTargetEvidenceProbe.Probe(pid, _currentRuntime,
+                attachMode);
+            if (!current.IsKnown ||
+                string.Equals(current.Signature, knownSignature, StringComparison.Ordinal))
+                return;
+            if (!TryReadProcessIdentity(pid, out string processName, out _)) return;
+
+            HookCompatibilityProfileCatalog.TryGetForProcess(pid,
+                out HookCompatibilityProfile catalog);
+            _learnedStore.TryGet(processName, current.Signature,
+                out HookLearnedProfileEntry learned);
+            HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Replan(current,
+                catalog, learned, _hookBuildHash.Value, _autoCompatibility, applied);
+            if (plan.IsEmpty) return;
+
+            var rearmed = new HookCompatibilityProbeSession(pid, plan);
+            IReadOnlyList<HookProbeAction> actions;
+            int rearmCount;
+            lock (_stateGate)
+            {
+                // The scan ran unlocked; only replace the session it was taken for.
+                if (pid != _currentPid || !ReferenceEquals(_probeSession, session)) return;
+                _probeSession = rearmed;
+                _probeEvidenceSignature = current.Signature;
+                _probeStandDownSinceTickMs = 0;
+                rearmCount = ++_probeRearmCount;
+                // The hook is already injected; the session needs that to start observing.
+                actions = rearmed.OnInjectionSucceeded(nowTickMs);
+            }
+
+            Log.Information(
+                "HookOverlay: compatibility evidence for pid {pid} ('{process}') changed from {previous} to {signature} " +
+                "while the in-game overlay was standing down — re-probing [{evidence}] from stage {index}/{stages} {stage} " +
+                "(re-plan {rearm}/{maxRearms}); {reason}",
+                pid, processName, knownSignature ?? "unknown", current.Signature,
+                current.Describe(), plan.StartIndex + 1, plan.Ladder.Count,
+                plan.StartStage?.DisplayName ?? "none", rearmCount, MaxProbeRearmsPerProcess,
+                plan.Reason);
+
+            ExecuteProbeActions(pid, rearmed, actions);
+            if (!TryPublishStage(pid, plan.StartStage, out string publishError))
             {
                 Log.Warning(
-                    "HookOverlay: in-game renderer unusable for pid {pid} ('{process}', {reason}); enabling hook-free fallback",
-                    pid, _currentProcessName ?? "unknown", reason);
+                    "HookOverlay: could not publish the re-planned compatibility stage for pid {pid} — {error}",
+                    pid, publishError);
             }
-            else
-            {
-                Log.Information(
-                    "HookOverlay: native status available for pid {pid}; clearing native-failure fallback",
-                    pid);
-            }
-            UpdateHookFreeFallback();
         }
 
         private bool RefreshVulkanInjectionGate(int pid, bool forceProbe = false)
@@ -1931,15 +2212,28 @@ namespace CapFrameX.OSD.Integration
                         ? HookOverlayStatusEvaluator.EvaluateNative(pid, runtime, native,
                             nowTickMs)
                         : null;
-                    UpdateNativeStatusFallback(pid, hasDxgiStatus, nativeStatus?.State,
-                        nowTickMs, hasDxgiStatus &&
-                        (native.Flags & NativeHookStatusFlags.ForeignPresenter) != 0,
-                        hasDxgiStatus &&
-                        (native.Flags & NativeHookStatusFlags.EarlyInjectionRequired) != 0);
+                    UpdateNativeStatusFallback(pid, hasDxgiStatus, native, nativeStatus?.State,
+                        nowTickMs);
+                    // Before the status text is assembled, so a re-plan shows up as "Probing"
+                    // in the very pass that starts it.
+                    TryRearmProbeOnEvidenceChange(pid, nativeStatus?.State, nowTickMs);
+                    HookCompatibilityProbeSession session;
                     lock (_stateGate)
                     {
                         hookFreeFallbackActive = _hookFreeFallbackActive;
                         hookFreeFallbackReason = _hookFreeFallbackReason;
+                        session = _probeSession != null && _probeSession.ProcessId == pid
+                            ? _probeSession
+                            : null;
+                    }
+                    if (nativeStatus != null && session != null)
+                    {
+                        HookCompatibilityStage stage = session.CurrentStage;
+                        nativeStatus = HookOverlayStatusEvaluator.WithProbe(nativeStatus,
+                            new HookProbeStatusView(session.Observing && session.ProbingEnabled,
+                                session.StageNumber, session.StageCount,
+                                stage?.DisplayName ?? "none",
+                                session.RemainingBudgetMs(nowTickMs)));
                     }
                     bool vulkanProbeOk = VulkanActivityProbe.TryRead(pid,
                         out VulkanActivitySnapshot vulkan, out string vulkanProbeError);
@@ -1960,6 +2254,11 @@ namespace CapFrameX.OSD.Integration
                         bool visible = _appConfiguration.IsOverlayActive;
                         status = CreateHookFreeFallbackStatus(pid, runtime, visible,
                             hookFreeFallbackReason);
+                        // The fallback serves this session, but the state the user should act
+                        // on is "restart the game": the next launch starts on the next stage.
+                        if (visible && session != null && session.RestartPending)
+                            status = new HookOverlayStatus(EHookOverlayStatus.RestartPending,
+                                pid, runtime, status.Detail);
                     }
                     else if (useVulkanStatus)
                     {
@@ -2056,14 +2355,30 @@ namespace CapFrameX.OSD.Integration
         // Copy the source DLL to LocalAppData\CapFrameX\hook\cfx_osd_hook_<hash8>.dll and
         // return that path. The copy is what games load and lock, keeping the app-bin DLL
         // free so CapFrameX can be rebuilt/updated while injected games are running.
+        // First eight hex digits of the DLL's SHA-256: the tag of the injectable copy and the
+        // build identity a learned compatibility profile is bound to. Null when unreadable.
+        internal static string ComputeHookTag(string dllPath)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(dllPath) || !File.Exists(dllPath)) return null;
+                using (var sha = SHA256.Create())
+                using (var fs = File.OpenRead(dllPath))
+                    return BitConverter.ToString(sha.ComputeHash(fs)).Replace("-", "")
+                        .Substring(0, 8).ToLowerInvariant();
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                return null;
+            }
+        }
+
         private string PrepareInjectableCopy(string sourceDll, string arch)
         {
             try
             {
-                string tag;
-                using (var sha = SHA256.Create())
-                using (var fs = File.OpenRead(sourceDll))
-                    tag = BitConverter.ToString(sha.ComputeHash(fs)).Replace("-", "").Substring(0, 8).ToLowerInvariant();
+                string tag = ComputeHookTag(sourceDll);
+                if (tag == null) return null;
 
                 var dir = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -2228,6 +2543,8 @@ namespace CapFrameX.OSD.Integration
             _enabledSub?.Dispose();
             _visibilitySub?.Dispose();
             _runtimeSub?.Dispose();
+            _autoCompatibilitySub?.Dispose();
+            _learnedStoreSub?.Dispose();
             _visibility?.Dispose();
             lock (_gate)
             {

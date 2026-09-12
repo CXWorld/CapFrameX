@@ -194,6 +194,13 @@ namespace CapFrameX.Contracts.Configuration
 		bool HookOverlayUsePresentMonFrametimes { get; set; }
 
 		/// <summary>
+		/// Let the in-game hook probe routing stages (vendor-aware, generic D3D12, generic
+		/// without FidelityFX lifecycle hooks, early injection) and remember the one that renders
+		/// per game. Off reproduces the fixed catalog-only behaviour: one stage, no learning.
+		/// </summary>
+		bool HookOverlayAutoCompatibility { get; set; }
+
+		/// <summary>
 		/// Minimum buffer duration in milliseconds for replaying the bursty PresentMon frame
 		/// stream in the hook-free and in-game CapFrameX renderers. Larger values tolerate wider
 		/// delivery gaps at the cost of additional graph latency. Range 500..10000; default 2500.

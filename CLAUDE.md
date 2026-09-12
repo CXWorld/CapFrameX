@@ -162,6 +162,49 @@ Registration is bitness-scoped and this is load-bearing: the loader identifies a
 
 **Never register the layer in HKCU** (the OSD repo's `register_layer.cmd` uses HKLM only and purges HKCU leftovers). HKCU is user-controlled, so the loader ignores it for targets started elevated — e.g. a game launched from a Visual Studio that debugs the admin-only `CapFrameX.exe` — and it is not split by bitness, so it also triggers the shadowing above. Both failure modes are silent and look exactly like "this game has no Vulkan": `VulkanActivityProbe` finds no renderer-state mapping, `VulkanLayerModuleProbe` finds no layer module, and `HookOverlayManager` correctly concludes DXGI and injects the hook into a Vulkan title — where the in-game arbiter denies its renderer lease and the status parks on `Initializing` until the hook-free fallback takes over.
 
+## In-game hook compatibility probing
+
+`HookCompatibilityProfiles.xml` (curated, embedded) is only a starting point. For every injection
+`HookOverlayManager` plans a **stage ladder** (`HookCompatibilityStagePlanner`), judges the injected
+hook's status against per-stage time budgets (`HookCompatibilityProbeSession` +
+`HookCompatibilityVerdictClassifier`) and persists the outcome in
+`%appdata%\CapFrameX\Configuration\HookCompatibilityProfiles.learned.json` (`HookLearnedProfileStore`;
+keyed by executable name + evidence signature, bound to the hook build hash so a hook update re-verifies).
+Switch: `IAppConfiguration.HookOverlayAutoCompatibility` (default on; off = catalog only, one stage, no
+learning). All of it is pure and unit-tested; the manager only executes the session's actions.
+
+- **Stages**: vendor-aware (flags None) → vendor-aware + XeSS-FG native queue → generic D3D12 (RTSS model)
+  → generic without FidelityFX lifecycle hooks, each optionally with early injection (gate `d3d12.dll`, or
+  `sl.interposer.dll` for Streamline-only evidence). Generic stages exist only when `d3d12.dll` is loaded:
+  under the generic route the hook never draws on a D3D11 swapchain (`overlay.cpp`, `knownD3D12Route`).
+- **Evidence** (`HookTargetEvidenceProbe`, ToolHelp scan *with paths*): Streamline / DLSS-G / XeSS-FG /
+  FSR-FG modules, a `dxgi.dll` outside System32/SysWOW64 (OptiScaler), duplicate FidelityFX loader copies.
+  Late attach with FG evidence starts on generic; loader duplicates or a dxgi proxy start on generic-without-FFX;
+  a catalog entry is always stage 1 and the ladder continues after it. Verified learned entries are a
+  single-stage ladder; exhausted ones skip injection until "Reset learned profiles" (Overlay tab).
+- **Verdicts** read status block V2 (`HookStatusProbe`: install phase + FidelityFX module/export detail,
+  present coverage, queue state, decline reason, FG telemetry): success confirmed after 2 s, install hung
+  after 6 s, no queue after 5 s, stage budget 20 s; idle/dormant samples pause the clocks.
+- **Escalation** runs **live** for every bit the hook advertises in `liveReloadCapabilities` (`0xE`: the
+  XeSS-FG queue bit, the generic route, the FidelityFX lifecycle switch). `HookCompatibilityChannel` always
+  creates the 64-byte V2 mapping (`Local\CfxOsdHookCompatibilityV2_{pid}`, plus the 16-byte V1 one for older
+  hooks when flags ≠ None) and `TryPublishStage` rewrites it with a bumped sequence; the hook polls it per
+  present, releases its renderer and rebuilds on the new route. The two routing bits only ever turn *on* —
+  they neutralize hooks that are already installed, which cannot be undone — so dropping one, early injection
+  and the injection delay still need a fresh process: `ScheduleRestart` sets status `RestartPending`, the
+  hook-free fallback serves the session, the next stage is persisted as pending and applied on the next
+  launch. The session waits up to 3 s for the hook to echo the flags in `AppliedFlags` before it judges the
+  new stage; no echo → restart.
+- **A frame-generation switch inside the running game** is the case the ladder alone cannot see: the probe
+  settled minutes earlier, and a new runtime taking over presentation stands the hook down for good.
+  `TryRearmProbeOnEvidenceChange` re-scans the target's modules while the overlay is down (after
+  `ProbeRearmStandDownMs`, at most every `ProbeEvidenceRescanIntervalMs`, at most `MaxProbeRearmsPerProcess`
+  times) and re-plans through `HookCompatibilityStagePlanner.Replan` when the evidence signature really
+  changed. `Replan` keeps the stage the hook is running in the ladder and never starts below it, so what the
+  re-probe learns describes what is actually in effect.
+- **Log lines**: `HookOverlay: compatibility plan for pid …` (evidence, signature, start stage, reason),
+  `… compatibility stage k/n (…) … ended with <verdict>: …`, `… learned profile for '<exe>' (…) is now …`.
+
 ## Update service
 
 `IUpdateService` (`CapFrameX.Updater/UpdateService.cs`) fetches a JSON manifest from the CapFrameX

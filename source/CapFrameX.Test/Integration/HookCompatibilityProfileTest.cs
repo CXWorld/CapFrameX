@@ -173,6 +173,14 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void Catalog_LeavesAPlagueTaleLegacyToTheAutomaticProbing()
+        {
+            // The reference case for the evidence-driven ladder: its signature starts on the
+            // generic route without FidelityFX lifecycle hooks (HookCompatibilityStagePlannerTest).
+            Assert.IsFalse(HookCompatibilityProfileCatalog.TryGet("Resonance.exe", out _));
+        }
+
+        [TestMethod]
         public void CompatibilityDelay_IsAppliedOncePerPid()
         {
             long timestamp = 1000;
@@ -202,20 +210,94 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(HookCompatibilityChannel.TryCreate(processId, expected,
                 out HookCompatibilityChannel channel, out string error), error);
             using (channel)
-            using (MemoryMappedFile mapping = MemoryMappedFile.OpenExisting(
-                HookCompatibilityChannel.GetMappingName(processId),
-                MemoryMappedFileRights.Read))
-            using (MemoryMappedViewAccessor view = mapping.CreateViewAccessor(
-                0, HookCompatibilityChannel.ChannelSize, MemoryMappedFileAccess.Read))
             {
-                Assert.AreEqual(HookCompatibilityChannel.Magic,
-                    view.ReadInt32(HookCompatibilityChannel.MagicOffset));
-                Assert.AreEqual(HookCompatibilityChannel.Version,
-                    view.ReadInt32(HookCompatibilityChannel.VersionOffset));
-                Assert.AreEqual(processId,
-                    view.ReadInt32(HookCompatibilityChannel.ProcessIdOffset));
-                Assert.AreEqual(unchecked((int)(uint)expected),
-                    view.ReadInt32(HookCompatibilityChannel.FlagsOffset));
+                // The legacy 16-byte mapping for a version-1 hook, written once.
+                using (MemoryMappedFile mapping = MemoryMappedFile.OpenExisting(
+                    HookCompatibilityChannel.GetMappingName(processId),
+                    MemoryMappedFileRights.Read))
+                using (MemoryMappedViewAccessor view = mapping.CreateViewAccessor(
+                    0, HookCompatibilityChannel.ChannelSize, MemoryMappedFileAccess.Read))
+                {
+                    Assert.AreEqual(HookCompatibilityChannel.Magic,
+                        view.ReadInt32(HookCompatibilityChannel.MagicOffset));
+                    Assert.AreEqual(HookCompatibilityChannel.Version,
+                        view.ReadInt32(HookCompatibilityChannel.VersionOffset));
+                    Assert.AreEqual(processId,
+                        view.ReadInt32(HookCompatibilityChannel.ProcessIdOffset));
+                    Assert.AreEqual(unchecked((int)(uint)expected),
+                        view.ReadInt32(HookCompatibilityChannel.FlagsOffset));
+                }
+
+                // The version-2 mapping the hook keeps mapped and polls.
+                using (MemoryMappedFile mapping = MemoryMappedFile.OpenExisting(
+                    HookCompatibilityChannel.GetMappingNameV2(processId),
+                    MemoryMappedFileRights.Read))
+                using (MemoryMappedViewAccessor view = mapping.CreateViewAccessor(
+                    0, HookCompatibilityChannel.ChannelSizeV2, MemoryMappedFileAccess.Read))
+                {
+                    Assert.AreEqual(HookCompatibilityChannel.MagicV2,
+                        view.ReadInt32(HookCompatibilityChannel.MagicOffset));
+                    Assert.AreEqual(HookCompatibilityChannel.Version2,
+                        view.ReadInt32(HookCompatibilityChannel.VersionOffset));
+                    Assert.AreEqual(processId,
+                        view.ReadInt32(HookCompatibilityChannel.ProcessIdOffset));
+                    Assert.AreEqual(unchecked((int)(uint)expected),
+                        view.ReadInt32(HookCompatibilityChannel.FlagsOffset));
+                    Assert.AreEqual(1, view.ReadInt32(HookCompatibilityChannel.SequenceOffset));
+                    Assert.AreEqual(Environment.ProcessId,
+                        view.ReadInt32(HookCompatibilityChannel.HostPidOffset));
+                    Assert.AreEqual(1, channel.Sequence);
+
+                    // A stage change rewrites the payload and bumps the sequence last.
+                    NativeHookCompatibilityFlags next = expected |
+                        NativeHookCompatibilityFlags.DisableFidelityFxSwapchainLifecycleHooks;
+                    Assert.IsTrue(channel.TryPublish(next, stageId: 3, stageIndex: 3, stageCount: 4,
+                        probeActive: true, hostFlags: 3, out error), error);
+                    Assert.AreEqual(2, channel.Sequence);
+                    Assert.AreEqual(2, view.ReadInt32(HookCompatibilityChannel.SequenceOffset));
+                    Assert.AreEqual(unchecked((int)(uint)next),
+                        view.ReadInt32(HookCompatibilityChannel.FlagsOffset));
+                    Assert.AreEqual(3, view.ReadInt32(HookCompatibilityChannel.StageIdOffset));
+                    Assert.AreEqual(3, view.ReadInt32(HookCompatibilityChannel.StageIndexOffset));
+                    Assert.AreEqual(4, view.ReadInt32(HookCompatibilityChannel.StageCountOffset));
+                    Assert.AreEqual(1, view.ReadInt32(HookCompatibilityChannel.ProbeActiveOffset));
+                    Assert.AreEqual(3, view.ReadInt32(HookCompatibilityChannel.HostFlagsOffset));
+                }
+            }
+        }
+
+        [TestMethod]
+        public void CompatibilityChannel_ExistsForFlagsNoneWithoutALegacyMapping()
+        {
+            // A vendor-aware start still needs the version-2 mapping so a live escalation can
+            // reach the hook later; a version-1 hook has nothing to read for flags None.
+            int processId = Process.GetCurrentProcess().Id;
+
+            Assert.IsTrue(HookCompatibilityChannel.TryCreate(processId,
+                NativeHookCompatibilityFlags.None, stageId: 0, stageIndex: 1, stageCount: 3,
+                probeActive: true, hostFlags: 0, out HookCompatibilityChannel channel,
+                out string error), error);
+            using (channel)
+            {
+                using (MemoryMappedFile.OpenExisting(
+                    HookCompatibilityChannel.GetMappingNameV2(processId),
+                    MemoryMappedFileRights.Read))
+                {
+                }
+                bool legacyExists = true;
+                try
+                {
+                    using (MemoryMappedFile.OpenExisting(
+                        HookCompatibilityChannel.GetMappingName(processId),
+                        MemoryMappedFileRights.Read))
+                    {
+                    }
+                }
+                catch (System.IO.FileNotFoundException)
+                {
+                    legacyExists = false;
+                }
+                Assert.IsFalse(legacyExists);
             }
         }
     }

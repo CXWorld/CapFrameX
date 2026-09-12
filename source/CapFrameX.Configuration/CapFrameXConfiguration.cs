@@ -757,6 +757,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool HookOverlayAutoCompatibility
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
         public int OsdReplayBufferSize
         {
             get => Get<int>(2500);

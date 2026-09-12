@@ -43,6 +43,8 @@ namespace CapFrameX.ViewModel
         private readonly IThreadAffinityController _threadAffinityController;
         private readonly IOnlineMetricService _onlineMetricService;
         private readonly IOverlayTemplateService _overlayTemplateService;
+        private readonly IHookLearnedProfileService _hookLearnedProfiles;
+        private readonly IHookOverlayStatusService _hookOverlayStatus;
         private int _selectedOverlayEntryIndex = -1;
         private IOverlayEntry _selectedOverlayEntry;
         private IOverlayEntryFormatChange _checkboxes = new OverlayEntryFormatChange();
@@ -53,6 +55,8 @@ namespace CapFrameX.ViewModel
         private Subject<object> _configSubject = new Subject<object>();
         private ResetOverlayConfigDialog _resetOverlayConfigContent;
         private bool _resetOverlayConfigContentIsOpen;
+        private bool _resetLearnedProfilesIsOpen;
+        private string _hookLearnedProfileText = "No learned compatibility profiles yet.";
         private string _filterText = string.Empty;
         private EOverlayEntryType? _selectedEntryTypeFilter;
         private ICollectionView _overlayEntriesView;
@@ -486,6 +490,44 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        // The in-game hook probes its routing stages and remembers the one that renders per
+        // game (HookOverlayManager). Off: the shipped catalog only, no probing, no learning.
+        public bool HookOverlayAutoCompatibility
+        {
+            get { return _appConfiguration.HookOverlayAutoCompatibility; }
+            set
+            {
+                _appConfiguration.HookOverlayAutoCompatibility = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        // What the learned store knows about the currently selected game, kept current by the
+        // store's change stream and the hook status stream (which carries the selected PID).
+        public string HookLearnedProfileText
+        {
+            get { return _hookLearnedProfileText; }
+            private set
+            {
+                _hookLearnedProfileText = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ResetLearnedProfilesIsOpen
+        {
+            get { return _resetLearnedProfilesIsOpen; }
+            set
+            {
+                _resetLearnedProfilesIsOpen = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public ICommand OpenResetLearnedProfilesDialogCommand { get; }
+
+        public ICommand ResetLearnedProfilesCommand { get; }
+
         // PresentMon replay baseline shared by the hook-free renderer and the in-game hook's
         // PresentMon source. A larger value bridges wider delivery gaps but adds graph latency.
         public int OsdReplayBufferSize
@@ -789,8 +831,9 @@ namespace CapFrameX.ViewModel
         public OverlayGroupSeparating OverlaySubModelGroupSeparating { get; }
 
         public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider, IAppConfiguration appConfiguration,
-            IPathService pathService, ISensorService sensorService, IRTSSService rTSSService, IThreadAffinityController threadAffinityController, 
-            IOnlineMetricService onlineMetricService, IOverlayTemplateService overlayTemplateService)
+            IPathService pathService, ISensorService sensorService, IRTSSService rTSSService, IThreadAffinityController threadAffinityController,
+            IOnlineMetricService onlineMetricService, IOverlayTemplateService overlayTemplateService,
+            IHookLearnedProfileService hookLearnedProfileService, IHookOverlayStatusService hookOverlayStatusService)
         {
             _overlayService = overlayService;
             _overlayEntryProvider = overlayEntryProvider;
@@ -801,6 +844,8 @@ namespace CapFrameX.ViewModel
             _overlayTemplateService = overlayTemplateService;
             _threadAffinityController = threadAffinityController;
             _onlineMetricService = onlineMetricService;
+            _hookLearnedProfiles = hookLearnedProfileService ?? NullHookLearnedProfileService.Instance;
+            _hookOverlayStatus = hookOverlayStatusService;
             ExtendedOsdLogging = new ExtendedOsdLoggingViewModel(new ExtendedOsdLoggingController());
             RefreshHookFreeDisplayItems();
 
@@ -867,6 +912,19 @@ namespace CapFrameX.ViewModel
             OpenResetDialogCommand = new DelegateCommand(() => ResetOverlayConfigContentIsOpen = true);
             ResetConfigCommand = new DelegateCommand(async () => await OnResetDefaults());
 
+            OpenResetLearnedProfilesDialogCommand =
+                new DelegateCommand(() => ResetLearnedProfilesIsOpen = true);
+            ResetLearnedProfilesCommand = new DelegateCommand(OnResetLearnedProfiles);
+            _hookLearnedProfiles.Changes
+                .ObserveOnDispatcher()
+                .Subscribe(_ => RefreshHookLearnedProfileText());
+            _hookOverlayStatus?.StatusStream
+                .Select(status => status?.ProcessId ?? 0)
+                .DistinctUntilChanged()
+                .ObserveOnDispatcher()
+                .Subscribe(_ => RefreshHookLearnedProfileText());
+            RefreshHookLearnedProfileText();
+
             SetFormatForGroupNameCommand = new DelegateCommand(
                () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry, Checkboxes));
 
@@ -927,6 +985,79 @@ namespace CapFrameX.ViewModel
         {
             _overlayEntryProvider.MarkPendingChanges();
             SaveButtonIsEnable = true;
+        }
+
+        private void OnResetLearnedProfiles()
+        {
+            try
+            {
+                _hookLearnedProfiles.Reset();
+            }
+            finally
+            {
+                ResetLearnedProfilesIsOpen = false;
+                RefreshHookLearnedProfileText();
+            }
+        }
+
+        private void RefreshHookLearnedProfileText()
+        {
+            string text;
+            try
+            {
+                int total = _hookLearnedProfiles.GetAll().Count;
+                string processName = ResolveHookTargetProcessName();
+                if (processName == null)
+                {
+                    text = total == 0
+                        ? "No learned compatibility profiles yet."
+                        : $"{total} learned compatibility profile(s); no game selected.";
+                }
+                else
+                {
+                    IReadOnlyList<HookLearnedProfileSummary> entries =
+                        _hookLearnedProfiles.GetForProcess(processName);
+                    if (entries.Count == 0)
+                    {
+                        text = $"No learned compatibility profile for {processName} yet ({total} in total).";
+                    }
+                    else
+                    {
+                        HookLearnedProfileSummary entry = entries[0];
+                        if (entry.PendingStageName != null)
+                            text = $"{processName}: the next launch starts on {entry.PendingStageName}.";
+                        else if (entry.Exhausted)
+                            text = $"{processName}: every stage failed on this hook build; reset the learned profiles to probe again.";
+                        else if (entry.Verified)
+                            text = $"{processName}: {entry.StageName} (verified {entry.UpdatedUtc.ToLocalTime():g}).";
+                        else
+                            text = $"{processName}: last tried {entry.StageName}, not verified yet.";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                text = $"Learned compatibility profiles unavailable ({ex.Message}).";
+            }
+            HookLearnedProfileText = text;
+        }
+
+        private string ResolveHookTargetProcessName()
+        {
+            int pid = _hookOverlayStatus?.Current?.ProcessId ?? 0;
+            if (pid <= 0) return null;
+            try
+            {
+                using (var process = Process.GetProcessById(pid))
+                    return process.ProcessName;
+            }
+            catch (Exception ex) when (ex is ArgumentException ||
+                                       ex is InvalidOperationException ||
+                                       ex is System.ComponentModel.Win32Exception ||
+                                       ex is NotSupportedException)
+            {
+                return null;
+            }
         }
 
         private async Task OnResetDefaults()
