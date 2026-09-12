@@ -16,17 +16,19 @@ also carries the hook-free stall diagnostics of `a2b5bb83` and the replay pacing
 2026-09-09 in `RelWithDebInfo` from the same revision, every native tree configured with
 `-G "Visual Studio 18 2026"` (toolset v145).
 
-The x64/x86 hook pair was rebuilt again on 2026-09-12 from that revision **plus the not yet
-committed status-block V2 and compatibility-channel V2 work in the OSD repository's working
-tree** (InstallHooks phases, present coverage, frame-generation telemetry and decline reasons in
+The x64/x86 hook pair was rebuilt again on 2026-09-12 from OSD revision
+`ffd1609e70fbb02d6060344b36cb8b30719e63e6`, including the compatibility-channel snapshot fix
+(a publication sequence at byte 44 marks a write before its payload changes; the existing
+sequence commits it afterwards). This revision also carries InstallHooks phases, present
+coverage, frame-generation telemetry and decline reasons in
 the status block; the `Rendered` bit re-publishes after a stand-down; FidelityFX exports are
 resolved before the install lock is taken, forwarded exports are skipped, and a fault inside that
 arming no longer takes the DXGI Present hook down; the hook keeps the 64-byte
 `Local\CfxOsdHookCompatibilityV2_{pid}` channel mapped, polls its sequence counter every 250 ms
 from the Present path and applies the XeSS-FG queue-route, the generic-route and the FidelityFX
 lifecycle bits live — the two routing bits only ever turn on — and advertises exactly that in
-`liveReloadCapabilities`). The core and both Vulkan layers are byte-identical to the 2026-09-09
-build. Bump this paragraph's revision once that work is committed.
+`liveReloadCapabilities`. The core and both Vulkan layers are byte-identical to the 2026-09-09
+build.
 
 The Vulkan trees are unchanged since the 2026-09-07 build and still pin Khronos Vulkan-Headers
 `vulkan-sdk-1.4.357.0` (commit `e3b1eec08173d6b825cd3ac88c885a63b621504a`) and glslang `16.5.0`
@@ -36,8 +38,8 @@ with the core because `hook_poc` and `vk_layer` compile the core sources into th
 
 - managed bridge SHA-256: `615838E43AADFEBEB009B17DA3ABBC53A0B47BE1969F5CD75D2BF96B04C21DA9`
 - core SHA-256: `F851659EF7F8A41154E39B2CB1446BD8E8C5B3DBA2A8471F29573A9DC84896B6`
-- hook x64 SHA-256: `E071B20EEBA95884048FEBD13464788F064F6CCE2A4272896A1DA4C2E8D6773A`
-- hook x86 SHA-256: `C7E8BB15BCC278C1BA483F2A11BC82D1AD7A7337CE3CA21F6D1DBBE5D3C42E36`
+- hook x64 SHA-256: `150F920CC42FE05C1DC07C71DCC924BF84DDC56FD234DD3618E8552E7A0796DE`
+- hook x86 SHA-256: `E5DD6130846D438531A42AD939F1B59571F40E561571051F9DD3522FA797F0A5`
 - Vulkan x64 SHA-256: `654B8750E132F17962A72A3947BE07EA4D3A9F596D8C92647F7E3B53C578646E`
 - Vulkan x86 SHA-256: `4F71DCDCF9DC5580BD7980785E3CB73D7907C52AE0D439E0A2DAE4379B16ABE6`
 
@@ -82,7 +84,9 @@ with the core because `hook_poc` and `vk_layer` compile the core sources into th
   from, present coverage of the profiled route, packed frame-generation telemetry, the D3D12
   queue state, the last decline reason and the route source of the most recent present.
   Compatibility flags arrive through channel **version 2** (`Local\CfxOsdHookCompatibilityV2_<pid>`,
-  64 bytes, sequence counter bumped last by the host; the 16-byte V1 mapping is still honoured
+  64 bytes, publication marker at byte 44 written first and sequence counter committed last;
+  matching, stable counters protect the payload; older V2 hosts with a zero marker remain
+  readable but require an upgrade for this guarantee; the 16-byte V1 mapping is still honoured
   when no V2 mapping exists). The hook keeps the V2 view mapped and polls it from the Present
   path every 250 ms: the XeSS-FG queue-route bit flips both ways, while the generic D3D12 route
   and the FidelityFX lifecycle switch only ever turn on. Turning the generic route on makes the

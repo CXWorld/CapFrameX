@@ -102,18 +102,60 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void Plan_VerifiedLearnedEntryIsASingleStage()
+        public void Plan_VerifiedLearnedEntryKeepsTheRemainingLadder()
         {
             HookLearnedProfileEntry learned = Entry(HookCompatibilityStageId.GenericNoFfxLifecycle,
                 verified: true, hash: Hash);
 
             HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Plan(
-                Evidence(streamline: true, d3d12: true), null, learned, Hash, true);
+                Evidence(streamline: true, ffxFg: true, d3d12: true), null, learned, Hash, true);
 
-            Assert.AreEqual(1, plan.Ladder.Count);
+            Assert.AreEqual(6, plan.Ladder.Count);
+            Assert.AreEqual(2, plan.StartIndex);
             Assert.AreEqual("learned", plan.StartStage.Source);
             Assert.AreEqual(HookCompatibilityStageId.GenericNoFfxLifecycle, plan.StartStage.Id);
             Assert.IsTrue(plan.ProbingEnabled);
+        }
+
+        [DataTestMethod]
+        [DataRow("D3D11", true)]
+        [DataRow("DXGI", false)]
+        public void Plan_D3D11RejectsLearnedPendingStaleAndExhaustedGenericRoutes(
+            string runtime, bool d3d12Loaded)
+        {
+            HookTargetEvidence evidence = Evidence(streamline: true, d3d12: d3d12Loaded,
+                runtime: runtime);
+            Assert.AreEqual(Evidence(streamline: true, runtime: "D3D12").Signature,
+                evidence.Signature, "the graphics API can change without changing the store key");
+            HookLearnedProfileEntry verified = Entry(HookCompatibilityStageId.Generic, true, Hash);
+            HookLearnedProfileEntry stale = Entry(HookCompatibilityStageId.Generic, true, "old");
+            HookLearnedProfileEntry exhausted = Entry(HookCompatibilityStageId.Generic, false, Hash);
+            exhausted.Exhausted = true;
+            HookLearnedProfileEntry pending = Entry(HookCompatibilityStageId.VendorAware, false, Hash);
+            pending.SetPending(HookCompatibilityStage.Create(HookCompatibilityStageId.Generic), "restart");
+
+            foreach (HookLearnedProfileEntry entry in new[] { verified, stale, exhausted, pending })
+            {
+                HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Plan(evidence,
+                    null, entry, Hash, true);
+                Assert.IsFalse(plan.IsEmpty);
+                Assert.AreEqual(HookCompatibilityStageId.VendorAware, plan.StartStage.Id);
+                Assert.IsFalse(plan.Ladder.Any(stage => stage.IsGeneric));
+            }
+        }
+
+        [TestMethod]
+        public void Plan_LearnedModifierIsInsertedBeforeItsRemainingEscalations()
+        {
+            HookLearnedProfileEntry learned = Entry(HookCompatibilityStageId.Generic, true, Hash);
+            learned.SetStage(HookCompatibilityStage.Create(HookCompatibilityStageId.Generic,
+                injectionDelay: TimeSpan.FromSeconds(2)));
+            HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Plan(
+                Evidence(ffxFg: true), null, learned, Hash, true);
+
+            Assert.AreEqual(TimeSpan.FromSeconds(2), plan.StartStage.InjectionDelay);
+            Assert.IsTrue(plan.Ladder.Skip(plan.StartIndex + 1).Any(stage =>
+                stage.Id == HookCompatibilityStageId.GenericNoFfxLifecycle));
         }
 
         [TestMethod]
@@ -227,6 +269,21 @@ namespace CapFrameX.Test.Integration
 
             Assert.IsTrue(back.StartStage.SameRouting(noFfx),
                 "re-planning must not regress below the stage the hook is running");
+        }
+
+        [TestMethod]
+        public void Replan_StartsAtTheAppliedStageEvenWhenNewEvidencePrefersGeneric()
+        {
+            HookTargetEvidence evidence = Evidence(streamline: true, ffxFg: true);
+            HookCompatibilityStage applied = HookCompatibilityStage.Create(HookCompatibilityStageId.VendorAware);
+            Assert.AreEqual(HookCompatibilityStageId.Generic,
+                HookCompatibilityStagePlanner.Plan(evidence, null, null, Hash, true).StartStage.Id);
+
+            HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Replan(evidence,
+                null, Entry(HookCompatibilityStageId.Generic, true, Hash), Hash, true, applied);
+
+            Assert.IsTrue(plan.StartStage.SameRouting(applied));
+            Assert.IsTrue(plan.Ladder.Skip(plan.StartIndex + 1).Any(stage => stage.IsGeneric));
         }
 
         [TestMethod]

@@ -300,6 +300,156 @@ namespace CapFrameX.Test.Integration
                 session.RemainingBudgetMs(2000 + HookCompatibilityVerdictClassifier.ProbeStageBudgetMs));
         }
 
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void HiddenSamples_PauseBothTheBudgetAndQueueTimeout(bool generic)
+        {
+            HookTargetEvidence evidence = HookCompatibilityStagePlannerTest.Evidence(d3d12: generic);
+            HookLearnedProfileEntry entry = generic
+                ? HookCompatibilityStagePlannerTest.Entry(HookCompatibilityStageId.Generic, true, "hash")
+                : null;
+            var session = new HookCompatibilityProbeSession(42,
+                HookCompatibilityStagePlanner.Plan(evidence, null, entry, "hash", true));
+            session.OnInjectionSucceeded(1000);
+            var hidden = new NativeHookStatusSnapshot
+            {
+                Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen,
+                AppliedFlags = (uint)session.CurrentStage.Flags, QueueState = NativeHookQueueState.None
+            };
+
+            Assert.AreEqual(0, session.Observe(true, hidden, EHookOverlayStatus.Hidden, 2000).Count);
+            Assert.AreEqual(0, session.Observe(true, hidden, EHookOverlayStatus.Hidden, 62000).Count);
+            Assert.AreEqual(HookProbeSettlement.None, session.Settlement);
+            Assert.AreEqual(HookCompatibilityVerdict.Inconclusive, session.LastVerdict);
+            Assert.AreEqual((long)HookCompatibilityVerdictClassifier.ProbeStageBudgetMs,
+                session.RemainingBudgetMs(63000), "the UI budget must also stay paused between samples");
+
+            var visible = hidden;
+            visible.Flags = Ready;
+            visible.CoverageSubmitted = 3;
+            session.Observe(true, visible, EHookOverlayStatus.Active, 164000);
+            Assert.AreEqual((long)HookCompatibilityVerdictClassifier.ProbeStageBudgetMs,
+                session.RemainingBudgetMs(164000), "resuming must not charge the hidden interval");
+            Assert.IsTrue(session.Observe(true, visible, EHookOverlayStatus.Active, 166000)
+                .Any(action => action.Kind == HookProbeActionKind.Learn));
+        }
+
+        [TestMethod]
+        public void LearnedStage_FgToggleEscalatesWithoutANewEvidenceSignature()
+        {
+            HookCompatibilityProbeSession session = Session(streamline: true);
+            LearnVendorStage(session);
+            var foreign = new NativeHookStatusSnapshot
+            {
+                Version = 2, LiveReloadCapabilities = 0xE,
+                Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.ForeignPresenter
+            };
+
+            IReadOnlyList<HookProbeAction> actions = session.Observe(true, foreign,
+                EHookOverlayStatus.Initializing, 6000);
+
+            Assert.IsTrue(session.Observing);
+            Assert.AreEqual(HookCompatibilityStageId.Generic, session.CurrentStage.Id);
+            Assert.IsTrue(actions.Any(action => action.Kind == HookProbeActionKind.EscalateLive));
+            Assert.IsTrue(actions.Any(action => action.Kind == HookProbeActionKind.SetPollInterval &&
+                action.PollIntervalMs == HookCompatibilityProbeSession.ProbePollIntervalMs));
+            Assert.AreEqual(0, session.Observe(true, foreign, EHookOverlayStatus.Initializing, 6250).Count);
+        }
+
+        [TestMethod]
+        public void LearnedStage_RendererFailureEnablesFallback()
+        {
+            HookCompatibilityProbeSession session = Session(streamline: true);
+            LearnVendorStage(session);
+            var error = new NativeHookStatusSnapshot
+            {
+                Version = 2, Flags = Armed | NativeHookStatusFlags.Error, LastError = 2
+            };
+
+            IReadOnlyList<HookProbeAction> actions = session.Observe(true, error,
+                EHookOverlayStatus.Error, 6000);
+
+            Assert.AreEqual(HookProbeSettlement.GaveUp, session.Settlement);
+            Assert.IsTrue(actions.Any(action => action.Kind == HookProbeActionKind.SetFallback &&
+                action.Reason != null));
+            Assert.IsFalse(actions.Single(action => action.Kind == HookProbeActionKind.GiveUp).Exhausted);
+        }
+
+        [TestMethod]
+        public void LearnedStage_HealthyTimeDoesNotExhaustALaterInitializationBudget()
+        {
+            HookCompatibilityProbeSession session = Session(streamline: true);
+            LearnVendorStage(session);
+            var active = new NativeHookStatusSnapshot { Version = 2, Flags = Ready };
+            Assert.AreEqual(0, session.Observe(true, active, EHookOverlayStatus.Active, 100000).Count);
+            var initializing = new NativeHookStatusSnapshot
+            {
+                Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.Visible
+            };
+
+            Assert.AreEqual(0, session.Observe(true, initializing, EHookOverlayStatus.Initializing, 101000).Count);
+            Assert.AreEqual(HookCompatibilityVerdict.Pending, session.LastVerdict);
+            Assert.AreEqual(0, session.Observe(true, initializing, EHookOverlayStatus.Initializing, 102000).Count);
+        }
+
+        [TestMethod]
+        public void VerifiedProfileFailure_TriesTheNextRouteInsteadOfExhaustingTheTitle()
+        {
+            HookTargetEvidence evidence = HookCompatibilityStagePlannerTest.Evidence(ffxFg: true);
+            HookLearnedProfileEntry learned = HookCompatibilityStagePlannerTest.Entry(
+                HookCompatibilityStageId.VendorAware, true, "hash");
+            var session = new HookCompatibilityProbeSession(42,
+                HookCompatibilityStagePlanner.Plan(evidence, null, learned, "hash", true));
+            session.OnInjectionSucceeded(1000);
+            var foreign = new NativeHookStatusSnapshot
+            {
+                Version = 2, LiveReloadCapabilities = 0xE,
+                Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.ForeignPresenter
+            };
+
+            IReadOnlyList<HookProbeAction> actions = session.Observe(true, foreign,
+                EHookOverlayStatus.Initializing, 2000);
+
+            Assert.AreEqual(HookCompatibilityStageId.Generic, session.CurrentStage.Id);
+            Assert.IsFalse(actions.Any(action => action.Kind == HookProbeActionKind.GiveUp));
+        }
+
+        [TestMethod]
+        public void ReplannedSession_DoesNotAttributeTheOldStandDownToAnUnappliedRoute()
+        {
+            HookTargetEvidence evidence = HookCompatibilityStagePlannerTest.Evidence(ffxFg: true);
+            HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Replan(evidence,
+                null, null, "hash", true, HookCompatibilityStage.Create(HookCompatibilityStageId.VendorAware));
+            var session = new HookCompatibilityProbeSession(42, plan);
+            session.OnInjectionSucceeded(1000);
+            var old = new NativeHookStatusSnapshot
+            {
+                Version = 2, AppliedFlags = 0, LiveReloadCapabilities = 0xE,
+                Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.ForeignPresenter
+            };
+
+            session.Observe(true, old, EHookOverlayStatus.Initializing, 1250);
+            Assert.AreEqual(HookCompatibilityStageId.Generic, session.CurrentStage.Id);
+            Assert.AreEqual(0, session.Observe(true, old, EHookOverlayStatus.Initializing, 1500).Count);
+            Assert.AreEqual(HookCompatibilityStageId.Generic, session.CurrentStage.Id);
+
+            // A superset is not an acknowledgement that the requested route is in effect.
+            var wrong = old;
+            wrong.AppliedFlags = 12;
+            Assert.AreEqual(0, session.Observe(true, wrong, EHookOverlayStatus.Initializing, 1750).Count);
+            Assert.AreEqual(HookCompatibilityStageId.Generic, session.CurrentStage.Id);
+        }
+
+        private static void LearnVendorStage(HookCompatibilityProbeSession session)
+        {
+            session.OnInjectionSucceeded(1000);
+            var active = new NativeHookStatusSnapshot { Version = 2, Flags = Ready };
+            session.Observe(true, active, EHookOverlayStatus.Active, 2000);
+            session.Observe(true, active, EHookOverlayStatus.Active, 4000);
+            Assert.AreEqual(HookProbeSettlement.Learned, session.Settlement);
+        }
+
         private static HookCompatibilityProbeSession Session(bool streamline, bool d3d12 = true)
         {
             HookTargetEvidence evidence = HookCompatibilityStagePlannerTest.Evidence(

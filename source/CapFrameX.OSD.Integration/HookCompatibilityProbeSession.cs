@@ -77,6 +77,7 @@ namespace CapFrameX.OSD.Integration
         private ulong _lastObservationTickMs;
         private bool _retriedStatusTimeout;
         private ulong _awaitingLiveApplyUntilTickMs;
+        private bool _stageClockPaused;
 
         internal HookCompatibilityProbeSession(int processId, HookCompatibilityStagePlan plan)
         {
@@ -113,7 +114,7 @@ namespace CapFrameX.OSD.Integration
         {
             if (!Observing) return 0;
             ulong active = _timings.ActiveElapsedMs;
-            if (nowTickMs > _lastObservationTickMs && _lastObservationTickMs != 0)
+            if (!_stageClockPaused && nowTickMs > _lastObservationTickMs && _lastObservationTickMs != 0)
                 active += nowTickMs - _lastObservationTickMs;
             return active >= HookCompatibilityVerdictClassifier.ProbeStageBudgetMs
                 ? 0
@@ -127,6 +128,7 @@ namespace CapFrameX.OSD.Integration
             _timings.InjectionSucceededTickMs = nowTickMs;
             _observingSinceTickMs = nowTickMs;
             _lastObservationTickMs = nowTickMs;
+            _stageClockPaused = false;
             HasStatusSample = false;
             if (Settlement == HookProbeSettlement.RestartPending)
             {
@@ -159,7 +161,7 @@ namespace CapFrameX.OSD.Integration
             if (_awaitingLiveApplyUntilTickMs != 0)
             {
                 bool applied = hasStatus &&
-                    (snapshot.AppliedFlags & (uint)stage.Flags) == (uint)stage.Flags;
+                    snapshot.AppliedFlags == (uint)stage.Flags && snapshot.PendingRestartFlags == 0;
                 if (applied)
                 {
                     // The hook runs the new stage from here; its clocks start now and this
@@ -195,6 +197,24 @@ namespace CapFrameX.OSD.Integration
                 Settlement = HookProbeSettlement.None;
                 PendingStage = null;
                 PendingStageIndex = -1;
+            }
+            else if (Settlement == HookProbeSettlement.Learned)
+            {
+                if (verdict == HookCompatibilityVerdict.Success ||
+                    verdict == HookCompatibilityVerdict.Pending ||
+                    verdict == HookCompatibilityVerdict.Inconclusive)
+                    return Array.Empty<HookProbeAction>();
+
+                // Learning does not end health monitoring. FG can be switched on with every
+                // provider DLL already resident, so no evidence-signature change is required.
+                Settlement = HookProbeSettlement.None;
+                var actions = new List<HookProbeAction>
+                {
+                    new HookProbeAction(HookProbeActionKind.SetPollInterval,
+                        pollIntervalMs: ProbePollIntervalMs)
+                };
+                actions.AddRange(Fail(stage, verdict, snapshot, nowTickMs));
+                return actions;
             }
             else if (Settlement != HookProbeSettlement.None)
             {
@@ -354,25 +374,32 @@ namespace CapFrameX.OSD.Integration
         private void UpdateClocks(bool hasStatus, NativeHookStatusSnapshot snapshot,
             EHookOverlayStatus? nativeState, ulong nowTickMs)
         {
-            ulong delta = nowTickMs > _lastObservationTickMs ? nowTickMs - _lastObservationTickMs : 0;
+            ulong delta = !_stageClockPaused && nowTickMs > _lastObservationTickMs
+                ? nowTickMs - _lastObservationTickMs
+                : 0;
             _lastObservationTickMs = nowTickMs;
             _timings.TotalElapsedMs = nowTickMs > _observingSinceTickMs
                 ? nowTickMs - _observingSinceTickMs
                 : 0;
 
             bool inconclusive = hasStatus &&
-                (nativeState == EHookOverlayStatus.Idle ||
+                (nativeState == EHookOverlayStatus.Idle || nativeState == EHookOverlayStatus.Hidden ||
                  (snapshot.Flags & NativeHookStatusFlags.Dormant) != 0);
+            _stageClockPaused = inconclusive;
             if (inconclusive)
             {
-                // The game is paused or the host dormant: the phase clocks restart afterwards.
+                // Paused, deliberately hidden or dormant: the phase clocks restart afterwards.
                 _timings.WaitingSinceTickMs = 0;
                 _timings.InitializingSinceTickMs = 0;
                 _timings.NoQueueSinceTickMs = 0;
                 _timings.SuccessSinceTickMs = 0;
                 return;
             }
-            _timings.ActiveElapsedMs += delta;
+            // Minutes of healthy rendering are not part of a later failure's probe budget.
+            if (Settlement == HookProbeSettlement.Learned && nativeState == EHookOverlayStatus.Active)
+                _timings.ActiveElapsedMs = 0;
+            else
+                _timings.ActiveElapsedMs += delta;
             if (!hasStatus) return;
 
             NativeHookStatusFlags flags = snapshot.Flags;
@@ -405,6 +432,7 @@ namespace CapFrameX.OSD.Integration
             _timings.LastNativeStatusTickMs = lastStatus;
             _observingSinceTickMs = nowTickMs;
             _lastObservationTickMs = nowTickMs;
+            _stageClockPaused = false;
         }
 
         private int IndexOf(HookCompatibilityStage stage)

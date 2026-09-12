@@ -135,12 +135,32 @@ namespace CapFrameX.Test.Integration
         [TestMethod]
         public void Classify_TheStageBudgetEndsAnUndecidedStage()
         {
-            var hidden = new NativeHookStatusSnapshot { Flags = Armed | NativeHookStatusFlags.PresentSeen };
+            var initializing = new NativeHookStatusSnapshot
+            {
+                Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.Visible
+            };
             HookProbeTimings timings = Timings(now: 30000);
             timings.ActiveElapsedMs = HookCompatibilityVerdictClassifier.ProbeStageBudgetMs;
 
             Assert.AreEqual(HookCompatibilityVerdict.RendererStalled,
-                HookCompatibilityVerdictClassifier.Classify(Vendor, true, hidden, EHookOverlayStatus.Hidden, in timings));
+                HookCompatibilityVerdictClassifier.Classify(Vendor, true, initializing,
+                    EHookOverlayStatus.Initializing, in timings));
+        }
+
+        [TestMethod]
+        public void Classify_HiddenIsInconclusiveEvenAfterTheBudgetAndQueueTimeout()
+        {
+            var hidden = new NativeHookStatusSnapshot
+            {
+                Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen,
+                QueueState = NativeHookQueueState.None
+            };
+            HookProbeTimings timings = Timings(now: 30000, noQueueSince: 1000);
+            timings.ActiveElapsedMs = HookCompatibilityVerdictClassifier.ProbeStageBudgetMs;
+
+            Assert.AreEqual(HookCompatibilityVerdict.Inconclusive,
+                HookCompatibilityVerdictClassifier.Classify(Generic, true, hidden,
+                    EHookOverlayStatus.Hidden, in timings));
         }
 
         private const NativeHookStatusFlags Armed =

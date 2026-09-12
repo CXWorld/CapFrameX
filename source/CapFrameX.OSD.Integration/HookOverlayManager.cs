@@ -931,7 +931,10 @@ namespace CapFrameX.OSD.Integration
                 {
                     if (stage != null) e.SetStage(stage);
                     e.Verified = verified;
-                    e.Exhausted = exhausted;
+                    // A late-loaded provider can invalidate the old ladder. Do not blacklist
+                    // its new signature before a re-plan has tried the newly available routes.
+                    e.Exhausted = exhausted &&
+                        string.Equals(signature, planned.Signature, StringComparison.Ordinal);
                     e.SetPending(pending, detail);
                     e.LastVerdict = verdict;
                     e.LastVerdictDetail = detail;
@@ -1748,9 +1751,9 @@ namespace CapFrameX.OSD.Integration
 
         /// <summary>
         /// A verified stage can stop working when the game changes its frame-generation setup at
-        /// runtime: another runtime takes over presentation and the hook stands down. The probe
-        /// settled long before that and would never look again, so re-scan the modules while the
-        /// overlay is down and, when the evidence signature really changed, re-plan from the
+        /// runtime: another runtime takes over presentation and the hook stands down. The session
+        /// monitors status-only changes itself; a newly loaded provider can also add routes its
+        /// old ladder never contained. Re-scan after settlement and, if the signature changed, re-plan from the
         /// stage currently in effect and let the ordinary escalation take it from there.
         /// </summary>
         private void TryRearmProbeOnEvidenceChange(int pid, EHookOverlayStatus? nativeState,
@@ -1769,8 +1772,7 @@ namespace CapFrameX.OSD.Integration
                     return;
                 // Only a session that already concluded. While it still walks the ladder it
                 // re-evaluates anyway, and a pending restart is advice the user already has.
-                bool settled = session.Settlement == HookProbeSettlement.Learned ||
-                               session.Settlement == HookProbeSettlement.GaveUp;
+                bool settled = CanRearmProbeForChangedEvidence(session.Settlement);
                 if (!settled || nativeState == EHookOverlayStatus.Active)
                 {
                     _probeStandDownSinceTickMs = 0;
@@ -1838,6 +1840,11 @@ namespace CapFrameX.OSD.Integration
                     pid, publishError);
             }
         }
+
+        // Kept separate from process/module scans so FG-switch tests exercise the manager's
+        // actual settlement gate without injecting a hook or loading vendor DLLs.
+        internal static bool CanRearmProbeForChangedEvidence(HookProbeSettlement settlement)
+            => settlement == HookProbeSettlement.Learned || settlement == HookProbeSettlement.GaveUp;
 
         private bool RefreshVulkanInjectionGate(int pid, bool forceProbe = false)
         {

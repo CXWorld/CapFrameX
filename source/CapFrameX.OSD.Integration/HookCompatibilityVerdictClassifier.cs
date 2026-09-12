@@ -88,7 +88,7 @@ namespace CapFrameX.OSD.Integration
             if ((flags & NativeHookStatusFlags.ForeignPresenter) != 0)
                 return HookCompatibilityVerdict.ForeignPresenter;
 
-            if (nativeState == EHookOverlayStatus.Idle ||
+            if (nativeState == EHookOverlayStatus.Idle || nativeState == EHookOverlayStatus.Hidden ||
                 (flags & NativeHookStatusFlags.Dormant) != 0)
                 return HookCompatibilityVerdict.Inconclusive;
 

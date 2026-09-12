@@ -171,6 +171,14 @@ namespace CapFrameX.OSD.Integration
                     "automatic compatibility probing is off", probingEnabled: false, evidence);
             }
 
+            HookCompatibilityStage learnedStage = learned?.ToStage();
+            // A title can keep the same module signature while switching graphics APIs. Never
+            // reuse a D3D12-only route (or its exhausted verdict) for a D3D11 launch.
+            if (learnedStage != null && !IsSupported(learnedStage, evidence))
+            {
+                learned = null;
+                learnedStage = null;
+            }
             bool learnedCurrent = learned != null && learned.MatchesHookBuild(hookBuildHash);
             if (learnedCurrent && learned.Exhausted)
             {
@@ -178,34 +186,29 @@ namespace CapFrameX.OSD.Integration
                     "every compatibility stage failed for this title on this hook build; " +
                     "reset the learned profiles to probe again", probingEnabled: true, evidence);
             }
-            if (learnedCurrent && learned.Verified && learned.PendingStageId == null)
-            {
-                HookCompatibilityStage verified = learned.ToStage();
-                if (verified != null)
-                {
-                    return new HookCompatibilityStagePlan(new[] { verified }, 0,
-                        $"learned profile ({learned.EvidenceSignature})", probingEnabled: true,
-                        evidence);
-                }
-            }
-
             List<HookCompatibilityStage> ladder = BuildLadder(evidence, catalogStage);
             int startIndex = 0;
             string reason;
 
             HookCompatibilityStage pending = learnedCurrent ? learned.PendingStage() : null;
-            HookCompatibilityStage learnedStage = learned?.ToStage();
-            if (pending != null)
+            if (IsSupported(pending, evidence))
             {
-                startIndex = IndexOfOrAppend(ladder, pending);
+                startIndex = IndexOfOrInsert(ladder, pending);
                 reason = $"learned profile scheduled stage {startIndex + 1}/{ladder.Count} " +
                     $"({pending.DisplayName}) for this launch";
+            }
+            else if (learnedCurrent && learned.Verified && learnedStage != null)
+            {
+                // A verification is the preferred entry point, not proof that every other
+                // route failed. Keep the remaining ladder for subsequent routing changes.
+                startIndex = IndexOfOrInsert(ladder, learnedStage);
+                reason = $"learned profile ({learned.EvidenceSignature})";
             }
             else if (learnedStage != null && !learnedCurrent)
             {
                 // The hook changed underneath a learned entry: re-verify from the stage that
                 // used to work rather than from the very beginning.
-                startIndex = IndexOfOrAppend(ladder, learnedStage);
+                startIndex = IndexOfOrInsert(ladder, learnedStage);
                 reason = $"learned profile predates this hook build; re-verifying from " +
                     $"stage {startIndex + 1}/{ladder.Count} ({learnedStage.DisplayName})";
             }
@@ -300,6 +303,9 @@ namespace CapFrameX.OSD.Integration
                 return true;
             return evidence.IsKnown && evidence.D3D12Loaded;
         }
+
+        private static bool IsSupported(HookCompatibilityStage stage, HookTargetEvidence evidence)
+            => stage != null && (!stage.IsGeneric || AllowsGenericRoute(evidence));
 
         internal static string ResolveEarlyInjectionGateModule(HookTargetEvidence evidence)
         {
@@ -478,8 +484,9 @@ namespace CapFrameX.OSD.Integration
                 autoCompatibility);
             if (applied == null || plan.IsEmpty) return plan;
             var ladder = new List<HookCompatibilityStage>(plan.Ladder);
-            int appliedIndex = IndexOfOrAppend(ladder, applied);
-            int startIndex = Math.Max(plan.StartIndex, appliedIndex);
+            // A fresh-launch heuristic is not an applied route. Observe the running stage;
+            // ordinary escalation will publish a change and wait for its native acknowledgement.
+            int startIndex = IndexOfOrInsert(ladder, applied);
             if (ladder.Count == plan.Ladder.Count && startIndex == plan.StartIndex) return plan;
             return new HookCompatibilityStagePlan(ladder, startIndex, plan.Reason,
                 plan.ProbingEnabled, evidence);
@@ -500,15 +507,21 @@ namespace CapFrameX.OSD.Integration
             return false;
         }
 
-        private static int IndexOfOrAppend(List<HookCompatibilityStage> ladder,
+        private static int IndexOfOrInsert(List<HookCompatibilityStage> ladder,
             HookCompatibilityStage stage)
         {
             for (int i = 0; i < ladder.Count; i++)
             {
-                if (ladder[i].SameRouting(stage)) return i;
+                if (ladder[i].SameRouting(stage))
+                {
+                    ladder[i] = stage;
+                    return i;
+                }
             }
-            ladder.Add(stage);
-            return ladder.Count - 1;
+            int index = ladder.FindIndex(candidate => Rank(candidate) > Rank(stage));
+            if (index < 0) index = ladder.Count;
+            ladder.Insert(index, stage);
+            return index;
         }
 
         private static int Rank(HookCompatibilityStage stage)

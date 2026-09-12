@@ -32,6 +32,9 @@ namespace CapFrameX.OSD.Integration
         internal const long ProbeActiveOffset = 32;
         internal const long HostFlagsOffset = 36;
         internal const long HostPidOffset = 40;
+        // Formerly reserved. Zero identifies an older V2 writer; otherwise this must equal
+        // SequenceOffset before a reader may consume the snapshot.
+        internal const long PublicationSequenceOffset = 44;
 
         internal const int HostFlagAutoCompatibility = 1 << 0;
         internal const int HostFlagLiveEscalationAllowed = 1 << 1;
@@ -93,15 +96,8 @@ namespace CapFrameX.OSD.Integration
                         view.ReadInt32(VersionOffset) == Version2 &&
                         view.ReadInt32(ProcessIdOffset) == processId)
                     {
-                        created._sequence = Math.Max(0, view.ReadInt32(SequenceOffset));
+                        created._sequence = view.ReadInt32(SequenceOffset);
                     }
-                    // Header first, then the payload, then the sequence — the hook validates the
-                    // header before it trusts any sequence.
-                    view.Write(MagicOffset, MagicV2);
-                    view.Write(VersionOffset, Version2);
-                    view.Write(ProcessIdOffset, processId);
-                    view.Write(HostPidOffset, Environment.ProcessId);
-                    view.Flush();
                     if (!created.TryPublish(flags, stageId, stageIndex, stageCount, probeActive,
                         hostFlags, out error))
                     {
@@ -141,6 +137,17 @@ namespace CapFrameX.OSD.Integration
             {
                 try
                 {
+                    int next = unchecked(_sequence + 1);
+                    if (next == 0) next = 1; // zero is reserved for legacy V2 publications
+                    // Mark the write BEFORE touching any payload, including an existing header
+                    // after a host restart. A sequence bumped only at the end cannot protect a
+                    // reader that has not yet consumed the previous publication.
+                    _viewV2.Write(PublicationSequenceOffset, next);
+                    Thread.MemoryBarrier();
+                    _viewV2.Write(MagicOffset, MagicV2);
+                    _viewV2.Write(VersionOffset, Version2);
+                    _viewV2.Write(ProcessIdOffset, _processId);
+                    _viewV2.Write(HostPidOffset, Environment.ProcessId);
                     _viewV2.Write(FlagsOffset, unchecked((int)(uint)flags));
                     _viewV2.Write(StageIdOffset, stageId);
                     _viewV2.Write(StageIndexOffset, stageIndex);
@@ -149,7 +156,6 @@ namespace CapFrameX.OSD.Integration
                     _viewV2.Write(HostFlagsOffset, hostFlags);
                     _viewV2.Flush();
                     Thread.MemoryBarrier();
-                    int next = _sequence + 1;
                     _viewV2.Write(SequenceOffset, next);
                     _viewV2.Flush();
                     Volatile.Write(ref _sequence, next);

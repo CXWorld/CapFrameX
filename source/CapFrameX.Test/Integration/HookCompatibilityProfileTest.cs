@@ -247,6 +247,8 @@ namespace CapFrameX.Test.Integration
                     Assert.AreEqual(Environment.ProcessId,
                         view.ReadInt32(HookCompatibilityChannel.HostPidOffset));
                     Assert.AreEqual(1, channel.Sequence);
+                    Assert.AreEqual(channel.Sequence,
+                        view.ReadInt32(HookCompatibilityChannel.PublicationSequenceOffset));
 
                     // A stage change rewrites the payload and bumps the sequence last.
                     NativeHookCompatibilityFlags next = expected |
@@ -255,6 +257,8 @@ namespace CapFrameX.Test.Integration
                         probeActive: true, hostFlags: 3, out error), error);
                     Assert.AreEqual(2, channel.Sequence);
                     Assert.AreEqual(2, view.ReadInt32(HookCompatibilityChannel.SequenceOffset));
+                    Assert.AreEqual(channel.Sequence,
+                        view.ReadInt32(HookCompatibilityChannel.PublicationSequenceOffset));
                     Assert.AreEqual(unchecked((int)(uint)next),
                         view.ReadInt32(HookCompatibilityChannel.FlagsOffset));
                     Assert.AreEqual(3, view.ReadInt32(HookCompatibilityChannel.StageIdOffset));
@@ -262,6 +266,39 @@ namespace CapFrameX.Test.Integration
                     Assert.AreEqual(4, view.ReadInt32(HookCompatibilityChannel.StageCountOffset));
                     Assert.AreEqual(1, view.ReadInt32(HookCompatibilityChannel.ProbeActiveOffset));
                     Assert.AreEqual(3, view.ReadInt32(HookCompatibilityChannel.HostFlagsOffset));
+                }
+            }
+        }
+
+        [DataTestMethod]
+        [DataRow(1, 2)]
+        [DataRow(int.MaxValue, int.MinValue)]
+        [DataRow(-1, 1)]
+        public void CompatibilityChannel_RecoversAnInterruptedPublicationAndHandlesWraparound(
+            int committed, int expected)
+        {
+            int processId = Environment.ProcessId;
+            using (MemoryMappedFile mapping = MemoryMappedFile.CreateOrOpen(
+                HookCompatibilityChannel.GetMappingNameV2(processId), HookCompatibilityChannel.ChannelSizeV2))
+            using (MemoryMappedViewAccessor view = mapping.CreateViewAccessor())
+            {
+                view.Write(HookCompatibilityChannel.MagicOffset, HookCompatibilityChannel.MagicV2);
+                view.Write(HookCompatibilityChannel.VersionOffset, HookCompatibilityChannel.Version2);
+                view.Write(HookCompatibilityChannel.ProcessIdOffset, processId);
+                view.Write(HookCompatibilityChannel.SequenceOffset, committed);
+                view.Write(HookCompatibilityChannel.PublicationSequenceOffset, expected);
+                view.Write(HookCompatibilityChannel.FlagsOffset, 12); // interrupted host write
+
+                Assert.IsTrue(HookCompatibilityChannel.TryCreate(processId,
+                    NativeHookCompatibilityFlags.None, out HookCompatibilityChannel channel,
+                    out string error), error);
+                using (channel)
+                {
+                    Assert.AreEqual(expected, channel.Sequence);
+                    Assert.AreEqual(expected, view.ReadInt32(HookCompatibilityChannel.SequenceOffset));
+                    Assert.AreEqual(expected,
+                        view.ReadInt32(HookCompatibilityChannel.PublicationSequenceOffset));
+                    Assert.AreEqual(0, view.ReadInt32(HookCompatibilityChannel.FlagsOffset));
                 }
             }
         }
