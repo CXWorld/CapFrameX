@@ -26,7 +26,7 @@ namespace CapFrameX.OSD.Integration
     /// exited is forgotten so a relaunch re-injects. Injection runs off the caller thread and
     /// never throws into the app.
     /// </summary>
-    public sealed class HookOverlayManager : IDisposable
+    public sealed partial class HookOverlayManager : IDisposable
     {
         private const string HookDllName = "cfx_osd_hook.dll";
         internal const ulong HookHandshakeTimeoutMs = 3000;
@@ -243,6 +243,7 @@ namespace CapFrameX.OSD.Integration
 
         private void OnEnabledChanged(bool enabled)
         {
+            if (!enabled) ResetVulkanLearning();
             if (enabled && !_enabled)
             {
                 _hookEnabledAtUtc = DateTime.UtcNow;
@@ -325,6 +326,7 @@ namespace CapFrameX.OSD.Integration
             }
             if (previousPid > 0 && previousPid != pid)
             {
+                ResetVulkanLearning();
                 HookTargetPolicy.Invalidate(previousPid);
                 lock (_gate)
                 {
@@ -551,7 +553,7 @@ namespace CapFrameX.OSD.Integration
                     pid = _currentPid;
                     runtime = _currentRuntime;
                     reason = GetHookFreeFallbackReason(_enabled, pid, runtime,
-                        _targetBlockReason, _nativeFallbackReason,
+                        _targetBlockReason, _vulkanFallbackReason ?? _nativeFallbackReason,
                         targetProcessAlive: pid > 0 && IsProcessAlive(pid));
                     active = reason != null;
                     activeChanged = active != _hookFreeFallbackActive;
@@ -2256,6 +2258,22 @@ namespace CapFrameX.OSD.Integration
                     bool useVulkanStatus = ShouldUseVulkanStatus(runtime, hasVulkanStatus,
                         vulkanHeartbeatAge, hasDxgiStatus, dxgiTransitionStarted);
 
+                    HookOverlayStatus vulkanLearningStatus = null;
+                    if (useVulkanStatus && targetAllowed)
+                    {
+                        vulkanLearningStatus = PollVulkanLearning(pid, vulkan, nowTickMs);
+                    }
+                    else
+                    {
+                        ResetVulkanLearning();
+                    }
+                    UpdateHookFreeFallback();
+                    lock (_stateGate)
+                    {
+                        hookFreeFallbackActive = _hookFreeFallbackActive;
+                        hookFreeFallbackReason = _hookFreeFallbackReason;
+                    }
+
                     if (hookFreeFallbackActive)
                     {
                         bool visible = _appConfiguration.IsOverlayActive;
@@ -2284,7 +2302,7 @@ namespace CapFrameX.OSD.Integration
                         }
                         else
                         {
-                            status = HookOverlayStatusEvaluator.EvaluateVulkan(pid, "Vulkan",
+                            status = vulkanLearningStatus ?? HookOverlayStatusEvaluator.EvaluateVulkan(pid, "Vulkan",
                                 vulkan, nowTickMs, _appConfiguration.IsOverlayActive);
                         }
                     }
@@ -2553,6 +2571,7 @@ namespace CapFrameX.OSD.Integration
             _autoCompatibilitySub?.Dispose();
             _learnedStoreSub?.Dispose();
             _visibility?.Dispose();
+            ResetVulkanLearning();
             lock (_gate)
             {
                 foreach (HookCompatibilityChannel channel in _compatibilityChannels.Values)

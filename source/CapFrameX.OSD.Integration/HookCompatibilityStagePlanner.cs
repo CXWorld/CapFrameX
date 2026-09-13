@@ -16,7 +16,11 @@ namespace CapFrameX.OSD.Integration
         /// <summary>RTSS model: draw on native DXGI Presents with observed DIRECT queues.</summary>
         Generic = 2,
         /// <summary>Generic, and the FidelityFX creation/destruction hooks are never installed.</summary>
-        GenericNoFfxLifecycle = 3
+        GenericNoFfxLifecycle = 3,
+        // Separate native Vulkan channel, never interpreted as DXGI routing flags.
+        VulkanGraphics = 100,
+        VulkanCompute = 101,
+        VulkanSuspended = 102
     }
 
     internal sealed class HookCompatibilityStage
@@ -57,6 +61,9 @@ namespace CapFrameX.OSD.Integration
                 string name;
                 switch (Id)
                 {
+                    case HookCompatibilityStageId.VulkanGraphics: name = "Vulkan graphics composite"; break;
+                    case HookCompatibilityStageId.VulkanCompute: name = "Vulkan compute composite"; break;
+                    case HookCompatibilityStageId.VulkanSuspended: name = "Vulkan hook-free fallback"; break;
                     case HookCompatibilityStageId.VendorAware: name = "vendor-aware"; break;
                     case HookCompatibilityStageId.VendorAwareXeFgQueue:
                         name = "vendor-aware + XeSS-FG native queue"; break;
@@ -305,7 +312,8 @@ namespace CapFrameX.OSD.Integration
         }
 
         private static bool IsSupported(HookCompatibilityStage stage, HookTargetEvidence evidence)
-            => stage != null && (!stage.IsGeneric || AllowsGenericRoute(evidence));
+            => stage != null && (int)stage.Id < 100 &&
+               (!stage.IsGeneric || AllowsGenericRoute(evidence));
 
         internal static string ResolveEarlyInjectionGateModule(HookTargetEvidence evidence)
         {
