@@ -757,9 +757,9 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
-        public bool HookOverlayAutoCompatibility
+        public bool ShareOverlayCompatibilityProfiles
         {
-            get => Get<bool>(true);
+            get => Get<bool>(false);
             set => Set(value);
         }
 

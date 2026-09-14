@@ -1164,21 +1164,6 @@
 
 						<StackPanel Grid.Column="1">
 							<Border Margin="6 0 6 6" Style="{StaticResource OsdOptionsCard}">
-							<materialDesign:DialogHost IsOpen="{Binding ResetLearnedProfilesIsOpen}" CloseOnClickAway="True">
-								<materialDesign:DialogHost.DialogContent>
-									<StackPanel Margin="20" MaxWidth="380">
-										<TextBlock FontWeight="SemiBold" TextWrapping="Wrap"
-												   Text="Reset learned compatibility profiles?"/>
-										<TextBlock Margin="0 10 0 0" TextWrapping="Wrap" Style="{StaticResource OsdOptionsDescription}"
-												   Text="CapFrameX forgets which in-game routing stage worked for each game and probes again on the next launch. The shipped catalog is not affected."/>
-										<StackPanel Margin="0 16 0 0" Orientation="Horizontal" HorizontalAlignment="Right">
-											<Button Style="{StaticResource MaterialDesignFlatButton}" Content="CANCEL"
-													Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"/>
-											<Button Margin="8 0 0 0" Style="{StaticResource MaterialDesignFlatButton}" Content="RESET"
-													Command="{Binding ResetLearnedProfilesCommand}"/>
-										</StackPanel>
-									</StackPanel>
-								</materialDesign:DialogHost.DialogContent>
 								<StackPanel>
 									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="Overlay renderer"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
@@ -1214,15 +1199,18 @@
 													  Style="{StaticResource MaterialDesignCheckBox}"/>
 											<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
 													   Text="Adds display-time data through the buffered PresentMon stream. Off uses the hook's low-latency present-to-present data."/>
-											<CheckBox Margin="0 8 0 0" Content="Automatic compatibility probing"
-													  IsChecked="{Binding HookOverlayAutoCompatibility, Mode=TwoWay}"
-													  Style="{StaticResource MaterialDesignCheckBox}"/>
-											<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
-													   Text="Tries the hook's routing stages (vendor-aware, generic D3D12, without FidelityFX lifecycle hooks, early injection) with a time budget and remembers the one that renders for each game. Off uses only the shipped catalog."/>
-											<TextBlock Margin="26 6 0 0" Style="{StaticResource OsdOptionsDescription}" TextWrapping="Wrap"
+											<TextBlock Margin="0 8 0 0" Style="{StaticResource OsdOptionsDescription}" TextWrapping="Wrap"
+													   Text="Always learns compatibility settings for each game."/>
+											<TextBlock Margin="0 6 0 0" Style="{StaticResource OsdOptionsDescription}" TextWrapping="Wrap"
 													   Text="{Binding HookLearnedProfileText}"/>
-											<Button Margin="26 6 0 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignOutlinedButton}"
-													Content="Reset learned profiles" Command="{Binding OpenResetLearnedProfilesDialogCommand}"/>
+										</StackPanel>
+										<StackPanel Margin="26 10 0 0">
+											<CheckBox Content="Share overlay compatibility reports"
+													  IsChecked="{Binding ShareOverlayCompatibilityProfiles, Mode=TwoWay}"
+													  IsEnabled="{Binding IsInGameOverlayAvailable}"
+													  Style="{StaticResource MaterialDesignCheckBox}"/>
+											<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}" TextWrapping="Wrap"
+													   Text="Send future-session profiles, game/runtime versions and hashes, Windows, GPU/driver and overlay/FG diagnostics to CapFrameX for analysis. Reports use a random ID; no paths, account details or raw logs. Off stops uploads and deletes unsent reports; submitted reports remain."/>
 										</StackPanel>
 									</StackPanel>
 
@@ -1295,7 +1283,7 @@
 										</Grid>
 									</StackPanel>
 								</StackPanel>
-							</materialDesign:DialogHost>
+
 							</Border>
 
 							<Border Style="{StaticResource OsdOptionsCard}">

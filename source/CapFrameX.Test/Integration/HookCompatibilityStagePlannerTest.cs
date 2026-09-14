@@ -173,7 +173,7 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void Plan_PendingStageStartsThereAndExhaustedStopsInjecting()
+        public void Plan_PendingStageIsReusedButExhaustionDoesNotBlockANewLaunch()
         {
             HookLearnedProfileEntry pending = Entry(HookCompatibilityStageId.Generic,
                 verified: false, hash: Hash);
@@ -190,9 +190,9 @@ namespace CapFrameX.Test.Integration
 
             Assert.AreEqual(HookCompatibilityStageId.GenericNoFfxLifecycle,
                 pendingPlan.StartStage.Id);
-            Assert.IsTrue(exhaustedPlan.IsEmpty);
-            Assert.IsNull(exhaustedPlan.StartStage);
-            StringAssert.Contains(exhaustedPlan.Reason, "reset the learned profiles");
+            Assert.IsFalse(exhaustedPlan.IsEmpty);
+            Assert.IsNotNull(exhaustedPlan.StartStage);
+            Assert.IsTrue(exhaustedPlan.ProbingEnabled);
         }
 
         [TestMethod]

@@ -187,12 +187,8 @@ namespace CapFrameX.OSD.Integration
                 learnedStage = null;
             }
             bool learnedCurrent = learned != null && learned.MatchesHookBuild(hookBuildHash);
-            if (learnedCurrent && learned.Exhausted)
-            {
-                return new HookCompatibilityStagePlan(Array.Empty<HookCompatibilityStage>(), 0,
-                    "every compatibility stage failed for this title on this hook build; " +
-                    "reset the learned profiles to probe again", probingEnabled: true, evidence);
-            }
+            // Exhaustion belongs to the observed run. A new launch always gets another probe;
+            // transient startup conditions must not require a user to clear the whole store.
             List<HookCompatibilityStage> ladder = BuildLadder(evidence, catalogStage);
             int startIndex = 0;
             string reason;

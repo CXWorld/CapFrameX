@@ -60,6 +60,8 @@ namespace CapFrameX.OSD.Integration
                 if (publish)
                 {
                     _vulkanSession = new HookVulkanProbeSession(snapshot, learned);
+                    _profileReports?.Begin(pid, name, path, null, snapshot.BuildHash, "Vulkan", "Layer",
+                        HookProfileReportService.Profile(_vulkanSession.Stage, snapshot.Signature));
                     _vulkanFallbackReason = null;
                     Log.Information("HookOverlay: Vulkan plan for pid {pid} ('{process}'), evidence {signature}, " +
                         "layer {build}, generation {generation}: {stage}", pid, name, snapshot.Signature,
@@ -73,12 +75,15 @@ namespace CapFrameX.OSD.Integration
                 publish |= (action & VulkanProbeAction.Publish) != 0;
                 uint revision = _vulkanChannel.Publish(session.Route, session.Context, true, nowMs, publish);
                 if (publish) session.Published(revision, nowMs);
+                _profileReports?.ObserveVulkan(pid, snapshot, action, nowMs,
+                    _appConfiguration.IsOverlayActive, session.Exhausted,
+                    activity.ResolutionX, activity.ResolutionY);
 
                 if ((action & (VulkanProbeAction.Learn | VulkanProbeAction.Invalidate)) != 0)
                 {
                     bool verified = (action & VulkanProbeAction.Learn) != 0;
                     var stage = HookVulkanProbeSession.ToStage(verified ? session.Route : preceding);
-                    _learnedStore.Upsert(name, path, session.Signature, null, session.BuildHash, entry =>
+                    var learnedEntry = _learnedStore.Upsert(name, path, session.Signature, null, session.BuildHash, entry =>
                     {
                         entry.SetStage(stage);
                         entry.SetPending(null, null);
@@ -88,6 +93,7 @@ namespace CapFrameX.OSD.Integration
                         entry.LastVerdictDetail = $"native route {snapshot.ActualRoute}, result {snapshot.Result}";
                         entry.Attempts++;
                     });
+                    _profileReports?.ProfileOutcome(pid, learnedEntry);
                     session.HasPersistedOutcome = true;
                     Log.Information("HookOverlay: Vulkan verdict for pid {pid} ('{process}'), evidence {signature}: " +
                         "{verdict}, stage {stage}, successful presents {draws}", pid, name, session.Signature,
@@ -95,7 +101,7 @@ namespace CapFrameX.OSD.Integration
                 }
 
                 _vulkanFallbackReason = session.Exhausted
-                    ? "no supported Vulkan composite route succeeded; reset learned profiles to retry"
+                    ? "no supported Vulkan composite route succeeded; the next game launch probes again"
                     : session.AcknowledgementFailed ? "the Vulkan layer did not acknowledge its compatibility stage" : null;
                 if (!_appConfiguration.IsOverlayActive || snapshot.Result == VulkanProbeResult.Dormant)
                     return new HookOverlayStatus(EHookOverlayStatus.Hidden, pid, "Vulkan",

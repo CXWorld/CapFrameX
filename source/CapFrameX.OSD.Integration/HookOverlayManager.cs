@@ -144,10 +144,11 @@ namespace CapFrameX.OSD.Integration
         private ulong _nextEvidenceRescanTickMs;
         private int _probeRearmCount;
         private readonly IHookLearnedProfileStore _learnedStore;
-        private readonly IDisposable _autoCompatibilitySub;
+        private readonly HookProfileReportService _profileReports;
         private readonly IDisposable _learnedStoreSub;
         private readonly Lazy<string> _hookBuildHash;
-        private volatile bool _autoCompatibility;
+        // Learning is mandatory; legacy HookOverlayAutoCompatibility=false settings are ignored.
+        private const bool _autoCompatibility = true;
         private volatile int _statusPollIntervalMs = HookCompatibilityProbeSession.IdlePollIntervalMs;
         private int _injectionStatusPid;
         private string _lastInjectionError;
@@ -172,7 +173,7 @@ namespace CapFrameX.OSD.Integration
         public HookOverlayManager(IAppConfiguration appConfiguration, IObservable<int> processIdStream,
             IObservable<string[]> frameDataStream, int processIdColumnIndex, int runtimeColumnIndex,
             string dllPathOverride = null, HookOverlayStatusService statusService = null,
-            HookLearnedProfileStore learnedStore = null)
+            HookLearnedProfileStore learnedStore = null, HookProfileReportService profileReports = null)
         {
             _appConfiguration = appConfiguration ?? throw new ArgumentNullException(nameof(appConfiguration));
             if (processIdStream == null) throw new ArgumentNullException(nameof(processIdStream));
@@ -188,12 +189,9 @@ namespace CapFrameX.OSD.Integration
             _enabled = appConfiguration.EnableHookOverlay;
             _statusService = statusService ?? new HookOverlayStatusService();
             _learnedStore = learnedStore ?? new HookLearnedProfileStore(null);
-            _autoCompatibility = appConfiguration.HookOverlayAutoCompatibility;
+            _profileReports = profileReports;
             // A learned entry is only trusted for the hook build that produced it.
             _hookBuildHash = new Lazy<string>(() => ComputeHookTag(_dllPath));
-            _autoCompatibilitySub = appConfiguration.OnValueChanged
-                .Where(x => x.key == nameof(IAppConfiguration.HookOverlayAutoCompatibility))
-                .Subscribe(x => _autoCompatibility = (bool)x.value);
             _learnedStoreSub = _learnedStore.Changes
                 .Subscribe(_ => AddConfiguredEarlyInjectionTargets());
 
@@ -326,6 +324,8 @@ namespace CapFrameX.OSD.Integration
             }
             if (previousPid > 0 && previousPid != pid)
             {
+                // Selection changing does not prove a game crash or a clean exit.
+                _profileReports?.End(previousPid, "target-changed");
                 ResetVulkanLearning();
                 HookTargetPolicy.Invalidate(previousPid);
                 lock (_gate)
@@ -764,7 +764,7 @@ namespace CapFrameX.OSD.Integration
                 out HookCompatibilityProfile catalog);
             HookLearnedProfileEntry learned = null;
             string processName = null;
-            if (TryReadProcessIdentity(pid, out processName, out _) &&
+            if (TryReadProcessIdentity(pid, out processName, out string gamePath) &&
                 !_learnedStore.TryGet(processName, evidence.Signature, out learned) &&
                 attachMode == HookAttachMode.Early)
             {
@@ -775,6 +775,10 @@ namespace CapFrameX.OSD.Integration
             HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Plan(evidence,
                 catalog, learned, _hookBuildHash.Value, _autoCompatibility);
             var session = new HookCompatibilityProbeSession(pid, plan);
+            _profileReports?.Begin(pid, processName, gamePath,
+                HookInjector.TryGetIsWow64(pid, out bool reportWow64, out _) && reportWow64 ? _dllPathX86 : _dllPath,
+                _hookBuildHash.Value, runtime, attachMode.ToString(),
+                HookProfileReportService.Profile(plan.StartStage, evidence.Signature, plan.Ladder));
             lock (_stateGate)
             {
                 _probeSession = session;
@@ -821,6 +825,7 @@ namespace CapFrameX.OSD.Integration
             {
                 try
                 {
+                    _profileReports?.Action(pid, session, action);
                     switch (action.Kind)
                     {
                         case HookProbeActionKind.LogVerdict:
@@ -943,6 +948,7 @@ namespace CapFrameX.OSD.Integration
                     e.Attempts++;
                     e.Ladder = ladder;
                 });
+            _profileReports?.ProfileOutcome(pid, entry);
             Log.Information(
                 "HookOverlay: learned profile for '{process}' ({signature}) is now stage {stage}, verified {verified}, exhausted {exhausted}, pending {pending}",
                 entry.ExecutableName, entry.EvidenceSignature, entry.ToStage().DisplayName,
@@ -1701,6 +1707,7 @@ namespace CapFrameX.OSD.Integration
                 if (!string.IsNullOrWhiteSpace(error))
                     _nativeFallbackReason = $"in-game hook injection failed ({error})";
             }
+            _profileReports?.Injection(pid, inProgress, succeeded, !string.IsNullOrWhiteSpace(error));
             UpdateHookFreeFallback();
             PublishStatus();
         }
@@ -1748,6 +1755,8 @@ namespace CapFrameX.OSD.Integration
             }
 
             if (legacyReason != null) SetNativeFallbackReason(pid, legacyReason);
+            _profileReports?.Observe(pid, hasNativeStatus, native, nativeState, nowTickMs,
+                _appConfiguration.IsOverlayActive, _hookFreeFallbackActive);
             ExecuteProbeActions(pid, session, actions);
         }
 
@@ -2569,7 +2578,7 @@ namespace CapFrameX.OSD.Integration
             _enabledSub?.Dispose();
             _visibilitySub?.Dispose();
             _runtimeSub?.Dispose();
-            _autoCompatibilitySub?.Dispose();
+            _profileReports?.End(_currentPid, "host-stopped");
             _learnedStoreSub?.Dispose();
             _visibility?.Dispose();
             ResetVulkanLearning();

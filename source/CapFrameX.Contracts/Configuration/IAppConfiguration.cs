@@ -194,11 +194,10 @@ namespace CapFrameX.Contracts.Configuration
 		bool HookOverlayUsePresentMonFrametimes { get; set; }
 
 		/// <summary>
-		/// Let the in-game hook probe routing stages (vendor-aware, generic D3D12, generic
-		/// without FidelityFX lifecycle hooks, early injection) and remember the one that renders
-		/// per game. Off reproduces the fixed catalog-only behaviour: one stage, no learning.
+		/// Explicit opt-in to sending overlay compatibility reports to the update server.
+		/// Local learning is always active and does not depend on this consent.
 		/// </summary>
-		bool HookOverlayAutoCompatibility { get; set; }
+		bool ShareOverlayCompatibilityProfiles { get; set; }
 
 		/// <summary>
 		/// Minimum buffer duration in milliseconds for replaying the bursty PresentMon frame

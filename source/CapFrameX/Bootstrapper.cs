@@ -58,6 +58,7 @@ namespace CapFrameX
         private OSD.Integration.HookFrametimePublisher _hookFrametimePublisher;
         // Learned in-game compatibility profiles (JSON in the configuration folder).
         private OSD.Integration.HookLearnedProfileStore _hookLearnedProfileStore;
+        private OSD.Integration.HookProfileReportService _hookProfileReports;
 #endif
         private OSD.Integration.HookOverlayStatusService _hookOverlayStatusService;
 
@@ -155,7 +156,8 @@ namespace CapFrameX
                         PresentMonCaptureService.ProcessID_INDEX,
                         PresentMonCaptureService.PresentRuntime_INDEX,
                         statusService: _hookOverlayStatusService,
-                        learnedStore: _hookLearnedProfileStore);
+                        learnedStore: _hookLearnedProfileStore,
+                        profileReports: _hookProfileReports);
                 }
 
 #endif
@@ -355,6 +357,15 @@ namespace CapFrameX
                 {
                     Container.Register<ISystemInfo, SystemInfo.NetStandard.SystemInfo>(Reuse.Singleton);
                     Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
+#if CFX_INGAME_OVERLAY
+                    var reportVersionProvider = Container.Resolve<IAppVersionProvider>();
+                    _hookProfileReports = new OSD.Integration.HookProfileReportService(
+                        appConfiguration, pathService.ConfigFolder,
+                        ConfigurationManager.AppSettings["UpdateCatalogUri"],
+                        reportVersionProvider.GetAppVersion().ToString(),
+                        reportVersionProvider.GetReleaseChannel().ToString());
+                    Exit += (_, _) => _hookProfileReports.Dispose();
+#endif
 
 					// The update service needs its catalog URI and the staging folder, neither of
 					// which the container can supply, so it is built here like the process list below.

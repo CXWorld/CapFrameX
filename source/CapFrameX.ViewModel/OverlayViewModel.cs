@@ -55,7 +55,6 @@ namespace CapFrameX.ViewModel
         private Subject<object> _configSubject = new Subject<object>();
         private ResetOverlayConfigDialog _resetOverlayConfigContent;
         private bool _resetOverlayConfigContentIsOpen;
-        private bool _resetLearnedProfilesIsOpen;
         private string _hookLearnedProfileText = "No learned compatibility profiles yet.";
         private string _filterText = string.Empty;
         private EOverlayEntryType? _selectedEntryTypeFilter;
@@ -490,14 +489,12 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        // The in-game hook probes its routing stages and remembers the one that renders per
-        // game (HookOverlayManager). Off: the shipped catalog only, no probing, no learning.
-        public bool HookOverlayAutoCompatibility
+        public bool ShareOverlayCompatibilityProfiles
         {
-            get { return _appConfiguration.HookOverlayAutoCompatibility; }
+            get { return _appConfiguration.ShareOverlayCompatibilityProfiles; }
             set
             {
-                _appConfiguration.HookOverlayAutoCompatibility = value;
+                _appConfiguration.ShareOverlayCompatibilityProfiles = value;
                 RaisePropertyChanged();
             }
         }
@@ -513,20 +510,6 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
-
-        public bool ResetLearnedProfilesIsOpen
-        {
-            get { return _resetLearnedProfilesIsOpen; }
-            set
-            {
-                _resetLearnedProfilesIsOpen = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public ICommand OpenResetLearnedProfilesDialogCommand { get; }
-
-        public ICommand ResetLearnedProfilesCommand { get; }
 
         // PresentMon replay baseline shared by the hook-free renderer and the in-game hook's
         // PresentMon source. A larger value bridges wider delivery gaps but adds graph latency.
@@ -912,9 +895,6 @@ namespace CapFrameX.ViewModel
             OpenResetDialogCommand = new DelegateCommand(() => ResetOverlayConfigContentIsOpen = true);
             ResetConfigCommand = new DelegateCommand(async () => await OnResetDefaults());
 
-            OpenResetLearnedProfilesDialogCommand =
-                new DelegateCommand(() => ResetLearnedProfilesIsOpen = true);
-            ResetLearnedProfilesCommand = new DelegateCommand(OnResetLearnedProfiles);
             _hookLearnedProfiles.Changes
                 .ObserveOnDispatcher()
                 .Subscribe(_ => RefreshHookLearnedProfileText());
@@ -987,19 +967,6 @@ namespace CapFrameX.ViewModel
             SaveButtonIsEnable = true;
         }
 
-        private void OnResetLearnedProfiles()
-        {
-            try
-            {
-                _hookLearnedProfiles.Reset();
-            }
-            finally
-            {
-                ResetLearnedProfilesIsOpen = false;
-                RefreshHookLearnedProfileText();
-            }
-        }
-
         private void RefreshHookLearnedProfileText()
         {
             string text;
@@ -1027,7 +994,7 @@ namespace CapFrameX.ViewModel
                         if (entry.PendingStageName != null)
                             text = $"{processName}: the next launch starts on {entry.PendingStageName}.";
                         else if (entry.Exhausted)
-                            text = $"{processName}: every stage failed on this hook build; reset the learned profiles to probe again.";
+                            text = $"{processName}: compatibility could not be established; the next game launch probes again.";
                         else if (entry.Verified)
                             text = $"{processName}: {entry.StageName} (verified {entry.UpdatedUtc.ToLocalTime():g}).";
                         else
