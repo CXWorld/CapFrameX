@@ -12,36 +12,74 @@ the OSD is built from source instead and these files are ignored.
 The current managed bridge was built in `Release` with the VS 2026/v145 toolset from private
 CapFrameX.OSD revision `e907ea965fb28cb56d82f59064a58579329c6568` (per-entry text scales; it
 also carries the hook-free stall diagnostics of `a2b5bb83` and the replay pacing fix of
-`2da4f0a6`). The core, x64/x86 hook pair, and x64/x86 Vulkan layer pair were rebuilt on
-2026-09-09 in `RelWithDebInfo` from the same revision, every native tree configured with
-`-G "Visual Studio 18 2026"` (toolset v145).
+`2da4f0a6`). Its sources are unchanged in the native revision below.
 
-The x64/x86 hook pair was rebuilt again on 2026-09-12 from OSD revision
-`ffd1609e70fbb02d6060344b36cb8b30719e63e6`, including the compatibility-channel snapshot fix
-(a publication sequence at byte 44 marks a write before its payload changes; the existing
-sequence commits it afterwards). This revision also carries InstallHooks phases, present
-coverage, frame-generation telemetry and decline reasons in
-the status block; the `Rendered` bit re-publishes after a stand-down; FidelityFX exports are
-resolved before the install lock is taken, forwarded exports are skipped, and a fault inside that
-arming no longer takes the DXGI Present hook down; the hook keeps the 64-byte
-`Local\CfxOsdHookCompatibilityV2_{pid}` channel mapped, polls its sequence counter every 250 ms
-from the Present path and applies the XeSS-FG queue-route, the generic-route and the FidelityFX
-lifecycle bits live — the two routing bits only ever turn on — and advertises exactly that in
-`liveReloadCapabilities`. The core and both Vulkan layers are byte-identical to the 2026-09-09
-build.
+The core, x64/x86 hook pair, and x64/x86 Vulkan layer pair were rebuilt on 2026-09-13 in
+`RelWithDebInfo` from private OSD revision `573dbe28d0fc607d782ce5f2d3a1fea9575f65d7`.
+Every native tree was configured with `-G "Visual Studio 18 2026"` (toolset v145) and built
+with `--clean-first`. This revision adds native Vulkan compatibility probing and retains the
+DXGI compatibility-channel snapshot fix and live routing updates from `ffd1609`.
 
-The Vulkan trees are unchanged since the 2026-09-07 build and still pin Khronos Vulkan-Headers
-`vulkan-sdk-1.4.357.0` (commit `e3b1eec08173d6b825cd3ac88c885a63b621504a`) and glslang `16.5.0`
-from the official `main-tot` Windows x64 release archive, SHA-256
-`6BA807EF1D697EC66A34D9D666F842F863FFF4F5612EE95C1CC88F5DE5A362C2`; the layer binaries change
-with the core because `hook_poc` and `vk_layer` compile the core sources into themselves.
+The Vulkan builds used the locally installed Vulkan SDK `1.4.335.0` headers and its bundled
+glslangValidator `16.0.0`. Both `hook_poc` and `vk_layer` compile the core sources into
+themselves, so all five DLLs were rebuilt together. All 41 native CTest cases passed: seven
+core tests, 15 hook tests per architecture, and two Vulkan tests per architecture. The copied
+payloads were checked against their build outputs with SHA-256, and their PE architectures
+and identical, manifest-relative Vulkan manifests were verified.
+
+The hook pair was subsequently rebuilt on the same date from the source state now committed
+as private OSD revision `f8fd7f7114d77df0282f07f3a6cfa4d5f04ecc9c`, containing the
+Dying Light FG queue-capture corrections in `hook_poc`. Factory proxies are unwrapped, and
+each factory/ResizeBuffers1 callback is classified before hooking: only a callback in the
+Windows system DXGI image can establish a native presentation queue. Streamline can patch
+the native factory's shared vtable directly, so COM identity alone does not establish this.
+DXGI private data retains proven queues per swapchain and updates them after native
+`ResizeBuffers1`. An interposed factory argument cannot overwrite an inner native binding;
+without such a binding, native OSD drawing is suspended and observed-queue fallback is blocked.
+The hook also intercepts the underlying native DXGI methods when Streamline has replaced
+their shared-vtable entries before attachment. It resolves those methods from the matching
+system DLL's PE data (validated headers, sections, pointer relocations and executable targets),
+then hooks their live addresses with separate trampolines. The file is never executed, and
+there are no version-specific offsets. The inner capture records the queue actually passed
+to DXGI; the outer callback preserves that binding after its vendor work completes.
+Device comparisons and captured application queues resolve Streamline's native interfaces.
+Interposed factory calls suppress OSD work while releasing the lifecycle lock so that a
+runtime waiting for another thread's Present can complete.
+DXGI bootstrap now creates a WARP software device/swapchain to discover native method
+addresses. It never opens a hardware D3D11 device or falls back to one: the startup crash
+dump showed the early hook worker entering EOS's D3D11 wrapper and NVIDIA's hardware-device
+initialization before an access violation. Hardware game swapchains still use the shared
+native DXGI methods discovered through WARP.
+All 38 hook CTests passed (19 per architecture), including WARP queue-binding regressions,
+native factory/resize capture, and a real-hook integration test with a patched native factory
+vtable that substitutes another same-device queue and waits for a presenter thread. The
+queue-substitution regression now requires the substituted inner queue. It fails with the
+preceding hook build `89761881` (exit 18) and passes with the current DLLs. PE validation also
+covers mismatched/truncated images, foreign slots and non-executable/out-of-image targets;
+both ASLR header adjustment and the x86 vtable's executable-section layout are exercised.
+An additional test intercepts the real D3D11 export, rejects hardware bootstrap calls, and
+requires software bootstrap to install the hooks. It fails against hook build `2e0d7b9d`
+(one hardware call, no software call) and passes with the current DLLs.
+Queue-state value 5 now distinguishes an unproven replacement binding from initial queue
+discovery. The managed probe keeps a recoverable hook-free fallback instead of scheduling
+early injection for this condition or for queue loss after confirmed rendering. While hidden,
+the generic native route continues checking its current swapchain's proven binding, without
+submitting GPU work. A fresh heartbeat and explicit queue allow a retry; new submissions
+must confirm recovery. Dying Light in-game verification on 2026-09-13 (PID 3648,
+15:14-15:17 local time) confirmed DLSS FG -> off -> FSR FG -> DLSS FG. The hook retained
+the inner DXGI queue when it differed from the Streamline argument, resumed OSD submission
+251-371 ms after queue capture, and logged 30,960/30,960 generic-route submissions with
+zero misses. No restart or HookFree fallback was recorded; the hidden-fallback recovery
+branch was not exercised by this game run. A separate late-host-attachment run timed out
+and advanced the compatibility stage while host metrics were still empty; this needs a
+separate probing review.
 
 - managed bridge SHA-256: `615838E43AADFEBEB009B17DA3ABBC53A0B47BE1969F5CD75D2BF96B04C21DA9`
-- core SHA-256: `F851659EF7F8A41154E39B2CB1446BD8E8C5B3DBA2A8471F29573A9DC84896B6`
-- hook x64 SHA-256: `150F920CC42FE05C1DC07C71DCC924BF84DDC56FD234DD3618E8552E7A0796DE`
-- hook x86 SHA-256: `E5DD6130846D438531A42AD939F1B59571F40E561571051F9DD3522FA797F0A5`
-- Vulkan x64 SHA-256: `654B8750E132F17962A72A3947BE07EA4D3A9F596D8C92647F7E3B53C578646E`
-- Vulkan x86 SHA-256: `4F71DCDCF9DC5580BD7980785E3CB73D7907C52AE0D439E0A2DAE4379B16ABE6`
+- core SHA-256: `0881FA4119CD2100132B8D75463AFC46C4A1E14521F1116FB33EF8E706953E6E`
+- hook x64 SHA-256: `899ED06543634A060B95D44B7808E07B33EC8C4F32A73BC3D200F0C896B0491A`
+- hook x86 SHA-256: `FF6A5FC7091C9CA38F10AB3D07BDC318B0AB6987CBA444B568613EEC5F77B59F`
+- Vulkan x64 SHA-256: `5C24161417EFC03B770A346F253BEEFE833B3A033B6867DC761375580CFB3BD3`
+- Vulkan x86 SHA-256: `20860D4016C0B9A3097B900FA674C61CC05B87216E35961145F0863F3C31521B`
 
 ## Contents
 
@@ -55,12 +93,18 @@ with the core because `hook_poc` and `vk_layer` compile the core sources into th
   Every native/vendor `ResizeBuffers*`, FidelityFX replacement/destruction, and generic DXGI
   `CreateSwapChain*` boundary waits for submitted overlay work and releases all overlay backbuffer
   references. Native DXGI calls retain lifecycle exclusion across the original call. Vendor proxy
-  resizes instead keep an external-mutation guard active while temporarily dropping the lifecycle
+  resizes and interposed factory calls keep an external-mutation guard active while dropping the lifecycle
   lock: real Presents can satisfy a runtime rendezvous, but they skip OSD work until the mutation
   and lifetime-generation update complete.
   Proxy rendering is bound to the application queue supplied during initialization and rejects
-  queues whose D3D12 device does not own the swapchain. The generic D3D12 route retires resources
-  when its observed queue changes and waits for a bounded, buffer-count-sized run of subsequent
+  queues whose native D3D12 device does not own the swapchain. The generic D3D12 route uses the
+  exact factory/resize queue when the captured callback belongs to system DXGI. An interposed
+  callback's application queue does not prove which queue its native output swapchain uses;
+  without an inner native binding, the generic route declines drawing until a native capture
+  establishes one. DXGI owns this binding, so replacing the swapchain cannot carry a stale
+  queue into the next object. Late attachment to
+  an uncaptured swapchain may still use an observed DIRECT queue. The route retires resources
+  when its selected queue changes and waits for a bounded, buffer-count-sized run of subsequent
   Presents before rebuilding and submitting on the replacement queue. It retains FidelityFX
   creation/destruction hooks as swapchain-lifecycle boundaries even while other vendor presentation
   and status hooks are disabled, unless a compatibility profile explicitly keeps the generic native
