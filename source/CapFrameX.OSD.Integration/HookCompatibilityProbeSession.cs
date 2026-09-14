@@ -50,7 +50,8 @@ namespace CapFrameX.OSD.Integration
         None = 0,
         Learned,
         RestartPending,
-        GaveUp
+        GaveUp,
+        QueueRecovery
     }
 
     /// <summary>
@@ -78,10 +79,13 @@ namespace CapFrameX.OSD.Integration
         private bool _retriedStatusTimeout;
         private ulong _awaitingLiveApplyUntilTickMs;
         private bool _stageClockPaused;
+        private int? _recoveryCoverageBaseline;
 
-        internal HookCompatibilityProbeSession(int processId, HookCompatibilityStagePlan plan)
+        internal HookCompatibilityProbeSession(int processId, HookCompatibilityStagePlan plan,
+            bool hasRendered = false)
         {
             ProcessId = processId;
+            HasRendered = hasRendered;
             Plan = plan ?? throw new ArgumentNullException(nameof(plan));
             StageIndex = plan.StartIndex;
             if (!plan.IsEmpty) _tried.Add(CurrentStage.Key);
@@ -102,6 +106,7 @@ namespace CapFrameX.OSD.Integration
         internal HookCompatibilityVerdict LastVerdict { get; private set; }
         internal NativeHookStatusSnapshot LastSnapshot { get; private set; }
         internal bool HasStatusSample { get; private set; }
+        internal bool HasRendered { get; private set; }
         internal bool Observing =>
             Settlement == HookProbeSettlement.None && _timings.InjectionSucceeded &&
             !Plan.IsEmpty;
@@ -158,6 +163,31 @@ namespace CapFrameX.OSD.Integration
             }
 
             HookCompatibilityStage stage = CurrentStage;
+            if (Settlement == HookProbeSettlement.QueueRecovery)
+            {
+                // Fallback intentionally hides the native renderer. Requiring Active here
+                // would prevent it from ever rendering again. A fresh Present with a proven
+                // queue permits one live retry; successful new submissions must confirm it.
+                const NativeHookStatusFlags required = NativeHookStatusFlags.HooksArmed |
+                    NativeHookStatusFlags.PresentSeen;
+                const NativeHookStatusFlags blocked = NativeHookStatusFlags.Dormant |
+                    NativeHookStatusFlags.Error | NativeHookStatusFlags.ForeignPresenter |
+                    NativeHookStatusFlags.EarlyInjectionRequired;
+                long age = HookStatusProbe.GetHeartbeatAgeMilliseconds(
+                    snapshot.LastHeartbeatTickMs, nowTickMs);
+                if (!hasStatus || snapshot.Version < HookStatusProbe.Version2 ||
+                    snapshot.QueueState != NativeHookQueueState.Explicit ||
+                    (snapshot.Flags & required) != required || (snapshot.Flags & blocked) != 0 ||
+                    snapshot.PendingRestartFlags != 0 || snapshot.AppliedFlags != (uint)stage.Flags ||
+                    age < 0 || (ulong)age > HookStatusProbe.HeartbeatStaleAfterMs)
+                    return Array.Empty<HookProbeAction>();
+
+                Settlement = HookProbeSettlement.None;
+                FallbackReason = null;
+                _recoveryCoverageBaseline = snapshot.CoverageSubmitted;
+                ResetStageClocks(nowTickMs);
+                return new[] { new HookProbeAction(HookProbeActionKind.SetFallback) };
+            }
             if (_awaitingLiveApplyUntilTickMs != 0)
             {
                 bool applied = hasStatus &&
@@ -186,6 +216,16 @@ namespace CapFrameX.OSD.Integration
             _timings.NowTickMs = nowTickMs;
             HookCompatibilityVerdict verdict = HookCompatibilityVerdictClassifier.Classify(
                 stage, hasStatus, snapshot, nativeState, in _timings);
+            if (hasStatus && nativeState == EHookOverlayStatus.Active &&
+                (snapshot.Flags & NativeHookStatusFlags.Rendered) != 0 &&
+                snapshot.QueueState != NativeHookQueueState.BindingUnavailable)
+                HasRendered = true;
+            // Coverage is cumulative for the process. Old draws before an FG switch cannot
+            // verify the recovery; require submissions after the fallback was lifted.
+            if (verdict == HookCompatibilityVerdict.Success && _recoveryCoverageBaseline.HasValue &&
+                snapshot.CoverageSubmitted == _recoveryCoverageBaseline.Value)
+                verdict = _timings.ActiveElapsedMs >= HookCompatibilityVerdictClassifier.ProbeStageBudgetMs
+                    ? HookCompatibilityVerdict.QueueRebinding : HookCompatibilityVerdict.Pending;
             LastVerdict = verdict;
 
             // After a restart was scheduled the hook stays resident; if it recovers on its own
@@ -229,6 +269,7 @@ namespace CapFrameX.OSD.Integration
 
                 case HookCompatibilityVerdict.Success:
                     Settlement = HookProbeSettlement.Learned;
+                    _recoveryCoverageBaseline = null;
                     FallbackReason = null;
                     return ProbingEnabled
                         ? new[]
@@ -255,6 +296,24 @@ namespace CapFrameX.OSD.Integration
         private IReadOnlyList<HookProbeAction> Fail(HookCompatibilityStage stage,
             HookCompatibilityVerdict verdict, NativeHookStatusSnapshot snapshot, ulong nowTickMs)
         {
+            // An FG swapchain replacement is a live binding problem, not evidence that
+            // injection should happen earlier at the next launch. Keep this stage and
+            // never persist an early-injection retry or exhaust the learned profile.
+            if (verdict == HookCompatibilityVerdict.QueueRebinding ||
+                (verdict == HookCompatibilityVerdict.NoQueue && HasRendered))
+            {
+                Settlement = HookProbeSettlement.QueueRecovery;
+                LastVerdict = HookCompatibilityVerdict.QueueRebinding;
+                FallbackReason = HookCompatibilityVerdictClassifier.DescribeVerdict(
+                    LastVerdict, snapshot, _timings.LastNativeStatusTickMs);
+                return new[]
+                {
+                    new HookProbeAction(HookProbeActionKind.LogVerdict, stage, verdict: LastVerdict),
+                    new HookProbeAction(HookProbeActionKind.SetFallback, reason: FallbackReason),
+                    new HookProbeAction(HookProbeActionKind.SetPollInterval,
+                        pollIntervalMs: ProbePollIntervalMs)
+                };
+            }
             string description = HookCompatibilityVerdictClassifier.DescribeVerdict(verdict,
                 snapshot, _timings.LastNativeStatusTickMs);
 

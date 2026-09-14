@@ -441,6 +441,148 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(HookCompatibilityStageId.Generic, session.CurrentStage.Id);
         }
 
+        [TestMethod]
+        public void QueueReplacement_RecoversWhileHiddenAndRequiresNewSubmissions()
+        {
+            HookCompatibilityProbeSession session = GenericLateSession();
+            session.OnInjectionSucceeded(1000);
+            var active = new NativeHookStatusSnapshot
+            {
+                Version = 2, Flags = Ready, QueueState = NativeHookQueueState.Explicit,
+                AppliedFlags = (uint)session.CurrentStage.Flags, CoverageSubmitted = 100
+            };
+            session.Observe(true, active, EHookOverlayStatus.Active, 2000);
+            session.Observe(true, active, EHookOverlayStatus.Active, 4000);
+            Assert.AreEqual(HookProbeSettlement.Learned, session.Settlement);
+
+            // No module/signature change is involved, including the second replacement.
+            foreach (ulong start in new[] { 6000UL, 20000UL })
+            {
+                var missing = active;
+                missing.QueueState = NativeHookQueueState.BindingUnavailable;
+                IReadOnlyList<HookProbeAction> fallback = session.Observe(true, missing,
+                    EHookOverlayStatus.Initializing, start);
+                Assert.AreEqual(HookProbeSettlement.QueueRecovery, session.Settlement);
+                Assert.IsNull(session.PendingStage);
+                Assert.IsFalse(session.RestartPending);
+                Assert.IsFalse(fallback.Any(a => a.Kind == HookProbeActionKind.ScheduleRestart ||
+                    a.Kind == HookProbeActionKind.GiveUp || a.Kind == HookProbeActionKind.Learn));
+                Assert.IsTrue(fallback.Any(a => a.Kind == HookProbeActionKind.SetFallback && a.Reason != null));
+
+                var hidden = active;
+                hidden.Flags &= ~(NativeHookStatusFlags.Visible | NativeHookStatusFlags.RendererReady);
+                hidden.LastHeartbeatTickMs = (long)start + 500;
+                IReadOnlyList<HookProbeAction> retry = session.Observe(true, hidden,
+                    EHookOverlayStatus.Hidden, start + 500);
+                Assert.IsTrue(retry.Any(a => a.Kind == HookProbeActionKind.SetFallback && a.Reason == null));
+                Assert.IsTrue(session.Observing);
+                Assert.IsFalse(retry.Any(a => a.Kind == HookProbeActionKind.Learn));
+
+                // Renderer flags and the old cumulative count are insufficient.
+                session.Observe(true, active, EHookOverlayStatus.Active, start + 750);
+                Assert.AreEqual(0, session.Observe(true, active,
+                    EHookOverlayStatus.Active, start + 3000).Count);
+                Assert.AreEqual(HookProbeSettlement.None, session.Settlement);
+                active.CoverageSubmitted += 50;
+                IReadOnlyList<HookProbeAction> recovered = session.Observe(true, active,
+                    EHookOverlayStatus.Active, start + 3250);
+                Assert.AreEqual(HookProbeSettlement.Learned, session.Settlement);
+                Assert.IsTrue(recovered.Any(a => a.Kind == HookProbeActionKind.Learn));
+            }
+        }
+
+        [TestMethod]
+        public void QueueRecovery_RejectsMissingStaleObservedAndBlockedStatus()
+        {
+            HookCompatibilityProbeSession session = GenericLateSession();
+            session.OnInjectionSucceeded(1000);
+            var missing = new NativeHookStatusSnapshot
+            {
+                Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen,
+                QueueState = NativeHookQueueState.BindingUnavailable
+            };
+            session.Observe(true, missing, EHookOverlayStatus.Initializing, 2000);
+            var proven = missing;
+            proven.QueueState = NativeHookQueueState.Explicit;
+            proven.AppliedFlags = (uint)session.CurrentStage.Flags;
+            proven.LastHeartbeatTickMs = 100000;
+            var stale = proven;
+            stale.LastHeartbeatTickMs = 2000;
+            var observed = proven;
+            observed.QueueState = NativeHookQueueState.Observed;
+            var blocked = proven;
+            blocked.Flags |= NativeHookStatusFlags.ForeignPresenter;
+            var pending = proven;
+            pending.PendingRestartFlags = 4;
+            var wrongStage = proven;
+            wrongStage.AppliedFlags = 0;
+            Assert.AreEqual(0, session.Observe(false, proven, EHookOverlayStatus.Hidden, 100000).Count);
+            foreach (var sample in new[] { missing, stale, observed, blocked, pending, wrongStage })
+            {
+                Assert.AreEqual(0, session.Observe(true, sample, EHookOverlayStatus.Hidden, 100000).Count);
+                Assert.AreEqual(HookProbeSettlement.QueueRecovery, session.Settlement);
+                Assert.IsNotNull(session.FallbackReason);
+            }
+            Assert.IsFalse(session.RestartPending);
+            Assert.IsNull(session.PendingStage);
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void NoQueue_AfterRenderingNeverSchedulesEarlyInjection(bool replan)
+        {
+            HookCompatibilityProbeSession session = GenericLateSession();
+            session.OnInjectionSucceeded(1000);
+            var active = new NativeHookStatusSnapshot
+            {
+                Version = 2, Flags = Ready, QueueState = NativeHookQueueState.Observed,
+                CoverageSubmitted = 10
+            };
+            session.Observe(true, active, EHookOverlayStatus.Active, 2000);
+            session.Observe(true, active, EHookOverlayStatus.Active, 4000);
+            if (replan)
+            {
+                session = new HookCompatibilityProbeSession(42, session.Plan, session.HasRendered);
+                session.OnInjectionSucceeded(5000);
+            }
+            var missing = active;
+            missing.Flags &= ~NativeHookStatusFlags.RendererReady;
+            missing.QueueState = NativeHookQueueState.None;
+            session.Observe(true, missing, EHookOverlayStatus.Initializing, 6000);
+            IReadOnlyList<HookProbeAction> actions = session.Observe(true, missing,
+                EHookOverlayStatus.Initializing, 6000 + HookCompatibilityVerdictClassifier.ProbeNoQueueMs);
+            Assert.AreEqual(HookProbeSettlement.QueueRecovery, session.Settlement);
+            Assert.IsNull(session.PendingStage);
+            Assert.IsFalse(actions.Any(a => a.Kind == HookProbeActionKind.ScheduleRestart));
+        }
+
+        [TestMethod]
+        public void NoQueue_DuringInitialAttachmentStillUsesTheCompatibilityLadder()
+        {
+            HookCompatibilityProbeSession session = GenericLateSession();
+            session.OnInjectionSucceeded(1000);
+            var missing = new NativeHookStatusSnapshot
+            {
+                Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen,
+                QueueState = NativeHookQueueState.None
+            };
+            session.Observe(true, missing, EHookOverlayStatus.Initializing, 2000);
+            session.Observe(true, missing, EHookOverlayStatus.Initializing,
+                2000 + HookCompatibilityVerdictClassifier.ProbeNoQueueMs);
+            Assert.IsTrue(session.RestartPending);
+            Assert.IsTrue(session.PendingStage.RequiresEarlyInjection);
+        }
+
+        private static HookCompatibilityProbeSession GenericLateSession()
+        {
+            HookTargetEvidence evidence = HookCompatibilityStagePlannerTest.Evidence(
+                streamline: true, ffxFg: true, d3d12: true, attach: HookAttachMode.Late);
+            HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Replan(evidence,
+                null, null, "hash", true, HookCompatibilityStage.Create(HookCompatibilityStageId.Generic));
+            return new HookCompatibilityProbeSession(42, plan);
+        }
+
         private static void LearnVendorStage(HookCompatibilityProbeSession session)
         {
             session.OnInjectionSucceeded(1000);

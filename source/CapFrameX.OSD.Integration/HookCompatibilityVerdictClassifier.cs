@@ -17,7 +17,9 @@ namespace CapFrameX.OSD.Integration
         RendererStalled,
         OsdCreateFailed,
         /// <summary>Paused / minimized / host dormant: the stage clock stops.</summary>
-        Inconclusive
+        Inconclusive,
+        /// <summary>A replacement swapchain has no proven presentation queue yet.</summary>
+        QueueRebinding
     }
 
     /// <summary>
@@ -91,6 +93,11 @@ namespace CapFrameX.OSD.Integration
             if (nativeState == EHookOverlayStatus.Idle || nativeState == EHookOverlayStatus.Hidden ||
                 (flags & NativeHookStatusFlags.Dormant) != 0)
                 return HookCompatibilityVerdict.Inconclusive;
+
+            if (snapshot.Version >= HookStatusProbe.Version2 &&
+                (flags & NativeHookStatusFlags.PresentSeen) != 0 &&
+                snapshot.QueueState == NativeHookQueueState.BindingUnavailable)
+                return HookCompatibilityVerdict.QueueRebinding;
 
             if (stage != null && stage.IsGeneric && snapshot.Version >= HookStatusProbe.Version2 &&
                 (flags & NativeHookStatusFlags.PresentSeen) != 0 &&
@@ -169,6 +176,9 @@ namespace CapFrameX.OSD.Integration
                 case HookCompatibilityVerdict.NoQueue:
                     return "no compatible D3D12 command queue was observed within " +
                         $"{ProbeNoQueueMs / 1000} seconds";
+                case HookCompatibilityVerdict.QueueRebinding:
+                    return "waiting for the replacement swapchain's presentation queue; " +
+                        "live recovery remains enabled";
                 case HookCompatibilityVerdict.StatusTimeout:
                     return lastNativeStatusTickMs > 0
                         ? $"native hook status was unavailable for more than {HookOverlayManager.HookHandshakeTimeoutMs / 1000} seconds"

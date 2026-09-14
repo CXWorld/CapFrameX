@@ -164,7 +164,9 @@ namespace CapFrameX.Test.Integration
         /// block. Every offset is pinned here and in the native hook_status_test.
         /// </summary>
         [TestMethod]
-        public void TryRead_ReadsTheVersion2ProbingFields()
+        [DataRow(1)]
+        [DataRow(5)]
+        public void TryRead_ReadsTheVersion2ProbingFields(int queueState)
         {
             int pid = NextTestPid();
 
@@ -190,7 +192,7 @@ namespace CapFrameX.Test.Integration
                 view.Write(92, 118);   // coverageSubmitted
                 view.Write(96, 2);     // coverageMissed
                 view.Write(100, 1 | (2 << 2) | (1 << 4) | (2 << 5)); // DLSS, active, authoritative, DLSS-G on
-                view.Write(104, 1);    // queueState = Observed
+                view.Write(104, queueState); // Observed or replacement binding unavailable
                 view.Write(108, 13);   // lastDeclineReason = D3D12NoQueue
                 view.Write(112, 5);    // routeSource = StreamlineProxy + 1
                 view.Write(116, 2);    // compatChannelVersion
@@ -215,7 +217,7 @@ namespace CapFrameX.Test.Integration
                 Assert.AreEqual(2, snapshot.FgActivity);
                 Assert.IsTrue(snapshot.FgAuthoritative);
                 Assert.AreEqual(2, snapshot.StreamlineDlssgMode);
-                Assert.AreEqual(NativeHookQueueState.Observed, snapshot.QueueState);
+                Assert.AreEqual((NativeHookQueueState)queueState, snapshot.QueueState);
                 Assert.AreEqual(NativeHookDeclineReason.D3D12NoQueue, snapshot.LastDeclineReason);
                 Assert.AreEqual(5, snapshot.RouteSource);
                 Assert.AreEqual(2, snapshot.CompatChannelVersion);

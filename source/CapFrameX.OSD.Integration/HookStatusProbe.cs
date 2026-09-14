@@ -56,7 +56,8 @@ namespace CapFrameX.OSD.Integration
         Observed = 1,
         Explicit = 2,
         DeviceMismatch = 3,
-        TransitionDeferred = 4
+        TransitionDeferred = 4,
+        BindingUnavailable = 5
     }
 
     /// <summary>
@@ -321,7 +322,7 @@ namespace CapFrameX.OSD.Integration
 
         private static NativeHookQueueState ToQueueState(int value)
             => value >= (int)NativeHookQueueState.None &&
-               value <= (int)NativeHookQueueState.TransitionDeferred
+               value <= (int)NativeHookQueueState.BindingUnavailable
                 ? (NativeHookQueueState)value
                 : NativeHookQueueState.Unknown;
 

@@ -1772,8 +1772,8 @@ namespace CapFrameX.OSD.Integration
                 if (session == null || session.ProcessId != pid || !session.ProbingEnabled ||
                     session.Plan.IsEmpty)
                     return;
-                // Only a session that already concluded. While it still walks the ladder it
-                // re-evaluates anyway, and a pending restart is advice the user already has.
+                // A newly loaded provider can make a pending restart obsolete. Re-planning
+                // still requires changed evidence and starts from the actually applied route.
                 bool settled = CanRearmProbeForChangedEvidence(session.Settlement);
                 if (!settled || nativeState == EHookOverlayStatus.Active)
                 {
@@ -1810,7 +1810,7 @@ namespace CapFrameX.OSD.Integration
                 catalog, learned, _hookBuildHash.Value, _autoCompatibility, applied);
             if (plan.IsEmpty) return;
 
-            var rearmed = new HookCompatibilityProbeSession(pid, plan);
+            var rearmed = new HookCompatibilityProbeSession(pid, plan, session.HasRendered);
             IReadOnlyList<HookProbeAction> actions;
             int rearmCount;
             lock (_stateGate)
@@ -1846,7 +1846,8 @@ namespace CapFrameX.OSD.Integration
         // Kept separate from process/module scans so FG-switch tests exercise the manager's
         // actual settlement gate without injecting a hook or loading vendor DLLs.
         internal static bool CanRearmProbeForChangedEvidence(HookProbeSettlement settlement)
-            => settlement == HookProbeSettlement.Learned || settlement == HookProbeSettlement.GaveUp;
+            => settlement == HookProbeSettlement.Learned || settlement == HookProbeSettlement.GaveUp ||
+               settlement == HookProbeSettlement.RestartPending;
 
         private bool RefreshVulkanInjectionGate(int pid, bool forceProbe = false)
         {
