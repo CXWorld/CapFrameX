@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="CapFrameX.View.OverlayView"
+<UserControl x:Class="CapFrameX.View.OverlayView"
 			 x:Name="OverlayViewControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -993,7 +993,7 @@
 								<StackPanel>
 									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="General"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
-											   Text="Control when the overlay is visible and how common entries behave."/>
+											   Text="Overlay visibility and clock options."/>
 									<Separator Margin="0 10 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 
 									<DockPanel Margin="0 8">
@@ -1003,7 +1003,7 @@
 										<StackPanel>
 											<TextBlock FontWeight="SemiBold" Text="Overlay active"/>
 											<TextBlock Style="{StaticResource OsdOptionsDescription}"
-													   Text="Show or hide the selected overlay renderer."/>
+													   Text="Show or hide the overlay."/>
 										</StackPanel>
 									</DockPanel>
 
@@ -1014,7 +1014,7 @@
 										<StackPanel>
 											<TextBlock FontWeight="SemiBold" Text="Auto-disable while capturing"/>
 											<TextBlock Style="{StaticResource OsdOptionsDescription}"
-													   Text="Hide the OSD while a benchmark capture is running."/>
+													   Text="Hide the overlay during capture."/>
 										</StackPanel>
 									</DockPanel>
 
@@ -1025,7 +1025,7 @@
 										<StackPanel>
 											<TextBlock FontWeight="SemiBold" Text="System time seconds"/>
 											<TextBlock Style="{StaticResource OsdOptionsDescription}"
-													   Text="Include seconds in the system-time overlay entry."/>
+													   Text="Show seconds in the clock."/>
 										</StackPanel>
 									</DockPanel>
 								</StackPanel>
@@ -1035,7 +1035,7 @@
 								<StackPanel>
 									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="Appearance and position"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
-											   Text="Adjust the placement and background of CapFrameX overlay content."/>
+											   Text="Overlay appearance and placement."/>
 									<Separator Margin="0 10 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 
 									<DockPanel Margin="0 8">
@@ -1045,7 +1045,7 @@
 										<StackPanel>
 											<TextBlock FontWeight="SemiBold" Text="Custom position"/>
 											<TextBlock Style="{StaticResource OsdOptionsDescription}"
-													   Text="Manually position the CapFrameX overlay items."/>
+													   Text="Set custom overlay coordinates."/>
 										</StackPanel>
 									</DockPanel>
 
@@ -1070,7 +1070,7 @@
 
 									<TextBlock Margin="0 8 0 0" FontWeight="SemiBold" Text="Background opacity"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
-											   Text="Applies to the in-game and hook-free CapFrameX renderers; RTSS uses its own setting."/>
+											   Text="In-game and hook-free backgrounds; RTSS is configured separately."/>
 									<Grid Margin="0 8 0 0">
 										<Grid.ColumnDefinitions>
 											<ColumnDefinition Width="*"/>
@@ -1084,7 +1084,7 @@
 
 									<TextBlock Margin="0 8 0 0" FontWeight="SemiBold" Text="Overlay position"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
-											   Text="Corner the in-game and hook-free CapFrameX renderers anchor to, and the distance from it in pixels; RTSS is positioned in the RTSS settings."/>
+											   Text="In-game and hook-free anchor and margins, in pixels."/>
 									<Grid Margin="0 8 0 0">
 										<Grid.ColumnDefinitions>
 											<ColumnDefinition Width="*"/>
@@ -1111,7 +1111,7 @@
 
 									<TextBlock Margin="0 8 0 0" FontWeight="SemiBold" Text="Overlay size"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
-											   Text="Scales text, spacing and graphs of the in-game and hook-free CapFrameX renderers; RTSS uses its own zoom."/>
+											   Text="Scale in-game and hook-free text and graphs."/>
 									<Grid Margin="0 8 0 0">
 										<Grid.ColumnDefinitions>
 											<ColumnDefinition Width="*"/>
@@ -1131,7 +1131,7 @@
 										<StackPanel>
 											<TextBlock FontWeight="SemiBold" Text="Smooth numeric values"/>
 											<TextBlock Style="{StaticResource OsdOptionsDescription}"
-													   Text="Animate intermediate values between data updates. Turn off to display every published value immediately; RTSS is unaffected."/>
+													   Text="Animate value changes. Off applies updates immediately; RTSS is unaffected."/>
 										</StackPanel>
 									</DockPanel>
 								</StackPanel>
@@ -1152,9 +1152,9 @@
 											   Visibility="{Binding ExtendedOsdLogging.IsUpdating, Converter={StaticResource TrueToVisibleConverter}}"
 											   Text="Saving..."/>
 									<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
-											   Text="Enables detailed logs for the DirectX hook, Vulkan layer, native renderer, hook-free stall diagnostics, and per-present statistics."/>
+											   Text="Detailed DirectX, Vulkan and hook-free logs, including per-present statistics."/>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#E0A020" TextWrapping="Wrap"
-											   Text="&#x26A0; The hook-free overlay follows this option live. Restart CapFrameX and the game for the in-game hook and Vulkan layer."/>
+											   Text="&#x26A0; Hook-free applies live. Restart CapFrameX and the game for in-game logging."/>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#D95050" TextWrapping="Wrap"
 											   Visibility="{Binding ExtendedOsdLogging.HasError, Converter={StaticResource TrueToVisibleConverter}}"
 											   Text="{Binding ExtendedOsdLogging.Error}"/>
@@ -1167,7 +1167,7 @@
 								<StackPanel>
 									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="Overlay renderer"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
-											   Text="Choose one output backend. Renderer-specific options stay with their renderer."/>
+											   Text="Choose an overlay renderer."/>
 									<Separator Margin="0 10 0 8" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 
 									<!-- The ViewModel enforces exclusivity. Distinct GroupNames prevent WPF from
@@ -1178,10 +1178,10 @@
 													 IsEnabled="{Binding IsRTSSInstalled}"
 													 Style="{StaticResource MaterialDesignRadioButton}"/>
 										<TextBlock Margin="26 0 0 0" Style="{StaticResource OsdOptionsDescription}"
-												   Text="Classic RivaTuner Statistics Server overlay. Requires RTSS."/>
+												   Text="Requires RivaTuner Statistics Server."/>
 										<TextBlock Margin="26 5 0 0" FontSize="11" Foreground="#E0A020" TextWrapping="Wrap"
 												   Visibility="{Binding ShowRtssHiddenHint, Converter={StaticResource TrueToVisibleConverter}}"
-												   Text="&#x26A0; &quot;Hide OSD on RTSS&quot; is enabled. Disable that setting to show the RTSS overlay."/>
+												   Text="&#x26A0; Disable &quot;Hide OSD on RTSS&quot; to show the overlay."/>
 									</StackPanel>
 
 									<Separator Margin="0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
@@ -1198,7 +1198,7 @@
 													  IsChecked="{Binding HookOverlayUsePresentMonFrametimes, Mode=TwoWay}"
 													  Style="{StaticResource MaterialDesignCheckBox}"/>
 											<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
-													   Text="Adds display-time data through the buffered PresentMon stream. Off uses the hook's low-latency present-to-present data."/>
+													   Text="Adds display times. Off uses the hook's local frame times."/>
 											<TextBlock Margin="0 8 0 0" Style="{StaticResource OsdOptionsDescription}" TextWrapping="Wrap"
 													   Text="Always learns compatibility settings for each game."/>
 											<TextBlock Margin="0 6 0 0" Style="{StaticResource OsdOptionsDescription}" TextWrapping="Wrap"
@@ -1220,7 +1220,7 @@
 													 IsChecked="{Binding OverlayModeHookFree, Mode=TwoWay}"
 													 Style="{StaticResource MaterialDesignRadioButton}"/>
 										<TextBlock Margin="26 0 0 0" Style="{StaticResource OsdOptionsDescription}"
-												   Text="Uses DWM/DirectComposition without game injection and is safe for anti-cheat protected titles."/>
+												   Text="Desktop overlay without game injection."/>
 										<StackPanel Margin="26 8 0 0" IsEnabled="{Binding CanConfigureHookFreeOptions}">
 											<StackPanel>
 												<TextBlock Text="Hook-free output display"/>
@@ -1270,7 +1270,7 @@
 									<StackPanel Margin="0 8 0 4">
 										<TextBlock FontWeight="SemiBold" Text="PresentMon replay buffer"/>
 										<TextBlock Style="{StaticResource OsdOptionsDescription}"
-												   Text="Minimum buffering used to smooth bursty PresentMon frame data. Increase it if graphs pause between updates; higher values add latency. Applies to hook-free and the in-game PresentMon source."/>
+												   Text="Smooths PresentMon graphs in both CapFrameX renderers. Increase if graphs pause; higher values add latency."/>
 										<Grid Margin="0 8 0 0">
 											<Grid.ColumnDefinitions>
 												<ColumnDefinition Width="*"/>
@@ -1290,7 +1290,7 @@
 								<StackPanel>
 									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="Shortcuts and timing"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
-											   Text="Configure overlay controls and data update intervals."/>
+											   Text="Hotkeys and update intervals."/>
 									<Separator Margin="0 10 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 
 									<DockPanel Margin="0 5">
