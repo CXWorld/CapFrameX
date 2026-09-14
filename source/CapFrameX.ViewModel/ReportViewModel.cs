@@ -524,11 +524,6 @@ namespace CapFrameX.ViewModel
                 return new List<IFileRecordInfo> { recordInfo };
             }
 
-            if (droppedData is IEnumerable<IFileRecordInfo> recordInfos)
-            {
-                return recordInfos.Where(info => info != null).ToList();
-            }
-
             if (droppedData is TreeViewItem treeViewItem)
             {
                 if (treeViewItem.Tag is DirectoryInfo directoryInfo)
@@ -568,6 +563,12 @@ namespace CapFrameX.ViewModel
                 {
                     return await GetRecordInfosByPathsAsync(fileDropPaths);
                 }
+            }
+
+            // Gong supplies multiple records as List<object>; handle file paths before collections.
+            if (droppedData is System.Collections.IEnumerable droppedItems)
+            {
+                return droppedItems.OfType<IFileRecordInfo>().ToList();
             }
 
             return new List<IFileRecordInfo>();
