@@ -276,6 +276,22 @@ namespace CapFrameX.Contracts.Configuration
 
         bool AnalysisRangeSliderRealTime { get; set; }
 
+        bool AnalysisShowCpuLoad { get; set; }
+
+        bool AnalysisShowCpuMaxThreadLoad { get; set; }
+
+        bool AnalysisShowGpuLoad { get; set; }
+
+        bool AnalysisShowGpuPowerLimit { get; set; }
+
+        bool AnalysisShowPcLatency { get; set; }
+
+        bool AnalysisShowAnimationError { get; set; }
+
+        bool AnalysisShowGpuActiveChart { get; set; }
+
+        bool AnalysisShowCpuActiveChart { get; set; }
+
         bool ComparisonRangeSliderRealTime { get; set; }
 
         int OverlayEntryConfigurationFile { get; set; }
