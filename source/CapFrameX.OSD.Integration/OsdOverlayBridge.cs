@@ -355,6 +355,12 @@ namespace CapFrameX.OSD.Integration
                     {
                         case "Framerate":
                             requirements |= NeedFramerateValue;
+                            if (entry.ShowGraph)
+                            {
+                                // The FPS graph derives its values from the same timestamped
+                                // frametimes, even when the Frametime graph is switched off.
+                                requirements |= NeedFrametimeGraph;
+                            }
                             break;
                         case "Frametime":
                             requirements |= NeedFrametimeValue;

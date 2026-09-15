@@ -14,6 +14,30 @@ CapFrameX.OSD revision `e907ea965fb28cb56d82f59064a58579329c6568` (per-entry tex
 also carries the hook-free stall diagnostics of `a2b5bb83` and the replay pacing fix of
 `2da4f0a6`). Its sources are unchanged in the native revision below.
 
+### Framerate graph correction (2026-09-15)
+
+All five native DLLs were rebuilt in `RelWithDebInfo` with Visual Studio 2026/v145 from the
+source state now committed as private OSD revision `e6458355fe44f1ca6944a3ccff15ef3c090ef923`.
+It contains the framerate graph correction in `OsdInstance`, `Widget`, and `ScrollChart`,
+plus the `apps/framerate_graph_test` regression.
+
+The renderer now honors `ShowGraph` for the `Framerate` entry, deriving per-frame FPS as
+`1000 / frametime_ms` on the existing replay timeline. FPS has its own adaptive scale, while
+Frametime and Displaytime retain their shared millisecond scale. Each enabled graph is drawn
+even when several entries share a group. CapFrameX's `OsdOverlayBridge` also feeds timestamped
+frametimes when only the FPS graph is enabled, with no duplicate samples when both are enabled.
+
+All 50 native CTests passed: eight core tests, 19 DXGI hook tests per architecture, and two
+Vulkan tests per architecture. The new regression checks timed and legacy samples, FPS values,
+independent scaling, invalid samples, and graph visibility in separate/shared groups. A CPU
+render of all three graphs was visually checked, and the existing raster/scale regression also
+passed. All five payload copies were checked with SHA-256 and PE architecture validation.
+The managed interop DLL and Vulkan manifests are unchanged.
+The user subsequently confirmed the Vulkan in-game graph after the registered x64 and x86
+layer DLLs in the installation folder were updated to these builds.
+
+### Earlier native builds
+
 The core, x64/x86 hook pair, and x64/x86 Vulkan layer pair were rebuilt on 2026-09-13 in
 `RelWithDebInfo` from private OSD revision `573dbe28d0fc607d782ce5f2d3a1fea9575f65d7`.
 Every native tree was configured with `-G "Visual Studio 18 2026"` (toolset v145) and built
@@ -74,12 +98,14 @@ branch was not exercised by this game run. A separate late-host-attachment run t
 and advanced the compatibility stage while host metrics were still empty; this needs a
 separate probing review.
 
+### Current SHA-256
+
 - managed bridge SHA-256: `615838E43AADFEBEB009B17DA3ABBC53A0B47BE1969F5CD75D2BF96B04C21DA9`
-- core SHA-256: `0881FA4119CD2100132B8D75463AFC46C4A1E14521F1116FB33EF8E706953E6E`
-- hook x64 SHA-256: `899ED06543634A060B95D44B7808E07B33EC8C4F32A73BC3D200F0C896B0491A`
-- hook x86 SHA-256: `FF6A5FC7091C9CA38F10AB3D07BDC318B0AB6987CBA444B568613EEC5F77B59F`
-- Vulkan x64 SHA-256: `5C24161417EFC03B770A346F253BEEFE833B3A033B6867DC761375580CFB3BD3`
-- Vulkan x86 SHA-256: `20860D4016C0B9A3097B900FA674C61CC05B87216E35961145F0863F3C31521B`
+- core SHA-256: `3F24ED2C4BA4DFB9168EB9758AACBEFE763E3643B94FE16B08E23A3D03B3A55F`
+- hook x64 SHA-256: `AF7E4E9096475C3EC929F9807EE516FF4AF52BB0F73F63D4E127077625E0A54E`
+- hook x86 SHA-256: `BC2F17E9DBEDC48686AA22EB9BA036769D2A50F73E9D4B9BA3030A86030DE291`
+- Vulkan x64 SHA-256: `41A2800EC9975DB760D502128D41F66E7837357E3CDAD7B5917A874696B0637C`
+- Vulkan x86 SHA-256: `93D0CBFFE3A03A8C2AA1454B2A00BC94E57736D3DAE2B2919661EBA535EEFD31`
 
 ## Contents
 
@@ -192,6 +218,14 @@ Copy those files one by one, never a whole `RelWithDebInfo` folder: the build ou
 hold the ctest executables and `cfx_inject.exe`. That injector was deliberately dropped when
 `HookInjector` learned to resolve the target's 32-bit `LoadLibraryW` itself, and a bulk copy
 is how it silently reappeared under `native/x86/` once already.
+
+For Vulkan runtime tests, also check the manifest paths registered in both HKLM registry views.
+The loader uses the DLL beside each registered manifest, which can still be the installed copy
+under `Program Files (x86)` even when CapFrameX runs from its build output. Updating this prebuilt
+folder and rebuilding the app does not update that installed copy. Use an updated installation
+or register the rebuilt staging folder with the private repo's `register_layer.cmd <folder>`
+for development, keeping one registration per bitness. Restart the Vulkan target to load the
+updated layer; a process already running retains its loaded DLL.
 
 Configure every native tree with the **same** toolset the core preset pins (`-G "Visual Studio 18
 2026"`, toolset v145, matching the `.vcxproj` projects in this repo). `hook_poc` and `vk_layer`
