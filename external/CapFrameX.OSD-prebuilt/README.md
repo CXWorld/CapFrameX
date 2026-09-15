@@ -14,9 +14,31 @@ CapFrameX.OSD revision `e907ea965fb28cb56d82f59064a58579329c6568` (per-entry tex
 also carries the hook-free stall diagnostics of `a2b5bb83` and the replay pacing fix of
 `2da4f0a6`). Its sources are unchanged in the native revision below.
 
+### Complete native rebuild (2026-09-15)
+
+All five native DLLs were rebuilt from clean private OSD `main` revision
+`ad9ed5a4aa4b65f38849079d3020cdaf3fe773f8` using Visual Studio 2026/v145 and
+`RelWithDebInfo`. Every CMake tree was freshly configured and built with `--clean-first`:
+core x64, DXGI hook x64/x86, and Vulkan layer x64/x86.
+
+All 66 native CTests passed: eight core tests, 27 hook tests per architecture, and two
+Vulkan tests per architecture. Each staged DLL was checked against its build output using
+SHA-256 and PE architecture validation. Both Vulkan manifests match the build manifests
+byte for byte and retain their manifest-relative library paths.
+
+These DLLs supersede the native payloads documented below.
+
+| Native DLL | SHA-256 |
+| --- | --- |
+| Core x64 | `EF7B2D9D28F12FD6641DA366C18C43FEA86C4F609B3E79291A263CA75A733229` |
+| Hook x64 | `7F8DE0379BF9943A70C5BD6E2045E68887EEB2353D7020F1424B0CBA0B4FF26B` |
+| Hook x86 | `3DFBB81BB0D930CB33307A168A54B2ADEB69D938D47A3D8CAF86447E568A9254` |
+| Vulkan x64 | `483C4C226C5CD39747B3B2BD44598A2E7D7EFAFE27683C59A6EC77CFA9BC420C` |
+| Vulkan x86 | `2D4E8A5CBC16A280A34890E57EC47D05B535BA6D6F19E312B04211D602EF8891` |
+
 ### Asynchronous HookLog file output (2026-09-15)
 
-The current x64 and x86 DXGI hooks were built in `RelWithDebInfo` with Visual Studio
+The x64 and x86 DXGI hooks were built in `RelWithDebInfo` with Visual Studio
 2026/v145 from the source state now committed as private OSD revision
 `ad9ed5a4aa4b65f38849079d3020cdaf3fe773f8`. This revision includes FSR control log filtering
 and asynchronous HookLog output. These hooks supersede the builds below.
