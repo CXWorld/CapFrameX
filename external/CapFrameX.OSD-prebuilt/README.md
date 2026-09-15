@@ -14,6 +14,61 @@ CapFrameX.OSD revision `e907ea965fb28cb56d82f59064a58579329c6568` (per-entry tex
 also carries the hook-free stall diagnostics of `a2b5bb83` and the replay pacing fix of
 `2da4f0a6`). Its sources are unchanged in the native revision below.
 
+### Asynchronous HookLog file output (2026-09-15)
+
+The current x64 and x86 DXGI hooks were built in `RelWithDebInfo` with Visual Studio
+2026/v145 from the source state now committed as private OSD revision
+`ad9ed5a4aa4b65f38849079d3020cdaf3fe773f8`. This revision includes FSR control log filtering
+and asynchronous HookLog output. These hooks supersede the builds below.
+
+With `CFX_HOOK_LOG=1`, HookLog captures the timestamp and formatted arguments in a fixed
+2,048-entry buffer. A single writer on a private Windows threadpool performs all file opens,
+batched writes and closes. Producers use interlocked lists and never wait for disk access or
+queue space. Queue overflow and file failures are counted and reported on a successful write.
+The writer preserves the existing PID/timestamp prefix and supports concurrent log readers.
+
+Initialization runs on the hook's init worker, outside the loader lock. Enabled logging pins
+the module so queued callbacks remain valid. The writer runs finite callbacks with no permanent
+queue-wait loop; process detach only disables new log calls and never joins or flushes. Pending
+diagnostics can therefore be lost at process termination.
+
+All 54 native hook CTests passed (27 per architecture), with logging enabled for the real-hook
+integration tests. Seven logger regressions cover a blocked writer, concurrent FIFO delivery
+and original timestamps/arguments, overflow accounting, file-error recovery with a tail reader,
+disabled logging, disabling during a write, ExitProcess with a blocked writer, and last-thread
+exit after the writer is idle. The overflow test delivers 2,048 entries and reports all 14,337
+losses from 16,385 calls while the producers finish before the writer is released.
+
+| Hook | SHA-256 |
+| --- | --- |
+| x64 | `DE56205256B0BBCF2216683A5DA548711F8058F32139B14CF387475F3E32FDEA` |
+| x86 | `601C6429F94C503EF7A00518F23B7B1838BC6A5126C5C9337ADC2ECBD638CDE2` |
+
+### FSR control log filtering (2026-09-15)
+
+The x64 and x86 DXGI hooks were rebuilt in `RelWithDebInfo` with Visual Studio 2026/v145
+from private OSD revision `e6458355fe44f1ca6944a3ccff15ef3c090ef923` plus the local FSR
+control log filter changes. These hook builds supersede the pair described below.
+
+Accepted FSR control calls are grouped by their opaque context handle. The first state and
+every ON/OFF transition are logged immediately; identical calls produce one summary per
+context every ten seconds, including the suppressed-call count. A state transition includes
+the pending count for the previous state. Successful context lifetime boundaries reset the
+filter for reused handles. Filtering occurs before formatting/file I/O and does not gate
+frame-generation telemetry or presentation work.
+
+All 40 native hook CTests passed (20 per architecture). The new regression simulates the
+AC Shadows pattern: 11,090 accepted ON calls at approximately 68 Hz produce 17 entries
+(one initial state and 16 summaries). It also covers immediate transitions, interleaved
+contexts, handle reuse, bounded context storage, and concurrent calls without lost counts.
+
+| Hook | SHA-256 |
+| --- | --- |
+| x64 | `B42DF7B867243B4D71B919314B60407B63DDC65A2117D3DD1234AC83989AC12D` |
+| x86 | `74C892361C1EDE4C13BF3A884A26D799FB4DE91FD61E45817775E9A51F7016D8` |
+
+The core, managed bridge, and Vulkan payloads retain the provenance documented below.
+
 ### Framerate graph correction (2026-09-15)
 
 All five native DLLs were rebuilt in `RelWithDebInfo` with Visual Studio 2026/v145 from the
