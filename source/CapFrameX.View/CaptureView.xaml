@@ -222,7 +222,7 @@
 						 Margin="0" FontSize="14" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" wpf:HintAssist.HintOpacity=".8"
 						 IsUndoEnabled="False" PreviewKeyDown="CaptureHotkeyTextBox_PreviewKeyDown"
 						 ContextMenu="{x:Null}" InputMethod.IsInputMethodEnabled="False"
-						 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
+						 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt). Press Backspace, Delete or Esc to clear.">
 						<!-- Deliberately not IsReadOnly: the MaterialDesign 5.x read-only text-field
 						     styling indents the text against the floating hint. All keyboard input is
 						     swallowed by the PreviewKeyDown hotkey capture; paste and IME input are
@@ -230,7 +230,7 @@
 						<Binding Path="CaptureHotkey"
 							  ElementName="CaptureViewControl"
 							  Mode="OneWay"
-							  TargetNullValue="&lt; not set &gt;">
+							  TargetNullValue="{x:Static validation:HotkeyValidationRule.UnsetText}">
 							<Binding.ValidationRules>
 								<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True" />
 							</Binding.ValidationRules>
@@ -352,11 +352,11 @@
 										Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 										IsUndoEnabled="False" PreviewKeyDown="ResetHistoryHotkeyTextBox_PreviewKeyDown"
 										ContextMenu="{x:Null}" InputMethod.IsInputMethodEnabled="False"
-										ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" materialDesign:HintAssist.HintOpacity=".8">
+										ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt). Press Backspace, Delete or Esc to clear." materialDesign:HintAssist.HintOpacity=".8">
 										<Binding Path="ResetHistoryHotkey"
 										 ElementName="CaptureViewControl"
 										 Mode="OneWay"
-										 TargetNullValue="&lt; not set &gt;">
+										 TargetNullValue="{x:Static validation:HotkeyValidationRule.UnsetText}">
 											<Binding.ValidationRules>
 												<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True" />
 											</Binding.ValidationRules>

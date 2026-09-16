@@ -132,6 +132,56 @@ namespace CapFrameX.Test.ViewModel
         }
 
         [TestMethod]
+        public void ClearingHotkeys_PersistsDisabledValuesAndUpdatesCaptureInstructions()
+        {
+            var sut = CreateSut();
+            try
+            {
+                sut.CaptureHotkeyString = string.Empty;
+                sut.ResetHistoryHotkeyString = string.Empty;
+
+                Assert.AreEqual(string.Empty, _appConfigurationMock.Object.CaptureHotKey);
+                Assert.AreEqual(string.Empty, _appConfigurationMock.Object.ResetHistoryHotkey);
+                StringAssert.Contains(sut.CaptureStateInfo, "Capture hotkey disabled.");
+
+                InvokePrivate(sut, "UpdateProcessToCaptureList");
+                StringAssert.Contains(sut.CaptureStateInfo, "Capture hotkey disabled.");
+                Assert.IsFalse(sut.CaptureStateInfo.Contains("Press"));
+
+                sut.CaptureHotkeyString = "Alt+NotAKey";
+                Assert.AreEqual(string.Empty, _appConfigurationMock.Object.CaptureHotKey);
+
+                sut.CaptureHotkeyString = "Control+F9";
+                sut.ResetHistoryHotkeyString = "Alt+R";
+                Assert.AreEqual("Control+F9", _appConfigurationMock.Object.CaptureHotKey);
+                Assert.AreEqual("Alt+R", _appConfigurationMock.Object.ResetHistoryHotkey);
+                StringAssert.Contains(sut.CaptureStateInfo, "Control+F9");
+                Assert.IsFalse(sut.CaptureStateInfo.Contains("disabled"));
+            }
+            finally
+            {
+                DisposeHeartbeat(sut);
+            }
+        }
+
+        [TestMethod]
+        public void Constructor_WithDisabledCaptureHotkey_ShowsDisabledInstruction()
+        {
+            _appConfigurationMock.Object.CaptureHotKey = string.Empty;
+            _appConfigurationMock.Object.ResetHistoryHotkey = string.Empty;
+            var sut = CreateSut();
+            try
+            {
+                StringAssert.Contains(sut.CaptureStateInfo, "Capture hotkey disabled.");
+                Assert.IsFalse(sut.CaptureStateInfo.Contains("Press"));
+            }
+            finally
+            {
+                DisposeHeartbeat(sut);
+            }
+        }
+
+        [TestMethod]
         public void UpdateProcessToCaptureList_WithVkcube_AutoDetectsAndPublishesProcessId()
         {
             var sut = CreateSut();

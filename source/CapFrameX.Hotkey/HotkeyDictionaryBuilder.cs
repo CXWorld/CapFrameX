@@ -122,6 +122,11 @@ namespace CapFrameX.Hotkey
             List<(HotkeyAction hotkeyAction, string key, string combination,
                 Dictionary<string, Action> actionDictionary, SynchronizationContext context)> actionList)
         {
+            // Keep the action registered so a disabled hotkey can be re-enabled through Refresh.
+            // Only assigned, valid keys belong in the snapshot used by the global hook.
+            if (!CXHotkey.IsValidHotkey(hotkey))
+                return;
+
             var hotkeySplit = hotkey.Split('+');
             var hotkeyChords = hotkeySplit.Take(hotkeySplit.Length - 1);
             // The stored name comes from the WPF Key enum, the hook reports a WinForms Keys name.

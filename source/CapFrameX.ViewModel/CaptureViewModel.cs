@@ -156,7 +156,7 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.CaptureHotKey; }
             set
             {
-                if (!CXHotkey.IsValidHotkey(value))
+                if (!CXHotkey.IsValidSetting(value))
                     return;
 
                 _appConfiguration.CaptureHotKey = value;
@@ -252,7 +252,7 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.ResetHistoryHotkey; }
             set
             {
-                if (!CXHotkey.IsValidHotkey(value))
+                if (!CXHotkey.IsValidSetting(value))
                     return;
 
                 _appConfiguration.ResetHistoryHotkey = value;
@@ -542,7 +542,7 @@ namespace CapFrameX.ViewModel
                     if (status.Status == ECaptureStatus.StartedTimer)
                     {
                         CaptureStateInfo = $"Capturing in progress (Set Time: {CaptureTimeString} seconds)..." + Environment.NewLine
-                          + $"Press {CaptureHotkeyString} to stop capture.";
+                          + GetCaptureHotkeyHint($"Press {CaptureHotkeyString} to stop capture.");
                     }
                     else if (status.Status == ECaptureStatus.StartedRemote)
                     {
@@ -550,14 +550,14 @@ namespace CapFrameX.ViewModel
                     }
                     else if (status.Status == ECaptureStatus.Started)
                     {
-                        CaptureStateInfo = "Capturing in progress..." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
+                        CaptureStateInfo = "Capturing in progress..." + Environment.NewLine + GetCaptureHotkeyHint($"Press {CaptureHotkeyString} to stop capture.");
                     }
                 }
             });
 
             _logger.LogDebug("{viewName} Ready", this.GetType().Name);
             CaptureStateInfo = "Service ready..." + Environment.NewLine +
-                $"Press {CaptureHotkeyString} to start capture of the running process.";
+                GetCaptureHotkeyHint($"Press {CaptureHotkeyString} to start capture of the running process.");
             SelectedSoundMode = _appConfiguration.HotkeySoundMode;
             CaptureTimeString = _appConfiguration.CaptureTime.ToString(CultureInfo.InvariantCulture);
             CaptureDelayString = _appConfiguration.CaptureDelay.ToString(CultureInfo.InvariantCulture);
@@ -622,9 +622,6 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventCaptureHotkey()
         {
-            if (!CXHotkey.IsValidHotkey(CaptureHotkeyString))
-                return;
-
             // No local re-trigger lock: key repeat is filtered centrally for every hotkey now
             // (KeyRepeatFilter). The 500 ms lock this replaces also swallowed deliberate double
             // presses; a start immediately followed by a stop is legitimate and is already
@@ -1006,18 +1003,23 @@ namespace CapFrameX.ViewModel
             return _processList.FindProcessByName(processName)?.DisplayName ?? processNameStripped;
         }
 
+        private string GetCaptureHotkeyHint(string enabledHint)
+        {
+            return string.IsNullOrEmpty(CaptureHotkeyString) ? "Capture hotkey disabled." : enabledHint;
+        }
+
         private void UpdateCaptureStateInfo()
         {
             if (string.IsNullOrWhiteSpace(SelectedProcessToCapture))
             {
                 if (!ProcessesToCapture.Any())
                 {
-                    CaptureStateInfo = "Process list clear." + Environment.NewLine + $"Start any game / application and press \"{CaptureHotkeyString}\" to start capture.";
+                    CaptureStateInfo = "Process list clear." + Environment.NewLine + GetCaptureHotkeyHint($"Start any game / application and press \"{CaptureHotkeyString}\" to start capture.");
                     _overlayService.SetCaptureServiceStatus("Scanning for process...");
                 }
                 else if (ProcessesToCapture.Count == 1 && !_captureManager.DelayCountdownRunning)
                 {
-                    CaptureStateInfo = $"\"{_currentGameNameToCapture}\" auto-detected." + Environment.NewLine + $"Press \"{CaptureHotkeyString}\" to start capture.";
+                    CaptureStateInfo = $"\"{_currentGameNameToCapture}\" auto-detected." + Environment.NewLine + GetCaptureHotkeyHint($"Press \"{CaptureHotkeyString}\" to start capture.");
                     _overlayService.SetCaptureServiceStatus($"\"{_currentGameNameToCapture}\" ready to capture...");
                 }
                 else if (ProcessesToCapture.Count > 1)
@@ -1031,7 +1033,7 @@ namespace CapFrameX.ViewModel
 
             if (!_captureManager.DelayCountdownRunning)
             {
-                CaptureStateInfo = $"\"{_currentGameNameToCapture}\" selected." + Environment.NewLine + $"Press \"{CaptureHotkeyString}\" to start capture.";
+                CaptureStateInfo = $"\"{_currentGameNameToCapture}\" selected." + Environment.NewLine + GetCaptureHotkeyHint($"Press \"{CaptureHotkeyString}\" to start capture.");
                 _overlayService.SetCaptureServiceStatus($"\"{_currentGameNameToCapture}\" ready to capture...");
             }
         }
@@ -1098,9 +1100,6 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventResetHistoryHotkey()
         {
-            if (!CXHotkey.IsValidHotkey(ResetHistoryHotkeyString))
-                return;
-
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.ResetHistory, () => _overlayService.ResetHistory());
         }
     }

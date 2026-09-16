@@ -168,7 +168,7 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.OverlayHotKey; }
             set
             {
-                if (!CXHotkey.IsValidHotkey(value))
+                if (!CXHotkey.IsValidSetting(value))
                     return;
 
                 _appConfiguration.OverlayHotKey = value;
@@ -181,7 +181,7 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.OverlayConfigHotKey; }
             set
             {
-                if (!CXHotkey.IsValidHotkey(value))
+                if (!CXHotkey.IsValidSetting(value))
                     return;
 
                 _appConfiguration.OverlayConfigHotKey = value;
@@ -195,7 +195,7 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.OverlayPositionHotkey; }
             set
             {
-                if (!CXHotkey.IsValidHotkey(value))
+                if (!CXHotkey.IsValidSetting(value))
                     return;
 
                 _appConfiguration.OverlayPositionHotkey = value;
@@ -209,7 +209,7 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.ThreadAffinityHotkey; }
             set
             {
-                if (!CXHotkey.IsValidHotkey(value))
+                if (!CXHotkey.IsValidSetting(value))
                     return;
 
                 _appConfiguration.ThreadAffinityHotkey = value;
@@ -223,7 +223,7 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.ResetMetricsHotkey; }
             set
             {
-                if (!CXHotkey.IsValidHotkey(value))
+                if (!CXHotkey.IsValidSetting(value))
                     return;
 
                 _appConfiguration.ResetMetricsHotkey = value;
@@ -1081,9 +1081,6 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventOverlayHotkey()
         {
-            if (!CXHotkey.IsValidHotkey(OverlayHotkeyString))
-                return;
-
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.Overlay, () =>
             {
                 IsOverlayActive = !IsOverlayActive;
@@ -1092,9 +1089,6 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventOverlayConfigHotkey()
         {
-            if (!CXHotkey.IsValidHotkey(OverlayConfigHotkeyString))
-                return;
-
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.OverlayConfig, () =>
             {
                 var nextConfig = GetNextConfig();
@@ -1104,9 +1098,6 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventOverlayPositionHotkey()
         {
-            if (!CXHotkey.IsValidHotkey(OverlayPositionHotkeyString))
-                return;
-
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.OverlayPosition, () =>
             {
                 OsdAnchor = OsdAnchorPositionCycle.GetNext(OsdAnchor);
@@ -1115,9 +1106,6 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventThreadAffinityHotkey()
         {
-            if (!CXHotkey.IsValidHotkey(ThreadAffinityHotkeyString))
-                return;
-
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.ThreadAffinity, () =>
             {
                 Task.Run(() => _threadAffinityController.ToggleAffinity());
@@ -1126,9 +1114,6 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventResetMetricsHotkey()
         {
-            if (!CXHotkey.IsValidHotkey(ResetMetricsHotkeyString))
-                return;
-
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.ResetMetrics, () =>
             {
                 Task.Run(() => _onlineMetricService.ResetRealtimeMetrics());

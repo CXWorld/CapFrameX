@@ -83,6 +83,8 @@ namespace CapFrameX.View
             if (modifiers == ModifierKeys.None && key.IsEither(Key.Delete, Key.Back, Key.Escape))
             {
                 CaptureHotkey = null;
+                (DataContext as CaptureViewModel).CaptureHotkeyString = string.Empty;
+                Keyboard.ClearFocus();
                 return;
             }
 
@@ -171,6 +173,8 @@ namespace CapFrameX.View
             if (modifiers == ModifierKeys.None && key.IsEither(Key.Delete, Key.Back, Key.Escape))
             {
                 ResetHistoryHotkey = null;
+                (DataContext as CaptureViewModel).ResetHistoryHotkeyString = string.Empty;
+                Keyboard.ClearFocus();
                 return;
             }
 

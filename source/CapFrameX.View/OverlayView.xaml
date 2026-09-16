@@ -960,11 +960,11 @@
 								</StackPanel>
 								<TextBox Margin="30 0 0 0" materialDesign:HintAssist.Hint="Thread Affinity Hotkey" Width="145" Height="45" Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 									 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ThreadAffinityHotkeyTextBox_PreviewKeyDown" materialDesign:HintAssist.HintOpacity=".8"
-									 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
+									 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt). Press Backspace, Delete or Esc to clear." Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
 									<Binding Path="ThreadAffinityHotkey"
 										ElementName="OverlayViewControl"
 										Mode="OneWay"
-										TargetNullValue="&lt; not set &gt;">
+										TargetNullValue="{x:Static validation:HotkeyValidationRule.UnsetText}">
 										<Binding.ValidationRules>
 											<validation:HotkeyValidationRule
 										ValidatesOnTargetUpdated="True" />
@@ -1300,8 +1300,8 @@
 												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
 												 PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
-												 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
-											<Binding Path="OverlayHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
+												 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt). Press Backspace, Delete or Esc to clear.">
+											<Binding Path="OverlayHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="{x:Static validation:HotkeyValidationRule.UnsetText}">
 												<Binding.ValidationRules>
 													<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True"/>
 												</Binding.ValidationRules>
@@ -1317,8 +1317,8 @@
 												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
 												 PreviewKeyDown="ConfigHotkeyTextBox_PreviewKeyDown"
-												 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
-											<Binding Path="OverlayConfigHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
+												 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt). Press Backspace, Delete or Esc to clear.">
+											<Binding Path="OverlayConfigHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="{x:Static validation:HotkeyValidationRule.UnsetText}">
 												<Binding.ValidationRules>
 													<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True"/>
 												</Binding.ValidationRules>
@@ -1334,8 +1334,8 @@
 												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
 												 PreviewKeyDown="OverlayPositionHotkeyTextBox_PreviewKeyDown"
-												 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
-											<Binding Path="OverlayPositionHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
+												 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt). Press Backspace, Delete or Esc to clear.">
+											<Binding Path="OverlayPositionHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="{x:Static validation:HotkeyValidationRule.UnsetText}">
 												<Binding.ValidationRules>
 													<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True"/>
 												</Binding.ValidationRules>
@@ -1351,8 +1351,8 @@
 												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
 												 PreviewKeyDown="ResetMetricsHotkeyTextBox_PreviewKeyDown"
-												 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
-											<Binding Path="ResetMetricsHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
+												 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt). Press Backspace, Delete or Esc to clear.">
+											<Binding Path="ResetMetricsHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="{x:Static validation:HotkeyValidationRule.UnsetText}">
 												<Binding.ValidationRules>
 													<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True"/>
 												</Binding.ValidationRules>
