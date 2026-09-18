@@ -14,6 +14,46 @@ CapFrameX.OSD revision `e907ea965fb28cb56d82f59064a58579329c6568` (per-entry tex
 also carries the hook-free stall diagnostics of `a2b5bb83` and the replay pacing fix of
 `2da4f0a6`). Its sources are unchanged in the native revision below.
 
+### Hook-free monitor bounds (2026-09-18)
+
+All five native DLLs were rebuilt with Visual Studio 2026/v145 in `RelWithDebInfo` from
+the source state now committed as private OSD revision
+`0104ab98e694ff3eac37cd3bc5319402c93b8f3f`, fixing
+[CapFrameX issue #440](https://github.com/CXWorld/CapFrameX/issues/440). These payloads
+supersede the native builds below; the managed bridge and Vulkan manifests are unchanged.
+
+`OverlayWindow::positionFixed` now anchors every placement to the selected monitor's
+`rcMonitor`, including negative virtual-desktop coordinates. The primary-display fallback
+also uses the full screen dimensions and no longer queries `SPI_GETWORKAREA`. Taskbar
+position and size therefore cannot offset the overlay's anchors. Margins and the native
+API remain unchanged.
+
+The new `overlay_position` regression compiles the actual placement code with simulated
+Win32 monitor queries. Its 439 checks cover all five anchors, taskbars on every edge,
+nonzero margins, multiple monitors, negative origins, scaled overlay dimensions, relayout,
+hidden panels and monitor-query failures. It failed 54 checks against the original source
+and passes with the fix. `overlay_position_live` passed another 77 checks using a hidden
+window on the current 3840x1600 display at 125% scaling. This live check does not change
+the taskbar or display settings; additional monitor layouts are covered by simulation.
+
+All 68 native CTests passed in both `RelWithDebInfo` and `Debug`: ten core tests, 27 hook
+tests per architecture and two Vulkan tests per architecture. Each staged DLL was checked
+against its build output using SHA-256 and PE architecture validation; both Vulkan
+manifests still match the build output.
+
+Renderer input SHA-256 at build time:
+
+- `src/core/OverlayWindow.cpp`: `69480C5D60CA877C45F94A868E82EC4AE6F2CCAF490CA38DF5D3EE7165102B23`
+- `src/core/OverlayWindow.h`: `CCD5FF65E9E3525C47C196C365DD070E3EFB7B7CBDFAB90B8D3441D77ADB82A7`
+
+| Native DLL | SHA-256 |
+| --- | --- |
+| Core x64 | `A0ABAD043AA750E8D710F4375D9B42CB8D313FCCEB8ED7BB012561AA545BA4C8` |
+| Hook x64 | `9EAD2288F5ECDC52B16137572734F8095AE7F0EAA2B916B3157809E6B1DD28EC` |
+| Hook x86 | `6F716E0A273F4DBB67E9F0DC1F0514C6EB1ED1D6FFF60C0B4AE72E490DEE2593` |
+| Vulkan x64 | `E23295F58837BF9DF7DF94B21FE206C17E746D5D53279D5D55DE606F14EDD2D6` |
+| Vulkan x86 | `D55B25FCD8668507D156952F94F68496ED44077C17553482334217CE2A15AA26` |
+
 ### Complete native rebuild (2026-09-15)
 
 All five native DLLs were rebuilt from clean private OSD `main` revision
