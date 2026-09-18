@@ -1,17 +1,11 @@
-﻿using CapFrameX.Configuration;
-using CapFrameX.Data;
-using CapFrameX.Extensions;
-using CapFrameX.Hotkey;
-using CapFrameX.Overlay;
-using CapFrameX.PresentMonInterface;
-using CapFrameX.ViewModel;
-using Microsoft.Extensions.Logging;
-using Prism.Events;
-using System.ComponentModel;
+﻿using System;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using CapFrameX.Extensions;
+using CapFrameX.Hotkey;
+using CapFrameX.ViewModel;
 
 namespace CapFrameX.View
 {
@@ -101,6 +95,81 @@ namespace CapFrameX.View
             dataContext.CaptureHotkeyString = CaptureHotkey.ToString();
 
             Keyboard.ClearFocus();
+        }
+
+        private bool CommitCaptureTime()
+        {
+            if (!(DataContext is CaptureViewModel viewModel) || !viewModel.AreButtonsActive)
+                return false;
+
+            var binding = CaptureTimeTextBox.GetBindingExpression(TextBox.TextProperty);
+            binding?.UpdateSource();
+            if (viewModel.CommitCaptureTime())
+            {
+                if (binding != null)
+                    Validation.ClearInvalid(binding);
+                return true;
+            }
+
+            const string message = "Enter a valid duration of 0 seconds or more (0 = no limit).";
+            if (binding != null)
+                Validation.MarkInvalid(binding, new ValidationError(new ExceptionValidationRule(), binding, message, null));
+            CaptureTimeTextBox.ToolTip = message;
+            return false;
+        }
+
+        private void CaptureTimeTextBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            CommitCaptureTime();
+        }
+
+        private void CaptureTimeTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                e.Handled = true;
+                if (CommitCaptureTime())
+                    Keyboard.ClearFocus();
+            }
+            else if (e.Key == Key.Escape)
+            {
+                e.Handled = true;
+                (DataContext as CaptureViewModel)?.RestoreCaptureTime();
+                Keyboard.ClearFocus();
+            }
+        }
+
+        private void CaptureTimeTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var textBox = (TextBox)sender;
+            var binding = textBox.GetBindingExpression(TextBox.TextProperty);
+            if (binding != null)
+                Validation.ClearInvalid(binding);
+            textBox.ToolTip = "0 = no limit. Press Enter or leave the field to save.";
+        }
+
+        private void CaptureTimeScopeButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!CommitCaptureTime())
+                return;
+
+            CaptureTimeScopeButton.ContextMenu.PlacementTarget = CaptureTimeScopeButton;
+            CaptureTimeScopeButton.ContextMenu.IsOpen = true;
+        }
+
+        private void CaptureTimeScopeButton_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            e.Handled = !CommitCaptureTime();
+        }
+
+        private void RememberGameCaptureTime_Click(object sender, RoutedEventArgs e)
+        {
+            // Run after the menu command and closing animation restore keyboard focus.
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                CaptureTimeTextBox.Focus();
+                CaptureTimeTextBox.SelectAll();
+            }));
         }
 
         private void TextBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)

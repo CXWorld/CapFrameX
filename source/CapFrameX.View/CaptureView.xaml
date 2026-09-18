@@ -237,23 +237,55 @@
 						</Binding>
 					</TextBox>
 
-					<TextBox Grid.Row="0" Grid.Column="1" Width="110" wpf:HintAssist.Hint="Capture time [s]" Style="{DynamicResource CxFloatingHintTextBox}"
+					<TextBox x:Name="CaptureTimeTextBox" Grid.Row="0" Grid.Column="1" Width="110" wpf:HintAssist.Hint="Capture time [s]" Style="{DynamicResource CxFloatingHintTextBox}"
 						 Margin="30 0 0 0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
-						 PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="TextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"
-						 PreviewTextInput="NumberValidationTextBox" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" wpf:HintAssist.HintOpacity=".8"/>
-					<Button Grid.Row="0" Grid.Column="1" Panel.ZIndex="1" HorizontalAlignment="Right" Margin="0 15 5 0" Width="18" Height="18" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-                            ToolTip="Save capture time for current process" Command="{Binding SaveCaptureTimeCommand}" Visibility="{Binding ShowCaptureTimeSave, Converter={StaticResource FalseToCollapsedConverter}}"
-                            materialDesign:RippleAssist.Feedback="#DD000000">
-						<materialDesign:PackIcon Kind="ContentSaveSettings" Height="15" Width="15" />
+						 PreviewKeyDown="CaptureTimeTextBox_PreviewKeyDown" LostKeyboardFocus="CaptureTimeTextBox_LostKeyboardFocus"
+						 TextChanged="CaptureTimeTextBox_TextChanged" ToolTip="0 = no limit. Press Enter or leave the field to save."
+						 Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" wpf:HintAssist.HintOpacity=".8"/>
+					<Button x:Name="CaptureTimeScopeButton" Grid.Row="1" Grid.Column="1" Margin="26 3 0 0" Padding="4 0"
+						 HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" MinWidth="0" FontSize="11"
+						 IsEnabled="{Binding AreButtonsActive}" ToolTip="{Binding CaptureTimeScopeToolTip}"
+						 AutomationProperties.Name="Capture duration scope" Click="CaptureTimeScopeButton_Click"
+						 ContextMenuOpening="CaptureTimeScopeButton_ContextMenuOpening">
+						<Button.Style>
+							<Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
+								<Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+								<Setter Property="Opacity" Value="0.7"/>
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding HasGameCaptureTime}" Value="True">
+										<Setter Property="FontWeight" Value="Medium"/>
+										<Setter Property="Opacity" Value="1"/>
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</Button.Style>
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="{Binding CaptureTimeScopeLabel}" VerticalAlignment="Center"/>
+							<materialDesign:PackIcon Kind="ChevronDown" Width="14" Height="14" Margin="3 0 0 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Primary}"/>
+						</StackPanel>
+						<Button.ContextMenu>
+							<ContextMenu Placement="Bottom" DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+								<MenuItem Header="{Binding CaptureTimeProcessLabel}" IsEnabled="False" FontSize="11"/>
+								<Separator/>
+								<MenuItem Height="Auto" MinHeight="56" IsCheckable="True" IsChecked="{Binding UseGlobalCaptureTime, Mode=OneWay}" Command="{Binding UseGlobalCaptureTimeCommand}">
+									<MenuItem.Header>
+										<StackPanel MaxWidth="300">
+											<TextBlock Text="Use global duration" FontSize="13"/>
+											<TextBlock Text="{Binding GlobalCaptureTimeDescription}" FontSize="11" Opacity="0.7" Margin="0 4 0 0" TextWrapping="Wrap"/>
+										</StackPanel>
+									</MenuItem.Header>
+								</MenuItem>
+								<MenuItem Height="Auto" MinHeight="56" IsCheckable="True" IsChecked="{Binding HasGameCaptureTime, Mode=OneWay}" Command="{Binding RememberGameCaptureTimeCommand}" Click="RememberGameCaptureTime_Click">
+									<MenuItem.Header>
+										<StackPanel MaxWidth="300">
+											<TextBlock Text="Remember for this game" FontSize="13"/>
+											<TextBlock Text="{Binding GameCaptureTimeDescription}" FontSize="11" Opacity="0.7" Margin="0 4 0 0" TextWrapping="Wrap"/>
+										</StackPanel>
+									</MenuItem.Header>
+								</MenuItem>
+							</ContextMenu>
+						</Button.ContextMenu>
 					</Button>
-					<!--<StackPanel Grid.Row="1" Grid.Column="1" Margin="30 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left" ToolTipService.ShowDuration="25000" IsEnabled="{Binding AreButtonsActive}">
-						<TextBlock Text="Global time" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-						<ToggleButton HorizontalAlignment="Right" Margin="5 0 -30 0" IsChecked="{Binding UseGlobalCaptureTime}"></ToggleButton>
-						<StackPanel.ToolTip >
-							<TextBlock Width="280" Text="Uses the same capture time for all processes.&#xA;Unchecked, when detecting a process this box will be filled with the last saved capture time of that process."
-								TextWrapping="Wrap"></TextBlock>
-						</StackPanel.ToolTip>
-					</StackPanel>-->
 
 					<TextBox Grid.Row="0" Grid.Column="2" Width="110" wpf:HintAssist.Hint="Capture delay [s]" Style="{DynamicResource CxFloatingHintTextBox}"
 					 Margin="30 0 0 0" FontSize="14" Text="{Binding CaptureDelayString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
