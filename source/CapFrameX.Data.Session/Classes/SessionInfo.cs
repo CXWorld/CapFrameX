@@ -1,5 +1,5 @@
 ﻿using CapFrameX.Data.Session.Contracts;
-using CapFrameX.Data.Session.Converters;
+using VersionConverter = CapFrameX.Data.Session.Converters.VersionConverter;
 using Newtonsoft.Json;
 using System;
 using System.ComponentModel;

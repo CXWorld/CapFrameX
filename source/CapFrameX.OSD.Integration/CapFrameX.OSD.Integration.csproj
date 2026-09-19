@@ -51,10 +51,7 @@
 
   <ItemGroup Condition="'$(CfxOsdFromSource)' != 'true'">
     <Reference Include="CapFrameX.OSD.Interop">
-      <!-- The prebuilt OSD bridge currently ships in a net9.0-windows folder. The assembly is
-           compatible with a net10.0-windows consumer, so keep this physical path pinned until
-           the OSD repository publishes a matching net10.0-windows artifact. -->
-      <HintPath>$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\net9.0-windows\CapFrameX.OSD.Interop.dll</HintPath>
+      <HintPath>$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\net10.0-windows\CapFrameX.OSD.Interop.dll</HintPath>
     </Reference>
   </ItemGroup>
 

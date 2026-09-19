@@ -9,10 +9,18 @@ the OSD is built from source instead and these files are ignored.
 
 ## Build provenance
 
-The current managed bridge was built in `Release` with the VS 2026/v145 toolset from private
-CapFrameX.OSD revision `e907ea965fb28cb56d82f59064a58579329c6568` (per-entry text scales; it
-also carries the hook-free stall diagnostics of `a2b5bb83` and the replay pacing fix of
-`2da4f0a6`). Its sources are unchanged in the native revision below.
+The current binaries were rebuilt on **2026-09-19** from private CapFrameX.OSD
+revision `0104ab98e694ff3eac37cd3bc5319402c93b8f3f`, with the migration of
+Interop, Controls and Editor.Demo to `net10.0-windows` now committed as
+`142ad1d5c46cbd5688068d03a48b893e4bb3a17c`. The managed bridge uses
+.NET SDK 10.0.401 in `Release`; all five native DLLs use VS 2026/v145 in
+`RelWithDebInfo`, from fresh x64/x86 build directories. All 68 native tests passed.
+
+The bridge and five native DLLs are Authenticode-signed with the Certum code-signing
+certificate `C0D5481E2ACBB9DD104A825A81EECF55557BA783` and RFC 3161 SHA-256 timestamps.
+The hashes below describe the signed files. The former `net9.0-windows` bridge
+has been replaced by `net10.0-windows`; all consuming project paths were updated.
+The following sections retain the history of the native fixes in this revision.
 
 ### Hook-free monitor bounds (2026-09-18)
 
@@ -217,16 +225,16 @@ separate probing review.
 
 ### Current SHA-256
 
-- managed bridge SHA-256: `615838E43AADFEBEB009B17DA3ABBC53A0B47BE1969F5CD75D2BF96B04C21DA9`
-- core SHA-256: `3F24ED2C4BA4DFB9168EB9758AACBEFE763E3643B94FE16B08E23A3D03B3A55F`
-- hook x64 SHA-256: `AF7E4E9096475C3EC929F9807EE516FF4AF52BB0F73F63D4E127077625E0A54E`
-- hook x86 SHA-256: `BC2F17E9DBEDC48686AA22EB9BA036769D2A50F73E9D4B9BA3030A86030DE291`
-- Vulkan x64 SHA-256: `41A2800EC9975DB760D502128D41F66E7837357E3CDAD7B5917A874696B0637C`
-- Vulkan x86 SHA-256: `93D0CBFFE3A03A8C2AA1454B2A00BC94E57736D3DAE2B2919661EBA535EEFD31`
+- managed bridge SHA-256: `21541CEB337F4DCC3F05192D27029279BDFA0F19057EAC764EBBC071E6E8A17C`
+- core SHA-256: `62AA80B30A363C740EE8921F79620A07BF705AFF99AEB6B460E754BDB3F56FB3`
+- hook x64 SHA-256: `0EAA7B90A728379062A057B4828076D41DE1F7ADCAD604544E8EE5C431F12824`
+- hook x86 SHA-256: `E4C6D78144560351E65C327883B7F3686728BAC933AB43E8129973EED34C681E`
+- Vulkan x64 SHA-256: `B2934C46A4B69FEEFFCF3F0304136D6911E03EADB29E695E74C136656B5DBC1B`
+- Vulkan x86 SHA-256: `D09B67C8E2D560F5286F21A226AAFE2C5CB80E5403F5636FE54B70B9A1FA44AF`
 
 ## Contents
 
-- `net9.0-windows/` — `CapFrameX.OSD.Interop.dll` (managed P/Invoke bridge, x64)
+- `net10.0-windows/` — `CapFrameX.OSD.Interop.dll` (managed P/Invoke bridge, x64)
 - `native/cfx_osd_core.dll` — native renderer (x64, RelWithDebInfo)
 - `native/cfx_osd_hook.dll` — x64 DXGI hook, including exact swapchain capture through
   Streamline's factory methods, FidelityFX frame-generation creation APIs, and XeSS-FG's public
