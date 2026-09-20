@@ -1,6 +1,7 @@
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Service.Analysis;
 using CapFrameX.Service.Contracts.Analysis;
+using CapFrameX.Service.Contracts.Records;
 using CapFrameX.Service.Data;
 using CapFrameX.Service.Records;
 using Microsoft.EntityFrameworkCore;
@@ -96,6 +97,39 @@ public sealed class RecordAnalyzer(
         cache.Set(key, session);
 
         return new RecordLoad(RecordLoadStatus.Ok, session, null);
+    }
+
+    /// <summary>Reads everything the analysis view needs to open one record.</summary>
+    /// <param name="id">Identity of the record.</param>
+    /// <param name="cancellationToken">Cancels the read.</param>
+    public async Task<(RecordLoad Load, RecordDetailDto? Detail)> DetailAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        var record = await context.Sessions
+            .AsNoTracking()
+            .FirstOrDefaultAsync(session => session.Id == id, cancellationToken);
+
+        if (record is null)
+        {
+            return (new RecordLoad(RecordLoadStatus.NotIndexed, null, $"No record with id '{id}' is indexed."), null);
+        }
+
+        var load = await LoadAsync(id, cancellationToken);
+
+        if (load.Session is not { } session)
+        {
+            return (load, null);
+        }
+
+        var detail = new RecordDetailDto(
+            Summary: RecordProjection.Summary(record),
+            Info: RecordDetailFactory.Info(session),
+            Runs: RecordDetailFactory.Runs(session),
+            Chips: RecordDetailFactory.Chips(session),
+            Source: RecordProjection.Source(record));
+
+        return (load, detail);
     }
 
     /// <summary>Analyses one record.</summary>
