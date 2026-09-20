@@ -44,13 +44,13 @@ public class SessionRun
     /// Contains arrays: TimeInSeconds[], MsBetweenPresents[], MsBetweenDisplayChange[],
     /// Dropped[], MsInPresentApi[], MsUntilRenderComplete[], MsUntilDisplayed[], etc.
     /// </summary>
-    public string CaptureDataJson { get; set; } = "{}";
+    public string? CaptureDataJson { get; set; }
 
     /// <summary>
     /// Hardware sensor data as JSON (CPU/GPU temps, clocks, usage, power)
     /// Dictionary-based format from SessionSensorData2
     /// </summary>
-    public string SensorDataJson { get; set; } = "{}";
+    public string? SensorDataJson { get; set; }
 
     /// <summary>
     /// RTSS frame times as JSON array (if available)

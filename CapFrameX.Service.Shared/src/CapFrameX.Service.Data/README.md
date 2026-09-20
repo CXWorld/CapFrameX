@@ -6,7 +6,7 @@ Data access layer for CapFrameX using Entity Framework Core and SQLite.
 
 ### Database Technology
 - **SQLite** - Lightweight embedded database (~1MB)
-- **Entity Framework Core 9.0** - Modern ORM with code-first migrations
+- **Entity Framework Core 10** - Code-first migrations
 - **No Installation Required** - Database runs locally in app folder
 - **Cross-Platform** - Same code works on Windows, Linux, macOS
 
@@ -25,7 +25,13 @@ Data access layer for CapFrameX using Entity Framework Core and SQLite.
   - Hardware: Processor, Motherboard, SystemRam, GPU, GpuCount, Clocks
   - Drivers: BaseDriverVersion, DriverPackage, GPUDriverVersion
   - System: OS, ApiInfo, ResizableBar, WinGameMode, HAGS, PresentationMode, Resolution
+  - Record source: SourceFilePath, SourceFileSize, SourceModifiedUtc, IndexVersion
+  - List projection: DurationSeconds, RunCount, FrameCount, SparklineJson, HasPcLatency, HasDisplayChange
 - One-to-many relationship with SessionRuns
+
+A session either *is* a capture file - indexed by `RecordIndex`, with `SourceFilePath` set and no
+runs stored, because the file remains the record - or was recorded by the service itself, in which
+case it has no source file and its runs carry the data.
 
 #### SessionRun
 - Individual benchmark run with frame timing and sensor data
@@ -205,31 +211,22 @@ public class SessionsController : ControllerBase
 
 ## Migrations
 
-### Creating Migrations
+`Microsoft.EntityFrameworkCore.Design` is **not** referenced here. It drags Roslyn and MSBuild
+behind it, and even with `PrivateAssets=all` that reached the publish output: removing it took a
+service publish from 85 files to 39 and dropped two `BuildHost-*` directories of build tooling.
+
+It lives in `CapFrameX.Service.Windows/tools/CapFrameX.DatabaseTool` instead, which is the startup
+project for the EF tools:
 
 ```bash
-cd CapFrameX.Service/src/CapFrameX.Service.Data
-dotnet ef migrations add MigrationName
+dotnet tool install --global dotnet-ef
+dotnet ef migrations add <Name> \
+  --project CapFrameX.Service.Shared/src/CapFrameX.Service.Data \
+  --startup-project CapFrameX.Service.Windows/tools/CapFrameX.DatabaseTool
 ```
 
-### Applying Migrations
-
-```bash
-# Update database to latest
-dotnet ef database update
-
-# Update to specific migration
-dotnet ef database update MigrationName
-
-# Rollback all migrations
-dotnet ef database update 0
-```
-
-### Removing Last Migration
-
-```bash
-dotnet ef migrations remove
-```
+The services apply pending migrations themselves at start (`DatabaseMigrationService`), so nothing
+has to be run by hand on a user's machine.
 
 ## Database Schema
 
@@ -264,6 +261,8 @@ All relationships use cascade delete.
 - `CreatedAt`
 - `(GameName, CreatedAt)` - Composite
 - `(SuiteId, CreatedAt)` - Composite
+- `SourceFilePath` - Unique, filtered to rows that have one, so one file cannot be indexed twice
+- `IndexVersion` - Finds the rows a changed projection has to re-read
 
 **SessionRuns**:
 - `SessionId`
@@ -304,7 +303,7 @@ This hybrid approach provides:
 
 ## Testing
 
-### Unit Tests (24 tests)
+### Unit Tests
 
 **SuiteRepositoryTests** (8 tests)
 - CRUD operations
@@ -328,10 +327,12 @@ This hybrid approach provides:
 ### Running Tests
 
 ```bash
-dotnet test CapFrameX.Service/tests/CapFrameX.Service.Data.Tests
+dotnet test CapFrameX.Service.Shared/tests/CapFrameX.Service.Data.Tests
 ```
 
-All tests use in-memory database for fast execution.
+The repository tests use the in-memory provider; `SchemaMigrationTests` applies the migrations to a
+real SQLite file, because the in-memory provider ignores the relational constraints and indexes a
+migration is supposed to produce.
 
 ## Design Decisions
 
@@ -392,10 +393,12 @@ JSON approach:
 
 ## Dependencies
 
-- `Microsoft.EntityFrameworkCore` (9.0.0) - Core ORM
-- `Microsoft.EntityFrameworkCore.Sqlite` (9.0.0) - SQLite provider
-- `Microsoft.EntityFrameworkCore.Design` (9.0.0) - Migration tooling
+- `Microsoft.EntityFrameworkCore.Sqlite` - SQLite provider
+- `SQLitePCLRaw.bundle_e_sqlite3` - The native SQLite build, on Windows and Linux alike
+- `Microsoft.Extensions.Hosting.Abstractions` - The migration step at start-up
 - `Microsoft.Extensions.Logging.Abstractions` - Logging interface
+
+`Microsoft.EntityFrameworkCore.Design` is deliberately absent; see Migrations below.
 
 ## Integration Notes
 
@@ -440,22 +443,3 @@ For cloud deployment or multi-user scenarios, consider migrating to PostgreSQL u
 ## License
 
 Part of CapFrameX - Frame capture and analysis tool
-
-## Migrations
-
-`Microsoft.EntityFrameworkCore.Design` is **not** referenced here. It drags Roslyn and MSBuild
-behind it, and even with `PrivateAssets=all` that reached the publish output: removing it took a
-service publish from 85 files to 39 and dropped two `BuildHost-*` directories of build tooling.
-
-It lives in `CapFrameX.Service.Windows/tools/CapFrameX.DatabaseTool` instead, which is the startup
-project for the EF tools:
-
-```bash
-dotnet tool install --global dotnet-ef
-dotnet ef migrations add <Name> \
-  --project CapFrameX.Service.Shared/src/CapFrameX.Service.Data \
-  --startup-project CapFrameX.Service.Windows/tools/CapFrameX.DatabaseTool
-```
-
-The services apply pending migrations themselves at start (`DatabaseMigrationService`), so nothing
-has to be run by hand on a user's machine.

@@ -74,6 +74,14 @@ public class CapFrameXDbContext : DbContext
             entity.HasIndex(e => new { e.GameName, e.CreatedAt });
             entity.HasIndex(e => new { e.SuiteId, e.CreatedAt });
 
+            // The indexer looks a record up by its file, and a file must not enter the index
+            // twice. Filtered so the rows of self-recorded sessions, which have no file, do not
+            // all collide on NULL.
+            entity.HasIndex(e => e.SourceFilePath)
+                .IsUnique()
+                .HasFilter("\"SourceFilePath\" IS NOT NULL");
+            entity.HasIndex(e => e.IndexVersion);
+
             // One-to-many relationship with SessionRuns
             entity.HasMany(e => e.Runs)
                 .WithOne(e => e.Session)
@@ -90,9 +98,10 @@ public class CapFrameXDbContext : DbContext
             entity.Property(e => e.PresentMonRuntime).HasMaxLength(50);
             entity.Property(e => e.SampleTime).IsRequired();
 
-            // JSON columns for large data arrays
-            entity.Property(e => e.CaptureDataJson).IsRequired();
-            entity.Property(e => e.SensorDataJson).IsRequired();
+            // JSON columns for large data arrays. Optional on purpose: a record that lives as a
+            // capture file on disk is indexed, not copied, so its runs carry no frame data here.
+            entity.Property(e => e.CaptureDataJson);
+            entity.Property(e => e.SensorDataJson);
             entity.Property(e => e.RtssFrameTimesJson);
             entity.Property(e => e.PmdGpuPowerJson);
             entity.Property(e => e.PmdCpuPowerJson);
