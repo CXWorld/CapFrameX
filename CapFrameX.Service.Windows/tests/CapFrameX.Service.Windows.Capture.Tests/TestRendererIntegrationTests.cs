@@ -19,7 +19,7 @@ public class TestRendererIntegrationTests : IDisposable
         _captureService = TestHelpers.CreateCaptureService();
     }
 
-    [Fact]
+    [RequiresElevationFact]
     public async Task CaptureService_WithTestRenderer_ShouldCaptureFrameData()
     {
         // Arrange
@@ -77,7 +77,7 @@ public class TestRendererIntegrationTests : IDisposable
         _captureService.StopCaptureService();
     }
 
-    [Fact]
+    [RequiresElevationFact]
     public async Task CaptureService_WithTestRenderer_ShouldDetectProcess()
     {
         // Arrange
@@ -117,7 +117,7 @@ public class TestRendererIntegrationTests : IDisposable
         _captureService.StopCaptureService();
     }
 
-    [Fact]
+    [RequiresElevationFact]
     public async Task CaptureService_WithTestRenderer_ShouldRespectProcessFilter()
     {
         // Arrange
@@ -155,7 +155,7 @@ public class TestRendererIntegrationTests : IDisposable
         _captureService.StopCaptureService();
     }
 
-    [Fact]
+    [RequiresElevationFact]
     public async Task CaptureService_StartStop_ShouldEmitCaptureModeStates()
     {
         // Arrange
@@ -196,7 +196,7 @@ public class TestRendererIntegrationTests : IDisposable
         stateSubscription.Dispose();
     }
 
-    [Fact]
+    [RequiresElevationFact]
     public async Task CaptureService_WithTestRenderer_ShouldCaptureConsistentFrameTiming()
     {
         // Arrange
@@ -256,7 +256,7 @@ public class TestRendererIntegrationTests : IDisposable
         _captureService.StopCaptureService();
     }
 
-    [Fact]
+    [RequiresElevationFact]
     public async Task CaptureService_LongRunningCapture_ShouldNotLeakMemory()
     {
         // Arrange

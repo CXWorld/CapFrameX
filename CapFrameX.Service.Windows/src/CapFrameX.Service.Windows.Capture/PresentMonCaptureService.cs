@@ -1,4 +1,6 @@
 using CapFrameX.Service.Capture.Contracts;
+using CapFrameX.Service.Capture.Frames;
+using CapFrameX.Service.Contracts.Frames;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Reactive.Linq;
@@ -13,23 +15,16 @@ namespace CapFrameX.Service.Capture;
 /// </summary>
 public sealed class PresentMonCaptureService : ICaptureService, IDisposable
 {
-    // Column indices for PresentMon 2.4.0 CSV output
-    private const int ApplicationNameIndex = 0;
-    private const int ProcessIdIndex = 1;
-    private const int MsBetweenPresentsIndex = 10;
-    private const int MsBetweenDisplayChangeIndex = 11;
-    private const int MsPcLatencyIndex = 15;
-    private const int StartTimeInSecondsIndex = 16;
-    private const int CpuBusyIndex = 18;
-    private const int GpuBusyIndex = 22;
-    private const int ValidLineLength = 27;
-
     private static readonly char[] CommaSeparator = [','];
-    private static readonly string ErrorMarker = "<error>";
 
     private readonly ILogger<PresentMonCaptureService> _logger;
     private readonly Subject<string[]> _outputDataStream;
+    private readonly Subject<FrameSample> _frameStream;
     private readonly Subject<bool> _isCaptureModeActiveStream;
+
+    // Replaced as soon as PresentMon writes its header; read on the output thread, written on it
+    // too, so a single volatile reference is enough to publish both objects together.
+    private volatile ColumnBinding _columns;
 
     // Process tracking with lock-free reads
     private volatile HashSet<(string ProcessName, int ProcessId)> _presentMonProcesses;
@@ -40,29 +35,28 @@ public sealed class PresentMonCaptureService : ICaptureService, IDisposable
     private IDisposable? _heartBeatDisposable;
     private IDisposable? _processNameDisposable;
 
-    public IReadOnlyDictionary<string, int> ParameterNameIndexMapping { get; }
+    public IReadOnlyDictionary<string, int> ParameterNameIndexMapping => _columns.NameIndexMapping;
     public IObservable<string[]> FrameDataStream => _outputDataStream.AsObservable();
+
+    /// <summary>
+    /// Presents as platform-neutral samples. This is what the capture orchestrator consumes;
+    /// <see cref="FrameDataStream"/> stays for callers that want the raw CSV fields.
+    /// </summary>
+    public IObservable<FrameSample> FrameStream => _frameStream.AsObservable();
+
+    /// <summary>Optional metrics the current column set delivers.</summary>
+    public FrameMetrics AvailableMetrics => _columns.Mapper.AvailableMetrics;
+
     public Subject<bool> IsCaptureModeActiveStream => _isCaptureModeActiveStream;
 
     public PresentMonCaptureService(ILogger<PresentMonCaptureService> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _outputDataStream = new Subject<string[]>();
+        _frameStream = new Subject<FrameSample>();
         _isCaptureModeActiveStream = new Subject<bool>();
         _presentMonProcesses = new HashSet<(string, int)>();
-
-        // Initialize parameter mapping
-        ParameterNameIndexMapping = new Dictionary<string, int>
-        {
-            ["ApplicationName"] = ApplicationNameIndex,
-            ["ProcessID"] = ProcessIdIndex,
-            ["MsBetweenPresents"] = MsBetweenPresentsIndex,
-            ["MsBetweenDisplayChange"] = MsBetweenDisplayChangeIndex,
-            ["MsPCLatency"] = MsPcLatencyIndex,
-            ["TimeInSeconds"] = StartTimeInSecondsIndex,
-            ["CpuBusy"] = CpuBusyIndex,
-            ["GpuBusy"] = GpuBusyIndex
-        };
+        _columns = ColumnBinding.For(PresentMonColumnLayout.FromHeader(PresentMonKnownLayouts.WithPcLatency));
     }
 
     public bool StartCaptureService(IServiceStartInfo startInfo)
@@ -127,28 +121,127 @@ public sealed class PresentMonCaptureService : ICaptureService, IDisposable
     }
 
     /// <summary>
-    /// OPTIMIZED: Minimal allocation output handler using ReadOnlySpan where possible
+    /// Handles one line of PresentMon output: the header once, frame rows after it.
     /// </summary>
     private void OnOutputDataReceived(object sender, DataReceivedEventArgs e)
     {
         if (string.IsNullOrWhiteSpace(e.Data))
             return;
 
-        // Fast path: Check minimum length before split
-        if (e.Data.Length < 50) // Minimum reasonable CSV line length
+        if (TryBindColumns(e.Data))
             return;
 
-        // Split using pooled array to reduce allocations
-        var lineSplit = e.Data.Split(CommaSeparator, ValidLineLength + 1);
+        var columns = _columns;
+        var lineSplit = e.Data.Split(CommaSeparator, columns.Layout.ColumnCount + 1);
 
-        if (lineSplit.Length >= ValidLineLength)
+        if (lineSplit.Length < columns.Layout.ColumnCount)
+            return;
+
+        if (columns.ApplicationIndex >= 0 &&
+            lineSplit[columns.ApplicationIndex].Equals(PresentMonColumns.ErrorMarker, StringComparison.Ordinal))
+            return;
+
+        // Subscribers own the lifetime of the array.
+        _outputDataStream.OnNext(lineSplit);
+
+        if (columns.Mapper.TryMap(lineSplit, out var frame))
+            _frameStream.OnNext(frame);
+    }
+
+    /// <summary>
+    /// Re-binds the column indices when the line is PresentMon's header.
+    /// </summary>
+    /// <remarks>
+    /// Reading the indices from the header rather than hard-coding them is what keeps a PresentMon
+    /// update from silently shifting every metric by one column.
+    /// </remarks>
+    /// <param name="line">One line of PresentMon output.</param>
+    /// <returns>True when the line was the header and must not be treated as frame data.</returns>
+    private bool TryBindColumns(string line)
+    {
+        if (!line.StartsWith(PresentMonKnownLayouts.HeaderPrefix, StringComparison.Ordinal))
+            return false;
+
+        try
         {
-            // Fast rejection: Check for error marker without string comparison
-            if (lineSplit[ApplicationNameIndex].Length != ErrorMarker.Length ||
-                !lineSplit[ApplicationNameIndex].Equals(ErrorMarker, StringComparison.Ordinal))
+            _columns = ColumnBinding.For(PresentMonColumnLayout.FromHeader(line));
+            _logger.LogInformation(
+                "PresentMon column layout bound from header: {ColumnCount} columns, metrics {Metrics}.",
+                _columns.Layout.ColumnCount,
+                _columns.Mapper.AvailableMetrics);
+        }
+        catch (ArgumentException exception)
+        {
+            _logger.LogWarning(
+                exception,
+                "PresentMon header could not be interpreted; keeping the previous column layout.");
+        }
+
+        return true;
+    }
+
+    /// <summary>One column layout together with everything derived from it.</summary>
+    private sealed class ColumnBinding
+    {
+        private ColumnBinding(
+            PresentMonColumnLayout layout,
+            PresentMonFrameMapper mapper,
+            int applicationIndex,
+            IReadOnlyDictionary<string, int> nameIndexMapping)
+        {
+            Layout = layout;
+            Mapper = mapper;
+            ApplicationIndex = applicationIndex;
+            NameIndexMapping = nameIndexMapping;
+        }
+
+        public PresentMonColumnLayout Layout { get; }
+
+        public PresentMonFrameMapper Mapper { get; }
+
+        public int ApplicationIndex { get; }
+
+        public IReadOnlyDictionary<string, int> NameIndexMapping { get; }
+
+        public static ColumnBinding For(PresentMonColumnLayout layout)
+        {
+            var application = layout.IndexOf(PresentMonColumns.Application);
+            var mapping = new Dictionary<string, int>(StringComparer.Ordinal);
+
+            foreach (var column in new[]
+                     {
+                         PresentMonColumns.Application,
+                         PresentMonColumns.ProcessId,
+                         PresentMonColumns.TimeInSeconds,
+                         PresentMonColumns.MsBetweenPresents,
+                         PresentMonColumns.MsBetweenDisplayChange,
+                         PresentMonColumns.MsPcLatency,
+                         PresentMonColumns.MsCpuBusy,
+                         PresentMonColumns.MsGpuBusy,
+                     })
             {
-                // Publish to stream (subscribers own the lifetime)
-                _outputDataStream.OnNext(lineSplit);
+                var index = layout.IndexOf(column);
+
+                if (index >= 0)
+                {
+                    mapping[column] = index;
+                }
+            }
+
+            // Names the capture consumers have always used, kept so a column rename in PresentMon
+            // does not ripple through them.
+            AddAlias("ApplicationName", PresentMonColumns.Application);
+            AddAlias("CpuBusy", PresentMonColumns.MsCpuBusy);
+            AddAlias("GpuBusy", PresentMonColumns.MsGpuBusy);
+
+            return new ColumnBinding(layout, new PresentMonFrameMapper(layout), application, mapping);
+
+            void AddAlias(string alias, string column)
+            {
+                if (mapping.TryGetValue(column, out var index))
+                {
+                    mapping[alias] = index;
+                }
             }
         }
     }
@@ -197,17 +290,23 @@ public sealed class PresentMonCaptureService : ICaptureService, IDisposable
             .Subscribe(_ => UpdateProcessToCaptureList());
 
         // Stream processing: Add new processes as they appear
+        // The header is consumed while binding the columns and never reaches this stream, so every
+        // line arriving here is frame data.
         _processNameDisposable = _outputDataStream
-            .Skip(1) // Skip header
             .Where(_ => !_isUpdating) // Skip during batch update
             .Subscribe(lineSplit =>
             {
                 try
                 {
-                    if (!int.TryParse(lineSplit[ProcessIdIndex], out int processId))
+                    var columns = _columns;
+
+                    if (columns.ApplicationIndex < 0 ||
+                        !columns.NameIndexMapping.TryGetValue(PresentMonColumns.ProcessId, out var processIdIndex) ||
+                        !int.TryParse(lineSplit[processIdIndex], out int processId))
                         return;
 
-                    var processName = lineSplit[ApplicationNameIndex].Replace(".exe", "", StringComparison.OrdinalIgnoreCase);
+                    var processName = lineSplit[columns.ApplicationIndex]
+                        .Replace(".exe", "", StringComparison.OrdinalIgnoreCase);
                     var processInfo = (processName, processId);
 
                     // OPTIMIZATION: Only lock for the minimal critical section
@@ -274,7 +373,7 @@ public sealed class PresentMonCaptureService : ICaptureService, IDisposable
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = Path.Combine("PresentMon", "PresentMon-2.4.0-x64.exe"),
+                    FileName = Path.Combine("PresentMon", "PresentMon-2.5.1-x64.exe"),
                     Arguments = "--terminate_existing_session",
                     UseShellExecute = false,
                     CreateNoWindow = true,

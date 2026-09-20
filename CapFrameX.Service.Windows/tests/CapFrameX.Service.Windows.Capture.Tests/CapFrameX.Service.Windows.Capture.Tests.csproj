@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\CapFrameX.Service.Capture\CapFrameX.Service.Capture.csproj" />
+    <ProjectReference Include="..\..\src\CapFrameX.Service.Windows.Capture\CapFrameX.Service.Windows.Capture.csproj" />
   </ItemGroup>
 
 </Project>

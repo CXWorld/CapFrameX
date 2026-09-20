@@ -8,7 +8,7 @@ namespace CapFrameX.Service.Capture;
 /// </summary>
 public sealed class PresentMonServiceConfiguration : IServiceStartInfo
 {
-    private const string PresentMonExecutable = "PresentMon-2.4.0-x64.exe";
+    private const string PresentMonExecutable = "PresentMon-2.5.1-x64.exe";
     private static readonly string PresentMonPath = Path.Combine("PresentMon", PresentMonExecutable);
 
     public string FileName => PresentMonPath;

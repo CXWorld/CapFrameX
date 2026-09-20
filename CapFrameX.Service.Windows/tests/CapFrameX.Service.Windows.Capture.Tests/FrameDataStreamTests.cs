@@ -169,14 +169,30 @@ public class FrameDataStreamTests : IDisposable
     }
 
     [Fact]
-    public void ParameterNameIndexMapping_ShouldHaveUniqueIndices()
+    public void ParameterNameIndexMapping_ShouldGiveEachColumnItsOwnIndex()
     {
-        // Act
-        var indices = _captureService.ParameterNameIndexMapping.Values.ToList();
+        // Every PresentMon column name must address a different column. The mapping also carries
+        // the legacy aliases CapFrameX consumers have always used, and those deliberately share an
+        // index with the column they stand for, so they are excluded here and checked below.
+        string[] aliases = ["ApplicationName", "CpuBusy", "GpuBusy"];
 
-        // Assert
-        var uniqueIndices = indices.Distinct().ToList();
-        Assert.Equal(indices.Count, uniqueIndices.Count);
+        var columnIndices = _captureService.ParameterNameIndexMapping
+            .Where(entry => !aliases.Contains(entry.Key))
+            .Select(entry => entry.Value)
+            .ToList();
+
+        Assert.Equal(columnIndices.Count, columnIndices.Distinct().Count());
+    }
+
+    [Theory]
+    [InlineData("ApplicationName", "Application")]
+    [InlineData("CpuBusy", "MsCPUBusy")]
+    [InlineData("GpuBusy", "MsGPUBusy")]
+    public void ParameterNameIndexMapping_ShouldResolveLegacyAliasesToTheirColumn(string alias, string column)
+    {
+        var mapping = _captureService.ParameterNameIndexMapping;
+
+        Assert.Equal(mapping[column], mapping[alias]);
     }
 
     [Fact]
