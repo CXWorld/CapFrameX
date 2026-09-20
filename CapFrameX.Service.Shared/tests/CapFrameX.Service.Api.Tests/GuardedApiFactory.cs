@@ -1,7 +1,9 @@
 using CapFrameX.Service.Core.Security;
+using CapFrameX.Service.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -24,7 +26,12 @@ public sealed class GuardedApiFactory : IAsyncLifetime
     /// <summary>Host header a legitimate caller sends.</summary>
     public const string OwnHost = "127.0.0.1:1337";
 
+    private readonly string _root = Path.Combine(Path.GetTempPath(), "cfx-api-" + Guid.NewGuid().ToString("N"));
+
     private WebApplication? _app;
+
+    /// <summary>The hosted services, so a test can seed what an endpoint reads.</summary>
+    public IServiceProvider Services => _app!.Services;
 
     /// <inheritdoc />
     public async Task InitializeAsync()
@@ -39,8 +46,19 @@ public sealed class GuardedApiFactory : IAsyncLifetime
             Port = CapFrameXApiOptions.DefaultPort,
         });
 
+        // The endpoints that read records need the database the hosts register alongside the API.
+        Directory.CreateDirectory(_root);
+        var databasePath = Path.Combine(_root, CapFrameXDatabaseExtensions.FileName);
+        builder.Services.AddDbContext<CapFrameXDbContext>(
+            options => options.UseSqlite($"Data Source={databasePath}"));
+
         _app = builder.Build();
         _app.MapCapFrameXApi();
+
+        using (var scope = _app.Services.CreateScope())
+        {
+            await scope.ServiceProvider.GetRequiredService<CapFrameXDbContext>().Database.MigrateAsync();
+        }
 
         await _app.StartAsync();
     }
@@ -73,6 +91,15 @@ public sealed class GuardedApiFactory : IAsyncLifetime
         if (_app is not null)
         {
             await _app.DisposeAsync();
+        }
+
+        try
+        {
+            Directory.Delete(_root, recursive: true);
+        }
+        catch (IOException)
+        {
+            // A temp folder that outlives the run is not a test failure.
         }
     }
 }
