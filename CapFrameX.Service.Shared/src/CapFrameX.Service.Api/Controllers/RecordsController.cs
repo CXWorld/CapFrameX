@@ -2,9 +2,7 @@ using CapFrameX.Service.Analysis;
 using CapFrameX.Service.Application.Records;
 using CapFrameX.Service.Contracts.Analysis;
 using CapFrameX.Service.Contracts.Records;
-using CapFrameX.Service.Data;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace CapFrameX.Service.Api.Controllers;
 
@@ -16,57 +14,65 @@ namespace CapFrameX.Service.Api.Controllers;
 /// with thousands of records, and reading every file for it would take seconds and a lot of memory
 /// for a handful of fields per capture.
 /// </remarks>
-/// <param name="context">The service database.</param>
+/// <param name="library">Reads the list.</param>
 /// <param name="analyzer">Reads and analyses the capture behind a record.</param>
 /// <param name="store">Changes a record, or removes it.</param>
 [ApiController]
 [Route("api/records")]
 public sealed class RecordsController(
-    CapFrameXDbContext context,
+    RecordLibrary library,
     RecordAnalyzer analyzer,
     RecordStore store) : ControllerBase
 {
-    /// <summary>Largest page the API hands out at once.</summary>
-    public const int MaximumPageSize = 500;
-
-    /// <summary>Page size when the caller does not ask for one.</summary>
-    public const int DefaultPageSize = 200;
-
     /// <summary>Lists the indexed captures, newest first.</summary>
-    /// <param name="search">Matches game or process name; case is ignored.</param>
+    /// <param name="search">Free text, matched against game and process name; case is ignored.</param>
+    /// <param name="game">One game, matched exactly - what a filter chip selects.</param>
+    /// <param name="from">Earliest capture time to include.</param>
+    /// <param name="to">Latest capture time to include, inclusive.</param>
+    /// <param name="sort">
+    /// What to order by, optionally prefixed with '-' to reverse it; defaults to newest first.
+    /// </param>
     /// <param name="skip">Records to skip.</param>
-    /// <param name="take">Records to return, capped at <see cref="MaximumPageSize"/>.</param>
+    /// <param name="take">
+    /// Records to return, capped at <see cref="RecordListRequest.MaximumPageSize"/>.
+    /// </param>
     /// <param name="cancellationToken">Cancels the query.</param>
     [HttpGet]
     public async Task<ActionResult<RecordsListResponse>> List(
         [FromQuery] string? search = null,
+        [FromQuery] string? game = null,
+        [FromQuery] DateTimeOffset? from = null,
+        [FromQuery] DateTimeOffset? to = null,
+        [FromQuery] string? sort = null,
         [FromQuery] int skip = 0,
-        [FromQuery] int take = DefaultPageSize,
+        [FromQuery] int take = RecordListRequest.DefaultPageSize,
         CancellationToken cancellationToken = default)
     {
-        var query = context.Sessions.AsNoTracking();
-
-        if (!string.IsNullOrWhiteSpace(search))
+        if (!RecordSort.TryParse(sort, out var field, out var descending, out var error))
         {
-            var term = search.Trim().ToLowerInvariant();
-
-            // Not LIKE: the user types into a search box, where '%' and '_' are characters rather
-            // than wildcards.
-            query = query.Where(session =>
-                session.GameName.ToLower().Contains(term) ||
-                session.ProcessName.ToLower().Contains(term));
+            return BadRequest(error);
         }
 
-        var total = await query.CountAsync(cancellationToken);
+        var request = new RecordListRequest
+        {
+            Search = search,
+            Game = game,
+            From = from,
+            To = to,
+            Sort = field,
+            Descending = descending,
+            Skip = skip,
+            Take = take,
+        };
 
-        var sessions = await query
-            .OrderByDescending(session => session.CreatedAt)
-            .Skip(Math.Max(skip, 0))
-            .Take(Math.Clamp(take, 1, MaximumPageSize))
-            .ToListAsync(cancellationToken);
-
-        return Ok(new RecordsListResponse(sessions.Select(RecordProjection.Summary).ToArray(), total));
+        return Ok(await library.ListAsync(request, cancellationToken));
     }
+
+    /// <summary>The games the index holds, for the filter the list offers.</summary>
+    /// <param name="cancellationToken">Cancels the query.</param>
+    [HttpGet("games")]
+    public async Task<ActionResult<IReadOnlyList<string>>> Games(CancellationToken cancellationToken) =>
+        Ok(await library.GamesAsync(cancellationToken));
 
     /// <summary>Returns everything the analysis view needs to open one record.</summary>
     /// <param name="id">Identity of the record.</param>

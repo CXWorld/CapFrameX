@@ -28,6 +28,7 @@ public static class AnalysisExtensions
         services.AddSingleton<AnalysisService>();
         services.TryAddSingleton<RecordFileReader>();
         services.TryAddSingleton<RecordFileWriter>();
+        services.AddScoped<RecordLibrary>();
         services.AddScoped<RecordAnalyzer>();
         services.AddScoped<RecordStore>();
 
