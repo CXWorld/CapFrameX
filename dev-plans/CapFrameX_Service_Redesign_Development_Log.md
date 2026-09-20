@@ -877,6 +877,59 @@ the path has to be reachable by the service, which is true for a local frontend 
 anything else. Nothing removes an import source from the suggestions once it has been imported;
 re-importing it is cheap and answers "already known", but the count still shows.
 
+## 2026-09-20 - The frontend: F0, F1 in part, F3, and the analysis slice
+
+**F0 - the toolchain.** Angular 18 to **21**, `application` builder (esbuild), **zoneless**, ESLint
+and Vitest. All three acceptance commands are green: `npm run build` (initial **72 kB** transfer
+against a 300 kB budget), `npm test` (15), `npm run lint`.
+
+Angular **22 was not reachable**: it wants Node 22.22.3, 24.15.0 or 26, and this machine has Node
+24.13.0. 21 is the highest that installs here. Also worth knowing for anyone repeating the upgrade:
+`ng update @angular/cli --name <migration>` always fetches the *latest* CLI, so the optional
+migrations could not be run either - the `application` builder configuration was written by hand
+instead, which the build then proved correct.
+
+Removed on the way: `ngx-echarts` (an unused wrapper that pinned Angular 18 - `echarts` itself
+stays, lazily, for M4), the Tauri packages from `package.json`. `src-tauri/` stays: removing it is
+WP-H3 and depends on H1 confirming the CEF host, which decision D1 still has open.
+
+**The hard-coded API URL is gone.** `RUNTIME_CONFIG` reads `window.__CX__` - base URL and session
+token - which the desktop host sets before any page script. Under `ng serve` there is no host, so
+the token is empty and the service refuses and says so, which is better than a frontend that
+silently talks to nothing. One interceptor adds the token, prefixes `/api/...` and turns
+problem-details bodies into the service's own sentence; "Http failure response for ..." helps
+nobody. A `SILENT` context exists for the health poll, because a poll that exists to notice the
+service is gone must not report that news every five seconds.
+
+**F1 in part.** `tokens.css` holds the token table from section 2.3, light and dark, plus the
+eight-colour series palette and the type, spacing and control scales the mockup implies. The
+mockup's own `--color-*` names are mapped onto the `--cx-*` tokens at the bottom of the file, which
+is what will let the reference page render the mockup markup unchanged. The icon sprite is built
+from Tabler by `tools/build-icon-sprite.mjs` and committed - 4.5 kB for fourteen icons.
+
+**F3 - the shell.** Rail, workspace, status bar, nine lazy routes. The rail is declared once in
+`rail-items.ts` and the routes follow it, so adding a view is two entries and nothing else. The
+status bar carries the service light and the error surface.
+
+**The analysis slice (F5, and F7 apart from the chart).** `RecordLibraryStore` and `AnalysisStore`
+are signal stores, no state library. The library reloads on `records.changed` from the event
+stream, so an import or a deletion - in this window or another - appears without a refresh. The
+workspace shows the chips, the configured stat tiles, the frame pacing card and the latency card,
+all from the service's own analysis, so the numbers are the ones the desktop application computes.
+
+`BridgeEvents` replaces the old SSE service: the token goes in the query string because
+`EventSource` sends no headers, `Last-Event-ID` is carried across our own reconnects because the
+browser only sends it on its own, and the backoff resets on a connection that actually **opened**
+rather than on the attempt - a service that accepts and immediately drops would otherwise spin.
+
+Not done, and not claimed: **F2** (the kit exists as the components this slice needed - icon,
+sparkline, chip, stat tile, card, record card, search field, page header - but there is no
+`/dev/kit` showcase and no axe check), **F4** (no mockup reference page, so no screenshot diff),
+**F6** (no chart - the workspace has a placeholder where it goes), **F8** (the settings view is
+still a placeholder, although the endpoints behind it are finished), and the Inter font is not
+bundled, so the type falls back to the system face and the screenshot test F4 needs cannot be
+stable yet.
+
 ## Documentation Rules For Future Steps
 
 For every meaningful backend/frontend migration step, update this log with:
