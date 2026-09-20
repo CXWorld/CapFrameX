@@ -15,7 +15,7 @@ namespace CapFrameX.Service.Data.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.1");
 
             modelBuilder.Entity("CapFrameX.Service.Data.Models.Session", b =>
                 {
@@ -128,7 +128,7 @@ namespace CapFrameX.Service.Data.Migrations
 
                     b.HasIndex("SuiteId", "CreatedAt");
 
-                    b.ToTable("Sessions");
+                    b.ToTable("Sessions", (string)null);
                 });
 
             modelBuilder.Entity("CapFrameX.Service.Data.Models.SessionRun", b =>
@@ -233,7 +233,7 @@ namespace CapFrameX.Service.Data.Migrations
 
                     b.HasIndex("SessionId", "CreatedAt");
 
-                    b.ToTable("SessionRuns");
+                    b.ToTable("SessionRuns", (string)null);
                 });
 
             modelBuilder.Entity("CapFrameX.Service.Data.Models.Suite", b =>
@@ -268,7 +268,7 @@ namespace CapFrameX.Service.Data.Migrations
 
                     b.HasIndex("Type", "CreatedAt");
 
-                    b.ToTable("Suites");
+                    b.ToTable("Suites", (string)null);
                 });
 
             modelBuilder.Entity("CapFrameX.Service.Data.Models.Session", b =>

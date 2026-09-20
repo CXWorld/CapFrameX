@@ -462,8 +462,15 @@ install. The migration command moved with the package and is documented in the D
 README; the services still migrate themselves at start, so nothing is run by hand on a user's
 machine.
 
-Note: `dotnet ef` is not installed on this machine, so the migration workflow itself was documented
-rather than executed.
+The migration workflow is verified, not only documented: with `dotnet-ef` 10.0.12 installed,
+`migrations list` finds the context through the tool as startup project, and an `add` / `remove`
+round trip works. The probe migration came out **empty**, which is the point - the model matches
+the snapshot, so the design-time setup survived moving the package.
+
+That round trip did regenerate `CapFrameXDbContextModelSnapshot.cs`: `ProductVersion` 9.0.0 ->
+10.0.1 and `ToTable("X")` -> `ToTable("X", (string)null)`, an EF 10 codegen change. No table or
+column changed. It is committed rather than reverted, because a stale snapshot would mix this noise
+into the next real migration.
 
 ## Documentation Rules For Future Steps
 
