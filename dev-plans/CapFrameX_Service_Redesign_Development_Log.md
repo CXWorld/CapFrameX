@@ -827,6 +827,56 @@ that can disagree with it - silently, because nothing would say which of the two
 directory is the service's own setting, starting at the platform's folder; a user who keeps
 captures elsewhere says so once. Section 5.2 and 5.4 were corrected to match.
 
+## 2026-09-20 - Import, and the reversal of D3
+
+**An imported record carries its capture.** Decision D3 - "the legacy capture file stays the source
+of truth, SQLite is an index over it" - was reversed deliberately, with the cost stated: the
+running user's 306 captures are 483 MB of JSON that now go into the database. What it buys is that
+a record opens whether or not the file it came from still exists, has been moved, or sits on a
+drive nobody plugged in.
+
+The folder scan stays for the service's own capture directory, so both shapes exist side by side
+and the schema already had room for them: a record either **carries** its capture (imported, or
+recorded by the service) or **points at** one (found by the scan). `StoredRecordFactory` rebuilds
+the first into the same model the reader produces from a file, which is why the statistics, the
+detail view and the chart need to know nothing about where a record came from.
+
+**Identity comes from the capture, not from the file.** `Session.Hash` - what CapFrameX computes
+over the runs - is now stored by both paths and unique. One capture is one record however it
+arrived: through a scan, through an import, or as the same file copied under another name. The
+folder the service already watches is never offered as an import source, for the same reason.
+
+**The payload is stored as the text the file held**, not serialised back from the parsed model.
+Several parts of the 1.x model - sensor data most of all - go through converters that are lossy in
+one direction, so a round trip would quietly store something other than what the user captured.
+Text in, text out.
+
+**What the real captures caught.** The generated fixtures are single-run and carry the handful of
+columns the tests assert on. Importing 25 real captures and comparing every metric against the same
+analysis run on the file found a difference in exactly one: the adaptive deviation, the only
+order-dependent metric in the list. EF returns a capture's runs in whatever order suits it, and
+several of these captures have three. Runs now carry a `RunIndex` and are read back in it. Worth
+recording twice over: the bug was invisible to every synthetic test, and the metric that exposed it
+was the one nobody would think to check.
+
+A second thing the fixtures were lying about: every generated capture carried the same `Hash`, so
+the first dedupe test looked like a bug in the dedupe. Generated captures now get their own.
+
+**The first import is offered once.** `GET /api/records/import/sources` suggests folders out of
+CapFrameX 1.x's `AppSettings.json` - `CaptureRootDirectory` and `ObservedDirectory`, resolving the
+`MyDocuments\` token it writes - with a capture count each. That is the whole of the legacy
+relationship: read once, to make a suggestion, never followed afterwards. `settings.import.offered`
+remembers the answer, whichever way it went, and importing sets it too.
+
+Verified: Shared 64, Api 102, Data 33, Records 70, Application 69, Analysis 114 - all green, both
+solutions build. The run-order test was checked for vacuity by reversing the ordering; it turns
+red.
+
+Known gaps: a single capture file can be imported by naming it, but there is no upload endpoint -
+the path has to be reachable by the service, which is true for a local frontend and not for
+anything else. Nothing removes an import source from the suggestions once it has been imported;
+re-importing it is cheap and answers "already known", but the count still shows.
+
 ## Documentation Rules For Future Steps
 
 For every meaningful backend/frontend migration step, update this log with:

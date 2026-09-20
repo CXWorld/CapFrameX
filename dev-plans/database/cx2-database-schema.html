@@ -104,7 +104,7 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
     <h2>Tables and relationships</h2>
     <figure>
       <div class="scroller">
-      <svg viewBox="0 0 1280 839" role="img" aria-label="Three tables. Suites on the left holds six columns and is the parent of Sessions in the middle, which holds thirty-four columns grouped into identity, game, hardware, drivers, system, record source and list projection. Sessions is the parent of SessionRuns on the right, which holds twenty-seven columns grouped into identity, JSON payload, frame rate metrics and sensor averages. Both relationships are one-to-many with cascade delete.">
+      <svg viewBox="0 0 1280 869" role="img" aria-label="Three tables. Suites on the left holds six columns and is the parent of Sessions in the middle, which holds thirty-four columns grouped into identity, game, hardware, drivers, system, record source and list projection. Sessions is the parent of SessionRuns on the right, which holds twenty-seven columns grouped into identity, JSON payload, frame rate metrics and sensor averages. Both relationships are one-to-many with cascade delete.">
         <defs>
           <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
@@ -127,7 +127,7 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
         <text class="ty" x="326" y="165">TEXT</text>
         <text class="col req" x="54" y="180">UpdatedAt</text>
         <text class="ty" x="326" y="180">TEXT</text>
-        <rect class="tbl" x="420" y="40" width="430" height="759" rx="4"/>
+        <rect class="tbl" x="420" y="40" width="430" height="789" rx="4"/>
         <text class="th" x="434" y="65">Sessions</text>
         <text class="s" x="434" y="82">one capture &mdash; a file on disk, or recorded live</text>
         <line class="hl" x1="420" y1="90" x2="850" y2="90"/>
@@ -139,6 +139,7 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
         <text class="tag" x="489.3" y="140">FK</text>
         <text class="ty" x="836" y="140">TEXT</text>
         <text class="col" x="434" y="155">Hash</text>
+        <text class="tag" x="468.6" y="155">UQ</text>
         <text class="ty" x="836" y="155">TEXT(100)</text>
         <text class="col req" x="434" y="170">CreatedAt</text>
         <text class="ty" x="836" y="170">TEXT</text>
@@ -186,7 +187,7 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
         <text class="ty" x="836" y="535">TEXT(50)</text>
         <text class="col" x="434" y="550">ResolutionInfo</text>
         <text class="ty" x="836" y="550">TEXT(50)</text>
-        <rect class="accentband" x="421" y="554" width="428" height="80"/>
+        <rect class="accentband" x="421" y="554" width="428" height="110"/>
         <text class="grp" x="434" y="568">record source</text>
         <text class="col" x="434" y="585">SourceFilePath</text>
         <text class="tag" x="537.6" y="585">UQ</text>
@@ -197,27 +198,31 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
         <text class="ty" x="836" y="615">TEXT</text>
         <text class="col req" x="434" y="630">IndexVersion</text>
         <text class="ty" x="836" y="630">INTEGER</text>
-        <rect class="accentband" x="421" y="634" width="428" height="155"/>
-        <text class="grp" x="434" y="648">list projection</text>
-        <text class="col" x="434" y="665">DurationSeconds</text>
-        <text class="ty" x="836" y="665">REAL</text>
-        <text class="col" x="434" y="680">RunCount</text>
-        <text class="ty" x="836" y="680">INTEGER</text>
-        <text class="col" x="434" y="695">FrameCount</text>
-        <text class="ty" x="836" y="695">INTEGER</text>
-        <text class="col" x="434" y="710">SparklineJson</text>
-        <text class="ty" x="836" y="710">TEXT</text>
-        <text class="col req" x="434" y="725">HasPcLatency</text>
+        <text class="col" x="434" y="645">ImportedFrom</text>
+        <text class="ty" x="836" y="645">TEXT</text>
+        <text class="col req" x="434" y="660">UpdatedAt</text>
+        <text class="ty" x="836" y="660">TEXT</text>
+        <rect class="accentband" x="421" y="664" width="428" height="155"/>
+        <text class="grp" x="434" y="678">list projection</text>
+        <text class="col" x="434" y="695">DurationSeconds</text>
+        <text class="ty" x="836" y="695">REAL</text>
+        <text class="col" x="434" y="710">RunCount</text>
+        <text class="ty" x="836" y="710">INTEGER</text>
+        <text class="col" x="434" y="725">FrameCount</text>
         <text class="ty" x="836" y="725">INTEGER</text>
-        <text class="col req" x="434" y="740">HasDisplayChange</text>
-        <text class="ty" x="836" y="740">INTEGER</text>
-        <text class="col" x="434" y="755">AverageFps</text>
-        <text class="ty" x="836" y="755">REAL</text>
-        <text class="col" x="434" y="770">P1Fps</text>
-        <text class="ty" x="836" y="770">REAL</text>
-        <text class="col" x="434" y="785">P99Fps</text>
+        <text class="col" x="434" y="740">SparklineJson</text>
+        <text class="ty" x="836" y="740">TEXT</text>
+        <text class="col req" x="434" y="755">HasPcLatency</text>
+        <text class="ty" x="836" y="755">INTEGER</text>
+        <text class="col req" x="434" y="770">HasDisplayChange</text>
+        <text class="ty" x="836" y="770">INTEGER</text>
+        <text class="col" x="434" y="785">AverageFps</text>
         <text class="ty" x="836" y="785">REAL</text>
-        <rect class="tbl" x="930" y="40" width="310" height="549" rx="4"/>
+        <text class="col" x="434" y="800">P1Fps</text>
+        <text class="ty" x="836" y="800">REAL</text>
+        <text class="col" x="434" y="815">P99Fps</text>
+        <text class="ty" x="836" y="815">REAL</text>
+        <rect class="tbl" x="930" y="40" width="310" height="564" rx="4"/>
         <text class="th" x="944" y="65">SessionRuns</text>
         <text class="s" x="944" y="82">one run inside a capture</text>
         <line class="hl" x1="930" y1="90" x2="1240" y2="90"/>
@@ -228,59 +233,61 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
         <text class="col req" x="944" y="140">SessionId</text>
         <text class="tag" x="1013.1" y="140">FK</text>
         <text class="ty" x="1226" y="140">TEXT</text>
-        <text class="col" x="944" y="155">Hash</text>
-        <text class="ty" x="1226" y="155">TEXT(100)</text>
-        <text class="col req" x="944" y="170">CreatedAt</text>
-        <text class="ty" x="1226" y="170">TEXT</text>
-        <text class="col" x="944" y="185">PresentMonRuntime</text>
-        <text class="ty" x="1226" y="185">TEXT(50)</text>
-        <text class="col req" x="944" y="200">SampleTime</text>
-        <text class="ty" x="1226" y="200">REAL</text>
-        <text class="grp" x="944" y="218">payload &middot; JSON</text>
-        <text class="col" x="944" y="235">CaptureDataJson</text>
-        <text class="ty" x="1226" y="235">TEXT</text>
-        <text class="col" x="944" y="250">SensorDataJson</text>
+        <text class="col req" x="944" y="155">RunIndex</text>
+        <text class="ty" x="1226" y="155">INTEGER</text>
+        <text class="col" x="944" y="170">Hash</text>
+        <text class="ty" x="1226" y="170">TEXT(100)</text>
+        <text class="col req" x="944" y="185">CreatedAt</text>
+        <text class="ty" x="1226" y="185">TEXT</text>
+        <text class="col" x="944" y="200">PresentMonRuntime</text>
+        <text class="ty" x="1226" y="200">TEXT(50)</text>
+        <text class="col req" x="944" y="215">SampleTime</text>
+        <text class="ty" x="1226" y="215">REAL</text>
+        <text class="grp" x="944" y="233">payload &middot; JSON</text>
+        <text class="col" x="944" y="250">CaptureDataJson</text>
         <text class="ty" x="1226" y="250">TEXT</text>
-        <text class="col" x="944" y="265">RtssFrameTimesJson</text>
+        <text class="col" x="944" y="265">SensorDataJson</text>
         <text class="ty" x="1226" y="265">TEXT</text>
-        <text class="col" x="944" y="280">PmdGpuPowerJson</text>
+        <text class="col" x="944" y="280">RtssFrameTimesJson</text>
         <text class="ty" x="1226" y="280">TEXT</text>
-        <text class="col" x="944" y="295">PmdCpuPowerJson</text>
+        <text class="col" x="944" y="295">PmdGpuPowerJson</text>
         <text class="ty" x="1226" y="295">TEXT</text>
-        <text class="col" x="944" y="310">PmdSystemPowerJson</text>
+        <text class="col" x="944" y="310">PmdCpuPowerJson</text>
         <text class="ty" x="1226" y="310">TEXT</text>
-        <text class="grp" x="944" y="328">frame rate</text>
-        <text class="col" x="944" y="345">MaxFps</text>
-        <text class="ty" x="1226" y="345">REAL</text>
-        <text class="col" x="944" y="360">P99Fps</text>
+        <text class="col" x="944" y="325">PmdSystemPowerJson</text>
+        <text class="ty" x="1226" y="325">TEXT</text>
+        <text class="grp" x="944" y="343">frame rate</text>
+        <text class="col" x="944" y="360">MaxFps</text>
         <text class="ty" x="1226" y="360">REAL</text>
-        <text class="col" x="944" y="375">P95Fps</text>
+        <text class="col" x="944" y="375">P99Fps</text>
         <text class="ty" x="1226" y="375">REAL</text>
-        <text class="col" x="944" y="390">AverageFps</text>
+        <text class="col" x="944" y="390">P95Fps</text>
         <text class="ty" x="1226" y="390">REAL</text>
-        <text class="col" x="944" y="405">MedianFps</text>
+        <text class="col" x="944" y="405">AverageFps</text>
         <text class="ty" x="1226" y="405">REAL</text>
-        <text class="col" x="944" y="420">P5Fps</text>
+        <text class="col" x="944" y="420">MedianFps</text>
         <text class="ty" x="1226" y="420">REAL</text>
-        <text class="col" x="944" y="435">P1Fps</text>
+        <text class="col" x="944" y="435">P5Fps</text>
         <text class="ty" x="1226" y="435">REAL</text>
-        <text class="col" x="944" y="450">P0_1Fps</text>
+        <text class="col" x="944" y="450">P1Fps</text>
         <text class="ty" x="1226" y="450">REAL</text>
-        <text class="col" x="944" y="465">P0_01Fps</text>
+        <text class="col" x="944" y="465">P0_1Fps</text>
         <text class="ty" x="1226" y="465">REAL</text>
-        <text class="grp" x="944" y="483">sensor averages</text>
-        <text class="col" x="944" y="500">AvgCpuTemp</text>
-        <text class="ty" x="1226" y="500">REAL</text>
-        <text class="col" x="944" y="515">AvgGpuTemp</text>
+        <text class="col" x="944" y="480">P0_01Fps</text>
+        <text class="ty" x="1226" y="480">REAL</text>
+        <text class="grp" x="944" y="498">sensor averages</text>
+        <text class="col" x="944" y="515">AvgCpuTemp</text>
         <text class="ty" x="1226" y="515">REAL</text>
-        <text class="col" x="944" y="530">AvgCpuPower</text>
+        <text class="col" x="944" y="530">AvgGpuTemp</text>
         <text class="ty" x="1226" y="530">REAL</text>
-        <text class="col" x="944" y="545">AvgGpuPower</text>
+        <text class="col" x="944" y="545">AvgCpuPower</text>
         <text class="ty" x="1226" y="545">REAL</text>
-        <text class="col" x="944" y="560">AvgCpuUsage</text>
+        <text class="col" x="944" y="560">AvgGpuPower</text>
         <text class="ty" x="1226" y="560">REAL</text>
-        <text class="col" x="944" y="575">AvgGpuUsage</text>
+        <text class="col" x="944" y="575">AvgCpuUsage</text>
         <text class="ty" x="1226" y="575">REAL</text>
+        <text class="col" x="944" y="590">AvgGpuUsage</text>
+        <text class="ty" x="1226" y="590">REAL</text>
 
         <path class="rel" d="M340,101.5 H380 V136.5 H414" marker-end="url(#ah)"/>
         <text class="card" x="346" y="95.5">1</text>
@@ -384,7 +391,7 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
       <tr class="grouprow"><th colspan="5">identity</th></tr>
       <tr><td><code>Id</code><span class="pill">PK</span></td><td><code>Guid</code></td><td><code>TEXT</code></td><td>&mdash;</td><td>Primary key.</td></tr>
       <tr><td><code>SuiteId</code><span class="pill">FK</span></td><td><code>Guid</code></td><td><code>TEXT</code></td><td>&mdash;</td><td>&rarr; <code>Suites.Id</code>, cascade. Mandatory: there is no session outside a suite.</td></tr>
-      <tr><td><code>Hash</code></td><td><code>string?</code></td><td><code>TEXT(100)</code></td><td>null</td><td>Carried over from the 1.x record so both generations can recognise the same capture.</td></tr>
+      <tr><td><code>Hash</code><span class="pill">UQ</span></td><td><code>string?</code></td><td><code>TEXT(100)</code></td><td>null</td><td>Identity of the capture itself, as CapFrameX computes it over its runs. Unique, so one capture is one record however it arrived &mdash; a scan, an import, or the same file under another name.</td></tr>
       <tr><td><code>CreatedAt</code></td><td><code>DateTime</code></td><td><code>TEXT</code></td><td>&mdash;</td><td>When the capture was taken, in UTC.</td></tr>
       <tr class="grouprow"><th colspan="5">game</th></tr>
       <tr><td><code>GameName</code></td><td><code>string</code></td><td><code>TEXT(200)</code></td><td>&mdash;</td><td></td></tr>
@@ -411,10 +418,12 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
       <tr><td><code>PresentationMode</code></td><td><code>string?</code></td><td><code>TEXT(50)</code></td><td>null</td><td></td></tr>
       <tr><td><code>ResolutionInfo</code></td><td><code>string?</code></td><td><code>TEXT(50)</code></td><td>null</td><td></td></tr>
       <tr class="grouprow"><th colspan="5">record source</th></tr>
-      <tr><td><code>SourceFilePath</code><span class="pill">UQ</span></td><td><code>string?</code></td><td><code>TEXT</code></td><td>null</td><td>Where the capture file lives. Unique, filtered to rows that have one; <code>NULL</code> marks a session the service recorded itself.</td></tr>
+      <tr><td><code>SourceFilePath</code><span class="pill">UQ</span></td><td><code>string?</code></td><td><code>TEXT</code></td><td>null</td><td>Where the capture file lives, for a record the folder scan maintains. Unique, filtered to rows that have one; <code>NULL</code> marks a record that carries its own capture.</td></tr>
       <tr><td><code>SourceFileSize</code></td><td><code>long?</code></td><td><code>INTEGER</code></td><td>null</td><td>Size when the row was written &mdash; one half of the change detection.</td></tr>
       <tr><td><code>SourceModifiedUtc</code></td><td><code>DateTime?</code></td><td><code>TEXT</code></td><td>null</td><td>Last write time when the row was written &mdash; the other half.</td></tr>
       <tr><td><code>IndexVersion</code></td><td><code>int</code></td><td><code>INTEGER</code></td><td>&mdash;</td><td>Projection version. A row below the current one is re-read; a row above it is left alone.</td></tr>
+      <tr><td><code>ImportedFrom</code></td><td><code>string?</code></td><td><code>TEXT</code></td><td>null</td><td>Where an imported capture was read from. Provenance only &mdash; the frames are in this database, and the folder scan never touches a row that has no <code>SourceFilePath</code>.</td></tr>
+      <tr><td><code>UpdatedAt</code></td><td><code>DateTime</code></td><td><code>TEXT</code></td><td>&mdash;</td><td>When the row last changed. What tells a cached copy apart from the row, now that an imported record has no file whose size and time could.</td></tr>
       <tr class="grouprow"><th colspan="5">list projection</th></tr>
       <tr><td><code>DurationSeconds</code></td><td><code>double?</code></td><td><code>REAL</code></td><td>null</td><td>Span the frames cover, summed over the runs.</td></tr>
       <tr><td><code>RunCount</code></td><td><code>int?</code></td><td><code>INTEGER</code></td><td>null</td><td></td></tr>
@@ -436,12 +445,13 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
       <tr class="grouprow"><th colspan="5">identity</th></tr>
       <tr><td><code>Id</code><span class="pill">PK</span></td><td><code>Guid</code></td><td><code>TEXT</code></td><td>&mdash;</td><td>Primary key.</td></tr>
       <tr><td><code>SessionId</code><span class="pill">FK</span></td><td><code>Guid</code></td><td><code>TEXT</code></td><td>&mdash;</td><td>&rarr; <code>Sessions.Id</code>, cascade.</td></tr>
+      <tr><td><code>RunIndex</code></td><td><code>int</code></td><td><code>INTEGER</code></td><td>&mdash;</td><td>Where this run sits in its capture. Stored because the order is part of the capture and the database has no opinion about it &mdash; several metrics answer differently when the frames arrive in another order.</td></tr>
       <tr><td><code>Hash</code></td><td><code>string?</code></td><td><code>TEXT(100)</code></td><td>null</td><td></td></tr>
       <tr><td><code>CreatedAt</code></td><td><code>DateTime</code></td><td><code>TEXT</code></td><td>&mdash;</td><td></td></tr>
       <tr><td><code>PresentMonRuntime</code></td><td><code>string?</code></td><td><code>TEXT(50)</code></td><td>null</td><td>DXGI, D3D9, &hellip;</td></tr>
       <tr><td><code>SampleTime</code></td><td><code>double</code></td><td><code>REAL</code></td><td>&mdash;</td><td>Length of the run in seconds.</td></tr>
       <tr class="grouprow"><th colspan="5">payload &middot; JSON</th></tr>
-      <tr><td><code>CaptureDataJson</code></td><td><code>string?</code></td><td><code>TEXT</code></td><td>null</td><td>Frame arrays. Empty for an indexed capture &mdash; the file on disk holds them.</td></tr>
+      <tr><td><code>CaptureDataJson</code></td><td><code>string?</code></td><td><code>TEXT</code></td><td>null</td><td>Frame arrays, as the imported file held them. Empty for a record the folder scan maintains &mdash; that one points at its file instead.</td></tr>
       <tr><td><code>SensorDataJson</code></td><td><code>string?</code></td><td><code>TEXT</code></td><td>null</td><td>CPU and GPU temperatures, clocks, usage, power.</td></tr>
       <tr><td><code>RtssFrameTimesJson</code></td><td><code>string?</code></td><td><code>TEXT</code></td><td>null</td><td></td></tr>
       <tr><td><code>PmdGpuPowerJson</code></td><td><code>string?</code></td><td><code>TEXT</code></td><td>null</td><td></td></tr>
@@ -479,7 +489,8 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
         <tr><td><code>CreatedAt</code></td><td>Newest first.</td></tr>
         <tr><td><code>(Type, CreatedAt)</code></td><td>Both at once, which is how the library lists them.</td></tr>
 
-        <tr><td rowspan="9"><code>Sessions</code></td><td><code>SourceFilePath</code> &mdash; unique, filtered to <code>NOT NULL</code></td><td><b>A rule, not a speed-up.</b> One file cannot enter the index twice. Filtered so that self-recorded sessions, which have no file, do not all collide on <code>NULL</code>.</td></tr>
+        <tr><td rowspan="10"><code>Sessions</code></td><td><code>Hash</code> &mdash; unique, filtered to <code>NOT NULL</code></td><td><b>A rule, not a speed-up.</b> One capture is one record however it arrived: through a folder scan, through an import, or as the same file copied under another name.</td></tr>
+        <tr><td><code>SourceFilePath</code> &mdash; unique, filtered to <code>NOT NULL</code></td><td><b>A rule, not a speed-up.</b> One file cannot enter the index twice. Filtered so that self-recorded sessions, which have no file, do not all collide on <code>NULL</code>.</td></tr>
         <tr><td><code>IndexVersion</code></td><td>Finds the rows a changed projection has to re-read, without a schema migration.</td></tr>
         <tr><td><code>GameName</code></td><td>Search and grouping.</td></tr>
         <tr><td><code>ProcessName</code></td><td>Search.</td></tr>
@@ -489,8 +500,9 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
         <tr><td><code>(GameName, CreatedAt)</code></td><td>One game&apos;s captures over time.</td></tr>
         <tr><td><code>(SuiteId, CreatedAt)</code></td><td>One suite&apos;s captures over time.</td></tr>
 
-        <tr><td rowspan="6"><code>SessionRuns</code></td><td><code>SessionId</code></td><td>Loading a capture&apos;s runs.</td></tr>
-        <tr><td><code>(SessionId, CreatedAt)</code></td><td>In the order they were recorded.</td></tr>
+        <tr><td rowspan="7"><code>SessionRuns</code></td><td><code>SessionId</code></td><td>Loading a capture&apos;s runs.</td></tr>
+        <tr><td><code>(SessionId, RunIndex)</code></td><td>Reading them back in the order they were recorded.</td></tr>
+        <tr><td><code>(SessionId, CreatedAt)</code></td><td>By recording time.</td></tr>
         <tr><td><code>CreatedAt</code></td><td>Newest first across sessions.</td></tr>
         <tr><td><code>AverageFps</code></td><td>Sorting and range filters over metrics.</td></tr>
         <tr><td><code>P1Fps</code></td><td>Sorting and range filters over metrics.</td></tr>
@@ -503,7 +515,7 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
   <section>
     <h2>What the schema takes for granted</h2>
     <ul class="open">
-      <li><b>The capture file is the record.</b> An indexed session stores a projection &mdash; duration, counts, a sparkline, two capability flags &mdash; and nothing else. Everything the analysis needs is read from the file when it is opened.</li>
+      <li><b>A record either carries its capture or points at one.</b> An imported record holds the frames and opens whether or not the file it came from still exists. A record the folder scan maintains stores only a projection and reads the file when it is opened. Both produce the same model, which is why the statistics, the detail view and the chart need to know nothing about where a record came from.</li>
       <li><b>Change detection is size plus last write time</b>, not a content hash. Hashing means reading every byte of a folder that runs to hundreds of megabytes, on every scan, to answer a question the file system already answers.</li>
       <li><b>A version column replaces a migration for projection changes.</b> Raising <code>RecordIndexPlanner.CurrentIndexVersion</code> makes the next scan re-read every record; a row written by a <i>newer</i> service is left alone, so an older one sharing the database cannot undo it.</li>
       <li><b>Large arrays are JSON, not rows.</b> A run holds ten thousand frames and more; a row per frame would mean millions of rows and joins across them for every chart.</li>
@@ -526,6 +538,7 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
         <tr><td><code>20251226142228_InitialCreate</code></td><td>Suites, Sessions, SessionRuns and their indexes.</td></tr>
         <tr><td><code>20260920153818_AddRecordSource</code></td><td>The record source and the list projection on <code>Sessions</code>; the JSON columns on <code>SessionRuns</code> become optional; the unique filtered index and the version index.</td></tr>
         <tr><td><code>20260920164331_AddRecordMetrics</code></td><td>The frame-rate metrics the record list shows, on <code>Sessions</code>. <code>IndexVersion</code> went to 2 with it, which is what makes the existing rows re-read themselves.</td></tr>
+        <tr><td><code>20260920180416_AddRecordImport</code></td><td>Importing: the capture identity as a unique key, where an imported record came from, when a row last changed, and the position of a run inside its capture.</td></tr>
       </tbody>
     </table>
     </div>

@@ -353,9 +353,16 @@ identical apart from the platform modules. Nothing in this section may use an OS
   the SSE framing.
 
 ### 5.2 Record library (WP-B2)
-**Recommendation (D3): legacy capture files stay the source of truth; SQLite is an index.**
-The legacy JSON records are what users have, what the WPF app reads, and what 1.9.x keeps writing.
-Copying frame arrays into `CaptureDataJson` doubles storage and creates a sync problem.
+**D3 was reversed on 2026-09-20: an imported record carries its capture.** The original decision
+had the legacy files stay the source of truth with SQLite as an index over them. Imported records
+now hold their frames in `CaptureDataJson`, so a record opens whether or not the file it came from
+still exists, has been moved, or sits on a drive nobody plugged in. The cost is storage - the
+running user's 306 captures are 483 MB of JSON - and it was taken knowingly.
+
+The folder scan stays for the service's own capture directory, so both shapes exist side by side:
+a record either carries its capture (imported, or recorded by the service) or points at one
+(found by the scan). Both produce the same model, which is why the statistics, the detail view and
+the chart need to know nothing about where a record came from.
 
 - Reference `CapFrameX.Data.Session` from a new `CapFrameX.Service.Records` project
   (`CapFrameX.Service.Shared/src/`). Reader for
@@ -473,6 +480,17 @@ reads the options per request and the indexer follows the folder - rather than o
 `AppSettings.json`; the index now holds what the service knows about records, and a second place to
 configure the same thing is one that can disagree with it. A user who keeps captures somewhere else
 says so once, in the settings.
+
+**Records from anywhere else arrive by import**, not by watching a second folder:
+
+```
+GET  /api/records/import/sources                 -> ImportSourcesResponse { sources[], offered }
+POST /api/records/import  { path, recursive }    -> ImportResultDto { imported, alreadyKnown, failed, total, errors[] }
+```
+
+`sources` reads CapFrameX 1.x's `AppSettings.json` once, to suggest where to look - the whole of
+the legacy relationship, and only a suggestion. `settings.import.offered` remembers that the first
+import was offered, so somebody who declined is not asked again at every start.
 
 Section 5.4 is complete.
 

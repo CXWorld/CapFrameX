@@ -30,7 +30,7 @@ SESSIONS = [
     ("identity", [
         ("Id", "Guid", "TEXT", True, "PK", "Primary key."),
         ("SuiteId", "Guid", "TEXT", True, "FK", "&rarr; <code>Suites.Id</code>, cascade. Mandatory: there is no session outside a suite."),
-        ("Hash", "string?", "TEXT(100)", False, "", "Carried over from the 1.x record so both generations can recognise the same capture."),
+        ("Hash", "string?", "TEXT(100)", False, "UQ", "Identity of the capture itself, as CapFrameX computes it over its runs. Unique, so one capture is one record however it arrived &mdash; a scan, an import, or the same file under another name."),
         ("CreatedAt", "DateTime", "TEXT", True, "", "When the capture was taken, in UTC."),
     ]),
     ("game", [
@@ -62,10 +62,12 @@ SESSIONS = [
         ("ResolutionInfo", "string?", "TEXT(50)", False, "", ""),
     ]),
     ("record source", [
-        ("SourceFilePath", "string?", "TEXT", False, "UQ", "Where the capture file lives. Unique, filtered to rows that have one; <code>NULL</code> marks a session the service recorded itself."),
+        ("SourceFilePath", "string?", "TEXT", False, "UQ", "Where the capture file lives, for a record the folder scan maintains. Unique, filtered to rows that have one; <code>NULL</code> marks a record that carries its own capture."),
         ("SourceFileSize", "long?", "INTEGER", False, "", "Size when the row was written &mdash; one half of the change detection."),
         ("SourceModifiedUtc", "DateTime?", "TEXT", False, "", "Last write time when the row was written &mdash; the other half."),
         ("IndexVersion", "int", "INTEGER", True, "", "Projection version. A row below the current one is re-read; a row above it is left alone."),
+        ("ImportedFrom", "string?", "TEXT", False, "", "Where an imported capture was read from. Provenance only &mdash; the frames are in this database, and the folder scan never touches a row that has no <code>SourceFilePath</code>."),
+        ("UpdatedAt", "DateTime", "TEXT", True, "", "When the row last changed. What tells a cached copy apart from the row, now that an imported record has no file whose size and time could."),
     ]),
     ("list projection", [
         ("DurationSeconds", "double?", "REAL", False, "", "Span the frames cover, summed over the runs."),
@@ -84,13 +86,14 @@ RUNS = [
     ("identity", [
         ("Id", "Guid", "TEXT", True, "PK", "Primary key."),
         ("SessionId", "Guid", "TEXT", True, "FK", "&rarr; <code>Sessions.Id</code>, cascade."),
+        ("RunIndex", "int", "INTEGER", True, "", "Where this run sits in its capture. Stored because the order is part of the capture and the database has no opinion about it &mdash; several metrics answer differently when the frames arrive in another order."),
         ("Hash", "string?", "TEXT(100)", False, "", ""),
         ("CreatedAt", "DateTime", "TEXT", True, "", ""),
         ("PresentMonRuntime", "string?", "TEXT(50)", False, "", "DXGI, D3D9, &hellip;"),
         ("SampleTime", "double", "REAL", True, "", "Length of the run in seconds."),
     ]),
     ("payload &middot; JSON", [
-        ("CaptureDataJson", "string?", "TEXT", False, "", "Frame arrays. Empty for an indexed capture &mdash; the file on disk holds them."),
+        ("CaptureDataJson", "string?", "TEXT", False, "", "Frame arrays, as the imported file held them. Empty for a record the folder scan maintains &mdash; that one points at its file instead."),
         ("SensorDataJson", "string?", "TEXT", False, "", "CPU and GPU temperatures, clocks, usage, power."),
         ("RtssFrameTimesJson", "string?", "TEXT", False, "", ""),
         ("PmdGpuPowerJson", "string?", "TEXT", False, "", ""),
@@ -444,7 +447,8 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
         <tr><td><code>CreatedAt</code></td><td>Newest first.</td></tr>
         <tr><td><code>(Type, CreatedAt)</code></td><td>Both at once, which is how the library lists them.</td></tr>
 
-        <tr><td rowspan="9"><code>Sessions</code></td><td><code>SourceFilePath</code> &mdash; unique, filtered to <code>NOT NULL</code></td><td><b>A rule, not a speed-up.</b> One file cannot enter the index twice. Filtered so that self-recorded sessions, which have no file, do not all collide on <code>NULL</code>.</td></tr>
+        <tr><td rowspan="10"><code>Sessions</code></td><td><code>Hash</code> &mdash; unique, filtered to <code>NOT NULL</code></td><td><b>A rule, not a speed-up.</b> One capture is one record however it arrived: through a folder scan, through an import, or as the same file copied under another name.</td></tr>
+        <tr><td><code>SourceFilePath</code> &mdash; unique, filtered to <code>NOT NULL</code></td><td><b>A rule, not a speed-up.</b> One file cannot enter the index twice. Filtered so that self-recorded sessions, which have no file, do not all collide on <code>NULL</code>.</td></tr>
         <tr><td><code>IndexVersion</code></td><td>Finds the rows a changed projection has to re-read, without a schema migration.</td></tr>
         <tr><td><code>GameName</code></td><td>Search and grouping.</td></tr>
         <tr><td><code>ProcessName</code></td><td>Search.</td></tr>
@@ -454,8 +458,9 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
         <tr><td><code>(GameName, CreatedAt)</code></td><td>One game&apos;s captures over time.</td></tr>
         <tr><td><code>(SuiteId, CreatedAt)</code></td><td>One suite&apos;s captures over time.</td></tr>
 
-        <tr><td rowspan="6"><code>SessionRuns</code></td><td><code>SessionId</code></td><td>Loading a capture&apos;s runs.</td></tr>
-        <tr><td><code>(SessionId, CreatedAt)</code></td><td>In the order they were recorded.</td></tr>
+        <tr><td rowspan="7"><code>SessionRuns</code></td><td><code>SessionId</code></td><td>Loading a capture&apos;s runs.</td></tr>
+        <tr><td><code>(SessionId, RunIndex)</code></td><td>Reading them back in the order they were recorded.</td></tr>
+        <tr><td><code>(SessionId, CreatedAt)</code></td><td>By recording time.</td></tr>
         <tr><td><code>CreatedAt</code></td><td>Newest first across sessions.</td></tr>
         <tr><td><code>AverageFps</code></td><td>Sorting and range filters over metrics.</td></tr>
         <tr><td><code>P1Fps</code></td><td>Sorting and range filters over metrics.</td></tr>
@@ -468,7 +473,7 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
   <section>
     <h2>What the schema takes for granted</h2>
     <ul class="open">
-      <li><b>The capture file is the record.</b> An indexed session stores a projection &mdash; duration, counts, a sparkline, two capability flags &mdash; and nothing else. Everything the analysis needs is read from the file when it is opened.</li>
+      <li><b>A record either carries its capture or points at one.</b> An imported record holds the frames and opens whether or not the file it came from still exists. A record the folder scan maintains stores only a projection and reads the file when it is opened. Both produce the same model, which is why the statistics, the detail view and the chart need to know nothing about where a record came from.</li>
       <li><b>Change detection is size plus last write time</b>, not a content hash. Hashing means reading every byte of a folder that runs to hundreds of megabytes, on every scan, to answer a question the file system already answers.</li>
       <li><b>A version column replaces a migration for projection changes.</b> Raising <code>RecordIndexPlanner.CurrentIndexVersion</code> makes the next scan re-read every record; a row written by a <i>newer</i> service is left alone, so an older one sharing the database cannot undo it.</li>
       <li><b>Large arrays are JSON, not rows.</b> A run holds ten thousand frames and more; a row per frame would mean millions of rows and joins across them for every chart.</li>
@@ -491,6 +496,7 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
         <tr><td><code>20251226142228_InitialCreate</code></td><td>Suites, Sessions, SessionRuns and their indexes.</td></tr>
         <tr><td><code>20260920153818_AddRecordSource</code></td><td>The record source and the list projection on <code>Sessions</code>; the JSON columns on <code>SessionRuns</code> become optional; the unique filtered index and the version index.</td></tr>
         <tr><td><code>20260920164331_AddRecordMetrics</code></td><td>The frame-rate metrics the record list shows, on <code>Sessions</code>. <code>IndexVersion</code> went to 2 with it, which is what makes the existing rows re-read themselves.</td></tr>
+        <tr><td><code>20260920180416_AddRecordImport</code></td><td>Importing: the capture identity as a unique key, where an imported record came from, when a row last changed, and the position of a run inside its capture.</td></tr>
       </tbody>
     </table>
     </div>
