@@ -81,7 +81,7 @@ export class RecordsClient {
  * An empty parameter is not the same as an absent one: `?search=` would narrow the list to records
  * whose name contains nothing in particular, and `?run=` is not a run.
  */
-function toParams(query: Record<string, unknown>): HttpParams {
+function toParams(query: object): HttpParams {
   let params = new HttpParams();
 
   for (const [key, value] of Object.entries(query)) {
