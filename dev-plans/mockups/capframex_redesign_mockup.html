@@ -1,0 +1,177 @@
+<style>
+.cx-mock{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;background:var(--color-background-primary);display:grid;grid-template-columns:52px 188px minmax(0,1fr);min-height:560px;font-size:13px;color:var(--color-text-primary)}
+.cx-side{background:var(--color-background-secondary);display:flex;flex-direction:column;align-items:center;padding:12px 0;border-right:0.5px solid var(--color-border-tertiary);gap:2px}
+.cx-side button{width:36px;height:36px;border:0;background:transparent;border-radius:var(--border-radius-md);color:var(--color-text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cx-side button:hover{background:var(--color-border-tertiary);color:var(--color-text-primary)}
+.cx-side button.act{background:var(--color-background-info);color:var(--color-text-info)}
+.cx-side button i{font-size:18px}
+.cx-logo{width:32px;height:32px;border-radius:var(--border-radius-md);background:var(--color-text-primary);color:var(--color-background-primary);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:11px;margin-bottom:10px;letter-spacing:0.04em}
+.cx-list{border-right:0.5px solid var(--color-border-tertiary);padding:14px 12px;display:flex;flex-direction:column;gap:8px}
+.cx-search{position:relative}
+.cx-search input{width:100%;height:30px;font-size:12px;padding-left:28px}
+.cx-search i{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--color-text-tertiary);font-size:14px;pointer-events:none}
+.cx-lbl{font-size:11px;color:var(--color-text-tertiary);letter-spacing:0.06em;padding:6px 2px 0;margin:0}
+.cx-cap{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:9px 10px;cursor:pointer;background:var(--color-background-primary)}
+.cx-cap:hover{border-color:var(--color-border-secondary)}
+.cx-cap.act{border-color:var(--color-border-info);background:var(--color-background-info)}
+.cx-cap p{margin:0}
+.cx-cap .tt{font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cx-cap.act .tt{color:var(--color-text-info)}
+.cx-cap .mt{font-size:11px;color:var(--color-text-secondary);margin-top:1px}
+.cx-cap.act .mt{color:var(--color-text-info);opacity:0.75}
+.cx-main{padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.cx-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.cx-head h3{margin:0;font-size:17px;font-weight:500}
+.cx-btn{height:30px;padding:0 12px;font-size:12px;display:inline-flex;align-items:center;gap:6px}
+.cx-btn i{font-size:14px}
+.cx-chips{display:flex;gap:6px;flex-wrap:wrap}
+.cx-chip{font-size:11px;padding:3px 9px;border-radius:999px;background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.cx-tabs{display:flex;gap:2px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.cx-tab{font-size:12px;padding:7px 12px;color:var(--color-text-secondary);border-bottom:2px solid transparent;cursor:pointer;margin-bottom:-1px}
+.cx-tab.act{color:var(--color-text-primary);border-bottom-color:var(--color-text-primary)}
+.cx-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.cx-stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px}
+.cx-stat .l{font-size:11px;color:var(--color-text-secondary);margin:0 0 4px}
+.cx-stat .v{font-size:19px;font-weight:500;margin:0;display:flex;align-items:baseline;gap:3px}
+.cx-stat .u{font-size:11px;color:var(--color-text-secondary);font-weight:400}
+.cx-bot{display:grid;grid-template-columns:1.3fr 1fr;gap:10px}
+.cx-bcard{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px}
+.cx-bcard h4{margin:0 0 8px;font-size:11px;color:var(--color-text-secondary);font-weight:500;letter-spacing:0.04em}
+</style>
+
+<div class="cx-mock">
+  <aside class="cx-side">
+    <div class="cx-logo">CX</div>
+    <button aria-label="Capture"><i class="ti ti-camera" aria-hidden="true"></i></button>
+    <button class="act" aria-label="Analysis"><i class="ti ti-chart-line" aria-hidden="true"></i></button>
+    <button aria-label="Overlay"><i class="ti ti-eye" aria-hidden="true"></i></button>
+    <button aria-label="Comparison"><i class="ti ti-arrows-left-right" aria-hidden="true"></i></button>
+    <button aria-label="Aggregation"><i class="ti ti-stack-2" aria-hidden="true"></i></button>
+    <button aria-label="Sensor"><i class="ti ti-activity" aria-hidden="true"></i></button>
+    <button aria-label="Report"><i class="ti ti-file-description" aria-hidden="true"></i></button>
+    <button aria-label="Cloud"><i class="ti ti-cloud" aria-hidden="true"></i></button>
+    <div style="flex:1"></div>
+    <button aria-label="Settings"><i class="ti ti-settings" aria-hidden="true"></i></button>
+  </aside>
+
+  <div class="cx-list">
+    <div class="cx-search">
+      <i class="ti ti-search" aria-hidden="true"></i>
+      <input placeholder="Search captures" />
+    </div>
+    <p class="cx-lbl">Recent</p>
+
+    <div class="cx-cap act">
+      <p class="tt">Marvel's Spider-Man 2</p>
+      <p class="mt">Today · 16:10 · 20 s</p>
+      <svg style="margin-top:7px;display:block" width="100%" height="20" viewBox="0 0 160 20" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0,15 L10,14 L20,15 L30,13 L40,14 L50,14 L60,13 L70,12 L80,2 L90,12 L100,13 L110,14 L120,12 L130,13 L140,12 L150,13 L160,12" stroke="#185FA5" stroke-width="1.1" fill="none" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div class="cx-cap">
+      <p class="tt">PUBG</p>
+      <p class="mt">Jan 27 · 19:02</p>
+    </div>
+    <div class="cx-cap">
+      <p class="tt">FF VII Rebirth</p>
+      <p class="mt">Jan 25 · 17:53</p>
+    </div>
+    <div class="cx-cap">
+      <p class="tt">Doom: The Dark Ages</p>
+      <p class="mt">Jan 22 · 14:30</p>
+    </div>
+    <div class="cx-cap">
+      <p class="tt">Hogwarts Legacy</p>
+      <p class="mt">Jan 18 · 21:14</p>
+    </div>
+  </div>
+
+  <main class="cx-main">
+    <div class="cx-head">
+      <div>
+        <h3>Marvel's Spider-Man 2</h3>
+        <p style="margin:2px 0 0;font-size:12px;color:var(--color-text-secondary)">Analysis · captured today at 16:10</p>
+      </div>
+      <button class="cx-btn"><i class="ti ti-download" aria-hidden="true"></i>Export</button>
+    </div>
+
+    <div class="cx-chips">
+      <span class="cx-chip">Ryzen 9 9950X</span>
+      <span class="cx-chip">RTX 5090</span>
+      <span class="cx-chip">32 GB · 6000 MT/s</span>
+      <span class="cx-chip">ReBAR · HAGS</span>
+    </div>
+
+    <div class="cx-tabs">
+      <div class="cx-tab act">Frame times</div>
+      <div class="cx-tab">FPS</div>
+      <div class="cx-tab">L-shape</div>
+      <div class="cx-tab">Distribution</div>
+    </div>
+
+    <div style="position:relative">
+      <svg viewBox="0 0 400 140" preserveAspectRatio="none" style="width:100%;height:150px;display:block" aria-hidden="true">
+        <line x1="22" y1="20" x2="396" y2="20" stroke="var(--color-border-tertiary)" stroke-width="0.5" stroke-dasharray="2,3"/>
+        <line x1="22" y1="58" x2="396" y2="58" stroke="var(--color-border-tertiary)" stroke-width="0.5" stroke-dasharray="2,3"/>
+        <line x1="22" y1="96" x2="396" y2="96" stroke="var(--color-border-tertiary)" stroke-width="0.5" stroke-dasharray="2,3"/>
+        <text x="2" y="23" font-size="9" fill="var(--color-text-tertiary)">40</text>
+        <text x="2" y="61" font-size="9" fill="var(--color-text-tertiary)">25</text>
+        <text x="2" y="99" font-size="9" fill="var(--color-text-tertiary)">10</text>
+        <text x="2" y="132" font-size="9" fill="var(--color-text-tertiary)">ms</text>
+
+        <path d="M22,109 L35,109 L48,107 L61,109 L74,107 L87,111 L99,109 L112,104 L125,107 L138,109 L151,107 L164,104 L177,102 L190,99 L203,83 L216,30 L228,85 L241,99 L254,104 L267,102 L280,107 L293,104 L306,107 L319,109 L332,107 L345,104 L357,107 L370,102 L383,99 L396,102 L396,134 L22,134 Z" fill="#185FA5" fill-opacity="0.10"/>
+        <path d="M22,109 L35,109 L48,107 L61,109 L74,107 L87,111 L99,109 L112,104 L125,107 L138,109 L151,107 L164,104 L177,102 L190,99 L203,83 L216,30 L228,85 L241,99 L254,104 L267,102 L280,107 L293,104 L306,107 L319,109 L332,107 L345,104 L357,107 L370,102 L383,99 L396,102" stroke="#185FA5" stroke-width="1.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+
+        <line x1="216" y1="30" x2="216" y2="134" stroke="#D85A30" stroke-width="0.5" stroke-dasharray="2,2" opacity="0.5"/>
+        <circle cx="216" cy="30" r="3.5" fill="#D85A30"/>
+        <rect x="223" y="22" width="46" height="16" rx="3" fill="#FAECE7"/>
+        <text x="246" y="33" font-size="10" fill="#993C1D" text-anchor="middle" font-weight="500">42 ms spike</text>
+
+        <text x="22" y="148" font-size="9" fill="var(--color-text-tertiary)">0 s</text>
+        <text x="200" y="148" font-size="9" fill="var(--color-text-tertiary)" text-anchor="middle">10 s</text>
+        <text x="396" y="148" font-size="9" fill="var(--color-text-tertiary)" text-anchor="end">20 s</text>
+      </svg>
+    </div>
+
+    <div class="cx-stats">
+      <div class="cx-stat">
+        <p class="l">Average</p>
+        <p class="v">83<span class="u">fps</span></p>
+      </div>
+      <div class="cx-stat">
+        <p class="l">P95</p>
+        <p class="v">116<span class="u">fps</span></p>
+      </div>
+      <div class="cx-stat">
+        <p class="l">1% low</p>
+        <p class="v">50<span class="u">fps</span></p>
+      </div>
+      <div class="cx-stat">
+        <p class="l">0.1% low</p>
+        <p class="v">23<span class="u">fps</span></p>
+      </div>
+    </div>
+
+    <div class="cx-bot">
+      <div class="cx-bcard">
+        <h4>Frame pacing</h4>
+        <div style="display:flex;align-items:center;gap:14px">
+          <svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true">
+            <circle cx="23" cy="23" r="18" stroke="var(--color-border-tertiary)" stroke-width="4" fill="none"/>
+            <circle cx="23" cy="23" r="18" stroke="#1D9E75" stroke-width="4" fill="none" stroke-dasharray="112.8 113" stroke-linecap="round" transform="rotate(-90 23 23)"/>
+          </svg>
+          <div style="min-width:0">
+            <p style="margin:0;font-size:20px;font-weight:500;line-height:1.2">99.8<span style="font-size:12px;color:var(--color-text-secondary);font-weight:400">% smooth</span></p>
+            <p style="margin:3px 0 0;font-size:11px;color:var(--color-text-secondary)">0.2% stutter · 0% low fps · 1 spike</p>
+          </div>
+        </div>
+      </div>
+      <div class="cx-bcard">
+        <h4>PC latency</h4>
+        <p style="margin:0;font-size:20px;font-weight:500;line-height:1.2">32.6 <span style="font-size:12px;color:var(--color-text-secondary);font-weight:400">ms</span></p>
+        <p style="margin:3px 0 0;font-size:11px;color:var(--color-text-secondary)">Click-to-photon, end-to-end</p>
+      </div>
+    </div>
+  </main>
+</div>

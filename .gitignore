@@ -268,6 +268,9 @@ source/publish webservice.ps1
 # Ignore nul file created by bash operations
 nul
 
+# Local scratch directory (validation dumps, logs, screenshots)
+/temp/
+
 # Crash reports
 crash-report/
 /pmcreader-plugin/Zen5Log.txt

@@ -18,35 +18,56 @@ The first backend/frontend bridge slice is implemented in `CapFrameX.Service` an
 
 Detailed progress is tracked in `dev-plans/CapFrameX_Service_Redesign_Development_Log.md`.
 
+**Platform requirement (2026-09-20): the frontend must run on Windows and on Linux.** This
+overrides every Windows-only assumption below. In particular the "prefer CefSharp" line in section 2
+no longer applies - CefSharp is Windows-only; the recommended shell is a native C++ CEF host built
+on CEF Views (same Chromium on both platforms), with CefGlue and Tauri as fallbacks. Shell choice,
+host bridge, service platform providers, packaging and CI for both platforms are specified in
+section 6 of the UI implementation plan. Of the existing Linux code base (`capframex-linux/`) the
+Avalonia GUI is removed, the daemon is absorbed by `CapFrameX.Service.Linux`, and the capture layer
+is replaced by the Linux build of the `CapFrameX.OSD` Vulkan layer.
+
+Further decisions of 2026-09-20, each detailed in its own plan: two separately implemented
+services (Windows always elevated; Linux with presents from the Vulkan layer) over the shared core
+`CapFrameX.Service.Shared` (`CapFrameX_2.0_Service_Architecture_DevPlan.md`,
+`CapFrameX_2.0_Windows_Service_DevPlan.md`, `CapFrameX_2.0_Linux_Service_DevPlan.md`,
+`CapFrameX_2.0_Linux_Telemetry_Validation_Plan.md`); reuse of `CapFrameX.OSD` on Linux
+(`CapFrameX_2.0_OSD_CrossPlatform_DevPlan.md`); lightweight modes and the on-demand policy from
+issue #396; the folder layout in section 4.
+
+Implementation-level planning for UI and overlay (added 2026-09-20):
+
+- `dev-plans/CapFrameX_2.0_UI_Implementation_Plan.md` - work packages, milestones, API surface and
+  design system, driven by the central UI mockup `dev-plans/mockups/capframex_redesign_mockup.html`.
+  It narrows two points of this document: the UI kit is an own component set on Angular CDK (no
+  Angular Material theme), and the `CapFrameX.UI/src-tauri` scaffold is a leftover that the CEF host
+  replaces.
+- `dev-plans/CapFrameX_2.0_Overlay_DevPlan.md` - Phase 3 (overlay configuration) in detail, with
+  TroyMetrics/Benchmark-Overlays as the design basis and the `cfx_osd_core` widget tree as the
+  render target.
+
 ## 1. Target Architecture
 
+Revised 2026-09-20: client and service are **separate processes**; the service exists once per
+platform over a shared core. Diagram: `dev-plans/architecture/cx2-client-service-architecture.html`.
+
 ```
-CapFrameX.Next.exe
-|-- Native desktop host
-|   |-- CEF bootstrap and lifecycle
-|   |-- app://capframex local scheme
-|   |-- window management, DPI, tray, single-instance handling
-|   |-- bridge registration and permissions
-|
-|-- CapFrameX backend services
-|   |-- capture lifecycle
-|   |-- PresentMon integration
-|   |-- sensor polling and aggregation
-|   |-- record/session storage
-|   |-- settings and profile management
-|   |-- overlay/RTSS integration
-|
-|-- Angular frontend
-|   |-- dashboard
-|   |-- capture setup
-|   |-- analysis views
-|   |-- sensor/overlay configuration
-|   |-- settings
-|
-|-- Bridge layer
-|   |-- request/response API for commands
-|   |-- event stream for live capture/sensor data
-|   |-- typed contracts shared with frontend
+CapFrameX.UI  (client - unelevated, identical on Windows and Linux, may be closed)
+|-- native CEF host: CEF bootstrap and lifecycle, app://capframex scheme, window management, DPI,
+|   single instance, narrow host bridge (window controls, dialogs, external links)
+|-- Angular frontend: capture, analysis, overlay, comparison, aggregation, sensor, report, cloud,
+|   settings; app modes Full / Capture / Overlay
+        |
+        |  HTTP on 127.0.0.1 + token   |   SSE events   |   WebSocket live stream
+        v
+CapFrameX.Service.Windows (always elevated)      |      CapFrameX.Service.Linux (user process)
+|-- CapFrameX.Service.Shared - identical in both: typed API + event stream, capture lifecycle,
+|   record/session storage and index, analysis, settings and profiles, demand registry
+|-- platform modules behind ports:
+|   Windows: PresentMon, PawnIO-based sensors, Win32 hotkeys, CapFrameX.OSD (hook-free window,
+|            DXGI hook, Vulkan layer), RTSS, PMD
+|   Linux:   CapFrameX.OSD Vulkan layer (presents + overlay), kernel telemetry + NVML, hotkeys
+|-- owns tray icon, hotkeys and autostart - capture and overlay work without the UI
 ```
 
 Core principle: the frontend renders and orchestrates workflows; it does not own capture, sensor, file, overlay, or driver-facing logic.
@@ -56,8 +77,7 @@ Core principle: the frontend renders and orchestrates workflows; it does not own
 ### Desktop shell
 
 - **CEF / Chromium Embedded Framework** as the desktop web runtime.
-- Prefer a .NET-friendly CEF host first, such as CefSharp, if it satisfies performance, DPI, message-pump, sandbox, and packaging requirements.
-- Keep a custom native CEF host as a fallback option only if CefSharp blocks critical requirements.
+- ~~Prefer a .NET-friendly CEF host first, such as CefSharp.~~ Superseded 2026-09-20: the frontend must run on Windows and Linux and CefSharp is Windows-only. Use a native C++ CEF host (CEF Views) on both platforms; CefGlue is the .NET fallback. See the UI implementation plan, section 6.1.
 - Use a custom local scheme such as `capframex://app/index.html` or `app://capframex/index.html`.
 - Disable arbitrary remote navigation by default. External links open in the system browser.
 
@@ -107,34 +127,30 @@ CEF plus Angular separates those workloads cleanly. The frontend can evolve like
 
 ## 4. High-Level Project Structure
 
-Recommended target structure:
+Decided 2026-09-20. The 2.0 code lives in four top-level folders; the earlier `CapFrameX.Next.*`
+and `CapFrameX.CefHost` / `CapFrameX.CefBridge` / `CapFrameX.WebUI` proposals are dropped.
 
 ```
-CapFrameX.sln
-|-- source/
-|   |-- CapFrameX.Next.Host/             native/.NET desktop host with CEF
-|   |-- CapFrameX.Next.Bridge/           typed bridge contracts and dispatch
-|   |-- CapFrameX.Next.Services/         app-facing orchestration services
-|   |-- CapFrameX.Next.Contracts/        DTOs shared across backend modules
-|   |-- CapFrameX.Next.Web/              Angular workspace
-|   |-- CapFrameX.Next.Web.Generated/    generated TypeScript contracts
-|   |-- existing CapFrameX projects reused during migration
-|
-|-- dev-plans/
-|-- overlay-templates/
-|-- images/
+CapFrameX.UI/                  Angular workspace (src/), native CEF host for Windows + Linux (host/), e2e tests
+CapFrameX.Service.Shared/      platform-neutral service core, net10.0, no OS-specific API:
+                               Contracts (DTOs = the API contract, source of the generated TypeScript types),
+                               Core (domain + platform ports), Application, Records, Analysis, Data, Api (library),
+                               conformance tests
+CapFrameX.Service.Windows/     elevated Windows host + Capture (PresentMon), Telemetry (PawnIO), Input, Overlay,
+                               Pmd, Platform, installer
+CapFrameX.Service.Linux/       Linux host (user process) + Capture (Vulkan layer), Telemetry (kernel + NVML),
+                               Input, Overlay, Platform, native/, tools/, packaging/
+external/CapFrameX.OSD         OSD submodule (shared / windows / linux inside), prebuilt fallback
+source/                        1.x application and the libraries both generations reference in place
+                               (Statistics.NetStandard, Data.Session, SystemInfo.NetStandard, OSD.Integration, native wrappers)
+dev-plans/, overlay-templates/, images/, version/
 ```
 
-Alternative for the first milestone:
-
-```
-source/
-|-- CapFrameX.CefHost/
-|-- CapFrameX.CefBridge/
-|-- CapFrameX.WebUI/
-```
-
-Use the smaller naming set if this begins as an experiment inside the existing repository rather than a full product split.
+Both services reference `CapFrameX.Service.Shared`; they never reference each other. Today's
+`CapFrameX.Service/` and `capframex-linux/` folders are dissolved into this layout. Full tree,
+migration steps and the rules that keep the shared core platform-neutral:
+`CapFrameX_2.0_Service_Architecture_DevPlan.md`, section 2. Diagram:
+`dev-plans/architecture/cx2-client-service-architecture.html`.
 
 ## 5. Bridge Design
 
@@ -385,30 +401,33 @@ Acceptance criteria:
 
 ## 8. Packaging Model
 
-Target layout:
+Target layout (Windows shown; Linux has the same parts with `CapFrameX.Service.Linux`, the layer
+`.so` files and no `hook/`):
 
 ```
 CapFrameX/
-|-- CapFrameX.Next.exe
+|-- CapFrameX.exe                      native CEF host (from CapFrameX.UI/host), unelevated
 |-- CEF/
 |   |-- libcef.dll
 |   |-- chrome_*.pak
 |   |-- icudtl.dat
 |   |-- locales/
-|-- www/
+|-- www/                               Angular production bundle (from CapFrameX.UI)
 |   |-- index.html
-|   |-- runtime.*.js
-|   |-- polyfills.*.js
-|   |-- main.*.js
+|   |-- main.*.js, polyfills.*.js, chunk-*.js
 |   |-- assets/
-|-- plugins/
-|   |-- native/backend DLLs where needed
+|-- service/
+|   |-- CapFrameX.Service.Windows.exe  elevated, started through the scheduled task
+|   |-- CapFrameX.Service.*.dll        shared core (CapFrameX.Service.Shared) + Windows modules
+|   |-- PresentMon/, native wrappers (ADLX, IGCL, Hwinfo), cfx_osd_core.dll
+|   |-- hook/, hook/x86/, vulkan/, vulkan/x86/
 ```
 
 Build pipeline:
 
 - restore NuGet packages
-- build backend/host x64
+- build `CapFrameX.Service.Shared` + the platform service (`CapFrameX.Service.Windows.sln` / `CapFrameX.Service.Linux.sln`)
+- build the native CEF host (`CapFrameX.UI/host`, CMake)
 - install frontend packages
 - run frontend tests/lint
 - build Angular production bundle
