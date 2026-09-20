@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CapFrameX 2.0 Database Schema</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+html{color-scheme:light dark}
+body{margin:0}
+:root{
+  --bg:#FBFBF9; --surface:#FFFFFF; --subtle:#F1F2EF;
+  --text:#1A1C1E; --muted:#5A6068; --faint:#878D95;
+  --line:#C9CDD2; --line-strong:#8E949C;
+  --accent:#185FA5; --accent-bg:#E6F1FB; --accent-line:#85B7EB;
+  --alert:#B4481F; --alert-bg:#FAECE7;
+  --good:#1D7F60;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#16181A; --surface:#1E2124; --subtle:#25292D;
+    --text:#ECEDEA; --muted:#A9AEB4; --faint:#7C828A;
+    --line:#3A4046; --line-strong:#6A7179;
+    --accent:#85B7EB; --accent-bg:#11304D; --accent-line:#2F6FB0;
+    --alert:#F0997B; --alert-bg:#43200F;
+    --good:#5DCAA5;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16181A; --surface:#1E2124; --subtle:#25292D;
+  --text:#ECEDEA; --muted:#A9AEB4; --faint:#7C828A;
+  --line:#3A4046; --line-strong:#6A7179;
+  --accent:#85B7EB; --accent-bg:#11304D; --accent-line:#2F6FB0;
+  --alert:#F0997B; --alert-bg:#43200F;
+  --good:#5DCAA5;
+}
+body{background:var(--bg);color:var(--text);font-family:"IBM Plex Sans",system-ui,"Segoe UI",sans-serif;font-size:15px;line-height:1.55}
+.page{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:36px 56px;display:flex;flex-direction:column;gap:40px}
+header{display:flex;flex-direction:column;gap:10px}
+.eyebrow{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+h1{margin:0;font-size:30px;line-height:1.15;font-weight:600;text-wrap:balance}
+h2{margin:0;font-size:19px;font-weight:600;text-wrap:balance}
+h3{margin:22px 0 0;font-size:15px;font-weight:600}
+h3 code{font-size:15px}
+.lead{margin:0;max-width:70ch;color:var(--muted)}
+section{display:flex;flex-direction:column;gap:14px}
+.scroller{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+figure{margin:0;display:flex;flex-direction:column;gap:10px}
+figcaption{max-width:78ch;color:var(--muted);font-size:14px}
+svg{display:block;width:100%;min-width:1080px;height:auto;color:var(--text);font-family:"IBM Plex Sans",system-ui,sans-serif}
+.b{fill:var(--surface);stroke:var(--line-strong);stroke-width:1}
+.band{fill:var(--subtle);stroke:var(--line);stroke-width:1}
+.shared{fill:var(--accent-bg);stroke:var(--accent-line);stroke-width:1.2}
+.plain{fill:var(--subtle);stroke:var(--line-strong);stroke-width:1.2}
+.ghost{fill:var(--surface);stroke:var(--line-strong);stroke-width:1;stroke-dasharray:4 4}
+.tbl{fill:var(--surface);stroke:var(--line-strong);stroke-width:1.2}
+.accentband{fill:var(--accent-bg)}
+.hl{stroke:var(--line);stroke-width:1}
+.t{fill:var(--text);font-size:12.5px;font-weight:600}
+.th{fill:var(--text);font-size:14px;font-weight:600}
+.s{fill:var(--muted);font-size:11px}
+.m{fill:var(--muted);font-size:10.5px;font-family:"IBM Plex Mono",ui-monospace,monospace}
+.grp{fill:var(--faint);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.col{fill:var(--muted);font-size:11.5px;font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace}
+.col.req{fill:var(--text)}
+.ty{fill:var(--faint);font-size:10px;font-family:"IBM Plex Mono",ui-monospace,monospace;text-anchor:end}
+.tag{fill:var(--accent);font-size:9.5px;font-weight:500;font-family:"IBM Plex Mono",ui-monospace,monospace}
+.card{fill:var(--accent);font-size:11px;font-family:"IBM Plex Mono",ui-monospace,monospace}
+.rel{stroke:var(--accent);stroke-width:1.4;fill:none}
+.a{stroke:currentColor;stroke-width:1.3;fill:none}
+.legend{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.sw{width:22px;height:12px;border-radius:2px;border:1.5px solid var(--line-strong);background:var(--surface)}
+.sw.sh{background:var(--accent-bg);border-color:var(--accent-line)}
+.sw.gh{border-style:dashed}
+.key{font-family:"IBM Plex Mono",ui-monospace,monospace;color:var(--text);font-weight:600}
+.keym{font-family:"IBM Plex Mono",ui-monospace,monospace;color:var(--muted)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:14px}
+th,td{text-align:left;vertical-align:top;padding:8px 12px;border-bottom:1px solid var(--line)}
+thead th{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.grouprow th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:500;background:var(--subtle);padding-block:5px}
+td:first-child{white-space:nowrap}
+code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
+.pill{margin-left:7px;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;color:var(--accent);border:1px solid var(--accent-line);border-radius:3px;padding:1px 4px;background:var(--accent-bg)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px 32px}
+.cols div{display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--line);padding-top:10px}
+.cols b{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13.5px;font-weight:500;color:var(--accent)}
+.cols span{color:var(--muted);font-size:14px}
+.open{margin:0;padding-left:18px;color:var(--muted);max-width:82ch}
+.open li{margin-block:6px}
+.open b{color:var(--text);font-weight:600}
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="eyebrow">CapFrameX 2.0 &middot; Schema state 2026-09-20 &middot; Branch release/2.0.0 &middot; EF Core 10 on SQLite</div>
+    <h1>Service Database Schema</h1>
+    <p class="lead">Three tables. The database is an index over the capture files, not a second copy of them &mdash; which is what shapes almost every decision below.</p>
+  </header>
+
+  <section>
+    <h2>Tables and relationships</h2>
+    <figure>
+      <div class="scroller">
+      <svg viewBox="0 0 1280 794" role="img" aria-label="Three tables. Suites on the left holds six columns and is the parent of Sessions in the middle, which holds thirty-four columns grouped into identity, game, hardware, drivers, system, record source and list projection. Sessions is the parent of SessionRuns on the right, which holds twenty-seven columns grouped into identity, JSON payload, frame rate metrics and sensor averages. Both relationships are one-to-many with cascade delete.">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+        <rect class="tbl" x="40" y="40" width="300" height="154" rx="4"/>
+        <text class="th" x="54" y="65">Suites</text>
+        <text class="s" x="54" y="82">groups related sessions</text>
+        <line class="hl" x1="40" y1="90" x2="340" y2="90"/>
+        <text class="col req" x="54" y="105">Id</text>
+        <text class="tag" x="74.8" y="105">PK</text>
+        <text class="ty" x="326" y="105">TEXT</text>
+        <text class="col req" x="54" y="120">Name</text>
+        <text class="ty" x="326" y="120">TEXT(200)</text>
+        <text class="col" x="54" y="135">Description</text>
+        <text class="ty" x="326" y="135">TEXT(1000)</text>
+        <text class="col req" x="54" y="150">Type</text>
+        <text class="ty" x="326" y="150">INTEGER</text>
+        <text class="col req" x="54" y="165">CreatedAt</text>
+        <text class="ty" x="326" y="165">TEXT</text>
+        <text class="col req" x="54" y="180">UpdatedAt</text>
+        <text class="ty" x="326" y="180">TEXT</text>
+        <rect class="tbl" x="420" y="40" width="430" height="714" rx="4"/>
+        <text class="th" x="434" y="65">Sessions</text>
+        <text class="s" x="434" y="82">one capture &mdash; a file on disk, or recorded live</text>
+        <line class="hl" x1="420" y1="90" x2="850" y2="90"/>
+        <text class="grp" x="434" y="108">identity</text>
+        <text class="col req" x="434" y="125">Id</text>
+        <text class="tag" x="454.8" y="125">PK</text>
+        <text class="ty" x="836" y="125">TEXT</text>
+        <text class="col req" x="434" y="140">SuiteId</text>
+        <text class="tag" x="489.3" y="140">FK</text>
+        <text class="ty" x="836" y="140">TEXT</text>
+        <text class="col" x="434" y="155">Hash</text>
+        <text class="ty" x="836" y="155">TEXT(100)</text>
+        <text class="col req" x="434" y="170">CreatedAt</text>
+        <text class="ty" x="836" y="170">TEXT</text>
+        <text class="grp" x="434" y="188">game</text>
+        <text class="col req" x="434" y="205">GameName</text>
+        <text class="ty" x="836" y="205">TEXT(200)</text>
+        <text class="col req" x="434" y="220">ProcessName</text>
+        <text class="ty" x="836" y="220">TEXT(200)</text>
+        <text class="col" x="434" y="235">Comment</text>
+        <text class="ty" x="836" y="235">TEXT(2000)</text>
+        <text class="grp" x="434" y="253">hardware</text>
+        <text class="col req" x="434" y="270">Processor</text>
+        <text class="ty" x="836" y="270">TEXT(200)</text>
+        <text class="col" x="434" y="285">Motherboard</text>
+        <text class="ty" x="836" y="285">TEXT(200)</text>
+        <text class="col" x="434" y="300">SystemRam</text>
+        <text class="ty" x="836" y="300">TEXT(100)</text>
+        <text class="col req" x="434" y="315">Gpu</text>
+        <text class="ty" x="836" y="315">TEXT(200)</text>
+        <text class="col" x="434" y="330">GpuCount</text>
+        <text class="ty" x="836" y="330">INTEGER</text>
+        <text class="col" x="434" y="345">GpuCoreClock</text>
+        <text class="ty" x="836" y="345">INTEGER</text>
+        <text class="col" x="434" y="360">GpuMemoryClock</text>
+        <text class="ty" x="836" y="360">INTEGER</text>
+        <text class="grp" x="434" y="378">drivers</text>
+        <text class="col" x="434" y="395">BaseDriverVersion</text>
+        <text class="ty" x="836" y="395">TEXT(50)</text>
+        <text class="col" x="434" y="410">DriverPackage</text>
+        <text class="ty" x="836" y="410">TEXT(100)</text>
+        <text class="col" x="434" y="425">GpuDriverVersion</text>
+        <text class="ty" x="836" y="425">TEXT(50)</text>
+        <text class="grp" x="434" y="443">system</text>
+        <text class="col req" x="434" y="460">Os</text>
+        <text class="ty" x="836" y="460">TEXT(100)</text>
+        <text class="col" x="434" y="475">ApiInfo</text>
+        <text class="ty" x="836" y="475">TEXT(50)</text>
+        <text class="col" x="434" y="490">ResizableBar</text>
+        <text class="ty" x="836" y="490">INTEGER</text>
+        <text class="col" x="434" y="505">WinGameMode</text>
+        <text class="ty" x="836" y="505">INTEGER</text>
+        <text class="col" x="434" y="520">Hags</text>
+        <text class="ty" x="836" y="520">INTEGER</text>
+        <text class="col" x="434" y="535">PresentationMode</text>
+        <text class="ty" x="836" y="535">TEXT(50)</text>
+        <text class="col" x="434" y="550">ResolutionInfo</text>
+        <text class="ty" x="836" y="550">TEXT(50)</text>
+        <rect class="accentband" x="421" y="554" width="428" height="80"/>
+        <text class="grp" x="434" y="568">record source</text>
+        <text class="col" x="434" y="585">SourceFilePath</text>
+        <text class="tag" x="537.6" y="585">UQ</text>
+        <text class="ty" x="836" y="585">TEXT</text>
+        <text class="col" x="434" y="600">SourceFileSize</text>
+        <text class="ty" x="836" y="600">INTEGER</text>
+        <text class="col" x="434" y="615">SourceModifiedUtc</text>
+        <text class="ty" x="836" y="615">TEXT</text>
+        <text class="col req" x="434" y="630">IndexVersion</text>
+        <text class="ty" x="836" y="630">INTEGER</text>
+        <rect class="accentband" x="421" y="634" width="428" height="110"/>
+        <text class="grp" x="434" y="648">list projection</text>
+        <text class="col" x="434" y="665">DurationSeconds</text>
+        <text class="ty" x="836" y="665">REAL</text>
+        <text class="col" x="434" y="680">RunCount</text>
+        <text class="ty" x="836" y="680">INTEGER</text>
+        <text class="col" x="434" y="695">FrameCount</text>
+        <text class="ty" x="836" y="695">INTEGER</text>
+        <text class="col" x="434" y="710">SparklineJson</text>
+        <text class="ty" x="836" y="710">TEXT</text>
+        <text class="col req" x="434" y="725">HasPcLatency</text>
+        <text class="ty" x="836" y="725">INTEGER</text>
+        <text class="col req" x="434" y="740">HasDisplayChange</text>
+        <text class="ty" x="836" y="740">INTEGER</text>
+        <rect class="tbl" x="930" y="40" width="310" height="549" rx="4"/>
+        <text class="th" x="944" y="65">SessionRuns</text>
+        <text class="s" x="944" y="82">one run inside a capture</text>
+        <line class="hl" x1="930" y1="90" x2="1240" y2="90"/>
+        <text class="grp" x="944" y="108">identity</text>
+        <text class="col req" x="944" y="125">Id</text>
+        <text class="tag" x="964.8" y="125">PK</text>
+        <text class="ty" x="1226" y="125">TEXT</text>
+        <text class="col req" x="944" y="140">SessionId</text>
+        <text class="tag" x="1013.1" y="140">FK</text>
+        <text class="ty" x="1226" y="140">TEXT</text>
+        <text class="col" x="944" y="155">Hash</text>
+        <text class="ty" x="1226" y="155">TEXT(100)</text>
+        <text class="col req" x="944" y="170">CreatedAt</text>
+        <text class="ty" x="1226" y="170">TEXT</text>
+        <text class="col" x="944" y="185">PresentMonRuntime</text>
+        <text class="ty" x="1226" y="185">TEXT(50)</text>
+        <text class="col req" x="944" y="200">SampleTime</text>
+        <text class="ty" x="1226" y="200">REAL</text>
+        <text class="grp" x="944" y="218">payload &middot; JSON</text>
+        <text class="col" x="944" y="235">CaptureDataJson</text>
+        <text class="ty" x="1226" y="235">TEXT</text>
+        <text class="col" x="944" y="250">SensorDataJson</text>
+        <text class="ty" x="1226" y="250">TEXT</text>
+        <text class="col" x="944" y="265">RtssFrameTimesJson</text>
+        <text class="ty" x="1226" y="265">TEXT</text>
+        <text class="col" x="944" y="280">PmdGpuPowerJson</text>
+        <text class="ty" x="1226" y="280">TEXT</text>
+        <text class="col" x="944" y="295">PmdCpuPowerJson</text>
+        <text class="ty" x="1226" y="295">TEXT</text>
+        <text class="col" x="944" y="310">PmdSystemPowerJson</text>
+        <text class="ty" x="1226" y="310">TEXT</text>
+        <text class="grp" x="944" y="328">frame rate</text>
+        <text class="col" x="944" y="345">MaxFps</text>
+        <text class="ty" x="1226" y="345">REAL</text>
+        <text class="col" x="944" y="360">P99Fps</text>
+        <text class="ty" x="1226" y="360">REAL</text>
+        <text class="col" x="944" y="375">P95Fps</text>
+        <text class="ty" x="1226" y="375">REAL</text>
+        <text class="col" x="944" y="390">AverageFps</text>
+        <text class="ty" x="1226" y="390">REAL</text>
+        <text class="col" x="944" y="405">MedianFps</text>
+        <text class="ty" x="1226" y="405">REAL</text>
+        <text class="col" x="944" y="420">P5Fps</text>
+        <text class="ty" x="1226" y="420">REAL</text>
+        <text class="col" x="944" y="435">P1Fps</text>
+        <text class="ty" x="1226" y="435">REAL</text>
+        <text class="col" x="944" y="450">P0_1Fps</text>
+        <text class="ty" x="1226" y="450">REAL</text>
+        <text class="col" x="944" y="465">P0_01Fps</text>
+        <text class="ty" x="1226" y="465">REAL</text>
+        <text class="grp" x="944" y="483">sensor averages</text>
+        <text class="col" x="944" y="500">AvgCpuTemp</text>
+        <text class="ty" x="1226" y="500">REAL</text>
+        <text class="col" x="944" y="515">AvgGpuTemp</text>
+        <text class="ty" x="1226" y="515">REAL</text>
+        <text class="col" x="944" y="530">AvgCpuPower</text>
+        <text class="ty" x="1226" y="530">REAL</text>
+        <text class="col" x="944" y="545">AvgGpuPower</text>
+        <text class="ty" x="1226" y="545">REAL</text>
+        <text class="col" x="944" y="560">AvgCpuUsage</text>
+        <text class="ty" x="1226" y="560">REAL</text>
+        <text class="col" x="944" y="575">AvgGpuUsage</text>
+        <text class="ty" x="1226" y="575">REAL</text>
+
+        <path class="rel" d="M340,101.5 H380 V136.5 H414" marker-end="url(#ah)"/>
+        <text class="card" x="346" y="95.5">1</text>
+        <text class="card" x="398" y="130.5">N</text>
+        <text class="s" x="380" y="160.5" text-anchor="middle">cascade delete</text>
+
+        <path class="rel" d="M850,121.5 H890 V136.5 H924" marker-end="url(#ah)"/>
+        <text class="card" x="856" y="115.5">1</text>
+        <text class="card" x="908" y="130.5">N</text>
+        <text class="s" x="890" y="160.5" text-anchor="middle">cascade delete</text>
+      </svg>
+      </div>
+      <div class="legend">
+        <span><span class="key">Column</span> not null</span>
+        <span><span class="keym">Column</span> nullable</span>
+        <span><span class="sw sh"></span> added by migration <code>AddRecordSource</code> for the record index</span>
+        <span><span class="pill">PK</span> primary key</span>
+        <span><span class="pill">FK</span> foreign key</span>
+        <span><span class="pill">UQ</span> unique index</span>
+      </div>
+      <figcaption>Both relationships cascade: deleting a suite deletes its sessions, deleting a session deletes its runs. <code>Sessions.SuiteId</code> is required, so importing a capture always means creating or choosing a suite &mdash; there is no loose session.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>The two shapes a session takes</h2>
+    <figure>
+      <div class="scroller">
+      <svg viewBox="0 0 1280 330" role="img" aria-label="Two shapes a session row takes. On the left an indexed capture: the Sessions row carries a source file path and the list projection, has no SessionRuns rows, and points at a capture file on disk that holds the frame data. On the right a session recorded by the service: the source file path is null and the SessionRuns rows carry the frame data as JSON.">
+        <defs>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <rect class="band" x="30" y="20" width="600" height="290" rx="4"/>
+        <text class="th" x="48" y="46">Indexed capture &mdash; the usual case</text>
+        <text class="s" x="48" y="66">written by CapFrameX 1.x, copied in by hand, or on a share</text>
+
+        <rect class="shared" x="48" y="84" width="564" height="74" rx="3"/>
+        <text class="t" x="64" y="108">Sessions row</text>
+        <text class="m" x="64" y="126">SourceFilePath = &apos;&hellip;\Captures\run.json&apos; &middot; IndexVersion = 1</text>
+        <text class="m" x="64" y="142">DurationSeconds &middot; RunCount &middot; FrameCount &middot; SparklineJson</text>
+
+        <path class="rel" d="M477,158 V186" marker-end="url(#ah2)"/>
+        <text class="m" x="487" y="178">SourceFilePath</text>
+
+        <rect class="ghost" x="48" y="190" width="270" height="54" rx="3"/>
+        <text class="t" x="64" y="213">SessionRuns</text>
+        <text class="s" x="64" y="232">none &mdash; nothing to store</text>
+
+        <rect class="b" x="342" y="190" width="270" height="54" rx="3"/>
+        <text class="t" x="358" y="213">run.json on disk</text>
+        <text class="s" x="358" y="232">holds every frame time</text>
+
+        <text class="s" x="48" y="270">the row is an index over the file</text>
+        <text class="s" x="48" y="290">delete the file and the row goes with it on the next scan</text>
+
+        <rect class="band" x="660" y="20" width="590" height="290" rx="4"/>
+        <text class="th" x="678" y="46">Recorded by the service</text>
+        <text class="s" x="678" y="66">a capture the service took itself</text>
+
+        <rect class="plain" x="678" y="84" width="554" height="74" rx="3"/>
+        <text class="t" x="694" y="108">Sessions row</text>
+        <text class="m" x="694" y="126">SourceFilePath = NULL</text>
+        <text class="m" x="694" y="142">no file behind it, so a folder scan says nothing about it</text>
+
+        <rect class="b" x="678" y="190" width="554" height="54" rx="3"/>
+        <text class="t" x="694" y="213">SessionRuns rows</text>
+        <text class="m" x="694" y="232">CaptureDataJson &middot; SensorDataJson &middot; metrics per run</text>
+
+        <text class="s" x="678" y="270">the row is the record</text>
+        <text class="s" x="678" y="290">nothing outside the database has to survive for it to be readable</text>
+      </svg>
+      </div>
+      <figcaption>The same table serves both, and <code>SourceFilePath</code> is what tells them apart. Frame data is never copied in for an indexed capture: it would double the storage and create a second version of the same capture that can drift from the first &mdash; and CapFrameX 1.x keeps writing those files.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>Column reference</h2>
+    <h3><code>Suites</code></h3>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>Column</th><th>Model</th><th>Storage</th><th>Nullable</th><th>Note</th></tr></thead>
+      <tbody>
+      <tr><td><code>Id</code><span class="pill">PK</span></td><td><code>Guid</code></td><td><code>TEXT</code></td><td>&mdash;</td><td>Primary key.</td></tr>
+      <tr><td><code>Name</code></td><td><code>string</code></td><td><code>TEXT(200)</code></td><td>&mdash;</td><td>What the suite is called in the library.</td></tr>
+      <tr><td><code>Description</code></td><td><code>string?</code></td><td><code>TEXT(1000)</code></td><td>null</td><td></td></tr>
+      <tr><td><code>Type</code></td><td><code>SuiteType</code></td><td><code>INTEGER</code></td><td>&mdash;</td><td>0 HardwareReview &middot; 1 GameReview &middot; 2 ComparisonSet &middot; 3 Miscellaneous.</td></tr>
+      <tr><td><code>CreatedAt</code></td><td><code>DateTime</code></td><td><code>TEXT</code></td><td>&mdash;</td><td></td></tr>
+      <tr><td><code>UpdatedAt</code></td><td><code>DateTime</code></td><td><code>TEXT</code></td><td>&mdash;</td><td></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <h3><code>Sessions</code></h3>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>Column</th><th>Model</th><th>Storage</th><th>Nullable</th><th>Note</th></tr></thead>
+      <tbody>
+      <tr class="grouprow"><th colspan="5">identity</th></tr>
+      <tr><td><code>Id</code><span class="pill">PK</span></td><td><code>Guid</code></td><td><code>TEXT</code></td><td>&mdash;</td><td>Primary key.</td></tr>
+      <tr><td><code>SuiteId</code><span class="pill">FK</span></td><td><code>Guid</code></td><td><code>TEXT</code></td><td>&mdash;</td><td>&rarr; <code>Suites.Id</code>, cascade. Mandatory: there is no session outside a suite.</td></tr>
+      <tr><td><code>Hash</code></td><td><code>string?</code></td><td><code>TEXT(100)</code></td><td>null</td><td>Carried over from the 1.x record so both generations can recognise the same capture.</td></tr>
+      <tr><td><code>CreatedAt</code></td><td><code>DateTime</code></td><td><code>TEXT</code></td><td>&mdash;</td><td>When the capture was taken, in UTC.</td></tr>
+      <tr class="grouprow"><th colspan="5">game</th></tr>
+      <tr><td><code>GameName</code></td><td><code>string</code></td><td><code>TEXT(200)</code></td><td>&mdash;</td><td></td></tr>
+      <tr><td><code>ProcessName</code></td><td><code>string</code></td><td><code>TEXT(200)</code></td><td>&mdash;</td><td>Executable name without extension.</td></tr>
+      <tr><td><code>Comment</code></td><td><code>string?</code></td><td><code>TEXT(2000)</code></td><td>null</td><td></td></tr>
+      <tr class="grouprow"><th colspan="5">hardware</th></tr>
+      <tr><td><code>Processor</code></td><td><code>string</code></td><td><code>TEXT(200)</code></td><td>&mdash;</td><td></td></tr>
+      <tr><td><code>Motherboard</code></td><td><code>string?</code></td><td><code>TEXT(200)</code></td><td>null</td><td></td></tr>
+      <tr><td><code>SystemRam</code></td><td><code>string?</code></td><td><code>TEXT(100)</code></td><td>null</td><td></td></tr>
+      <tr><td><code>Gpu</code></td><td><code>string</code></td><td><code>TEXT(200)</code></td><td>&mdash;</td><td></td></tr>
+      <tr><td><code>GpuCount</code></td><td><code>int?</code></td><td><code>INTEGER</code></td><td>null</td><td></td></tr>
+      <tr><td><code>GpuCoreClock</code></td><td><code>int?</code></td><td><code>INTEGER</code></td><td>null</td><td>MHz.</td></tr>
+      <tr><td><code>GpuMemoryClock</code></td><td><code>int?</code></td><td><code>INTEGER</code></td><td>null</td><td>MHz.</td></tr>
+      <tr class="grouprow"><th colspan="5">drivers</th></tr>
+      <tr><td><code>BaseDriverVersion</code></td><td><code>string?</code></td><td><code>TEXT(50)</code></td><td>null</td><td></td></tr>
+      <tr><td><code>DriverPackage</code></td><td><code>string?</code></td><td><code>TEXT(100)</code></td><td>null</td><td></td></tr>
+      <tr><td><code>GpuDriverVersion</code></td><td><code>string?</code></td><td><code>TEXT(50)</code></td><td>null</td><td></td></tr>
+      <tr class="grouprow"><th colspan="5">system</th></tr>
+      <tr><td><code>Os</code></td><td><code>string</code></td><td><code>TEXT(100)</code></td><td>&mdash;</td><td></td></tr>
+      <tr><td><code>ApiInfo</code></td><td><code>string?</code></td><td><code>TEXT(50)</code></td><td>null</td><td>DX11, DX12, Vulkan &hellip;</td></tr>
+      <tr><td><code>ResizableBar</code></td><td><code>bool?</code></td><td><code>INTEGER</code></td><td>null</td><td>Unknown is a third state, which is why it is nullable.</td></tr>
+      <tr><td><code>WinGameMode</code></td><td><code>bool?</code></td><td><code>INTEGER</code></td><td>null</td><td></td></tr>
+      <tr><td><code>Hags</code></td><td><code>bool?</code></td><td><code>INTEGER</code></td><td>null</td><td>Hardware-accelerated GPU scheduling.</td></tr>
+      <tr><td><code>PresentationMode</code></td><td><code>string?</code></td><td><code>TEXT(50)</code></td><td>null</td><td></td></tr>
+      <tr><td><code>ResolutionInfo</code></td><td><code>string?</code></td><td><code>TEXT(50)</code></td><td>null</td><td></td></tr>
+      <tr class="grouprow"><th colspan="5">record source</th></tr>
+      <tr><td><code>SourceFilePath</code><span class="pill">UQ</span></td><td><code>string?</code></td><td><code>TEXT</code></td><td>null</td><td>Where the capture file lives. Unique, filtered to rows that have one; <code>NULL</code> marks a session the service recorded itself.</td></tr>
+      <tr><td><code>SourceFileSize</code></td><td><code>long?</code></td><td><code>INTEGER</code></td><td>null</td><td>Size when the row was written &mdash; one half of the change detection.</td></tr>
+      <tr><td><code>SourceModifiedUtc</code></td><td><code>DateTime?</code></td><td><code>TEXT</code></td><td>null</td><td>Last write time when the row was written &mdash; the other half.</td></tr>
+      <tr><td><code>IndexVersion</code></td><td><code>int</code></td><td><code>INTEGER</code></td><td>&mdash;</td><td>Projection version. A row below the current one is re-read; a row above it is left alone.</td></tr>
+      <tr class="grouprow"><th colspan="5">list projection</th></tr>
+      <tr><td><code>DurationSeconds</code></td><td><code>double?</code></td><td><code>REAL</code></td><td>null</td><td>Span the frames cover, summed over the runs.</td></tr>
+      <tr><td><code>RunCount</code></td><td><code>int?</code></td><td><code>INTEGER</code></td><td>null</td><td></td></tr>
+      <tr><td><code>FrameCount</code></td><td><code>int?</code></td><td><code>INTEGER</code></td><td>null</td><td></td></tr>
+      <tr><td><code>SparklineJson</code></td><td><code>string?</code></td><td><code>TEXT</code></td><td>null</td><td>At most 64 min/max-decimated frame times, as a JSON array.</td></tr>
+      <tr><td><code>HasPcLatency</code></td><td><code>bool</code></td><td><code>INTEGER</code></td><td>&mdash;</td><td>Whether the capture carries input-to-display latency at all.</td></tr>
+      <tr><td><code>HasDisplayChange</code></td><td><code>bool</code></td><td><code>INTEGER</code></td><td>&mdash;</td><td>Whether it carries display-side frame times.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <h3><code>SessionRuns</code></h3>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>Column</th><th>Model</th><th>Storage</th><th>Nullable</th><th>Note</th></tr></thead>
+      <tbody>
+      <tr class="grouprow"><th colspan="5">identity</th></tr>
+      <tr><td><code>Id</code><span class="pill">PK</span></td><td><code>Guid</code></td><td><code>TEXT</code></td><td>&mdash;</td><td>Primary key.</td></tr>
+      <tr><td><code>SessionId</code><span class="pill">FK</span></td><td><code>Guid</code></td><td><code>TEXT</code></td><td>&mdash;</td><td>&rarr; <code>Sessions.Id</code>, cascade.</td></tr>
+      <tr><td><code>Hash</code></td><td><code>string?</code></td><td><code>TEXT(100)</code></td><td>null</td><td></td></tr>
+      <tr><td><code>CreatedAt</code></td><td><code>DateTime</code></td><td><code>TEXT</code></td><td>&mdash;</td><td></td></tr>
+      <tr><td><code>PresentMonRuntime</code></td><td><code>string?</code></td><td><code>TEXT(50)</code></td><td>null</td><td>DXGI, D3D9, &hellip;</td></tr>
+      <tr><td><code>SampleTime</code></td><td><code>double</code></td><td><code>REAL</code></td><td>&mdash;</td><td>Length of the run in seconds.</td></tr>
+      <tr class="grouprow"><th colspan="5">payload &middot; JSON</th></tr>
+      <tr><td><code>CaptureDataJson</code></td><td><code>string?</code></td><td><code>TEXT</code></td><td>null</td><td>Frame arrays. Empty for an indexed capture &mdash; the file on disk holds them.</td></tr>
+      <tr><td><code>SensorDataJson</code></td><td><code>string?</code></td><td><code>TEXT</code></td><td>null</td><td>CPU and GPU temperatures, clocks, usage, power.</td></tr>
+      <tr><td><code>RtssFrameTimesJson</code></td><td><code>string?</code></td><td><code>TEXT</code></td><td>null</td><td></td></tr>
+      <tr><td><code>PmdGpuPowerJson</code></td><td><code>string?</code></td><td><code>TEXT</code></td><td>null</td><td></td></tr>
+      <tr><td><code>PmdCpuPowerJson</code></td><td><code>string?</code></td><td><code>TEXT</code></td><td>null</td><td></td></tr>
+      <tr><td><code>PmdSystemPowerJson</code></td><td><code>string?</code></td><td><code>TEXT</code></td><td>null</td><td></td></tr>
+      <tr class="grouprow"><th colspan="5">frame rate</th></tr>
+      <tr><td><code>MaxFps</code></td><td><code>double?</code></td><td><code>REAL</code></td><td>null</td><td></td></tr>
+      <tr><td><code>P99Fps</code></td><td><code>double?</code></td><td><code>REAL</code></td><td>null</td><td></td></tr>
+      <tr><td><code>P95Fps</code></td><td><code>double?</code></td><td><code>REAL</code></td><td>null</td><td></td></tr>
+      <tr><td><code>AverageFps</code></td><td><code>double?</code></td><td><code>REAL</code></td><td>null</td><td></td></tr>
+      <tr><td><code>MedianFps</code></td><td><code>double?</code></td><td><code>REAL</code></td><td>null</td><td></td></tr>
+      <tr><td><code>P5Fps</code></td><td><code>double?</code></td><td><code>REAL</code></td><td>null</td><td></td></tr>
+      <tr><td><code>P1Fps</code></td><td><code>double?</code></td><td><code>REAL</code></td><td>null</td><td></td></tr>
+      <tr><td><code>P0_1Fps</code></td><td><code>double?</code></td><td><code>REAL</code></td><td>null</td><td></td></tr>
+      <tr><td><code>P0_01Fps</code></td><td><code>double?</code></td><td><code>REAL</code></td><td>null</td><td></td></tr>
+      <tr class="grouprow"><th colspan="5">sensor averages</th></tr>
+      <tr><td><code>AvgCpuTemp</code></td><td><code>double?</code></td><td><code>REAL</code></td><td>null</td><td>&deg;C.</td></tr>
+      <tr><td><code>AvgGpuTemp</code></td><td><code>double?</code></td><td><code>REAL</code></td><td>null</td><td>&deg;C.</td></tr>
+      <tr><td><code>AvgCpuPower</code></td><td><code>double?</code></td><td><code>REAL</code></td><td>null</td><td>W.</td></tr>
+      <tr><td><code>AvgGpuPower</code></td><td><code>double?</code></td><td><code>REAL</code></td><td>null</td><td>W.</td></tr>
+      <tr><td><code>AvgCpuUsage</code></td><td><code>double?</code></td><td><code>REAL</code></td><td>null</td><td>%.</td></tr>
+      <tr><td><code>AvgGpuUsage</code></td><td><code>double?</code></td><td><code>REAL</code></td><td>null</td><td>%.</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Indexes</h2>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>Table</th><th>Index</th><th>What it is for</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="3"><code>Suites</code></td><td><code>Type</code></td><td>Filtering the library by suite kind.</td></tr>
+        <tr><td><code>CreatedAt</code></td><td>Newest first.</td></tr>
+        <tr><td><code>(Type, CreatedAt)</code></td><td>Both at once, which is how the library lists them.</td></tr>
+
+        <tr><td rowspan="9"><code>Sessions</code></td><td><code>SourceFilePath</code> &mdash; unique, filtered to <code>NOT NULL</code></td><td><b>A rule, not a speed-up.</b> One file cannot enter the index twice. Filtered so that self-recorded sessions, which have no file, do not all collide on <code>NULL</code>.</td></tr>
+        <tr><td><code>IndexVersion</code></td><td>Finds the rows a changed projection has to re-read, without a schema migration.</td></tr>
+        <tr><td><code>GameName</code></td><td>Search and grouping.</td></tr>
+        <tr><td><code>ProcessName</code></td><td>Search.</td></tr>
+        <tr><td><code>Processor</code></td><td>Filtering by hardware.</td></tr>
+        <tr><td><code>Gpu</code></td><td>Filtering by hardware.</td></tr>
+        <tr><td><code>CreatedAt</code></td><td>The record list orders by it, newest first.</td></tr>
+        <tr><td><code>(GameName, CreatedAt)</code></td><td>One game&apos;s captures over time.</td></tr>
+        <tr><td><code>(SuiteId, CreatedAt)</code></td><td>One suite&apos;s captures over time.</td></tr>
+
+        <tr><td rowspan="6"><code>SessionRuns</code></td><td><code>SessionId</code></td><td>Loading a capture&apos;s runs.</td></tr>
+        <tr><td><code>(SessionId, CreatedAt)</code></td><td>In the order they were recorded.</td></tr>
+        <tr><td><code>CreatedAt</code></td><td>Newest first across sessions.</td></tr>
+        <tr><td><code>AverageFps</code></td><td>Sorting and range filters over metrics.</td></tr>
+        <tr><td><code>P1Fps</code></td><td>Sorting and range filters over metrics.</td></tr>
+        <tr><td><code>P99Fps</code></td><td>Sorting and range filters over metrics.</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>What the schema takes for granted</h2>
+    <ul class="open">
+      <li><b>The capture file is the record.</b> An indexed session stores a projection &mdash; duration, counts, a sparkline, two capability flags &mdash; and nothing else. Everything the analysis needs is read from the file when it is opened.</li>
+      <li><b>Change detection is size plus last write time</b>, not a content hash. Hashing means reading every byte of a folder that runs to hundreds of megabytes, on every scan, to answer a question the file system already answers.</li>
+      <li><b>A version column replaces a migration for projection changes.</b> Raising <code>RecordIndexPlanner.CurrentIndexVersion</code> makes the next scan re-read every record; a row written by a <i>newer</i> service is left alone, so an older one sharing the database cannot undo it.</li>
+      <li><b>Large arrays are JSON, not rows.</b> A run holds ten thousand frames and more; a row per frame would mean millions of rows and joins across them for every chart.</li>
+      <li><b>The frame-rate metrics are still empty.</b> The index computes none of them &mdash; their definitions belong to the analysis adapter over <code>CapFrameX.Statistics.NetStandard</code>, where parity with 1.x is pinned. Two places computing them is how the list and the analysis come to disagree.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Where it lives, and how it is built</h2>
+    <div class="cols">
+      <div><b>Windows</b><span><code>%LOCALAPPDATA%\CapFrameX\capframex.db</code></span></div>
+      <div><b>Linux</b><span><code>$XDG_DATA_HOME/capframex/capframex.db</code>, falling back to <code>~/.local/share</code></span></div>
+      <div><b>Portable mode</b><span>next to the binaries, under the portable root</span></div>
+      <div><b>Never hard-coded</b><span>the path always comes from <code>IAppPaths.DataDirectory</code></span></div>
+    </div>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>Migration</th><th>Brings</th></tr></thead>
+      <tbody>
+        <tr><td><code>20251226142228_InitialCreate</code></td><td>Suites, Sessions, SessionRuns and their indexes.</td></tr>
+        <tr><td><code>20260920153818_AddRecordSource</code></td><td>The record source and the list projection on <code>Sessions</code>; the JSON columns on <code>SessionRuns</code> become optional; the unique filtered index and the version index.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="lead"><code>DatabaseMigrationService</code> applies pending migrations at start-up and refuses to start when it cannot, so nothing has to be run by hand on a user&apos;s machine. New migrations are generated against <code>CapFrameX.Service.Windows/tools/CapFrameX.DatabaseTool</code> as the startup project &mdash; <code>Microsoft.EntityFrameworkCore.Design</code> is deliberately absent from the data project, because it dragged Roslyn and MSBuild into the service publish.</p>
+  </section>
+</div>
+</body>
+</html>
