@@ -344,6 +344,34 @@ notice.
 Not yet done from B1: `Service.Api` is still an executable rather than the library the two
 composition roots map, and the token is not yet written to a file the desktop host can read.
 
+## 2026-09-20 - Start model and token hand-over
+
+Decision recorded in the Windows and Linux plans: the **frontend starts first** and starts the
+service; started on its own the service is an ordinary console application with a visible console,
+which is the diagnostic path and the reason its project stays `OutputType=Exe`. A frontend that
+finds a running service through `GET /api/health` attaches to it rather than starting a second one.
+
+Both orders have to end with the frontend knowing the session token, and it must never travel on a
+command line, where any process could read it from the process list:
+
+- frontend first: the token goes in the child process environment (`CAPFRAMEX_SERVICE_TOKEN`);
+- service first: it generates its own.
+
+Either way the service publishes it to `<runtime directory>/service.token`, rewritten per start and
+removed on shutdown, for a frontend that did not start it. `SessionTokenStore` (shared, 11 tests)
+owns that logic; the one platform-specific part is behind `ISecretFileWriter`:
+
+- `WindowsSecretFileWriter` replaces the file's ACL with the current user alone and **switches
+  inheritance off** - a runtime directory that inherits "Users: read" would otherwise hand the
+  token to every account on the machine, and an added rule does not remove an inherited one. Four
+  tests assert the resulting ACL, including that no inherited entry survives. Setting the DACL had
+  to go through `FileInfo`: a plain write handle lacks `WRITE_DAC` and the first implementation
+  threw `UnauthorizedAccessException`.
+- `PosixSecretFileWriter` creates the file, applies mode `0600`, then writes - so the token never
+  exists on disk under the process umask. Verified on Linux later; it cannot run on Windows.
+
+New project `CapFrameX.Service.Windows.Platform` holds the Windows side.
+
 ## Documentation Rules For Future Steps
 
 For every meaningful backend/frontend migration step, update this log with:
