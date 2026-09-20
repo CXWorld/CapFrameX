@@ -12,8 +12,13 @@ public class Session
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Hash from legacy system for backwards compatibility
+    /// Identity of the capture itself, as CapFrameX computes it over its runs.
     /// </summary>
+    /// <remarks>
+    /// What tells two rows apart from the same capture arriving twice - through an import of a
+    /// folder that was already watched, or the same file imported from two places. It comes from
+    /// the capture rather than from the file, so a copy under another name is still recognised.
+    /// </remarks>
     public string? Hash { get; set; }
 
     /// <summary>
@@ -149,6 +154,24 @@ public class Session
 
     /// <summary>Last write time of the capture file when it was indexed, in UTC.</summary>
     public DateTime? SourceModifiedUtc { get; set; }
+
+    /// <summary>
+    /// Where an imported capture was read from, if it was imported.
+    /// </summary>
+    /// <remarks>
+    /// Provenance, not a source: the frames of an imported record live in this database, and the
+    /// file it came from may be gone or on a drive that is not attached. Deliberately not
+    /// <see cref="SourceFilePath"/>, because the folder scan owns every row that has one and would
+    /// drop an imported record the moment it looked in a folder the file is not in.
+    /// </remarks>
+    public string? ImportedFrom { get; set; }
+
+    /// <summary>When this row last changed, in UTC.</summary>
+    /// <remarks>
+    /// What tells a cached copy of a record apart from the row it was made from, now that a record
+    /// has no file whose size and time could say so.
+    /// </remarks>
+    public DateTime UpdatedAt { get; set; }
 
     /// <summary>
     /// Version of the indexer that wrote this row, so a changed projection can re-index without a

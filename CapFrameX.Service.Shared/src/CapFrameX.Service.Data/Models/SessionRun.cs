@@ -24,6 +24,17 @@ public class SessionRun
     public string? Hash { get; set; }
 
     /// <summary>
+    /// Where this run sits in its capture, counted from zero.
+    /// </summary>
+    /// <remarks>
+    /// Stored because the order is part of the capture and the database has no opinion about it.
+    /// The statistics read the runs as one sequence, and several of them - the adaptive deviation,
+    /// the moving average the stutter share is built on - give a different answer when the frames
+    /// arrive in a different order. It is also what the analysis endpoint names a run by.
+    /// </remarks>
+    public int RunIndex { get; set; }
+
+    /// <summary>
     /// Creation timestamp
     /// </summary>
     public DateTime CreatedAt { get; set; }

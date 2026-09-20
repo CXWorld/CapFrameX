@@ -82,6 +82,12 @@ public class CapFrameXDbContext : DbContext
                 .HasFilter("\"SourceFilePath\" IS NOT NULL");
             entity.HasIndex(e => e.IndexVersion);
 
+            // A capture is one record however it got here. Filtered, because rows written before
+            // the hash was stored have none and would all collide on NULL.
+            entity.HasIndex(e => e.Hash)
+                .IsUnique()
+                .HasFilter("\"Hash\" IS NOT NULL");
+
             // One-to-many relationship with SessionRuns
             entity.HasMany(e => e.Runs)
                 .WithOne(e => e.Session)
@@ -114,6 +120,9 @@ public class CapFrameXDbContext : DbContext
             entity.HasIndex(e => e.P1Fps);
             entity.HasIndex(e => e.P99Fps);
             entity.HasIndex(e => new { e.SessionId, e.CreatedAt });
+
+            // How a capture's runs are read back in the order they were recorded.
+            entity.HasIndex(e => new { e.SessionId, e.RunIndex });
         });
     }
 }
