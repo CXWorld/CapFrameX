@@ -1,7 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\CapFrameX.Service.Core\CapFrameX.Service.Core.csproj" />
+    <ProjectReference Include="..\CapFrameX.Service.Data\CapFrameX.Service.Data.csproj" />
+    <ProjectReference Include="..\CapFrameX.Service.Records\CapFrameX.Service.Records.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

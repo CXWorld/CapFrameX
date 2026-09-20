@@ -1,10 +1,11 @@
 using System.Collections.Concurrent;
 using System.Threading.Channels;
 using CapFrameX.Service.Contracts.Bridge;
+using CapFrameX.Service.Core.Bridge;
 
 namespace CapFrameX.Service.Api.Services;
 
-public sealed class BridgeEventStream
+public sealed class BridgeEventStream : IBridgeEventPublisher
 {
     private readonly ConcurrentDictionary<Guid, Channel<BridgeEventEnvelope>> _subscribers = new();
     private long _sequence;
@@ -39,6 +40,15 @@ public sealed class BridgeEventStream
 
         return envelope;
     }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Explicit because background work only needs to announce something, while a caller
+    /// inside the API also wants the envelope back - the sequence number it carries is what
+    /// a reconnecting client resumes from.
+    /// </remarks>
+    void IBridgeEventPublisher.Publish(string type, object payload, int version) =>
+        Publish(type, payload, version);
 
     private void Unsubscribe(Guid id)
     {

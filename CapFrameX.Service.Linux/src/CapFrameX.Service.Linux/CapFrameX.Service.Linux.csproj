@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\CapFrameX.Service.Shared\src\CapFrameX.Service.Api\CapFrameX.Service.Api.csproj" />
+    <ProjectReference Include="..\..\..\CapFrameX.Service.Shared\src\CapFrameX.Service.Application\CapFrameX.Service.Application.csproj" />
     <ProjectReference Include="..\..\..\CapFrameX.Service.Shared\src\CapFrameX.Service.Data\CapFrameX.Service.Data.csproj" />
     <ProjectReference Include="..\CapFrameX.Service.Linux.Platform\CapFrameX.Service.Linux.Platform.csproj" />
   </ItemGroup>

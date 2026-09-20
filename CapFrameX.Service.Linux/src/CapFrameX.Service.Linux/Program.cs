@@ -1,4 +1,5 @@
 using CapFrameX.Service.Api;
+using CapFrameX.Service.Application.Records;
 using CapFrameX.Service.Core.Platform;
 using CapFrameX.Service.Data;
 using CapFrameX.Service.Core.Security;
@@ -40,6 +41,7 @@ builder.Services.AddSingleton(paths);
 builder.Services.AddSingleton<ISecretFileWriter, PosixSecretFileWriter>();
 builder.Services.AddSingleton(tokenStore);
 builder.Services.AddCapFrameXDatabase(paths);
+builder.Services.AddCapFrameXRecordIndex(paths);
 builder.Services.AddCapFrameXApi(new CapFrameXApiOptions { Token = token });
 
 var app = builder.Build();

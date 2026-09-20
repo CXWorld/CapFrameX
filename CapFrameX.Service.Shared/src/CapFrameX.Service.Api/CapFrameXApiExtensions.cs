@@ -1,5 +1,6 @@
 using CapFrameX.Service.Api.Security;
 using CapFrameX.Service.Api.Services;
+using CapFrameX.Service.Core.Bridge;
 using CapFrameX.Service.Core.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,6 +46,9 @@ public static class CapFrameXApiExtensions
                 .AllowAnyMethod()));
 
         services.AddSingleton<BridgeEventStream>();
+        // One stream, two ways in: controllers take it directly, background work through the
+        // interface it can reach from below the API.
+        services.AddSingleton<IBridgeEventPublisher>(provider => provider.GetRequiredService<BridgeEventStream>());
         services.AddHostedService<BridgeHeartbeatService>();
 
         return services;
