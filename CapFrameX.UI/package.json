@@ -8,7 +8,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@angular/common": "^21.2.23",
@@ -27,6 +28,7 @@
     "@angular/cli": "^21.2.24",
     "@angular/compiler-cli": "^21.2.23",
     "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.63.0",
     "@tabler/icons": "^3.47.0",
     "@types/node": "^20.0.0",
     "angular-eslint": "^21.0.0",
