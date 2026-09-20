@@ -25,8 +25,19 @@ public sealed class GuardedApiFactory : IAsyncLifetime
     /// <summary>The token the hosted service accepts.</summary>
     public const string Token = "TestTokenTestTokenTestTokenTestTokenTestTok";
 
-    /// <summary>Host header a legitimate caller sends.</summary>
-    public const string OwnHost = "127.0.0.1:1337";
+    /// <summary>
+    /// Host header a legitimate caller sends.
+    /// </summary>
+    /// <remarks>
+    /// The guard compares this against the port the service bound, so the two have to agree. It
+    /// has to be a compile-time constant to serve as a default argument, so it cannot read
+    /// <see cref="CapFrameXApiOptions.DefaultPort"/> - <c>The_test_host_uses_the_service_port</c>
+    /// pins them together instead, and fails on its own rather than as ninety-nine tests that say
+    /// nothing about what moved.
+    /// </remarks>
+    public const string OwnHost = "127.0.0.1:" + PortText;
+
+    private const string PortText = "17337";
 
     private readonly string _root = Path.Combine(Path.GetTempPath(), "cfx-api-" + Guid.NewGuid().ToString("N"));
 

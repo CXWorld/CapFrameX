@@ -54,7 +54,7 @@ public sealed class LocalApiGuardEndpointTests(GuardedApiFactory factory) : ICla
     public async Task Request_naming_a_foreign_host_is_refused()
     {
         // A web page can resolve its own name to 127.0.0.1; the Host header is what betrays it.
-        using var client = factory.CreateCaller(host: "evil.example.com:1337");
+        using var client = factory.CreateCaller(host: $"evil.example.com:{CapFrameXApiOptions.DefaultPort}");
 
         var response = await client.GetAsync("/api/health");
 

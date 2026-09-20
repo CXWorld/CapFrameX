@@ -36,18 +36,20 @@ var token = Environment.GetEnvironmentVariable("CAPFRAMEX_SERVICE_TOKEN") is { L
     ? new SessionToken(supplied)
     : SessionToken.Generate();
 
-if (IsPortTaken(CapFrameXApiOptions.DefaultPort))
+var port = CapFrameXApiOptions.ResolvePort();
+
+if (IsPortTaken(port))
 {
     Console.Error.WriteLine(
-        $"CapFrameX service: port {CapFrameXApiOptions.DefaultPort} is already in use, most likely "
-        + "by another CapFrameX service.");
+        $"CapFrameX service: port {port} is already in use - by another CapFrameX service, or by "
+        + $"something else. Set {CapFrameXApiOptions.PortVariable} to put this one somewhere else.");
 
     return ServiceExitCode.PortInUse;
 }
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.ConfigureKestrel(options => options.ListenLocalhost(CapFrameXApiOptions.DefaultPort));
+builder.WebHost.ConfigureKestrel(options => options.ListenLocalhost(port));
 
 builder.Services.AddSingleton(paths);
 builder.Services.AddSingleton<IPrivilegeInfo>(privileges);
@@ -58,7 +60,7 @@ builder.Services.AddCapFrameXRecordIndex(paths);
 builder.Services.AddCapFrameXRecordWatcher();
 builder.Services.AddCapFrameXAnalysis();
 builder.Services.AddSingleton<IFileTrash>(new WindowsFileTrash());
-builder.Services.AddCapFrameXApi(new CapFrameXApiOptions { Token = token });
+builder.Services.AddCapFrameXApi(new CapFrameXApiOptions { Token = token, Port = port });
 
 var app = builder.Build();
 app.MapCapFrameXApi();
@@ -69,8 +71,12 @@ app.Services.GetRequiredService<SettingsStore>().Load();
 
 tokenStore.Publish(token);
 
+// So a frontend that did not start this process can still find it.
+ServiceEndpointFile.Publish(paths, port);
+
 // A token left behind after shutdown would keep authenticating; it goes when the service does.
 app.Lifetime.ApplicationStopped.Register(tokenStore.Revoke);
+app.Lifetime.ApplicationStopped.Register(() => ServiceEndpointFile.Revoke(paths));
 
 try
 {
@@ -79,6 +85,7 @@ try
 finally
 {
     tokenStore.Revoke();
+    ServiceEndpointFile.Revoke(paths);
 }
 
 return ServiceExitCode.Ok;
