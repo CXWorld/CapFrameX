@@ -19,7 +19,5 @@
     <ProjectReference Include="..\CapFrameX.Service.Contracts\CapFrameX.Service.Contracts.csproj" />
     <ProjectReference Include="..\CapFrameX.Service.Core\CapFrameX.Service.Core.csproj" />
     <ProjectReference Include="..\CapFrameX.Service.Data\CapFrameX.Service.Data.csproj" />
-    <ProjectReference Include="..\CapFrameX.Service.Infrastructure\CapFrameX.Service.Infrastructure.csproj" />
-    <ProjectReference Include="..\CapFrameX.Service.Input\CapFrameX.Service.Input.csproj" />
   </ItemGroup>
 </Project>
