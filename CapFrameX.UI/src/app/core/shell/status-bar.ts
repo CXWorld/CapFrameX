@@ -36,7 +36,7 @@ import { ServiceStatus } from '../service/service-status';
     }
   `,
   styles: `
-    .cx-status-bar {
+    :host {
       display: flex;
       align-items: center;
       gap: var(--cx-space-3);

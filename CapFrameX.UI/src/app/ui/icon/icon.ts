@@ -19,7 +19,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     </svg>
   `,
   styles: `
-    .cx-icon {
+    :host {
       display: inline-flex;
       color: inherit;
     }

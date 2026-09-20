@@ -31,7 +31,7 @@ declare global {
 export const RUNTIME_CONFIG = new InjectionToken<RuntimeConfig>('CapFrameX runtime configuration');
 
 /** Where the service listens unless the host says otherwise. */
-export const DEFAULT_API_BASE_URL = 'http://127.0.0.1:1337';
+export const DEFAULT_API_BASE_URL = 'http://127.0.0.1:17337';
 
 /**
  * Reads the configuration the host left on `window`.

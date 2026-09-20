@@ -25,7 +25,7 @@ import { Icon } from '../icon/icon';
     />
   `,
   styles: `
-    .cx-search-field {
+    :host {
       position: relative;
       display: block;
     }

@@ -10,7 +10,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     <ng-content />
   `,
   styles: `
-    .cx-card {
+    :host {
       display: block;
       padding: var(--cx-space-5) var(--cx-space-6);
       border-radius: var(--cx-radius);

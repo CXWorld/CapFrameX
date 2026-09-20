@@ -20,7 +20,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     </p>
   `,
   styles: `
-    .cx-stat-tile {
+    :host {
       display: block;
       padding: var(--cx-space-4) var(--cx-space-5);
       border-radius: var(--cx-radius);

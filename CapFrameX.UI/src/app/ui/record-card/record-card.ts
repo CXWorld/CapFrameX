@@ -29,7 +29,7 @@ import { Sparkline } from '../sparkline/sparkline';
     }
   `,
   styles: `
-    .cx-record-card {
+    :host {
       display: block;
       padding: 9px var(--cx-space-4);
       border: 0.5px solid var(--cx-line);
@@ -38,11 +38,11 @@ import { Sparkline } from '../sparkline/sparkline';
       cursor: pointer;
     }
 
-    .cx-record-card:hover {
+    :host(:hover) {
       border-color: var(--cx-line-strong);
     }
 
-    .cx-record-card.selected {
+    :host(.selected) {
       border-color: var(--cx-line-accent);
       background: var(--cx-bg-accent);
     }
@@ -55,7 +55,7 @@ import { Sparkline } from '../sparkline/sparkline';
       white-space: nowrap;
     }
 
-    .cx-record-card.selected .title {
+    :host(.selected) .title {
       color: var(--cx-text-accent);
     }
 
@@ -65,7 +65,7 @@ import { Sparkline } from '../sparkline/sparkline';
       font-size: var(--cx-text-11);
     }
 
-    .cx-record-card.selected .meta {
+    :host(.selected) .meta {
       color: var(--cx-text-accent);
       opacity: 0.75;
     }

@@ -48,7 +48,7 @@ import { RAIL_ITEMS } from './rail-items';
     </nav>
   `,
   styles: `
-    .cx-rail {
+    :host {
       display: flex;
       flex-direction: column;
       align-items: center;

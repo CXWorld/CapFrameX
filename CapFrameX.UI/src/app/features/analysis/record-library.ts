@@ -43,7 +43,7 @@ import { RecordLibraryStore } from './record-library-store';
     }
   `,
   styles: `
-    .cx-record-library {
+    :host {
       display: flex;
       flex-direction: column;
       gap: var(--cx-space-3);

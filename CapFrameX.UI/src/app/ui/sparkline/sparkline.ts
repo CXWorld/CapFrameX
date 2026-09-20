@@ -19,7 +19,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
     }
   `,
   styles: `
-    .cx-sparkline {
+    :host {
       display: block;
     }
 

@@ -15,7 +15,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     <ng-content />
   `,
   styles: `
-    .cx-page-header {
+    :host {
       display: flex;
       align-items: center;
       justify-content: space-between;

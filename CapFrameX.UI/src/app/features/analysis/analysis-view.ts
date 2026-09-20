@@ -78,7 +78,7 @@ import { RecordLibraryStore } from './record-library-store';
     </section>
   `,
   styles: `
-    .cx-analysis-view {
+    :host {
       display: flex;
       flex: 1;
       min-width: 0;

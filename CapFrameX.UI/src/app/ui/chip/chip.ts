@@ -7,7 +7,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   host: { class: 'cx-chip' },
   template: '<ng-content />',
   styles: `
-    .cx-chip {
+    :host {
       display: inline-flex;
       align-items: center;
       padding: 3px var(--cx-space-2);
