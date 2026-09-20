@@ -12,6 +12,16 @@ namespace CapFrameX.PmcReader.Plugin
             global::PmcReader.PmcReaderInterop.Close();
         }
 
+        public static bool IsKernelDriverOpen()
+        {
+            return global::PmcReader.PmcReaderInterop.IsKernelDriverOpen();
+        }
+
+        public static string GetKernelDriverReport()
+        {
+            return global::PmcReader.PmcReaderInterop.GetKernelDriverReport();
+        }
+
         public static string GetManufacturerId()
         {
             return global::PmcReader.PmcReaderInterop.GetManufacturerId();

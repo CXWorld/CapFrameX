@@ -63,7 +63,7 @@ namespace CapFrameX.Mcp.Tools
                         continue;
                     }
                     _tools[descriptor.Name] = descriptor;
-                    Log.Logger.Information("Registered MCP tool {name} from {type}.{method}",
+                    Log.Logger.Debug("Registered MCP tool {name} from {type}.{method}",
                         descriptor.Name, type.FullName, method.Name);
                 }
             }

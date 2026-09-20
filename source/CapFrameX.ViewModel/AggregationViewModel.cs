@@ -11,7 +11,7 @@ using GongSolutions.Wpf.DragDrop;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
-using Prism.Regions;
+using Prism.Navigation.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -466,9 +466,9 @@ namespace CapFrameX.ViewModel
                         {
                             AddAggregationEntry(recordInfo, null);
                         }
-                        else if (dropInfo.Data is IEnumerable<IFileRecordInfo> recordInfos)
+                        else if (dropInfo.Data is System.Collections.IEnumerable droppedItems)
                         {
-                            recordInfos.ForEach(info => AddAggregationEntry(info, null));
+                            droppedItems.OfType<IFileRecordInfo>().ForEach(info => AddAggregationEntry(info, null));
                         }
                     }
                 }

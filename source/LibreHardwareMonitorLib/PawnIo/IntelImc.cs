@@ -1,5 +1,5 @@
-using LibreHardwareMonitor.Hardware;
 using System;
+using LibreHardwareMonitor.Hardware;
 
 namespace LibreHardwareMonitor.PawnIo;
 
@@ -148,13 +148,10 @@ public class IntelImc
     private const int SA_PERF_STATUS = 0x5918;
     private const int IMC_LIVE_GV_STATUS_ARL = 0xE448;
 
-    // ADL/RPL: MC_BIOS_DATA mirror of the BIOS-programmed memory controller
-    // configuration. Not in Intel's public client CFG/MEM datasheet. Layout
-    // empirically validated on i9-13900HX with DDR5-5600 in Gear2 (Memory
-    // Data Rate matched 5600 MT/s after applying):
-    //   bits 11:8   gear-down stage      (0=Gear1, 1=Gear2, 2=Gear4)
-    // The gear maps as 2^stage; anything beyond stage 2 is treated as
-    // "wrong register / future stage" and falls back to ImcGear.Unknown.
+    // ADL/RPL: MC_BIOS_DATA mirrors the last BIOS memory-controller request.
+    // Intel 13th Gen Core Datasheet Vol. 2 (ID 767624), offset 5E04h:
+    //   bits 13:12  GEAR        (0=Gear1, 1=Gear2, 2=Gear4, 3=reserved)
+    //   bits 11:8   MC_PLL_REF  (0=133 MHz, 1=100 MHz; independent of gear)
     private const int MC_BIOS_DATA_ADL_RPL = 0x5E04;
 
     private const uint IMC_RATIO_MIN = 16;
@@ -395,10 +392,10 @@ public class IntelImc
         return true;
     }
 
-    // ADL/RPL gear probe. MC_BIOS_DATA bits [11:8] encode the gear-down
+    // ADL/RPL gear probe. MC_BIOS_DATA bits [13:12] encode the gear-down
     // stage (0=Gear1, 1=Gear2, 2=Gear4) - so the gear value is 2^stage.
     // Returns true only when a recognized stage is read; on any other case
-    // (read failure, future/unknown stage) gear stays Unknown and the caller
+    // (read failure or reserved stage) gear stays Unknown and the caller
     // proceeds without populating Memory Data Rate / DRAM Frequency.
     private bool TryReadAdlRplGear(out ImcGear gear)
     {
@@ -406,7 +403,13 @@ public class IntelImc
         if (!ReadMchbarDword(MC_BIOS_DATA_ADL_RPL, out uint raw))
             return false;
 
-        uint stage = (raw >> 8) & 0xF;
+        return TryDecodeAdlRplGear(raw, out gear);
+    }
+
+    internal static bool TryDecodeAdlRplGear(uint raw, out ImcGear gear)
+    {
+        gear = ImcGear.Unknown;
+        uint stage = (raw >> 12) & 0x3;
         switch (stage)
         {
             case 0:

@@ -31,6 +31,11 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
 
     private readonly LpcAcpiEc _pawnModule;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WindowsEmbeddedControllerIO" /> class and takes
+    /// the ISA bus mutex.
+    /// </summary>
+    /// <exception cref="BusMutexLockingFailedException">The ISA bus mutex could not be acquired.</exception>
     public WindowsEmbeddedControllerIO()
     {
         _pawnModule = new LpcAcpiEc();
@@ -41,6 +46,7 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
         }
     }
 
+    /// <inheritdoc />
     public void Read(ushort[] registers, byte[] data)
     {
         Trace.Assert(registers.Length <= data.Length,
@@ -78,6 +84,7 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
         WriteLoop(register, value, WriteByteOp);
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         if (!_disposed)
@@ -170,8 +177,14 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
         _pawnModule.WritePort((byte)port, datum);
     }
 
+    /// <summary>
+    /// The exception that is thrown when the ISA bus mutex cannot be acquired.
+    /// </summary>
     public class BusMutexLockingFailedException : EmbeddedController.IOException
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BusMutexLockingFailedException" /> class.
+        /// </summary>
         public BusMutexLockingFailedException()
             : base("could not lock ISA bus mutex")
         { }
@@ -209,6 +222,12 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
 
     #region Read/Write ops
 
+    /// <summary>
+    /// Reads a single register of the embedded controller.
+    /// </summary>
+    /// <param name="register">The register to read.</param>
+    /// <param name="value">When this method returns, the value that was read.</param>
+    /// <returns><see langword="true" /> if the controller answered in time; otherwise, <see langword="false" />.</returns>
     protected bool ReadByteOp(byte register, out byte value)
     {
         if (WaitWrite())
@@ -231,6 +250,12 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
         return false;
     }
 
+    /// <summary>
+    /// Writes a single register of the embedded controller.
+    /// </summary>
+    /// <param name="register">The register to write.</param>
+    /// <param name="value">The value to write.</param>
+    /// <returns><see langword="true" /> if the controller accepted the write in time; otherwise, <see langword="false" />.</returns>
     protected bool WriteByteOp(byte register, byte value)
     {
         if (WaitWrite())

@@ -1,7 +1,8 @@
-﻿using CapFrameX.Configuration;
+using CapFrameX.Configuration;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.MVVM;
+using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
@@ -13,12 +14,11 @@ using CapFrameX.Webservice.Data.DTO;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using Microsoft.Win32.TaskScheduler;
-using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
-using Prism.Regions;
+using Prism.Navigation.Regions;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -27,6 +27,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.NetworkInformation;
+using System.Reactive.Linq;
 using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
@@ -42,11 +43,15 @@ namespace CapFrameX.ViewModel
         private readonly IShell _shell;
         private readonly ISystemInfo _systemInfo;
         private readonly LoginManager _loginManager;
+        private readonly CaptureManager _captureManager;
         private PubSubEvent<AppMessages.OpenLoginWindow> _openLoginWindow;
         public PubSubEvent<ViewMessages.OptionPopupClosed> OptionPopupClosed;
         public PubSubEvent<ViewMessages.ThemeChanged> _themeChanged;
 
-        private bool _captureIsChecked = true;
+        // The Info tab is the leading tab and the startup view (see CapFrameXViewRegion,
+        // which registers InfoView first so the region activates it initially).
+        private bool _infoIsChecked = true;
+        private bool _captureIsChecked;
         private bool _overlayIsChecked;
         private bool _singleRecordIsChecked;
         private bool _recordComparisonIsChecked;
@@ -61,18 +66,34 @@ namespace CapFrameX.ViewModel
         private bool _hardwareViewSelected;
         private bool _appViewSelected;
         private bool _remoteViewSelected;
+        private bool _updateViewSelected;
         private bool _helpViewSelected;
         private bool _showNotification;
         private DateTime _notificationTimestamp = DateTime.MinValue;
+        private bool _isCaptureServiceRunning;
+        private bool _isCapturing;
 
         public string OsdHttpUrl => WebserverFactory.OsdHttpUrl;
         public string OsdWSUrl => WebserverFactory.OsdWSUrl;
         public string SensorsWSUrl => WebserverFactory.SensorsWSUrl;
         public string ActiveSensorsWSUrl => WebserverFactory.ActiveSensorsWSUrl;
 
-        public string CurrentPageName { get; set; }
+        public string CurrentPageName { get; set; } = "Info";
 
         public IFileRecordInfo RecordInfo { get; set; }
+
+        public bool InfoIsChecked
+        {
+            get { return _infoIsChecked; }
+            set
+            {
+                _infoIsChecked = value;
+                RaisePropertyChanged();
+
+                if (value)
+                    OnInfoIsCheckedChanged();
+            }
+        }
 
         public bool CaptureIsChecked
         {
@@ -310,6 +331,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public string CustomMainboardDescription
+        {
+            get { return _appConfiguration.CustomMainboardDescription; }
+            set
+            {
+                _appConfiguration.CustomMainboardDescription = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public bool IsGpuAccelerationActive
         {
             get { return _appConfiguration.IsGpuAccelerationActive; }
@@ -369,6 +400,17 @@ namespace CapFrameX.ViewModel
             set
             {
                 _remoteViewSelected = value;
+                OnViewSelectionChanged();
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool UpdateViewSelected
+        {
+            get { return _updateViewSelected; }
+            set
+            {
+                _updateViewSelected = value;
                 OnViewSelectionChanged();
                 RaisePropertyChanged();
             }
@@ -508,6 +550,34 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public Array PresentMonCircularBufferSizeItemsSource
+            => PresentMonCircularBuffer.Sizes.ToArray();
+
+        /// <summary>
+        /// Only reaches PresentMon on its command line, so changing it restarts the capture
+        /// service. <see cref="IsCaptureServiceReady"/> keeps the combo box disabled until it is
+        /// back up.
+        /// </summary>
+        public int PresentMonCircularBufferSize
+        {
+            get { return _appConfiguration.PresentMonCircularBufferSize; }
+            set
+            {
+                if (value == _appConfiguration.PresentMonCircularBufferSize)
+                    return;
+
+                _appConfiguration.PresentMonCircularBufferSize = value;
+                RaisePropertyChanged();
+                RestartCaptureService();
+            }
+        }
+
+        /// <summary>
+        /// True while PresentMon runs properly and no capture is in progress - the only state in
+        /// which the capture service may be restarted.
+        /// </summary>
+        public bool IsCaptureServiceReady => _isCaptureServiceRunning && !_isCapturing;
+
         public string PingURL
         {
             get { return _appConfiguration.PingURL; }
@@ -556,6 +626,11 @@ namespace CapFrameX.ViewModel
 
         public ISensorService SensorService => _sensorService;
 
+        /// <summary>
+        /// Backs the update tab. Shared with the status bar and the embedded update dialog.
+        /// </summary>
+        public UpdateViewModel UpdateViewModel { get; }
+
         public string ResolveDocumentsPath(string path) => _pathService.ResolveDocumentsPlaceholder(path);
 
         public ColorbarViewModel(IRegionManager regionManager,
@@ -566,7 +641,9 @@ namespace CapFrameX.ViewModel
             ILogger<ColorbarViewModel> logger,
             IShell shell,
             ISystemInfo systemInfo,
-            LoginManager loginManager)
+            LoginManager loginManager,
+            UpdateViewModel updateViewModel,
+            CaptureManager captureManager)
         {
             _regionManager = regionManager;
             _eventAggregator = eventAggregator;
@@ -577,6 +654,8 @@ namespace CapFrameX.ViewModel
             _shell = shell;
             _systemInfo = systemInfo;
             _loginManager = loginManager;
+            _captureManager = captureManager;
+            UpdateViewModel = updateViewModel;
 
             RoundingDigits = new List<int>(Enumerable.Range(0, 8));
             SelectScreenshotFolderCommand = new DelegateCommand(OnSelectScreenshotFolder);
@@ -598,11 +677,34 @@ namespace CapFrameX.ViewModel
                     .ToArray();
 
                 RaisePropertyChanged(nameof(GraphicsAdapters));
+
+                // Seed the custom hardware descriptions only after GPU enumeration is
+                // complete: earlier, GetGraphicCardName() falls back to WMI, which
+                // reports the display-driving adapter - the iGPU on hybrid systems -
+                // and that wrong name would be persisted in the configuration.
+                SetHardwareInfoDefaultsFromConfig();
             });
+
+            _captureManager.CaptureServiceRunningStream
+                .ObserveOnDispatcher()
+                .Subscribe(isRunning =>
+                {
+                    _isCaptureServiceRunning = isRunning;
+                    RaisePropertyChanged(nameof(IsCaptureServiceReady));
+                });
+
+            // Restarting the capture service kills a recording in progress, so a capture started
+            // while this popup is open has to lock the setting as well.
+            _captureManager.CaptureStatusChange
+                .ObserveOnDispatcher()
+                .Subscribe(status =>
+                {
+                    _isCapturing = status.Status != null && status.Status != ECaptureStatus.Stopped;
+                    RaisePropertyChanged(nameof(IsCaptureServiceReady));
+                });
 
             SetAggregatorEvents();
             SubscribeToAggregatorEvents();
-            SetHardwareInfoDefaultsFromConfig();
 
             System.Threading.Tasks.Task.Run(() =>
             {
@@ -632,6 +734,28 @@ namespace CapFrameX.ViewModel
             await _loginManager.Logout();
         }
 
+        // The restart waits for PresentMon's ETW session to go down and come back up, which must
+        // not block the UI thread. IsCaptureServiceReady goes false right away so the setting
+        // cannot be changed again while the service is down; the capture service pushes it back
+        // to true once PresentMon delivers data again.
+        private void RestartCaptureService()
+        {
+            _isCaptureServiceRunning = false;
+            RaisePropertyChanged(nameof(IsCaptureServiceReady));
+
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                try
+                {
+                    _captureManager.RestartCaptureService();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Unable to restart the capture service.");
+                }
+            });
+        }
+
         private void SetHardwareInfoDefaultsFromConfig()
         {
             if (CustomCpuDescription == "CPU")
@@ -642,21 +766,19 @@ namespace CapFrameX.ViewModel
 
             if (CustomRamDescription == "RAM")
                 CustomRamDescription = _systemInfo.GetSystemRAMInfoName();
+
+            if (CustomMainboardDescription == "Mainboard")
+                CustomMainboardDescription = _systemInfo.GetMotherboardName();
         }
 
         private void OnSelectScreenshotFolder()
         {
-            var dialog = new CommonOpenFileDialog
-            {
-                IsFolderPicker = true
-            };
+            var dialog = new Microsoft.Win32.OpenFolderDialog();
 
-            CommonFileDialogResult result = dialog.ShowDialog();
-
-            if (result == CommonFileDialogResult.Ok)
+            if (dialog.ShowDialog() == true)
             {
-                _appConfiguration.ScreenshotDirectory = dialog.FileName;
-                ScreenshotDirectory = dialog.FileName;
+                _appConfiguration.ScreenshotDirectory = dialog.FolderName;
+                ScreenshotDirectory = dialog.FolderName;
             }
         }
 
@@ -665,9 +787,16 @@ namespace CapFrameX.ViewModel
             try
             {
                 var path = _pathService.ResolveDocumentsPlaceholder(_appConfiguration.ScreenshotDirectory);
-                Process.Start(path);
+                // UseShellExecute is required to open a folder in Explorer on .NET Core+
+                Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
             }
             catch { _logger.LogError("Error while opening screenshot folder."); }
+        }
+
+        private void OnInfoIsCheckedChanged()
+        {
+            _regionManager.RequestNavigate("DataRegion", "InfoView");
+            CurrentPageName = "Info";
         }
 
         private void OnCaptureIsCheckedChanged()
@@ -758,6 +887,9 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged(nameof(ActiveSensorsWSUrl));
             }
 
+            if (UpdateViewSelected)
+                SelectedView = "Update";
+
             if (HelpViewSelected)
                 SelectedView = "Help";
         }
@@ -771,18 +903,22 @@ namespace CapFrameX.ViewModel
 
         public void OnAutostartChanged(bool cleanup = false)
         {
+            if (PortableModeDetector.IsPortableMode)
+                return;
+
             const string appName = "CapFrameX";
 
             try
             {
                 using (TaskService ts = new TaskService())
                 {
-                    var taskExists = ts.RootFolder.GetTasks().Any(t => t.Name == appName);
-
-                    if (Autostart && !taskExists)
+                    // Refresh existing tasks as well to repair DLL targets and stale installation paths.
+                    if (Autostart)
                     {
-                        string appPath = System.Reflection.Assembly.GetEntryAssembly().Location;
-
+                        // On modern .NET, the entry assembly is CapFrameX.dll; Windows must launch the apphost EXE.
+                        string appDirectory = AppContext.BaseDirectory;
+                        string appPath = Path.Combine(appDirectory, appName + ".exe");
+                        string userId = Environment.UserDomainName + "\\" + Environment.UserName;
 
                         TaskDefinition td = ts.NewTask();
                         td.RegistrationInfo.Description = "Autostart";
@@ -791,21 +927,18 @@ namespace CapFrameX.ViewModel
                         td.Principal.RunLevel = TaskRunLevel.Highest;
 
                         var trigger = new LogonTrigger();
-                        trigger.UserId = Environment.UserName;
+                        trigger.UserId = userId;
                         trigger.Delay = TimeSpan.FromSeconds(20);
 
                         td.Triggers.Add(trigger);
+                        td.Actions.Add(new ExecAction(appPath, workingDirectory: appDirectory));
 
-
-                        td.Actions.Add(new ExecAction(appPath));
-
-                        ts.RootFolder.RegisterTaskDefinition(appName, td, TaskCreation.CreateOrUpdate,
-                        Environment.UserDomainName + "\\" + Environment.UserName, null, TaskLogonType.InteractiveToken);
-
+                        using var task = ts.RootFolder.RegisterTaskDefinition(appName, td, TaskCreation.CreateOrUpdate,
+                            userId, null, TaskLogonType.InteractiveToken);
+                        _logger.LogInformation("Registered autostart task for {AppPath}.", appPath);
                     }
-                    else if (!Autostart && taskExists)
+                    else if (ts.RootFolder.GetTasks().Any(t => t.Name == appName))
                     {
-
                         ts.RootFolder.DeleteTask(appName);
                     }
                 }

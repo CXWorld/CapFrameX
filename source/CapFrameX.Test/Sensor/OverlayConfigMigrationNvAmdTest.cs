@@ -41,6 +41,7 @@ namespace CapFrameX.Test.Sensor
         private Mock<IRTSSService> _rtssServiceMock;
         private Mock<IThreadAffinityController> _threadAffinityMock;
         private Mock<IPathService> _pathServiceMock;
+        private Mock<IHookOverlayStatusService> _hookOverlayStatusMock;
         private Mock<ILogger<OverlayEntryProvider>> _loggerMock;
 
         private List<OverlayEntryWrapper> _loadedConfigEntries;
@@ -90,6 +91,12 @@ namespace CapFrameX.Test.Sensor
             _threadAffinityMock = new Mock<IThreadAffinityController>();
             _pathServiceMock = new Mock<IPathService>();
             _pathServiceMock.Setup(x => x.ConfigFolder).Returns(_testConfigFolder);
+
+            _hookOverlayStatusMock = new Mock<IHookOverlayStatusService>();
+            _hookOverlayStatusMock.Setup(x => x.Current)
+                .Returns(new HookOverlayStatus(EHookOverlayStatus.Disabled));
+            _hookOverlayStatusMock.Setup(x => x.StatusStream)
+                .Returns(Observable.Never<HookOverlayStatus>());
 
             _loggerMock = new Mock<ILogger<OverlayEntryProvider>>();
         }
@@ -251,7 +258,9 @@ namespace CapFrameX.Test.Sensor
                 _overlayEntryCore,
                 _threadAffinityMock.Object,
                 _pathServiceMock.Object,
-                _loggerMock.Object);
+                _hookOverlayStatusMock.Object,
+                _loggerMock.Object,
+                () => Array.Empty<DetectedDisplay>());
         }
 
         // ==================== TESTS ====================
@@ -354,6 +363,73 @@ namespace CapFrameX.Test.Sensor
                 Assert.IsTrue(entryIds.Contains(configEntry.Identifier),
                     $"Entry '{configEntry.Identifier}' should be present.");
             }
+        }
+
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task IdenticalHardware_RetiredEntriesAreRemovedFromSavedProfiles(bool useStableIdentifier)
+        {
+            var retiredIdentifiers = new[]
+            {
+                "OnlineAmdFlmLatency", "OnlineClickToPhotonLatency",
+                "/capframex/amd-flm/0/latency/0", "/capframex/presentmon/0/latency/0"
+            };
+            var retiredEntries = retiredIdentifiers.Select(identifier =>
+                new OverlayEntryWrapper(useStableIdentifier ? identifier + "_legacy" : identifier)
+                {
+                    StableIdentifier = useStableIdentifier ? identifier : null,
+                    OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                    IsEntryEnabled = true,
+                    ShowOnOverlayIsEnabled = true,
+                    ShowOnOverlay = true,
+                    GroupName = "Retired metric",
+                    Description = "Retired metric",
+                    Value = 23.5
+                }).ToList();
+            var persistence = new OverlayEntryPersistence
+            {
+                OverlayEntries = _loadedConfigEntries.Concat(retiredEntries).ToList()
+            };
+            File.WriteAllText(Path.Combine(_testConfigFolder, "OverlayEntryConfiguration_0.json"),
+                JsonConvert.SerializeObject(persistence));
+            PopulateOverlayEntryCoreFromConfig();
+
+            var provider = CreateProvider();
+            var entries = await provider.GetOverlayEntries(updateFormats: false);
+            var entryIds = entries.Select(entry => entry.Identifier).ToHashSet();
+
+            foreach (var entry in retiredEntries)
+                Assert.IsFalse(entryIds.Contains(entry.Identifier), "Retired entries must not be restored.");
+            foreach (var entry in _loadedConfigEntries)
+                Assert.IsTrue(entryIds.Contains(entry.Identifier), "Existing metrics must be preserved.");
+
+            var framerate = entries.Single(entry => entry.Identifier == "Framerate");
+            var savedFramerate = _loadedConfigEntries.Single(entry => entry.Identifier == "Framerate");
+            Assert.AreEqual(savedFramerate.ShowOnOverlay, framerate.ShowOnOverlay);
+            Assert.AreEqual(savedFramerate.GroupName, framerate.GroupName);
+        }
+
+        [TestMethod]
+        public async Task IdenticalHardware_DisabledPcLatency_StaysInListDeactivated()
+        {
+            // PC latency off: the entry has to survive the load filter so the
+            // live config toggle can enable it in place without a restart.
+            _appConfigMock.Setup(x => x.UsePcLatency).Returns(false);
+            PopulateOverlayEntryCoreFromConfig();
+
+            var provider = CreateProvider();
+            await Task.Delay(500);
+
+            var entries = await provider.GetOverlayEntries(updateFormats: false);
+
+            var pcLatencyEntry = entries.Single(entry => entry.Identifier == "OnlinePcLatency");
+            Assert.IsFalse(pcLatencyEntry.IsEntryEnabled,
+                "Disabled PC latency should remain in migrated configs without being activated.");
+            Assert.IsFalse(pcLatencyEntry.ShowOnOverlayIsEnabled,
+                "The PC latency overlay toggle should remain disabled until the feature is enabled.");
+            Assert.IsFalse(pcLatencyEntry.ShowOnOverlay,
+                "A disabled PC latency entry must not be shown on the overlay.");
         }
 
         [TestMethod]
@@ -760,13 +836,23 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
-        public void SensorEntryProvider_DefaultActiveSensors_IncludeGpuProcessMemoryDedicated()
+        public void SensorEntryProvider_DefaultActiveSensors_IncludeGpuMemoryDedicatedGame()
         {
             var sensorEntryProvider = new SensorEntryProvider(_mockSensorService, _sensorConfigMock.Object);
 
-            var sensor = new MockSensorEntry("/gpu/0/data/processdedicated", "GPU Process Memory Dedicated", "GpuNvidia", "Data");
+            var sensor = new MockSensorEntry("/gpu/0/data/processdedicated", "GPU Memory Dedicated Game", "GpuNvidia", "Data");
             Assert.IsTrue(sensorEntryProvider.GetIsDefaultActiveSensor(sensor),
-                "GPU Process Memory Dedicated should be a default active sensor.");
+                "GPU Memory Dedicated Game should be a default active sensor.");
+        }
+
+        [TestMethod]
+        public void SensorEntryProvider_DefaultActiveSensors_IncludeGpuMemoryAllocated()
+        {
+            var sensorEntryProvider = new SensorEntryProvider(_mockSensorService, _sensorConfigMock.Object);
+
+            var sensor = new MockSensorEntry("/gpu/0/data/allocated", "GPU Memory Allocated", "GpuNvidia", "Data");
+            Assert.IsTrue(sensorEntryProvider.GetIsDefaultActiveSensor(sensor),
+                "GPU Memory Allocated should be a default active sensor.");
         }
 
         [TestMethod]

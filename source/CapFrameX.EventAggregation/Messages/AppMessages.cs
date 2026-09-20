@@ -37,5 +37,20 @@
 		public class CloudFolderChanged	{ }
 
 		public class SelectCloudFolder { }
+
+		/// <summary>
+		/// Published by the shell whenever its content becomes visible or invisible
+		/// (minimized or hidden to the tray). Deliberately based on visibility, not
+		/// focus: CapFrameX may run on a second monitor while a game holds the focus.
+		/// </summary>
+		public class ShellVisibilityChanged
+		{
+			public bool IsContentVisible { get; }
+
+			public ShellVisibilityChanged(bool isContentVisible)
+			{
+				IsContentVisible = isContentVisible;
+			}
+		}
 	}
 }

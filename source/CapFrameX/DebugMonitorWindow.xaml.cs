@@ -164,7 +164,8 @@ namespace CapFrameX
         {
             _frameDataSubscription = _captureService.FrameDataStream
                 .Sample(TimeSpan.FromMilliseconds(250))
-                .ObserveOn(Application.Current.Dispatcher)
+                .ObserveOn(new System.Reactive.Concurrency.SynchronizationContextScheduler(
+                    new System.Windows.Threading.DispatcherSynchronizationContext(Application.Current.Dispatcher)))
                 .Subscribe(OnFrameData);
         }
 

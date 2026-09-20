@@ -1,11 +1,13 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
+using CapFrameX.PresentMonInterface;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -34,6 +36,15 @@ namespace CapFrameX.Test.Mocks
         /// Number of files currently stored in memory.
         /// </summary>
         public int FileCount => _inMemoryFiles.Count;
+
+        /// <summary>
+        /// The normalized PresentMon lines handed to the last
+        /// <see cref="ConvertPresentDataLinesToSessionRun"/> call. Lets a test inspect what the
+        /// capture pipeline actually produced, which the converted SessionRun does not show —
+        /// it recomputes its own timeline from MsBetweenPresents.
+        /// </summary>
+        public IReadOnlyList<string> LastConvertedPresentLines { get; private set; } =
+            new List<string>();
 
         public MockRecordManager()
         {
@@ -142,7 +153,8 @@ namespace CapFrameX.Test.Mocks
         }
 
         public void UpdateCustomData(IFileRecordInfo recordInfo, string customCpuInfo,
-            string customGpuInfo, string customRamInfo, string customGameName, string customComment)
+            string customGpuInfo, string customRamInfo, string customMainboardInfo,
+            string customGameName, string customComment, string customResolution = null)
         {
             var path = recordInfo.FullPath;
 
@@ -158,6 +170,8 @@ namespace CapFrameX.Test.Mocks
                         session.Info.GPU = customGpuInfo;
                     if (!string.IsNullOrEmpty(customRamInfo))
                         session.Info.SystemRam = customRamInfo;
+                    if (!string.IsNullOrEmpty(customMainboardInfo))
+                        session.Info.Motherboard = customMainboardInfo;
                     if (!string.IsNullOrEmpty(customGameName))
                         session.Info.GameName = customGameName;
                     if (!string.IsNullOrEmpty(customComment))
@@ -182,6 +196,7 @@ namespace CapFrameX.Test.Mocks
 
             AddSystemInfoEntry(entries, "Game", recordInfo.GameName);
             AddSystemInfoEntry(entries, "Process", recordInfo.ProcessName);
+            AddSystemInfoEntry(entries, "Device Name", recordInfo.DeviceName);
             AddSystemInfoEntry(entries, "CPU", recordInfo.ProcessorName);
             AddSystemInfoEntry(entries, "GPU", recordInfo.GraphicCardName);
             AddSystemInfoEntry(entries, "RAM", recordInfo.SystemRamInfo);
@@ -209,6 +224,7 @@ namespace CapFrameX.Test.Mocks
         public ISessionRun ConvertPresentDataLinesToSessionRun(IEnumerable<string> presentLines)
         {
             var lines = presentLines.ToList();
+            LastConvertedPresentLines = lines;
             if (lines.Count == 0)
             {
                 return new SessionRun
@@ -218,8 +234,10 @@ namespace CapFrameX.Test.Mocks
                 };
             }
 
-            // Skip header line if present
-            var dataLines = lines[0].StartsWith("Application") || lines[0].Contains(",")
+            // Only an actual header line is dropped. The previous check treated every line
+            // containing a comma as a header, which silently swallowed one frame of every
+            // capture — CaptureManager hands over pure data lines, no header.
+            var dataLines = lines[0].StartsWith("Application,", StringComparison.OrdinalIgnoreCase)
                 ? lines.Skip(1).ToList()
                 : lines;
 
@@ -230,21 +248,17 @@ namespace CapFrameX.Test.Mocks
             for (int i = 0; i < frameCount; i++)
             {
                 var parts = dataLines[i].Split(',');
-                if (parts.Length >= 11)
-                {
-                    // Parse frame time (MsBetweenPresents is typically at index 10)
-                    if (double.TryParse(parts[10], out var frameTime))
-                    {
-                        captureData.MsBetweenPresents[i] = frameTime;
-                        cumulativeTime += frameTime / 1000.0;
-                        captureData.TimeInSeconds[i] = cumulativeTime;
-                    }
 
-                    // Parse display change time (typically at index 11)
-                    if (parts.Length > 11 && double.TryParse(parts[11], out var displayChange))
-                    {
-                        captureData.MsBetweenDisplayChange[i] = displayChange;
-                    }
+                if (TryParseColumn(parts, PresentMonCaptureService.MsBetweenPresents_INDEX, out var frameTime))
+                {
+                    captureData.MsBetweenPresents[i] = frameTime;
+                    cumulativeTime += frameTime / 1000.0;
+                    captureData.TimeInSeconds[i] = cumulativeTime;
+                }
+
+                if (TryParseColumn(parts, PresentMonCaptureService.MsBetweenDisplayChange_INDEX, out var displayChange))
+                {
+                    captureData.MsBetweenDisplayChange[i] = displayChange;
                 }
             }
 
@@ -264,6 +278,28 @@ namespace CapFrameX.Test.Mocks
                 CaptureData = captureData,
                 SensorData2 = new SessionSensorData2()
             };
+        }
+
+        /// <summary>
+        /// Reads one PresentMon column the way <c>RecordManager</c> does.
+        ///
+        /// The index comes from <see cref="PresentMonCaptureService"/> rather than a literal:
+        /// hard-coded positions silently pick up a neighbouring column when the layout changes,
+        /// and that is exactly what happened here — MsBetweenPresents sits at index 11, the mock
+        /// read index 10 (MsBetweenSimulationStart) and produced sessions whose frame times were
+        /// all zero. Both indices are ahead of the optional MsPCLatency column, so they hold for
+        /// either layout.
+        ///
+        /// The culture is pinned for the same class of reason: PresentMon writes invariant
+        /// numbers ("6.94"), and parsing those with the current culture turns the decimal point
+        /// into a group separator on locales such as de-DE, yielding 694.
+        /// </summary>
+        private static bool TryParseColumn(string[] parts, int index, out double value)
+        {
+            value = 0;
+            return index >= 0
+                && index < parts.Length
+                && double.TryParse(parts[index], NumberStyles.Any, CultureInfo.InvariantCulture, out value);
         }
 
         public Task SavePresentmonRawToFile(IEnumerable<string> lines, string process, string recordDirectory)
@@ -348,6 +384,7 @@ namespace CapFrameX.Test.Mocks
                 ProcessName = processName,
                 GameName = processName,
                 Comment = comment,
+                DeviceName = Environment.MachineName,
                 AppVersion = new Version(1, 7, 7)
             };
 
@@ -355,6 +392,7 @@ namespace CapFrameX.Test.Mocks
             if (hwInfo?.Count > 0)
             {
                 var first = hwInfo[0];
+                info.DeviceName = first.DeviceName;
                 info.Processor = first.Processor;
                 info.GPU = first.GPU;
                 info.SystemRam = first.SystemRam;
@@ -450,6 +488,7 @@ namespace CapFrameX.Test.Mocks
         public string FullPath { get; private set; }
         public FileInfo FileInfo { get; private set; }
         public string CombinedInfo => $"{GameName} {ProcessName} {ProcessorName} {GraphicCardName}";
+        public string DeviceName { get; private set; }
         public string MotherboardName { get; private set; }
         public string OsVersion { get; private set; }
         public string BaseDriverVersion { get; private set; }
@@ -498,6 +537,7 @@ namespace CapFrameX.Test.Mocks
             _systemRamInfo = info.SystemRam;
             _comment = info.Comment;
 
+            DeviceName = info.DeviceName;
             MotherboardName = info.Motherboard;
             OsVersion = info.OS;
             GPUDriverVersion = info.GPUDriverVersion;

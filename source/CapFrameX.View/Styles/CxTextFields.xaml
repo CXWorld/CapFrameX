@@ -1,0 +1,60 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<ResourceDictionary.MergedDictionaries>
+		<!--The BasedOn keys below have to resolve wherever this dictionary is merged.-->
+		<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.TextBox.xaml" />
+		<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ComboBox.xaml" />
+	</ResourceDictionary.MergedDictionaries>
+
+	<!--Material text fields centre their content vertically but draw the underline - the baseline
+	    the text is supposed to sit on - at the very bottom. A field that is taller than its natural
+	    height therefore parks its text in the middle of the box and leaves the surplus between text
+	    and underline. That is every field we give a uniform height to (the settings UI forces 40-45px
+	    on all of them) and every field stretched by its grid row. TextBox and ComboBox drift by
+	    different amounts on top of that - the TextBox reserves 12px above the text for the floating
+	    hint, the ComboBox only 4 - so two fields of equal height side by side do not even share a
+	    baseline.
+
+	    Anchoring the content to the bottom keeps it at the Padding's distance above the underline at
+	    any height and moves the surplus above the text, which is where the floating hint lives.-->
+	<Style x:Key="CxTextBox" TargetType="{x:Type TextBox}" BasedOn="{StaticResource MaterialDesignTextBox}">
+		<Setter Property="VerticalContentAlignment" Value="Bottom" />
+		<Style.Triggers>
+			<!--Fields that hold more than one line have to keep filling their box instead.-->
+			<Trigger Property="AcceptsReturn" Value="True">
+				<Setter Property="VerticalContentAlignment" Value="Stretch" />
+			</Trigger>
+			<Trigger Property="TextWrapping" Value="Wrap">
+				<Setter Property="VerticalContentAlignment" Value="Stretch" />
+			</Trigger>
+			<Trigger Property="TextWrapping" Value="WrapWithOverflow">
+				<Setter Property="VerticalContentAlignment" Value="Stretch" />
+			</Trigger>
+		</Style.Triggers>
+	</Style>
+
+	<!--Same anchoring on top of MaterialDesignFloatingHintTextBox, so the floating-hint padding
+	    stays whatever MDIX defines it to be.-->
+	<Style x:Key="CxFloatingHintTextBox" TargetType="{x:Type TextBox}" BasedOn="{StaticResource MaterialDesignFloatingHintTextBox}">
+		<Setter Property="VerticalContentAlignment" Value="Bottom" />
+		<Style.Triggers>
+			<Trigger Property="AcceptsReturn" Value="True">
+				<Setter Property="VerticalContentAlignment" Value="Stretch" />
+			</Trigger>
+			<Trigger Property="TextWrapping" Value="Wrap">
+				<Setter Property="VerticalContentAlignment" Value="Stretch" />
+			</Trigger>
+			<Trigger Property="TextWrapping" Value="WrapWithOverflow">
+				<Setter Property="VerticalContentAlignment" Value="Stretch" />
+			</Trigger>
+		</Style.Triggers>
+	</Style>
+
+	<Style x:Key="CxComboBox" TargetType="{x:Type ComboBox}" BasedOn="{StaticResource MaterialDesignComboBox}">
+		<Setter Property="VerticalContentAlignment" Value="Bottom" />
+	</Style>
+
+	<!--App-wide defaults, replacing the implicit styles from MaterialDesign3.Defaults.xaml.-->
+	<Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource CxTextBox}" />
+	<Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource CxComboBox}" />
+</ResourceDictionary>

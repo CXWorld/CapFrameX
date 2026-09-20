@@ -90,9 +90,9 @@ CString CGroupedString::Get(BOOL& bTruncated, BOOL bSpaceAlignment, LPCSTR lpGro
 			CString buf;
 
 			if (bSpaceAlignment)
-				buf.Format("%-*s%s%s", iMaxWidth, strGroup, lpGroupNameSeparator, strValue);
+				buf.Format("%-*s%s%s", iMaxWidth, (LPCSTR)strGroup, lpGroupNameSeparator, (LPCSTR)strValue);
 			else
-				buf.Format("%s%s%s", strGroup, lpGroupNameSeparator, strValue);
+				buf.Format("%s%s%s", (LPCSTR)strGroup, lpGroupNameSeparator, (LPCSTR)strValue);
 
 			if (result.GetLength() + buf.GetLength() < m_nMaxLen)
 			{

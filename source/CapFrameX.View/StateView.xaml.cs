@@ -22,11 +22,5 @@ namespace CapFrameX.View
 		{
 			InitializeComponent();
 		}
-
-        private void PackIcon_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-			Process.Start(new ProcessStartInfo("https://github.com/DevTechProfile/CapFrameX/releases"));
-			e.Handled = true;
-		}
     }
 }

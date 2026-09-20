@@ -4,6 +4,7 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using CapFrameX.Monitoring.Contracts;
 using LibreHardwareMonitor.Hardware.Memory.Sensors;
 using RAMSPDToolkit.SPD;
 using RAMSPDToolkit.SPD.Interfaces;
@@ -15,7 +16,7 @@ internal sealed class DimmMemory : Hardware
 {
     private readonly SpdThermalSensor _thermalSensor;
 
-    public DimmMemory(SPDAccessor accessor, string name, Identifier identifier, ISettings settings)
+    public DimmMemory(SPDAccessor accessor, string name, Identifier identifier, ISettings settings, ISensorConfig sensorConfig = null)
         : base(name, identifier, settings)
     {
         //Only add thermal sensor if present
@@ -35,7 +36,8 @@ internal sealed class DimmMemory : Hardware
                         SensorType.Temperature,
                         this,
                         settings,
-                        accessor as IThermalSensor)
+                        accessor as IThermalSensor,
+                        sensorConfig)
                     { PresentationSortKey = $"1_{accessor.Index}"};
                     break;
             }

@@ -58,6 +58,14 @@ namespace LiveCharts.Wpf.Components
             }
 
             RequiresRestart = restartView || RequiresRestart;
+
+            var wpfChart = (Chart) Chart.View;
+            if (!wpfChart.IsVisible && !wpfChart.IsMocked)
+            {
+                StopTimer();
+                return;
+            }
+
             if (IsUpdating) return;
 
             IsUpdating = true;
@@ -66,7 +74,8 @@ namespace LiveCharts.Wpf.Components
 
         public override void UpdateFrequency(TimeSpan freq)
         {
-            Timer.Interval = freq;
+            Freq = freq;
+            if (Timer != null) Timer.Interval = freq;
         }
 
         public void OnTimerOnTick(object sender, EventArgs args)
@@ -78,7 +87,11 @@ namespace LiveCharts.Wpf.Components
         {
             var wpfChart = (Chart) Chart.View;
             
-            if (!force && !wpfChart.IsVisible && !wpfChart.IsMocked) return;
+            if (!force && !wpfChart.IsVisible && !wpfChart.IsMocked)
+            {
+                StopTimer();
+                return;
+            }
 
             Chart.ControlSize = wpfChart.IsMocked
                 ? wpfChart.Model.ControlSize
@@ -92,6 +105,12 @@ namespace LiveCharts.Wpf.Components
             
             wpfChart.ChartUpdated();
             wpfChart.PrepareScrolBar();
+        }
+
+        private void StopTimer()
+        {
+            Timer?.Stop();
+            IsUpdating = false;
         }
     }
 }

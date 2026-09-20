@@ -76,13 +76,8 @@ namespace CapFrameX.Extensions
         public static string GetSha1(this string value)
         {
             var data = Encoding.ASCII.GetBytes(value);
-            var hashData = new SHA1Managed().ComputeHash(data);
-            var hash = string.Empty;
-            foreach (var b in hashData)
-            {
-                hash += b.ToString("X2");
-            }
-            return hash;
+            var hashData = SHA1.HashData(data);
+            return Convert.ToHexString(hashData);
         }
 
         public static bool IsAllNotNullOrWhiteSpace(params string[] strings)

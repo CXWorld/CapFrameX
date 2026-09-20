@@ -283,7 +283,7 @@ namespace PmcReader.Intel
                         bool fixedCtrlOk = Ring0.WriteMsr(IA32_FIXED_CTR_CTRL, fixedCounterConfigurationValue);
 
                         if (!globalCtrlOk || !fixedCtrlOk)
-                            PmcDiagnostics.Log("  WriteMsr FAILED thread={0} globalCtrl={1} fixedCtrl={2}", threadIdx, globalCtrlOk, fixedCtrlOk);
+                            PmcDiagnostics.Warning("WriteMsr FAILED thread={0} globalCtrl={1} fixedCtrl={2}", threadIdx, globalCtrlOk, fixedCtrlOk);
 
                         // Zero counters to ensure we don't pollute totals
                         Ring0.WriteMsr(IA32_FIXED_CTR0, 0);
@@ -326,14 +326,20 @@ namespace PmcReader.Intel
                         ThreadAffinity.Set(1UL << threadIdx);
                         Ring0.WriteMsr(IA32_PERF_GLOBAL_CTRL, 0);
                         Ring0.WriteMsr(IA32_FIXED_CTR_CTRL, 0);
-                        for (byte pmcIdx = 0; pmcIdx < 16; pmcIdx++)
+                        // Only clear counters the core actually implements. Writing a
+                        // non-existent PMC/PERFEVTSEL MSR raises #GP, which is harmless but makes
+                        // the WinRing0 IOCTL fail and would surface as a spurious "WriteMsr IOCTL
+                        // FAILED" warning - e.g. PERFEVTSEL[10] = MSR 0x190 on cores with fewer
+                        // GP counters. Mirrors the bounds already used in EnablePerformanceCounters.
+                        for (byte pmcIdx = 0; pmcIdx < coreType.PmcCounters; pmcIdx++)
                         {
                             Ring0.WriteMsr(IA32_PERFEVTSEL[pmcIdx], 0);
                             Ring0.WriteMsr(IA32_A_PMC[pmcIdx], 0);
                         }
                         for (byte fixedIdx = 0; fixedIdx < 16; fixedIdx++)
                         {
-                            Ring0.WriteMsr(IA32_FIXED_CTR[fixedIdx], 0);
+                            if (((coreType.FixedCounterMask >> fixedIdx) & 0x1) == 0x1)
+                                Ring0.WriteMsr(IA32_FIXED_CTR[fixedIdx], 0);
                         }
                     }
                 }
@@ -398,7 +404,7 @@ namespace PmcReader.Intel
                 bool evtSelOk = Ring0.WriteMsr(IA32_PERFEVTSEL[pmcIdx], pmc[pmcIdx]);
                 bool pmcOk = Ring0.WriteMsr(IA32_A_PMC[pmcIdx], 0);
                 if (!evtSelOk || !pmcOk)
-                    PmcDiagnostics.Log("  ProgramPerfCounters FAILED thread={0} pmc[{1}] evtSel=0x{2:X16} ok={3},{4}",
+                    PmcDiagnostics.Warning("ProgramPerfCounters FAILED thread={0} pmc[{1}] evtSel=0x{2:X16} ok={3},{4}",
                         threadIdx, pmcIdx, pmc[pmcIdx], evtSelOk, pmcOk);
             }
         }
@@ -474,16 +480,6 @@ namespace PmcReader.Intel
                 ulong[] pmc = new ulong[coreType.PmcCounters];
                 for (byte pmcIdx = 0; pmcIdx < pmc.Length; pmcIdx++)
                     pmc[pmcIdx] = ReadAndClearMsr(IA32_A_PMC[pmcIdx]);
-
-                // Log raw values for first thread of each type (to avoid log spam)
-                if (threadIdx <= 1 || coreType.CoreCount <= 2)
-                {
-                    PmcDiagnostics.Log("UpdateThread[{0}] type=0x{1:X2} cycles={2} instr={3} pmc0={4} pmc1={5} pmc2={6} pmc3={7} normFactor={8:F4}",
-                        threadIdx, coreType.Type, activeCycles, retiredInstructions,
-                        pmc.Length > 0 ? pmc[0] : 0, pmc.Length > 1 ? pmc[1] : 0,
-                        pmc.Length > 2 ? pmc[2] : 0, pmc.Length > 3 ? pmc[3] : 0,
-                        normalizationFactor);
-                }
 
                 NormalizedThreadCounts[threadIdx].activeCycles = activeCycles * normalizationFactor;
                 NormalizedThreadCounts[threadIdx].instr = retiredInstructions * normalizationFactor;

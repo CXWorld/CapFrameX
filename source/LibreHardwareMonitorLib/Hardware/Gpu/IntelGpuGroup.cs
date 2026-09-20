@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using CapFrameX.Monitoring.Contracts;
 using LibreHardwareMonitor.Hardware.Cpu;
 using LibreHardwareMonitor.Interop;
 
@@ -17,7 +18,7 @@ internal class IntelGpuGroup : IGroup
     private readonly List<Hardware> _hardware = new();
     private readonly StringBuilder _report = new();
 
-    public IntelGpuGroup(List<IntelCpu> intelCpus, ISettings settings)
+    public IntelGpuGroup(List<IntelCpu> intelCpus, ISettings settings, ISensorConfig sensorConfig = null)
     {
         if (!Software.OperatingSystem.IsUnix)
         {
@@ -26,7 +27,14 @@ internal class IntelGpuGroup : IGroup
 
             try
             {
-                gclInitialized = IGCL.IntializeIgcl();
+                // Only load the Intel GCL when an Intel GPU is actually present among the active
+                // display adapters. Initializing/tearing down IGCL on a non-Intel machine (which
+                // only has leftover Intel driver files) risks the same foreign-vendor COM teardown
+                // hang that ADLX exhibits on AMD-less systems.
+                if (D3DDisplayDevice.IsAdapterVendorPresent("VEN_8086"))
+                    gclInitialized = IGCL.IntializeIgcl();
+                else
+                    _report.AppendLine("Intel GCL skipped (no Intel display adapter present)");
             }
             catch (Exception ex)
             {
@@ -117,19 +125,19 @@ internal class IntelGpuGroup : IGroup
                         _report.AppendLine(deviceInfo.GpuSharedLimit.ToString(CultureInfo.InvariantCulture));
                         _report.Append("GpuSharedUsed: ");
                         _report.AppendLine(deviceInfo.GpuSharedUsed.ToString(CultureInfo.InvariantCulture));
-                        _report.Append("GpuSharedMax: ");
-                        _report.AppendLine(deviceInfo.GpuSharedMax.ToString(CultureInfo.InvariantCulture));
+                        _report.Append("GpuSharedCommitted: ");
+                        _report.AppendLine(deviceInfo.GpuSharedCommitted.ToString(CultureInfo.InvariantCulture));
                         _report.Append("GpuDedicatedLimit: ");
                         _report.AppendLine(deviceInfo.GpuDedicatedLimit.ToString(CultureInfo.InvariantCulture));
                         _report.Append("GpuDedicatedUsed: ");
                         _report.AppendLine(deviceInfo.GpuDedicatedUsed.ToString(CultureInfo.InvariantCulture));
-                        _report.Append("GpuDedicatedMax: ");
-                        _report.AppendLine(deviceInfo.GpuDedicatedMax.ToString(CultureInfo.InvariantCulture));
+                        _report.Append("GpuDedicatedCommitted: ");
+                        _report.AppendLine(deviceInfo.GpuDedicatedCommitted.ToString(CultureInfo.InvariantCulture));
                         _report.Append("Integrated: ");
                         _report.AppendLine(deviceInfo.Integrated.ToString(CultureInfo.InvariantCulture));
 
                         // We also want D3D VRAM counters for discrete Intel GPUs
-                        _hardware.Add(new IntelD3dGpu(intelCpus[0], (int)adapterCount + i, deviceId, deviceInfo, settings));
+                        _hardware.Add(new IntelD3dGpu(intelCpus[0], (int)adapterCount + i, deviceId, deviceInfo, settings, sensorConfig));
 
                         //if (deviceInfo.Integrated)
                         //{

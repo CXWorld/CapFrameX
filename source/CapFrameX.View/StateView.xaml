@@ -25,29 +25,39 @@
             <mvvm:ModeColorConverter x:Key="ModeColorConverterReverse" ActiveColor="OrangeRed" InactiveColor="LimeGreen"/>
             <mvvm:ModeDescriptionConverter x:Key="ModeDescriptionConverter" Seperator="|"/>
             <Style TargetType="ToolTip">
-                <Setter Property="Background" Value="{DynamicResource MaterialDesignTextFieldBoxBackground}"></Setter>
+                <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"></Setter>
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+    <Grid Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="10*"></ColumnDefinition>
             <ColumnDefinition Width="2*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <StackPanel HorizontalAlignment="Left" Grid.Column="0" Margin="10 0 0 0" Orientation="Horizontal">
-            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Capture Service:</TextBlock>
+            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" >Capture Service:</TextBlock>
             <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsCaptureModeActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=Capturing|Ready}" 
                        FontWeight="Bold" Foreground="{Binding IsCaptureModeActive, Converter={StaticResource ModeColorConverterReverse}}"></TextBlock>
 
-            <TextBlock Margin="20 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Overlay:</TextBlock>
+            <TextBlock Margin="20 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" >Overlay:</TextBlock>
             <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsOverlayActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=On|Off}" 
                        FontWeight="Bold" Foreground="{Binding IsOverlayActive, Converter={StaticResource ModeColorConverter}}"></TextBlock>
 
-            <TextBlock Margin="20 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Sensor Logging:</TextBlock>
+            <TextBlock Margin="20 0 5 0" VerticalAlignment="Center"
+                       Visibility="{Binding IsHookOverlayStatusVisible, Converter={StaticResource FalseToCollapsedConverter}}"
+                       Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Hook:</TextBlock>
+            <TextBlock Width="Auto" VerticalAlignment="Center"
+                       Visibility="{Binding IsHookOverlayStatusVisible, Converter={StaticResource FalseToCollapsedConverter}}"
+                       Text="{Binding HookOverlayStatusText}" FontWeight="Bold"
+                       Foreground="{Binding HookOverlayStatusColor}"
+                       ToolTip="{Binding HookOverlayStatusToolTip}"
+                       ToolTipService.ShowDuration="120000"></TextBlock>
+
+            <TextBlock Margin="20 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" >Sensor Logging:</TextBlock>
             <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsLoggingActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=On|Off}" 
                        FontWeight="Bold" Foreground="{Binding IsLoggingActive, Converter={StaticResource ModeColorConverter}}"></TextBlock>
 
-            <TextBlock Margin="20 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Login Status:</TextBlock>
+            <TextBlock Margin="20 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" >Login Status:</TextBlock>
 			<TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsLoggedIn, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= Logged in|Not logged in}" 
                        FontWeight="Bold" Foreground="{Binding IsLoggedIn, Converter={StaticResource ModeColorConverter}}"></TextBlock>
 
@@ -59,67 +69,79 @@
                             Background="Transparent"
                             BorderBrush="Transparent"
 							Command="{Binding UpdateStatusInfoCommand}">
-                <materialDesign:PackIcon Foreground="{DynamicResource MaterialDesignBodyLight}" Kind="Update" Width="18" Height="18" Margin="-2 -2 0 0"/>
+                <materialDesign:PackIcon Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}" Kind="Update" Width="18" Height="18" Margin="-2 -2 0 0"/>
                 <Button.ToolTip>
-                    <TextBlock  Text="Update system info status" Foreground="{DynamicResource MaterialDesignBody}"/>
+                    <TextBlock  Text="Update system info status" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                 </Button.ToolTip>
             </Button>
 
             <Grid Margin="15 0 0 0" Visibility="{Binding IsResizableBarAnyStatusValid, Converter={StaticResource FalseToCollapsedConverter}}"
                   ToolTipService.ShowDuration="120000">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Resizable Bar:</TextBlock>
+                    <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" >Resizable Bar:</TextBlock>
                     <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding ResizableBarStatus}" 
                            FontWeight="Bold" Foreground="{Binding ResizableBarStatusColor}"></TextBlock>
                 </StackPanel>
                 <Grid.ToolTip>
                     <StackPanel Orientation="Vertical">
                         <StackPanel Margin="5" Orientation="Horizontal" Visibility="{Binding IsResizableBarHardwareStatusValid, Converter={StaticResource FalseToCollapsedConverter}}">
-                            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Resizable Bar HW:</TextBlock>
+                            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" >Resizable Bar HW:</TextBlock>
                             <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsResizableBarHardwareEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
                            FontWeight="Bold" Foreground="{Binding IsResizableBarHardwareEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
-                            <TextBlock Visibility="{Binding IsResizableBarHardwareStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" Text="{Binding Path=ResizableBarHardwareSize, StringFormat=' (\{0\} MiB)'}" Foreground="{DynamicResource MaterialDesignBody}" ></TextBlock>
+                            <TextBlock Visibility="{Binding IsResizableBarHardwareStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" Text="{Binding Path=ResizableBarHardwareSize, StringFormat=' (\{0\} MiB)'}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" ></TextBlock>
                         </StackPanel>
                         <StackPanel Margin="5" Orientation="Horizontal" Visibility="{Binding IsResizableBarD3DStatusValid, Converter={StaticResource FalseToCollapsedConverter}}">
-                            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Resizable Bar D3D:</TextBlock>
+                            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" >Resizable Bar D3D:</TextBlock>
                             <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsResizableBarD3DEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
                            FontWeight="Bold" Foreground="{Binding IsResizableBarD3DEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
-                            <TextBlock Visibility="{Binding IsResizableBarD3DStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" Text="{Binding Path=ResizableBarD3DSize, StringFormat=' (\{0\} MiB)'}" Foreground="{DynamicResource MaterialDesignBody}" ></TextBlock>
+                            <TextBlock Visibility="{Binding IsResizableBarD3DStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" Text="{Binding Path=ResizableBarD3DSize, StringFormat=' (\{0\} MiB)'}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" ></TextBlock>
                         </StackPanel>
                         <StackPanel Margin="5" Orientation="Horizontal" Visibility="{Binding IsResizableBarVulkanStatusValid, Converter={StaticResource FalseToCollapsedConverter}}">
-                            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Resizable Bar Vulkan:</TextBlock>
+                            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" >Resizable Bar Vulkan:</TextBlock>
                             <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsResizableBarVulkanEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
                            FontWeight="Bold" Foreground="{Binding IsResizableBarVulkanEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
-                            <TextBlock Visibility="{Binding IsResizableBarVulkanStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" Text="{Binding Path=ResizableBarVulkanSize, StringFormat=' (\{0\} MiB)'}" Foreground="{DynamicResource MaterialDesignBody}" ></TextBlock>
+                            <TextBlock Visibility="{Binding IsResizableBarVulkanStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" Text="{Binding Path=ResizableBarVulkanSize, StringFormat=' (\{0\} MiB)'}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" ></TextBlock>
                         </StackPanel>
                     </StackPanel>
                 </Grid.ToolTip>
             </Grid>
 
-            <TextBlock Margin="15 0 5 0" Visibility="{Binding IsGameModeStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Win Game Mode:</TextBlock>
+            <TextBlock Margin="15 0 5 0" Visibility="{Binding IsGameModeStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" >Win Game Mode:</TextBlock>
             <TextBlock Width="Auto" Visibility="{Binding IsGameModeStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Text="{Binding IsGameModeEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
                        FontWeight="Bold" Foreground="{Binding IsGameModeEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
 
-            <TextBlock Margin="20 0 5 0" Visibility="{Binding IsHAGSStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >HAGS:</TextBlock>
+            <TextBlock Margin="20 0 5 0" Visibility="{Binding IsHAGSStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" >HAGS:</TextBlock>
             <TextBlock Width="Auto" Visibility="{Binding IsHAGSStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Text="{Binding IsHAGSEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
                        FontWeight="Bold" Foreground="{Binding IsHAGSEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
         </StackPanel>
         <StackPanel HorizontalAlignment="Right" Grid.Column="1" Margin="0 0 10 0" Orientation="Horizontal">
-            <Border Visibility="{Binding IsUpdateAvailable, Converter={StaticResource FalseToCollapsedConverter}}" Background="Transparent" 
-                    Cursor="Hand" MouseLeftButtonDown="PackIcon_MouseLeftButtonDown">
-                <Border.ToolTip>
-                    <TextBlock Text="{Binding Path=UpdateHyperlinkText}" Foreground="{DynamicResource MaterialDesignBody}"/>
-                </Border.ToolTip>
-                <materialDesign:PackIcon Foreground="{DynamicResource MaterialDesignBodyLight}" Margin="0 0 5 0" Height="20" Width="20" Kind="Download" VerticalAlignment="Center" >
-                </materialDesign:PackIcon>
-            </Border>
-            <materialDesign:PackIcon Foreground="{DynamicResource MaterialDesignBody}"  Kind="Information" VerticalAlignment="Center">
+            <TextBlock Margin="0 0 6 0" VerticalAlignment="Center" FontWeight="Bold"
+                       Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+                       Visibility="{Binding UpdateViewModel.IsDownloading, Converter={StaticResource FalseToCollapsedConverter}}"
+                       Text="{Binding UpdateViewModel.DownloadProgressText}"/>
+            <Button Margin="0 0 5 0" Width="20" Height="20" Padding="0"
+                    Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
+                    Background="Transparent" BorderBrush="Transparent" VerticalAlignment="Center"
+                    Visibility="{Binding UpdateViewModel.IsUpdateIndicatorVisible, Converter={StaticResource FalseToCollapsedConverter}}"
+                    Command="{Binding UpdateViewModel.ShowUpdateDialogCommand}">
+                <Grid>
+                    <materialDesign:PackIcon Height="20" Width="20" Kind="Download"
+                                             Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
+                                             Visibility="{Binding UpdateViewModel.IsUpdateReadyToInstall, Converter={StaticResource TrueToCollapsedConverter}}"/>
+                    <materialDesign:PackIcon Height="20" Width="20" Kind="Restart" Foreground="LimeGreen"
+                                             Visibility="{Binding UpdateViewModel.IsUpdateReadyToInstall, Converter={StaticResource FalseToCollapsedConverter}}"/>
+                </Grid>
+                <Button.ToolTip>
+                    <TextBlock Text="{Binding UpdateViewModel.StatusText}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+                </Button.ToolTip>
+            </Button>
+            <materialDesign:PackIcon Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"  Kind="Information" VerticalAlignment="Center">
                 <materialDesign:PackIcon.ToolTip>
-                    <TextBlock Text="{Binding InfoToolTipText, UpdateSourceTrigger=Default}" Foreground="{DynamicResource MaterialDesignBody}"/>
+                    <TextBlock Text="{Binding InfoToolTipText, UpdateSourceTrigger=Default}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                 </materialDesign:PackIcon.ToolTip>
             </materialDesign:PackIcon>
-            <TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Version:</TextBlock>
-            <TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"  Text="{Binding VersionString, Mode=OneWay}"/>
+            <TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" >Version:</TextBlock>
+            <TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"  Text="{Binding VersionString, Mode=OneWay}"/>
         </StackPanel>
     </Grid>
 </UserControl>

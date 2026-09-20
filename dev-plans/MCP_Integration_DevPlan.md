@@ -229,7 +229,7 @@ Wrap the existing report/export pipeline. Same process, no new architectural con
 - Added to `CapFrameX.sln`.
 - `CapFrameX.csproj` (or `CapFrameX.ApiInterface.csproj`) gets a `<ProjectReference>` to it; outputs land in `source/CapFrameX/bin/x64/Release/` automatically via MSBuild copy semantics.
 - The existing `heat.exe` PreBuildEvent in `CapFrameXInstaller.wixproj` picks up `CapFrameX.Mcp.dll` via its recursive scan — **no installer changes required**.
-- The Jenkinsfile **does not need a new stage** — the existing `Build CX` step compiles the whole solution graph that `CapFrameX.csproj` reaches into.
+- The GitHub Actions workflow **does not need a new step** — the existing `Build CX` step compiles the whole solution graph that `CapFrameX.csproj` reaches into.
 - No .NET runtime prerequisite changes — only the existing .NET Framework 4.7.2 is needed.
 
 ## 9. Tool-Surface Summary

@@ -18,6 +18,10 @@ public class Identifier : IComparable<Identifier>
     private const char Separator = '/';
     private readonly string _identifier;
 
+    /// <summary>
+    /// Creates a new identifier instance from its individual elements.
+    /// </summary>
+    /// <param name="identifiers">The parts the identifier is composed of.</param>
     public Identifier(params string[] identifiers)
     {
         CoerceIdentifiers(identifiers);
@@ -124,6 +128,12 @@ public class Identifier : IComparable<Identifier>
         return _identifier.GetHashCode();
     }
 
+    /// <summary>
+    /// Determines whether two identifiers are equal.
+    /// </summary>
+    /// <param name="id1">The first identifier to compare.</param>
+    /// <param name="id2">The second identifier to compare.</param>
+    /// <returns><see langword="true" /> if both identifiers are equal; otherwise, <see langword="false" />.</returns>
     public static bool operator ==(Identifier id1, Identifier id2)
     {
         if (id1 is null && id2 is null)
@@ -132,11 +142,23 @@ public class Identifier : IComparable<Identifier>
         return id1 is not null && id1.Equals(id2);
     }
 
+    /// <summary>
+    /// Determines whether two identifiers differ.
+    /// </summary>
+    /// <param name="id1">The first identifier to compare.</param>
+    /// <param name="id2">The second identifier to compare.</param>
+    /// <returns><see langword="true" /> if both identifiers differ; otherwise, <see langword="false" />.</returns>
     public static bool operator !=(Identifier id1, Identifier id2)
     {
         return !(id1 == id2);
     }
 
+    /// <summary>
+    /// Determines whether one identifier precedes another one.
+    /// </summary>
+    /// <param name="id1">The identifier to compare.</param>
+    /// <param name="id2">The identifier to compare with.</param>
+    /// <returns><see langword="true" /> if <paramref name="id1" /> precedes <paramref name="id2" />; otherwise, <see langword="false" />.</returns>
     public static bool operator <(Identifier id1, Identifier id2)
     {
         if (id1 == null)
@@ -145,6 +167,12 @@ public class Identifier : IComparable<Identifier>
         return id1.CompareTo(id2) < 0;
     }
 
+    /// <summary>
+    /// Determines whether one identifier follows another one.
+    /// </summary>
+    /// <param name="id1">The identifier to compare.</param>
+    /// <param name="id2">The identifier to compare with.</param>
+    /// <returns><see langword="true" /> if <paramref name="id1" /> follows <paramref name="id2" />; otherwise, <see langword="false" />.</returns>
     public static bool operator >(Identifier id1, Identifier id2)
     {
         if (id1 == null)

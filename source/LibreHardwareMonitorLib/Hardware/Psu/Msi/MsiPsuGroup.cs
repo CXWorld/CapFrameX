@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text;
 using HidSharp;
 
+#pragma warning disable CS1591 // file exempt from XML documentation
+
 namespace LibreHardwareMonitor.Hardware.Psu.Msi;
 
 public class MsiPsuGroup : IGroup

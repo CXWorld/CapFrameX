@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices.WindowsRuntime;
 using PmcReader.Interop;
 
 namespace PmcReader.AMD

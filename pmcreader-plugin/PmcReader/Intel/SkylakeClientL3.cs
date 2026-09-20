@@ -1,7 +1,6 @@
 ﻿using PmcReader.Interop;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace PmcReader.Intel
 {

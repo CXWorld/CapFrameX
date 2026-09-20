@@ -2,11 +2,14 @@
 using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
+using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using OxyPlot;
 using Prism.Events;
 using Prism.Mvvm;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace CapFrameX.ViewModel.DataContext
@@ -73,11 +76,55 @@ namespace CapFrameX.ViewModel.DataContext
                 {
                     try
                     {
-                        PlotModel.TextColor = AppConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black;
-                        PlotModel.InvalidatePlot(false);
+                        if (PlotModel is not null)
+                        {
+                            PlotModel.TextColor = AppConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black;
+                            PlotModel.InvalidatePlot(false);
+                        }
                     }
                     catch { }
                 });
+        }
+
+        // Both series originate from the same TimeInSeconds source, but validity
+        // filtering can drop different samples from each, so pair by timestamp
+        // intersection instead of by index.
+        protected static IList<Tuple<Point, Point>> GetAlignedFinitePoints(
+            IList<Point> fpsPoints, IList<Point> gpuActiveFpsPoints)
+        {
+            var alignedPoints = new List<Tuple<Point, Point>>();
+            if (fpsPoints == null || gpuActiveFpsPoints == null)
+                return alignedPoints;
+
+            int fpsIndex = 0;
+            int gpuIndex = 0;
+            while (fpsIndex < fpsPoints.Count && gpuIndex < gpuActiveFpsPoints.Count)
+            {
+                Point fpsPoint = fpsPoints[fpsIndex];
+                Point gpuPoint = gpuActiveFpsPoints[gpuIndex];
+                if (fpsPoint.X < gpuPoint.X)
+                {
+                    fpsIndex++;
+                    continue;
+                }
+                if (gpuPoint.X < fpsPoint.X)
+                {
+                    gpuIndex++;
+                    continue;
+                }
+
+                if (IsFinite(fpsPoint.Y) && IsFinite(gpuPoint.Y))
+                    alignedPoints.Add(Tuple.Create(fpsPoint, gpuPoint));
+                fpsIndex++;
+                gpuIndex++;
+            }
+
+            return alignedPoints;
+        }
+
+        private static bool IsFinite(double value)
+        {
+            return !double.IsNaN(value) && !double.IsInfinity(value);
         }
     }
 

@@ -1,0 +1,16 @@
+<Project>
+
+  <!-- Scoped to source/ on purpose: pmcreader-plugin/ and capframex-linux/ are separate,
+       unrelated project trees outside this folder and must not inherit central package
+       management from here. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- In-game rendering and its native payloads are enabled for 1.9.1 development. -->
+    <CfxEnableInGameOverlay Condition="'$(CfxEnableInGameOverlay)' == ''">true</CfxEnableInGameOverlay>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(CfxEnableInGameOverlay)' == 'true'">
+    <DefineConstants>$(DefineConstants);CFX_INGAME_OVERLAY</DefineConstants>
+  </PropertyGroup>
+
+</Project>

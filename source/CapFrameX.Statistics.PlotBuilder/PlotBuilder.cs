@@ -196,20 +196,22 @@ namespace CapFrameX.Statistics.PlotBuilder
             }
         };
 
-        public void Reset()
+        public void Reset(bool invalidatePlot = true)
         {
             PlotModel.Series.Clear();
             PlotModel.Axes.Clear();
-            PlotModel.InvalidatePlot(true);
+            if (invalidatePlot)
+                PlotModel.InvalidatePlot(true);
         }
 
-        public void UpdateAxis(EPlotAxis axisType, Action<Axis> action)
+        public void UpdateAxis(EPlotAxis axisType, Action<Axis> action, bool invalidatePlot = true)
         {
             var axis = PlotModel.GetAxisOrDefault(axisType.GetDescription(), null);
             if (axis != null)
             {
                 action(axis);
-                PlotModel.InvalidatePlot(false);
+                if (invalidatePlot)
+                    PlotModel.InvalidatePlot(false);
             }
         }
 
@@ -320,6 +322,16 @@ namespace CapFrameX.Statistics.PlotBuilder
 
         protected void SetAnimationErrorChart(PlotModel plotModel, IList<Point> points)
         {
+            var validPoints = points?
+                .Where(p => !double.IsNaN(p.X) && !double.IsInfinity(p.X)
+                    && !double.IsNaN(p.Y) && !double.IsInfinity(p.Y))
+                .ToList();
+
+            if (validPoints == null || !validPoints.Any())
+            {
+                return;
+            }
+
             var series = new LineSeries
             {
                 Title = "Animation Error",
@@ -329,7 +341,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 YAxisKey = EPlotAxis.YAXISFRAMETIMES.GetDescription()
             };
 
-            series.Points.AddRange(points.Select(p => new DataPoint(p.X, p.Y)));
+            series.Points.AddRange(validPoints.Select(p => new DataPoint(p.X, p.Y)));
             plotModel.Series.Add(series);
         }
 

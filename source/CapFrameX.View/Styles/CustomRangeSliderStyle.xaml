@@ -312,19 +312,19 @@
     <Style TargetType="{x:Type controls:RangeSlider}" x:Key="CustomRangeSlider">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Margin" Value="6 0" />
-        <Setter Property="controls:SliderHelper.ThumbFillBrush" Value="{DynamicResource PrimaryHueMidBrush}" />
-        <Setter Property="controls:SliderHelper.ThumbFillDisabledBrush" Value="{DynamicResource PrimaryHueMidBrush}" />
-        <Setter Property="controls:SliderHelper.ThumbFillHoverBrush" Value="{DynamicResource PrimaryHueMidBrush}" />
-        <Setter Property="controls:SliderHelper.ThumbFillPressedBrush" Value="{DynamicResource PrimaryHueMidBrush}" />
-        <Setter Property="controls:SliderHelper.TrackFillBrush" Value="{DynamicResource MaterialDesignCheckBoxOff}" />
+        <Setter Property="controls:SliderHelper.ThumbFillBrush" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
+        <Setter Property="controls:SliderHelper.ThumbFillDisabledBrush" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
+        <Setter Property="controls:SliderHelper.ThumbFillHoverBrush" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
+        <Setter Property="controls:SliderHelper.ThumbFillPressedBrush" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
+        <Setter Property="controls:SliderHelper.TrackFillBrush" Value="{DynamicResource MaterialDesign.Brush.ForegroundLight}" />
         <Setter Property="controls:SliderHelper.TrackFillDisabledBrush" Value="{DynamicResource MaterialDesignCheckBoxDisabled}" />
-        <Setter Property="controls:SliderHelper.TrackFillHoverBrush" Value="{DynamicResource MaterialDesignCheckBoxOff}" />
-        <Setter Property="controls:SliderHelper.TrackFillPressedBrush" Value="{DynamicResource MaterialDesignCheckBoxOff}" />
-        <Setter Property="controls:SliderHelper.TrackValueFillBrush" Value="{DynamicResource PrimaryHueMidBrush}" />
-        <Setter Property="controls:SliderHelper.TrackValueFillDisabledBrush" Value="{DynamicResource PrimaryHueMidBrush}" />
-        <Setter Property="controls:SliderHelper.TrackValueFillHoverBrush" Value="{DynamicResource PrimaryHueMidBrush}" />
-        <Setter Property="controls:SliderHelper.TrackValueFillPressedBrush" Value="{DynamicResource PrimaryHueMidBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}" />
+        <Setter Property="controls:SliderHelper.TrackFillHoverBrush" Value="{DynamicResource MaterialDesign.Brush.ForegroundLight}" />
+        <Setter Property="controls:SliderHelper.TrackFillPressedBrush" Value="{DynamicResource MaterialDesign.Brush.ForegroundLight}" />
+        <Setter Property="controls:SliderHelper.TrackValueFillBrush" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
+        <Setter Property="controls:SliderHelper.TrackValueFillDisabledBrush" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
+        <Setter Property="controls:SliderHelper.TrackValueFillHoverBrush" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
+        <Setter Property="controls:SliderHelper.TrackValueFillPressedBrush" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
+        <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="Template" Value="{StaticResource MaterialDesignMahAppsRangeSliderHorizontal}" />
         <Setter Property="VerticalContentAlignment" Value="Stretch" />

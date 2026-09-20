@@ -368,6 +368,11 @@ typedef struct RTSS_SHARED_MEMORY
 	DWORD dwProcessPerfCountersArrOffset;
 	//offset of arrPerfCounters array for compatibility with future versions (relative to application entry)
 
+//next fields are valid for v2.19 and newer shared memory format only
+
+	LARGE_INTEGER qwLatencyMarkerSetTimestamp;
+	LARGE_INTEGER qwLatencyMarkerResetTimestamp;
+
 //OSD slot descriptor structure
 
 	typedef struct RTSS_SHARED_MEMORY_OSD_ENTRY
@@ -386,6 +391,11 @@ typedef struct RTSS_SHARED_MEMORY
 
 		BYTE	buffer[262144];
 		//OSD slot data buffer
+
+	//next fields are valid for v2.20 and newer shared memory format only
+
+		char	szOSDEx2[32768];
+		//additional 32KB extended OSD slot text
 
 	} RTSS_SHARED_MEMORY_OSD_ENTRY, * LPRTSS_SHARED_MEMORY_OSD_ENTRY;
 
@@ -546,7 +556,34 @@ typedef struct RTSS_SHARED_MEMORY
 		DWORD dwProcessPerfCountersSamplingTime;
 		DWORD dwProcessPerfCountersTimestamp;
 
-		//WARNING: next fields should never (!!!) be accessed directly, use the offsets to access them in order to provide 
+		//next fields are valid for v2.19 and newer shared memory format only
+
+		LARGE_INTEGER qwLatencyMarkerPresentTimestamp;
+
+		//next fields are valid for v2.20 and newer shared memory format only
+
+		DWORD dwResolutionX;
+		DWORD dwResolutionY;
+
+		//next fields are valid for v2.21 and newer shared memory format only
+
+		ULONGLONG	qwInputSampleTime;
+		ULONGLONG	qwSimStartTime;
+		ULONGLONG	qwSimEndTime;
+		ULONGLONG	qwRenderSubmitStartTime;
+		ULONGLONG	qwRenderSubmitEndTime;
+		ULONGLONG	qwPresentStartTime;
+		ULONGLONG	qwPresentEndTime;
+		ULONGLONG	qwDriverStartTime;
+		ULONGLONG	qwDriverEndTime;
+		ULONGLONG	qwOsRenderQueueStartTime;
+		ULONGLONG	qwOsRenderQueueEndTime;
+		ULONGLONG	qwGpuRenderStartTime;
+		ULONGLONG	qwGpuRenderEndTime;
+		DWORD		dwGpuActiveRenderTime;
+		DWORD		dwGpuFrameTime;
+
+		//WARNING: next fields should never (!!!) be accessed directly, use the offsets to access them in order to provide
 		//compatibility with future versions
 
 		RTSS_SHARED_MEMORY_PROCESS_PERF_COUNTER_ENTRY arrPerfCounters[256];
@@ -600,6 +637,8 @@ typedef struct RTSS_EMBEDDED_OBJECT
 #define RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_FRAMERATE_MAX				1024
 #define RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_FRAMERATE_1DOT0_PERCENT_LOW	2048
 #define RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_FRAMERATE_0DOT1_PERCENT_LOW	4096
+
+#define RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_BAR_RANGE					8192
 /////////////////////////////////////////////////////////////////////////////
 #pragma warning (disable : 4200)
 

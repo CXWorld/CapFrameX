@@ -18,8 +18,13 @@ namespace LibreHardwareMonitor.Hardware;
 /// </summary>
 public abstract class Hardware : IHardware
 {
+    /// <summary>The sensors that are currently activated on this component.</summary>
     protected readonly HashSet<ISensor> _active = new();
+
+    /// <summary>The name the component was created with, before any user override.</summary>
     protected readonly string _name;
+
+    /// <summary>The settings passed by the <see cref="IComputer" />.</summary>
     protected readonly ISettings _settings;
     private string _customName;
 
@@ -131,8 +136,14 @@ public abstract class Hardware : IHardware
     }
 
 #pragma warning disable 67
+    /// <summary>
+    /// Event triggered when a <see cref="ISensor"/> is added to this component.
+    /// </summary>
     public event SensorEventHandler SensorAdded;
 
+    /// <summary>
+    /// Event triggered when a <see cref="ISensor"/> is removed from this component.
+    /// </summary>
     public event SensorEventHandler SensorRemoved;
 #pragma warning restore 67
 }

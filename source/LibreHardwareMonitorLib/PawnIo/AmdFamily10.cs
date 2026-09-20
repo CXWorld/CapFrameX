@@ -1,5 +1,7 @@
 ﻿using LibreHardwareMonitor.Hardware;
 
+#pragma warning disable CS1591 // file exempt from XML documentation
+
 namespace LibreHardwareMonitor.PawnIo;
 
 public class AmdFamily10

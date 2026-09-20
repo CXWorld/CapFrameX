@@ -67,6 +67,56 @@ namespace CapFrameX.Statistics.NetStandard
             return Math.Sqrt(sumResidualSquares / (sequence.Count - 1));
         }
 
+        public double GetFpsAdaptiveStandardDeviation(IList<double> frametimes, IList<double> fps,
+            double timeWindow)
+        {
+            if (frametimes == null)
+            {
+                throw new ArgumentNullException(nameof(frametimes));
+            }
+
+            if (fps == null)
+            {
+                throw new ArgumentNullException(nameof(fps));
+            }
+
+            if (frametimes.Count != fps.Count)
+            {
+                throw new InvalidDataException("Different sample count frametimes vs. FPS");
+            }
+
+            if (frametimes.Count < 2)
+            {
+                return double.NaN;
+            }
+
+            var windowStart = 0;
+            var windowFrametimeSum = 0d;
+            var windowFpsSum = 0d;
+            var sumResidualSquares = 0d;
+
+            for (int i = 0; i < frametimes.Count; i++)
+            {
+                windowFrametimeSum += frametimes[i];
+                windowFpsSum += fps[i];
+
+                while (windowStart < i &&
+                    windowFrametimeSum - frametimes[windowStart] >= timeWindow)
+                {
+                    windowFrametimeSum -= frametimes[windowStart];
+                    windowFpsSum -= fps[windowStart];
+                    windowStart++;
+                }
+
+                var windowSampleCount = i - windowStart + 1;
+                var movingAverageFps = windowFpsSum / windowSampleCount;
+                var residual = fps[i] - movingAverageFps;
+                sumResidualSquares += residual * residual;
+            }
+
+            return Math.Sqrt(sumResidualSquares / (frametimes.Count - 1));
+        }
+
         public double GetStutteringCountPercentage(IList<double> sequence, double stutteringFactor)
         {
             var average = sequence.Average();
@@ -124,9 +174,7 @@ namespace CapFrameX.Statistics.NetStandard
 
         public IList<double> GetTimeBasedMovingAverage(IList<double> sequence, double timeWindow)
         {
-            var average = sequence.Average();
             var timeBasedMovingAverageFilter = new TimeBasedMovingAverage(timeWindow);
-
             return timeBasedMovingAverageFilter.ProcessSamples(sequence);
         }
 
@@ -138,21 +186,49 @@ namespace CapFrameX.Statistics.NetStandard
             {
                 case ERemoveOutlierMethod.DeciPercentile:
                     {
-                        var deciPercentile = sequence.Quantile(TAU);
-                        adjustedSequence = new List<double>();
-
-                        foreach (var element in sequence)
+                        if (sequence.Count < 2 || sequence.All(value => value == sequence[0]))
                         {
-                            if (element < deciPercentile)
+                            adjustedSequence = new List<double>(sequence);
+                            break;
+                        }
+
+                        // Remove exactly the slowest 0.1% while preserving capture order.
+                        // Subtracting the epsilon avoids removing two values for 1000 samples
+                        // because 1000 * (1 - 0.999) is slightly greater than one in binary.
+                        int removeCount = Math.Max(1,
+                            (int)Math.Ceiling(sequence.Count * (1 - TAU) - 1E-9));
+                        var sortedValues = sequence.ToArray();
+                        Array.Sort(sortedValues);
+                        var removals = new Dictionary<double, int>();
+
+                        for (int i = sortedValues.Length - removeCount; i < sortedValues.Length; i++)
+                        {
+                            int count;
+                            removals.TryGetValue(sortedValues[i], out count);
+                            removals[sortedValues[i]] = count + 1;
+                        }
+
+                        adjustedSequence = new List<double>(sequence.Count - removeCount);
+                        foreach (double element in sequence)
+                        {
+                            int count;
+                            if (removals.TryGetValue(element, out count) && count > 0)
+                            {
+                                removals[element] = count - 1;
+                            }
+                            else
+                            {
                                 adjustedSequence.Add(element);
+                            }
                         }
                     }
                     break;
                 case ERemoveOutlierMethod.InterquartileRange:
-                    break;
                 case ERemoveOutlierMethod.ThreeSigma:
-                    break;
                 case ERemoveOutlierMethod.TwoDotFiveSigma:
+                    // These modes are not implemented. Returning the source is safer than
+                    // returning null to callers which expect a sequence.
+                    adjustedSequence = sequence;
                     break;
                 case ERemoveOutlierMethod.None:
                     adjustedSequence = sequence;
@@ -328,11 +404,8 @@ namespace CapFrameX.Statistics.NetStandard
                         metricValue = GetMin(fps);
                         break;
                     case EMetric.AdaptiveStd:
-                        // For AdaptiveStd, we need to pass as IList - use a temporary list
-                        var fpsList = new List<double>(count);
-                        for (int i = 0; i < count; i++)
-                            fpsList.Add(fpsBuffer[i]);
-                        metricValue = GetAdaptiveStandardDeviation(fpsList, _options.IntervalAverageWindowTime);
+                        metricValue = GetFpsAdaptiveStandardDeviation(sequence, fps,
+                            _options.IntervalAverageWindowTime);
                         break;
                     default:
                         metricValue = double.NaN;
@@ -699,100 +772,66 @@ namespace CapFrameX.Statistics.NetStandard
         public IList<double> GetFrametimeVariancePercentages(ISession session)
         {
             if (!session.Runs.Any())
-                return new List<double>();
+                return new double[5];
 
-            // Create bins for variance thresholds
-            int threshold2Count = 0;
-            int threshold4Count = 0;
-            int threshold8Count = 0;
-            int threshold12Count = 0;
-            int thresholdOver12Count = 0;
-
-            // Get frametime variances
-            double varianceCount = 0.0;
-            foreach (var run in session.Runs)
-            {
-                var frametimes = run.CaptureData.MsBetweenPresents.ToArray();
-                for (int i = 1; i < frametimes.Count(); i++)
-                {
-                    double variance = Math.Abs(frametimes[i] - frametimes[i - 1]);
-
-                    if (variance < 2)
-                        threshold2Count++;
-                    else if (variance < 4)
-                        threshold4Count++;
-                    else if (variance < 8)
-                        threshold8Count++;
-                    else if (variance < 12)
-                        threshold12Count++;
-                    else
-                        thresholdOver12Count++;
-
-                    varianceCount++;
-                }
-            }
-
-
-            // Add percentage of variance bins to List
-            IList<double> variancePercentages = new List<double>
-            {
-                Math.Round(threshold2Count / varianceCount, 4, MidpointRounding.AwayFromZero),
-                Math.Round(threshold4Count / varianceCount, 4, MidpointRounding.AwayFromZero),
-                Math.Round(threshold8Count / varianceCount, 4, MidpointRounding.AwayFromZero),
-                Math.Round(threshold12Count / varianceCount, 4, MidpointRounding.AwayFromZero),
-                Math.Round(thresholdOver12Count / varianceCount, 4, MidpointRounding.AwayFromZero)
-            };
-
-            return variancePercentages;
+            return GetVariancePercentages(session.Runs
+                .Select(run => (IList<double>)run.CaptureData.MsBetweenPresents));
         }
 
         public IList<double> GetDisplayTimeVariancePercentages(ISession session)
         {
             if (!session.Runs.Any())
-                return new List<double>();
+                return new double[5];
 
-            // Create bins for variance thresholds
-            int threshold2Count = 0;
-            int threshold4Count = 0;
-            int threshold8Count = 0;
-            int threshold12Count = 0;
-            int thresholdOver12Count = 0;
+            return GetVariancePercentages(session.Runs
+                .Select(run => (IList<double>)run.CaptureData.MsBetweenDisplayChange));
+        }
 
-            // Get frametime variances
-            double varianceCount = 0.0;
-            foreach (var run in session.Runs)
+        public IList<double> GetVariancePercentages(IList<double> sequence)
+        {
+            return GetVariancePercentages(new[] { sequence });
+        }
+
+        public IList<double> GetVariancePercentages(IEnumerable<IList<double>> sequences)
+        {
+            var thresholds = new int[5];
+            var varianceCount = 0;
+
+            foreach (var sequence in sequences.Where(candidate => candidate != null))
             {
-                var displayTimes = run.CaptureData.MsBetweenDisplayChange.ToArray();
-                for (int i = 1; i < displayTimes.Count(); i++)
+                for (int i = 1; i < sequence.Count; i++)
                 {
-                    double variance = Math.Abs(displayTimes[i] - displayTimes[i - 1]);
+                    double previous = sequence[i - 1];
+                    double current = sequence[i];
+                    if (double.IsNaN(previous) || double.IsInfinity(previous)
+                        || double.IsNaN(current) || double.IsInfinity(current))
+                    {
+                        continue;
+                    }
 
+                    double variance = Math.Abs(current - previous);
                     if (variance < 2)
-                        threshold2Count++;
+                        thresholds[0]++;
                     else if (variance < 4)
-                        threshold4Count++;
+                        thresholds[1]++;
                     else if (variance < 8)
-                        threshold8Count++;
+                        thresholds[2]++;
                     else if (variance < 12)
-                        threshold12Count++;
+                        thresholds[3]++;
                     else
-                        thresholdOver12Count++;
+                        thresholds[4]++;
 
                     varianceCount++;
                 }
             }
 
-            // Add percentage of variance bins to List
-            IList<double> variancePercentages = new List<double>
-            {
-                Math.Round(threshold2Count / varianceCount, 4, MidpointRounding.AwayFromZero),
-                Math.Round(threshold4Count / varianceCount, 4, MidpointRounding.AwayFromZero),
-                Math.Round(threshold8Count / varianceCount, 4, MidpointRounding.AwayFromZero),
-                Math.Round(threshold12Count / varianceCount, 4, MidpointRounding.AwayFromZero),
-                Math.Round(thresholdOver12Count / varianceCount, 4, MidpointRounding.AwayFromZero)
-            };
+            if (varianceCount == 0)
+                return new double[5];
 
-            return variancePercentages;
+            return thresholds
+                .Select(count => Math.Round((double)count / varianceCount, 4,
+                    MidpointRounding.AwayFromZero))
+                .ToList();
         }
     }
 }

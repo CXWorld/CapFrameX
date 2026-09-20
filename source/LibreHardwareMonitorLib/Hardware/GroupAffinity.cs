@@ -11,6 +11,9 @@ namespace LibreHardwareMonitor.Hardware;
 /// </summary>
 public readonly struct GroupAffinity
 {
+    /// <summary>
+    /// An affinity that does not refer to any processor group.
+    /// </summary>
     public static GroupAffinity Undefined = new(ushort.MaxValue, 0);
 
     /// <summary>

@@ -25,7 +25,10 @@ namespace CapFrameX
         const int SWP_NOMOVE = 0x0002;
         const int SWP_NOZORDER = 0x0004;
         const int SWP_FRAMECHANGED = 0x0020;
+        const uint WM_GETICON = 0x007F;
         const uint WM_SETICON = 0x0080;
+        const int ICON_SMALL = 0;
+        const int ICON_BIG = 1;
 
         public static void RemoveIcon(Window window)
         {
@@ -33,6 +36,31 @@ namespace CapFrameX
             int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
             SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_DLGMODALFRAME);
             SetWindowPos(hwnd, IntPtr.Zero, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+        }
+
+        public static void RefreshTaskbarIcon(Window window)
+        {
+            IntPtr hwnd = new WindowInteropHelper(window).Handle;
+            if (hwnd == IntPtr.Zero)
+                return;
+
+            IntPtr smallIcon = SendMessage(hwnd, WM_GETICON, new IntPtr(ICON_SMALL), IntPtr.Zero);
+            IntPtr bigIcon = SendMessage(hwnd, WM_GETICON, new IntPtr(ICON_BIG), IntPtr.Zero);
+
+            // Re-publish the existing handles after the taskbar button has been created.
+            // WS_EX_DLGMODALFRAME keeps the title bar clean but can make Explorer miss
+            // WPF's initial WM_SETICON messages until the window is minimized/restored.
+            if (smallIcon != IntPtr.Zero)
+            {
+                SendMessage(hwnd, WM_SETICON, new IntPtr(ICON_SMALL), IntPtr.Zero);
+                SendMessage(hwnd, WM_SETICON, new IntPtr(ICON_SMALL), smallIcon);
+            }
+
+            if (bigIcon != IntPtr.Zero)
+            {
+                SendMessage(hwnd, WM_SETICON, new IntPtr(ICON_BIG), IntPtr.Zero);
+                SendMessage(hwnd, WM_SETICON, new IntPtr(ICON_BIG), bigIcon);
+            }
         }
     }
 }

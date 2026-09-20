@@ -1,9 +1,7 @@
 using CapFrameX.Contracts.Configuration;
-using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Logging;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
-using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Monitoring.Contracts;
@@ -22,6 +20,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Threading;
 
 namespace CapFrameX.Test.ViewModel
@@ -134,6 +133,56 @@ namespace CapFrameX.Test.ViewModel
         }
 
         [TestMethod]
+        public void ClearingHotkeys_PersistsDisabledValuesAndUpdatesCaptureInstructions()
+        {
+            var sut = CreateSut();
+            try
+            {
+                sut.CaptureHotkeyString = string.Empty;
+                sut.ResetHistoryHotkeyString = string.Empty;
+
+                Assert.AreEqual(string.Empty, _appConfigurationMock.Object.CaptureHotKey);
+                Assert.AreEqual(string.Empty, _appConfigurationMock.Object.ResetHistoryHotkey);
+                StringAssert.Contains(sut.CaptureStateInfo, "Capture hotkey disabled.");
+
+                InvokePrivate(sut, "UpdateProcessToCaptureList");
+                StringAssert.Contains(sut.CaptureStateInfo, "Capture hotkey disabled.");
+                Assert.IsFalse(sut.CaptureStateInfo.Contains("Press"));
+
+                sut.CaptureHotkeyString = "Alt+NotAKey";
+                Assert.AreEqual(string.Empty, _appConfigurationMock.Object.CaptureHotKey);
+
+                sut.CaptureHotkeyString = "Control+F9";
+                sut.ResetHistoryHotkeyString = "Alt+R";
+                Assert.AreEqual("Control+F9", _appConfigurationMock.Object.CaptureHotKey);
+                Assert.AreEqual("Alt+R", _appConfigurationMock.Object.ResetHistoryHotkey);
+                StringAssert.Contains(sut.CaptureStateInfo, "Control+F9");
+                Assert.IsFalse(sut.CaptureStateInfo.Contains("disabled"));
+            }
+            finally
+            {
+                DisposeHeartbeat(sut);
+            }
+        }
+
+        [TestMethod]
+        public void Constructor_WithDisabledCaptureHotkey_ShowsDisabledInstruction()
+        {
+            _appConfigurationMock.Object.CaptureHotKey = string.Empty;
+            _appConfigurationMock.Object.ResetHistoryHotkey = string.Empty;
+            var sut = CreateSut();
+            try
+            {
+                StringAssert.Contains(sut.CaptureStateInfo, "Capture hotkey disabled.");
+                Assert.IsFalse(sut.CaptureStateInfo.Contains("Press"));
+            }
+            finally
+            {
+                DisposeHeartbeat(sut);
+            }
+        }
+
+        [TestMethod]
         public void UpdateProcessToCaptureList_WithVkcube_AutoDetectsAndPublishesProcessId()
         {
             var sut = CreateSut();
@@ -213,30 +262,246 @@ namespace CapFrameX.Test.ViewModel
         }
 
         [TestMethod]
-        public void CaptureTimeString_WhenUseGlobalCaptureTime_UpdatesAppConfiguration()
+        public void CaptureDuration_AutoDetectionLoadsSavedTimeWithoutChangingGlobalTime()
         {
-            var sut = CreateSut();
-            sut.UseGlobalCaptureTime = true;
+            var sut = CreateDurationSut();
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
 
-            sut.CaptureTimeString = "42.5";
-
-            Assert.AreEqual(42.5d, _appConfigurationMock.Object.CaptureTime, 0.001d);
-
-            DisposeHeartbeat(sut);
+            Assert.AreEqual("30", sut.CaptureTimeString);
+            Assert.AreEqual("This game", sut.CaptureTimeScopeLabel);
+            Assert.IsTrue(sut.HasGameCaptureTime);
+            Assert.AreEqual(60d, _appConfigurationMock.Object.CaptureTime);
+            StringAssert.Contains(sut.CaptureTimeScopeToolTip, VkcubeProcess);
         }
 
         [TestMethod]
-        public void OnSaveCaptureTime_WithVkcube_UpdatesProcessListEntry()
+        public void CaptureDuration_SwitchingToUnknownGameFallsBackToGlobalTime()
+        {
+            var sut = CreateDurationSut();
+            _mockCaptureService.AddProcess("second.exe", 4242);
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            sut.SelectedProcessToCapture = VkcubeProcess;
+            Assert.AreEqual("30", sut.CaptureTimeString);
+
+            sut.SelectedProcessToCapture = "second.exe";
+            Assert.AreEqual("60", sut.CaptureTimeString);
+            Assert.AreEqual("Global", sut.CaptureTimeScopeLabel);
+
+            sut.SelectedProcessToCapture = VkcubeProcess;
+            Assert.AreEqual("30", sut.CaptureTimeString);
+            Assert.AreEqual(60d, _appConfigurationMock.Object.CaptureTime);
+        }
+
+        [TestMethod]
+        public async Task CaptureDuration_RememberEditAndReloadPersistsOnlySelectedGame()
+        {
+            var sut = CreateDurationSut();
+            _mockCaptureService.AddProcess("second.exe", 4242);
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            sut.SelectedProcessToCapture = "second.exe";
+            sut.RememberGameCaptureTimeCommand.Execute(null);
+
+            Assert.AreEqual(60d, _processList.FindProcessByName("second").LastCaptureTime);
+            sut.CaptureTimeString = "120";
+            Assert.AreEqual(60d, _processList.FindProcessByName("second").LastCaptureTime);
+            Assert.IsTrue(sut.CommitCaptureTime());
+
+            // Wait for queued saves, then read the persisted file as a new session would.
+            await _processList.Save();
+            _processList.ReadFromFile();
+            sut.SelectedProcessToCapture = VkcubeProcess;
+            Assert.AreEqual("30", sut.CaptureTimeString);
+            sut.SelectedProcessToCapture = "second.exe";
+            Assert.AreEqual("120", sut.CaptureTimeString);
+            Assert.AreEqual(60d, _appConfigurationMock.Object.CaptureTime);
+            Assert.AreEqual(1, _processList.Processes.Count(process => process.Name == "second"));
+        }
+
+        [TestMethod]
+        public async Task CaptureDuration_UseGlobalClearsOnlyCurrentGameAndPersistsReset()
+        {
+            var sut = CreateDurationSut();
+            _processList.AddEntry("second.exe", "Second game", false, 45d);
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            sut.UseGlobalCaptureTimeCommand.Execute(null);
+            await _processList.Save();
+            _processList.ReadFromFile();
+
+            Assert.IsNull(_processList.FindProcessByName(VkcubeProcess).LastCaptureTime);
+            Assert.AreEqual(45d, _processList.FindProcessByName("second.exe").LastCaptureTime);
+            Assert.AreEqual("Second game", _processList.FindProcessByName("second.exe").DisplayName);
+            Assert.IsTrue(sut.UseGlobalCaptureTime);
+            Assert.AreEqual("60", sut.CaptureTimeString);
+        }
+
+        [TestMethod]
+        public void CaptureDuration_GlobalEditIsSavedOnCommitAndPreservesGameTimes()
+        {
+            var sut = CreateDurationSut();
+            sut.CaptureTimeString = "90";
+            Assert.AreEqual(60d, _appConfigurationMock.Object.CaptureTime);
+
+            Assert.IsTrue(sut.CommitCaptureTime());
+            Assert.AreEqual(90d, _appConfigurationMock.Object.CaptureTime);
+            Assert.AreEqual(30d, _processList.FindProcessByName(VkcubeProcess).LastCaptureTime);
+        }
+
+        [TestMethod]
+        public void CaptureDuration_NoUniqueTargetDisablesRememberAndUsesGlobalTime()
+        {
+            var sut = CreateDurationSut();
+            Assert.IsFalse(sut.RememberGameCaptureTimeCommand.CanExecute(null));
+
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            Assert.IsTrue(sut.RememberGameCaptureTimeCommand.CanExecute(null));
+            _mockCaptureService.AddProcess("second.exe", 4242);
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+
+            Assert.IsFalse(sut.RememberGameCaptureTimeCommand.CanExecute(null));
+            sut.RememberGameCaptureTimeCommand.Execute(null);
+            Assert.AreEqual("Global", sut.CaptureTimeScopeLabel);
+            Assert.AreEqual("60", sut.CaptureTimeString);
+        }
+
+        [TestMethod]
+        [DataRow("en-US", "120.5", 120.5d)]
+        [DataRow("de-DE", "120.5", 120.5d)]
+        [DataRow("de-DE", "120,5", 120.5d)]
+        [DataRow("en-US", "0", 0d)]
+        public void CaptureDuration_DecimalsAndUnlimitedAreSavedIndependentlyOfCulture(string culture, string input, double expected)
+        {
+            var previousCulture = CultureInfo.CurrentCulture;
+            try
+            {
+                CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
+                var sut = CreateDurationSut();
+                InvokePrivate(sut, "UpdateProcessToCaptureList");
+                sut.CaptureTimeString = input;
+
+                Assert.IsTrue(sut.CommitCaptureTime());
+                Assert.AreEqual(expected, _processList.FindProcessByName(VkcubeProcess).LastCaptureTime);
+                Assert.IsTrue(sut.HasGameCaptureTime);
+                Assert.AreEqual(60d, _appConfigurationMock.Object.CaptureTime);
+                sut.RestoreCaptureTime();
+                Assert.AreEqual(expected.ToString(CultureInfo.InvariantCulture), sut.CaptureTimeString);
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = previousCulture;
+            }
+        }
+
+        [TestMethod]
+        [DataRow("")]
+        [DataRow(".")]
+        [DataRow("-1")]
+        [DataRow("NaN")]
+        [DataRow("Infinity")]
+        [DataRow("1e309")]
+        [DataRow("1,2.3")]
+        [DataRow("invalid")]
+        public void CaptureDuration_InvalidInputDoesNotReplaceSavedDuration(string input)
+        {
+            var sut = CreateDurationSut();
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            sut.CaptureTimeString = input;
+
+            Assert.IsFalse(sut.CommitCaptureTime());
+            Assert.AreEqual(30d, _processList.FindProcessByName(VkcubeProcess).LastCaptureTime);
+            Assert.AreEqual(60d, _appConfigurationMock.Object.CaptureTime);
+            sut.RestoreCaptureTime();
+            Assert.AreEqual("30", sut.CaptureTimeString);
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void CaptureDuration_ProcessRefreshKeepsPendingEditAndScope(bool newProcessDetected)
+        {
+            var sut = CreateDurationSut();
+            _mockCaptureService.AddProcess("second.exe", 4242);
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            sut.SelectedProcessToCapture = VkcubeProcess;
+            sut.CaptureTimeString = "123.";
+            if (newProcessDetected)
+                _mockCaptureService.AddProcess("third.exe", 5678);
+            // Simulate the ListView clearing its selection during ItemsSource changes.
+            sut.ProcessesToCapture.CollectionChanged += (_, args) =>
+            {
+                if (args.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
+                    sut.SelectedProcessToCapture = null;
+            };
+
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+
+            Assert.AreEqual("123.", sut.CaptureTimeString);
+            Assert.AreEqual(VkcubeProcess, sut.SelectedProcessToCapture);
+            Assert.IsTrue(sut.HasGameCaptureTime);
+            Assert.AreEqual(30d, _processList.FindProcessByName(VkcubeProcess).LastCaptureTime);
+            Assert.AreEqual(60d, _appConfigurationMock.Object.CaptureTime);
+        }
+
+        [TestMethod]
+        public void CaptureDuration_ProcessSwitchCommitsEditForPreviousGame()
+        {
+            var sut = CreateDurationSut();
+            _mockCaptureService.AddProcess("second.exe", 4242);
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            sut.SelectedProcessToCapture = VkcubeProcess;
+            sut.CaptureTimeString = "120";
+            sut.SelectedProcessToCapture = "second.exe";
+
+            Assert.AreEqual(120d, _processList.FindProcessByName(VkcubeProcess).LastCaptureTime);
+            Assert.AreEqual("60", sut.CaptureTimeString);
+            Assert.IsNull(_processList.FindProcessByName("second.exe"));
+        }
+
+        [TestMethod]
+        public void CaptureDuration_DisabledControlsCannotChangeSavedSettings()
+        {
+            var sut = CreateDurationSut();
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            sut.AreButtonsActive = false;
+            sut.CaptureTimeString = "120";
+
+            Assert.IsFalse(sut.RememberGameCaptureTimeCommand.CanExecute(null));
+            Assert.IsFalse(sut.UseGlobalCaptureTimeCommand.CanExecute(null));
+            Assert.IsFalse(sut.CommitCaptureTime());
+            sut.UseGlobalCaptureTimeCommand.Execute(null);
+            sut.RememberGameCaptureTimeCommand.Execute(null);
+            Assert.AreEqual(30d, _processList.FindProcessByName(VkcubeProcess).LastCaptureTime);
+            Assert.AreEqual(60d, _appConfigurationMock.Object.CaptureTime);
+        }
+
+        [TestMethod]
+        [DataRow(ECaptureStatus.StartedDelay, false)]
+        [DataRow(ECaptureStatus.StartedTimer, false)]
+        [DataRow(ECaptureStatus.Processing, false)]
+        [DataRow(ECaptureStatus.Stopped, true)]
+        public void CaptureDuration_CaptureLifecycleDisablesSettingsUntilStopped(ECaptureStatus status, bool enabled)
+        {
+            var sut = CreateDurationSut();
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            var statusStream = (ISubject<CaptureStatus>)typeof(CaptureManager)
+                .GetField("_captureStatusChange", BindingFlags.Instance | BindingFlags.NonPublic)
+                .GetValue(_captureManager);
+            statusStream.OnNext(new CaptureStatus { Status = status });
+
+            var frame = new DispatcherFrame();
+            Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle,
+                new Action(() => frame.Continue = false));
+            Dispatcher.PushFrame(frame);
+
+            Assert.AreEqual(enabled, sut.AreButtonsActive);
+            Assert.AreEqual(enabled, sut.RememberGameCaptureTimeCommand.CanExecute(null));
+            Assert.AreEqual(enabled, sut.UseGlobalCaptureTimeCommand.CanExecute(null));
+        }
+
+        private CaptureViewModel CreateDurationSut()
         {
             var sut = CreateSut();
-
-            sut.OnSaveCaptureTime("55.0", "vkcube");
-
-            var processEntry = _processList.FindProcessByName("vkcube");
-            Assert.IsNotNull(processEntry);
-            Assert.AreEqual(55.0d, processEntry.LastCaptureTime.Value, 0.001d);
-
             DisposeHeartbeat(sut);
+            return sut;
         }
 
         private CaptureViewModel CreateSut()
@@ -267,11 +532,12 @@ namespace CapFrameX.Test.ViewModel
             _appConfigurationMock.Object.CaptureHotKey = "F11";
             _appConfigurationMock.Object.OverlayHotKey = "Alt+O";
             _appConfigurationMock.Object.OverlayConfigHotKey = "Alt+C";
+            _appConfigurationMock.Object.OverlayPositionHotkey = "Alt+P";
             _appConfigurationMock.Object.ResetHistoryHotkey = "F10";
             _appConfigurationMock.Object.ThreadAffinityHotkey = "Control+A";
             _appConfigurationMock.Object.ResetMetricsHotkey = "Alt+M";
             _appConfigurationMock.Object.HotkeySoundMode = "None";
-            _appConfigurationMock.Object.CaptureTime = 30d;
+            _appConfigurationMock.Object.CaptureTime = 60d;
             _appConfigurationMock.Object.CaptureDelay = 0d;
             _appConfigurationMock.Object.UseGlobalCaptureTime = true;
             _appConfigurationMock.Object.RunHistorySecondMetric = EMetric.P1.ToString();

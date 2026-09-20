@@ -703,9 +703,4 @@ namespace CapFrameX.PMD.Powenetics
         public static readonly byte[] Clear_Calibration = new byte[] { 0xCA, 0xAC, 0xBD, 0x00 };
         public static readonly byte[] Stream_Mode = new byte[] { 0xCA, 0xAC, 0xBD, 0x90 };
     }
-
-    public static class StatusCodes
-    {
-        public const string Calibration_Error = "CA-AC";
-    }
 }

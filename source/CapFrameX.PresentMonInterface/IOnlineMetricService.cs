@@ -1,5 +1,5 @@
-﻿using CapFrameX.Statistics.NetStandard.Contracts;
-using System;
+﻿using System;
+using CapFrameX.Statistics.NetStandard.Contracts;
 
 namespace CapFrameX.PresentMonInterface
 {

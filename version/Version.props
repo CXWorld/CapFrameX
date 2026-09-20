@@ -1,0 +1,34 @@
+<Project>
+  <PropertyGroup>
+    <CapFrameXVersion>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)Version.txt').Trim())</CapFrameXVersion>
+    <CapFrameXReleaseChannel>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)Channel.txt').Trim().ToLowerInvariant())</CapFrameXReleaseChannel>
+    <CapFrameXIsBeta Condition="'$(CapFrameXReleaseChannel)' == 'beta'">true</CapFrameXIsBeta>
+    <CapFrameXIsBeta Condition="'$(CapFrameXIsBeta)' == ''">false</CapFrameXIsBeta>
+    <CapFrameXVersionMajor>$([System.Version]::Parse('$(CapFrameXVersion)').Major)</CapFrameXVersionMajor>
+    <CapFrameXVersionMinor>$([System.Version]::Parse('$(CapFrameXVersion)').Minor)</CapFrameXVersionMinor>
+    <CapFrameXVersionPatch>$([System.Version]::Parse('$(CapFrameXVersion)').Build)</CapFrameXVersionPatch>
+    <CapFrameXVersionRevision>$([System.Version]::Parse('$(CapFrameXVersion)').Revision)</CapFrameXVersionRevision>
+    <CapFrameXInstallerBuild>$([MSBuild]::Add($([MSBuild]::Multiply($(CapFrameXVersionPatch), 1000)), $(CapFrameXVersionRevision)))</CapFrameXInstallerBuild>
+    <CapFrameXInstallerVersion>$(CapFrameXVersionMajor).$(CapFrameXVersionMinor).$(CapFrameXInstallerBuild)</CapFrameXInstallerVersion>
+
+    <Version>$(CapFrameXVersion)</Version>
+    <AssemblyVersion>$(CapFrameXVersion)</AssemblyVersion>
+    <FileVersion>$(CapFrameXVersion)</FileVersion>
+    <InformationalVersion Condition="'$(CapFrameXIsBeta)' == 'true'">$(CapFrameXVersion)-beta</InformationalVersion>
+    <InformationalVersion Condition="'$(CapFrameXIsBeta)' != 'true'">$(CapFrameXVersion)</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="ReleaseChannel" Value="$(CapFrameXReleaseChannel)" />
+  </ItemGroup>
+
+  <Target Name="ValidateCapFrameXVersionMetadata" BeforeTargets="PrepareForBuild">
+    <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(CapFrameXVersion)', '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'))"
+           Text="version/Version.txt must contain a four-part version such as 1.9.0.1." />
+    <Error Condition="'$(CapFrameXReleaseChannel)' != 'release' and '$(CapFrameXReleaseChannel)' != 'beta'"
+           Text="version/Channel.txt must contain either release or beta." />
+    <Error Condition="'$(CapFrameXVersionMajor)' &gt; '255' or '$(CapFrameXVersionMinor)' &gt; '255' or '$(CapFrameXVersionRevision)' &gt;= '1000' or '$(CapFrameXInstallerBuild)' &gt; '65535'"
+           Text="The four-part CapFrameX version cannot be mapped to a Windows Installer product version." />
+  </Target>
+</Project>

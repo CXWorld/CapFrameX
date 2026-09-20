@@ -12,6 +12,9 @@ using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware;
 
+/// <summary>
+/// Sets and restores the processor group affinity of the calling thread.
+/// </summary>
 public static class ThreadAffinity
 {
     /// <summary>

@@ -4,15 +4,18 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
-using CapFrameX.Monitoring.Contracts;
-using LibreHardwareMonitor.Interop;
-using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+
+using CapFrameX.Monitoring.Contracts;
+using LibreHardwareMonitor.Interop;
+using LibreHardwareMonitor.PawnIo;
+using Microsoft.Win32;
+using Serilog;
 using static LibreHardwareMonitor.Interop.NvApi;
 
 namespace LibreHardwareMonitor.Hardware.Gpu;
@@ -23,17 +26,37 @@ internal sealed class NvidiaGpu : GenericGpu
     private const int LoadIndexPowerBase = 100;
     private const int LoadIndexMemory = 300;
 
+    // Throughput sensor indices (PCIe Rx = 0, PCIe Tx = 1).
+    private const int ThroughputIndexMemoryBandwidth = 2;
+
     private const float MiB = 1024f * 1024f;
     private const float GiB = 1024f * 1024f * 1024f;
 
+    // NVAPI reports the memory clock on a generation-dependent basis: GDDR5/5X/6 are reported
+    // at a low (~1-2 GHz) clock with the per-cycle data rate folded into the 4x/8x multiplier
+    // from GetMemoryDataRateMultiplier(), whereas GDDR7 is reported at its true ~15 GHz I/O
+    // clock, whose data-rate multiplier is just 2 (plain DDR). The NvGpuMemoryType enum can't
+    // tell these generations apart (it tops out at GDDR5X), so a reported memory clock above
+    // this threshold (well above the ~2.6 GHz any pre-GDDR7 card reports) is taken as the
+    // GDDR7 high-clock basis and forced to the DDR multiplier of 2.
+    private const float Gddr7MemoryClockBasisThresholdMHz = 5000f;
+    private const float Gddr7DataRateMultiplier = 2f;
+
+    // GDDR6X uses PAM4 signalling and transfers 16 data words per reported NVAPI memory-clock
+    // cycle - twice the 8x of GDDR6/GDDR5X. NvAPI_GPU_GetRamType cannot report GDDR6X (its enum
+    // tops out at GDDR5X), so the affected boards are identified by PCI device id, see
+    // IsGddr6xMemory(). Example: RTX 4090 at ~1313 MHz x 16 x 384 bit / 8000 = ~1008 GB/s.
+    private const float Gddr6xDataRateMultiplier = 16f;
+
     private uint _lastBlankCounter;
+    private ulong _lastPowerSampleTimestamp;
+    private bool _powerSamplesFallbackLogged;
 
     private readonly Stopwatch _stopwatch;
     private readonly int _adapterIndex;
     private readonly Sensor[] _clocks;
     private readonly int _clockVersion;
     private readonly Sensor[] _controls;
-    private readonly string _d3dDeviceId;
     private NvDisplayHandle? _displayHandle;
     private readonly IReadOnlyList<NvDisplayHandleInfo> _displayHandleInfos;
     private readonly Control[] _fanControls;
@@ -47,10 +70,18 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor _hotSpotTemperature;
     private readonly Sensor[] _loads;
     private readonly Sensor _memoryFree;
+    private readonly Sensor[] _memoryTemperatures;
     private readonly Sensor _memoryJunctionTemperature;
     private readonly Sensor _memoryTotal;
     private readonly Sensor _memoryUsed;
     private readonly Sensor _memoryLoad;
+    private readonly Sensor _memoryBandwidth;
+    private readonly Sensor _memoryClock;
+    private readonly Sensor _memoryControllerLoad;
+    private readonly uint _memoryBusWidth;
+    private readonly float _memoryDataRateMultiplier;
+    private readonly float?[] _directMemoryTemperatures = new float?[NvidiaThermal.MemoryTemperatureSensorCount];
+    private readonly NvidiaThermal _nvidiaThermal;
     private readonly NvidiaML.NvmlDevice? _nvmlDevice;
     private readonly Sensor _pcieThroughputRx;
     private readonly Sensor _pcieThroughputTx;
@@ -63,20 +94,26 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor _powerLimit;
     private readonly Sensor _temperatureLimit;
     private readonly Sensor _voltageLimit;
-    private readonly ISensorConfig _sensorConfig;
     private string _activeDisplayDeviceName;
 
     public NvidiaGpu(int adapterIndex, NvApi.NvPhysicalGpuHandle handle, IReadOnlyList<NvDisplayHandleInfo> displayHandles, ISettings settings, ISensorConfig sensorConfig = null)
-        : base(GetName(handle), new Identifier("gpu-nvidia", adapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
+        : base(
+            GetName(handle),
+            new Identifier("gpu-nvidia", adapterIndex.ToString(CultureInfo.InvariantCulture)),
+            settings,
+            sensorConfig: sensorConfig,
+            dedicatedMemoryPresentationSortKey: $"{adapterIndex}_8_0",
+            sharedMemoryPresentationSortKey: $"{adapterIndex}_8_1")
     {
         _adapterIndex = adapterIndex;
         _handle = handle;
-        _sensorConfig = sensorConfig;
         _displayHandleInfos = displayHandles ?? Array.Empty<NvDisplayHandleInfo>();
         _displayHandle = _displayHandleInfos.Count > 0 ? _displayHandleInfos[0].Handle : null;
         _stopwatch = new Stopwatch();
 
         bool hasBusId = NvApi.NvAPI_GPU_GetBusId(handle, out uint busId) == NvApi.NvStatus.OK;
+        uint pciDevice = 0;
+        uint pciFunction = 0;
 
         // Thermal settings
         NvApi.NvThermalSettings thermalSettings = GetThermalSettings(out NvApi.NvStatus status);
@@ -114,6 +151,14 @@ internal sealed class NvidiaGpu : GenericGpu
         { PresentationSortKey = $"{adapterIndex}_2_0_{thermalSettings.Count + 1}" };
         _memoryJunctionTemperature = new Sensor("GPU Memory Junction", (int)thermalSettings.Count + 2, SensorType.Temperature, this, settings)
         { PresentationSortKey = $"{adapterIndex}_2_0_{thermalSettings.Count + 2}" };
+        _memoryTemperatures = new Sensor[NvidiaThermal.MemoryTemperatureSensorCount];
+        for (int i = 0; i < _memoryTemperatures.Length; i++)
+        {
+            int sensorIndex = (int)thermalSettings.Count + 3 + i;
+            _memoryTemperatures[i] = new Sensor($"GPU Memory Temperature #{i + 1}", sensorIndex, SensorType.Temperature, this, settings)
+            { PresentationSortKey = $"{adapterIndex}_2_0_{sensorIndex}" };
+        }
+
         bool hasAnyThermalSensor = false;
 
         for (int thermalSensorsMaxBit = 0; thermalSensorsMaxBit < 32; thermalSensorsMaxBit++)
@@ -293,10 +338,12 @@ internal sealed class NvidiaGpu : GenericGpu
             {
                 _loads = loads;
 
-                foreach (Sensor sensor in loads)
+                // The memory-controller (FrameBuffer) load is activated on demand in Update()
+                // (mirroring the PCIe throughput sensors), so it is not unconditionally activated here.
+                for (int i = 0; i < loads.Length; i++)
                 {
-                    if (sensor != null)
-                        ActivateSensor(sensor);
+                    if (loads[i] != null && i != (int)NvApi.NvUtilizationDomain.FrameBuffer)
+                        ActivateSensor(loads[i]);
                 }
             }
         }
@@ -326,10 +373,12 @@ internal sealed class NvidiaGpu : GenericGpu
                 {
                     _loads = loads;
 
-                    foreach (Sensor sensor in loads)
+                    // The memory-controller (FrameBuffer) load is activated on demand in Update()
+                    // (mirroring the PCIe throughput sensors), so it is not unconditionally activated here.
+                    for (int i = 0; i < loads.Length; i++)
                     {
-                        if (sensor != null)
-                            ActivateSensor(sensor);
+                        if (loads[i] != null && i != (int)NvApi.NvUtilizationDomain.FrameBuffer)
+                            ActivateSensor(loads[i]);
                     }
                 }
             }
@@ -425,6 +474,9 @@ internal sealed class NvidiaGpu : GenericGpu
 
                     if (pciInfo is { } pci)
                     {
+                        pciDevice = pci.device;
+                        pciFunction = GetPciFunction(pci.busId);
+
                         string[] deviceIds = D3DDisplayDevice.GetDeviceIdentifiers();
                         if (deviceIds != null)
                         {
@@ -496,13 +548,15 @@ internal sealed class NvidiaGpu : GenericGpu
                                     {
                                         int smallDataSensorIndex = 3; // There are three normal GPU memory sensors.
 
-                                        _d3dDeviceId = deviceId;
-                                        SetProcessMemoryInstanceFilter(deviceInfo.AdapterLuidInstanceName);
-
                                         _gpuDedicatedMemoryUsage = new Sensor("GPU Memory Dedicated", smallDataSensorIndex++, SensorType.Data, this, settings)
                                         { PresentationSortKey = $"{adapterIndex}_8_0" };
-                                        _gpuSharedMemoryUsage = new Sensor("GPU Memory Shared", smallDataSensorIndex, SensorType.Data, this, settings)
+                                        _gpuSharedMemoryUsage = new Sensor("GPU Memory Shared", smallDataSensorIndex++, SensorType.Data, this, settings)
                                         { PresentationSortKey = $"{adapterIndex}_8_1" };
+                                        InitializeWddmDevice(
+                                            deviceId,
+                                            deviceInfo.AdapterLuidInstanceName,
+                                            smallDataSensorIndex,
+                                            $"{adapterIndex}_8_0_1");
 
                                         //_gpuNodeUsage = new Sensor[deviceInfo.Nodes.Length];
                                         //_gpuNodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
@@ -527,6 +581,9 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
+        if (hasBusId && !Software.OperatingSystem.IsUnix)
+            _nvidiaThermal = new NvidiaThermal(busId, pciDevice, pciFunction);
+
         _memoryFree = new Sensor("GPU Memory Free", 0, SensorType.Data, this, settings)
         { PresentationSortKey = $"{adapterIndex}_8_2" };
         _memoryUsed = new Sensor("GPU Memory Used", 1, SensorType.Data, this, settings)
@@ -536,6 +593,32 @@ internal sealed class NvidiaGpu : GenericGpu
         _memoryLoad = new Sensor("GPU Memory", LoadIndexMemory, SensorType.Load, this, settings)
         { PresentationSortKey = $"{adapterIndex}_8_5" };
 
+        // Momentary memory bandwidth (concept ported from Special K's GPU monitor):
+        //   bandwidth = (theoretical peak) * (memory-controller utilization).
+        // The peak is derived from the memory clock, the data rate per clock cycle
+        // (depends on the memory type) and the memory bus width:
+        //   peak [B/s] = memClock[Hz] * dataRateMultiplier * busWidth[bit] / 8
+        // The dynamic part is the "GPU Memory Controller" load (NvUtilizationDomain.FrameBuffer).
+        _memoryBusWidth = GetMemoryBusWidth();
+        // GDDR6X (PAM4) is not reported by NvAPI_GPU_GetRamType, so detect those boards by PCI
+        // device id and use the PAM4 multiplier (16) instead of the GDDR5X/6 fallback value (8),
+        // which would otherwise under-report their bandwidth by 2x.
+        _memoryDataRateMultiplier = IsGddr6xMemory()
+            ? Gddr6xDataRateMultiplier
+            : GetMemoryDataRateMultiplier(GetMemoryType());
+
+        // Reuse the already-created memory clock / memory-controller load sensors as inputs.
+        _memoryClock = _clocks?.FirstOrDefault(s => s.Index == (int)NvApi.NvGpuPublicClockId.Memory);
+        _memoryControllerLoad = _loads != null && _loads.Length > (int)NvApi.NvUtilizationDomain.FrameBuffer
+            ? _loads[(int)NvApi.NvUtilizationDomain.FrameBuffer]
+            : null;
+
+        if (_memoryBusWidth > 0 && _memoryClock != null && _memoryControllerLoad != null)
+        {
+            _memoryBandwidth = new Sensor("GPU Memory Bandwidth", ThroughputIndexMemoryBandwidth, SensorType.Throughput, this, settings)
+            { PresentationSortKey = $"{adapterIndex}_8_6" };
+        }
+
         Update();
     }
 
@@ -544,7 +627,7 @@ internal sealed class NvidiaGpu : GenericGpu
     {
         get
         {
-            return _d3dDeviceId != null ? D3DDisplayDevice.GetActualDeviceIdentifier(_d3dDeviceId) : null;
+            return WddmDeviceId != null ? D3DDisplayDevice.GetActualDeviceIdentifier(WddmDeviceId) : null;
         }
     }
 
@@ -558,8 +641,7 @@ internal sealed class NvidiaGpu : GenericGpu
         UpdateProcessMemorySensors();
         UpdateDisplayHandleIfNeeded();
 
-        if (_d3dDeviceId != null && ShouldEvaluateAnyD3DSensor() &&
-            D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+        if (TryUpdateWddmMemorySensors(ShouldEvaluateAnyD3DSensor(), out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
         {
             _gpuDedicatedMemoryUsage.Value = deviceInfo.GpuDedicatedUsed / GiB;
             _gpuSharedMemoryUsage.Value = deviceInfo.GpuSharedUsed / GiB;
@@ -580,7 +662,29 @@ internal sealed class NvidiaGpu : GenericGpu
 
         NvApi.NvStatus status;
 
-        if (_temperatures is { Length: > 0 })
+        // Resolve the selection once per update. Most NVAPI entry points below are separate
+        // driver round-trips; merely having a sensor object must not make every group poll.
+        // Use non-short-circuiting aggregation so GetSensorEvaluate still sees every identifier
+        // during the one-time discovery pass.
+        bool shouldUpdateMemoryBandwidth = ShouldEvaluateMemoryBandwidthSensor();
+        bool shouldUpdateTemperatures = ShouldEvaluateAnySensor(_temperatures);
+        bool shouldUpdateHotSpot = ShouldEvaluateSensor(_hotSpotTemperature);
+        bool shouldUpdateMemoryJunction = ShouldEvaluateSensor(_memoryJunctionTemperature);
+        bool shouldUpdateDirectMemoryTemperatures = ShouldEvaluateAnySensor(_memoryTemperatures);
+        bool shouldReadDirectMemoryTemperatures = shouldUpdateDirectMemoryTemperatures ||
+            (shouldUpdateMemoryJunction && _thermalSensorsMask == 0);
+        bool shouldReadDirectHotSpot = _nvidiaThermal?.NeedsInitialSample == true;
+        shouldReadDirectHotSpot |= shouldUpdateHotSpot;
+        bool shouldUpdateClocks = ShouldEvaluateAnySensor(_clocks);
+        shouldUpdateClocks |= shouldUpdateMemoryBandwidth;
+        bool shouldUpdateFans = ShouldEvaluateAnySensor(_fans);
+        bool shouldUpdateControls = ShouldEvaluateAnySensor(_controls);
+        bool shouldUpdateLoads = ShouldEvaluateAnySensor(_loads);
+        shouldUpdateLoads |= shouldUpdateMemoryBandwidth;
+        bool shouldUpdateMemory = ShouldEvaluateMemorySensors();
+        bool shouldUpdateVoltage = ShouldEvaluateSensor(_voltage);
+
+        if (_temperatures is { Length: > 0 } && shouldUpdateTemperatures)
         {
             NvApi.NvThermalSettings settings = GetThermalSettings(out status);
             // settings.Count is 0 when no valid data available, this happens when you try to read out this value with a high polling interval.
@@ -591,7 +695,43 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        if (_thermalSensorsMask > 0)
+        float? directHotSpot = null;
+        float? directMemoryJunction = null;
+        bool directMemoryReadSucceeded = false;
+        bool hasDirectThermalData = _nvidiaThermal != null &&
+            (shouldReadDirectHotSpot || shouldReadDirectMemoryTemperatures) &&
+            _nvidiaThermal.TryRead(
+                shouldReadDirectMemoryTemperatures,
+                out directHotSpot,
+                out directMemoryJunction,
+                _directMemoryTemperatures,
+                out directMemoryReadSucceeded);
+        bool hasDirectHotSpot = hasDirectThermalData && directHotSpot.HasValue;
+        bool hasDirectMemoryJunction = hasDirectThermalData && directMemoryJunction.HasValue;
+
+        if (hasDirectHotSpot)
+            _hotSpotTemperature.Value = directHotSpot;
+        else if (_nvidiaThermal != null && Name.StartsWith("NVIDIA GeForce RTX 50", StringComparison.OrdinalIgnoreCase))
+            _hotSpotTemperature.Value = null;
+
+        if (hasDirectMemoryJunction)
+            _memoryJunctionTemperature.Value = directMemoryJunction;
+
+        if (hasDirectThermalData && directMemoryReadSucceeded)
+        {
+            for (int i = 0; i < _memoryTemperatures.Length; i++)
+            {
+                Sensor memoryTemperature = _memoryTemperatures[i];
+                memoryTemperature.Value = _directMemoryTemperatures[i];
+                if (memoryTemperature.Value.HasValue)
+                    ActivateSensor(memoryTemperature);
+            }
+        }
+
+        bool shouldUpdateExtendedThermals = shouldUpdateHotSpot ||
+            shouldUpdateMemoryJunction ||
+            shouldUpdateDirectMemoryTemperatures;
+        if (_thermalSensorsMask > 0 && (shouldUpdateTemperatures || shouldUpdateExtendedThermals))
         {
             NvApi.NvThermalSensors thermalSensors = GetThermalSensors(_thermalSensorsMask, out status);
 
@@ -600,36 +740,42 @@ internal sealed class NvidiaGpu : GenericGpu
                 // RTX 50xx series
                 if (Name.StartsWith("NVIDIA GeForce RTX 50", StringComparison.OrdinalIgnoreCase))
                 {
-                    _hotSpotTemperature.Value = 0;
                     _temperatures[0].Value = thermalSensors.Temperatures[1] / 256.0f;
-                    _memoryJunctionTemperature.Value = thermalSensors.Temperatures[2] / 256.0f;
+                    if (!hasDirectMemoryJunction)
+                        _memoryJunctionTemperature.Value = thermalSensors.Temperatures[2] / 256.0f;
                 }
                 // RTX 40xx series
                 else if (Name.StartsWith("NVIDIA GeForce RTX 40", StringComparison.OrdinalIgnoreCase))
                 {
-                    _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
-                    _memoryJunctionTemperature.Value = thermalSensors.Temperatures[7] / 256.0f;
+                    if (!hasDirectHotSpot)
+                        _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
+                    if (!hasDirectMemoryJunction)
+                        _memoryJunctionTemperature.Value = thermalSensors.Temperatures[7] / 256.0f;
                 }
                 else
                 {
-                    _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
-                    _memoryJunctionTemperature.Value = thermalSensors.Temperatures[9] / 256.0f;
+                    if (!hasDirectHotSpot)
+                        _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
+                    if (!hasDirectMemoryJunction)
+                        _memoryJunctionTemperature.Value = thermalSensors.Temperatures[9] / 256.0f;
                 }
             }
-
-            if (_hotSpotTemperature.Value != 0)
-                ActivateSensor(_hotSpotTemperature);
-
-            if (_memoryJunctionTemperature.Value != 0)
-                ActivateSensor(_memoryJunctionTemperature);
         }
         else
         {
-            _hotSpotTemperature.Value = null;
-            _memoryJunctionTemperature.Value = null;
+            if (!hasDirectHotSpot)
+                _hotSpotTemperature.Value = null;
+            if (!hasDirectMemoryJunction)
+                _memoryJunctionTemperature.Value = null;
         }
 
-        if (_clocks is { Length: > 0 })
+        if (_hotSpotTemperature.Value is > 0)
+            ActivateSensor(_hotSpotTemperature);
+
+        if (_memoryJunctionTemperature.Value is > 0)
+            ActivateSensor(_memoryJunctionTemperature);
+
+        if (_clocks is { Length: > 0 } && shouldUpdateClocks)
         {
             NvApi.NvGpuClockFrequencies clockFrequencies = GetClockFrequencies(out status);
             if (status == NvApi.NvStatus.OK)
@@ -644,7 +790,7 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        if (_fans is { Length: > 0 })
+        if (_fans is { Length: > 0 } && shouldUpdateFans)
         {
             NvApi.NvFanCoolersStatus fanCoolers = GetFanCoolersStatus(out status);
             if (status == NvApi.NvStatus.OK && fanCoolers.Count > 0)
@@ -663,7 +809,7 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        if (_controls is { Length: > 0 })
+        if (_controls is { Length: > 0 } && shouldUpdateControls)
         {
             NvApi.NvFanCoolersStatus fanCoolers = GetFanCoolersStatus(out status);
             if (status == NvApi.NvStatus.OK && fanCoolers.Count > 0 && fanCoolers.Count == _controls.Length)
@@ -690,7 +836,7 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        if (_loads is { Length: > 0 })
+        if (_loads is { Length: > 0 } && shouldUpdateLoads)
         {
             NvApi.NvDynamicPStatesInfo pStatesInfo = GetDynamicPstatesInfoEx(out status);
             if (status == NvApi.NvStatus.OK)
@@ -721,6 +867,40 @@ internal sealed class NvidiaGpu : GenericGpu
                     }
                 }
             }
+
+            // Expose the memory-controller load like the PCIe throughput sensors: its value is
+            // always refreshed above (the bandwidth sensor consumes it), but it is only surfaced
+            // when selected for logging/overlay (GetSensorEvaluate returns true on first sight).
+            if (_memoryControllerLoad != null && ShouldEvaluateMemoryControllerSensor())
+                ActivateSensor(_memoryControllerLoad);
+        }
+
+        if (_memoryBandwidth != null && shouldUpdateMemoryBandwidth)
+        {
+            // _memoryClock holds the reported memory clock in MHz, _memoryControllerLoad the
+            // memory-controller utilization in %. Compute the momentary bandwidth in GB/s
+            // (Throughput sensors are presented as GB/s). Done in floating point to keep the
+            // sub-percent resolution of the utilization value.
+            float? memClockMHz = _memoryClock.Value;
+            float? controllerLoadPercent = _memoryControllerLoad.Value;
+
+            if (memClockMHz.HasValue && controllerLoadPercent.HasValue)
+            {
+                // A reported memory clock in the GDDR7 range uses the DDR multiplier of 2; the
+                // memory-type based multiplier only applies to the low clock basis NVAPI reports
+                // for GDDR5/5X/6 (see Gddr7MemoryClockBasisThresholdMHz). This is evaluated per
+                // tick rather than once because the memory clock downclocks at idle.
+                float dataRateMultiplier = memClockMHz.Value > Gddr7MemoryClockBasisThresholdMHz
+                    ? Gddr7DataRateMultiplier
+                    : _memoryDataRateMultiplier;
+
+                // peak [GB/s] = memClock[MHz] * 1e6 * multiplier * busWidth[bit] / 8 / 1e9
+                //             = memClock[MHz] * multiplier * busWidth / 8000
+                float peakGBs = memClockMHz.Value * dataRateMultiplier * _memoryBusWidth / 8000f;
+
+                _memoryBandwidth.Value = peakGBs * (controllerLoadPercent.Value / 100f);
+                ActivateSensor(_memoryBandwidth);
+            }
         }
 
         if (_powers is { Length: > 0 } && ShouldEvaluateAnyPowerSensor())
@@ -736,7 +916,7 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        if (_displayHandle is not null)
+        if (_displayHandle is not null && shouldUpdateMemory)
         {
             NvApi.NvMemoryInfo memoryInfo = GetMemoryInfo(out status);
             if (status == NvApi.NvStatus.OK)
@@ -759,7 +939,7 @@ internal sealed class NvidiaGpu : GenericGpu
             }
         }
 
-        if (_voltage is not null)
+        if (_voltage is not null && shouldUpdateVoltage)
         {
             NvApi.NvGpuVoltageStatus voltageStatus = GetVoltageStatus(out status);
             if (status == NvApi.NvStatus.OK)
@@ -792,7 +972,19 @@ internal sealed class NvidiaGpu : GenericGpu
         {
             if (ShouldEvaluatePowerUsageSensor())
             {
-                int? result = NvidiaML.NvmlDeviceGetPowerUsage(_nvmlDevice.Value);
+                int? result = NvidiaML.NvmlDeviceGetPowerUsage(_nvmlDevice.Value, out NvidiaML.NvmlReturn powerUsageStatus);
+                if (!result.HasValue)
+                {
+                    result = NvidiaML.NvmlDeviceGetPowerUsageFromSamples(_nvmlDevice.Value, ref _lastPowerSampleTimestamp);
+                    if (result.HasValue && !_powerSamplesFallbackLogged)
+                    {
+                        Log.Logger.Information(
+                            "NVIDIA GPU power monitoring is using NVML samples because nvmlDeviceGetPowerUsage returned {Status}.",
+                            powerUsageStatus);
+                        _powerSamplesFallbackLogged = true;
+                    }
+                }
+
                 if (result.HasValue)
                 {
                     _powerUsage.Value = result.Value / 1000f;
@@ -875,11 +1067,12 @@ internal sealed class NvidiaGpu : GenericGpu
         if (_sensorConfig == null)
             return true;
 
-        if (_gpuDedicatedMemoryUsage != null && _sensorConfig.GetSensorEvaluate(_gpuDedicatedMemoryUsage.Identifier.ToString()))
-            return true;
+        bool evaluate = false;
+        if (_gpuDedicatedMemoryUsage != null)
+            evaluate |= _sensorConfig.GetSensorEvaluate(_gpuDedicatedMemoryUsage.Identifier.ToString());
 
-        if (_gpuSharedMemoryUsage != null && _sensorConfig.GetSensorEvaluate(_gpuSharedMemoryUsage.Identifier.ToString()))
-            return true;
+        if (_gpuSharedMemoryUsage != null)
+            evaluate |= _sensorConfig.GetSensorEvaluate(_gpuSharedMemoryUsage.Identifier.ToString());
 
         //if (_gpuNodeUsage is { Length: > 0 })
         //{
@@ -890,21 +1083,12 @@ internal sealed class NvidiaGpu : GenericGpu
         //    }
         //}
 
-        return false;
+        return evaluate;
     }
 
     private bool ShouldEvaluateAnyPowerSensor()
     {
-        if (_sensorConfig == null)
-            return true;
-
-        foreach (Sensor sensor in _powers)
-        {
-            if (sensor != null && _sensorConfig.GetSensorEvaluate(sensor.Identifier.ToString()))
-                return true;
-        }
-
-        return false;
+        return ShouldEvaluateAnySensor(_powers);
     }
 
     private bool ShouldEvaluatePowerUsageSensor()
@@ -940,21 +1124,33 @@ internal sealed class NvidiaGpu : GenericGpu
         return _sensorConfig.GetSensorEvaluate(_pcieThroughputTx.Identifier.ToString());
     }
 
+    private bool ShouldEvaluateMemoryControllerSensor()
+    {
+        if (_memoryControllerLoad == null)
+            return false;
+
+        if (_sensorConfig == null)
+            return true;
+
+        return _sensorConfig.GetSensorEvaluate(_memoryControllerLoad.Identifier.ToString());
+    }
+
     private bool ShouldEvaluateAnyLimitSensor()
     {
         if (_sensorConfig == null)
             return true;
 
-        if (_powerLimit != null && _sensorConfig.GetSensorEvaluate(_powerLimit.Identifier.ToString()))
-            return true;
+        bool evaluate = false;
+        if (_powerLimit != null)
+            evaluate |= _sensorConfig.GetSensorEvaluate(_powerLimit.Identifier.ToString());
 
-        if (_temperatureLimit != null && _sensorConfig.GetSensorEvaluate(_temperatureLimit.Identifier.ToString()))
-            return true;
+        if (_temperatureLimit != null)
+            evaluate |= _sensorConfig.GetSensorEvaluate(_temperatureLimit.Identifier.ToString());
 
-        if (_voltageLimit != null && _sensorConfig.GetSensorEvaluate(_voltageLimit.Identifier.ToString()))
-            return true;
+        if (_voltageLimit != null)
+            evaluate |= _sensorConfig.GetSensorEvaluate(_voltageLimit.Identifier.ToString());
 
-        return false;
+        return evaluate;
     }
 
     private bool ShouldEvaluateMonitorRefreshRateSensor()
@@ -966,6 +1162,45 @@ internal sealed class NvidiaGpu : GenericGpu
             return true;
 
         return _sensorConfig.GetSensorEvaluate(_monitorRefreshRate.Identifier.ToString());
+    }
+
+    private bool ShouldEvaluateMemoryBandwidthSensor()
+    {
+        if (_memoryBandwidth == null)
+            return false;
+
+        if (_sensorConfig == null)
+            return true;
+
+        return _sensorConfig.GetSensorEvaluate(_memoryBandwidth.Identifier.ToString());
+    }
+
+    private bool ShouldEvaluateAnySensor(IEnumerable<Sensor> sensors)
+    {
+        if (sensors == null)
+            return false;
+
+        bool evaluate = false;
+        foreach (Sensor sensor in sensors)
+            evaluate |= ShouldEvaluateSensor(sensor);
+
+        return evaluate;
+    }
+
+    private bool ShouldEvaluateSensor(Sensor sensor)
+    {
+        return sensor != null &&
+               (_sensorConfig == null || _sensorConfig.GetSensorEvaluate(sensor.Identifier.ToString()));
+    }
+
+    private bool ShouldEvaluateMemorySensors()
+    {
+        bool evaluate = false;
+        evaluate |= ShouldEvaluateSensor(_memoryTotal);
+        evaluate |= ShouldEvaluateSensor(_memoryFree);
+        evaluate |= ShouldEvaluateSensor(_memoryUsed);
+        evaluate |= ShouldEvaluateSensor(_memoryLoad);
+        return evaluate;
     }
 
     public override string GetReport()
@@ -1255,11 +1490,21 @@ internal sealed class NvidiaGpu : GenericGpu
             r.AppendLine();
         }
 
-        if (_d3dDeviceId != null)
+        if (NvApi.NvAPI_GPU_GetFBWidthAndLocation != null || NvApi.NvAPI_GPU_GetRamType != null)
+        {
+            r.AppendLine("Memory Bandwidth");
+            r.AppendLine();
+            r.AppendFormat(" Bus Width: {0} bit{1}", _memoryBusWidth, Environment.NewLine);
+            r.AppendFormat(" Memory Type: {0} (raw {1}){2}", GetMemoryType(), (uint)GetMemoryType(), Environment.NewLine);
+            r.AppendFormat(" Data Rate Multiplier: {0}{1}", _memoryDataRateMultiplier, Environment.NewLine);
+            r.AppendLine();
+        }
+
+        if (WddmDeviceId != null)
         {
             r.AppendLine("D3D");
             r.AppendLine();
-            r.AppendLine(" Id: " + _d3dDeviceId);
+            r.AppendLine(" Id: " + WddmDeviceId);
 
             r.AppendLine();
         }
@@ -1276,6 +1521,19 @@ internal sealed class NvidiaGpu : GenericGpu
         }
 
         return "NVIDIA";
+    }
+
+    private static uint GetPciFunction(string busId)
+    {
+        if (string.IsNullOrEmpty(busId))
+            return 0;
+
+        int separator = busId.LastIndexOf('.');
+        return separator >= 0 &&
+               uint.TryParse(busId.Substring(separator + 1), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out uint function) &&
+               function <= 7
+            ? function
+            : 0;
     }
 
     private NvApi.NvMemoryInfo GetMemoryInfo(out NvApi.NvStatus status)
@@ -1499,6 +1757,95 @@ internal sealed class NvidiaGpu : GenericGpu
         return value;
     }
 
+    private uint GetMemoryBusWidth()
+    {
+        if (NvApi.NvAPI_GPU_GetFBWidthAndLocation == null)
+            return 0;
+
+        return NvApi.NvAPI_GPU_GetFBWidthAndLocation(_handle, out uint width, out _) == NvApi.NvStatus.OK
+            ? width
+            : 0;
+    }
+
+    private NvApi.NvGpuMemoryType GetMemoryType()
+    {
+        if (NvApi.NvAPI_GPU_GetRamType == null)
+            return NvApi.NvGpuMemoryType.Unknown;
+
+        return NvApi.NvAPI_GPU_GetRamType(_handle, out uint memType) == NvApi.NvStatus.OK
+            ? (NvApi.NvGpuMemoryType)memType
+            : NvApi.NvGpuMemoryType.Unknown;
+    }
+
+    // Known desktop boards that use GDDR6X (PAM4) memory. NvAPI_GPU_GetRamType cannot report
+    // GDDR6X (its NvGpuMemoryType enum tops out at GDDR5X and returns GDDR5X/Unknown for it), so
+    // these are matched by PCI device id and forced to the PAM4 data-rate multiplier (16x), i.e.
+    // twice the GDDR5X/GDDR6 value of 8x. Device ids verified against the pci.ids repository.
+    private bool IsGddr6xMemory()
+    {
+        if (NvApi.NvAPI_GPU_GetPCIIdentifiers == null ||
+            NvApi.NvAPI_GPU_GetPCIIdentifiers(_handle, out uint deviceId, out _, out _, out _) != NvApi.NvStatus.OK)
+            return false;
+
+        // NvAPI packs the identifier as (pciDeviceId << 16) | pciVendorId (0x10DE for NVIDIA);
+        // the vendor check keeps the extraction correct even if a driver ever returns the bare id.
+        uint pciDeviceId = (deviceId & 0xFFFF) == 0x10DE ? deviceId >> 16 : deviceId & 0xFFFF;
+
+        switch (pciDeviceId)
+        {
+            // Ampere (GA102 / GA104)
+            case 0x2203: // RTX 3090 Ti
+            case 0x2204: // RTX 3090
+            case 0x2206: // RTX 3080
+            case 0x2208: // RTX 3080 Ti
+            case 0x220A: // RTX 3080 12GB
+            case 0x2216: // RTX 3080 (Lite Hash Rate)
+            case 0x2482: // RTX 3070 Ti
+            case 0x24C9: // RTX 3060 Ti GDDR6X (distinct id from the GDDR6 0x2489)
+            // Ada (AD102 / AD103 / AD104)
+            case 0x2684: // RTX 4090
+            case 0x2685: // RTX 4090 D
+            case 0x2702: // RTX 4080 SUPER
+            case 0x2704: // RTX 4080
+            case 0x2705: // RTX 4070 Ti SUPER
+            case 0x2782: // RTX 4070 Ti
+            case 0x2783: // RTX 4070 SUPER
+            case 0x2786: // RTX 4070 (GDDR6X launch part; the later GDDR6 / AD103 0x2709 variants are excluded)
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static float GetMemoryDataRateMultiplier(NvApi.NvGpuMemoryType memoryType)
+    {
+        // Multiplier = effective data transfers per *reported* NVAPI memory clock cycle.
+        // NVAPI reports the memory I/O command clock; multiplying yields the per-pin data rate.
+        switch (memoryType)
+        {
+            case NvApi.NvGpuMemoryType.Sdram:
+            case NvApi.NvGpuMemoryType.Ddr1:
+            case NvApi.NvGpuMemoryType.Ddr2:
+            case NvApi.NvGpuMemoryType.Ddr3:
+            case NvApi.NvGpuMemoryType.Gddr2:
+            case NvApi.NvGpuMemoryType.Gddr3:
+            case NvApi.NvGpuMemoryType.Lpddr2:
+                return 2f; // (LP/G)DDR: double data rate
+            case NvApi.NvGpuMemoryType.Gddr4:
+            case NvApi.NvGpuMemoryType.Gddr5:
+                return 4f; // GDDR5: quad data rate
+            case NvApi.NvGpuMemoryType.Gddr5x:
+                return 8f; // GDDR5X (and commonly reported for GDDR6)
+            default:
+                // GDDR6 / GDDR6X are frequently NOT distinguished by NvAPI_GPU_GetRamType
+                // (it tops out at GDDR5X) and may report Unknown or a newer, higher value.
+                // Assume a modern GDDR data rate when the raw value is >= GDDR5, otherwise plain DDR.
+                // NOTE: GDDR6 maps to 8x here; known GDDR6X (PAM4, 16x) boards are handled earlier
+                // by IsGddr6xMemory() via PCI device id, since this fallback would under-report 2x.
+                return (uint)memoryType >= (uint)NvApi.NvGpuMemoryType.Gddr5 ? 8f : 2f;
+        }
+    }
+
     private static string GetUtilizationDomainName(NvApi.NvUtilizationDomain utilizationDomain) => utilizationDomain switch
     {
         NvApi.NvUtilizationDomain.Gpu => "GPU Core",
@@ -1644,6 +1991,8 @@ internal sealed class NvidiaGpu : GenericGpu
 
     public override void Close()
     {
+        _nvidiaThermal?.Close();
+
         if (_fanControls != null)
         {
             for (int i = 0; i < _fanControls.Length; i++)

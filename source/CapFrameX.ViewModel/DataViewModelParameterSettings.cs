@@ -5,8 +5,6 @@
 		private bool _useMaxStatisticParameter;
 		private bool _useP99QuantileStatisticParameter;
 		private bool _useP95QuantileStatisticParameter;
-		private bool _useFrametimeP1QuantileStatisticParameter;
-		private bool _useFrametimeP5QuantileStatisticParameter;
 		private bool _useMedianStatisticParameter;
 		private bool _useAverageStatisticParameter;
 		private bool _useGpuActiveAverageStatisticParameter;
@@ -34,8 +32,6 @@
 			UseMaxStatisticParameter = _appConfiguration.UseSingleRecordMaxStatisticParameter;
 			UseP99QuantileStatisticParameter = _appConfiguration.UseSingleRecord99QuantileStatisticParameter;
 			UseP95QuantileStatisticParameter = _appConfiguration.UseSingleRecordP95QuantileStatisticParameter;
-			UseFrametimeP1QuantileStatisticParameter = _appConfiguration.UseSingleRecordFrametimeP1QuantileStatisticParameter;
-			UseFrametimeP5QuantileStatisticParameter = _appConfiguration.UseSingleRecordFrametimeP5QuantileStatisticParameter;
 			UseMedianStatisticParameter = _appConfiguration.UseSingleRecordMedianStatisticParameter;
 			UseAverageStatisticParameter = _appConfiguration.UseSingleRecordAverageStatisticParameter;
 			UseGpuActiveAverageStatisticParameter = _appConfiguration.UseSingleRecordGpuActiveAverageStatisticParameter;
@@ -94,30 +90,6 @@
 				RaisePropertyChanged();
 			}
 		}
-		public bool UseFrametimeP1QuantileStatisticParameter
-		{
-			get { return _useFrametimeP1QuantileStatisticParameter; }
-			set
-			{
-				_useFrametimeP1QuantileStatisticParameter = value;
-				_appConfiguration.UseSingleRecordFrametimeP1QuantileStatisticParameter = value;
-				OnAcceptParameterSettings();
-				RaisePropertyChanged();
-			}
-		}
-
-		public bool UseFrametimeP5QuantileStatisticParameter
-		{
-			get { return _useFrametimeP5QuantileStatisticParameter; }
-			set
-			{
-				_useFrametimeP5QuantileStatisticParameter = value;
-				_appConfiguration.UseSingleRecordFrametimeP5QuantileStatisticParameter = value;
-				OnAcceptParameterSettings();
-				RaisePropertyChanged();
-			}
-		}
-
 		public bool UseMedianStatisticParameter
 		{
 			get { return _useMedianStatisticParameter; }

@@ -21,6 +21,7 @@ internal static class NvidiaML
 
     private static WindowsNvmlGetHandleDelegate _windowsNvmlDeviceGetHandleByIndex;
     private static WindowsNvmlGetHandleByPciBusIdDelegate _windowsNvmlDeviceGetHandleByPciBusId;
+    private static WindowsNvmlDeviceGetSamplesDelegate _windowsNvmlDeviceGetSamples;
     private static WindowsNvmlDeviceGetPcieThroughputDelegate _windowsNvmlDeviceGetPcieThroughputDelegate;
     private static WindowsNvmlDeviceGetPciInfo _windowsNvmlDeviceGetPciInfo;
     private static WindowsNvmlGetPowerUsageDelegate _windowsNvmlDeviceGetPowerUsage;
@@ -31,6 +32,21 @@ internal static class NvidiaML
     {
         TxBytes = 0,
         RxBytes = 1
+    }
+
+    public enum NvmlSamplingType
+    {
+        TotalPower = 0
+    }
+
+    public enum NvmlValueType
+    {
+        Double = 0,
+        UnsignedInt = 1,
+        UnsignedLong = 2,
+        UnsignedLongLong = 3,
+        SignedLongLong = 4,
+        SignedInt = 5
     }
 
     public enum NvmlReturn
@@ -236,6 +252,12 @@ internal static class NvidiaML
         else
             return false;
 
+        // Power samples are an optional fallback. Do not make NVML initialization depend on
+        // this entry point because the primary power and PCIe queries remain useful without it.
+        IntPtr nvmlGetSamples = PInvoke.GetProcAddress(_windowsDll, "nvmlDeviceGetSamples");
+        if (nvmlGetSamples != IntPtr.Zero)
+            _windowsNvmlDeviceGetSamples = (WindowsNvmlDeviceGetSamplesDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetSamples, typeof(WindowsNvmlDeviceGetSamplesDelegate));
+
         IntPtr nvmlGetPcieThroughput = PInvoke.GetProcAddress(_windowsDll, "nvmlDeviceGetPcieThroughput");
         if (nvmlGetPcieThroughput != IntPtr.Zero)
             _windowsNvmlDeviceGetPcieThroughputDelegate = (WindowsNvmlDeviceGetPcieThroughputDelegate)Marshal.GetDelegateForFunctionPointer(nvmlGetPcieThroughput, typeof(WindowsNvmlDeviceGetPcieThroughputDelegate));
@@ -334,28 +356,168 @@ internal static class NvidiaML
         return null;
     }
 
-    public static int? NvmlDeviceGetPowerUsage(NvmlDevice nvmlDevice)
+    public static int? NvmlDeviceGetPowerUsage(NvmlDevice nvmlDevice, out NvmlReturn status)
     {
+        status = NvmlReturn.Uninitialized;
+
         if (IsAvailable)
         {
             int powerUsage;
             if (Software.OperatingSystem.IsUnix)
             {
-                if (nvmlDeviceGetPowerUsage(nvmlDevice, out powerUsage) == NvmlReturn.Success)
-                    return powerUsage;
+                try
+                {
+                    status = nvmlDeviceGetPowerUsage(nvmlDevice, out powerUsage);
+                    if (status == NvmlReturn.Success)
+                        return powerUsage;
+                }
+                catch (EntryPointNotFoundException)
+                {
+                    status = NvmlReturn.FunctionNotFound;
+                }
+                catch
+                {
+                    status = NvmlReturn.Unknown;
+                }
             }
             else
             {
                 try
                 {
-                    if (_windowsNvmlDeviceGetPowerUsage(nvmlDevice, out powerUsage) == NvmlReturn.Success)
+                    status = _windowsNvmlDeviceGetPowerUsage(nvmlDevice, out powerUsage);
+                    if (status == NvmlReturn.Success)
                         return powerUsage;
                 }
-                catch { }
+                catch
+                {
+                    status = NvmlReturn.Unknown;
+                }
             }
         }
 
         return null;
+    }
+
+    public static unsafe int? NvmlDeviceGetPowerUsageFromSamples(NvmlDevice nvmlDevice, ref ulong lastSeenTimestamp)
+    {
+        if (!IsAvailable)
+            return null;
+
+        uint sampleCount = 0;
+        NvmlReturn status = InvokeNvmlDeviceGetSamples(
+            nvmlDevice,
+            NvmlSamplingType.TotalPower,
+            lastSeenTimestamp,
+            out NvmlValueType sampleValueType,
+            ref sampleCount,
+            IntPtr.Zero);
+
+        if ((status != NvmlReturn.Success && status != NvmlReturn.InsufficientSize) || sampleCount == 0)
+            return null;
+
+        // The driver's sample buffer can grow between the sizing and retrieval calls. Leave a
+        // little headroom and retry once if it still reports an insufficient buffer.
+        for (int attempt = 0; attempt < 2; attempt++)
+        {
+            if (sampleCount > int.MaxValue - 4)
+                return null;
+
+            var samples = new NvmlSample[sampleCount + 4];
+            uint returnedSampleCount = (uint)samples.Length;
+
+            fixed (NvmlSample* samplesPointer = samples)
+            {
+                status = InvokeNvmlDeviceGetSamples(
+                    nvmlDevice,
+                    NvmlSamplingType.TotalPower,
+                    lastSeenTimestamp,
+                    out sampleValueType,
+                    ref returnedSampleCount,
+                    (IntPtr)samplesPointer);
+            }
+
+            if (status == NvmlReturn.InsufficientSize)
+            {
+                sampleCount = returnedSampleCount;
+                continue;
+            }
+
+            if (status != NvmlReturn.Success)
+                return null;
+
+            return GetLatestPowerSample(samples, returnedSampleCount, sampleValueType, ref lastSeenTimestamp);
+        }
+
+        return null;
+    }
+
+    internal static int? GetLatestPowerSample(NvmlSample[] samples, uint sampleCount, NvmlValueType sampleValueType, ref ulong lastSeenTimestamp)
+    {
+        if (sampleValueType != NvmlValueType.UnsignedInt || samples == null || sampleCount == 0)
+            return null;
+
+        int count = (int)Math.Min(sampleCount, (uint)samples.Length);
+        NvmlSample latestSample = default;
+        bool foundSample = false;
+
+        for (int i = 0; i < count; i++)
+        {
+            NvmlSample sample = samples[i];
+            if (sample.Timestamp > lastSeenTimestamp && (!foundSample || sample.Timestamp > latestSample.Timestamp))
+            {
+                latestSample = sample;
+                foundSample = true;
+            }
+        }
+
+        if (!foundSample || latestSample.SampleValue.UnsignedInt > int.MaxValue)
+            return null;
+
+        lastSeenTimestamp = latestSample.Timestamp;
+        return (int)latestSample.SampleValue.UnsignedInt;
+    }
+
+    private static NvmlReturn InvokeNvmlDeviceGetSamples(
+        NvmlDevice nvmlDevice,
+        NvmlSamplingType samplingType,
+        ulong lastSeenTimestamp,
+        out NvmlValueType sampleValueType,
+        ref uint sampleCount,
+        IntPtr samples)
+    {
+        sampleValueType = default;
+
+        if (Software.OperatingSystem.IsUnix)
+        {
+            try
+            {
+                return nvmlDeviceGetSamples(nvmlDevice, samplingType, lastSeenTimestamp, out sampleValueType, ref sampleCount, samples);
+            }
+            catch (DllNotFoundException)
+            {
+                return NvmlReturn.LibraryNotFound;
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return NvmlReturn.FunctionNotFound;
+            }
+            catch
+            {
+                return NvmlReturn.Unknown;
+            }
+        }
+
+        if (_windowsNvmlDeviceGetSamples == null)
+            return NvmlReturn.FunctionNotFound;
+
+        try
+        {
+            return _windowsNvmlDeviceGetSamples(nvmlDevice, samplingType, lastSeenTimestamp, out sampleValueType, ref sampleCount, samples);
+        }
+        catch
+        {
+            return NvmlReturn.Unknown;
+        }
     }
 
     public static uint? NvmlDeviceGetPcieThroughput(NvmlDevice nvmlDevice, NvmlPcieUtilCounter counter)
@@ -429,6 +591,15 @@ internal static class NvidiaML
     [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetPowerUsage", ExactSpelling = true)]
     private static extern NvmlReturn nvmlDeviceGetPowerUsage(NvmlDevice device, out int power);
 
+    [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetSamples", ExactSpelling = true)]
+    private static extern NvmlReturn nvmlDeviceGetSamples(
+        NvmlDevice device,
+        NvmlSamplingType type,
+        ulong lastSeenTimestamp,
+        out NvmlValueType sampleValueType,
+        ref uint sampleCount,
+        IntPtr samples);
+
     [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetPcieThroughput", ExactSpelling = true)]
     private static extern NvmlReturn nvmlDeviceGetPcieThroughput(NvmlDevice device, NvmlPcieUtilCounter counter, out uint value);
 
@@ -443,6 +614,15 @@ internal static class NvidiaML
 
     private delegate NvmlReturn WindowsNvmlGetPowerUsageDelegate(NvmlDevice device, out int power);
 
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate NvmlReturn WindowsNvmlDeviceGetSamplesDelegate(
+        NvmlDevice device,
+        NvmlSamplingType type,
+        ulong lastSeenTimestamp,
+        out NvmlValueType sampleValueType,
+        ref uint sampleCount,
+        IntPtr samples);
+
     private delegate NvmlReturn WindowsNvmlDeviceGetPcieThroughputDelegate(NvmlDevice device, NvmlPcieUtilCounter counter, out uint value);
 
     private delegate NvmlReturn WindowsNvmlDeviceGetPciInfo(NvmlDevice device, ref NvmlPciInfo pci);
@@ -451,6 +631,20 @@ internal static class NvidiaML
     public struct NvmlDevice
     {
         public IntPtr Handle;
+    }
+
+    [StructLayout(LayoutKind.Explicit, Size = 8)]
+    internal struct NvmlValue
+    {
+        [FieldOffset(0)]
+        public uint UnsignedInt;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct NvmlSample
+    {
+        public ulong Timestamp;
+        public NvmlValue SampleValue;
     }
 
     [StructLayout(LayoutKind.Sequential)]

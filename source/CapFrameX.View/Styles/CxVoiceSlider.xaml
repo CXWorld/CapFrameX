@@ -1,0 +1,88 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style x:Key="CxVoiceSliderRepeatButton" TargetType="{x:Type RepeatButton}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type RepeatButton}">
+                    <Border Background="{TemplateBinding Background}" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <ControlTemplate x:Key="CxVoiceSliderThumb" TargetType="{x:Type Thumb}">
+        <Grid Width="20" Height="20">
+            <Ellipse x:Name="OuterHalo"
+                     Width="40"
+                     Height="40"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Fill="{TemplateBinding Foreground}"
+                     IsHitTestVisible="False"
+                     Margin="-20"
+                     Opacity="0" />
+            <Ellipse Width="20"
+                     Height="20"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Effect="{DynamicResource MaterialDesignShadowDepth1}"
+                     Fill="{TemplateBinding Foreground}" />
+        </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="OuterHalo" Property="Opacity" Value="0.15" />
+            </Trigger>
+            <Trigger Property="IsDragging" Value="True">
+                <Setter TargetName="OuterHalo" Property="Opacity" Value="0.15" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="CxVoiceSliderTemplate" TargetType="{x:Type Slider}">
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                SnapsToDevicePixels="True">
+            <Grid>
+                <Rectangle Height="4"
+                           VerticalAlignment="Center"
+                           Fill="{TemplateBinding Foreground}"
+                           Opacity="0.38"
+                           RadiusX="2"
+                           RadiusY="2" />
+                <Border x:Name="ActiveTrack"
+                        Width="{Binding DecreaseRepeatButton.ActualWidth, ElementName=PART_Track}"
+                        Height="4"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Background="{TemplateBinding Foreground}"
+                        CornerRadius="2,0,0,2" />
+                <Track x:Name="PART_Track" Height="20">
+                    <Track.DecreaseRepeatButton>
+                        <RepeatButton Command="{x:Static Slider.DecreaseLarge}"
+                                      Style="{StaticResource CxVoiceSliderRepeatButton}" />
+                    </Track.DecreaseRepeatButton>
+                    <Track.IncreaseRepeatButton>
+                        <RepeatButton Command="{x:Static Slider.IncreaseLarge}"
+                                      Style="{StaticResource CxVoiceSliderRepeatButton}" />
+                    </Track.IncreaseRepeatButton>
+                    <Track.Thumb>
+                        <Thumb Foreground="{TemplateBinding Foreground}"
+                               SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                               Template="{StaticResource CxVoiceSliderThumb}" />
+                    </Track.Thumb>
+                </Track>
+            </Grid>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsDirectionReversed" Value="True">
+                <Setter TargetName="ActiveTrack" Property="CornerRadius" Value="0,2,2,0" />
+                <Setter TargetName="ActiveTrack" Property="HorizontalAlignment" Value="Right" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+</ResourceDictionary>

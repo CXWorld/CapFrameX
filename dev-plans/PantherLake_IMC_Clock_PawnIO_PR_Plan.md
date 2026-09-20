@@ -669,7 +669,7 @@ We are implementing an upstream PR for https://github.com/namazso/PawnIO.Modules
 Goal: add a safe read-only Intel client IMC/QCLK clock-ratio module for Panther Lake memory-clock calculation, without WinRing0-style generic access.
 
 Read local plan first:
-D:\Code\CapFrameX\dev-plans\PantherLake_IMC_Clock_PawnIO_PR_Plan.md
+E:\Code\CapFrameX\dev-plans\PantherLake_IMC_Clock_PawnIO_PR_Plan.md
 
 Key constraints:
 - Do not expose generic PCI/MMIO/MSR read/write IOCTLs.

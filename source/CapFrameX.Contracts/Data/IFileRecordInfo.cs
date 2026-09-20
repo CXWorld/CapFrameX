@@ -13,6 +13,7 @@ namespace CapFrameX.Contracts.Data
 		string FullPath { get; }
 		FileInfo FileInfo { get; }
 		string CombinedInfo { get; }
+		string DeviceName { get; }
 		string MotherboardName { get; }
 		string OsVersion { get; }
 		string ProcessorName { get; set; }

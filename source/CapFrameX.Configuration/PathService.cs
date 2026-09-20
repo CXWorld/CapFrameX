@@ -19,6 +19,24 @@ namespace CapFrameX.Configuration
         public string ScreenshotsFolder { get; }
         public string LogsFolder { get; }
         public string CloudFolder { get; }
+        public string UpdatesFolder { get; } = GetUpdatesFolder();
+
+        /// <summary>
+        /// Resolves the updates folder without a container. App start has to install a staged
+        /// update before the container is built - the installer replaces the files of the running
+        /// app - so this must be reachable from <c>App.OnStartup</c>, right after
+        /// <see cref="PortableModeDetector.Initialize"/>.
+        /// </summary>
+        public static string GetUpdatesFolder()
+        {
+            const string updatesFolderName = "Updates";
+
+            if (PortableModeDetector.IsPortableMode)
+                return Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, updatesFolderName));
+
+            var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            return Path.Combine(appDataPath, "CapFrameX", updatesFolderName);
+        }
 
         public PathService(ILogger<PathService> logger)
         {
@@ -58,6 +76,7 @@ namespace CapFrameX.Configuration
             _logger.LogInformation("ScreenshotsFolder: {ScreenshotsFolder}", ScreenshotsFolder);
             _logger.LogInformation("LogsFolder: {LogsFolder}", LogsFolder);
             _logger.LogInformation("CloudFolder: {CloudFolder}", CloudFolder);
+            _logger.LogInformation("UpdatesFolder: {UpdatesFolder}", UpdatesFolder);
         }
 
         public string ResolvePath(string relativePath)

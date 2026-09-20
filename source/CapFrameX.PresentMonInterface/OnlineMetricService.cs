@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Capture.Contracts;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
+using CapFrameX.Contracts.PMD;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
@@ -9,6 +10,7 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 using Prism.Events;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reactive.Concurrency;
@@ -66,14 +68,25 @@ namespace CapFrameX.PresentMonInterface
         // Reusable list buffers to avoid allocations during metric calculations
         private List<double> _reusableListBufferA;
         private List<double> _reusableListBufferB;
+        // The five-second path is protected by a different lock and therefore
+        // must not share the realtime path's mutable scratch buffer.
+        private List<double> _reusableListBuffer5Seconds;
+
+        // Window length for aggregating PMD samples before they reach the overlay metrics.
+        private const int PMD_METRIC_BUFFER_MS = 50;
 
         // Disposable resources
         private IDisposable _frameDataSubscription;
         private IDisposable _poweneticsSubscription;
         private IDisposable _benchlabSubscription;
+        private IDisposable _poweneticsStatusSubscription;
+        private IDisposable _benchlabStatusSubscription;
         private EventLoopScheduler _frameDataScheduler;
         private EventLoopScheduler _poweneticsScheduler;
         private EventLoopScheduler _benchlabScheduler;
+        // Guards attach/detach of the PMD data subscriptions: the status streams deliver on the
+        // device threads, so both sides can race.
+        private readonly object _pmdStreamLock = new object();
         private bool _disposed;
 
         private string _currentProcess;
@@ -101,6 +114,7 @@ namespace CapFrameX.PresentMonInterface
             // Initialize reusable buffers
             _reusableListBufferA = new List<double>(LIST_CAPACITY);
             _reusableListBufferB = new List<double>(LIST_CAPACITY);
+            _reusableListBuffer5Seconds = new List<double>(LIST_CAPACITY);
 
             SubscribeToUpdateSession();
             ConnectOnlineMetricDataStream();
@@ -128,10 +142,10 @@ namespace CapFrameX.PresentMonInterface
 
         private void ConnectOnlineMetricDataStream()
         {
-            // Create schedulers that we can dispose later
+            // Create schedulers that we can dispose later. The two PMD ones are created on demand
+            // in AttachPoweneticsStream/AttachBenchlabStream instead: each EventLoopScheduler owns
+            // a dedicated thread, and without a device there is nothing for it to serve.
             _frameDataScheduler = new EventLoopScheduler();
-            _poweneticsScheduler = new EventLoopScheduler();
-            _benchlabScheduler = new EventLoopScheduler();
 
             _frameDataSubscription = _captureService
                 .FrameDataStream
@@ -140,17 +154,99 @@ namespace CapFrameX.PresentMonInterface
                 .Where(x => EvaluateRealtimeMetrics())
                 .Subscribe(UpdateOnlineMetrics);
 
-            _poweneticsSubscription = _poweneticsService.PmdChannelStream
-                .ObserveOn(_poweneticsScheduler)
-                .Where(_ => EvaluatePmdMetrics())
-                .Buffer(TimeSpan.FromMilliseconds(50))
-                .Subscribe(metricsData => UpdatePmdMetrics(metricsData));
+            ConnectPmdDataStreams();
 
-            _benchlabSubscription = _benchlabService.PmdSensorStream
-                .ObserveOn(_benchlabScheduler)
-                .Where(_ => EvaluatePmdMetrics())
-                .Buffer(TimeSpan.FromMilliseconds(50))
-                .Subscribe(metricsData => UpdatePmdMetrics(metricsData));
+        }
+
+        /// <summary>
+        /// Attaches the PMD data streams only while a device actually reports itself.
+        /// <para>
+        /// The subscriptions used to be created unconditionally in the constructor, and that is
+        /// expensive on a machine without PMD hardware: <c>Buffer(TimeSpan)</c> is TIME driven, so
+        /// its periodic Rx timer belongs to the SUBSCRIPTION rather than to the data flow. It keeps
+        /// closing empty 50 ms windows even when no element ever arrives and the
+        /// <see cref="EvaluatePmdMetrics"/> gate in front of it discards everything. Measured with
+        /// no device connected: two such timers produced ~40 wake-ups per second, which cascaded
+        /// through the Rx scheduler into the .NET timer queue and on into the WPF dispatcher —
+        /// ~218 UI thread wake-ups per second whose cost is context switches and contention on the
+        /// window manager's global lock, not computation. It showed up as periodic CPU spikes while
+        /// the application sat idle.
+        /// </para>
+        /// Each attach also owns an <see cref="EventLoopScheduler"/>, i.e. a dedicated thread, so
+        /// both are created here and released again on detach.
+        /// </summary>
+        private void ConnectPmdDataStreams()
+        {
+            _poweneticsStatusSubscription = _poweneticsService.PmdStatusStream
+                .DistinctUntilChanged()
+                .Subscribe(status =>
+                {
+                    if (status == EPmdDriverStatus.Connected) AttachPoweneticsStream();
+                    else DetachPoweneticsStream();
+                });
+
+            _benchlabStatusSubscription = _benchlabService.PmdServiceStatusStream
+                .DistinctUntilChanged()
+                .Subscribe(status =>
+                {
+                    if (status == EPmdServiceStatus.Running) AttachBenchlabStream();
+                    else DetachBenchlabStream();
+                });
+
+            // Both status streams are plain Subjects and replay nothing, so a device that was
+            // already up before this service was constructed would never be picked up.
+            if (_poweneticsService.IsServiceRunning) AttachPoweneticsStream();
+            if (_benchlabService.IsServiceRunning) AttachBenchlabStream();
+        }
+
+        private void AttachPoweneticsStream()
+        {
+            lock (_pmdStreamLock)
+            {
+                if (_disposed || _poweneticsSubscription != null) return;
+                _poweneticsScheduler = new EventLoopScheduler();
+                _poweneticsSubscription = _poweneticsService.PmdChannelStream
+                    .ObserveOn(_poweneticsScheduler)
+                    .Where(_ => EvaluatePmdMetrics())
+                    .Buffer(TimeSpan.FromMilliseconds(PMD_METRIC_BUFFER_MS))
+                    .Subscribe(metricsData => UpdatePmdMetrics(metricsData));
+            }
+        }
+
+        private void DetachPoweneticsStream()
+        {
+            lock (_pmdStreamLock)
+            {
+                _poweneticsSubscription?.Dispose();
+                _poweneticsSubscription = null;
+                _poweneticsScheduler?.Dispose();
+                _poweneticsScheduler = null;
+            }
+        }
+
+        private void AttachBenchlabStream()
+        {
+            lock (_pmdStreamLock)
+            {
+                if (_disposed || _benchlabSubscription != null) return;
+                _benchlabScheduler = new EventLoopScheduler();
+                _benchlabSubscription = _benchlabService.PmdSensorStream
+                    .ObserveOn(_benchlabScheduler)
+                    .Where(_ => EvaluatePmdMetrics())
+                    .Buffer(TimeSpan.FromMilliseconds(PMD_METRIC_BUFFER_MS))
+                    .Subscribe(metricsData => UpdatePmdMetrics(metricsData));
+            }
+        }
+
+        private void DetachBenchlabStream()
+        {
+            lock (_pmdStreamLock)
+            {
+                _benchlabSubscription?.Dispose();
+                _benchlabSubscription = null;
+                _benchlabScheduler?.Dispose();
+                _benchlabScheduler = null;
+            }
         }
 
         private bool EvaluateRealtimeMetrics()
@@ -184,7 +280,9 @@ namespace CapFrameX.PresentMonInterface
                     || (_overlayEntryCore.GetRealtimeMetricEntry("PmdSystemPowerCurrent")?.ShowOnOverlay ?? false);
 
             }
-            catch { return false; }
+            // Fail open, like EvaluateRealtimeMetrics: the entry store may not be populated yet
+            // during startup, and dropping samples then would silently blank the overlay metrics.
+            catch { return true; }
         }
 
         private void UpdateOnlineMetrics(string[] lineSplit)
@@ -258,9 +356,13 @@ namespace CapFrameX.PresentMonInterface
             }
 
             double pcLatency = double.NaN;
-            if (_appConfiguration.UsePcLatency)
+            // Dynamic index: the running PresentMon session only carries the MsPCLatency column
+            // when it was started with PC latency tracking — after a live config toggle the
+            // session lags behind the config until the capture service restarts.
+            int pcLatencyIndex = _captureService.MsPcLatency_Index;
+            if (_appConfiguration.UsePcLatency && pcLatencyIndex >= 0 && pcLatencyIndex < lineSplit.Length)
             {
-                if (!double.TryParse(lineSplit[PresentMonCaptureService.MsPCLatency_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out pcLatency))
+                if (!double.TryParse(lineSplit[pcLatencyIndex], NumberStyles.Any, CultureInfo.InvariantCulture, out pcLatency))
                 {
                     // Don't reset metrics if PC latency if not available
                     pcLatency = double.NaN;
@@ -441,14 +543,19 @@ namespace CapFrameX.PresentMonInterface
             lock (_lockRealtimeMetric)
             {
                 // Use frame times when calculating average fps
-                var buffer = (_appConfiguration.UseDisplayChangeMetrics && metric != EMetric.Average)
+                var useDisplayTimes = _appConfiguration.UseDisplayChangeMetrics && metric != EMetric.Average;
+                var buffer = useDisplayTimes
                     ? _displayedtimesRealtimeSeconds : _frametimesRealtimeSeconds;
 
                 if (buffer == null || buffer.Count == 0)
                     return double.NaN;
 
-                // Reuse list buffer to avoid allocations
-                var samples = buffer.ToList(_reusableListBufferA);
+                var samples = CopyValidTimings(buffer, _reusableListBufferA);
+                if (samples.Count == 0 && useDisplayTimes)
+                    samples = CopyValidTimings(_frametimesRealtimeSeconds, _reusableListBufferA);
+
+                if (samples.Count == 0)
+                    return double.NaN;
 
                 return _frametimeStatisticProvider
                     .GetFpsMetricValue(samples, metric);
@@ -521,23 +628,37 @@ namespace CapFrameX.PresentMonInterface
         {
             lock (_lock5SecondsMetric)
             {
-                var buffer = _appConfiguration.UseDisplayChangeMetrics ? _displaytimes5Seconds : _frametimes5Seconds;
+                var useDisplayTimes = _appConfiguration.UseDisplayChangeMetrics;
+                var buffer = useDisplayTimes ? _displaytimes5Seconds : _frametimes5Seconds;
 
                 if (buffer == null || buffer.Count == 0)
                     return double.NaN;
 
-                // Check for NaN values
-                foreach (var sample in buffer)
-                {
-                    if (double.IsNaN(sample))
-                        return double.NaN;
-                }
+                var samples = CopyValidTimings(buffer, _reusableListBuffer5Seconds);
+                if (samples.Count == 0 && useDisplayTimes)
+                    samples = CopyValidTimings(_frametimes5Seconds, _reusableListBuffer5Seconds);
 
-                var samples = buffer.ToList(_reusableListBufferA);
+                if (samples.Count == 0)
+                    return double.NaN;
 
                 return _frametimeStatisticProvider
                     .GetOnlineStutteringTimePercentage(samples, _appConfiguration.StutteringFactor);
             }
+        }
+
+        private static List<double> CopyValidTimings(IEnumerable<double> source, List<double> target)
+        {
+            target.Clear();
+            if (source == null)
+                return target;
+
+            foreach (double timing in source)
+            {
+                if (timing > 0 && !double.IsNaN(timing) && !double.IsInfinity(timing))
+                    target.Add(timing);
+            }
+
+            return target;
         }
 
         public double GetOnlinePcLatencyAverageValue()
@@ -669,15 +790,19 @@ namespace CapFrameX.PresentMonInterface
 
             if (disposing)
             {
+                // Stop reacting to device status BEFORE tearing the data streams down, otherwise a
+                // status event arriving mid-teardown could re-attach what we just released.
+                _poweneticsStatusSubscription?.Dispose();
+                _benchlabStatusSubscription?.Dispose();
+
                 // Dispose subscriptions
                 _frameDataSubscription?.Dispose();
-                _poweneticsSubscription?.Dispose();
-                _benchlabSubscription?.Dispose();
+                DetachPoweneticsStream();
+                DetachBenchlabStream();
 
-                // Dispose schedulers (EventLoopScheduler implements IDisposable)
+                // Dispose schedulers (EventLoopScheduler implements IDisposable). The two PMD
+                // schedulers are owned by the detach methods above.
                 _frameDataScheduler?.Dispose();
-                _poweneticsScheduler?.Dispose();
-                _benchlabScheduler?.Dispose();
 
                 // Clear buffers
                 lock (_lockRealtimeMetric)
@@ -687,6 +812,8 @@ namespace CapFrameX.PresentMonInterface
                     _gpuActiveTimesRealtimeSeconds?.Clear();
                     _cpuActiveTimesRealtimeSeconds?.Clear();
                     _measuretimesRealtimeSeconds?.Clear();
+                    _reusableListBufferA?.Clear();
+                    _reusableListBufferB?.Clear();
                 }
 
                 lock (_lock5SecondsMetric)
@@ -694,6 +821,7 @@ namespace CapFrameX.PresentMonInterface
                     _frametimes5Seconds?.Clear();
                     _displaytimes5Seconds?.Clear();
                     _measuretimes5Seconds?.Clear();
+                    _reusableListBuffer5Seconds?.Clear();
                 }
 
                 lock (_lock1SecondMetric)
@@ -713,9 +841,6 @@ namespace CapFrameX.PresentMonInterface
                     _channelDataBuffer?.Clear();
                     _sensorDataBuffer?.Clear();
                 }
-
-                _reusableListBufferA?.Clear();
-                _reusableListBufferB?.Clear();
             }
 
             _disposed = true;

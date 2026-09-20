@@ -4,7 +4,9 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using CapFrameX.Monitoring.Contracts;
+
 namespace LibreHardwareMonitor.Hardware.Cpu;
 
-internal abstract class AmdCpu(int processorIndex, CpuId[][] cpuId, ISettings settings)
-    : GenericCpu(processorIndex, cpuId, settings);
+internal abstract class AmdCpu(int processorIndex, CpuId[][] cpuId, ISettings settings, ISensorConfig sensorConfig = null)
+    : GenericCpu(processorIndex, cpuId, settings, sensorConfig);

@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CapFrameX.Monitoring.Contracts;
 using RAMSPDToolkit.I2CSMBus;
 using RAMSPDToolkit.SPD;
 using RAMSPDToolkit.SPD.Enums;
@@ -26,9 +27,12 @@ internal class MemoryGroup : IGroup, IHardwareChanged
     private CancellationTokenSource _cancellationTokenSource;
     private Exception _lastException;
     private bool _disposed = false;
+    private readonly ISensorConfig _sensorConfig;
 
-    public MemoryGroup(ISettings settings)
+    public MemoryGroup(ISettings settings, ISensorConfig sensorConfig = null)
     {
+        _sensorConfig = sensorConfig;
+
         if (DriverManager.Driver is null || !DriverManager.Driver.IsOpen)
         {
             // Assign implementation of IDriver.
@@ -184,7 +188,7 @@ internal class MemoryGroup : IGroup, IHardwareChanged
             if (ram.ChangePage(PageData.ModulePartNumber))
                 name = $"{ram.GetModuleManufacturerString()} - {ram.ModulePartNumber()} (#{ram.Index})";
 
-            DimmMemory memory = new(ram, name, new Identifier("memory", "dimm", $"{ram.Index}"), settings);
+            DimmMemory memory = new(ram, name, new Identifier("memory", "dimm", $"{ram.Index}"), settings, _sensorConfig);
             additions.Add(memory);
         }
 

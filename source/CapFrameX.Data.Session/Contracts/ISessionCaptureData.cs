@@ -13,6 +13,7 @@
 		int[] AllowsTearing { get; set; }
 		int[] SyncInterval { get; set; }
 		bool[] Dropped { get; set; }
+        string[] FrameType { get; set; }
         double[] PcLatency { get; set; }
 		double[] AnimationError { get; set; }
         double[] GpuActive { get; set; }

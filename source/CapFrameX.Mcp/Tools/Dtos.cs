@@ -261,13 +261,94 @@ namespace CapFrameX.Mcp.Tools
         [JsonProperty("overlayEntryType", NullValueHandling = NullValueHandling.Ignore)] public string OverlayEntryType { get; set; }
         [JsonProperty("isEntryEnabled")] public bool IsEntryEnabled { get; set; }
         [JsonProperty("showOnOverlay")] public bool ShowOnOverlay { get; set; }
+        [JsonProperty("showOnOverlayIsEnabled")] public bool ShowOnOverlayIsEnabled { get; set; }
         [JsonProperty("showGraph")] public bool ShowGraph { get; set; }
+        [JsonProperty("showGraphIsEnabled")] public bool ShowGraphIsEnabled { get; set; }
         [JsonProperty("value", NullValueHandling = NullValueHandling.Ignore)] public string Value { get; set; }
+        [JsonProperty("formattedValue", NullValueHandling = NullValueHandling.Ignore)] public string FormattedValue { get; set; }
+        [JsonProperty("valueFormat", NullValueHandling = NullValueHandling.Ignore)] public string ValueFormat { get; set; }
         [JsonProperty("valueUnitFormat", NullValueHandling = NullValueHandling.Ignore)] public string ValueUnitFormat { get; set; }
         [JsonProperty("valueAlignmentAndDigits", NullValueHandling = NullValueHandling.Ignore)] public string ValueAlignmentAndDigits { get; set; }
+        [JsonProperty("valueFontSize")] public int ValueFontSize { get; set; }
         [JsonProperty("color", NullValueHandling = NullValueHandling.Ignore)] public string Color { get; set; }
+        [JsonProperty("formattedGroupName", NullValueHandling = NullValueHandling.Ignore)] public string FormattedGroupName { get; set; }
+        [JsonProperty("groupNameFormat", NullValueHandling = NullValueHandling.Ignore)] public string GroupNameFormat { get; set; }
+        [JsonProperty("groupColor", NullValueHandling = NullValueHandling.Ignore)] public string GroupColor { get; set; }
+        [JsonProperty("groupFontSize")] public int GroupFontSize { get; set; }
+        [JsonProperty("groupSeparators")] public int GroupSeparators { get; set; }
         [JsonProperty("upperLimitValue", NullValueHandling = NullValueHandling.Ignore)] public string UpperLimitValue { get; set; }
         [JsonProperty("lowerLimitValue", NullValueHandling = NullValueHandling.Ignore)] public string LowerLimitValue { get; set; }
+        [JsonProperty("upperLimitColor", NullValueHandling = NullValueHandling.Ignore)] public string UpperLimitColor { get; set; }
+        [JsonProperty("lowerLimitColor", NullValueHandling = NullValueHandling.Ignore)] public string LowerLimitColor { get; set; }
+        [JsonProperty("isNumeric")] public bool IsNumeric { get; set; }
+        [JsonProperty("lastLimitState", NullValueHandling = NullValueHandling.Ignore)] public string LastLimitState { get; set; }
+        [JsonProperty("formatChanged")] public bool FormatChanged { get; set; }
+        [JsonProperty("orderIndex")] public int OrderIndex { get; set; }
         [JsonProperty("sortKey", NullValueHandling = NullValueHandling.Ignore)] public string SortKey { get; set; }
+    }
+
+    public class SetOverlayEntryResult
+    {
+        [JsonProperty("applied")] public bool Applied { get; set; }
+        [JsonProperty("persisted")] public bool Persisted { get; set; }
+        [JsonProperty("changedCount")] public int ChangedCount { get; set; }
+        [JsonProperty("changedProperties")] public List<string> ChangedProperties { get; set; } = new List<string>();
+        [JsonProperty("entry")] public OverlayEntryInfo Entry { get; set; }
+    }
+
+    public enum OsdRendererMode
+    {
+        Rtss,
+        InGame,
+        HookFree
+    }
+
+    public enum OsdAnchorPosition
+    {
+        TopLeft = 0,
+        TopRight = 1,
+        BottomLeft = 2,
+        BottomRight = 3,
+        TopCenter = 4
+    }
+
+    public class OsdOptionsInfo
+    {
+        [JsonProperty("renderer")] public string Renderer { get; set; }
+        [JsonProperty("rendererConfigurationValid")] public bool RendererConfigurationValid { get; set; }
+        [JsonProperty("enableHookOverlay")] public bool EnableHookOverlay { get; set; }
+        [JsonProperty("enableHookFreeOverlay")] public bool EnableHookFreeOverlay { get; set; }
+        [JsonProperty("rtssInstalled")] public bool RtssInstalled { get; set; }
+        [JsonProperty("isOverlayActive")] public bool IsOverlayActive { get; set; }
+        [JsonProperty("autoDisableOverlay")] public bool AutoDisableOverlay { get; set; }
+        [JsonProperty("showSystemTimeSeconds")] public bool ShowSystemTimeSeconds { get; set; }
+        [JsonProperty("hideOverlay")] public bool HideOverlay { get; set; }
+        [JsonProperty("hookOverlayUsePresentMonFrametimes")] public bool HookOverlayUsePresentMonFrametimes { get; set; }
+        [JsonProperty("replayBufferSizeMs")] public int ReplayBufferSizeMs { get; set; }
+        [JsonProperty("hookFreeRefreshRate")] public int HookFreeRefreshRate { get; set; }
+        [JsonProperty("osdCustomPosition")] public bool OsdCustomPosition { get; set; }
+        [JsonProperty("osdPositionX")] public int OsdPositionX { get; set; }
+        [JsonProperty("osdPositionY")] public int OsdPositionY { get; set; }
+        [JsonProperty("backgroundOpacity")] public int BackgroundOpacity { get; set; }
+        [JsonProperty("anchor")] public string Anchor { get; set; }
+        [JsonProperty("anchorValue")] public int AnchorValue { get; set; }
+        [JsonProperty("marginX")] public int MarginX { get; set; }
+        [JsonProperty("marginY")] public int MarginY { get; set; }
+        [JsonProperty("zoom")] public int Zoom { get; set; }
+        [JsonProperty("useValueSmoothing")] public bool UseValueSmoothing { get; set; }
+        [JsonProperty("overlayHotkey")] public string OverlayHotkey { get; set; }
+        [JsonProperty("overlayConfigHotkey")] public string OverlayConfigHotkey { get; set; }
+        [JsonProperty("overlayPositionHotkey")] public string OverlayPositionHotkey { get; set; }
+        [JsonProperty("resetMetricsHotkey")] public string ResetMetricsHotkey { get; set; }
+        [JsonProperty("refreshPeriodMs")] public int RefreshPeriodMs { get; set; }
+        [JsonProperty("metricIntervalSeconds")] public int MetricIntervalSeconds { get; set; }
+    }
+
+    public class SetOsdOptionsResult
+    {
+        [JsonProperty("applied")] public bool Applied { get; set; }
+        [JsonProperty("changedCount")] public int ChangedCount { get; set; }
+        [JsonProperty("changedProperties")] public List<string> ChangedProperties { get; set; } = new List<string>();
+        [JsonProperty("options")] public OsdOptionsInfo Options { get; set; }
     }
 }

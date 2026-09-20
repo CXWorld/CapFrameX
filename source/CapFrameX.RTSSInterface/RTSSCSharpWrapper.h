@@ -266,6 +266,11 @@ public:
 		return gcnew String(_coreControl->GetApiInfo((UINT)processId));
 	}
 
+	String^ GetResolution(INT processId)
+	{
+		return gcnew String(_coreControl->GetResolution((UINT)processId));
+	}
+
 	Tuple<double, double>^ GetCurrentFramerate(INT processId)
 	{
 		std::vector<float> result = _coreControl->GetCurrentFramerate((UINT)processId);

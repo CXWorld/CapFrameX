@@ -1,4 +1,6 @@
-﻿namespace LibreHardwareMonitor.PawnIo;
+﻿#pragma warning disable CS1591 // file exempt from XML documentation
+
+namespace LibreHardwareMonitor.PawnIo;
 
 public class LpcAcpiEc
 {

@@ -6,6 +6,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 
+#pragma warning disable CS1591 // file exempt from XML documentation
+
 namespace LibreHardwareMonitor.Hardware.Motherboard;
 
 [SuppressMessage("ReSharper", "IdentifierTypo")]

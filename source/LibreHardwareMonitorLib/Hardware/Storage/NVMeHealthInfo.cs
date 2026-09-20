@@ -6,6 +6,8 @@
 using Windows.Win32.Storage.Nvme;
 using LibreHardwareMonitor.Interop;
 
+#pragma warning disable CS1591 // file exempt from XML documentation
+
 namespace LibreHardwareMonitor.Hardware.Storage;
 
 public abstract class NVMeHealthInfo

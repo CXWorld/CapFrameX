@@ -11,10 +11,20 @@ using LibreHardwareMonitor.Interop;
 
 namespace LibreHardwareMonitor.Hardware.Storage;
 
+/// <summary>
+/// Describes a single SMART attribute and how it is turned into a sensor value.
+/// </summary>
 public class SmartAttribute
 {
     private readonly RawValueConversion _rawValueConversion;
 
+    /// <summary>
+    /// Converts the raw bytes of a SMART attribute into a sensor value.
+    /// </summary>
+    /// <param name="rawValue">The six raw bytes of the attribute.</param>
+    /// <param name="value">The normalized current value of the attribute.</param>
+    /// <param name="parameters">The parameters of the sensor.</param>
+    /// <returns>The converted value.</returns>
     public delegate float RawValueConversion(byte[] rawValue, byte value, IReadOnlyList<IParameter> parameters);
 
     /// <summary>
@@ -76,8 +86,14 @@ public class SmartAttribute
         ParameterDescriptions = parameterDescriptions;
     }
 
+    /// <summary>
+    /// Gets a value indicating whether the sensor is hidden initially.
+    /// </summary>
     public bool DefaultHiddenSensor { get; }
 
+    /// <summary>
+    /// Gets a value indicating whether the raw value is converted instead of using the attribute value.
+    /// </summary>
     public bool HasRawValueConversion => _rawValueConversion != null;
 
     /// <summary>
@@ -85,14 +101,30 @@ public class SmartAttribute
     /// </summary>
     public byte Id { get; }
 
+    /// <summary>
+    /// Gets the name of the attribute.
+    /// </summary>
     public string Name { get; }
 
+    /// <summary>
+    /// Gets the descriptions for the parameters of the sensor, or <see langword="null" /> if it has none.
+    /// </summary>
     public ParameterDescription[] ParameterDescriptions { get; }
 
+    /// <summary>
+    /// Gets the channel of the sensor. Where several attributes share a channel and type, only the
+    /// first one gets a sensor.
+    /// </summary>
     public int SensorChannel { get; }
 
+    /// <summary>
+    /// Gets the name of the sensor, or <see langword="null" /> if no sensor is created.
+    /// </summary>
     public string SensorName { get; }
 
+    /// <summary>
+    /// Gets the type of the sensor, or <see langword="null" /> if no sensor is created.
+    /// </summary>
     public SensorType? SensorType { get; }
 
     internal unsafe float ConvertValue(AtaSmart.SMART_ATTRIBUTE value, IReadOnlyList<IParameter> parameters)

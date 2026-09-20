@@ -144,6 +144,10 @@ namespace LibreHardwareMonitor.Hardware.Gpu
             return refreshRate;
         }
 
+        /// <summary>
+        /// Gets the device name of the display, for example <c>\\.\DISPLAY1</c>.
+        /// </summary>
+        /// <returns>The device name, or an empty string if it cannot be determined.</returns>
         public string GetDisplayDeviceName()
         {
             try
