@@ -9,16 +9,81 @@ the OSD is built from source instead and these files are ignored.
 
 ## Build provenance
 
-The current binaries were rebuilt on **2026-09-19** from private CapFrameX.OSD
+The current five native DLLs were rebuilt on **2026-09-20** with VS 2026/v145 in
+`RelWithDebInfo` from the source state now committed as private OSD revision
+`d801775d032bffbba5b1cb481d645fc011c60296`. This includes the graph-source corrections
+and the OSD log directory changes.
+
+These native payloads are **unsigned development builds**. The existing
+`net10.0-windows` managed bridge retains its Certum signature from the rebuild below.
+
+### OSD log directory (2026-09-20)
+
+All native log writers now use `%TEMP%\cfx-osd-logs`: `cfx_osd.log`, `cfxhook.log`,
+`cfx_vklayer.log`, and `cfx_present_stats.log`. A shared native helper creates the
+directory when needed, validates path capacity and handles directory creation failures.
+The writers use Unicode paths. The Overlay tab's **Open OSD log folder** command creates
+and opens the same directory, including when extended logging is disabled. This path
+also applies in portable mode. Restart CapFrameX and the game to load the updated DLLs.
+
+All 16 existing logging CTests passed (seven hook logger tests and the present-statistics
+concurrency test per architecture). A temporary smoke host using the actual core, Vulkan
+and statistics writer sources verified a new Unicode directory, reuse of the directory,
+safe failure when a file occupies the directory name, and rejection of paths exceeding
+the buffer capacity. All five staged DLLs match their build outputs by SHA-256 and PE
+architecture. These DLLs supersede the builds below.
+
+| Native DLL | SHA-256 |
+| --- | --- |
+| Core x64 | `78125B6722862469123614D0BBF7D7D161D2B9460DCECF14CB466BE17095015A` |
+| Hook x64 | `2C86B0E7DA887E6F24E8FCD8677FF1EFE14E16EE0BB5D48E0100445A4E0EC3C8` |
+| Hook x86 | `AFDD6D4F16EF506838A4E7E8DC43579F0796896E5C9F195A52B6D21168D90455` |
+| Vulkan x64 | `7C3D307A63E0F0B65AC2BD98FFE82B8CA1C898305842299100BEDDB8824C7E6D` |
+| Vulkan x86 | `785E9F6F8BBE1046843A076F669A8CB544D2EC4FE2C82FACD73532C6620FFC87` |
+
+### Local Presents and live graph-source switching (2026-09-19)
+
+Swapchain Presents now draw through the newest sample, independent of the PresentMon
+replay-buffer setting. Both the DXGI hook and Vulkan layer explicitly select the graph
+source through the additive `cfx_osd_set_graph_source` API. PresentMon remains the default
+for existing hosts, preserving hook-free replay behavior.
+
+Changing the source clears frametime/display-time history, synthetic timestamps and the
+delivery-cadence estimate. The render thread resets its replay clock and graph scales
+when it snapshots the source generation, including quick A -> B -> A switches between
+render ticks. The entry values refresh on the switch, and each recreated renderer
+receives its source again. This prevents old QPC timestamps and display samples from
+keeping the local synthetic timeline outside the visible graph window.
+
+All **70 native CTest invocations** passed: eleven core tests on x64, 27 DXGI tests per
+architecture, two Vulkan tests per architecture, and the new `graph_source` test on x86.
+The new test runs 70 checks per architecture against the real feed/snapshot/clock code,
+covering local chart geometry without prebuffering, replay settings from 500 to 10000 ms,
+PresentMon replay, both switch directions, rapid/repeated switches, history retention,
+invalid input and concurrent feed/render snapshots. All five staged DLLs were checked
+against their build outputs by SHA-256 and PE architecture; both Vulkan manifests match
+the build manifests.
+
+| Native DLL | SHA-256 |
+| --- | --- |
+| Core x64 | `D4261EF8467A6D1CDA7A0E8181A59496ACC66EBCB77485666C13A6607ED5639A` |
+| Hook x64 | `D8C84435A5E4F544098B2780787354EC8A015753D8AB6C3915989EA9E585491C` |
+| Hook x86 | `FBC73CD0D2F5FDC144A373D2EA360D55343BE4A650B354E23178CA025E250317` |
+| Vulkan x64 | `48403F665AC4EC5F272B42F188EBAE27FD09794E5DB7604795F41B2FC011628B` |
+| Vulkan x86 | `45FB4941B01023389BBFCE61E13B3157883E71BA601FEC0691F5D420B3F268B8` |
+
+### Signed .NET 10 rebuild (2026-09-19)
+
+The preceding binaries were rebuilt on **2026-09-19** from private CapFrameX.OSD
 revision `0104ab98e694ff3eac37cd3bc5319402c93b8f3f`, with the migration of
 Interop, Controls and Editor.Demo to `net10.0-windows` now committed as
 `142ad1d5c46cbd5688068d03a48b893e4bb3a17c`. The managed bridge uses
 .NET SDK 10.0.401 in `Release`; all five native DLLs use VS 2026/v145 in
 `RelWithDebInfo`, from fresh x64/x86 build directories. All 68 native tests passed.
 
-The bridge and five native DLLs are Authenticode-signed with the Certum code-signing
+That bridge and those five native DLLs were Authenticode-signed with the Certum code-signing
 certificate `C0D5481E2ACBB9DD104A825A81EECF55557BA783` and RFC 3161 SHA-256 timestamps.
-The hashes below describe the signed files. The former `net9.0-windows` bridge
+The hashes in the monitor-bounds section below describe those signed files. The former `net9.0-windows` bridge
 has been replaced by `net10.0-windows`; all consuming project paths were updated.
 The following sections retain the history of the native fixes in this revision.
 
