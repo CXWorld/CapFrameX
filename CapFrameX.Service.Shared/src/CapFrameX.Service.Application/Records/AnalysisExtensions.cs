@@ -27,7 +27,9 @@ public static class AnalysisExtensions
         services.AddSingleton<SessionCache>();
         services.AddSingleton<AnalysisService>();
         services.TryAddSingleton<RecordFileReader>();
+        services.TryAddSingleton<RecordFileWriter>();
         services.AddScoped<RecordAnalyzer>();
+        services.AddScoped<RecordStore>();
 
         return services;
     }

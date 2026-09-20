@@ -1,4 +1,5 @@
 using CapFrameX.Service.Application.Records;
+using CapFrameX.Service.Core.Platform;
 using CapFrameX.Service.Core.Security;
 using CapFrameX.Service.Data;
 using Microsoft.AspNetCore.Builder;
@@ -34,6 +35,9 @@ public sealed class GuardedApiFactory : IAsyncLifetime
     /// <summary>The hosted services, so a test can seed what an endpoint reads.</summary>
     public IServiceProvider Services => _app!.Services;
 
+    /// <summary>The trash the delete endpoint reaches, so a test can see what went into it.</summary>
+    public RecordingTrash Trash { get; } = new();
+
     /// <inheritdoc />
     public async Task InitializeAsync()
     {
@@ -56,6 +60,11 @@ public sealed class GuardedApiFactory : IAsyncLifetime
         // The analysis endpoints read the capture behind a record, which the hosts wire up the
         // same way.
         builder.Services.AddCapFrameXAnalysis();
+        builder.Services.AddSingleton<IFileTrash>(Trash);
+
+        // The index, but not the folder watcher: editing a record has to re-read it at once, while
+        // a background scan of a temp folder would only add timing to every test here.
+        builder.Services.AddCapFrameXRecordIndex(new TestPaths(_root));
 
         _app = builder.Build();
         _app.MapCapFrameXApi();
@@ -98,11 +107,36 @@ public sealed class GuardedApiFactory : IAsyncLifetime
             await _app.DisposeAsync();
         }
 
+        foreach (var folder in new[] { _root, Trash.Directory })
+        {
+            TryDelete(folder);
+        }
+    }
+
+    /// <summary>A layout under one temp folder, which is all the index needs to be constructed.</summary>
+    /// <param name="root">The temp folder.</param>
+    private sealed class TestPaths(string root) : IAppPaths
+    {
+        public string ConfigurationDirectory { get; } = Path.Combine(root, "Configuration");
+
+        public string DataDirectory { get; } = root;
+
+        public string CaptureDirectory { get; } = Path.Combine(root, "Captures");
+
+        public string LogDirectory { get; } = Path.Combine(root, "Logs");
+
+        public string RuntimeDirectory { get; } = Path.Combine(root, "run");
+
+        public bool IsPortable => true;
+    }
+
+    private static void TryDelete(string folder)
+    {
         try
         {
-            Directory.Delete(_root, recursive: true);
+            Directory.Delete(folder, recursive: true);
         }
-        catch (IOException)
+        catch (Exception exception) when (exception is IOException or DirectoryNotFoundException)
         {
             // A temp folder that outlives the run is not a test failure.
         }

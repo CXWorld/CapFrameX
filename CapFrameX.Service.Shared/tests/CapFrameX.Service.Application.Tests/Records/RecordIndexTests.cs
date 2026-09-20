@@ -217,6 +217,54 @@ public sealed class RecordIndexTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task A_refreshed_record_picks_up_what_the_service_just_wrote()
+    {
+        // After the service edits a capture, the next request has to answer with the edit rather
+        // than with whatever the folder watcher gets round to a second or two later.
+        var path = Write("run-one", CaptureFixture.Capture("Before"));
+        await ScanAsync();
+        var id = Assert.Single(await SessionsAsync()).Id;
+
+        Write("run-one", CaptureFixture.Capture("After"));
+
+        await using (var context = Context())
+        {
+            var index = Index(context);
+            Assert.True(await index.RefreshAsync(id));
+        }
+
+        Assert.Equal("After", Assert.Single(await SessionsAsync()).GameName);
+    }
+
+    [Fact]
+    public async Task A_refresh_leaves_the_next_scan_nothing_to_do()
+    {
+        // It writes the file's new size and time as well; without that the watcher would re-read a
+        // record that is already current.
+        var path = Write("run-one", CaptureFixture.Capture("Before"));
+        await ScanAsync();
+        var id = Assert.Single(await SessionsAsync()).Id;
+
+        Write("run-one", CaptureFixture.Capture("After", runs: 2));
+        File.SetLastWriteTimeUtc(path, File.GetLastWriteTimeUtc(path).AddMinutes(1));
+
+        await using (var context = Context())
+        {
+            await Index(context).RefreshAsync(id);
+        }
+
+        Assert.True((await ScanAsync()).IsEmpty);
+    }
+
+    [Fact]
+    public async Task Refreshing_something_with_no_file_behind_it_does_nothing()
+    {
+        await using var context = Context();
+
+        Assert.False(await Index(context).RefreshAsync(Guid.NewGuid()));
+    }
+
+    [Fact]
     public async Task A_deleted_capture_loses_its_record()
     {
         var path = Write("run-one", CaptureFixture.Capture());
@@ -325,15 +373,15 @@ public sealed class RecordIndexTests : IAsyncLifetime
     {
         await using var context = Context();
 
-        var index = new RecordIndex(
-            context,
+        return await Index(context).ScanAsync();
+    }
+
+    private RecordIndex Index(CapFrameXDbContext context) =>
+        new(context,
             new RecordFileReader(),
             new AnalysisService(new AnalysisSettings()),
             new RecordIndexOptions { CaptureDirectory = _captures },
             NullLogger<RecordIndex>.Instance);
-
-        return await index.ScanAsync();
-    }
 
     private async Task<List<Session>> SessionsAsync()
     {

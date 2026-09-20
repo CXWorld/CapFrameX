@@ -148,6 +148,48 @@ public sealed class RecordIndex
         return result;
     }
 
+    /// <summary>
+    /// Re-reads one record from its file.
+    /// </summary>
+    /// <remarks>
+    /// After the service itself changed a capture, so the answer to the next request is the edited
+    /// one rather than what the watcher will get round to in a second or two. It writes the file's
+    /// new size and time as well, which is what keeps that scan from finding work that is already
+    /// done.
+    /// </remarks>
+    /// <param name="id">Identity of the record.</param>
+    /// <param name="cancellationToken">Cancels the read.</param>
+    /// <returns>Whether the row now describes the file.</returns>
+    public async Task<bool> RefreshAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var record = await _context.Sessions.FirstOrDefaultAsync(session => session.Id == id, cancellationToken);
+
+        if (record?.SourceFilePath is not { Length: > 0 } path)
+        {
+            return false;
+        }
+
+        var info = new FileInfo(path);
+
+        if (!info.Exists)
+        {
+            return false;
+        }
+
+        var file = new RecordFile(path, info.Length, info.LastWriteTimeUtc);
+        var projection = await SummaryAsync(file, cancellationToken);
+
+        if (projection is null)
+        {
+            return false;
+        }
+
+        Apply(record, projection, file);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return true;
+    }
+
     private List<RecordFile> OnDisk()
     {
         var directory = _options.CaptureDirectory;

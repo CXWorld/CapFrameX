@@ -1,10 +1,8 @@
-using System.Text.Json;
 using CapFrameX.Service.Analysis;
 using CapFrameX.Service.Application.Records;
 using CapFrameX.Service.Contracts.Analysis;
 using CapFrameX.Service.Contracts.Records;
 using CapFrameX.Service.Data;
-using CapFrameX.Service.Data.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,9 +18,13 @@ namespace CapFrameX.Service.Api.Controllers;
 /// </remarks>
 /// <param name="context">The service database.</param>
 /// <param name="analyzer">Reads and analyses the capture behind a record.</param>
+/// <param name="store">Changes a record, or removes it.</param>
 [ApiController]
 [Route("api/records")]
-public sealed class RecordsController(CapFrameXDbContext context, RecordAnalyzer analyzer) : ControllerBase
+public sealed class RecordsController(
+    CapFrameXDbContext context,
+    RecordAnalyzer analyzer,
+    RecordStore store) : ControllerBase
 {
     /// <summary>Largest page the API hands out at once.</summary>
     public const int MaximumPageSize = 500;
@@ -63,28 +65,66 @@ public sealed class RecordsController(CapFrameXDbContext context, RecordAnalyzer
             .Take(Math.Clamp(take, 1, MaximumPageSize))
             .ToListAsync(cancellationToken);
 
-        return Ok(new RecordsListResponse(sessions.Select(Summary).ToArray(), total));
+        return Ok(new RecordsListResponse(sessions.Select(RecordProjection.Summary).ToArray(), total));
     }
 
-    /// <summary>Returns one indexed capture.</summary>
+    /// <summary>Returns everything the analysis view needs to open one record.</summary>
     /// <param name="id">Identity of the record.</param>
     /// <param name="cancellationToken">Cancels the query.</param>
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<RecordSummaryDto>> Get(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<RecordDetailDto>> Get(Guid id, CancellationToken cancellationToken)
     {
-        var session = await context.Sessions
-            .AsNoTracking()
-            .FirstOrDefaultAsync(candidate => candidate.Id == id, cancellationToken);
+        var (load, detail) = await analyzer.DetailAsync(id, cancellationToken);
 
-        if (session is null)
+        return detail is null ? Failed(load) : Ok(detail);
+    }
+
+    /// <summary>Corrects what a capture recorded about itself.</summary>
+    /// <remarks>
+    /// The change is written into the capture file, so it survives being copied elsewhere and
+    /// CapFrameX 1.x sees it too. A field left out of the body is left alone.
+    /// </remarks>
+    /// <param name="id">Identity of the record.</param>
+    /// <param name="edit">What to change.</param>
+    /// <param name="cancellationToken">Cancels the change.</param>
+    [HttpPatch("{id:guid}")]
+    public async Task<ActionResult<RecordDetailDto>> Patch(
+        Guid id,
+        [FromBody] RecordEdit edit,
+        CancellationToken cancellationToken)
+    {
+        if (edit is null)
         {
-            return Problem(
-                title: "Record not found.",
-                detail: $"No record with id '{id}' is indexed.",
-                statusCode: StatusCodes.Status404NotFound);
+            return BadRequest("A patch needs a body naming the fields to change.");
         }
 
-        return Ok(Summary(session));
+        var change = await store.EditAsync(id, edit, cancellationToken);
+
+        if (!change.IsSuccess)
+        {
+            return Refused(change);
+        }
+
+        // The edited record, so the client does not have to ask again to see what it now says.
+        var (load, detail) = await analyzer.DetailAsync(id, cancellationToken);
+
+        return detail is null ? Failed(load) : Ok(detail);
+    }
+
+    /// <summary>Moves a capture to the platform's trash and drops it from the index.</summary>
+    /// <remarks>
+    /// Never an outright delete: a record is hours of benchmarking that cannot be recaptured, and
+    /// the recycle bin - or the freedesktop trash on Linux - is where the user can get it back with
+    /// the tools they already know.
+    /// </remarks>
+    /// <param name="id">Identity of the record.</param>
+    /// <param name="cancellationToken">Cancels the removal.</param>
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        var change = await store.DeleteAsync(id, cancellationToken);
+
+        return change.IsSuccess ? NoContent() : Refused(change);
     }
 
     /// <summary>Analyses one indexed capture.</summary>
@@ -184,6 +224,22 @@ public sealed class RecordsController(CapFrameXDbContext context, RecordAnalyzer
             detail: detail,
             statusCode: StatusCodes.Status400BadRequest);
 
+    private ObjectResult Refused(RecordChange change) =>
+        change.Status switch
+        {
+            RecordChangeStatus.NotIndexed => Problem(
+                title: "Record not found.",
+                detail: change.Error,
+                statusCode: StatusCodes.Status404NotFound),
+
+            // The record is there; the capture behind it is not in a state the service can change.
+            // That is a fact about the folder, not a bad request.
+            _ => Problem(
+                title: "The capture behind this record could not be changed.",
+                detail: change.Error,
+                statusCode: StatusCodes.Status409Conflict),
+        };
+
     private ObjectResult Failed(RecordLoad load) =>
         load.Status switch
         {
@@ -200,52 +256,4 @@ public sealed class RecordsController(CapFrameXDbContext context, RecordAnalyzer
                 statusCode: StatusCodes.Status409Conflict),
         };
 
-    private static RecordSummaryDto Summary(Session session) =>
-        new(
-            Id: session.Id,
-            Name: Name(session),
-            GameName: NullIfBlank(session.GameName),
-            ProcessName: NullIfBlank(session.ProcessName),
-            CreatedAt: new DateTimeOffset(DateTime.SpecifyKind(session.CreatedAt, DateTimeKind.Utc)),
-            DurationSeconds: session.DurationSeconds ?? 0,
-            RunCount: session.RunCount ?? 0,
-            FrameCount: session.FrameCount ?? 0,
-            Sparkline: Sparkline(session.SparklineJson),
-            Processor: NullIfBlank(session.Processor),
-            Gpu: NullIfBlank(session.Gpu),
-            HasPcLatency: session.HasPcLatency,
-            HasDisplayChange: session.HasDisplayChange,
-            AverageFps: session.AverageFps,
-            P1Fps: session.P1Fps,
-            P99Fps: session.P99Fps);
-
-    private static string Name(Session session)
-    {
-        var fileName = session.SourceFilePath is null
-            ? null
-            : Path.GetFileNameWithoutExtension(session.SourceFilePath);
-
-        return NullIfBlank(fileName) ?? NullIfBlank(session.GameName) ?? session.Id.ToString();
-    }
-
-    private static IReadOnlyList<double> Sparkline(string? json)
-    {
-        if (string.IsNullOrEmpty(json))
-        {
-            return [];
-        }
-
-        try
-        {
-            return JsonSerializer.Deserialize<double[]>(json) ?? [];
-        }
-        catch (JsonException)
-        {
-            // Written by an older indexer, or by hand: the list is better without it than not at
-            // all.
-            return [];
-        }
-    }
-
-    private static string? NullIfBlank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
 }

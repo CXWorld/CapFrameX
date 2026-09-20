@@ -1,16 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using CapFrameX.Data.Session.Classes;
 using CapFrameX.Service.Contracts.Analysis;
-using CapFrameX.Service.Data;
-using CapFrameX.Service.Data.Models;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using LegacySession = CapFrameX.Data.Session.Classes.Session;
-using LegacyRun = CapFrameX.Data.Session.Classes.SessionRun;
-using RecordRow = CapFrameX.Service.Data.Models.Session;
 
 namespace CapFrameX.Service.Api.Tests;
 
@@ -30,7 +21,7 @@ public sealed class AnalysisEndpointTests(GuardedApiFactory factory) : IClassFix
     public async Task InitializeAsync()
     {
         Directory.CreateDirectory(_root);
-        await ClearAsync();
+        await RecordSeed.ClearAsync(factory);
     }
 
     public Task DisposeAsync()
@@ -59,7 +50,7 @@ public sealed class AnalysisEndpointTests(GuardedApiFactory factory) : IClassFix
         Assert.Equal(["average", "p95", "onePercentLowAverage", "zerodotOnePercentLowAverage"],
             analysis.Metrics.Select(metric => metric.Key));
         Assert.All(analysis.Metrics, metric => Assert.NotNull(metric.Value));
-        Assert.Equal(600, analysis.Window.FrameCount);
+        Assert.Equal(RecordSeed.FrameCount, analysis.Window.FrameCount);
         Assert.NotEmpty(analysis.LShape);
         Assert.NotEmpty(analysis.Distribution);
     }
@@ -146,8 +137,8 @@ public sealed class AnalysisEndpointTests(GuardedApiFactory factory) : IClassFix
         var series = await client.GetFromJsonAsync<SeriesResponse>($"/api/records/{id}/series", Json);
 
         Assert.NotNull(series);
-        Assert.Equal(600, series.Time.Length);
-        Assert.Equal(600, series.Frametimes!.Length);
+        Assert.Equal(RecordSeed.FrameCount, series.Time.Length);
+        Assert.Equal(RecordSeed.FrameCount, series.Frametimes!.Length);
         Assert.Null(series.Fps);
     }
 
@@ -183,116 +174,19 @@ public sealed class AnalysisEndpointTests(GuardedApiFactory factory) : IClassFix
     {
         // Deleting the file after the first call is the only way to see the cache from outside,
         // and it is exactly what the cache is for: a range drag must not go back to the disk.
-        var id = await SeedAsync(out var path);
+        var seeded = await RecordSeed.WriteAsync(factory, _root);
+        var id = seeded.Id;
         using var client = factory.CreateCaller();
 
         Assert.True((await client.GetAsync($"/api/records/{id}/analysis")).IsSuccessStatusCode);
-        File.Delete(path);
+        File.Delete(seeded.Path);
 
         var second = await client.GetAsync($"/api/records/{id}/analysis?start=0.1&end=0.5");
 
         Assert.True(second.IsSuccessStatusCode);
     }
 
-    private Task<Guid> SeedAsync(bool deleteFile = false) => SeedAsync(out _, deleteFile);
+    private async Task<Guid> SeedAsync(bool deleteFile = false) =>
+        (await RecordSeed.WriteAsync(factory, _root, deleteFile: deleteFile)).Id;
 
-    private Task<Guid> SeedAsync(out string path, bool deleteFile = false)
-    {
-        path = Path.Combine(_root, Guid.NewGuid().ToString("N") + ".json");
-
-        return SeedCoreAsync(path, deleteFile);
-    }
-
-    private async Task<Guid> SeedCoreAsync(string path, bool deleteFile)
-    {
-        var random = new Random(20260920);
-        var frametimes = new double[600];
-        var times = new double[600];
-        var latency = new double[600];
-        var elapsed = 0d;
-
-        for (var i = 0; i < frametimes.Length; i++)
-        {
-            frametimes[i] = 10d + random.NextDouble() * 15d;
-            times[i] = elapsed;
-            latency[i] = 25d + random.NextDouble() * 10d;
-            elapsed += frametimes[i] / 1000d;
-        }
-
-        var capture = new SessionCaptureData(frametimes.Length)
-        {
-            TimeInSeconds = times,
-            MsBetweenPresents = frametimes,
-            PcLatency = latency,
-        };
-
-        var session = new LegacySession
-        {
-            Hash = "0123456789abcdef",
-            Info = new SessionInfo
-            {
-                Id = Guid.NewGuid(),
-                GameName = "Cyberpunk 2077",
-                ProcessName = "Cyberpunk2077",
-                Processor = "Ryzen 9 9950X",
-                GPU = "RTX 5090",
-                OS = "Windows 11",
-                CreationDate = new DateTime(2026, 9, 20, 18, 10, 0, DateTimeKind.Utc),
-            },
-            Runs = [new LegacyRun { CaptureData = capture, SampleTime = (int)Math.Ceiling(elapsed) }],
-        };
-
-        await File.WriteAllTextAsync(path, JsonConvert.SerializeObject(session));
-
-        var info = new FileInfo(path);
-        var id = Guid.NewGuid();
-
-        using (var scope = factory.Services.CreateScope())
-        {
-            var context = scope.ServiceProvider.GetRequiredService<CapFrameXDbContext>();
-            var suite = new Suite
-            {
-                Id = Guid.NewGuid(),
-                Name = "Captures",
-                Type = SuiteType.Miscellaneous,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-            };
-
-            context.Suites.Add(suite);
-            context.Sessions.Add(new RecordRow
-            {
-                Id = id,
-                SuiteId = suite.Id,
-                GameName = "Cyberpunk 2077",
-                ProcessName = "Cyberpunk2077",
-                Processor = "Ryzen 9 9950X",
-                Gpu = "RTX 5090",
-                Os = "Windows 11",
-                CreatedAt = DateTime.UtcNow,
-                SourceFilePath = path,
-                SourceFileSize = info.Length,
-                SourceModifiedUtc = info.LastWriteTimeUtc,
-                IndexVersion = 1,
-            });
-
-            await context.SaveChangesAsync();
-        }
-
-        if (deleteFile)
-        {
-            File.Delete(path);
-        }
-
-        return id;
-    }
-
-    private async Task ClearAsync()
-    {
-        using var scope = factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<CapFrameXDbContext>();
-
-        await context.Sessions.ExecuteDeleteAsync();
-        await context.Suites.ExecuteDeleteAsync();
-    }
 }

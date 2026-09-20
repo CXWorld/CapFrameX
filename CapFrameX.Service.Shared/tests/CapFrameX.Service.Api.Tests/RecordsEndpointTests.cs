@@ -126,15 +126,18 @@ public sealed class RecordsEndpointTests(GuardedApiFactory factory) : IClassFixt
     }
 
     [Fact]
-    public async Task One_capture_can_be_asked_for_by_id()
+    public async Task A_record_whose_file_is_gone_cannot_be_opened()
     {
-        var record = Record("Cyberpunk 2077", @"C:\c\one.json");
+        // The list still shows it - the index is what the list reads - but opening it needs the
+        // capture, and saying so beats an empty analysis view.
+        var record = Record("Cyberpunk 2077", @"C:\c
+ever-existed.json");
         await SeedAsync(record);
         using var client = factory.CreateCaller();
 
-        var summary = await client.GetFromJsonAsync<RecordSummaryDto>($"/api/records/{record.Id}", Json);
+        var response = await client.GetAsync($"/api/records/{record.Id}");
 
-        Assert.Equal(record.Id, summary!.Id);
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 
     [Fact]

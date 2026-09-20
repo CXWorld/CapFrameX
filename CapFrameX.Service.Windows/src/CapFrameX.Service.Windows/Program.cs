@@ -53,7 +53,9 @@ builder.Services.AddSingleton<ISecretFileWriter, WindowsSecretFileWriter>();
 builder.Services.AddSingleton(tokenStore);
 builder.Services.AddCapFrameXDatabase(paths);
 builder.Services.AddCapFrameXRecordIndex(paths);
+builder.Services.AddCapFrameXRecordWatcher();
 builder.Services.AddCapFrameXAnalysis();
+builder.Services.AddSingleton<IFileTrash>(new WindowsFileTrash());
 builder.Services.AddCapFrameXApi(new CapFrameXApiOptions { Token = token });
 
 var app = builder.Build();
