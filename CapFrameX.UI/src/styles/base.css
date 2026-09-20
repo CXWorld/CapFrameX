@@ -1,0 +1,103 @@
+/*
+ * The base layer: what every page gets before a single component is involved.
+ *
+ * Deliberately small. Anything that belongs to a component lives with that component, so this file
+ * stays the answer to "what does an unstyled element look like" and nothing else.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--cx-bg);
+  color: var(--cx-text);
+  font-family: var(--cx-font);
+  font-size: var(--cx-text-13);
+  font-weight: var(--cx-weight-normal);
+  line-height: 1.45;
+
+  /*
+   * Numbers in this application sit in columns and change several times a second in the live
+   * views. Proportional digits make them jump; tabular figures hold the column still.
+   */
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-weight: var(--cx-weight-medium);
+}
+
+p {
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+input,
+select {
+  height: var(--cx-control-height);
+  padding: 0 var(--cx-space-3);
+  border: 0.5px solid var(--cx-line);
+  border-radius: var(--cx-radius);
+  background: var(--cx-bg);
+  color: var(--cx-text);
+}
+
+input::placeholder {
+  color: var(--cx-text-faint);
+}
+
+/*
+ * One focus ring everywhere, and only for keyboard users. The rail and the record list are
+ * navigated by keyboard by design, so this is load-bearing rather than decoration.
+ */
+:focus-visible {
+  outline: 2px solid var(--cx-text-accent);
+  outline-offset: 1px;
+}
+
+/*
+ * Motion is a preference, not a default. Nothing in this interface needs an animation to be
+ * understood.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* For content that only a screen reader should reach. */
+.cx-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

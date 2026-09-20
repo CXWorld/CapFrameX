@@ -1,0 +1,167 @@
+/*
+ * The design tokens, from section 2.3 of the UI implementation plan.
+ *
+ * Everything the interface draws reads these, so a theme change is a change here and nowhere else.
+ * The mockup's own `--color-*` names are mapped onto them at the bottom, which is what lets the
+ * reference page render the mockup markup unchanged.
+ *
+ * Dark is declared twice on purpose: once behind the media query for "follow the system", guarded
+ * so an explicit light choice wins, and once for an explicit dark choice.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* Surfaces */
+  --cx-bg: #ffffff;
+  --cx-bg-subtle: #f5f5f2;
+  --cx-bg-accent: #e6f1fb;
+
+  /* Text */
+  --cx-text: #1a1a19;
+  --cx-text-muted: #5f5e5a;
+  --cx-text-faint: #8e8d87;
+  --cx-text-accent: #185fa5;
+
+  /* Lines. Hairlines are translucent so they sit on any surface without a second value. */
+  --cx-line: rgb(0 0 0 / 0.1);
+  --cx-line-strong: rgb(0 0 0 / 0.22);
+  --cx-line-accent: #85b7eb;
+
+  /* States */
+  --cx-alert: #d85a30;
+  --cx-alert-bg: #faece7;
+  --cx-alert-text: #993c1d;
+  --cx-good: #1d9e75;
+
+  /*
+   * Series palette. Eight categories, because a comparison of more than eight records is a table
+   * rather than a chart. Checked against deuteranopia and protanopia by keeping the hues apart in
+   * lightness as well as in hue, so two lines never differ by hue alone.
+   */
+  --cx-series-1: #185fa5;
+  --cx-series-2: #d85a30;
+  --cx-series-3: #1d9e75;
+  --cx-series-4: #8b5cd6;
+  --cx-series-5: #b8860b;
+  --cx-series-6: #2f9bb5;
+  --cx-series-7: #c2185b;
+  --cx-series-8: #5f6b7a;
+
+  /* Shape */
+  --cx-radius: 8px;
+  --cx-radius-lg: 12px;
+  --cx-radius-pill: 999px;
+
+  /*
+   * Type. One face on both platforms: the host font would be Segoe UI on Windows and whatever the
+   * distribution ships on Linux - different metrics, different line breaks, and screenshot tests
+   * that can never pass on both.
+   */
+  --cx-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --cx-font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", monospace;
+
+  --cx-text-11: 11px;
+  --cx-text-12: 12px;
+  --cx-text-13: 13px;
+  --cx-text-17: 17px;
+  --cx-text-19: 19px;
+  --cx-text-20: 20px;
+
+  --cx-weight-normal: 400;
+  --cx-weight-medium: 500;
+
+  /* Spacing, as the mockup uses it. */
+  --cx-space-1: 2px;
+  --cx-space-2: 6px;
+  --cx-space-3: 8px;
+  --cx-space-4: 10px;
+  --cx-space-5: 12px;
+  --cx-space-6: 14px;
+  --cx-space-7: 18px;
+
+  /* Controls */
+  --cx-control-height: 30px;
+  --cx-rail-width: 52px;
+  --cx-rail-button: 36px;
+  --cx-list-width: 188px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-cx-theme="light"]) {
+    --cx-bg: #1a1a19;
+    --cx-bg-subtle: #242422;
+    --cx-bg-accent: #0f2c47;
+
+    --cx-text: #ecebe6;
+    --cx-text-muted: #a8a79f;
+    --cx-text-faint: #77766f;
+    --cx-text-accent: #85b7eb;
+
+    --cx-line: rgb(255 255 255 / 0.1);
+    --cx-line-strong: rgb(255 255 255 / 0.22);
+    --cx-line-accent: #2f6fb0;
+
+    --cx-alert: #f0997b;
+    --cx-alert-bg: #4a1f12;
+    --cx-alert-text: #f5c4b3;
+    --cx-good: #5dcaa5;
+
+    --cx-series-1: #4c9be8;
+    --cx-series-2: #f0997b;
+    --cx-series-3: #5dcaa5;
+    --cx-series-4: #b494ea;
+    --cx-series-5: #d9b04a;
+    --cx-series-6: #63c3da;
+    --cx-series-7: #e9749f;
+    --cx-series-8: #9aa5b1;
+  }
+}
+
+:root[data-cx-theme="dark"] {
+  --cx-bg: #1a1a19;
+  --cx-bg-subtle: #242422;
+  --cx-bg-accent: #0f2c47;
+
+  --cx-text: #ecebe6;
+  --cx-text-muted: #a8a79f;
+  --cx-text-faint: #77766f;
+  --cx-text-accent: #85b7eb;
+
+  --cx-line: rgb(255 255 255 / 0.1);
+  --cx-line-strong: rgb(255 255 255 / 0.22);
+  --cx-line-accent: #2f6fb0;
+
+  --cx-alert: #f0997b;
+  --cx-alert-bg: #4a1f12;
+  --cx-alert-text: #f5c4b3;
+  --cx-good: #5dcaa5;
+
+  --cx-series-1: #4c9be8;
+  --cx-series-2: #f0997b;
+  --cx-series-3: #5dcaa5;
+  --cx-series-4: #b494ea;
+  --cx-series-5: #d9b04a;
+  --cx-series-6: #63c3da;
+  --cx-series-7: #e9749f;
+  --cx-series-8: #9aa5b1;
+}
+
+/*
+ * The mockup's own names, mapped onto the tokens above. The mockup markup can then be rendered
+ * unchanged, which is what makes the reference page a reference rather than a copy that drifts.
+ */
+:root {
+  --color-background-primary: var(--cx-bg);
+  --color-background-secondary: var(--cx-bg-subtle);
+  --color-background-info: var(--cx-bg-accent);
+  --color-text-primary: var(--cx-text);
+  --color-text-secondary: var(--cx-text-muted);
+  --color-text-tertiary: var(--cx-text-faint);
+  --color-text-info: var(--cx-text-accent);
+  --color-border-tertiary: var(--cx-line);
+  --color-border-secondary: var(--cx-line-strong);
+  --color-border-info: var(--cx-line-accent);
+  --border-radius-md: var(--cx-radius);
+  --border-radius-lg: var(--cx-radius-lg);
+}
