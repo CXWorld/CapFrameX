@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\CapFrameX.Service.Input\CapFrameX.Service.Input.csproj" />
+    <ProjectReference Include="..\..\src\CapFrameX.Service.Windows.Input\CapFrameX.Service.Windows.Input.csproj" />
   </ItemGroup>
 
 </Project>
