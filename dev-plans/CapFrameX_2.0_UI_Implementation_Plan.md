@@ -220,10 +220,35 @@ webfont, no CDN (offline rule, CSP).
   >= 50 fps, first paint < 150 ms after data arrival. Record the numbers in the dev log. If uPlot
   fails the gate, evaluate a WebGL renderer before building more chart features.
 
-  **Not measured yet (2026-09-20).** The chart is built and draws real captures, but the gate needs
-  browser automation that can drive a pan and count frames; headless screenshots fire at an
-  unpredictable moment and cannot measure anything. Playwright - which WP-F4 needs anyway - is the
-  prerequisite, and the gate should be the first thing it does.
+  **Measured 2026-09-20, passed** (`CapFrameX.UI/e2e/chart-gate.spec.ts`, Playwright/Chromium
+  against the running service and the real database):
+
+  | | measured | budget |
+  |---|---|---|
+  | First paint after the series arrived | 69-75 ms | < 150 ms |
+  | Frame rate during a drag-zoom | 59.9 fps median | >= 50 fps |
+  | Worst single frame | 16.8 ms (59.5 fps) | - |
+
+  Subject: a 107,442-point frame-time series, one run; 2.8-3.2 ms of that is building the uPlot
+  instance, the rest is layout and the browser's own paint. The median sits on the 60 Hz refresh
+  cap and the worst frame is one vsync interval, so the zoom of 107k points never cost a frame -
+  the number is the display's limit, not uPlot's. **D5 (uPlot as the primary renderer) is
+  confirmed**; no WebGL renderer needs evaluating.
+
+  Two limits of this measurement, both of them real:
+  - **The 8-run comparison half of the gate is not measured.** The Comparison view is M4, so there
+    is nothing to drive yet. This has to be re-run when it exists.
+  - **The largest capture in the database (126,896 frames) is not what was measured**, because the
+    record list loads one page of 200 newest-first and has no sort control, so a user cannot open
+    it either. The gate measures the largest capture the UI can actually reach (107,442) and prints
+    both numbers.
+
+  Writing the gate found two genuine product bugs, neither visible from the application: a partial
+  `cursor.drag` option replaced uPlot's defaults (losing `dist: 0`, which makes `rawDX >= drag.dist`
+  false for every drag), and the hand-inlined uPlot stylesheet omitted `pointer-events: none` on the
+  crosshair, so the crosshair became the event target and uPlot discarded the moves. Drag-to-zoom
+  had never worked. The gate only caught them because it counts uPlot's draws and fails when the
+  drag redraws nothing - without that check it reported a comfortable 59.9 fps for an idle page.
 
 ## 3. Frontend architecture
 

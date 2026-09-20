@@ -995,10 +995,8 @@ zoom, the theme bridge, and the spike annotation. Three things worth keeping:
 Only the two curves that need frame data are fetched, and only while one of them is showing: the
 L-shape and the distribution already arrive with the analysis, and a series is a megabyte.
 
-**The chart gate is not measured**, and no number is claimed for it. It needs automation that can
-drive a pan and count frames; headless screenshots fire at an unpredictable moment - three of six
-attempts here caught the page before its data arrived. Playwright, which WP-F4 needs anyway, is the
-prerequisite.
+**The chart gate is not measured yet** at this point; see the Playwright entry below, which
+measures it.
 
 **F8 - settings and import.** The service owns every value: a patch goes out, it validates the
 whole thing, and the answer is what the settings now are - so the form cannot show something the
@@ -1010,6 +1008,64 @@ holding across both paths on real data, because that folder sits inside the one 
 
 Verified: Api 109, Shared 64, Data 33, Records 70, Application 69, Analysis 114, frontend 20; build
 and lint green; the analysis view drawing a real 2254-frame capture.
+
+## 2026-09-20 - Playwright and the chart gate (plan section 2.5)
+
+**Scope.** Browser automation for `CapFrameX.UI`, and with it the M1 chart gate: the largest real
+capture must paint in under 150 ms after its data arrives and stay at 50 fps or better under
+pan/zoom.
+
+**Files.** `CapFrameX.UI/playwright.config.ts`, `e2e/service.ts`, `e2e/chart-gate.spec.ts`,
+`src/app/visualization/chart.ts`,
+`CapFrameX.Service.Shared/src/CapFrameX.Service.Application/Records/RecordLibrary.cs`.
+
+**Design decision: the gate runs against the real service and the real database**, not a fixture.
+The gate is a statement about uPlot on what CapFrameX actually produces, and a synthetic 100k-point
+array would measure the renderer while saying nothing about the pipeline that feeds it. The test
+reports itself *skipped* where no service is running, so it never fails a machine that simply has
+not started one - which also means a green run is no evidence that it measured anything.
+
+**Result: passed.** First paint 69-75 ms against a 150 ms budget (2.8-3.2 ms of it building the
+uPlot instance), 59.9 fps median during a drag-zoom against a 50 fps budget, worst single frame
+16.8 ms. The subject is a 107,442-point frame-time series. Median and worst frame both sit on the
+60 Hz refresh cap, so the zoom never cost a frame: the number is the display's limit, not uPlot's.
+**D5 (uPlot as the primary renderer) is confirmed.**
+
+Two honest limits, both recorded in the plan: the **8-run comparison** half of the gate cannot be
+driven until the Comparison view exists (M4), and the **largest capture in the database (126,896
+frames) is not what was measured** - the record list loads one page of 200 newest-first with no
+sort control, so a user cannot reach it either. The gate measures the largest capture the UI can
+actually open and prints both numbers.
+
+**Writing the gate found three real bugs**, which is the point of measuring against the product
+rather than a fixture:
+1. **Search ignored the file name.** The list shows a file name, but the service matched only game
+   and process, so searching for what is on screen found nothing. `RecordLibrary` now also matches
+   `SourceFilePath` and `ImportedFrom`.
+2. **A partial `cursor.drag` option disabled zooming.** uPlot merges `cursor` shallowly, so
+   `{ x: true, y: false }` replaced the whole default object and dropped `dist: 0`; every drag then
+   evaluated `rawDX >= undefined`, which is false. uPlot's defaults are already x-only, so the
+   option is gone.
+3. **The inlined uPlot stylesheet omitted `pointer-events: none` on the crosshair.** The crosshair
+   follows the pointer, so it became the event target, and uPlot only accepts events targeting its
+   overlay - it discarded every move. The `.u-off` rule (how uPlot hides crosshair and selection)
+   and the canvas sizing rule were missing too.
+
+Bugs 2 and 3 together meant **drag-to-zoom had never worked** in any chart, and neither is visible
+from the application: the chart looks right, it just ignores the drag.
+
+**The gate only caught them because it counts uPlot's draws** and fails when the drag redrew
+nothing. Without that check it reported a comfortable *59.9 fps* - for a page that was doing
+nothing at all. Two earlier false greens were removed the same way: the first measured the
+auto-selected 2,254-point capture instead of the large one (fixed by clearing marks and resource
+timings before the click and polling for a mark with the expected point count), and the second took
+its timestamp before uPlot had drawn (fixed by marking from uPlot's `draw` hook).
+
+**Verification.** `npx playwright test` - passed, four consecutive runs within 69-75 ms / 59.9 fps.
+`npx ng test` 20 passed, `npx ng lint` clean, `dotnet test` Records filter 13 passed.
+
+**Follow-up.** Re-run the gate against the Comparison view in M4. A sort control on the record list
+would make the 126,896-frame capture reachable, for the gate and for the user.
 
 ## Documentation Rules For Future Steps
 
