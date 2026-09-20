@@ -11,11 +11,56 @@ the OSD is built from source instead and these files are ignored.
 
 The current five native DLLs were rebuilt on **2026-09-20** with VS 2026/v145 in
 `RelWithDebInfo` from the source state now committed as private OSD revision
-`d801775d032bffbba5b1cb481d645fc011c60296`. This includes the graph-source corrections
-and the OSD log directory changes.
+`4e362b1aac895ea8681752ea1ea028f3559a08ac`. This includes the row-alignment changes
+described below, along with the preceding graph-source corrections and OSD log
+directory changes.
 
 These native payloads are **unsigned development builds**. The existing
 `net10.0-windows` managed bridge retains its Certum signature from the rebuild below.
+
+### Fixed overlay value columns (2026-09-20)
+
+Fixes [CapFrameX issue #441](https://github.com/CXWorld/CapFrameX/issues/441).
+All metric rows share a column grid: short rows start in the first value column,
+and complete numbers align at their right edge. Each unit follows its number with
+one space at the cell's font size, including when other rows use more decimal places.
+Spare unit space follows the unit instead of separating it from its number.
+
+Every column reserves the same unit width. The standard is `MT/s`, the widest built-in
+sensor/metric unit in the default font (46.416 px at a 20 px font size), measured at
+the actual font scale. Wider units expand that reserve across the whole grid.
+Numeric column widths account for the widest actual digit and each value's precision
+and font scale. Live numeric updates retain the same positions. The additional gap
+between value columns is 8 px at 100% zoom and scales with zoom.
+
+Labels and ordinary text remain left-aligned. Text-only rows such as model names
+span the available value area without widening the first numeric column. Mixed
+text/numeric rows preserve entry order, and live text growth expands the shared
+grid without overlapping the next column or shrinking again on shorter values.
+
+All twelve core CTests passed on x64, along with `row_alignment` on x86.
+The alignment test runs 597 checks per architecture for uneven row
+lengths, all built-in units, standard unit reserves, custom units, precision, font
+scales, zoom, text rows and live text growth. CPU raster reproductions of the issue
+and the reported GPU/CPU sensor layout were visually checked. The existing CPU
+raster and external D3D11 rendering tests also passed.
+
+All five DLLs were rebuilt, checked for PE architecture, and staged in both this
+folder and the Release app output with matching SHA-256 hashes. Restart CapFrameX
+and the game to load them. These DLLs supersede the builds below.
+
+Renderer input SHA-256 at build time:
+
+- `src/core/Widget.cpp`: `286C6CF6046B747923664E05093516FE71EDBF27AD58030B9606F42E428B1ED4`
+- `src/core/Widget.h`: `9E76627ABE4BF1DA936D76E83227775615530B05D5FFAE770503D210F961FE45`
+
+| Native DLL | SHA-256 |
+| --- | --- |
+| Core x64 | `C1CF40AC660AF30388B192C66CF32741A18F84AE75DB45C4B652DA46D8E8EBAE` |
+| Hook x64 | `CB0E57DB144CBBF91D3D7BEC4273A1B180252EDBC55CD8AD8B9D052391CFA4C6` |
+| Hook x86 | `69709E607B54521F9E38CA035C9A0C09B9E80EDECB96B190B5FDF2021B8A72E4` |
+| Vulkan x64 | `7A156E099DA456EEF8D9024EC2C905F1C38F2B1C220E4DFDE2FF6C5D4FF96AF6` |
+| Vulkan x86 | `A4E17AFC98F5BFA5B18AAA17E8996F49979160CC9D1ACB454007EFE6F2A29515` |
 
 ### OSD log directory (2026-09-20)
 
