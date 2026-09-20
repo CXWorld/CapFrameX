@@ -42,6 +42,7 @@ builder.Services.AddSingleton<ISecretFileWriter, PosixSecretFileWriter>();
 builder.Services.AddSingleton(tokenStore);
 builder.Services.AddCapFrameXDatabase(paths);
 builder.Services.AddCapFrameXRecordIndex(paths);
+builder.Services.AddCapFrameXAnalysis();
 builder.Services.AddCapFrameXApi(new CapFrameXApiOptions { Token = token });
 
 var app = builder.Build();

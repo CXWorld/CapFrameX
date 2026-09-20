@@ -1,6 +1,7 @@
 using CapFrameX.Service.Core.Platform;
 using CapFrameX.Service.Records;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace CapFrameX.Service.Application.Records;
 
@@ -25,7 +26,7 @@ public static class RecordIndexExtensions
         ArgumentNullException.ThrowIfNull(paths);
 
         services.AddSingleton(new RecordIndexOptions { CaptureDirectory = paths.CaptureDirectory });
-        services.AddSingleton<RecordFileReader>();
+        services.TryAddSingleton<RecordFileReader>();
         services.AddScoped<RecordIndex>();
         services.AddHostedService<RecordIndexer>();
 

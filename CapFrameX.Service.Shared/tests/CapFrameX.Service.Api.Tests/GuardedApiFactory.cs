@@ -1,3 +1,4 @@
+using CapFrameX.Service.Application.Records;
 using CapFrameX.Service.Core.Security;
 using CapFrameX.Service.Data;
 using Microsoft.AspNetCore.Builder;
@@ -51,6 +52,10 @@ public sealed class GuardedApiFactory : IAsyncLifetime
         var databasePath = Path.Combine(_root, CapFrameXDatabaseExtensions.FileName);
         builder.Services.AddDbContext<CapFrameXDbContext>(
             options => options.UseSqlite($"Data Source={databasePath}"));
+
+        // The analysis endpoints read the capture behind a record, which the hosts wire up the
+        // same way.
+        builder.Services.AddCapFrameXAnalysis();
 
         _app = builder.Build();
         _app.MapCapFrameXApi();
