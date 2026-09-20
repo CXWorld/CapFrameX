@@ -930,6 +930,47 @@ still a placeholder, although the endpoints behind it are finished), and the Int
 bundled, so the type falls back to the system face and the screenshot test F4 needs cannot be
 stable yet.
 
+## 2026-09-20 - Running the two halves together for the first time
+
+The service and the frontend had never been started at the same time. Every layer had tests and
+every layer passed; the seams between them had never been touched. Three of them were broken.
+
+**The default port was CapFrameX 1.x's.** 1.x serves its metrics API on 1337 by default
+(`WebservicePort`), so with 1.x running - which is the whole premise of the transition - the 2.0
+service refuses to start, correctly and uselessly. The default moved to **17337**, the port is
+overridable through `CAPFRAMEX_SERVICE_PORT` the way the token already was, and the service now
+writes the port it actually bound to `service.port` beside the token, so a frontend that did not
+start the process can still find it. A test pins the default against 1337 and against the copy of
+the number the test host needs as a compile-time constant - which is how the first attempt was
+caught, as ninety-nine API tests failing for one hard-coded `127.0.0.1:1337`.
+
+**The record list never asked for anything.** The store built its request out of
+`toObservable(computed(...))`, whose emission is driven by an effect. Nothing ticked the
+application, so the effect never ran, and the list sat on "Loading…" forever while the status bar
+beside it said the service was connected. It is an `httpResource` now, which is eager and re-runs
+when its request computation changes - no effect in the path at all. The unit test that reproduces
+it passed against the old code as well, because `TestBed.tick()` supplies exactly the thing the
+browser did not; what settled it was counting requests in the service log across a browser run.
+
+**Every component's outermost style rule missed its element.** `host: { class: 'cx-thing' }` puts
+the class on the host, but a `.cx-thing` rule inside the component's styles is scoped to the
+template, which the host never matches - so every width, padding and display meant for a host
+element was silently dropped, and the 188px record list spanned the whole window. All twelve
+components now use `:host`. No test would have caught this; it took looking at the rendered page.
+
+Also added: `tools/dev-host.mjs`, which serves the built frontend on port 4200 - the origin the
+guard accepts - and injects `window.__CX__` from the token and port the running service published.
+It is what the CEF host will do, so the frontend can be run against a real service today and needs
+nothing from the build to find it.
+
+**What the run proved.** 306 real captures indexed and listed, analysis, series, detail, settings
+and import endpoints answering, the guard giving 401 without a token, 403 for a foreign origin and
+200 for the dev origin, the CORS preflight allowing `x-capframex-token`, the event stream
+delivering heartbeats with an id to resume from, and every one of the eleven DTO shapes the
+frontend reads matching the service's JSON key for key - no missing field, no extra one. The
+analysis view shows the real numbers for a real capture: 113 avg, 128 P95, 30 1% low, 97.9% smooth,
+three spikes, and "this capture does not carry latency" where it does not.
+
 ## Documentation Rules For Future Steps
 
 For every meaningful backend/frontend migration step, update this log with:
