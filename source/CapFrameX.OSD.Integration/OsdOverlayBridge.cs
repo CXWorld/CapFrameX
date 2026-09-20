@@ -127,7 +127,7 @@ namespace CapFrameX.OSD.Integration
                     appConfiguration.HookFreeDisplayDeviceName));
             // Stall diagnostics (Extended OSD logging only): the render loop reports its own stalls
             // (managed side, GC), the feed diagnostics report what the PresentMon stream delivered.
-            // Both land in CapFrameX.log next to the native "[diag]" lines in %TEMP%\cfx_osd.log.
+            // Both land in CapFrameX.log next to the native "[diag]" lines in %TEMP%\cfx-osd-logs\cfx_osd.log.
             _osd.Diagnostic += message => Log.Information("HookFree OSD: {Message}", message);
             _feedDiagnostics = new HookFreeFeedDiagnostics(
                 message => Log.Information("HookFree feed: {Message}", message));

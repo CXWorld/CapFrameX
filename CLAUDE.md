@@ -139,7 +139,7 @@ process variable once per OSD refresh and pushes it to the feed diagnostics, the
 loop and, through `OsdHost.VerboseDiagnostics` → `cfx_osd_set_verbose_log`, the native core.
 Only the in-game hook and the Vulkan layer still read it at load:
 
-- `%TEMP%\cfx_osd.log` — the native core's `[diag]` lines (timestamped): host tick gaps, slow
+- `%TEMP%\cfx-osd-logs\cfx_osd.log` — the native core's `[diag]` lines (timestamped): host tick gaps, slow
   ticks with a phase breakdown, replay holds/snaps, feed arrival vs. source gaps, scene rebuilds
   with the entries that changed, window placement, topmost fights, scale changes, Present
   HRESULT changes. Documented in the OSD repo's CLAUDE.md.

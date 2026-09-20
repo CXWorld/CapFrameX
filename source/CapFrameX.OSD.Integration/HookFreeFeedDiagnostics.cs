@@ -10,7 +10,7 @@ namespace CapFrameX.OSD.Integration
     /// <summary>
     /// Observes the PresentMon rows that reach (or fail to reach) the hook-free overlay feed
     /// and turns them into a compact log trail for stall reports. The native core logs what it
-    /// does with the samples (%TEMP%\cfx_osd.log, "[diag]" lines); this class logs what it was
+    /// does with the samples (%TEMP%\cfx-osd-logs\cfx_osd.log, "[diag]" lines); this class logs what it was
     /// GIVEN: target-PID changes, rows rejected for a foreign PID, additional swapchains inside
     /// the target process, runtime-label flips, frametime outliers and gaps in either the source
     /// timeline or the delivery. Immediate lines cover rare state changes; everything that can

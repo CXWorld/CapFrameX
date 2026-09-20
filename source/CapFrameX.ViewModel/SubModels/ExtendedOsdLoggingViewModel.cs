@@ -1,6 +1,9 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using Prism.Commands;
 using Prism.Mvvm;
 
 namespace CapFrameX.ViewModel.SubModels
@@ -15,6 +18,7 @@ namespace CapFrameX.ViewModel.SubModels
         internal ExtendedOsdLoggingViewModel(ExtendedOsdLoggingController controller)
         {
             _controller = controller ?? throw new ArgumentNullException(nameof(controller));
+            OpenLogFolderCommand = new DelegateCommand(OnOpenLogFolder);
             try
             {
                 _isEnabled = _controller.IsEnabled();
@@ -25,6 +29,8 @@ namespace CapFrameX.ViewModel.SubModels
                 Trace.TraceError("Failed to read extended OSD logging state: {0}", ex);
             }
         }
+
+        public ICommand OpenLogFolderCommand { get; }
 
         public bool IsEnabled
         {
@@ -55,6 +61,21 @@ namespace CapFrameX.ViewModel.SubModels
         }
 
         public bool HasError => !string.IsNullOrWhiteSpace(_error);
+
+        private void OnOpenLogFolder()
+        {
+            try
+            {
+                string logDirectory = Path.Combine(Path.GetTempPath(), "cfx-osd-logs");
+                Directory.CreateDirectory(logDirectory);
+                Process.Start(new ProcessStartInfo(logDirectory) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Error = $"OSD log folder could not be opened: {ex.Message}";
+                Trace.TraceError("Failed to open OSD log folder: {0}", ex);
+            }
+        }
 
         private async Task UpdateAsync(bool enabled)
         {

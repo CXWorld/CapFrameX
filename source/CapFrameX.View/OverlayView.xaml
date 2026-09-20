@@ -1155,6 +1155,15 @@
 											   Text="Detailed DirectX, Vulkan and hook-free logs, including per-present statistics."/>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#E0A020" TextWrapping="Wrap"
 											   Text="&#x26A0; Hook-free applies live. Restart CapFrameX and the game for in-game logging."/>
+									<Button Margin="26 12 0 0" HorizontalAlignment="Left"
+											Style="{StaticResource MaterialDesignOutlinedButton}"
+											Command="{Binding ExtendedOsdLogging.OpenLogFolderCommand}"
+											ToolTip="Open the folder containing the OSD log files">
+										<StackPanel Orientation="Horizontal">
+											<materialDesign:PackIcon Kind="FolderOpen" Width="18" Height="18" Margin="0 0 8 0" VerticalAlignment="Center"/>
+											<TextBlock Text="Open OSD log folder" VerticalAlignment="Center"/>
+										</StackPanel>
+									</Button>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#D95050" TextWrapping="Wrap"
 											   Visibility="{Binding ExtendedOsdLogging.HasError, Converter={StaticResource TrueToVisibleConverter}}"
 											   Text="{Binding ExtendedOsdLogging.Error}"/>

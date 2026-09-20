@@ -81,7 +81,8 @@ In the stable v1.9.0 package, the in-game overlay is unavailable until our code-
 | Config storage | `%AppData%\CapFrameX\Configuration` | `./Portable/Config` |
 | Captures storage | `Documents\CapFrameX\Captures` | `./Portable/Captures` |
 | Screenshots | `Documents\CapFrameX\Screenshots` | `./Portable/Screenshots` |
-| Logs | `%AppData%\CapFrameX\Logs` | `./Portable/Logs` |
+| Application logs | `%AppData%\CapFrameX\Logs` | `./Portable/Logs` |
+| Native OSD logs | `%TEMP%\cfx-osd-logs` | `%TEMP%\cfx-osd-logs` |
 | UI state (window size, column widths) | `%LocalAppData%\Jot` | `./Portable/Config` |
 | Window title | "CapFrameX" | "CapFrameX Portable" |
 | Config migration | Migrates old settings | Skipped |
