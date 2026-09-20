@@ -245,6 +245,33 @@ assembly.
 Open: the rest of `source/` is not consumed by the service yet (statistics, session model); the
 capture path has still not been exercised against a running game, which needs an elevated session.
 
+## 2026-09-20 - PresentMon 2.5.1 verified against real output (elevated session)
+
+With administrator rights the capture integration tests finally *run* instead of reporting
+themselves skipped. What that turned up:
+
+- **Bug found and fixed:** `PresentMonTestConfiguration` still named `PresentMon-2.4.0-x64`. The
+  earlier rename only matched the name *with* the `.exe` suffix, so the tests were starting a
+  binary that no longer exists. This is why the capture service returned `false` on start.
+- **The header-driven column binding is confirmed by real output.** The shipped build prints
+  **27** columns, not the 29 of `PresentMonKnownLayouts`: without `--track_frame_type` there is no
+  `FrameType` column and no `MsInstrumentedLatency`. With the fixed indices the service used
+  before, everything from `TimeInSeconds` onwards would have been read one column off. The observed
+  header and a real row are now a test fixture (`PresentMonRealOutputTests`), including the case
+  where a column exists but its value is `NA`.
+- **Open question - PresentMon does not observe every renderer here.** On this machine PresentMon
+  reports a D3D9 window continuously but never the Silk.NET **OpenGL** test renderer, and never
+  **vkcube** either, with both processes alive and presenting (window present, NVIDIA driver,
+  60 FPS). Verified that this is *not* caused by the version bump: PresentMon **2.4.0**, restored
+  from git, behaves identically. Five `TestRendererIntegrationTests` therefore still fail; their
+  assertions now say why instead of "collection was empty". Whether this is an environment issue
+  (a competing ETW session - one named `PresentMon` keeps reappearing) or a genuine coverage gap
+  for OpenGL and Vulkan titles is unresolved and worth its own investigation, because it would
+  affect users with such titles.
+
+Verification: Windows unit tests 121 passed (12 shared, 24 data, 47 input, 19 telemetry, and 54 of
+59 capture); the 5 failures are the integration tests above. Linux 62 passed.
+
 ## Documentation Rules For Future Steps
 
 For every meaningful backend/frontend migration step, update this log with:

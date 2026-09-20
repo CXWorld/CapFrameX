@@ -57,7 +57,11 @@ public class TestRendererIntegrationTests : IDisposable
         await Task.Delay(3000);
 
         // Assert
-        Assert.NotEmpty(frameDataReceived);
+        Assert.True(frameDataReceived.Count > 0,
+            "PresentMon produced no data for the test renderer. Verified on 2026-09-20: PresentMon "
+            + "2.4.0 and 2.5.1 both observe a D3D9 window on this machine but never the Silk.NET "
+            + "OpenGL test renderer, nor vkcube. The capture pipeline itself is covered by the "
+            + "unit tests; this test needs a presenting process PresentMon actually tracks.");
 
         // Verify data format
         var firstFrame = frameDataReceived.First();
@@ -110,7 +114,11 @@ public class TestRendererIntegrationTests : IDisposable
         var processes = _captureService.GetAllFilteredProcesses(new HashSet<string>()).ToList();
 
         // Assert
-        Assert.NotEmpty(processes);
+        Assert.True(processes.Count > 0,
+            "PresentMon produced no data for the test renderer. Verified on 2026-09-20: PresentMon "
+            + "2.4.0 and 2.5.1 both observe a D3D9 window on this machine but never the Silk.NET "
+            + "OpenGL test renderer, nor vkcube. The capture pipeline itself is covered by the "
+            + "unit tests; this test needs a presenting process PresentMon actually tracks.");
         Assert.Contains(processes, p => p.ProcessName.Contains("CapFrameX.TestRenderer"));
 
         // Cleanup
@@ -236,7 +244,11 @@ public class TestRendererIntegrationTests : IDisposable
         await Task.Delay(5000); // Capture for 5 seconds
 
         // Assert
-        Assert.NotEmpty(frameTimings);
+        Assert.True(frameTimings.Count > 0,
+            "PresentMon produced no data for the test renderer. Verified on 2026-09-20: PresentMon "
+            + "2.4.0 and 2.5.1 both observe a D3D9 window on this machine but never the Silk.NET "
+            + "OpenGL test renderer, nor vkcube. The capture pipeline itself is covered by the "
+            + "unit tests; this test needs a presenting process PresentMon actually tracks.");
 
         // Calculate FPS from frame timings
         var avgFrameTime = frameTimings.Average();
@@ -297,7 +309,11 @@ public class TestRendererIntegrationTests : IDisposable
         var memoryGrowth = finalMemory - initialMemory;
 
         // Assert
-        Assert.True(frameCount > 0, "Should have captured frames");
+        Assert.True(frameCount > 0,
+            "PresentMon produced no data for the test renderer. Verified on 2026-09-20: PresentMon "
+            + "2.4.0 and 2.5.1 both observe a D3D9 window on this machine but never the Silk.NET "
+            + "OpenGL test renderer, nor vkcube. The capture pipeline itself is covered by the "
+            + "unit tests; this test needs a presenting process PresentMon actually tracks.");
 
         // Memory growth should be reasonable (< 50MB for 30 seconds of capture)
         Assert.True(memoryGrowth < 50 * 1024 * 1024,

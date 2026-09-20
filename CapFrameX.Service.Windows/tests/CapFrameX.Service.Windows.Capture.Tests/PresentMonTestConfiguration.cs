@@ -8,7 +8,7 @@ namespace CapFrameX.Service.Capture.Tests;
 /// </summary>
 internal static class PresentMonTestConfiguration
 {
-    private const string PresentMonAppName = "PresentMon-2.4.0-x64";
+    private const string PresentMonAppName = "PresentMon-2.5.1-x64";
 
     /// <summary>
     /// Gets common blacklisted process names that should be excluded from capture.
