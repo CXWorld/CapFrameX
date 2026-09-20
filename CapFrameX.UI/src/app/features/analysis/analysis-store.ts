@@ -1,57 +1,46 @@
+import { httpResource } from '@angular/common/http';
 import { Injectable, computed, inject } from '@angular/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, combineLatest, map, of, startWith, switchMap } from 'rxjs';
 
 import { AnalysisDto, RecordDetailDto } from '../../data-access/contracts';
-import { RecordsClient } from '../../data-access/records-client';
 import { RecordLibraryStore } from './record-library-store';
-
-/** What the workspace has for the open record. */
-interface OpenRecord {
-  readonly detail: RecordDetailDto | null;
-  readonly analysis: AnalysisDto | null;
-}
 
 /**
  * The open record: what it is, and what the numbers say about it.
  *
- * Both requests go out together because the view needs both before it has anything to show, and
- * neither depends on the other. The tiles and the L-shape come from the service's configured
- * defaults, so a user's chosen metrics arrive without this having to know what they are.
+ * Two resources rather than one request pipeline. Both are eager and both re-run when the
+ * selection changes, so neither depends on an effect getting a tick - which is what left the
+ * record list loading forever before. With nothing selected the request function returns
+ * `undefined`, which is how a resource says "do not ask".
+ *
+ * The tiles and the L-shape come from the service's configured defaults, so a user's chosen
+ * metrics arrive without this having to know what they are.
  */
 @Injectable({ providedIn: 'root' })
 export class AnalysisStore {
-  private readonly client = inject(RecordsClient);
   private readonly library = inject(RecordLibraryStore);
 
-  private readonly open = toSignal(
-    toObservable(this.library.selectedId).pipe(
-      switchMap((id) => {
-        if (id === null) {
-          return of<OpenRecord>({ detail: null, analysis: null });
-        }
+  private readonly detailResource = httpResource<RecordDetailDto>(() => {
+    const id = this.library.selectedId();
 
-        return combineLatest([
-          this.client.detail(id).pipe(catchError(() => of(null))),
-          this.client.analysis(id).pipe(catchError(() => of(null))),
-        ]).pipe(
-          map(([detail, analysis]) => ({ detail, analysis })),
-          startWith<OpenRecord | null>(null),
-        );
-      }),
-      takeUntilDestroyed(),
-    ),
-    { initialValue: null },
-  );
+    return id === null ? undefined : `/api/records/${id}`;
+  });
+
+  private readonly analysisResource = httpResource<AnalysisDto>(() => {
+    const id = this.library.selectedId();
+
+    return id === null ? undefined : `/api/records/${id}/analysis`;
+  });
 
   /** Whether an answer is still on its way. */
-  readonly loading = computed(() => this.library.selectedId() !== null && this.open() === null);
+  readonly loading = computed(() => this.detailResource.isLoading() || this.analysisResource.isLoading());
 
   /** What the capture recorded about itself. */
-  readonly detail = computed(() => this.open()?.detail ?? null);
+  readonly detail = computed(() => (this.detailResource.hasValue() ? this.detailResource.value() : null));
 
   /** The numbers. */
-  readonly analysis = computed(() => this.open()?.analysis ?? null);
+  readonly analysis = computed(() =>
+    this.analysisResource.hasValue() ? this.analysisResource.value() : null,
+  );
 
   /** The pills above the chart. */
   readonly chips = computed(() => this.detail()?.chips ?? []);
@@ -64,4 +53,10 @@ export class AnalysisStore {
 
   /** Latency, where the capture carries it. */
   readonly latency = computed(() => this.analysis()?.pcLatency ?? null);
+
+  /** Reads both again, after the record was edited. */
+  refresh(): void {
+    this.detailResource.reload();
+    this.analysisResource.reload();
+  }
 }
