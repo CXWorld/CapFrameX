@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CapFrameX.Service.Contracts\CapFrameX.Service.Contracts.csproj" />
+    <ProjectReference Include="..\CapFrameX.Service.Core\CapFrameX.Service.Core.csproj" />
+    <ProjectReference Include="..\CapFrameX.Service.Records\CapFrameX.Service.Records.csproj" />
+    <!-- The statistics are the ones CapFrameX 1.x computes, referenced rather than reimplemented.
+         Two implementations of a percentile is two answers to the same question. -->
+    <ProjectReference Include="..\..\..\source\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj" />
+  </ItemGroup>
+
+</Project>
