@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using CapFrameX.Service.Contracts.Records;
@@ -111,6 +111,19 @@ public sealed class RecordsEndpointTests(GuardedApiFactory factory) : IClassFixt
 
         Assert.Equal("Cyberpunk 2077", Assert.Single(byGame!.Records).GameName);
         Assert.Equal("Baldurs Gate 3", Assert.Single(byProcess!.Records).GameName);
+    }
+
+    [Fact]
+    public async Task Searching_finds_a_record_by_the_name_the_list_shows()
+    {
+        // The list shows a file name, and somebody typing what is on screen has to find it. The
+        // game and the process are often nothing like it.
+        await SeedAsync(Record("Cyberpunk 2077", @"C:\c\bench-run-3.json", process: "Cyberpunk2077"));
+        using var client = factory.CreateCaller();
+
+        var page = await client.GetFromJsonAsync<RecordsListResponse>("/api/records?search=bench-run", Json);
+
+        Assert.Equal("bench-run-3", Assert.Single(page!.Records).Name);
     }
 
     [Fact]

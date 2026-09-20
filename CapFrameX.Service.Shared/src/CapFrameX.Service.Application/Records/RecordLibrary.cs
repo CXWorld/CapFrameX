@@ -43,7 +43,7 @@ public sealed record RecordListRequest
     /// <summary>Page size when the caller does not ask for one.</summary>
     public const int DefaultPageSize = 200;
 
-    /// <summary>Free text, matched against game and process name.</summary>
+    /// <summary>Free text, matched against game, process and the file the record came from.</summary>
     public string? Search { get; init; }
 
     /// <summary>One game, matched exactly - what a filter chip selects.</summary>
@@ -116,11 +116,17 @@ public sealed class RecordLibrary(CapFrameXDbContext context)
         {
             var term = request.Search.Trim().ToLowerInvariant();
 
+            // Game, process and the file the record came from. The last one matters because the
+            // list shows a file name: searching for what is on screen has to find it, and the
+            // record's display name is derived from that path.
+            //
             // Not LIKE: the text comes from a search box, where '%' and '_' are characters rather
             // than wildcards.
             query = query.Where(record =>
                 record.GameName.ToLower().Contains(term) ||
-                record.ProcessName.ToLower().Contains(term));
+                record.ProcessName.ToLower().Contains(term) ||
+                (record.SourceFilePath != null && record.SourceFilePath.ToLower().Contains(term)) ||
+                (record.ImportedFrom != null && record.ImportedFrom.ToLower().Contains(term)));
         }
 
         if (!string.IsNullOrWhiteSpace(request.Game))
