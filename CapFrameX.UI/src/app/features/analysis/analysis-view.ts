@@ -4,7 +4,10 @@ import { Card } from '../../ui/card/card';
 import { Chip } from '../../ui/chip/chip';
 import { PageHeader } from '../../ui/page-header/page-header';
 import { StatTile } from '../../ui/stat-tile/stat-tile';
+import { Tabs } from '../../ui/tabs/tabs';
+import { Chart } from '../../visualization/chart';
 import { AnalysisStore } from './analysis-store';
+import { ANALYSIS_TABS, AnalysisTab, SeriesStore } from './series-store';
 import { RecordLibrary } from './record-library';
 import { RecordLibraryStore } from './record-library-store';
 
@@ -18,7 +21,7 @@ import { RecordLibraryStore } from './record-library-store';
 @Component({
   selector: 'cx-analysis-view',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Card, Chip, PageHeader, RecordLibrary, StatTile],
+  imports: [Card, Chart, Chip, PageHeader, RecordLibrary, StatTile, Tabs],
   host: { class: 'cx-analysis-view' },
   template: `
     <cx-record-library />
@@ -35,8 +38,21 @@ import { RecordLibraryStore } from './record-library-store';
           </div>
         }
 
+        <cx-tabs
+          [tabs]="tabs"
+          [selected]="series.tab()"
+          label="Analysis charts"
+          (selectedChange)="series.show($any($event))"
+        />
+
         <div class="chart-slot">
-          <p>The frame time chart lands with WP-F6.</p>
+          @if (series.chart(); as chart) {
+            <cx-chart [data]="chart" [marker]="series.marker()" [zeroBased]="zeroBased()" />
+          } @else if (series.loading()) {
+            <p class="placeholder">Loading…</p>
+          } @else {
+            <p class="placeholder">This capture has nothing to draw here.</p>
+          }
         </div>
 
         <div class="tiles">
@@ -104,11 +120,14 @@ import { RecordLibraryStore } from './record-library-store';
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 160px;
-      border: 0.5px dashed var(--cx-line-strong);
-      border-radius: var(--cx-radius);
+      height: 220px;
       color: var(--cx-text-faint);
       font-size: var(--cx-text-12);
+    }
+
+    cx-chart {
+      width: 100%;
+      height: 100%;
     }
 
     .tiles {
@@ -150,7 +169,20 @@ import { RecordLibraryStore } from './record-library-store';
 })
 export class AnalysisView {
   protected readonly store = inject(AnalysisStore);
+  protected readonly series = inject(SeriesStore);
+  protected readonly tabs = ANALYSIS_TABS;
+
   private readonly library = inject(RecordLibraryStore);
+
+  /**
+   * Frame times and frame rate are read against zero; the L-shape and the distribution are not.
+   * A percentile curve forced to start at zero wastes most of its height on empty space.
+   */
+  protected readonly zeroBased = computed<boolean>(() => {
+    const tab: AnalysisTab = this.series.tab();
+
+    return tab === 'frametimes' || tab === 'fps';
+  });
 
   protected readonly record = computed(() => this.store.detail());
 
