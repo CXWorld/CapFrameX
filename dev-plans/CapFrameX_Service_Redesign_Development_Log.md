@@ -272,6 +272,46 @@ themselves skipped. What that turned up:
 Verification: Windows unit tests 121 passed (12 shared, 24 data, 47 input, 19 telemetry, and 54 of
 59 capture); the 5 failures are the integration tests above. Linux 62 passed.
 
+## 2026-09-20 - PresentMon command line aligned with 1.9.x
+
+The capture service was starting PresentMon with a shorter switch set than the shipping
+application, which silently changed what PresentMon reports. Written test-first
+(`PresentMonArgumentsTests`, 13 tests):
+
+- **`--track_frame_type` added.** Without it PresentMon omits the `FrameType` column entirely and
+  frame generation is invisible to the analysis.
+- **`--track_app_timing` added** and **`--set_circular_buffer_size 4096`** added.
+  `PresentMonCircularBuffer` normalises the value, because PresentMon only accepts powers of two
+  and rejects the *whole* command line otherwise - which would keep the service from starting.
+- **`--restart_as_admin` removed.** 1.9.x has it commented out for a reason: the service is always
+  elevated, so it buys nothing, and a PresentMon that re-executes itself takes the redirected
+  stdout with it - and that stream *is* the capture.
+- The test configuration builds the same switches now; tests that exercise a different command line
+  than the service uses prove nothing.
+
+With these switches PresentMon is expected to emit the 29-column layout `PresentMonKnownLayouts`
+describes (`FrameType` from the first switch, `MsInstrumentedLatency` from the second). **Not yet
+confirmed against live output** - see below.
+
+### Open: PresentMon captures nothing on this machine
+
+Measured repeatedly on 2026-09-20 in an elevated shell, with `vkcube` running and presenting:
+
+- every run reports `warning: 46000-76000 ETW events were lost`, and no CSV is written at all -
+  not even a header, with minimal switches just as much as with the full set;
+- the circular buffer size makes no difference (2048 and 8192 behave identically), so this is ETW
+  session buffer loss, not the present event buffer;
+- earlier in the session PresentMon did report one D3D9 window continuously while never reporting
+  the OpenGL test renderer or vkcube; once that window closed, output stopped entirely;
+- **not caused by the version bump**: PresentMon 2.4.0, restored from git, behaves the same;
+- the machine has ~50 active ETW sessions, and a leftover session named `PresentMon` reappears
+  after every run.
+
+Until this is understood the five `TestRendererIntegrationTests` cannot pass, and the live
+behaviour of the new switches is unverified. Worth checking next: whether another tool holds the
+providers, whether a reboot clears it, and whether PresentMon needs larger ETW session buffers
+(`--set_trace_buffer_*` style options) on a machine this busy.
+
 ## Documentation Rules For Future Steps
 
 For every meaningful backend/frontend migration step, update this log with:

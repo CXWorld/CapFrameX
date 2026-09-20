@@ -86,12 +86,16 @@ internal static class PresentMonTestConfiguration
     {
         var sb = new StringBuilder();
 
-        // Core parameters
-        sb.Append("--restart_as_admin");
-        sb.Append(" --stop_existing_session");
+        // Kept in step with PresentMonServiceConfiguration: the tests are worthless if they
+        // exercise a different command line than the service does.
+        sb.Append("--stop_existing_session");
         sb.Append(" --output_stdout");
         sb.Append(" --no_track_input");
         sb.Append(" --qpc_time_ms");
+        sb.Append(" --set_circular_buffer_size ");
+        sb.Append(PresentMonCircularBuffer.DefaultSize);
+        sb.Append(" --track_frame_type");
+        sb.Append(" --track_app_timing");
         sb.Append(" --track_pc_latency");
 
         // Exclude processes

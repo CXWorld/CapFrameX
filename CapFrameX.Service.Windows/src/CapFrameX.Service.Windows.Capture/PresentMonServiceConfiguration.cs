@@ -29,6 +29,18 @@ public sealed class PresentMonServiceConfiguration : IServiceStartInfo
     public List<string>? ExcludeProcesses { get; init; }
 
     /// <summary>
+    /// Whether PresentMon should report input-to-display latency. Off means the MsPCLatency column
+    /// is absent, not that its values are zero.
+    /// </summary>
+    public bool TrackPcLatency { get; init; } = true;
+
+    /// <summary>
+    /// Present event circular buffer size handed to <c>--set_circular_buffer_size</c>. Normalized
+    /// on use, because PresentMon refuses to start on anything that is not a power of two.
+    /// </summary>
+    public int CircularBufferSize { get; init; } = PresentMonCircularBuffer.DefaultSize;
+
+    /// <summary>
     /// Builds command-line arguments based on configuration.
     /// OPTIMIZED: Uses StringBuilder to minimize allocations.
     /// </summary>
@@ -42,13 +54,22 @@ public sealed class PresentMonServiceConfiguration : IServiceStartInfo
 
         var sb = new StringBuilder(256);
 
-        // Core PresentMon flags
-        sb.Append("--restart_as_admin ");           // Ensure admin privileges
-        sb.Append("--stop_existing_session ");      // Clean state
-        sb.Append("--output_stdout ");              // Redirect to console
-        sb.Append("--no_track_input ");             // Reduce overhead
-        sb.Append("--qpc_time_ms ");                // Millisecond QPC timestamps
-        sb.Append("--track_pc_latency");            // PC latency metrics
+        // The switch set CapFrameX 1.9.x ships with. --restart_as_admin is deliberately absent:
+        // the service is always elevated, and a PresentMon that re-executes itself takes the
+        // redirected stdout with it - and that stream is the capture.
+        sb.Append("--stop_existing_session");                    // Clean state
+        sb.Append(" --output_stdout");                           // Stream instead of writing a file
+        sb.Append(" --no_track_input");                          // Reduce overhead
+        sb.Append(" --qpc_time_ms");                             // Millisecond QPC timestamps
+        sb.Append(" --set_circular_buffer_size ");               // Present event buffer
+        sb.Append(PresentMonCircularBuffer.Normalize(CircularBufferSize));
+        sb.Append(" --track_frame_type");                        // FrameType column: generated frames
+        sb.Append(" --track_app_timing");                        // App timing columns
+
+        if (TrackPcLatency)
+        {
+            sb.Append(" --track_pc_latency");                    // PC latency metrics
+        }
 
         // Exclude system processes
         if (ExcludeProcesses != null && ExcludeProcesses.Count > 0)
