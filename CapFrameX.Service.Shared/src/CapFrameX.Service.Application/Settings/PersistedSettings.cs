@@ -46,4 +46,13 @@ public sealed class PersistedSettings
 
     /// <summary>How the frontend presents itself.</summary>
     public string Theme { get; set; } = "system";
+
+    /// <summary>
+    /// Whether the user has been offered the first import.
+    /// </summary>
+    /// <remarks>
+    /// Asked once. Somebody who said no to importing their CapFrameX 1.x captures should not be
+    /// asked again every time they open the application.
+    /// </remarks>
+    public bool ImportOffered { get; set; }
 }

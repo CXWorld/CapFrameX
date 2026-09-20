@@ -33,6 +33,7 @@ public static class AnalysisExtensions
         services.AddScoped<RecordLibrary>();
         services.AddScoped<RecordAnalyzer>();
         services.AddScoped<RecordStore>();
+        services.AddScoped<RecordImporter>();
 
         return services;
     }

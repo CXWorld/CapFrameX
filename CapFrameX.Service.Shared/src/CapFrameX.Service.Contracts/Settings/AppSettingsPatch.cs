@@ -27,6 +27,10 @@ public sealed record PathSettingsPatch(string? CaptureDirectory = null);
 /// <param name="Theme">One of <see cref="AppearanceThemes"/>.</param>
 public sealed record AppearanceSettingsPatch(string? Theme = null);
 
+/// <summary>Changes to what the service remembers about importing.</summary>
+/// <param name="Offered">Whether the user has been offered the first import.</param>
+public sealed record ImportSettingsPatch(bool? Offered = null);
+
 /// <summary>
 /// Changes to the settings.
 /// </summary>
@@ -38,11 +42,13 @@ public sealed record AppearanceSettingsPatch(string? Theme = null);
 /// <param name="Analysis">Changes to the analysis options.</param>
 /// <param name="Paths">Changes to where the service looks for captures.</param>
 /// <param name="Appearance">Changes to how the frontend presents itself.</param>
+/// <param name="Import">Changes to what the service remembers about importing.</param>
 public sealed record AppSettingsPatch(
     AnalysisSettingsPatch? Analysis = null,
     PathSettingsPatch? Paths = null,
-    AppearanceSettingsPatch? Appearance = null)
+    AppearanceSettingsPatch? Appearance = null,
+    ImportSettingsPatch? Import = null)
 {
     /// <summary>Whether the patch asks for anything at all.</summary>
-    public bool IsEmpty => Analysis is null && Paths is null && Appearance is null;
+    public bool IsEmpty => Analysis is null && Paths is null && Appearance is null && Import is null;
 }

@@ -37,9 +37,13 @@ internal static class CaptureFixture
                 }
             """;
 
+        // A capture's identity is its own, the way CapFrameX computes it over the runs: two
+        // generated captures are two captures, and only a copy of one shares its hash.
+        var hash = Guid.NewGuid().ToString("N");
+
         return $$"""
             {
-              "Hash": "0123456789abcdef",
+              "Hash": "{{hash}}",
               "Info": {
                 "Id": "{{Guid.NewGuid()}}",
                 "AppVersion": "1.7.2.21",

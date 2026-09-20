@@ -256,7 +256,8 @@ public sealed class RecordIndex
     /// <summary>What one capture contributes to the index.</summary>
     /// <param name="Summary">The fields the list shows.</param>
     /// <param name="Metrics">The frame-rate metrics it shows beside them.</param>
-    private sealed record Projection(RecordSummary Summary, IReadOnlyList<MetricDto> Metrics);
+    /// <param name="Hash">Identity of the capture, as CapFrameX computes it over its runs.</param>
+    private sealed record Projection(RecordSummary Summary, IReadOnlyList<MetricDto> Metrics, string? Hash);
 
     private async Task<Projection?> SummaryAsync(RecordFile file, CancellationToken cancellationToken)
     {
@@ -271,12 +272,17 @@ public sealed class RecordIndex
 
         return new Projection(
             RecordSummaryFactory.Create(read.Session, file.Path, _options.SparklinePoints),
-            _analysis.Analyze(read.Session, ListMetrics).Metrics);
+            _analysis.Analyze(read.Session, ListMetrics).Metrics,
+            read.Session.Hash);
     }
 
     private static void Apply(Session session, Projection projection, RecordFile file)
     {
         var summary = projection.Summary;
+        // So an import of the same capture, from this folder or anywhere else, recognises it.
+        session.Hash = string.IsNullOrWhiteSpace(projection.Hash) ? null : projection.Hash;
+        session.UpdatedAt = DateTime.UtcNow;
+
         session.GameName = summary.GameName ?? string.Empty;
         session.ProcessName = summary.ProcessName ?? string.Empty;
         session.Processor = summary.Processor ?? string.Empty;

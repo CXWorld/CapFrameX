@@ -251,7 +251,15 @@ public sealed class SettingsStore(
                     : [.. MetricCatalog.Default.Select(MetricCatalog.Key)],
                 LShapeMetric: settings.LShapeMetric),
             Paths: new PathSettingsDto(settings.CaptureDirectory ?? paths.CaptureDirectory),
-            Appearance: new AppearanceSettingsDto(settings.Theme));
+            Appearance: new AppearanceSettingsDto(settings.Theme),
+            Import: new ImportSettingsDto(settings.ImportOffered));
+
+    /// <summary>
+    /// Records that the user has been offered the first import, so they are not asked again.
+    /// </summary>
+    /// <param name="cancellationToken">Cancels the change.</param>
+    public Task MarkImportOfferedAsync(CancellationToken cancellationToken = default) =>
+        ApplyAsync(new AppSettingsPatch(Import: new ImportSettingsPatch(Offered: true)), cancellationToken);
 
     /// <summary>The analysis request the settings describe, for a caller that named nothing.</summary>
     /// <remarks>

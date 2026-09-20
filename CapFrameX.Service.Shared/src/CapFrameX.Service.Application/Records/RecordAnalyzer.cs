@@ -55,18 +55,25 @@ public sealed class RecordAnalyzer(
     {
         var record = await context.Sessions
             .AsNoTracking()
-            .Where(session => session.Id == id)
-            .Select(session => new
-            {
-                session.SourceFilePath,
-                session.SourceFileSize,
-                session.SourceModifiedUtc,
-            })
-            .FirstOrDefaultAsync(cancellationToken);
+            .Include(session => session.Runs)
+            .FirstOrDefaultAsync(session => session.Id == id, cancellationToken);
 
         if (record is null)
         {
             return new RecordLoad(RecordLoadStatus.NotIndexed, null, $"No record with id '{id}' is indexed.");
+        }
+
+        // A record either carries its capture or points at one. An imported record carries it, so
+        // it reads the same whether the file it came from is still there, moved, or on a drive
+        // nobody plugged in.
+        //
+        // In the order they were recorded: the database returns rows in whatever order suits it,
+        // and the statistics read the runs as one sequence, where order changes the answer.
+        var runs = record.Runs.OrderBy(run => run.RunIndex).ToArray();
+
+        if (StoredRecordFactory.HasCapture(runs))
+        {
+            return Stored(record, runs);
         }
 
         if (string.IsNullOrEmpty(record.SourceFilePath))
@@ -74,17 +81,39 @@ public sealed class RecordAnalyzer(
             return new RecordLoad(
                 RecordLoadStatus.NoSourceFile,
                 null,
-                $"Record '{id}' was recorded by the service and has no capture file.");
+                $"Record '{id}' holds no capture and points at no file.");
         }
 
-        var key = new SessionCacheKey(id, record.SourceFileSize ?? 0, record.SourceModifiedUtc ?? default);
+        return await FromFileAsync(record, cancellationToken);
+    }
+
+    private RecordLoad Stored(Data.Models.Session record, IReadOnlyList<Data.Models.SessionRun> runs)
+    {
+        // The row's own timestamp stands in for the file's size and time: an edit changes it, so a
+        // cached copy of the old one cannot be served.
+        var key = new SessionCacheKey(record.Id, 0, record.UpdatedAt);
 
         if (cache.TryGet(key, out var cached) && cached is not null)
         {
             return new RecordLoad(RecordLoadStatus.Ok, cached, null);
         }
 
-        var read = await reader.ReadAsync(record.SourceFilePath, cancellationToken);
+        var session = StoredRecordFactory.Rebuild(record, runs);
+        cache.Set(key, session);
+
+        return new RecordLoad(RecordLoadStatus.Ok, session, null);
+    }
+
+    private async Task<RecordLoad> FromFileAsync(Data.Models.Session record, CancellationToken cancellationToken)
+    {
+        var key = new SessionCacheKey(record.Id, record.SourceFileSize ?? 0, record.SourceModifiedUtc ?? default);
+
+        if (cache.TryGet(key, out var cached) && cached is not null)
+        {
+            return new RecordLoad(RecordLoadStatus.Ok, cached, null);
+        }
+
+        var read = await reader.ReadAsync(record.SourceFilePath!, cancellationToken);
 
         if (read.Session is not { } session)
         {

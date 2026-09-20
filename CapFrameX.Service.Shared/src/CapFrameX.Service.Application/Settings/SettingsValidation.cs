@@ -62,6 +62,11 @@ public static class SettingsValidator
             }
         }
 
+        if (patch.Import?.Offered is { } offered)
+        {
+            result.ImportOffered = offered;
+        }
+
         return new SettingsValidation(errors, errors.Count == 0 ? result : null);
     }
 
@@ -83,6 +88,7 @@ public static class SettingsValidator
             LShapeMetric = settings.LShapeMetric,
             CaptureDirectory = settings.CaptureDirectory,
             Theme = settings.Theme,
+            ImportOffered = settings.ImportOffered,
         };
     }
 

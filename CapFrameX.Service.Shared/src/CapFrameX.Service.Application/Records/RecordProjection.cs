@@ -45,7 +45,7 @@ public static class RecordProjection
         ArgumentNullException.ThrowIfNull(record);
 
         return new RecordSourceDto(
-            FilePath: record.SourceFilePath,
+            FilePath: record.SourceFilePath ?? record.ImportedFrom,
             FileSize: record.SourceFileSize,
             ModifiedUtc: record.SourceModifiedUtc is { } modified
                 ? new DateTimeOffset(DateTime.SpecifyKind(modified, DateTimeKind.Utc))
@@ -57,14 +57,15 @@ public static class RecordProjection
     /// What to call the record.
     /// </summary>
     /// <remarks>
-    /// The file name, because that is what the user named it and what they will look for in the
-    /// folder. A session the service recorded itself has none, so it falls back to the game.
+    /// The file name, because that is what the user named it and what they will look for. An
+    /// imported record keeps the name of the file it came from even though that file is no longer
+    /// what it reads; a session the service recorded itself has neither, so it falls back to the
+    /// game.
     /// </remarks>
     private static string Name(Session record)
     {
-        var fileName = record.SourceFilePath is null
-            ? null
-            : Path.GetFileNameWithoutExtension(record.SourceFilePath);
+        var origin = record.SourceFilePath ?? record.ImportedFrom;
+        var fileName = origin is null ? null : Path.GetFileNameWithoutExtension(origin);
 
         return NullIfBlank(fileName) ?? NullIfBlank(record.GameName) ?? record.Id.ToString();
     }

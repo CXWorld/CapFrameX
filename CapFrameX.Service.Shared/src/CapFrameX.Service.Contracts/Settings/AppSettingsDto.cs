@@ -53,11 +53,19 @@ public static class AppearanceThemes
     public static IReadOnlyList<string> All { get; } = [System, Light, Dark];
 }
 
+/// <summary>What the service remembers about importing.</summary>
+/// <param name="Offered">
+/// Whether the user has been offered the first import. Asked once, whichever way they answered.
+/// </param>
+public sealed record ImportSettingsDto(bool Offered);
+
 /// <summary>Everything the user can set.</summary>
 /// <param name="Analysis">The options every analysis is computed with.</param>
 /// <param name="Paths">Where the service looks for captures.</param>
 /// <param name="Appearance">How the frontend presents itself.</param>
+/// <param name="Import">What the service remembers about importing.</param>
 public sealed record AppSettingsDto(
     AnalysisSettingsDto Analysis,
     PathSettingsDto Paths,
-    AppearanceSettingsDto Appearance);
+    AppearanceSettingsDto Appearance,
+    ImportSettingsDto Import);
