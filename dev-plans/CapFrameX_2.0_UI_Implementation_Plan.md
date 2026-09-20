@@ -389,9 +389,10 @@ Copying frame arrays into `CaptureDataJson` doubles storage and creates a sync p
   reading every byte of a folder that runs to hundreds of megabytes, on every scan, to answer a
   question the file system already answers; the version column covers the only case a hash would
   add, which is the projection changing rather than the file.
-- **The index stores no metrics.** `AverageFps`, `P1Fps` and `P99Fps` stay null until B3, whose
-  adapter over `CapFrameX.Statistics.NetStandard` owns their definitions and the parity tests that
-  pin them. Computing them here is exactly how the list and the analysis come to disagree.
+- **The index stored no metrics at first.** `AverageFps`, `P1Fps` and `P99Fps` stayed null until
+  B3, whose adapter over `CapFrameX.Statistics.NetStandard` owns their definitions and the parity
+  tests that pin them. B3 fills them through that adapter; computing them separately here is
+  exactly how the list and the analysis would come to disagree.
 
 Still open from this section: CSV import, `DELETE /api/records/{id}` through the platform trash,
 the Linux fixtures, and the `Service.Data.Tests` provider swap.
@@ -404,6 +405,24 @@ the Linux fixtures, and the `Service.Data.Tests` provider swap.
   `FrametimeStatisticProvider` results bit-for-bit (same code path, so this guards the option
   mapping - outlier removal, range, stuttering factor - rather than the math).
 - LRU cache of parsed sessions (size-bounded) so tab switches and range changes do not re-read files.
+
+**As implemented (2026-09-20)** - `CapFrameX.Service.Analysis`, with three decisions worth keeping:
+
+- **Three GPU metrics need the GPU-active column**, not the frame times: inside the provider they
+  share a branch with `Average`, `P1` and the 1% low average, so feeding them frame times returns
+  the plain metric under a GPU label.
+- **Only `None` and `DeciPercentile` are offered** as outlier methods. The provider declares three
+  more and implements none of them, and a setting that does nothing is worse than one that is not
+  there.
+- **Latency is read from the capture data** rather than through `GetPcLatencyPointTimeWindow`,
+  whose sensor-data guard hides the latency of every capture recorded without hardware monitoring.
+
+The cache is bounded by **frame count**, not entry count, and keyed by the file's size and
+modification time so a rewritten capture cannot be served from an old parse.
+
+The record list metrics from 5.2 are filled by `RecordIndex` **through this adapter**
+(`AddRecordMetrics`, index version 2), which is what keeps the list and the open record from
+disagreeing.
 
 ### 5.4 API surface for M1
 ```

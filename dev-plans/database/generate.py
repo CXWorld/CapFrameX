@@ -74,6 +74,9 @@ SESSIONS = [
         ("SparklineJson", "string?", "TEXT", False, "", "At most 64 min/max-decimated frame times, as a JSON array."),
         ("HasPcLatency", "bool", "INTEGER", True, "", "Whether the capture carries input-to-display latency at all."),
         ("HasDisplayChange", "bool", "INTEGER", True, "", "Whether it carries display-side frame times."),
+        ("AverageFps", "double?", "REAL", False, "", "From the analysis adapter, so the list cannot disagree with the record it opens."),
+        ("P1Fps", "double?", "REAL", False, "", ""),
+        ("P99Fps", "double?", "REAL", False, "", ""),
     ]),
 ]
 
@@ -469,7 +472,7 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
       <li><b>Change detection is size plus last write time</b>, not a content hash. Hashing means reading every byte of a folder that runs to hundreds of megabytes, on every scan, to answer a question the file system already answers.</li>
       <li><b>A version column replaces a migration for projection changes.</b> Raising <code>RecordIndexPlanner.CurrentIndexVersion</code> makes the next scan re-read every record; a row written by a <i>newer</i> service is left alone, so an older one sharing the database cannot undo it.</li>
       <li><b>Large arrays are JSON, not rows.</b> A run holds ten thousand frames and more; a row per frame would mean millions of rows and joins across them for every chart.</li>
-      <li><b>The frame-rate metrics are still empty.</b> The index computes none of them &mdash; their definitions belong to the analysis adapter over <code>CapFrameX.Statistics.NetStandard</code>, where parity with 1.x is pinned. Two places computing them is how the list and the analysis come to disagree.</li>
+      <li><b>The frame-rate metrics come from the analysis, not from the index.</b> <code>RecordIndex</code> asks the same adapter over <code>CapFrameX.Statistics.NetStandard</code> that the analysis view asks, and stores the answer. A second calculation here is how the list and the open record would come to disagree.</li>
     </ul>
   </section>
 
@@ -487,6 +490,7 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
       <tbody>
         <tr><td><code>20251226142228_InitialCreate</code></td><td>Suites, Sessions, SessionRuns and their indexes.</td></tr>
         <tr><td><code>20260920153818_AddRecordSource</code></td><td>The record source and the list projection on <code>Sessions</code>; the JSON columns on <code>SessionRuns</code> become optional; the unique filtered index and the version index.</td></tr>
+        <tr><td><code>20260920164331_AddRecordMetrics</code></td><td>The frame-rate metrics the record list shows, on <code>Sessions</code>. <code>IndexVersion</code> went to 2 with it, which is what makes the existing rows re-read themselves.</td></tr>
       </tbody>
     </table>
     </div>

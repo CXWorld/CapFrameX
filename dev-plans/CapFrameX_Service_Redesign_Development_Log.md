@@ -602,6 +602,83 @@ guessed. After a migration, update the description in that script and run it aga
 HTML by hand undoes both. The description is the schema as `CapFrameXDbContextModelSnapshot`
 states it, which is the file to re-read when they disagree.
 
+## 2026-09-20 - B3: the analysis over the 1.x statistics
+
+`CapFrameX.Service.Analysis` turns a capture into what the analysis view shows. **It computes no
+statistic of its own.** Every number comes from `FrametimeStatisticProvider` and every sequence
+from `SessionExtensions`, the same code the desktop app runs, so the two cannot disagree about what
+a percentile is. What the project does own is the mapping - which window, which run, which sequence
+a metric needs - and that is what the tests are about.
+
+**`MetricCatalog`** names the metrics for the frontend (`p95`, `onePercentLowAverage`, …) and marks
+which sequence each needs. Two things it settles:
+
+- **Three metrics need the GPU-active column, not the frame times.** `GpuActiveAverage`,
+  `GpuActiveP1` and `GpuActiveOnePercentLowAverage` share their branch inside the provider with
+  `Average`, `P1` and the 1% low average. Feeding them frame times returns the plain metric under a
+  GPU label - a wrong number that looks right. They are computed from
+  `GetGpuActiveTimeTimeWindow` and come back empty where the capture has no such column.
+- **The catalogue lists exactly what the provider can compute**, pinned by a test that walks every
+  `EMetric` and compares "the provider returns a number" against "the catalogue offers it". Frames
+  per watt needs power data and a coefficient, so the provider answers `NaN` and the catalogue
+  leaves it out rather than offering a tile that never fills.
+
+**Frame pacing** is the split 1.x draws as a pie: stutter and low-FPS time percentages from the
+provider, smooth as the remainder. The **spikes are the very frames the stutter percentage is made
+of** - same rule, same moving average - so the count on the card and the share behind it can never
+tell different stories.
+
+**Parity tests** compare the adapter against the provider called directly, per metric, under
+outlier removal and inside a window, plus the frame pacing, the L-shape and the rounding digits.
+One of them pins something subtle: the service reads frame times **as points**, because a spike has
+to keep the time it happened at, and that path has to select the same frames as the plain value
+path. They also run over **every capture in the running user's folder**, where dropped frames,
+several runs and a first frame time of zero are real rather than imagined. Checked for vacuity by
+dropping the outlier argument in the adapter: four of them turn red.
+
+**Two deliberate departures from 1.x**, both recorded because they are deviations rather than
+oversights:
+
+- **Latency is read from the capture data**, not through `GetPcLatencyPointTimeWindow`, which
+  returns nothing unless every run also carries sensor data. Latency comes from PresentMon and
+  sensor readings do not, so that guard hides the latency of every capture recorded without
+  hardware monitoring - and the record list, which reads the column directly, would promise a value
+  the analysis never delivers.
+- **Only two outlier methods are offered.** `ERemoveOutlierMethod` declares five; the provider
+  implements `DeciPercentile` and returns the sequence unchanged for interquartile range, three
+  sigma and two-and-a-half sigma. Accepting those would put a setting in the UI that does nothing,
+  so the API refuses them and names the two that work.
+
+**`SessionCache`** keeps parsed captures in memory between calls, bounded by **frame count rather
+than entry count**: captures differ in length by two orders of magnitude, so counting them would
+either waste memory on short ones or run out on long ones. The file's size and modification time
+are part of the key, so a capture rewritten on disk is a different entry rather than a stale one,
+and a capture larger than the whole cache is served but not kept.
+
+**`/api/records/{id}/analysis`** and **`/api/records/{id}/series`** serve it, through
+`RecordAnalyzer`, which is the one place that puts index row, file and analysis together. The
+series is **columnar** - one time axis, every other column indexed by it - and **removes no
+outliers**, because dropping frames from one curve would misplace every point after the first. A
+column that has no value for a frame carries `null` there, which a chart draws as a gap rather than
+a drop to the floor. Everything a caller names is returned or refused: an unknown metric or curve
+is a 400 listing the known ones, an unknown record a 404, and a record whose file has gone a 409
+rather than an empty chart.
+
+**The record list now carries its metrics.** `Sessions` gained `AverageFps`, `P1Fps` and `P99Fps`
+(migration `20260920164331_AddRecordMetrics`), filled by `RecordIndex` **through the same analysis
+adapter** - this is what B2 left open on purpose, and a second calculation here is exactly how the
+list and the open record would come to disagree. `RecordIndexPlanner.CurrentIndexVersion` went to
+**2** with it, so every already-indexed row is re-read on the next scan without a schema migration
+filling in numbers that were never computed. That path has its own test.
+
+Verified: all six shared suites green - Shared 64, Api 39, Data 33, Records 46, Application 22,
+Analysis 114 - and both solutions build. The real-capture parity test ran rather than skipped, over
+the 306 captures in this machine's folder.
+
+Known gaps: `RecordDetailDto`, `PATCH` and `DELETE /api/records/{id}` are still open from section
+5.4, as are the settings endpoints; the analysis is reachable only by record id, so a capture that
+is not indexed cannot be analysed.
+
 ## Documentation Rules For Future Steps
 
 For every meaningful backend/frontend migration step, update this log with:
