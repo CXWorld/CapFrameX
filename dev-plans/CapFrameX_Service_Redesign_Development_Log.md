@@ -214,6 +214,37 @@ tree remains the May 2026 snapshot while its PawnIO layer is current - re-syncin
 `LibreHardwareMonitorLib` wholesale is the follow-up. PresentMon 2.5.1 has not been exercised
 against a running game, because that needs an elevated session.
 
+## 2026-09-20 - Merge of release/1.9.1 and full LibreHardwareMonitorLib sync
+
+- `release/1.9.1` merged into `release/2.0.0`; the branch is no longer behind. Only two conflicts:
+  - `.gitignore`: 1.9.1 ignores `/CapFrameX.Service/` and `/CapFrameX.UI/`. Those lines were **not**
+    taken - that code is tracked on 2.0.0, and the second rule would have hidden new frontend files.
+  - `README.md`: kept 1.9.1's product description and replaced the outdated 2.0 section with the
+    current folder layout.
+- **`source/LibreHardwareMonitorLib` fully adopted into `CapFrameX.Service.Windows.Telemetry`**
+  (212 files, 182 of them sources). The transformation is mechanical and verified to reproduce the
+  library exactly: namespace `LibreHardwareMonitor` -> `CapFrameX.Service.Monitoring`,
+  `CapFrameX.Monitoring.Contracts` and `CapFrameX.Extensions` mapped onto the service's local
+  replacements. New from 1.9.1: `Hardware/SensorPolling.cs`,
+  `Hardware/Storage/ICancellableNVMeDrive.cs`.
+- Three corrections the sync had to make, each a trap for the next sync:
+  - the upstream **licence header is preserved verbatim** - the May 2026 sync had rewritten
+    "Copyright (C) LibreHardwareMonitor and Contributors" into the service namespace, which restates
+    someone else's attribution; links to the upstream repository are preserved too;
+  - `nameof(LibreHardwareMonitor)` cannot survive a multi-part namespace, because `nameof` yields
+    only the last identifier - every PawnIO module lookup is a literal now, in one folder casing,
+    pinned through `LogicalName` in the project file;
+  - three library files are Latin-1 encoded and are normalised to UTF-8 on the way in.
+- Package references of both projects are identical, so the project file needed no change beyond
+  the PawnIO item groups.
+
+Verification: both solutions build; Windows 151 passed / 6 skipped (need elevation), Linux 62
+passed; all 22 PawnIO modules embedded and every lookup in the code resolves against the built
+assembly.
+
+Open: the rest of `source/` is not consumed by the service yet (statistics, session model); the
+capture path has still not been exercised against a running game, which needs an elevated session.
+
 ## Documentation Rules For Future Steps
 
 For every meaningful backend/frontend migration step, update this log with:

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CapFrameX 2.0 Architektur</title>
+<title>CapFrameX 2.0 Architecture</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
 html{color-scheme:light dark}
@@ -86,16 +86,16 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
 <body>
 <div class="page">
   <header>
-    <div class="eyebrow">CapFrameX 2.0 · Planungsstand 20.09.2026 · Branch release/2.0.0</div>
-    <h1>Client-Service-Architektur</h1>
-    <p class="lead">Ein Frontend, zwei getrennt implementierte Services. Beide Services liefern denselben API-Vertrag, weil sie denselben plattformneutralen Kern einbinden. Alles, was Hardware, Treiber oder den Spielprozess berührt, ist pro Plattform eigener Code.</p>
+    <div class="eyebrow">CapFrameX 2.0 · Planning state 2026-09-20 · Branch release/2.0.0</div>
+    <h1>Client and Service Architecture</h1>
+    <p class="lead">One frontend, two separately implemented services. Both expose the same API contract because both build on the same platform-neutral core. Everything that touches hardware, drivers or the game process is written once per platform.</p>
   </header>
 
   <section>
-    <h2>Prozesse, Grenzen und Datenwege</h2>
+    <h2>Processes, boundaries and data paths</h2>
     <figure>
       <div class="scroller">
-      <svg viewBox="0 0 1280 870" role="img" aria-label="Oben das gemeinsame Frontend CapFrameX.UI. Darunter links der Windows-Service mit Adminrechten, rechts der Linux-Service als Benutzerprozess. Beide enthalten denselben gemeinsamen Kern und eigene Plattform-Module. Unten die externen Partner: PresentMon, PawnIO und der Spielprozess unter Windows; der Spielprozess mit dem CapFrameX.OSD-Vulkan-Layer und die Kernel-Telemetrie unter Linux.">
+      <svg viewBox="0 0 1280 870" role="img" aria-label="At the top the shared frontend CapFrameX.UI. Below it on the left the elevated Windows service, on the right the Linux service as a user process. Both contain the same shared core plus their own platform modules. At the bottom the external partners: PresentMon, PawnIO and the game process on Windows; the game process with the CapFrameX.OSD Vulkan layer and kernel telemetry on Linux.">
         <defs>
           <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
@@ -105,19 +105,19 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
         <!-- Row A: client -->
         <rect class="band" x="30" y="30" width="1220" height="122" rx="4"/>
         <text class="th" x="46" y="54">CapFrameX.UI</text>
-        <text class="s" x="150" y="54">ein Code-Stand für Windows und Linux · läuft ohne Adminrechte · kann geschlossen sein, Capture und Overlay laufen weiter</text>
+        <text class="s" x="150" y="54">one code base for Windows and Linux · runs unelevated · may be closed while capture and overlay keep running</text>
         <rect class="b" x="46" y="68" width="380" height="68" rx="3"/>
-        <text class="t" x="60" y="92">CEF-Host (C++, CEF Views)</text>
-        <text class="s" x="60" y="112">app://capframex · startet bzw. findet den Service</text>
+        <text class="t" x="60" y="92">CEF host (C++, CEF Views)</text>
+        <text class="s" x="60" y="112">app://capframex · starts or finds the service</text>
         <text class="m" x="60" y="128">CapFrameX.UI/host</text>
         <rect class="b" x="440" y="68" width="400" height="68" rx="3"/>
-        <text class="t" x="454" y="92">Angular-Frontend</text>
-        <text class="s" x="454" y="112">Views · UI-Kit · uPlot · Modi: Full / Capture / Overlay</text>
+        <text class="t" x="454" y="92">Angular frontend</text>
+        <text class="s" x="454" y="112">Views · UI kit · uPlot · modes: Full / Capture / Overlay</text>
         <text class="m" x="454" y="128">CapFrameX.UI/src</text>
         <rect class="b" x="854" y="68" width="380" height="68" rx="3"/>
-        <text class="t" x="868" y="92">Host-Bridge window.cxHost</text>
-        <text class="s" x="868" y="112">Fenster · Dateidialoge · externe Links</text>
-        <text class="m" x="868" y="128">sonst nichts – alles andere läuft über die API</text>
+        <text class="t" x="868" y="92">Host bridge window.cxHost</text>
+        <text class="s" x="868" y="112">Window · file dialogs · external links</text>
+        <text class="m" x="868" y="128">nothing else – everything else goes through the API</text>
 
         <!-- A -> B arrows, Windows -->
         <line class="a" x1="300" y1="152" x2="300" y2="248" marker-end="url(#ah)"/>
@@ -125,7 +125,7 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
         <text class="s" x="290" y="186" text-anchor="end">HTTP 127.0.0.1:1337 · Token</text>
         <text class="s" x="366" y="186">SSE /api/events · WebSocket /api/stream</text>
         <line class="bound" x1="30" y1="222" x2="625" y2="222"/>
-        <text class="sr" x="621" y="214" text-anchor="end">Privilegiengrenze: normale Rechte → Adminrechte</text>
+        <text class="sr" x="621" y="214" text-anchor="end">Privilege boundary: normal rights → administrator rights</text>
 
         <!-- A -> B arrows, Linux -->
         <line class="a" x1="925" y1="152" x2="925" y2="248" marker-end="url(#ah)"/>
@@ -136,208 +136,208 @@ code{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-size:13px}
         <!-- Row B: Windows service -->
         <rect class="elev" x="30" y="250" width="595" height="328" rx="4"/>
         <text class="th" x="46" y="274">CapFrameX.Service.Windows</text>
-        <text class="sr" x="46" y="292">Konsolen-App, headless über geplanten Task gestartet · Adminrechte · kein Windows-Dienst</text>
+        <text class="sr" x="46" y="292">Console app, started headless through a scheduled task · elevated · not a Windows service</text>
         <rect class="shared" x="46" y="304" width="563" height="104" rx="3"/>
-        <text class="ta" x="60" y="325">CapFrameX.Service.Shared · identisch in beiden Services</text>
-        <text class="s" x="60" y="344">Api: HTTP · SSE · WebSocket · Token-Auth</text>
+        <text class="ta" x="60" y="325">CapFrameX.Service.Shared · identical in both services</text>
+        <text class="s" x="60" y="344">Api: HTTP · SSE · WebSocket · token auth</text>
         <text class="s" x="60" y="361">Application: CaptureOrchestrator · SensorHub · DemandRegistry</text>
-        <text class="s" x="60" y="378">Records (JSON-Captures) · Analysis (Statistics.NetStandard) · Data (SQLite-Index)</text>
+        <text class="s" x="60" y="378">Records (JSON captures) · Analysis (Statistics.NetStandard) · Data (SQLite index)</text>
         <text class="sa" x="60" y="397">Ports: IFrameSource · ITelemetrySource · IHotkeyBackend · IOverlayBackend</text>
-        <text class="s" x="46" y="428">Plattform-Module – implementieren die Ports, werden erst bei Bedarf geladen</text>
+        <text class="s" x="46" y="428">Platform modules – implement the ports, loaded only on demand</text>
         <rect class="b" x="46" y="438" width="178" height="52" rx="3"/>
-        <text class="t" x="58" y="460">Input</text><text class="s" x="58" y="478">Win32-Hotkeys</text>
+        <text class="t" x="58" y="460">Input</text><text class="s" x="58" y="478">Win32 hotkeys</text>
         <rect class="b" x="238" y="438" width="178" height="52" rx="3"/>
         <text class="t" x="250" y="460">Pmd</text><text class="s" x="250" y="478">PMD / Benchlab</text>
         <rect class="b" x="431" y="438" width="178" height="52" rx="3"/>
-        <text class="t" x="443" y="460">Platform</text><text class="s" x="443" y="478">Tray · Task · Pfade</text>
+        <text class="t" x="443" y="460">Platform</text><text class="s" x="443" y="478">Tray · task · paths</text>
         <rect class="b" x="46" y="504" width="178" height="52" rx="3"/>
         <text class="t" x="58" y="526">Capture</text><text class="s" x="58" y="544">PresentMon → FrameSample</text>
         <rect class="b" x="238" y="504" width="178" height="52" rx="3"/>
         <text class="t" x="250" y="526">Telemetry</text><text class="s" x="250" y="544">LHM · NVAPI · ADLX · IGCL</text>
         <rect class="b" x="431" y="504" width="178" height="52" rx="3"/>
-        <text class="t" x="443" y="526">Overlay</text><text class="s" x="443" y="544">OSD-Fenster · Hook · RTSS</text>
+        <text class="t" x="443" y="526">Overlay</text><text class="s" x="443" y="544">OSD window · hook · RTSS</text>
 
         <!-- Row B: Linux service -->
         <rect class="plain" x="655" y="250" width="595" height="328" rx="4"/>
         <text class="th" x="671" y="274">CapFrameX.Service.Linux</text>
-        <text class="s" x="671" y="292">Konsolen-App als Benutzerprozess ohne Root · optional als systemd --user Unit</text>
+        <text class="s" x="671" y="292">Console app as a user process, no root · optionally a systemd --user unit</text>
         <rect class="shared" x="671" y="304" width="563" height="104" rx="3"/>
-        <text class="ta" x="685" y="325">CapFrameX.Service.Shared · identisch in beiden Services</text>
-        <text class="s" x="685" y="344">Api: HTTP · SSE · WebSocket · Token-Auth</text>
+        <text class="ta" x="685" y="325">CapFrameX.Service.Shared · identical in both services</text>
+        <text class="s" x="685" y="344">Api: HTTP · SSE · WebSocket · token auth</text>
         <text class="s" x="685" y="361">Application: CaptureOrchestrator · SensorHub · DemandRegistry</text>
-        <text class="s" x="685" y="378">Records (JSON-Captures) · Analysis (Statistics.NetStandard) · Data (SQLite-Index)</text>
+        <text class="s" x="685" y="378">Records (JSON captures) · Analysis (Statistics.NetStandard) · Data (SQLite index)</text>
         <text class="sa" x="685" y="397">Ports: IFrameSource · ITelemetrySource · IHotkeyBackend · IOverlayBackend</text>
-        <text class="s" x="671" y="428">Plattform-Module – implementieren die Ports, werden erst bei Bedarf geladen</text>
+        <text class="s" x="671" y="428">Platform modules – implement the ports, loaded only on demand</text>
         <rect class="b" x="671" y="438" width="178" height="52" rx="3"/>
-        <text class="t" x="683" y="460">Input</text><text class="s" x="683" y="478">X11 · GlobalShortcuts-Portal</text>
+        <text class="t" x="683" y="460">Input</text><text class="s" x="683" y="478">X11 · GlobalShortcuts portal</text>
         <rect class="b" x="863" y="438" width="178" height="52" rx="3"/>
-        <text class="t" x="875" y="460">Platform</text><text class="s" x="875" y="478">XDG-Pfade · Tray · Trash</text>
+        <text class="t" x="875" y="460">Platform</text><text class="s" x="875" y="478">XDG paths · tray · trash</text>
         <rect class="ghost" x="1056" y="438" width="178" height="52" rx="3"/>
-        <text class="s" x="1068" y="460">unter Linux nicht vorhanden:</text><text class="s" x="1068" y="478">RTSS · PMD · DXGI-Hook</text>
+        <text class="s" x="1068" y="460">not available on Linux:</text><text class="s" x="1068" y="478">RTSS · PMD · DXGI hook</text>
         <rect class="b" x="671" y="504" width="178" height="52" rx="3"/>
-        <text class="t" x="683" y="526">Capture</text><text class="s" x="683" y="544">Layer-Server → FrameSample</text>
+        <text class="t" x="683" y="526">Capture</text><text class="s" x="683" y="544">Layer server → FrameSample</text>
         <rect class="b" x="863" y="504" width="178" height="52" rx="3"/>
-        <text class="t" x="875" y="526">Overlay</text><text class="s" x="875" y="544">Profil + Metriken → Layer</text>
+        <text class="t" x="875" y="526">Overlay</text><text class="s" x="875" y="544">Profile + metrics → layer</text>
         <rect class="b" x="1056" y="504" width="178" height="52" rx="3"/>
         <text class="t" x="1068" y="526">Telemetry</text><text class="s" x="1068" y="544">sysfs · NVML · fdinfo</text>
 
         <!-- B -> C arrows, Windows -->
         <line class="a" x1="135" y1="556" x2="135" y2="648" marker-start="url(#ah)" marker-end="url(#ah)"/>
-        <text class="s" x="144" y="610">startet Prozess</text><text class="s" x="144" y="626">liest Frame-Stream</text>
+        <text class="s" x="144" y="610">starts process</text><text class="s" x="144" y="626">reads frame stream</text>
         <line class="a" x1="327" y1="556" x2="327" y2="648" marker-end="url(#ah)"/>
-        <text class="s" x="336" y="610">öffnet Gerät nur,</text><text class="s" x="336" y="626">wenn ein Sensor es braucht</text>
+        <text class="s" x="336" y="610">opens the device only</text><text class="s" x="336" y="626">when a sensor needs it</text>
         <line class="a" x1="520" y1="556" x2="520" y2="648" marker-end="url(#ah)"/>
         <text class="s" x="529" y="610">Injection ·</text><text class="s" x="529" y="626">Shared Memory</text>
 
         <!-- Row C: Windows partners -->
         <rect class="b" x="46" y="650" width="178" height="92" rx="3"/>
         <text class="t" x="58" y="673">PresentMon</text>
-        <text class="s" x="58" y="692">ETW · Kindprozess</text>
-        <text class="s" x="58" y="709">läuft nur mit Frame-Bedarf</text>
+        <text class="s" x="58" y="692">ETW · child process</text>
+        <text class="s" x="58" y="709">runs only while frames are demanded</text>
         <rect class="b" x="238" y="650" width="178" height="92" rx="3"/>
-        <text class="t" x="250" y="673">PawnIO-Treiber</text>
-        <text class="s" x="250" y="692">Kernel · signiert</text>
+        <text class="t" x="250" y="673">PawnIO driver</text>
+        <text class="s" x="250" y="692">Kernel · signed</text>
         <text class="s" x="250" y="709">MSR · SMU · Super-I/O</text>
         <rect class="b" x="431" y="650" width="178" height="92" rx="3"/>
-        <text class="t" x="443" y="673">Spielprozess</text>
-        <text class="s" x="443" y="692">DXGI-Hook (D3D11/12)</text>
-        <text class="s" x="443" y="709">Vulkan-Layer</text>
-        <text class="sa" x="443" y="728">aus CapFrameX.OSD</text>
+        <text class="t" x="443" y="673">Game process</text>
+        <text class="s" x="443" y="692">DXGI hook (D3D11/12)</text>
+        <text class="s" x="443" y="709">Vulkan layer</text>
+        <text class="sa" x="443" y="728">from CapFrameX.OSD</text>
 
         <!-- B -> C arrows, Linux -->
         <line class="a" x1="760" y1="648" x2="760" y2="556" marker-end="url(#ah)"/>
-        <text class="s" x="769" y="610">Frames: Unix-Socket</text><text class="s" x="769" y="626">+ memfd-Ring</text>
+        <text class="s" x="769" y="610">Frames: Unix socket</text><text class="s" x="769" y="626">+ memfd ring</text>
         <line class="a" x1="952" y1="556" x2="952" y2="648" marker-end="url(#ah)"/>
-        <text class="s" x="961" y="610">Profil ·</text><text class="s" x="961" y="626">Metriken</text>
+        <text class="s" x="961" y="610">Profile ·</text><text class="s" x="961" y="626">metrics</text>
         <line class="a" x1="1145" y1="556" x2="1145" y2="648" marker-end="url(#ah)"/>
-        <text class="s" x="1154" y="610">liest Dateien,</text><text class="s" x="1154" y="626">lädt NVML</text>
+        <text class="s" x="1154" y="610">reads files,</text><text class="s" x="1154" y="626">loads NVML</text>
 
         <!-- Row C: Linux partners -->
         <rect class="b" x="671" y="650" width="370" height="92" rx="3"/>
-        <text class="t" x="683" y="673">Spielprozess – nativ und Proton</text>
-        <text class="s" x="683" y="692">ein Vulkan-Layer: Capture-Modul + Overlay-Compositor</text>
-        <text class="s" x="683" y="709">sieht über Proton auch D3D-Titel (DXVK, VKD3D)</text>
-        <text class="sa" x="683" y="728">aus CapFrameX.OSD – derselbe Compositor wie unter Windows</text>
+        <text class="t" x="683" y="673">Game process – native and Proton</text>
+        <text class="s" x="683" y="692">one Vulkan layer: capture module + overlay compositor</text>
+        <text class="s" x="683" y="709">covers D3D titles through Proton as well (DXVK, VKD3D)</text>
+        <text class="sa" x="683" y="728">from CapFrameX.OSD – the same compositor as on Windows</text>
         <rect class="b" x="1056" y="650" width="178" height="92" rx="3"/>
-        <text class="t" x="1068" y="673">Telemetrie-Quellen</text>
+        <text class="t" x="1068" y="673">Telemetry sources</text>
         <text class="s" x="1068" y="692">Kernel: hwmon · DRM · cpufreq</text>
-        <text class="s" x="1068" y="709">NVML für NVIDIA</text>
-        <text class="sr" x="1068" y="728">Root-Helfer: RAPL (optional)</text>
+        <text class="s" x="1068" y="709">NVML for NVIDIA</text>
+        <text class="sr" x="1068" y="728">Root helper: RAPL (optional)</text>
 
         <!-- Row D: OSD repo -->
         <line class="thin" x1="520" y1="742" x2="520" y2="780"/>
         <line class="thin" x1="856" y1="742" x2="856" y2="780"/>
         <rect class="shared" x="30" y="780" width="1220" height="62" rx="4"/>
-        <text class="ta" x="46" y="804">CapFrameX.OSD · ein Repository, intern shared / windows / linux</text>
-        <text class="s" x="46" y="824">gemeinsam: Szenenmodell · Widgets · JSON-Templates · Vulkan-Compositor · Shader</text>
-        <text class="s" x="660" y="824">je Plattform: Rasterizer (Direct2D | portabel) · IPC (Named Mappings | memfd + Socket)</text>
+        <text class="ta" x="46" y="804">CapFrameX.OSD · one repository, split internally into shared / windows / linux</text>
+        <text class="s" x="46" y="824">shared: scene model · widgets · JSON templates · Vulkan compositor · shaders</text>
+        <text class="s" x="660" y="824">per platform: rasteriser (Direct2D | portable) · IPC (named mappings | memfd + socket)</text>
       </svg>
       </div>
-      <figcaption>Das Frontend spricht nur HTTP, SSE und WebSocket – auf beiden Plattformen gegen dieselben Routen. Ein gemeinsamer Testsatz läuft gegen beide Services und stellt sicher, dass der Vertrag nicht auseinanderläuft. Unter Windows ist die API zugleich die Grenze zwischen normalen Rechten und Adminrechten: kein Endpunkt nimmt Pfade zu Programmen oder DLLs an, Dateioperationen bleiben in den Datenordnern.</figcaption>
+      <figcaption>The frontend speaks only HTTP, SSE and WebSocket, against the same routes on both platforms. One conformance suite runs against both services so the contract cannot drift. On Windows the API is also the boundary between normal and administrator rights: no endpoint accepts a path to an executable or a DLL, and file operations stay inside the data directories.</figcaption>
     </figure>
     <div class="legend">
-      <span><i class="sw sh"></i>gemeinsamer Code, auf beiden Plattformen identisch</span>
-      <span><i class="sw el"></i>läuft mit Adminrechten</span>
-      <span><i class="sw"></i>plattformspezifisch</span>
-      <span><i class="sw gh"></i>bewusst nicht vorhanden</span>
+      <span><i class="sw sh"></i>shared code, identical on both platforms</span>
+      <span><i class="sw el"></i>runs elevated</span>
+      <span><i class="sw"></i>platform-specific</span>
+      <span><i class="sw gh"></i>deliberately absent</span>
     </div>
   </section>
 
   <section>
-    <h2>Bedarfssteuerung: was niemand braucht, läuft nicht</h2>
+    <h2>Demand: what nobody needs does not run</h2>
     <figure>
       <div class="scroller">
-      <svg viewBox="0 0 1280 300" role="img" aria-label="Links drei Verbraucher: sichtbares Overlay-Profil, scharfes Capture, abonnierte UI-Ansicht. Sie nehmen Leases bei der DemandRegistry in der Mitte. Rechts, was die Registry nur bei bestehendem Lease aktiviert: Frame-Quelle, Sensor-Polling pro Sensor, Low-Level-Zugriff, Overlay-Stack.">
+      <svg viewBox="0 0 1280 300" role="img" aria-label="On the left three consumers: a visible overlay profile, an armed capture, a subscribed UI view. They take leases on the DemandRegistry in the middle. On the right what the registry activates only while a lease exists: frame source, per-sensor polling, low-level access, overlay stack.">
         <defs>
           <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
           </marker>
         </defs>
-        <text class="s" x="30" y="24">VERBRAUCHER</text>
+        <text class="s" x="30" y="24">CONSUMERS</text>
         <rect class="b" x="30" y="36" width="320" height="56" rx="3"/>
-        <text class="t" x="44" y="59">Overlay-Profil aktiv und sichtbar</text>
-        <text class="s" x="44" y="78">braucht die Metriken seiner Module</text>
+        <text class="t" x="44" y="59">Overlay profile active and visible</text>
+        <text class="s" x="44" y="78">braucht die metrics seiner Module</text>
         <rect class="b" x="30" y="112" width="320" height="56" rx="3"/>
-        <text class="t" x="44" y="135">Capture scharf oder laufend</text>
-        <text class="s" x="44" y="154">braucht Frames + zum Logging gewählte Sensoren</text>
+        <text class="t" x="44" y="135">Capture armed or running</text>
+        <text class="s" x="44" y="154">needs frames + the sensors selected for logging</text>
         <rect class="b" x="30" y="188" width="320" height="56" rx="3"/>
-        <text class="t" x="44" y="211">UI-Ansicht abonniert (WebSocket / SSE)</text>
-        <text class="s" x="44" y="230">Lease endet mit Verbindung oder View-Wechsel</text>
+        <text class="t" x="44" y="211">UI view subscribed (WebSocket / SSE)</text>
+        <text class="s" x="44" y="230">lease ends with the connection or a view change</text>
 
         <line class="a" x1="350" y1="64" x2="478" y2="126" marker-end="url(#ah2)"/>
         <line class="a" x1="350" y1="140" x2="478" y2="140" marker-end="url(#ah2)"/>
         <line class="a" x1="350" y1="216" x2="478" y2="154" marker-end="url(#ah2)"/>
-        <text class="s" x="414" y="66" text-anchor="middle">nimmt Lease</text>
+        <text class="s" x="414" y="66" text-anchor="middle">takes lease</text>
 
         <rect class="shared" x="480" y="80" width="320" height="120" rx="3"/>
         <text class="ta" x="496" y="106">DemandRegistry</text>
-        <text class="s" x="496" y="127">zählt Leases pro Bedarfsschlüssel</text>
-        <text class="s" x="496" y="145">langsamstes akzeptiertes Intervall gewinnt</text>
-        <text class="s" x="496" y="163">Freigabe mit kurzer Karenzzeit</text>
-        <text class="sa" x="496" y="185">im gemeinsamen Kern – gilt für beide Services</text>
+        <text class="s" x="496" y="127">counts leases per demand key</text>
+        <text class="s" x="496" y="145">the slowest interval every holder accepts wins</text>
+        <text class="s" x="496" y="163">release after a short grace period</text>
+        <text class="sa" x="496" y="185">in the shared core – applies to both services</text>
 
         <line class="a" x1="800" y1="116" x2="928" y2="58" marker-end="url(#ah2)"/>
         <line class="a" x1="800" y1="132" x2="928" y2="120" marker-end="url(#ah2)"/>
         <line class="a" x1="800" y1="148" x2="928" y2="182" marker-end="url(#ah2)"/>
         <line class="a" x1="800" y1="164" x2="928" y2="244" marker-end="url(#ah2)"/>
-        <text class="s" x="858" y="44" text-anchor="middle">aktiviert nur bei Lease</text>
+        <text class="s" x="858" y="44" text-anchor="middle">activated only while leased</text>
 
-        <text class="s" x="930" y="24">WIRD ERST DANN GESTARTET ODER GELADEN</text>
+        <text class="s" x="930" y="24">ONLY THEN STARTED OR LOADED</text>
         <rect class="b" x="930" y="36" width="320" height="46" rx="3"/>
-        <text class="t" x="944" y="56">Frame-Quelle</text>
-        <text class="s" x="944" y="73">PresentMon-Prozess | Frame-Lieferung des Layers</text>
+        <text class="t" x="944" y="56">Frame source</text>
+        <text class="s" x="944" y="73">PresentMon process | frame delivery from the layer</text>
         <rect class="b" x="930" y="98" width="320" height="46" rx="3"/>
-        <text class="t" x="944" y="118">Sensor-Polling – pro Sensor</text>
-        <text class="s" x="944" y="135">nur Hardware-Gruppen mit gefragtem Sensor</text>
+        <text class="t" x="944" y="118">Sensor polling – per sensor</text>
+        <text class="s" x="944" y="135">only hardware groups holding a demanded sensor</text>
         <rect class="b" x="930" y="160" width="320" height="46" rx="3"/>
-        <text class="t" x="944" y="180">Low-Level-Zugriff</text>
-        <text class="s" x="944" y="197">PawnIO-Gerät | Root-Helfer für RAPL</text>
+        <text class="t" x="944" y="180">Low-level access</text>
+        <text class="s" x="944" y="197">PawnIO device | root helper for RAPL</text>
         <rect class="b" x="930" y="222" width="320" height="46" rx="3"/>
-        <text class="t" x="944" y="242">Overlay-Stack</text>
-        <text class="s" x="944" y="259">OSD-Core, Hook-Injection | Compositor im Layer</text>
+        <text class="t" x="944" y="242">Overlay stack</text>
+        <text class="s" x="944" y="259">OSD core, hook injection | compositor in the layer</text>
 
-        <text class="s" x="640" y="232" text-anchor="middle">kein Lease → kein Timer, kein Kindprozess,</text>
-        <text class="s" x="640" y="248" text-anchor="middle">Assembly und native DLL bleiben ungeladen</text>
+        <text class="s" x="640" y="232" text-anchor="middle">no lease → no timer, no child process,</text>
+        <text class="s" x="640" y="248" text-anchor="middle">assembly and native DLL stay unloaded</text>
       </svg>
       </div>
-      <figcaption>Das ist die Umsetzung von „evaluate on demand“ und „DLLs on demand“ aus Issue #396. Der Service-Start erledigt nur Konfiguration, Token, API-Listener, Tray und Hotkeys. Ein Integrationstest prüft die Liste der geladenen Module: ohne Lease dürfen weder das Monitoring-Assembly noch OSD-Interop oder EF Core auftauchen.</figcaption>
+      <figcaption>This is how "evaluate on demand" and "load DLLs on demand" from issue #396 are implemented. Service start-up does configuration, token, API listener, tray and hotkeys, and nothing else. An integration test asserts on the list of loaded modules: with no lease held, neither the monitoring assembly nor the OSD interop nor EF Core may appear.</figcaption>
     </figure>
   </section>
 
   <section>
-    <h2>Lightweight-Modi sind UI-Konfiguration</h2>
+    <h2>Lightweight modes are UI configuration</h2>
     <div class="tablewrap">
     <table>
-      <thead><tr><th>Modus</th><th>Frontend</th><th>Was der Service dadurch tut</th></tr></thead>
+      <thead><tr><th>Mode</th><th>Frontend</th><th>What the service does as a result</th></tr></thead>
       <tbody>
-        <tr><td>Full</td><td>alle Ansichten, dreispaltiges Layout des Mockups</td><td>je nach geöffneter Ansicht: Record-Index, Analyse, Live-Daten</td></tr>
-        <tr><td>Capture</td><td>kompaktes Fenster: Zielprozess, Hotkey, Dauer, Live-FPS, letzte Runs</td><td>Frame-Quelle und Logging-Sensoren; kein Record-Index, keine Analyse</td></tr>
-        <tr><td>Overlay</td><td>kompaktes Fenster: Profile, An/Aus, Akzent, Module, Vorschau</td><td>Overlay-Stack und genau die Metriken der aktiven Module</td></tr>
-        <tr><td>Ohne UI</td><td>Host läuft nicht; Tray-Icon und Hotkeys gehören dem Service</td><td>wie oben, aber ohne CEF-Prozesse – der leichteste Zustand und Standard nach Autostart</td></tr>
+        <tr><td>Full</td><td>all views, the three-column layout of the mockup</td><td>depending on the open view: record index, analysis, live data</td></tr>
+        <tr><td>Capture</td><td>compact window: target process, hotkey, duration, live FPS, recent runs</td><td>frame source and logging sensors; no record index, no analysis</td></tr>
+        <tr><td>Overlay</td><td>compact window: profiles, on/off, accent, modules, preview</td><td>overlay stack and exactly the metrics of the active modules</td></tr>
+        <tr><td>No UI</td><td>host not running; tray icon and hotkeys belong to the service</td><td>as above but without CEF processes – the lightest state and the default after autostart</td></tr>
       </tbody>
     </table>
     </div>
-    <p class="lead">Es gibt keinen zweiten Build und keinen abgespeckten Code-Pfad. Ein Modus legt fest, was angezeigt wird, und damit, was angefordert wird.</p>
+    <p class="lead">There is no second build and no reduced code path. A mode decides what is shown, and therefore what is demanded.</p>
   </section>
 
   <section>
-    <h2>Ordner im Repository</h2>
+    <h2>Repository folders</h2>
     <div class="cols">
-      <div><b>CapFrameX.UI/</b><span>Angular-App unter <code>src/</code>, CEF-Host unter <code>host/</code>, Playwright-Tests mit gemeinsamer Screenshot-Basis</span></div>
-      <div><b>CapFrameX.Service.Shared/</b><span>Contracts, Core mit Ports, Application, Records, Analysis, Data, Api als Bibliothek, Conformance-Tests</span></div>
-      <div><b>CapFrameX.Service.Windows/</b><span>Host-Programm mit Adminrechten, Capture (PresentMon), Telemetry (PawnIO), Input, Overlay, Pmd, Platform, WiX-Installer</span></div>
-      <div><b>CapFrameX.Service.Linux/</b><span>Host-Programm als Benutzerprozess, Capture, Telemetry, Input, Overlay, Platform, <code>native/layer</code>, Probe-Tool, Packaging</span></div>
-      <div><b>external/CapFrameX.OSD</b><span>Submodul mit Prebuilt-Fallback; liefert <code>cfx_osd_core</code>, Hook und Vulkan-Layer für Windows sowie den Vulkan-Layer für Linux</span></div>
-      <div><b>source/</b><span>1.x-App und die von beiden Generationen genutzten Bibliotheken – werden referenziert, nicht kopiert</span></div>
+      <div><b>CapFrameX.UI/</b><span>Angular app in <code>src/</code>, CEF host in <code>host/</code>, Playwright tests with a shared screenshot baseline</span></div>
+      <div><b>CapFrameX.Service.Shared/</b><span>Contracts, Core with the ports, Application, Records, Analysis, Data, Api as a library, conformance tests</span></div>
+      <div><b>CapFrameX.Service.Windows/</b><span>Elevated host, Capture (PresentMon), Telemetry (PawnIO), Input, Overlay, Pmd, Platform, WiX installer</span></div>
+      <div><b>CapFrameX.Service.Linux/</b><span>Host as a user process, Capture, Telemetry, Input, Overlay, Platform, <code>native/layer</code>, probe tool, packaging</span></div>
+      <div><b>external/CapFrameX.OSD</b><span>Submodule with a prebuilt fallback; provides <code>cfx_osd_core</code>, the hook and the Vulkan layer for Windows, and the Vulkan layer for Linux</span></div>
+      <div><b>source/</b><span>The 1.x application and the libraries both generations use – referenced, never copied</span></div>
     </div>
   </section>
 
   <section>
-    <h2>Noch offen</h2>
+    <h2>Still open</h2>
     <ul class="open">
-      <li><b>Shell:</b> nativer C++-CEF-Host; ein Spike auf beiden Plattformen bestätigt oder verwirft das.</li>
-      <li><b>Linux-Rasterizer:</b> Blend2D als erster Kandidat, Entscheidung nach dem OSD-Spike.</li>
-      <li><b>Root-Helfer für RAPL:</b> Entscheidung nach der Telemetrie-Validierung.</li>
+      <li><b>Shell:</b> a native C++ CEF host; a spike on both platforms confirms or rejects it.</li>
+      <li><b>Linux rasteriser:</b> Blend2D as the first candidate, decided after the OSD spike.</li>
+      <li><b>Root helper for RAPL:</b> decided after the telemetry validation.</li>
     </ul>
   </section>
 </div>
