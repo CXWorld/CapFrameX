@@ -1,4 +1,6 @@
 using System.Text.Json;
+using CapFrameX.Service.Analysis;
+using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Service.Application.Records;
 using CapFrameX.Service.Data;
 using CapFrameX.Service.Data.Models;
@@ -97,6 +99,62 @@ public sealed class RecordIndexTests : IAsyncLifetime
         Assert.NotEmpty(JsonSerializer.Deserialize<double[]>(session.SparklineJson!)!);
         Assert.Equal("Ryzen 9 9950X", session.Processor);
         Assert.Equal("RTX 5090", session.Gpu);
+    }
+
+    [Fact]
+    public async Task A_record_carries_the_metrics_the_list_shows()
+    {
+        Write("run-one", CaptureFixture.Capture());
+
+        await ScanAsync();
+
+        var session = Assert.Single(await SessionsAsync());
+        Assert.NotNull(session.AverageFps);
+        Assert.NotNull(session.P1Fps);
+        Assert.NotNull(session.P99Fps);
+    }
+
+    [Fact]
+    public async Task The_stored_metrics_are_the_ones_the_analysis_returns()
+    {
+        // The list and the open record answer the same question, so they must answer it with the
+        // same number - which is why the index calls the analysis rather than computing its own.
+        var path = Write("run-one", CaptureFixture.Capture());
+        await ScanAsync();
+
+        var read = new RecordFileReader().Parse(File.ReadAllText(path), path);
+        var expected = new AnalysisService(new AnalysisSettings())
+            .Analyze(read.Session!, new AnalysisRequest { Metrics = [EMetric.Average, EMetric.P1, EMetric.P99] })
+            .Metrics;
+
+        var session = Assert.Single(await SessionsAsync());
+        Assert.Equal(expected[0].Value, session.AverageFps);
+        Assert.Equal(expected[1].Value, session.P1Fps);
+        Assert.Equal(expected[2].Value, session.P99Fps);
+    }
+
+    [Fact]
+    public async Task A_record_indexed_by_an_older_version_is_re_read_and_gains_what_it_was_missing()
+    {
+        // What the version column is for: the projection grew, and no schema migration can fill in
+        // a number that was never computed.
+        Write("run-one", CaptureFixture.Capture());
+        await ScanAsync();
+
+        await using (var context = Context())
+        {
+            var stale = await context.Sessions.SingleAsync();
+            stale.IndexVersion = RecordIndexPlanner.CurrentIndexVersion - 1;
+            stale.AverageFps = null;
+            await context.SaveChangesAsync();
+        }
+
+        var result = await ScanAsync();
+
+        Assert.Equal(1, result.Updated);
+        var session = Assert.Single(await SessionsAsync());
+        Assert.NotNull(session.AverageFps);
+        Assert.Equal(RecordIndexPlanner.CurrentIndexVersion, session.IndexVersion);
     }
 
     [Fact]
@@ -270,6 +328,7 @@ public sealed class RecordIndexTests : IAsyncLifetime
         var index = new RecordIndex(
             context,
             new RecordFileReader(),
+            new AnalysisService(new AnalysisSettings()),
             new RecordIndexOptions { CaptureDirectory = _captures },
             NullLogger<RecordIndex>.Instance);
 

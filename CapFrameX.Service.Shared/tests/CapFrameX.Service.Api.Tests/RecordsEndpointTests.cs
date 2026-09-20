@@ -55,6 +55,22 @@ public sealed class RecordsEndpointTests(GuardedApiFactory factory) : IClassFixt
     }
 
     [Fact]
+    public async Task The_list_carries_the_metrics_the_index_computed()
+    {
+        // They are stored rather than computed per request: the list shows them for every row, and
+        // computing one means parsing a capture file.
+        await SeedAsync(Record("Cyberpunk 2077", @"C:\c\one.json"));
+        using var client = factory.CreateCaller();
+
+        var response = await client.GetFromJsonAsync<RecordsListResponse>("/api/records", Json);
+
+        var record = Assert.Single(response!.Records);
+        Assert.Equal(83.4, record.AverageFps);
+        Assert.Equal(50.1, record.P1Fps);
+        Assert.Equal(116.2, record.P99Fps);
+    }
+
+    [Fact]
     public async Task The_newest_capture_comes_first()
     {
         await SeedAsync(
@@ -155,6 +171,9 @@ public sealed class RecordsEndpointTests(GuardedApiFactory factory) : IClassFixt
             FrameCount = 7200,
             SparklineJson = "[16.6,16.7]",
             HasDisplayChange = true,
+            AverageFps = 83.4,
+            P1Fps = 50.1,
+            P99Fps = 116.2,
         };
 
     private async Task SeedAsync(params Session[] sessions)

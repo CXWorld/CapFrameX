@@ -1,7 +1,10 @@
 using System.Text.Json;
+using CapFrameX.Service.Analysis;
+using CapFrameX.Service.Contracts.Analysis;
 using CapFrameX.Service.Data;
 using CapFrameX.Service.Data.Models;
 using CapFrameX.Service.Records;
+using CapFrameX.Statistics.NetStandard.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -26,24 +29,40 @@ public sealed class RecordIndex
     /// </summary>
     public static readonly Guid DefaultSuiteId = new("b6f0f5c0-6a58-4a2f-9c3d-0a7f1c2e4d10");
 
+    /// <summary>
+    /// The metrics the record list shows, computed once per record at index time.
+    /// </summary>
+    /// <remarks>
+    /// Through the analysis adapter rather than a second calculation here: a list that disagreed
+    /// with the record it opens would be worse than a list with no numbers at all.
+    /// </remarks>
+    private static readonly AnalysisRequest ListMetrics = new()
+    {
+        Metrics = [EMetric.Average, EMetric.P1, EMetric.P99],
+    };
+
     private readonly CapFrameXDbContext _context;
     private readonly RecordFileReader _reader;
+    private readonly AnalysisService _analysis;
     private readonly RecordIndexOptions _options;
     private readonly ILogger<RecordIndex> _logger;
 
     /// <summary>Creates the index over one database and one folder.</summary>
     /// <param name="context">The service database.</param>
     /// <param name="reader">Reads the capture files.</param>
+    /// <param name="analysis">Computes the metrics the record list shows.</param>
     /// <param name="options">Which folder, and how the projection is built.</param>
     /// <param name="logger">Receives what a scan did and what it could not read.</param>
     public RecordIndex(
         CapFrameXDbContext context,
         RecordFileReader reader,
+        AnalysisService analysis,
         RecordIndexOptions options,
         ILogger<RecordIndex> logger)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _reader = reader ?? throw new ArgumentNullException(nameof(reader));
+        _analysis = analysis ?? throw new ArgumentNullException(nameof(analysis));
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -67,16 +86,16 @@ public sealed class RecordIndex
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var summary = await SummaryAsync(file, cancellationToken);
+            var projection = await SummaryAsync(file, cancellationToken);
 
-            if (summary is null)
+            if (projection is null)
             {
                 failed++;
                 continue;
             }
 
             var session = new Session { Id = Guid.NewGuid(), SuiteId = await SuiteIdAsync(cancellationToken) };
-            Apply(session, summary, file);
+            Apply(session, projection, file);
             _context.Sessions.Add(session);
             added++;
         }
@@ -95,9 +114,9 @@ public sealed class RecordIndex
                 continue;
             }
 
-            var summary = await SummaryAsync(file, cancellationToken);
+            var projection = await SummaryAsync(file, cancellationToken);
 
-            if (summary is null)
+            if (projection is null)
             {
                 // The row keeps the size and time it was indexed with, so the next scan sees the
                 // file as changed again and retries it.
@@ -105,7 +124,7 @@ public sealed class RecordIndex
                 continue;
             }
 
-            Apply(session, summary, file);
+            Apply(session, projection, file);
             updated++;
         }
 
@@ -192,7 +211,12 @@ public sealed class RecordIndex
             .ToList();
     }
 
-    private async Task<RecordSummary?> SummaryAsync(RecordFile file, CancellationToken cancellationToken)
+    /// <summary>What one capture contributes to the index.</summary>
+    /// <param name="Summary">The fields the list shows.</param>
+    /// <param name="Metrics">The frame-rate metrics it shows beside them.</param>
+    private sealed record Projection(RecordSummary Summary, IReadOnlyList<MetricDto> Metrics);
+
+    private async Task<Projection?> SummaryAsync(RecordFile file, CancellationToken cancellationToken)
     {
         var read = await _reader.ReadAsync(file.Path, cancellationToken);
 
@@ -203,11 +227,14 @@ public sealed class RecordIndex
             return null;
         }
 
-        return RecordSummaryFactory.Create(read.Session, file.Path, _options.SparklinePoints);
+        return new Projection(
+            RecordSummaryFactory.Create(read.Session, file.Path, _options.SparklinePoints),
+            _analysis.Analyze(read.Session, ListMetrics).Metrics);
     }
 
-    private void Apply(Session session, RecordSummary summary, RecordFile file)
+    private static void Apply(Session session, Projection projection, RecordFile file)
     {
+        var summary = projection.Summary;
         session.GameName = summary.GameName ?? string.Empty;
         session.ProcessName = summary.ProcessName ?? string.Empty;
         session.Processor = summary.Processor ?? string.Empty;
@@ -225,7 +252,14 @@ public sealed class RecordIndex
         session.SparklineJson = JsonSerializer.Serialize(summary.Sparkline);
         session.HasPcLatency = summary.HasPcLatency;
         session.HasDisplayChange = summary.HasDisplayChange;
+
+        session.AverageFps = Metric(projection, EMetric.Average);
+        session.P1Fps = Metric(projection, EMetric.P1);
+        session.P99Fps = Metric(projection, EMetric.P99);
     }
+
+    private static double? Metric(Projection projection, EMetric metric) =>
+        projection.Metrics.FirstOrDefault(value => value.Key == MetricCatalog.Key(metric))?.Value;
 
     private async Task<Guid> SuiteIdAsync(CancellationToken cancellationToken)
     {

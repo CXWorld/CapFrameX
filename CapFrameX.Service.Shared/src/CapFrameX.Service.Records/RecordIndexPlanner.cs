@@ -14,7 +14,10 @@ public static class RecordIndexPlanner
     /// Version of the projection the indexer writes. Bump it when a summary gains or changes a
     /// field, and every record is re-read on the next scan without a schema migration.
     /// </summary>
-    public const int CurrentIndexVersion = 1;
+    /// <remarks>
+    /// Version 2 added the frame-rate metrics the record list shows.
+    /// </remarks>
+    public const int CurrentIndexVersion = 2;
 
     /// <summary>
     /// How two capture paths are compared. Windows hands the same file back under different

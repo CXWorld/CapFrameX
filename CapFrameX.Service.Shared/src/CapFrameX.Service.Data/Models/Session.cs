@@ -1,4 +1,4 @@
-﻿namespace CapFrameX.Service.Data.Models;
+namespace CapFrameX.Service.Data.Models;
 
 /// <summary>
 /// Represents a benchmark session containing hardware/game info and multiple runs.
@@ -164,6 +164,22 @@ public class Session
 
     /// <summary>Runs the capture contains.</summary>
     public int? RunCount { get; set; }
+
+    /// <summary>
+    /// Average frame rate over the whole capture, as the analysis computes it.
+    /// </summary>
+    /// <remarks>
+    /// Stored rather than computed per request because the record list shows it for every row, and
+    /// computing it means parsing the capture file. It comes from the same adapter the analysis
+    /// view uses, so the list and the open record cannot disagree.
+    /// </remarks>
+    public double? AverageFps { get; set; }
+
+    /// <summary>1st percentile frame rate over the whole capture.</summary>
+    public double? P1Fps { get; set; }
+
+    /// <summary>99th percentile frame rate over the whole capture.</summary>
+    public double? P99Fps { get; set; }
 
     /// <summary>Decimated frame times for the record list, as a JSON array.</summary>
     public string? SparklineJson { get; set; }

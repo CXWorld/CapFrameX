@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using CapFrameX.Service.Analysis;
 using CapFrameX.Service.Application.Records;
 using CapFrameX.Service.Contracts.Bridge;
 using CapFrameX.Service.Contracts.Records;
@@ -47,6 +48,8 @@ public sealed class RecordIndexerTests : IAsyncLifetime
             SettleDelay = TimeSpan.FromMilliseconds(50),
         });
         services.AddSingleton<RecordFileReader>();
+        services.AddSingleton<AnalysisSettings>();
+        services.AddSingleton<AnalysisService>();
         services.AddScoped<RecordIndex>();
         services.AddSingleton<IBridgeEventPublisher>(_events);
 
