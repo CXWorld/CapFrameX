@@ -383,6 +383,19 @@ Copying frame arrays into `CaptureDataJson` doubles storage and creates a sync p
 - Replace `EntityFrameworkCore.InMemory` in `Service.Data.Tests` with SQLite in-memory - the
   in-memory provider ignores relational constraints and the indexes this schema relies on.
 
+**As implemented (2026-09-20)** - two deliberate departures from the list above:
+
+- **No `ContentHash`.** Change detection is size plus last write time. Hashing every file means
+  reading every byte of a folder that runs to hundreds of megabytes, on every scan, to answer a
+  question the file system already answers; the version column covers the only case a hash would
+  add, which is the projection changing rather than the file.
+- **The index stores no metrics.** `AverageFps`, `P1Fps` and `P99Fps` stay null until B3, whose
+  adapter over `CapFrameX.Statistics.NetStandard` owns their definitions and the parity tests that
+  pin them. Computing them here is exactly how the list and the analysis come to disagree.
+
+Still open from this section: CSV import, `DELETE /api/records/{id}` through the platform trash,
+the Linux fixtures, and the `Service.Data.Tests` provider swap.
+
 ### 5.3 Analysis (WP-B3)
 - New `CapFrameX.Service.Analysis` (`CapFrameX.Service.Shared/src/`) referencing
   `CapFrameX.Statistics.NetStandard`. No statistics

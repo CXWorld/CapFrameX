@@ -520,8 +520,74 @@ Verified against reality: **all 306 captures in the running user's folder** read
 them produces a usable list entry - a name, at least one run, frames, a duration above zero and a
 sparkline within budget. That test skips where no captures exist.
 
-Still open in B2: the `AddRecordSource` migration, the indexer with its file watcher, and the
-`/api/records` endpoints.
+## 2026-09-20 - B2 complete: the index, the watcher and `/api/records`
+
+The remaining three pieces of B2, which together make a folder of capture files appear in the
+frontend as a list.
+
+**Schema** - `Session` gained the record source (`SourceFilePath`, `SourceFileSize`,
+`SourceModifiedUtc`, `IndexVersion`) and the list projection (`DurationSeconds`, `RunCount`,
+`FrameCount`, `SparklineJson`, `HasPcLatency`, `HasDisplayChange`); `SessionRun.CaptureDataJson`
+and `SensorDataJson` became optional. Migration `20260920153818_AddRecordSource`. Two indexes carry
+rules rather than performance: `SourceFilePath` is **unique and filtered to rows that have one**,
+so a file cannot be indexed twice while self-recorded sessions do not all collide on NULL, and
+`IndexVersion` finds the rows a changed projection has to re-read. `IsRequired()` on the two JSON
+columns had to go first - it silently overrode the nullable properties, and EF emitted no
+`AlterColumn` at all.
+
+**The frame data is not copied into the database.** The capture file stays the record; the table is
+an index over it. Copying the frames in would double the storage and create a second version of the
+same capture that can drift from the first - and CapFrameX 1.x keeps writing those files.
+
+**`RecordIndexPlanner`** decides what a scan means, apart from both the file system and the
+database, so the rules are testable on their own: a file not in the index is *added*; a file whose
+size or last write time differs is *updated*; a row below the current `IndexVersion` is *updated*,
+which is how a changed projection re-reads everything without a schema migration; a row **above**
+it is left alone, so an older service sharing a database does not undo a newer one; an indexed
+record whose file is gone is *removed*; and a row without a source file takes no part at all,
+because a scan of the folder says nothing about a session the service recorded itself. Paths are
+compared the way the platform compares them - ignoring case on Windows only.
+
+**`RecordIndex`** applies the plan, and **`RecordIndexer`** keeps it following the folder: a
+start-up scan, then a `FileSystemWatcher` whose events are coalesced into one scan after the folder
+has been quiet for `SettleDelay` (2 s by default). Writing one capture raises several events and
+the last can arrive well after the first, so scanning on the first would read a half-written file.
+Three details that are deliberate:
+
+- **The watcher is created before the first scan**, not after: a capture written in between is then
+  either caught by the watcher or still found by the scan. The other order has a gap where it is
+  neither.
+- **Every change ends in a full scan.** The planner is cheap, and a scan cannot get out of step
+  with the folder the way a queue of individual file events can - a dropped event, a rename, a
+  watcher buffer overflow all come out the same.
+- **A file that could not be read costs one file, not the scan**, and nothing is stored for it, so
+  the next scan sees it as new and tries again. The folder belongs to the user, where a leftover
+  from a crashed capture or something that merely ends in `.json` are normal.
+
+**Events** - background work below the API reaches the event stream through
+`IBridgeEventPublisher` (in `Service.Core`), which `BridgeEventStream` implements explicitly. Only
+a scan that actually changed something publishes `records.changed`; the frontend reloads the list
+on it, so an unreadable file must stay silent.
+
+**`/api/records`** serves the index, newest first, with `search` (game or process, case ignored,
+and `%` is a character rather than a wildcard because it comes from a search box), `skip`/`take`
+and a total; `/api/records/{id}` returns one record or a 404 problem. `AverageFps`, `P1Fps` and
+`P99Fps` are **deliberately null**: the index computes no metrics, and their definitions belong to
+B3 over `CapFrameX.Statistics.NetStandard`, where parity with 1.x is pinned. Inventing them here
+would risk two different answers to the same question.
+
+Both hosts register the index after the database - hosted services start in registration order and
+the migration step runs to completion before the next one begins, which is what keeps the first
+scan from meeting a schema that is not there yet.
+
+Verified: `dotnet test` over all five shared suites - Shared 64, Api 27, Data 33, Records 46,
+Application 19 - all green. The watcher tests were checked for vacuity by disabling
+`EnableRaisingEvents`: the three that claim to need it then fail.
+
+Known gaps: `RecordsController` exposes no detail endpoint yet (frame data for the analysis view is
+B3), and the record list shows no FPS until B3 lands. A leftover `CapFrameX.Service.Windows.exe`
+from an earlier session holds its own build output, so the host was verified with `-t:Compile`
+rather than a full solution build.
 
 ## Documentation Rules For Future Steps
 
