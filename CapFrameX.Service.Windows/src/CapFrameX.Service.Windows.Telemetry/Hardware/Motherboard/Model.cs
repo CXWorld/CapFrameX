@@ -1,12 +1,14 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) CapFrameX.Service.Monitoring and Contributors.
+// Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
 // ReSharper disable InconsistentNaming
 
 using System.Diagnostics.CodeAnalysis;
+
+#pragma warning disable CS1591 // file exempt from XML documentation
 
 namespace CapFrameX.Service.Monitoring.Hardware.Motherboard;
 

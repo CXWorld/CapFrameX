@@ -1,12 +1,14 @@
 // This Source Code Form is subject to the terms of the GNU Public License, v. 2.0.
 // Copyright (C) 2024 demorfi<demorfi@gmail.com>
-// Copyright (C) CapFrameX.Service.Monitoring and Contributors.
+// Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using HidSharp;
+
+#pragma warning disable CS1591 // file exempt from XML documentation
 
 namespace CapFrameX.Service.Monitoring.Hardware.Psu.Msi;
 

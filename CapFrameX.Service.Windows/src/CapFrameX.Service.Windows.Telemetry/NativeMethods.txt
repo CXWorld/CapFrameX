@@ -17,8 +17,6 @@ SetupDiDestroyDeviceInfoList
 SetupDiGetDeviceInterfaceDetail
 SetupDiEnumDeviceInterfaces
 SetupDiGetClassDevs
-SP_DEVICE_INTERFACE_DATA
-SP_DEVICE_INTERFACE_DETAIL_DATA_W
 GUID_DEVICE_BATTERY
 WIN32_ERROR
 HRESULT_FROM_WIN32

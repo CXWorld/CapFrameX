@@ -1,6 +1,6 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) CapFrameX.Service.Monitoring and Contributors.
+// Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
@@ -205,7 +205,7 @@ public class Computer : IComputer
                     if (IsSimulationEnabled)
                         Add(new SimulatedCpuGroup(_simulationConfiguration, _settings));
                     else
-                        Add(new CpuGroup(_settings));
+                        Add(new CpuGroup(_settings, _sensorConfig));
                 }
                 else
                 {
@@ -235,8 +235,8 @@ public class Computer : IComputer
                     else
                     {
                         Add(new NvidiaGroup(_settings, _sensorConfig));
-                        Add(new AmdGpuGroup(_settings));
-                        Add(new IntelGpuGroup(GetIntelCpus(), _settings));
+                        Add(new AmdGpuGroup(_settings, _sensorConfig));
+                        Add(new IntelGpuGroup(GetIntelCpus(), _settings, _sensorConfig));
                     }
                 }
                 else
@@ -261,7 +261,7 @@ public class Computer : IComputer
             if (_open && value != _memoryEnabled)
             {
                 if (value)
-                    Add(new MemoryGroup(_settings));
+                    Add(new MemoryGroup(_settings, _sensorConfig));
                 else
                     RemoveType<MemoryGroup>();
             }
@@ -339,7 +339,7 @@ public class Computer : IComputer
             if (_open && value != _storageEnabled)
             {
                 if (value)
-                    Add(new StorageGroup(_settings));
+                    Add(new StorageGroup(_settings, _sensorConfig));
                 else
                     RemoveType<StorageGroup>();
             }
@@ -362,7 +362,7 @@ public class Computer : IComputer
         }
     }
 
-    //// <inheritdoc />
+    /// <inheritdoc />
     public string GetReport()
     {
         lock (_lock)
@@ -370,7 +370,7 @@ public class Computer : IComputer
             using StringWriter w = new(CultureInfo.InvariantCulture);
 
             w.WriteLine();
-            w.WriteLine("CapFrameX.Service.Monitoring" + " Report");
+            w.WriteLine("CapFrameX Monitoring Report");
             w.WriteLine();
 
             Version version = typeof(Computer).Assembly.GetName().Version;
@@ -568,11 +568,11 @@ public class Computer : IComputer
             if (IsSimulationEnabled)
                 Add(new SimulatedCpuGroup(_simulationConfiguration, _settings));
             else
-                Add(new CpuGroup(_settings));
+                Add(new CpuGroup(_settings, _sensorConfig));
         }
 
         if (_memoryEnabled)
-            Add(new MemoryGroup(_settings));
+            Add(new MemoryGroup(_settings, _sensorConfig));
 
         if (_gpuEnabled)
         {
@@ -583,8 +583,8 @@ public class Computer : IComputer
             else
             {
                 Add(new NvidiaGroup(_settings, _sensorConfig));
-                Add(new AmdGpuGroup(_settings));
-                Add(new IntelGpuGroup(GetIntelCpus(), _settings));
+                Add(new AmdGpuGroup(_settings, _sensorConfig));
+                Add(new IntelGpuGroup(GetIntelCpus(), _settings, _sensorConfig));
             }
         }
 
@@ -599,7 +599,7 @@ public class Computer : IComputer
         }
 
         if (_storageEnabled)
-            Add(new StorageGroup(_settings));
+            Add(new StorageGroup(_settings, _sensorConfig));
 
         if (_networkEnabled)
             Add(new NetworkGroup(_settings));
@@ -741,7 +741,7 @@ public class Computer : IComputer
         // Create a temporary cpu group if one has not been added.
         lock (_lock)
         {
-            IGroup cpuGroup = _groups.Find(x => x is CpuGroup) ?? new CpuGroup(_settings);
+            IGroup cpuGroup = _groups.Find(x => x is CpuGroup) ?? new CpuGroup(_settings, _sensorConfig);
             return cpuGroup.Hardware.Select(x => x as IntelCpu).ToList();
         }
     }

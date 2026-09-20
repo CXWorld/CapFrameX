@@ -55,6 +55,8 @@ internal static class NvApi
     public static NvAPI_GPU_GetCurrentVoltageDelegate NvAPI_GPU_GetCurrentVoltage { get; internal set; }
     public static NvAPI_GetVBlankCounterDelegate NvAPI_GetVBlankCounter { get; internal set; }
     public static NvAPI_GPU_PerfGetStatusDelegate NvAPI_GPU_PerfGetStatus { get; internal set; }
+    public static NvAPI_GPU_GetFBWidthAndLocationDelegate NvAPI_GPU_GetFBWidthAndLocation { get; internal set; }
+    public static NvAPI_GPU_GetRamTypeDelegate NvAPI_GPU_GetRamType { get; internal set; }
 
     public static void Initialize()
     {
@@ -100,6 +102,8 @@ internal static class NvApi
             NvAPI_GPU_GetCurrentVoltage = GetDelegate<NvAPI_GPU_GetCurrentVoltageDelegate>(0x465f9bcf);
             NvAPI_GetVBlankCounter = GetDelegate<NvAPI_GetVBlankCounterDelegate>(0x67B5DB55);
             NvAPI_GPU_PerfGetStatus = GetDelegate<NvAPI_GPU_PerfGetStatusDelegate>(0x3d358a0c);
+            NvAPI_GPU_GetFBWidthAndLocation = GetDelegate<NvAPI_GPU_GetFBWidthAndLocationDelegate>(0x11104158);
+            NvAPI_GPU_GetRamType = GetDelegate<NvAPI_GPU_GetRamTypeDelegate>(0x57F7CAAC);
 
             IsAvailable = true;
         }
@@ -180,6 +184,12 @@ internal static class NvApi
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate NvStatus NvAPI_GPU_PerfGetStatusDelegate(NvPhysicalGpuHandle gpuHandle, ref NvPerformanceStatus performanceStatus);
 
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate NvStatus NvAPI_GPU_GetFBWidthAndLocationDelegate(NvPhysicalGpuHandle gpuHandle, out uint width, out uint location);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate NvStatus NvAPI_GPU_GetRamTypeDelegate(NvPhysicalGpuHandle gpuHandle, out uint memType);
+
     [Flags]
     internal enum NvPerformanceLimit : uint
     {
@@ -236,6 +246,24 @@ internal static class NvApi
         FrameBuffer, // Memory Controller
         VideoEngine, // Video Engine
         BusInterface // Bus
+    }
+
+    // NV_GPU_RAM_TYPE as returned by NvAPI_GPU_GetRamType (0x57F7CAAC).
+    // The public NVAPI enum historically tops out at GDDR5X; GDDR6/GDDR6X are
+    // frequently reported as GDDR5X or Unknown by this call.
+    public enum NvGpuMemoryType : uint
+    {
+        Unknown = 0,
+        Sdram = 1,
+        Ddr1 = 2,
+        Ddr2 = 3,
+        Gddr2 = 4,
+        Gddr3 = 5,
+        Gddr4 = 6,
+        Ddr3 = 7,
+        Gddr5 = 8,
+        Lpddr2 = 9,
+        Gddr5x = 10
     }
 
     public static bool IsAvailable { get; private set; }

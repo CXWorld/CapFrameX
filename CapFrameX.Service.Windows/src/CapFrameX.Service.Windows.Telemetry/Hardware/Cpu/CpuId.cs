@@ -1,6 +1,6 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) CapFrameX.Service.Monitoring and Contributors.
+// Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
@@ -58,7 +58,12 @@ public enum CpuCoreType
     /// <summary>
     /// Dense core (D-core) - AMD.
     /// </summary>
-    DenseCore = 4
+    DenseCore = 4,
+
+    /// <summary>
+    /// Low-Power core (LP-core) - AMD (Zen 6 and later).
+    /// </summary>
+    LowPowerCore = 5
 }
 
 /// <summary>
