@@ -106,6 +106,13 @@ export interface ChartMarker {
       position: absolute;
     }
 
+    ::ng-deep .uplot canvas {
+      display: block;
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
     ::ng-deep .u-select {
       position: absolute;
       background: var(--cx-bg-accent);
@@ -113,12 +120,18 @@ export interface ChartMarker {
       pointer-events: none;
     }
 
+    /*
+     * pointer-events on the crosshair is load-bearing, not cosmetic: the lines follow the pointer,
+     * so without it they become the event target, and uPlot only accepts mouse events whose target
+     * is its overlay. Dropping it disables drag-to-zoom outright.
+     */
     ::ng-deep .u-cursor-x,
     ::ng-deep .u-cursor-y {
       position: absolute;
       left: 0;
       top: 0;
       border-right: 1px dashed var(--cx-line-strong);
+      pointer-events: none;
       will-change: transform;
     }
 
@@ -143,6 +156,15 @@ export interface ChartMarker {
     }
 
     ::ng-deep .u-legend {
+      display: none;
+    }
+
+    /* How uPlot hides the crosshair and the selection; without it they stay on screen for good. */
+    ::ng-deep .u-axis.u-off,
+    ::ng-deep .u-select.u-off,
+    ::ng-deep .u-cursor-x.u-off,
+    ::ng-deep .u-cursor-y.u-off,
+    ::ng-deep .u-cursor-pt.u-off {
       display: none;
     }
 
@@ -177,6 +199,9 @@ export class Chart {
 
   private plot: uPlot | null = null;
   private observer: ResizeObserver | null = null;
+
+  /** Name of the mark left when a chart finishes drawing. Read by the chart gate. */
+  static readonly DrawnMark = 'cx-chart-drawn';
 
   /** How long the last build took, in milliseconds. For the chart gate. */
   lastBuildMs = 0;
@@ -250,11 +275,29 @@ export class Chart {
         // uPlot settles its geometry across the draw, not in the constructor, so the marker is
         // placed from its own hooks rather than from a measurement taken too early.
         hooks: {
+          // After uPlot has put pixels on the canvas, not after its constructor returned: the
+          // constructor schedules work, and a mark taken there reports a draw that has not
+          // happened yet.
+          draw: [
+            () => {
+              this.lastBuildMs = performance.now() - started;
+              performance.mark(Chart.DrawnMark, {
+                detail: {
+                  points: data.x.length,
+                  series: data.series.length,
+                  buildMs: this.lastBuildMs,
+                },
+              });
+            },
+          ],
           ready: [() => this.placeMarker()],
           setScale: [() => this.placeMarker()],
           setSize: [() => this.placeMarker()],
         },
-        cursor: { drag: { x: true, y: false } },
+        // No `cursor` option on purpose. uPlot merges it shallowly, so passing a partial
+        // `drag` replaces the whole default object - and losing `dist: 0` alone makes
+        // `rawDX >= drag.dist` false for every drag, which silently disables zooming. The
+        // defaults are already x-only.
         scales: {
           // Seconds from the start of the capture, not a point in time: without this uPlot reads
           // the axis as unix timestamps and labels it 1/1/1970.
@@ -279,7 +322,6 @@ export class Chart {
       element,
     );
 
-    this.lastBuildMs = performance.now() - started;
   }
 
   /**
