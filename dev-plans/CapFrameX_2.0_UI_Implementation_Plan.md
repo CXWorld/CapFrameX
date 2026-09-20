@@ -463,7 +463,14 @@ The list takes `search`, `game`, `from`, `to`, `sort`, `skip` and `take`; `GET /
 returns the games the index holds, which is what the filter chips are built from. `sort` is one
 parameter with a leading `-` for descending, defaulting to `-created`.
 
-Still open here: the settings endpoints and `settings.changed`.
+`GET`/`PATCH /api/settings` carry the analysis options, the capture folder and the theme. A patch
+is checked as a whole before any of it is kept, and a change takes effect at once - the analysis
+reads the options per request and the indexer follows the folder - rather than on the next start.
+`settings.changed` carries the settings as they now are, so a second window does not have to ask.
+
+Still open here: reading the observed directory out of CapFrameX 1.x's `AppSettings.json`, which
+section 5.2 asks for and the service does not do - it starts from the platform's own capture folder
+until the user points it somewhere else.
 
 ### 5.5 Contract generation (WP-B4)
 - Emit the OpenAPI document at build time from `CapFrameX.Service.Shared/src/CapFrameX.Service.Api`

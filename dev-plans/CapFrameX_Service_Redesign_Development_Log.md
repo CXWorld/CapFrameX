@@ -771,6 +771,59 @@ clause is there so the order does not depend on that happening to stay true.
 Verified: Shared 64, Api 76, Data 33, Records 70, Application 25, Analysis 114 - all green, both
 solutions build.
 
+## 2026-09-20 - Settings, and what changing one does
+
+`GET` and `PATCH /api/settings` carry three sections: the analysis options, the capture folder and
+the theme. The defaults are the ones CapFrameX 1.x ships, so a record analysed in either
+application gives the same numbers until the user says otherwise.
+
+**A setting that does nothing until the next start is not a setting.** The store is a singleton
+holding the *live* objects: `AnalysisSettings`, which the statistics provider reads on every call,
+and `RecordIndexOptions`, which the indexer watches. Both are updated in place rather than
+replaced, because the provider and the indexer hold them by reference and a new instance would
+leave them on the old one. Three tests pin the effect rather than the value - changing the
+stuttering factor changes the next frame pacing, changing the rounding changes the next metric, and
+changing the folder moves the index.
+
+**The folder can move while the service runs.** `RecordIndexOptions.CaptureDirectory` is no longer
+fixed at start-up; setting it raises `Invalidated`, the indexer disposes its watcher and takes up
+the new folder, and the scan that follows drops the records of the old one - the index describes
+the folder being observed, and the files themselves are untouched. `Invalidate()` is the same
+channel without the move, for when what the index *stores* has to change.
+
+**Changing the rounding digits marks every record for re-reading.** The list shows numbers the
+index computed once; without this it would disagree with the record it opens in the last decimal
+place until each capture happened to be touched again. `IndexVersion` goes to 0 and the watcher
+rescans - the version column doing what it was built for. Only the rounding digits get this
+treatment, because everything else is read per request.
+
+**Validation is where the quiet failures are.** Rounding digits outside 0 to 15 make `Math.Round`
+throw, which the statistics provider catches and turns into a metric that is silently absent; a
+stuttering factor of one or less reports a perfectly even capture as stuttering the whole way
+through. The whole patch is checked before any of it is kept, so one bad value changes nothing
+rather than half of what was asked for, and the answer names every fault at once rather than making
+the user find them one request at a time.
+
+Two smaller decisions:
+
+- **A separate file**, `ServiceSettings.json`, beside 1.x's `AppSettings.json` rather than inside
+  it. Two applications rewriting one file would each drop what the other had added.
+- **The capture folder is stored as null when it is the platform's own**, not as the resolved path,
+  so a portable installation moved to another drive does not carry a path that no longer exists.
+
+The analysis endpoint now starts from the configured options and lets the query override them, so
+the tile row and the L-shape a user chose are what they get without the frontend repeating them on
+every request. `OutlierMethods` moved out of the API into the analysis project, where the settings
+validator needs it too.
+
+Verified: Shared 64, Api 89, Data 33, Records 70, Application 50, Analysis 114 - all green, both
+solutions build. The two live-effect tests were checked for vacuity by not applying the stuttering
+factor and by skipping the re-projection; both turn red.
+
+Known gap: section 5.2 asks for the observed directory to come from CapFrameX 1.x's
+`AppSettings.json`. It does not - the service starts from the platform's capture folder until the
+user points it elsewhere, and a user who moved 1.x's folder has to say so once.
+
 ## Documentation Rules For Future Steps
 
 For every meaningful backend/frontend migration step, update this log with:
