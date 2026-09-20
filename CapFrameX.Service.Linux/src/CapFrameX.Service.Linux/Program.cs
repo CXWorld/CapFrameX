@@ -1,5 +1,6 @@
 using CapFrameX.Service.Api;
 using CapFrameX.Service.Core.Platform;
+using CapFrameX.Service.Data;
 using CapFrameX.Service.Core.Security;
 using CapFrameX.Service.Linux.Platform;
 using Microsoft.Extensions.Hosting;
@@ -38,6 +39,7 @@ builder.WebHost.ConfigureKestrel(options => options.ListenLocalhost(CapFrameXApi
 builder.Services.AddSingleton(paths);
 builder.Services.AddSingleton<ISecretFileWriter, PosixSecretFileWriter>();
 builder.Services.AddSingleton(tokenStore);
+builder.Services.AddCapFrameXDatabase(paths);
 builder.Services.AddCapFrameXApi(new CapFrameXApiOptions { Token = token });
 
 var app = builder.Build();

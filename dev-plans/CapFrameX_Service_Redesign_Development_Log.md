@@ -404,6 +404,41 @@ is not an opening - the token only authenticates against a service that is runni
 start overwrites it - but a frontend must treat the file as a hint and confirm with
 `GET /api/health`, never as proof that a service is there.
 
+## 2026-09-20 - The database now exists
+
+It did not before: the `InitialCreate` migration had been written in December but **never applied**.
+Neither host referenced `CapFrameX.Service.Data`, no `DbContext` was registered, and no database
+file existed on a developer machine. The schema was a file in the repository, nothing more.
+
+- `AddCapFrameXDatabase(paths)` registers the context and the three repositories, and
+  `DatabaseMigrationService` applies pending migrations before the service answers. Migrations, not
+  `EnsureCreated`: an installation holding a user's records has to be upgraded, not recreated.
+- The path comes from `IAppPaths.DataDirectory`, not from a hard-coded `LocalApplicationData` - the
+  old `CapFrameXDbContextFactory.GetDefaultDatabasePath()` ignored both portable mode and the XDG
+  layout. That factory stays for the EF design-time tools only.
+- Both hosts register it, so Windows and Linux create the same schema in their own place.
+
+Verified live: starting the Windows host logs `Applying 1 database migration(s):
+20251226142228_InitialCreate`, creates `capframex.db`, and the database tool reads the three tables
+back.
+
+**Schema tests now run against real SQLite** (`SchemaMigrationTests`), not the in-memory provider,
+which ignores relational constraints and would have let all of this pass. That immediately turned
+up a property worth knowing before the record importer is written: **`Session.SuiteId` is a
+mandatory foreign key**, so importing a capture file means creating or choosing a suite for it -
+there is no loose session. The plan's item to move `Service.Data.Tests` off the in-memory provider
+is started rather than finished: the existing repository tests still use it.
+
+Also: EF Core moved 9.0.0 -> 10.0.1 to match the target framework.
+
+### Open: dependency advisories
+
+`dotnet build` reports two `NU1903` warnings that predate this work and are not resolved by the EF
+upgrade: `SQLitePCLRaw.lib.e_sqlite3` (2.1.10, still 2.1.11 under EF 10) and `Microsoft.OpenApi`
+2.3.0, both "known high severity". Neither has an obvious fixed version on the feed. They ship in a
+service that runs elevated on Windows, so they want a decision rather than a warning everyone
+scrolls past.
+
 ## Documentation Rules For Future Steps
 
 For every meaningful backend/frontend migration step, update this log with:

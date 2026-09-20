@@ -1,5 +1,6 @@
 using CapFrameX.Service.Api;
 using CapFrameX.Service.Core.Platform;
+using CapFrameX.Service.Data;
 using CapFrameX.Service.Core.Security;
 using CapFrameX.Service.Windows.Host;
 using CapFrameX.Service.Windows.Platform;
@@ -49,6 +50,7 @@ builder.Services.AddSingleton(paths);
 builder.Services.AddSingleton<IPrivilegeInfo>(privileges);
 builder.Services.AddSingleton<ISecretFileWriter, WindowsSecretFileWriter>();
 builder.Services.AddSingleton(tokenStore);
+builder.Services.AddCapFrameXDatabase(paths);
 builder.Services.AddCapFrameXApi(new CapFrameXApiOptions { Token = token });
 
 var app = builder.Build();
