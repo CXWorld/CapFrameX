@@ -743,6 +743,34 @@ untouched. Four projects still carry package references NuGet reports as redunda
 (`System.Text.Json`, `System.Threading.AccessControl`, `System.Security.Principal.Windows`,
 `System.Runtime.CompilerServices.Unsafe`); they predate this work and were left alone.
 
+## 2026-09-20 - The record list filters
+
+`GET /api/records` now takes `game`, `from`, `to` and `sort` beside the `search`, `skip` and `take`
+it already had, and `GET /api/records/games` returns the games the index holds - the filter chips
+are built from that rather than from whatever happens to be on the current page. The querying moved
+out of the controller into `RecordLibrary`, next to the other record services.
+
+- **`search` and `game` are different questions.** `search` is the box the user types in, matched
+  against game and process as a substring with `%` and `_` as ordinary characters. `game` is a chip
+  they picked from the games that exist, so it matches the whole name - "Portal" must not drag in
+  "Portal 2".
+- **`to` is inclusive.** A capture taken at the exact second the user asked up to is inside the
+  range they asked for.
+- **`sort` is one parameter**, with a leading `-` for descending, because a sort is one decision
+  and that is the convention someone typing a URL will guess. An unknown field is a 400 listing the
+  known ones, like the metrics and series parameters before it.
+- **A record whose metric was never computed sorts last either way.** "Not measured" is not
+  "slowest", and a record the index has not caught up with must not head a list sorted by frame
+  rate. Pinned by a test that fails if the null handling goes.
+
+The order ends in the record identity so it is total. Worth being precise about what that is worth:
+the test pins that identity is the last key - reversing it fails - but **it does not prove the list
+would be wrong without it**, because SQLite returns these rows in the same order either way. The
+clause is there so the order does not depend on that happening to stay true.
+
+Verified: Shared 64, Api 76, Data 33, Records 70, Application 25, Analysis 114 - all green, both
+solutions build.
+
 ## Documentation Rules For Future Steps
 
 For every meaningful backend/frontend migration step, update this log with:

@@ -459,8 +459,11 @@ GET    /api/settings            PATCH /api/settings             -> AppSettingsDt
 - **`records.changed` carries counts**, not the identities the sketch above shows. The frontend
   reloads the list on it either way, and counts are what the indexer already knows.
 
-Still open here: `RecordsPage` filters beyond `search`/`skip`/`take` (`game`, `from`, `to`, `sort`),
-the settings endpoints and `settings.changed`.
+The list takes `search`, `game`, `from`, `to`, `sort`, `skip` and `take`; `GET /api/records/games`
+returns the games the index holds, which is what the filter chips are built from. `sort` is one
+parameter with a leading `-` for descending, defaulting to `-created`.
+
+Still open here: the settings endpoints and `settings.changed`.
 
 ### 5.5 Contract generation (WP-B4)
 - Emit the OpenAPI document at build time from `CapFrameX.Service.Shared/src/CapFrameX.Service.Api`
