@@ -220,6 +220,11 @@ webfont, no CDN (offline rule, CSP).
   >= 50 fps, first paint < 150 ms after data arrival. Record the numbers in the dev log. If uPlot
   fails the gate, evaluate a WebGL renderer before building more chart features.
 
+  **Not measured yet (2026-09-20).** The chart is built and draws real captures, but the gate needs
+  browser automation that can drive a pan and count frames; headless screenshots fire at an
+  unpredictable moment and cannot measure anything. Playwright - which WP-F4 needs anyway - is the
+  prerequisite, and the gate should be the first thing it does.
+
 ## 3. Frontend architecture
 
 - **Upgrade first** (WP-F0): Angular to the current stable major, `application` builder (esbuild),

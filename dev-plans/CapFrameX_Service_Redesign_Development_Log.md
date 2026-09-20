@@ -971,6 +971,46 @@ frontend reads matching the service's JSON key for key - no missing field, no ex
 analysis view shows the real numbers for a real capture: 113 avg, 128 P95, 30 1% low, 97.9% smooth,
 three spikes, and "this capture does not carry latency" where it does not.
 
+## 2026-09-20 - F6 and F8: the chart, and settings
+
+**The last of the fragile pattern is gone.** `AnalysisStore` still read the open record through
+`toObservable(...)`, the construction that left the record list loading forever. It worked in the
+browser - but by luck: `selectedId` is set by an effect after construction, and by then the
+application happened to be ticking. Two `httpResource`s now, which are eager and skip the request
+by returning `undefined` while nothing is selected. Its tests include the case that matters for
+resources: reading `value()` in an error state throws, so both are read through `hasValue()`.
+
+**F6 - the chart.** uPlot on canvas, four tabs (frame times, FPS, L-shape, distribution), drag to
+zoom, the theme bridge, and the spike annotation. Three things worth keeping:
+
+- **The x axis is not time.** uPlot reads an x scale as unix timestamps by default, so twenty
+  seconds of capture came out labelled 1/1/1970. `scales.x.time = false`.
+- **The annotation is a DOM element, not canvas.** It is a label with text in it, and text drawn on
+  canvas is text no screen reader reaches and nobody can select.
+- **It is placed from uPlot's own hooks** (`ready`, `setScale`, `setSize`), not after the
+  constructor. Measuring right after `new uPlot(...)` put the "374 ms spike" pill outside the plot,
+  clipped to "4 ms spike" - which looked like a wrong number from the service and was not: the
+  service had 373.77 ms at 17.58 s, exactly where the peak is.
+
+Only the two curves that need frame data are fetched, and only while one of them is showing: the
+L-shape and the distribution already arrive with the analysis, and a series is a megabyte.
+
+**The chart gate is not measured**, and no number is claimed for it. It needs automation that can
+drive a pan and count frames; headless screenshots fire at an unpredictable moment - three of six
+attempts here caught the page before its data arrived. Playwright, which WP-F4 needs anyway, is the
+prerequisite.
+
+**F8 - settings and import.** The service owns every value: a patch goes out, it validates the
+whole thing, and the answer is what the settings now are - so the form cannot show something the
+service rejected. The import section lists what `import/sources` suggests, and it suggested the
+real thing: CapFrameX 1.x's observed folder, 13 captures, read out of its `AppSettings.json`.
+
+Importing it reported **13 already known, 0 imported**, and the count stayed at 306 - the dedupe
+holding across both paths on real data, because that folder sits inside the one the scan watches.
+
+Verified: Api 109, Shared 64, Data 33, Records 70, Application 69, Analysis 114, frontend 20; build
+and lint green; the analysis view drawing a real 2254-frame capture.
+
 ## Documentation Rules For Future Steps
 
 For every meaningful backend/frontend migration step, update this log with:
