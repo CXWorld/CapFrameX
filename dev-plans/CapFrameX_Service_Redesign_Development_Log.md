@@ -500,6 +500,29 @@ files have. It skips where no captures exist, so a green run on a build agent is
 Still open in B2: the `AddRecordSource` migration, the summary projection with duration and
 sparkline, the indexer with its file watcher, and the `/api/records` endpoints.
 
+## 2026-09-20 - B2: record summaries and the sparkline
+
+`RecordSummaryFactory` projects a capture onto what the list shows: name, game, process, hardware,
+duration, run and frame counts, and a sparkline. Two decisions worth keeping:
+
+- **Duration is the span the frames cover**, summed per run, not the frame count times a frame time
+  - a capture with dropped frames or several runs would otherwise be misreported.
+- **Metrics a capture does not carry are flagged, not zeroed** (`HasPcLatency`, `HasDisplayChange`),
+  so the list can say "this capture has no latency" instead of showing 0 ms.
+
+`FrametimeSparkline` uses **min/max decimation**, not sampling or averaging. The sparkline's job is
+to show whether a capture stuttered, and a single 200 ms frame among ten thousand 16 ms ones
+vanishes under an average and is missed entirely by every-nth sampling. Tests pin exactly that: a
+spike survives, the lowest frame time survives, and a rising series stays rising - a sparkline that
+reorders its points would be a lie.
+
+Verified against reality: **all 306 captures in the running user's folder** read, and every one of
+them produces a usable list entry - a name, at least one run, frames, a duration above zero and a
+sparkline within budget. That test skips where no captures exist.
+
+Still open in B2: the `AddRecordSource` migration, the indexer with its file watcher, and the
+`/api/records` endpoints.
+
 ## Documentation Rules For Future Steps
 
 For every meaningful backend/frontend migration step, update this log with:

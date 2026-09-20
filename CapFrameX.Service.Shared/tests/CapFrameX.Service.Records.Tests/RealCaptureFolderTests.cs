@@ -49,4 +49,37 @@ public sealed class RealCaptureFolderTests
         Assert.NotNull(session.Runs[0].CaptureData);
         Assert.NotEmpty(session.Runs[0].CaptureData!.MsBetweenPresents);
     }
+
+    [RequiresRealCapturesFact]
+    public async Task Summaries_of_real_captures_are_usable_in_a_list()
+    {
+        var reader = new RecordFileReader();
+        var summaries = new List<RecordSummary>();
+
+        foreach (var record in CaptureFolder.Records())
+        {
+            var session = (await reader.ReadAsync(record)).Session;
+
+            if (session is not null)
+            {
+                summaries.Add(RecordSummaryFactory.Create(session, record));
+            }
+        }
+
+        Assert.NotEmpty(summaries);
+
+        // A list entry with no duration, no frames or no sparkline is an entry a user cannot read
+        // anything from, so none of the real captures may produce one.
+        Assert.All(summaries, summary =>
+        {
+            Assert.False(string.IsNullOrWhiteSpace(summary.Name));
+            Assert.True(summary.RunCount > 0, $"{summary.Name} has no runs.");
+            Assert.True(summary.FrameCount > 0, $"{summary.Name} has no frames.");
+            Assert.True(summary.DurationSeconds > 0, $"{summary.Name} has no duration.");
+            Assert.NotEmpty(summary.Sparkline);
+            Assert.True(
+                summary.Sparkline.Length <= FrametimeSparkline.DefaultPointCount,
+                $"{summary.Name} has an oversized sparkline.");
+        });
+    }
 }

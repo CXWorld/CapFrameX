@@ -26,7 +26,7 @@ public sealed class RecordFileReaderTests : IDisposable
     [Fact]
     public void Capture_with_its_parts_is_read()
     {
-        var result = _reader.Parse(RecordFixtures.MinimalCapture);
+        var result = _reader.Parse(RecordFixtures.Capture);
 
         Assert.True(result.IsSuccess, result.Error);
         Assert.Null(result.Error);
@@ -35,7 +35,7 @@ public sealed class RecordFileReaderTests : IDisposable
     [Fact]
     public void Session_info_survives_the_read()
     {
-        var session = _reader.Parse(RecordFixtures.MinimalCapture).Session!;
+        var session = _reader.Parse(RecordFixtures.Capture).Session!;
 
         Assert.Equal("Cyberpunk 2077", session.Info.GameName);
         Assert.Equal("Cyberpunk2077", session.Info.ProcessName);
@@ -46,7 +46,7 @@ public sealed class RecordFileReaderTests : IDisposable
     [Fact]
     public void Frame_times_survive_the_read()
     {
-        var run = _reader.Parse(RecordFixtures.MinimalCapture).Session!.Runs[0];
+        var run = _reader.Parse(RecordFixtures.Capture).Session!.Runs[0];
 
         Assert.Equal([16.6, 16.7, 16.5], run.CaptureData!.MsBetweenPresents);
         Assert.Equal([0.0, 0.0166, 0.0333], run.CaptureData.TimeInSeconds);
@@ -76,7 +76,7 @@ public sealed class RecordFileReaderTests : IDisposable
     public async Task Half_written_file_is_a_failure()
     {
         // What a capture interrupted by a crash leaves behind.
-        var truncated = RecordFixtures.MinimalCapture[..(RecordFixtures.MinimalCapture.Length / 2)];
+        var truncated = RecordFixtures.Capture[..(RecordFixtures.Capture.Length / 2)];
 
         var result = await _reader.ReadAsync(Write("truncated.json", truncated));
 
@@ -101,7 +101,7 @@ public sealed class RecordFileReaderTests : IDisposable
     public async Task Unknown_fields_do_not_make_a_capture_unreadable()
     {
         // A record written by a later CapFrameX still has to open here.
-        var withExtra = RecordFixtures.MinimalCapture.Replace(
+        var withExtra = RecordFixtures.Capture.Replace(
             """"Hash":"""",
             """"SomethingFromTheFuture":{"a":1},"Hash":"""",
             StringComparison.Ordinal);
@@ -114,7 +114,7 @@ public sealed class RecordFileReaderTests : IDisposable
     [Fact]
     public async Task File_is_read_from_disk_as_well_as_from_memory()
     {
-        var result = await _reader.ReadAsync(Write("capture.json", RecordFixtures.MinimalCapture));
+        var result = await _reader.ReadAsync(Write("capture.json", RecordFixtures.Capture));
 
         Assert.True(result.IsSuccess, result.Error);
         Assert.Equal("Cyberpunk 2077", result.Session!.Info.GameName);
