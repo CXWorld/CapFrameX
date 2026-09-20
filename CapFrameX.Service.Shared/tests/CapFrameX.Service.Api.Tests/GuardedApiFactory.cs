@@ -1,23 +1,49 @@
 using CapFrameX.Service.Core.Security;
-using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace CapFrameX.Service.Api.Tests;
 
 /// <summary>
-/// Hosts the real API in-process with a known session token, so the guard can be exercised exactly
-/// as a caller would meet it.
+/// Hosts the API exactly as a composition root does - <c>AddCapFrameXApi</c> plus
+/// <c>MapCapFrameXApi</c> - with a known session token.
 /// </summary>
-public sealed class GuardedApiFactory : WebApplicationFactory<Program>
+/// <remarks>
+/// Deliberately not a copy of the pipeline: if a host ever adds the guard itself instead of
+/// getting it from the library, or the library stops adding it, these tests notice.
+/// </remarks>
+public sealed class GuardedApiFactory : IAsyncLifetime
 {
-    /// <summary>The token the hosted service was started with.</summary>
+    /// <summary>The token the hosted service accepts.</summary>
     public const string Token = "TestTokenTestTokenTestTokenTestTokenTestTok";
 
     /// <summary>Host header a legitimate caller sends.</summary>
     public const string OwnHost = "127.0.0.1:1337";
 
-    /// <summary>Creates the factory and pins the token the service will accept.</summary>
-    public GuardedApiFactory() =>
-        Environment.SetEnvironmentVariable("CAPFRAMEX_SERVICE_TOKEN", Token);
+    private WebApplication? _app;
+
+    /// <inheritdoc />
+    public async Task InitializeAsync()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Logging.ClearProviders();
+
+        builder.Services.AddCapFrameXApi(new CapFrameXApiOptions
+        {
+            Token = new SessionToken(Token),
+            Port = CapFrameXApiOptions.DefaultPort,
+        });
+
+        _app = builder.Build();
+        _app.MapCapFrameXApi();
+
+        await _app.StartAsync();
+    }
 
     /// <summary>A client whose requests look like they come from the frontend.</summary>
     /// <param name="token">Token to present, or <c>null</c> to present none.</param>
@@ -25,7 +51,7 @@ public sealed class GuardedApiFactory : WebApplicationFactory<Program>
     /// <param name="origin">Origin header to send, if any.</param>
     public HttpClient CreateCaller(string? token = Token, string host = OwnHost, string? origin = null)
     {
-        var client = CreateClient();
+        var client = _app!.GetTestClient();
         client.DefaultRequestHeaders.Host = host;
 
         if (token is not null)
@@ -42,13 +68,11 @@ public sealed class GuardedApiFactory : WebApplicationFactory<Program>
     }
 
     /// <inheritdoc />
-    protected override void Dispose(bool disposing)
+    public async Task DisposeAsync()
     {
-        if (disposing)
+        if (_app is not null)
         {
-            Environment.SetEnvironmentVariable("CAPFRAMEX_SERVICE_TOKEN", null);
+            await _app.DisposeAsync();
         }
-
-        base.Dispose(disposing);
     }
 }

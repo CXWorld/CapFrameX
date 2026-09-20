@@ -49,6 +49,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Service.Windows.P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Service.Windows.Platform", "src\CapFrameX.Service.Windows.Platform\CapFrameX.Service.Windows.Platform.csproj", "{F000F3E0-3850-4B4B-8ADE-5E5A54F469C0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Service.Windows", "src\CapFrameX.Service.Windows\CapFrameX.Service.Windows.csproj", "{D06A4DBE-4EA6-4EC1-9F5F-424452835FE6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -299,6 +301,18 @@ Global
 		{F000F3E0-3850-4B4B-8ADE-5E5A54F469C0}.Release|x64.Build.0 = Release|Any CPU
 		{F000F3E0-3850-4B4B-8ADE-5E5A54F469C0}.Release|x86.ActiveCfg = Release|Any CPU
 		{F000F3E0-3850-4B4B-8ADE-5E5A54F469C0}.Release|x86.Build.0 = Release|Any CPU
+		{D06A4DBE-4EA6-4EC1-9F5F-424452835FE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D06A4DBE-4EA6-4EC1-9F5F-424452835FE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D06A4DBE-4EA6-4EC1-9F5F-424452835FE6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D06A4DBE-4EA6-4EC1-9F5F-424452835FE6}.Debug|x64.Build.0 = Debug|Any CPU
+		{D06A4DBE-4EA6-4EC1-9F5F-424452835FE6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D06A4DBE-4EA6-4EC1-9F5F-424452835FE6}.Debug|x86.Build.0 = Debug|Any CPU
+		{D06A4DBE-4EA6-4EC1-9F5F-424452835FE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D06A4DBE-4EA6-4EC1-9F5F-424452835FE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D06A4DBE-4EA6-4EC1-9F5F-424452835FE6}.Release|x64.ActiveCfg = Release|Any CPU
+		{D06A4DBE-4EA6-4EC1-9F5F-424452835FE6}.Release|x64.Build.0 = Release|Any CPU
+		{D06A4DBE-4EA6-4EC1-9F5F-424452835FE6}.Release|x86.ActiveCfg = Release|Any CPU
+		{D06A4DBE-4EA6-4EC1-9F5F-424452835FE6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -316,5 +330,6 @@ Global
 		{7CAD1B57-ED77-43CA-BC1F-EA5556CE56F1} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
 		{63B94E94-0BF9-41E4-8884-A983961537E6} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{F000F3E0-3850-4B4B-8ADE-5E5A54F469C0} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{D06A4DBE-4EA6-4EC1-9F5F-424452835FE6} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal

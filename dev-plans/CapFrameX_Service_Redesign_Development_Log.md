@@ -372,6 +372,38 @@ owns that logic; the one platform-specific part is behind `ISecretFileWriter`:
 
 New project `CapFrameX.Service.Windows.Platform` holds the Windows side.
 
+## 2026-09-20 - The two composition roots exist
+
+`CapFrameX.Service.Api` is a library now, not an executable. It exposes `AddCapFrameXApi` and
+`MapCapFrameXApi`; routes live there and nowhere else, so both hosts map the same endpoints and the
+contract cannot drift between the platforms. `Worker.cs`, the project template's stub, is gone.
+
+- **`CapFrameX.Service.Windows`** (`net10.0-windows`, console app, `requireAdministrator` manifest):
+  checks elevation first and exits with a distinct code rather than serving half an API - PresentMon
+  needs a real-time ETW session and PawnIO its device, so there is no degraded mode. Also refuses to
+  start when the port is taken. `WindowsAppPaths` keeps the 1.x locations so both generations see
+  the same settings and captures; portable mode is switched on by `portable.json` next to the
+  binaries.
+- **`CapFrameX.Service.Linux`** (`net10.0`, console app): same shape, XDG paths, no elevation - the
+  Vulkan layer needs none and the kernel exports its telemetry to everyone.
+- Both publish the session token on start and revoke it on shutdown, and both take one from
+  `CAPFRAMEX_SERVICE_TOKEN` when the frontend started them.
+- `POST /api/app/shutdown` is the deliberate "Exit": the service outlives the frontend on purpose,
+  so closing the window must not stop it. It answers before stopping, because a caller that gets no
+  response cannot tell a shutdown from a crash.
+
+The API tests no longer host a `Program`; they build a host through the two extension methods, which
+is exactly what a composition root does - so they fail if a host ever has to add the guard itself.
+
+Verified against the running elevated service, not only in tests: `401` without a token, `200` with
+the token read from the published file, `403` from a foreign origin, `202` on shutdown, process
+gone, token file removed.
+
+Known limitation: a *forced* kill cannot run the shutdown hook, so the token file survives it. That
+is not an opening - the token only authenticates against a service that is running, and the next
+start overwrites it - but a frontend must treat the file as a hint and confirm with
+`GET /api/health`, never as proof that a service is there.
+
 ## Documentation Rules For Future Steps
 
 For every meaningful backend/frontend migration step, update this log with:
