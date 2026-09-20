@@ -364,8 +364,8 @@ Copying frame arrays into `CaptureDataJson` doubles storage and creates a sync p
   `SourceModifiedUtc`, `ContentHash`, `IndexVersion`; `SessionRun.CaptureDataJson` and friends
   become nullable and stay empty for file-backed records. Per `Session` also store
   `SparklineJson` - <= 64 min/max-decimated frametime points for `cx-sparkline` - and the duration.
-- `RecordIndexer` (hosted service): initial scan of the observed directory (path from the legacy
-  `AppSettings.json`, default `Documents\CapFrameX\Captures`, portable mode respected), then
+- `RecordIndexer` (hosted service): initial scan of the capture directory (the service's own
+  setting, default `Documents\CapFrameX\Captures`, portable mode respected), then
   `FileSystemWatcher` with debounce; publishes `records.changed`. Index metrics with the statistics
   adapter from 5.3 so list metrics and analysis metrics cannot disagree.
 - `DatabaseInitializer.SeedSampleDataAsync` becomes Development-only.
@@ -468,9 +468,13 @@ is checked as a whole before any of it is kept, and a change takes effect at onc
 reads the options per request and the indexer follows the folder - rather than on the next start.
 `settings.changed` carries the settings as they now are, so a second window does not have to ask.
 
-Still open here: reading the observed directory out of CapFrameX 1.x's `AppSettings.json`, which
-section 5.2 asks for and the service does not do - it starts from the platform's own capture folder
-until the user points it somewhere else.
+**The capture directory is the service's own setting, not one imported from CapFrameX 1.x**
+(decided 2026-09-20). The earlier sketch had the indexer read 1.x's `ObservedDirectory` out of
+`AppSettings.json`; the index now holds what the service knows about records, and a second place to
+configure the same thing is one that can disagree with it. A user who keeps captures somewhere else
+says so once, in the settings.
+
+Section 5.4 is complete.
 
 ### 5.5 Contract generation (WP-B4)
 - Emit the OpenAPI document at build time from `CapFrameX.Service.Shared/src/CapFrameX.Service.Api`

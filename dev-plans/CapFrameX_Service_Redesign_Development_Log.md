@@ -820,9 +820,12 @@ Verified: Shared 64, Api 89, Data 33, Records 70, Application 50, Analysis 114 -
 solutions build. The two live-effect tests were checked for vacuity by not applying the stuttering
 factor and by skipping the re-projection; both turn red.
 
-Known gap: section 5.2 asks for the observed directory to come from CapFrameX 1.x's
-`AppSettings.json`. It does not - the service starts from the platform's capture folder until the
-user points it elsewhere, and a user who moved 1.x's folder has to say so once.
+**Not a gap, a decision** (confirmed the same day): section 5.2 originally had the indexer read
+1.x's `ObservedDirectory` out of `AppSettings.json`. It does not, and it will not. The index is
+what the service knows about records now, and a second place to configure where they live is one
+that can disagree with it - silently, because nothing would say which of the two won. The capture
+directory is the service's own setting, starting at the platform's folder; a user who keeps
+captures elsewhere says so once. Section 5.2 and 5.4 were corrected to match.
 
 ## Documentation Rules For Future Steps
 
