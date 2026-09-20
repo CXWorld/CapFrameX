@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\CapFrameX.Service.Shared\src\CapFrameX.Service.Contracts\CapFrameX.Service.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\CapFrameX.Service.Shared\src\CapFrameX.Service.Core\CapFrameX.Service.Core.csproj" />
+  </ItemGroup>
+
+</Project>
