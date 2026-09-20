@@ -146,7 +146,12 @@ validation report is accepted (L2).
   demand or by a `systemd --user` unit (`capframex.service`, `WantedBy=default.target`) when
   autostart is enabled; XDG autostart as fallback for non-systemd sessions.
 - Single instance: lock file in `$XDG_RUNTIME_DIR/capframex/`.
-- Token hand-over: `$XDG_RUNTIME_DIR/capframex/service.token`, mode `0600`, per start.
+- Start model, as on Windows: the **frontend starts first** and starts the service; started on its
+  own the service is an ordinary console application with its logs on the console. A frontend that
+  finds a running service through `GET /api/health` attaches to it instead of starting a second one.
+- Token hand-over: the frontend passes `CAPFRAMEX_SERVICE_TOKEN` when it starts the service;
+  either way the service writes the token to `$XDG_RUNTIME_DIR/capframex/service.token`, mode
+  `0600`, rewritten per start and deleted on shutdown, for a frontend that did not start it.
 - Tray: StatusNotifierItem over D-Bus, owned by the service (architecture plan section 3);
   optional - no feature depends on it.
 - **Optional privileged helper** `capframex-telemetry-helper` (decided by the validation plan, T5):

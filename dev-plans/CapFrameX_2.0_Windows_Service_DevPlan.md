@@ -58,6 +58,14 @@ Windows service mechanism.
   shape as `CapFrameX.Service.Linux`, which is a console application too - one mental model, and
   `dotnet run` / F5 with log output on stdout and Ctrl+C shutdown work during development on both
   platforms.
+- **Two ways in, decided by the launcher, not by the program.**
+  - *Default:* the **frontend starts first** and starts the service (2.2). It is launched headless,
+    so no console window appears, and the frontend supplies the session token it will then use.
+  - *Standalone:* the service is started on its own - a shortcut, a terminal, a debugger - and
+    then behaves like the console application it is: the console stays, logs go to it, Ctrl+C stops
+    it. This is the diagnostic path, and it is the reason the project is `OutputType=Exe`.
+  A frontend that starts later finds the already-running service through `GET /api/health` and
+  picks up its token from the runtime file (2.4) instead of starting a second instance.
 - **Headless start:** a console-subsystem process gets a console window whenever it is started
   without an attached console, so the window is suppressed by *how* it is launched, not by the
   program:
@@ -90,7 +98,8 @@ parent of the service.
   The legacy app already uses this mechanism for its autostart (`ColorbarViewModel`,
   `TaskRunLevel.Highest`, `LogonTrigger`; creation in `InstallerCustomActions`), so it is proven on
   the user base.
-- The host starts the service with `ITaskService::Run` on that task. A user who is a member of
+- The frontend starts the service with `ITaskService::Run` on that task - this is the default
+  path, and the only one a normal user ever sees. A user who is a member of
   Administrators can start their own highest-run-level task on demand **without a UAC prompt**; the
   one UAC prompt happens at install time.
 - The service executable additionally carries a `requireAdministrator` manifest, so a direct start
@@ -115,6 +124,25 @@ parent of the service.
   together, so the host is asked to close first.
 - Standard (non-administrator) users are not supported, as in 1.x. Document it; do not build an
   over-the-shoulder elevation path.
+
+### 2.4 Who owns the session token
+
+The token authenticates the frontend to an elevated service, so both start orders have to end with
+the frontend knowing it - without ever putting it on a command line, where any process could read
+it from the process list.
+
+- **Frontend starts the service** (default): the frontend generates the token and passes it in the
+  child process environment (`CAPFRAMEX_SERVICE_TOKEN`). It never touches disk in this direction.
+- **Service starts alone**: it generates its own token.
+
+In both cases the service writes the token to `<runtime directory>/service.token` restricted to the
+current user - Windows: an ACL with that user only, inheritance disabled; Linux: mode `0600` under
+`$XDG_RUNTIME_DIR`. The file is rewritten on every start and deleted on shutdown, so a stale token
+cannot authenticate anything. A frontend that did not start the service reads it there.
+
+This is deliberately not a strong secret: any process of this user can read the file, exactly as it
+could read the environment of a process it owns. Its job is to keep out *other* users and *web
+pages*, which is what the privilege boundary of section 4 needs.
 
 ## 3. Components (all under `CapFrameX.Service.Windows/src/`)
 
