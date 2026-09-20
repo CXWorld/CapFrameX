@@ -440,3 +440,22 @@ For cloud deployment or multi-user scenarios, consider migrating to PostgreSQL u
 ## License
 
 Part of CapFrameX - Frame capture and analysis tool
+
+## Migrations
+
+`Microsoft.EntityFrameworkCore.Design` is **not** referenced here. It drags Roslyn and MSBuild
+behind it, and even with `PrivateAssets=all` that reached the publish output: removing it took a
+service publish from 85 files to 39 and dropped two `BuildHost-*` directories of build tooling.
+
+It lives in `CapFrameX.Service.Windows/tools/CapFrameX.DatabaseTool` instead, which is the startup
+project for the EF tools:
+
+```bash
+dotnet tool install --global dotnet-ef
+dotnet ef migrations add <Name> \
+  --project CapFrameX.Service.Shared/src/CapFrameX.Service.Data \
+  --startup-project CapFrameX.Service.Windows/tools/CapFrameX.DatabaseTool
+```
+
+The services apply pending migrations themselves at start (`DatabaseMigrationService`), so nothing
+has to be run by hand on a user's machine.

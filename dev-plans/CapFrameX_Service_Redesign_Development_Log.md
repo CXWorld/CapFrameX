@@ -439,6 +439,32 @@ upgrade: `SQLitePCLRaw.lib.e_sqlite3` (2.1.10, still 2.1.11 under EF 10) and `Mi
 service that runs elevated on Windows, so they want a decision rather than a warning everyone
 scrolls past.
 
+## 2026-09-20 - Dependency advisories, and what the design-time package was shipping
+
+Asked whether `SQLitePCLRaw.lib.e_sqlite3` works on Linux. It does - the package carries
+`libe_sqlite3.so` for linux-x64 plus arm64, musl and more, and a cross-publish of the Linux host
+from Windows picks up the right one and no Windows DLL. Following that up cleared the build of
+security warnings and turned up something bigger:
+
+- **`SQLitePCLRaw`**: the advisory covers `<= 2.1.11`; pinning `SQLitePCLRaw.bundle_e_sqlite3` to
+  2.1.13 resolves it. EF Core also moved 9.0.0 -> 10.0.1 to match the target framework.
+- **`Microsoft.OpenApi`**: advisory covers `<= 2.7.4`, fixed in 2.7.5; pinned to 2.12.2.
+- **`Microsoft.EntityFrameworkCore.Design` was shipping build tooling.** It arrives with
+  `Microsoft.CodeAnalysis.Workspaces.MSBuild` and `Microsoft.Build.Tasks.Core`, which is also where
+  the six `System.Security.Cryptography.Xml` advisories came from. `PrivateAssets=all` was already
+  set and did *not* prevent it: a publish of the Linux service contained `BuildHost-net472/` and
+  `BuildHost-netcore/`. Moving the package out of `Service.Data` and into the `CapFrameX.DatabaseTool`
+  startup project took the publish from **85 files to 39** and removed those directories.
+
+Result: `dotnet build` of the Linux solution reports **no advisories at all**; the Windows solution
+reports them only for `CapFrameX.DatabaseTool`, a developer tool that is not part of a service
+install. The migration command moved with the package and is documented in the Data project's
+README; the services still migrate themselves at start, so nothing is run by hand on a user's
+machine.
+
+Note: `dotnet ef` is not installed on this machine, so the migration workflow itself was documented
+rather than executed.
+
 ## Documentation Rules For Future Steps
 
 For every meaningful backend/frontend migration step, update this log with:
