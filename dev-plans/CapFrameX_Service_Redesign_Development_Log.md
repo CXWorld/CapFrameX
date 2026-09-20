@@ -472,6 +472,34 @@ That round trip did regenerate `CapFrameXDbContextModelSnapshot.cs`: `ProductVer
 column changed. It is committed rather than reverted, because a stale snapshot would mix this noise
 into the next real migration.
 
+## 2026-09-20 - B2 started: reading capture files
+
+`CapFrameX.Service.Records` exists and reads the capture format CapFrameX 1.x writes. It
+**references** `CapFrameX.Data.Session` rather than reimplementing the model: records travel
+between machines and between both generations, so a second parser would only find new ways to
+disagree with the files users already have.
+
+`RecordFileReader` returns a result, not an exception. The indexer walks a directory the user
+controls, where a half-written file, a leftover from a crashed capture and anything else ending in
+`.json` are all normal; each of those has to skip one file, not stop the scan.
+
+Two things the tests turned up, both worth keeping in mind for the indexer:
+
+- **`SampleTime` is an integer**, not a timestamp, and `CreationDate` carries sub-second precision
+  with a `Z` suffix. The first hand-written fixture guessed wrong and the reader rejected it.
+- **A JSON object without a `Runs` array throws `ArgumentNullException`**, not `JsonException`:
+  the legacy `[JsonConstructor]` receives null and passes it to `new List<ISessionRun>(null)`. The
+  reader therefore catches broadly on parse - deliberately, because the input is user-controlled
+  and the contract is "skip the file".
+
+Tests: 12 against hand-written fixtures, plus two that read the **running user's own capture
+folder** when there is one. On this machine that is **306 real captures, all of them readable**.
+The fixtures pin the shape the reader expects; the folder test pins that the shape is the one real
+files have. It skips where no captures exist, so a green run on a build agent is no evidence it ran.
+
+Still open in B2: the `AddRecordSource` migration, the summary projection with duration and
+sparkline, the indexer with its file watcher, and the `/api/records` endpoints.
+
 ## Documentation Rules For Future Steps
 
 For every meaningful backend/frontend migration step, update this log with:
