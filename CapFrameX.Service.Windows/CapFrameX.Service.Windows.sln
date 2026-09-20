@@ -43,6 +43,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{07C2787E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.DatabaseTool", "tools\CapFrameX.DatabaseTool\CapFrameX.DatabaseTool.csproj", "{7CAD1B57-ED77-43CA-BC1F-EA5556CE56F1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Service.Api.Tests", "..\CapFrameX.Service.Shared\tests\CapFrameX.Service.Api.Tests\CapFrameX.Service.Api.Tests.csproj", "{CE702AEF-4440-4877-BBF4-40FA42653D2C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -257,6 +259,18 @@ Global
 		{7CAD1B57-ED77-43CA-BC1F-EA5556CE56F1}.Release|x64.Build.0 = Release|Any CPU
 		{7CAD1B57-ED77-43CA-BC1F-EA5556CE56F1}.Release|x86.ActiveCfg = Release|Any CPU
 		{7CAD1B57-ED77-43CA-BC1F-EA5556CE56F1}.Release|x86.Build.0 = Release|Any CPU
+		{CE702AEF-4440-4877-BBF4-40FA42653D2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE702AEF-4440-4877-BBF4-40FA42653D2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE702AEF-4440-4877-BBF4-40FA42653D2C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CE702AEF-4440-4877-BBF4-40FA42653D2C}.Debug|x64.Build.0 = Debug|Any CPU
+		{CE702AEF-4440-4877-BBF4-40FA42653D2C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CE702AEF-4440-4877-BBF4-40FA42653D2C}.Debug|x86.Build.0 = Debug|Any CPU
+		{CE702AEF-4440-4877-BBF4-40FA42653D2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE702AEF-4440-4877-BBF4-40FA42653D2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE702AEF-4440-4877-BBF4-40FA42653D2C}.Release|x64.ActiveCfg = Release|Any CPU
+		{CE702AEF-4440-4877-BBF4-40FA42653D2C}.Release|x64.Build.0 = Release|Any CPU
+		{CE702AEF-4440-4877-BBF4-40FA42653D2C}.Release|x86.ActiveCfg = Release|Any CPU
+		{CE702AEF-4440-4877-BBF4-40FA42653D2C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -312,6 +312,38 @@ behaviour of the new switches is unverified. Worth checking next: whether anothe
 providers, whether a reboot clears it, and whether PresentMon needs larger ETW session buffers
 (`--set_trace_buffer_*` style options) on a machine this busy.
 
+## 2026-09-20 - B1: the localhost API is no longer unauthenticated
+
+`Program.cs` called `app.UseAuthorization()` without any authentication scheme - decoration, not a
+check. On Windows this process is elevated, so every route was lending administrator rights to
+whatever asked for it. Written test-first (31 policy tests, 17 endpoint tests):
+
+- `SessionToken` (`Service.Core/Security`): 256 bits from `RandomNumberGenerator`, base64url so it
+  survives a query string, compared with `CryptographicOperations.FixedTimeEquals`. Generated per
+  service start; the host supplies it through `CAPFRAMEX_SERVICE_TOKEN`, and a run without one
+  still starts so development is not blocked.
+- `LocalApiGuard` (same folder, no ASP.NET types, so the rules are testable without a host) checks
+  three things in this order:
+  1. the `Host` header names this service's loopback endpoint - any website can point its own name
+     at 127.0.0.1, and the Host header is what separates that from a local caller;
+  2. the `Origin`, when sent, is the CapFrameX frontend - this is what stops a page from driving
+     the service, since a browser always sends it cross-origin;
+  3. the token matches.
+  Host is judged first on purpose: a caller already out of bounds learns nothing about the token.
+- `LocalApiGuardMiddleware` runs in front of every route. Refusals answer `application/problem+json`
+  with 401 or 403 and never name the failed check; the reason goes to the log only. Asserted by a
+  test, because a helpful error message here is an oracle.
+- The event stream may take its token from the query (`access_token`), because `EventSource` cannot
+  set request headers; every other route rejects a query token, since it ends up in logs.
+- CORS lost the `tauri://localhost` origin - the Tauri scaffold is superseded by the CEF host.
+
+The endpoint tests host the real API through `WebApplicationFactory`, so they fail if the
+middleware is ever dropped from the pipeline - which unit tests of the policy alone would not
+notice.
+
+Not yet done from B1: `Service.Api` is still an executable rather than the library the two
+composition roots map, and the token is not yet written to a file the desktop host can read.
+
 ## Documentation Rules For Future Steps
 
 For every meaningful backend/frontend migration step, update this log with:
