@@ -679,6 +679,70 @@ Known gaps: `RecordDetailDto`, `PATCH` and `DELETE /api/records/{id}` are still 
 5.4, as are the settings endpoints; the analysis is reachable only by record id, so a capture that
 is not indexed cannot be analysed.
 
+## 2026-09-20 - 5.4: the record detail, editing and deleting
+
+**`GET /api/records/{id}` now returns `RecordDetailDto`** - the summary from the index row, the
+machine and the runs from the capture file, and the chips above the chart. It reads the file, so a
+record whose capture has gone answers 409 rather than a view that renders and says nothing.
+
+`RecordDetailFactory` composes the chips server-side. Two rules worth keeping:
+
+- **A platform switch has three states.** CapFrameX writes "Enabled", "Disabled", or an empty
+  string where it could not find out, and "not known" is not the same claim as "off" - so the DTO
+  carries `bool?` and the unknown case is `null`.
+- **The switches that are on share one pill**, and a capture with none gets no pill at all. They
+  are only interesting together, and a row of "Disabled" chips says nothing a reader wants.
+
+**`PATCH /api/records/{id}`** writes the correction into the capture file, because the file is the
+record: the change has to survive being copied to another machine, and CapFrameX 1.x reads the same
+files. The editable set is exactly the one 1.x allows - game name, comment, processor, graphics
+card, memory, motherboard, resolution. Four things the tests pin:
+
+- **A field left out is left alone; an empty string clears it.** That is what makes it a patch, and
+  a client editing only the comment must not blank hardware it never sent.
+- **A patch that changes nothing does not write.** Rewriting would change the file's timestamp,
+  wake the watcher and re-index a record for no reason.
+- **The edit is read fresh, not from the session cache.** The cached parse is shared with whoever
+  is looking at the record right now, and mutating it would show them an edit that has not been
+  written - or, if the write fails, one that never will be.
+- **The index re-reads that one record immediately** (`RecordIndex.RefreshAsync`), storing the new
+  size and time, so the next request answers with the edit and the watcher's next scan finds
+  nothing to do.
+
+The file is serialised into memory and moved into place rather than written over directly: this
+overwrites something the user cannot get back, and a failure halfway through a direct write would
+leave a truncated capture where a whole one was. The scratch file ends in `.tmp` so a scan cannot
+pick a half-written capture up as a record.
+
+**`DELETE /api/records/{id}` never unlinks a capture.** A record is hours of benchmarking that
+cannot be recaptured, so it goes to the platform's trash behind a new port, `IFileTrash`:
+
+- **`WindowsFileTrash`** calls `SHFileOperation` with `FOF_ALLOWUNDO`. Worth recording: the first
+  attempt declared the struct with `Pack = 1`, which is what most examples on the web show, and it
+  crashed the test host with an access violation inside `shell32`. The shell reads the fields at
+  the offsets its own compiler chose; with default alignment it works. The test goes through the
+  real recycle bin, because a fake would only assert that we wrote the call we wrote.
+- **`XdgFileTrash`** implements the freedesktop layout: `files/` and `info/` under the trash home,
+  a percent-encoded `.trashinfo` record, and a fresh name when one is taken. The info file is
+  created with `CreateNew` *before* the move, which is how two programs trashing the same name at
+  once each get a name of their own - the file system decides rather than a check-then-write. All
+  of it is testable on Windows, since it is file operations and a text format.
+- **A capture that refuses to move keeps its record.** Dropping the row while the file is still in
+  the folder would only bring it back on the next scan, under a new identity and without its
+  history.
+
+`AddCapFrameXRecordIndex` was split from `AddCapFrameXRecordWatcher`: editing a record needs the
+index to re-read it, while a background scan is a thing a host runs and a test would rather not.
+
+Verified: Shared 64, Api 57, Data 33, Records 70, Application 25, Analysis 114, Windows platform
+13, Linux 35 - all green, both solutions build.
+
+Known gaps: the record list still takes only `search`, `skip` and `take`, not the `game`, `from`,
+`to` and `sort` filters section 5.4 sketches; the settings endpoints and `settings.changed` are
+untouched. Four projects still carry package references NuGet reports as redundant
+(`System.Text.Json`, `System.Threading.AccessControl`, `System.Security.Principal.Windows`,
+`System.Runtime.CompilerServices.Unsafe`); they predate this work and were left alone.
+
 ## Documentation Rules For Future Steps
 
 For every meaningful backend/frontend migration step, update this log with:

@@ -375,7 +375,8 @@ Copying frame arrays into `CaptureDataJson` doubles storage and creates a sync p
   `$XDG_DATA_HOME/capframex`, captures where the Avalonia app writes them today - verify and keep).
   No path concatenation with `\`, no case-insensitive path comparison outside `IAppPaths`.
 - `DELETE /api/records/{id}` uses the platform trash (Windows recycle bin; freedesktop trash spec on
-  Linux), never a hard delete.
+  Linux), never a hard delete. **Done**: `IFileTrash` in `Service.Core`, `WindowsFileTrash` over
+  `SHFileOperation` and `XdgFileTrash` over the freedesktop layout.
 - `FileSystemWatcher` on Linux is inotify-backed: watch directories, not files, handle
   `IN_Q_OVERFLOW` by falling back to a rescan, and document the `max_user_watches` limit.
 - Records written by the Linux Avalonia app must load: add fixtures from `capframex-linux` to the
@@ -394,8 +395,8 @@ Copying frame arrays into `CaptureDataJson` doubles storage and creates a sync p
   tests that pin them. B3 fills them through that adapter; computing them separately here is
   exactly how the list and the analysis would come to disagree.
 
-Still open from this section: CSV import, `DELETE /api/records/{id}` through the platform trash,
-the Linux fixtures, and the `Service.Data.Tests` provider swap.
+Still open from this section: CSV import, the Linux fixtures, and the `Service.Data.Tests` provider
+swap.
 
 ### 5.3 Analysis (WP-B3)
 - New `CapFrameX.Service.Analysis` (`CapFrameX.Service.Shared/src/`) referencing
@@ -443,6 +444,23 @@ GET    /api/settings            PATCH /api/settings             -> AppSettingsDt
   gate shows JSON parsing on the hot path, add `Accept: application/octet-stream` returning
   little-endian `Float32` columns behind the same client method - do not build it speculatively.
 - New SSE events: `records.changed { added[], removed[], updated[] }`, `settings.changed`.
+
+**As implemented (2026-09-20)** - `GET /api/records`, `GET /api/records/{id}`, `PATCH`, `DELETE`,
+`/series` and `/analysis` are in place. Four decisions behind them:
+
+- **The detail reads the capture file**, because the runs and the full machine description are only
+  in it. It carries the summary as well, so a deep link needs no list request first. A record whose
+  file has gone answers 409, not an empty view.
+- **A patch is a patch**: a field left out is left alone, an empty string clears it, and a patch
+  that changes nothing does not rewrite the file - which would wake the watcher and re-index a
+  record for no reason.
+- **An edit is written into the capture file**, and the index re-reads that one record immediately
+  rather than waiting for the watcher, so the next request answers with the edit.
+- **`records.changed` carries counts**, not the identities the sketch above shows. The frontend
+  reloads the list on it either way, and counts are what the indexer already knows.
+
+Still open here: `RecordsPage` filters beyond `search`/`skip`/`take` (`game`, `from`, `to`, `sort`),
+the settings endpoints and `settings.changed`.
 
 ### 5.5 Contract generation (WP-B4)
 - Emit the OpenAPI document at build time from `CapFrameX.Service.Shared/src/CapFrameX.Service.Api`
