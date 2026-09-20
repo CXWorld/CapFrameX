@@ -110,6 +110,29 @@ public sealed class RecordIndexerTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Pointing_the_service_at_another_folder_moves_the_watch_with_it()
+    {
+        // The user can move the capture folder while the service runs, and the old watcher would
+        // otherwise keep reporting about a place nobody is looking at.
+        Write("first", CaptureFixture.Capture("First"));
+        using var indexer = Start();
+        Assert.True(await WaitForRecordsAsync(1));
+
+        var moved = Path.Combine(_root, "Elsewhere");
+        Directory.CreateDirectory(moved);
+        _provider.GetRequiredService<RecordIndexOptions>().CaptureDirectory = moved;
+
+        // The old folder is no longer observed, so its record leaves the index.
+        Assert.True(await WaitForRecordsAsync(0));
+
+        File.WriteAllText(
+            Path.Combine(moved, "second" + RecordFileReader.Extension),
+            CaptureFixture.Capture("Second"));
+
+        Assert.True(await WaitForRecordsAsync(1));
+    }
+
+    [Fact]
     public async Task The_frontend_is_told_what_changed()
     {
         Write("first", CaptureFixture.Capture("First"));

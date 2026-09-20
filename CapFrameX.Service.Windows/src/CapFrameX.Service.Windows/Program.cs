@@ -1,5 +1,7 @@
 using CapFrameX.Service.Api;
 using CapFrameX.Service.Application.Records;
+using CapFrameX.Service.Application.Settings;
+using Microsoft.Extensions.DependencyInjection;
 using CapFrameX.Service.Core.Platform;
 using CapFrameX.Service.Data;
 using CapFrameX.Service.Core.Security;
@@ -60,6 +62,10 @@ builder.Services.AddCapFrameXApi(new CapFrameXApiOptions { Token = token });
 
 var app = builder.Build();
 app.MapCapFrameXApi();
+
+// Before anything serves a request, so the first analysis already uses the user's options
+// and the indexer watches the folder they chose rather than the platform default.
+app.Services.GetRequiredService<SettingsStore>().Load();
 
 tokenStore.Publish(token);
 

@@ -222,6 +222,7 @@ public sealed class RecordListFilterTests(GuardedApiFactory factory)
 
         var games = await client.GetFromJsonAsync<string[]>("/api/records/games", Json);
 
+        Assert.NotNull(games);
         Assert.Equal(["Baldurs Gate 3", "Cyberpunk 2077"], games);
     }
 

@@ -14,17 +14,6 @@ namespace CapFrameX.Service.Api.Controllers;
 /// </remarks>
 internal static class AnalysisQuery
 {
-    /// <summary>
-    /// The outlier methods that actually remove anything.
-    /// </summary>
-    /// <remarks>
-    /// <see cref="ERemoveOutlierMethod"/> declares three more - interquartile range, three sigma,
-    /// two and a half sigma - which the 1.x provider accepts and then returns the sequence
-    /// unchanged for. Offering them here would let the UI show a setting that does nothing.
-    /// </remarks>
-    public static IReadOnlyList<ERemoveOutlierMethod> SupportedOutlierMethods { get; } =
-        [ERemoveOutlierMethod.None, ERemoveOutlierMethod.DeciPercentile];
-
     /// <summary>Reads the metric list.</summary>
     /// <param name="metrics">Comma-separated metric keys, or nothing for the default tiles.</param>
     /// <param name="parsed">What they name.</param>
@@ -74,17 +63,13 @@ internal static class AnalysisQuery
             return true;
         }
 
-        foreach (var method in SupportedOutlierMethods)
+        if (OutlierMethods.TryParse(outliers, out parsed))
         {
-            if (string.Equals(method.ToString(), outliers.Trim(), StringComparison.OrdinalIgnoreCase))
-            {
-                parsed = method;
-
-                return true;
-            }
+            return true;
         }
 
-        error = $"'{outliers}' is not an outlier method. Known methods: {Join(SupportedOutlierMethods.Select(m => m.ToString()))}.";
+        parsed = ERemoveOutlierMethod.None;
+        error = $"'{outliers}' is not an outlier method. Known methods: {Join(OutlierMethods.Names)}.";
 
         return false;
     }

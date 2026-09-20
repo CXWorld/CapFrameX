@@ -64,7 +64,9 @@ public sealed class GuardedApiFactory : IAsyncLifetime
 
         // The index, but not the folder watcher: editing a record has to re-read it at once, while
         // a background scan of a temp folder would only add timing to every test here.
-        builder.Services.AddCapFrameXRecordIndex(new TestPaths(_root));
+        var testPaths = new TestPaths(_root);
+        builder.Services.AddSingleton<IAppPaths>(testPaths);
+        builder.Services.AddCapFrameXRecordIndex(testPaths);
 
         _app = builder.Build();
         _app.MapCapFrameXApi();

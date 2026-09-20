@@ -1,5 +1,6 @@
 using CapFrameX.Service.Analysis;
 using CapFrameX.Service.Application.Records;
+using CapFrameX.Service.Application.Settings;
 using CapFrameX.Service.Contracts.Analysis;
 using CapFrameX.Service.Contracts.Records;
 using Microsoft.AspNetCore.Mvc;
@@ -17,12 +18,14 @@ namespace CapFrameX.Service.Api.Controllers;
 /// <param name="library">Reads the list.</param>
 /// <param name="analyzer">Reads and analyses the capture behind a record.</param>
 /// <param name="store">Changes a record, or removes it.</param>
+/// <param name="settings">Supplies the analysis options the user configured.</param>
 [ApiController]
 [Route("api/records")]
 public sealed class RecordsController(
     RecordLibrary library,
     RecordAnalyzer analyzer,
-    RecordStore store) : ControllerBase
+    RecordStore store,
+    SettingsStore settings) : ControllerBase
 {
     /// <summary>Lists the indexed captures, newest first.</summary>
     /// <param name="search">Free text, matched against game and process name; case is ignored.</param>
@@ -160,14 +163,18 @@ public sealed class RecordsController(
             return BadRequest(error);
         }
 
-        var request = new AnalysisRequest
+        // What the user configured, unless this request says otherwise - so opening a record gives
+        // the tiles and the curve they chose without the frontend repeating them every time.
+        var defaults = settings.DefaultAnalysisRequest();
+
+        var request = defaults with
         {
             Run = run,
             StartSeconds = start,
             EndSeconds = end,
-            OutlierMethod = method,
-            Metrics = wanted,
-            LShapeMetric = lShapeMetric,
+            OutlierMethod = string.IsNullOrWhiteSpace(outliers) ? defaults.OutlierMethod : method,
+            Metrics = wanted ?? defaults.Metrics,
+            LShapeMetric = string.IsNullOrWhiteSpace(lshape) ? defaults.LShapeMetric : lShapeMetric,
         };
 
         try

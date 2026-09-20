@@ -1,4 +1,5 @@
 using CapFrameX.Service.Analysis;
+using CapFrameX.Service.Application.Settings;
 using CapFrameX.Service.Records;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -26,6 +27,7 @@ public static class AnalysisExtensions
         services.AddSingleton<AnalysisSettings>();
         services.AddSingleton<SessionCache>();
         services.AddSingleton<AnalysisService>();
+        services.AddSingleton<SettingsStore>();
         services.TryAddSingleton<RecordFileReader>();
         services.TryAddSingleton<RecordFileWriter>();
         services.AddScoped<RecordLibrary>();

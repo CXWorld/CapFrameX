@@ -26,6 +26,8 @@ public sealed class RecordIndexer : BackgroundService
     private readonly ILogger<RecordIndexer> _logger;
     private readonly SemaphoreSlim _changed = new(0, 1);
 
+    private int _moved;
+
     /// <summary>Creates the indexer.</summary>
     /// <param name="scopes">Provides a scope per scan, because the index holds a database context.</param>
     /// <param name="options">Which folder to watch, and how long to let it settle.</param>
@@ -51,24 +53,51 @@ public sealed class RecordIndexer : BackgroundService
 
         // Watching before scanning, not after: a capture written in between is then either caught
         // by the watcher or still found by the scan. The other order has a gap where it is neither.
-        using var watcher = Watch();
+        var watcher = Watch();
+        _options.Invalidated += OnInvalidated;
 
-        await ScanAsync(stoppingToken);
-
-        while (!stoppingToken.IsCancellationRequested)
+        try
         {
-            try
-            {
-                await _changed.WaitAsync(stoppingToken);
-                await SettleAsync(stoppingToken);
-            }
-            catch (OperationCanceledException)
-            {
-                return;
-            }
-
             await ScanAsync(stoppingToken);
+
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                try
+                {
+                    await _changed.WaitAsync(stoppingToken);
+                    await SettleAsync(stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+
+                if (Interlocked.Exchange(ref _moved, 0) == 1)
+                {
+                    // The user pointed the service at another folder. The old watcher is reporting
+                    // about a place nobody is looking at any more.
+                    watcher?.Dispose();
+                    watcher = Watch();
+                }
+
+                await ScanAsync(stoppingToken);
+            }
         }
+        finally
+        {
+            _options.Invalidated -= OnInvalidated;
+            watcher?.Dispose();
+        }
+    }
+
+    private void OnInvalidated(bool moved)
+    {
+        if (moved)
+        {
+            Interlocked.Exchange(ref _moved, 1);
+        }
+
+        Signal();
     }
 
     /// <summary>
