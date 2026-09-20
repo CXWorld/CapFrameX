@@ -1,0 +1,116 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>CapFrameX.Service.Monitoring</AssemblyName>
+    <RootNamespace>CapFrameX.Service.Monitoring</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Platforms>x64;x86;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x64;win-x86;win-arm64</RuntimeIdentifiers>
+    <PlatformTarget Condition="'$(Platform)' == 'AnyCPU'">x64</PlatformTarget>
+    <PlatformTarget Condition="'$(Platform)' == 'x64'">x64</PlatformTarget>
+    <PlatformTarget Condition="'$(Platform)' == 'x86'">x86</PlatformTarget>
+    <PlatformTarget Condition="'$(Platform)' == 'ARM64'">ARM64</PlatformTarget>
+    <NoWarn>$(NoWarn);CA1416;CS1591;CS8618;CS8603;CS8625</NoWarn>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="PawnIo\PawnIO.cat" />
+    <None Remove="PawnIo\PawnIO.inf" />
+    <None Remove="PawnIo\PawnIO.sys" />
+    <None Remove="PawnIo\PawnIOLib.dll" />
+    <None Remove="PawnIo\PawnIOLib.h" />
+    <None Remove="Resources\PawnIO\AMDFamily0F.bin" />
+    <None Remove="Resources\PawnIO\AMDFamily10.bin" />
+    <None Remove="Resources\PawnIO\AMDFamily17.bin" />
+    <None Remove="Resources\PawnIO\AMDReset.bin" />
+    <None Remove="Resources\PawnIO\ARMMSR.bin" />
+    <None Remove="Resources\PawnIO\DellSMM.bin" />
+    <None Remove="Resources\PawnIO\Echo.bin" />
+    <None Remove="Resources\PawnIO\IntelMCHBAR.bin" />
+    <None Remove="Resources\PawnIO\IntelMSR.bin" />
+    <None Remove="Resources\PawnIO\IntelOOBMSM.bin" />
+    <None Remove="Resources\PawnIO\IntelPCHThermal.bin" />
+    <None Remove="Resources\PawnIO\IsaBridgeEC.bin" />
+    <None Remove="Resources\PawnIO\LpcACPIEC.bin" />
+    <None Remove="Resources\PawnIO\LpcCrOSEC.bin" />
+    <None Remove="Resources\PawnIO\LpcIO.bin" />
+    <None Remove="Resources\PawnIO\Nvidia.bin" />
+    <None Remove="Resources\PawnIO\RyzenSMU.bin" />
+    <None Remove="Resources\PawnIO\SmbusI801.bin" />
+    <None Remove="Resources\PawnIO\SmbusIntelSkylakeIMC.bin" />
+    <None Remove="Resources\PawnIO\SmbusNCT6793.bin" />
+    <None Remove="Resources\PawnIO\SmbusPIIX4.bin" />
+    <None Remove="Resources\PawnIO\ZhaoxinMSR.bin" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- PawnIO 2.x is a PnP driver: the device object is only created once a Root\PawnIO node
+         exists, so it has to be installed through its INF. INF, catalog and .sys must stay in
+         the same folder - the INF references the .sys via SourceDisksFiles and names the
+         catalog in CatalogFile. -->
+    <Content Include="PawnIo\PawnIO.cat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PawnIo\PawnIO.inf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PawnIo\PawnIO.sys">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PawnIo\PawnIOLib.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PawnIo\PawnIOLib.h">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\PawnIO\AMDFamily0F.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.AMDFamily0F.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\AMDFamily10.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.AMDFamily10.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\AMDFamily17.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.AMDFamily17.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\AMDReset.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.AMDReset.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\ARMMSR.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.ARMMSR.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\DellSMM.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.DellSMM.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\Echo.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.Echo.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\IntelMCHBAR.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.IntelMCHBAR.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\IntelMSR.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.IntelMSR.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\IntelOOBMSM.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.IntelOOBMSM.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\IntelPCHThermal.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.IntelPCHThermal.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\IsaBridgeEC.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.IsaBridgeEC.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\LpcACPIEC.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.LpcACPIEC.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\LpcCrOSEC.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.LpcCrOSEC.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\LpcIO.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.LpcIO.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\Nvidia.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.Nvidia.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\RyzenSMU.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.RyzenSMU.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\SmbusI801.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.SmbusI801.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\SmbusIntelSkylakeIMC.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.SmbusIntelSkylakeIMC.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\SmbusNCT6793.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.SmbusNCT6793.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\SmbusPIIX4.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.SmbusPIIX4.bin" />
+    <EmbeddedResource Include="Resources\PawnIO\ZhaoxinMSR.bin" LogicalName="CapFrameX.Service.Monitoring.Resources.PawnIO.ZhaoxinMSR.bin" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HidSharp" Version="2.6.3" />
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.205">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="RAMSPDToolkit-NDD" Version="1.4.2" />
+    <PackageReference Include="Serilog" Version="2.9.0" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="10.0.1" />
+    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
+    <PackageReference Include="System.IO.Ports" Version="10.0.1" />
+    <PackageReference Include="System.Management" Version="10.0.1" />
+    <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
+    <PackageReference Include="System.Reactive" Version="6.1.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
+    <PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
+    <PackageReference Include="System.Threading.AccessControl" Version="10.0.1" />
+  </ItemGroup>
+</Project>
