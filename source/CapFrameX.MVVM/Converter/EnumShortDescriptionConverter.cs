@@ -17,7 +17,7 @@ namespace CapFrameX.MVVM.Converter
                     return string.Empty;
 
                 string description = GetEnumShortDescription(myEnum);
-                return CxLang.Instance.T(description);
+                return CxLang.T(description);
             }
             catch { return string.Empty; }
         }

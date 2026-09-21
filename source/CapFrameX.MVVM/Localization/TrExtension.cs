@@ -41,7 +41,7 @@ namespace CapFrameX.MVVM.Localization
                 return binding.ProvideValue(serviceProvider);
             }
 
-            return CxLang.Instance.T(english);
+            return CxLang.T(english);
         }
 
         private sealed class TranslateConverter : IValueConverter
@@ -49,7 +49,7 @@ namespace CapFrameX.MVVM.Localization
             public static readonly TranslateConverter Instance = new TranslateConverter();
 
             public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-                => CxLang.Instance.T(parameter as string);
+                => CxLang.T(parameter as string);
 
             public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
                 => throw new NotSupportedException();

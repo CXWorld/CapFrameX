@@ -56,11 +56,11 @@ namespace CapFrameX.Contracts.Localization
             OverlayLanguageChanged?.Invoke();
         }
 
-        public string T(string english)
+        public static string T(string english)
         {
-            if (string.IsNullOrEmpty(english) || _uiLanguage == "en")
+            if (string.IsNullOrEmpty(english) || Instance._uiLanguage == "en")
                 return english ?? string.Empty;
-            return _ui.TryGetValue(english, out var translated) && !string.IsNullOrEmpty(translated)
+            return Instance._ui.TryGetValue(english, out var translated) && !string.IsNullOrEmpty(translated)
                 ? translated
                 : english;
         }

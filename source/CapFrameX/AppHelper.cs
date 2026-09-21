@@ -93,7 +93,7 @@ namespace CapFrameX
 
             if (process?.MainWindowHandle == IntPtr.Zero)
             {
-                MessageBox.Show(CxLang.Instance.T("There is already an instance running..."));
+                MessageBox.Show(CxLang.T("There is already an instance running..."));
                 return;
             }
 
