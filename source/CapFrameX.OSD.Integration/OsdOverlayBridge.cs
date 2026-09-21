@@ -21,7 +21,11 @@ namespace CapFrameX.OSD.Integration
     ///  - runs when the overlay is active AND either the user enabled the hook-free overlay
     ///    (<c>IAppConfiguration.EnableHookFreeOverlay</c>) or the in-game renderer requested a
     ///    transient fallback for an unsupported runtime; RTSS is gated off in OverlayService
-    ///    for both hook modes, so the renderers never overlap.
+    ///    for both hook modes, so the renderers never overlap,
+    ///  - is only VISIBLE while the capture process list has at least one entry: a desktop
+    ///    overlay with nothing to measure would otherwise sit on an empty desktop. The overlay
+    ///    hotkey keeps toggling <c>IsOverlayActive</c>, which can hide the overlay at any time
+    ///    but cannot show it past this gate.
     /// </summary>
     public sealed class OsdOverlayBridge : IDisposable
     {
@@ -48,6 +52,7 @@ namespace CapFrameX.OSD.Integration
         private readonly IObservable<string[]> _frameDataStream;
         private readonly bool _filterFrameRowsByTarget;
         private readonly IDisposable _targetPidSub;
+        private readonly IDisposable _processCountSub;
         private readonly object _frameSubscriptionLock = new object();
         // StartTimeInMs (CPUStartQPCTimeInMs) sits AFTER the optional PC-latency column, so
         // its index is layout-dependent — resolve it lazily instead of caching a stale int.
@@ -55,6 +60,7 @@ namespace CapFrameX.OSD.Integration
         private volatile bool _active;
         private volatile bool _enabled;
         private volatile bool _fallbackEnabled;
+        private volatile bool _hasProcesses;
         private volatile bool _started;
         private int _targetPid;
 
@@ -108,7 +114,8 @@ namespace CapFrameX.OSD.Integration
                                 IObservable<int> processIdStream = null,
                                 int processIdColumnIndex = -1,
                                 int swapChainColumnIndex = -1,
-                                int frameTypeColumnIndex = -1)
+                                int frameTypeColumnIndex = -1,
+                                IObservable<int> processCountStream = null)
         {
             if (overlayService == null) throw new ArgumentNullException(nameof(overlayService));
             if (appConfiguration == null) throw new ArgumentNullException(nameof(appConfiguration));
@@ -154,7 +161,16 @@ namespace CapFrameX.OSD.Integration
                     .DistinctUntilChanged()
                     .Subscribe(OnTargetPidChanged);
 
-            _activeSub = overlayService.IsOverlayActiveStream.Subscribe(OnActiveChanged);
+            // Without a process list there is nothing to gate on. Subscribed before the active
+            // stream so its replayed state never shows the overlay ahead of the first count.
+            _hasProcesses = processCountStream == null;
+            if (processCountStream != null)
+                _processCountSub = processCountStream
+                    .Select(count => count > 0)
+                    .DistinctUntilChanged()
+                    .Subscribe(OnHasProcessesChanged);
+
+            _activeSub =overlayService.IsOverlayActiveStream.Subscribe(OnActiveChanged);
             _entriesSub = overlayService.OnDictionaryUpdated.Subscribe(_ => OnEntries());
             _enabledSub = appConfiguration.OnValueChanged
                 .Where(x => x.key == nameof(IAppConfiguration.EnableHookFreeOverlay))
@@ -190,6 +206,10 @@ namespace CapFrameX.OSD.Integration
         private void OnActiveChanged(bool active) { _active = active; UpdateRunState(); }
         private void OnEnabledChanged(bool enabled) { _enabled = enabled; UpdateRunState(); }
         private void OnFallbackChanged(bool enabled) { _fallbackEnabled = enabled; UpdateRunState(); }
+        private void OnHasProcessesChanged(bool hasProcesses) { _hasProcesses = hasProcesses; UpdateRunState(); }
+
+        // An empty process list hides exactly like the overlay hotkey does: a soft-hide.
+        private bool IsVisible => _active && _hasProcesses && (_enabled || _fallbackEnabled);
 
         private void OnTargetPidChanged(int processId)
         {
@@ -218,12 +238,12 @@ namespace CapFrameX.OSD.Integration
         {
             // Two-level lifecycle: the renderer EXISTS while a hook-free mode is selected,
             // and mere visibility toggles (IsOverlayActive — capture auto-disable, overlay
-            // hotkey) are soft-hides via DWM cloaking. Tearing the window down instead
-            // stalls the game's presentation path (measured 20-70 ms display hitches from
-            // the multi-stage DWM re-evaluation, including a delayed one seconds later) —
-            // cloaking is the only hide method that stays completely stall-free.
+            // hotkey — or an empty process list) are soft-hides via DWM cloaking. Tearing the
+            // window down instead stalls the game's presentation path (measured 20-70 ms
+            // display hitches from the multi-stage DWM re-evaluation, including a delayed one
+            // seconds later) — cloaking is the only hide method that stays completely stall-free.
             bool exist = _enabled || _fallbackEnabled;
-            bool visible = _active && exist;
+            bool visible = IsVisible;
 
             if (exist && !_started)
             {
@@ -386,7 +406,7 @@ namespace CapFrameX.OSD.Integration
             }
 
             int previous = Interlocked.Exchange(ref _frameFeedRequirements, requirements);
-            UpdateFrameSubscription(_active && (_enabled || _fallbackEnabled));
+            UpdateFrameSubscription(IsVisible);
             bool enableFrametimeScalar = (previous & NeedFrametimeScalar) == 0 &&
                 (requirements & NeedFrametimeScalar) != 0;
             bool enableDisplayTimeScalar = (previous & NeedDisplayTimeValue) == 0 &&
@@ -653,6 +673,7 @@ namespace CapFrameX.OSD.Integration
             _backgroundOpacitySub?.Dispose();
             _zoomSub?.Dispose();
             _targetPidSub?.Dispose();
+            _processCountSub?.Dispose();
             _osd?.Dispose();
         }
     }

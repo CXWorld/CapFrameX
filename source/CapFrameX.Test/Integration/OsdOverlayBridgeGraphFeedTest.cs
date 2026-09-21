@@ -73,6 +73,49 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(0, harness.PendingSamples.Count);
         }
 
+        [TestMethod]
+        public void EmptyProcessList_HidesTheOverlayEvenWhileItIsActive()
+        {
+            var processCount = new Subject<int>();
+            using var harness = new BridgeHarness(processCount);
+            harness.SetActive(true);
+            harness.Publish(true, false, false);
+            Assert.IsFalse(harness.Frames.HasObservers, "Nothing is detected yet.");
+            Assert.IsTrue(harness.IsHidden);
+
+            processCount.OnNext(1);
+            Assert.IsTrue(harness.Frames.HasObservers);
+            Assert.IsFalse(harness.IsHidden);
+
+            // Several detected processes publish no target PID but still count as a filled list.
+            processCount.OnNext(2);
+            Assert.IsFalse(harness.IsHidden);
+
+            processCount.OnNext(0);
+            Assert.IsFalse(harness.Frames.HasObservers);
+            Assert.IsTrue(harness.IsHidden);
+        }
+
+        [TestMethod]
+        public void OverlayHotkey_HidesButCannotShowWhileTheProcessListIsEmpty()
+        {
+            var processCount = new Subject<int>();
+            using var harness = new BridgeHarness(processCount);
+            harness.SetActive(true);
+            processCount.OnNext(1);
+            Assert.IsFalse(harness.IsHidden);
+
+            harness.SetActive(false);
+            Assert.IsTrue(harness.IsHidden, "The hotkey still hides a visible overlay.");
+
+            processCount.OnNext(0);
+            harness.SetActive(true);
+            Assert.IsTrue(harness.IsHidden, "The hotkey must not show it without a process.");
+
+            processCount.OnNext(1);
+            Assert.IsFalse(harness.IsHidden, "The toggled state applies once a process appears.");
+        }
+
         // Keep the real bridge, adapter and OsdHost queue in this regression. Simulate only the
         // worker's running state so no overlay window, native DLL or render thread is needed.
         private sealed class BridgeHarness : IDisposable
@@ -82,12 +125,15 @@ namespace CapFrameX.Test.Integration
             private readonly Subject<(string key, object value)> _configChanges =
                 new Subject<(string key, object value)>();
             private readonly Mock<IOverlayService> _overlay = new Mock<IOverlayService>();
+            private readonly object _host;
 
             public Subject<string[]> Frames { get; } = new Subject<string[]>();
             public OsdOverlayBridge Bridge { get; }
             public IList PendingSamples { get; }
 
-            public BridgeHarness()
+            public bool IsHidden => ReadField<bool>(_host, "_hidden");
+
+            public BridgeHarness(IObservable<int> processCount = null)
             {
                 var config = new Mock<IAppConfiguration>();
                 config.SetupGet(x => x.EnableHookFreeOverlay).Returns(true);
@@ -96,13 +142,15 @@ namespace CapFrameX.Test.Integration
                 _overlay.SetupGet(x => x.OnDictionaryUpdated).Returns(_entries);
                 Bridge = new OsdOverlayBridge(_overlay.Object, config.Object, Frames,
                     frametimeColumnIndex: 0, displayChangedColumnIndex: 1,
-                    startTimeIndexProvider: () => 2);
+                    startTimeIndexProvider: () => 2, processCountStream: processCount);
                 SetField(Bridge, "_started", true);
                 SetField(Bridge, "_active", true);
-                var host = ReadField<object>(Bridge, "_osd");
-                SetField(host, "_running", true);
-                PendingSamples = ReadField<IList>(host, "_pendingSamples");
+                _host = ReadField<object>(Bridge, "_osd");
+                SetField(_host, "_running", true);
+                PendingSamples = ReadField<IList>(_host, "_pendingSamples");
             }
+
+            public void SetActive(bool active) => _active.OnNext(active);
 
             public void Publish(bool fps, bool ft, bool display)
             {

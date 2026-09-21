@@ -52,6 +52,7 @@ namespace CapFrameX.Test.ViewModel
         private Mock<IOverlayEntry> _runHistoryOverlayEntryMock;
 
         private Subject<int> _processIdStream;
+        private Subject<int> _processCountStream;
         private EventAggregator _eventAggregator;
         private ProcessList _processList;
         private SoundManager _soundManager;
@@ -84,6 +85,7 @@ namespace CapFrameX.Test.ViewModel
 
             _eventAggregator = new EventAggregator();
             _processIdStream = new Subject<int>();
+            _processCountStream = new Subject<int>();
 
             SetupAppConfiguration();
             SetupServices();
@@ -210,9 +212,16 @@ namespace CapFrameX.Test.ViewModel
         {
             var sut = CreateSut();
             _mockCaptureService.AddProcess("second.exe", 4242);
+            int? lastProcessId = null;
+            int? lastProcessCount = null;
+            _processIdStream.Subscribe(id => lastProcessId = id);
+            _processCountStream.Subscribe(count => lastProcessCount = count);
 
             InvokePrivate(sut, "UpdateProcessToCaptureList");
 
+            // No target PID without a selection, yet the hook-free overlay must stay visible.
+            Assert.AreEqual(0, lastProcessId);
+            Assert.AreEqual(2, lastProcessCount);
             Assert.IsTrue(sut.CaptureStateInfo.IndexOf("Multiple processes detected", StringComparison.Ordinal) >= 0);
             _overlayServiceMock.Verify(x => x.SetCaptureServiceStatus("Multiple processes detected"), Times.AtLeastOnce);
 
@@ -564,6 +573,7 @@ namespace CapFrameX.Test.ViewModel
             _overlayServiceMock.Setup(x => x.ResetHistory());
 
             _rtssServiceMock.Setup(x => x.ProcessIdStream).Returns(_processIdStream);
+            _rtssServiceMock.Setup(x => x.ProcessCountStream).Returns(_processCountStream);
             _rtssServiceMock.Setup(x => x.GetFrameTimesInterval(It.IsAny<int>(), It.IsAny<int>()))
                 .Returns(new[] { 16.67f, 16.67f, 16.67f });
 
