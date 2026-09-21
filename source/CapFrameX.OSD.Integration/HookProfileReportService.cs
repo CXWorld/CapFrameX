@@ -25,6 +25,7 @@ namespace CapFrameX.OSD.Integration
     {
         internal const int MaxEvents = 256, MaxPending = 32, MaxOutboxFiles = 128;
         internal const int MaxReportBytes = 256 * 1024;
+        internal const long StableCheckpointIntervalMs = 10 * 60 * 1000;
         internal static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -42,6 +43,8 @@ namespace CapFrameX.OSD.Integration
         private readonly Dictionary<int, Session> _sessions = new Dictionary<int, Session>();
         private readonly Queue<Pending> _pending = new Queue<Pending>();
         private readonly Func<int, string, string, CancellationToken, HookProfileReportContext> _capture;
+        private readonly Func<long> _tickCount;
+        private readonly Func<DateTime> _utcNow;
         private CancellationTokenSource _consentCancellation = new CancellationTokenSource();
         private bool _consented, _disposed;
         private int _epoch, _pumpActive;
@@ -53,13 +56,16 @@ namespace CapFrameX.OSD.Integration
         {
             internal int Pid, Sequence, Dropped;
             internal Guid Id = Guid.NewGuid();
-            internal long Started = Environment.TickCount64;
+            internal long Started, LastCheckpointMs;
             internal string GameName, GamePath, HookPath, HookBuild, Api, AttachMode;
-            internal string LastStatusKey;
-            internal long LastSampleMs;
+            internal bool Changed;
+            // DXGI and Vulkan can be observed for the same target. Comparing them against
+            // one shared key makes every alternating observation look like a transition.
+            internal Dictionary<string, (string Key, ReportEvent Latest)> Samples = new();
             internal ReportProfile LastProfile;
-            internal ReportEvent LastSample;
             internal HookProfileReportContext Context;
+            internal string ContextKey;
+            internal int ContextRevision, CapturedContextRevision;
             internal DateTime ContextReadUtc;
             internal List<ReportEvent> Events = new List<ReportEvent>();
         }
@@ -78,13 +84,16 @@ namespace CapFrameX.OSD.Integration
 
         internal HookProfileReportService(IAppConfiguration configuration, string configurationFolder,
             string updateCatalogUri, string appVersion, string appChannel, HttpMessageHandler handler,
-            Func<int, string, string, CancellationToken, HookProfileReportContext> capture, bool startTimer)
+            Func<int, string, string, CancellationToken, HookProfileReportContext> capture, bool startTimer,
+            Func<long> tickCount = null, Func<DateTime> utcNow = null)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _folder = Path.Combine(configurationFolder, "OverlayProfileReports");
             _appVersion = appVersion;
             _appChannel = appChannel;
             _capture = capture;
+            _tickCount = tickCount ?? (() => Environment.TickCount64);
+            _utcNow = utcNow ?? (() => DateTime.UtcNow);
             _endpoint = ResolveEndpoint(updateCatalogUri);
             _http = new HttpClient(handler ?? new HttpClientHandler
             {
@@ -136,11 +145,15 @@ namespace CapFrameX.OSD.Integration
                 {
                     if (_sessions.Count >= 4) EndLocked(_sessions.Keys.First(), "target-limit");
                     session = new Session { Pid = pid, GameName = gameName, GamePath = gamePath,
-                        HookPath = hookPath, HookBuild = hookBuild, Api = api, AttachMode = attachMode };
+                        HookPath = hookPath, HookBuild = hookBuild, Api = api, AttachMode = attachMode,
+                        Started = _tickCount() };
                     _sessions.Add(pid, session);
                 }
+                if (profile?.EvidenceSignature != session.LastProfile?.EvidenceSignature)
+                    session.ContextRevision++;
                 session.LastProfile = profile;
-                AddLocked(session, new ReportEvent { Kind = "plan", Profile = profile });
+                AddLocked(session, new ReportEvent { Kind = "plan", Profile = profile,
+                    ElapsedMs = Math.Max(0, _tickCount() - session.Started) });
             }
         }
 
@@ -149,20 +162,21 @@ namespace CapFrameX.OSD.Integration
             lock (_gate)
             {
                 if (!_consented || _disposed || !_sessions.TryGetValue(pid, out var session)) return;
-                long now = Environment.TickCount64;
+                long now = _tickCount();
                 observation.ElapsedMs = Math.Max(0, now - session.Started);
                 if (statusKey != null)
                 {
-                    session.LastSample = observation;
-                    // Keep transitions immediately, plus cumulative counter samples every 10 s.
-                    if (statusKey == session.LastStatusKey && now - session.LastSampleMs < 10000) return;
-                    session.LastStatusKey = statusKey;
-                    session.LastSampleMs = now;
+                    session.Samples.TryGetValue(observation.Kind, out var previous);
+                    session.Samples[observation.Kind] = (statusKey, observation);
+                    // Normal counter/heartbeat progress updates only the latest snapshot.
+                    // Retain both sides of a transition or counter reset for later analysis.
+                    if (statusKey == previous.Key && !CountersReset(previous.Latest, observation)) return;
+                    AppendSampleLocked(session, previous.Latest);
                 }
                 if (observation.Profile != null)
                 {
                     if (observation.Profile.EvidenceSignature != session.LastProfile?.EvidenceSignature)
-                        session.ContextReadUtc = default;
+                        session.ContextRevision++;
                     // Action proposals must not overwrite the last learned outcome.
                     if (observation.Kind == "profile-outcome") session.LastProfile = observation.Profile;
                 }
@@ -172,7 +186,7 @@ namespace CapFrameX.OSD.Integration
 
         private static void AddLocked(Session session, ReportEvent observation)
         {
-            observation.ElapsedMs = Math.Max(0, Environment.TickCount64 - session.Started);
+            session.Changed = true;
             if (session.Events.Count == MaxEvents)
             {
                 // Preserve the initial plan and early decisions as well as the latest state.
@@ -180,6 +194,21 @@ namespace CapFrameX.OSD.Integration
                 session.Dropped++;
             }
             session.Events.Add(observation);
+        }
+
+        private static void AppendSampleLocked(Session session, ReportEvent sample)
+        {
+            if (sample != null && !session.Events.Contains(sample)) AddLocked(session, sample);
+        }
+
+        private static bool CountersReset(ReportEvent previous, ReportEvent current)
+        {
+            if (previous?.Native != null && current.Native != null)
+                return current.Native.CoverageAttempts < previous.Native.CoverageAttempts ||
+                    current.Native.CoverageSubmitted < previous.Native.CoverageSubmitted ||
+                    current.Native.CoverageMissed < previous.Native.CoverageMissed;
+            return previous?.Vulkan != null && current.Vulkan != null &&
+                current.Vulkan.Successes < previous.Vulkan.Successes;
         }
 
         internal void End(int pid, string reason)
@@ -195,28 +224,31 @@ namespace CapFrameX.OSD.Integration
 
         private void CheckpointLocked(Session session, string reason)
         {
-            if (session.Events.Count == 0 && reason == "checkpoint") return;
-            if (session.LastSample != null && !session.Events.Contains(session.LastSample))
-            {
-                if (session.Events.Count == MaxEvents) { session.Events.RemoveAt(32); session.Dropped++; }
-                session.Events.Add(session.LastSample);
-            }
+            long elapsed = Math.Max(0, _tickCount() - session.Started);
+            if (reason == "checkpoint" && !session.Changed &&
+                elapsed - session.LastCheckpointMs < StableCheckpointIntervalMs) return;
+            foreach (var sample in session.Samples.Values) AppendSampleLocked(session, sample.Latest);
             var report = new OverlayProfileReport
             {
                 ReportId = Guid.NewGuid(), SessionId = session.Id, Sequence = ++session.Sequence,
-                CreatedUtc = DateTime.UtcNow, AppVersion = _appVersion, AppChannel = _appChannel,
+                CreatedUtc = _utcNow(), AppVersion = _appVersion, AppChannel = _appChannel,
                 OsVersion = Environment.OSVersion.Version.ToString(),
                 OsArchitecture = RuntimeInformation.OSArchitecture.ToString(),
                 AttachMode = session.AttachMode ?? "unknown", GraphicsApi = session.Api ?? "unknown",
                 HookBuild = session.HookBuild ?? "", Game = new ReportBinary { Name = session.GameName ?? "unknown" },
-                EndReason = reason, DurationMs = Math.Max(0, Environment.TickCount64 - session.Started),
-                Events = session.Events, DroppedEvents = session.Dropped
+                EndReason = reason, DurationMs = elapsed,
+                Events = session.Events.OrderBy(e => e.ElapsedMs).ToList(), DroppedEvents = session.Dropped
             };
             session.Events = new List<ReportEvent>();
             session.Dropped = 0;
             // A checkpoint is self-describing even if another segment was never delivered.
             session.Events.Add(new ReportEvent { Kind = "profile-at-checkpoint", Profile = session.LastProfile,
                 ElapsedMs = report.DurationMs });
+            // Carry counter baselines without treating them as new evidence. A seeded
+            // profile/sample must never trigger another report by itself.
+            foreach (var sample in session.Samples.Values) session.Events.Add(sample.Latest);
+            session.Changed = false;
+            session.LastCheckpointMs = elapsed;
             if (_pending.Count == MaxPending)
             {
                 _pending.Dequeue();
@@ -241,12 +273,25 @@ namespace CapFrameX.OSD.Integration
                 PurgeIfRequired();
                 CancellationToken token;
                 int epoch;
+                Session[] sessions;
                 lock (_gate)
                 {
                     if (!_consented || _disposed || _endpoint == null) return;
                     token = _consentCancellation.Token;
                     epoch = _epoch;
-                    foreach (var session in _sessions.Values) CheckpointLocked(session, "checkpoint");
+                    sessions = _sessions.Values.ToArray();
+                }
+                // Metadata changes also trigger a report, even when native state is stable.
+                // Keep the two-minute scan independent of the ten-minute stable checkpoint.
+                foreach (var session in sessions)
+                {
+                    RefreshContext(session, upload, token);
+                    lock (_gate)
+                    {
+                        if (!_consented || epoch != _epoch) return;
+                        if (_sessions.TryGetValue(session.Pid, out var active) && ReferenceEquals(active, session))
+                            CheckpointLocked(session, "checkpoint");
+                    }
                 }
                 EnsureFolder();
                 if (_participant == Guid.Empty)
@@ -269,27 +314,7 @@ namespace CapFrameX.OSD.Integration
                     if (pending.Epoch != epoch) { CompletePending(pending); continue; }
                     token.ThrowIfCancellationRequested();
                     Session session = pending.Session;
-                    // Re-scan periodically so late-loaded FG providers and overlays are recorded.
-                    if (session.Context == null || DateTime.UtcNow - session.ContextReadUtc >= TimeSpan.FromMinutes(2))
-                    {
-                        try
-                        {
-                            session.Context = upload ? _capture(session.Pid, session.GamePath, session.HookPath, token)
-                                : session.Context ?? new HookProfileReportContext
-                                {
-                                    Game = new ReportBinary { Name = session.GameName ?? "unknown" },
-                                    Status = "host-stopped-before-context"
-                                };
-                        }
-                        catch (Exception ex) when (!(ex is OperationCanceledException))
-                        {
-                            session.Context = new HookProfileReportContext
-                            {
-                                Game = new ReportBinary { Name = session.GameName ?? "unknown" }, Status = "unavailable"
-                            };
-                        }
-                        session.ContextReadUtc = DateTime.UtcNow;
-                    }
+                    RefreshContext(session, upload, token);
                     var context = session.Context;
                     pending.Report.ParticipantId = _participant;
                     pending.Report.Game = context.Game;
@@ -316,8 +341,8 @@ namespace CapFrameX.OSD.Integration
                 var files = new DirectoryInfo(_folder).GetFiles("*.json")
                     .OrderByDescending(f => f.LastWriteTimeUtc).ToArray();
                 foreach (var file in files.Where((f, i) => i >= MaxOutboxFiles ||
-                    DateTime.UtcNow - f.LastWriteTimeUtc > TimeSpan.FromDays(7))) file.Delete();
-                if (!upload || DateTime.UtcNow < _retryAfterUtc) return;
+                    _utcNow() - f.LastWriteTimeUtc > TimeSpan.FromDays(7))) file.Delete();
+                if (!upload || _utcNow() < _retryAfterUtc) return;
                 foreach (var file in new DirectoryInfo(_folder).GetFiles("*.json").OrderBy(f => f.LastWriteTimeUtc).Take(8))
                 {
                     token.ThrowIfCancellationRequested();
@@ -334,9 +359,9 @@ namespace CapFrameX.OSD.Integration
                     content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
                     HttpResponseMessage response;
                     try { response = await _http.PostAsync(_endpoint, content, token).ConfigureAwait(false); }
-                    catch (HttpRequestException) { _retryAfterUtc = DateTime.UtcNow.AddMinutes(5); break; }
+                    catch (HttpRequestException) { _retryAfterUtc = _utcNow().AddMinutes(5); break; }
                     catch (OperationCanceledException) when (!token.IsCancellationRequested)
-                    { _retryAfterUtc = DateTime.UtcNow.AddMinutes(5); break; }
+                    { _retryAfterUtc = _utcNow().AddMinutes(5); break; }
                     using (response)
                     {
                         if (response.StatusCode == HttpStatusCode.Accepted || response.StatusCode == HttpStatusCode.OK)
@@ -347,7 +372,7 @@ namespace CapFrameX.OSD.Integration
                         else
                         {
                             var delay = response.Headers.RetryAfter?.Delta ?? TimeSpan.FromMinutes(5);
-                            _retryAfterUtc = DateTime.UtcNow.AddSeconds(Math.Clamp(delay.TotalSeconds, 30, 3600));
+                            _retryAfterUtc = _utcNow().AddSeconds(Math.Clamp(delay.TotalSeconds, 30, 3600));
                             break;
                         }
                     }
@@ -355,6 +380,55 @@ namespace CapFrameX.OSD.Integration
             }
             catch (OperationCanceledException) { }
             finally { _ioGate.Release(); }
+        }
+
+        private void RefreshContext(Session session, bool capture, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            int revision;
+            lock (_gate)
+            {
+                if (session.Context != null && (!capture ||
+                    (session.CapturedContextRevision == session.ContextRevision &&
+                    _utcNow() - session.ContextReadUtc < TimeSpan.FromMinutes(2)))) return;
+                revision = session.ContextRevision;
+            }
+            HookProfileReportContext context;
+            try
+            {
+                context = capture ? _capture(session.Pid, session.GamePath, session.HookPath, token)
+                    : new HookProfileReportContext
+                    {
+                        Game = new ReportBinary { Name = session.GameName ?? "unknown" },
+                        Status = "host-stopped-before-context"
+                    };
+            }
+            catch (Exception ex) when (!(ex is OperationCanceledException))
+            {
+                context = new HookProfileReportContext
+                {
+                    Game = new ReportBinary { Name = session.GameName ?? "unknown" }, Status = "unavailable"
+                };
+            }
+            // Enumeration order and observation time are not metadata changes. Compare
+            // only the allowlisted wire fields, never paths or other capture internals.
+            string key = JsonSerializer.Serialize(new
+            {
+                context.Game, context.Hook, context.Status,
+                Modules = context.Modules.Select(m => JsonSerializer.Serialize(m, JsonOptions))
+                    .OrderBy(m => m, StringComparer.Ordinal),
+                Gpus = context.Gpus.Select(g => JsonSerializer.Serialize(g, JsonOptions))
+                    .OrderBy(g => g, StringComparer.Ordinal)
+            }, JsonOptions);
+            token.ThrowIfCancellationRequested();
+            lock (_gate)
+            {
+                if (key != session.ContextKey) session.Changed = true;
+                session.Context = context;
+                session.ContextKey = key;
+                session.ContextReadUtc = _utcNow();
+                session.CapturedContextRevision = revision;
+            }
         }
 
         private void EnsureFolder()

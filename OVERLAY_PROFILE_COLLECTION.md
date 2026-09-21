@@ -29,13 +29,23 @@ Both copies must remain identical; incompatible changes require a new schema/con
 | Vulkan timeline | Requested/actual composite route, result, acknowledgment revision, capabilities, bitness, generation, composited-present count, native vendor/device/driver, queue family/flags, format/color space/usage, resolution and profile outcomes. |
 
 State transitions are retained immediately at the manager's polling cadence, including changes
-after a profile was learned. Unchanged states receive cumulative counter samples every 10 seconds.
-Checkpoints are persisted and uploaded every 30 seconds. `contextObservedUtc` dates the metadata
-snapshot separately from the recorded events. Metadata is refreshed at most every two
-minutes normally, and refreshed when profile evidence changes. Each checkpoint includes the
-latest profile and available status, so missing preceding checkpoints remain detectable through
-sequence numbers. A target change closes the observed session; application exit attempts to
-persist final evidence without network or hardware queries.
+after a profile was learned. DXGI and Vulkan observations are compared separately. Unchanged
+states update an in-memory latest snapshot instead of appending periodic duplicate events.
+Reports retain counter baselines, the last sample before a transition and the new state;
+counter resets and heartbeat freshness changes also count as transitions.
+
+The background worker runs every 30 seconds and persists/uploads new evidence. An unchanged
+session produces a checkpoint only every **10 minutes** (six per hour instead of 120), plus
+initial and final reports. Carrying forward a profile or status does not itself trigger a report.
+Metadata is still scanned every two minutes normally, and refreshed when profile evidence
+changes. Changed metadata, including read failures and newly loaded modules, triggers a report;
+enumeration order and observation timestamps alone do not. `contextObservedUtc` dates the
+metadata snapshot separately from the recorded events.
+
+Each report remains self-contained in the existing v1 schema, with profile, metadata and
+available status. Sequence numbers count emitted reports, so suppressed duplicates do not create
+gaps. A target change closes the observed session; application exit attempts to persist final
+evidence without network or hardware queries.
 
 ## Limits when interpreting data
 
@@ -45,6 +55,9 @@ persist final evidence without network or hardware queries.
   produce an unnecessary compatibility escalation followed by success.
 - DXGI coverage counts refer to the **generic native route**. Vendor-proxy drawing is not fully
   covered by those counters. Counters can reset or wrap; compare adjacent samples accordingly.
+- During unchanged states, counters describe the interval between retained samples, not a
+  ten-second timeline. A forced application exit can lose the unreported portion of the current
+  ten-minute stable interval; it does not establish a crash or a clean game exit.
 - DXGI hardware is an inventory; the current native status does not identify the active GPU on
   systems with multiple adapters. Vulkan carries native device/vendor/driver identifiers.
 - FG observations describe actual native telemetry, including its authority/unknown state.
@@ -88,7 +101,9 @@ See `E:\Code\CapFrameX.UpdateServer\COLLECTION.md` for deployment and operationa
 
 Client MSTest coverage includes consent default/migration, no collection without consent,
 private-field exclusion, FG changes after learning, cancellation and purge, immediate off/on,
-durable retries, backoff, bounds and endpoint restrictions. Existing DXGI/Vulkan learning and
+durable retries, backoff, bounds and endpoint restrictions. Simulated stable sessions verify
+the ten-minute cadence, independent DXGI/Vulkan comparisons, counter baselines/resets, brief
+FG and heartbeat transitions, metadata changes and final reports. Existing DXGI/Vulkan learning and
 live-switch regressions run alongside these tests.
 
 The update-server test project exercises validation, duplicate/conflicting UUIDs, storage
