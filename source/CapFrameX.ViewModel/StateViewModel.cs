@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Capture.Contracts;
 using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
@@ -61,7 +62,7 @@ namespace CapFrameX.ViewModel
 		}
 
 		public string HookOverlayStatusText
-			=> HookOverlayStatusLabel.ForState(_hookOverlayStatus?.State ?? EHookOverlayStatus.Waiting);
+			=> CxLang.T(HookOverlayStatusLabel.ForState(_hookOverlayStatus?.State ?? EHookOverlayStatus.Waiting));
 
 		public string HookOverlayStatusColor
 		{
@@ -151,6 +152,17 @@ namespace CapFrameX.ViewModel
 			_logger = logger;
 
 			UpdateStatusInfoCommand = new DelegateCommand(RefreshSystemInfo);
+			CxLang.Instance.PropertyChanged += (_, __) =>
+			{
+				RaisePropertyChanged(nameof(IsCaptureModeActive));
+				RaisePropertyChanged(nameof(IsOverlayActive));
+				RaisePropertyChanged(nameof(IsLoggingActive));
+				RaisePropertyChanged(nameof(IsLoggedIn));
+				RaisePropertyChanged(nameof(IsGameModeEnabled));
+				RaisePropertyChanged(nameof(IsHAGSEnabled));
+				RaisePropertyChanged(nameof(HookOverlayStatusText));
+				RaisePropertyChanged(nameof(ResizableBarStatus));
+			};
 
 			IsCaptureModeActive = false;
 			IsOverlayActive = _appConfiguration.IsOverlayActive &&

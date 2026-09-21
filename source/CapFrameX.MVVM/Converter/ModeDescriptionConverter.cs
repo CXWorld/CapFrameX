@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Windows.Data;
+using CapFrameX.Contracts.Localization;
 
 namespace CapFrameX.MVVM.Converter
 {
@@ -24,10 +25,8 @@ namespace CapFrameX.MVVM.Converter
 
                 if (parameters.Length == 2)
                 {
-                    if (active)
-                        description = parameters[0];
-                    else
-                        description = parameters[1];
+                    description = (active ? parameters[0] : parameters[1]).Trim();
+                    description = CxLang.T(description);
                 }
             }
 

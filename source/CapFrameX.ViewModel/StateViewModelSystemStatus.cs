@@ -1,6 +1,7 @@
 ﻿using System;
 
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Localization;
 
 namespace CapFrameX.ViewModel
 {
@@ -30,9 +31,9 @@ namespace CapFrameX.ViewModel
         {
             get
             {
-                if (IsResizableBarD3DEnabled && IsResizableBarVulkanEnabled) return "On";
-                if (IsResizableBarD3DEnabled || IsResizableBarVulkanEnabled) return "Partial";
-                return "Off";
+                if (IsResizableBarD3DEnabled && IsResizableBarVulkanEnabled) return CxLang.T("On");
+                if (IsResizableBarD3DEnabled || IsResizableBarVulkanEnabled) return CxLang.T("Partial");
+                return CxLang.T("Off");
             }
         }
 

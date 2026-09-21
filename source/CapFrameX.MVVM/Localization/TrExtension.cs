@@ -26,22 +26,24 @@ namespace CapFrameX.MVVM.Localization
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-            var english = Text ?? string.Empty;
-            if (serviceProvider.GetService(typeof(IProvideValueTarget)) is IProvideValueTarget target
+            var binding = new Binding(nameof(CxLang.UiLanguage))
+            {
+                Source = CxLang.Instance,
+                Mode = BindingMode.OneWay,
+                Converter = TranslateConverter.Instance,
+                ConverterParameter = Text ?? string.Empty
+            };
+
+            // A normal element can take the binding immediately. Inside a DataTemplate the
+            // target is not created yet: return the Binding itself so WPF applies it when the
+            // visual is built. Returning this extension there makes the template fail to load
+            // and the page stays blank.
+            if (serviceProvider?.GetService(typeof(IProvideValueTarget)) is IProvideValueTarget target
                 && target.TargetObject is DependencyObject
                 && target.TargetProperty is DependencyProperty)
-            {
-                var binding = new Binding(nameof(CxLang.UiLanguage))
-                {
-                    Source = CxLang.Instance,
-                    Mode = BindingMode.OneWay,
-                    Converter = TranslateConverter.Instance,
-                    ConverterParameter = english
-                };
                 return binding.ProvideValue(serviceProvider);
-            }
 
-            return CxLang.T(english);
+            return binding;
         }
 
         private sealed class TranslateConverter : IValueConverter

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -79,7 +80,18 @@ namespace CapFrameX.Contracts.Localization
             var phrase = english;
             foreach (var (en, ru) in _phrases)
                 phrase = Regex.Replace(phrase, en, ru, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-            return phrase;
+            return CapitalizeStart(phrase);
+        }
+
+        /// <summary>
+        /// Sensor phrases are written in lowercase so they stay correct in the middle of a name.
+        /// A label is its own line, so the first letter is a capital.
+        /// </summary>
+        private static string CapitalizeStart(string text)
+        {
+            if (string.IsNullOrEmpty(text) || !char.IsLower(text[0]))
+                return text;
+            return char.ToUpper(text[0], CultureInfo.GetCultureInfo("ru-RU")) + text.Substring(1);
         }
 
         private void Load()

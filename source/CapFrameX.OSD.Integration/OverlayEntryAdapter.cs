@@ -90,7 +90,12 @@ namespace CapFrameX.OSD.Integration
                     o.IsNumeric = false;
                     // FormattedValue contains RTSS hypertext (<S...>/<C...>). The neutral OSD
                     // renderer does not interpret those tags, so only forward the raw text value.
-                    o.ValueText = e.Value?.ToString() ?? string.Empty;
+                    var text = e.Value?.ToString() ?? string.Empty;
+                    // Status lines are sentences, not hardware names. Other text values (CPU name,
+                    // driver version) must stay literal.
+                    if (e.Identifier == "CaptureServiceStatus" || e.Identifier == "HookOverlayStatus")
+                        text = CxLang.Instance.TranslateOverlay(text);
+                    o.ValueText = text;
                 }
 
                 if (TryParseLimit(e.UpperLimitValue, out var up))

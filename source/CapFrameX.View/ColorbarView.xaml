@@ -383,7 +383,7 @@
 															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'FPS graph filter'}"/>
 															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Average time window in milliseconds.'}"/>
 															<ComboBox Margin="0 9 0 0" Height="42" MaxDropDownHeight="140"
-																	  materialDesign:HintAssist.Hint="Time window (ms)"
+																	  materialDesign:HintAssist.Hint="{loc:Tr 'Time window (ms)'}"
 																	  materialDesign:HintAssist.IsFloating="True"
 																	  ToolTip="{loc:Tr 'Sets the time window for the interval of the average FPS graphs'}"
 																	  ItemsSource="{Binding Path=DataContext.AverageTimeWindows, ElementName=ColorbarViewName}">
@@ -396,7 +396,7 @@
 															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'FPS decimals'}"/>
 															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Displayed decimal places.'}"/>
 															<ComboBox Margin="0 9 0 0" Height="42" MaxDropDownHeight="140"
-																	  materialDesign:HintAssist.Hint="Decimal places"
+																	  materialDesign:HintAssist.Hint="{loc:Tr 'Decimal places'}"
 																	  materialDesign:HintAssist.IsFloating="True"
 																	  ToolTip="{loc:Tr 'Sets the number of decimal points for displayed FPS values'}"
 																	  ItemsSource="{Binding Path=DataContext.RoundingDigits, ElementName=ColorbarViewName}">
@@ -416,7 +416,7 @@
 														</Grid.ColumnDefinitions>
 														<TextBox Height="42" MinWidth="92" HorizontalContentAlignment="Center"
 																 Text="{Binding HorizontalGraphExportRes, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-																 materialDesign:HintAssist.Hint="Width"
+																 materialDesign:HintAssist.Hint="{loc:Tr 'Width'}"
 																 Style="{DynamicResource CxFloatingHintTextBox}"
 																 PreviewKeyDown="ResolutionTextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave"
 																 PreviewTextInput="NumberValidationTextBox"/>
@@ -424,7 +424,7 @@
 																   Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"/>
 														<TextBox Grid.Column="2" Height="42" MinWidth="92" HorizontalContentAlignment="Center"
 																 Text="{Binding VerticalGraphExportRes, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-																 materialDesign:HintAssist.Hint="Height"
+																 materialDesign:HintAssist.Hint="{loc:Tr 'Height'}"
 																 Style="{DynamicResource CxFloatingHintTextBox}"
 																 PreviewKeyDown="ResolutionTextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave"
 																 PreviewTextInput="NumberValidationTextBox"/>
@@ -488,7 +488,7 @@
 														</StackPanel>
 														<ComboBox Grid.Column="1" Width="130" Height="42" MaxDropDownHeight="140"
 																  VerticalAlignment="Center"
-																  materialDesign:HintAssist.Hint="Events"
+																  materialDesign:HintAssist.Hint="{loc:Tr 'Events'}"
 																  materialDesign:HintAssist.IsFloating="True"
 																  IsEnabled="{Binding IsCaptureServiceReady}"
 																  ToolTipService.ShowOnDisabled="True"
@@ -559,19 +559,19 @@
 															<ColumnDefinition Width="Auto"/>
 															<ColumnDefinition Width="Auto"/>
 														</Grid.ColumnDefinitions>
-														<TextBox Height="42" IsReadOnly="True" materialDesign:HintAssist.Hint="Screenshot directory"
+														<TextBox Height="42" IsReadOnly="True" materialDesign:HintAssist.Hint="{loc:Tr 'Screenshot directory'}"
 																 Text="{Binding ScreenshotDirectory, Mode=OneWay}"
 																 Style="{DynamicResource CxFloatingHintTextBox}"/>
 														<Button Grid.Column="1" Margin="10 0 0 0" Width="40" Height="40" Padding="0"
 																Style="{StaticResource MaterialDesignIconButton}"
 																Command="{Binding Path=DataContext.SelectScreenshotFolderCommand, ElementName=ColorbarViewName}"
-																ToolTip="Select screenshot folder">
+																ToolTip="{loc:Tr 'Select screenshot folder'}">
 															<materialDesign:PackIcon Kind="Folder" Height="22" Width="22"/>
 														</Button>
 														<Button Grid.Column="2" Margin="6 0 0 0" Width="40" Height="40" Padding="0"
 																Style="{StaticResource MaterialDesignIconButton}"
 																Command="{Binding Path=DataContext.OpenScreenshotFolderCommand, ElementName=ColorbarViewName}"
-																ToolTip="Open screenshot folder">
+																ToolTip="{loc:Tr 'Open screenshot folder'}">
 															<materialDesign:PackIcon Kind="Forward" Height="22" Width="22"/>
 														</Button>
 													</Grid>
@@ -593,7 +593,7 @@
 													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="{loc:Tr 'Graphics adapter'}"/>
 													<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Choose the primary adapter used for monitoring and logging. Restart CapFrameX after changing it.'}"/>
 													<ComboBox Margin="0 14 0 0" Width="340" Height="42" HorizontalAlignment="Left"
-															  materialDesign:HintAssist.Hint="Primary graphics adapter"
+															  materialDesign:HintAssist.Hint="{loc:Tr 'Primary graphics adapter'}"
 															  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="140"
 															  ToolTip="{loc:Tr 'Sets the primary graphics adapter for monitoring and logging. Restart CapFrameX after changing the adapter.'}"
 															  ItemsSource="{Binding Path=DataContext.GraphicsAdapters, ElementName=ColorbarViewName}">
@@ -614,7 +614,7 @@
 															<ColumnDefinition Width="18"/>
 															<ColumnDefinition Width="*"/>
 														</Grid.ColumnDefinitions>
-														<ComboBox Height="42" materialDesign:HintAssist.Hint="Hardware info source"
+														<ComboBox Height="42" materialDesign:HintAssist.Hint="{loc:Tr 'Hardware info source'}"
 																  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="140"
 																  ItemsSource="{Binding Path=DataContext.HardwareInfoSourceItems, ElementName=ColorbarViewName}"
 																  SelectedItem="{Binding Path=DataContext.SelectedHardwareInfoSource, ElementName=ColorbarViewName}">
@@ -624,7 +624,7 @@
 																</DataTemplate>
 															</ComboBox.ItemTemplate>
 														</ComboBox>
-														<ComboBox Grid.Column="2" Height="42" materialDesign:HintAssist.Hint="Capture file mode"
+														<ComboBox Grid.Column="2" Height="42" materialDesign:HintAssist.Hint="{loc:Tr 'Capture file mode'}"
 																  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="140"
 																  ToolTipService.ShowDuration="25000"
 																  ItemsSource="{Binding Path=DataContext.CaptureFileModeItems, ElementName=ColorbarViewName}"
@@ -659,28 +659,28 @@
 															<RowDefinition Height="Auto"/>
 															<RowDefinition Height="Auto"/>
 														</Grid.RowDefinitions>
-														<TextBox Height="42" materialDesign:HintAssist.Hint="CPU"
+														<TextBox Height="42" materialDesign:HintAssist.Hint="{loc:Tr 'CPU'}"
 																 Style="{DynamicResource CxFloatingHintTextBox}"
 																 PreviewKeyDown="HardwareDescription_PreviewKeyDown">
 															<TextBox.Text>
 																<Binding Path="DataContext.CustomCpuDescription" ElementName="ColorbarViewName" Mode="TwoWay" UpdateSourceTrigger="LostFocus"/>
 															</TextBox.Text>
 														</TextBox>
-														<TextBox Grid.Column="2" Height="42" materialDesign:HintAssist.Hint="GPU"
+														<TextBox Grid.Column="2" Height="42" materialDesign:HintAssist.Hint="{loc:Tr 'GPU'}"
 																 Style="{DynamicResource CxFloatingHintTextBox}"
 																 PreviewKeyDown="HardwareDescription_PreviewKeyDown">
 															<TextBox.Text>
 																<Binding Path="DataContext.CustomGpuDescription" ElementName="ColorbarViewName" Mode="TwoWay" UpdateSourceTrigger="LostFocus"/>
 															</TextBox.Text>
 														</TextBox>
-														<TextBox Grid.Row="1" Margin="0 14 0 0" Height="42" materialDesign:HintAssist.Hint="RAM"
+														<TextBox Grid.Row="1" Margin="0 14 0 0" Height="42" materialDesign:HintAssist.Hint="{loc:Tr 'RAM'}"
 																 Style="{DynamicResource CxFloatingHintTextBox}"
 																 PreviewKeyDown="HardwareDescription_PreviewKeyDown">
 															<TextBox.Text>
 																<Binding Path="DataContext.CustomRamDescription" ElementName="ColorbarViewName" Mode="TwoWay" UpdateSourceTrigger="LostFocus"/>
 															</TextBox.Text>
 														</TextBox>
-														<TextBox Grid.Row="1" Grid.Column="2" Margin="0 14 0 0" Height="42" materialDesign:HintAssist.Hint="Mainboard"
+														<TextBox Grid.Row="1" Grid.Column="2" Margin="0 14 0 0" Height="42" materialDesign:HintAssist.Hint="{loc:Tr 'Mainboard'}"
 																 Style="{DynamicResource CxFloatingHintTextBox}"
 																 PreviewKeyDown="HardwareDescription_PreviewKeyDown">
 															<TextBox.Text>
@@ -836,7 +836,7 @@
 													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="{loc:Tr 'Network target'}"/>
 													<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Set the host used by the network ping overlay entry.'}"/>
 													<TextBox Margin="0 14 0 0" Height="42" PreviewKeyDown="TextBox_KeyEnterUpdate"
-															 materialDesign:HintAssist.Hint="Ping URL"
+															 materialDesign:HintAssist.Hint="{loc:Tr 'Ping URL'}"
 															 Style="{DynamicResource CxFloatingHintTextBox}"
 															 ToolTip="{loc:Tr 'URL to use for the network ping overlay entry'}">
 														<TextBox.Text>
@@ -871,7 +871,7 @@
 														</StackPanel>
 														<TextBox Grid.Column="1" Height="42" Text="{Binding WebservicePort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 																 PreviewTextInput="IntegerValidationTextBox"
-																 materialDesign:HintAssist.Hint="Port"
+																 materialDesign:HintAssist.Hint="{loc:Tr 'Port'}"
 																 Style="{DynamicResource CxFloatingHintTextBox}"/>
 													</Grid>
 													<Separator Margin="0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
@@ -926,30 +926,30 @@
 														<StackPanel>
 															<TextBox Height="42" Margin="0 0 0 10" Text="{Binding OsdHttpUrl, Mode=OneWay}" IsReadOnly="True"
 																	 Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
-																	 materialDesign:HintAssist.Hint="OSD HTTP URL"
+																	 materialDesign:HintAssist.Hint="{loc:Tr 'OSD HTTP URL'}"
 																	 Style="{DynamicResource CxFloatingHintTextBox}"
 																	 ToolTip="{loc:Tr 'HTTP URL to access the current overlay output (overlay needs to be active)'}"/>
 															<TextBox Height="42" Margin="0 0 0 10" Text="{Binding OsdWSUrl, Mode=OneWay}" IsReadOnly="True"
 																	 Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
-																	 materialDesign:HintAssist.Hint="OSD WebSocket URL"
+																	 materialDesign:HintAssist.Hint="{loc:Tr 'OSD WebSocket URL'}"
 																	 Style="{DynamicResource CxFloatingHintTextBox}"
 																	 ToolTip="{loc:Tr 'WebSocket URL to access the current overlay output (overlay needs to be active)'}"/>
 															<TextBox Height="42" Text="{Binding SensorsWSUrl, Mode=OneWay}" IsReadOnly="True"
 																	 Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
-																	 materialDesign:HintAssist.Hint="Sensor stream WebSocket URL"
+																	 materialDesign:HintAssist.Hint="{loc:Tr 'Sensor stream WebSocket URL'}"
 																	 Style="{DynamicResource CxFloatingHintTextBox}"
 																	 ToolTip="{loc:Tr 'WebSocket URL to access the complete sensor stream'}"/>
 														</StackPanel>
 														<StackPanel Grid.Column="2">
 															<TextBox Height="42" Margin="0 0 0 10" Text="{Binding ActiveSensorsWSUrl, Mode=OneWay}" IsReadOnly="True"
 																	 Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
-																	 materialDesign:HintAssist.Hint="Active sensors WebSocket URL"
+																	 materialDesign:HintAssist.Hint="{loc:Tr 'Active sensors WebSocket URL'}"
 																	 Style="{DynamicResource CxFloatingHintTextBox}"
 																	 ToolTip="{loc:Tr 'WebSocket URL to access all sensors currently selected in the Sensors tab'}"/>
 															<TextBox MinHeight="42" Text="https://app.swaggerhub.com/apis/CapFrameX/cx-remote/1.0.0"
 																	 TextWrapping="Wrap" IsReadOnly="True"
 																	 Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
-																	 materialDesign:HintAssist.Hint="CX Remote Service info URL"
+																	 materialDesign:HintAssist.Hint="{loc:Tr 'CX Remote Service info URL'}"
 																	 Style="{DynamicResource CxFloatingHintTextBox}"/>
 														</StackPanel>
 													</Grid>
@@ -1067,7 +1067,7 @@
 														<ComboBox Grid.Column="1" Height="42" MaxDropDownHeight="260"
 																  ItemsSource="{Binding UpdateViewModel.AvailableVersionsView, Mode=OneWay}"
 																  SelectedItem="{Binding UpdateViewModel.SelectedVersion, Mode=TwoWay}"
-																  materialDesign:HintAssist.Hint="Published version"
+																  materialDesign:HintAssist.Hint="{loc:Tr 'Published version'}"
 																  materialDesign:HintAssist.IsFloating="True">
 															<ComboBox.GroupStyle>
 																<GroupStyle>

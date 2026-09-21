@@ -652,7 +652,17 @@ namespace CapFrameX.ViewModel
 
         public string AppNotification { get; private set; }
 
-        public string HelpText => File.ReadAllText(@"HelpTexts\ChartControls.rtf");
+        public string HelpText
+        {
+            get
+            {
+                var russian = CxLang.Instance.UiLanguage == "ru";
+                var path = russian && File.Exists(@"HelpTexts\ChartControls.ru.rtf")
+                    ? @"HelpTexts\ChartControls.ru.rtf"
+                    : @"HelpTexts\ChartControls.rtf";
+                return File.ReadAllText(path);
+            }
+        }
 
         public bool IsCompatibleWithRunningOS => CaptureServiceInfo.IsCompatibleWithRunningOS;
 
@@ -715,6 +725,7 @@ namespace CapFrameX.ViewModel
             _loginManager = loginManager;
             _captureManager = captureManager;
             UpdateViewModel = updateViewModel;
+            CxLang.Instance.PropertyChanged += (_, __) => RaisePropertyChanged(nameof(HelpText));
 
             RoundingDigits = new List<int>(Enumerable.Range(0, 8));
             SelectScreenshotFolderCommand = new DelegateCommand(OnSelectScreenshotFolder);
