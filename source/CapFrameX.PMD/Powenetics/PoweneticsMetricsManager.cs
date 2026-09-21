@@ -1,4 +1,4 @@
-﻿using CapFrameX.Contracts.Localization;
+using CapFrameX.Contracts.Localization;
 using Prism.Mvvm;
 using System.Collections.Generic;
 using System.Globalization;
@@ -60,7 +60,7 @@ namespace CapFrameX.PMD.Powenetics
 
         public string AllGpuPowerCur
         {
-            get => _allGpuPowerCur;
+            get => Show(_allGpuPowerCur);
             set
             {
                 _allGpuPowerCur = value;
@@ -70,7 +70,7 @@ namespace CapFrameX.PMD.Powenetics
 
         public string AllGpuPowerAvg
         {
-            get => _allGpuPowerAvg;
+            get => Show(_allGpuPowerAvg);
             set
             {
                 _allGpuPowerAvg = value;
@@ -80,7 +80,7 @@ namespace CapFrameX.PMD.Powenetics
 
         public string AllGpuPowerMax
         {
-            get => _allGpuPowerMax;
+            get => Show(_allGpuPowerMax);
             set
             {
                 _allGpuPowerMax = value;
@@ -90,7 +90,7 @@ namespace CapFrameX.PMD.Powenetics
 
         public string AllPciExCur
         {
-            get => _allPciExCur;
+            get => Show(_allPciExCur);
             set
             {
                 _allPciExCur = value;
@@ -102,7 +102,7 @@ namespace CapFrameX.PMD.Powenetics
 
         public string AllPciExAvg
         {
-            get => _allPciExAvg;
+            get => Show(_allPciExAvg);
             set
             {
                 _allPciExAvg = value;
@@ -112,7 +112,7 @@ namespace CapFrameX.PMD.Powenetics
 
         public string AllPciExMax
         {
-            get => _allPciExMax;
+            get => Show(_allPciExMax);
             set
             {
                 _allPciExMax = value;
@@ -122,7 +122,7 @@ namespace CapFrameX.PMD.Powenetics
 
         public string PciExSlotCur
         {
-            get => _pciExSlotCur;
+            get => Show(_pciExSlotCur);
             set
             {
                 _pciExSlotCur = value;
@@ -133,7 +133,7 @@ namespace CapFrameX.PMD.Powenetics
 
         public string PciExSlotAvg
         {
-            get => _pciExSlotAvg;
+            get => Show(_pciExSlotAvg);
             set
             {
                 _pciExSlotAvg = value;
@@ -143,7 +143,7 @@ namespace CapFrameX.PMD.Powenetics
 
         public string PciExSlotMax
         {
-            get => _pciExSlotMax;
+            get => Show(_pciExSlotMax);
             set
             {
                 _pciExSlotMax = value;
@@ -153,7 +153,7 @@ namespace CapFrameX.PMD.Powenetics
 
         public string AllCpuPowerCur
         {
-            get => _allCpuPowerCur;
+            get => Show(_allCpuPowerCur);
             set
             {
                 _allCpuPowerCur = value;
@@ -164,7 +164,7 @@ namespace CapFrameX.PMD.Powenetics
 
         public string AllCpuPowerAvg
         {
-            get => _allCpuPowerAvg;
+            get => Show(_allCpuPowerAvg);
             set
             {
                 _allCpuPowerAvg = value;
@@ -174,7 +174,7 @@ namespace CapFrameX.PMD.Powenetics
 
         public string AllCpuPowerMax
         {
-            get => _allCpuPowerMax;
+            get => Show(_allCpuPowerMax);
             set
             {
                 _allCpuPowerMax = value;
@@ -184,7 +184,7 @@ namespace CapFrameX.PMD.Powenetics
 
         public string AllAtxPowerCur
         {
-            get => _allAtxPowerCur;
+            get => Show(_allAtxPowerCur);
             set
             {
                 _allAtxPowerCur = value;
@@ -195,7 +195,7 @@ namespace CapFrameX.PMD.Powenetics
 
         public string AllAtxPowerAvg
         {
-            get => _allAtxPowerAvg;
+            get => Show(_allAtxPowerAvg);
             set
             {
                 _allAtxPowerAvg = value;
@@ -205,7 +205,7 @@ namespace CapFrameX.PMD.Powenetics
 
         public string AllAtxPowerMax
         {
-            get => _allAtxPowerMax;
+            get => Show(_allAtxPowerMax);
             set
             {
                 _allAtxPowerMax = value;
@@ -215,7 +215,7 @@ namespace CapFrameX.PMD.Powenetics
 
         public string AllPowerCur
         {
-            get => _allPowerCur;
+            get => Show(_allPowerCur);
             set
             {
                 _allPowerCur = value;
@@ -225,7 +225,7 @@ namespace CapFrameX.PMD.Powenetics
 
         public string AllPowerAvg
         {
-            get => _allPowerAvg;
+            get => Show(_allPowerAvg);
             set
             {
                 _allPowerAvg = value;
@@ -235,7 +235,7 @@ namespace CapFrameX.PMD.Powenetics
 
         public string AllPowerMax
         {
-            get => _allPowerMax;
+            get => Show(_allPowerMax);
             set
             {
                 _allPowerMax = value;
@@ -247,10 +247,13 @@ namespace CapFrameX.PMD.Powenetics
 
         public int PmdDataWindowSeconds { get; set; }
 
+        static string Show(string value) => CxLang.Instance.TranslateOverlay(value);
+
         public PoweneticsMetricsManager(int pmdMetricRefreshPeriod, int pmdDataWindowSeconds)
         {
             PmdMetricRefreshPeriod = pmdMetricRefreshPeriod;
             PmdDataWindowSeconds = pmdDataWindowSeconds;
+            CxLang.Instance.PropertyChanged += (_, __) => RaisePropertyChanged(string.Empty);
         }
 
         public void UpdateMetrics(IList<PoweneticsChannel[]> metricsData)

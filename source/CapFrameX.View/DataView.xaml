@@ -87,7 +87,7 @@
 							<TabItem Width="80" Header="{loc:Tr 'Frame Times'}">
                                 <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <Grid Margin="0 0 0 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-                                        <ComboBox Width="Auto" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10 0 0 10" materialDesign:HintAssist.Hint="Y-Axis scale"
+                                        <ComboBox Width="Auto" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10 0 0 10" materialDesign:HintAssist.Hint="{loc:Tr 'Y-Axis scale'}"
 										          materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:HintAssist.HintOpacity=".8"
 										          ItemsSource="{Binding ChartYAxisSettings}" SelectedItem="{Binding SelecetedChartYAxisSetting}">
                                             <ComboBox.ItemTemplate>
@@ -108,7 +108,7 @@
                             <TabItem Width="55" Header="{loc:Tr 'FPS'}">
                                 <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <Grid Margin="-15 0 0 1" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-                                        <ComboBox Width="96" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Filter Mode"
+                                        <ComboBox Width="96" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="{loc:Tr 'Filter Mode'}"
 										      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:HintAssist.HintOpacity=".8"
                                               SelectedItem="{Binding SelectedFilterMode}" SelectedIndex="1" ItemsSource="{Binding FilterModes}">
                                             <ComboBox.ItemTemplate>
@@ -124,7 +124,7 @@
                             <TabItem Width="70" Header="{loc:Tr 'L-shape'}">
                                 <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <Grid Margin="-15 0 0 1" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-                                        <ComboBox Width="96" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Metric"
+                                        <ComboBox Width="96" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="{loc:Tr 'Metric'}"
 										      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:HintAssist.HintOpacity=".8"
                                               SelectedItem="{Binding SelectedLShapeMetric}" ItemsSource="{Binding LShapeMetrics}">
                                             <ComboBox.ItemTemplate>
@@ -183,11 +183,11 @@
                         </StackPanel>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 10 0" Height="25">
                             <TextBlock Text="{loc:Tr 'Range:'}" Margin="0 5 5 0" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-                            <TextBox Grid.Row="1" materialDesign:HintAssist.Hint="Start (s)" HorizontalAlignment="Center" Width="45" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"
+                            <TextBox Grid.Row="1" materialDesign:HintAssist.Hint="{loc:Tr 'Start (s)'}" HorizontalAlignment="Center" Width="45" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"
                                       ToolTip="{loc:Tr 'Range Slider start point'}" PreviewKeyDown="FirstSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center" Text="{Binding FirstSeconds, Mode=TwoWay, StringFormat=F2, UpdateSourceTrigger=LostFocus}"
                                      Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" materialDesign:HintAssist.HintOpacity=".8"/>
                             <TextBlock Text="-" Margin="3 5 3 0" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-                            <TextBox Grid.Row="1" materialDesign:HintAssist.Hint="End (s)" HorizontalAlignment="Center" Width="45" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"
+                            <TextBox Grid.Row="1" materialDesign:HintAssist.Hint="{loc:Tr 'End (s)'}" HorizontalAlignment="Center" Width="45" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"
                                      ToolTip="{loc:Tr 'Range Slider end point'}" PreviewKeyDown="LastSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center" Text="{Binding LastSeconds, Mode=TwoWay, StringFormat=F2, UpdateSourceTrigger=LostFocus}"
                                      Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" materialDesign:HintAssist.HintOpacity=".8"/>
                             <TextBlock Grid.Row="1"  Text="{Binding RemainingRecordingTime}" FontSize="14" Margin="10 0 0 3" VerticalAlignment="Center" TextAlignment="Left" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
@@ -195,12 +195,12 @@
 
 
                         <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 40 5" Height="20" >
-                            <TextBlock Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" VerticalAlignment="Center">Cut outside</TextBlock>
+                            <TextBlock Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" VerticalAlignment="Center" Text="{loc:Tr 'Cut outside'}"/>
                             <Button Margin="10 0 15 0" Height="20" Width="20" Command="{Binding CutRecordCommand}"  Foreground="White" Background="OrangeRed" BorderBrush="OrangeRed"
                                     Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  ToolTipService.ShowDuration="25000" ToolTip="{loc:Tr 'Remove data outside of range slider(red) and create a new file with the remaining data(blue)'}">
                                 <materialDesign:PackIcon Kind="ContentCut" Height="15" Width="15" />
                             </Button>
-                            <TextBlock Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" VerticalAlignment="Center">Cut inside</TextBlock>
+                            <TextBlock Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" VerticalAlignment="Center" Text="{loc:Tr 'Cut inside'}"/>
                             <Button Margin="10 0 0 0" Height="20" Width="20" Command="{Binding CutRecordInverseCommand}"  Foreground="White" 
                                     Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  ToolTipService.ShowDuration="25000" ToolTip="{loc:Tr 'Remove data inside of range slider(blue) and create a new file with the remaining data(red)'}">
                                 <materialDesign:PackIcon Kind="ContentCut" Height="15" Width="15" RenderTransformOrigin=".5,.5">
@@ -286,7 +286,7 @@
                                                     <RowDefinition Height="*" />
                                                     <RowDefinition Height="*" />
                                                 </Grid.RowDefinitions>
-                                                <TextBox Grid.Row="0" materialDesign:HintAssist.Hint="Low FPS threshold" materialDesign:HintAssist.IsFloating="True" Width="100"
+                                                <TextBox Grid.Row="0" materialDesign:HintAssist.Hint="{loc:Tr 'Low FPS threshold'}" materialDesign:HintAssist.IsFloating="True" Width="100"
                                                     HorizontalContentAlignment="Center" Text="{Binding StutteringLowFPSThreshold}" materialDesign:HintAssist.HintOpacity=".8"
                                                     PreviewKeyDown="StutteringThreshold_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" ToolTipService.ShowDuration="25000">
                                                     <TextBox.ToolTip>
@@ -296,7 +296,7 @@
                                                         </ToolTip>
                                                     </TextBox.ToolTip>
                                                 </TextBox>
-                                                <TextBox Grid.Row="1" Margin="0 20 0 0" materialDesign:HintAssist.Hint="Stuttering factor" materialDesign:HintAssist.IsFloating="True" Width="100"
+                                                <TextBox Grid.Row="1" Margin="0 20 0 0" materialDesign:HintAssist.Hint="{loc:Tr 'Stuttering factor'}" materialDesign:HintAssist.IsFloating="True" Width="100"
                                                      HorizontalContentAlignment="Center" Text="{Binding StutteringFactor}" materialDesign:HintAssist.HintOpacity=".8" 
                                                      PreviewKeyDown="StutteringFactor_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" ToolTipService.ShowDuration="25000">
                                                     <TextBox.ToolTip>

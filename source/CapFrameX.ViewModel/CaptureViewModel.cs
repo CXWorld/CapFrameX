@@ -1005,6 +1005,8 @@ namespace CapFrameX.ViewModel
             text = text.Replace("Start any game / application and press", CxLang.T("Start any game / application and press"));
             text = text.Replace("to start capture.", CxLang.T("to start capture."));
             text = text.Replace("selected.", CxLang.T("selected."));
+            text = text.Replace("Multiple processes detected.", CxLang.T("Multiple processes detected."));
+            text = text.Replace("Select one or move unwanted processes to ignore list.", CxLang.T("Select one or move unwanted processes to ignore list."));
             return text;
         }
 

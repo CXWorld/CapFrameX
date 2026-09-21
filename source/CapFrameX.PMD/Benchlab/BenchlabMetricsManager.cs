@@ -1,4 +1,5 @@
-﻿using Prism.Mvvm;
+using CapFrameX.Contracts.Localization;
+using Prism.Mvvm;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -7,7 +8,7 @@ namespace CapFrameX.PMD.Benchlab
 {
     public class BenchlabMetricsManager : BindableBase
     {
-        const string ZERO_WATT = "0.0 W";
+        static string ZERO_WATT => "0.0 " + CxLang.T("W");
 
         private string _systemPowerCur = ZERO_WATT;
         private string _gpuPowerCur = ZERO_WATT;
@@ -39,7 +40,7 @@ namespace CapFrameX.PMD.Benchlab
 
         public string SystemPowerCur
         {
-            get => _systemPowerCur;
+            get => Show(_systemPowerCur);
             set
             {
                 _systemPowerCur = value;
@@ -49,7 +50,7 @@ namespace CapFrameX.PMD.Benchlab
 
         public string GpuPowerCur
         {
-            get => _gpuPowerCur;
+            get => Show(_gpuPowerCur);
             set
             {
                 _gpuPowerCur = value;
@@ -59,7 +60,7 @@ namespace CapFrameX.PMD.Benchlab
 
         public string CpuPowerCur
         {
-            get => _cpuPowerCur;
+            get => Show(_cpuPowerCur);
             set
             {
                 _cpuPowerCur = value;
@@ -69,7 +70,7 @@ namespace CapFrameX.PMD.Benchlab
 
         public string MainboardPowerCur
         {
-            get => _mainboardPowerCur;
+            get => Show(_mainboardPowerCur);
             set
             {
                 _mainboardPowerCur = value;
@@ -79,7 +80,7 @@ namespace CapFrameX.PMD.Benchlab
 
         public string SystemPowerAvg
         {
-            get => _systemPowerAvg;
+            get => Show(_systemPowerAvg);
             set
             {
                 _systemPowerAvg = value;
@@ -89,7 +90,7 @@ namespace CapFrameX.PMD.Benchlab
 
         public string GpuPowerAvg
         {
-            get => _gpuPowerAvg;
+            get => Show(_gpuPowerAvg);
             set
             {
                 _gpuPowerAvg = value;
@@ -99,7 +100,7 @@ namespace CapFrameX.PMD.Benchlab
 
         public string CpuPowerAvg
         {
-            get => _cpuPowerAvg;
+            get => Show(_cpuPowerAvg);
             set
             {
                 _cpuPowerAvg = value;
@@ -109,7 +110,7 @@ namespace CapFrameX.PMD.Benchlab
 
         public string MainboardPowerAvg
         {
-            get => _mainboardPowerAvg;
+            get => Show(_mainboardPowerAvg);
             set
             {
                 _mainboardPowerAvg = value;
@@ -119,7 +120,7 @@ namespace CapFrameX.PMD.Benchlab
 
         public string SystemPowerMax
         {
-            get => _systemPowerMax;
+            get => Show(_systemPowerMax);
             set
             {
                 _systemPowerMax = value;
@@ -129,7 +130,7 @@ namespace CapFrameX.PMD.Benchlab
 
         public string GpuPowerMax
         {
-            get => _gpuPowerMax;
+            get => Show(_gpuPowerMax);
             set
             {
                 _gpuPowerMax = value;
@@ -139,7 +140,7 @@ namespace CapFrameX.PMD.Benchlab
 
         public string CpuPowerMax
         {
-            get => _cpuPowerMax;
+            get => Show(_cpuPowerMax);
             set
             {
                 _cpuPowerMax = value;
@@ -149,7 +150,7 @@ namespace CapFrameX.PMD.Benchlab
 
         public string MainboardPowerMax
         {
-            get => _mainboardPowerMax;
+            get => Show(_mainboardPowerMax);
             set
             {
                 _mainboardPowerMax = value;
@@ -161,11 +162,14 @@ namespace CapFrameX.PMD.Benchlab
 
         public int PmdDataWindowSeconds { get; set; }
 
+        static string Show(string value) => CxLang.Instance.TranslateOverlay(value);
+
         public BenchlabMetricsManager(IBenchlabService benchlabService, int pmdMetricRefreshPeriod, int pmdDataWindowSeconds)
         {
             _benchlabService = benchlabService;
             PmdMetricRefreshPeriod = pmdMetricRefreshPeriod;
             PmdDataWindowSeconds = pmdDataWindowSeconds;
+            CxLang.Instance.PropertyChanged += (_, __) => RaisePropertyChanged(string.Empty);
         }
 
         public void ResetHistory()

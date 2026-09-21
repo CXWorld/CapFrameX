@@ -111,17 +111,17 @@
 						</StackPanel>
 						<StackPanel Grid.Row="0" Margin="0 0 0 10" Orientation="Horizontal" HorizontalAlignment="Right">
 							<Button Width="28" Height="28" Margin="7 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-								ToolTip="Sort entries by type" Command="{Binding SortByEntryTypeCommand}"
+								ToolTip="{loc:Tr 'Sort entries by type'}" Command="{Binding SortByEntryTypeCommand}"
 								materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="Sort" Height="22" Width="22" />
 							</Button>
 							<Button Width="28" Height="28" Margin="0 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-								ToolTip="Open configuration folder" Command="{Binding OpenConfigFolderCommand}"
+								ToolTip="{loc:Tr 'Open configuration folder'}" Command="{Binding OpenConfigFolderCommand}"
 								materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="Folder" Height="22" Width="22" />
 							</Button>
 							<Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-									ToolTip="Save selection to other configs" Click="CopyButton_Click" 
+									ToolTip="{loc:Tr 'Save selection to other configs'}" Click="CopyButton_Click" 
 									materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="ContentCopy" Height="22" Width="22"/>
 							</Button>
@@ -188,7 +188,7 @@
                                  Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                                  Command="{Binding ConfigSwitchCommand}" CommandParameter="2"/>
 							<Button Width="28" Height="28" Margin="7 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-								ToolTip="Reset to defaults" Command="{Binding OpenResetDialogCommand}"
+								ToolTip="{loc:Tr 'Reset to defaults'}" Command="{Binding OpenResetDialogCommand}"
                             materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="Restore" Height="22" Width="22" />
 							</Button>
@@ -196,13 +196,13 @@
 						<!--Filter Controls-->
 						<StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10 0 10 5" HorizontalAlignment="Stretch">
 							<TextBox Width="150" Height="28" FontSize="12" VerticalContentAlignment="Center"
-									 materialDesign:HintAssist.Hint="Search..." materialDesign:HintAssist.HintOpacity=".6"
+									 materialDesign:HintAssist.Hint="{loc:Tr 'Search...'}" materialDesign:HintAssist.HintOpacity=".6"
 									 materialDesign:TextFieldAssist.HasClearButton="True"
 									 Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}"
 									 Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
 									 ToolTip="{loc:Tr 'Search in Description, Group Name, and Identifier'}"/>
 							<ComboBox Width="110" Height="28" Margin="10 0 0 0" FontSize="12" VerticalContentAlignment="Center"
-									  materialDesign:HintAssist.Hint="Entry Type" materialDesign:HintAssist.HintOpacity=".6"
+									  materialDesign:HintAssist.Hint="{loc:Tr 'Entry Type'}" materialDesign:HintAssist.HintOpacity=".6"
 									  materialDesign:HintAssist.IsFloating="False"
 
 									  ItemsSource="{Binding EntryTypeFilterItems}"
@@ -216,7 +216,7 @@
 								</ComboBox.ItemTemplate>
 							</ComboBox>
 							<Button Width="24" Height="24" Margin="10 0 0 0" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-									ToolTip="Clear filters" Command="{Binding ClearFilterCommand}"
+									ToolTip="{loc:Tr 'Clear filters'}" Command="{Binding ClearFilterCommand}"
 									materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="FilterRemove" Height="16" Width="16" />
 							</Button>
@@ -334,7 +334,7 @@
 								<DataGridTemplateColumn Header="{loc:Tr 'Group Name'}" SortMemberPath="GroupName" MinWidth="120">
 									<DataGridTemplateColumn.CellTemplate>
 										<DataTemplate>
-											<TextBlock Margin="4 0" VerticalAlignment="Center" Text="{Binding FormattedGroupName}"/>
+											<TextBlock Margin="4 0" VerticalAlignment="Center" Text="{Binding GroupName, Converter={StaticResource OverlayLabelConverter}}"/>
 										</DataTemplate>
 									</DataGridTemplateColumn.CellTemplate>
 									<DataGridTemplateColumn.CellEditingTemplate>
@@ -520,7 +520,7 @@
 											</StackPanel>
 										</materialDesign:Card>
 									</materialDesign:PopupBox>
-									<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Min OSD</TextBlock>
+									<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr 'Min OSD'}"/>
 									<Button Margin="10 0 0 0" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
                                             Command="{Binding SetToMinOsdCommand}" materialDesign:RippleAssist.Feedback="#DD000000">
 										<materialDesign:PackIcon Kind="FlipToFront" Height="15" Width="15" />
@@ -580,7 +580,7 @@
 							<Button Height="28" Margin="5 0 5 0"
 								Style="{StaticResource OverlayTemplateOutlinedButton}"
 								Command="{Binding LaunchOverlayPreviewAppCommand}"
-								ToolTip="Launch preview app">
+								ToolTip="{loc:Tr 'Launch preview app'}">
 								<StackPanel Orientation="Horizontal">
 									<materialDesign:PackIcon Kind="Play" VerticalAlignment="Center" Margin="0 0 5 0"
 										Foreground="{DynamicResource Cx.Brush.OutlinedAction.Foreground}"/>
@@ -591,7 +591,7 @@
 							<Button Height="28" Margin="5 0 5 0"
 								Style="{StaticResource OverlayTemplateOutlinedButton}"
 								Command="{Binding RevertOverlayTemplateCommand}"
-								ToolTip="Revert to last applied template">
+								ToolTip="{loc:Tr 'Revert to last applied template'}">
 								<StackPanel Orientation="Horizontal">
 									<materialDesign:PackIcon Kind="Undo" VerticalAlignment="Center" Margin="0 0 5 0"
 										Foreground="{DynamicResource Cx.Brush.OutlinedAction.Foreground}"/>
@@ -602,7 +602,7 @@
 							<Button Height="28" Margin="5 0 5 0"
 								Style="{StaticResource MaterialDesignRaisedButton}"
 								Command="{Binding ApplyOverlayTemplateCommand}"
-								ToolTip="Apply selected template">
+								ToolTip="{loc:Tr 'Apply selected template'}">
 								<StackPanel Orientation="Horizontal">
 									<materialDesign:PackIcon Kind="Check" VerticalAlignment="Center" Margin="0 0 5 0"
 										Foreground="White"/>
@@ -630,7 +630,7 @@
 							</Grid.ColumnDefinitions>
 							<TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{loc:Tr 'Colors and Limits'}" FontSize="16"/>
 							<Button Grid.Row="0" Grid.Column="2" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-								ToolTip="Reset to defaults" Command="{Binding ResetColorAndLimitDefaultsCommand}"
+								ToolTip="{loc:Tr 'Reset to defaults'}" Command="{Binding ResetColorAndLimitDefaultsCommand}"
 								materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="Restore" Height="15" Width="15" />
 							</Button>
@@ -968,7 +968,7 @@
 										</ToggleButton.ToolTip>
 									</ToggleButton>
 								</StackPanel>
-								<TextBox Margin="30 0 0 0" materialDesign:HintAssist.Hint="Thread Affinity Hotkey" Width="145" Height="45" Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
+								<TextBox Margin="30 0 0 0" materialDesign:HintAssist.Hint="{loc:Tr 'Thread Affinity Hotkey'}" Width="145" Height="45" Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 									 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ThreadAffinityHotkeyTextBox_PreviewKeyDown" materialDesign:HintAssist.HintOpacity=".8"
 									 ToolTip="{loc:Tr 'Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)'}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
 									<Binding Path="ThreadAffinityHotkey"
@@ -1227,7 +1227,7 @@
 											</StackPanel>
 											<ComboBox Margin="0 8 0 0" Height="40" FontSize="14"
 													  HorizontalContentAlignment="Stretch"
-													  materialDesign:HintAssist.Hint="Display"
+													  materialDesign:HintAssist.Hint="{loc:Tr 'Display'}"
 													  materialDesign:HintAssist.HintOpacity=".8"
 													  materialDesign:HintAssist.IsFloating="True"
 													  ItemsSource="{Binding HookFreeDisplayItemsSource}"
@@ -1245,7 +1245,7 @@
 										</StackPanel>
 										<DockPanel Margin="26 8 0 0" IsEnabled="{Binding CanConfigureHookFreeOptions}">
 											<ComboBox DockPanel.Dock="Right" Width="120" Height="40" FontSize="14"
-													  materialDesign:HintAssist.Hint="Refresh rate"
+													  materialDesign:HintAssist.Hint="{loc:Tr 'Refresh rate'}"
 													  materialDesign:HintAssist.HintOpacity=".8"
 													  materialDesign:HintAssist.IsFloating="True"
 													  ItemsSource="{Binding HookFreeRefreshRateItemsSource}"
@@ -1292,7 +1292,7 @@
 
 									<DockPanel Margin="0 5">
 										<TextBox DockPanel.Dock="Right" Width="160" Height="42"
-												 materialDesign:HintAssist.Hint="Toggle overlay"
+												 materialDesign:HintAssist.Hint="{loc:Tr 'Toggle overlay'}"
 												 materialDesign:HintAssist.HintOpacity=".8"
 												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
@@ -1309,7 +1309,7 @@
 
 									<DockPanel Margin="0 5">
 										<TextBox DockPanel.Dock="Right" Width="160" Height="42"
-												 materialDesign:HintAssist.Hint="Switch config"
+												 materialDesign:HintAssist.Hint="{loc:Tr 'Switch config'}"
 												 materialDesign:HintAssist.HintOpacity=".8"
 												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
@@ -1326,7 +1326,7 @@
 
 									<DockPanel Margin="0 5">
 										<TextBox DockPanel.Dock="Right" Width="160" Height="42"
-												 materialDesign:HintAssist.Hint="Cycle position"
+												 materialDesign:HintAssist.Hint="{loc:Tr 'Cycle position'}"
 												 materialDesign:HintAssist.HintOpacity=".8"
 												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
@@ -1343,7 +1343,7 @@
 
 									<DockPanel Margin="0 5">
 										<TextBox DockPanel.Dock="Right" Width="160" Height="42"
-												 materialDesign:HintAssist.Hint="Reset metrics"
+												 materialDesign:HintAssist.Hint="{loc:Tr 'Reset metrics'}"
 												 materialDesign:HintAssist.HintOpacity=".8"
 												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
@@ -1362,7 +1362,7 @@
 									<DockPanel Margin="0 5">
 										<ComboBox DockPanel.Dock="Right" Width="160" Height="40" FontSize="14"
 
-												  materialDesign:HintAssist.Hint="Refresh period (ms)"
+												  materialDesign:HintAssist.Hint="{loc:Tr 'Refresh period (ms)'}"
 												  materialDesign:HintAssist.HintOpacity=".8"
 												  materialDesign:HintAssist.IsFloating="True"
 												  MaxDropDownHeight="200" MouseLeave="OSDRefreshPeriodComboBox_MouseLeave"
@@ -1380,7 +1380,7 @@
 									<DockPanel Margin="0 5">
 										<ComboBox DockPanel.Dock="Right" Width="160" Height="40" FontSize="14"
 
-												  materialDesign:HintAssist.Hint="Metric interval (s)"
+												  materialDesign:HintAssist.Hint="{loc:Tr 'Metric interval (s)'}"
 												  materialDesign:HintAssist.HintOpacity=".8"
 												  materialDesign:HintAssist.IsFloating="True"
 												  MaxDropDownHeight="200" MouseLeave="MetricIntervalComboBox_MouseLeave"

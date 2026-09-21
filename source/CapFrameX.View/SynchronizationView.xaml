@@ -49,7 +49,7 @@
         <TabControl Grid.Row="1" Grid.Column="0" Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
             <TabItem Width="150" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                 <TabItem.Header>
-                    <Label FontSize="12">Input lag approximation</Label>
+                    <Label FontSize="12" Content="{loc:Tr 'Input lag approximation'}"/>
                 </TabItem.Header>
                 <Grid>
                     <Grid.RowDefinitions>
@@ -81,7 +81,7 @@
                     <!--Input lag offset-->
                     <Grid Grid.Row="1" Margin="0 5 0 0" >
                         <StackPanel Margin="20 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left">
-                            <TextBlock VerticalAlignment="Center" FontSize="14">Input lag offset (ms):</TextBlock>
+                            <TextBlock VerticalAlignment="Center" FontSize="14" Text="{loc:Tr 'Input lag offset (ms):'}"/>
                             <TextBox FontSize="14" Height="25" Margin="5 0 0 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" TextAlignment="Center" Text="{Binding InputLagOffset, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Offset" 
 									 PreviewKeyDown="InputLagOffsetTextBox_PreviewKeyDown" ToolTip="{loc:Tr 'Offset for display and mouse/keyboard/gamepad latency'}"/>
                         </StackPanel>
@@ -146,7 +146,7 @@
             </TabItem>
             <TabItem Width="150" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" >
                 <TabItem.Header>
-                    <Label FontSize="12">Until displayed times</Label>
+                    <Label FontSize="12" Content="{loc:Tr 'Until displayed times'}"/>
                 </TabItem.Header>
                 <Grid>
                     <Grid.RowDefinitions>
@@ -177,7 +177,7 @@
                     </DockPanel>
                     <Grid Grid.Row="1" Margin="0 5 0 0">
                         <StackPanel Margin="20 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left">
-                            <TextBlock VerticalAlignment="Center">Frames within monitor sync range:</TextBlock>
+                            <TextBlock VerticalAlignment="Center" Text="{loc:Tr 'Frames within monitor sync range:'}"/>
                             <TextBlock Width="40" Height="27" Margin="10 0 0 0" Padding="0 7 0 0" FontWeight="Bold" TextAlignment="Center"
 						    Text="{Binding SyncRangePercentage}" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"/>
                             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">(Range:</TextBlock>

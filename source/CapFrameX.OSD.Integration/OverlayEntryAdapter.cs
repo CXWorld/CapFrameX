@@ -235,7 +235,7 @@ namespace CapFrameX.OSD.Integration
                 else if (ch == '>') inTag = false;
                 else if (!inTag && ch != '{' && ch != '}' && ch != '0') sb.Append(ch);
             }
-            return sb.ToString().Trim();
+            return CxLang.Instance.TranslateOverlay(sb.ToString().Trim());
         }
     }
 }

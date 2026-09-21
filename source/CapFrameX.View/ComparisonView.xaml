@@ -156,7 +156,7 @@
 								<Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
 									<ComboBox Grid.Column="5" Margin="45 0 0 15" HorizontalAlignment="Left" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Values"
 					                    materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="80" Height="40">
-										<ComboBoxItem IsSelected="True">Frametimes</ComboBoxItem>
+										<ComboBoxItem IsSelected="True" Content="{loc:Tr 'Frametimes'}"/>
 										<ComboBoxItem>FPS</ComboBoxItem>
 										<ComboBox.Text>
 											<Binding Path="SelectedChartView"
@@ -190,7 +190,7 @@
 										<DataTemplate x:Key="FpsChartContent">
 											<Grid>
 												<Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-													<ComboBox  Width="100" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="150 0 0 15" materialDesign:HintAssist.Hint="Filter mode"
+													<ComboBox  Width="100" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="150 0 0 15" materialDesign:HintAssist.Hint="{loc:Tr 'Filter mode'}"
 										                      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240"
                                                               SelectedItem="{Binding SelectedFilterMode}" SelectedIndex="1" ItemsSource="{Binding FilterModes}">
 														<ComboBox.ItemTemplate>
@@ -255,7 +255,7 @@
 							</StackPanel>
 							<StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 10 5" Height="22">
 								<TextBlock Text="{loc:Tr 'Range:'}" Margin="0 5 5 0"/>
-								<TextBox x:Name="FirsSecondsTextbox" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" Grid.Row="1" materialDesign:HintAssist.Hint="Start (s)" HorizontalAlignment="Center" Width="45"
+								<TextBox x:Name="FirsSecondsTextbox" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" Grid.Row="1" materialDesign:HintAssist.Hint="{loc:Tr 'Start (s)'}" HorizontalAlignment="Center" Width="45"
                                     ToolTip="{loc:Tr 'Range Slider start point'}" PreviewKeyDown="FirstSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center">
 									<TextBox.Text>
 										<Binding Path="FirstSeconds"
@@ -266,7 +266,7 @@
 									</TextBox.Text>
 								</TextBox>
 								<TextBlock Text="-" Margin="3 3 3 0"/>
-								<TextBox x:Name="LastSecondsTextbox" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" Grid.Row="1" materialDesign:HintAssist.Hint="End (s)" HorizontalAlignment="Center" Width="45"
+								<TextBox x:Name="LastSecondsTextbox" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" Grid.Row="1" materialDesign:HintAssist.Hint="{loc:Tr 'End (s)'}" HorizontalAlignment="Center" Width="45"
                                         ToolTip="{loc:Tr 'Range Slider end point'}" PreviewKeyDown="LastSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center">
 									<TextBox.Text>
 										<Binding Path="LastSeconds"
@@ -385,7 +385,7 @@
 							</StackPanel>
 							<StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 10 5" Height="22">
 								<TextBlock Text="{loc:Tr 'Range:'}" Margin="0 5 5 0"/>
-								<TextBox Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" Grid.Row="1" materialDesign:HintAssist.Hint="Start (s)" HorizontalAlignment="Center" Width="45"
+								<TextBox Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" Grid.Row="1" materialDesign:HintAssist.Hint="{loc:Tr 'Start (s)'}" HorizontalAlignment="Center" Width="45"
                                          ToolTip="{loc:Tr 'Range Slider start point'}" PreviewKeyDown="FirstSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center">
 									<TextBox.Text>
 										<Binding Path="FirstSeconds"
@@ -396,7 +396,7 @@
 									</TextBox.Text>
 								</TextBox>
 								<TextBlock Text="-" Margin="3 3 3 0"/>
-								<TextBox  Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" Grid.Row="1" materialDesign:HintAssist.Hint="End (s)" HorizontalAlignment="Center" Width="45"
+								<TextBox  Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" Grid.Row="1" materialDesign:HintAssist.Hint="{loc:Tr 'End (s)'}" HorizontalAlignment="Center" Width="45"
                                         ToolTip="{loc:Tr 'Range Slider end point'}" PreviewKeyDown="LastSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center">
 									<TextBox.Text>
 										<Binding Path="LastSeconds"
@@ -447,7 +447,7 @@
 									<ColumnDefinition Width="Auto"/>
 									<ColumnDefinition Width="Auto"/>
 								</Grid.ColumnDefinitions>
-								<ComboBox Grid.Column="0" Width="140" Height="40" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="5 5 5 5" materialDesign:HintAssist.Hint="First label"
+								<ComboBox Grid.Column="0" Width="140" Height="40" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="5 5 5 5" materialDesign:HintAssist.Hint="{loc:Tr 'First label'}"
 					                materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" materialDesign:HintAssist.HintOpacity=".8"
 					                ItemsSource="{Binding ComparisonContextItems}" SelectedItem="{Binding SelectedComparisonContext}">
 									<ComboBox.ItemTemplate>
@@ -456,7 +456,7 @@
 										</DataTemplate>
 									</ComboBox.ItemTemplate>
 								</ComboBox>
-								<ComboBox Grid.Column="1" Width="140" Height="40" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="15 5 5 5" materialDesign:HintAssist.Hint="Second label"
+								<ComboBox Grid.Column="1" Width="140" Height="40" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="15 5 5 5" materialDesign:HintAssist.Hint="{loc:Tr 'Second label'}"
 					                materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" materialDesign:HintAssist.HintOpacity=".8"
 					                ItemsSource="{Binding ComparisonContextItems}" SelectedItem="{Binding SelectedSecondComparisonContext}">
 									<ComboBox.ItemTemplate>
@@ -472,7 +472,7 @@
 			</StackPanel>
 
 			<StackPanel Grid.Column="2" Margin="10 10 5 0" Orientation="Horizontal" Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
-				ToolTip="Select metrics to be shown" IsEnabled="{Binding MetricAndLabelOptionsEnabled}">
+				ToolTip="{loc:Tr 'Select metrics to be shown'}" IsEnabled="{Binding MetricAndLabelOptionsEnabled}">
 				<TextBlock Margin="0 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"> Metrics</TextBlock>
 				<materialDesign:PopupBox Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
 					<materialDesign:Card Width="Auto" Margin="0 0 0 0">
@@ -572,13 +572,13 @@
 
 			<StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10 10 5 0" Orientation="Horizontal"
                         Visibility="{Binding IsLineChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
-				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Legend:</TextBlock>
+				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr 'Legend:'}"/>
 				<ToggleButton Name="ContextLegendActiveToggleButton" Margin="10 0 0 0"
 					  ToolTip="{loc:Tr 'Show selected labels as chart legend'}" IsChecked="{Binding IsContextLegendActive}"/>
 			</StackPanel>
 
 			<StackPanel Grid.Column="4" Margin="10 10 5 0" VerticalAlignment="Center" Orientation="Horizontal">
-				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Range Slider:</TextBlock>
+				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr 'Range Slider:'}"/>
 				<ToggleButton Name="RangeSliderActiveToggleButton" Margin="10 0 0 0"
 							  IsChecked="{Binding IsRangeSliderActive}"/>
 				<StackPanel.Style>
@@ -599,7 +599,7 @@
 			<StackPanel Grid.Column="5" Margin="10 10 5 0" VerticalAlignment="Center" Orientation="Horizontal">
 				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr 'Grouping:'}"/>
 				<ToggleButton Margin="10 0 0 0"
-					ToolTip="Sort entries by game first" IsChecked="{Binding UseComparisonGrouping}"/>
+					ToolTip="{loc:Tr 'Sort entries by game first'}" IsChecked="{Binding UseComparisonGrouping}"/>
 				<StackPanel.Style>
 					<Style TargetType="StackPanel">
 						<Setter Property="Visibility" Value="Visible"/>
@@ -650,7 +650,7 @@
 			</StackPanel>
 
             <StackPanel Grid.Column="6" Margin="10 10 5 0" Orientation="Horizontal">
-                <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Further Settings</TextBlock>
+                <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr 'Further Settings'}"/>
                 <materialDesign:PopupBox Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
                     <materialDesign:Card Width="Auto" Margin="0 0 0 -10">
                         <StackPanel Orientation="Horizontal" Margin="10">
@@ -668,14 +668,14 @@
 
                             <StackPanel Margin="10 10 10 0" VerticalAlignment="Center" Orientation="Horizontal"
 							Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
-                                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Relative Mode:</TextBlock>
+                                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr 'Relative Mode:'}"/>
                                 <ToggleButton Margin="10 0 0 0"
 							  ToolTip="{loc:Tr 'Toggle fixed relative mode. Target value selectable by mouse click.'}" IsChecked="{Binding UseComparisonRelativeMode}"/>
                             </StackPanel>
 
                             <StackPanel HorizontalAlignment="Right" Margin="10 10 10 0" Orientation="Horizontal"
 							Visibility="{Binding IsVarianceChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
-                                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Auto scale:</TextBlock>
+                                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr 'Auto scale:'}"/>
                                 <ToggleButton  Margin="10 0 0 0"
 							    ToolTip="{loc:Tr 'Auto scale variance bars based on the first variance group'}" IsChecked="{Binding VarianceAutoScaling}"/>
 
@@ -852,7 +852,7 @@
 								HorizontalAlignment="Center"
 								VerticalAlignment="Center"
 								Width="35" Height="35"
-								ToolTip="Remove all comparisons"
+								ToolTip="{loc:Tr 'Remove all comparisons'}"
 								Command="{Binding RemoveAllComparisonsCommand}"
                                 Foreground="White"
                                 Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}"

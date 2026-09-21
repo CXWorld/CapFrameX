@@ -646,7 +646,7 @@
 						<Grid Grid.Row="2" Margin="0 2 0 2" Background="Transparent">
 							<ComboBox Margin="10 0 0 5" HorizontalAlignment="Left" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Values"
 					                    materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="80" Height="40">
-								<ComboBoxItem IsSelected="True">Frametimes</ComboBoxItem>
+								<ComboBoxItem IsSelected="True" Content="{loc:Tr 'Frametimes'}"/>
 								<ComboBoxItem>FPS</ComboBoxItem>
 								<ComboBox.Text>
 									<Binding Path="SelectedChartView"

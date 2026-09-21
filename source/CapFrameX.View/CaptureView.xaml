@@ -289,7 +289,7 @@
 						<Slider Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource CxVoiceSlider}"
 							Minimum="0" 
 							Maximum="100" 
-							ToolTip="Sound level control"
+							ToolTip="{loc:Tr 'Sound level control'}"
 							Value="{Binding SliderSoundLevel}"
 							Width="65" Thumb.DragCompleted="Slider_DragCompleted" />
 						<TextBlock Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" TextAlignment="Right" Text="{Binding SliderSoundLevel}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>

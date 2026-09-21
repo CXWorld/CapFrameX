@@ -140,7 +140,7 @@
                     <TextBlock Text="{Binding InfoToolTipText, UpdateSourceTrigger=Default}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                 </materialDesign:PackIcon.ToolTip>
             </materialDesign:PackIcon>
-            <TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" >Version:</TextBlock>
+            <TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr 'Version:'}"/>
             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"  Text="{Binding VersionString, Mode=OneWay}"/>
         </StackPanel>
     </Grid>

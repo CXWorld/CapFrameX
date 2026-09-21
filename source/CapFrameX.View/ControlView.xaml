@@ -102,7 +102,7 @@
                                                 Foreground="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
                                                 <materialDesign:PackIcon Kind="Cached" Width="18" Height="18"/>
                                             </Button>
-                                            <TextBox IsReadOnly="True" materialDesign:HintAssist.Hint="Root capture folder"
+                                            <TextBox IsReadOnly="True" materialDesign:HintAssist.Hint="{loc:Tr 'Root capture folder'}"
 												Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                                                 materialDesign:HintAssist.IsFloating="True" materialDesign:HintAssist.HintOpacity=".8"
                                                 Text="{Binding DataContext.RootDirectory, ElementName=ControlViewControl, Mode=OneWay}"
@@ -483,18 +483,18 @@
                         <ColumnDefinition Width="1*"/>
                     </Grid.ColumnDefinitions>
                     <!--System descriptions (left column)-->
-                    <TextBox Grid.Row="0" Grid.Column="0" wpf:HintAssist.Hint="CPU description"
+                    <TextBox Grid.Row="0" Grid.Column="0" wpf:HintAssist.Hint="{loc:Tr 'CPU description'}"
                              Text="{Binding CustomCpuDescription, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
-                    <TextBox Grid.Row="1" Grid.Column="0" wpf:HintAssist.Hint="GPU description"
+                    <TextBox Grid.Row="1" Grid.Column="0" wpf:HintAssist.Hint="{loc:Tr 'GPU description'}"
                              Text="{Binding CustomGpuDescription, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
-                    <TextBox Grid.Row="2" Grid.Column="0" wpf:HintAssist.Hint="RAM description"
+                    <TextBox Grid.Row="2" Grid.Column="0" wpf:HintAssist.Hint="{loc:Tr 'RAM description'}"
                              Text="{Binding CustomRamDescription, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
                     <!--Record metadata (right column)-->
                     <TextBox Grid.Row="0" Grid.Column="2" wpf:HintAssist.Hint="Game"
                              Text="{Binding CustomGameName, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
-                    <TextBox Grid.Row="1" Grid.Column="2" wpf:HintAssist.Hint="Resolution"
+                    <TextBox Grid.Row="1" Grid.Column="2" wpf:HintAssist.Hint="{loc:Tr 'Resolution'}"
                              Text="{Binding CustomResolution, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
-                    <TextBox Grid.Row="2" Grid.Column="2" VerticalAlignment="Stretch" wpf:HintAssist.Hint="Comment"
+                    <TextBox Grid.Row="2" Grid.Column="2" VerticalAlignment="Stretch" wpf:HintAssist.Hint="{loc:Tr 'Comment'}"
                              Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
                     <!--Actions-->
                     <Button Grid.Row="3" Grid.Column="2" Margin="0 12 0 0" MinWidth="120" HorizontalAlignment="Right"

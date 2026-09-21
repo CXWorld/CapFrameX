@@ -100,7 +100,7 @@
 								Margin="0 0 10 0"
 								HorizontalAlignment="Right"
 								Width="30" Height="30"
-								ToolTip="Remove all comparisons"
+								ToolTip="{loc:Tr 'Remove all comparisons'}"
 								Command="{Binding RemoveAllComparisonsCommand}">
 							<materialDesign:PackIcon Kind="PlaylistRemove" Height="24" Width="24" />
 						</Button>
@@ -214,7 +214,7 @@
 								VerticalAlignment="Bottom"
 								Value="{Binding FirstSeconds}"
 								Style="{StaticResource MaterialDesignDiscreteSlider}"
-								ToolTip="Cut first seconds"/>
+								ToolTip="{loc:Tr 'Cut first seconds'}"/>
 						<TextBox Grid.Column="1" HorizontalAlignment="Center" IsReadOnly="True" Margin="20 0 20 3"
 								 Style="{StaticResource CxFloatingHintTextBox}" Text="{Binding RemainingRecordingTime}">
 							<materialDesign:HintAssist.Hint>
@@ -234,7 +234,7 @@
 								VerticalAlignment="Bottom"
 								Value="{Binding LastSeconds}"
 								Style="{StaticResource MaterialDesignDiscreteSlider}"
-								ToolTip="Cut last seconds"/>
+								ToolTip="{loc:Tr 'Cut last seconds'}"/>
 					</Grid>
 				</Grid>
 			</TabItem>
@@ -262,12 +262,12 @@
 					<ColumnDefinition Width="1*" />
 				</Grid.ColumnDefinitions>
 				<StackPanel VerticalAlignment="Top" Grid.Column="0" Margin="25 10 0 10" Orientation="Horizontal">
-					<TextBlock VerticalAlignment="Center">Cutting mode:</TextBlock>
+					<TextBlock VerticalAlignment="Center" Text="{loc:Tr 'Cutting mode:'}"/>
 					<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0"
 								  ToolTip="{loc:Tr 'Cutting mode'}" IsChecked="{Binding IsCuttingModeActive}"/>
 				</StackPanel>
 				<StackPanel VerticalAlignment="Top" Grid.Column="1" Margin="25 10 0 10" Orientation="Horizontal">
-					<TextBlock VerticalAlignment="Center">Show context legend:</TextBlock>
+					<TextBlock VerticalAlignment="Center" Text="{loc:Tr 'Show context legend:'}"/>
 					<ToggleButton Name="ContextLegendActiveToggleButton" Margin="10 0 0 0"
 								  ToolTip="{loc:Tr 'Show context legend'}" IsChecked="{Binding IsContextLegendActive}"/>
 				</StackPanel>

@@ -91,6 +91,35 @@ namespace CapFrameX.PMD
             AxisDefinitions["X_Axis_Time_GPU_Analysis"].AxisChanged += GPU_AxisChanged;
             AxisDefinitions["X_Axis_Time_CPU_Analysis"].AxisChanged += CPU_AxisChanged;
             AxisDefinitions["X_Axis_Performance"].AxisChanged += Performance_AxisChanged;
+
+            ApplyAxisTitles();
+            CxLang.Instance.PropertyChanged += (_, __) => ApplyAxisTitles();
+        }
+
+        private void ApplyAxisTitles()
+        {
+            void Set(string key, string title)
+            {
+                if (AxisDefinitions.TryGetValue(key, out var axis))
+                    axis.Title = CxLang.T(title);
+            }
+
+            Set("Y_Axis_CPU_W", "CPU Power [W]");
+            Set("Y_Axis_GPU_W", "GPU Power [W]");
+            Set("Y_Axis_Analysis_CPU_W", "Power [W]");
+            Set("Y_Axis_Analysis_GPU_W", "Power [W]");
+            Set("Y_Axis_Performance", "Frametime [ms]");
+            Set("X_Axis_Time_CPU", "Time [s]");
+            Set("X_Axis_Time_GPU", "Time [s]");
+            Set("X_Axis_Time_CPU_Analysis", "Time [s]");
+            Set("X_Axis_Time_GPU_Analysis", "Time [s]");
+            Set("X_Axis_Performance", "Time [s]");
+
+            Eps12VModel?.InvalidatePlot(false);
+            PciExpressModel?.InvalidatePlot(false);
+            CpuAnalysisModel?.InvalidatePlot(false);
+            GpuAnalysisModel?.InvalidatePlot(false);
+            PerformanceModel?.InvalidatePlot(false);
         }
 
 
