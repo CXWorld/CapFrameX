@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
@@ -1239,8 +1240,10 @@ namespace CapFrameX.ViewModel
             if (!string.IsNullOrWhiteSpace(_filterText))
             {
                 var searchText = _filterText.Trim();
-                bool matchesDescription = entry.Description?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
-                bool matchesGroupName = entry.GroupName?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+                bool matchesDescription = entry.Description?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0
+                    || CxLang.Instance.TranslateOverlay(entry.Description)?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+                bool matchesGroupName = entry.GroupName?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0
+                    || CxLang.Instance.TranslateOverlay(entry.GroupName)?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
                 bool matchesStableId = entry.StableIdentifier?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
 
                 if (!matchesDescription && !matchesGroupName && !matchesStableId)

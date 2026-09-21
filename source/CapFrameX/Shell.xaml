@@ -1,15 +1,15 @@
-﻿<Window x:Class="CapFrameX.Shell"
+<Window x:Class="CapFrameX.Shell"
         x:Name="ShellWindow"
         xmlns:prism="http://prismlibrary.com/"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:CapFrameX.MVVM.Localization;assembly=CapFrameX.MVVM"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:tb="http://www.hardcodet.net/taskbar"
 		xmlns:converter="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 		mc:Ignorable="d"
-        Title="CapFrameX"
+        Title="{loc:Tr 'CapFrameX'}"
         Height="800" Width="1400" MinHeight="740" MinWidth="1250" Icon="Icons/cx_icon_BUC.ico"
         Background="{DynamicResource MaterialDesign.Brush.Background}"
         FontFamily="{materialDesign:MaterialDesignFont}">
@@ -31,7 +31,7 @@
                         TrayLeftMouseDown="SystemTray_TrayLeftMouseDownClick">
             <tb:TaskbarIcon.TrayToolTip>
                 <Grid Background="White">
-                    <TextBlock Margin="3" Foreground="#575757" Text="CapFrameX" />
+                    <TextBlock Margin="3" Foreground="#575757" Text="{loc:Tr 'CapFrameX'}" />
                 </Grid>
             </tb:TaskbarIcon.TrayToolTip>
             <tb:TaskbarIcon.ContextMenu>
@@ -42,7 +42,7 @@
                             <materialDesign:PackIcon Kind="WindowMaximize"/>
                         </MenuItem.Icon>
                         <MenuItem.Header>
-                            <TextBlock Margin="-10 0 0 0" Text="Show Main Window"/>
+                            <TextBlock Margin="-10 0 0 0" Text="{loc:Tr 'Show Main Window'}"/>
                         </MenuItem.Header>
                     </MenuItem>
                     <Separator Margin="10 0 0 0"/>
@@ -51,7 +51,7 @@
                             <materialDesign:PackIcon Kind="CloseCircle" />
                         </MenuItem.Icon>
                         <MenuItem.Header>
-                            <TextBlock Margin="-10 0 0 0" Text="Close"/>
+                            <TextBlock Margin="-10 0 0 0" Text="{loc:Tr 'Close'}"/>
                         </MenuItem.Header>
                     </MenuItem>
                 </ContextMenu>

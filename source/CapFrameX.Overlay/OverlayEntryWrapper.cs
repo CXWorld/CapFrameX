@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.Overlay;
+﻿using CapFrameX.Contracts.Localization;
+using CapFrameX.Contracts.Overlay;
 using Newtonsoft.Json;
 using Prism.Mvvm;
 using System;
@@ -44,6 +45,27 @@ namespace CapFrameX.Overlay
         public EOverlayEntryType OverlayEntryType { get; set; }
 
         public string Description { get; set; }
+
+        /// <summary>
+        /// OSD and overlay-list label. The stored <see cref="Description"/> stays the English
+        /// catalog name so saved profiles and sensor matching do not depend on the overlay language.
+        /// </summary>
+        [JsonIgnore]
+        public string LocalizedDescription
+        {
+            get => CxLang.Instance.TranslateOverlay(Description);
+            set
+            {
+                if (value == null)
+                    return;
+                var shown = CxLang.Instance.TranslateOverlay(Description);
+                if (value == shown || value == Description)
+                    return;
+                Description = value;
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(LocalizedDescription));
+            }
+        }
 
         [JsonIgnore]
         public Action PropertyChangedAction { set; get; }
@@ -199,9 +221,15 @@ namespace CapFrameX.Overlay
 
         [JsonIgnore]
         public string FormattedGroupName
-        => string.IsNullOrWhiteSpace(GroupNameFormat) ?
-            (GroupName == null ? string.Empty : GroupName.ToString())
-            : string.Format(CultureInfo.InvariantCulture, GroupNameFormat, GroupName);
+        {
+            get
+            {
+                var name = CxLang.Instance.TranslateOverlay(GroupName ?? string.Empty);
+                return string.IsNullOrWhiteSpace(GroupNameFormat)
+                    ? name
+                    : string.Format(CultureInfo.InvariantCulture, GroupNameFormat, name);
+            }
+        }
 
         public string UpperLimitValue
         {
@@ -289,12 +317,20 @@ namespace CapFrameX.Overlay
                 // not make an otherwise unchanged overlay profile appear dirty.
                 if (e.PropertyName != nameof(ShowOnOverlayIsEnabled)
                     && e.PropertyName != nameof(ShowGraphIsEnabled)
-                    && e.PropertyName != nameof(GroupNameFormat))
+                    && e.PropertyName != nameof(GroupNameFormat)
+                    && e.PropertyName != nameof(LocalizedDescription))
                 {
                     PropertyChangedAction?.Invoke();
                 }
             };
             PropertyChanged += _propertyChangedHandler;
+            CxLang.Instance.OverlayLanguageChanged += OnOverlayLanguageChanged;
+        }
+
+        private void OnOverlayLanguageChanged()
+        {
+            if (!_disposed)
+                RaisePropertyChanged(nameof(LocalizedDescription));
         }
 
         public IOverlayEntry Clone()
@@ -335,6 +371,7 @@ namespace CapFrameX.Overlay
             if (_disposed)
                 return;
 
+            CxLang.Instance.OverlayLanguageChanged -= OnOverlayLanguageChanged;
             PropertyChanged -= _propertyChangedHandler;
             PropertyChangedAction = null;
             UpdateShowOnOverlay = null;

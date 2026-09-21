@@ -1,7 +1,7 @@
-﻿<UserControl x:Class="CapFrameX.View.ComparisonDataView"
+<UserControl x:Class="CapFrameX.View.ComparisonDataView"
 			 x:Name="ComparisonDataControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:CapFrameX.MVVM.Localization;assembly=CapFrameX.MVVM"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
 			 xmlns:dragdrop="urn:gong-wpf-dragdrop"
@@ -63,19 +63,19 @@
 													 ToggleContent="{materialDesign:PackIcon BallotOutline, Size=24}"
 													 Margin="10 0 0 0"
 													 PlacementMode="BottomAndAlignCentres"
-													 ToolTip="Set comparison context">
+													 ToolTip="{loc:Tr 'Set comparison context'}">
 								<materialDesign:PopupBox.ToggleCheckedContent>
 									<materialDesign:PackIcon Kind="Pencil" Width="24" Height="24" />
 								</materialDesign:PopupBox.ToggleCheckedContent>
 								<StackPanel>
-									<Button Command="{Binding DateTimeContextCommand}" Content="{materialDesign:PackIcon TimeTable, Size=24}" ToolTip="Date and time"/>
-									<Button Command="{Binding CpuContextCommand}" ToolTip="CPU">
+									<Button Command="{Binding DateTimeContextCommand}" Content="{materialDesign:PackIcon TimeTable, Size=24}" ToolTip="{loc:Tr 'Date and time'}"/>
+									<Button Command="{Binding CpuContextCommand}" ToolTip="{loc:Tr 'CPU'}">
 										CPU
 									</Button>
-									<Button Command="{Binding GpuContextCommand}" ToolTip="GPU">
+									<Button Command="{Binding GpuContextCommand}" ToolTip="{loc:Tr 'GPU'}">
 										GPU
 									</Button>
-									<Button Command="{Binding CustomContextCommand}" Content="{materialDesign:PackIcon CommentUser, Size=24}" ToolTip="Custom comments"/>
+									<Button Command="{Binding CustomContextCommand}" Content="{materialDesign:PackIcon CommentUser, Size=24}" ToolTip="{loc:Tr 'Custom comments'}"/>
 								</StackPanel>
 							</materialDesign:PopupBox>
 							<materialDesign:PopupBox StaysOpen="True"
@@ -84,15 +84,15 @@
 													 ToggleContent="{materialDesign:PackIcon Compare, Size=24}"
 													 Margin="20 0 0 0"
 													 PlacementMode="BottomAndAlignCentres"
-													 ToolTip="Set absolut/relative mode">
+													 ToolTip="{loc:Tr 'Set absolut/relative mode'}">
 								<materialDesign:PopupBox.ToggleCheckedContent>
 									<materialDesign:PackIcon Kind="Pencil" Width="24" Height="24" />
 								</materialDesign:PopupBox.ToggleCheckedContent>
 								<StackPanel>
-									<Button FontSize="9" Command="{Binding AbsoluteModeCommand}" ToolTip="Absolute mode">
+									<Button FontSize="9" Command="{Binding AbsoluteModeCommand}" ToolTip="{loc:Tr 'Absolute mode'}">
 										Absolute
 									</Button>
-									<Button Command="{Binding RelativeModeCommand}" Content="{materialDesign:PackIcon FilePercent, Size=24}" ToolTip="Relative mode"/>
+									<Button Command="{Binding RelativeModeCommand}" Content="{materialDesign:PackIcon FilePercent, Size=24}" ToolTip="{loc:Tr 'Relative mode'}"/>
 								</StackPanel>
 							</materialDesign:PopupBox>
 						</StackPanel>
@@ -192,7 +192,7 @@
 			</Border>
 		</StackPanel>
 		<TabControl  Margin="0 10 0 0" Grid.Row="0" Grid.Column="0" Background="#F5F5F5" Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}" >
-			<TabItem Header="Frametimes">
+			<TabItem Header="{loc:Tr 'Frametimes'}">
 				<Grid Name="ChartAndCuttingGrid">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="1*"></RowDefinition>
@@ -238,22 +238,22 @@
 					</Grid>
 				</Grid>
 			</TabItem>
-			<TabItem Header="L-shape">
+			<TabItem Header="{loc:Tr 'L-shape'}">
 				<lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding ComparisonLShapeCollection}" Zoom="Y" >
 					<lvc:CartesianChart.AxisX>
-						<lvc:Axis Title="Quantiles (%)" Name="LShapeX" Foreground="Black">
+						<lvc:Axis Title="{loc:Tr 'Quantiles (%)'}" Name="LShapeX" Foreground="Black">
 							<lvc:Axis.Separator >
 								<lvc:Separator Step="1"></lvc:Separator>
 							</lvc:Axis.Separator>
 						</lvc:Axis>
 					</lvc:CartesianChart.AxisX>
 					<lvc:CartesianChart.AxisY>
-						<lvc:Axis Title="Frametime (ms)" Name="LShapeY" Foreground="Black"/>
+						<lvc:Axis Title="{loc:Tr 'Frametime (ms)'}" Name="LShapeY" Foreground="Black"/>
 					</lvc:CartesianChart.AxisY>
 				</lvc:CartesianChart>
 			</TabItem>
 		</TabControl>
-		<Expander Grid.Row="1" Grid.ColumnSpan="2" Name="SettingsExpander" Background="#F5F5F5" Margin="0 5 0 5" Header="Data/Chart Settings" HorizontalAlignment="Stretch"
+		<Expander Grid.Row="1" Grid.ColumnSpan="2" Name="SettingsExpander" Background="#F5F5F5" Margin="0 5 0 5" Header="{loc:Tr 'Data/Chart Settings'}" HorizontalAlignment="Stretch"
                   Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}" >
 			<Grid Height="60">
 				<Grid.ColumnDefinitions>
@@ -264,19 +264,19 @@
 				<StackPanel VerticalAlignment="Top" Grid.Column="0" Margin="25 10 0 10" Orientation="Horizontal">
 					<TextBlock VerticalAlignment="Center">Cutting mode:</TextBlock>
 					<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0"
-								  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"/>
+								  ToolTip="{loc:Tr 'Cutting mode'}" IsChecked="{Binding IsCuttingModeActive}"/>
 				</StackPanel>
 				<StackPanel VerticalAlignment="Top" Grid.Column="1" Margin="25 10 0 10" Orientation="Horizontal">
 					<TextBlock VerticalAlignment="Center">Show context legend:</TextBlock>
 					<ToggleButton Name="ContextLegendActiveToggleButton" Margin="10 0 0 0"
-								  ToolTip="Show context legend" IsChecked="{Binding IsContextLegendActive}"/>
+								  ToolTip="{loc:Tr 'Show context legend'}" IsChecked="{Binding IsContextLegendActive}"/>
 				</StackPanel>
 			</Grid>
 		</Expander>
 		<lvc:CartesianChart Margin="0 0 5 0" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Series="{Binding ComparisonColumnChartSeriesCollection}" LegendLocation="Top"
                             Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}" Background="#F5F5F5">
 			<lvc:CartesianChart.AxisX>
-				<lvc:Axis Title="Comparisons" FontSize="11" Labels="{Binding ComparisonColumnChartLabels}" Foreground="Black"></lvc:Axis>
+				<lvc:Axis Title="{loc:Tr 'Comparisons'}" FontSize="11" Labels="{Binding ComparisonColumnChartLabels}" Foreground="Black"></lvc:Axis>
 			</lvc:CartesianChart.AxisX>
 			<lvc:CartesianChart.AxisY>
 				<lvc:Axis MinValue="0" FontSize="11" Title="{Binding ColumnChartYAxisTitle}" LabelFormatter="{Binding ComparisonColumnChartFormatter}" Foreground="Black"></lvc:Axis>

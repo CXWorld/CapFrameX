@@ -1,7 +1,7 @@
 <UserControl x:Class="CapFrameX.View.ControlView"
              Name="ControlViewControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:CapFrameX.MVVM.Localization;assembly=CapFrameX.MVVM"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
@@ -47,7 +47,7 @@
             </Grid.RowDefinitions>
             <Border Grid.Column="0" Grid.Row="0" Visibility="{Binding HasValidSource, Converter={StaticResource FalseToVisibleConverter}}" Margin="0 0 50 0" BorderThickness="1" Panel.ZIndex="2">
                 <!--Style="{StaticResource MaterialDesignHeadlineTextBlock}"-->
-                <TextBlock Text="Observed directory missing.&#10;Open the folder chip above and select a folder." TextAlignment="Center"
+                <TextBlock Text="{loc:Tr 'Observed directory missing.&#10;Open the folder chip above and select a folder.'}" TextAlignment="Center"
                        TextWrapping="Wrap" Width="220" Margin="60 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center"
                        Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
             </Border>
@@ -58,9 +58,9 @@
                         <RowDefinition Height="1*"></RowDefinition>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Loading records..." FontSize="16" Panel.ZIndex="1" Visibility="{Binding DirectoryLoading, Converter={StaticResource TrueToVisibleConverter}}"
+                    <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{loc:Tr 'Loading records...'}" FontSize="16" Panel.ZIndex="1" Visibility="{Binding DirectoryLoading, Converter={StaticResource TrueToVisibleConverter}}"
                         Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-					<TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Directory is empty. Refresh directory (context menu) or start a game and then press the capture key to create records." TextWrapping="Wrap" Width="200" TextAlignment="Center" FontSize="16" Panel.ZIndex="1"
+					<TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{loc:Tr 'Directory is empty. Refresh directory (context menu) or start a game and then press the capture key to create records.'}" TextWrapping="Wrap" Width="200" TextAlignment="Center" FontSize="16" Panel.ZIndex="1"
                         Visibility="{Binding DirectoryIsEmpty, Converter={StaticResource TrueToVisibleConverter}}"
                         Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 
@@ -98,7 +98,7 @@
                                         <DockPanel Grid.Row="0" LastChildFill="True">
                                             <Button DockPanel.Dock="Right" VerticalAlignment="Bottom" Margin="8 0 0 4"
                                                 Width="26" Height="26" Padding="0" Style="{StaticResource MaterialDesignIconButton}"
-                                                ToolTip="Reload root folder" Command="{Binding ReloadRootFolderCommand}"
+                                                ToolTip="{loc:Tr 'Reload root folder'}" Command="{Binding ReloadRootFolderCommand}"
                                                 Foreground="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
                                                 <materialDesign:PackIcon Kind="Cached" Width="18" Height="18"/>
                                             </Button>
@@ -120,9 +120,9 @@
                                                 dragdrop:DragDrop.UseDefaultEffectDataTemplate="False" Drop="TrvStructure_Drop">
                                                 <TreeView.ContextMenu>
                                                     <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                                        <MenuItem Header="Open folder" Command="{Binding OpenObservedFolderCommand}"/>
-                                                        <MenuItem Header="Delete folder" Command="{Binding DeleteFolderCommand}"/>
-                                                        <MenuItem Header="Create new subfolder" Command="{Binding OpenCreateSubFolderDialogCommand}"/>
+                                                        <MenuItem Header="{loc:Tr 'Open folder'}" Command="{Binding OpenObservedFolderCommand}"/>
+                                                        <MenuItem Header="{loc:Tr 'Delete folder'}" Command="{Binding DeleteFolderCommand}"/>
+                                                        <MenuItem Header="{loc:Tr 'Create new subfolder'}" Command="{Binding OpenCreateSubFolderDialogCommand}"/>
                                                     </ContextMenu>
                                                 </TreeView.ContextMenu>
                                             </TreeView>
@@ -137,7 +137,7 @@
                             Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                         <materialDesign:PopupBox.ToolTip>
                             <ToolTip Placement="Top">
-                                <TextBlock Text="Column options"/>
+                                <TextBlock Text="{loc:Tr 'Column options'}"/>
                             </ToolTip>
                         </materialDesign:PopupBox.ToolTip>
                         <materialDesign:Card Width="Auto" Margin="0 0 0 -10">
@@ -164,17 +164,17 @@
                                     <ColumnDefinition Width="100"/>
                                     <ColumnDefinition Width="100"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Date / Time" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="{loc:Tr 'Date / Time'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding ShowCreationDate}"/>
-                                <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Comment" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="{loc:Tr 'Comment'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowComment}"/>
-                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="Aggregated" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="{loc:Tr 'Aggregated'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding ShowIsAggregated}" />
-                                <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="CPU" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="{loc:Tr 'CPU'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowCpuName}"/>
-                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="GPU" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="{loc:Tr 'GPU'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding ShowGpuName}"/>
-                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="RAM" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="{loc:Tr 'RAM'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding ShowRamName}"/>
                             </Grid>
                         </materialDesign:Card>
@@ -290,10 +290,10 @@
                         </DataGrid.InputBindings>
                         <DataGrid.ContextMenu>
                             <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                <MenuItem Header="Delete recording file(s)" Command="{Binding DeleteRecordFileCommand}"/>
-                                <MenuItem Header="Move recording file(s)" Command="{Binding MoveRecordFileCommand}"/>
-                                <MenuItem Header="Copy/paste recording file(s)" Command="{Binding DuplicateRecordFileCommand}"/>
-								<MenuItem Header="Refresh directory" Command="{Binding RefreshDirectoryCommand}"/>
+                                <MenuItem Header="{loc:Tr 'Delete recording file(s)'}" Command="{Binding DeleteRecordFileCommand}"/>
+                                <MenuItem Header="{loc:Tr 'Move recording file(s)'}" Command="{Binding MoveRecordFileCommand}"/>
+                                <MenuItem Header="{loc:Tr 'Copy/paste recording file(s)'}" Command="{Binding DuplicateRecordFileCommand}"/>
+								<MenuItem Header="{loc:Tr 'Refresh directory'}" Command="{Binding RefreshDirectoryCommand}"/>
 							</ContextMenu>
                         </DataGrid.ContextMenu>
                         <DataGrid.ColumnHeaderStyle>
@@ -367,7 +367,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
                                         Width="Auto"
-                                        Header="Game"
+                                        Header="{loc:Tr 'Game'}"
                                         FontSize="13"
                                         IsReadOnly="True">
                                 <DataGridTextColumn.ElementStyle>
@@ -379,7 +379,7 @@
                             <DataGridTextColumn Binding="{Binding CreationTimestamp, Mode=OneWay}"
                                         Width="Auto"
                                         MinWidth="110"
-                                        Header="Date / Time"
+                                        Header="{loc:Tr 'Date / Time'}"
                                         IsReadOnly="True"
                                         Visibility="{Binding DataContext.ShowCreationDate, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
                                 <DataGridTextColumn.ElementStyle>
@@ -391,7 +391,7 @@
                             </DataGridTextColumn>
                             <DataGridTextColumn Binding="{Binding Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="100"
-                                        Header="Comment"
+                                        Header="{loc:Tr 'Comment'}"
                                         IsReadOnly="False"
                                         Visibility="{Binding DataContext.ShowComment, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
                                 <DataGridTextColumn.ElementStyle>
@@ -402,7 +402,7 @@
                             </DataGridTextColumn>
                             <DataGridCheckBoxColumn Binding="{Binding IsAggregated, Mode=OneWay}"
                                         Width="Auto"
-                                        Header="Aggregated"
+                                        Header="{loc:Tr 'Aggregated'}"
                                         IsReadOnly="True" 
                                         MinWidth="40"
                                         Visibility="{Binding DataContext.ShowIsAggregated, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
@@ -417,7 +417,7 @@
                             </DataGridCheckBoxColumn>
                             <DataGridTextColumn Binding="{Binding ProcessorName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="Auto"
-                                        Header="CPU"
+                                        Header="{loc:Tr 'CPU'}"
                                         IsReadOnly="False"
                                         Visibility="{Binding DataContext.ShowCpuName, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
                                 <DataGridTextColumn.ElementStyle>
@@ -428,7 +428,7 @@
                             </DataGridTextColumn>
                             <DataGridTextColumn Binding="{Binding GraphicCardName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="Auto"
-                                        Header="GPU"
+                                        Header="{loc:Tr 'GPU'}"
                                         IsReadOnly="False"
                                         Visibility="{Binding DataContext.ShowGpuName, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
                                 <DataGridTextColumn.ElementStyle>
@@ -439,7 +439,7 @@
                             </DataGridTextColumn>
                             <DataGridTextColumn Binding="{Binding SystemRamInfo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="Auto"
-                                        Header="RAM"
+                                        Header="{loc:Tr 'RAM'}"
                                         IsReadOnly="False"
                                         Visibility="{Binding DataContext.ShowRamName, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
                                 <DataGridTextColumn.ElementStyle>
@@ -458,7 +458,7 @@
                 <Expander.Header>
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon Kind="CardTextOutline" Width="18" Height="18" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                        <TextBlock Text="Record Info" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+                        <TextBlock Text="{loc:Tr 'Record Info'}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
                         <TextBlock Text="{Binding SelectedRecordInfo.GameName, StringFormat=' — {0}'}" FontSize="14" Opacity="0.7" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Expander.Header>
@@ -499,11 +499,11 @@
                     <!--Actions-->
                     <Button Grid.Row="3" Grid.Column="2" Margin="0 12 0 0" MinWidth="120" HorizontalAlignment="Right"
                             Style="{DynamicResource MaterialDesignRaisedButton}" Command="{Binding AcceptEditingDialogCommand}"
-                            ToolTip="Apply the descriptions to the selected record(s). Enter inside a field saves as well.">
+                            ToolTip="{loc:Tr 'Apply the descriptions to the selected record(s). Enter inside a field saves as well.'}">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="ContentSave" Width="16" Height="16" VerticalAlignment="Center" Margin="0 0 8 0"
                                                      Foreground="White"/>
-                            <TextBlock Text="SAVE" VerticalAlignment="Center" Foreground="White"/>
+                            <TextBlock Text="{loc:Tr 'SAVE'}" VerticalAlignment="Center" Foreground="White"/>
                         </StackPanel>
                     </Button>
                 </Grid>

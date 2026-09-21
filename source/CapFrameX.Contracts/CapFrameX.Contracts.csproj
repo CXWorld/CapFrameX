@@ -17,6 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Localization\Strings.ru.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CapFrameX.Capture.Contracts\CapFrameX.Capture.Contracts.csproj" />
     <ProjectReference Include="..\CapFrameX.Data.Session\CapFrameX.Data.Session.csproj" />
     <ProjectReference Include="..\CapFrameX.Extensions.NetStandard\CapFrameX.Extensions.NetStandard.csproj" />

@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="CapFrameX.View.ColorbarView"
+<UserControl x:Class="CapFrameX.View.ColorbarView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -6,6 +6,7 @@
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 			 xmlns:prism="http://prismlibrary.com/"
              xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
+             xmlns:loc="clr-namespace:CapFrameX.MVVM.Localization;assembly=CapFrameX.MVVM"
              xmlns:controls="clr-namespace:CapFrameX.View.Controls"
 			 xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d"
@@ -113,14 +114,14 @@
 	</UserControl.Resources>
 	<Grid>
 		<StackPanel Panel.ZIndex="1" Orientation="Horizontal" Visibility="{Binding ShowNotification, Converter={StaticResource FalseToCollapsedConverter}}" Background="Orange">
-			<TextBlock VerticalAlignment="Center" Margin="10" FontWeight="Bold" FontSize="18" Text="Important Message:"></TextBlock>
+			<TextBlock VerticalAlignment="Center" Margin="10" FontWeight="Bold" FontSize="18" Text="{loc:Tr 'Important Message:'}"></TextBlock>
 			<controls:MarkupTextBlock VerticalAlignment="Center" Margin="5" FontWeight="Bold" FontSize="14" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="60"
                 Width="{Binding ElementName=ColorbarViewName, Path=ActualWidth, Converter={StaticResource AddValueConverter}}"
                 MarkupText="{Binding AppNotification}" Hyperlink.RequestNavigate="Hyperlink_RequestNavigate">
 			</controls:MarkupTextBlock>
 			<Button Margin="10" BorderThickness="0" Width="100" Height="25"
-			    Command="{Binding CloseNotificationCommand}" Foreground="White" Background="LimeGreen" ToolTip="Close this message and not show it again until there's a new one">
-				<TextBlock Text="Close" TextWrapping="Wrap" TextAlignment="Center"/>
+			    Command="{Binding CloseNotificationCommand}" Foreground="White" Background="LimeGreen" ToolTip="{loc:Tr 'Close this message and not show it again until there''s a new one'}">
+				<TextBlock Text="{loc:Tr 'Close'}" TextWrapping="Wrap" TextAlignment="Center"/>
 			</Button>
 		</StackPanel>
 		<materialDesign:ColorZone Mode="PrimaryMid" Foreground="White" Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
@@ -150,62 +151,62 @@
                         Width="120"
                         HorizontalAlignment="Center"
                         IsChecked="{Binding InfoIsChecked}"
-                        Content="INFO" />
+                        Content="{loc:Tr 'INFO'}" />
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
                         Grid.Column="2"
                         Width="150"
                         HorizontalAlignment="Center"
                         IsChecked="{Binding CaptureIsChecked}"
-                        Content="CAPTURE"
+                        Content="{loc:Tr 'CAPTURE'}"
                         Visibility="{Binding IsCompatibleWithRunningOS, Converter={StaticResource FalseToCollapsedConverter}}"/>
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Grid.Column="3"
                                  Width="150"
                                  HorizontalAlignment="Center"
 							 IsChecked="{Binding SingleRecordIsChecked}"
-							 Content="ANALYSIS" />
+							 Content="{loc:Tr 'ANALYSIS'}" />
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Grid.Column="4"
                                  Width="150"
                                  HorizontalAlignment="Center"
 							 IsChecked="{Binding OverlayIsChecked}"
-							 Content="OVERLAY" />
+							 Content="{loc:Tr 'OVERLAY'}" />
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Grid.Column="5"
                                  Width="150"
                                  HorizontalAlignment="Center"
 							 IsChecked="{Binding RecordComparisonIsChecked}"
-							 Content="COMPARISON" />
+							 Content="{loc:Tr 'COMPARISON'}" />
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Grid.Column="6"
                                  Width="150"
                                  HorizontalAlignment="Center"
 							 IsChecked="{Binding AggregationIsChecked}"
-							 Content="AGGREGATION" />
+							 Content="{loc:Tr 'AGGREGATION'}" />
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
                              Grid.Column="7"
                                  Width="150"
                                  HorizontalAlignment="Center"
                              IsChecked="{Binding SensorIsChecked}"
-                             Content="SENSOR" />
+                             Content="{loc:Tr 'SENSOR'}" />
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Grid.Column="8"
                                  Width="150"
                                  HorizontalAlignment="Center"
 							 IsChecked="{Binding PmdIsChecked}"
-							 Content="PMD" />
+							 Content="{loc:Tr 'PMD'}" />
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Grid.Column="9"
                                  Width="150"
                                  HorizontalAlignment="Center"
 							 IsChecked="{Binding ReportIsChecked}"
-							 Content="REPORT" />
+							 Content="{loc:Tr 'REPORT'}" />
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
                              Grid.Column="11"
                                  Width="150"
                                  HorizontalAlignment="Center"
                              IsChecked="{Binding CloudIsChecked}"
-                             Content="CLOUD" />
+                             Content="{loc:Tr 'CLOUD'}" />
 				</Grid>
 
 				<materialDesign:PopupBox Grid.Column="1" Margin="0 0 225 0" DataContext="{Binding Path=DataContext, ElementName=ColorbarViewName}"
@@ -215,7 +216,7 @@
 						<Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
 						        VerticalAlignment="Center"
 						        HorizontalAlignment="Right"
-						        ToolTip="Take a screenshot"
+						        ToolTip="{loc:Tr 'Take a screenshot'}"
 						        materialDesign:RippleAssist.Feedback="#DD000000"
                                 Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}"
                                 BorderBrush="Transparent"
@@ -229,19 +230,19 @@
                                 Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}" Foreground="White"
                                 BorderBrush="Transparent"
                                 HorizontalContentAlignment="Center" Padding="0"
-                                Content="Save" Click="SaveScreenShotButton_Click"/>
+                                Content="{loc:Tr 'Save'}" Click="SaveScreenShotButton_Click"/>
 						<Button Width="70" Height="40" VerticalContentAlignment="Center"
                                 Style="{StaticResource MaterialDesignRaisedButton}"
                                 Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}" Foreground="White" 
                                 BorderBrush="Transparent"
                                 HorizontalContentAlignment="Center" Padding="0"
-                                Content="Copy" Click="CopyScreenShotButton_Click"/>
+                                Content="{loc:Tr 'Copy'}" Click="CopyScreenShotButton_Click"/>
 					</UniformGrid>
 				</materialDesign:PopupBox>
 
 				<Button Grid.Column="1" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
                             Margin="0 0 187 0"
-						    ToolTip="Login"
+						    ToolTip="{loc:Tr 'Login'}"
                             HorizontalAlignment="Right"
 						    materialDesign:RippleAssist.Feedback="#DD000000"
 						    Width="32" Height="32" Click="Login_Click"
@@ -252,7 +253,7 @@
 
 				<Button Grid.Column="1" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
                             Margin="0 0 190 0"
-						    ToolTip="Logout"
+						    ToolTip="{loc:Tr 'Logout'}"
                             HorizontalAlignment="Right"
 						    materialDesign:RippleAssist.Feedback="#DD000000"
 						    Width="32" Height="32" Click="Logout_Click"
@@ -263,7 +264,7 @@
 
 				<TextBlock Grid.Column="1" Margin="0 0 60 2" HorizontalAlignment="Right" VerticalAlignment="Center">           
 			        <Hyperlink NavigateUri="https://capframex.com/" RequestNavigate="Hyperlink_RequestNavigate" TextDecorations="None">
-				        <TextBlock FontSize="16" Text="CapFrameX.com" Foreground="White"/>
+				        <TextBlock FontSize="16" Text="{loc:Tr 'CapFrameX.com'}" Foreground="White"/>
 			        </Hyperlink>	
 		        </TextBlock>
 
@@ -298,11 +299,11 @@
 																 VerticalAlignment="Center"
 																 Foreground="{DynamicResource MaterialDesign.Brush.Primary}"/>
 											<TextBlock Margin="9 0 0 0" FontSize="18" FontWeight="SemiBold"
-													   VerticalAlignment="Center" Text="Settings"/>
+													   VerticalAlignment="Center" Text="{loc:Tr 'Settings'}"/>
 										</StackPanel>
 										<TextBlock Margin="0 6 0 0" FontSize="11" TextWrapping="Wrap"
 												   Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
-												   Text="Configure CapFrameX to match your workflow."/>
+												   Text="{loc:Tr 'Configure CapFrameX to match your workflow.'}"/>
 									</StackPanel>
 
 									<StackPanel Grid.Row="1">
@@ -310,49 +311,49 @@
 													 IsChecked="{Binding OptionsViewSelected}">
 											<StackPanel Orientation="Horizontal">
 												<materialDesign:PackIcon Kind="Tune" Width="19" Height="19" VerticalAlignment="Center"/>
-												<TextBlock Margin="11 0 0 0" VerticalAlignment="Center" Text="Options"/>
+												<TextBlock Margin="11 0 0 0" VerticalAlignment="Center" Text="{loc:Tr 'Options'}"/>
 											</StackPanel>
 										</RadioButton>
 										<RadioButton GroupName="SettingsView" Style="{StaticResource SettingsNavigationButton}"
 													 IsChecked="{Binding HardwareViewSelected}">
 											<StackPanel Orientation="Horizontal">
 												<materialDesign:PackIcon Kind="Gpu" Width="19" Height="19" VerticalAlignment="Center"/>
-												<TextBlock Margin="11 0 0 0" VerticalAlignment="Center" Text="Hardware"/>
+												<TextBlock Margin="11 0 0 0" VerticalAlignment="Center" Text="{loc:Tr 'Hardware'}"/>
 											</StackPanel>
 										</RadioButton>
 										<RadioButton GroupName="SettingsView" Style="{StaticResource SettingsNavigationButton}"
 													 IsChecked="{Binding AppViewSelected}">
 											<StackPanel Orientation="Horizontal">
 												<materialDesign:PackIcon Kind="ApplicationOutline" Width="19" Height="19" VerticalAlignment="Center"/>
-												<TextBlock Margin="11 0 0 0" VerticalAlignment="Center" Text="Application"/>
+												<TextBlock Margin="11 0 0 0" VerticalAlignment="Center" Text="{loc:Tr 'Application'}"/>
 											</StackPanel>
 										</RadioButton>
 										<RadioButton GroupName="SettingsView" Style="{StaticResource SettingsNavigationButton}"
 													 IsChecked="{Binding RemoteViewSelected}">
 											<StackPanel Orientation="Horizontal">
 												<materialDesign:PackIcon Kind="CloudUploadOutline" Width="19" Height="19" VerticalAlignment="Center"/>
-												<TextBlock Margin="11 0 0 0" VerticalAlignment="Center" Text="Remote"/>
+												<TextBlock Margin="11 0 0 0" VerticalAlignment="Center" Text="{loc:Tr 'Remote'}"/>
 											</StackPanel>
 										</RadioButton>
 										<RadioButton GroupName="SettingsView" Style="{StaticResource SettingsNavigationButton}"
 													 IsChecked="{Binding UpdateViewSelected}">
 											<StackPanel Orientation="Horizontal">
 												<materialDesign:PackIcon Kind="Update" Width="19" Height="19" VerticalAlignment="Center"/>
-												<TextBlock Margin="11 0 0 0" VerticalAlignment="Center" Text="Update"/>
+												<TextBlock Margin="11 0 0 0" VerticalAlignment="Center" Text="{loc:Tr 'Update'}"/>
 											</StackPanel>
 										</RadioButton>
 										<RadioButton GroupName="SettingsView" Style="{StaticResource SettingsNavigationButton}"
 													 IsChecked="{Binding HelpViewSelected}">
 											<StackPanel Orientation="Horizontal">
 												<materialDesign:PackIcon Kind="Information" Width="19" Height="19" VerticalAlignment="Center"/>
-												<TextBlock Margin="11 0 0 0" VerticalAlignment="Center" Text="Help"/>
+												<TextBlock Margin="11 0 0 0" VerticalAlignment="Center" Text="{loc:Tr 'Help'}"/>
 											</StackPanel>
 										</RadioButton>
 									</StackPanel>
 
 									<TextBlock Grid.Row="2" Margin="4 0 4 4" FontSize="10" TextWrapping="Wrap"
 											   Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
-											   Text="Settings marked in their description may require a restart."/>
+											   Text="{loc:Tr 'Settings marked in their description may require a restart.'}"/>
 								</Grid>
 							</Border>
 
@@ -361,14 +362,14 @@
 								<DataTemplate x:Name="OptionsDataTemplate" x:Key="OptionsContent">
 									<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
 										<StackPanel Margin="24 20 18 22">
-											<TextBlock Style="{StaticResource SettingsPageTitle}" Text="Options"/>
+											<TextBlock Style="{StaticResource SettingsPageTitle}" Text="{loc:Tr 'Options'}"/>
 											<TextBlock Style="{StaticResource SettingsPageDescription}"
-													   Text="Configure charts, capture metrics, latency tracking and screenshots."/>
+													   Text="{loc:Tr 'Configure charts, capture metrics, latency tracking and screenshots.'}"/>
 
 											<Border Style="{StaticResource SettingsCard}">
 												<StackPanel>
-													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Charts and export"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Control how FPS values are calculated, displayed and exported."/>
+													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="{loc:Tr 'Charts and export'}"/>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Control how FPS values are calculated, displayed and exported.'}"/>
 											<Separator Margin="0 12 0 10" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 											<Grid>
 												<Grid.ColumnDefinitions>
@@ -379,12 +380,12 @@
 													<ColumnDefinition Width="1.25*"/>
 												</Grid.ColumnDefinitions>
 												<StackPanel>
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="FPS graph filter"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="Average time window in milliseconds."/>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'FPS graph filter'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Average time window in milliseconds.'}"/>
 															<ComboBox Margin="0 9 0 0" Height="42" MaxDropDownHeight="140"
 																	  materialDesign:HintAssist.Hint="Time window (ms)"
 																	  materialDesign:HintAssist.IsFloating="True"
-																	  ToolTip="Sets the time window for the interval of the average FPS graphs"
+																	  ToolTip="{loc:Tr 'Sets the time window for the interval of the average FPS graphs'}"
 																	  ItemsSource="{Binding Path=DataContext.AverageTimeWindows, ElementName=ColorbarViewName}">
 																<ComboBox.Text>
 																	<Binding Path="SelectedAverageTimeWindow" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
@@ -392,21 +393,21 @@
 															</ComboBox>
 														</StackPanel>
 												<StackPanel Grid.Column="2">
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="FPS decimals"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="Displayed decimal places."/>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'FPS decimals'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Displayed decimal places.'}"/>
 															<ComboBox Margin="0 9 0 0" Height="42" MaxDropDownHeight="140"
 																	  materialDesign:HintAssist.Hint="Decimal places"
 																	  materialDesign:HintAssist.IsFloating="True"
-																	  ToolTip="Sets the number of decimal points for displayed FPS values"
+																	  ToolTip="{loc:Tr 'Sets the number of decimal points for displayed FPS values'}"
 																	  ItemsSource="{Binding Path=DataContext.RoundingDigits, ElementName=ColorbarViewName}">
 																<ComboBox.Text>
 																	<Binding Path="FpsValuesRoundingDigits" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
 																</ComboBox.Text>
 															</ComboBox>
 														</StackPanel>
-												<StackPanel Grid.Column="4" ToolTip="Select resolution for graph export (via context menu)">
-													<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Graph export resolution"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Pixel dimensions used by graph export."/>
+												<StackPanel Grid.Column="4" ToolTip="{loc:Tr 'Select resolution for graph export (via context menu)'}">
+													<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Graph export resolution'}"/>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Pixel dimensions used by graph export.'}"/>
 													<Grid Margin="0 9 0 0">
 														<Grid.ColumnDefinitions>
 															<ColumnDefinition Width="*"/>
@@ -435,8 +436,8 @@
 
 											<Border Style="{StaticResource SettingsCard}">
 												<StackPanel>
-													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Capture metrics"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Choose the timing data stored and used for performance analysis."/>
+													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="{loc:Tr 'Capture metrics'}"/>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Choose the timing data stored and used for performance analysis.'}"/>
 													<Separator Margin="0 12 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 													<Grid Margin="0 8" ToolTipService.ShowDuration="25000">
 														<Grid.ColumnDefinitions>
@@ -444,14 +445,14 @@
 															<ColumnDefinition Width="Auto"/>
 														</Grid.ColumnDefinitions>
 														<StackPanel>
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Use MsBetweenDisplayChange metrics"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="More closely reflects displayed frames and is recommended with Frame Generation."/>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Use MsBetweenDisplayChange metrics'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'More closely reflects displayed frames and is recommended with Frame Generation.'}"/>
 														</StackPanel>
 														<CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}"
 																  IsChecked="{Binding UseDisplayChangeMetrics, Mode=TwoWay}">
 															<CheckBox.ToolTip>
 																<ToolTip MaxWidth="400">
-																	<TextBlock TextWrapping="Wrap" Text="Use &quot;MsBetweenDisplayChange&quot; to calculate performance metrics. This option provides more consistent metrics when using Frame Generation.&#10;MsBetweenDisplayChange is closer to the user experience."/>
+																	<TextBlock TextWrapping="Wrap" Text="{loc:Tr 'Use &quot;MsBetweenDisplayChange&quot; to calculate performance metrics. This option provides more consistent metrics when using Frame Generation.&#10;MsBetweenDisplayChange is closer to the user experience.'}"/>
 																</ToolTip>
 															</CheckBox.ToolTip>
 														</CheckBox>
@@ -463,14 +464,14 @@
 															<ColumnDefinition Width="Auto"/>
 														</Grid.ColumnDefinitions>
 														<StackPanel>
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Use PC Latency"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="Adds PresentMon's MsPCLatency column to capture data. Capture service restart required."/>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Use PC Latency'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Adds PresentMon''s MsPCLatency column to capture data. Capture service restart required.'}"/>
 														</StackPanel>
 														<CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}"
 																  IsChecked="{Binding UsePcLatency, Mode=TwoWay}">
 															<CheckBox.ToolTip>
 																<ToolTip MaxWidth="400">
-																	<TextBlock TextWrapping="Wrap" Text="Enable PC Latency tracking via PresentMon. When enabled, the &quot;MsPCLatency&quot; column will be available in the capture data.&#10;Requires restart of the capture service to take effect."/>
+																	<TextBlock TextWrapping="Wrap" Text="{loc:Tr 'Enable PC Latency tracking via PresentMon. When enabled, the &quot;MsPCLatency&quot; column will be available in the capture data.&#10;Requires restart of the capture service to take effect.'}"/>
 																</ToolTip>
 															</CheckBox.ToolTip>
 														</CheckBox>
@@ -482,8 +483,8 @@
 															<ColumnDefinition Width="Auto"/>
 														</Grid.ColumnDefinitions>
 														<StackPanel VerticalAlignment="Center">
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="PresentMon event buffer"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="Size of PresentMon's present event ring buffer. Restarts the capture service."/>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'PresentMon event buffer'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Size of PresentMon''s present event ring buffer. Restarts the capture service.'}"/>
 														</StackPanel>
 														<ComboBox Grid.Column="1" Width="130" Height="42" MaxDropDownHeight="140"
 																  VerticalAlignment="Center"
@@ -495,7 +496,7 @@
 																  SelectedItem="{Binding PresentMonCircularBufferSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
 															<ComboBox.ToolTip>
 																<ToolTip MaxWidth="400">
-																	<TextBlock TextWrapping="Wrap" Text="Number of present events PresentMon keeps in its circular buffer (--set_circular_buffer_size). Raise it if frames are lost at very high frame rates; PresentMon's own default is 2048.&#10;Changing this restarts the capture service, which takes a moment. The setting is locked while the service is down or a capture is running."/>
+																	<TextBlock TextWrapping="Wrap" Text="{loc:Tr 'Number of present events PresentMon keeps in its circular buffer (--set_circular_buffer_size). Raise it if frames are lost at very high frame rates; PresentMon''s own default is 2048.&#10;Changing this restarts the capture service, which takes a moment. The setting is locked while the service is down or a capture is running.'}"/>
 																</ToolTip>
 															</ComboBox.ToolTip>
 														</ComboBox>
@@ -505,8 +506,8 @@
 
 											<Border Style="{StaticResource SettingsCard}" IsEnabled="{Binding IsFlmSupported}">
 												<StackPanel>
-													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="AMD Frame Latency Meter"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Measure click-to-screen-response latency from real mouse input on supported AMD systems."/>
+													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="{loc:Tr 'AMD Frame Latency Meter'}"/>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Measure click-to-screen-response latency from real mouse input on supported AMD systems.'}"/>
 													<Separator Margin="0 12 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 													<Grid Margin="0 8">
 														<Grid.ColumnDefinitions>
@@ -514,15 +515,15 @@
 															<ColumnDefinition Width="Auto"/>
 														</Grid.ColumnDefinitions>
 														<StackPanel>
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Use AMD FLM latency"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="Continuously poll FLM and expose results as a sensor and overlay metric."/>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Use AMD FLM latency'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Continuously poll FLM and expose results as a sensor and overlay metric.'}"/>
 														</StackPanel>
 														<CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}"
 																  IsChecked="{Binding UseAmdFlmLatency, Mode=TwoWay}"
 																  ToolTipService.ShowDuration="25000" ToolTipService.ShowOnDisabled="True">
 															<CheckBox.ToolTip>
 																<ToolTip MaxWidth="440">
-																	<TextBlock TextWrapping="Wrap" Text="Enable continuous AMD Frame Latency Meter polling. FLM measures the click-to-screen-response latency of your real mouse clicks via screen capture — no synthetic input is injected. Values appear after clicks once the capture region has settled. The result is exposed as a loggable sensor and live overlay metric, independent of PresentMon and Anti-Lag 2 markers. Requires an AMD GPU — on other systems this option is unavailable."/>
+																	<TextBlock TextWrapping="Wrap" Text="{loc:Tr 'Enable continuous AMD Frame Latency Meter polling. FLM measures the click-to-screen-response latency of your real mouse clicks via screen capture — no synthetic input is injected. Values appear after clicks once the capture region has settled. The result is exposed as a loggable sensor and live overlay metric, independent of PresentMon and Anti-Lag 2 markers. Requires an AMD GPU — on other systems this option is unavailable.'}"/>
 																</ToolTip>
 															</CheckBox.ToolTip>
 														</CheckBox>
@@ -536,13 +537,13 @@
 																<ColumnDefinition Width="Auto"/>
 															</Grid.ColumnDefinitions>
 															<StackPanel>
-																<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Frame Generation"/>
-																<TextBlock Style="{StaticResource SettingsDescription}" Text="Optimize FLM detection for games using Frame Generation."/>
+																<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Frame Generation'}"/>
+																<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Optimize FLM detection for games using Frame Generation.'}"/>
 															</StackPanel>
 															<CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}"
 																	  IsChecked="{Binding AmdFlmFrameGeneration, Mode=TwoWay}"
 																	  ToolTipService.ShowOnDisabled="True"
-																	  ToolTip="Optimize FLM's detection for games with Frame Generation enabled. Takes effect immediately (FLM restarts)."/>
+																	  ToolTip="{loc:Tr 'Optimize FLM''s detection for games with Frame Generation enabled. Takes effect immediately (FLM restarts).'}"/>
 														</Grid>
 													</Border>
 												</StackPanel>
@@ -550,8 +551,8 @@
 
 											<Border Style="{StaticResource SettingsCard}" Margin="0">
 												<StackPanel>
-													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Screenshots"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Choose where screenshots created from the toolbar are saved."/>
+													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="{loc:Tr 'Screenshots'}"/>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Choose where screenshots created from the toolbar are saved.'}"/>
 													<Grid Margin="0 12 0 0">
 														<Grid.ColumnDefinitions>
 															<ColumnDefinition Width="*"/>
@@ -583,18 +584,18 @@
 								<DataTemplate x:Name="HardwareDataTemplate" x:Key="HardwareContent">
 									<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
 										<StackPanel Margin="24 20 18 22">
-											<TextBlock Style="{StaticResource SettingsPageTitle}" Text="Hardware"/>
+											<TextBlock Style="{StaticResource SettingsPageTitle}" Text="{loc:Tr 'Hardware'}"/>
 											<TextBlock Style="{StaticResource SettingsPageDescription}"
-													   Text="Select monitoring hardware and control how system information is stored."/>
+													   Text="{loc:Tr 'Select monitoring hardware and control how system information is stored.'}"/>
 
 											<Border Style="{StaticResource SettingsCard}">
 												<StackPanel>
-													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Graphics adapter"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Choose the primary adapter used for monitoring and logging. Restart CapFrameX after changing it."/>
+													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="{loc:Tr 'Graphics adapter'}"/>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Choose the primary adapter used for monitoring and logging. Restart CapFrameX after changing it.'}"/>
 													<ComboBox Margin="0 14 0 0" Width="340" Height="42" HorizontalAlignment="Left"
 															  materialDesign:HintAssist.Hint="Primary graphics adapter"
 															  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="140"
-															  ToolTip="Sets the primary graphics adapter for monitoring and logging. Restart CapFrameX after changing the adapter."
+															  ToolTip="{loc:Tr 'Sets the primary graphics adapter for monitoring and logging. Restart CapFrameX after changing the adapter.'}"
 															  ItemsSource="{Binding Path=DataContext.GraphicsAdapters, ElementName=ColorbarViewName}">
 														<ComboBox.Text>
 															<Binding Path="SelectedGraphicsAdapter" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
@@ -605,8 +606,8 @@
 
 											<Border Style="{StaticResource SettingsCard}">
 												<StackPanel>
-													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Capture and analysis"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Set the source of hardware labels and the capture file format."/>
+													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="{loc:Tr 'Capture and analysis'}"/>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Set the source of hardware labels and the capture file format.'}"/>
 													<Grid Margin="0 14 0 0">
 														<Grid.ColumnDefinitions>
 															<ColumnDefinition Width="*"/>
@@ -630,7 +631,7 @@
 																  SelectedItem="{Binding Path=DataContext.SelectedCaptureFileMode, ElementName=ColorbarViewName}">
 															<ComboBox.ToolTip>
 																<ToolTip MaxWidth="400" Placement="Top">
-																	<TextBlock TextWrapping="Wrap" Text="JSON:&#10;Records are saved as JSON files with all needed data.&#10;&#10;JSON + CSV:&#10;For each record a CSV file is created in addition to the JSON file. The CSV includes all PresentMon data and is intended for special analysis."/>
+																	<TextBlock TextWrapping="Wrap" Text="{loc:Tr 'JSON:&#10;Records are saved as JSON files with all needed data.&#10;&#10;JSON + CSV:&#10;For each record a CSV file is created in addition to the JSON file. The CSV includes all PresentMon data and is intended for special analysis.'}"/>
 																</ToolTip>
 															</ComboBox.ToolTip>
 															<ComboBox.ItemTemplate>
@@ -646,8 +647,8 @@
 											<Border Style="{StaticResource SettingsCard}"
 													Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
 												<StackPanel>
-													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Custom hardware labels"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Override the hardware names stored with captures."/>
+													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="{loc:Tr 'Custom hardware labels'}"/>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Override the hardware names stored with captures.'}"/>
 													<Grid Margin="0 14 0 0">
 														<Grid.ColumnDefinitions>
 															<ColumnDefinition Width="*"/>
@@ -692,21 +693,21 @@
 
 											<Border Style="{StaticResource SettingsCard}" Margin="0">
 												<StackPanel>
-													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Power analysis"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Control which power sensor is used for power-related metrics."/>
+													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="{loc:Tr 'Power analysis'}"/>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Control which power sensor is used for power-related metrics.'}"/>
 													<Grid Margin="0 14 0 0" ToolTipService.ShowDuration="25000">
 														<Grid.ColumnDefinitions>
 															<ColumnDefinition Width="*"/>
 															<ColumnDefinition Width="Auto"/>
 														</Grid.ColumnDefinitions>
 														<StackPanel>
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Use TBP Sim values for analysis if available"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="Prefer simulated total-board-power data for supported RDNA and Intel Arc GPUs."/>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Use TBP Sim values for analysis if available'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Prefer simulated total-board-power data for supported RDNA and Intel Arc GPUs.'}"/>
 														</StackPanel>
 														<CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}" IsChecked="{Binding UseTBPSim, Mode=TwoWay}">
 															<CheckBox.ToolTip>
 																<ToolTip MaxWidth="400">
-																	<TextBlock TextWrapping="Wrap" Text="If sensor data of a record contains &quot;TBP Sim&quot; values (RDNA + Intel Arc GPUs only), use these for analysis like FPS/W instead of &quot;GPU Total&quot;.&#10;For changes to take effect the analysis and comparison pages have to be reloaded and already inserted records on the report page need to be added again."/>
+																	<TextBlock TextWrapping="Wrap" Text="{loc:Tr 'If sensor data of a record contains &quot;TBP Sim&quot; values (RDNA + Intel Arc GPUs only), use these for analysis like FPS/W instead of &quot;GPU Total&quot;.&#10;For changes to take effect the analysis and comparison pages have to be reloaded and already inserted records on the report page need to be added again.'}"/>
 																</ToolTip>
 															</CheckBox.ToolTip>
 														</CheckBox>
@@ -720,14 +721,44 @@
 								<DataTemplate x:Key="AppContent">
 									<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
 										<StackPanel Margin="24 20 18 22">
-											<TextBlock Style="{StaticResource SettingsPageTitle}" Text="Application"/>
+											<TextBlock Style="{StaticResource SettingsPageTitle}" Text="{loc:Tr 'Application'}"/>
 											<TextBlock Style="{StaticResource SettingsPageDescription}"
-													   Text="Adjust appearance, startup behavior and application-wide services."/>
+													   Text="{loc:Tr 'Adjust appearance, startup behavior and application-wide services.'}"/>
 
 											<Border Style="{StaticResource SettingsCard}">
 												<StackPanel>
-													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Appearance and notifications"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Personalize the interface and choose whether CapFrameX may show team messages."/>
+													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="{loc:Tr 'Appearance and notifications'}"/>
+													<Grid Margin="0 12 0 4">
+														<Grid.ColumnDefinitions>
+															<ColumnDefinition Width="*"/>
+															<ColumnDefinition Width="Auto"/>
+														</Grid.ColumnDefinitions>
+														<StackPanel>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Interface language'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Language of menus, pages and dialogs.'}"/>
+														</StackPanel>
+														<ComboBox Grid.Column="1" Width="150" Margin="16 0 4 0" VerticalAlignment="Center"
+																  SelectedValue="{Binding UiLanguage, Mode=TwoWay}" SelectedValuePath="Tag">
+															<ComboBoxItem Tag="en" Content="English"/>
+															<ComboBoxItem Tag="ru" Content="Русский"/>
+														</ComboBox>
+													</Grid>
+													<Grid Margin="0 8 0 4">
+														<Grid.ColumnDefinitions>
+															<ColumnDefinition Width="*"/>
+															<ColumnDefinition Width="Auto"/>
+														</Grid.ColumnDefinitions>
+														<StackPanel>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'OSD language'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Language of overlay labels such as CPU, GPU Hot Spot and frametime. Independent from the interface language.'}"/>
+														</StackPanel>
+														<ComboBox Grid.Column="1" Width="150" Margin="16 0 4 0" VerticalAlignment="Center"
+																  SelectedValue="{Binding OverlayLanguage, Mode=TwoWay}" SelectedValuePath="Tag">
+															<ComboBoxItem Tag="en" Content="English"/>
+															<ComboBoxItem Tag="ru" Content="Русский"/>
+														</ComboBox>
+													</Grid>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Personalize the interface and choose whether CapFrameX may show team messages.'}"/>
 													<Separator Margin="0 12 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 													<Grid Margin="0 8">
 														<Grid.ColumnDefinitions>
@@ -735,21 +766,21 @@
 															<ColumnDefinition Width="Auto"/>
 														</Grid.ColumnDefinitions>
 														<StackPanel>
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Dark mode"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="Use the dark CapFrameX color theme."/>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Dark mode'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Use the dark CapFrameX color theme.'}"/>
 														</StackPanel>
 														<ToggleButton Grid.Column="1" Margin="16 0 4 0" VerticalAlignment="Center"
 																	  Click="MenuDarkModeButton_Click" IsChecked="{Binding IsDarkModeToggleChecked}"/>
 													</Grid>
 													<Separator Margin="0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
-													<Grid Margin="0 8" ToolTip="Allows you to receive important messages from the CX Team on app start">
+													<Grid Margin="0 8" ToolTip="{loc:Tr 'Allows you to receive important messages from the CX Team on app start'}">
 														<Grid.ColumnDefinitions>
 															<ColumnDefinition Width="*"/>
 															<ColumnDefinition Width="Auto"/>
 														</Grid.ColumnDefinitions>
 														<StackPanel>
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Receive notifications"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="Show important messages from the CapFrameX team on startup."/>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Receive notifications'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Show important messages from the CapFrameX team on startup.'}"/>
 														</StackPanel>
 														<ToggleButton Grid.Column="1" Margin="16 0 4 0" VerticalAlignment="Center"
 																	  IsChecked="{Binding AppNotificationsActive, Mode=TwoWay}"/>
@@ -759,8 +790,8 @@
 
 											<Border Style="{StaticResource SettingsCard}">
 												<StackPanel>
-													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Windows behavior"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Control how CapFrameX starts and behaves when minimized."/>
+													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="{loc:Tr 'Windows behavior'}"/>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Control how CapFrameX starts and behaves when minimized.'}"/>
 													<Separator Margin="0 12 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 													<Grid Margin="0 8" IsEnabled="{Binding AutoStartIsEnabeld}">
 														<Grid.ColumnDefinitions>
@@ -768,8 +799,8 @@
 															<ColumnDefinition Width="Auto"/>
 														</Grid.ColumnDefinitions>
 														<StackPanel>
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Start with Windows"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="Launch CapFrameX automatically after signing in."/>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Start with Windows'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Launch CapFrameX automatically after signing in.'}"/>
 														</StackPanel>
 														<CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}" IsChecked="{Binding Autostart, Mode=TwoWay}"/>
 													</Grid>
@@ -780,8 +811,8 @@
 															<ColumnDefinition Width="Auto"/>
 														</Grid.ColumnDefinitions>
 														<StackPanel>
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Start minimized"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="Open CapFrameX without bringing the main window to the foreground."/>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Start minimized'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Open CapFrameX without bringing the main window to the foreground.'}"/>
 														</StackPanel>
 														<CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}" IsChecked="{Binding StartMinimized, Mode=TwoWay}"/>
 													</Grid>
@@ -792,8 +823,8 @@
 															<ColumnDefinition Width="Auto"/>
 														</Grid.ColumnDefinitions>
 														<StackPanel>
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Minimize to tray"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="Keep CapFrameX running in the notification area when minimized."/>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Minimize to tray'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Keep CapFrameX running in the notification area when minimized.'}"/>
 														</StackPanel>
 														<CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}" IsChecked="{Binding MinimizeToTray, Mode=TwoWay}"/>
 													</Grid>
@@ -802,12 +833,12 @@
 
 											<Border Style="{StaticResource SettingsCard}" Margin="0">
 												<StackPanel>
-													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Network target"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Set the host used by the network ping overlay entry."/>
+													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="{loc:Tr 'Network target'}"/>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Set the host used by the network ping overlay entry.'}"/>
 													<TextBox Margin="0 14 0 0" Height="42" PreviewKeyDown="TextBox_KeyEnterUpdate"
 															 materialDesign:HintAssist.Hint="Ping URL"
 															 Style="{DynamicResource CxFloatingHintTextBox}"
-															 ToolTip="URL to use for the network ping overlay entry">
+															 ToolTip="{loc:Tr 'URL to use for the network ping overlay entry'}">
 														<TextBox.Text>
 															<Binding Path="DataContext.PingURL" ElementName="ColorbarViewName" Mode="TwoWay" UpdateSourceTrigger="LostFocus"/>
 														</TextBox.Text>
@@ -820,14 +851,14 @@
 								<DataTemplate x:Key="RemoteContent">
 									<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
 										<StackPanel Margin="24 20 18 22">
-											<TextBlock Style="{StaticResource SettingsPageTitle}" Text="Remote"/>
+											<TextBlock Style="{StaticResource SettingsPageTitle}" Text="{loc:Tr 'Remote'}"/>
 											<TextBlock Style="{StaticResource SettingsPageDescription}"
-													   Text="Configure local service access and review the endpoints exposed by CapFrameX."/>
+													   Text="{loc:Tr 'Configure local service access and review the endpoints exposed by CapFrameX.'}"/>
 
 											<Border Style="{StaticResource SettingsCard}">
 												<StackPanel>
-													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Service configuration"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Manage the local web service, RTSS output and MCP integration."/>
+													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="{loc:Tr 'Service configuration'}"/>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Manage the local web service, RTSS output and MCP integration.'}"/>
 													<Separator Margin="0 12 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 													<Grid Margin="0 7">
 														<Grid.ColumnDefinitions>
@@ -835,8 +866,8 @@
 															<ColumnDefinition Width="190"/>
 														</Grid.ColumnDefinitions>
 														<StackPanel VerticalAlignment="Center">
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Webservice port"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="Listening port for the local remote service. Restart required."/>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Webservice port'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Listening port for the local remote service. Restart required.'}"/>
 														</StackPanel>
 														<TextBox Grid.Column="1" Height="42" Text="{Binding WebservicePort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 																 PreviewTextInput="IntegerValidationTextBox"
@@ -850,13 +881,13 @@
 															<ColumnDefinition Width="Auto"/>
 														</Grid.ColumnDefinitions>
 														<StackPanel>
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Hide OSD on RTSS"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="Keep the overlay available through the remote API without showing it in RTSS."/>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Hide OSD on RTSS'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Keep the overlay available through the remote API without showing it in RTSS.'}"/>
 														</StackPanel>
 														<CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}" IsChecked="{Binding HideOverlay, Mode=TwoWay}">
 															<CheckBox.ToolTip>
 																<ToolTip StaysOpen="True" MaxWidth="275">
-																	<TextBlock Text="If checked, the overlay will not be shown on RTSS but will still be accessible through remote API." TextWrapping="Wrap"/>
+																	<TextBlock Text="{loc:Tr 'If checked, the overlay will not be shown on RTSS but will still be accessible through remote API.'}" TextWrapping="Wrap"/>
 																</ToolTip>
 															</CheckBox.ToolTip>
 														</CheckBox>
@@ -868,13 +899,13 @@
 															<ColumnDefinition Width="Auto"/>
 														</Grid.ColumnDefinitions>
 														<StackPanel>
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Enable MCP server"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="Expose the local MCP endpoint for tool integrations. Restart required."/>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Enable MCP server'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Expose the local MCP endpoint for tool integrations. Restart required.'}"/>
 														</StackPanel>
 														<CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}" IsChecked="{Binding McpEnabled, Mode=TwoWay}">
 															<CheckBox.ToolTip>
 																<ToolTip StaysOpen="True" MaxWidth="275">
-																	<TextBlock Text="Enables the local MCP endpoint for tool integrations. Restart CapFrameX after changing this setting." TextWrapping="Wrap"/>
+																	<TextBlock Text="{loc:Tr 'Enables the local MCP endpoint for tool integrations. Restart CapFrameX after changing this setting.'}" TextWrapping="Wrap"/>
 																</ToolTip>
 															</CheckBox.ToolTip>
 														</CheckBox>
@@ -884,8 +915,8 @@
 
 											<Border Style="{StaticResource SettingsCard}" Margin="0">
 												<StackPanel>
-													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Available endpoints"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Read-only addresses generated from the current service configuration."/>
+													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="{loc:Tr 'Available endpoints'}"/>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Read-only addresses generated from the current service configuration.'}"/>
 													<Grid Margin="0 14 0 0">
 														<Grid.ColumnDefinitions>
 															<ColumnDefinition Width="*"/>
@@ -897,24 +928,24 @@
 																	 Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
 																	 materialDesign:HintAssist.Hint="OSD HTTP URL"
 																	 Style="{DynamicResource CxFloatingHintTextBox}"
-																	 ToolTip="HTTP URL to access the current overlay output (overlay needs to be active)"/>
+																	 ToolTip="{loc:Tr 'HTTP URL to access the current overlay output (overlay needs to be active)'}"/>
 															<TextBox Height="42" Margin="0 0 0 10" Text="{Binding OsdWSUrl, Mode=OneWay}" IsReadOnly="True"
 																	 Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
 																	 materialDesign:HintAssist.Hint="OSD WebSocket URL"
 																	 Style="{DynamicResource CxFloatingHintTextBox}"
-																	 ToolTip="WebSocket URL to access the current overlay output (overlay needs to be active)"/>
+																	 ToolTip="{loc:Tr 'WebSocket URL to access the current overlay output (overlay needs to be active)'}"/>
 															<TextBox Height="42" Text="{Binding SensorsWSUrl, Mode=OneWay}" IsReadOnly="True"
 																	 Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
 																	 materialDesign:HintAssist.Hint="Sensor stream WebSocket URL"
 																	 Style="{DynamicResource CxFloatingHintTextBox}"
-																	 ToolTip="WebSocket URL to access the complete sensor stream"/>
+																	 ToolTip="{loc:Tr 'WebSocket URL to access the complete sensor stream'}"/>
 														</StackPanel>
 														<StackPanel Grid.Column="2">
 															<TextBox Height="42" Margin="0 0 0 10" Text="{Binding ActiveSensorsWSUrl, Mode=OneWay}" IsReadOnly="True"
 																	 Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
 																	 materialDesign:HintAssist.Hint="Active sensors WebSocket URL"
 																	 Style="{DynamicResource CxFloatingHintTextBox}"
-																	 ToolTip="WebSocket URL to access all sensors currently selected in the Sensors tab"/>
+																	 ToolTip="{loc:Tr 'WebSocket URL to access all sensors currently selected in the Sensors tab'}"/>
 															<TextBox MinHeight="42" Text="https://app.swaggerhub.com/apis/CapFrameX/cx-remote/1.0.0"
 																	 TextWrapping="Wrap" IsReadOnly="True"
 																	 Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
@@ -930,14 +961,14 @@
 								<DataTemplate x:Key="UpdateContent">
 									<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
 										<StackPanel Margin="24 20 18 22">
-											<TextBlock Style="{StaticResource SettingsPageTitle}" Text="Update"/>
+											<TextBlock Style="{StaticResource SettingsPageTitle}" Text="{loc:Tr 'Update'}"/>
 											<TextBlock Style="{StaticResource SettingsPageDescription}"
-													   Text="Check for updates or deliberately return to an earlier supported release."/>
+													   Text="{loc:Tr 'Check for updates or deliberately return to an earlier supported release.'}"/>
 
 											<Border Style="{StaticResource SettingsCard}">
 												<StackPanel>
-													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Version status"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Automatic checks follow the installed channel. Every published Release and Beta build remains selectable below."/>
+													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="{loc:Tr 'Version status'}"/>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Automatic checks follow the installed channel. Every published Release and Beta build remains selectable below.'}"/>
 													<Grid Margin="0 16 0 0">
 														<Grid.ColumnDefinitions>
 															<ColumnDefinition Width="*"/>
@@ -948,7 +979,7 @@
 														</Grid.ColumnDefinitions>
 														<Border Padding="14" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}" CornerRadius="6">
 															<StackPanel>
-																<TextBlock Style="{StaticResource SettingsDescription}" Text="Installed version"/>
+																<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Installed version'}"/>
 																<TextBlock Margin="0 4 0 0" FontSize="18" FontWeight="SemiBold"
 																		   Text="{Binding UpdateViewModel.InstalledVersionString, Mode=OneWay}"/>
 																<TextBlock Margin="0 3 0 0" FontSize="11" Opacity="0.7"
@@ -957,14 +988,14 @@
 														</Border>
 														<Border Grid.Column="2" Padding="14" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}" CornerRadius="6">
 															<StackPanel>
-																<TextBlock Style="{StaticResource SettingsDescription}" Text="Latest Release"/>
+																<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Latest Release'}"/>
 																<TextBlock Margin="0 4 0 0" FontSize="18" FontWeight="SemiBold"
 																		   Text="{Binding UpdateViewModel.LatestReleaseVersionString, Mode=OneWay}"/>
 															</StackPanel>
 														</Border>
 														<Border Grid.Column="4" Padding="14" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}" CornerRadius="6">
 															<StackPanel>
-																<TextBlock Style="{StaticResource SettingsDescription}" Text="Latest Beta"/>
+																<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Latest Beta'}"/>
 																<TextBlock Margin="0 4 0 0" FontSize="18" FontWeight="SemiBold"
 																		   Text="{Binding UpdateViewModel.LatestBetaVersionString, Mode=OneWay}"/>
 															</StackPanel>
@@ -975,7 +1006,7 @@
 															Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"
 															CornerRadius="6">
 														<StackPanel>
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Update status"/>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Update status'}"/>
 															<TextBlock Margin="0 5 0 0" MinHeight="34" TextWrapping="Wrap"
 																	   Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
 																	   Text="{Binding UpdateViewModel.StatusText, Mode=OneWay}"/>
@@ -986,11 +1017,11 @@
 													</Border>
 
 													<StackPanel Margin="0 16 0 0" Orientation="Horizontal">
-														<Button Width="180" Height="36" Content="CHECK FOR UPDATES"
+														<Button Width="180" Height="36" Content="{loc:Tr 'CHECK FOR UPDATES'}"
 																Style="{StaticResource MaterialDesignRaisedButton}"
 																Command="{Binding UpdateViewModel.CheckForUpdateCommand}"
 																ToolTip="Ask the CapFrameX update server whether a newer version is available"/>
-														<Button Width="145" Height="36" Margin="10 0 0 0" Content="SHOW UPDATE"
+														<Button Width="145" Height="36" Margin="10 0 0 0" Content="{loc:Tr 'SHOW UPDATE'}"
 																Style="{StaticResource MaterialDesignOutlinedButton}"
 																Command="{Binding UpdateViewModel.ShowUpdateDialogCommand}"
 																ToolTip="Show what the available update contains"/>
@@ -1003,23 +1034,23 @@
 															<ColumnDefinition Width="Auto"/>
 														</Grid.ColumnDefinitions>
 														<StackPanel>
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Check on start"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="Check for a newer CapFrameX release every time the application starts."/>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Check on start'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Check for a newer CapFrameX release every time the application starts.'}"/>
 														</StackPanel>
 														<CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}"
 																  IsChecked="{Binding UpdateViewModel.AutoUpdateCheckActive, Mode=TwoWay}"
-																  ToolTip="Check for updates every time CapFrameX starts"/>
+																  ToolTip="{loc:Tr 'Check for updates every time CapFrameX starts'}"/>
 													</Grid>
 												</StackPanel>
 											</Border>
 
 											<Border Style="{StaticResource SettingsCard}" Margin="0">
 												<StackPanel>
-													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Version history"/>
+													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="{loc:Tr 'Version history'}"/>
 													<TextBlock Style="{StaticResource SettingsDescription}" TextWrapping="Wrap">
-														<Run Text="Install any published release from "/>
+														<Run Text="{loc:Tr 'Install any published release from '}"/>
 														<Run FontWeight="SemiBold" Text="{Binding UpdateViewModel.MinimumRollbackVersionString, Mode=OneWay}"/>
-														<Run Text=" onward. Selecting an older version starts an explicit rollback."/>
+														<Run Text="{loc:Tr ' onward. Selecting an older version starts an explicit rollback.'}"/>
 													</TextBlock>
 
 													<Grid Margin="0 16 0 0">
@@ -1030,8 +1061,8 @@
 															<ColumnDefinition Width="155"/>
 														</Grid.ColumnDefinitions>
 														<StackPanel VerticalAlignment="Center">
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Target version"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="Packages are verified before installation."/>
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Target version'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Packages are verified before installation.'}"/>
 														</StackPanel>
 														<ComboBox Grid.Column="1" Height="42" MaxDropDownHeight="260"
 																  ItemsSource="{Binding UpdateViewModel.AvailableVersionsView, Mode=OneWay}"
@@ -1069,7 +1100,7 @@
 																				 VerticalAlignment="Top" Foreground="{DynamicResource MaterialDesign.Brush.Primary}"/>
 															<TextBlock TextWrapping="Wrap" MaxWidth="590"
 																	   Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
-																	   Text="Rollback replaces the application version. Captures and settings remain, but newer settings may not be compatible with the selected release."/>
+																	   Text="{loc:Tr 'Rollback replaces the application version. Captures and settings remain, but newer settings may not be compatible with the selected release.'}"/>
 														</StackPanel>
 													</Border>
 												</StackPanel>
@@ -1084,9 +1115,9 @@
 											<RowDefinition Height="Auto"/>
 											<RowDefinition Height="*"/>
 										</Grid.RowDefinitions>
-										<TextBlock Style="{StaticResource SettingsPageTitle}" Text="Help"/>
+										<TextBlock Style="{StaticResource SettingsPageTitle}" Text="{loc:Tr 'Help'}"/>
 										<TextBlock Grid.Row="1" Style="{StaticResource SettingsPageDescription}"
-												   Text="Quick reference for working with CapFrameX."/>
+												   Text="{loc:Tr 'Quick reference for working with CapFrameX.'}"/>
 										<Border Grid.Row="2" Style="{StaticResource SettingsCard}" Margin="0">
 											<xctk:RichTextBox IsHitTestVisible="False" IsReadOnly="True" BorderThickness="0"
 														  Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"

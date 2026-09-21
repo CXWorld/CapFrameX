@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
@@ -70,7 +71,7 @@ namespace CapFrameX.ViewModel
         private Func<double, string> _percentageFormatter;
         private SeriesCollection _comparisonLShapeCollection;
         private string _comparisonItemControlHeight = "300";
-        private string _columnChartYAxisTitle = "FPS";
+        private string _columnChartYAxisTitle = CxLang.T("FPS");
         private ComparisonColorManager _comparisonColorManager = new ComparisonColorManager();
         private bool _useEventMessages;
         private string _remainingRecordingTime;
@@ -967,7 +968,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "xAxis",
                 Position = OxyPlot.Axes.AxisPosition.Bottom,
-                Title = "Recording time [s]",
+                Title = CxLang.T("Recording time [s]"),
                 AxisTitleDistance = 10,
                 FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
@@ -983,7 +984,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "yAxis",
                 Position = OxyPlot.Axes.AxisPosition.Left,
-                Title = "Frametime [ms]",
+                Title = CxLang.T("Frametime [ms]"),
                 AxisTitleDistance = 10,
                 FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
@@ -1016,7 +1017,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "xAxis",
                 Position = OxyPlot.Axes.AxisPosition.Bottom,
-                Title = "Recording time [s]",
+                Title = CxLang.T("Recording time [s]"),
                 AxisTitleDistance = 10,
                 FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
@@ -1031,7 +1032,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "yAxis",
                 Position = OxyPlot.Axes.AxisPosition.Left,
-                Title = "FPS [1/s]",
+                Title = CxLang.T("FPS [1/s]"),
                 AxisTitleDistance = 10,
                 FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
@@ -1065,7 +1066,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "xAxis",
                 Position = OxyPlot.Axes.AxisPosition.Bottom,
-                Title = "Frame time [ms]",
+                Title = CxLang.T("Frame time [ms]"),
                 AxisTitleDistance = 10,
                 FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
@@ -1082,7 +1083,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "yAxis",
                 Position = OxyPlot.Axes.AxisPosition.Left,
-                Title = "Frame Time Distribution [%]",
+                Title = CxLang.T("Frame Time Distribution [%]"),
                 AxisTitleDistance = 10,
                 FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,

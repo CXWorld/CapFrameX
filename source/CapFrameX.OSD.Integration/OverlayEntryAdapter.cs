@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.OSD.Interop;
 
@@ -42,8 +43,8 @@ namespace CapFrameX.OSD.Integration
                 var o = new OsdEntry
                 {
                     Identifier = e.Identifier,
-                    Group = e.GroupName ?? string.Empty,
-                    Label = string.IsNullOrEmpty(e.Description) ? e.Identifier : e.Description,
+                    Group = CxLang.Instance.TranslateOverlay(e.GroupName ?? string.Empty),
+                    Label = CxLang.Instance.TranslateOverlay(string.IsNullOrEmpty(e.Description) ? e.Identifier : e.Description),
                     Unit = ExtractUnit(e.ValueUnitFormat),
                     Color = OsdColor.FromCapFrameXHex(e.Color),
                     GroupColor = OsdColor.FromCapFrameXHex(e.GroupColor),
@@ -126,8 +127,8 @@ namespace CapFrameX.OSD.Integration
                 list.Add(new OsdEntry
                 {
                     Identifier = $"RunHistory.{i + 1}",
-                    Group = $"Run {i + 1}:",
-                    Label = template.Description ?? "Run history",
+                    Group = CxLang.Instance.TranslateOverlay($"Run {i + 1}:"),
+                    Label = CxLang.Instance.TranslateOverlay(template.Description ?? "Run history"),
                     ValueText = string.IsNullOrEmpty(runHistory[i]) ? "N/A" : runHistory[i],
                     IsNumeric = false,
                     Color = isOutlier ? outlierColor : valueColor,
@@ -141,8 +142,8 @@ namespace CapFrameX.OSD.Integration
                 list.Add(new OsdEntry
                 {
                     Identifier = "RunHistory.Result",
-                    Group = "Result:",
-                    Label = template.Description ?? "Run history",
+                    Group = CxLang.Instance.TranslateOverlay("Result:"),
+                    Label = CxLang.Instance.TranslateOverlay(template.Description ?? "Run history"),
                     ValueText = aggregation,
                     IsNumeric = false,
                     Color = valueColor,

@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Logging;
 using CapFrameX.Contracts.Overlay;
@@ -1041,7 +1042,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "xAxis",
                 Position = AxisPosition.Bottom,
-                Title = "Samples",
+                Title = CxLang.T("Samples"),
                 MajorGridlineStyle = LineStyle.Solid,
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
@@ -1054,7 +1055,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "yAxis",
                 Position = AxisPosition.Left,
-                Title = "Frametime [ms]",
+                Title = CxLang.T("Frametime [ms]"),
                 MajorGridlineStyle = LineStyle.Solid,
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),

@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Configuration;
 using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.MVVM;
 using CapFrameX.Contracts.Overlay;
@@ -424,6 +425,32 @@ namespace CapFrameX.ViewModel
             {
                 _helpViewSelected = value;
                 OnViewSelectionChanged();
+                RaisePropertyChanged();
+            }
+        }
+
+        public string UiLanguage
+        {
+            get => string.IsNullOrWhiteSpace(_appConfiguration.UiLanguage) ? "en" : _appConfiguration.UiLanguage;
+            set
+            {
+                if (value == null || value == _appConfiguration.UiLanguage)
+                    return;
+                _appConfiguration.UiLanguage = value;
+                CxLang.Instance.SetUiLanguage(value);
+                RaisePropertyChanged();
+            }
+        }
+
+        public string OverlayLanguage
+        {
+            get => string.IsNullOrWhiteSpace(_appConfiguration.OverlayLanguage) ? "en" : _appConfiguration.OverlayLanguage;
+            set
+            {
+                if (value == null || value == _appConfiguration.OverlayLanguage)
+                    return;
+                _appConfiguration.OverlayLanguage = value;
+                CxLang.Instance.SetOverlayLanguage(value);
                 RaisePropertyChanged();
             }
         }

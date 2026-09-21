@@ -87,6 +87,10 @@ namespace CapFrameX.Contracts.Configuration
 
 		string HotkeySoundMode { get; set; }
 
+		string UiLanguage { get; set; }
+
+		string OverlayLanguage { get; set; }
+
 		double CaptureTime { get; set; }
 
 		bool UseGlobalCaptureTime { get; set; }
