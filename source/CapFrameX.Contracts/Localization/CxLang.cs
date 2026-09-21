@@ -85,7 +85,8 @@ namespace CapFrameX.Contracts.Localization
         private void Load()
         {
             var assembly = typeof(CxLang).Assembly;
-            using var stream = assembly.GetManifestResourceStream("CapFrameX.Contracts.Localization.Strings.ru.json");
+            var resourceName = Array.Find(assembly.GetManifestResourceNames(), name => name.EndsWith("Russian.json", StringComparison.Ordinal));
+            using var stream = resourceName == null ? null : assembly.GetManifestResourceStream(resourceName);
             if (stream == null)
                 return;
 
