@@ -26,6 +26,7 @@
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
 			<mvvm:InvertBoolConverter x:Key="InvertBoolConverter"/>
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+			<mvvm:OverlayLabelConverter x:Key="OverlayLabelConverter"/>
 			<mvvm:EnumShortDescriptionConverter x:Key="EnumShortDescriptionConverter"/>
 			<mvvm:StringColorConverter x:Key="StringColorConverter"/>
 			<Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource CxTabHeaderItem}" />
@@ -330,16 +331,25 @@
 								<DataGridTextColumn Binding="{Binding LocalizedDescription, Mode=TwoWay}"
                                     Header="{loc:Tr 'Description'}"
                                     IsReadOnly="True"/>
-								<DataGridTextColumn Binding="{Binding GroupName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                    Header="{loc:Tr 'Group Name'}"
-                                    IsReadOnly="False"/>
+								<DataGridTemplateColumn Header="{loc:Tr 'Group Name'}" SortMemberPath="GroupName" MinWidth="120">
+									<DataGridTemplateColumn.CellTemplate>
+										<DataTemplate>
+											<TextBlock Margin="4 0" VerticalAlignment="Center" Text="{Binding FormattedGroupName}"/>
+										</DataTemplate>
+									</DataGridTemplateColumn.CellTemplate>
+									<DataGridTemplateColumn.CellEditingTemplate>
+										<DataTemplate>
+											<TextBox Text="{Binding GroupName, UpdateSourceTrigger=LostFocus}"/>
+										</DataTemplate>
+									</DataGridTemplateColumn.CellEditingTemplate>
+								</DataGridTemplateColumn>
 
 								<DataGridTextColumn Binding="{Binding OverlayEntryType, Mode=OneWay, Converter={StaticResource EnumShortDescriptionConverter}}"
-									Header="Entry Type"
+									Header="{loc:Tr 'Entry Type'}"
 									IsReadOnly="True"/>
 
 								<DataGridCheckBoxColumn Binding="{Binding ShowGraph, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-									Header="Graph">
+									Header="{loc:Tr 'Graph'}">
 									<DataGridCheckBoxColumn.CellStyle>
 										<Style TargetType="DataGridCell">
 											<Setter Property="Visibility" 
@@ -366,7 +376,7 @@
 						<StackPanel Grid.Row="3" Orientation="Vertical">
 							<Border Margin="10 10 10 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}" BorderThickness="0" CornerRadius="6">
 								<StackPanel Margin="10 5 0 5" Orientation="Horizontal">
-									<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Group Control:</TextBlock>
+									<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr 'Group Control:'}"/>
 									<materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
 										<materialDesign:PopupBox.ToolTip>
 											<ToolTip MaxWidth="275" Placement="Top">
@@ -553,7 +563,7 @@
 						<StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
 							<TextBlock VerticalAlignment="Center" Text="{loc:Tr 'Overlay Template'}" FontSize="16" Margin="5 0 15 0"/>
 							<ComboBox Margin="5 0 0 0" Padding="8 0 8 0"
-								Width="140" Height="35"
+								Width="180" Height="35"
 								VerticalContentAlignment="Center"
 								FontSize="14"
 								Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
@@ -865,7 +875,7 @@
 							</Style>
 						</DataGrid.Resources>
 						<DataGrid.Columns>
-							<DataGridTextColumn Binding="{Binding GroupName, Mode=OneWay}"
+							<DataGridTextColumn Binding="{Binding GroupName, Mode=OneWay, Converter={StaticResource OverlayLabelConverter}}"
                                             Header="{loc:Tr 'Group name'}"
                                             IsReadOnly="True"/>
 							<DataGridTextColumn Binding="{Binding GroupSeparators, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
@@ -891,13 +901,13 @@
 							TextWrapping="Wrap" TextAlignment="Center" FontSize="16"/>
 						<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
 							<CheckBox IsChecked="{Binding Checkboxes.Colors}" Margin="5">
-								<TextBlock>Colors</TextBlock>
+								<TextBlock Text="{loc:Tr 'Colors'}"/>
 							</CheckBox>
 							<CheckBox IsChecked="{Binding Checkboxes.Limits}" Margin="5">
-								<TextBlock>Limits</TextBlock>
+								<TextBlock Text="{loc:Tr 'Limits'}"/>
 							</CheckBox>
 							<CheckBox IsChecked="{Binding Checkboxes.Format}" Margin="5">
-								<TextBlock>Format</TextBlock>
+								<TextBlock Text="{loc:Tr 'Format'}"/>
 							</CheckBox>
 						</StackPanel>
 						<TextBlock Grid.Row="2"  Text="{loc:Tr 'Group Name'}" TextAlignment="Left" Margin="10 5 0 0"/>

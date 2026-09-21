@@ -169,9 +169,13 @@
 												</ListView.ContextMenu>
 											</ListView>
 										</Border>
-										<Button Margin="0 12 0 0" HorizontalAlignment="Right" BorderThickness="0" Height="34" Padding="12 0"
+										<Button Margin="0 12 0 0" HorizontalAlignment="Stretch" BorderThickness="0" Height="34" Padding="8 0"
 											Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding AreButtonsActive}" Foreground="White"
-											Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}" Content="{loc:Tr 'Move to ignore list'}"/>
+											Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
+											<Viewbox Stretch="Uniform" StretchDirection="DownOnly" MaxHeight="16">
+												<TextBlock Text="{loc:Tr 'Move to ignore list'}"/>
+											</Viewbox>
+										</Button>
 									</StackPanel>
 								</Border>
 								<!--Process ignore list card-->
@@ -188,9 +192,13 @@
 												ScrollViewer.VerticalScrollBarVisibility="Auto" FontSize="14" ScrollViewer.CanContentScroll="True" Height="160">
 											</ListView>
 										</Border>
-										<Button Margin="0 12 0 0" HorizontalAlignment="Right" BorderThickness="0" Height="34" Padding="12 0"
+										<Button Margin="0 12 0 0" HorizontalAlignment="Stretch" BorderThickness="0" Height="34" Padding="8 0"
 											Command="{Binding AddToProcessListCommand}" IsEnabled="{Binding AreButtonsActive}" Foreground="White"
-											Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}" Content="{loc:Tr 'Remove from ignore list'}"/>
+											Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
+											<Viewbox Stretch="Uniform" StretchDirection="DownOnly" MaxHeight="16">
+												<TextBlock Text="{loc:Tr 'Remove from ignore list'}"/>
+											</Viewbox>
+										</Button>
 									</StackPanel>
 								</Border>
 							</Grid>
@@ -218,7 +226,7 @@
 						<ColumnDefinition Width="1*"/>
 						<ColumnDefinition Width="1*"/>
 					</Grid.ColumnDefinitions>
-					<TextBox Grid.Row="0" Grid.Column="0" Width="110" wpf:HintAssist.Hint="Capture hotkey" Style="{DynamicResource CxFloatingHintTextBox}"
+					<TextBox Grid.Row="0" Grid.Column="0" Width="110" wpf:HintAssist.Hint="{loc:Tr 'Capture hotkey'}" Style="{DynamicResource CxFloatingHintTextBox}"
 						 Margin="0" FontSize="14" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" wpf:HintAssist.HintOpacity=".8"
 						 IsUndoEnabled="False" PreviewKeyDown="CaptureHotkeyTextBox_PreviewKeyDown"
 						 ContextMenu="{x:Null}" InputMethod.IsInputMethodEnabled="False"
@@ -237,7 +245,7 @@
 						</Binding>
 					</TextBox>
 
-					<TextBox Grid.Row="0" Grid.Column="1" Width="110" wpf:HintAssist.Hint="Capture time [s]" Style="{DynamicResource CxFloatingHintTextBox}"
+					<TextBox Grid.Row="0" Grid.Column="1" Width="110" wpf:HintAssist.Hint="{loc:Tr 'Capture time [s]'}" Style="{DynamicResource CxFloatingHintTextBox}"
 						 Margin="30 0 0 0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
 						 PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="TextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"
 						 PreviewTextInput="NumberValidationTextBox" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" wpf:HintAssist.HintOpacity=".8"/>
@@ -255,12 +263,12 @@
 						</StackPanel.ToolTip>
 					</StackPanel>-->
 
-					<TextBox Grid.Row="0" Grid.Column="2" Width="110" wpf:HintAssist.Hint="Capture delay [s]" Style="{DynamicResource CxFloatingHintTextBox}"
+					<TextBox Grid.Row="0" Grid.Column="2" Width="110" wpf:HintAssist.Hint="{loc:Tr 'Capture delay [s]'}" Style="{DynamicResource CxFloatingHintTextBox}"
 					 Margin="30 0 0 0" FontSize="14" Text="{Binding CaptureDelayString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
                      PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="TextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no delay"
                      PreviewTextInput="NumberValidationTextBox" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" wpf:HintAssist.HintOpacity=".8"/>
 
-					<ComboBox Grid.Row="0" Grid.Column="3" Width="102" Height="40" materialDesign:HintAssist.Hint="Hotkey sound" Style="{StaticResource CxComboBox}"                          
+					<ComboBox Grid.Row="0" Grid.Column="3" Width="102" Height="40" materialDesign:HintAssist.Hint="{loc:Tr 'Hotkey sound'}" Style="{StaticResource CxComboBox}"                          
 						  Margin="30 0 0 0" MaxDropDownHeight="200" FontSize="14" materialDesign:HintAssist.IsFloating="True" materialDesign:HintAssist.HintOpacity=".8"
 						  ItemsSource="{Binding SoundModes}" HorizontalAlignment="Left" HorizontalContentAlignment="Left" VerticalAlignment="Bottom" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
 						<ComboBox.Text>
@@ -328,7 +336,7 @@
 										<ColumnDefinition Width="24"/>
 										<ColumnDefinition Width="1*"/>
 									</Grid.ColumnDefinitions>
-									<ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Number of runs"
+									<ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="{loc:Tr 'Number of runs'}"
 										MaxDropDownHeight="100" ItemsSource="{Binding Path=NumberOfRunsItemsSource}" ToolTipService.ShowDuration="25000">
 										<ComboBox.ToolTip>
 											<ToolTip StaysOpen="True" MaxWidth="275">
@@ -348,7 +356,7 @@
 									    read-only text-field styling indents the text against the floating hint. All
 									    keyboard input is swallowed by the PreviewKeyDown hotkey capture; paste and
 									    IME input are disabled via ContextMenu/InputMethod. -->
-									<TextBox Grid.Row="0" Grid.Column="2" Margin="0 10 0 10" materialDesign:HintAssist.Hint="Reset run history"
+									<TextBox Grid.Row="0" Grid.Column="2" Margin="0 10 0 10" materialDesign:HintAssist.Hint="{loc:Tr 'Reset run history'}"
 										Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 										IsUndoEnabled="False" PreviewKeyDown="ResetHistoryHotkeyTextBox_PreviewKeyDown"
 										ContextMenu="{x:Null}" InputMethod.IsInputMethodEnabled="False"
@@ -362,7 +370,7 @@
 											</Binding.ValidationRules>
 										</Binding>
 									</TextBox>
-									<ComboBox Grid.Row="1" Grid.Column="0" materialDesign:HintAssist.Hint="Second metric"
+									<ComboBox Grid.Row="1" Grid.Column="0" materialDesign:HintAssist.Hint="{loc:Tr 'Second metric'}"
 										MaxDropDownHeight="330" ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondMetric}"
 										ToolTip="Second metric shown for history entries on the overlay">
 										<ComboBox.ItemTemplate>
@@ -371,7 +379,7 @@
 											</DataTemplate>
 										</ComboBox.ItemTemplate>
 									</ComboBox>
-									<ComboBox Grid.Row="1" Grid.Column="2" materialDesign:HintAssist.Hint="Third metric"
+									<ComboBox Grid.Row="1" Grid.Column="2" materialDesign:HintAssist.Hint="{loc:Tr 'Third metric'}"
 										MaxDropDownHeight="360" ItemsSource="{Binding ThirdMetricItems}" SelectedItem="{Binding SelectedThirdMetric}"
 										ToolTip="Third metric shown for history entries on the overlay">
 										<ComboBox.ItemTemplate>
@@ -422,7 +430,7 @@
 										<ColumnDefinition Width="24"/>
 										<ColumnDefinition Width="1*"/>
 									</Grid.ColumnDefinitions>
-									<ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Outlier handling"
+									<ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="{loc:Tr 'Outlier handling'}"
 										MaxDropDownHeight="100" ItemsSource="{Binding OutlierHandlingItems}" SelectedItem="{Binding SelectedOutlierHandling}"
 										ToolTipService.ShowDuration="25000">
 										<ComboBox.ToolTip>
@@ -441,7 +449,7 @@
 											</DataTemplate>
 										</ComboBox.ItemTemplate>
 									</ComboBox>
-									<ComboBox Grid.Row="0" Grid.Column="2" materialDesign:HintAssist.Hint="Outlier metric"
+									<ComboBox Grid.Row="0" Grid.Column="2" materialDesign:HintAssist.Hint="{loc:Tr 'Outlier metric'}"
 										MaxDropDownHeight="100" ItemsSource="{Binding RelatedMetricItemsSource}" SelectedItem="{Binding SelectedRelatedMetric}"
 										ToolTipService.ShowDuration="25000">
 										<ComboBox.ToolTip>
@@ -450,7 +458,7 @@
 											</ToolTip>
 										</ComboBox.ToolTip>
 									</ComboBox>
-									<ComboBox Grid.Row="1" Grid.Column="0" materialDesign:HintAssist.Hint="Outlier percentage"
+									<ComboBox Grid.Row="1" Grid.Column="0" materialDesign:HintAssist.Hint="{loc:Tr 'Outlier percentage'}"
 										MaxDropDownHeight="200" ItemsSource="{Binding OutlierPercentageItemsSource}" SelectedItem="{Binding SelectedOutlierPercentage}"
 										ToolTipService.ShowDuration="25000">
 										<ComboBox.ToolTip>
@@ -468,9 +476,7 @@
 													TextWrapping="Wrap"/>
 											</ToolTip>
 										</CheckBox.ToolTip>
-										<TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow">
-											Save aggregated result only
-										</TextBlock>
+										<TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow" Text="{loc:Tr 'Save aggregated result only'}"/>
 									</CheckBox>
 								</Grid>
 							</StackPanel>

@@ -105,7 +105,7 @@ namespace CapFrameX.ViewModel
 
         public string CaptureStateInfo
         {
-            get { return _captureStateInfo; }
+            get { return TranslateCaptureState(_captureStateInfo); }
             set
             {
                 _captureStateInfo = value;
@@ -990,6 +990,22 @@ namespace CapFrameX.ViewModel
             }
 
             return _processList.FindProcessByName(processName)?.DisplayName ?? processNameStripped;
+        }
+
+        private static string TranslateCaptureState(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return text;
+            text = System.Text.RegularExpressions.Regex.Replace(text, "auto-detected\\.", CxLang.T("auto-detected."));
+            text = System.Text.RegularExpressions.Regex.Replace(
+                text,
+                "Press \"(.+?)\" to start capture\\.",
+                CxLang.T("Press \"{0}\" to start capture.").Replace("{0}", "$1"));
+            text = text.Replace("Process list clear.", CxLang.T("Process list clear."));
+            text = text.Replace("Start any game / application and press", CxLang.T("Start any game / application and press"));
+            text = text.Replace("to start capture.", CxLang.T("to start capture."));
+            text = text.Replace("selected.", CxLang.T("selected."));
+            return text;
         }
 
         private void UpdateCaptureStateInfo()

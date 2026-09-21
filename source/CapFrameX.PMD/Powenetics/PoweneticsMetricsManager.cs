@@ -1,4 +1,5 @@
-﻿using Prism.Mvvm;
+﻿using CapFrameX.Contracts.Localization;
+using Prism.Mvvm;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -7,7 +8,7 @@ namespace CapFrameX.PMD.Powenetics
 {
     public class PoweneticsMetricsManager : BindableBase
     {
-        const string ZERO_WATT = "0.0 W";
+        static string ZERO_WATT => "0.0 " + CxLang.T("W");
 
         private string _allPowerCur = ZERO_WATT;
         private string _allGpuPowerCur = ZERO_WATT;
@@ -262,12 +263,12 @@ namespace CapFrameX.PMD.Powenetics
             lock (_resetHistoryLock)
             {
                 UpdateHistory(pmdMetricSet, _allGpuPowerAvgHistory, historyLength);
-                AllGpuPowerAvg = $"{_allGpuPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} W";
-                AllGpuPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} W";
+                AllGpuPowerAvg = $"{_allGpuPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
+                AllGpuPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
                 if (pmdMetricSet.Max > _allGpuPowerMaxValue)
                 {
                     _allGpuPowerMaxValue = pmdMetricSet.Max;
-                    AllGpuPowerMax = $"{_allGpuPowerMaxValue.ToString("F1", CultureInfo.InvariantCulture)} W";
+                    AllGpuPowerMax = $"{_allGpuPowerMaxValue.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
                 }
             }
 
@@ -276,12 +277,12 @@ namespace CapFrameX.PMD.Powenetics
             lock (_resetHistoryLock)
             {
                 UpdateHistory(pmdMetricSet, _allPciExAvgHistory, historyLength);
-                AllPciExAvg = $"{_allPciExAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} W";
-                AllPciExCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} W";
+                AllPciExAvg = $"{_allPciExAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
+                AllPciExCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
                 if (pmdMetricSet.Max > _allPciExMaxValue)
                 {
                     _allPciExMaxValue = pmdMetricSet.Max;
-                    AllPciExMax = $"{_allPciExMaxValue.ToString("F1", CultureInfo.InvariantCulture)} W";
+                    AllPciExMax = $"{_allPciExMaxValue.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
                 }
             }
 
@@ -290,12 +291,12 @@ namespace CapFrameX.PMD.Powenetics
             lock (_resetHistoryLock)
             {
                 UpdateHistory(pmdMetricSet, _pciExSlotAvgHistory, historyLength);
-                PciExSlotAvg = $"{_pciExSlotAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} W";
-                PciExSlotCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} W";
+                PciExSlotAvg = $"{_pciExSlotAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
+                PciExSlotCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
                 if (pmdMetricSet.Max > _pciExSlotMaxValue)
                 {
                     _pciExSlotMaxValue = pmdMetricSet.Max;
-                    PciExSlotMax = $"{_pciExSlotMaxValue.ToString("F1", CultureInfo.InvariantCulture)} W";
+                    PciExSlotMax = $"{_pciExSlotMaxValue.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
                 }
             }
 
@@ -304,12 +305,12 @@ namespace CapFrameX.PMD.Powenetics
             lock (_resetHistoryLock)
             {
                 UpdateHistory(pmdMetricSet, _allCpuPowerAvgHistory, historyLength);
-                AllCpuPowerAvg = $"{_allCpuPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} W";
-                AllCpuPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} W";
+                AllCpuPowerAvg = $"{_allCpuPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
+                AllCpuPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
                 if (pmdMetricSet.Max > _allCpuPowerMaxValue)
                 {
                     _allCpuPowerMaxValue = pmdMetricSet.Max;
-                    AllCpuPowerMax = $"{_allCpuPowerMaxValue.ToString("F1", CultureInfo.InvariantCulture)} W";
+                    AllCpuPowerMax = $"{_allCpuPowerMaxValue.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
                 }
             }
 
@@ -318,12 +319,12 @@ namespace CapFrameX.PMD.Powenetics
             lock (_resetHistoryLock)
             {
                 UpdateHistory(pmdMetricSet, _allAtxPowerAvgHistory, historyLength);
-                AllAtxPowerAvg = $"{_allAtxPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} W";
-                AllAtxPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} W";
+                AllAtxPowerAvg = $"{_allAtxPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
+                AllAtxPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
                 if (pmdMetricSet.Max > _allAtxPowerMaxValue)
                 {
                     _allAtxPowerMaxValue = pmdMetricSet.Max;
-                    AllAtxPowerMax = $"{_allAtxPowerMaxValue.ToString("F1", CultureInfo.InvariantCulture)} W";
+                    AllAtxPowerMax = $"{_allAtxPowerMaxValue.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
                 }
             }
 
@@ -332,12 +333,12 @@ namespace CapFrameX.PMD.Powenetics
             lock (_resetHistoryLock)
             {
                 UpdateHistory(pmdMetricSet, _allPowerAvgHistory, historyLength);
-                AllPowerAvg = $"{_allPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} W";
-                AllPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} W";
+                AllPowerAvg = $"{_allPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
+                AllPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
                 if (pmdMetricSet.Max > _allPowerMaxValue)
                 {
                     _allPowerMaxValue = pmdMetricSet.Max;
-                    AllPowerMax = $"{_allPowerMaxValue.ToString("F1", CultureInfo.InvariantCulture)} W";
+                    AllPowerMax = $"{_allPowerMaxValue.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
                 }
             }
         }

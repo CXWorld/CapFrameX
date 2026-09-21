@@ -70,7 +70,7 @@
 						<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Width="450" x:Name="DragAndDropInfoTextTextBlock"
 							TextAlignment="Center" TextWrapping="Wrap" FontSize="16" Panel.ZIndex="1"
 							Visibility="{Binding ShowHelpText, Converter={StaticResource TrueToVisibleConverter}}"
-							Text="Drop items here or double click them in the record list"
+							Text="{loc:Tr 'Drop items here or double click them in the record list'}"
 							Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
 							dragdrop:DragDrop.IsDragSource="False"
 							dragdrop:DragDrop.IsDropTarget="True"
@@ -112,7 +112,7 @@
 							<TextBox x:Name="UploadDescription" Style="{StaticResource CloudHintTextBox}" wpf:HintAssist.Hint="(Optional) Upload description"
 								Text="{Binding UploadDescription, UpdateSourceTrigger=PropertyChanged}"
 								Visibility="{Binding ShowUploadDescriptionTextBox, Converter={StaticResource TrueToVisibleConverter}}"/>
-							<TextBox Style="{StaticResource CloudHintTextBox}" wpf:HintAssist.Hint="Download link / ID" IsReadOnly="True"
+							<TextBox Style="{StaticResource CloudHintTextBox}" wpf:HintAssist.Hint="{loc:Tr 'Download link / ID'}" IsReadOnly="True"
 								Text="{Binding ShareUrl, Mode=OneWay}" PreviewMouseDoubleClick="ShareUrlFocusHandler"
 								Visibility="{Binding ShareUrlVisible, Converter={StaticResource TrueToVisibleConverter}}"/>
 							<StackPanel Orientation="Horizontal" VerticalAlignment="Center"
@@ -152,7 +152,7 @@
 							Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 					</DockPanel>
 
-					<TextBox x:Name="IDBox" Margin="0 12 0 0" Style="{StaticResource CloudHintTextBox}" wpf:HintAssist.Hint="Download link / ID"
+					<TextBox x:Name="IDBox" Margin="0 12 0 0" Style="{StaticResource CloudHintTextBox}" wpf:HintAssist.Hint="{loc:Tr 'Download link / ID'}"
 						Text="{Binding DownloadIDString, UpdateSourceTrigger=PropertyChanged}"/>
 
 					<DockPanel Margin="0 8 0 0">
@@ -162,7 +162,7 @@
 							Foreground="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
 							<materialDesign:PackIcon Kind="FolderSearchOutline" Width="20" Height="20"/>
 						</Button>
-						<TextBox Style="{StaticResource CloudHintTextBox}" wpf:HintAssist.Hint="Download folder" IsReadOnly="True"
+						<TextBox Style="{StaticResource CloudHintTextBox}" wpf:HintAssist.Hint="{loc:Tr 'Download folder'}" IsReadOnly="True"
 							Text="{Binding CloudDownloadDirectory, Mode=OneWay}" PreviewMouseDown="DownloadFolder_PreviewMouseDown"/>
 					</DockPanel>
 

@@ -1017,14 +1017,22 @@
 													</Border>
 
 													<StackPanel Margin="0 16 0 0" Orientation="Horizontal">
-														<Button Width="180" Height="36" Content="{loc:Tr 'CHECK FOR UPDATES'}"
+														<Button Width="210" Height="36"
 																Style="{StaticResource MaterialDesignRaisedButton}"
 																Command="{Binding UpdateViewModel.CheckForUpdateCommand}"
-																ToolTip="Ask the CapFrameX update server whether a newer version is available"/>
-														<Button Width="145" Height="36" Margin="10 0 0 0" Content="{loc:Tr 'SHOW UPDATE'}"
+																ToolTip="{loc:Tr 'Ask the CapFrameX update server whether a newer version is available'}">
+															<Viewbox Stretch="Uniform" StretchDirection="DownOnly" MaxHeight="16">
+																<TextBlock Text="{loc:Tr 'CHECK FOR UPDATES'}"/>
+															</Viewbox>
+														</Button>
+														<Button Width="190" Height="36" Margin="10 0 0 0"
 																Style="{StaticResource MaterialDesignOutlinedButton}"
 																Command="{Binding UpdateViewModel.ShowUpdateDialogCommand}"
-																ToolTip="Show what the available update contains"/>
+																ToolTip="{loc:Tr 'Show what the available update contains'}">
+															<Viewbox Stretch="Uniform" StretchDirection="DownOnly" MaxHeight="16">
+																<TextBlock Text="{loc:Tr 'SHOW UPDATE'}"/>
+															</Viewbox>
+														</Button>
 													</StackPanel>
 
 													<Separator Margin="0 16 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
@@ -1058,7 +1066,7 @@
 															<ColumnDefinition Width="*"/>
 															<ColumnDefinition Width="230"/>
 															<ColumnDefinition Width="12"/>
-															<ColumnDefinition Width="155"/>
+															<ColumnDefinition Width="210"/>
 														</Grid.ColumnDefinitions>
 														<StackPanel VerticalAlignment="Center">
 															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Target version'}"/>
@@ -1087,8 +1095,11 @@
 														</ComboBox>
 														<Button Grid.Column="3" Height="38"
 																Style="{StaticResource MaterialDesignRaisedButton}"
-																Content="{Binding UpdateViewModel.VersionSelectionActionText, Mode=OneWay}"
-																Command="{Binding UpdateViewModel.InstallSelectedVersionCommand}"/>
+																Command="{Binding UpdateViewModel.InstallSelectedVersionCommand}">
+															<Viewbox Stretch="Uniform" StretchDirection="DownOnly" MaxHeight="16">
+																<TextBlock Text="{Binding UpdateViewModel.VersionSelectionActionText, Mode=OneWay}"/>
+															</Viewbox>
+														</Button>
 													</Grid>
 
 													<Border Margin="0 14 0 0" Padding="12"

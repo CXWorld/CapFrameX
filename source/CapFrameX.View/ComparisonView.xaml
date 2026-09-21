@@ -428,14 +428,14 @@
 			</Grid.ColumnDefinitions>
 
 			<StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10 10 5 0" Orientation="Horizontal">
-				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Custom Title:</TextBlock>
+				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr 'Custom Title:'}"/>
 				<ToggleButton x:Name="ShowCustomTitleToggleButton" Margin="10 0 0 0"
 				    ToolTip="{loc:Tr 'Show custom title edit box'}" IsChecked="{Binding ShowCustomTitle}"/>
 			</StackPanel>
 
 			<StackPanel Grid.Column="1" Margin="10 10 5 0" Orientation="Horizontal"
                 ToolTip="{loc:Tr 'Select up to 2 labels to be shown for each record'}" IsEnabled="{Binding MetricAndLabelOptionsEnabled}">
-				<TextBlock Margin="0 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Labels</TextBlock>
+				<TextBlock Margin="0 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr 'Labels'}"/>
 				<materialDesign:PopupBox Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
 					<materialDesign:Card Width="325" Margin="0 0 0 -10">
 						<StackPanel>
@@ -597,7 +597,7 @@
 			</StackPanel>
 
 			<StackPanel Grid.Column="5" Margin="10 10 5 0" VerticalAlignment="Center" Orientation="Horizontal">
-				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Grouping:</TextBlock>
+				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr 'Grouping:'}"/>
 				<ToggleButton Margin="10 0 0 0"
 					ToolTip="Sort entries by game first" IsChecked="{Binding UseComparisonGrouping}"/>
 				<StackPanel.Style>
@@ -750,7 +750,7 @@
 		<!-- Copmparison List -->
 		<StackPanel Margin="5 10 5 5" Grid.Column="1" Grid.RowSpan="2" Orientation="Vertical">
 			<TextBox IsReadOnly="True" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
-                     materialDesign:HintAssist.Hint="Comparisons" />
+                     materialDesign:HintAssist.Hint="{loc:Tr 'Comparisons'}" />
 			<Border Margin="0 5 0 5" Style="{StaticResource SectionCard}" Padding="0 4 0 4" VerticalAlignment="Stretch">
 				<Grid>
 					<Grid.RowDefinitions>

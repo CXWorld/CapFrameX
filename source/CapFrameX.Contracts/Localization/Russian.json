@@ -749,9 +749,121 @@
                "This beta build is downloaded now and installed the next time CapFrameX starts. Beta builds may be less stable than regular releases.":  "Эта бета загружается сейчас и установится при следующем запуске CapFrameX. Бета может быть менее стабильной, чем обычный выпуск.",
                "The update is downloaded now and installed the next time CapFrameX starts.":  "Обновление загружается сейчас и установится при следующем запуске CapFrameX.",
                "Download size: {0} MB":  "Размер загрузки: {0} МБ",
-               "Mainboard":  "Плата"
+               "Mainboard":  "Плата",
+               "W":  "Вт",
+               "Basic":  "Базовый",
+               "Detailed":  "Подробный",
+               "Enthusiast":  "Продвинутый",
+               "Colors":  "Цвета",
+               "Limits":  "Пределы",
+               "Format":  "Формат",
+               "Graph":  "График",
+               "Entry Type":  "Тип записи",
+               "Group Control:":  "Группы:",
+               "Group control":  "Группы",
+               "Overlay Items":  "Элементы оверлея",
+               "Drop items here or double click them in the record list":  "Перетащите записи сюда или дважды щёлкните их в списке",
+               "Download link / ID":  "Ссылка или ID",
+               "Download folder":  "Папка загрузки",
+               "Capture hotkey":  "Клавиша захвата",
+               "Capture time [s]":  "Время захвата [с]",
+               "Capture delay [s]":  "Задержка захвата [с]",
+               "Hotkey sound":  "Звук клавиши",
+               "Voice":  "Голос",
+               "Number of runs":  "Число прогонов",
+               "Reset run history":  "Сброс истории прогонов",
+               "Second metric":  "Вторая метрика",
+               "Third metric":  "Третья метрика",
+               "Outlier handling":  "Обработка выбросов",
+               "Outlier metric":  "Метрика выбросов",
+               "Outlier percentage":  "Процент выбросов",
+               "Save aggregated result only":  "Сохранять только агрегированный результат",
+               "Mark & use":  "Пометить и использовать",
+               "Mark & replace":  "Пометить и заменить",
+               "Maximum":  "Максимум",
+               "99% percentile":  "99-й перцентиль",
+               "95% percentile":  "95-й перцентиль",
+               "5% percentile":  "5-й перцентиль",
+               "1% percentile":  "1-й перцентиль",
+               "0.2% percentile":  "0,2-й перцентиль",
+               "0.1% percentile":  "0,1-й перцентиль",
+               "GPU Active 1% percentile":  "1-й перцентиль активности ГП",
+               "GPU Active Average":  "Средняя активность ГП",
+               "1% low average":  "Среднее нижнего 1%",
+               "0.2% low average":  "Среднее нижнего 0,2%",
+               "0.1% low average":  "Среднее нижнего 0,1%",
+               "GPU Active 1% low average":  "Среднее нижнего 1% активности ГП",
+               "1% low integral":  "Интеграл нижнего 1%",
+               "0.2% low integral":  "Интеграл нижнего 0,2%",
+               "0.1% low integral":  "Интеграл нижнего 0,1%",
+               "Minimum":  "Минимум",
+               "Median":  "Медиана",
+               "Adaptive STDEV":  "Адаптивное СКО",
+               "CPU FPS per 10 Watts":  "FPS ЦП на 10 Вт",
+               "GPU FPS per 10 Watts":  "FPS ГП на 10 Вт",
+               "CPU Active Average":  "Средняя активность ЦП",
+               "None":  "Нет",
+               "Second":  "Секунда",
+               "Average of N":  "Среднее из N",
+               "Present frametime":  "Время кадра Present",
+               "Display time":  "Время на экране",
+               "Present FPS":  "FPS Present",
+               "Display FPS":  "FPS экрана",
+               "GPU active time [ms]":  "Активное время ГП [мс]",
+               "Present frametime [ms]":  "Время кадра Present [мс]",
+               "Display time [ms]":  "Время на экране [мс]",
+               "Present FPS [1/s]":  "FPS Present [1/с]",
+               "Display FPS [1/s]":  "FPS экрана [1/с]",
+               "Present frametime Distribution [%]":  "Распределение времени кадра Present [%]",
+               "Display time Distribution [%]":  "Распределение времени на экране [%]",
+               "Recording time [s]":  "Время записи [с]",
+               "Source: Presents":  "Источник: Present",
+               "Source: Display changes (Average FPS: Presents)":  "Источник: смена кадра на экране (средний FPS: Present)",
+               "Source: Presents (display data unavailable)":  "Источник: Present (нет данных экрана)",
+               "Custom Title:":  "Свой заголовок:",
+               "Labels":  "Подписи",
+               "Grouping:":  "Группировка:",
+               "Values":  "Значения",
+               "Frametimes":  "Время кадров",
+               "Sensor polling [ms]":  "Опрос датчиков [мс]",
+               "Evaluation":  "Оценка",
+               "Evaluate\r\nmultiple entries":  "Оценить\r\nнесколько записей",
+               "Evaluate\nmultiple entries":  "Оценить\nнесколько записей",
+               "Working":  "Обработка",
+               "Sensor statistics for selected record":  "Статистика датчиков выбранной записи",
+               "Sensor statistics for multiple selected records":  "Статистика датчиков нескольких записей",
+               "Reset PMD Metrics":  "Сбросить метрики PMD",
+               "PMD Service Status:":  "Состояние службы PMD:",
+               "GPU Power [W]":  "Мощность ГП [Вт]",
+               "CPU Power [W]":  "Мощность ЦП [Вт]",
+               "Time [s]":  "Время [с]",
+               "Load":  "Загрузка",
+               "Clock":  "Частота",
+               "Power":  "Мощность",
+               "Temperature":  "Температура",
+               "Voltage":  "Напряжение",
+               "Fan":  "Вентилятор",
+               "Data":  "Данные",
+               "Throughput":  "Пропускная способность",
+               "Small Data":  "Малые данные",
+               "Factor":  "Множитель",
+               "Distribution [%]":  "Распределение [%]",
+               "auto-detected.":  "обнаружен автоматически.",
+               "Press \"{0}\" to start capture.":  "Нажмите «{0}», чтобы начать захват.",
+               "Process list clear.":  "Список процессов пуст.",
+               "Start any game / application and press":  "Запустите игру или приложение и нажмите",
+               "to start capture.":  "чтобы начать захват.",
+               "selected.":  "выбран.",
+               "Ask the CapFrameX update server whether a newer version is available":  "Спросить сервер обновлений CapFrameX, есть ли более новая версия",
+               "Show what the available update contains":  "Показать, что входит в доступное обновление"
            },
     "overlay":  {
+                    "MB Info":  "Плата",
+                    "OS":  "ОС",
+                    "GPU Driver":  "Драйвер ГП",
+                    "Ping":  "Пинг",
+                    "Display 1 Resolution":  "Разрешение дисплея 1",
+                    "Battery Life":  "Батарея",
                     "Multiple processes detected":  "Обнаружено несколько процессов",
                     "Scanning for process...":  "Поиск процесса...",
                     "Recording frametimes":  "Запись времени кадров",
@@ -949,8 +1061,84 @@
                                       "ru":  "TBP ГП"
                                   },
                                   {
-                                      "en":  "RAM Used\\b",
+                                      "en":  "\\bVRAM Used\\b",
+                                      "ru":  "Занято видеопамяти"
+                                  },
+                                  {
+                                      "en":  "\\bRAM Used\\b",
                                       "ru":  "Занято ОЗУ"
+                                  },
+                                  {
+                                      "en":  "\\bCPU Model\\b",
+                                      "ru":  "Модель ЦП"
+                                  },
+                                  {
+                                      "en":  "\\bVRAM\\b",
+                                      "ru":  "видеопамять"
+                                  },
+                                  {
+                                      "en":  "\\bMT/s\\b",
+                                      "ru":  "МТ/с"
+                                  },
+                                  {
+                                      "en":  "\\bMHz\\b",
+                                      "ru":  "МГц"
+                                  },
+                                  {
+                                      "en":  "\\bGHz\\b",
+                                      "ru":  "ГГц"
+                                  },
+                                  {
+                                      "en":  "\\bkHz\\b",
+                                      "ru":  "кГц"
+                                  },
+                                  {
+                                      "en":  "\\bDIMM\\b",
+                                      "ru":  "модуль"
+                                  },
+                                  {
+                                      "en":  "\\bModel\\b",
+                                      "ru":  "модель"
+                                  },
+                                  {
+                                      "en":  "\\bMax\\b",
+                                      "ru":  "макс."
+                                  },
+                                  {
+                                      "en":  "(\\d+(?:\\.\\d+)?)\\s*W\\b",
+                                      "ru":  "$1 Вт"
+                                  },
+                                  {
+                                      "en":  "(\\d+(?:\\.\\d+)?)\\s*V\\b",
+                                      "ru":  "$1 В"
+                                  },
+                                  {
+                                      "en":  "\\bGB\\b",
+                                      "ru":  "ГБ"
+                                  },
+                                  {
+                                      "en":  "\\bMB\\b",
+                                      "ru":  "МБ"
+                                  },
+                                  {
+                                      "en":  "\\bKB\\b",
+                                      "ru":  "КБ"
+                                  },
+                                  {
+                                      "en":  "\\bTB\\b",
+                                      "ru":  "ТБ"
+                                  },
+                                  {
+                                      "en":  "\\bms\\b",
+                                      "ru":  "мс"
+                                  },
+                                  {
+                                      "en":  "\\bW\\b",
+                                      "ru":  "Вт"
+                                  },
+                                  {
+                                      "en":  "\\bV\\b",
+                                      "ru":  "В"
                                   },
                                   {
                                       "en":  "ready to capture\\.\\.\\.",

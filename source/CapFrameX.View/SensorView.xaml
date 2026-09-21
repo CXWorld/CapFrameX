@@ -32,6 +32,7 @@
             <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
             <mvvm:InvertBoolConverter x:Key="InvertBoolConverter"/>
             <mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+            <mvvm:OverlayLabelConverter x:Key="OverlayLabelConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid HorizontalAlignment="Center">
@@ -132,9 +133,9 @@
                             </Style>
                         </DataGrid.Resources>
                         <DataGrid.Columns>
-                            <DataGridTextColumn Binding="{Binding Name, Mode=TwoWay}"
+                            <DataGridTextColumn Binding="{Binding Name, Mode=OneWay, Converter={StaticResource OverlayLabelConverter}}"
                                                 Header="{loc:Tr 'Sensor'}" IsReadOnly="True" MinWidth="185"/>
-                            <DataGridTextColumn Binding="{Binding SensorType, Mode=TwoWay}"
+                            <DataGridTextColumn Binding="{Binding SensorType, Mode=OneWay, Converter={StaticResource OverlayLabelConverter}}"
                                                 Header="{loc:Tr 'Type'}" IsReadOnly="True" MinWidth="100"/>
                             <DataGridCheckBoxColumn Binding="{Binding UseForLogging, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Header="{loc:Tr 'Use for logging'}" Width="100">
                                 <DataGridCheckBoxColumn.CellStyle>
@@ -174,7 +175,7 @@
                                 <TextBlock Margin="10 0 20 0" VerticalAlignment="Center" Text="{loc:Tr 'Log sensors'}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                             </StackPanel>
                             <ComboBox Margin="15 0 0 0"
-					              materialDesign:HintAssist.Hint="Sensor polling [ms]" materialDesign:HintAssist.HintOpacity=".8"
+					              materialDesign:HintAssist.Hint="{loc:Tr 'Sensor polling [ms]'}" materialDesign:HintAssist.HintOpacity=".8"
 					              materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110"
 					              MouseLeave="LoggingPeriodComboBox_MouseLeave" FontSize="14"
 					              ItemsSource="{Binding Path=LoggingPeriodItemsSource}"
@@ -299,7 +300,7 @@
                                     </StackPanel>
                                 </materialDesign:Card>
                             </materialDesign:PopupBox>
-                            <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">Group control</TextBlock>
+                            <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr 'Group control'}"/>
                         </StackPanel>
                     </StackPanel>
                 </Grid>
@@ -387,7 +388,9 @@
                     <Button Grid.Row="1" Width="150" Height="45" BorderBrush="Transparent"
 					        Command="{Binding AggregateSensorEntriesCommand}" IsEnabled="{Binding AggregateButtonIsEnable}"
                             ToolTipService.ShowDuration="25000" Foreground="White" Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}"> 
-                        <TextBlock Text="{Binding AggregateButtonText}" TextWrapping="Wrap" TextAlignment="Center"/>
+                        <Viewbox Stretch="Uniform" StretchDirection="DownOnly" MaxHeight="32">
+                            <TextBlock Text="{Binding AggregateButtonText}" TextWrapping="Wrap" TextAlignment="Center"/>
+                        </Viewbox>
                         <Button.ToolTip>
                             <ToolTip MaxWidth="250">
                                 <TextBlock
@@ -397,7 +400,7 @@
                         </Button.ToolTip>
                     </Button>
                     <ComboBox Grid.Row="1" Margin="10 0 20 0" VerticalAlignment="Center" HorizontalAlignment="Right"
-					              materialDesign:HintAssist.Hint="Evaluation"
+					              materialDesign:HintAssist.Hint="{loc:Tr 'Evaluation'}"
                                   materialDesign:HintAssist.HintOpacity=".8"
 					              materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="105" Height="40"
                                   ToolTipService.ShowDuration="25000"

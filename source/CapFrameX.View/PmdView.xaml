@@ -214,7 +214,9 @@
 					</Grid>
 					<Button Grid.Row="2" Margin="0 0 0 2" Width="190" Height="40" Command="{Binding PoweneticsViewModel.ResetPmdMetricsCommand}"
 						Foreground="White" Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
-						Reset PMD Metrics
+						<Viewbox Stretch="Uniform" StretchDirection="DownOnly" MaxHeight="16">
+							<TextBlock Text="{loc:Tr 'Reset PMD Metrics'}"/>
+						</Viewbox>
 					</Button>
 					<Grid Grid.Row="2" Grid.Column="1" Margin="0 0 0 2" Background="Transparent">
 						<Border Style="{StaticResource SectionCard}" />
@@ -244,7 +246,7 @@
 							</ComboBox>
 						</StackPanel>
 						<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 20 0">
-							<TextBlock VerticalAlignment="Center" FontSize="14">PMD Service Status:</TextBlock>
+							<TextBlock VerticalAlignment="Center" FontSize="14" Text="{loc:Tr 'PMD Service Status:'}"/>
 							<TextBlock Margin="10 0 0 0" Width="Auto" VerticalAlignment="Center" Text="{Binding PmdCaptureStatus, Converter={StaticResource EnumDescriptionConverter}}" 
 								FontWeight="Bold" FontSize="14" Foreground="{Binding PoweneticsViewModel.PmdCaptureStatus, Converter={StaticResource PmdStatusColorConverter}}"/>
 						</StackPanel>
@@ -464,7 +466,9 @@
 					</Grid>
 					<Button Grid.Row="2" Margin="0 0 0 2" Width="190" Height="40" Command="{Binding BenchlabViewModel.ResetPmdMetricsCommand}"
 						Foreground="White" Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
-							Reset PMD Metrics
+							<Viewbox Stretch="Uniform" StretchDirection="DownOnly" MaxHeight="16">
+							<TextBlock Text="{loc:Tr 'Reset PMD Metrics'}"/>
+						</Viewbox>
 					</Button>
 					<Grid Grid.Row="2" Grid.Column="1" Margin="0 0 0 2" Background="Transparent">
 						<Border Style="{StaticResource SectionCard}" />
@@ -481,7 +485,7 @@
 							</ToggleButton>
 						</StackPanel>
 						<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 20 0">
-							<TextBlock VerticalAlignment="Center" FontSize="14">PMD Service Status:</TextBlock>
+							<TextBlock VerticalAlignment="Center" FontSize="14" Text="{loc:Tr 'PMD Service Status:'}"/>
 							<TextBlock Margin="10 0 0 0" Width="Auto" VerticalAlignment="Center" Text="{Binding BenchlabViewModel.PmdServiceStatus, Converter={StaticResource EnumDescriptionConverter}}" 
 								FontWeight="Bold" FontSize="14" Foreground="{Binding BenchlabViewModel.PmdServiceStatus, Converter={StaticResource PmdStatusColorConverter}}"/>
 						</StackPanel>

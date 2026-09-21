@@ -1408,17 +1408,17 @@ namespace CapFrameX.ViewModel
             bool hasRecords = ComparisonRecords.Any() || additionalRecord != null;
             if (useDisplayTimes)
             {
-                ComparisonMetricSourceDescription = "Source: Display changes (Average FPS: Presents)";
+                ComparisonMetricSourceDescription = CxLang.T("Source: Display changes (Average FPS: Presents)");
                 IsComparisonMetricSourceFallback = false;
             }
             else if (_appConfiguration.UseDisplayChangeMetrics && hasRecords)
             {
-                ComparisonMetricSourceDescription = "Source: Presents (display data unavailable)";
+                ComparisonMetricSourceDescription = CxLang.T("Source: Presents (display data unavailable)");
                 IsComparisonMetricSourceFallback = true;
             }
             else
             {
-                ComparisonMetricSourceDescription = "Source: Presents";
+                ComparisonMetricSourceDescription = CxLang.T("Source: Presents");
                 IsComparisonMetricSourceFallback = false;
             }
 
@@ -1430,14 +1430,14 @@ namespace CapFrameX.ViewModel
         {
             UpdateRowSeriesTitles();
 
-            string timingSource = _useDisplayChangeSamplesForComparison
-                ? "Display time" : "Present frametime";
-            string fpsSource = _useDisplayChangeSamplesForComparison
-                ? "Display FPS" : "Present FPS";
+            string timingSource = CxLang.T(_useDisplayChangeSamplesForComparison
+                ? "Display time" : "Present frametime");
+            string fpsSource = CxLang.T(_useDisplayChangeSamplesForComparison
+                ? "Display FPS" : "Present FPS");
 
             var frametimeAxis = ComparisonFrametimesModel?.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
             if (frametimeAxis != null)
-                frametimeAxis.Title = ShowGpuActiveLineCharts ? "GPU active time [ms]" : timingSource + " [ms]";
+                frametimeAxis.Title = ShowGpuActiveLineCharts ? CxLang.T("GPU active time [ms]") : timingSource + " [ms]";
 
             var fpsAxis = ComparisonFpsModel?.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
             if (fpsAxis != null)
@@ -1449,7 +1449,7 @@ namespace CapFrameX.ViewModel
 
             var distributionYAxis = ComparisonDistributionModel?.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
             if (distributionYAxis != null)
-                distributionYAxis.Title = timingSource + " Distribution [%]";
+                distributionYAxis.Title = timingSource + " " + CxLang.T("Distribution [%]");
 
             if (!ShowGpuActiveLineCharts)
             {
