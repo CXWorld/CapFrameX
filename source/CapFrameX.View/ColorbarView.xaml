@@ -120,7 +120,7 @@
                 MarkupText="{Binding AppNotification}" Hyperlink.RequestNavigate="Hyperlink_RequestNavigate">
 			</controls:MarkupTextBlock>
 			<Button Margin="10" BorderThickness="0" Width="100" Height="25"
-			    Command="{Binding CloseNotificationCommand}" Foreground="White" Background="LimeGreen" ToolTip="{loc:Tr 'Close this message and not show it again until there''s a new one'}">
+			    Command="{Binding CloseNotificationCommand}" Foreground="White" Background="LimeGreen" ToolTip="{loc:Tr 'Close this message and not show it again until there’s a new one'}">
 				<TextBlock Text="{loc:Tr 'Close'}" TextWrapping="Wrap" TextAlignment="Center"/>
 			</Button>
 		</StackPanel>
@@ -465,7 +465,7 @@
 														</Grid.ColumnDefinitions>
 														<StackPanel>
 															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'Use PC Latency'}"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Adds PresentMon''s MsPCLatency column to capture data. Capture service restart required.'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Adds PresentMon’s MsPCLatency column to capture data. Capture service restart required.'}"/>
 														</StackPanel>
 														<CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}"
 																  IsChecked="{Binding UsePcLatency, Mode=TwoWay}">
@@ -484,7 +484,7 @@
 														</Grid.ColumnDefinitions>
 														<StackPanel VerticalAlignment="Center">
 															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr 'PresentMon event buffer'}"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Size of PresentMon''s present event ring buffer. Restarts the capture service.'}"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr 'Size of PresentMon’s present event ring buffer. Restarts the capture service.'}"/>
 														</StackPanel>
 														<ComboBox Grid.Column="1" Width="130" Height="42" MaxDropDownHeight="140"
 																  VerticalAlignment="Center"
@@ -496,7 +496,7 @@
 																  SelectedItem="{Binding PresentMonCircularBufferSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
 															<ComboBox.ToolTip>
 																<ToolTip MaxWidth="400">
-																	<TextBlock TextWrapping="Wrap" Text="{loc:Tr 'Number of present events PresentMon keeps in its circular buffer (--set_circular_buffer_size). Raise it if frames are lost at very high frame rates; PresentMon''s own default is 2048.&#10;Changing this restarts the capture service, which takes a moment. The setting is locked while the service is down or a capture is running.'}"/>
+																	<TextBlock TextWrapping="Wrap" Text="{loc:Tr 'Number of present events PresentMon keeps in its circular buffer (--set_circular_buffer_size). Raise it if frames are lost at very high frame rates; PresentMon’s own default is 2048.&#10;Changing this restarts the capture service, which takes a moment. The setting is locked while the service is down or a capture is running.'}"/>
 																</ToolTip>
 															</ComboBox.ToolTip>
 														</ComboBox>
@@ -543,7 +543,7 @@
 															<CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}"
 																	  IsChecked="{Binding AmdFlmFrameGeneration, Mode=TwoWay}"
 																	  ToolTipService.ShowOnDisabled="True"
-																	  ToolTip="{loc:Tr 'Optimize FLM''s detection for games with Frame Generation enabled. Takes effect immediately (FLM restarts).'}"/>
+																	  ToolTip="{loc:Tr 'Optimize FLM’s detection for games with Frame Generation enabled. Takes effect immediately (FLM restarts).'}"/>
 														</Grid>
 													</Border>
 												</StackPanel>

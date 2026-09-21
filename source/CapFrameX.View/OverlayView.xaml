@@ -1198,7 +1198,7 @@
 													  IsChecked="{Binding HookOverlayUsePresentMonFrametimes, Mode=TwoWay}"
 													  Style="{StaticResource MaterialDesignCheckBox}"/>
 											<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
-													   Text="{loc:Tr 'Adds display-time data through the buffered PresentMon stream. Off uses the hook''s low-latency present-to-present data.'}"/>
+													   Text="{loc:Tr 'Adds display-time data through the buffered PresentMon stream. Off uses the hook’s low-latency present-to-present data.'}"/>
 										</StackPanel>
 									</StackPanel>
 

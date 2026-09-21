@@ -140,14 +140,14 @@ jobs:
           $version = (Get-Content "version\Version.txt" -Raw).Trim()
           $zip = Join-Path $env:GITHUB_WORKSPACE "CapFrameX-$version-portable.zip"
           $tag = "test-$version"
-          $notes = @"
-          Test build of the localization fork.
-
-          - Interface language and OSD language are chosen separately under Settings, Application.
-          - Russian is included. English remains the default.
-          - Extract the zip and run CapFrameX.exe. portable.json is already next to the executable.
-          - Requires the .NET 10 Desktop Runtime (x64).
-          "@
+          $notes = @(
+            "Test build of the localization fork."
+            ""
+            "- Interface language and OSD language are chosen separately under Settings, Application."
+            "- Russian is included. English remains the default."
+            "- Extract the zip and run CapFrameX.exe. portable.json is already next to the executable."
+            "- Requires the .NET 10 Desktop Runtime (x64)."
+          ) -join "`n"
           gh release delete $tag --yes --cleanup-tag 2>$null
           gh release create $tag $zip `
             --prerelease `

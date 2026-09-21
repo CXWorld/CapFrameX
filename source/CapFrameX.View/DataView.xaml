@@ -291,7 +291,7 @@
                                                     PreviewKeyDown="StutteringThreshold_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" ToolTipService.ShowDuration="25000">
                                                     <TextBox.ToolTip>
                                                         <ToolTip Width="300">
-                                                            <TextBlock Text="{loc:Tr 'FPS threshold for the low FPS time.&#xA;Every frametime that isn''t already counted as stutter and for which the converted FPS are lower than this threshold, is added to the low FPS time.'}"
+                                                            <TextBlock Text="{loc:Tr 'FPS threshold for the low FPS time.&#xA;Every frametime that isn’t already counted as stutter and for which the converted FPS are lower than this threshold, is added to the low FPS time.'}"
 										            TextWrapping="Wrap"/>
                                                         </ToolTip>
                                                     </TextBox.ToolTip>
