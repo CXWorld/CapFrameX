@@ -38,6 +38,7 @@ namespace CapFrameX.Test.Integration
                 Assert.AreEqual(expectedFrametime, ReadField<double>(sample, "FrametimeMs"));
                 Assert.AreEqual(expectedDisplayTime, ReadField<double>(sample, "DisplayTimeMs"));
             }
+            harness.Publish(fpsGraph, ftGraph, displayGraph); // the next OSD refresh
             Assert.AreEqual(125d, ReadField<double>(harness.Bridge, "_curFps"),
                 "The numeric FPS value must still update when its graph is disabled.");
         }
@@ -55,7 +56,35 @@ namespace CapFrameX.Test.Integration
             harness.Frames.OnNext(new[] { "12", "16", "1012" });
 
             Assert.AreEqual(0, harness.PendingSamples.Count);
-            Assert.AreEqual(100d, ReadField<double>(harness.Bridge, "_curFps"));
+            harness.Publish(false, false, false);
+            Assert.AreEqual(1000d / 12d, ReadField<double>(harness.Bridge, "_curFps"), 1e-9);
+        }
+
+        [TestMethod]
+        public void NumericValues_AreTheMeanOverEachRefreshInterval()
+        {
+            using var harness = new BridgeHarness();
+            harness.Publish(false, false, false);
+
+            harness.Frames.OnNext(new[] { "8", "10", "1000" });
+            harness.Frames.OnNext(new[] { "12", "20", "1012" });
+            Assert.AreEqual(0d, ReadField<double>(harness.Bridge, "_curFps"),
+                "Values change with the OSD refresh, not with every frame.");
+
+            harness.Publish(false, false, false);
+            Assert.AreEqual(10d, ReadField<double>(harness.Bridge, "_curFrametimeMs"), 1e-9);
+            Assert.AreEqual(100d, ReadField<double>(harness.Bridge, "_curFps"), 1e-9);
+            Assert.AreEqual(15d, ReadField<double>(harness.Bridge, "_curDisplayTimeMs"), 1e-9);
+
+            harness.Publish(false, false, false);
+            Assert.AreEqual(100d, ReadField<double>(harness.Bridge, "_curFps"), 1e-9,
+                "A refresh without frames (between two PresentMon waves) keeps the values.");
+
+            harness.Frames.OnNext(new[] { "20", "40", "1032" });
+            harness.Publish(false, false, false);
+            Assert.AreEqual(50d, ReadField<double>(harness.Bridge, "_curFps"), 1e-9,
+                "Each refresh covers only its own interval.");
+            Assert.AreEqual(40d, ReadField<double>(harness.Bridge, "_curDisplayTimeMs"), 1e-9);
         }
 
         [DataTestMethod]

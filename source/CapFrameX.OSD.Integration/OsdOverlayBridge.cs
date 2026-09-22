@@ -79,16 +79,18 @@ namespace CapFrameX.OSD.Integration
 
         // Current <APP> framerate/frametime derived from the PresentMon frame-data stream
         // (RTSS resolves these in the classic path; hook-free we compute them ourselves).
-        private const double FpsWindowMs = 1000.0;   // ~1s sliding window
+        // Like every other metric they change once per OSD refresh: each refresh shows the mean
+        // over the frames that arrived since the previous one, as the in-game hook does. A
+        // refresh without frames (PresentMon delivers in waves) keeps the previous values.
         private readonly object _fpsLock = new object();
-        private readonly Queue<double> _ftWindow = new Queue<double>();
-        private double _ftWindowSumMs;
+        private double _ftIntervalSumMs;
+        private int _ftIntervalCount;
         private double _curFps;
         private double _curFrametimeMs;
-        // Current display time (MsBetweenDisplayChange mean over the same ~1s window) for
+        // Current display time (MsBetweenDisplayChange mean over the same interval) for
         // the hook-free-only "Displaytime" entry; only displayed frames contribute.
-        private readonly Queue<double> _dtWindow = new Queue<double>();
-        private double _dtWindowSumMs;
+        private double _dtIntervalSumMs;
+        private int _dtIntervalCount;
         private double _curDisplayTimeMs;
         // Presenting app's graphics runtime/API (PresentMon "PresentRuntime", e.g. "DXGI") —
         // used to label the <APP> line; RTSS reads this from the 3D API, we from PresentMon.
@@ -224,13 +226,42 @@ namespace CapFrameX.OSD.Integration
             _curRuntime = null;
             lock (_fpsLock)
             {
-                _ftWindow.Clear();
-                _ftWindowSumMs = 0;
-                _curFps = 0;
-                _curFrametimeMs = 0;
-                _dtWindow.Clear();
-                _dtWindowSumMs = 0;
-                _curDisplayTimeMs = 0;
+                ResetFrametimeScalarLocked();
+                ResetDisplayTimeScalarLocked();
+            }
+        }
+
+        private void ResetFrametimeScalarLocked()
+        {
+            _ftIntervalSumMs = 0;
+            _ftIntervalCount = 0;
+            _curFps = 0;
+            _curFrametimeMs = 0;
+        }
+
+        private void ResetDisplayTimeScalarLocked()
+        {
+            _dtIntervalSumMs = 0;
+            _dtIntervalCount = 0;
+            _curDisplayTimeMs = 0;
+        }
+
+        // One OSD refresh: the frames collected since the previous one become the shown means.
+        private void CloseScalarIntervalLocked()
+        {
+            if (_ftIntervalCount > 0)
+            {
+                _curFrametimeMs = _ftIntervalSumMs / _ftIntervalCount;
+                _curFps = 1000.0 / _curFrametimeMs;
+                _ftIntervalSumMs = 0;
+                _ftIntervalCount = 0;
+            }
+
+            if (_dtIntervalCount > 0)
+            {
+                _curDisplayTimeMs = _dtIntervalSumMs / _dtIntervalCount;
+                _dtIntervalSumMs = 0;
+                _dtIntervalCount = 0;
             }
         }
 
@@ -285,13 +316,8 @@ namespace CapFrameX.OSD.Integration
             UpdateFrameSubscription(false);
             lock (_fpsLock)
             {
-                _ftWindow.Clear();
-                _ftWindowSumMs = 0;
-                _curFps = 0;
-                _curFrametimeMs = 0;
-                _dtWindow.Clear();
-                _dtWindowSumMs = 0;
-                _curDisplayTimeMs = 0;
+                ResetFrametimeScalarLocked();
+                ResetDisplayTimeScalarLocked();
             }
         }
 
@@ -314,7 +340,11 @@ namespace CapFrameX.OSD.Integration
             // The "<APP>" group placeholder (RTSS substitutes the app via the 3D API) is
             // resolved to the PresentMon graphics runtime, falling back to "Performance".
             double fps, ft, dt;
-            lock (_fpsLock) { fps = _curFps; ft = _curFrametimeMs; dt = _curDisplayTimeMs; }
+            lock (_fpsLock)
+            {
+                CloseScalarIntervalLocked();
+                fps = _curFps; ft = _curFrametimeMs; dt = _curDisplayTimeMs;
+            }
             var appLabel = _curRuntime;
             if (string.IsNullOrWhiteSpace(appLabel)) appLabel = "Performance";
             for (int i = 0; i < list.Count; i++)
@@ -416,24 +446,12 @@ namespace CapFrameX.OSD.Integration
                 return;
             }
 
-            // Do not expose an old window when a profile re-enables a scalar after it has spent
-            // time disabled. The next completed frame repopulates it immediately.
+            // Do not expose an old mean when a profile re-enables a scalar after it has spent
+            // time disabled. The next refresh with frames repopulates it.
             lock (_fpsLock)
             {
-                if (enableFrametimeScalar)
-                {
-                    _ftWindow.Clear();
-                    _ftWindowSumMs = 0;
-                    _curFps = 0;
-                    _curFrametimeMs = 0;
-                }
-
-                if (enableDisplayTimeScalar)
-                {
-                    _dtWindow.Clear();
-                    _dtWindowSumMs = 0;
-                    _curDisplayTimeMs = 0;
-                }
+                if (enableFrametimeScalar) ResetFrametimeScalarLocked();
+                if (enableDisplayTimeScalar) ResetDisplayTimeScalarLocked();
             }
         }
 
@@ -620,9 +638,9 @@ namespace CapFrameX.OSD.Integration
                 if (pushDisplayTimeGraph) _osd.PushDisplayTime(dc);
             }
 
-            // Current framerate/frametime for the <APP> entries: mean frametime over a ~1s
-            // window; FPS = 1000 * frames / window_ms  (equivalently 1000 / mean_frametime).
-            // The Displaytime entry uses the same windowed mean over its own samples.
+            // Current framerate/frametime for the <APP> entries: collect this refresh interval's
+            // frametimes; OnEntries turns them into the mean (FPS = 1000 / mean frametime).
+            // The Displaytime entry collects its own samples the same way.
             bool updateFrametimeScalar = (requirements & NeedFrametimeScalar) != 0 &&
                 hasFrametimeSample;
             bool updateDisplayTimeScalar = (requirements & NeedDisplayTimeValue) != 0 &&
@@ -633,28 +651,14 @@ namespace CapFrameX.OSD.Integration
             {
                 if (updateFrametimeScalar)
                 {
-                    _ftWindow.Enqueue(ms);
-                    _ftWindowSumMs += ms;
-                    // keep ~1s of history, but hard-cap the sample count so pathologically small
-                    // frametimes (very high FPS) can't grow the queue without bound
-                    while (_ftWindow.Count > 1 && (_ftWindowSumMs > FpsWindowMs || _ftWindow.Count > 4000))
-                        _ftWindowSumMs -= _ftWindow.Dequeue();
-                    int n = _ftWindow.Count;
-                    if (n > 0 && _ftWindowSumMs > 0)
-                    {
-                        _curFrametimeMs = _ftWindowSumMs / n;
-                        _curFps = 1000.0 * n / _ftWindowSumMs;
-                    }
+                    _ftIntervalSumMs += ms;
+                    _ftIntervalCount++;
                 }
 
                 if (updateDisplayTimeScalar)
                 {
-                    _dtWindow.Enqueue(dc);
-                    _dtWindowSumMs += dc;
-                    while (_dtWindow.Count > 1 && (_dtWindowSumMs > FpsWindowMs || _dtWindow.Count > 4000))
-                        _dtWindowSumMs -= _dtWindow.Dequeue();
-                    if (_dtWindow.Count > 0 && _dtWindowSumMs > 0)
-                        _curDisplayTimeMs = _dtWindowSumMs / _dtWindow.Count;
+                    _dtIntervalSumMs += dc;
+                    _dtIntervalCount++;
                 }
             }
         }
