@@ -32,6 +32,10 @@ namespace CapFrameX.OSD.Integration
             UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
             MaxDepth = 16
         };
+        internal static readonly JsonSerializerOptions CompactJsonOptions = new JsonSerializerOptions(JsonOptions)
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
+        };
         private readonly object _gate = new object();
         private readonly SemaphoreSlim _ioGate = new SemaphoreSlim(1);
         private readonly IAppConfiguration _configuration;
@@ -39,18 +43,25 @@ namespace CapFrameX.OSD.Integration
         private readonly string _folder, _appVersion, _appChannel;
         private readonly Uri _endpoint;
         private readonly HttpClient _http;
-        private readonly Timer _timer;
+        private readonly bool _startTimer;
+        private readonly TimeProvider _timeProvider;
+        private ITimer _timer;
         private readonly Dictionary<int, Session> _sessions = new Dictionary<int, Session>();
         private readonly Queue<Pending> _pending = new Queue<Pending>();
         private readonly Func<int, string, string, CancellationToken, HookProfileReportContext> _capture;
         private readonly Func<long> _tickCount;
         private readonly Func<DateTime> _utcNow;
         private CancellationTokenSource _consentCancellation = new CancellationTokenSource();
-        private bool _consented, _disposed;
+        private bool _consented, _disposed, _disposing;
         private int _epoch, _pumpActive;
         private bool _purgeRequired;
         private Guid _participant;
         private DateTime _retryAfterUtc;
+
+        // The default path must return before locks, timestamps, strings or report allocations.
+        // Record still checks consent under the lock to handle a concurrent revocation.
+        internal bool IsEnabled => Volatile.Read(ref _consented) &&
+            !Volatile.Read(ref _disposed) && !Volatile.Read(ref _disposing);
 
         private sealed class Session
         {
@@ -67,6 +78,8 @@ namespace CapFrameX.OSD.Integration
             internal string ContextKey;
             internal int ContextRevision, CapturedContextRevision;
             internal DateTime ContextReadUtc;
+            internal string WindowState;
+            internal long WindowReadMs;
             internal List<ReportEvent> Events = new List<ReportEvent>();
         }
 
@@ -85,13 +98,15 @@ namespace CapFrameX.OSD.Integration
         internal HookProfileReportService(IAppConfiguration configuration, string configurationFolder,
             string updateCatalogUri, string appVersion, string appChannel, HttpMessageHandler handler,
             Func<int, string, string, CancellationToken, HookProfileReportContext> capture, bool startTimer,
-            Func<long> tickCount = null, Func<DateTime> utcNow = null)
+            Func<long> tickCount = null, Func<DateTime> utcNow = null, TimeProvider timeProvider = null)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _folder = Path.Combine(configurationFolder, "OverlayProfileReports");
             _appVersion = appVersion;
             _appChannel = appChannel;
             _capture = capture;
+            _startTimer = startTimer;
+            _timeProvider = timeProvider ?? TimeProvider.System;
             _tickCount = tickCount ?? (() => Environment.TickCount64);
             _utcNow = utcNow ?? (() => DateTime.UtcNow);
             _endpoint = ResolveEndpoint(updateCatalogUri);
@@ -100,20 +115,20 @@ namespace CapFrameX.OSD.Integration
                 AllowAutoRedirect = false, UseCookies = false
             }) { Timeout = TimeSpan.FromSeconds(15) };
             _consented = configuration.ShareOverlayCompatibilityProfiles;
+            _purgeRequired = !_consented;
             _consentSubscription = configuration.OnValueChanged
                 .Where(c => c.key == nameof(IAppConfiguration.ShareOverlayCompatibilityProfiles))
                 .Subscribe(c => ChangeConsent((bool)c.value));
-            if (startTimer)
-                _timer = new Timer(_ => _ = PumpSafelyAsync(), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+            lock (_gate) UpdateTimerLocked();
             // Also clear leftovers from a previously opted-out/crashed application on startup.
-            if (!_consented) _ = PurgeSafelyAsync();
+            if (_purgeRequired) _ = PurgeSafelyAsync();
         }
 
         internal static Uri ResolveEndpoint(string catalogUri)
         {
             if (!Uri.TryCreate(catalogUri, UriKind.Absolute, out var catalog) ||
                 catalog.Scheme != Uri.UriSchemeHttps || !string.IsNullOrEmpty(catalog.UserInfo)) return null;
-            return new Uri(catalog.GetLeftPart(UriPartial.Authority) + "/api/v1/overlay-reports");
+            return new Uri(catalog.GetLeftPart(UriPartial.Authority) + "/api/v2/overlay-reports");
         }
 
         private void ChangeConsent(bool consented)
@@ -121,7 +136,7 @@ namespace CapFrameX.OSD.Integration
             lock (_gate)
             {
                 if (_disposed || consented == _consented) return;
-                _consented = consented;
+                Volatile.Write(ref _consented, consented);
                 _epoch++;
                 _consentCancellation.Cancel();
                 _consentCancellation = new CancellationTokenSource();
@@ -130,17 +145,29 @@ namespace CapFrameX.OSD.Integration
                 _participant = Guid.Empty;
                 _purgeRequired = true;
                 _retryAfterUtc = default;
+                UpdateTimerLocked();
             }
             // Always purge the old consent epoch, including an immediate off/on toggle.
             _ = PurgeSafelyAsync();
         }
 
+        private void UpdateTimerLocked()
+        {
+            _timer?.Dispose();
+            _timer = null;
+            if (_startTimer && IsEnabled && _endpoint != null)
+                _timer = _timeProvider.CreateTimer(static state =>
+                    _ = ((HookProfileReportService)state).PumpSafelyAsync(), this,
+                    TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+        }
+
         internal void Begin(int pid, string gameName, string gamePath, string hookPath,
             string hookBuild, string api, string attachMode, ReportProfile profile)
         {
+            if (!IsEnabled) return;
             lock (_gate)
             {
-                if (!_consented || _disposed || pid <= 0) return;
+                if (!_consented || _disposed || _disposing || pid <= 0) return;
                 if (!_sessions.TryGetValue(pid, out var session))
                 {
                     if (_sessions.Count >= 4) EndLocked(_sessions.Keys.First(), "target-limit");
@@ -159,9 +186,10 @@ namespace CapFrameX.OSD.Integration
 
         internal void Record(int pid, ReportEvent observation, string statusKey = null)
         {
+            if (!IsEnabled) return;
             lock (_gate)
             {
-                if (!_consented || _disposed || !_sessions.TryGetValue(pid, out var session)) return;
+                if (!_consented || _disposed || _disposing || !_sessions.TryGetValue(pid, out var session)) return;
                 long now = _tickCount();
                 observation.ElapsedMs = Math.Max(0, now - session.Started);
                 if (statusKey != null)
@@ -206,13 +234,17 @@ namespace CapFrameX.OSD.Integration
             if (previous?.Native != null && current.Native != null)
                 return current.Native.CoverageAttempts < previous.Native.CoverageAttempts ||
                     current.Native.CoverageSubmitted < previous.Native.CoverageSubmitted ||
-                    current.Native.CoverageMissed < previous.Native.CoverageMissed;
+                    current.Native.CoverageMissed < previous.Native.CoverageMissed ||
+                    previous.Native.Progress != null && current.Native.Progress != null &&
+                    (current.Native.Progress.Presents < previous.Native.Progress.Presents ||
+                     current.Native.Progress.Draws < previous.Native.Progress.Draws);
             return previous?.Vulkan != null && current.Vulkan != null &&
                 current.Vulkan.Successes < previous.Vulkan.Successes;
         }
 
         internal void End(int pid, string reason)
         {
+            if (!IsEnabled) return;
             lock (_gate) EndLocked(pid, reason);
         }
 
@@ -230,6 +262,7 @@ namespace CapFrameX.OSD.Integration
             foreach (var sample in session.Samples.Values) AppendSampleLocked(session, sample.Latest);
             var report = new OverlayProfileReport
             {
+                SchemaVersion = 2,
                 ReportId = Guid.NewGuid(), SessionId = session.Id, Sequence = ++session.Sequence,
                 CreatedUtc = _utcNow(), AppVersion = _appVersion, AppChannel = _appChannel,
                 OsVersion = Environment.OSVersion.Version.ToString(),
@@ -259,7 +292,7 @@ namespace CapFrameX.OSD.Integration
 
         private async Task PumpSafelyAsync()
         {
-            if (Interlocked.Exchange(ref _pumpActive, 1) != 0) return;
+            if (!IsEnabled || Interlocked.Exchange(ref _pumpActive, 1) != 0) return;
             try { await FlushAsync().ConfigureAwait(false); }
             catch (Exception ex) { Log.Debug("Overlay reports: background collection unavailable ({type})", ex.GetType().Name); }
             finally { Volatile.Write(ref _pumpActive, 0); }
@@ -267,6 +300,10 @@ namespace CapFrameX.OSD.Integration
 
         internal async Task FlushAsync(bool upload = true)
         {
+            // A one-time purge can still be pending after revocation. Once it is complete,
+            // disabled callers do not acquire the I/O gate or touch the report directory.
+            if ((!Volatile.Read(ref _consented) || Volatile.Read(ref _disposed)) &&
+                !Volatile.Read(ref _purgeRequired)) return;
             await _ioGate.WaitAsync().ConfigureAwait(false);
             try
             {
@@ -324,7 +361,7 @@ namespace CapFrameX.OSD.Integration
                     pending.Report.Gpus = context.Gpus;
                     pending.Report.ContextStatus = context.Status;
                     pending.Report.ContextObservedUtc = session.ContextReadUtc;
-                    byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(pending.Report, JsonOptions);
+                    byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(pending.Report, CompactJsonOptions);
                     if (bytes.Length > MaxReportBytes)
                     {
                         Log.Debug("Overlay reports: oversized checkpoint discarded");
@@ -353,12 +390,17 @@ namespace CapFrameX.OSD.Integration
                     OverlayProfileReport report;
                     try { report = JsonSerializer.Deserialize<OverlayProfileReport>(bytes, JsonOptions); }
                     catch (JsonException) { file.Delete(); continue; }
-                    if (report == null || report.SchemaVersion != 1 || report.ConsentVersion != 1 ||
+                    if (report == null || (report.SchemaVersion != 1 && report.SchemaVersion != 2) || report.ConsentVersion != 1 ||
                         report.ParticipantId != _participant) { file.Delete(); continue; }
-                    using var content = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(report, JsonOptions));
+                    using var content = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(report,
+                        report.SchemaVersion == 1 ? JsonOptions : CompactJsonOptions));
                     content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
                     HttpResponseMessage response;
-                    try { response = await _http.PostAsync(_endpoint, content, token).ConfigureAwait(false); }
+                    // A server not upgraded yet returns 404/405 for v2: retain and retry the
+                    // report, instead of losing it to v1's strict unknown-field rejection.
+                    Uri endpoint = report.SchemaVersion == 1
+                        ? new Uri(_endpoint.GetLeftPart(UriPartial.Authority) + "/api/v1/overlay-reports") : _endpoint;
+                    try { response = await _http.PostAsync(endpoint, content, token).ConfigureAwait(false); }
                     catch (HttpRequestException) { _retryAfterUtc = _utcNow().AddMinutes(5); break; }
                     catch (OperationCanceledException) when (!token.IsCancellationRequested)
                     { _retryAfterUtc = _utcNow().AddMinutes(5); break; }
@@ -423,6 +465,28 @@ namespace CapFrameX.OSD.Integration
             token.ThrowIfCancellationRequested();
             lock (_gate)
             {
+                if (_sessions.TryGetValue(session.Pid, out var active) && ReferenceEquals(active, session) &&
+                    session.Context != null &&
+                    (session.Context.Status == "complete" || session.Context.Status == "gpu-unavailable") &&
+                    (context.Status == "complete" || context.Status == "gpu-unavailable"))
+                {
+                    var before = session.Context.Modules.GroupBy(m => m.Name, StringComparer.OrdinalIgnoreCase)
+                        .ToDictionary(g => g.Key, g => string.Join("|", g.Select(m => JsonSerializer.Serialize(m, JsonOptions))
+                            .OrderBy(m => m, StringComparer.Ordinal)), StringComparer.OrdinalIgnoreCase);
+                    var after = context.Modules.GroupBy(m => m.Name, StringComparer.OrdinalIgnoreCase)
+                        .ToDictionary(g => g.Key, g => string.Join("|", g.Select(m => JsonSerializer.Serialize(m, JsonOptions))
+                            .OrderBy(m => m, StringComparer.Ordinal)), StringComparer.OrdinalIgnoreCase);
+                    var change = new ReportModuleChange
+                    {
+                        Added = after.Keys.Except(before.Keys, StringComparer.OrdinalIgnoreCase).OrderBy(n => n).ToList(),
+                        Removed = before.Keys.Except(after.Keys, StringComparer.OrdinalIgnoreCase).OrderBy(n => n).ToList(),
+                        Updated = after.Keys.Where(n => before.TryGetValue(n, out string old) && old != after[n])
+                            .OrderBy(n => n).ToList()
+                    };
+                    if (change.Added.Count + change.Removed.Count + change.Updated.Count > 0)
+                        AddLocked(session, new ReportEvent { Kind = "module-change", ModuleChange = change,
+                            ElapsedMs = Math.Max(0, _tickCount() - session.Started) });
+                }
                 if (key != session.ContextKey) session.Changed = true;
                 session.Context = context;
                 session.ContextKey = key;
@@ -462,7 +526,7 @@ namespace CapFrameX.OSD.Integration
             // lock through deletion so an off/on toggle cannot reuse the previous identity.
             lock (_gate)
             {
-                if (!_purgeRequired && _consented) return;
+                if (!_purgeRequired) return;
                 if (Directory.Exists(_folder) && (File.GetAttributes(_folder) & FileAttributes.ReparsePoint) == 0)
                     foreach (string file in Directory.EnumerateFiles(_folder))
                     {
@@ -477,10 +541,11 @@ namespace CapFrameX.OSD.Integration
 
         public void Dispose()
         {
-            _timer?.Dispose();
             lock (_gate)
             {
-                if (_disposed) return;
+                if (_disposed || _disposing) return;
+                Volatile.Write(ref _disposing, true);
+                UpdateTimerLocked();
                 _consentCancellation.Cancel();
                 _consentCancellation = new CancellationTokenSource();
                 foreach (int pid in _sessions.Keys.ToArray()) EndLocked(pid, "host-stopped");
@@ -491,7 +556,7 @@ namespace CapFrameX.OSD.Integration
             catch (AggregateException) { }
             lock (_gate)
             {
-                _disposed = true;
+                Volatile.Write(ref _disposed, true);
                 _consentCancellation.Cancel();
                 _pending.Clear();
             }

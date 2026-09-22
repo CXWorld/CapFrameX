@@ -571,7 +571,26 @@ namespace CapFrameX.OSD.Integration
                     string.IsNullOrWhiteSpace(reason) ? "none" : reason);
                 if (activeChanged) _hookFreeFallbackStream.OnNext(active);
                 UpdateHookVisibility();
+                ReportHostState();
             }
+        }
+
+        private void ReportHostState()
+        {
+            if (_profileReports?.IsEnabled != true) return;
+            int pid;
+            string runtime, source, reason;
+            lock (_stateGate)
+            {
+                pid = _currentPid;
+                runtime = _currentRuntime;
+                reason = _hookFreeFallbackReason;
+                source = !_hookFreeFallbackActive ? "none" :
+                    !string.IsNullOrEmpty(_targetBlockReason) ? "target-policy" :
+                    !string.IsNullOrEmpty(_vulkanFallbackReason) ? "vulkan" :
+                    !string.IsNullOrEmpty(_nativeFallbackReason) ? "native" : "runtime";
+            }
+            _profileReports.ObserveHost(pid, runtime, _appConfiguration.IsOverlayActive, source, reason);
         }
 
         internal static bool ShouldUseVulkanStatus(string runtime, bool hasVulkanStatus,
@@ -775,10 +794,13 @@ namespace CapFrameX.OSD.Integration
             HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Plan(evidence,
                 catalog, learned, _hookBuildHash.Value, _autoCompatibility);
             var session = new HookCompatibilityProbeSession(pid, plan);
-            _profileReports?.Begin(pid, processName, gamePath,
-                HookInjector.TryGetIsWow64(pid, out bool reportWow64, out _) && reportWow64 ? _dllPathX86 : _dllPath,
-                _hookBuildHash.Value, runtime, attachMode.ToString(),
-                HookProfileReportService.Profile(plan.StartStage, evidence.Signature, plan.Ladder));
+            if (_profileReports?.IsEnabled == true)
+            {
+                _profileReports.Begin(pid, processName, gamePath,
+                    HookInjector.TryGetIsWow64(pid, out bool reportWow64, out _) && reportWow64 ? _dllPathX86 : _dllPath,
+                    _hookBuildHash.Value, runtime, attachMode.ToString(),
+                    HookProfileReportService.Profile(plan.StartStage, evidence.Signature, plan.Ladder));
+            }
             lock (_stateGate)
             {
                 _probeSession = session;
@@ -841,6 +863,11 @@ namespace CapFrameX.OSD.Integration
                             RecordStageOutcome(pid, session, action.Stage, verified: true,
                                 pending: null, exhausted: false, verdict: "Success",
                                 detail: null);
+                            break;
+                        case HookProbeActionKind.InvalidateVerification:
+                            RecordStageOutcome(pid, session, action.Stage, verified: false,
+                                pending: null, exhausted: false, verdict: action.Verdict.ToString(),
+                                detail: null, countAttempt: false);
                             break;
                         case HookProbeActionKind.ScheduleRestart:
                             RecordStageOutcome(pid, session, session.CurrentStage,
@@ -912,7 +939,7 @@ namespace CapFrameX.OSD.Integration
 
         private void RecordStageOutcome(int pid, HookCompatibilityProbeSession session,
             HookCompatibilityStage stage, bool verified, HookCompatibilityStage pending,
-            bool exhausted, string verdict, string detail)
+            bool exhausted, string verdict, string detail, bool countAttempt = true)
         {
             if (!TryReadProcessIdentity(pid, out string processName, out string executablePath))
             {
@@ -945,7 +972,7 @@ namespace CapFrameX.OSD.Integration
                     e.SetPending(pending, detail);
                     e.LastVerdict = verdict;
                     e.LastVerdictDetail = detail;
-                    e.Attempts++;
+                    if (countAttempt) e.Attempts++;
                     e.Ladder = ladder;
                 });
             _profileReports?.ProfileOutcome(pid, entry);
@@ -1755,8 +1782,10 @@ namespace CapFrameX.OSD.Integration
             }
 
             if (legacyReason != null) SetNativeFallbackReason(pid, legacyReason);
-            _profileReports?.Observe(pid, hasNativeStatus, native, nativeState, nowTickMs,
-                _appConfiguration.IsOverlayActive, _hookFreeFallbackActive);
+            if (_profileReports?.IsEnabled == true)
+                _profileReports.Observe(pid, hasNativeStatus, native, nativeState, nowTickMs,
+                    _appConfiguration.IsOverlayActive, _hookFreeFallbackActive);
+            ReportHostState();
             ExecuteProbeActions(pid, session, actions);
         }
 
@@ -2224,9 +2253,10 @@ namespace CapFrameX.OSD.Integration
                 }
                 else
                 {
-                    ulong nowTickMs = HookStatusProbe.CurrentTickCount;
                     bool hasDxgiStatus = HookStatusProbe.TryRead(pid,
                         out NativeHookStatusSnapshot native, out string dxgiProbeError);
+                    // Timestamp after the read: a draw completed during the read is not in the future.
+                    ulong nowTickMs = HookStatusProbe.CurrentTickCount;
                     HookOverlayStatus nativeStatus = hasDxgiStatus
                         ? HookOverlayStatusEvaluator.EvaluateNative(pid, runtime, native,
                             nowTickMs)

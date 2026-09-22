@@ -36,6 +36,7 @@ namespace CapFrameX.OSD.Integration
         public ulong InitializingSinceTickMs;
         public ulong NoQueueSinceTickMs;
         public ulong SuccessSinceTickMs;
+        public bool RenderProgressConfirmed;
         /// <summary>Observation time that was not paused by an inconclusive sample.</summary>
         public ulong ActiveElapsedMs;
         /// <summary>Wall time since the stage started observing, pauses included.</summary>
@@ -120,9 +121,12 @@ namespace CapFrameX.OSD.Integration
                 bool coverageProven = stage == null || !stage.IsGeneric ||
                     snapshot.Version < HookStatusProbe.Version2 ||
                     snapshot.CoverageSubmitted > 0;
-                if (coverageProven &&
+                if (coverageProven && timings.RenderProgressConfirmed &&
                     Elapsed(timings.SuccessSinceTickMs, timings.NowTickMs) >= ProbeSuccessConfirmMs)
                     return HookCompatibilityVerdict.Success;
+                if (snapshot.Progress.HasValue && !timings.RenderProgressConfirmed &&
+                    timings.ActiveElapsedMs >= ProbeStageBudgetMs)
+                    return HookCompatibilityVerdict.RendererStalled;
                 return HookCompatibilityVerdict.Pending;
             }
 

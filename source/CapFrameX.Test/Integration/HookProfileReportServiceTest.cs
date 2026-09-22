@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reactive.Subjects;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,7 +25,7 @@ namespace CapFrameX.Test.Integration
         private string _folder;
         private Mock<IAppConfiguration> _configuration;
         private Subject<(string key, object value)> _changes;
-        private int _contextReads;
+        private int _contextReads, _timestampReads;
         private long _elapsedMs;
         private DateTime _startedUtc;
 
@@ -46,7 +47,8 @@ namespace CapFrameX.Test.Integration
         }
 
         private HookProfileReportService Create(Handler handler, bool consent = true,
-            Func<HookProfileReportContext> contextFactory = null)
+            Func<HookProfileReportContext> contextFactory = null, bool startTimer = false,
+            TimeProvider timeProvider = null)
         {
             _configuration.SetupGet(c => c.ShareOverlayCompatibilityProfiles).Returns(consent);
             return new HookProfileReportService(_configuration.Object, _folder,
@@ -64,7 +66,8 @@ namespace CapFrameX.Test.Integration
                         Gpus = new List<ReportGpu> { new ReportGpu { Name = "Test GPU", DriverVersion = "1.2.3", VendorId = "10DE" } },
                         Status = "complete"
                     };
-                }, false, () => _elapsedMs, () => _startedUtc.AddMilliseconds(_elapsedMs));
+                }, startTimer, () => { _timestampReads++; return _elapsedMs; },
+                () => { _timestampReads++; return _startedUtc.AddMilliseconds(_elapsedMs); }, timeProvider);
         }
 
         private static void Begin(HookProfileReportService service, int pid = 42)
@@ -305,6 +308,115 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task DisabledReportEntryPoints_DoNotAllocateOrReadDiagnostics(bool afterRevocation)
+        {
+            var handler = new Handler();
+            using var service = Create(handler, consent: afterRevocation);
+            if (afterRevocation)
+            {
+                Begin(service);
+                _changes.OnNext((nameof(IAppConfiguration.ShareOverlayCompatibilityProfiles), false));
+            }
+            await service.FlushAsync(); // Finish the one-time cleanup before measuring steady state.
+            Assert.IsFalse(service.IsEnabled);
+            int windowReads = 0;
+            Func<int, string> window = _ => { windowReads++; return "foreground"; };
+            int timestampsBefore = _timestampReads;
+
+            // Include every reporting entry point, with native counters present. A late gate
+            // would allocate report objects/enum strings or dereference the absent profile/session.
+            var snapshot = new NativeHookStatusSnapshot
+            {
+                Version = 2, Api = NativeHookApi.D3D12,
+                Progress = new HookRenderProgress { Generation = 1, Presents = 100, Draws = 100 }
+            };
+            void Sample()
+            {
+                service.Observe(42, true, snapshot, EHookOverlayStatus.Active, 10000, true, false);
+                service.ObserveVulkan(42, default, VulkanProbeAction.None, 10000, true, false, 1920, 1080);
+                service.ObserveHost(42, "DXGI", true, "none", null, window);
+                service.Injection(42, false, true, false);
+                service.Action(42, null, null);
+                service.ProfileOutcome(42, null);
+                service.Begin(42, "game", null, null, null, "DXGI", "Late", null);
+                service.Record(42, null);
+                service.End(42, "target-changed");
+                service.FlushAsync().GetAwaiter().GetResult();
+            }
+            long allocated = AllocatedForSamples(Sample);
+
+            Assert.AreEqual(0L, allocated, "Disabled reporting must not construct diagnostic payloads.");
+            Assert.AreEqual(timestampsBefore, _timestampReads);
+            Assert.AreEqual(0, windowReads);
+            Assert.AreEqual(0, _contextReads);
+            Assert.AreEqual(0, handler.Bodies.Count);
+            Assert.IsFalse(Directory.Exists(_folder));
+            Console.WriteLine($"Disabled reporting: 10,000 iterations, {allocated} allocated bytes.");
+        }
+
+        // Compile the measurement loop directly to optimized code. Tiered compilation's
+        // first on-stack replacement otherwise contributes its own one-time allocation.
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.AggressiveOptimization)]
+        private static long AllocatedForSamples(Action sample)
+        {
+            for (int i = 0; i < 1000; i++)
+            {
+                sample();
+                _ = GC.GetAllocatedBytesForCurrentThread();
+            }
+            long before = GC.GetAllocatedBytesForCurrentThread();
+            for (int i = 0; i < 10000; i++) sample();
+            return GC.GetAllocatedBytesForCurrentThread() - before;
+        }
+
+        [TestMethod]
+        public async Task ReportTimer_OnlyRunsWithConsentAndStopsOnRevocationAndDispose()
+        {
+            var scheduled = new List<(TimerCallback Callback, object State, Mock<ITimer> Timer)>();
+            var clock = new Mock<TimeProvider>();
+            clock.Setup(c => c.CreateTimer(It.IsAny<TimerCallback>(), It.IsAny<object>(),
+                It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
+                .Returns((TimerCallback callback, object state, TimeSpan due, TimeSpan period) =>
+                {
+                    Assert.AreEqual(TimeSpan.FromSeconds(30), due);
+                    Assert.AreEqual(TimeSpan.FromSeconds(30), period);
+                    var timer = new Mock<ITimer>();
+                    scheduled.Add((callback, state, timer));
+                    return timer.Object;
+                });
+            var handler = new Handler();
+            using var service = Create(handler, consent: false, startTimer: true, timeProvider: clock.Object);
+            Assert.AreEqual(0, scheduled.Count, "Default-off must not create a scheduled worker.");
+
+            _changes.OnNext((nameof(IAppConfiguration.ShareOverlayCompatibilityProfiles), true));
+            Assert.AreEqual(1, scheduled.Count);
+            Begin(service);
+            await service.FlushAsync();
+            Assert.AreEqual(1, handler.Bodies.Count);
+
+            _changes.OnNext((nameof(IAppConfiguration.ShareOverlayCompatibilityProfiles), false));
+            scheduled[0].Timer.Verify(t => t.Dispose(), Times.Once);
+            await service.FlushAsync();
+            int reads = _timestampReads;
+            scheduled[0].Callback(scheduled[0].State); // A callback queued before revocation is inert.
+            Assert.AreEqual(reads, _timestampReads);
+            Assert.AreEqual(1, handler.Bodies.Count);
+
+            _changes.OnNext((nameof(IAppConfiguration.ShareOverlayCompatibilityProfiles), true));
+            Assert.AreEqual(2, scheduled.Count);
+            Begin(service, 43);
+            await service.FlushAsync();
+            Assert.AreEqual(2, handler.Bodies.Count);
+            service.Dispose();
+            scheduled[1].Timer.Verify(t => t.Dispose(), Times.Once);
+            Assert.IsFalse(service.IsEnabled);
+            scheduled[1].Callback(scheduled[1].State);
+            Assert.AreEqual(2, handler.Bodies.Count);
+        }
+
+        [TestMethod]
         public async Task Consent_SendsProfilesFailuresAndFgTransitionsWithoutPrivateFields()
         {
             var handler = new Handler();
@@ -340,7 +452,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual("1.2.3.4", report.Game.FileVersion);
             Assert.AreEqual("10DE", report.Gpus.Single().VendorId);
             Assert.IsTrue(report.Events.All(e => e.ElapsedMs <= report.DurationMs));
-            Assert.AreEqual("https://updates.capframex.com/api/v1/overlay-reports", handler.Uris.Single());
+            Assert.AreEqual("https://updates.capframex.com/api/v2/overlay-reports", handler.Uris.Single());
         }
 
         [TestMethod]
@@ -463,6 +575,107 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual("host-stopped", report.EndReason);
             Assert.AreEqual("host-stopped-before-context", report.ContextStatus);
             Assert.IsTrue(report.Events.Any(e => e.Verdict == "NoQueue"));
+        }
+
+        [TestMethod]
+        public async Task ProgressAndHostState_StableHourIsBoundedAndDoesNotStreamFrames()
+        {
+            var handler = new Handler();
+            using var service = Create(handler);
+            Begin(service);
+            for (int i = 0; i <= 360; i++)
+            {
+                _elapsedMs = i * 10000;
+                long now = _elapsedMs + 10000;
+                service.Observe(42, true, new NativeHookStatusSnapshot
+                {
+                    Version = 2, Flags = (NativeHookStatusFlags)127, MetricsEntryCount = 53,
+                    LastHeartbeatTickMs = now, Progress = new HookRenderProgress
+                    {
+                        Generation = 1, Presents = (ulong)i * 600, Draws = (ulong)i * 600,
+                        LastDrawTickMs = now, RouteSource = 1
+                    }
+                }, EHookOverlayStatus.Active, (ulong)now, true, false);
+                service.ObserveHost(42, "D3D11", true, "none", null, _ => "foreground");
+                if (i % 3 == 0) await service.FlushAsync();
+            }
+            Assert.AreEqual(7, handler.Bodies.Count, "Initial report and six ten-minute checkpoints.");
+            int bytes = handler.Bodies.Sum(b => System.Text.Encoding.UTF8.GetByteCount(b));
+            Assert.IsTrue(bytes < 64 * 1024, $"A stable hour used {bytes} bytes.");
+            Assert.AreEqual(216000UL, ReadReport(handler.Bodies.Last()).Events
+                .Last(e => e.Native != null).Native.Progress.Draws);
+            Assert.IsTrue(handler.Bodies.Select(ReadReport).All(r => r.SchemaVersion == 2 && r.DroppedEvents == 0));
+            Console.WriteLine($"Stable hour: {handler.Bodies.Count} reports, {bytes} bytes.");
+        }
+
+        [TestMethod]
+        public async Task HostTransitions_PreserveReasonWithoutPrivateMessage()
+        {
+            var handler = new Handler();
+            using var service = Create(handler);
+            Begin(service);
+            service.ObserveHost(42, "D3D11", true, "none", null, _ => "foreground");
+            await service.FlushAsync();
+            _elapsedMs = 1000;
+            service.ObserveHost(42, "D3D11", true, "native",
+                @"in-game hook injection failed (C:\Users\PrivateUser\hook.dll)", _ => "minimized");
+            await service.FlushAsync();
+            var host = ReadReport(handler.Bodies.Last()).Events.Last(e => e.Host != null).Host;
+            Assert.AreEqual("minimized", host.Window);
+            Assert.AreEqual("native", host.FallbackSource);
+            Assert.AreEqual("injection-failed", host.FallbackReason);
+            Assert.IsFalse(handler.Bodies.Last().Contains("PrivateUser"));
+        }
+
+        [TestMethod]
+        public async Task NoConsent_DoesNotQueryWindowState()
+        {
+            var handler = new Handler();
+            using var service = Create(handler, consent: false);
+            Begin(service);
+            service.ObserveHost(42, "DXGI", true, "none", null, _ => throw new Exception("must not query"));
+            await service.FlushAsync();
+            Assert.AreEqual(0, handler.Bodies.Count);
+        }
+
+        [TestMethod]
+        public async Task OlderServer_RetainsV2OutboxUntilEndpointIsAvailable()
+        {
+            var handler = new Handler { Status = HttpStatusCode.NotFound };
+            using var service = Create(handler);
+            Begin(service);
+            await service.FlushAsync();
+            Assert.AreEqual(1, Directory.GetFiles(Path.Combine(_folder, "OverlayProfileReports"), "*.json").Length);
+            handler.Status = HttpStatusCode.Accepted;
+            _elapsedMs = 301000;
+            await service.FlushAsync();
+            Assert.AreEqual(2, handler.Bodies.Count);
+            Assert.AreEqual(handler.Bodies[0], handler.Bodies[1]);
+            Assert.AreEqual(0, Directory.GetFiles(Path.Combine(_folder, "OverlayProfileReports"), "*.json").Length);
+        }
+
+        [TestMethod]
+        public async Task ModuleChanges_AreTimestampedOnceAtFirstObservation()
+        {
+            var handler = new Handler();
+            bool loaded = false;
+            using var service = Create(handler, contextFactory: () => new HookProfileReportContext
+            {
+                Game = new ReportBinary { Name = "game.exe" }, Status = "complete",
+                Modules = loaded ? new List<ReportBinary> { new ReportBinary { Name = "RTSSHooks64.dll" } }
+                    : new List<ReportBinary>()
+            });
+            Begin(service);
+            await service.FlushAsync();
+            loaded = true;
+            _elapsedMs = 120000;
+            await service.FlushAsync();
+            var change = ReadReport(handler.Bodies.Last()).Events.Single(e => e.ModuleChange != null);
+            Assert.AreEqual(120000L, change.ElapsedMs);
+            CollectionAssert.AreEqual(new[] { "RTSSHooks64.dll" }, change.ModuleChange.Added);
+            _elapsedMs = 240000;
+            await service.FlushAsync();
+            Assert.AreEqual(2, handler.Bodies.Count);
         }
 
         private sealed class Handler : HttpMessageHandler

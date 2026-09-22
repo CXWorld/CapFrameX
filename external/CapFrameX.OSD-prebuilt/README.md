@@ -9,14 +9,36 @@ the OSD is built from source instead and these files are ignored.
 
 ## Build provenance
 
-The current five native DLLs were rebuilt on **2026-09-20** with VS 2026/v145 in
+The core and Vulkan DLLs were rebuilt on **2026-09-20** with VS 2026/v145 in
 `RelWithDebInfo` from the source state now committed as private OSD revision
 `4e362b1aac895ea8681752ea1ea028f3559a08ac`. This includes the row-alignment changes
 described below, along with the preceding graph-source corrections and OSD log
 directory changes.
 
+The x64/x86 hook DLLs were rebuilt on **2026-09-22** from that revision plus the
+render-progress changes described below.
+
 These native payloads are **unsigned development builds**. The existing
 `net10.0-windows` managed bridge retains its Certum signature from the rebuild below.
+
+### Render-progress diagnostics (2026-09-22)
+
+The hooks publish a separate, coherent 64-byte progress channel with cumulative
+Present/draw counts and the last successful draw's context. The host uses it to
+verify ongoing rendering and to collect compact opt-in diagnostics. Existing
+native status mappings remain byte compatible. See
+[overlay diagnostics and rollout](../../docs/overlay-profile-diagnostics.md).
+
+Both hooks were built with VS 2026/v145 in `RelWithDebInfo` from an isolated copy
+of `4e362b1aac895ea8681752ea1ea028f3559a08ac` plus the changes to
+`hook_poc/src/hook_status.cpp`, `hook_status.h`, `hook_status_test.cpp` and
+`overlay.cpp`. The `hook_status`, `renderer_arbiter` and `swapchain_lifetime` CTests
+passed on both architectures. PE architecture and staged SHA-256 hashes were checked.
+
+| Native DLL | SHA-256 |
+| --- | --- |
+| Hook x64 | `5AA5E4F03D65BF1E14A1201C60CE95D9CD2806DAC834775530596F0A8642F068` |
+| Hook x86 | `429AC7BEB0F505BF7781CF39FD7B56728A55EE1E5D031F48723FFA2B6C2134D7` |
 
 ### Fixed overlay value columns (2026-09-20)
 

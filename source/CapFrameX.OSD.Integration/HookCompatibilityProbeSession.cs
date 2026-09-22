@@ -14,6 +14,7 @@ namespace CapFrameX.OSD.Integration
         ScheduleRestart,
         /// <summary>The stage rendered; persist it as verified.</summary>
         Learn,
+        InvalidateVerification,
         /// <summary>No stage left (or the failure is not a routing problem).</summary>
         GiveUp,
         /// <summary>Hook-free fallback reason for the manager; null clears it.</summary>
@@ -80,6 +81,7 @@ namespace CapFrameX.OSD.Integration
         private ulong _awaitingLiveApplyUntilTickMs;
         private bool _stageClockPaused;
         private int? _recoveryCoverageBaseline;
+        private readonly HookRenderProgressVerifier _renderProgress = new HookRenderProgressVerifier();
 
         internal HookCompatibilityProbeSession(int processId, HookCompatibilityStagePlan plan,
             bool hasRendered = false)
@@ -129,6 +131,7 @@ namespace CapFrameX.OSD.Integration
         internal IReadOnlyList<HookProbeAction> OnInjectionSucceeded(ulong nowTickMs)
         {
             _timings = default;
+            _renderProgress.Reset();
             _timings.InjectionSucceeded = true;
             _timings.InjectionSucceededTickMs = nowTickMs;
             _observingSinceTickMs = nowTickMs;
@@ -214,6 +217,8 @@ namespace CapFrameX.OSD.Integration
             }
             UpdateClocks(hasStatus, snapshot, nativeState, nowTickMs);
             _timings.NowTickMs = nowTickMs;
+            _timings.RenderProgressConfirmed = !ProbingEnabled || _renderProgress.Observe(snapshot,
+                hasStatus && nativeState == EHookOverlayStatus.Active, (uint)stage.Flags, nowTickMs);
             HookCompatibilityVerdict verdict = HookCompatibilityVerdictClassifier.Classify(
                 stage, hasStatus, snapshot, nativeState, in _timings);
             if (hasStatus && nativeState == EHookOverlayStatus.Active &&
@@ -240,6 +245,19 @@ namespace CapFrameX.OSD.Integration
             }
             else if (Settlement == HookProbeSettlement.Learned)
             {
+                if (ProbingEnabled && (verdict == HookCompatibilityVerdict.Inconclusive ||
+                    verdict == HookCompatibilityVerdict.Pending && !_timings.RenderProgressConfirmed))
+                {
+                    // Pauses and context changes require fresh confirmation, not another route.
+                    Settlement = HookProbeSettlement.None;
+                    return new[]
+                    {
+                        new HookProbeAction(HookProbeActionKind.InvalidateVerification, stage,
+                            verdict: HookCompatibilityVerdict.Inconclusive),
+                        new HookProbeAction(HookProbeActionKind.SetPollInterval,
+                            pollIntervalMs: ProbePollIntervalMs)
+                    };
+                }
                 if (verdict == HookCompatibilityVerdict.Success ||
                     verdict == HookCompatibilityVerdict.Pending ||
                     verdict == HookCompatibilityVerdict.Inconclusive)
@@ -253,7 +271,15 @@ namespace CapFrameX.OSD.Integration
                     new HookProbeAction(HookProbeActionKind.SetPollInterval,
                         pollIntervalMs: ProbePollIntervalMs)
                 };
-                actions.AddRange(Fail(stage, verdict, snapshot, nowTickMs));
+                IReadOnlyList<HookProbeAction> failureActions = Fail(stage, verdict, snapshot, nowTickMs);
+                if (ProbingEnabled && (Settlement == HookProbeSettlement.None ||
+                    Settlement == HookProbeSettlement.QueueRecovery))
+                {
+                    // Live recovery has no final outcome to replace the old verified entry yet.
+                    actions.Add(new HookProbeAction(HookProbeActionKind.InvalidateVerification,
+                        stage, verdict: LastVerdict));
+                }
+                actions.AddRange(failureActions);
                 return actions;
             }
             else if (Settlement != HookProbeSettlement.None)
@@ -482,6 +508,7 @@ namespace CapFrameX.OSD.Integration
 
         private void ResetStageClocks(ulong nowTickMs)
         {
+            _renderProgress.Reset();
             bool injected = _timings.InjectionSucceeded;
             ulong injectedAt = _timings.InjectionSucceededTickMs;
             ulong lastStatus = _timings.LastNativeStatusTickMs;

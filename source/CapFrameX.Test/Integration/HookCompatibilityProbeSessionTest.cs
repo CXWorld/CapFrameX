@@ -22,7 +22,7 @@ namespace CapFrameX.Test.Integration
             session.OnInjectionSucceeded(1000);
             var foreign = new NativeHookStatusSnapshot { Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.ForeignPresenter };
 
-            IReadOnlyList<HookProbeAction> actions = session.Observe(true, foreign,
+            IReadOnlyList<HookProbeAction> actions = ObserveRendering(session, true, foreign,
                 EHookOverlayStatus.Initializing, 2000);
 
             Assert.IsTrue(session.RestartPending);
@@ -48,7 +48,7 @@ namespace CapFrameX.Test.Integration
                 Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.ForeignPresenter
             };
 
-            IReadOnlyList<HookProbeAction> actions = session.Observe(true, foreign,
+            IReadOnlyList<HookProbeAction> actions = ObserveRendering(session, true, foreign,
                 EHookOverlayStatus.Initializing, 2000);
 
             Assert.IsFalse(session.RestartPending);
@@ -61,7 +61,7 @@ namespace CapFrameX.Test.Integration
             Assert.IsNull(session.FallbackReason);
 
             // Until the hook echoes the new flags the old stand-down is not a verdict.
-            Assert.AreEqual(0, session.Observe(true, foreign, EHookOverlayStatus.Initializing, 2300).Count);
+            Assert.AreEqual(0, ObserveRendering(session, true, foreign, EHookOverlayStatus.Initializing, 2300).Count);
             Assert.IsFalse(session.RestartPending);
 
             // Echo: the generic route is in effect; a clean sample sequence then confirms it.
@@ -73,9 +73,9 @@ namespace CapFrameX.Test.Integration
                 Flags = Ready,
                 CoverageSubmitted = 3
             };
-            Assert.AreEqual(0, session.Observe(true, applied, EHookOverlayStatus.Active, 2600).Count);
-            Assert.AreEqual(0, session.Observe(true, applied, EHookOverlayStatus.Active, 3000).Count);
-            IReadOnlyList<HookProbeAction> learned = session.Observe(true, applied,
+            Assert.AreEqual(0, ObserveRendering(session, true, applied, EHookOverlayStatus.Active, 2600).Count);
+            Assert.AreEqual(0, ObserveRendering(session, true, applied, EHookOverlayStatus.Active, 3000).Count);
+            IReadOnlyList<HookProbeAction> learned = ObserveRendering(session, true, applied,
                 EHookOverlayStatus.Active, 3000 + HookCompatibilityVerdictClassifier.ProbeSuccessConfirmMs);
             Assert.AreEqual(HookProbeSettlement.Learned, session.Settlement);
             Assert.IsTrue(learned.Any(a => a.Kind == HookProbeActionKind.Learn &&
@@ -105,7 +105,7 @@ namespace CapFrameX.Test.Integration
                         NativeHookStatusFlags.ForeignPresenter
             };
 
-            IReadOnlyList<HookProbeAction> actions = session.Observe(true, standDown,
+            IReadOnlyList<HookProbeAction> actions = ObserveRendering(session, true, standDown,
                 EHookOverlayStatus.Initializing, 2000);
 
             Assert.IsFalse(session.RestartPending);
@@ -127,8 +127,8 @@ namespace CapFrameX.Test.Integration
                 CoverageSubmitted = 5
             };
             Assert.AreEqual(0,
-                session.Observe(true, applied, EHookOverlayStatus.Active, 2500).Count);
-            IReadOnlyList<HookProbeAction> learned = session.Observe(true, applied,
+                ObserveRendering(session, true, applied, EHookOverlayStatus.Active, 2500).Count);
+            IReadOnlyList<HookProbeAction> learned = ObserveRendering(session, true, applied,
                 EHookOverlayStatus.Active,
                 2500 + HookCompatibilityVerdictClassifier.ProbeSuccessConfirmMs);
             Assert.AreEqual(HookProbeSettlement.Learned, session.Settlement);
@@ -147,9 +147,9 @@ namespace CapFrameX.Test.Integration
                 LiveReloadCapabilities = 0x6,
                 Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.ForeignPresenter
             };
-            session.Observe(true, foreign, EHookOverlayStatus.Initializing, 2000);
+            ObserveRendering(session, true, foreign, EHookOverlayStatus.Initializing, 2000);
 
-            IReadOnlyList<HookProbeAction> actions = session.Observe(true, foreign,
+            IReadOnlyList<HookProbeAction> actions = ObserveRendering(session, true, foreign,
                 EHookOverlayStatus.Initializing, 2000 + HookCompatibilityProbeSession.LiveApplyGraceMs);
 
             Assert.IsTrue(session.RestartPending);
@@ -165,8 +165,8 @@ namespace CapFrameX.Test.Integration
             session.OnInjectionSucceeded(1000);
             var active = new NativeHookStatusSnapshot { Version = 2, Flags = Ready, CoverageSubmitted = 5 };
 
-            Assert.AreEqual(0, session.Observe(true, active, EHookOverlayStatus.Active, 1500).Count);
-            IReadOnlyList<HookProbeAction> actions = session.Observe(true, active,
+            Assert.AreEqual(0, ObserveRendering(session, true, active, EHookOverlayStatus.Active, 1500).Count);
+            IReadOnlyList<HookProbeAction> actions = ObserveRendering(session, true, active,
                 EHookOverlayStatus.Active, 1500 + HookCompatibilityVerdictClassifier.ProbeSuccessConfirmMs);
 
             Assert.AreEqual(HookProbeSettlement.Learned, session.Settlement);
@@ -184,9 +184,9 @@ namespace CapFrameX.Test.Integration
             session.OnInjectionSucceeded(1000);
             var hidden = new NativeHookStatusSnapshot { Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.Visible };
 
-            IReadOnlyList<HookProbeAction> first = session.Observe(true, hidden,
+            IReadOnlyList<HookProbeAction> first = ObserveRendering(session, true, hidden,
                 EHookOverlayStatus.Initializing, 2000);
-            IReadOnlyList<HookProbeAction> stalled = session.Observe(true, hidden,
+            IReadOnlyList<HookProbeAction> stalled = ObserveRendering(session, true, hidden,
                 EHookOverlayStatus.Initializing, 2000 + HookOverlayManager.HookRendererReadyTimeoutMs);
 
             Assert.AreEqual(0, first.Count);
@@ -210,7 +210,7 @@ namespace CapFrameX.Test.Integration
             session.OnInjectionSucceeded(1000);
             var foreign = new NativeHookStatusSnapshot { Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.ForeignPresenter };
 
-            IReadOnlyList<HookProbeAction> actions = session.Observe(true, foreign,
+            IReadOnlyList<HookProbeAction> actions = ObserveRendering(session, true, foreign,
                 EHookOverlayStatus.Initializing, 2000);
 
             Assert.AreEqual(HookProbeSettlement.GaveUp, session.Settlement);
@@ -225,7 +225,7 @@ namespace CapFrameX.Test.Integration
             HookCompatibilityProbeSession session = Session(streamline: true);
             session.OnInjectionSucceeded(1000);
 
-            IReadOnlyList<HookProbeAction> first = session.Observe(false, default, null,
+            IReadOnlyList<HookProbeAction> first = ObserveRendering(session, false, default, null,
                 1000 + HookOverlayManager.HookHandshakeTimeoutMs);
             Assert.IsTrue(session.RestartPending);
             Assert.AreEqual(session.CurrentStage.Key, session.PendingStage.Key);
@@ -233,7 +233,7 @@ namespace CapFrameX.Test.Integration
 
             // Same session, fresh injection, same silence.
             session.OnInjectionSucceeded(10000);
-            IReadOnlyList<HookProbeAction> second = session.Observe(false, default, null,
+            IReadOnlyList<HookProbeAction> second = ObserveRendering(session, false, default, null,
                 10000 + HookOverlayManager.HookHandshakeTimeoutMs);
             Assert.AreEqual(HookProbeSettlement.GaveUp, session.Settlement);
             Assert.IsFalse(second.Single(a => a.Kind == HookProbeActionKind.GiveUp).Exhausted);
@@ -250,7 +250,7 @@ namespace CapFrameX.Test.Integration
             var foreign = new NativeHookStatusSnapshot { Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.ForeignPresenter };
             var active = new NativeHookStatusSnapshot { Version = 2, Flags = Ready };
 
-            IReadOnlyList<HookProbeAction> failed = session.Observe(true, foreign,
+            IReadOnlyList<HookProbeAction> failed = ObserveRendering(session, true, foreign,
                 EHookOverlayStatus.Initializing, 2000);
             Assert.AreEqual(1, failed.Count);
             Assert.AreEqual(HookProbeActionKind.SetFallback, failed[0].Kind);
@@ -258,8 +258,8 @@ namespace CapFrameX.Test.Integration
             Assert.IsFalse(session.RestartPending);
 
             // The FG toggle went off in-game: the reason clears once the hook renders again.
-            session.Observe(true, active, EHookOverlayStatus.Active, 3000);
-            IReadOnlyList<HookProbeAction> recovered = session.Observe(true, active,
+            ObserveRendering(session, true, active, EHookOverlayStatus.Active, 3000);
+            IReadOnlyList<HookProbeAction> recovered = ObserveRendering(session, true, active,
                 EHookOverlayStatus.Active, 3000 + HookCompatibilityVerdictClassifier.ProbeSuccessConfirmMs);
             Assert.IsTrue(recovered.Any(a => a.Kind == HookProbeActionKind.SetFallback && a.Reason == null));
             Assert.IsFalse(recovered.Any(a => a.Kind == HookProbeActionKind.Learn));
@@ -272,11 +272,11 @@ namespace CapFrameX.Test.Integration
             session.OnInjectionSucceeded(1000);
             var foreign = new NativeHookStatusSnapshot { Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.ForeignPresenter };
             var active = new NativeHookStatusSnapshot { Version = 2, Flags = Ready };
-            session.Observe(true, foreign, EHookOverlayStatus.Initializing, 2000);
+            ObserveRendering(session, true, foreign, EHookOverlayStatus.Initializing, 2000);
             Assert.IsTrue(session.RestartPending);
 
-            session.Observe(true, active, EHookOverlayStatus.Active, 3000);
-            IReadOnlyList<HookProbeAction> actions = session.Observe(true, active,
+            ObserveRendering(session, true, active, EHookOverlayStatus.Active, 3000);
+            IReadOnlyList<HookProbeAction> actions = ObserveRendering(session, true, active,
                 EHookOverlayStatus.Active, 3000 + HookCompatibilityVerdictClassifier.ProbeSuccessConfirmMs);
 
             Assert.AreEqual(HookProbeSettlement.Learned, session.Settlement);
@@ -291,8 +291,8 @@ namespace CapFrameX.Test.Integration
             session.OnInjectionSucceeded(1000);
             var idle = new NativeHookStatusSnapshot { Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen };
 
-            session.Observe(true, idle, EHookOverlayStatus.Idle, 1000 + HookCompatibilityVerdictClassifier.ProbeStageBudgetMs);
-            session.Observe(true, idle, EHookOverlayStatus.Idle, 2000 + HookCompatibilityVerdictClassifier.ProbeStageBudgetMs);
+            ObserveRendering(session, true, idle, EHookOverlayStatus.Idle, 1000 + HookCompatibilityVerdictClassifier.ProbeStageBudgetMs);
+            ObserveRendering(session, true, idle, EHookOverlayStatus.Idle, 2000 + HookCompatibilityVerdictClassifier.ProbeStageBudgetMs);
 
             Assert.IsTrue(session.Observing);
             Assert.AreEqual(HookCompatibilityVerdict.Inconclusive, session.LastVerdict);
@@ -318,8 +318,8 @@ namespace CapFrameX.Test.Integration
                 AppliedFlags = (uint)session.CurrentStage.Flags, QueueState = NativeHookQueueState.None
             };
 
-            Assert.AreEqual(0, session.Observe(true, hidden, EHookOverlayStatus.Hidden, 2000).Count);
-            Assert.AreEqual(0, session.Observe(true, hidden, EHookOverlayStatus.Hidden, 62000).Count);
+            Assert.AreEqual(0, ObserveRendering(session, true, hidden, EHookOverlayStatus.Hidden, 2000).Count);
+            Assert.AreEqual(0, ObserveRendering(session, true, hidden, EHookOverlayStatus.Hidden, 62000).Count);
             Assert.AreEqual(HookProbeSettlement.None, session.Settlement);
             Assert.AreEqual(HookCompatibilityVerdict.Inconclusive, session.LastVerdict);
             Assert.AreEqual((long)HookCompatibilityVerdictClassifier.ProbeStageBudgetMs,
@@ -328,10 +328,10 @@ namespace CapFrameX.Test.Integration
             var visible = hidden;
             visible.Flags = Ready;
             visible.CoverageSubmitted = 3;
-            session.Observe(true, visible, EHookOverlayStatus.Active, 164000);
+            ObserveRendering(session, true, visible, EHookOverlayStatus.Active, 164000);
             Assert.AreEqual((long)HookCompatibilityVerdictClassifier.ProbeStageBudgetMs,
                 session.RemainingBudgetMs(164000), "resuming must not charge the hidden interval");
-            Assert.IsTrue(session.Observe(true, visible, EHookOverlayStatus.Active, 166000)
+            Assert.IsTrue(ObserveRendering(session, true, visible, EHookOverlayStatus.Active, 166000)
                 .Any(action => action.Kind == HookProbeActionKind.Learn));
         }
 
@@ -346,7 +346,7 @@ namespace CapFrameX.Test.Integration
                 Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.ForeignPresenter
             };
 
-            IReadOnlyList<HookProbeAction> actions = session.Observe(true, foreign,
+            IReadOnlyList<HookProbeAction> actions = ObserveRendering(session, true, foreign,
                 EHookOverlayStatus.Initializing, 6000);
 
             Assert.IsTrue(session.Observing);
@@ -354,7 +354,7 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(actions.Any(action => action.Kind == HookProbeActionKind.EscalateLive));
             Assert.IsTrue(actions.Any(action => action.Kind == HookProbeActionKind.SetPollInterval &&
                 action.PollIntervalMs == HookCompatibilityProbeSession.ProbePollIntervalMs));
-            Assert.AreEqual(0, session.Observe(true, foreign, EHookOverlayStatus.Initializing, 6250).Count);
+            Assert.AreEqual(0, ObserveRendering(session, true, foreign, EHookOverlayStatus.Initializing, 6250).Count);
         }
 
         [TestMethod]
@@ -367,7 +367,7 @@ namespace CapFrameX.Test.Integration
                 Version = 2, Flags = Armed | NativeHookStatusFlags.Error, LastError = 2
             };
 
-            IReadOnlyList<HookProbeAction> actions = session.Observe(true, error,
+            IReadOnlyList<HookProbeAction> actions = ObserveRendering(session, true, error,
                 EHookOverlayStatus.Error, 6000);
 
             Assert.AreEqual(HookProbeSettlement.GaveUp, session.Settlement);
@@ -382,15 +382,16 @@ namespace CapFrameX.Test.Integration
             HookCompatibilityProbeSession session = Session(streamline: true);
             LearnVendorStage(session);
             var active = new NativeHookStatusSnapshot { Version = 2, Flags = Ready };
-            Assert.AreEqual(0, session.Observe(true, active, EHookOverlayStatus.Active, 100000).Count);
+            Assert.AreEqual(0, ObserveRendering(session, true, active, EHookOverlayStatus.Active, 100000).Count);
             var initializing = new NativeHookStatusSnapshot
             {
                 Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.Visible
             };
 
-            Assert.AreEqual(0, session.Observe(true, initializing, EHookOverlayStatus.Initializing, 101000).Count);
+            Assert.IsTrue(ObserveRendering(session, true, initializing, EHookOverlayStatus.Initializing, 101000)
+                .Any(a => a.Kind == HookProbeActionKind.InvalidateVerification));
             Assert.AreEqual(HookCompatibilityVerdict.Pending, session.LastVerdict);
-            Assert.AreEqual(0, session.Observe(true, initializing, EHookOverlayStatus.Initializing, 102000).Count);
+            Assert.AreEqual(0, ObserveRendering(session, true, initializing, EHookOverlayStatus.Initializing, 102000).Count);
         }
 
         [TestMethod]
@@ -408,7 +409,7 @@ namespace CapFrameX.Test.Integration
                 Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.ForeignPresenter
             };
 
-            IReadOnlyList<HookProbeAction> actions = session.Observe(true, foreign,
+            IReadOnlyList<HookProbeAction> actions = ObserveRendering(session, true, foreign,
                 EHookOverlayStatus.Initializing, 2000);
 
             Assert.AreEqual(HookCompatibilityStageId.Generic, session.CurrentStage.Id);
@@ -429,15 +430,15 @@ namespace CapFrameX.Test.Integration
                 Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.ForeignPresenter
             };
 
-            session.Observe(true, old, EHookOverlayStatus.Initializing, 1250);
+            ObserveRendering(session, true, old, EHookOverlayStatus.Initializing, 1250);
             Assert.AreEqual(HookCompatibilityStageId.Generic, session.CurrentStage.Id);
-            Assert.AreEqual(0, session.Observe(true, old, EHookOverlayStatus.Initializing, 1500).Count);
+            Assert.AreEqual(0, ObserveRendering(session, true, old, EHookOverlayStatus.Initializing, 1500).Count);
             Assert.AreEqual(HookCompatibilityStageId.Generic, session.CurrentStage.Id);
 
             // A superset is not an acknowledgement that the requested route is in effect.
             var wrong = old;
             wrong.AppliedFlags = 12;
-            Assert.AreEqual(0, session.Observe(true, wrong, EHookOverlayStatus.Initializing, 1750).Count);
+            Assert.AreEqual(0, ObserveRendering(session, true, wrong, EHookOverlayStatus.Initializing, 1750).Count);
             Assert.AreEqual(HookCompatibilityStageId.Generic, session.CurrentStage.Id);
         }
 
@@ -451,8 +452,8 @@ namespace CapFrameX.Test.Integration
                 Version = 2, Flags = Ready, QueueState = NativeHookQueueState.Explicit,
                 AppliedFlags = (uint)session.CurrentStage.Flags, CoverageSubmitted = 100
             };
-            session.Observe(true, active, EHookOverlayStatus.Active, 2000);
-            session.Observe(true, active, EHookOverlayStatus.Active, 4000);
+            ObserveRendering(session, true, active, EHookOverlayStatus.Active, 2000);
+            ObserveRendering(session, true, active, EHookOverlayStatus.Active, 4000);
             Assert.AreEqual(HookProbeSettlement.Learned, session.Settlement);
 
             // No module/signature change is involved, including the second replacement.
@@ -460,9 +461,10 @@ namespace CapFrameX.Test.Integration
             {
                 var missing = active;
                 missing.QueueState = NativeHookQueueState.BindingUnavailable;
-                IReadOnlyList<HookProbeAction> fallback = session.Observe(true, missing,
+                IReadOnlyList<HookProbeAction> fallback = ObserveRendering(session, true, missing,
                     EHookOverlayStatus.Initializing, start);
                 Assert.AreEqual(HookProbeSettlement.QueueRecovery, session.Settlement);
+                Assert.IsTrue(fallback.Any(a => a.Kind == HookProbeActionKind.InvalidateVerification));
                 Assert.IsNull(session.PendingStage);
                 Assert.IsFalse(session.RestartPending);
                 Assert.IsFalse(fallback.Any(a => a.Kind == HookProbeActionKind.ScheduleRestart ||
@@ -472,19 +474,19 @@ namespace CapFrameX.Test.Integration
                 var hidden = active;
                 hidden.Flags &= ~(NativeHookStatusFlags.Visible | NativeHookStatusFlags.RendererReady);
                 hidden.LastHeartbeatTickMs = (long)start + 500;
-                IReadOnlyList<HookProbeAction> retry = session.Observe(true, hidden,
+                IReadOnlyList<HookProbeAction> retry = ObserveRendering(session, true, hidden,
                     EHookOverlayStatus.Hidden, start + 500);
                 Assert.IsTrue(retry.Any(a => a.Kind == HookProbeActionKind.SetFallback && a.Reason == null));
                 Assert.IsTrue(session.Observing);
                 Assert.IsFalse(retry.Any(a => a.Kind == HookProbeActionKind.Learn));
 
                 // Renderer flags and the old cumulative count are insufficient.
-                session.Observe(true, active, EHookOverlayStatus.Active, start + 750);
-                Assert.AreEqual(0, session.Observe(true, active,
+                ObserveRendering(session, true, active, EHookOverlayStatus.Active, start + 750);
+                Assert.AreEqual(0, ObserveRendering(session, true, active,
                     EHookOverlayStatus.Active, start + 3000).Count);
                 Assert.AreEqual(HookProbeSettlement.None, session.Settlement);
                 active.CoverageSubmitted += 50;
-                IReadOnlyList<HookProbeAction> recovered = session.Observe(true, active,
+                IReadOnlyList<HookProbeAction> recovered = ObserveRendering(session, true, active,
                     EHookOverlayStatus.Active, start + 3250);
                 Assert.AreEqual(HookProbeSettlement.Learned, session.Settlement);
                 Assert.IsTrue(recovered.Any(a => a.Kind == HookProbeActionKind.Learn));
@@ -501,7 +503,7 @@ namespace CapFrameX.Test.Integration
                 Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen,
                 QueueState = NativeHookQueueState.BindingUnavailable
             };
-            session.Observe(true, missing, EHookOverlayStatus.Initializing, 2000);
+            ObserveRendering(session, true, missing, EHookOverlayStatus.Initializing, 2000);
             var proven = missing;
             proven.QueueState = NativeHookQueueState.Explicit;
             proven.AppliedFlags = (uint)session.CurrentStage.Flags;
@@ -516,10 +518,10 @@ namespace CapFrameX.Test.Integration
             pending.PendingRestartFlags = 4;
             var wrongStage = proven;
             wrongStage.AppliedFlags = 0;
-            Assert.AreEqual(0, session.Observe(false, proven, EHookOverlayStatus.Hidden, 100000).Count);
+            Assert.AreEqual(0, ObserveRendering(session, false, proven, EHookOverlayStatus.Hidden, 100000).Count);
             foreach (var sample in new[] { missing, stale, observed, blocked, pending, wrongStage })
             {
-                Assert.AreEqual(0, session.Observe(true, sample, EHookOverlayStatus.Hidden, 100000).Count);
+                Assert.AreEqual(0, ObserveRendering(session, true, sample, EHookOverlayStatus.Hidden, 100000).Count);
                 Assert.AreEqual(HookProbeSettlement.QueueRecovery, session.Settlement);
                 Assert.IsNotNull(session.FallbackReason);
             }
@@ -539,8 +541,8 @@ namespace CapFrameX.Test.Integration
                 Version = 2, Flags = Ready, QueueState = NativeHookQueueState.Observed,
                 CoverageSubmitted = 10
             };
-            session.Observe(true, active, EHookOverlayStatus.Active, 2000);
-            session.Observe(true, active, EHookOverlayStatus.Active, 4000);
+            ObserveRendering(session, true, active, EHookOverlayStatus.Active, 2000);
+            ObserveRendering(session, true, active, EHookOverlayStatus.Active, 4000);
             if (replan)
             {
                 session = new HookCompatibilityProbeSession(42, session.Plan, session.HasRendered);
@@ -549,8 +551,8 @@ namespace CapFrameX.Test.Integration
             var missing = active;
             missing.Flags &= ~NativeHookStatusFlags.RendererReady;
             missing.QueueState = NativeHookQueueState.None;
-            session.Observe(true, missing, EHookOverlayStatus.Initializing, 6000);
-            IReadOnlyList<HookProbeAction> actions = session.Observe(true, missing,
+            ObserveRendering(session, true, missing, EHookOverlayStatus.Initializing, 6000);
+            IReadOnlyList<HookProbeAction> actions = ObserveRendering(session, true, missing,
                 EHookOverlayStatus.Initializing, 6000 + HookCompatibilityVerdictClassifier.ProbeNoQueueMs);
             Assert.AreEqual(HookProbeSettlement.QueueRecovery, session.Settlement);
             Assert.IsNull(session.PendingStage);
@@ -567,8 +569,8 @@ namespace CapFrameX.Test.Integration
                 Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen,
                 QueueState = NativeHookQueueState.None
             };
-            session.Observe(true, missing, EHookOverlayStatus.Initializing, 2000);
-            session.Observe(true, missing, EHookOverlayStatus.Initializing,
+            ObserveRendering(session, true, missing, EHookOverlayStatus.Initializing, 2000);
+            ObserveRendering(session, true, missing, EHookOverlayStatus.Initializing,
                 2000 + HookCompatibilityVerdictClassifier.ProbeNoQueueMs);
             Assert.IsTrue(session.RestartPending);
             Assert.IsTrue(session.PendingStage.RequiresEarlyInjection);
@@ -583,12 +585,30 @@ namespace CapFrameX.Test.Integration
             return new HookCompatibilityProbeSession(42, plan);
         }
 
+        // Existing routing tests simulate continuing rendering; frozen/status-only cases are
+        // covered separately in HookRenderProgressTest.
+        private static IReadOnlyList<HookProbeAction> ObserveRendering(HookCompatibilityProbeSession session,
+            bool hasStatus, NativeHookStatusSnapshot snapshot, EHookOverlayStatus? state, ulong now)
+        {
+            if (hasStatus && state == EHookOverlayStatus.Active)
+            {
+                snapshot.LastHeartbeatTickMs = (long)now;
+                snapshot.Progress = new HookRenderProgress
+                {
+                    Generation = 1, Presents = now, Draws = now, LastDrawTickMs = (long)now,
+                    RouteSource = 1, AppliedFlags = snapshot.AppliedFlags,
+                    AppliedSequence = snapshot.AppliedSequence
+                };
+            }
+            return session.Observe(hasStatus, snapshot, state, now);
+        }
+
         private static void LearnVendorStage(HookCompatibilityProbeSession session)
         {
             session.OnInjectionSucceeded(1000);
             var active = new NativeHookStatusSnapshot { Version = 2, Flags = Ready };
-            session.Observe(true, active, EHookOverlayStatus.Active, 2000);
-            session.Observe(true, active, EHookOverlayStatus.Active, 4000);
+            ObserveRendering(session, true, active, EHookOverlayStatus.Active, 2000);
+            ObserveRendering(session, true, active, EHookOverlayStatus.Active, 4000);
             Assert.AreEqual(HookProbeSettlement.Learned, session.Settlement);
         }
 

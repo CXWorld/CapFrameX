@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-// Wire contract v1. Kept identical in CapFrameX.UpdateServer/OverlayProfileReport.cs.
+// Wire contracts v1/v2. Kept identical in CapFrameX.UpdateServer/OverlayProfileReport.cs.
 // Only explicit fields below are transmitted; never serialize a learned-store entry directly.
 namespace CapFrameX.OverlayReporting
 {
@@ -90,6 +90,38 @@ namespace CapFrameX.OverlayReporting
         public ReportProfile? Profile { get; set; }
         public ReportNativeStatus? Native { get; set; }
         public ReportVulkanStatus? Vulkan { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public ReportHostState? Host { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public ReportModuleChange? ModuleChange { get; set; }
+    }
+
+    public sealed class ReportHostState
+    {
+        public string Runtime { get; set; } = "unknown";
+        public string Window { get; set; } = "unknown";
+        public bool OverlayRequested { get; set; }
+        public string FallbackSource { get; set; } = "none";
+        public string FallbackReason { get; set; } = "none";
+    }
+
+    public sealed class ReportModuleChange
+    {
+        // First observed by the bounded context scan, not an exact DLL load timestamp.
+        public List<string> Added { get; set; } = new();
+        public List<string> Removed { get; set; } = new();
+        public List<string> Updated { get; set; } = new();
+    }
+
+    public sealed class ReportRenderProgress
+    {
+        public uint Generation { get; set; }
+        public ulong Presents { get; set; }
+        public ulong Draws { get; set; }
+        public long LastDrawAgeMs { get; set; }
+        public int RouteSource { get; set; }
+        public uint AppliedFlags { get; set; }
+        public uint AppliedSequence { get; set; }
     }
 
     public sealed class ReportNativeStatus
@@ -120,6 +152,8 @@ namespace CapFrameX.OverlayReporting
         public string DeclineReason { get; set; } = "";
         public int RouteSource { get; set; }
         public int CompatChannelVersion { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public ReportRenderProgress? Progress { get; set; }
     }
 
     public sealed class ReportVulkanStatus

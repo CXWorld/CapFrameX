@@ -117,6 +117,15 @@ namespace CapFrameX.Test.Integration
             NativeHookStatusSnapshot snapshot, ulong nowTickMs)
         {
             snapshot.LastHeartbeatTickMs = (long)nowTickMs;
+            if ((snapshot.Flags & NativeHookStatusFlags.Rendered) != 0)
+            {
+                snapshot.Progress = new HookRenderProgress
+                {
+                    Generation = 1, Presents = nowTickMs, Draws = nowTickMs,
+                    LastDrawTickMs = (long)nowTickMs, RouteSource = 1,
+                    AppliedFlags = snapshot.AppliedFlags, AppliedSequence = snapshot.AppliedSequence
+                };
+            }
             HookOverlayStatus status = HookOverlayStatusEvaluator.EvaluateNative(ProcessId,
                 "DXGI", snapshot, nowTickMs);
             return session.Observe(true, snapshot, status.State, nowTickMs);
