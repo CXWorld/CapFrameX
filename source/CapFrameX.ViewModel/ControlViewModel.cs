@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Capture.Contracts;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
@@ -301,7 +302,10 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public string SearchBarText => $" Search in \"{new DirectoryInfo(_appConfiguration.ObservedDirectory).Name}\" ({RecordInfoList.Count} items)";
+        public string SearchBarText => string.Format(
+            CxLang.T("Search in \"{0}\" ({1} items)"),
+            new DirectoryInfo(_appConfiguration.ObservedDirectory).Name,
+            RecordInfoList.Count);
 
         public string ObservedDirectory { get; private set; }
 

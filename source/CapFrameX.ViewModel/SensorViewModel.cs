@@ -138,7 +138,7 @@ namespace CapFrameX.ViewModel
 
         public string AggregateButtonText
         {
-            get { return _aggregationButtonText; }
+            get { return CxLang.T(_aggregationButtonText); }
             set
             {
                 _aggregationButtonText = value;
@@ -148,7 +148,7 @@ namespace CapFrameX.ViewModel
 
         public string SensorStatisticsText
         {
-            get { return _sensorStatisticsText; }
+            get { return CxLang.T(_sensorStatisticsText); }
             set
             {
                 _sensorStatisticsText = value;

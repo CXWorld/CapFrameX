@@ -655,7 +655,7 @@
                "GPU-Busy Time Avg.(ms)":  "Среднее время занятости ГП (мс)",
                "Sensor items":  "Элементы датчиков",
                "Type":  "Тип",
-               "Use for logging":  "Писать в журнал",
+               "Use for logging":  "В журнал",
                "Logs selected sensor values during a capture":  "Записывать выбранные датчики во время захвата",
                "Log sensors":  "Журнал датчиков",
                "Reset to defaults":  "Сбросить по умолчанию",
@@ -820,7 +820,11 @@
                "Entry Type":  "Тип записи",
                "Group Control:":  "Группы:",
                "Group control":  "Группы",
-               "Overlay Items":  "Элементы оверлея",
+               "Overlay Items":  "Оверлей",
+               "Sensor":  "Датчик",
+               "Level":  "Уровень",
+               "Aggregate":  "Сводка",
+               "Search in \"{0}\" ({1} items)":  "Поиск в «{0}» ({1})",
                "Drop items here or double click them in the record list":  "Перетащите записи сюда или дважды щёлкните их в списке",
                "Download link / ID":  "Ссылка или ID",
                "Download folder":  "Папка загрузки",
@@ -1160,6 +1164,82 @@
                                   {
                                       "en":  "Game Used",
                                       "ru":  "занято игрой"
+                                  },
+                                  {
+                                      "en":  "Drive Available Spare Threshold",
+                                      "ru":  "Порог резерва диска"
+                                  },
+                                  {
+                                      "en":  "Drive Available Spare",
+                                      "ru":  "Резерв диска"
+                                  },
+                                  {
+                                      "en":  "Drive Lifetime Used",
+                                      "ru":  "Износ диска"
+                                  },
+                                  {
+                                      "en":  "Drive Read Activity",
+                                      "ru":  "Активность чтения диска"
+                                  },
+                                  {
+                                      "en":  "Drive Write Activity",
+                                      "ru":  "Активность записи диска"
+                                  },
+                                  {
+                                      "en":  "Drive Total Activity",
+                                      "ru":  "Общая активность диска"
+                                  },
+                                  {
+                                      "en":  "Drive Data Written",
+                                      "ru":  "Записано на диск"
+                                  },
+                                  {
+                                      "en":  "Drive Used Space",
+                                      "ru":  "Занято на диске"
+                                  },
+                                  {
+                                      "en":  "Drive Data Read",
+                                      "ru":  "Прочитано с диска"
+                                  },
+                                  {
+                                      "en":  "Drive Write Rate",
+                                      "ru":  "Скорость записи диска"
+                                  },
+                                  {
+                                      "en":  "Drive Read Rate",
+                                      "ru":  "Скорость чтения диска"
+                                  },
+                                  {
+                                      "en":  "Drive Temperature",
+                                      "ru":  "Температура диска"
+                                  },
+                                  {
+                                      "en":  "GB/s",
+                                      "ru":  "ГБ/с"
+                                  },
+                                  {
+                                      "en":  "\\bEffective\\b",
+                                      "ru":  "эффективная"
+                                  },
+                                  {
+                                      "en":  "\\bCapacity\\b",
+                                      "ru":  "объём"
+                                  },
+                                  {
+                                      "en":  "\\bThreshold\\b",
+                                      "ru":  "порог"
+                                  },
+                                  {
+                                      "en":  "\\bLifetime\\b",
+                                      "ru":  "ресурс"
+                                  },
+                                  {
+                                      "en":  "\\bActivity\\b",
+                                      "ru":  "активность"
+                                  },
+                                  {
+                                      "en":  "\\bDrive\\b",
+                                      "ru":  "диск"
                                   },
                                   {
                                       "en":  "\\bAvailable\\b",

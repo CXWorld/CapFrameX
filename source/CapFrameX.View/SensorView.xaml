@@ -407,12 +407,14 @@
 					              MouseLeave="EvaluationComboBox_MouseLeave" FontSize="14"
 					              ItemsSource="{Binding Path=EvaluationMethodItemsSource}"
                                   Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
-                        <ComboBox.Text>
-                            <Binding Path="EvaluationMethod"
-							 Mode="TwoWay"
-							 UpdateSourceTrigger="PropertyChanged">
-                            </Binding>
-                        </ComboBox.Text>
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={StaticResource OverlayLabelConverter}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                        <ComboBox.SelectedItem>
+                            <Binding Path="EvaluationMethod" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
+                        </ComboBox.SelectedItem>
                         <ComboBox.ToolTip>
                             <TextBlock Text="{loc:Tr 'Select the method for evaluating multiple entries.&#10;
                                            &#10;Aggregate: Generate the report based on the combined sensor data of all entries.&#10;
