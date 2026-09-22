@@ -37,6 +37,9 @@ namespace
 			g_quarantinedAdapters.fetch_or(1ull << index, std::memory_order_relaxed);
 	}
 
+	// System metrics have no adapter index; a driver fault disables them until the next initialization.
+	std::atomic_bool g_systemMetricsQuarantined{ false };
+
 	int AdlxDriverExceptionFilter(const DWORD exceptionCode)
 	{
 		switch (exceptionCode)
@@ -369,6 +372,26 @@ void SetGPUFanDuty(IADLXGPUMetricsSupport3Ptr gpuMetricsSupport3, IADLXGPUMetric
 	}
 }
 
+// Set AMD SmartShift (-100 = power shifted to the CPU .. +100 = shifted to the GPU)
+void SetSmartShift(IADLXSystemMetricsSupportPtr systemMetricsSupport, IADLXSystemMetricsPtr systemMetrics, AdlxSystemMetrics* adlxSystemMetrics)
+{
+	adlx_bool supported = false;
+	ADLX_RESULT res = systemMetricsSupport->IsSupportedSmartShift(&supported);
+	if (ADLX_SUCCEEDED(res))
+	{
+		adlxSystemMetrics->smartShiftSupported = supported;
+		if (supported)
+		{
+			adlx_int smartShift = 0;
+			res = systemMetrics->SmartShift(&smartShift);
+			if (ADLX_SUCCEEDED(res))
+				adlxSystemMetrics->smartShiftValue = smartShift;
+			else
+				adlxSystemMetrics->smartShiftSupported = false;
+		}
+	}
+}
+
 static bool IntializeAdlxImpl()
 {
 	ADLX_RESULT res = ADLX_FAIL;
@@ -439,7 +462,10 @@ bool IntializeAdlx()
 	{
 		const bool initialized = IntializeAdlxImpl();
 		if (initialized)
+		{
 			g_quarantinedAdapters.store(0, std::memory_order_relaxed);
+			g_systemMetricsQuarantined.store(false, std::memory_order_relaxed);
+		}
 
 		return initialized;
 	}
@@ -835,6 +861,70 @@ bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo* adlxDeviceInfo)
 	{
 		QuarantineAdapter(index);
 		*adlxDeviceInfo = {};
+		return false;
+	}
+}
+
+static bool GetAdlxSystemMetricsImpl(const adlx_uint historyLength, AdlxSystemMetrics* adlxSystemMetrics)
+{
+	if (adlxSystemMetrics == nullptr || _perfMonitoringService == nullptr)
+		return false;
+
+	*adlxSystemMetrics = {};
+
+	bool check = false;
+
+	try
+	{
+		IADLXSystemMetricsSupportPtr systemMetricsSupport;
+		ADLX_RESULT resGetSupportedMetrics = _perfMonitoringService->GetSupportedSystemMetrics(&systemMetricsSupport);
+
+		if (ADLX_SUCCEEDED(resGetSupportedMetrics) && systemMetricsSupport != nullptr)
+		{
+			IADLXSystemMetricsListPtr systemMetricsList;
+			ADLX_RESULT resGetHistory = _perfMonitoringService->GetSystemMetricsHistory(historyLength, 0, &systemMetricsList);
+
+			// Take the last element, as for the GPU metrics
+			if (ADLX_SUCCEEDED(resGetHistory) && systemMetricsList != nullptr && systemMetricsList->Size() > 0)
+			{
+				IADLXSystemMetricsPtr systemMetrics;
+				ADLX_RESULT resSystemMetrics = systemMetricsList->At(systemMetricsList->Size() - 1, &systemMetrics);
+
+				if (ADLX_SUCCEEDED(resSystemMetrics) && systemMetrics != nullptr)
+				{
+					SetSmartShift(systemMetricsSupport, systemMetrics, adlxSystemMetrics);
+					check = true;
+				}
+			}
+		}
+	}
+	catch (const std::exception&)
+	{
+		return false;
+	}
+	catch (...)
+	{
+		return false;
+	}
+
+	return check;
+}
+
+bool GetAdlxSystemMetrics(const adlx_uint historyLength, AdlxSystemMetrics* adlxSystemMetrics)
+{
+	if (adlxSystemMetrics == nullptr || g_systemMetricsQuarantined.load(std::memory_order_relaxed))
+		return false;
+
+	*adlxSystemMetrics = {};
+
+	__try
+	{
+		return GetAdlxSystemMetricsImpl(historyLength, adlxSystemMetrics);
+	}
+	__except (AdlxDriverExceptionFilter(GetExceptionCode()))
+	{
+		g_systemMetricsQuarantined.store(true, std::memory_order_relaxed);
+		*adlxSystemMetrics = {};
 		return false;
 	}
 }
