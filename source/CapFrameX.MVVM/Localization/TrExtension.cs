@@ -34,16 +34,15 @@ namespace CapFrameX.MVVM.Localization
                 ConverterParameter = Text ?? string.Empty
             };
 
-            // A normal element can take the binding immediately. Inside a DataTemplate the
-            // target is not created yet: return the Binding itself so WPF applies it when the
-            // visual is built. Returning this extension there makes the template fail to load
-            // and the page stays blank.
+            // Only a real element can host the binding. Inside a template the target does not
+            // exist yet. A Binding object returned from here is written into the template as
+            // the property value and the page fails to load, so fall back to the translated text.
             if (serviceProvider?.GetService(typeof(IProvideValueTarget)) is IProvideValueTarget target
                 && target.TargetObject is DependencyObject
                 && target.TargetProperty is DependencyProperty)
                 return binding.ProvideValue(serviceProvider);
 
-            return binding;
+            return CxLang.T(Text ?? string.Empty);
         }
 
         private sealed class TranslateConverter : IValueConverter

@@ -35,7 +35,7 @@
 	<Grid>
 		<TabControl x:Name="GraphTab" Margin="10" FocusVisualStyle="{x:Null}" Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
 			<!--Powenetics-->
-			<TabItem Width="100" Header="{loc:Tr 'Powenetics'}">
+			<TabItem Header="{loc:Tr 'Powenetics'}">
 				<Grid Margin="{StaticResource CxTabContentMargin}">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="1*"/>
@@ -331,7 +331,7 @@
 				</Grid>
 			</TabItem>
 			<!--BENCHLAB-->
-			<TabItem Width="100" Header="{loc:Tr 'BENCHLAB'}">
+			<TabItem Header="{loc:Tr 'BENCHLAB'}">
 				<Grid Margin="{StaticResource CxTabContentMargin}">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="1*"/>
@@ -544,7 +544,7 @@
 				</Grid>
 			</TabItem>
 			<!--PMD Analysis-->
-			<TabItem Width="100" Header="{loc:Tr 'PMD Analysis'}">
+			<TabItem Header="{loc:Tr 'PMD Analysis'}">
 				<Grid x:Name="AnalysisChartGrid" Margin="{StaticResource CxTabContentMargin}">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="1*"/>

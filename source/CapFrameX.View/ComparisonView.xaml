@@ -81,7 +81,7 @@
 		    CloseOnClickAway="True">
 			<TabControl Name="GraphTab" Grid.Row="0" Grid.Column="0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"
 					SelectedItem="{Binding SelectedChartItem}" FocusVisualStyle="{x:Null}">
-				<TabItem Width="75" Header="{loc:Tr 'Bar charts'}">
+				<TabItem Header="{loc:Tr 'Bar charts'}">
 					<DockPanel Margin="{StaticResource CxTabContentMargin}">
 						<TextBlock DockPanel.Dock="Top" Grid.Row="0" Margin="0 10 0 5" FontWeight="Bold" FontSize="18" Text="{Binding CurrentGameName}" HorizontalAlignment="Center"
 						    Visibility="{Binding ShowGameNameTitle, Converter={StaticResource TrueToVisibleConverter}}"/>
@@ -138,7 +138,7 @@
 						</ScrollViewer>
 					</DockPanel>
 				</TabItem>
-				<TabItem Width="150" Header="{loc:Tr 'Line charts/ L-shapes'}">
+				<TabItem Header="{loc:Tr 'Line charts/ L-shapes'}">
 					<Grid Name="ChartAndCuttingGrid" Margin="{StaticResource CxTabContentMargin}">
 						<Grid.RowDefinitions>
 							<!--Edit box for custom title-->
@@ -304,7 +304,7 @@
 					</Grid>
 				</TabItem>
 				<!-- Variances Tab -->
-				<TabItem Width="100" Header="{loc:Tr 'Variances'}">
+				<TabItem Header="{loc:Tr 'Variances'}">
 					<DockPanel Margin="{StaticResource CxTabContentMargin}">
 						<TextBlock DockPanel.Dock="Top" Grid.Row="0" Margin="0 10 0 0" FontWeight="Bold" FontSize="18" Text="{Binding CurrentGameName}" HorizontalAlignment="Center"
 							   Visibility="{Binding ShowGameNameTitle, Converter={StaticResource TrueToVisibleConverter}}"/>
@@ -340,7 +340,7 @@
 					</DockPanel>
 				</TabItem>
 				<!-- Frame Time Distribution Tab -->
-				<TabItem Width="140" Header="{loc:Tr 'Frame Time Distribution'}">
+				<TabItem Header="{loc:Tr 'Frame Time Distribution'}">
 					<Grid Name="DistributionGrid" Margin="{StaticResource CxTabContentMargin}">
 						<Grid.RowDefinitions>
 							<!--Edit box for custom title-->

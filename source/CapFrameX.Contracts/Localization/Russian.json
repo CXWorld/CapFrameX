@@ -277,7 +277,7 @@
                "Create new subfolder":  "Создать подпапку",
                "Column options":  "Столбцы",
                "Date / Time":  "Дата / время",
-               "Aggregated":  "Агрегировано",
+               "Aggregated":  "Сводка",
                "RAM":  "ОЗУ",
                "Delete recording file(s)":  "Удалить файлы записей",
                "Move recording file(s)":  "Переместить файлы записей",
@@ -363,7 +363,7 @@
                "Temperature":  "Температура",
                "Clock":  "Частота",
                "GRAPHICS CARD":  "ВИДЕОКАРТА",
-               "VRAM":  "VRAM",
+               "VRAM":  "Видеопамять",
                "MAINBOARD":  "Плата",
                "Resizable BAR":  "Resizable BAR",
                "Hardware-accelerated GPU scheduling":  "Аппаратное планирование ГП",
@@ -829,6 +829,8 @@
                "Capture delay [s]":  "Задержка захвата [с]",
                "Hotkey sound":  "Звук клавиши",
                "Voice":  "Голос",
+               "None":  "Нет",
+               "Simple":  "Простой",
                "Number of runs":  "Число прогонов",
                "Reset run history":  "Сброс истории прогонов",
                "Second metric":  "Вторая метрика",
@@ -906,6 +908,22 @@
                "Throughput":  "Пропускная способность",
                "Small Data":  "Малые данные",
                "Factor":  "Множитель",
+               "Cores":  "ядер",
+               "Threads":  "потоков",
+               "[1/s]":  "[1/с]",
+               "App":  "Прил.",
+               "Mainboard":  "Плата",
+               "Storage":  "Диск",
+               "Misc":  "Прочее",
+               "Application info":  "Сведения о приложении",
+               "Performance metric":  "Метрика",
+               "Mainboard sensor":  "Датчик платы",
+               "Fan controller sensor":  "Датчик вентилятора",
+               "CPU sensor":  "Датчик ЦП",
+               "Memory sensor":  "Датчик памяти",
+               "GPU sensor":  "Датчик ГП",
+               "Storage sensor":  "Датчик накопителя",
+               "Miscellaneous":  "Разное",
                "Distribution [%]":  "Распределение [%]",
                "auto-detected.":  "обнаружен автоматически.",
                "Press \"{0}\" to start capture.":  "Нажмите «{0}», чтобы начать захват.",
@@ -1138,6 +1156,18 @@
                                   {
                                       "en":  "\\bVRAM\\b",
                                       "ru":  "видеопамять"
+                                  },
+                                  {
+                                      "en":  "Game Used",
+                                      "ru":  "занято игрой"
+                                  },
+                                  {
+                                      "en":  "\\bAvailable\\b",
+                                      "ru":  "доступно"
+                                  },
+                                  {
+                                      "en":  "\\bVirtual\\b",
+                                      "ru":  "виртуальная"
                                   },
                                   {
                                       "en":  "\\bMT/s\\b",

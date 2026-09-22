@@ -62,7 +62,7 @@
 	</UserControl.Resources>
 	<Grid HorizontalAlignment="Center">
 		<TabControl Width="940" Margin="10" Background="{DynamicResource MaterialDesign.Brush.Card.Background}" BorderThickness="0" FocusVisualStyle="{x:Null}">
-			<TabItem Width="140" Header="{loc:Tr 'Overlay items'}">
+			<TabItem Header="{loc:Tr 'Overlay items'}">
 				<Grid Margin="{StaticResource CxTabContentMargin}">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="*"/>
@@ -989,7 +989,7 @@
 		</Border>
 				</Grid>
 			</TabItem>
-			<TabItem Width="140" Header="{loc:Tr 'OSD options'}">
+			<TabItem Header="{loc:Tr 'OSD options'}">
 				<ScrollViewer Margin="{StaticResource CxTabContentMargin}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
 					<Grid Margin="8 0 8 14">
 						<Grid.ColumnDefinitions>

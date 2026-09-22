@@ -24,6 +24,7 @@
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+			<mvvm:OverlayLabelConverter x:Key="OverlayLabelConverter"/>
 			<Style x:Key="CxVoiceSlider" TargetType="{x:Type Slider}" BasedOn="{StaticResource MaterialDesign3.MaterialDesignSlider}">
 				<Setter Property="Template" Value="{StaticResource CxVoiceSliderTemplate}" />
 			</Style>
@@ -268,15 +269,14 @@
                      PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="TextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no delay"
                      PreviewTextInput="NumberValidationTextBox" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" wpf:HintAssist.HintOpacity=".8"/>
 
-					<ComboBox Grid.Row="0" Grid.Column="3" Width="102" Height="40" materialDesign:HintAssist.Hint="{loc:Tr 'Hotkey sound'}" Style="{StaticResource CxComboBox}"                          
+					<ComboBox Grid.Row="0" Grid.Column="3" Width="120" Height="40" materialDesign:HintAssist.Hint="{loc:Tr 'Hotkey sound'}" Style="{StaticResource CxComboBox}"                          
 						  Margin="30 0 0 0" MaxDropDownHeight="200" FontSize="14" materialDesign:HintAssist.IsFloating="True" materialDesign:HintAssist.HintOpacity=".8"
-						  ItemsSource="{Binding SoundModes}" HorizontalAlignment="Left" HorizontalContentAlignment="Left" VerticalAlignment="Bottom" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
-						<ComboBox.Text>
-							<Binding Path="SelectedSoundMode"
-								 Mode="TwoWay"
-								 UpdateSourceTrigger="PropertyChanged">
-							</Binding>
-						</ComboBox.Text>
+						  ItemsSource="{Binding SoundModes}" SelectedItem="{Binding SelectedSoundMode}" HorizontalAlignment="Left" HorizontalContentAlignment="Left" VerticalAlignment="Bottom" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
+						<ComboBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Converter={StaticResource OverlayLabelConverter}}"/>
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
 					</ComboBox>
 
 					<Grid Grid.Row="1" Grid.Column="3" Margin="20 10 -5 0" Width="110" Height="26" Visibility="{Binding ShowVolumeController, Converter={StaticResource FalseToCollapsedConverter}}">
@@ -299,7 +299,7 @@
 			</Border>
 			</DockPanel>
 			<TabControl Grid.Column="1" Margin="20 14 20 20" Background="Transparent" BorderThickness="0">
-				<TabItem Width="192" Margin="8 0 6 0" Header="{loc:Tr 'Run history and aggregation'}">
+				<TabItem Margin="8 0 6 0" Header="{loc:Tr 'Run history and aggregation'}">
 					<StackPanel Width="400" Margin="{StaticResource CxTabContentMargin}">
 						<!--Run history card-->
 						<Border Style="{StaticResource SectionCard}" Margin="0 0 0 4" Padding="16 12 16 16">
@@ -452,6 +452,11 @@
 									<ComboBox Grid.Row="0" Grid.Column="2" materialDesign:HintAssist.Hint="{loc:Tr 'Outlier metric'}"
 										MaxDropDownHeight="100" ItemsSource="{Binding RelatedMetricItemsSource}" SelectedItem="{Binding SelectedRelatedMetric}"
 										ToolTipService.ShowDuration="25000">
+										<ComboBox.ItemTemplate>
+											<DataTemplate>
+												<TextBlock Text="{Binding Converter={StaticResource OverlayLabelConverter}}"/>
+											</DataTemplate>
+										</ComboBox.ItemTemplate>
 										<ComboBox.ToolTip>
 											<ToolTip MaxWidth="350">
 												<TextBlock Text="{loc:Tr 'Metric used to determine outliers'}" TextWrapping="Wrap"/>
@@ -483,7 +488,7 @@
 						</Border>
 					</StackPanel>
 				</TabItem>
-				<TabItem Width="120" Header="{loc:Tr 'Capture Logger'}">
+				<TabItem Header="{loc:Tr 'Capture Logger'}">
 					<StackPanel Width="400" Margin="{StaticResource CxTabContentMargin}">
 						<Border Style="{StaticResource SectionCard}" Height="415" VerticalAlignment="Top">
 						<Grid>

@@ -130,7 +130,6 @@ jobs:
           if-no-files-found: error
 
       - name: Publish test release
-        if: github.event_name == 'workflow_dispatch'
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

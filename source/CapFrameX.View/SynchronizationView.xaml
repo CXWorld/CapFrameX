@@ -47,7 +47,7 @@
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="18" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{Binding CurrentGameName}"/>
         <TabControl Grid.Row="1" Grid.Column="0" Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
-            <TabItem Width="150" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
+            <TabItem Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                 <TabItem.Header>
                     <Label FontSize="12" Content="{loc:Tr 'Input lag approximation'}"/>
                 </TabItem.Header>
@@ -144,7 +144,7 @@
                     </Grid>
                 </Grid>
             </TabItem>
-            <TabItem Width="150" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" >
+            <TabItem Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" >
                 <TabItem.Header>
                     <Label FontSize="12" Content="{loc:Tr 'Until displayed times'}"/>
                 </TabItem.Header>
