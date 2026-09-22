@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using CapFrameX.Contracts.PMD;
+using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 
 namespace CapFrameX.PMD.Benchlab
@@ -36,6 +37,7 @@ namespace CapFrameX.PMD.Benchlab
         // Initial 10 samples per second.
         private int _sampleInterval = 100;
         private bool _isServiceRunning;
+        private readonly ILogger<BenchlabService> _logger;
         private readonly ISubject<SensorSample> _pmdSensorStream = new Subject<SensorSample>();
         private readonly ISubject<EPmdServiceStatus> _pmdServiceStatusStream = new Subject<EPmdServiceStatus>();
         private readonly SemaphoreSlim _pipeRequestLock = new SemaphoreSlim(1, 1);
@@ -57,6 +59,11 @@ namespace CapFrameX.PMD.Benchlab
         public int MinMonitoringInterval { get; set; } = 25;
 
         public bool IsServiceRunning => _isServiceRunning;
+
+        public BenchlabService(ILogger<BenchlabService> logger)
+        {
+            _logger = logger;
+        }
 
         public bool EnsureDemandStartMode()
         {
@@ -135,14 +142,17 @@ namespace CapFrameX.PMD.Benchlab
 
                 if (!UpdatePowerSensorIndices(initialSensorList))
                 {
-                    throw new InvalidDataException("The BENCHLAB device does not expose all required power sensors.");
+                    throw new InvalidDataException("The BENCHLAB device does not report valid readings for all required power sensors.");
                 }
 
                 _isServiceRunning = true;
                 PublishSensorSample(initialSensorList);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex,
+                    "Could not start BENCHLAB monitoring (device {DeviceId}, pipe {PipeName}).",
+                    _selectedDeviceId, _devicePipeName);
                 _isServiceRunning = false;
                 _pmdServiceStatusStream.OnNext(EPmdServiceStatus.Error);
                 return;
@@ -158,8 +168,9 @@ namespace CapFrameX.PMD.Benchlab
             {
                 return await GetDevicesWhenReadyAsync();
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogWarning(ex, "BENCHLAB discovery failed; attempting to use the bundled service.");
                 // An installed pre-2.0 service can be running under the same Windows service
                 // name but does not expose the discovery pipe. Replace it for this session
                 // with the bundled service that implements the current protocol.
@@ -221,6 +232,9 @@ namespace CapFrameX.PMD.Benchlab
                     }
                     catch (Exception ex)
                     {
+                        _logger.LogWarning(ex,
+                            "BENCHLAB sensor request failed (attempt {Attempt}, device {DeviceId}, pipe {PipeName}).",
+                            attempt + 1, _selectedDeviceId, _devicePipeName);
                         lastError = ex;
                         _devicePipeName = null;
                     }
@@ -287,6 +301,15 @@ namespace CapFrameX.PMD.Benchlab
                 out var mainboardPowerSensorIndex,
                 out var systemPowerSensorIndex))
             {
+                var invalidReadings = new[]
+                {
+                    cpuPowerSensorIndex < 0 ? "CPU_P" : null,
+                    gpuPowerSensorIndex < 0 ? "GPU_P" : null,
+                    mainboardPowerSensorIndex < 0 ? "MB_P" : null,
+                    systemPowerSensorIndex < 0 ? "SYS_P" : null
+                };
+                _logger.LogError("BENCHLAB telemetry has missing or invalid required power readings: {Sensors}.",
+                    string.Join(", ", invalidReadings.Where(name => name != null)));
                 return false;
             }
 
@@ -563,6 +586,7 @@ namespace CapFrameX.PMD.Benchlab
             var executablePath = GetBundledServicePath();
             if (string.IsNullOrWhiteSpace(executablePath) || !File.Exists(executablePath))
             {
+                _logger.LogError("The bundled BENCHLAB service was not found at {ExecutablePath}.", executablePath);
                 return false;
             }
 
@@ -589,8 +613,9 @@ namespace CapFrameX.PMD.Benchlab
                 _benchlabProcessJob = processJob;
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Could not launch the bundled BENCHLAB service at {ExecutablePath}.", executablePath);
                 processJob?.Dispose();
 
                 try
@@ -626,8 +651,11 @@ namespace CapFrameX.PMD.Benchlab
                             return await GetUpdatedSensorListAsync(cts.Token);
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        _logger.LogError(ex,
+                            "BENCHLAB monitoring failed while reading sensors (device {DeviceId}, pipe {PipeName}).",
+                            _selectedDeviceId, _devicePipeName);
                         return null;
                     }
                 }))
