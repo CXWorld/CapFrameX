@@ -60,17 +60,17 @@
 			</Style>
 		</ResourceDictionary>
 	</UserControl.Resources>
-	<Grid HorizontalAlignment="Center">
-		<TabControl Width="940" Margin="10" Background="{DynamicResource MaterialDesign.Brush.Card.Background}" BorderThickness="0" FocusVisualStyle="{x:Null}">
+	<Grid>
+		<TabControl Margin="10" Background="{DynamicResource MaterialDesign.Brush.Card.Background}" BorderThickness="0" FocusVisualStyle="{x:Null}">
 			<TabItem Header="{loc:Tr 'Overlay items'}">
 				<Grid Margin="{StaticResource CxTabContentMargin}">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="*"/>
 					</Grid.RowDefinitions>
 					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="460"/>
+						<ColumnDefinition Width="1.4*"/>
 						<ColumnDefinition Width="10"/>
-						<ColumnDefinition Width="460"/>
+						<ColumnDefinition Width="*"/>
 					</Grid.ColumnDefinitions>
 		<!--Margin keeps the top edge level with the first card of the right column (spacer-less grid + 5px card margin)-->
 		<Border Style="{StaticResource SectionCard}" Margin="0 0 0 5" Grid.Row="0" Grid.Column="0" >
@@ -776,7 +776,7 @@
 								<RowDefinition Height="40"></RowDefinition>
 							</Grid.RowDefinitions>
 							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="130"/>
+								<ColumnDefinition Width="*"/>
 								<ColumnDefinition Width="40"/>
 								<ColumnDefinition Width="20"/>
 							</Grid.ColumnDefinitions>

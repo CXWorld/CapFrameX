@@ -365,7 +365,7 @@
                             </Style>
                         </DataGrid.ColumnHeaderStyle>
                         <DataGrid.Columns>
-                            <DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
+                            <DataGridTextColumn x:Name="GameColumn" Binding="{Binding GameName, Mode=OneWay}"
                                         Width="Auto"
                                         Header="{loc:Tr 'Game'}"
                                         FontSize="13"
@@ -376,7 +376,7 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Binding="{Binding CreationTimestamp, Mode=OneWay}"
+                            <DataGridTextColumn x:Name="DateColumn" Binding="{Binding CreationTimestamp, Mode=OneWay}"
                                         Width="Auto"
                                         MinWidth="110"
                                         Header="{loc:Tr 'Date / Time'}"
@@ -389,7 +389,7 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Binding="{Binding Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            <DataGridTextColumn x:Name="CommentColumn" Binding="{Binding Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="100"
                                         Header="{loc:Tr 'Comment'}"
                                         IsReadOnly="False"
@@ -400,7 +400,7 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-                            <DataGridCheckBoxColumn Binding="{Binding IsAggregated, Mode=OneWay}"
+                            <DataGridCheckBoxColumn x:Name="AggregatedColumn" Binding="{Binding IsAggregated, Mode=OneWay}"
                                         Width="Auto"
                                         Header="{loc:Tr 'Aggregated'}"
                                         IsReadOnly="True" 
@@ -415,7 +415,7 @@
                                     </Style>
                                 </DataGridCheckBoxColumn.ElementStyle>
                             </DataGridCheckBoxColumn>
-                            <DataGridTextColumn Binding="{Binding ProcessorName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            <DataGridTextColumn x:Name="CpuColumn" Binding="{Binding ProcessorName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="Auto"
                                         Header="{loc:Tr 'CPU'}"
                                         IsReadOnly="False"
@@ -426,7 +426,7 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Binding="{Binding GraphicCardName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            <DataGridTextColumn x:Name="GpuColumn" Binding="{Binding GraphicCardName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="Auto"
                                         Header="{loc:Tr 'GPU'}"
                                         IsReadOnly="False"
@@ -437,7 +437,7 @@
                                     </Style> 
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Binding="{Binding SystemRamInfo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            <DataGridTextColumn x:Name="RamColumn" Binding="{Binding SystemRamInfo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="Auto"
                                         Header="{loc:Tr 'RAM'}"
                                         IsReadOnly="False"

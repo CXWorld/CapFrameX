@@ -682,9 +682,9 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="{loc:Tr 'Maximum'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding UseMaxStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="99% percentile" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="{loc:Tr '99% percentile'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding UseP99QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="95% percentile" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="{loc:Tr '95% percentile'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding UseP95QuantileStatisticParameter}" />
                                 <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="{loc:Tr 'Average'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding UseAverageStatisticParameter}"/>
@@ -692,15 +692,15 @@
                                 <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding UseGpuActiveAverageStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="{loc:Tr 'Median'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding UseMedianStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="5% percentile" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="{loc:Tr '5% percentile'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="6" Grid.Column="1" IsChecked="{Binding UseP5QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="1% percentile" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="{loc:Tr '1% percentile'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="7" Grid.Column="1" IsChecked="{Binding UseP1QuantileStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="{loc:Tr 'GPU-Busy 99% percentile(only ms)'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="8" Grid.Column="1" IsChecked="{Binding UseGpuActiveP1QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="0.2% percentile" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="{loc:Tr '0.2% percentile'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="9" Grid.Column="1" IsChecked="{Binding UseP0Dot2QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="3" Text="0.1% percentile" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="3" Text="{loc:Tr '0.1% percentile'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="0" Grid.Column="5" IsChecked="{Binding UseP0Dot1QuantileStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="1" Grid.Column="3" Text="1% low average" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="1" Grid.Column="4" IsChecked="{Binding UseP1LowAverageStatisticParameter}"/>
@@ -797,15 +797,15 @@
                                 <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding UseP1LowAverageStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="{loc:Tr 'GPU-Busy 1% high avg.(only ms)'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding UseGpuActiveP1LowAverageStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="99.9% percentile" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="{loc:Tr '99.9% percentile'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="6" Grid.Column="1" IsChecked="{Binding UseP0Dot1QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="99.8% percentile" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="{loc:Tr '99.8% percentile'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="7" Grid.Column="1" IsChecked="{Binding UseP0Dot2QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="99% percentile" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="{loc:Tr '99% percentile'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="8" Grid.Column="1" IsChecked="{Binding UseP1QuantileStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="{loc:Tr 'GPU-Busy 99% percentile(only ms)'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="9" Grid.Column="1" IsChecked="{Binding UseGpuActiveP1QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="3" Text="95% percentile" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="3" Text="{loc:Tr '95% percentile'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="0" Grid.Column="5" IsChecked="{Binding UseP5QuantileStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="1" Grid.Column="3" Text="{loc:Tr 'Average'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="1" Grid.Column="4" IsChecked="{Binding UseAverageStatisticParameter}"/>
@@ -813,9 +813,9 @@
                                 <ToggleButton Margin="5" Grid.Row="2" Grid.Column="4" IsChecked="{Binding UseGpuActiveAverageStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="{loc:Tr 'Median'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="3" Grid.Column="4" IsChecked="{Binding UseMedianStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="3" Text="5% percentile" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="3" Text="{loc:Tr '5% percentile'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="4" Grid.Column="4" IsChecked="{Binding UseP95QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="3" Text="1% percentile" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="3" Text="{loc:Tr '1% percentile'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="5" Grid.Column="4" IsChecked="{Binding UseP99QuantileStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="6" Grid.Column="3" Text="{loc:Tr 'Maximum'}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="6" Grid.Column="4" IsChecked="{Binding UseMinStatisticParameter}"/>

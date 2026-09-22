@@ -653,7 +653,7 @@ namespace CapFrameX.Overlay
                 OverlayEntryType = MapType(sensor.HardwareType),
                 GroupName = GetGroupName(sensor),
                 ShowGraph = false,
-                ShowGraphIsEnabled = false,
+                ShowGraphIsEnabled = true,
                 ShowOnOverlayIsEnabled = true,
                 ShowOnOverlay = sensor.IsPresentationDefault,
                 Value = 0,

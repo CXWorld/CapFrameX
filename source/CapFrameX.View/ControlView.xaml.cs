@@ -327,7 +327,7 @@ namespace CapFrameX.View
             if (myCell.Column == null)
                 return;
 
-            if (myCell.Column.Header.ToString() == "Comment")
+            if (myCell.Column == CommentColumn)
             {
                 if (_viewModel.CustomComment != _viewModel.SelectedRecordInfo.Comment)
                 {
@@ -335,7 +335,7 @@ namespace CapFrameX.View
                 }
 
             }
-            else if (myCell.Column.Header.ToString() == "CPU")
+            else if (myCell.Column == CpuColumn)
             {
                 if (_viewModel.CustomCpuDescription != _viewModel.SelectedRecordInfo.ProcessorName)
                 {
@@ -343,7 +343,7 @@ namespace CapFrameX.View
                 }
 
             }
-            else if (myCell.Column.Header.ToString() == "GPU")
+            else if (myCell.Column == GpuColumn)
             {
                 if (_viewModel.CustomGpuDescription != _viewModel.SelectedRecordInfo.GraphicCardName)
                 {
@@ -351,7 +351,7 @@ namespace CapFrameX.View
                 }
 
             }
-            else if (myCell.Column.Header.ToString() == "RAM")
+            else if (myCell.Column == RamColumn)
             {
                 if (_viewModel.CustomRamDescription != _viewModel.SelectedRecordInfo.SystemRamInfo)
                 {
@@ -373,7 +373,7 @@ namespace CapFrameX.View
             if (myCell.Column == null)
                 return;
 
-            if (myCell.Column.Header.ToString() == "Comment")
+            if (myCell.Column == CommentColumn)
             {
                 if (_viewModel.CustomComment != _viewModel.SelectedRecordInfo.Comment)
                 {
@@ -381,7 +381,7 @@ namespace CapFrameX.View
                     _viewModel.SaveDescriptions();
                 }
             }
-            else if (myCell.Column.Header.ToString() == "CPU")
+            else if (myCell.Column == CpuColumn)
             {
                 if (_viewModel.CustomCpuDescription != _viewModel.SelectedRecordInfo.ProcessorName)
                 {
@@ -389,7 +389,7 @@ namespace CapFrameX.View
                     _viewModel.SaveDescriptions();
                 }
             }
-            else if (myCell.Column.Header.ToString() == "GPU")
+            else if (myCell.Column == GpuColumn)
             {
                 if (_viewModel.CustomGpuDescription != _viewModel.SelectedRecordInfo.GraphicCardName)
                 {
@@ -397,7 +397,7 @@ namespace CapFrameX.View
                     _viewModel.SaveDescriptions();
                 }
             }
-            else if (myCell.Column.Header.ToString() == "RAM")
+            else if (myCell.Column == RamColumn)
             {
                 if (_viewModel.CustomRamDescription != _viewModel.SelectedRecordInfo.SystemRamInfo)
                 {
@@ -425,27 +425,29 @@ namespace CapFrameX.View
         {
             _viewModel.AppConfiguration.RecordListHeaderOrder = new int[7]
             {
-                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Game").DisplayIndex,
-                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Date / Time").DisplayIndex,
-                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Comment").DisplayIndex,
-                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Aggregated").DisplayIndex,
-                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "CPU").DisplayIndex,
-                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "GPU").DisplayIndex,
-                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "RAM").DisplayIndex
+                 GameColumn.DisplayIndex,
+                 DateColumn.DisplayIndex,
+                 CommentColumn.DisplayIndex,
+                 AggregatedColumn.DisplayIndex,
+                 CpuColumn.DisplayIndex,
+                 GpuColumn.DisplayIndex,
+                 RamColumn.DisplayIndex
             };
         }
 
         private void SetHeaders()
         {
             var indices = _viewModel.AppConfiguration.RecordListHeaderOrder;
+            if (indices == null || indices.Length < 7)
+                return;
 
-            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Game").DisplayIndex = indices[0];
-            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Date / Time").DisplayIndex = indices[1];
-            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Comment").DisplayIndex = indices[2];
-            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Aggregated").DisplayIndex = indices[3];
-            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "CPU").DisplayIndex = indices[4];
-            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "GPU").DisplayIndex = indices[5];
-            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "RAM").DisplayIndex = indices[6];
+            GameColumn.DisplayIndex = indices[0];
+            DateColumn.DisplayIndex = indices[1];
+            CommentColumn.DisplayIndex = indices[2];
+            AggregatedColumn.DisplayIndex = indices[3];
+            CpuColumn.DisplayIndex = indices[4];
+            GpuColumn.DisplayIndex = indices[5];
+            RamColumn.DisplayIndex = indices[6];
         }
 
         // TreeView Drag & Drop from record list
