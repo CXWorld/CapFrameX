@@ -1800,7 +1800,6 @@ namespace CapFrameX.Overlay
                 || x.OverlayEntryType == EOverlayEntryType.HDD))
             {
                 entry.IsNumeric = true;
-                entry.ShowGraphIsEnabled = true;
             }
         }
 
