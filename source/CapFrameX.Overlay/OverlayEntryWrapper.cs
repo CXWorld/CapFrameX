@@ -1,4 +1,4 @@
-﻿using CapFrameX.Contracts.Localization;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using Newtonsoft.Json;
 using Prism.Mvvm;
@@ -324,13 +324,15 @@ namespace CapFrameX.Overlay
                 }
             };
             PropertyChanged += _propertyChangedHandler;
-            CxLang.Instance.OverlayLanguageChanged += OnOverlayLanguageChanged;
         }
 
-        private void OnOverlayLanguageChanged()
+        public void RefreshLocalization()
         {
             if (!_disposed)
+            {
                 RaisePropertyChanged(nameof(LocalizedDescription));
+                RaisePropertyChanged(nameof(FormattedGroupName));
+            }
         }
 
         public IOverlayEntry Clone()
@@ -371,7 +373,6 @@ namespace CapFrameX.Overlay
             if (_disposed)
                 return;
 
-            CxLang.Instance.OverlayLanguageChanged -= OnOverlayLanguageChanged;
             PropertyChanged -= _propertyChangedHandler;
             PropertyChangedAction = null;
             UpdateShowOnOverlay = null;

@@ -47,7 +47,7 @@ namespace CapFrameX.ViewModel
         private bool _saveButtonIsEnable;
         private bool _isActive;
         private bool _aggregateButtonIsEnable = true;
-        private string _aggregationButtonText = "Evaluate" + Environment.NewLine + "multiple entries";
+        private string _aggregationButtonText = CxLang.T("SensorViewModel_EvaluateMultipleEntries");
         private string _sensorStatisticsText = CxLang.T("SensorViewModel_SensorStatisticsForSelectedRecord");
         private bool _selectedRecordChanged;
 
@@ -238,7 +238,7 @@ namespace CapFrameX.ViewModel
                         else
                             AggregateSensorDataOfSessions(sessions);
 
-                        AggregateButtonText = CxLang.T("Evaluate" + Environment.NewLine + "multiple entries");
+                        AggregateButtonText = CxLang.T("SensorViewModel_EvaluateMultipleEntries");
                         SensorStatisticsText = CxLang.T("SensorViewModel_SensorStatisticsForMultipleSelected");
                         AggregateButtonIsEnable = true;
                     }

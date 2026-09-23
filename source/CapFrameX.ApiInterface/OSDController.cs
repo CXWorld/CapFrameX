@@ -1,4 +1,3 @@
-﻿using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using EmbedIO;
 using EmbedIO.Routing;
@@ -34,7 +33,7 @@ namespace CapFrameX.ApiInterface
             return overlayService.CurrentOverlayEntries
                 .Where(e => showAll || e.ShowOnOverlay)
                 .GroupBy(e => e.GroupName)
-                .Select(g => $"{CxLang.Instance.TranslateOverlay(g.Key)}  {string.Join(" ", g.Select(FormatEntry))}")
+                .Select(g => $"{g.Key}  {string.Join(" ", g.Select(FormatEntry))}")
                 .ToArray();
         }
 

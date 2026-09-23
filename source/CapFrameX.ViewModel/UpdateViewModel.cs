@@ -97,7 +97,7 @@ namespace CapFrameX.ViewModel
 			&& !IsDownloading
 			&& Normalize(SelectedVersion.Version) != Normalize(_appVersionProvider.GetAppVersion());
 
-		public string VersionSelectionActionText => CxLang.T(IsSelectedVersionRollback ? "ROLL BACK" : "INSTALL VERSION");
+		public string VersionSelectionActionText => CxLang.T(IsSelectedVersionRollback ? "UpdateViewModel_RollBack" : "UpdateViewModel_InstallVersion");
 
 		/// <summary>Full sentence for the tab and the status bar tooltip.</summary>
 		public string StatusText
@@ -131,15 +131,15 @@ namespace CapFrameX.ViewModel
 		public bool IsRollback => Package != null
 			&& Normalize(Package.Version) < Normalize(_appVersionProvider.GetAppVersion());
 
-		public string UpdateDialogTitle => CxLang.T(IsRollback ? "Roll back CapFrameX" : "CapFrameX update");
+		public string UpdateDialogTitle => CxLang.T(IsRollback ? "UpdateViewModel_RollBackCapFrameX" : "UpdateViewModel_CapFrameXUpdate");
 
-		public string ConfirmActionText => CxLang.T(IsRollback ? "ROLL BACK" : "UPDATE");
+		public string ConfirmActionText => CxLang.T(IsRollback ? "UpdateViewModel_RollBack" : "UpdateViewModel_Update");
 
 		public string InstallConfirmationText => CxLang.T(IsRollback
-			? "The selected version replaces the current installation on the next launch. Captures and settings remain, but settings created by newer versions may not be understood by the older release."
+			? "UpdateViewModel_InstallConfirmationRollback"
 			: Package?.Channel == EUpdateChannel.Beta
-				? "This beta build is downloaded now and installed the next time CapFrameX starts. Beta builds may be less stable than regular releases."
-				: "The update is downloaded now and installed the next time CapFrameX starts.");
+				? "UpdateViewModel_InstallConfirmationBeta"
+				: "UpdateViewModel_InstallConfirmationRegular");
 
 		/// <summary>Drives the download icon in the status bar.</summary>
 		public bool IsUpdateIndicatorVisible => IsUpdateAvailable || IsDownloading || IsUpdateReadyToInstall;
@@ -210,21 +210,29 @@ namespace CapFrameX.ViewModel
 
 		private static string TranslateUpdateMessage(string message)
 		{
+			if (string.IsNullOrEmpty(message))
+				return message ?? string.Empty;
+
 			var exact = CxLang.T(message);
 			if (!string.Equals(exact, message, StringComparison.Ordinal))
 				return exact;
 
+			if (message == "The update check was cancelled.")
+				return CxLang.T("UpdateViewModel_TheUpdateCheckWasCancelled");
+			if (message == "The update server could not be reached.")
+				return CxLang.T("UpdateViewModel_TheUpdateServerCouldNotBeReached");
+
 			var noChannel = Regex.Match(message, @"^No (.+) build is currently published\. (\d+) other versions are available\.$");
 			if (noChannel.Success)
-				return $"Сейчас нет опубликованной сборки {noChannel.Groups[1].Value}. Доступно других версий: {noChannel.Groups[2].Value}.";
+				return string.Format(CultureInfo.CurrentCulture, CxLang.T("UpdateViewModel_NoChannelBuildPublished"), noChannel.Groups[1].Value, noChannel.Groups[2].Value);
 
 			var upToDate = Regex.Match(message, @"^CapFrameX is up to date on the (.+) channel\. (\d+) versions are available\.$");
 			if (upToDate.Success)
-				return $"CapFrameX обновлён на канале {upToDate.Groups[1].Value}. Доступно версий: {upToDate.Groups[2].Value}.";
+				return string.Format(CultureInfo.CurrentCulture, CxLang.T("UpdateViewModel_CapFrameXUpToDateOnChannel"), upToDate.Groups[1].Value, upToDate.Groups[2].Value);
 
 			var available = Regex.Match(message, @"^(.+) version (.+) is available\.$");
 			if (available.Success)
-				return $"Доступна версия {available.Groups[2].Value} ({available.Groups[1].Value}).";
+				return string.Format(CultureInfo.CurrentCulture, CxLang.T("UpdateViewModel_VersionAvailable"), available.Groups[1].Value, available.Groups[2].Value);
 
 			return message;
 		}

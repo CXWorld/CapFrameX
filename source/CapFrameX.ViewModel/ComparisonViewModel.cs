@@ -1431,9 +1431,9 @@ namespace CapFrameX.ViewModel
             UpdateRowSeriesTitles();
 
             string timingSource = CxLang.T(_useDisplayChangeSamplesForComparison
-                ? "Display time" : "Present frametime");
+                ? "ComparisonViewModel_DisplayTime" : "ComparisonViewModel_PresentFrametime");
             string fpsSource = CxLang.T(_useDisplayChangeSamplesForComparison
-                ? "Display FPS" : "Present FPS");
+                ? "ComparisonViewModel_DisplayFPS" : "ComparisonViewModel_PresentFPS");
 
             var frametimeAxis = ComparisonFrametimesModel?.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
             if (frametimeAxis != null)

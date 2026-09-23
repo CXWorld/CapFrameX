@@ -1,4 +1,4 @@
-﻿using CapFrameX.Capture.Contracts;
+using CapFrameX.Capture.Contracts;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Data;
@@ -62,7 +62,7 @@ namespace CapFrameX.ViewModel
 		}
 
 		public string HookOverlayStatusText
-			=> CxLang.T(HookOverlayStatusLabel.ForState(_hookOverlayStatus?.State ?? EHookOverlayStatus.Waiting));
+			=> CxLang.TranslateEnum(_hookOverlayStatus?.State ?? EHookOverlayStatus.Waiting);
 
 		public string HookOverlayStatusColor
 		{
@@ -88,7 +88,7 @@ namespace CapFrameX.ViewModel
 		}
 
 		public string HookOverlayStatusToolTip => _hookOverlayStatus?.Detail ??
-			"Waiting for hook status.";
+			CxLang.T("StateViewModel_WaitingForHookStatus");
 
 		public bool IsCaptureModeActive
 		{

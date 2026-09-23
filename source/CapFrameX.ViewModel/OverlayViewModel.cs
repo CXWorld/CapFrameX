@@ -1,4 +1,4 @@
-﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
@@ -913,6 +913,7 @@ namespace CapFrameX.ViewModel
                     RefreshHookLearnedProfileText();
                 }
             };
+            CxLang.Instance.OverlayLanguageChanged += OnOverlayLanguageChanged;
 
             SetFormatForGroupNameCommand = new DelegateCommand(
                () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry, Checkboxes));
@@ -946,6 +947,25 @@ namespace CapFrameX.ViewModel
             SetGlobalHookEventResetMetricsHotkey();
 
             InitializeOSDCustomPosition();
+        }
+
+        private void OnOverlayLanguageChanged()
+        {
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher != null && !dispatcher.CheckAccess())
+            {
+                dispatcher.BeginInvoke(new Action(OnOverlayLanguageChanged));
+                return;
+            }
+
+            if (OverlayEntries != null)
+            {
+                foreach (var entry in OverlayEntries.OfType<OverlayEntryWrapper>())
+                {
+                    entry.RefreshLocalization();
+                }
+            }
+            OverlayEntriesView?.Refresh();
         }
 
         // Shared refresh path after the provider re-read its entry list (profile switch or display

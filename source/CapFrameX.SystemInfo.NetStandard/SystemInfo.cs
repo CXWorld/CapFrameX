@@ -1,5 +1,4 @@
 using CapFrameX.Contracts.Data;
-using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Sensor;
 using Microsoft.Extensions.Logging;
 using Mixaill.HwInfo.D3D;
@@ -469,7 +468,7 @@ namespace CapFrameX.SystemInfo.NetStandard
                     infoString += $"{item.Value}x{item.Key / ONE_GIB}GB+";
                 }
 
-                RamName = $"{wholeCapacity / ONE_GIB} {CxLang.Instance.TranslateOverlay("GB")} ({infoString.Remove(infoString.Length - 1)}) {speed} {CxLang.Instance.TranslateOverlay("MT/s")}";
+                RamName = $"{wholeCapacity / ONE_GIB}GB ({infoString.Remove(infoString.Length - 1)}) {speed}MT/s";
             }
 
             private static void AddMemoryManufacturer(string rawManufacturer, List<string> manufacturers)

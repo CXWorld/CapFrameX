@@ -1,4 +1,6 @@
+using CapFrameX.Extensions.NetStandard;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -18,7 +20,7 @@ namespace CapFrameX.Contracts.Localization
         public static CxLang Instance { get; } = new CxLang();
 
         private readonly Dictionary<string, Catalog> _catalogs = new Dictionary<string, Catalog>(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, string> _overlayCache = new Dictionary<string, string>(StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<string, string> _overlayCache = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
 
         private string _uiLanguage = "en";
         private string _overlayLanguage = "en";
@@ -94,6 +96,15 @@ namespace CapFrameX.Contracts.Localization
             if (Instance.TryGet(Instance._uiLanguage, key, out var translated)
                 || Instance.TryGet("en", key, out translated))
                 return translated;
+            if (useShortDescription)
+            {
+                var shortDesc = value.GetShortDescription();
+                if (!string.IsNullOrEmpty(shortDesc) && shortDesc != value.ToString())
+                    return shortDesc;
+            }
+            var desc = value.GetDescription();
+            if (!string.IsNullOrEmpty(desc))
+                return desc;
             return value.ToString();
         }
 
@@ -122,8 +133,6 @@ namespace CapFrameX.Contracts.Localization
         {
             if (string.IsNullOrEmpty(label))
                 return label ?? string.Empty;
-            if (label.Any(c => c >= '\u0400' && c <= '\u04FF'))
-                return label;
             if (_overlayCache.TryGetValue(label, out var cached))
                 return cached;
 
@@ -162,7 +171,7 @@ namespace CapFrameX.Contracts.Localization
                 _overlayPhrases = Array.Empty<Phrase>();
                 return;
             }
-            _overlayPhrases = catalog.Phrases;
+            _overlayPhrases = catalog.GetOrBuildPhrases();
         }
 
         private string CapitalizeStart(string text)
@@ -225,7 +234,7 @@ namespace CapFrameX.Contracts.Localization
         {
             public Phrase(string pattern, string replacement)
             {
-                Pattern = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+                Pattern = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
                 Replacement = replacement ?? string.Empty;
             }
 
@@ -255,7 +264,24 @@ namespace CapFrameX.Contracts.Localization
             public string Culture { get; private set; }
             public Dictionary<string, string> Strings { get; } = new Dictionary<string, string>(StringComparer.Ordinal);
             public Dictionary<string, string> Overlay { get; } = new Dictionary<string, string>(StringComparer.Ordinal);
-            public Phrase[] Phrases { get; private set; } = Array.Empty<Phrase>();
+            public List<(string pattern, string replacement)> RawPhrases { get; } = new List<(string pattern, string replacement)>();
+            private Phrase[] _builtPhrases;
+
+            public Phrase[] GetOrBuildPhrases()
+            {
+                if (_builtPhrases != null)
+                    return _builtPhrases;
+
+                var list = new List<Phrase>();
+                foreach (var (pattern, replacement) in RawPhrases)
+                {
+                    if (Phrase.TryCreate(pattern, replacement, out var phrase))
+                        list.Add(phrase);
+                }
+                list.Sort((a, b) => b.Pattern.ToString().Length.CompareTo(a.Pattern.ToString().Length));
+                _builtPhrases = list.ToArray();
+                return _builtPhrases;
+            }
 
             public static Catalog Parse(string json, string language)
             {
@@ -268,16 +294,13 @@ namespace CapFrameX.Contracts.Localization
                 ReadMap(root, "overlay", catalog.Overlay);
                 if (root.TryGetProperty("phrases", out var phrases) && phrases.ValueKind == JsonValueKind.Array)
                 {
-                    var list = new List<Phrase>();
                     foreach (var item in phrases.EnumerateArray())
                     {
                         var pattern = item.GetProperty("pattern").GetString();
                         var replacement = item.GetProperty("replacement").GetString();
-                        if (Phrase.TryCreate(pattern, replacement, out var phrase))
-                            list.Add(phrase);
+                        if (!string.IsNullOrEmpty(pattern))
+                            catalog.RawPhrases.Add((pattern, replacement));
                     }
-                    list.Sort((a, b) => b.Pattern.ToString().Length.CompareTo(a.Pattern.ToString().Length));
-                    catalog.Phrases = list.ToArray();
                 }
                 return catalog;
             }
