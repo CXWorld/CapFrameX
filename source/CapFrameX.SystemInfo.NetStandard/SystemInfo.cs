@@ -507,7 +507,7 @@ namespace CapFrameX.SystemInfo.NetStandard
                     }
 
                     if (cores > 0 && threads > 0)
-                        ProcessorCoreCountInfo = $"{cores} {CxLang.T("SystemInfo_Cores")} / {threads} {CxLang.T("SystemInfo_Threads")}";
+                        ProcessorCoreCountInfo = $"{cores} Cores / {threads} Threads";
                 }
                 catch (Exception ex)
                 {

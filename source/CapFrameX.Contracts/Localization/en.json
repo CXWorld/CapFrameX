@@ -1275,8 +1275,6 @@
     "SynchronizationViewModel_SyncedFrames": "Synced frames",
     "SynchronizationViewModel_UntilDisplayedTimeDistribution": "Until displayed time distribution",
     "SynchronizationViewModel_UntilDisplayedTimes": "Until displayed times",
-    "SystemInfo_Cores": "Cores",
-    "SystemInfo_Threads": "Threads",
     "UnsavedOverlayProfileDialog_Cancel": "Cancel",
     "UnsavedOverlayProfileDialog_ClosingWithoutSavingPermanentlyDiscards": "Closing without saving permanently discards the current changes.",
     "UnsavedOverlayProfileDialog_ExitWithoutSaving": "Exit without saving",

@@ -1275,8 +1275,6 @@
     "SynchronizationViewModel_SyncedFrames": "Синхронные кадры",
     "SynchronizationViewModel_UntilDisplayedTimeDistribution": "Распределение времени до отображения",
     "SynchronizationViewModel_UntilDisplayedTimes": "Время до отображения",
-    "SystemInfo_Cores": "ядер",
-    "SystemInfo_Threads": "потоков",
     "UnsavedOverlayProfileDialog_Cancel": "Отмена",
     "UnsavedOverlayProfileDialog_ClosingWithoutSavingPermanentlyDiscards": "Закрытие без сохранения безвозвратно отменит текущие изменения.",
     "UnsavedOverlayProfileDialog_ExitWithoutSaving": "Выйти без сохранения",
