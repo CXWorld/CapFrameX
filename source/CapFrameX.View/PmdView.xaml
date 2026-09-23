@@ -478,7 +478,7 @@
 								ToolTipService.ShowDuration="25000">
 								<ToggleButton.ToolTip>
 									<ToolTip MaxWidth="350">
-										<TextBlock Text="{loc:Tr PmdView_ConnectToACompatibleBENCHLAB}"
+										<TextBlock Text="{loc:Tr PmdView_StartOrStopBENCHLABMonitoring}"
 											TextWrapping="Wrap"/>
 									</ToolTip>
 								</ToggleButton.ToolTip>

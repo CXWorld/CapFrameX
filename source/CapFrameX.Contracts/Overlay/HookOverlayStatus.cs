@@ -19,7 +19,18 @@ namespace CapFrameX.Contracts.Overlay
         /// Unlike <see cref="Waiting"/> this never resolves on its own — the game has to be
         /// restarted. Detail carries the reason.
         /// </summary>
-        Blocked
+        Blocked,
+        /// <summary>
+        /// The hook is injected and CapFrameX is judging the current compatibility stage against
+        /// its time budget. Resolves into <see cref="Active"/>, <see cref="Fallback"/> or
+        /// <see cref="RestartPending"/> within seconds.
+        /// </summary>
+        Probing,
+        /// <summary>
+        /// The current stage failed and the next one needs a fresh process. The hook-free
+        /// fallback serves this session; the next launch of the title starts on the next stage.
+        /// </summary>
+        RestartPending
     }
 
     public sealed class HookOverlayStatus
@@ -91,6 +102,8 @@ namespace CapFrameX.Contracts.Overlay
                 case EHookOverlayStatus.Idle: return "Idle";
                 case EHookOverlayStatus.Error: return "Error";
                 case EHookOverlayStatus.Blocked: return "Blocked";
+                case EHookOverlayStatus.Probing: return "Probing";
+                case EHookOverlayStatus.RestartPending: return "Restart game";
                 default: return "Waiting";
             }
         }

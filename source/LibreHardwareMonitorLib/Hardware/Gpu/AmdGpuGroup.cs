@@ -54,6 +54,8 @@ internal class AmdGpuGroup : IGroup
 
                 if (numberOfAdapters > 0)
                 {
+                    var adapters = new List<(uint Index, ADLX.AdlxDeviceInfo DeviceInfo)>();
+
                     for (uint i = 0; i < numberOfAdapters; i++)
                     {
                         ADLX.AdlxDeviceInfo deviceInfo = new();
@@ -83,9 +85,17 @@ internal class AmdGpuGroup : IGroup
                             // Check for valid AMD GPU
                             if (!string.IsNullOrEmpty(deviceInfo.GpuName))
                             {
-                                _hardware.Add(new AmdGpu(i, deviceInfo, settings, sensorConfig));
+                                adapters.Add((i, deviceInfo));
                             }
                         }
+                    }
+
+                    int systemMetricsAdapter = GetSystemMetricsAdapter(adapters.ConvertAll(adapter => adapter.DeviceInfo.GpuType));
+
+                    for (int n = 0; n < adapters.Count; n++)
+                    {
+                        _hardware.Add(new AmdGpu(adapters[n].Index, adapters[n].DeviceInfo, settings, sensorConfig,
+                            reportsSystemMetrics: n == systemMetricsAdapter));
                     }
                 }
             }
@@ -106,6 +116,21 @@ internal class AmdGpuGroup : IGroup
             _report.AppendLine("Exception: " + e.Message);
             _report.AppendLine();
         }
+    }
+
+    /// <summary>
+    /// System-wide metrics (SmartShift) are reported by one adapter only: the first discrete GPU,
+    /// which SmartShift shifts power to, otherwise the first adapter. Returns -1 for no adapters.
+    /// </summary>
+    internal static int GetSystemMetricsAdapter(IReadOnlyList<uint> gpuTypes)
+    {
+        for (int i = 0; i < gpuTypes.Count; i++)
+        {
+            if (gpuTypes[i] == (uint)ADLX.GpuType.Discrete)
+                return i;
+        }
+
+        return gpuTypes.Count > 0 ? 0 : -1;
     }
 
     public IReadOnlyList<IHardware> Hardware => _hardware;

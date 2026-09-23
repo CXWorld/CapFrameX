@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.ExceptionServices;
 using CapFrameX.PMD.Benchlab;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json.Linq;
 using BenchlabSensor = CapFrameX.PMD.Benchlab.Sensor;
 
 namespace CapFrameX.Test.PMD
@@ -89,14 +90,77 @@ namespace CapFrameX.Test.PMD
             Assert.ThrowsException<InvalidDataException>(() => BenchlabProtocol.DeserializeSensors(json));
         }
 
+        [DataTestMethod]
+        [DataRow("null", false)]
+        [DataRow("null", true)]
+        [DataRow(null, true)]
+        [DataRow("\"NaN\"", true)]
+        [DataRow("\"Infinity\"", true)]
+        [DataRow("\"-Infinity\"", true)]
+        [DataRow("-1.7976931348623157E+308", false)]
+        [DataRow("-1.7976931348623157E+308", true)]
+        [DataRow("24.5", false)]
+        public void DeserializeSensors_UnavailableOptionalReadingPreservesPowerValuesAndIndices(
+            string valueJson, bool isValid)
+        {
+            var sensors = BenchlabProtocol.DeserializeSensors(CreateTelemetryJson("TS1", valueJson, isValid));
+
+            Assert.AreEqual(6, sensors.Count);
+            Assert.IsNull(sensors[0]);
+            Assert.AreEqual("TS1", sensors[1].ShortName);
+            Assert.IsFalse(sensors[1].IsValid);
+            Assert.IsTrue(double.IsNaN(sensors[1].Value));
+
+            Assert.IsTrue(BenchlabProtocol.TryGetPowerSensorIndices(
+                sensors, out var cpu, out var gpu, out var mainboard, out var system));
+            Assert.AreEqual(2, cpu);
+            Assert.AreEqual(3, gpu);
+            Assert.AreEqual(4, mainboard);
+            Assert.AreEqual(5, system);
+            Assert.AreEqual(125.0, sensors[cpu].Value);
+            Assert.AreEqual(300.0, sensors[gpu].Value);
+            Assert.AreEqual(75.0, sensors[mainboard].Value);
+            Assert.AreEqual(500.0, sensors[system].Value);
+        }
+
+        [DataTestMethod]
+        [DataRow("CPU_P", "null", true)]
+        [DataRow("GPU_P", "null", true)]
+        [DataRow("MB_P", "null", true)]
+        [DataRow("SYS_P", "null", true)]
+        [DataRow("CPU_P", "null", false)]
+        [DataRow("CPU_P", null, true)]
+        [DataRow("GPU_P", "\"NaN\"", true)]
+        [DataRow("MB_P", "\"Infinity\"", true)]
+        [DataRow("SYS_P", "\"-Infinity\"", true)]
+        [DataRow("CPU_P", "125.0", false)]
+        [DataRow("CPU_P", "-1.7976931348623157E+308", true)]
+        public void TryGetPowerSensorIndices_RejectsUnavailableRequiredReading(
+            string shortName, string valueJson, bool isValid)
+        {
+            var sensors = BenchlabProtocol.DeserializeSensors(CreateTelemetryJson(shortName, valueJson, isValid));
+
+            Assert.IsFalse(BenchlabProtocol.TryGetPowerSensorIndices(sensors, out _, out _, out _, out _));
+        }
+
+        [TestMethod]
+        public void DeserializeSensors_PreservesValidZeroPower()
+        {
+            var sensors = BenchlabProtocol.DeserializeSensors(CreateTelemetryJson("CPU_P", "0.0", true));
+
+            Assert.IsTrue(BenchlabProtocol.TryGetPowerSensorIndices(sensors, out var cpu, out _, out _, out _));
+            Assert.AreEqual(0.0, sensors[cpu].Value);
+            Assert.IsTrue(sensors[cpu].IsValid);
+        }
+
         [TestMethod]
         public void TryGetPowerSensorIndices_ReturnsFalseWhenRequiredSensorIsMissing()
         {
             var sensors = new List<BenchlabSensor>
             {
-                new BenchlabSensor(0, "CPU_P", "CPU Power", SensorType.Power),
-                new BenchlabSensor(1, "GPU_P", "GPU Power", SensorType.Power),
-                new BenchlabSensor(2, "SYS_P", "System Power", SensorType.Power)
+                new BenchlabSensor(0, "CPU_P", "CPU Power", SensorType.Power) { Value = 125, IsValid = true },
+                new BenchlabSensor(1, "GPU_P", "GPU Power", SensorType.Power) { Value = 300, IsValid = true },
+                new BenchlabSensor(2, "SYS_P", "System Power", SensorType.Power) { Value = 500, IsValid = true }
             };
 
             var foundPowerSensors = BenchlabProtocol.TryGetPowerSensorIndices(
@@ -167,6 +231,45 @@ namespace CapFrameX.Test.PMD
             }
 
             Assert.AreEqual(0, serviceControllerExceptions);
+        }
+
+        private static string CreateTelemetryJson(string shortName, string valueJson, bool isValid)
+        {
+            // Include an empty row and an optional sensor before the power readings to
+            // catch filtering that would change the indices used by charts and captures.
+            var response = JObject.Parse(@"{
+                ""status"": ""CONNECTED"",
+                ""sensorsUpdated"": true,
+                ""sensors"": [
+                    null,
+                    { ""Id"": 16, ""ShortName"": ""TS1"", ""Name"": ""Temperature Sensor #1"", ""Type"": 0, ""Value"": 24.5, ""IsValid"": true },
+                    { ""Id"": 23, ""ShortName"": ""CPU_P"", ""Name"": ""CPU Power"", ""Type"": 6, ""Value"": 125.0, ""IsValid"": true },
+                    { ""Id"": 24, ""ShortName"": ""GPU_P"", ""Name"": ""GPU Power"", ""Type"": 6, ""Value"": 300.0, ""IsValid"": true },
+                    { ""Id"": 25, ""ShortName"": ""MB_P"", ""Name"": ""Motherboard Power"", ""Type"": 6, ""Value"": 75.0, ""IsValid"": true },
+                    { ""Id"": 22, ""ShortName"": ""SYS_P"", ""Name"": ""System Power"", ""Type"": 6, ""Value"": 500.0, ""IsValid"": true }
+                ]
+            }");
+
+            foreach (var sensor in response["sensors"].Children<JObject>())
+            {
+                if ((string)sensor["ShortName"] != shortName)
+                {
+                    continue;
+                }
+
+                if (valueJson == null)
+                {
+                    sensor.Remove("Value");
+                }
+                else
+                {
+                    sensor["Value"] = JToken.Parse(valueJson);
+                }
+
+                sensor["IsValid"] = isValid;
+            }
+
+            return response.ToString();
         }
     }
 }

@@ -2435,6 +2435,54 @@ ctlGetSetDisplaySettings(
 
 
 /**
+* @brief Display feature reset
+* 
+* @details
+*     - Resets specified display features for a given display
+* 
+* @returns
+*     - CTL_RESULT_SUCCESS
+*     - CTL_RESULT_ERROR_UNINITIALIZED
+*     - CTL_RESULT_ERROR_DEVICE_LOST
+*     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
+*         + `nullptr == hDisplayOutput`
+*     - CTL_RESULT_ERROR_INVALID_NULL_POINTER
+*         + `nullptr == pResetFeature`
+*     - ::CTL_RESULT_ERROR_UNSUPPORTED_VERSION - "Unsupported version"
+*     - ::CTL_RESULT_ERROR_NULL_OS_DISPLAY_OUTPUT_HANDLE - "Null OS display output handle"
+*     - ::CTL_RESULT_ERROR_NULL_OS_INTERFACE - "Null OS interface"
+*     - ::CTL_RESULT_ERROR_NULL_OS_ADAPATER_HANDLE - "Null OS adapter handle"
+*     - ::CTL_RESULT_ERROR_KMD_CALL - "Kernel mode driver call failure"
+*     - ::CTL_RESULT_ERROR_INVALID_NULL_HANDLE - "Invalid or Null handle passed"
+*     - ::CTL_RESULT_ERROR_INVALID_NULL_POINTER - "Invalid null pointer"
+*     - ::CTL_RESULT_ERROR_INVALID_OPERATION_TYPE - "Invalid operation type"
+*     - ::CTL_RESULT_ERROR_INVALID_ARGUMENT - "Invalid combination of parameters"
+*/
+ctl_result_t CTL_APICALL
+ctlDisplayFeatureReset(
+    ctl_display_output_handle_t hDisplayOutput,     ///< [in][release] Handle to display output
+    ctl_display_feature_reset_t* pResetFeature      ///< [in] Indicates Features to be reset
+    )
+{
+    ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
+    
+
+    HINSTANCE hinstLibPtr = GetLoaderHandle();
+
+    if (NULL != hinstLibPtr)
+    {
+        ctl_pfnDisplayFeatureReset_t pfnDisplayFeatureReset = (ctl_pfnDisplayFeatureReset_t)GetProcAddress(hinstLibPtr, "ctlDisplayFeatureReset");
+        if (pfnDisplayFeatureReset)
+        {
+            result = pfnDisplayFeatureReset(hDisplayOutput, pResetFeature);
+        }
+    }
+
+    return result;
+}
+
+
+/**
 * @brief Get ECC properties.
 * 
 * @details
@@ -4828,6 +4876,54 @@ ctlPowerTelemetryGet(
         if (pfnPowerTelemetryGet)
         {
             result = pfnPowerTelemetryGet(hDeviceHandle, pTelemetryInfo);
+        }
+    }
+
+    return result;
+}
+
+
+/**
+* @brief Get Power Telemetry V2.
+* 
+* @details
+*     - The purpose of this function is to retrieve multiple power and
+*       performance telemetry metrics from the adapter in a single efficient
+*       call.
+*     - Telemetry items include GPU/VRAM energy counters, voltage, clock
+*       frequency, temperature, activity counters, fan speed, VR temperatures,
+*       bandwidth, and throttling indicators.
+*     - Each telemetry item has a bSupported field indicating whether the
+*       value is available on the current hardware.
+*     - Limited rate of 50 ms, any call under 50 ms will return the same
+*       information.
+* 
+* @returns
+*     - CTL_RESULT_SUCCESS
+*     - CTL_RESULT_ERROR_UNINITIALIZED
+*     - CTL_RESULT_ERROR_DEVICE_LOST
+*     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
+*         + `nullptr == hDeviceHandle`
+*     - CTL_RESULT_ERROR_INVALID_NULL_POINTER
+*         + `nullptr == pTelemetryInfo`
+*/
+ctl_result_t CTL_APICALL
+ctlPowerTelemetryGetV2(
+    ctl_device_adapter_handle_t hDeviceHandle,      ///< [in][release] Handle to display adapter
+    ctl_power_telemetry_v2_t* pTelemetryInfo        ///< [out] The power telemetry data for the specified device.
+    )
+{
+    ctl_result_t result = CTL_RESULT_ERROR_NOT_INITIALIZED;
+    
+
+    HINSTANCE hinstLibPtr = GetLoaderHandle();
+
+    if (NULL != hinstLibPtr)
+    {
+        ctl_pfnPowerTelemetryGetV2_t pfnPowerTelemetryGetV2 = (ctl_pfnPowerTelemetryGetV2_t)GetProcAddress(hinstLibPtr, "ctlPowerTelemetryGetV2");
+        if (pfnPowerTelemetryGetV2)
+        {
+            result = pfnPowerTelemetryGetV2(hDeviceHandle, pTelemetryInfo);
         }
     }
 

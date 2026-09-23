@@ -271,7 +271,8 @@
 				<materialDesign:PopupBox Grid.Column="1" DataContext="{Binding Path=DataContext, ElementName=ColorbarViewName}"
 					materialDesign:Closed="PopupBox_Closed" RequestBringIntoView="PopupBox_RequestBringIntoView"
 					Margin="16,0,16,0" Padding="0" PopupUniformCornerRadius="10"
-					StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right" Opened="PopupBoxOpened">
+					StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right" Opened="PopupBoxOpened"
+					x:Name="OptionsPopupBox">
 					<materialDesign:PopupBox.ToggleContent>
 						<materialDesign:PackIcon Kind="Cog" Width="30" Height="30" Foreground="White"/>
 					</materialDesign:PopupBox.ToggleContent>
@@ -501,51 +502,6 @@
 															</ComboBox.ToolTip>
 														</ComboBox>
 													</Grid>
-												</StackPanel>
-											</Border>
-
-											<Border Style="{StaticResource SettingsCard}" IsEnabled="{Binding IsFlmSupported}">
-												<StackPanel>
-													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="{loc:Tr ColorbarView_AMDFrameLatencyMeter}"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr ColorbarView_MeasureClickToScreenResponse}"/>
-													<Separator Margin="0 12 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
-													<Grid Margin="0 8">
-														<Grid.ColumnDefinitions>
-															<ColumnDefinition Width="*"/>
-															<ColumnDefinition Width="Auto"/>
-														</Grid.ColumnDefinitions>
-														<StackPanel>
-															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr ColorbarView_UseAMDFLMLatency}"/>
-															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr ColorbarView_ContinuouslyPollFLMAndExpose}"/>
-														</StackPanel>
-														<CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}"
-																  IsChecked="{Binding UseAmdFlmLatency, Mode=TwoWay}"
-																  ToolTipService.ShowDuration="25000" ToolTipService.ShowOnDisabled="True">
-															<CheckBox.ToolTip>
-																<ToolTip MaxWidth="440">
-																	<TextBlock TextWrapping="Wrap" Text="{loc:Tr ColorbarView_EnableContinuousAMDFrameLatency}"/>
-																</ToolTip>
-															</CheckBox.ToolTip>
-														</CheckBox>
-													</Grid>
-													<Border Margin="0 4 0 0" Padding="12"
-															Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"
-															CornerRadius="5" IsEnabled="{Binding UseAmdFlmLatency}">
-														<Grid>
-															<Grid.ColumnDefinitions>
-																<ColumnDefinition Width="*"/>
-																<ColumnDefinition Width="Auto"/>
-															</Grid.ColumnDefinitions>
-															<StackPanel>
-																<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="{loc:Tr ColorbarView_FrameGeneration}"/>
-																<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr ColorbarView_OptimizeFLMDetectionForGames}"/>
-															</StackPanel>
-															<CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}"
-																	  IsChecked="{Binding AmdFlmFrameGeneration, Mode=TwoWay}"
-																	  ToolTipService.ShowOnDisabled="True"
-																	  ToolTip="{loc:Tr ColorbarView_OptimizeFLMSDetectionFor}"/>
-														</Grid>
-													</Border>
 												</StackPanel>
 											</Border>
 
@@ -1027,6 +983,7 @@
 														</Button>
 														<Button Width="190" Height="36" Margin="10 0 0 0"
 																Style="{StaticResource MaterialDesignOutlinedButton}"
+																Click="ShowUpdate_Click"
 																Command="{Binding UpdateViewModel.ShowUpdateDialogCommand}"
 																ToolTip="{loc:Tr ColorbarView_ShowWhatTheAvailableUpdate}">
 															<Viewbox Stretch="Uniform" StretchDirection="DownOnly" MaxHeight="16">

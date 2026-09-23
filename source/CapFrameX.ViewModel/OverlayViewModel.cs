@@ -44,6 +44,8 @@ namespace CapFrameX.ViewModel
         private readonly IThreadAffinityController _threadAffinityController;
         private readonly IOnlineMetricService _onlineMetricService;
         private readonly IOverlayTemplateService _overlayTemplateService;
+        private readonly IHookLearnedProfileService _hookLearnedProfiles;
+        private readonly IHookOverlayStatusService _hookOverlayStatus;
         private int _selectedOverlayEntryIndex = -1;
         private IOverlayEntry _selectedOverlayEntry;
         private IOverlayEntryFormatChange _checkboxes = new OverlayEntryFormatChange();
@@ -54,6 +56,7 @@ namespace CapFrameX.ViewModel
         private Subject<object> _configSubject = new Subject<object>();
         private ResetOverlayConfigDialog _resetOverlayConfigContent;
         private bool _resetOverlayConfigContentIsOpen;
+        private string _hookLearnedProfileText = "No learned compatibility profiles yet.";
         private string _filterText = string.Empty;
         private EOverlayEntryType? _selectedEntryTypeFilter;
         private ICollectionView _overlayEntriesView;
@@ -166,7 +169,7 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.OverlayHotKey; }
             set
             {
-                if (!CXHotkey.IsValidHotkey(value))
+                if (!CXHotkey.IsValidSetting(value))
                     return;
 
                 _appConfiguration.OverlayHotKey = value;
@@ -179,7 +182,7 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.OverlayConfigHotKey; }
             set
             {
-                if (!CXHotkey.IsValidHotkey(value))
+                if (!CXHotkey.IsValidSetting(value))
                     return;
 
                 _appConfiguration.OverlayConfigHotKey = value;
@@ -193,7 +196,7 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.OverlayPositionHotkey; }
             set
             {
-                if (!CXHotkey.IsValidHotkey(value))
+                if (!CXHotkey.IsValidSetting(value))
                     return;
 
                 _appConfiguration.OverlayPositionHotkey = value;
@@ -207,7 +210,7 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.ThreadAffinityHotkey; }
             set
             {
-                if (!CXHotkey.IsValidHotkey(value))
+                if (!CXHotkey.IsValidSetting(value))
                     return;
 
                 _appConfiguration.ThreadAffinityHotkey = value;
@@ -221,7 +224,7 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.ResetMetricsHotkey; }
             set
             {
-                if (!CXHotkey.IsValidHotkey(value))
+                if (!CXHotkey.IsValidSetting(value))
                     return;
 
                 _appConfiguration.ResetMetricsHotkey = value;
@@ -483,6 +486,28 @@ namespace CapFrameX.ViewModel
             set
             {
                 _appConfiguration.HookOverlayUsePresentMonFrametimes = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShareOverlayCompatibilityProfiles
+        {
+            get { return _appConfiguration.ShareOverlayCompatibilityProfiles; }
+            set
+            {
+                _appConfiguration.ShareOverlayCompatibilityProfiles = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        // What the learned store knows about the currently selected game, kept current by the
+        // store's change stream and the hook status stream (which carries the selected PID).
+        public string HookLearnedProfileText
+        {
+            get { return _hookLearnedProfileText; }
+            private set
+            {
+                _hookLearnedProfileText = value;
                 RaisePropertyChanged();
             }
         }
@@ -790,8 +815,9 @@ namespace CapFrameX.ViewModel
         public OverlayGroupSeparating OverlaySubModelGroupSeparating { get; }
 
         public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider, IAppConfiguration appConfiguration,
-            IPathService pathService, ISensorService sensorService, IRTSSService rTSSService, IThreadAffinityController threadAffinityController, 
-            IOnlineMetricService onlineMetricService, IOverlayTemplateService overlayTemplateService)
+            IPathService pathService, ISensorService sensorService, IRTSSService rTSSService, IThreadAffinityController threadAffinityController,
+            IOnlineMetricService onlineMetricService, IOverlayTemplateService overlayTemplateService,
+            IHookLearnedProfileService hookLearnedProfileService, IHookOverlayStatusService hookOverlayStatusService)
         {
             _overlayService = overlayService;
             _overlayEntryProvider = overlayEntryProvider;
@@ -802,6 +828,8 @@ namespace CapFrameX.ViewModel
             _overlayTemplateService = overlayTemplateService;
             _threadAffinityController = threadAffinityController;
             _onlineMetricService = onlineMetricService;
+            _hookLearnedProfiles = hookLearnedProfileService ?? NullHookLearnedProfileService.Instance;
+            _hookOverlayStatus = hookOverlayStatusService;
             ExtendedOsdLogging = new ExtendedOsdLoggingViewModel(new ExtendedOsdLoggingController());
             RefreshHookFreeDisplayItems();
 
@@ -868,6 +896,16 @@ namespace CapFrameX.ViewModel
             OpenResetDialogCommand = new DelegateCommand(() => ResetOverlayConfigContentIsOpen = true);
             ResetConfigCommand = new DelegateCommand(async () => await OnResetDefaults());
 
+            _hookLearnedProfiles.Changes
+                .ObserveOnDispatcher()
+                .Subscribe(_ => RefreshHookLearnedProfileText());
+            _hookOverlayStatus?.StatusStream
+                .Select(status => status?.ProcessId ?? 0)
+                .DistinctUntilChanged()
+                .ObserveOnDispatcher()
+                .Subscribe(_ => RefreshHookLearnedProfileText());
+            RefreshHookLearnedProfileText();
+
             SetFormatForGroupNameCommand = new DelegateCommand(
                () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry, Checkboxes));
 
@@ -930,6 +968,66 @@ namespace CapFrameX.ViewModel
             SaveButtonIsEnable = true;
         }
 
+        private void RefreshHookLearnedProfileText()
+        {
+            string text;
+            try
+            {
+                int total = _hookLearnedProfiles.GetAll().Count;
+                string processName = ResolveHookTargetProcessName();
+                if (processName == null)
+                {
+                    text = total == 0
+                        ? "No learned compatibility profiles yet."
+                        : $"{total} learned compatibility profile(s); no game selected.";
+                }
+                else
+                {
+                    IReadOnlyList<HookLearnedProfileSummary> entries =
+                        _hookLearnedProfiles.GetForProcess(processName);
+                    if (entries.Count == 0)
+                    {
+                        text = $"No learned compatibility profile for {processName} yet ({total} in total).";
+                    }
+                    else
+                    {
+                        HookLearnedProfileSummary entry = entries[0];
+                        if (entry.PendingStageName != null)
+                            text = $"{processName}: the next launch starts on {entry.PendingStageName}.";
+                        else if (entry.Exhausted)
+                            text = $"{processName}: compatibility could not be established; the next game launch probes again.";
+                        else if (entry.Verified)
+                            text = $"{processName}: {entry.StageName} (verified {entry.UpdatedUtc.ToLocalTime():g}).";
+                        else
+                            text = $"{processName}: last tried {entry.StageName}, not verified yet.";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                text = $"Learned compatibility profiles unavailable ({ex.Message}).";
+            }
+            HookLearnedProfileText = text;
+        }
+
+        private string ResolveHookTargetProcessName()
+        {
+            int pid = _hookOverlayStatus?.Current?.ProcessId ?? 0;
+            if (pid <= 0) return null;
+            try
+            {
+                using (var process = Process.GetProcessById(pid))
+                    return process.ProcessName;
+            }
+            catch (Exception ex) when (ex is ArgumentException ||
+                                       ex is InvalidOperationException ||
+                                       ex is System.ComponentModel.Win32Exception ||
+                                       ex is NotSupportedException)
+            {
+                return null;
+            }
+        }
+
         private async Task OnResetDefaults()
         {
             bool wasOverlayActive = _appConfiguration.IsOverlayActive;
@@ -984,9 +1082,6 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventOverlayHotkey()
         {
-            if (!CXHotkey.IsValidHotkey(OverlayHotkeyString))
-                return;
-
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.Overlay, () =>
             {
                 IsOverlayActive = !IsOverlayActive;
@@ -995,9 +1090,6 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventOverlayConfigHotkey()
         {
-            if (!CXHotkey.IsValidHotkey(OverlayConfigHotkeyString))
-                return;
-
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.OverlayConfig, () =>
             {
                 var nextConfig = GetNextConfig();
@@ -1007,9 +1099,6 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventOverlayPositionHotkey()
         {
-            if (!CXHotkey.IsValidHotkey(OverlayPositionHotkeyString))
-                return;
-
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.OverlayPosition, () =>
             {
                 OsdAnchor = OsdAnchorPositionCycle.GetNext(OsdAnchor);
@@ -1018,9 +1107,6 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventThreadAffinityHotkey()
         {
-            if (!CXHotkey.IsValidHotkey(ThreadAffinityHotkeyString))
-                return;
-
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.ThreadAffinity, () =>
             {
                 Task.Run(() => _threadAffinityController.ToggleAffinity());
@@ -1029,9 +1115,6 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventResetMetricsHotkey()
         {
-            if (!CXHotkey.IsValidHotkey(ResetMetricsHotkeyString))
-                return;
-
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.ResetMetrics, () =>
             {
                 Task.Run(() => _onlineMetricService.ResetRealtimeMetrics());

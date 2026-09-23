@@ -960,7 +960,7 @@
 									<Binding Path="ThreadAffinityHotkey"
 										ElementName="OverlayViewControl"
 										Mode="OneWay"
-										TargetNullValue="&lt; not set &gt;">
+										TargetNullValue="{x:Static validation:HotkeyValidationRule.UnsetText}">
 										<Binding.ValidationRules>
 											<validation:HotkeyValidationRule
 										ValidatesOnTargetUpdated="True" />
@@ -1148,9 +1148,18 @@
 											   Visibility="{Binding ExtendedOsdLogging.IsUpdating, Converter={StaticResource TrueToVisibleConverter}}"
 											   Text="{loc:Tr OverlayView_Saving}"/>
 									<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
-											   Text="{loc:Tr OverlayView_EnablesDetailedLogsForThe}"/>
+											   Text="{loc:Tr OverlayView_DetailedDirectXVulkanAndHook}"/>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#E0A020" TextWrapping="Wrap"
-											   Text="{loc:Tr OverlayView_RestartCapFrameXAndTheGame}"/>
+											   Text="{loc:Tr OverlayView_HookFreeAppliesLiveRestart}"/>
+									<Button Margin="26 12 0 0" HorizontalAlignment="Left"
+											Style="{StaticResource MaterialDesignOutlinedButton}"
+											Command="{Binding ExtendedOsdLogging.OpenLogFolderCommand}"
+											ToolTip="{loc:Tr OverlayView_OpenTheFolderContainingThe}">
+										<StackPanel Orientation="Horizontal">
+											<materialDesign:PackIcon Kind="FolderOpen" Width="18" Height="18" Margin="0 0 8 0" VerticalAlignment="Center"/>
+											<TextBlock Text="{loc:Tr OverlayView_OpenOSDLogFolder}" VerticalAlignment="Center"/>
+										</StackPanel>
+									</Button>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#D95050" TextWrapping="Wrap"
 											   Visibility="{Binding ExtendedOsdLogging.HasError, Converter={StaticResource TrueToVisibleConverter}}"
 											   Text="{Binding ExtendedOsdLogging.Error}"/>
@@ -1174,10 +1183,10 @@
 													 IsEnabled="{Binding IsRTSSInstalled}"
 													 Style="{StaticResource MaterialDesignRadioButton}"/>
 										<TextBlock Margin="26 0 0 0" Style="{StaticResource OsdOptionsDescription}"
-												   Text="{loc:Tr OverlayView_ClassicRivaTunerStatisticsServerOverlay}"/>
+												   Text="{loc:Tr OverlayView_RequiresRivaTunerStatisticsServer}"/>
 										<TextBlock Margin="26 5 0 0" FontSize="11" Foreground="#E0A020" TextWrapping="Wrap"
 												   Visibility="{Binding ShowRtssHiddenHint, Converter={StaticResource TrueToVisibleConverter}}"
-												   Text="{loc:Tr OverlayView_HideOSDOnRTSSIs}"/>
+												   Text="{loc:Tr OverlayView_DisableHideOSDOnRTSS}"/>
 									</StackPanel>
 
 									<Separator Margin="0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
@@ -1194,7 +1203,19 @@
 													  IsChecked="{Binding HookOverlayUsePresentMonFrametimes, Mode=TwoWay}"
 													  Style="{StaticResource MaterialDesignCheckBox}"/>
 											<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
-													   Text="{loc:Tr OverlayView_AddsDisplayTimeDataThrough}"/>
+													   Text="{loc:Tr OverlayView_AddsDisplayTimesOffUses}"/>
+											<TextBlock Margin="0 8 0 0" Style="{StaticResource OsdOptionsDescription}" TextWrapping="Wrap"
+													   Text="{loc:Tr OverlayView_AlwaysLearnsCompatibilitySettingsFor}"/>
+											<TextBlock Margin="0 6 0 0" Style="{StaticResource OsdOptionsDescription}" TextWrapping="Wrap"
+													   Text="{Binding HookLearnedProfileText}"/>
+										</StackPanel>
+										<StackPanel Margin="26 10 0 0">
+											<CheckBox Content="{loc:Tr OverlayView_ShareOverlayCompatibilityReports}"
+													  IsChecked="{Binding ShareOverlayCompatibilityProfiles, Mode=TwoWay}"
+													  IsEnabled="{Binding IsInGameOverlayAvailable}"
+													  Style="{StaticResource MaterialDesignCheckBox}"/>
+											<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}" TextWrapping="Wrap"
+													   Text="{loc:Tr OverlayView_SendFutureSessionProfilesGame}"/>
 										</StackPanel>
 									</StackPanel>
 
@@ -1267,6 +1288,7 @@
 										</Grid>
 									</StackPanel>
 								</StackPanel>
+
 							</Border>
 
 							<Border Style="{StaticResource OsdOptionsCard}">
@@ -1283,8 +1305,8 @@
 												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
 												 PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
-												 ToolTip="{loc:Tr OverlayView_HotkeyCombinableWithUpTo2}">
-											<Binding Path="OverlayHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
+												 ToolTip="{loc:Tr OverlayView_HotkeyPressBackspaceDeleteOrEsc}">
+											<Binding Path="OverlayHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="{x:Static validation:HotkeyValidationRule.UnsetText}">
 												<Binding.ValidationRules>
 													<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True"/>
 												</Binding.ValidationRules>
@@ -1300,8 +1322,8 @@
 												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
 												 PreviewKeyDown="ConfigHotkeyTextBox_PreviewKeyDown"
-												 ToolTip="{loc:Tr OverlayView_HotkeyCombinableWithUpTo3}">
-											<Binding Path="OverlayConfigHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
+												 ToolTip="{loc:Tr OverlayView_HotkeyPressBackspaceDeleteOrEsc}">
+											<Binding Path="OverlayConfigHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="{x:Static validation:HotkeyValidationRule.UnsetText}">
 												<Binding.ValidationRules>
 													<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True"/>
 												</Binding.ValidationRules>
@@ -1317,8 +1339,8 @@
 												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
 												 PreviewKeyDown="OverlayPositionHotkeyTextBox_PreviewKeyDown"
-												 ToolTip="{loc:Tr OverlayView_HotkeyCombinableWithUpTo4}">
-											<Binding Path="OverlayPositionHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
+												 ToolTip="{loc:Tr OverlayView_HotkeyPressBackspaceDeleteOrEsc}">
+											<Binding Path="OverlayPositionHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="{x:Static validation:HotkeyValidationRule.UnsetText}">
 												<Binding.ValidationRules>
 													<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True"/>
 												</Binding.ValidationRules>
@@ -1334,8 +1356,8 @@
 												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
 												 PreviewKeyDown="ResetMetricsHotkeyTextBox_PreviewKeyDown"
-												 ToolTip="{loc:Tr OverlayView_HotkeyCombinableWithUpTo5}">
-											<Binding Path="ResetMetricsHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
+												 ToolTip="{loc:Tr OverlayView_HotkeyPressBackspaceDeleteOrEsc}">
+											<Binding Path="ResetMetricsHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="{x:Static validation:HotkeyValidationRule.UnsetText}">
 												<Binding.ValidationRules>
 													<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True"/>
 												</Binding.ValidationRules>

@@ -17,6 +17,26 @@ namespace LibreHardwareMonitor.Interop
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    internal struct IgclTelemetryItem
+    {
+        public bool supported;
+        public double value;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct IgclPsuRail
+    {
+        // ctl_psu_type_t: PCIe slot, 6-pin or 8-pin connector (0 = unknown)
+        public int type;
+
+        // Average power over the last sample interval (W)
+        public IgclTelemetryItem power;
+
+        // Voltage (V)
+        public IgclTelemetryItem voltage;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     internal struct IgclTelemetryData
     {
         // GPU TDP
@@ -78,12 +98,68 @@ namespace LibreHardwareMonitor.Interop
         // Fanspeed (n Fans)
         public bool fanSpeedSupported;
         public double fanSpeedValue;
+
+        // The items below require ctl_power_telemetry_t version 1 or newer.
+
+        // GPU VR Temperature
+        public bool gpuVrTemperatureSupported;
+        public double gpuVrTemperatureValue;
+
+        // VRAM VR Temperature
+        public bool vramVrTemperatureSupported;
+        public double vramVrTemperatureValue;
+
+        // System Agent VR Temperature
+        public bool saVrTemperatureSupported;
+        public double saVrTemperatureValue;
+
+        // GPU Effective Frequency
+        public bool gpuEffectiveClockSupported;
+        public double gpuEffectiveClockValue;
+
+        // GPU Overvoltage (% of the maximum over-voltage increment)
+        public bool gpuOverVoltagePercentSupported;
+        public double gpuOverVoltagePercentValue;
+
+        // GPU Power (% of the default maximum power)
+        public bool gpuPowerPercentSupported;
+        public double gpuPowerPercentValue;
+
+        // GPU Temperature (% of the thermal margin)
+        public bool gpuTemperaturePercentSupported;
+        public double gpuTemperaturePercentValue;
+
+        // VRAM Read Bandwidth (GB/s)
+        public bool vramReadBandwidthGBpsSupported;
+        public double vramReadBandwidthGBpsValue;
+
+        // VRAM Write Bandwidth (GB/s)
+        public bool vramWriteBandwidthGBpsSupported;
+        public double vramWriteBandwidthGBpsValue;
+
+        // Fans 2..5; fan 1 is fanSpeedSupported/fanSpeedValue above.
+        public IgclTelemetryItem fan2Speed;
+        public IgclTelemetryItem fan3Speed;
+        public IgclTelemetryItem fan4Speed;
+        public IgclTelemetryItem fan5Speed;
+
+        // Power supply rails (CTL_PSU_COUNT)
+        public IgclPsuRail psu1;
+        public IgclPsuRail psu2;
+        public IgclPsuRail psu3;
+        public IgclPsuRail psu4;
+        public IgclPsuRail psu5;
     }
 
     internal class IGCL
     {
         public const int CTL_MAX_DEVICE_NAME_LEN = 100;
         public const int CTL_MAX_DRIVER_VERSION_LEN = 25;
+
+        // ctl_psu_type_t
+        public const int CTL_PSU_TYPE_PSU_PCIE = 1;
+        public const int CTL_PSU_TYPE_PSU_6PIN = 2;
+        public const int CTL_PSU_TYPE_PSU_8PIN = 3;
 
         public static int Intel_VENDOR_ID = 0x8086;
 

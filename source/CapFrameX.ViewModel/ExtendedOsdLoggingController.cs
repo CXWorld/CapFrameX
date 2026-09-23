@@ -59,6 +59,17 @@ namespace CapFrameX.ViewModel
                 throw new ArgumentNullException(nameof(notifyEnvironmentChanged));
         }
 
+        /// <summary>
+        /// Whether this process currently runs with extended OSD logging, i.e. the switch as
+        /// applied by <see cref="ApplyProcessSettings"/> or <see cref="SetEnabled"/>. Cheap enough
+        /// for rare events (a target-PID change); per-row consumers cache it once per second.
+        /// </summary>
+        public static bool IsVerboseLoggingEnabledInProcess()
+        {
+            return Environment.GetEnvironmentVariable(VerboseLogEnvironmentVariable,
+                EnvironmentVariableTarget.Process) == "1";
+        }
+
         internal bool IsEnabled()
         {
             // The JSON stores the user's selection. A launcher or IDE can retain old environment

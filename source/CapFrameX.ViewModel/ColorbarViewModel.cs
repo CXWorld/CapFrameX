@@ -1,4 +1,4 @@
-﻿using CapFrameX.Configuration;
+using CapFrameX.Configuration;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Data;
@@ -71,7 +71,6 @@ namespace CapFrameX.ViewModel
         private bool _helpViewSelected;
         private bool _showNotification;
         private DateTime _notificationTimestamp = DateTime.MinValue;
-        private bool _isFlmSupported;
         private bool _isCaptureServiceRunning;
         private bool _isCapturing;
 
@@ -606,37 +605,6 @@ namespace CapFrameX.ViewModel
         /// </summary>
         public bool IsCaptureServiceReady => _isCaptureServiceRunning && !_isCapturing;
 
-        public bool IsFlmSupported
-        {
-            get { return _isFlmSupported; }
-            private set
-            {
-                _isFlmSupported = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public bool UseAmdFlmLatency
-        {
-            get { return _appConfiguration.UseAmdFlmLatency; }
-            set
-            {
-                _appConfiguration.UseAmdFlmLatency = value;
-                RaisePropertyChanged();
-                RaisePropertyChanged(nameof(AmdFlmFrameGeneration));
-            }
-        }
-
-        public bool AmdFlmFrameGeneration
-        {
-            get { return _appConfiguration.AmdFlmFrameGeneration; }
-            set
-            {
-                _appConfiguration.AmdFlmFrameGeneration = value;
-                RaisePropertyChanged();
-            }
-        }
-
         public string PingURL
         {
             get { return _appConfiguration.PingURL; }
@@ -748,8 +716,6 @@ namespace CapFrameX.ViewModel
 
                 RaisePropertyChanged(nameof(GraphicsAdapters));
 
-                IsFlmSupported = sensorService.GetGpuVendor() == EGpuVendor.Amd;
-
                 // Seed the custom hardware descriptions only after GPU enumeration is
                 // complete: earlier, GetGraphicCardName() falls back to WMI, which
                 // reports the display-driving adapter - the iGPU on hybrid systems -
@@ -773,16 +739,6 @@ namespace CapFrameX.ViewModel
                 {
                     _isCapturing = status.Status != null && status.Status != ECaptureStatus.Stopped;
                     RaisePropertyChanged(nameof(IsCaptureServiceReady));
-                });
-
-            // AmdFlmService resets UseAmdFlmLatency when a copied config enables it on a
-            // non-AMD system; mirror such external changes into the checkbox bindings.
-            _appConfiguration.OnValueChanged
-                .Where(change => change.key == nameof(IAppConfiguration.UseAmdFlmLatency))
-                .Subscribe(_ =>
-                {
-                    RaisePropertyChanged(nameof(UseAmdFlmLatency));
-                    RaisePropertyChanged(nameof(AmdFlmFrameGeneration));
                 });
 
             SetAggregatorEvents();
@@ -985,18 +941,22 @@ namespace CapFrameX.ViewModel
 
         public void OnAutostartChanged(bool cleanup = false)
         {
+            if (PortableModeDetector.IsPortableMode)
+                return;
+
             const string appName = "CapFrameX";
 
             try
             {
                 using (TaskService ts = new TaskService())
                 {
-                    var taskExists = ts.RootFolder.GetTasks().Any(t => t.Name == appName);
-
-                    if (Autostart && !taskExists)
+                    // Refresh existing tasks as well to repair DLL targets and stale installation paths.
+                    if (Autostart)
                     {
-                        string appPath = System.Reflection.Assembly.GetEntryAssembly().Location;
-
+                        // On modern .NET, the entry assembly is CapFrameX.dll; Windows must launch the apphost EXE.
+                        string appDirectory = AppContext.BaseDirectory;
+                        string appPath = Path.Combine(appDirectory, appName + ".exe");
+                        string userId = Environment.UserDomainName + "\\" + Environment.UserName;
 
                         TaskDefinition td = ts.NewTask();
                         td.RegistrationInfo.Description = "Autostart";
@@ -1005,21 +965,18 @@ namespace CapFrameX.ViewModel
                         td.Principal.RunLevel = TaskRunLevel.Highest;
 
                         var trigger = new LogonTrigger();
-                        trigger.UserId = Environment.UserName;
+                        trigger.UserId = userId;
                         trigger.Delay = TimeSpan.FromSeconds(20);
 
                         td.Triggers.Add(trigger);
+                        td.Actions.Add(new ExecAction(appPath, workingDirectory: appDirectory));
 
-
-                        td.Actions.Add(new ExecAction(appPath));
-
-                        ts.RootFolder.RegisterTaskDefinition(appName, td, TaskCreation.CreateOrUpdate,
-                        Environment.UserDomainName + "\\" + Environment.UserName, null, TaskLogonType.InteractiveToken);
-
+                        using var task = ts.RootFolder.RegisterTaskDefinition(appName, td, TaskCreation.CreateOrUpdate,
+                            userId, null, TaskLogonType.InteractiveToken);
+                        _logger.LogInformation("Registered autostart task for {AppPath}.", appPath);
                     }
-                    else if (!Autostart && taskExists)
+                    else if (ts.RootFolder.GetTasks().Any(t => t.Name == appName))
                     {
-
                         ts.RootFolder.DeleteTask(appName);
                     }
                 }

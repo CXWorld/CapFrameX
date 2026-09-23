@@ -66,10 +66,10 @@ namespace CapFrameX.Mcp.Tools
             [Description("Vertical distance from the anchor in pixels, 0..2000.")] int? marginY = null,
             [Description("CapFrameX renderer size in percent, 50..200.")] int? zoom = null,
             [Description("Smooth numeric values between OSD data updates.")] bool? useValueSmoothing = null,
-            [Description("Global overlay toggle hotkey, for example Alt+O.")] string overlayHotkey = null,
-            [Description("Global overlay-configuration switch hotkey, for example Alt+C.")] string overlayConfigHotkey = null,
-            [Description("Global hotkey that cycles through all CapFrameX overlay anchor positions, for example Alt+P.")] string overlayPositionHotkey = null,
-            [Description("Global real-time metrics reset hotkey, for example Alt+M.")] string resetMetricsHotkey = null,
+            [Description("Global overlay toggle hotkey, for example Alt+O. Use an empty string to disable; omit to keep the current value.")] string overlayHotkey = null,
+            [Description("Global overlay-configuration switch hotkey, for example Alt+C. Use an empty string to disable; omit to keep the current value.")] string overlayConfigHotkey = null,
+            [Description("Global hotkey that cycles through all CapFrameX overlay anchor positions, for example Alt+P. Use an empty string to disable; omit to keep the current value.")] string overlayPositionHotkey = null,
+            [Description("Global real-time metrics reset hotkey, for example Alt+M. Use an empty string to disable; omit to keep the current value.")] string resetMetricsHotkey = null,
             [Description("OSD sensor refresh period in milliseconds; must be greater than zero.")] int? refreshPeriodMs = null,
             [Description("Real-time metric calculation interval in seconds; must be greater than zero.")] int? metricIntervalSeconds = null)
         {
@@ -346,9 +346,9 @@ namespace CapFrameX.Mcp.Tools
 
         private static void ValidateHotkey(string value, string parameterName)
         {
-            if (value != null && !CXHotkey.IsValidHotkey(value))
+            if (value != null && !CXHotkey.IsValidSetting(value))
                 throw new ArgumentException(
-                    "Hotkey must contain a trigger key and up to two modifiers (Control, Shift, or Alt), for example Alt+O.",
+                    "Hotkey must be empty to disable it, or contain a trigger key and up to two modifiers (Control, Shift, or Alt), for example Alt+O.",
                     parameterName);
         }
     }

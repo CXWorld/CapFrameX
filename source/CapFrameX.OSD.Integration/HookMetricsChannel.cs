@@ -13,10 +13,13 @@ namespace CapFrameX.OSD.Integration
     /// block, <c>Global\CfxOsdMetricsV1</c>. The hook (in the game process) opens it read-only and
     /// feeds the entries, so the in-game OSD shows the same values as RTSS / hook-free.
     ///
-    /// Layout is a fixed 32-byte header + up to <see cref="MaxEntries"/> fixed-size v2 records (no
+    /// Layout is a fixed 32-byte header + up to <see cref="MaxEntries"/> fixed-size records (no
     /// offset math; only the first <c>EntryCount</c> records are written and read). The final
-    /// four bytes of the existing v2 record are used for the optional group color; legacy readers
-    /// ignore that reserved tail and remain wire-compatible. Updates use a
+    /// four bytes of the v2 record carry the optional group color; v4 appends the per-entry text
+    /// scales (group / value font size in percent) and grows the record to 376 bytes. A reader
+    /// that predates v4 rejects the version and falls back to its local metrics rather than
+    /// parsing misaligned records; a hook that old only exists in a game process that was
+    /// injected before the app was updated. Updates use a
     /// SEQLOCK: the sequence counter is odd while writing, even when a consistent snapshot is
     /// published; the reader retries/uses-cached on an odd or changed sequence. The block carries a
     /// QPC timestamp for staleness detection. Same permissive SD (Everyone DACL + LOW integrity
@@ -28,7 +31,8 @@ namespace CapFrameX.OSD.Integration
 
         // ---- shared layout (MUST match the native reader in overlay_metrics_shm.cpp) ----
         internal const uint Magic = 0x31584643u; // 'C''F''X''1'
-        internal const uint Version = 2;
+        // v2 = target PID in the header; v4 = 376-byte records with the text scales (2026-09).
+        internal const uint Version = 4;
         // Raised 64 -> 256 (2026-07-28): the Enthusiast template enables one entry per core clock
         // AND per core load (plus per-thread loads where the CPU exposes them), so a 24-core CPU
         // already produced 68 entries. Publish() truncates, and GetTemplateSortOrder puts the
@@ -61,15 +65,17 @@ namespace CapFrameX.OSD.Integration
         private const int OffMagic = 0, OffVersion = 4, OffSeq = 8, OffEntryCount = 12,
                           OffTargetPid = 16, OffFlags = 20, OffWriteQpc = 24;
         internal const int HeaderSize = 32;
-        // record field offsets (relative to the record start) + sizes
+        // record field offsets (relative to the record start) + sizes. v4 appended the two
+        // text-scale fields (group / value font size in percent) behind the v2 group color,
+        // growing the record from 368 to 376 bytes; every older offset is unchanged.
         private const int RId = 0, SzId = 64, RGroup = 64, SzGroup = 64, RLabel = 128, SzLabel = 96,
                           RValueText = 224, SzValueText = 64, RUnit = 288, SzUnit = 16,
                           RValue = 304, RUpperLimit = 312, RLowerLimit = 320, RIsNumeric = 328,
                           RColor = 332, RShowGraph = 336, RDigits = 340, RHasUpper = 344,
                           RUpperColor = 348, RHasLower = 352, RLowerColor = 356, RSeparators = 360,
-                          RGroupColor = 364;
-        internal const int RecordSize = 368;
-        private const int MapSize = 131072; // > HeaderSize + MaxEntries*RecordSize (94240)
+                          RGroupColor = 364, RGroupScale = 368, RValueScale = 372;
+        internal const int RecordSize = 376;
+        private const int MapSize = 131072; // > HeaderSize + MaxEntries*RecordSize (96288)
 
         private const string Sddl = "D:(A;;GA;;;WD)S:(ML;;NW;;;LW)";
         private const uint SDDL_REVISION_1 = 1;
@@ -241,6 +247,8 @@ namespace CapFrameX.OSD.Integration
                     Marshal.WriteInt32(rec, RLowerColor, unchecked((int)e.LowerColor));
                     Marshal.WriteInt32(rec, RSeparators, e.Separators);
                     Marshal.WriteInt32(rec, RGroupColor, unchecked((int)e.GroupColor));
+                    Marshal.WriteInt32(rec, RGroupScale, e.GroupScalePercent);
+                    Marshal.WriteInt32(rec, RValueScale, e.ValueScalePercent);
                 }
 
                 Thread.MemoryBarrier();

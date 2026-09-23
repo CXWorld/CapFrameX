@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Data
@@ -22,6 +23,7 @@ namespace CapFrameX.Data
         private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<ProcessList> _logger;
         private readonly ISubject<int> _processListUpdate = new Subject<int>();
+        private readonly SemaphoreSlim _saveLock = new SemaphoreSlim(1, 1);
         private bool ProcesslistInitialized { get; set; }
         public IObservable<int> ProcessesUpdate => _processListUpdate.AsObservable();
 
@@ -107,18 +109,23 @@ namespace CapFrameX.Data
 
         public async Task Save()
         {
-            var json = JsonConvert.SerializeObject(_processList.OrderBy(p => p.Name), Formatting.Indented);
-
+            // Edits and scope changes can arrive before a previous asynchronous save ends.
+            await _saveLock.WaitAsync().ConfigureAwait(false);
             try
             {
+                var json = JsonConvert.SerializeObject(_processList.OrderBy(p => p.Name), Formatting.Indented);
                 using (StreamWriter outputFile = new StreamWriter(_filename))
                 {
-                    await outputFile.WriteAsync(json);
+                    await outputFile.WriteAsync(json).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while saving process list.");
+            }
+            finally
+            {
+                _saveLock.Release();
             }
         }
 
@@ -273,7 +280,7 @@ namespace CapFrameX.Data
             _onChange();
         }
 
-        public void UpdateCaptureTime(double lastCaptureTime)
+        public void UpdateCaptureTime(double? lastCaptureTime)
         {
             LastCaptureTime = lastCaptureTime;
             _onChange();

@@ -65,7 +65,10 @@ namespace CapFrameX.ViewModel
         private string _lastCapturedProcess;
         private string _currentGameNameToCapture = string.Empty;
         private string _currentProcessToCapture = string.Empty;
+        private int _lastPublishedProcessId;
         private bool _isLoggerOutputEmpty = true;
+        private bool _isUpdatingProcessList;
+        private bool _areButtonsActive = true;
         private Dictionary<string, string> _gameFileDescriptionCache = new Dictionary<string, string>();
 
         private PubSubEvent<ViewMessages.CurrentProcessToCapture> _updateCurrentProcess;
@@ -77,7 +80,8 @@ namespace CapFrameX.ViewModel
             {
                 _selectedProcessToCapture = value;
                 RaisePropertyChanged();
-                OnSelectedProcessToCaptureChanged();
+                if (!_isUpdatingProcessList)
+                    OnSelectedProcessToCaptureChanged();
             }
         }
 
@@ -91,7 +95,15 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool AreButtonsActive { get; set; } = true;
+        public bool AreButtonsActive
+        {
+            get => _areButtonsActive;
+            set
+            {
+                if (SetProperty(ref _areButtonsActive, value))
+                    RaisePropertyChanged(nameof(CanRememberGameCaptureTime));
+            }
+        }
 
         public bool IsLoggerOutputEmpty
         {
@@ -109,21 +121,6 @@ namespace CapFrameX.ViewModel
             set
             {
                 _captureStateInfo = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public string CaptureTimeString
-        {
-            get { return _captureTimeString; }
-            set
-            {
-                _captureTimeString = value;
-
-                if (UseGlobalCaptureTime && double.TryParse(_captureTimeString, out _))
-                    _appConfiguration.CaptureTime = Convert.ToDouble(value, CultureInfo.InvariantCulture);
-
-                RaisePropertyChanged(nameof(ShowCaptureTimeSave));
                 RaisePropertyChanged();
             }
         }
@@ -156,7 +153,7 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.CaptureHotKey; }
             set
             {
-                if (!CXHotkey.IsValidHotkey(value))
+                if (!CXHotkey.IsValidSetting(value))
                     return;
 
                 _appConfiguration.CaptureHotKey = value;
@@ -230,29 +227,13 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool UseGlobalCaptureTime => true;
-        //{
-        //    get { return _appConfiguration.UseGlobalCaptureTime; }
-        //    set
-        //    {
-        //        _appConfiguration.UseGlobalCaptureTime = value;
-
-        //        if (value)
-        //            CaptureTimeString = Convert.ToString(_appConfiguration.CaptureTime, CultureInfo.InvariantCulture);
-        //        else
-        //            UdateCustomCaptureTime(_currentProcessToCapture);
-
-        //        RaisePropertyChanged();
-        //    }
-        //}
-
         // Run history and aggregation options
         public string ResetHistoryHotkeyString
         {
             get { return _appConfiguration.ResetHistoryHotkey; }
             set
             {
-                if (!CXHotkey.IsValidHotkey(value))
+                if (!CXHotkey.IsValidSetting(value))
                     return;
 
                 _appConfiguration.ResetHistoryHotkey = value;
@@ -382,8 +363,6 @@ namespace CapFrameX.ViewModel
 
         public bool AggregationButtonEnabled => UseRunHistory && SelectedNumberOfRuns > 1;
 
-        public bool ShowCaptureTimeSave => !UseGlobalCaptureTime && CompareLastCaptureTime(_currentProcessToCapture);
-
         public bool SaveAggregationOnly
         {
             get
@@ -438,8 +417,10 @@ namespace CapFrameX.ViewModel
 
         public IAppConfiguration AppConfiguration => _appConfiguration;
 
-        public ObservableConcurrentCollection<string> ProcessesToCapture { get; }
-            = new ObservableConcurrentCollection<string>();
+        // Process discovery is observed on the UI dispatcher. Synchronous collection
+        // notifications keep selection changes inside the guarded refresh below.
+        public ObservableCollection<string> ProcessesToCapture { get; }
+            = new ObservableCollection<string>();
 
         public ObservableConcurrentCollection<(string, int)> ProcessesInfo { get; }
             = new ObservableConcurrentCollection<(string, int)>();
@@ -459,8 +440,6 @@ namespace CapFrameX.ViewModel
         public ICommand UpdateLogCommand { get; }
 
         public ICommand ClearLogCommand { get; }
-
-        public ICommand SaveCaptureTimeCommand { get; }
 
         public ICommand ShowProcessDetailsCommand { get; }
 
@@ -504,7 +483,10 @@ namespace CapFrameX.ViewModel
             ShowProcessDetailsCommand = new DelegateCommand(ShowProcessDetails);
             UpdateLogCommand = new DelegateCommand(() => _logEntryManager?.UpdateFilter());
             ClearLogCommand = new DelegateCommand(() => _logEntryManager?.ClearLog());
-            SaveCaptureTimeCommand = new DelegateCommand(() => OnSaveCaptureTime(CaptureTimeString, _currentProcessToCapture));
+            UseGlobalCaptureTimeCommand = new DelegateCommand(UseGlobalCaptureDuration, () => AreButtonsActive)
+                .ObservesProperty(() => AreButtonsActive);
+            RememberGameCaptureTimeCommand = new DelegateCommand(RememberGameCaptureDuration, () => CanRememberGameCaptureTime)
+                .ObservesProperty(() => CanRememberGameCaptureTime);
 
             LoggerOutput.CollectionChanged += (e, x) =>
             {
@@ -515,11 +497,13 @@ namespace CapFrameX.ViewModel
 
             _captureManager
                 .CaptureStatusChange
-                .SubscribeOnDispatcher()
+                .ObserveOnDispatcher()
                 .Subscribe(status =>
             {
                 if (status.Status != null)
                 {
+                    AreButtonsActive = status.Status == ECaptureStatus.Stopped;
+
                     if (status.Status == ECaptureStatus.Processing)
                     {
                         CaptureStateInfo = "Creating capture file..." + Environment.NewLine;
@@ -532,9 +516,6 @@ namespace CapFrameX.ViewModel
                     }
                     else
                     {
-                        AreButtonsActive = status.Status == ECaptureStatus.Stopped;
-                        RaisePropertyChanged(nameof(AreButtonsActive));
-
                         if (status.Status == ECaptureStatus.Stopped)
                             UpdateCaptureStateInfo();
                     }
@@ -542,7 +523,7 @@ namespace CapFrameX.ViewModel
                     if (status.Status == ECaptureStatus.StartedTimer)
                     {
                         CaptureStateInfo = $"Capturing in progress (Set Time: {CaptureTimeString} seconds)..." + Environment.NewLine
-                          + $"Press {CaptureHotkeyString} to stop capture.";
+                          + GetCaptureHotkeyHint($"Press {CaptureHotkeyString} to stop capture.");
                     }
                     else if (status.Status == ECaptureStatus.StartedRemote)
                     {
@@ -550,16 +531,16 @@ namespace CapFrameX.ViewModel
                     }
                     else if (status.Status == ECaptureStatus.Started)
                     {
-                        CaptureStateInfo = "Capturing in progress..." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
+                        CaptureStateInfo = "Capturing in progress..." + Environment.NewLine + GetCaptureHotkeyHint($"Press {CaptureHotkeyString} to stop capture.");
                     }
                 }
             });
 
             _logger.LogDebug("{viewName} Ready", this.GetType().Name);
             CaptureStateInfo = "Service ready..." + Environment.NewLine +
-                $"Press {CaptureHotkeyString} to start capture of the running process.";
+                GetCaptureHotkeyHint($"Press {CaptureHotkeyString} to start capture of the running process.");
             SelectedSoundMode = _appConfiguration.HotkeySoundMode;
-            CaptureTimeString = _appConfiguration.CaptureTime.ToString(CultureInfo.InvariantCulture);
+            RestoreCaptureTime();
             CaptureDelayString = _appConfiguration.CaptureDelay.ToString(CultureInfo.InvariantCulture);
             _disposableHeartBeat?.Dispose();
             _disposableHeartBeat = GetListUpdateHeartBeat();
@@ -612,6 +593,8 @@ namespace CapFrameX.ViewModel
                 {
                     ProcessesToIgnore.Clear();
                     ProcessesToIgnore.AddRange(_processList.GetIgnoredProcessNames());
+                    if (!_isCaptureTimeEdited && AreButtonsActive)
+                        RestoreCaptureTime();
                 });
         }
 
@@ -622,9 +605,6 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventCaptureHotkey()
         {
-            if (!CXHotkey.IsValidHotkey(CaptureHotkeyString))
-                return;
-
             // No local re-trigger lock: key repeat is filtered centrally for every hotkey now
             // (KeyRepeatFilter). The 500 ms lock this replaces also swallowed deliberate double
             // presses; a start immediately followed by a stop is legitimate and is already
@@ -672,20 +652,27 @@ namespace CapFrameX.ViewModel
                 string processToCapture = SelectedProcessToCapture ?? ProcessesToCapture.FirstOrDefault();
                 var processInfo = ProcessesInfo.FirstOrDefault(info => info.Item1 == processToCapture);
 
+                if (!CommitCaptureTime())
+                {
+                    _logEntryManager.AddLogEntry("Enter a valid capture duration before starting a capture (0 = no limit).", ELogMessageType.Error, true);
+                    return;
+                }
+
+                // Freeze the selected process and its settings before starting the worker.
+                var captureOptions = new CaptureOptions()
+                {
+                    CaptureTime = GetEffectiveCaptureTime(processToCapture),
+                    CaptureDelay = _appConfiguration.CaptureDelay,
+                    CaptureFileMode = AppConfiguration.CaptureFileMode,
+                    ProcessInfo = processInfo,
+                    Remote = false
+                };
+
                 StartCaptureWork(async () =>
                 {
                     try
                     {
-                        await _captureManager.StartCapture(new CaptureOptions()
-                        {
-                            CaptureTime = double.TryParse(_captureTimeString, out _)
-                                ? Convert.ToDouble(_captureTimeString, CultureInfo.InvariantCulture)
-                                : _appConfiguration.CaptureTime,
-                            CaptureDelay = _appConfiguration.CaptureDelay,
-                            CaptureFileMode = AppConfiguration.CaptureFileMode,
-                            ProcessInfo = processInfo,
-                            Remote = false
-                        });
+                        await _captureManager.StartCapture(captureOptions);
                     }
                     catch (Exception e)
                     {
@@ -764,57 +751,12 @@ namespace CapFrameX.ViewModel
             _captureManager.RestartCaptureService();
         }
 
-        public void OnSaveCaptureTime(string captureTimeString, string process)
-        {
-            if (string.IsNullOrWhiteSpace(process))
-                return;
-
-            try
-            {
-                var captureTime = double.TryParse(_captureTimeString, out _) ?
-                    Convert.ToDouble(captureTimeString, CultureInfo.InvariantCulture) : _appConfiguration.CaptureTime;
-
-                var entry = _processList.Processes
-                .FirstOrDefault(p => p.Name == process);
-
-                if (entry is null)
-                {
-                    _processList.AddEntry(process, null, false, captureTime);
-                }
-                else if (entry is CXProcess)
-                {
-                    entry.UpdateCaptureTime(captureTime);
-                }
-
-                _processList?.Save();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Error saving capture time to process list");
-            }
-
-            RaisePropertyChanged(nameof(ShowCaptureTimeSave));
-        }
-
-        private bool CompareLastCaptureTime(string process)
-        {
-            if (!string.IsNullOrWhiteSpace(process) && CaptureTimeString != string.Empty)
-            {
-                var lastProcessCaptureTime = _processList.FindProcessByName(process)?.LastCaptureTime;
-                return lastProcessCaptureTime?.ToString(CultureInfo.InvariantCulture) != CaptureTimeString;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
         private IDisposable GetListUpdateHeartBeat()
         {
             return Observable
                 .Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
-                .Where(x => !_captureManager.IsCapturing)
                 .ObserveOnDispatcher()
+                .Where(x => AreButtonsActive && !_captureManager.IsCapturing && !_captureManager.DelayCountdownRunning)
                 .Subscribe(x => UpdateProcessToCaptureList());
         }
 
@@ -822,15 +764,28 @@ namespace CapFrameX.ViewModel
         {
             var selectedProcessToCapture = SelectedProcessToCapture;
 
-            ProcessesToCapture.Clear();
-            ProcessesInfo.Clear();
-
             var filter = _processList.GetIgnoredProcessNames().ToHashSet();
-            var processesInfo = _captureManager.GetAllFilteredProcesses(filter);
-            var processList = processesInfo.Select(info => info.Item1);
+            var processesInfo = _captureManager.GetAllFilteredProcesses(filter).ToArray();
+            var processList = processesInfo.Select(info => info.Item1).ToArray();
 
-            ProcessesToCapture.AddFromEnumerable(processList);
-            ProcessesInfo.AddFromEnumerable(processesInfo);
+            // A ListView clears its selection while its items are replaced. Do not treat
+            // that intermediate state as a real process/scope change or commit an edit.
+            _isUpdatingProcessList = true;
+            try
+            {
+                foreach (var process in ProcessesToCapture.Where(process => !processList.Contains(process)).ToArray())
+                    ProcessesToCapture.Remove(process);
+                foreach (var process in processList.Where(process => !ProcessesToCapture.Contains(process)))
+                    ProcessesToCapture.Add(process);
+                ProcessesInfo.Clear();
+                ProcessesInfo.AddFromEnumerable(processesInfo);
+                SelectedProcessToCapture = processList.Contains(selectedProcessToCapture)
+                    ? selectedProcessToCapture : null;
+            }
+            finally
+            {
+                _isUpdatingProcessList = false;
+            }
 
             if (ProcessesToCapture.Any() && !string.IsNullOrWhiteSpace(_lastCapturedProcess))
             {
@@ -847,18 +802,13 @@ namespace CapFrameX.ViewModel
             // process never invalidated the registration — while re-registering once per process
             // change used to tear down and re-install the global hook, which drops keystrokes.
 
-            if (!processList.Contains(selectedProcessToCapture))
-                SelectedProcessToCapture = null;
-            else
-                SelectedProcessToCapture = selectedProcessToCapture;
-
-            UpdateCaptureStateInfo();
+            OnSelectedProcessToCaptureChanged();
         }
 
         private void OnSelectedProcessToCaptureChanged()
         {
-            UpdateCaptureStateInfo();
             UpdateProcessToCapture();
+            UpdateCaptureStateInfo();
         }
 
         private void UpdateProcessToCapture()
@@ -873,19 +823,34 @@ namespace CapFrameX.ViewModel
                 currentProcess = ProcessesToCapture.FirstOrDefault();
             }
 
-            GetGameNameFromProcessList(currentProcess);
-
-            if (!UseGlobalCaptureTime && _currentProcessToCapture != currentProcess)
+            if (_currentProcessToCapture != currentProcess)
             {
-                UdateCustomCaptureTime(currentProcess);
+                // An automatic process switch also finishes a valid edit for the old target.
+                CommitCaptureTime();
+                GetGameNameFromProcessList(currentProcess);
                 _currentProcessToCapture = currentProcess;
-                RaisePropertyChanged(nameof(ShowCaptureTimeSave));
+                RestoreCaptureTime();
             }
 
-            _currentProcessToCapture = currentProcess;
-
             var processId = ProcessesInfo.FirstOrDefault(info => info.Item1 == currentProcess).Item2;
+            if (processId != _lastPublishedProcessId)
+            {
+                // Every overlay renderer keys its frame feed on this PID; a flicker to 0 silences
+                // the hook-free graph and renames its <APP> group, so each change is logged once
+                // while extended OSD logging is on.
+                if (ExtendedOsdLoggingController.IsVerboseLoggingEnabledInProcess())
+                {
+                    _logger.LogInformation(
+                        "Overlay target process: '{process}' PID {previous} -> {current} (detected {count}, selected '{selected}')",
+                        currentProcess ?? "<none>", _lastPublishedProcessId, processId,
+                        ProcessesToCapture.Count, SelectedProcessToCapture ?? "<auto>");
+                }
+                _lastPublishedProcessId = processId;
+            }
             _rTSSService.ProcessIdStream.OnNext(processId);
+            // The PID stays 0 while several processes wait for a selection; the hook-free overlay
+            // only shows itself while the list has entries, so it needs the count as well.
+            _rTSSService.ProcessCountStream.OnNext(ProcessesToCapture.Count);
 
             _updateCurrentProcess?.Publish(new ViewMessages.CurrentProcessToCapture(currentProcess, processId));
         }
@@ -903,16 +868,6 @@ namespace CapFrameX.ViewModel
                         System.Windows.MessageBoxButton.OK,
                         System.Windows.MessageBoxImage.Information);
                 }
-            }
-        }
-
-        private void UdateCustomCaptureTime(string currentProcess)
-        {
-            if (currentProcess != null)
-            {
-                var lastProcessCaptureTime = _processList.FindProcessByName(currentProcess)?.LastCaptureTime;
-                if (lastProcessCaptureTime != null)
-                    CaptureTimeString = Convert.ToString(lastProcessCaptureTime, CultureInfo.InvariantCulture);
             }
         }
 
@@ -1007,7 +962,15 @@ namespace CapFrameX.ViewModel
             text = text.Replace("selected.", CxLang.T("CaptureViewModel_Selected"));
             text = text.Replace("Multiple processes detected.", CxLang.T("CaptureViewModel_MultipleProcessesDetected"));
             text = text.Replace("Select one or move unwanted processes to ignore list.", CxLang.T("CaptureViewModel_SelectOneOrMoveUnwanted"));
+            text = text.Replace("Capture hotkey disabled.", CxLang.T("CaptureViewModel_CaptureHotkeyDisabled"));
+            text = text.Replace("to stop capture.", CxLang.T("CaptureViewModel_ToStopCapture"));
+            text = text.Replace("Capturing in progress...", CxLang.T("CaptureViewModel_CapturingInProgress"));
             return text;
+        }
+
+        private string GetCaptureHotkeyHint(string enabledHint)
+        {
+            return string.IsNullOrEmpty(CaptureHotkeyString) ? "Capture hotkey disabled." : enabledHint;
         }
 
         private void UpdateCaptureStateInfo()
@@ -1016,12 +979,12 @@ namespace CapFrameX.ViewModel
             {
                 if (!ProcessesToCapture.Any())
                 {
-                    CaptureStateInfo = "Process list clear." + Environment.NewLine + $"Start any game / application and press \"{CaptureHotkeyString}\" to start capture.";
+                    CaptureStateInfo = "Process list clear." + Environment.NewLine + GetCaptureHotkeyHint($"Start any game / application and press \"{CaptureHotkeyString}\" to start capture.");
                     _overlayService.SetCaptureServiceStatus("Scanning for process...");
                 }
                 else if (ProcessesToCapture.Count == 1 && !_captureManager.DelayCountdownRunning)
                 {
-                    CaptureStateInfo = $"\"{_currentGameNameToCapture}\" auto-detected." + Environment.NewLine + $"Press \"{CaptureHotkeyString}\" to start capture.";
+                    CaptureStateInfo = $"\"{_currentGameNameToCapture}\" auto-detected." + Environment.NewLine + GetCaptureHotkeyHint($"Press \"{CaptureHotkeyString}\" to start capture.");
                     _overlayService.SetCaptureServiceStatus($"\"{_currentGameNameToCapture}\" ready to capture...");
                 }
                 else if (ProcessesToCapture.Count > 1)
@@ -1035,7 +998,7 @@ namespace CapFrameX.ViewModel
 
             if (!_captureManager.DelayCountdownRunning)
             {
-                CaptureStateInfo = $"\"{_currentGameNameToCapture}\" selected." + Environment.NewLine + $"Press \"{CaptureHotkeyString}\" to start capture.";
+                CaptureStateInfo = $"\"{_currentGameNameToCapture}\" selected." + Environment.NewLine + GetCaptureHotkeyHint($"Press \"{CaptureHotkeyString}\" to start capture.");
                 _overlayService.SetCaptureServiceStatus($"\"{_currentGameNameToCapture}\" ready to capture...");
             }
         }
@@ -1102,9 +1065,6 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventResetHistoryHotkey()
         {
-            if (!CXHotkey.IsValidHotkey(ResetHistoryHotkeyString))
-                return;
-
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.ResetHistory, () => _overlayService.ResetHistory());
         }
     }

@@ -2,7 +2,6 @@
 using CapFrameX.Configuration;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
-using CapFrameX.Contracts.Latency;
 using CapFrameX.Contracts.Logging;
 using CapFrameX.Contracts.MVVM;
 using CapFrameX.Contracts.Overlay;
@@ -21,7 +20,6 @@ using CapFrameX.Overlay;
 using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
 using CapFrameX.PresentMonInterface;
-using CapFrameX.PresentMonInterface.AmdFlm;
 using CapFrameX.RTSSIntegration;
 using CapFrameX.Sensor;
 using CapFrameX.Statistics.NetStandard;
@@ -58,6 +56,9 @@ namespace CapFrameX
         private OSD.Integration.HookMetricsPublisher _hookMetricsPublisher;
         // Streams per-frame PresentMon frametimes/display-times to the hook (PresentMon graph mode).
         private OSD.Integration.HookFrametimePublisher _hookFrametimePublisher;
+        // Learned in-game compatibility profiles (JSON in the configuration folder).
+        private OSD.Integration.HookLearnedProfileStore _hookLearnedProfileStore;
+        private OSD.Integration.HookProfileReportService _hookProfileReports;
 #endif
         private OSD.Integration.HookOverlayStatusService _hookOverlayStatusService;
 
@@ -131,10 +132,6 @@ namespace CapFrameX
                     osdCaptureService = Container.Resolve<ICaptureService>();
                 }
 
-                // Resolve the opt-in FLM service at startup so it can measure independently of
-                // PresentMon captures and feed both the live metric and sensor pipelines.
-                Container.Resolve<IAmdFlmService>();
-
                 // Only the composition root sees both the RTSS integration and the OSD's Vulkan
                 // probes, so the "is this target presenting through Vulkan?" answer is handed over
                 // here. RTSS uses it to decide whether it may still be launched into a running
@@ -158,7 +155,9 @@ namespace CapFrameX
                         osdCaptureService.FrameDataStream,
                         PresentMonCaptureService.ProcessID_INDEX,
                         PresentMonCaptureService.PresentRuntime_INDEX,
-                        statusService: _hookOverlayStatusService);
+                        statusService: _hookOverlayStatusService,
+                        learnedStore: _hookLearnedProfileStore,
+                        profileReports: _hookProfileReports);
                 }
 
 #endif
@@ -182,7 +181,12 @@ namespace CapFrameX
 #endif
                         processIdStream: rtssService.ProcessIdStream,
                         processIdColumnIndex:
-                            PresentMonCaptureService.ProcessID_INDEX);
+                            PresentMonCaptureService.ProcessID_INDEX,
+                        swapChainColumnIndex:
+                            PresentMonCaptureService.SwapChainAddress_INDEX,
+                        frameTypeColumnIndex:
+                            PresentMonCaptureService.FrameType_INDEX,
+                        processCountStream: rtssService.ProcessCountStream);
                 }
 
 #if CFX_INGAME_OVERLAY
@@ -296,6 +300,15 @@ namespace CapFrameX
                     _hookOverlayStatusService = new OSD.Integration.HookOverlayStatusService();
                     Container.RegisterInstance<IHookOverlayStatusService>(
                         _hookOverlayStatusService);
+#if CFX_INGAME_OVERLAY
+                    // Same folder as the other per-user stores; portable mode redirects it.
+                    _hookLearnedProfileStore =
+                        OSD.Integration.HookLearnedProfileStore.Create(pathService.ConfigFolder);
+                    Container.RegisterInstance<IHookLearnedProfileService>(_hookLearnedProfileStore);
+#else
+                    Container.RegisterInstance<IHookLearnedProfileService>(
+                        NullHookLearnedProfileService.Instance);
+#endif
                 }
 
                 using (StartupPerformanceLogger.Measure("Prism and core service registrations"))
@@ -308,7 +321,6 @@ namespace CapFrameX
                     Container.Register<IRTSSService, RTSSService>(Reuse.Singleton);
                     Container.Register<IOverlayEntryCore, OverlayEntryCore>(Reuse.Singleton);
                     Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
-                    Container.Register<IAmdFlmService, AmdFlmService>(Reuse.Singleton);
                     Container.Register<IOnlineMetricService, OnlineMetricService>(Reuse.Singleton);
                     Container.Register<ISensorService, SensorService>(Reuse.Singleton);
                 }
@@ -348,6 +360,15 @@ namespace CapFrameX
                 {
                     Container.Register<ISystemInfo, SystemInfo.NetStandard.SystemInfo>(Reuse.Singleton);
                     Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
+#if CFX_INGAME_OVERLAY
+                    var reportVersionProvider = Container.Resolve<IAppVersionProvider>();
+                    _hookProfileReports = new OSD.Integration.HookProfileReportService(
+                        appConfiguration, pathService.ConfigFolder,
+                        ConfigurationManager.AppSettings["UpdateCatalogUri"],
+                        reportVersionProvider.GetAppVersion().ToString(),
+                        reportVersionProvider.GetReleaseChannel().ToString());
+                    Exit += (_, _) => _hookProfileReports.Dispose();
+#endif
 
 					// The update service needs its catalog URI and the staging folder, neither of
 					// which the container can supply, so it is built here like the process list below.

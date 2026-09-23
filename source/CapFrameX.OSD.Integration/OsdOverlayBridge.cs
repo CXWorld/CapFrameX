@@ -7,6 +7,7 @@ using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.OSD.Interop;
+using Serilog;
 
 namespace CapFrameX.OSD.Integration
 {
@@ -21,7 +22,11 @@ namespace CapFrameX.OSD.Integration
     ///  - runs when the overlay is active AND either the user enabled the hook-free overlay
     ///    (<c>IAppConfiguration.EnableHookFreeOverlay</c>) or the in-game renderer requested a
     ///    transient fallback for an unsupported runtime; RTSS is gated off in OverlayService
-    ///    for both hook modes, so the renderers never overlap.
+    ///    for both hook modes, so the renderers never overlap,
+    ///  - is only VISIBLE while the capture process list has at least one entry: a desktop
+    ///    overlay with nothing to measure would otherwise sit on an empty desktop. The overlay
+    ///    hotkey keeps toggling <c>IsOverlayActive</c>, which can hide the overlay at any time
+    ///    but cannot show it past this gate.
     /// </summary>
     public sealed class OsdOverlayBridge : IDisposable
     {
@@ -42,9 +47,13 @@ namespace CapFrameX.OSD.Integration
         private readonly int _runtimeIndex;
         private readonly int _displayChangedIndex;
         private readonly int _processIdIndex;
+        private readonly int _swapChainIndex;
+        private readonly int _frameTypeIndex;
+        private readonly HookFreeFeedDiagnostics _feedDiagnostics;
         private readonly IObservable<string[]> _frameDataStream;
         private readonly bool _filterFrameRowsByTarget;
         private readonly IDisposable _targetPidSub;
+        private readonly IDisposable _processCountSub;
         private readonly object _frameSubscriptionLock = new object();
         // StartTimeInMs (CPUStartQPCTimeInMs) sits AFTER the optional PC-latency column, so
         // its index is layout-dependent — resolve it lazily instead of caching a stale int.
@@ -52,6 +61,7 @@ namespace CapFrameX.OSD.Integration
         private volatile bool _active;
         private volatile bool _enabled;
         private volatile bool _fallbackEnabled;
+        private volatile bool _hasProcesses;
         private volatile bool _started;
         private int _targetPid;
 
@@ -70,16 +80,18 @@ namespace CapFrameX.OSD.Integration
 
         // Current <APP> framerate/frametime derived from the PresentMon frame-data stream
         // (RTSS resolves these in the classic path; hook-free we compute them ourselves).
-        private const double FpsWindowMs = 1000.0;   // ~1s sliding window
+        // Like every other metric they change once per OSD refresh: each refresh shows the mean
+        // over the frames that arrived since the previous one, as the in-game hook does. A
+        // refresh without frames (PresentMon delivers in waves) keeps the previous values.
         private readonly object _fpsLock = new object();
-        private readonly Queue<double> _ftWindow = new Queue<double>();
-        private double _ftWindowSumMs;
+        private double _ftIntervalSumMs;
+        private int _ftIntervalCount;
         private double _curFps;
         private double _curFrametimeMs;
-        // Current display time (MsBetweenDisplayChange mean over the same ~1s window) for
+        // Current display time (MsBetweenDisplayChange mean over the same interval) for
         // the hook-free-only "Displaytime" entry; only displayed frames contribute.
-        private readonly Queue<double> _dtWindow = new Queue<double>();
-        private double _dtWindowSumMs;
+        private double _dtIntervalSumMs;
+        private int _dtIntervalCount;
         private double _curDisplayTimeMs;
         // Presenting app's graphics runtime/API (PresentMon "PresentRuntime", e.g. "DXGI") —
         // used to label the <APP> line; RTSS reads this from the 3D API, we from PresentMon.
@@ -103,7 +115,10 @@ namespace CapFrameX.OSD.Integration
                                 Func<int> startTimeIndexProvider = null,
                                 IObservable<bool> hookFreeFallbackStream = null,
                                 IObservable<int> processIdStream = null,
-                                int processIdColumnIndex = -1)
+                                int processIdColumnIndex = -1,
+                                int swapChainColumnIndex = -1,
+                                int frameTypeColumnIndex = -1,
+                                IObservable<int> processCountStream = null)
         {
             if (overlayService == null) throw new ArgumentNullException(nameof(overlayService));
             if (appConfiguration == null) throw new ArgumentNullException(nameof(appConfiguration));
@@ -120,10 +135,19 @@ namespace CapFrameX.OSD.Integration
                 marginX: appConfiguration.OsdMarginX, marginY: appConfiguration.OsdMarginY,
                 monitor: DisplayMonitorResolver.GetMonitorIndex(
                     appConfiguration.HookFreeDisplayDeviceName));
+            // Stall diagnostics (Extended OSD logging only): the render loop reports its own stalls
+            // (managed side, GC), the feed diagnostics report what the PresentMon stream delivered.
+            // Both land in CapFrameX.log next to the native "[diag]" lines in %TEMP%\cfx-osd-logs\cfx_osd.log.
+            _osd.Diagnostic += message => Log.Information("HookFree OSD: {Message}", message);
+            _feedDiagnostics = new HookFreeFeedDiagnostics(
+                message => Log.Information("HookFree feed: {Message}", message));
+            ApplyDiagnosticsSwitch();
             _ftIndex = frametimeColumnIndex;
             _runtimeIndex = presentRuntimeColumnIndex;
             _displayChangedIndex = displayChangedColumnIndex;
             _processIdIndex = processIdColumnIndex;
+            _swapChainIndex = swapChainColumnIndex;
+            _frameTypeIndex = frameTypeColumnIndex;
             _frameDataStream = frameDataStream;
             _startTimeIndexProvider = startTimeIndexProvider;
             _filterFrameRowsByTarget = processIdStream != null;
@@ -140,7 +164,16 @@ namespace CapFrameX.OSD.Integration
                     .DistinctUntilChanged()
                     .Subscribe(OnTargetPidChanged);
 
-            _activeSub = overlayService.IsOverlayActiveStream.Subscribe(OnActiveChanged);
+            // Without a process list there is nothing to gate on. Subscribed before the active
+            // stream so its replayed state never shows the overlay ahead of the first count.
+            _hasProcesses = processCountStream == null;
+            if (processCountStream != null)
+                _processCountSub = processCountStream
+                    .Select(count => count > 0)
+                    .DistinctUntilChanged()
+                    .Subscribe(OnHasProcessesChanged);
+
+            _activeSub =overlayService.IsOverlayActiveStream.Subscribe(OnActiveChanged);
             _entriesSub = overlayService.OnDictionaryUpdated.Subscribe(_ => OnEntries());
             _enabledSub = appConfiguration.OnValueChanged
                 .Where(x => x.key == nameof(IAppConfiguration.EnableHookFreeOverlay))
@@ -176,25 +209,60 @@ namespace CapFrameX.OSD.Integration
         private void OnActiveChanged(bool active) { _active = active; UpdateRunState(); }
         private void OnEnabledChanged(bool enabled) { _enabled = enabled; UpdateRunState(); }
         private void OnFallbackChanged(bool enabled) { _fallbackEnabled = enabled; UpdateRunState(); }
+        private void OnHasProcessesChanged(bool hasProcesses) { _hasProcesses = hasProcesses; UpdateRunState(); }
+
+        // An empty process list hides exactly like the overlay hotkey does: a soft-hide.
+        private bool IsVisible => _active && _hasProcesses && (_enabled || _fallbackEnabled);
 
         private void OnTargetPidChanged(int processId)
         {
             int targetPid = processId > 0 ? processId : 0;
-            if (Interlocked.Exchange(ref _targetPid, targetPid) == targetPid)
+            int previousPid = Interlocked.Exchange(ref _targetPid, targetPid);
+            if (previousPid == targetPid)
             {
                 return;
             }
 
+            _feedDiagnostics.OnTargetPidChanged(previousPid, targetPid, HookFreeFeedDiagnostics.Now());
             _curRuntime = null;
             lock (_fpsLock)
             {
-                _ftWindow.Clear();
-                _ftWindowSumMs = 0;
-                _curFps = 0;
-                _curFrametimeMs = 0;
-                _dtWindow.Clear();
-                _dtWindowSumMs = 0;
-                _curDisplayTimeMs = 0;
+                ResetFrametimeScalarLocked();
+                ResetDisplayTimeScalarLocked();
+            }
+        }
+
+        private void ResetFrametimeScalarLocked()
+        {
+            _ftIntervalSumMs = 0;
+            _ftIntervalCount = 0;
+            _curFps = 0;
+            _curFrametimeMs = 0;
+        }
+
+        private void ResetDisplayTimeScalarLocked()
+        {
+            _dtIntervalSumMs = 0;
+            _dtIntervalCount = 0;
+            _curDisplayTimeMs = 0;
+        }
+
+        // One OSD refresh: the frames collected since the previous one become the shown means.
+        private void CloseScalarIntervalLocked()
+        {
+            if (_ftIntervalCount > 0)
+            {
+                _curFrametimeMs = _ftIntervalSumMs / _ftIntervalCount;
+                _curFps = 1000.0 / _curFrametimeMs;
+                _ftIntervalSumMs = 0;
+                _ftIntervalCount = 0;
+            }
+
+            if (_dtIntervalCount > 0)
+            {
+                _curDisplayTimeMs = _dtIntervalSumMs / _dtIntervalCount;
+                _dtIntervalSumMs = 0;
+                _dtIntervalCount = 0;
             }
         }
 
@@ -202,17 +270,18 @@ namespace CapFrameX.OSD.Integration
         {
             // Two-level lifecycle: the renderer EXISTS while a hook-free mode is selected,
             // and mere visibility toggles (IsOverlayActive — capture auto-disable, overlay
-            // hotkey) are soft-hides via DWM cloaking. Tearing the window down instead
-            // stalls the game's presentation path (measured 20-70 ms display hitches from
-            // the multi-stage DWM re-evaluation, including a delayed one seconds later) —
-            // cloaking is the only hide method that stays completely stall-free.
+            // hotkey — or an empty process list) are soft-hides via DWM cloaking. Tearing the
+            // window down instead stalls the game's presentation path (measured 20-70 ms
+            // display hitches from the multi-stage DWM re-evaluation, including a delayed one
+            // seconds later) — cloaking is the only hide method that stays completely stall-free.
             bool exist = _enabled || _fallbackEnabled;
-            bool visible = _active && exist;
+            bool visible = IsVisible;
 
             if (exist && !_started)
             {
                 ApplyPosition(force: true);
                 UpdateFrameFeedRequirements(_overlayService.CurrentOverlayEntries);
+                ApplyDiagnosticsSwitch(); // applied natively right after the instance is created
                 _osd.Start();
                 _started = true;
                 UpdateFrameSubscription(visible);
@@ -248,13 +317,8 @@ namespace CapFrameX.OSD.Integration
             UpdateFrameSubscription(false);
             lock (_fpsLock)
             {
-                _ftWindow.Clear();
-                _ftWindowSumMs = 0;
-                _curFps = 0;
-                _curFrametimeMs = 0;
-                _dtWindow.Clear();
-                _dtWindowSumMs = 0;
-                _curDisplayTimeMs = 0;
+                ResetFrametimeScalarLocked();
+                ResetDisplayTimeScalarLocked();
             }
         }
 
@@ -277,7 +341,11 @@ namespace CapFrameX.OSD.Integration
             // The "<APP>" group placeholder (RTSS substitutes the app via the 3D API) is
             // resolved to the PresentMon graphics runtime, falling back to "Performance".
             double fps, ft, dt;
-            lock (_fpsLock) { fps = _curFps; ft = _curFrametimeMs; dt = _curDisplayTimeMs; }
+            lock (_fpsLock)
+            {
+                CloseScalarIntervalLocked();
+                fps = _curFps; ft = _curFrametimeMs; dt = _curDisplayTimeMs;
+            }
             var appLabel = _curRuntime;
             if (string.IsNullOrWhiteSpace(appLabel))
                 appLabel = CxLang.Instance.TranslateOverlay("Performance");
@@ -303,6 +371,24 @@ namespace CapFrameX.OSD.Integration
             ApplyPosition();
 
             _osd.UpdateEntries(list);
+
+            // The OSD refresh (~1 Hz) doubles as the diagnostics heartbeat: follow the "Extended OSD
+            // logging" switch live and flush a due feed summary even when no rows arrive.
+            ApplyDiagnosticsSwitch();
+            _feedDiagnostics.Tick(HookFreeFeedDiagnostics.Now());
+        }
+
+        /// <summary>
+        /// Propagates the "Extended OSD logging" switch to every diagnostics consumer: the managed
+        /// render-loop monitor, the native core (via the host) and the feed diagnostics.
+        /// ExtendedOsdLoggingController mirrors the OsdDebug.json verboseLog flag into this process
+        /// environment variable when the user toggles the option.
+        /// </summary>
+        private void ApplyDiagnosticsSwitch()
+        {
+            bool enabled = Environment.GetEnvironmentVariable("CFX_OSD_VERBOSE_LOG") == "1";
+            _osd.VerboseDiagnostics = enabled;
+            _feedDiagnostics.Enabled = enabled;
         }
 
         private void UpdateFrameFeedRequirements(IEnumerable<IOverlayEntry> entries)
@@ -321,6 +407,12 @@ namespace CapFrameX.OSD.Integration
                     {
                         case "Framerate":
                             requirements |= NeedFramerateValue;
+                            if (entry.ShowGraph)
+                            {
+                                // The FPS graph derives its values from the same timestamped
+                                // frametimes, even when the Frametime graph is switched off.
+                                requirements |= NeedFrametimeGraph;
+                            }
                             break;
                         case "Frametime":
                             requirements |= NeedFrametimeValue;
@@ -346,7 +438,7 @@ namespace CapFrameX.OSD.Integration
             }
 
             int previous = Interlocked.Exchange(ref _frameFeedRequirements, requirements);
-            UpdateFrameSubscription(_active && (_enabled || _fallbackEnabled));
+            UpdateFrameSubscription(IsVisible);
             bool enableFrametimeScalar = (previous & NeedFrametimeScalar) == 0 &&
                 (requirements & NeedFrametimeScalar) != 0;
             bool enableDisplayTimeScalar = (previous & NeedDisplayTimeValue) == 0 &&
@@ -356,24 +448,12 @@ namespace CapFrameX.OSD.Integration
                 return;
             }
 
-            // Do not expose an old window when a profile re-enables a scalar after it has spent
-            // time disabled. The next completed frame repopulates it immediately.
+            // Do not expose an old mean when a profile re-enables a scalar after it has spent
+            // time disabled. The next refresh with frames repopulates it.
             lock (_fpsLock)
             {
-                if (enableFrametimeScalar)
-                {
-                    _ftWindow.Clear();
-                    _ftWindowSumMs = 0;
-                    _curFps = 0;
-                    _curFrametimeMs = 0;
-                }
-
-                if (enableDisplayTimeScalar)
-                {
-                    _dtWindow.Clear();
-                    _dtWindowSumMs = 0;
-                    _curDisplayTimeMs = 0;
-                }
+                if (enableFrametimeScalar) ResetFrametimeScalarLocked();
+                if (enableDisplayTimeScalar) ResetDisplayTimeScalarLocked();
             }
         }
 
@@ -462,18 +542,37 @@ namespace CapFrameX.OSD.Integration
             {
                 targetPid = Volatile.Read(ref _targetPid);
                 if (!PresentMonFrameFilter.IsForTargetProcess(
-                    row, _processIdIndex, targetPid)) return;
+                    row, _processIdIndex, targetPid))
+                {
+                    if (Volatile.Read(ref _frameFeedRequirements) != 0)
+                    {
+                        int.TryParse(row[_processIdIndex], NumberStyles.Integer,
+                            CultureInfo.InvariantCulture, out int rowPid);
+                        _feedDiagnostics.OnRowRejected(rowPid, targetPid, HookFreeFeedDiagnostics.Now());
+                    }
+                    return;
+                }
             }
 
             int requirements = Volatile.Read(ref _frameFeedRequirements);
             if (requirements == 0) return;
 
             // graphics runtime/API of the presenting app -> label for the <APP> line
-            if ((requirements & NeedRuntimeLabel) != 0 &&
-                _runtimeIndex >= 0 && row.Length > _runtimeIndex)
+            string runtime = null;
+            if (_runtimeIndex >= 0 && row.Length > _runtimeIndex)
             {
-                var rt = row[_runtimeIndex]?.Trim();
-                if (!string.IsNullOrEmpty(rt) && rt != "<error>") _curRuntime = rt;
+                runtime = row[_runtimeIndex]?.Trim();
+                if ((requirements & NeedRuntimeLabel) != 0 &&
+                    !string.IsNullOrEmpty(runtime) && runtime != "<error>")
+                {
+                    string previousRuntime = _curRuntime;
+                    if (!string.Equals(previousRuntime, runtime, StringComparison.Ordinal))
+                    {
+                        _curRuntime = runtime;
+                        _feedDiagnostics.OnRuntimeLabelChanged(previousRuntime, runtime,
+                            HookFreeFeedDiagnostics.Now());
+                    }
+                }
             }
 
             bool needFrametimeSample = (requirements &
@@ -508,6 +607,13 @@ namespace CapFrameX.OSD.Integration
             // publishing if its selection generation changed meanwhile.
             if (_filterFrameRowsByTarget && targetPid != Volatile.Read(ref _targetPid)) return;
 
+            _feedDiagnostics.OnRowAccepted(
+                _swapChainIndex >= 0 && row.Length > _swapChainIndex ? row[_swapChainIndex] : null,
+                runtime,
+                _frameTypeIndex >= 0 && row.Length > _frameTypeIndex ? row[_frameTypeIndex] : null,
+                hasFrametimeSample ? ms : 0.0, hasTimestamp ? t : 0.0, hasDisplaySample ? dc : 0.0,
+                HookFreeFeedDiagnostics.Now());
+
             bool pushFrametimeGraph = (requirements & NeedFrametimeGraph) != 0 &&
                 hasFrametimeSample;
             bool pushDisplayTimeGraph = (requirements & NeedDisplayTimeGraph) != 0 &&
@@ -534,9 +640,9 @@ namespace CapFrameX.OSD.Integration
                 if (pushDisplayTimeGraph) _osd.PushDisplayTime(dc);
             }
 
-            // Current framerate/frametime for the <APP> entries: mean frametime over a ~1s
-            // window; FPS = 1000 * frames / window_ms  (equivalently 1000 / mean_frametime).
-            // The Displaytime entry uses the same windowed mean over its own samples.
+            // Current framerate/frametime for the <APP> entries: collect this refresh interval's
+            // frametimes; OnEntries turns them into the mean (FPS = 1000 / mean frametime).
+            // The Displaytime entry collects its own samples the same way.
             bool updateFrametimeScalar = (requirements & NeedFrametimeScalar) != 0 &&
                 hasFrametimeSample;
             bool updateDisplayTimeScalar = (requirements & NeedDisplayTimeValue) != 0 &&
@@ -547,28 +653,14 @@ namespace CapFrameX.OSD.Integration
             {
                 if (updateFrametimeScalar)
                 {
-                    _ftWindow.Enqueue(ms);
-                    _ftWindowSumMs += ms;
-                    // keep ~1s of history, but hard-cap the sample count so pathologically small
-                    // frametimes (very high FPS) can't grow the queue without bound
-                    while (_ftWindow.Count > 1 && (_ftWindowSumMs > FpsWindowMs || _ftWindow.Count > 4000))
-                        _ftWindowSumMs -= _ftWindow.Dequeue();
-                    int n = _ftWindow.Count;
-                    if (n > 0 && _ftWindowSumMs > 0)
-                    {
-                        _curFrametimeMs = _ftWindowSumMs / n;
-                        _curFps = 1000.0 * n / _ftWindowSumMs;
-                    }
+                    _ftIntervalSumMs += ms;
+                    _ftIntervalCount++;
                 }
 
                 if (updateDisplayTimeScalar)
                 {
-                    _dtWindow.Enqueue(dc);
-                    _dtWindowSumMs += dc;
-                    while (_dtWindow.Count > 1 && (_dtWindowSumMs > FpsWindowMs || _dtWindow.Count > 4000))
-                        _dtWindowSumMs -= _dtWindow.Dequeue();
-                    if (_dtWindow.Count > 0 && _dtWindowSumMs > 0)
-                        _curDisplayTimeMs = _dtWindowSumMs / _dtWindow.Count;
+                    _dtIntervalSumMs += dc;
+                    _dtIntervalCount++;
                 }
             }
         }
@@ -587,6 +679,7 @@ namespace CapFrameX.OSD.Integration
             _backgroundOpacitySub?.Dispose();
             _zoomSub?.Dispose();
             _targetPidSub?.Dispose();
+            _processCountSub?.Dispose();
             _osd?.Dispose();
         }
     }

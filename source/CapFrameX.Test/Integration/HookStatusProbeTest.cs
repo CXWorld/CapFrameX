@@ -13,6 +13,7 @@ namespace CapFrameX.Test.Integration
     public class HookStatusProbeTest
     {
         private const long StatusSize = 64;
+        private const long StatusSizeV2 = 128;
         private const int Magic = 0x31534843; // 'C''H''S''1'
         private static int _nextTestPid = 1600000000;
 
@@ -155,6 +156,151 @@ namespace CapFrameX.Test.Integration
                 Assert.AreEqual(0, snapshot.ResolutionY);
                 Assert.IsNull(HookOverlayStatusEvaluator.FormatResolution(
                     snapshot.ResolutionX, snapshot.ResolutionY));
+            }
+        }
+
+        /// <summary>
+        /// Version 2 appends the compatibility-probing fields after the untouched 64-byte V1
+        /// block. Every offset is pinned here and in the native hook_status_test.
+        /// </summary>
+        [TestMethod]
+        [DataRow(1)]
+        [DataRow(5)]
+        public void TryRead_ReadsTheVersion2ProbingFields(int queueState)
+        {
+            int pid = NextTestPid();
+
+            using (MemoryMappedFile mapping = MemoryMappedFile.CreateNew(
+                HookStatusProbe.GetMappingName(pid), StatusSizeV2,
+                MemoryMappedFileAccess.ReadWrite))
+            using (MemoryMappedViewAccessor view = mapping.CreateViewAccessor(
+                0, StatusSizeV2, MemoryMappedFileAccess.ReadWrite))
+            {
+                view.Write(0, Magic);
+                view.Write(4, 2);      // version
+                view.Write(8, pid);
+                view.Write(12, unchecked((int)(uint)(NativeHookStatusFlags.Loaded |
+                                                     NativeHookStatusFlags.HooksArmed)));
+                view.Write(16, 4242L);
+                view.Write(64, 15);    // installPhase = FidelityFxExports
+                view.Write(68, (1 << 8) | 2);
+                view.Write(72, 4);     // appliedFlags = EnableGenericD3D12PresentRoute
+                view.Write(76, 3);     // appliedSequence
+                view.Write(80, 8);     // pendingRestartFlags = DisableFidelityFxSwapchainLifecycleHooks
+                view.Write(84, 6);     // liveReloadCapabilities = bits 1 and 2
+                view.Write(88, 120);   // coverageAttempts
+                view.Write(92, 118);   // coverageSubmitted
+                view.Write(96, 2);     // coverageMissed
+                view.Write(100, 1 | (2 << 2) | (1 << 4) | (2 << 5)); // DLSS, active, authoritative, DLSS-G on
+                view.Write(104, queueState); // Observed or replacement binding unavailable
+                view.Write(108, 13);   // lastDeclineReason = D3D12NoQueue
+                view.Write(112, 5);    // routeSource = StreamlineProxy + 1
+                view.Write(116, 2);    // compatChannelVersion
+                view.Write(120, 777L); // lastFlagsAppliedTickMs
+                view.Flush();
+
+                Assert.IsTrue(HookStatusProbe.TryRead(
+                    pid, out NativeHookStatusSnapshot snapshot, out string error), error);
+
+                Assert.AreEqual(2, snapshot.Version);
+                Assert.AreEqual(4242L, snapshot.LastHeartbeatTickMs);
+                Assert.AreEqual(NativeHookInstallPhase.FidelityFxExports, snapshot.InstallPhase);
+                Assert.AreEqual((1 << 8) | 2, snapshot.InstallDetail);
+                Assert.AreEqual(4u, snapshot.AppliedFlags);
+                Assert.AreEqual(3u, snapshot.AppliedSequence);
+                Assert.AreEqual(8u, snapshot.PendingRestartFlags);
+                Assert.AreEqual(6u, snapshot.LiveReloadCapabilities);
+                Assert.AreEqual(120, snapshot.CoverageAttempts);
+                Assert.AreEqual(118, snapshot.CoverageSubmitted);
+                Assert.AreEqual(2, snapshot.CoverageMissed);
+                Assert.AreEqual(1, snapshot.FgTechnology);
+                Assert.AreEqual(2, snapshot.FgActivity);
+                Assert.IsTrue(snapshot.FgAuthoritative);
+                Assert.AreEqual(2, snapshot.StreamlineDlssgMode);
+                Assert.AreEqual((NativeHookQueueState)queueState, snapshot.QueueState);
+                Assert.AreEqual(NativeHookDeclineReason.D3D12NoQueue, snapshot.LastDeclineReason);
+                Assert.AreEqual(5, snapshot.RouteSource);
+                Assert.AreEqual(2, snapshot.CompatChannelVersion);
+                Assert.AreEqual(777L, snapshot.LastFlagsAppliedTickMs);
+            }
+        }
+
+        [TestMethod]
+        public void TryRead_ReadsAVersion1BlockWithZeroedVersion2Fields()
+        {
+            // The shipped hook may lag the reader (see the prebuilt tree): its 64-byte block
+            // must keep parsing, with every V2 field at its "unknown" zero.
+            int pid = NextTestPid();
+
+            using (MemoryMappedFile mapping = MemoryMappedFile.CreateNew(
+                HookStatusProbe.GetMappingName(pid), StatusSize,
+                MemoryMappedFileAccess.ReadWrite))
+            using (MemoryMappedViewAccessor view = mapping.CreateViewAccessor(
+                0, StatusSize, MemoryMappedFileAccess.ReadWrite))
+            {
+                view.Write(0, Magic);
+                view.Write(4, 1);
+                view.Write(8, pid);
+                view.Write(12, unchecked((int)(uint)NativeHookStatusFlags.Loaded));
+                view.Flush();
+
+                Assert.IsTrue(HookStatusProbe.TryRead(
+                    pid, out NativeHookStatusSnapshot snapshot, out _));
+                Assert.AreEqual(1, snapshot.Version);
+                Assert.AreEqual(NativeHookInstallPhase.None, snapshot.InstallPhase);
+                Assert.AreEqual(NativeHookQueueState.None, snapshot.QueueState);
+                Assert.AreEqual(NativeHookDeclineReason.None, snapshot.LastDeclineReason);
+                Assert.AreEqual(0u, snapshot.LiveReloadCapabilities);
+                Assert.AreEqual(0, snapshot.CoverageAttempts);
+            }
+        }
+
+        [TestMethod]
+        public void TryRead_ReportsUnrecognizedVersion2ValuesAsUnknown()
+        {
+            int pid = NextTestPid();
+
+            using (MemoryMappedFile mapping = MemoryMappedFile.CreateNew(
+                HookStatusProbe.GetMappingName(pid), StatusSizeV2,
+                MemoryMappedFileAccess.ReadWrite))
+            using (MemoryMappedViewAccessor view = mapping.CreateViewAccessor(
+                0, StatusSizeV2, MemoryMappedFileAccess.ReadWrite))
+            {
+                view.Write(0, Magic);
+                view.Write(4, 2);
+                view.Write(8, pid);
+                view.Write(12, unchecked((int)(uint)NativeHookStatusFlags.Loaded));
+                view.Write(64, 99);
+                view.Write(104, 99);
+                view.Write(108, 99);
+                view.Flush();
+
+                Assert.IsTrue(HookStatusProbe.TryRead(
+                    pid, out NativeHookStatusSnapshot snapshot, out _));
+                Assert.AreEqual(NativeHookInstallPhase.Unknown, snapshot.InstallPhase);
+                Assert.AreEqual(NativeHookQueueState.Unknown, snapshot.QueueState);
+                Assert.AreEqual(NativeHookDeclineReason.Unknown, snapshot.LastDeclineReason);
+            }
+        }
+
+        [TestMethod]
+        public void TryRead_RejectsAVersionThisReaderDoesNotKnow()
+        {
+            int pid = NextTestPid();
+
+            using (MemoryMappedFile mapping = MemoryMappedFile.CreateNew(
+                HookStatusProbe.GetMappingName(pid), StatusSizeV2,
+                MemoryMappedFileAccess.ReadWrite))
+            using (MemoryMappedViewAccessor view = mapping.CreateViewAccessor(
+                0, StatusSizeV2, MemoryMappedFileAccess.ReadWrite))
+            {
+                view.Write(0, Magic);
+                view.Write(4, 3);
+                view.Write(8, pid);
+                view.Flush();
+
+                Assert.IsFalse(HookStatusProbe.TryRead(pid, out _, out string error));
+                StringAssert.Contains(error, "version 3");
             }
         }
 

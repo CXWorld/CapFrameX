@@ -126,6 +126,128 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void EvaluateNative_NamesTheInstallPhaseWhileHooksAreNotArmed()
+        {
+            // A version-2 hook publishes the InstallHooks step it is in. When the install stops
+            // (the FidelityFX export arming hang), this is what tells the reader where.
+            var native = new NativeHookStatusSnapshot
+            {
+                Version = HookStatusProbe.Version2,
+                Flags = NativeHookStatusFlags.Loaded,
+                InstallPhase = NativeHookInstallPhase.FidelityFxExports,
+                InstallDetail = (1 << 8) | 2
+            };
+
+            HookOverlayStatus status = HookOverlayStatusEvaluator.EvaluateNative(
+                42, "DXGI", native, Now);
+
+            Assert.AreEqual(EHookOverlayStatus.Initializing, status.State);
+            StringAssert.Contains(status.Detail, "phase FidelityFxExports");
+            StringAssert.Contains(status.Detail, "module 1, export 2");
+        }
+
+        [TestMethod]
+        public void EvaluateNative_KeepsThePlainInstallTextForAVersion1Hook()
+        {
+            var native = new NativeHookStatusSnapshot
+            {
+                Version = HookStatusProbe.Version1,
+                Flags = NativeHookStatusFlags.Loaded
+            };
+
+            HookOverlayStatus status = HookOverlayStatusEvaluator.EvaluateNative(
+                42, "DXGI", native, Now);
+
+            Assert.AreEqual(EHookOverlayStatus.Initializing, status.State);
+            StringAssert.EndsWith(status.Detail, "installing DXGI hooks.");
+            Assert.IsFalse(status.Detail.Contains("phase"));
+            Assert.IsNull(HookOverlayStatusEvaluator.DescribeInstallPhase(
+                NativeHookInstallPhase.None, 0));
+        }
+
+        [TestMethod]
+        public void EvaluateNative_AppendsTheLastDeclineReasonWhileInitializing()
+        {
+            NativeHookStatusSnapshot native = ReadySnapshot();
+            native.Flags &= ~NativeHookStatusFlags.Rendered;
+            native.LastDeclineReason = NativeHookDeclineReason.D3D12NoQueue;
+
+            HookOverlayStatus status = HookOverlayStatusEvaluator.EvaluateNative(
+                42, "DXGI", native, Now);
+
+            Assert.AreEqual(EHookOverlayStatus.Initializing, status.State);
+            StringAssert.Contains(status.Detail, "no compatible D3D12 command queue");
+        }
+
+        [TestMethod]
+        public void EvaluateNative_DoesNotExplainAHiddenOverlayWithItsOwnReason()
+        {
+            // "Hidden because hidden" says nothing; a stuck owner deferral does.
+            NativeHookStatusSnapshot hidden = ReadySnapshot();
+            hidden.Flags &= ~NativeHookStatusFlags.Visible;
+            hidden.LastDeclineReason = NativeHookDeclineReason.Hidden;
+            NativeHookStatusSnapshot deferred = ReadySnapshot();
+            deferred.Flags &= ~NativeHookStatusFlags.Visible;
+            deferred.LastDeclineReason = NativeHookDeclineReason.OwnerDeferral;
+
+            Assert.IsFalse(HookOverlayStatusEvaluator.EvaluateNative(42, "DXGI", hidden, Now)
+                .Detail.Contains("Last decline"));
+            StringAssert.Contains(
+                HookOverlayStatusEvaluator.EvaluateNative(42, "DXGI", deferred, Now).Detail,
+                "previous resource owner");
+        }
+
+        [TestMethod]
+        public void EvaluateNative_NamesTheFrameGenerationTechnologyOfAForeignPresenter()
+        {
+            NativeHookStatusSnapshot native = ReadySnapshot();
+            native.Flags |= NativeHookStatusFlags.ForeignPresenter;
+            native.FgTechnology = 1;
+
+            HookOverlayStatus status = HookOverlayStatusEvaluator.EvaluateNative(
+                42, "DXGI", native, Now);
+
+            Assert.AreEqual(EHookOverlayStatus.Initializing, status.State);
+            StringAssert.Contains(status.Detail, "(DLSS-FG)");
+            Assert.IsNull(HookOverlayStatusEvaluator.DescribeFrameGenerationTechnology(0));
+        }
+
+        [TestMethod]
+        public void WithProbe_ReportsProbingWhileAStageIsUnderObservation()
+        {
+            NativeHookStatusSnapshot native = ReadySnapshot();
+            native.Flags &= ~NativeHookStatusFlags.Rendered;
+            HookOverlayStatus initializing = HookOverlayStatusEvaluator.EvaluateNative(
+                42, "DXGI", native, Now);
+            var probe = new HookProbeStatusView(observing: true, stageNumber: 2, stageCount: 3,
+                stageName: "generic D3D12", remainingMs: 4200);
+
+            HookOverlayStatus status = HookOverlayStatusEvaluator.WithProbe(initializing, in probe);
+
+            Assert.AreEqual(EHookOverlayStatus.Probing, status.State);
+            StringAssert.Contains(status.Detail, "stage 2/3: generic D3D12 (5 s left)");
+            Assert.AreEqual("Probing", HookOverlayStatusLabel.ForState(EHookOverlayStatus.Probing));
+            Assert.AreEqual("Restart game",
+                HookOverlayStatusLabel.ForState(EHookOverlayStatus.RestartPending));
+        }
+
+        [TestMethod]
+        public void WithProbe_LeavesActiveAndErrorAlone()
+        {
+            HookOverlayStatus active = HookOverlayStatusEvaluator.EvaluateNative(
+                42, "DXGI", ReadySnapshot(), Now);
+            var probe = new HookProbeStatusView(true, 1, 2, "vendor-aware", 1000);
+            var idle = new HookProbeStatusView(false, 1, 2, "vendor-aware", 1000);
+
+            Assert.AreSame(active, HookOverlayStatusEvaluator.WithProbe(active, in probe));
+            NativeHookStatusSnapshot native = ReadySnapshot();
+            native.Flags &= ~NativeHookStatusFlags.Rendered;
+            HookOverlayStatus initializing = HookOverlayStatusEvaluator.EvaluateNative(
+                42, "DXGI", native, Now);
+            Assert.AreSame(initializing, HookOverlayStatusEvaluator.WithProbe(initializing, in idle));
+        }
+
+        [TestMethod]
         public void EvaluateNative_ReportsNativeRendererError()
         {
             NativeHookStatusSnapshot native = ReadySnapshot();
