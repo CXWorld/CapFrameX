@@ -95,7 +95,8 @@ The hooks publish a separate, coherent 64-byte progress channel with cumulative
 Present/draw counts and the last successful draw's context. The host uses it to
 verify ongoing rendering and to collect compact opt-in diagnostics. Existing
 native status mappings remain byte compatible. See
-[overlay diagnostics and rollout](../../docs/overlay-profile-diagnostics.md).
+[overlay diagnostics and rollout](https://github.com/CXWorld/CapFrameX.OSD/blob/main/Documentation/overlay-profile-diagnostics.md)
+in the OSD repository.
 
 Both hooks were built with VS 2026/v145 in `RelWithDebInfo` from an isolated copy
 of `4e362b1aac895ea8681752ea1ea028f3559a08ac` plus the changes to
