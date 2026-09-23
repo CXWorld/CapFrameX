@@ -24,8 +24,8 @@
     The CapFrameX installation to treat as authoritative. Detected automatically when omitted.
 
 .EXAMPLE
-    .\Cleanup-VulkanLayerRegistrations.ps1 -DryRun
-    .\Cleanup-VulkanLayerRegistrations.ps1
+    .\scripts\Cleanup-VulkanLayerRegistrations.ps1 -DryRun
+    .\scripts\Cleanup-VulkanLayerRegistrations.ps1
 #>
 [CmdletBinding()]
 param(
