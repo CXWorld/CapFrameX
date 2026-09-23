@@ -24,7 +24,7 @@
                        FontSize="18"
                        FontWeight="Bold"
                        VerticalAlignment="Center"
-                       Text="{loc:Tr 'Unsaved overlay profile'}"/>
+                       Text="{loc:Tr UnsavedOverlayProfileDialog_UnsavedOverlayProfile}"/>
         </StackPanel>
 
         <TextBlock Grid.Row="1"
@@ -32,14 +32,14 @@
                    FontSize="14"
                    LineHeight="20"
                    TextWrapping="Wrap"
-                   Text="{loc:Tr 'The current Overlay Items profile contains unsaved changes. Save them before closing CapFrameX?'}"/>
+                   Text="{loc:Tr UnsavedOverlayProfileDialog_TheCurrentOverlayItemsProfile}"/>
 
         <TextBlock Grid.Row="2"
                    Margin="0 10 0 0"
                    FontSize="12"
                    Opacity="0.7"
                    TextWrapping="Wrap"
-                   Text="{loc:Tr 'Closing without saving permanently discards the current changes.'}"/>
+                   Text="{loc:Tr UnsavedOverlayProfileDialog_ClosingWithoutSavingPermanentlyDiscards}"/>
 
         <StackPanel Grid.Row="3"
                     Margin="0 22 0 0"
@@ -47,20 +47,20 @@
                     HorizontalAlignment="Right">
             <Button Padding="10 0"
                     Style="{DynamicResource MaterialDesignFlatButton}"
-                    Content="{loc:Tr 'Exit without saving'}"
+                    Content="{loc:Tr UnsavedOverlayProfileDialog_ExitWithoutSaving}"
                     Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
                     CommandParameter="{x:Static local:UnsavedOverlayProfileDialogResult.ExitWithoutSaving}"/>
             <Button Margin="8 0 0 0"
                     Padding="10 0"
                     IsCancel="True"
                     Style="{DynamicResource MaterialDesignFlatButton}"
-                    Content="{loc:Tr 'Cancel'}"
+                    Content="{loc:Tr UnsavedOverlayProfileDialog_Cancel}"
                     Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
                     CommandParameter="{x:Static local:UnsavedOverlayProfileDialogResult.Cancel}"/>
             <Button Margin="8 0 0 0"
                     MinWidth="112"
                     IsDefault="True"
-                    Content="{loc:Tr 'Save and exit'}"
+                    Content="{loc:Tr UnsavedOverlayProfileDialog_SaveAndExit}"
                     Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
                     CommandParameter="{x:Static local:UnsavedOverlayProfileDialogResult.SaveAndExit}"/>
         </StackPanel>

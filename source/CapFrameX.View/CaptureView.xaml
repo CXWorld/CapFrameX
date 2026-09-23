@@ -149,10 +149,10 @@
 										<DockPanel LastChildFill="False">
 											<materialDesign:PackIcon Kind="ApplicationOutline" Width="20" Height="20" VerticalAlignment="Center"
 												Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-											<TextBlock Text="{loc:Tr 'Running processes'}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
+											<TextBlock Text="{loc:Tr CaptureView_RunningProcesses}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
 												Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 											<Button DockPanel.Dock="Right" VerticalAlignment="Center" Width="26" Height="26" Padding="0"
-												Style="{StaticResource MaterialDesignIconButton}" ToolTip="{loc:Tr 'Reset and rescan processes'}"
+												Style="{StaticResource MaterialDesignIconButton}" ToolTip="{loc:Tr CaptureView_ResetAndRescanProcesses}"
 												Command="{Binding ResetPresentMonCommand}" IsEnabled="{Binding AreButtonsActive}"
 												Foreground="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
 												<materialDesign:PackIcon Kind="Autorenew" Width="20" Height="20"/>
@@ -164,7 +164,7 @@
 												IsEnabled="{Binding AreButtonsActive}">
 												<ListView.ContextMenu>
 													<ContextMenu>
-														<MenuItem Header="{loc:Tr 'Show process details'}"
+														<MenuItem Header="{loc:Tr CaptureView_ShowProcessDetails}"
 														Command="{Binding ShowProcessDetailsCommand}" />
 													</ContextMenu>
 												</ListView.ContextMenu>
@@ -174,7 +174,7 @@
 											Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding AreButtonsActive}" Foreground="White"
 											Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
 											<Viewbox Stretch="Uniform" StretchDirection="DownOnly" MaxHeight="16">
-												<TextBlock Text="{loc:Tr 'Move to ignore list'}"/>
+												<TextBlock Text="{loc:Tr CaptureView_MoveToIgnoreList}"/>
 											</Viewbox>
 										</Button>
 									</StackPanel>
@@ -185,7 +185,7 @@
 										<DockPanel LastChildFill="False" Height="26">
 											<materialDesign:PackIcon Kind="EyeOffOutline" Width="20" Height="20" VerticalAlignment="Center"
 												Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-											<TextBlock Text="{loc:Tr 'Process ignore list'}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
+											<TextBlock Text="{loc:Tr CaptureView_ProcessIgnoreList}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
 												Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 										</DockPanel>
 										<Border Margin="0 12 0 0" Style="{StaticResource SectionCardInset}" Padding="0 4 6 4">
@@ -197,7 +197,7 @@
 											Command="{Binding AddToProcessListCommand}" IsEnabled="{Binding AreButtonsActive}" Foreground="White"
 											Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
 											<Viewbox Stretch="Uniform" StretchDirection="DownOnly" MaxHeight="16">
-												<TextBlock Text="{loc:Tr 'Remove from ignore list'}"/>
+												<TextBlock Text="{loc:Tr CaptureView_RemoveFromIgnoreList}"/>
 											</Viewbox>
 										</Button>
 									</StackPanel>
@@ -213,7 +213,7 @@
 					<DockPanel LastChildFill="False">
 						<materialDesign:PackIcon Kind="Tune" Width="20" Height="20" VerticalAlignment="Center"
 							Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-						<TextBlock Text="{loc:Tr 'Capture settings'}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
+						<TextBlock Text="{loc:Tr CaptureView_CaptureSettings}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
 							Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 					</DockPanel>
 					<Grid x:Name="HotkeyTextBox" Margin="0 8 0 0" HorizontalAlignment="Center">
@@ -227,11 +227,11 @@
 						<ColumnDefinition Width="1*"/>
 						<ColumnDefinition Width="1*"/>
 					</Grid.ColumnDefinitions>
-					<TextBox Grid.Row="0" Grid.Column="0" Width="110" wpf:HintAssist.Hint="{loc:Tr 'Capture hotkey'}" Style="{DynamicResource CxFloatingHintTextBox}"
+					<TextBox Grid.Row="0" Grid.Column="0" Width="110" wpf:HintAssist.Hint="{loc:Tr CaptureView_CaptureHotkey}" Style="{DynamicResource CxFloatingHintTextBox}"
 						 Margin="0" FontSize="14" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" wpf:HintAssist.HintOpacity=".8"
 						 IsUndoEnabled="False" PreviewKeyDown="CaptureHotkeyTextBox_PreviewKeyDown"
 						 ContextMenu="{x:Null}" InputMethod.IsInputMethodEnabled="False"
-						 ToolTip="{loc:Tr 'Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)'}">
+						 ToolTip="{loc:Tr CaptureView_HotkeyCombinableWithUpTo}">
 						<!-- Deliberately not IsReadOnly: the MaterialDesign 5.x read-only text-field
 						     styling indents the text against the floating hint. All keyboard input is
 						     swallowed by the PreviewKeyDown hotkey capture; paste and IME input are
@@ -246,30 +246,30 @@
 						</Binding>
 					</TextBox>
 
-					<TextBox Grid.Row="0" Grid.Column="1" Width="110" wpf:HintAssist.Hint="{loc:Tr 'Capture time [s]'}" Style="{DynamicResource CxFloatingHintTextBox}"
+					<TextBox Grid.Row="0" Grid.Column="1" Width="110" wpf:HintAssist.Hint="{loc:Tr CaptureView_CaptureTimeS}" Style="{DynamicResource CxFloatingHintTextBox}"
 						 Margin="30 0 0 0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
 						 PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="TextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"
 						 PreviewTextInput="NumberValidationTextBox" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" wpf:HintAssist.HintOpacity=".8"/>
 					<Button Grid.Row="0" Grid.Column="1" Panel.ZIndex="1" HorizontalAlignment="Right" Margin="0 15 5 0" Width="18" Height="18" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-                            ToolTip="{loc:Tr 'Save capture time for current process'}" Command="{Binding SaveCaptureTimeCommand}" Visibility="{Binding ShowCaptureTimeSave, Converter={StaticResource FalseToCollapsedConverter}}"
+                            ToolTip="{loc:Tr CaptureView_SaveCaptureTimeForCurrent}" Command="{Binding SaveCaptureTimeCommand}" Visibility="{Binding ShowCaptureTimeSave, Converter={StaticResource FalseToCollapsedConverter}}"
                             materialDesign:RippleAssist.Feedback="#DD000000">
 						<materialDesign:PackIcon Kind="ContentSaveSettings" Height="15" Width="15" />
 					</Button>
 					<!--<StackPanel Grid.Row="1" Grid.Column="1" Margin="30 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left" ToolTipService.ShowDuration="25000" IsEnabled="{Binding AreButtonsActive}">
-						<TextBlock Text="{loc:Tr 'Global time'}" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+						<TextBlock Text="{loc:Tr CaptureView_GlobalTime}" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 						<ToggleButton HorizontalAlignment="Right" Margin="5 0 -30 0" IsChecked="{Binding UseGlobalCaptureTime}"></ToggleButton>
 						<StackPanel.ToolTip >
-							<TextBlock Width="280" Text="{loc:Tr 'Uses the same capture time for all processes.&#xA;Unchecked, when detecting a process this box will be filled with the last saved capture time of that process.'}"
+							<TextBlock Width="280" Text="{loc:Tr CaptureView_UsesTheSameCaptureTime}"
 								TextWrapping="Wrap"></TextBlock>
 						</StackPanel.ToolTip>
 					</StackPanel>-->
 
-					<TextBox Grid.Row="0" Grid.Column="2" Width="110" wpf:HintAssist.Hint="{loc:Tr 'Capture delay [s]'}" Style="{DynamicResource CxFloatingHintTextBox}"
+					<TextBox Grid.Row="0" Grid.Column="2" Width="110" wpf:HintAssist.Hint="{loc:Tr CaptureView_CaptureDelayS}" Style="{DynamicResource CxFloatingHintTextBox}"
 					 Margin="30 0 0 0" FontSize="14" Text="{Binding CaptureDelayString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
                      PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="TextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no delay"
                      PreviewTextInput="NumberValidationTextBox" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" wpf:HintAssist.HintOpacity=".8"/>
 
-					<ComboBox Grid.Row="0" Grid.Column="3" Width="120" Height="40" materialDesign:HintAssist.Hint="{loc:Tr 'Hotkey sound'}" Style="{StaticResource CxComboBox}"                          
+					<ComboBox Grid.Row="0" Grid.Column="3" Width="120" Height="40" materialDesign:HintAssist.Hint="{loc:Tr CaptureView_HotkeySound}" Style="{StaticResource CxComboBox}"                          
 						  Margin="30 0 0 0" MaxDropDownHeight="200" FontSize="14" materialDesign:HintAssist.IsFloating="True" materialDesign:HintAssist.HintOpacity=".8"
 						  ItemsSource="{Binding SoundModes}" SelectedItem="{Binding SelectedSoundMode}" HorizontalAlignment="Left" HorizontalContentAlignment="Left" VerticalAlignment="Bottom" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
 						<ComboBox.ItemTemplate>
@@ -289,7 +289,7 @@
 						<Slider Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource CxVoiceSlider}"
 							Minimum="0" 
 							Maximum="100" 
-							ToolTip="{loc:Tr 'Sound level control'}"
+							ToolTip="{loc:Tr CaptureView_SoundLevelControl}"
 							Value="{Binding SliderSoundLevel}"
 							Width="65" Thumb.DragCompleted="Slider_DragCompleted" />
 						<TextBlock Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" TextAlignment="Right" Text="{Binding SliderSoundLevel}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
@@ -299,7 +299,7 @@
 			</Border>
 			</DockPanel>
 			<TabControl Grid.Column="1" Margin="20 14 20 20" Background="Transparent" BorderThickness="0">
-				<TabItem Margin="8 0 6 0" Header="{loc:Tr 'Run history and aggregation'}">
+				<TabItem Margin="8 0 6 0" Header="{loc:Tr CaptureView_RunHistoryAndAggregation}">
 					<StackPanel Width="400" Margin="{StaticResource CxTabContentMargin}">
 						<!--Run history card-->
 						<Border Style="{StaticResource SectionCard}" Margin="0 0 0 4" Padding="16 12 16 16">
@@ -307,13 +307,13 @@
 								<DockPanel LastChildFill="False">
 									<materialDesign:PackIcon Kind="History" Width="20" Height="20" VerticalAlignment="Center"
 										Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-									<TextBlock Text="{loc:Tr 'Run history'}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
+									<TextBlock Text="{loc:Tr CaptureView_RunHistory}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
 										Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 									<ToggleButton DockPanel.Dock="Right" VerticalAlignment="Center" IsChecked="{Binding UseRunHistory}"
 										ToolTipService.ShowDuration="25000">
 										<ToggleButton.ToolTip>
 											<ToolTip MaxWidth="250">
-												<TextBlock Text="{loc:Tr 'Saves a set number of runs into a history which can also be displayed on the overlay'}"
+												<TextBlock Text="{loc:Tr CaptureView_SavesASetNumberOf}"
 													TextWrapping="Wrap"/>
 											</ToolTip>
 										</ToggleButton.ToolTip>
@@ -336,12 +336,11 @@
 										<ColumnDefinition Width="24"/>
 										<ColumnDefinition Width="1*"/>
 									</Grid.ColumnDefinitions>
-									<ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="{loc:Tr 'Number of runs'}"
+									<ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="{loc:Tr CaptureView_NumberOfRuns}"
 										MaxDropDownHeight="100" ItemsSource="{Binding Path=NumberOfRunsItemsSource}" ToolTipService.ShowDuration="25000">
 										<ComboBox.ToolTip>
 											<ToolTip StaysOpen="True" MaxWidth="275">
-												<TextBlock Text="{loc:Tr 'The number of runs written into the history.
-											When not using aggregation, any run added to a full history will replace the oldest one.'}"
+												<TextBlock Text="{loc:Tr CaptureView_TheNumberOfRunsWritten}"
 													TextWrapping="Wrap"/>
 											</ToolTip>
 										</ComboBox.ToolTip>
@@ -356,7 +355,7 @@
 									    read-only text-field styling indents the text against the floating hint. All
 									    keyboard input is swallowed by the PreviewKeyDown hotkey capture; paste and
 									    IME input are disabled via ContextMenu/InputMethod. -->
-									<TextBox Grid.Row="0" Grid.Column="2" Margin="0 10 0 10" materialDesign:HintAssist.Hint="{loc:Tr 'Reset run history'}"
+									<TextBox Grid.Row="0" Grid.Column="2" Margin="0 10 0 10" materialDesign:HintAssist.Hint="{loc:Tr CaptureView_ResetRunHistory}"
 										Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 										IsUndoEnabled="False" PreviewKeyDown="ResetHistoryHotkeyTextBox_PreviewKeyDown"
 										ContextMenu="{x:Null}" InputMethod.IsInputMethodEnabled="False"
@@ -370,7 +369,7 @@
 											</Binding.ValidationRules>
 										</Binding>
 									</TextBox>
-									<ComboBox Grid.Row="1" Grid.Column="0" materialDesign:HintAssist.Hint="{loc:Tr 'Second metric'}"
+									<ComboBox Grid.Row="1" Grid.Column="0" materialDesign:HintAssist.Hint="{loc:Tr CaptureView_SecondMetric}"
 										MaxDropDownHeight="330" ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondMetric}"
 										ToolTip="Second metric shown for history entries on the overlay">
 										<ComboBox.ItemTemplate>
@@ -379,7 +378,7 @@
 											</DataTemplate>
 										</ComboBox.ItemTemplate>
 									</ComboBox>
-									<ComboBox Grid.Row="1" Grid.Column="2" materialDesign:HintAssist.Hint="{loc:Tr 'Third metric'}"
+									<ComboBox Grid.Row="1" Grid.Column="2" materialDesign:HintAssist.Hint="{loc:Tr CaptureView_ThirdMetric}"
 										MaxDropDownHeight="360" ItemsSource="{Binding ThirdMetricItems}" SelectedItem="{Binding SelectedThirdMetric}"
 										ToolTip="Third metric shown for history entries on the overlay">
 										<ComboBox.ItemTemplate>
@@ -397,16 +396,14 @@
 								<DockPanel LastChildFill="False">
 									<materialDesign:PackIcon Kind="Sigma" Width="20" Height="20" VerticalAlignment="Center"
 										Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-									<TextBlock Text="{loc:Tr 'Aggregation of run history'}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
+									<TextBlock Text="{loc:Tr CaptureView_AggregationOfRunHistory}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
 										Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 									<ToggleButton DockPanel.Dock="Right" VerticalAlignment="Center" IsChecked="{Binding UseAggregation}"
 										IsEnabled="{Binding AggregationButtonEnabled}"
 										ToolTipService.ShowDuration="25000">
 										<ToggleButton.ToolTip>
 											<ToolTip MaxWidth="350">
-												<TextBlock Text="{loc:Tr 'Once the run history is full, combine and save all frametime data into a new single record file.
-                                                &#10;&#10;This is NOT the same as calculating average parameters from multiple single record files. It simulates running the same scene multiple times in one single benchmark.
-                                                Performance parameters are calculated once, using all of the frametime data.'}"
+												<TextBlock Text="{loc:Tr CaptureView_OnceTheRunHistoryIs}"
 													TextWrapping="Wrap"/>
 											</ToolTip>
 										</ToggleButton.ToolTip>
@@ -430,16 +427,13 @@
 										<ColumnDefinition Width="24"/>
 										<ColumnDefinition Width="1*"/>
 									</Grid.ColumnDefinitions>
-									<ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="{loc:Tr 'Outlier handling'}"
+									<ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="{loc:Tr CaptureView_OutlierHandling}"
 										MaxDropDownHeight="100" ItemsSource="{Binding OutlierHandlingItems}" SelectedItem="{Binding SelectedOutlierHandling}"
 										ToolTipService.ShowDuration="25000">
 										<ComboBox.ToolTip>
 											<ToolTip MaxWidth="350">
 												<TextBlock
-                                                Text="{loc:Tr 'If the selected metric of a run differs more than the set percentage from the median of all runs, it will be marked as an outlier.
-                                                &#10;&#10;Mark &amp; use&#10;All runs will be aggregated once the history is full.
-                                                &#10;&#10;Mark &amp; replace&#10;Marked runs have to be replaced by additional runs.
-                                                &#10;Runs will be aggregated once the history contains no more outliers.'}"
+                                                Text="{loc:Tr CaptureView_IfTheSelectedMetricOf}"
 													TextWrapping="Wrap"/>
 											</ToolTip>
 										</ComboBox.ToolTip>
@@ -449,7 +443,7 @@
 											</DataTemplate>
 										</ComboBox.ItemTemplate>
 									</ComboBox>
-									<ComboBox Grid.Row="0" Grid.Column="2" materialDesign:HintAssist.Hint="{loc:Tr 'Outlier metric'}"
+									<ComboBox Grid.Row="0" Grid.Column="2" materialDesign:HintAssist.Hint="{loc:Tr CaptureView_OutlierMetric}"
 										MaxDropDownHeight="100" ItemsSource="{Binding RelatedMetricItemsSource}" SelectedItem="{Binding SelectedRelatedMetric}"
 										ToolTipService.ShowDuration="25000">
 										<ComboBox.ItemTemplate>
@@ -459,16 +453,16 @@
 										</ComboBox.ItemTemplate>
 										<ComboBox.ToolTip>
 											<ToolTip MaxWidth="350">
-												<TextBlock Text="{loc:Tr 'Metric used to determine outliers'}" TextWrapping="Wrap"/>
+												<TextBlock Text="{loc:Tr CaptureView_MetricUsedToDetermineOutliers}" TextWrapping="Wrap"/>
 											</ToolTip>
 										</ComboBox.ToolTip>
 									</ComboBox>
-									<ComboBox Grid.Row="1" Grid.Column="0" materialDesign:HintAssist.Hint="{loc:Tr 'Outlier percentage'}"
+									<ComboBox Grid.Row="1" Grid.Column="0" materialDesign:HintAssist.Hint="{loc:Tr CaptureView_OutlierPercentage}"
 										MaxDropDownHeight="200" ItemsSource="{Binding OutlierPercentageItemsSource}" SelectedItem="{Binding SelectedOutlierPercentage}"
 										ToolTipService.ShowDuration="25000">
 										<ComboBox.ToolTip>
 											<ToolTip MaxWidth="350">
-												<TextBlock Text="{loc:Tr 'The max percentage the FPS of a run can differ from the median of all runs before being counted as an outlier'}"
+												<TextBlock Text="{loc:Tr CaptureView_TheMaxPercentageTheFPS}"
 													TextWrapping="Wrap"/>
 											</ToolTip>
 										</ComboBox.ToolTip>
@@ -477,22 +471,22 @@
 										IsChecked="{Binding SaveAggregationOnly}" ToolTipService.ShowDuration="25000">
 										<CheckBox.ToolTip>
 											<ToolTip StaysOpen="True" MaxWidth="275">
-												<TextBlock Text="{loc:Tr 'If checked, the single runs will not be saved in addition to the aggregated result.'}"
+												<TextBlock Text="{loc:Tr CaptureView_IfCheckedTheSingleRuns}"
 													TextWrapping="Wrap"/>
 											</ToolTip>
 										</CheckBox.ToolTip>
-										<TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow" Text="{loc:Tr 'Save aggregated result only'}"/>
+										<TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow" Text="{loc:Tr CaptureView_SaveAggregatedResultOnly}"/>
 									</CheckBox>
 								</Grid>
 							</StackPanel>
 						</Border>
 					</StackPanel>
 				</TabItem>
-				<TabItem Header="{loc:Tr 'Capture Logger'}">
+				<TabItem Header="{loc:Tr CaptureView_CaptureLogger}">
 					<StackPanel Width="400" Margin="{StaticResource CxTabContentMargin}">
 						<Border Style="{StaticResource SectionCard}" Height="415" VerticalAlignment="Top">
 						<Grid>
-							<TextBlock Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{loc:Tr 'Capture service logger output...'}" FontSize="14" Margin="10 10 0 0" 
+							<TextBlock Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{loc:Tr CaptureView_CaptureServiceLoggerOutput}" FontSize="14" Margin="10 10 0 0" 
                        Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Visibility="{Binding IsLoggerOutputEmpty, Converter={StaticResource FalseToCollapsedConverter}}"></TextBlock>
 							<ItemsControl ItemsSource="{Binding LoggerOutput}" Style="{StaticResource LogViewerStyle}">
 								<ItemsControl.Template>
@@ -520,13 +514,13 @@
 								<materialDesign:PackIcon Kind="PlaylistRemove"  Height="20" Width="20" />
 								<Button.ToolTip>
 									<ToolTip>
-										<TextBlock Text="{loc:Tr 'Clear logger output'}">
+										<TextBlock Text="{loc:Tr CaptureView_ClearLoggerOutput}">
 										</TextBlock>
 									</ToolTip>
 								</Button.ToolTip>
 							</Button>
 							<StackPanel Margin="25 0 0 0" Orientation="Horizontal">
-								<TextBlock Text="{loc:Tr 'Message filter'}" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+								<TextBlock Text="{loc:Tr CaptureView_MessageFilter}" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 								<materialDesign:PopupBox StaysOpen="True" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
 									<materialDesign:Card  Margin="0 0 0 -10">
 										<StackPanel>
@@ -540,9 +534,9 @@
 													<ColumnDefinition Width="90"/>
 													<ColumnDefinition Width="30"/>
 												</Grid.ColumnDefinitions>
-												<TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Tr 'Basic Info'}"></TextBlock>
-												<TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Tr 'Advanced Info'}"></TextBlock>
-												<TextBlock Grid.Row="2" Grid.Column="0" Text="{loc:Tr 'Errors'}"></TextBlock>
+												<TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Tr CaptureView_BasicInfo}"></TextBlock>
+												<TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Tr CaptureView_AdvancedInfo}"></TextBlock>
+												<TextBlock Grid.Row="2" Grid.Column="0" Text="{loc:Tr CaptureView_Errors}"></TextBlock>
 
 												<CheckBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" IsChecked="{Binding ShowBasicInfo}"></CheckBox>
 												<CheckBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" IsChecked="{Binding ShowAdvancedInfo}"></CheckBox>

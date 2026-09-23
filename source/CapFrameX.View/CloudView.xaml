@@ -56,10 +56,10 @@
 					<DockPanel LastChildFill="False" Height="26">
 						<materialDesign:PackIcon Kind="CloudUploadOutline" Width="20" Height="20" VerticalAlignment="Center"
 							Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-						<TextBlock Text="{loc:Tr 'Record upload'}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
+						<TextBlock Text="{loc:Tr CloudView_RecordUpload}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
 							Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 						<Button DockPanel.Dock="Right" VerticalAlignment="Center" Width="26" Height="26" Padding="0"
-							Style="{StaticResource MaterialDesignIconButton}" ToolTip="{loc:Tr 'Remove all entries'}"
+							Style="{StaticResource MaterialDesignIconButton}" ToolTip="{loc:Tr CloudView_RemoveAllEntries}"
 							Command="{Binding ClearTableCommand}" IsEnabled="{Binding EnableClearAndUploadButton}"
 							Foreground="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
 							<materialDesign:PackIcon Kind="PlaylistRemove" Width="20" Height="20"/>
@@ -70,7 +70,7 @@
 						<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Width="450" x:Name="DragAndDropInfoTextTextBlock"
 							TextAlignment="Center" TextWrapping="Wrap" FontSize="16" Panel.ZIndex="1"
 							Visibility="{Binding ShowHelpText, Converter={StaticResource TrueToVisibleConverter}}"
-							Text="{loc:Tr 'Drop items here or double click them in the record list'}"
+							Text="{loc:Tr CloudView_DropItemsHereOrDouble}"
 							Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
 							dragdrop:DragDrop.IsDragSource="False"
 							dragdrop:DragDrop.IsDropTarget="True"
@@ -94,10 +94,10 @@
 							Background="{DynamicResource MaterialDesign.Brush.Card.Background}"
 							Style="{StaticResource MaterialDesignDataGrid}">
 							<DataGrid.Columns>
-								<DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}" Header="{loc:Tr 'Game'}" Width="Auto" IsReadOnly="True"/>
-								<DataGridTextColumn Binding="{Binding CreationDate, Mode=OneWay}" Header="{loc:Tr 'Date'}" Width="Auto" IsReadOnly="True"/>
-								<DataGridTextColumn Binding="{Binding CreationTime, Mode=OneWay}" Header="{loc:Tr 'Time'}" Width="Auto" IsReadOnly="True"/>
-								<DataGridTextColumn Binding="{Binding Comment, Mode=OneWay}" Header="{loc:Tr 'Comment'}" Width="1*" IsReadOnly="True"/>
+								<DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}" Header="{loc:Tr CloudView_Game}" Width="Auto" IsReadOnly="True"/>
+								<DataGridTextColumn Binding="{Binding CreationDate, Mode=OneWay}" Header="{loc:Tr CloudView_Date}" Width="Auto" IsReadOnly="True"/>
+								<DataGridTextColumn Binding="{Binding CreationTime, Mode=OneWay}" Header="{loc:Tr CloudView_Time}" Width="Auto" IsReadOnly="True"/>
+								<DataGridTextColumn Binding="{Binding Comment, Mode=OneWay}" Header="{loc:Tr CloudView_Comment}" Width="1*" IsReadOnly="True"/>
 							</DataGrid.Columns>
 						</DataGrid>
 					</Grid>
@@ -112,29 +112,29 @@
 							<TextBox x:Name="UploadDescription" Style="{StaticResource CloudHintTextBox}" wpf:HintAssist.Hint="(Optional) Upload description"
 								Text="{Binding UploadDescription, UpdateSourceTrigger=PropertyChanged}"
 								Visibility="{Binding ShowUploadDescriptionTextBox, Converter={StaticResource TrueToVisibleConverter}}"/>
-							<TextBox Style="{StaticResource CloudHintTextBox}" wpf:HintAssist.Hint="{loc:Tr 'Download link / ID'}" IsReadOnly="True"
+							<TextBox Style="{StaticResource CloudHintTextBox}" wpf:HintAssist.Hint="{loc:Tr CloudView_DownloadLinkID}" IsReadOnly="True"
 								Text="{Binding ShareUrl, Mode=OneWay}" PreviewMouseDoubleClick="ShareUrlFocusHandler"
 								Visibility="{Binding ShareUrlVisible, Converter={StaticResource TrueToVisibleConverter}}"/>
 							<StackPanel Orientation="Horizontal" VerticalAlignment="Center"
 								Visibility="{Binding ShowUploadInfo, Converter={StaticResource TrueToVisibleConverter}}">
 								<ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}" Width="18" Height="18" IsIndeterminate="True"/>
-								<TextBlock Text="{loc:Tr 'Uploading...'}" FontSize="14" FontWeight="Medium" Margin="10 0 0 0" VerticalAlignment="Center"
+								<TextBlock Text="{loc:Tr CloudView_Uploading}" FontSize="14" FontWeight="Medium" Margin="10 0 0 0" VerticalAlignment="Center"
 									Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 							</StackPanel>
 						</Grid>
 						<!--Actions-->
 						<Grid Grid.Column="1" VerticalAlignment="Center">
-							<Button Style="{StaticResource CloudActionButton}" Content="{loc:Tr 'Upload records'}"
+							<Button Style="{StaticResource CloudActionButton}" Content="{loc:Tr CloudView_UploadRecords}"
 								Command="{Binding UploadRecordsCommand}" IsEnabled="{Binding EnableClearAndUploadButton}"
 								Visibility="{Binding ShareUrlVisible, Converter={StaticResource FalseToVisibleConverter}}"
 								ToolTipService.ShowDuration="25000">
 								<Button.ToolTip>
 									<ToolTip MaxWidth="200">
-										<TextBlock Text="{loc:Tr 'Upload your records to our server and receive an ID to share them'}" TextWrapping="Wrap"/>
+										<TextBlock Text="{loc:Tr CloudView_UploadYourRecordsToOur}" TextWrapping="Wrap"/>
 									</ToolTip>
 								</Button.ToolTip>
 							</Button>
-							<Button Style="{StaticResource CloudActionButton}" Content="{loc:Tr 'Copy to clipboard'}"
+							<Button Style="{StaticResource CloudActionButton}" Content="{loc:Tr CloudView_CopyToClipboard}"
 								Command="{Binding CopyURLCommand}"
 								Visibility="{Binding ShareUrlVisible, Converter={StaticResource TrueToVisibleConverter}}"/>
 						</Grid>
@@ -148,21 +148,21 @@
 					<DockPanel LastChildFill="False" Height="26">
 						<materialDesign:PackIcon Kind="CloudDownloadOutline" Width="20" Height="20" VerticalAlignment="Center"
 							Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-						<TextBlock Text="{loc:Tr 'Record download'}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
+						<TextBlock Text="{loc:Tr CloudView_RecordDownload}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
 							Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 					</DockPanel>
 
-					<TextBox x:Name="IDBox" Margin="0 12 0 0" Style="{StaticResource CloudHintTextBox}" wpf:HintAssist.Hint="{loc:Tr 'Download link / ID'}"
+					<TextBox x:Name="IDBox" Margin="0 12 0 0" Style="{StaticResource CloudHintTextBox}" wpf:HintAssist.Hint="{loc:Tr CloudView_DownloadLinkID2}"
 						Text="{Binding DownloadIDString, UpdateSourceTrigger=PropertyChanged}"/>
 
 					<DockPanel Margin="0 8 0 0">
 						<Button DockPanel.Dock="Right" VerticalAlignment="Bottom" Width="26" Height="26" Padding="0" Margin="8 0 0 0"
-							Style="{StaticResource MaterialDesignIconButton}" ToolTip="{loc:Tr 'Observe download folder'}"
+							Style="{StaticResource MaterialDesignIconButton}" ToolTip="{loc:Tr CloudView_ObserveDownloadFolder}"
 							Command="{Binding SwitchToDownloadDirectoryCommand}"
 							Foreground="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
 							<materialDesign:PackIcon Kind="FolderSearchOutline" Width="20" Height="20"/>
 						</Button>
-						<TextBox Style="{StaticResource CloudHintTextBox}" wpf:HintAssist.Hint="{loc:Tr 'Download folder'}" IsReadOnly="True"
+						<TextBox Style="{StaticResource CloudHintTextBox}" wpf:HintAssist.Hint="{loc:Tr CloudView_DownloadFolder}" IsReadOnly="True"
 							Text="{Binding CloudDownloadDirectory, Mode=OneWay}" PreviewMouseDown="DownloadFolder_PreviewMouseDown"/>
 					</DockPanel>
 
@@ -174,15 +174,15 @@
 						<StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center"
 							Visibility="{Binding ShowDownloadInfo, Converter={StaticResource TrueToVisibleConverter}}">
 							<ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}" Width="18" Height="18" IsIndeterminate="True"/>
-							<TextBlock Text="{loc:Tr 'Downloading...'}" FontSize="14" FontWeight="Medium" Margin="10 0 0 0" VerticalAlignment="Center"
+							<TextBlock Text="{loc:Tr CloudView_Downloading}" FontSize="14" FontWeight="Medium" Margin="10 0 0 0" VerticalAlignment="Center"
 								Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 						</StackPanel>
-						<Button Grid.Column="1" Style="{StaticResource CloudActionButton}" Content="{loc:Tr 'Download records'}"
+						<Button Grid.Column="1" Style="{StaticResource CloudActionButton}" Content="{loc:Tr CloudView_DownloadRecords}"
 							Command="{Binding DownloadRecordsCommand}" IsEnabled="{Binding EnableDownloadButton}"
 							ToolTipService.ShowDuration="25000">
 							<Button.ToolTip>
 								<ToolTip MaxWidth="200">
-									<TextBlock Text="{loc:Tr 'Download the records bound to the download ID to your specified download folder'}" TextWrapping="Wrap"/>
+									<TextBlock Text="{loc:Tr CloudView_DownloadTheRecordsBoundTo}" TextWrapping="Wrap"/>
 								</ToolTip>
 							</Button.ToolTip>
 						</Button>
@@ -197,7 +197,7 @@
 				<DockPanel LastChildFill="False" Height="26">
 					<materialDesign:PackIcon Kind="PlaylistEdit" Width="20" Height="20" VerticalAlignment="Center"
 						Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-					<TextBlock Text="{loc:Tr 'Process list options'}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
+					<TextBlock Text="{loc:Tr CloudView_ProcessListOptions}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="8 0 0 0"
 						Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 				</DockPanel>
 
@@ -205,17 +205,17 @@
 					<Expander Background="Transparent" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
 						wpf:ExpanderAssist.HorizontalHeaderPadding="12 8 12 8">
 						<Expander.Header>
-							<TextBlock Text="{loc:Tr 'What is the process list?'}" FontSize="13" FontWeight="Medium"/>
+							<TextBlock Text="{loc:Tr CloudView_WhatIsTheProcessList}" FontSize="13" FontWeight="Medium"/>
 						</Expander.Header>
 						<TextBlock Margin="12 0 12 12" TextWrapping="Wrap" FontSize="12"
 							Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}">
-							<Run Text="{loc:Tr 'The process list contains all processes known by CapFrameX.'}"/>
+							<Run Text="{loc:Tr CloudView_TheProcessListContainsAll}"/>
 							<LineBreak/><LineBreak/>
-							<Run Text="{loc:Tr 'It holds information about the displayed process name and whether or not the process is ignored by the capture service.'}"/>
+							<Run Text="{loc:Tr CloudView_ItHoldsInformationAboutThe}"/>
 							<LineBreak/><LineBreak/>
-							<Run Text="{loc:Tr 'On first startup your own process list is created and updated from a default list we deliver with every new version of CapFrameX that already contains many game processes with their correct names and other processes that are to be ignored.'}"/>
+							<Run Text="{loc:Tr CloudView_OnFirstStartupYourOwn}"/>
 							<LineBreak/><LineBreak/>
-							<Run Text="{loc:Tr 'The options below help us to get additional entries for our default list and can also directly provide you with our latest additions.'}"/>
+							<Run Text="{loc:Tr CloudView_TheOptionsBelowHelpUs}"/>
 						</TextBlock>
 					</Expander>
 				</Border>
@@ -224,10 +224,10 @@
 					<CheckBox IsChecked="{Binding ShareProcessListEntries}" ToolTipService.ShowDuration="25000">
 						<CheckBox.ToolTip>
 							<ToolTip StaysOpen="True" MaxWidth="275">
-								<TextBlock Text="{loc:Tr 'Any new game name or ignored process you add will be sent to us so that we can add it to our own list'}" TextWrapping="Wrap"/>
+								<TextBlock Text="{loc:Tr CloudView_AnyNewGameNameOr}" TextWrapping="Wrap"/>
 							</ToolTip>
 						</CheckBox.ToolTip>
-						<TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow" Text="{loc:Tr 'Share new entries'}"
+						<TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow" Text="{loc:Tr CloudView_ShareNewEntries}"
 							Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 					</CheckBox>
 					<CheckBox Margin="24 0 0 0" IsChecked="{Binding AutoUpdateProcessList}" ToolTipService.ShowDuration="25000">
@@ -237,7 +237,7 @@
 									Text="On startup, your own process list will be compared to our online list and anything that's not on your list will be added.&#10;&#10;This will not affect the ignored/unignored status or the custom game name of any process that's already on your list"/>
 							</ToolTip>
 						</CheckBox.ToolTip>
-						<TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow" Text="{loc:Tr 'Auto update list'}"
+						<TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow" Text="{loc:Tr CloudView_AutoUpdateList}"
 							Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 					</CheckBox>
 				</StackPanel>

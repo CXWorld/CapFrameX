@@ -1,4 +1,4 @@
-﻿using CapFrameX.Contracts.Localization;
+using CapFrameX.Contracts.Localization;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -93,7 +93,7 @@ namespace CapFrameX
 
             if (process?.MainWindowHandle == IntPtr.Zero)
             {
-                MessageBox.Show(CxLang.T("There is already an instance running..."));
+                MessageBox.Show(CxLang.T("AppHelper_ThereIsAlreadyAnInstance"));
                 return;
             }
 

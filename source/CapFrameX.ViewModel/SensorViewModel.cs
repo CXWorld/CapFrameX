@@ -1,4 +1,4 @@
-﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Sensor;
@@ -48,7 +48,7 @@ namespace CapFrameX.ViewModel
         private bool _isActive;
         private bool _aggregateButtonIsEnable = true;
         private string _aggregationButtonText = "Evaluate" + Environment.NewLine + "multiple entries";
-        private string _sensorStatisticsText = CxLang.T("Sensor statistics for selected record");
+        private string _sensorStatisticsText = CxLang.T("SensorViewModel_SensorStatisticsForSelectedRecord");
         private bool _selectedRecordChanged;
 
         public IFileRecordInfo RecordInfo { get; private set; }
@@ -223,7 +223,7 @@ namespace CapFrameX.ViewModel
                 {
                     if (_applicationState.SelectedRecords != null && _applicationState.SelectedRecords.Count > 1)
                     {
-                        AggregateButtonText = CxLang.T("Working");
+                        AggregateButtonText = CxLang.T("SensorViewModel_Working");
                         AggregateButtonIsEnable = false;
                         CopyRawSensorsEnable = false;
                         _selectedRecordChanged = false;
@@ -239,7 +239,7 @@ namespace CapFrameX.ViewModel
                             AggregateSensorDataOfSessions(sessions);
 
                         AggregateButtonText = CxLang.T("Evaluate" + Environment.NewLine + "multiple entries");
-                        SensorStatisticsText = CxLang.T("Sensor statistics for multiple selected records");
+                        SensorStatisticsText = CxLang.T("SensorViewModel_SensorStatisticsForMultipleSelected");
                         AggregateButtonIsEnable = true;
                     }
                 });
@@ -283,7 +283,7 @@ namespace CapFrameX.ViewModel
                     UpdateSensorSessionReport(msg.CurrentSession);
                     CopyRawSensorsEnable = true;
                     _selectedRecordChanged = true;
-                    SensorStatisticsText = CxLang.T("Sensor statistics for selected record");
+                    SensorStatisticsText = CxLang.T("SensorViewModel_SensorStatisticsForSelectedRecord2");
                 });
         }
 

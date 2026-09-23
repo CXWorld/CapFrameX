@@ -16,12 +16,12 @@
             <ColumnDefinition Width="1*"></ColumnDefinition>
             <ColumnDefinition Width="1*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <TextBlock Margin="10" TextWrapping="Wrap" VerticalAlignment="Center" Grid.Row="0" Grid.ColumnSpan="2" Text="{loc:Tr 'Do you really want to reset the config. Previous settings will be lost!'}" FontSize="16">
+        <TextBlock Margin="10" TextWrapping="Wrap" VerticalAlignment="Center" Grid.Row="0" Grid.ColumnSpan="2" Text="{loc:Tr ResetOverlayConfigDialog_DoYouReallyWantTo}" FontSize="16">
         </TextBlock>
-        <Button Margin="0 0 0 15" Grid.Row="1" Grid.Column="0" Width="80" Height="30" Content="{loc:Tr 'OK'}"
+        <Button Margin="0 0 0 15" Grid.Row="1" Grid.Column="0" Width="80" Height="30" Content="{loc:Tr ResetOverlayConfigDialog_OK}"
                 Command="{Binding ResetConfigCommand}">
         </Button>
-        <Button  Margin="0 0 0 15" Grid.Row="1" Grid.Column="1" Width="80" Height="30" Content="{loc:Tr 'Cancel'}"
+        <Button  Margin="0 0 0 15" Grid.Row="1" Grid.Column="1" Width="80" Height="30" Content="{loc:Tr ResetOverlayConfigDialog_Cancel}"
                 Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}">
         </Button>
     </Grid>

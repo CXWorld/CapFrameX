@@ -1,7 +1,7 @@
 <Window x:Class="CapFrameX.VoltageMonitor.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:CapFrameX.MVVM.Localization;assembly=CapFrameX.MVVM"
-        Title="{loc:Tr 'Panther Lake Voltage Monitor'}"
+        Title="{loc:Tr MainWindow_PantherLakeVoltageMonitor}"
         Height="600" Width="800"
         Background="#1E1E1E"
         WindowStartupLocation="CenterScreen">
@@ -14,7 +14,7 @@
 
         <!-- Header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,10">
-            <TextBlock Text="{loc:Tr 'Panther Lake Voltage Candidates'}"
+            <TextBlock Text="{loc:Tr MainWindow_PantherLakeVoltageCandidates}"
                        FontSize="18" FontWeight="Bold" Foreground="White"/>
             <TextBlock x:Name="ProcessorInfoText"
                        FontSize="12" Foreground="#888" Margin="0,5,0,0"/>
@@ -54,18 +54,18 @@
                 </Style>
             </DataGrid.CellStyle>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="{loc:Tr 'Core'}" Binding="{Binding Core}" Width="60"/>
+                <DataGridTextColumn Header="{loc:Tr MainWindow_Core}" Binding="{Binding Core}" Width="60"/>
                 <DataGridTextColumn Header="0x019C (THERM_STATUS)" Binding="{Binding ThermStatusVoltage}" Width="160"/>
                 <DataGridTextColumn Header="0x00CE (PLATFORM_INFO)" Binding="{Binding PlatformInfoVoltage}" Width="160"/>
                 <DataGridTextColumn Header="0x0198 (PERF_STATUS)" Binding="{Binding PerfStatusVoltage}" Width="160"/>
                 <DataGridTextColumn Header="0x0641 (PP1_ENERGY)" Binding="{Binding Pp1EnergyVoltage}" Width="160"/>
-                <DataGridTextColumn Header="{loc:Tr 'Raw 0x019C'}" Binding="{Binding ThermStatusRaw}" Width="140"/>
+                <DataGridTextColumn Header="{loc:Tr MainWindow_Raw0x019C}" Binding="{Binding ThermStatusRaw}" Width="140"/>
             </DataGrid.Columns>
         </DataGrid>
 
         <!-- Status Bar -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,0">
-            <TextBlock Text="{loc:Tr 'Polling: 1s'}" Foreground="#888" Margin="0,0,20,0"/>
+            <TextBlock Text="{loc:Tr MainWindow_Polling1s}" Foreground="#888" Margin="0,0,20,0"/>
             <TextBlock x:Name="LastUpdateText" Foreground="#888"/>
         </StackPanel>
     </Grid>

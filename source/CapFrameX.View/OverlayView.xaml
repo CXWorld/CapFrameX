@@ -62,7 +62,7 @@
 	</UserControl.Resources>
 	<Grid HorizontalAlignment="Center">
 		<TabControl Width="940" Margin="10" Background="{DynamicResource MaterialDesign.Brush.Card.Background}" BorderThickness="0" FocusVisualStyle="{x:Null}">
-			<TabItem Header="{loc:Tr 'Overlay items'}">
+			<TabItem Header="{loc:Tr OverlayView_OverlayItems}">
 				<Grid Margin="{StaticResource CxTabContentMargin}">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="*"/>
@@ -87,41 +87,27 @@
 							<RowDefinition Height="50"></RowDefinition>
 						</Grid.RowDefinitions>
 						<StackPanel Orientation="Horizontal" Margin="15 0 0 10" HorizontalAlignment="Left">
-							<TextBlock Margin="0 0 10 0" Text="{loc:Tr 'Overlay Items'}" FontSize="18" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+							<TextBlock Margin="0 0 10 0" Text="{loc:Tr OverlayView_OverlayItems2}" FontSize="18" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 							<materialDesign:PackIcon Width="20" Height="20" Kind="Information" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTipService.ShowDuration="25000" ToolTipService.Placement="Top">
 								<materialDesign:PackIcon.ToolTip>
-									<TextBlock Width="275" Text="{loc:Tr 'Special CX Overlay items:&#xA;
-                                                        &#xA;Capture service status:
-                                                        &#xA;Current state of capture service(process found, multiple processes found, running benchmark...) &#xA;
-                                                        &#xA;Capture timer:
-                                                        &#xA;Remaining time for currently active capture(time set) or current capture time(unlimited)&#xA;
-                                                        &#xA;Run history:
-                                                        &#xA;Displays the data of previous runs and aggregated results(settings on capture page) &#xA;
-                                                        &#xA;Real-time FPS metrics:
-                                                        &#xA;Averaged values for average and percentiles FPS&#xA;
-                                                        &#xA;Stuttering Time:
-                                                        &#xA;Time percentage of frames above the stuttering threshold &#xA;
-                                                        &#xA;Application Latency:
-                                                        &#xA;Averaged approximated input lag &#xA;
-                                                        &#xA;PMD Powers:
-                                                        &#xA;Power values for use with Powernetics v2 tool &#xA;'}"
+									<TextBlock Width="275" Text="{loc:Tr OverlayView_SpecialCXOverlayItemsCapture}"
 										   TextWrapping="Wrap"/>
 								</materialDesign:PackIcon.ToolTip>
 							</materialDesign:PackIcon>
 						</StackPanel>
 						<StackPanel Grid.Row="0" Margin="0 0 0 10" Orientation="Horizontal" HorizontalAlignment="Right">
 							<Button Width="28" Height="28" Margin="7 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-								ToolTip="{loc:Tr 'Sort entries by type'}" Command="{Binding SortByEntryTypeCommand}"
+								ToolTip="{loc:Tr OverlayView_SortEntriesByType}" Command="{Binding SortByEntryTypeCommand}"
 								materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="Sort" Height="22" Width="22" />
 							</Button>
 							<Button Width="28" Height="28" Margin="0 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-								ToolTip="{loc:Tr 'Open configuration folder'}" Command="{Binding OpenConfigFolderCommand}"
+								ToolTip="{loc:Tr OverlayView_OpenConfigurationFolder}" Command="{Binding OpenConfigFolderCommand}"
 								materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="Folder" Height="22" Width="22" />
 							</Button>
 							<Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-									ToolTip="{loc:Tr 'Save selection to other configs'}" Click="CopyButton_Click" 
+									ToolTip="{loc:Tr OverlayView_SaveSelectionToOtherConfigs}" Click="CopyButton_Click" 
 									materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="ContentCopy" Height="22" Width="22"/>
 							</Button>
@@ -137,9 +123,9 @@
 											<ColumnDefinition Width="Auto"></ColumnDefinition>
 											<ColumnDefinition Width="Auto"></ColumnDefinition>
 										</Grid.ColumnDefinitions>
-										<TextBlock Grid.Row="0" Grid.Column="0" Margin="0 5 25 5" Text="{loc:Tr 'Config  1'}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"></TextBlock>
-										<TextBlock Grid.Row="1" Grid.Column="0" Margin="0 5 25 5" Text="{loc:Tr 'Config  2'}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"></TextBlock>
-										<TextBlock Grid.Row="2" Grid.Column="0" Margin="0 5 25 5" Text="{loc:Tr 'Config  3'}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"></TextBlock>
+										<TextBlock Grid.Row="0" Grid.Column="0" Margin="0 5 25 5" Text="{loc:Tr OverlayView_Config1}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"></TextBlock>
+										<TextBlock Grid.Row="1" Grid.Column="0" Margin="0 5 25 5" Text="{loc:Tr OverlayView_Config2}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"></TextBlock>
+										<TextBlock Grid.Row="2" Grid.Column="0" Margin="0 5 25 5" Text="{loc:Tr OverlayView_Config3}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"></TextBlock>
 										<Button Grid.Row="0" Grid.Column="1" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
                                         Command="{Binding SaveConfigCommand}" CommandParameter="0"
                                         materialDesign:RippleAssist.Feedback="#DD000000">
@@ -159,7 +145,7 @@
 								</materialDesign:Card>
 							</Popup>
 							<Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-                            ToolTip="{loc:Tr 'Save selection to current config'}" Command="{Binding SaveConfigCommand}" CommandParameter="3" IsEnabled="{Binding SaveButtonIsEnable}"
+                            ToolTip="{loc:Tr OverlayView_SaveSelectionToCurrentConfig}" Command="{Binding SaveConfigCommand}" CommandParameter="3" IsEnabled="{Binding SaveButtonIsEnable}"
                             materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="ContentSaveSettings" Height="22" Width="22" />
 							</Button>
@@ -188,7 +174,7 @@
                                  Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                                  Command="{Binding ConfigSwitchCommand}" CommandParameter="2"/>
 							<Button Width="28" Height="28" Margin="7 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-								ToolTip="{loc:Tr 'Reset to defaults'}" Command="{Binding OpenResetDialogCommand}"
+								ToolTip="{loc:Tr OverlayView_ResetToDefaults}" Command="{Binding OpenResetDialogCommand}"
                             materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="Restore" Height="22" Width="22" />
 							</Button>
@@ -196,19 +182,19 @@
 						<!--Filter Controls-->
 						<StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10 0 10 5" HorizontalAlignment="Stretch">
 							<TextBox Width="150" Height="28" FontSize="12" VerticalContentAlignment="Center"
-									 materialDesign:HintAssist.Hint="{loc:Tr 'Search...'}" materialDesign:HintAssist.HintOpacity=".6"
+									 materialDesign:HintAssist.Hint="{loc:Tr OverlayView_Search}" materialDesign:HintAssist.HintOpacity=".6"
 									 materialDesign:TextFieldAssist.HasClearButton="True"
 									 Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}"
 									 Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
-									 ToolTip="{loc:Tr 'Search in Description, Group Name, and Identifier'}"/>
+									 ToolTip="{loc:Tr OverlayView_SearchInDescriptionGroupName}"/>
 							<ComboBox Width="110" Height="28" Margin="10 0 0 0" FontSize="12" VerticalContentAlignment="Center"
-									  materialDesign:HintAssist.Hint="{loc:Tr 'Entry Type'}" materialDesign:HintAssist.HintOpacity=".6"
+									  materialDesign:HintAssist.Hint="{loc:Tr OverlayView_EntryType}" materialDesign:HintAssist.HintOpacity=".6"
 									  materialDesign:HintAssist.IsFloating="False"
 
 									  ItemsSource="{Binding EntryTypeFilterItems}"
 									  SelectedItem="{Binding SelectedEntryTypeFilter}"
 									  Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
-									  ToolTip="{loc:Tr 'Filter by entry type'}">
+									  ToolTip="{loc:Tr OverlayView_FilterByEntryType}">
 								<ComboBox.ItemTemplate>
 									<DataTemplate>
 										<TextBlock Text="{Binding Converter={StaticResource EnumShortDescriptionConverter}, TargetNullValue='All Types'}"/>
@@ -216,7 +202,7 @@
 								</ComboBox.ItemTemplate>
 							</ComboBox>
 							<Button Width="24" Height="24" Margin="10 0 0 0" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-									ToolTip="{loc:Tr 'Clear filters'}" Command="{Binding ClearFilterCommand}"
+									ToolTip="{loc:Tr OverlayView_ClearFilters}" Command="{Binding ClearFilterCommand}"
 									materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="FilterRemove" Height="16" Width="16" />
 							</Button>
@@ -232,7 +218,7 @@
 					          dragdrop:DragDrop.UseDefaultDragAdorner="True"
 					          dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 					          dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
-                              ToolTip="{loc:Tr 'Drag &amp; Drop to change order'}"
+                              ToolTip="{loc:Tr OverlayView_DragDropToChangeOrder}"
                               ToolTipService.VerticalOffset="-6"
                               Style="{StaticResource MaterialDesignDataGrid}"
                               Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
@@ -306,7 +292,7 @@
 								</Style>
 							</DataGrid.Resources>
 							<DataGrid.Columns>
-								<DataGridCheckBoxColumn Binding="{Binding ShowOnOverlay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Header="{loc:Tr 'OSD'}">
+								<DataGridCheckBoxColumn Binding="{Binding ShowOnOverlay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Header="{loc:Tr OverlayView_OSD}">
 									<DataGridCheckBoxColumn.CellStyle>
 										<Style TargetType="DataGridCell">
 											<Setter Property="IsEnabled" 
@@ -329,9 +315,9 @@
 									</DataGridCheckBoxColumn.CellStyle>
 								</DataGridCheckBoxColumn>
 								<DataGridTextColumn Binding="{Binding LocalizedDescription, Mode=TwoWay}"
-                                    Header="{loc:Tr 'Description'}"
+                                    Header="{loc:Tr OverlayView_Description}"
                                     IsReadOnly="True"/>
-								<DataGridTemplateColumn Header="{loc:Tr 'Group Name'}" SortMemberPath="GroupName" MinWidth="120">
+								<DataGridTemplateColumn Header="{loc:Tr OverlayView_GroupName}" SortMemberPath="GroupName" MinWidth="120">
 									<DataGridTemplateColumn.CellTemplate>
 										<DataTemplate>
 											<TextBlock Margin="4 0" VerticalAlignment="Center" Text="{Binding GroupName, Converter={StaticResource OverlayLabelConverter}}"/>
@@ -345,11 +331,11 @@
 								</DataGridTemplateColumn>
 
 								<DataGridTextColumn Binding="{Binding OverlayEntryType, Mode=OneWay, Converter={StaticResource EnumShortDescriptionConverter}}"
-									Header="{loc:Tr 'Entry Type'}"
+									Header="{loc:Tr OverlayView_EntryType2}"
 									IsReadOnly="True"/>
 
 								<DataGridCheckBoxColumn Binding="{Binding ShowGraph, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-									Header="{loc:Tr 'Graph'}">
+									Header="{loc:Tr OverlayView_Graph}">
 									<DataGridCheckBoxColumn.CellStyle>
 										<Style TargetType="DataGridCell">
 											<Setter Property="Visibility" 
@@ -376,11 +362,11 @@
 						<StackPanel Grid.Row="3" Orientation="Vertical">
 							<Border Margin="10 10 10 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}" BorderThickness="0" CornerRadius="6">
 								<StackPanel Margin="10 5 0 5" Orientation="Horizontal">
-									<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr 'Group Control:'}"/>
+									<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr OverlayView_GroupControl}"/>
 									<materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
 										<materialDesign:PopupBox.ToolTip>
 											<ToolTip MaxWidth="275" Placement="Top">
-												<TextBlock Text="{loc:Tr 'OSD parameter group control'}" 
+												<TextBlock Text="{loc:Tr OverlayView_OSDParameterGroupControl}" 
 										   TextWrapping="Wrap"/>
 											</ToolTip>
 										</materialDesign:PopupBox.ToolTip>
@@ -415,118 +401,118 @@
 														<ColumnDefinition Width="1*"/>
 														<ColumnDefinition Width="1*"/>
 													</Grid.ColumnDefinitions>
-													<TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="{loc:Tr 'Capture Items'}" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="{loc:Tr OverlayView_CaptureItems}" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="0" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckCaptureItems}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Check Capture Items'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_CheckCaptureItems}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 													<Button Margin="5" Grid.Row="0" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckCaptureItems}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Uncheck Capture Items'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_UncheckCaptureItems}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 
-													<TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="{loc:Tr 'System Infos'}" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="{loc:Tr OverlayView_SystemInfos}" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="1" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckSystemInfo}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Check System Info'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_CheckSystemInfo}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 													<Button Margin="5" Grid.Row="1" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckSystemInfo}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Uncheck System Info'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_UncheckSystemInfo}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 
-													<TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="{loc:Tr 'Real-time Metrics'}" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="{loc:Tr OverlayView_RealTimeMetrics}" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="2" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckOnlineMetrics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Check real-time Metrics'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_CheckRealTimeMetrics}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 													<Button Margin="5" Grid.Row="2" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckOnlineMetrics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Uncheck real-time Metrics'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_UncheckRealTimeMetrics}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 
-													<TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="{loc:Tr 'GPU Basics'}" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="{loc:Tr OverlayView_GPUBasics}" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="3" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckGpuBasics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Check GPU Basics'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_CheckGPUBasics}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 													<Button Margin="5" Grid.Row="3" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckGpuBasics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Uncheck GPU Basics'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_UncheckGPUBasics}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 
-													<TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="{loc:Tr 'CPU Core Loads'}" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="{loc:Tr OverlayView_CPUCoreLoads}" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="4" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckCpuLoads}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Check CPU Loads'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_CheckCPULoads}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 													<Button Margin="5" Grid.Row="4" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckCpuLoads}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Uncheck CPU Loads'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_UncheckCPULoads}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 
-													<TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="{loc:Tr 'CPU Core Clocks'}" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="{loc:Tr OverlayView_CPUCoreClocks}" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="5" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckCpuClocks}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Check CPU Clocks'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_CheckCPUClocks}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 													<Button Margin="5" Grid.Row="5" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckCpuClocks}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Uncheck CPU Clocks'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_UncheckCPUClocks}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 
-													<TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="{loc:Tr 'CPU Core Powers'}" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="{loc:Tr OverlayView_CPUCorePowers}" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="6" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckCpuPowers}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Check CPU Clocks'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_CheckCPUClocks2}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 													<Button Margin="5" Grid.Row="6" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckCpuPowers}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Uncheck CPU Clocks'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_UncheckCPUClocks2}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 
-													<TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="{loc:Tr 'CPU Core Temps'}" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="{loc:Tr OverlayView_CPUCoreTemps}" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="7" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckCpuTemps}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Check CPU Core Temps'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_CheckCPUCoreTemps}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 													<Button Margin="5" Grid.Row="7" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckCpuTemps}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Uncheck CPU Core Temps'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_UncheckCPUCoreTemps}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 
 													<!--CPU voltages-->
-													<TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="{loc:Tr 'CPU Core Voltages'}" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="{loc:Tr OverlayView_CPUCoreVoltages}" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="8" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckCpuVoltages}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Check CPU Core Voltages'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_CheckCPUCoreVoltages}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 													<Button Margin="5" Grid.Row="8" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckCpuVoltages}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Uncheck CPU Core Voltages'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_UncheckCPUCoreVoltages}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 
-													<TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="{loc:Tr 'RAM Items'}" VerticalAlignment="Center"/>
+													<TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="{loc:Tr OverlayView_RAMItems}" VerticalAlignment="Center"/>
 													<Button Margin="5" Grid.Row="9" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckRamItems}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Check RAM Items'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_CheckRAMItems}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
 													</Button>
 
 													<Button Margin="5" Grid.Row="9" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckRamItems}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Uncheck RAM Items'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr OverlayView_UncheckRAMItems}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
 														<materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
 													</Button>
 												</Grid>
 											</StackPanel>
 										</materialDesign:Card>
 									</materialDesign:PopupBox>
-									<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr 'Min OSD'}"/>
+									<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr OverlayView_MinOSD}"/>
 									<Button Margin="10 0 0 0" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
                                             Command="{Binding SetToMinOsdCommand}" materialDesign:RippleAssist.Feedback="#DD000000">
 										<materialDesign:PackIcon Kind="FlipToFront" Height="15" Width="15" />
 										<Button.ToolTip>
 											<ToolTip>
-												<TextBlock Width="275" Text="{loc:Tr 'Set OSD items to minimum. Only framerate and frametime are shown.'}" TextWrapping="Wrap">
+												<TextBlock Width="275" Text="{loc:Tr OverlayView_SetOSDItemsToMinimum}" TextWrapping="Wrap">
 												</TextBlock>
 											</ToolTip>
 										</Button.ToolTip>
@@ -561,7 +547,7 @@
 							<RowDefinition Height="65"/>
 						</Grid.RowDefinitions>
 						<StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
-							<TextBlock VerticalAlignment="Center" Text="{loc:Tr 'Overlay Template'}" FontSize="16" Margin="5 0 15 0"/>
+							<TextBlock VerticalAlignment="Center" Text="{loc:Tr OverlayView_OverlayTemplate}" FontSize="16" Margin="5 0 15 0"/>
 							<ComboBox Margin="5 0 0 0" Padding="8 0 8 0"
 								Width="180" Height="35"
 								VerticalContentAlignment="Center"
@@ -580,33 +566,33 @@
 							<Button Height="28" Margin="5 0 5 0"
 								Style="{StaticResource OverlayTemplateOutlinedButton}"
 								Command="{Binding LaunchOverlayPreviewAppCommand}"
-								ToolTip="{loc:Tr 'Launch preview app'}">
+								ToolTip="{loc:Tr OverlayView_LaunchPreviewApp}">
 								<StackPanel Orientation="Horizontal">
 									<materialDesign:PackIcon Kind="Play" VerticalAlignment="Center" Margin="0 0 5 0"
 										Foreground="{DynamicResource Cx.Brush.OutlinedAction.Foreground}"/>
-									<TextBlock Text="{loc:Tr 'Preview'}" VerticalAlignment="Center"
+									<TextBlock Text="{loc:Tr OverlayView_Preview}" VerticalAlignment="Center"
 										Foreground="{DynamicResource Cx.Brush.OutlinedAction.Foreground}"/>
 								</StackPanel>
 							</Button>
 							<Button Height="28" Margin="5 0 5 0"
 								Style="{StaticResource OverlayTemplateOutlinedButton}"
 								Command="{Binding RevertOverlayTemplateCommand}"
-								ToolTip="{loc:Tr 'Revert to last applied template'}">
+								ToolTip="{loc:Tr OverlayView_RevertToLastAppliedTemplate}">
 								<StackPanel Orientation="Horizontal">
 									<materialDesign:PackIcon Kind="Undo" VerticalAlignment="Center" Margin="0 0 5 0"
 										Foreground="{DynamicResource Cx.Brush.OutlinedAction.Foreground}"/>
-									<TextBlock Text="{loc:Tr 'Revert'}" VerticalAlignment="Center"
+									<TextBlock Text="{loc:Tr OverlayView_Revert}" VerticalAlignment="Center"
 										Foreground="{DynamicResource Cx.Brush.OutlinedAction.Foreground}"/>
 								</StackPanel>
 							</Button>
 							<Button Height="28" Margin="5 0 5 0"
 								Style="{StaticResource MaterialDesignRaisedButton}"
 								Command="{Binding ApplyOverlayTemplateCommand}"
-								ToolTip="{loc:Tr 'Apply selected template'}">
+								ToolTip="{loc:Tr OverlayView_ApplySelectedTemplate}">
 								<StackPanel Orientation="Horizontal">
 									<materialDesign:PackIcon Kind="Check" VerticalAlignment="Center" Margin="0 0 5 0"
 										Foreground="White"/>
-									<TextBlock Text="{loc:Tr 'Apply'}" VerticalAlignment="Center" Foreground="White"/>
+									<TextBlock Text="{loc:Tr OverlayView_Apply}" VerticalAlignment="Center" Foreground="White"/>
 								</StackPanel>
 							</Button>
 						</UniformGrid>
@@ -628,13 +614,13 @@
 								<ColumnDefinition Width="40"/>
 								<ColumnDefinition Width="1*"/>
 							</Grid.ColumnDefinitions>
-							<TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{loc:Tr 'Colors and Limits'}" FontSize="16"/>
+							<TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{loc:Tr OverlayView_ColorsAndLimits}" FontSize="16"/>
 							<Button Grid.Row="0" Grid.Column="2" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-								ToolTip="{loc:Tr 'Reset to defaults'}" Command="{Binding ResetColorAndLimitDefaultsCommand}"
+								ToolTip="{loc:Tr OverlayView_ResetToDefaults2}" Command="{Binding ResetColorAndLimitDefaultsCommand}"
 								materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="Restore" Height="15" Width="15" />
 							</Button>
-							<TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="{loc:Tr 'Group color:'}"/>
+							<TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="{loc:Tr OverlayView_GroupColor}"/>
 							<ctrls:CXColorPicker Grid.Row="1" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" SelectedColor="{Binding SelectedOverlayEntry.GroupColor, Converter={StaticResource StringColorConverter}}" 
 								SelectedColorChanged="SelectedColorChanged" UsingAlphaChannel="True" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness">
 								<ctrls:CXColorPicker.ButtonStyle>
@@ -662,7 +648,7 @@
 									</Style>
 								</ctrls:CXColorPicker.ButtonStyle>
 							</ctrls:CXColorPicker>
-							<TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="{loc:Tr 'Standard value color:'}"/>
+							<TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="{loc:Tr OverlayView_StandardValueColor}"/>
 							<ctrls:CXColorPicker Grid.Row="2" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" SelectedColor="{Binding SelectedOverlayEntry.Color, Converter={StaticResource StringColorConverter}}" 
 								SelectedColorChanged="SelectedColorChanged" UsingAlphaChannel="True" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness">
 								<ctrls:CXColorPicker.ButtonStyle>
@@ -691,7 +677,7 @@
 								</ctrls:CXColorPicker.ButtonStyle>
 							</ctrls:CXColorPicker>
 							<StackPanel Grid.Row="3" Grid.ColumnSpan="3" Orientation="Horizontal" Visibility="{Binding SelectedOverlayEntry.IsNumeric, Converter={StaticResource FalseToCollapsedConverter}}">
-								<TextBlock VerticalAlignment="Center" Text="{loc:Tr 'Upper limit + color:'}"></TextBlock>
+								<TextBlock VerticalAlignment="Center" Text="{loc:Tr OverlayView_UpperLimitColor}"></TextBlock>
 								<TextBox Margin="20 0 2 0" Width="40" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" 
 									ToolTip="Changes value color if value is equal or higher&#10;Clear this box to deactivate limit"
 									Text="{Binding SelectedOverlayEntry.UpperLimitValue, UpdateSourceTrigger=LostFocus}" IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
@@ -725,7 +711,7 @@
 								</ctrls:CXColorPicker>
 							</StackPanel>
 							<StackPanel Grid.Row="4" Grid.ColumnSpan="3" Orientation="Horizontal" Visibility="{Binding SelectedOverlayEntry.IsNumeric, Converter={StaticResource FalseToCollapsedConverter}}">
-								<TextBlock Grid.Row="4" Grid.Column="0"  VerticalAlignment="Center" Text="{loc:Tr 'Lower limit + color:'}"></TextBlock>
+								<TextBlock Grid.Row="4" Grid.Column="0"  VerticalAlignment="Center" Text="{loc:Tr OverlayView_LowerLimitColor}"></TextBlock>
 								<TextBox Margin="20 0 2 0" Grid.Row="4" Grid.Column="1" Width="40" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" 
 									ToolTip="Changes value color if value is equal or lower&#10;Clear this box to deactivate limit"
 									Text="{Binding SelectedOverlayEntry.LowerLimitValue, UpdateSourceTrigger=LostFocus}"
@@ -780,16 +766,16 @@
 								<ColumnDefinition Width="40"/>
 								<ColumnDefinition Width="20"/>
 							</Grid.ColumnDefinitions>
-							<TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{loc:Tr 'Format Options'}" FontSize="16"/>
-							<TextBlock Grid.Row="1" Grid.Column="0"  VerticalAlignment="Center" Text="{loc:Tr 'Group name font size'}"></TextBlock>
+							<TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{loc:Tr OverlayView_FormatOptions}" FontSize="16"/>
+							<TextBlock Grid.Row="1" Grid.Column="0"  VerticalAlignment="Center" Text="{loc:Tr OverlayView_GroupNameFontSize}"></TextBlock>
 							<TextBox Grid.Row="1" Grid.Column="1" Width="25" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" 
 								ToolTip="Positive percentage = superscript&#10;Negative percentage = subscript"
 								Text="{Binding SelectedOverlayEntry.GroupFontSize, UpdateSourceTrigger=LostFocus}">
 							</TextBox>
 							<Label Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Content="%"/>
-							<TextBlock Grid.Row="2" Grid.Column="0"  VerticalAlignment="Center" Text="{loc:Tr 'Value font size'}"></TextBlock>
+							<TextBlock Grid.Row="2" Grid.Column="0"  VerticalAlignment="Center" Text="{loc:Tr OverlayView_ValueFontSize}"></TextBlock>
 							<TextBox Grid.Row="2" Grid.Column="1" Width="25" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" 
-                                         ToolTip="{loc:Tr 'Positive percentage = superscript&#10;Negative percentage = subscript'}"
+                                         ToolTip="{loc:Tr OverlayView_PositivePercentageSuperscriptNegativePercentage}"
                                          Text="{Binding SelectedOverlayEntry.ValueFontSize, UpdateSourceTrigger=LostFocus}">
 							</TextBox>
 							<Label Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Content="%"/>
@@ -876,10 +862,10 @@
 						</DataGrid.Resources>
 						<DataGrid.Columns>
 							<DataGridTextColumn Binding="{Binding GroupName, Mode=OneWay, Converter={StaticResource OverlayLabelConverter}}"
-                                            Header="{loc:Tr 'Group name'}"
+                                            Header="{loc:Tr OverlayView_GroupName2}"
                                             IsReadOnly="True"/>
 							<DataGridTextColumn Binding="{Binding GroupSeparators, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                            Header="{loc:Tr 'Separators'}"
+                                            Header="{loc:Tr OverlayView_Separators}"
                                             IsReadOnly="False"/>
 						</DataGrid.Columns>
 					</DataGrid>
@@ -897,32 +883,32 @@
 							<RowDefinition Height="1*"></RowDefinition>
 							<RowDefinition Height="1*"></RowDefinition>
 						</Grid.RowDefinitions>
-						<TextBlock Grid.Row="0" Margin="5" HorizontalAlignment="Center" Text="{loc:Tr 'Apply to multiple Entries'}" Width="180" 
+						<TextBlock Grid.Row="0" Margin="5" HorizontalAlignment="Center" Text="{loc:Tr OverlayView_ApplyToMultipleEntries}" Width="180" 
 							TextWrapping="Wrap" TextAlignment="Center" FontSize="16"/>
 						<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
 							<CheckBox IsChecked="{Binding Checkboxes.Colors}" Margin="5">
-								<TextBlock Text="{loc:Tr 'Colors'}"/>
+								<TextBlock Text="{loc:Tr OverlayView_Colors}"/>
 							</CheckBox>
 							<CheckBox IsChecked="{Binding Checkboxes.Limits}" Margin="5">
-								<TextBlock Text="{loc:Tr 'Limits'}"/>
+								<TextBlock Text="{loc:Tr OverlayView_Limits}"/>
 							</CheckBox>
 							<CheckBox IsChecked="{Binding Checkboxes.Format}" Margin="5">
-								<TextBlock Text="{loc:Tr 'Format'}"/>
+								<TextBlock Text="{loc:Tr OverlayView_Format}"/>
 							</CheckBox>
 						</StackPanel>
-						<TextBlock Grid.Row="2"  Text="{loc:Tr 'Group Name'}" TextAlignment="Left" Margin="10 5 0 0"/>
+						<TextBlock Grid.Row="2"  Text="{loc:Tr OverlayView_GroupName3}" TextAlignment="Left" Margin="10 5 0 0"/>
 						<StackPanel Grid.Row="3" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
 							<Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-								IsEnabled="{Binding SetGroupButtonEnabled}" Command="{Binding SetFormatForGroupNameCommand}" ToolTip="{loc:Tr 'Set selected options for all entries with this group name'}"
+								IsEnabled="{Binding SetGroupButtonEnabled}" Command="{Binding SetFormatForGroupNameCommand}" ToolTip="{loc:Tr OverlayView_SetSelectedOptionsForAll}"
 								materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
 							</Button>
 							<TextBlock Margin="0 7 0 0" Text="{Binding SelectedOverlayItemGroupName}" Width="140" TextAlignment="Left" TextWrapping="Wrap" FontWeight="Bold"/>
 						</StackPanel>
-						<TextBlock Grid.Row="4" TextAlignment="Left" Text="{loc:Tr 'Sensor Type'}" Margin="10 5 0 0"/>
+						<TextBlock Grid.Row="4" TextAlignment="Left" Text="{loc:Tr OverlayView_SensorType}" Margin="10 5 0 0"/>
 						<StackPanel Grid.Row="5" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
 							<Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-								IsEnabled="{Binding SetSensorTypeButtonEnabled}" Command="{Binding SetFormatForSensorTypeCommand}" ToolTip="{loc:Tr 'Set selected options for all entries with this sensor type'}"
+								IsEnabled="{Binding SetSensorTypeButtonEnabled}" Command="{Binding SetFormatForSensorTypeCommand}" ToolTip="{loc:Tr OverlayView_SetSelectedOptionsForAll2}"
 								materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
 							</Button>
@@ -930,23 +916,23 @@
 						</StackPanel>
 
 						<!--Manage all entries-->
-						<TextBlock Grid.Row="6" Text="{loc:Tr 'All Entries'}" TextAlignment="Left" Margin="10 5 0 0"/>
+						<TextBlock Grid.Row="6" Text="{loc:Tr OverlayView_AllEntries}" TextAlignment="Left" Margin="10 5 0 0"/>
 
 						<StackPanel Grid.Row="7" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
 							<Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-								Command="{Binding SetFormatForAllGroupsCommand}" ToolTip="{loc:Tr 'Set selected options for all entries groups'}">
+								Command="{Binding SetFormatForAllGroupsCommand}" ToolTip="{loc:Tr OverlayView_SetSelectedOptionsForAll3}">
 								<materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
 							</Button>
-							<TextBlock Margin="0 7 0 0" Text="{loc:Tr 'Groups'}" Width="140" TextAlignment="Left" TextWrapping="Wrap" FontWeight="Bold"/>
+							<TextBlock Margin="0 7 0 0" Text="{loc:Tr OverlayView_Groups}" Width="140" TextAlignment="Left" TextWrapping="Wrap" FontWeight="Bold"/>
 						</StackPanel>
 
 						<StackPanel Grid.Row="8" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
 							<Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-								Command="{Binding SetFormatForAllValuesCommand}" ToolTip="{loc:Tr 'Set selected options for all entries values'}"
+								Command="{Binding SetFormatForAllValuesCommand}" ToolTip="{loc:Tr OverlayView_SetSelectedOptionsForAll4}"
                                 materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
 							</Button>
-							<TextBlock Margin="0 7 0 0" Text="{loc:Tr 'Values'}" Width="140" TextAlignment="Left" TextWrapping="Wrap" FontWeight="Bold"/>
+							<TextBlock Margin="0 7 0 0" Text="{loc:Tr OverlayView_Values}" Width="140" TextAlignment="Left" TextWrapping="Wrap" FontWeight="Bold"/>
 						</StackPanel>
 					</Grid>
 				</Border>
@@ -954,23 +940,23 @@
 				<Grid Grid.Row="3" Grid.ColumnSpan="2" VerticalAlignment="Top" Height="105" Visibility="Collapsed">
 					<Border Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}">
 						<Grid>
-							<TextBlock Margin="0 10 0 0" HorizontalAlignment="Center" Text="{loc:Tr 'Hardware Controller'}" FontSize="16"/>
+							<TextBlock Margin="0 10 0 0" HorizontalAlignment="Center" Text="{loc:Tr OverlayView_HardwareController}" FontSize="16"/>
 							<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 20 0 0">
 								<StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-									<TextBlock Text="{loc:Tr 'Thread Affinity Controller'}"/>
+									<TextBlock Text="{loc:Tr OverlayView_ThreadAffinityController}"/>
 									<ToggleButton Margin="0 8 0 0" IsChecked="{Binding UseThreadAffinity}"
 								  ToolTipService.ShowDuration="25000">
 										<ToggleButton.ToolTip>
 											<ToolTip MaxWidth="250">
-												<TextBlock Text="{loc:Tr 'Sets the thread affinity for Intel hybrid architectures and Ryzen CPUs with 2 CCDs.'}"                               
+												<TextBlock Text="{loc:Tr OverlayView_SetsTheThreadAffinityFor}"                               
 										   TextWrapping="Wrap"/>
 											</ToolTip>
 										</ToggleButton.ToolTip>
 									</ToggleButton>
 								</StackPanel>
-								<TextBox Margin="30 0 0 0" materialDesign:HintAssist.Hint="{loc:Tr 'Thread Affinity Hotkey'}" Width="145" Height="45" Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
+								<TextBox Margin="30 0 0 0" materialDesign:HintAssist.Hint="{loc:Tr OverlayView_ThreadAffinityHotkey}" Width="145" Height="45" Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 									 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ThreadAffinityHotkeyTextBox_PreviewKeyDown" materialDesign:HintAssist.HintOpacity=".8"
-									 ToolTip="{loc:Tr 'Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)'}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
+									 ToolTip="{loc:Tr OverlayView_HotkeyCombinableWithUpTo}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
 									<Binding Path="ThreadAffinityHotkey"
 										ElementName="OverlayViewControl"
 										Mode="OneWay"
@@ -989,7 +975,7 @@
 		</Border>
 				</Grid>
 			</TabItem>
-			<TabItem Header="{loc:Tr 'OSD options'}">
+			<TabItem Header="{loc:Tr OverlayView_OSDOptions}">
 				<ScrollViewer Margin="{StaticResource CxTabContentMargin}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
 					<Grid Margin="8 0 8 14">
 						<Grid.ColumnDefinitions>
@@ -1001,9 +987,9 @@
 						<StackPanel Grid.Column="0">
 							<Border Margin="6 0 6 6" Style="{StaticResource OsdOptionsCard}">
 								<StackPanel>
-									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="{loc:Tr 'General'}"/>
+									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="{loc:Tr OverlayView_General}"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
-											   Text="{loc:Tr 'Control when the overlay is visible and how common entries behave.'}"/>
+											   Text="{loc:Tr OverlayView_ControlWhenTheOverlayIs}"/>
 									<Separator Margin="0 10 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 
 									<DockPanel Margin="0 8">
@@ -1011,9 +997,9 @@
 													  IsChecked="{Binding IsOverlayActive, Mode=TwoWay}"
 />
 										<StackPanel>
-											<TextBlock FontWeight="SemiBold" Text="{loc:Tr 'Overlay active'}"/>
+											<TextBlock FontWeight="SemiBold" Text="{loc:Tr OverlayView_OverlayActive}"/>
 											<TextBlock Style="{StaticResource OsdOptionsDescription}"
-													   Text="{loc:Tr 'Show or hide the selected overlay renderer.'}"/>
+													   Text="{loc:Tr OverlayView_ShowOrHideTheSelected}"/>
 										</StackPanel>
 									</DockPanel>
 
@@ -1022,9 +1008,9 @@
 												  IsChecked="{Binding AutoDisableOverlay, Mode=TwoWay}"
 												  Style="{StaticResource MaterialDesignCheckBox}"/>
 										<StackPanel>
-											<TextBlock FontWeight="SemiBold" Text="{loc:Tr 'Auto-disable while capturing'}"/>
+											<TextBlock FontWeight="SemiBold" Text="{loc:Tr OverlayView_AutoDisableWhileCapturing}"/>
 											<TextBlock Style="{StaticResource OsdOptionsDescription}"
-													   Text="{loc:Tr 'Hide the OSD while a benchmark capture is running.'}"/>
+													   Text="{loc:Tr OverlayView_HideTheOSDWhileA}"/>
 										</StackPanel>
 									</DockPanel>
 
@@ -1033,9 +1019,9 @@
 												  IsChecked="{Binding ShowSystemTimeSeconds, Mode=TwoWay}"
 												  Style="{StaticResource MaterialDesignCheckBox}"/>
 										<StackPanel>
-											<TextBlock FontWeight="SemiBold" Text="{loc:Tr 'System time seconds'}"/>
+											<TextBlock FontWeight="SemiBold" Text="{loc:Tr OverlayView_SystemTimeSeconds}"/>
 											<TextBlock Style="{StaticResource OsdOptionsDescription}"
-													   Text="{loc:Tr 'Include seconds in the system-time overlay entry.'}"/>
+													   Text="{loc:Tr OverlayView_IncludeSecondsInTheSystem}"/>
 										</StackPanel>
 									</DockPanel>
 								</StackPanel>
@@ -1043,9 +1029,9 @@
 
 							<Border Style="{StaticResource OsdOptionsCard}">
 								<StackPanel>
-									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="{loc:Tr 'Appearance and position'}"/>
+									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="{loc:Tr OverlayView_AppearanceAndPosition}"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
-											   Text="{loc:Tr 'Adjust the placement and background of CapFrameX overlay content.'}"/>
+											   Text="{loc:Tr OverlayView_AdjustThePlacementAndBackground}"/>
 									<Separator Margin="0 10 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 
 									<DockPanel Margin="0 8">
@@ -1053,9 +1039,9 @@
 												  IsChecked="{Binding OSDCustomPosition, Mode=TwoWay}"
 												  Style="{StaticResource MaterialDesignCheckBox}"/>
 										<StackPanel>
-											<TextBlock FontWeight="SemiBold" Text="{loc:Tr 'Custom position'}"/>
+											<TextBlock FontWeight="SemiBold" Text="{loc:Tr OverlayView_CustomPosition}"/>
 											<TextBlock Style="{StaticResource OsdOptionsDescription}"
-													   Text="{loc:Tr 'Manually position the CapFrameX overlay items.'}"/>
+													   Text="{loc:Tr OverlayView_ManuallyPositionTheCapFrameXOverlay}"/>
 										</StackPanel>
 									</DockPanel>
 
@@ -1065,7 +1051,7 @@
 											<ColumnDefinition Width="*"/>
 											<ColumnDefinition Width="Auto"/>
 										</Grid.ColumnDefinitions>
-										<TextBlock VerticalAlignment="Center" Text="{loc:Tr 'Overlay coordinates'}"/>
+										<TextBlock VerticalAlignment="Center" Text="{loc:Tr OverlayView_OverlayCoordinates}"/>
 										<StackPanel Grid.Column="1" Orientation="Horizontal">
 											<TextBlock Margin="0 0 6 0" VerticalAlignment="Center" Text="X"/>
 											<TextBox Width="45" Height="28" HorizontalContentAlignment="Center"
@@ -1078,9 +1064,9 @@
 										</StackPanel>
 									</Grid>
 
-									<TextBlock Margin="0 8 0 0" FontWeight="SemiBold" Text="{loc:Tr 'Background opacity'}"/>
+									<TextBlock Margin="0 8 0 0" FontWeight="SemiBold" Text="{loc:Tr OverlayView_BackgroundOpacity}"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
-											   Text="{loc:Tr 'Applies to the hook-free renderer; RTSS uses its own setting.'}"/>
+											   Text="{loc:Tr OverlayView_AppliesToTheHookFree}"/>
 									<Grid Margin="0 8 0 0">
 										<Grid.ColumnDefinitions>
 											<ColumnDefinition Width="*"/>
@@ -1092,20 +1078,20 @@
 												   Text="{Binding OsdBackgroundOpacity, StringFormat={}{0} %}"/>
 									</Grid>
 
-									<TextBlock Margin="0 8 0 0" FontWeight="SemiBold" Text="{loc:Tr 'Overlay position'}"/>
+									<TextBlock Margin="0 8 0 0" FontWeight="SemiBold" Text="{loc:Tr OverlayView_OverlayPosition}"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
-											   Text="{loc:Tr 'Anchor corner and distance in pixels for the hook-free renderer; RTSS is positioned in the RTSS settings.'}"/>
+											   Text="{loc:Tr OverlayView_AnchorCornerAndDistanceIn}"/>
 									<Grid Margin="0 8 0 0">
 										<Grid.ColumnDefinitions>
 											<ColumnDefinition Width="*"/>
 											<ColumnDefinition Width="Auto"/>
 										</Grid.ColumnDefinitions>
 										<ComboBox VerticalAlignment="Center" SelectedIndex="{Binding OsdAnchor, Mode=TwoWay}">
-											<ComboBoxItem Content="{loc:Tr 'Top left'}"/>
-											<ComboBoxItem Content="{loc:Tr 'Top right'}"/>
-											<ComboBoxItem Content="{loc:Tr 'Bottom left'}"/>
-											<ComboBoxItem Content="{loc:Tr 'Bottom right'}"/>
-											<ComboBoxItem Content="{loc:Tr 'Top center'}"/>
+											<ComboBoxItem Content="{loc:Tr OverlayView_TopLeft}"/>
+											<ComboBoxItem Content="{loc:Tr OverlayView_TopRight}"/>
+											<ComboBoxItem Content="{loc:Tr OverlayView_BottomLeft}"/>
+											<ComboBoxItem Content="{loc:Tr OverlayView_BottomRight}"/>
+											<ComboBoxItem Content="{loc:Tr OverlayView_TopCenter}"/>
 										</ComboBox>
 										<StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12 0 0 0">
 											<TextBlock Margin="0 0 6 0" VerticalAlignment="Center" Text="X"/>
@@ -1119,9 +1105,9 @@
 										</StackPanel>
 									</Grid>
 
-									<TextBlock Margin="0 8 0 0" FontWeight="SemiBold" Text="{loc:Tr 'Overlay size'}"/>
+									<TextBlock Margin="0 8 0 0" FontWeight="SemiBold" Text="{loc:Tr OverlayView_OverlaySize}"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
-											   Text="{loc:Tr 'Scales text, spacing and graphs of the hook-free renderer; RTSS uses its own zoom.'}"/>
+											   Text="{loc:Tr OverlayView_ScalesTextSpacingAndGraphs}"/>
 									<Grid Margin="0 8 0 0">
 										<Grid.ColumnDefinitions>
 											<ColumnDefinition Width="*"/>
@@ -1139,9 +1125,9 @@
 												  IsChecked="{Binding UseOsdValueSmoothing, Mode=TwoWay}"
 												  Style="{StaticResource MaterialDesignCheckBox}"/>
 										<StackPanel>
-											<TextBlock FontWeight="SemiBold" Text="{loc:Tr 'Smooth numeric values'}"/>
+											<TextBlock FontWeight="SemiBold" Text="{loc:Tr OverlayView_SmoothNumericValues}"/>
 											<TextBlock Style="{StaticResource OsdOptionsDescription}"
-													   Text="{loc:Tr 'Animate intermediate values between data updates. Turn off to display every published value immediately; RTSS is unaffected.'}"/>
+													   Text="{loc:Tr OverlayView_AnimateIntermediateValuesBetweenData}"/>
 										</StackPanel>
 									</DockPanel>
 								</StackPanel>
@@ -1149,22 +1135,22 @@
 
 							<Border Style="{StaticResource OsdOptionsCard}">
 								<StackPanel>
-									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="{loc:Tr 'Diagnostics'}"/>
+									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="{loc:Tr OverlayView_Diagnostics}"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
-											   Text="{loc:Tr 'Collect detailed data for troubleshooting CapFrameX overlay renderers.'}"/>
+											   Text="{loc:Tr OverlayView_CollectDetailedDataForTroubleshooting}"/>
 									<Separator Margin="0 10 0 8" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 
-									<CheckBox Content="{loc:Tr 'Extended OSD logging'}"
+									<CheckBox Content="{loc:Tr OverlayView_ExtendedOSDLogging}"
 											  IsChecked="{Binding ExtendedOsdLogging.IsEnabled, Mode=TwoWay}"
 											  IsEnabled="{Binding ExtendedOsdLogging.IsUpdating, Converter={StaticResource InvertBoolConverter}}"
 											  Style="{StaticResource MaterialDesignCheckBox}"/>
 									<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
 											   Visibility="{Binding ExtendedOsdLogging.IsUpdating, Converter={StaticResource TrueToVisibleConverter}}"
-											   Text="{loc:Tr 'Saving...'}"/>
+											   Text="{loc:Tr OverlayView_Saving}"/>
 									<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
-											   Text="{loc:Tr 'Enables detailed logs for the native renderer and per-present statistics.'}"/>
+											   Text="{loc:Tr OverlayView_EnablesDetailedLogsForThe}"/>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#E0A020" TextWrapping="Wrap"
-											   Text="{loc:Tr '&#x26A0; Restart CapFrameX and the game after changing this option.'}"/>
+											   Text="{loc:Tr OverlayView_RestartCapFrameXAndTheGame}"/>
 									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#D95050" TextWrapping="Wrap"
 											   Visibility="{Binding ExtendedOsdLogging.HasError, Converter={StaticResource TrueToVisibleConverter}}"
 											   Text="{Binding ExtendedOsdLogging.Error}"/>
@@ -1175,28 +1161,28 @@
 						<StackPanel Grid.Column="1">
 							<Border Margin="6 0 6 6" Style="{StaticResource OsdOptionsCard}">
 								<StackPanel>
-									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="{loc:Tr 'Overlay renderer'}"/>
+									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="{loc:Tr OverlayView_OverlayRenderer}"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
-											   Text="{loc:Tr 'Choose one output backend. Renderer-specific options stay with their renderer.'}"/>
+											   Text="{loc:Tr OverlayView_ChooseOneOutputBackendRenderer}"/>
 									<Separator Margin="0 10 0 8" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 
 									<!-- The ViewModel enforces exclusivity. Distinct GroupNames prevent WPF from
 										 dropping a binding while it automatically unchecks another renderer. -->
 									<StackPanel Margin="0 4 0 8">
-										<RadioButton GroupName="OverlayModeRtss" Content="{loc:Tr 'RTSS'}"
+										<RadioButton GroupName="OverlayModeRtss" Content="{loc:Tr OverlayView_RTSS}"
 													 IsChecked="{Binding OverlayModeRtss, Mode=TwoWay}"
 													 IsEnabled="{Binding IsRTSSInstalled}"
 													 Style="{StaticResource MaterialDesignRadioButton}"/>
 										<TextBlock Margin="26 0 0 0" Style="{StaticResource OsdOptionsDescription}"
-												   Text="{loc:Tr 'Classic RivaTuner Statistics Server overlay. Requires RTSS.'}"/>
+												   Text="{loc:Tr OverlayView_ClassicRivaTunerStatisticsServerOverlay}"/>
 										<TextBlock Margin="26 5 0 0" FontSize="11" Foreground="#E0A020" TextWrapping="Wrap"
 												   Visibility="{Binding ShowRtssHiddenHint, Converter={StaticResource TrueToVisibleConverter}}"
-												   Text="{loc:Tr '&#x26A0; &quot;Hide OSD on RTSS&quot; is enabled. Disable that setting to show the RTSS overlay.'}"/>
+												   Text="{loc:Tr OverlayView_HideOSDOnRTSSIs}"/>
 									</StackPanel>
 
 									<Separator Margin="0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 									<StackPanel Margin="0 8">
-										<RadioButton GroupName="OverlayModeHook" Content="{loc:Tr 'CapFrameX in-game (Experimental)'}"
+										<RadioButton GroupName="OverlayModeHook" Content="{loc:Tr OverlayView_CapFrameXInGameExperimental}"
                                                      IsEnabled="{Binding IsInGameOverlayAvailable}"
                                                      ToolTip="{Binding InGameOverlayDescription}" ToolTipService.ShowOnDisabled="True"
 													 IsChecked="{Binding OverlayModeHook, Mode=TwoWay}"
@@ -1204,30 +1190,30 @@
 										<TextBlock Margin="26 0 0 0" Style="{StaticResource OsdOptionsDescription}"
 												   Text="{Binding InGameOverlayDescription}"/>
 										<StackPanel Margin="26 8 0 0" IsEnabled="{Binding OverlayModeHook}">
-											<CheckBox Content="{loc:Tr 'Use PresentMon frame times'}"
+											<CheckBox Content="{loc:Tr OverlayView_UsePresentMonFrameTimes}"
 													  IsChecked="{Binding HookOverlayUsePresentMonFrametimes, Mode=TwoWay}"
 													  Style="{StaticResource MaterialDesignCheckBox}"/>
 											<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
-													   Text="{loc:Tr 'Adds display-time data through the buffered PresentMon stream. Off uses the hook’s low-latency present-to-present data.'}"/>
+													   Text="{loc:Tr OverlayView_AddsDisplayTimeDataThrough}"/>
 										</StackPanel>
 									</StackPanel>
 
 									<Separator Margin="0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 									<StackPanel Margin="0 8 0 4">
-										<RadioButton GroupName="OverlayModeHookFree" Content="{loc:Tr 'CapFrameX hook-free'}"
+										<RadioButton GroupName="OverlayModeHookFree" Content="{loc:Tr OverlayView_CapFrameXHookFree}"
 													 IsChecked="{Binding OverlayModeHookFree, Mode=TwoWay}"
 													 Style="{StaticResource MaterialDesignRadioButton}"/>
 										<TextBlock Margin="26 0 0 0" Style="{StaticResource OsdOptionsDescription}"
-												   Text="{loc:Tr 'Uses DWM/DirectComposition without game injection and is safe for anti-cheat protected titles.'}"/>
+												   Text="{loc:Tr OverlayView_UsesDWMDirectCompositionWithoutGame}"/>
 										<StackPanel Margin="26 8 0 0" IsEnabled="{Binding CanConfigureHookFreeOptions}">
 											<StackPanel>
-												<TextBlock Text="{loc:Tr 'Hook-free output display'}"/>
+												<TextBlock Text="{loc:Tr OverlayView_HookFreeOutputDisplay}"/>
 												<TextBlock Style="{StaticResource OsdOptionsDescription}"
-														   Text="{loc:Tr 'Display used by the hook-free overlay'}"/>
+														   Text="{loc:Tr OverlayView_DisplayUsedByTheHook}"/>
 											</StackPanel>
 											<ComboBox Margin="0 8 0 0" Height="40" FontSize="14"
 													  HorizontalContentAlignment="Stretch"
-													  materialDesign:HintAssist.Hint="{loc:Tr 'Display'}"
+													  materialDesign:HintAssist.Hint="{loc:Tr OverlayView_Display}"
 													  materialDesign:HintAssist.HintOpacity=".8"
 													  materialDesign:HintAssist.IsFloating="True"
 													  ItemsSource="{Binding HookFreeDisplayItemsSource}"
@@ -1245,7 +1231,7 @@
 										</StackPanel>
 										<DockPanel Margin="26 8 0 0" IsEnabled="{Binding CanConfigureHookFreeOptions}">
 											<ComboBox DockPanel.Dock="Right" Width="120" Height="40" FontSize="14"
-													  materialDesign:HintAssist.Hint="{loc:Tr 'Refresh rate'}"
+													  materialDesign:HintAssist.Hint="{loc:Tr OverlayView_RefreshRate}"
 													  materialDesign:HintAssist.HintOpacity=".8"
 													  materialDesign:HintAssist.IsFloating="True"
 													  ItemsSource="{Binding HookFreeRefreshRateItemsSource}"
@@ -1257,18 +1243,18 @@
 												</ComboBox.ItemTemplate>
 											</ComboBox>
 											<StackPanel Margin="0 0 12 0" VerticalAlignment="Center">
-												<TextBlock Text="{loc:Tr 'Chart refresh rate'}"/>
+												<TextBlock Text="{loc:Tr OverlayView_ChartRefreshRate}"/>
 												<TextBlock Style="{StaticResource OsdOptionsDescription}"
-														   Text="{loc:Tr 'Maximum visible chart updates per second'}"/>
+														   Text="{loc:Tr OverlayView_MaximumVisibleChartUpdatesPer}"/>
 											</StackPanel>
 										</DockPanel>
 									</StackPanel>
 
 									<Separator Margin="0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 									<StackPanel Margin="0 8 0 4">
-										<TextBlock FontWeight="SemiBold" Text="{loc:Tr 'PresentMon replay buffer'}"/>
+										<TextBlock FontWeight="SemiBold" Text="{loc:Tr OverlayView_PresentMonReplayBuffer}"/>
 										<TextBlock Style="{StaticResource OsdOptionsDescription}"
-												   Text="{loc:Tr 'Minimum buffering used to smooth bursty PresentMon frame data. Increase it if graphs pause between updates; higher values add latency. Applies to the hook-free renderer.'}"/>
+												   Text="{loc:Tr OverlayView_MinimumBufferingUsedToSmooth}"/>
 										<Grid Margin="0 8 0 0">
 											<Grid.ColumnDefinitions>
 												<ColumnDefinition Width="*"/>
@@ -1285,84 +1271,84 @@
 
 							<Border Style="{StaticResource OsdOptionsCard}">
 								<StackPanel>
-									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="{loc:Tr 'Shortcuts and timing'}"/>
+									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="{loc:Tr OverlayView_ShortcutsAndTiming}"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
-											   Text="{loc:Tr 'Configure overlay controls and data update intervals.'}"/>
+											   Text="{loc:Tr OverlayView_ConfigureOverlayControlsAndData}"/>
 									<Separator Margin="0 10 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 
 									<DockPanel Margin="0 5">
 										<TextBox DockPanel.Dock="Right" Width="160" Height="42"
-												 materialDesign:HintAssist.Hint="{loc:Tr 'Toggle overlay'}"
+												 materialDesign:HintAssist.Hint="{loc:Tr OverlayView_ToggleOverlay}"
 												 materialDesign:HintAssist.HintOpacity=".8"
 												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
 												 PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
-												 ToolTip="{loc:Tr 'Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)'}">
+												 ToolTip="{loc:Tr OverlayView_HotkeyCombinableWithUpTo2}">
 											<Binding Path="OverlayHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
 												<Binding.ValidationRules>
 													<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True"/>
 												</Binding.ValidationRules>
 											</Binding>
 										</TextBox>
-										<TextBlock Margin="0 0 12 0" VerticalAlignment="Center" Text="{loc:Tr 'Overlay hotkey'}"/>
+										<TextBlock Margin="0 0 12 0" VerticalAlignment="Center" Text="{loc:Tr OverlayView_OverlayHotkey}"/>
 									</DockPanel>
 
 									<DockPanel Margin="0 5">
 										<TextBox DockPanel.Dock="Right" Width="160" Height="42"
-												 materialDesign:HintAssist.Hint="{loc:Tr 'Switch config'}"
+												 materialDesign:HintAssist.Hint="{loc:Tr OverlayView_SwitchConfig}"
 												 materialDesign:HintAssist.HintOpacity=".8"
 												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
 												 PreviewKeyDown="ConfigHotkeyTextBox_PreviewKeyDown"
-												 ToolTip="{loc:Tr 'Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)'}">
+												 ToolTip="{loc:Tr OverlayView_HotkeyCombinableWithUpTo3}">
 											<Binding Path="OverlayConfigHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
 												<Binding.ValidationRules>
 													<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True"/>
 												</Binding.ValidationRules>
 											</Binding>
 										</TextBox>
-										<TextBlock Margin="0 0 12 0" VerticalAlignment="Center" Text="{loc:Tr 'Config hotkey'}"/>
+										<TextBlock Margin="0 0 12 0" VerticalAlignment="Center" Text="{loc:Tr OverlayView_ConfigHotkey}"/>
 									</DockPanel>
 
 									<DockPanel Margin="0 5">
 										<TextBox DockPanel.Dock="Right" Width="160" Height="42"
-												 materialDesign:HintAssist.Hint="{loc:Tr 'Cycle position'}"
+												 materialDesign:HintAssist.Hint="{loc:Tr OverlayView_CyclePosition}"
 												 materialDesign:HintAssist.HintOpacity=".8"
 												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
 												 PreviewKeyDown="OverlayPositionHotkeyTextBox_PreviewKeyDown"
-												 ToolTip="{loc:Tr 'Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)'}">
+												 ToolTip="{loc:Tr OverlayView_HotkeyCombinableWithUpTo4}">
 											<Binding Path="OverlayPositionHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
 												<Binding.ValidationRules>
 													<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True"/>
 												</Binding.ValidationRules>
 											</Binding>
 										</TextBox>
-										<TextBlock Margin="0 0 12 0" VerticalAlignment="Center" Text="{loc:Tr 'Position hotkey'}"/>
+										<TextBlock Margin="0 0 12 0" VerticalAlignment="Center" Text="{loc:Tr OverlayView_PositionHotkey}"/>
 									</DockPanel>
 
 									<DockPanel Margin="0 5">
 										<TextBox DockPanel.Dock="Right" Width="160" Height="42"
-												 materialDesign:HintAssist.Hint="{loc:Tr 'Reset metrics'}"
+												 materialDesign:HintAssist.Hint="{loc:Tr OverlayView_ResetMetrics}"
 												 materialDesign:HintAssist.HintOpacity=".8"
 												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
 												 PreviewKeyDown="ResetMetricsHotkeyTextBox_PreviewKeyDown"
-												 ToolTip="{loc:Tr 'Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)'}">
+												 ToolTip="{loc:Tr OverlayView_HotkeyCombinableWithUpTo5}">
 											<Binding Path="ResetMetricsHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="&lt; not set &gt;">
 												<Binding.ValidationRules>
 													<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True"/>
 												</Binding.ValidationRules>
 											</Binding>
 										</TextBox>
-										<TextBlock Margin="0 0 12 0" VerticalAlignment="Center" Text="{loc:Tr 'Reset metrics hotkey'}"/>
+										<TextBlock Margin="0 0 12 0" VerticalAlignment="Center" Text="{loc:Tr OverlayView_ResetMetricsHotkey}"/>
 									</DockPanel>
 
-									<TextBlock Margin="0 14 0 2" FontWeight="SemiBold" Text="{loc:Tr 'Update intervals'}"/>
+									<TextBlock Margin="0 14 0 2" FontWeight="SemiBold" Text="{loc:Tr OverlayView_UpdateIntervals}"/>
 									<DockPanel Margin="0 5">
 										<ComboBox DockPanel.Dock="Right" Width="160" Height="40" FontSize="14"
 
-												  materialDesign:HintAssist.Hint="{loc:Tr 'Refresh period (ms)'}"
+												  materialDesign:HintAssist.Hint="{loc:Tr OverlayView_RefreshPeriodMs}"
 												  materialDesign:HintAssist.HintOpacity=".8"
 												  materialDesign:HintAssist.IsFloating="True"
 												  MaxDropDownHeight="200" MouseLeave="OSDRefreshPeriodComboBox_MouseLeave"
@@ -1372,15 +1358,15 @@
 											</ComboBox.Text>
 										</ComboBox>
 										<StackPanel Margin="0 0 12 0" VerticalAlignment="Center">
-											<TextBlock Text="{loc:Tr 'Overlay refresh'}"/>
-											<TextBlock Style="{StaticResource OsdOptionsDescription}" Text="{loc:Tr 'OSD update period'}"/>
+											<TextBlock Text="{loc:Tr OverlayView_OverlayRefresh}"/>
+											<TextBlock Style="{StaticResource OsdOptionsDescription}" Text="{loc:Tr OverlayView_OSDUpdatePeriod}"/>
 										</StackPanel>
 									</DockPanel>
 
 									<DockPanel Margin="0 5">
 										<ComboBox DockPanel.Dock="Right" Width="160" Height="40" FontSize="14"
 
-												  materialDesign:HintAssist.Hint="{loc:Tr 'Metric interval (s)'}"
+												  materialDesign:HintAssist.Hint="{loc:Tr OverlayView_MetricIntervalS}"
 												  materialDesign:HintAssist.HintOpacity=".8"
 												  materialDesign:HintAssist.IsFloating="True"
 												  MaxDropDownHeight="200" MouseLeave="MetricIntervalComboBox_MouseLeave"
@@ -1390,8 +1376,8 @@
 											</ComboBox.Text>
 										</ComboBox>
 										<StackPanel Margin="0 0 12 0" VerticalAlignment="Center">
-											<TextBlock Text="{loc:Tr 'Real-time metrics'}"/>
-											<TextBlock Style="{StaticResource OsdOptionsDescription}" Text="{loc:Tr 'Calculation time frame'}"/>
+											<TextBlock Text="{loc:Tr OverlayView_RealTimeMetrics2}"/>
+											<TextBlock Style="{StaticResource OsdOptionsDescription}" Text="{loc:Tr OverlayView_CalculationTimeFrame}"/>
 										</StackPanel>
 									</DockPanel>
 								</StackPanel>

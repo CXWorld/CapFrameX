@@ -11,18 +11,18 @@ namespace CapFrameX.Contracts.Localization
 {
     /// <summary>
     /// UI strings and OSD labels. The interface language and the overlay language
-    /// are independent. Lookup keys are the original English strings.
+    /// are independent. Call sites use stable catalog keys. English text lives in en.json.
     /// </summary>
     public sealed class CxLang : INotifyPropertyChanged
     {
         public static CxLang Instance { get; } = new CxLang();
 
-        private readonly Dictionary<string, string> _ui = new Dictionary<string, string>(StringComparer.Ordinal);
-        private readonly Dictionary<string, string> _overlay = new Dictionary<string, string>(StringComparer.Ordinal);
-        private readonly List<(string En, string Ru)> _phrases = new List<(string, string)>();
+        private readonly Dictionary<string, Catalog> _catalogs = new Dictionary<string, Catalog>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, string> _overlayCache = new Dictionary<string, string>(StringComparer.Ordinal);
 
         private string _uiLanguage = "en";
         private string _overlayLanguage = "en";
+        private Phrase[] _overlayPhrases = Array.Empty<Phrase>();
 
         public event PropertyChangedEventHandler PropertyChanged;
         public event Action OverlayLanguageChanged;
@@ -30,6 +30,7 @@ namespace CapFrameX.Contracts.Localization
         private CxLang()
         {
             Load();
+            ApplyOverlayLanguage("en");
         }
 
         public string UiLanguage => _uiLanguage;
@@ -53,40 +54,68 @@ namespace CapFrameX.Contracts.Localization
             if (next == _overlayLanguage)
                 return;
             _overlayLanguage = next;
+            ApplyOverlayLanguage(next);
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(OverlayLanguage)));
             OverlayLanguageChanged?.Invoke();
         }
 
-        public static string T(string english)
+        public static string T(string key)
         {
-            if (string.IsNullOrEmpty(english) || Instance._uiLanguage == "en")
-                return english ?? string.Empty;
-            return Instance._ui.TryGetValue(english, out var translated) && !string.IsNullOrEmpty(translated)
-                ? translated
-                : english;
-        }
-
-        public string TranslateOverlay(string english)
-        {
-            if (string.IsNullOrEmpty(english) || _overlayLanguage == "en")
-                return english ?? string.Empty;
-            if (english.Any(c => c >= '\u0400' && c <= '\u04FF'))
+            if (string.IsNullOrEmpty(key))
+                return key ?? string.Empty;
+            if (Instance.TryGet(Instance._uiLanguage, key, out var translated))
+                return translated;
+            if (Instance.TryGet("en", key, out var english))
                 return english;
-            if (_overlay.TryGetValue(english, out var exact) && !string.IsNullOrEmpty(exact))
-                return exact;
-            if (_ui.TryGetValue(english, out var fromUi) && !string.IsNullOrEmpty(fromUi))
-                return fromUi;
-
-            var phrase = english;
-            foreach (var (en, ru) in _phrases)
-                phrase = Regex.Replace(phrase, en, ru, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-            return CapitalizeStart(phrase);
+            return key;
         }
 
-        /// <summary>
-        /// Sensor phrases are written in lowercase so they stay correct in the middle of a name.
-        /// A label is its own line, so the first letter is a capital.
-        /// </summary>
+        public string TranslateOverlay(string label)
+        {
+            if (string.IsNullOrEmpty(label) || _overlayLanguage == "en")
+                return label ?? string.Empty;
+            if (label.Any(c => c >= '\u0400' && c <= '\u04FF'))
+                return label;
+            if (_overlayCache.TryGetValue(label, out var cached))
+                return cached;
+
+            var result = label;
+            if (_catalogs.TryGetValue(_overlayLanguage, out var catalog)
+                && catalog.Overlay.TryGetValue(label, out var exact)
+                && !string.IsNullOrEmpty(exact))
+            {
+                result = exact;
+            }
+            else
+            {
+                foreach (var phrase in _overlayPhrases)
+                    result = phrase.Pattern.Replace(result, phrase.Replacement);
+                result = CapitalizeStart(result);
+            }
+
+            _overlayCache[label] = result;
+            return result;
+        }
+
+        private bool TryGet(string language, string key, out string value)
+        {
+            value = null;
+            return _catalogs.TryGetValue(language, out var catalog)
+                && catalog.Strings.TryGetValue(key, out value)
+                && !string.IsNullOrEmpty(value);
+        }
+
+        private void ApplyOverlayLanguage(string language)
+        {
+            _overlayCache.Clear();
+            if (!_catalogs.TryGetValue(language, out var catalog) || language == "en")
+            {
+                _overlayPhrases = Array.Empty<Phrase>();
+                return;
+            }
+            _overlayPhrases = catalog.Phrases;
+        }
+
         private static string CapitalizeStart(string text)
         {
             if (string.IsNullOrEmpty(text) || !char.IsLower(text[0]))
@@ -97,45 +126,76 @@ namespace CapFrameX.Contracts.Localization
         private void Load()
         {
             var assembly = typeof(CxLang).Assembly;
-            var resourceName = Array.Find(assembly.GetManifestResourceNames(), name => name.EndsWith("Russian.json", StringComparison.Ordinal));
-            using var stream = resourceName == null ? null : assembly.GetManifestResourceStream(resourceName);
-            if (stream == null)
-                return;
-
-            using var reader = new StreamReader(stream);
-            using var doc = JsonDocument.Parse(reader.ReadToEnd());
-            var root = doc.RootElement;
-            if (root.TryGetProperty("ui", out var ui))
+            foreach (var name in assembly.GetManifestResourceNames())
             {
-                foreach (var item in ui.EnumerateObject())
-                    _ui[item.Name] = item.Value.GetString() ?? item.Name;
-            }
-            if (root.TryGetProperty("overlay", out var overlay))
-            {
-                foreach (var item in overlay.EnumerateObject())
-                    _overlay[item.Name] = item.Value.GetString() ?? item.Name;
-            }
-            if (root.TryGetProperty("phrases", out var phrases))
-            {
-                foreach (var item in phrases.EnumerateArray())
-                {
-                    var en = item.GetProperty("en").GetString();
-                    var ru = item.GetProperty("ru").GetString();
-                    if (!string.IsNullOrEmpty(en) && ru != null)
-                        _phrases.Add((en, ru));
-                }
-                _phrases.Sort((a, b) => b.En.Length.CompareTo(a.En.Length));
+                var match = Regex.Match(name, @"\.([A-Za-z0-9]+)\.json$", RegexOptions.CultureInvariant);
+                if (!match.Success)
+                    continue;
+                var language = match.Groups[1].Value.ToLowerInvariant();
+                using var stream = assembly.GetManifestResourceStream(name);
+                if (stream == null)
+                    continue;
+                using var reader = new StreamReader(stream);
+                _catalogs[language] = Catalog.Parse(reader.ReadToEnd());
             }
         }
 
-        private static string Normalize(string language)
+        private string Normalize(string language)
         {
             if (string.IsNullOrWhiteSpace(language))
                 return "en";
             language = language.Trim().ToLowerInvariant();
-            if (language.StartsWith("ru", StringComparison.Ordinal))
-                return "ru";
-            return "en";
+            return _catalogs.ContainsKey(language) ? language : "en";
+        }
+
+        private sealed class Phrase
+        {
+            public Phrase(string pattern, string replacement)
+            {
+                Pattern = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+                Replacement = replacement ?? string.Empty;
+            }
+
+            public Regex Pattern { get; }
+            public string Replacement { get; }
+        }
+
+        private sealed class Catalog
+        {
+            public Dictionary<string, string> Strings { get; } = new Dictionary<string, string>(StringComparer.Ordinal);
+            public Dictionary<string, string> Overlay { get; } = new Dictionary<string, string>(StringComparer.Ordinal);
+            public Phrase[] Phrases { get; private set; } = Array.Empty<Phrase>();
+
+            public static Catalog Parse(string json)
+            {
+                var catalog = new Catalog();
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+                ReadMap(root, "strings", catalog.Strings);
+                ReadMap(root, "overlay", catalog.Overlay);
+                if (root.TryGetProperty("phrases", out var phrases) && phrases.ValueKind == JsonValueKind.Array)
+                {
+                    var list = new List<Phrase>();
+                    foreach (var item in phrases.EnumerateArray())
+                    {
+                        var pattern = item.GetProperty("pattern").GetString();
+                        var replacement = item.GetProperty("replacement").GetString();
+                        if (!string.IsNullOrEmpty(pattern))
+                            list.Add(new Phrase(pattern, replacement));
+                    }
+                    list.Sort((a, b) => b.Pattern.ToString().Length.CompareTo(a.Pattern.ToString().Length));
+                    catalog.Phrases = list.ToArray();
+                }
+                return catalog;
+            }
+
+            private static void ReadMap(JsonElement root, string name, Dictionary<string, string> target)
+            {
+                if (!root.TryGetProperty(name, out var element) || element.ValueKind != JsonValueKind.Object)
+                    return;
+                foreach (var item in element.EnumerateObject())
+                    target[item.Name] = item.Value.GetString() ?? string.Empty;
+            }
         }
     }
 }

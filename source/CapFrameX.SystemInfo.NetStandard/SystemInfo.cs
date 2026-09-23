@@ -1,4 +1,4 @@
-﻿using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Sensor;
 using Microsoft.Extensions.Logging;
@@ -508,7 +508,7 @@ namespace CapFrameX.SystemInfo.NetStandard
                     }
 
                     if (cores > 0 && threads > 0)
-                        ProcessorCoreCountInfo = $"{cores} {CxLang.T("Cores")} / {threads} {CxLang.T("Threads")}";
+                        ProcessorCoreCountInfo = $"{cores} {CxLang.T("SystemInfo_Cores")} / {threads} {CxLang.T("SystemInfo_Threads")}";
                 }
                 catch (Exception ex)
                 {

@@ -8,7 +8,7 @@ namespace CapFrameX.PMD.Benchlab
 {
     public class BenchlabMetricsManager : BindableBase
     {
-        static string ZERO_WATT => "0.0 " + CxLang.T("W");
+        static string ZERO_WATT => "0.0 " + CxLang.T("BenchlabMetricsManager_W");
 
         private string _systemPowerCur = ZERO_WATT;
         private string _gpuPowerCur = ZERO_WATT;

@@ -71,7 +71,7 @@ namespace CapFrameX.ViewModel
         private Func<double, string> _percentageFormatter;
         private SeriesCollection _comparisonLShapeCollection;
         private string _comparisonItemControlHeight = "300";
-        private string _columnChartYAxisTitle = CxLang.T("FPS");
+        private string _columnChartYAxisTitle = CxLang.T("ComparisonViewModel_FPS");
         private ComparisonColorManager _comparisonColorManager = new ComparisonColorManager();
         private bool _useEventMessages;
         private string _remainingRecordingTime;
@@ -968,7 +968,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "xAxis",
                 Position = OxyPlot.Axes.AxisPosition.Bottom,
-                Title = CxLang.T("Recording time [s]"),
+                Title = CxLang.T("ComparisonViewModel_RecordingTimeS"),
                 AxisTitleDistance = 10,
                 FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
@@ -984,7 +984,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "yAxis",
                 Position = OxyPlot.Axes.AxisPosition.Left,
-                Title = CxLang.T("Frametime [ms]"),
+                Title = CxLang.T("ComparisonViewModel_FrametimeMs"),
                 AxisTitleDistance = 10,
                 FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
@@ -1017,7 +1017,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "xAxis",
                 Position = OxyPlot.Axes.AxisPosition.Bottom,
-                Title = CxLang.T("Recording time [s]"),
+                Title = CxLang.T("ComparisonViewModel_RecordingTimeS2"),
                 AxisTitleDistance = 10,
                 FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
@@ -1032,7 +1032,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "yAxis",
                 Position = OxyPlot.Axes.AxisPosition.Left,
-                Title = CxLang.T("FPS [1/s]"),
+                Title = CxLang.T("ComparisonViewModel_FPS1S"),
                 AxisTitleDistance = 10,
                 FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
@@ -1066,7 +1066,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "xAxis",
                 Position = OxyPlot.Axes.AxisPosition.Bottom,
-                Title = CxLang.T("Frame time [ms]"),
+                Title = CxLang.T("ComparisonViewModel_FrameTimeMs2"),
                 AxisTitleDistance = 10,
                 FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
@@ -1083,7 +1083,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "yAxis",
                 Position = OxyPlot.Axes.AxisPosition.Left,
-                Title = CxLang.T("Frame Time Distribution [%]"),
+                Title = CxLang.T("ComparisonViewModel_FrameTimeDistribution"),
                 AxisTitleDistance = 10,
                 FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
@@ -1408,17 +1408,17 @@ namespace CapFrameX.ViewModel
             bool hasRecords = ComparisonRecords.Any() || additionalRecord != null;
             if (useDisplayTimes)
             {
-                ComparisonMetricSourceDescription = CxLang.T("Source: Display changes (Average FPS: Presents)");
+                ComparisonMetricSourceDescription = CxLang.T("ComparisonViewModel_SourceDisplayChangesAverageFPS");
                 IsComparisonMetricSourceFallback = false;
             }
             else if (_appConfiguration.UseDisplayChangeMetrics && hasRecords)
             {
-                ComparisonMetricSourceDescription = CxLang.T("Source: Presents (display data unavailable)");
+                ComparisonMetricSourceDescription = CxLang.T("ComparisonViewModel_SourcePresentsDisplayDataUnavailable");
                 IsComparisonMetricSourceFallback = true;
             }
             else
             {
-                ComparisonMetricSourceDescription = CxLang.T("Source: Presents");
+                ComparisonMetricSourceDescription = CxLang.T("ComparisonViewModel_SourcePresents");
                 IsComparisonMetricSourceFallback = false;
             }
 
@@ -1437,7 +1437,7 @@ namespace CapFrameX.ViewModel
 
             var frametimeAxis = ComparisonFrametimesModel?.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
             if (frametimeAxis != null)
-                frametimeAxis.Title = ShowGpuActiveLineCharts ? CxLang.T("GPU active time [ms]") : timingSource + " [ms]";
+                frametimeAxis.Title = ShowGpuActiveLineCharts ? CxLang.T("ComparisonViewModel_GPUActiveTimeMs") : timingSource + " [ms]";
 
             var fpsAxis = ComparisonFpsModel?.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
             if (fpsAxis != null)
@@ -1449,7 +1449,7 @@ namespace CapFrameX.ViewModel
 
             var distributionYAxis = ComparisonDistributionModel?.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
             if (distributionYAxis != null)
-                distributionYAxis.Title = timingSource + " " + CxLang.T("Distribution [%]");
+                distributionYAxis.Title = timingSource + " " + CxLang.T("ComparisonViewModel_Distribution");
 
             if (!ShowGpuActiveLineCharts)
             {

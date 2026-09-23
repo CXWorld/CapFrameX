@@ -49,7 +49,7 @@
         <Border Style="{StaticResource SectionCard}" Grid.Row="1" Grid.Column="0" >
             <DockPanel Margin="0 10 0 10">
                 <Grid DockPanel.Dock="Top">
-                    <TextBlock Margin="15 0 0 10" HorizontalAlignment="Left" Text="{loc:Tr 'Sensor items'}" FontSize="16" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+                    <TextBlock Margin="15 0 0 10" HorizontalAlignment="Left" Text="{loc:Tr SensorView_SensorItems}" FontSize="16" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                 </Grid>
                 <Grid>
                     <Grid.RowDefinitions>
@@ -134,10 +134,10 @@
                         </DataGrid.Resources>
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding Name, Mode=OneWay, Converter={StaticResource OverlayLabelConverter}}"
-                                                Header="{loc:Tr 'Sensor'}" IsReadOnly="True" MinWidth="185"/>
+                                                Header="{loc:Tr SensorView_Sensor}" IsReadOnly="True" MinWidth="185"/>
                             <DataGridTextColumn Binding="{Binding SensorType, Mode=OneWay, Converter={StaticResource OverlayLabelConverter}}"
-                                                Header="{loc:Tr 'Type'}" IsReadOnly="True" MinWidth="100"/>
-                            <DataGridCheckBoxColumn Binding="{Binding UseForLogging, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Header="{loc:Tr 'Use for logging'}" Width="100">
+                                                Header="{loc:Tr SensorView_Type}" IsReadOnly="True" MinWidth="100"/>
+                            <DataGridCheckBoxColumn Binding="{Binding UseForLogging, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Header="{loc:Tr SensorView_UseForLogging}" Width="100">
                                 <DataGridCheckBoxColumn.CellStyle>
                                     <Style TargetType="DataGridCell">
                                         <!--<Setter Property="IsEnabled" Value="{Binding Path=UseSensorLogging, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />-->
@@ -167,15 +167,15 @@
                                 <CheckBox IsChecked="{Binding UseSensorLogging, Mode=TwoWay}">
                                     <CheckBox.ToolTip>
                                         <ToolTip MaxWidth="250">
-                                            <TextBlock Text="{loc:Tr 'Logs selected sensor values during a capture'}"                            
+                                            <TextBlock Text="{loc:Tr SensorView_LogsSelectedSensorValuesDuring}"                            
 										   TextWrapping="Wrap"/>
                                         </ToolTip>
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <TextBlock Margin="10 0 20 0" VerticalAlignment="Center" Text="{loc:Tr 'Log sensors'}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+                                <TextBlock Margin="10 0 20 0" VerticalAlignment="Center" Text="{loc:Tr SensorView_LogSensors}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                             </StackPanel>
                             <ComboBox Margin="15 0 0 0"
-					              materialDesign:HintAssist.Hint="{loc:Tr 'Sensor polling [ms]'}" materialDesign:HintAssist.HintOpacity=".8"
+					              materialDesign:HintAssist.Hint="{loc:Tr SensorView_SensorPollingMs}" materialDesign:HintAssist.HintOpacity=".8"
 					              materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110"
 					              MouseLeave="LoggingPeriodComboBox_MouseLeave" FontSize="14"
 					              ItemsSource="{Binding Path=LoggingPeriodItemsSource}"
@@ -193,7 +193,7 @@
                             </ComboBox>
                             <Grid Width="210">
                                 <Button Width="28" Height="28" Margin="20 10 15 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-                                ToolTip="{loc:Tr 'Reset to defaults'}" Command="{Binding ResetToDefaultCommand}" IsEnabled="{Binding Path=UseSensorLogging}"
+                                ToolTip="{loc:Tr SensorView_ResetToDefaults}" Command="{Binding ResetToDefaultCommand}" IsEnabled="{Binding Path=UseSensorLogging}"
                                 materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="Restore" Height="22" Width="22" />
                                 </Button>
@@ -204,23 +204,23 @@
                                     <Button.ToolTip>
                                         <ToolTip>
                                             <TextBlock Width="275" TextWrapping="Wrap"
-                                                       Text="{loc:Tr 'Resync Windows performance monitor when you have issues with 0 memory counter. Restart CX after execution.'}"/>
+                                                       Text="{loc:Tr SensorView_ResyncWindowsPerformanceMonitorWhen}"/>
                                         </ToolTip>
                                     </Button.ToolTip>
                                 </Button>
                                 <Button Width="28" Height="28" Margin="0 10 60 0" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-                                    ToolTip="{loc:Tr 'Open configuration folder'}" Command="{Binding OpenConfigFolderCommand}"
+                                    ToolTip="{loc:Tr SensorView_OpenConfigurationFolder}" Command="{Binding OpenConfigFolderCommand}"
                                     materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="Folder" Height="22" Width="22" />
                                 </Button>
                                 <Button Width="28" Height="28" Margin="0 10 20 0" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
-                                    ToolTip="{loc:Tr 'Save selected sensors for logging'}" Command="{Binding SaveConfigCommand}" IsEnabled="{Binding SaveButtonIsEnable}"
+                                    ToolTip="{loc:Tr SensorView_SaveSelectedSensorsForLogging}" Command="{Binding SaveConfigCommand}" IsEnabled="{Binding SaveButtonIsEnable}"
                                     materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="ContentSaveSettings" Height="22" Width="22" />
                                 </Button>
                             </Grid>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="5 0 0 0" ToolTip="{loc:Tr 'Check or uncheck groups of sensors'}" ToolTipService.Placement="Top">
+                        <StackPanel Orientation="Horizontal" Margin="5 0 0 0" ToolTip="{loc:Tr SensorView_CheckOrUncheckGroupsOf}" ToolTipService.Placement="Top">
                             <materialDesign:PopupBox StaysOpen="True" IsEnabled="{Binding Path=UseSensorLogging}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                                 <materialDesign:Card Width="220" Margin="0 0 0 -10">
                                     <StackPanel>
@@ -247,60 +247,60 @@
                                                 <ColumnDefinition Width="1*"/>
                                                 <ColumnDefinition Width="1*"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="{loc:Tr 'CPU basics'}" VerticalAlignment="Center"/>
+                                            <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="{loc:Tr SensorView_CPUBasics}" VerticalAlignment="Center"/>
                                             <Button Margin="5" Grid.Row="0" Grid.Column="1" Command="{Binding Path=SensorSubModelGroupControl.CheckCpuBasics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Check CPU basics'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr SensorView_CheckCPUBasics}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
                                                 <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
                                             </Button>
                                             <Button Margin="5" Grid.Row="0" Grid.Column="2" Command="{Binding Path=SensorSubModelGroupControl.UncheckCpuBasics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Uncheck CPU basics'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr SensorView_UncheckCPUBasics}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
                                                 <materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
                                             </Button>
 
-                                            <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="{loc:Tr 'GPU basics'}" VerticalAlignment="Center"/>
+                                            <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="{loc:Tr SensorView_GPUBasics}" VerticalAlignment="Center"/>
                                             <Button Margin="5" Grid.Row="1" Grid.Column="1" Command="{Binding Path=SensorSubModelGroupControl.CheckGpuBasics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Check GPU basics'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr SensorView_CheckGPUBasics}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
                                                 <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
                                             </Button>
                                             <Button Margin="5" Grid.Row="1" Grid.Column="2" Command="{Binding Path=SensorSubModelGroupControl.UncheckGpuBasics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Uncheck GPU basics'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr SensorView_UncheckGPUBasics}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
                                                 <materialDesign:PackIcon Kind="Remove" Height="20" Width="15" />
                                             </Button>
                                             
-                                            <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="{loc:Tr 'CPU thread loads'}" VerticalAlignment="Center"/>
+                                            <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="{loc:Tr SensorView_CPUThreadLoads}" VerticalAlignment="Center"/>
                                             <Button Margin="5" Grid.Row="2" Grid.Column="1" Command="{Binding Path=SensorSubModelGroupControl.CheckCpuThreadLoads}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Check CPU thread loads'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr SensorView_CheckCPUThreadLoads}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
                                                 <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
                                             </Button>
                                             <Button Margin="5" Grid.Row="2" Grid.Column="2" Command="{Binding Path=SensorSubModelGroupControl.UncheckCpuThreadLoads}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Uncheck CPU thread loads'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr SensorView_UncheckCPUThreadLoads}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
                                                 <materialDesign:PackIcon Kind="Remove" Height="15" Width="15" />
                                             </Button>
 
-                                            <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="{loc:Tr 'CPU core clocks'}" VerticalAlignment="Center"/>
+                                            <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="{loc:Tr SensorView_CPUCoreClocks}" VerticalAlignment="Center"/>
                                             <Button Margin="5" Grid.Row="3" Grid.Column="1" Command="{Binding Path=SensorSubModelGroupControl.CheckCpuCoreClocks}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Check CPU core clocks'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr SensorView_CheckCPUCoreClocks}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
                                                 <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
                                             </Button>
                                             <Button Margin="5" Grid.Row="3" Grid.Column="2" Command="{Binding Path=SensorSubModelGroupControl.UncheckCpuCoreClocks}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Uncheck CPU core clocks'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr SensorView_UncheckCPUCoreClocks}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
                                                 <materialDesign:PackIcon Kind="Remove" Height="15" Width="15" />
                                             </Button>
 
-                                            <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="{loc:Tr 'All sensors'}" VerticalAlignment="Center"/>
+                                            <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="{loc:Tr SensorView_AllSensors}" VerticalAlignment="Center"/>
                                             <Button Margin="5" Grid.Row="4" Grid.Column="1" Command="{Binding Path=SensorSubModelGroupControl.CheckAll}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Check all sensors'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr SensorView_CheckAllSensors}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
                                                 <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
                                             </Button>
                                             <Button Margin="5" Grid.Row="4" Grid.Column="2" Command="{Binding Path=SensorSubModelGroupControl.UncheckAll}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
-                                                    Width="20" Height="20" ToolTip="{loc:Tr 'Uncheck all sensors'}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    Width="20" Height="20" ToolTip="{loc:Tr SensorView_UncheckAllSensors}" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
                                                 <materialDesign:PackIcon Kind="Remove" Height="15" Width="15" />
                                             </Button>
                                         </Grid>
                                     </StackPanel>
                                 </materialDesign:Card>
                             </materialDesign:PopupBox>
-                            <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr 'Group control'}"/>
+                            <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr SensorView_GroupControl}"/>
                         </StackPanel>
                     </StackPanel>
                 </Grid>
@@ -328,8 +328,8 @@
                                 Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
                         <DataGrid.ContextMenu>
                             <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                <MenuItem Header="{loc:Tr 'Copy sensor data(min, avg, max)'}" Command="{Binding CopySensorInfoCommand}"/>
-                                <MenuItem Header="{loc:Tr 'Copy raw sensor data'}" Command="{Binding CopyRawSensorInfoCommand}" IsEnabled="{Binding CopyRawSensorsEnable}"/>
+                                <MenuItem Header="{loc:Tr SensorView_CopySensorDataMinAvg}" Command="{Binding CopySensorInfoCommand}"/>
+                                <MenuItem Header="{loc:Tr SensorView_CopyRawSensorData}" Command="{Binding CopyRawSensorInfoCommand}" IsEnabled="{Binding CopyRawSensorsEnable}"/>
                             </ContextMenu>
                         </DataGrid.ContextMenu>
                         <DataGrid.Resources>
@@ -364,22 +364,22 @@
                         </DataGrid.Resources>
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding Name, Mode=OneWay}"                                                           
-                                            Header="{loc:Tr 'Sensor'}"                 
+                                            Header="{loc:Tr SensorView_Sensor2}"                 
                                             MinWidth="180"
                                             IsReadOnly="True"
                                             CellStyle="{StaticResource CellStyle}"/>
                             <DataGridTextColumn Binding="{Binding MinValue, Mode=OneWay}"
-                                            Header="{loc:Tr 'Min'}"
+                                            Header="{loc:Tr SensorView_Min}"
                                             MinWidth="75"
                                             IsReadOnly="True"
                                             CellStyle="{StaticResource CellStyle}"/>
                             <DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
-                                            Header="{loc:Tr 'Avg'}"
+                                            Header="{loc:Tr SensorView_Avg}"
                                             MinWidth="75"
                                             IsReadOnly="True"
                                             CellStyle="{StaticResource CellStyle}"/>
                             <DataGridTextColumn Binding="{Binding MaxValue, Mode=OneWay}"
-                                            Header="{loc:Tr 'Max'}"
+                                            Header="{loc:Tr SensorView_Max}"
                                             MinWidth="75"
                                             IsReadOnly="True"
                                             CellStyle="{StaticResource CellStyle}"/>
@@ -394,13 +394,13 @@
                         <Button.ToolTip>
                             <ToolTip MaxWidth="250">
                                 <TextBlock
-                             Text="{loc:Tr 'Show sensor statistics for all entries currently selected in the record list.'}" 
+                             Text="{loc:Tr SensorView_ShowSensorStatisticsForAll}" 
                              TextWrapping="Wrap"/>
                             </ToolTip>
                         </Button.ToolTip>
                     </Button>
                     <ComboBox Grid.Row="1" Margin="10 0 20 0" VerticalAlignment="Center" HorizontalAlignment="Right"
-					              materialDesign:HintAssist.Hint="{loc:Tr 'Evaluation'}"
+					              materialDesign:HintAssist.Hint="{loc:Tr SensorView_Evaluation}"
                                   materialDesign:HintAssist.HintOpacity=".8"
 					              materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="105" Height="40"
                                   ToolTipService.ShowDuration="25000"
@@ -416,10 +416,7 @@
                             <Binding Path="EvaluationMethod" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
                         </ComboBox.SelectedItem>
                         <ComboBox.ToolTip>
-                            <TextBlock Text="{loc:Tr 'Select the method for evaluating multiple entries.&#10;
-                                           &#10;Aggregate: Generate the report based on the combined sensor data of all entries.&#10;
-                                           &#10;Average: Generate the report based on the average of each individual report.
-                                           &#10;(only includes sensors that are present in all entries)'}"
+                            <TextBlock Text="{loc:Tr SensorView_SelectTheMethodForEvaluating}"
                                     TextWrapping="Wrap">
 
                             </TextBlock>

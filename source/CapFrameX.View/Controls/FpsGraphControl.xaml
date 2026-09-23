@@ -41,12 +41,12 @@
                 </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                 <controls:PlotViewCustomZoom.ContextMenu>
 					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-						<MenuItem Header="{loc:Tr 'Copy fps values (f)'}" Command="{Binding CopyFpsValuesCommand}"/>
-                        <MenuItem Header="{loc:Tr 'Copy fps points (t, f(t))'}" Command="{Binding CopyFpsPointsCommand}"/>
-                        <!--<MenuItem Header="{loc:Tr 'Copy fps + GPU-Busy fps values (f)'}" Command="{Binding CopyGpuActiveFpsValuesCommand}" Visibility="{Binding ShowGpuActiveCommands, Converter={StaticResource FalseToCollapsedConverter}}"/>
-                        <MenuItem Header="{loc:Tr 'Copy fps + GPU-Busy fps points (t, f(t))'}" Command="{Binding CopyGpuActiveFpsPointsCommand}" Visibility="{Binding ShowGpuActiveCommands, Converter={StaticResource FalseToCollapsedConverter}}" />-->
-                        <MenuItem Header="{loc:Tr 'Save plot as SVG'}" Command="{Binding SavePlotAsSVG }"/>
-                        <MenuItem Header="{loc:Tr 'Save plot as PNG'}" Command="{Binding SavePlotAsPNG }"/>
+						<MenuItem Header="{loc:Tr FpsGraphControl_CopyFpsValuesF}" Command="{Binding CopyFpsValuesCommand}"/>
+                        <MenuItem Header="{loc:Tr FpsGraphControl_CopyFpsPointsTF}" Command="{Binding CopyFpsPointsCommand}"/>
+                        <!--<MenuItem Header="{loc:Tr FpsGraphControl_CopyFpsGPUBusyFps}" Command="{Binding CopyGpuActiveFpsValuesCommand}" Visibility="{Binding ShowGpuActiveCommands, Converter={StaticResource FalseToCollapsedConverter}}"/>
+                        <MenuItem Header="{loc:Tr FpsGraphControl_CopyFpsGPUBusyFps2}" Command="{Binding CopyGpuActiveFpsPointsCommand}" Visibility="{Binding ShowGpuActiveCommands, Converter={StaticResource FalseToCollapsedConverter}}" />-->
+                        <MenuItem Header="{loc:Tr FpsGraphControl_SavePlotAsSVG}" Command="{Binding SavePlotAsSVG }"/>
+                        <MenuItem Header="{loc:Tr FpsGraphControl_SavePlotAsPNG}" Command="{Binding SavePlotAsPNG }"/>
 					</ContextMenu>
                 </controls:PlotViewCustomZoom.ContextMenu>
 			</controls:PlotViewCustomZoom>

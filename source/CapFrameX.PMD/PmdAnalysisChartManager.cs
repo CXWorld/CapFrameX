@@ -1,4 +1,4 @@
-﻿using CapFrameX.Contracts.Localization;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.PlotBuilder;
@@ -214,7 +214,7 @@ namespace CapFrameX.PMD
                     {
                         Key = "Y_Axis_CPU_W",
                         Position = AxisPosition.Left,
-                        Title = CxLang.T("CPU Power [W]"),
+                        Title = CxLang.T("PmdAnalysisChartManager_CPUPowerW"),
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
@@ -231,7 +231,7 @@ namespace CapFrameX.PMD
                     {
                         Key = "Y_Axis_GPU_W",
                         Position = AxisPosition.Left,
-                        Title = CxLang.T("GPU Power [W]"),
+                        Title = CxLang.T("PmdAnalysisChartManager_GPUPowerW"),
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
@@ -248,7 +248,7 @@ namespace CapFrameX.PMD
                     {
                         Key = "X_Axis_Time_CPU",
                         Position = AxisPosition.Bottom,
-                        Title = CxLang.T("Time [s]"),
+                        Title = CxLang.T("PmdAnalysisChartManager_TimeS"),
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
@@ -265,7 +265,7 @@ namespace CapFrameX.PMD
                     {
                         Key = "X_Axis_Time_GPU",
                         Position = AxisPosition.Bottom,
-                        Title = CxLang.T("Time [s]"),
+                        Title = CxLang.T("PmdAnalysisChartManager_TimeS2"),
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
@@ -297,7 +297,7 @@ namespace CapFrameX.PMD
                     {
                         Key = "X_Axis_Performance",
                         Position = AxisPosition.Bottom,
-                        Title = CxLang.T("Time [s]"),
+                        Title = CxLang.T("PmdAnalysisChartManager_TimeS3"),
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
@@ -311,7 +311,7 @@ namespace CapFrameX.PMD
                     {
                         Key = "X_Axis_Time_CPU_Analysis",
                         Position = AxisPosition.Bottom,
-                        Title = CxLang.T("Time [s]"),
+                        Title = CxLang.T("PmdAnalysisChartManager_TimeS4"),
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
@@ -325,7 +325,7 @@ namespace CapFrameX.PMD
                     {
                         Key = "X_Axis_Time_GPU_Analysis",
                         Position = AxisPosition.Bottom,
-                        Title = CxLang.T("Time [s]"),
+                        Title = CxLang.T("PmdAnalysisChartManager_TimeS5"),
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,

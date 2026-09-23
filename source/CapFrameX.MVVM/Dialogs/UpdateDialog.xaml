@@ -34,7 +34,7 @@
         </StackPanel>
 
         <StackPanel Grid.Row="1" Margin="0 12 0 0" Orientation="Horizontal">
-            <TextBlock Text="{loc:Tr 'Target version'}" VerticalAlignment="Center"/>
+            <TextBlock Text="{loc:Tr UpdateDialog_TargetVersion}" VerticalAlignment="Center"/>
             <TextBlock Margin="6 0 0 0" FontWeight="Bold" VerticalAlignment="Center"
                        Text="{Binding AvailableVersionString, Mode=OneWay}"/>
             <TextBlock Margin="7 0 0 0" VerticalAlignment="Center" Opacity="0.7"
@@ -68,7 +68,7 @@
             <TextBlock VerticalAlignment="Center" Opacity="0.7" Text="{Binding PackageSizeText, Mode=OneWay}"/>
             <Button Margin="14 0 0 0" Padding="4 0 4 0" Style="{DynamicResource MaterialDesignFlatButton}"
                     Visibility="{Binding HasReleaseNotesLink, Converter={StaticResource FalseToCollapsedConverter}}"
-                    Command="{Binding OpenReleaseNotesCommand}" Content="{loc:Tr 'RELEASE NOTES'}"/>
+                    Command="{Binding OpenReleaseNotesCommand}" Content="{loc:Tr UpdateDialog_RELEASENOTES}"/>
         </StackPanel>
 
         <!-- The download is confirmed here. Every other state - already downloading, already
@@ -80,7 +80,7 @@
                        Text="{Binding InstallConfirmationText, Mode=OneWay}"/>
             <Button Width="100" Height="30" Content="{Binding ConfirmActionText, Mode=OneWay}"
                     Command="{Binding ConfirmUpdateCommand}"/>
-            <Button Width="90" Height="30" Margin="10 0 0 0" Content="{loc:Tr 'Cancel'}"
+            <Button Width="90" Height="30" Margin="10 0 0 0" Content="{loc:Tr UpdateDialog_Cancel}"
                     Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"/>
         </StackPanel>
 
@@ -88,7 +88,7 @@
                     Visibility="{Binding CanConfirmUpdate, Converter={StaticResource TrueToCollapsedConverter}}">
             <TextBlock Width="330" Margin="0 0 10 0" VerticalAlignment="Center" TextWrapping="Wrap"
                        FontSize="11" Opacity="0.7" Text="{Binding StatusText, Mode=OneWay}"/>
-            <Button Width="90" Height="30" Content="{loc:Tr 'Close'}"
+            <Button Width="90" Height="30" Content="{loc:Tr UpdateDialog_Close}"
                     Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"/>
         </StackPanel>
     </Grid>

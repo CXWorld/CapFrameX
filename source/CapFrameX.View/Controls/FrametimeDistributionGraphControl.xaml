@@ -41,9 +41,9 @@
                 </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                 <controls:PlotViewCustomZoom.ContextMenu>
                     <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                        <MenuItem Header="{loc:Tr 'Copy distribution points (ms, %))'}" Command="{Binding CopyDistributionPointsCommand}"/>
-                        <MenuItem Header="{loc:Tr 'Save plot as SVG'}" Command="{Binding SavePlotAsSVG }"/>
-                        <MenuItem Header="{loc:Tr 'Save plot as PNG'}" Command="{Binding SavePlotAsPNG }"/>
+                        <MenuItem Header="{loc:Tr FrametimeDistributionGraphControl_CopyDistributionPointsMs}" Command="{Binding CopyDistributionPointsCommand}"/>
+                        <MenuItem Header="{loc:Tr FrametimeDistributionGraphControl_SavePlotAsSVG}" Command="{Binding SavePlotAsSVG }"/>
+                        <MenuItem Header="{loc:Tr FrametimeDistributionGraphControl_SavePlotAsPNG}" Command="{Binding SavePlotAsPNG }"/>
 					</ContextMenu>
                 </controls:PlotViewCustomZoom.ContextMenu>
 			</controls:PlotViewCustomZoom>

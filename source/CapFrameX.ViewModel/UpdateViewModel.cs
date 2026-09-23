@@ -105,17 +105,17 @@ namespace CapFrameX.ViewModel
 			get
 			{
 				if (!IsUpdateServerConfigured)
-					return CxLang.T("No update server is configured.");
+					return CxLang.T("UpdateViewModel_NoUpdateServerIsConfigured");
 
 				if (!string.IsNullOrWhiteSpace(_status.Message))
 					return TranslateUpdateMessage(_status.Message);
 
 				switch (_status.State)
 				{
-					case EUpdateState.Checking: return CxLang.T("Looking for updates...");
-					case EUpdateState.UpToDate: return CxLang.T("CapFrameX is up to date.");
-					case EUpdateState.Failed: return CxLang.T("The update check failed.");
-					default: return CxLang.T("CapFrameX has not checked for updates yet.");
+					case EUpdateState.Checking: return CxLang.T("UpdateViewModel_LookingForUpdates");
+					case EUpdateState.UpToDate: return CxLang.T("UpdateViewModel_CapFrameXIsUpToDate");
+					case EUpdateState.Failed: return CxLang.T("UpdateViewModel_TheUpdateCheckFailed");
+					default: return CxLang.T("UpdateViewModel_CapFrameXHasNotCheckedFor");
 				}
 			}
 		}
@@ -150,7 +150,7 @@ namespace CapFrameX.ViewModel
 			=> DownloadProgressPercent.ToString("F0", CultureInfo.InvariantCulture) + " %";
 
 		public string ReleaseSummary => string.IsNullOrWhiteSpace(Package?.Summary)
-			? CxLang.T("No description was provided for this update.")
+			? CxLang.T("UpdateViewModel_NoDescriptionWasProvidedFor")
 			: Package.Summary;
 
 		public IReadOnlyList<string> ReleaseHighlights
@@ -175,7 +175,7 @@ namespace CapFrameX.ViewModel
 
 				return sizeInBytes <= 0L
 					? string.Empty
-					: string.Format(CultureInfo.CurrentCulture, CxLang.T("Download size: {0} MB"), (sizeInBytes / (1024d * 1024d)).ToString("F1", CultureInfo.CurrentCulture));
+					: string.Format(CultureInfo.CurrentCulture, CxLang.T("UpdateViewModel_DownloadSize0MB"), (sizeInBytes / (1024d * 1024d)).ToString("F1", CultureInfo.CurrentCulture));
 			}
 		}
 

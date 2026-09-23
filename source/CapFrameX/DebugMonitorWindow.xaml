@@ -1,7 +1,7 @@
 <Window x:Class="CapFrameX.DebugMonitorWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:CapFrameX.MVVM.Localization;assembly=CapFrameX.MVVM"
-        Title="{loc:Tr 'Debug Monitor'}"
+        Title="{loc:Tr DebugMonitorWindow_DebugMonitor}"
         Height="510"
         Width="500"
         WindowStartupLocation="Manual"
@@ -31,11 +31,11 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Tr 'CPU Usage:'}" Margin="0,2"/>
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Tr DebugMonitorWindow_CPUUsage}" Margin="0,2"/>
                 <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CapFrameXCpuUsage, StringFormat={}{0:F1} %}"
                            Foreground="#FF00BFFF" FontWeight="Bold" Margin="0,2"/>
 
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Tr 'Memory Usage:'}" Margin="0,2"/>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Tr DebugMonitorWindow_MemoryUsage}" Margin="0,2"/>
                 <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CapFrameXMemoryUsage, StringFormat={}{0:F1} MB}"
                            Foreground="#FF00FF7F" FontWeight="Bold" Margin="0,2"/>
             </Grid>
@@ -55,22 +55,22 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Tr 'CPU Usage:'}" Margin="0,2"/>
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Tr DebugMonitorWindow_CPUUsage2}" Margin="0,2"/>
                 <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PresentMonCpuUsage, StringFormat={}{0:F1} %}"
                            Foreground="#FF00BFFF" FontWeight="Bold" Margin="0,2"/>
 
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Tr 'Memory Usage:'}" Margin="0,2"/>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Tr DebugMonitorWindow_MemoryUsage2}" Margin="0,2"/>
                 <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding PresentMonMemoryUsage, StringFormat={}{0:F1} MB}"
                            Foreground="#FF00FF7F" FontWeight="Bold" Margin="0,2"/>
 
-                <TextBlock Grid.Row="2" Grid.Column="0" Text="{loc:Tr 'Status:'}" Margin="0,2"/>
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="{loc:Tr DebugMonitorWindow_Status}" Margin="0,2"/>
                 <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding PresentMonStatus}"
                            Foreground="#FFFFA500" FontWeight="Bold" Margin="0,2"/>
             </Grid>
         </GroupBox>
 
         <!-- ETW Buffer Status -->
-        <GroupBox Grid.Row="2" Header="{loc:Tr 'ETW Buffer Status'}" Margin="0,0,0,10"
+        <GroupBox Grid.Row="2" Header="{loc:Tr DebugMonitorWindow_ETWBufferStatus}" Margin="0,0,0,10"
                   Foreground="White" BorderBrush="#FF3E3E3E">
             <Grid Margin="5">
                 <Grid.ColumnDefinitions>
@@ -86,27 +86,27 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Tr 'Processing Delay:'}" Margin="0,2"/>
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Tr DebugMonitorWindow_ProcessingDelay}" Margin="0,2"/>
                 <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ProcessingDelayMs, StringFormat={}{0:F1} ms}"
                            Foreground="#FFFF69B4" FontWeight="Bold" Margin="0,2"/>
 
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Tr 'Buffer Fill %:'}" Margin="0,2"/>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Tr DebugMonitorWindow_BufferFill}" Margin="0,2"/>
                 <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding EtwBufferFillPct, StringFormat={}{0:F1} %}"
                            Foreground="#FFFFCC00" FontWeight="Bold" Margin="0,2"/>
 
-                <TextBlock Grid.Row="2" Grid.Column="0" Text="{loc:Tr 'Buffers In Use:'}" Margin="0,2"/>
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="{loc:Tr DebugMonitorWindow_BuffersInUse}" Margin="0,2"/>
                 <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding EtwBuffersInUse}"
                            Foreground="#FF87CEEB" FontWeight="Bold" Margin="0,2"/>
 
-                <TextBlock Grid.Row="3" Grid.Column="0" Text="{loc:Tr 'Total Buffers:'}" Margin="0,2"/>
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="{loc:Tr DebugMonitorWindow_TotalBuffers}" Margin="0,2"/>
                 <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding EtwTotalBuffers}"
                            Foreground="#FF87CEEB" FontWeight="Bold" Margin="0,2"/>
 
-                <TextBlock Grid.Row="4" Grid.Column="0" Text="{loc:Tr 'Events Lost:'}" Margin="0,2"/>
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="{loc:Tr DebugMonitorWindow_EventsLost}" Margin="0,2"/>
                 <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding EtwEventsLost}"
                            Foreground="#FFFF4444" FontWeight="Bold" Margin="0,2"/>
 
-                <TextBlock Grid.Row="5" Grid.Column="0" Text="{loc:Tr 'Buffers Lost:'}" Margin="0,2"/>
+                <TextBlock Grid.Row="5" Grid.Column="0" Text="{loc:Tr DebugMonitorWindow_BuffersLost}" Margin="0,2"/>
                 <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding EtwBuffersLost}"
                            Foreground="#FFFF4444" FontWeight="Bold" Margin="0,2"/>
             </Grid>

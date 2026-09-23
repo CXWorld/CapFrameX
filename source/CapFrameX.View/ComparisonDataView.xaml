@@ -63,19 +63,19 @@
 													 ToggleContent="{materialDesign:PackIcon BallotOutline, Size=24}"
 													 Margin="10 0 0 0"
 													 PlacementMode="BottomAndAlignCentres"
-													 ToolTip="{loc:Tr 'Set comparison context'}">
+													 ToolTip="{loc:Tr ComparisonDataView_SetComparisonContext}">
 								<materialDesign:PopupBox.ToggleCheckedContent>
 									<materialDesign:PackIcon Kind="Pencil" Width="24" Height="24" />
 								</materialDesign:PopupBox.ToggleCheckedContent>
 								<StackPanel>
-									<Button Command="{Binding DateTimeContextCommand}" Content="{materialDesign:PackIcon TimeTable, Size=24}" ToolTip="{loc:Tr 'Date and time'}"/>
-									<Button Command="{Binding CpuContextCommand}" ToolTip="{loc:Tr 'CPU'}">
+									<Button Command="{Binding DateTimeContextCommand}" Content="{materialDesign:PackIcon TimeTable, Size=24}" ToolTip="{loc:Tr ComparisonDataView_DateAndTime}"/>
+									<Button Command="{Binding CpuContextCommand}" ToolTip="{loc:Tr ComparisonDataView_CPU}">
 										CPU
 									</Button>
-									<Button Command="{Binding GpuContextCommand}" ToolTip="{loc:Tr 'GPU'}">
+									<Button Command="{Binding GpuContextCommand}" ToolTip="{loc:Tr ComparisonDataView_GPU}">
 										GPU
 									</Button>
-									<Button Command="{Binding CustomContextCommand}" Content="{materialDesign:PackIcon CommentUser, Size=24}" ToolTip="{loc:Tr 'Custom comments'}"/>
+									<Button Command="{Binding CustomContextCommand}" Content="{materialDesign:PackIcon CommentUser, Size=24}" ToolTip="{loc:Tr ComparisonDataView_CustomComments}"/>
 								</StackPanel>
 							</materialDesign:PopupBox>
 							<materialDesign:PopupBox StaysOpen="True"
@@ -84,15 +84,15 @@
 													 ToggleContent="{materialDesign:PackIcon Compare, Size=24}"
 													 Margin="20 0 0 0"
 													 PlacementMode="BottomAndAlignCentres"
-													 ToolTip="{loc:Tr 'Set absolut/relative mode'}">
+													 ToolTip="{loc:Tr ComparisonDataView_SetAbsolutRelativeMode}">
 								<materialDesign:PopupBox.ToggleCheckedContent>
 									<materialDesign:PackIcon Kind="Pencil" Width="24" Height="24" />
 								</materialDesign:PopupBox.ToggleCheckedContent>
 								<StackPanel>
-									<Button FontSize="9" Command="{Binding AbsoluteModeCommand}" ToolTip="{loc:Tr 'Absolute mode'}">
+									<Button FontSize="9" Command="{Binding AbsoluteModeCommand}" ToolTip="{loc:Tr ComparisonDataView_AbsoluteMode}">
 										Absolute
 									</Button>
-									<Button Command="{Binding RelativeModeCommand}" Content="{materialDesign:PackIcon FilePercent, Size=24}" ToolTip="{loc:Tr 'Relative mode'}"/>
+									<Button Command="{Binding RelativeModeCommand}" Content="{materialDesign:PackIcon FilePercent, Size=24}" ToolTip="{loc:Tr ComparisonDataView_RelativeMode}"/>
 								</StackPanel>
 							</materialDesign:PopupBox>
 						</StackPanel>
@@ -100,7 +100,7 @@
 								Margin="0 0 10 0"
 								HorizontalAlignment="Right"
 								Width="30" Height="30"
-								ToolTip="{loc:Tr 'Remove all comparisons'}"
+								ToolTip="{loc:Tr ComparisonDataView_RemoveAllComparisons}"
 								Command="{Binding RemoveAllComparisonsCommand}">
 							<materialDesign:PackIcon Kind="PlaylistRemove" Height="24" Width="24" />
 						</Button>
@@ -192,7 +192,7 @@
 			</Border>
 		</StackPanel>
 		<TabControl  Margin="0 10 0 0" Grid.Row="0" Grid.Column="0" Background="#F5F5F5" Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}" >
-			<TabItem Header="{loc:Tr 'Frametimes'}">
+			<TabItem Header="{loc:Tr ComparisonDataView_Frametimes}">
 				<Grid Name="ChartAndCuttingGrid">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="1*"></RowDefinition>
@@ -214,7 +214,7 @@
 								VerticalAlignment="Bottom"
 								Value="{Binding FirstSeconds}"
 								Style="{StaticResource MaterialDesignDiscreteSlider}"
-								ToolTip="{loc:Tr 'Cut first seconds'}"/>
+								ToolTip="{loc:Tr ComparisonDataView_CutFirstSeconds}"/>
 						<TextBox Grid.Column="1" HorizontalAlignment="Center" IsReadOnly="True" Margin="20 0 20 3"
 								 Style="{StaticResource CxFloatingHintTextBox}" Text="{Binding RemainingRecordingTime}">
 							<materialDesign:HintAssist.Hint>
@@ -234,26 +234,26 @@
 								VerticalAlignment="Bottom"
 								Value="{Binding LastSeconds}"
 								Style="{StaticResource MaterialDesignDiscreteSlider}"
-								ToolTip="{loc:Tr 'Cut last seconds'}"/>
+								ToolTip="{loc:Tr ComparisonDataView_CutLastSeconds}"/>
 					</Grid>
 				</Grid>
 			</TabItem>
-			<TabItem Header="{loc:Tr 'L-shape'}">
+			<TabItem Header="{loc:Tr ComparisonDataView_LShape}">
 				<lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding ComparisonLShapeCollection}" Zoom="Y" >
 					<lvc:CartesianChart.AxisX>
-						<lvc:Axis Title="{loc:Tr 'Quantiles (%)'}" Name="LShapeX" Foreground="Black">
+						<lvc:Axis Title="{loc:Tr ComparisonDataView_Quantiles}" Name="LShapeX" Foreground="Black">
 							<lvc:Axis.Separator >
 								<lvc:Separator Step="1"></lvc:Separator>
 							</lvc:Axis.Separator>
 						</lvc:Axis>
 					</lvc:CartesianChart.AxisX>
 					<lvc:CartesianChart.AxisY>
-						<lvc:Axis Title="{loc:Tr 'Frametime (ms)'}" Name="LShapeY" Foreground="Black"/>
+						<lvc:Axis Title="{loc:Tr ComparisonDataView_FrametimeMs}" Name="LShapeY" Foreground="Black"/>
 					</lvc:CartesianChart.AxisY>
 				</lvc:CartesianChart>
 			</TabItem>
 		</TabControl>
-		<Expander Grid.Row="1" Grid.ColumnSpan="2" Name="SettingsExpander" Background="#F5F5F5" Margin="0 5 0 5" Header="{loc:Tr 'Data/Chart Settings'}" HorizontalAlignment="Stretch"
+		<Expander Grid.Row="1" Grid.ColumnSpan="2" Name="SettingsExpander" Background="#F5F5F5" Margin="0 5 0 5" Header="{loc:Tr ComparisonDataView_DataChartSettings}" HorizontalAlignment="Stretch"
                   Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}" >
 			<Grid Height="60">
 				<Grid.ColumnDefinitions>
@@ -262,21 +262,21 @@
 					<ColumnDefinition Width="1*" />
 				</Grid.ColumnDefinitions>
 				<StackPanel VerticalAlignment="Top" Grid.Column="0" Margin="25 10 0 10" Orientation="Horizontal">
-					<TextBlock VerticalAlignment="Center" Text="{loc:Tr 'Cutting mode:'}"/>
+					<TextBlock VerticalAlignment="Center" Text="{loc:Tr ComparisonDataView_CuttingMode}"/>
 					<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0"
-								  ToolTip="{loc:Tr 'Cutting mode'}" IsChecked="{Binding IsCuttingModeActive}"/>
+								  ToolTip="{loc:Tr ComparisonDataView_CuttingMode2}" IsChecked="{Binding IsCuttingModeActive}"/>
 				</StackPanel>
 				<StackPanel VerticalAlignment="Top" Grid.Column="1" Margin="25 10 0 10" Orientation="Horizontal">
-					<TextBlock VerticalAlignment="Center" Text="{loc:Tr 'Show context legend:'}"/>
+					<TextBlock VerticalAlignment="Center" Text="{loc:Tr ComparisonDataView_ShowContextLegend}"/>
 					<ToggleButton Name="ContextLegendActiveToggleButton" Margin="10 0 0 0"
-								  ToolTip="{loc:Tr 'Show context legend'}" IsChecked="{Binding IsContextLegendActive}"/>
+								  ToolTip="{loc:Tr ComparisonDataView_ShowContextLegend2}" IsChecked="{Binding IsContextLegendActive}"/>
 				</StackPanel>
 			</Grid>
 		</Expander>
 		<lvc:CartesianChart Margin="0 0 5 0" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Series="{Binding ComparisonColumnChartSeriesCollection}" LegendLocation="Top"
                             Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}" Background="#F5F5F5">
 			<lvc:CartesianChart.AxisX>
-				<lvc:Axis Title="{loc:Tr 'Comparisons'}" FontSize="11" Labels="{Binding ComparisonColumnChartLabels}" Foreground="Black"></lvc:Axis>
+				<lvc:Axis Title="{loc:Tr ComparisonDataView_Comparisons}" FontSize="11" Labels="{Binding ComparisonColumnChartLabels}" Foreground="Black"></lvc:Axis>
 			</lvc:CartesianChart.AxisX>
 			<lvc:CartesianChart.AxisY>
 				<lvc:Axis MinValue="0" FontSize="11" Title="{Binding ColumnChartYAxisTitle}" LabelFormatter="{Binding ComparisonColumnChartFormatter}" Foreground="Black"></lvc:Axis>

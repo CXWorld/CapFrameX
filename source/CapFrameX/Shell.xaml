@@ -9,7 +9,7 @@
 		xmlns:converter="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 		mc:Ignorable="d"
-        Title="{loc:Tr 'CapFrameX'}"
+        Title="{loc:Tr Shell_CapFrameX}"
         Height="800" Width="1400" MinHeight="740" MinWidth="1250" Icon="Icons/cx_icon_BUC.ico"
         Background="{DynamicResource MaterialDesign.Brush.Background}"
         FontFamily="{materialDesign:MaterialDesignFont}">
@@ -31,7 +31,7 @@
                         TrayLeftMouseDown="SystemTray_TrayLeftMouseDownClick">
             <tb:TaskbarIcon.TrayToolTip>
                 <Grid Background="White">
-                    <TextBlock Margin="3" Foreground="#575757" Text="{loc:Tr 'CapFrameX'}" />
+                    <TextBlock Margin="3" Foreground="#575757" Text="{loc:Tr Shell_CapFrameX2}" />
                 </Grid>
             </tb:TaskbarIcon.TrayToolTip>
             <tb:TaskbarIcon.ContextMenu>
@@ -42,7 +42,7 @@
                             <materialDesign:PackIcon Kind="WindowMaximize"/>
                         </MenuItem.Icon>
                         <MenuItem.Header>
-                            <TextBlock Margin="-10 0 0 0" Text="{loc:Tr 'Show Main Window'}"/>
+                            <TextBlock Margin="-10 0 0 0" Text="{loc:Tr Shell_ShowMainWindow}"/>
                         </MenuItem.Header>
                     </MenuItem>
                     <Separator Margin="10 0 0 0"/>
@@ -51,7 +51,7 @@
                             <materialDesign:PackIcon Kind="CloseCircle" />
                         </MenuItem.Icon>
                         <MenuItem.Header>
-                            <TextBlock Margin="-10 0 0 0" Text="{loc:Tr 'Close'}"/>
+                            <TextBlock Margin="-10 0 0 0" Text="{loc:Tr Shell_Close}"/>
                         </MenuItem.Header>
                     </MenuItem>
                 </ContextMenu>

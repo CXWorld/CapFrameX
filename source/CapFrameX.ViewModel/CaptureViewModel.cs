@@ -996,17 +996,17 @@ namespace CapFrameX.ViewModel
         {
             if (string.IsNullOrEmpty(text))
                 return text;
-            text = System.Text.RegularExpressions.Regex.Replace(text, "auto-detected\\.", CxLang.T("auto-detected."));
+            text = System.Text.RegularExpressions.Regex.Replace(text, "auto-detected\\.", CxLang.T("CaptureViewModel_AutoDetected"));
             text = System.Text.RegularExpressions.Regex.Replace(
                 text,
                 "Press \"(.+?)\" to start capture\\.",
-                CxLang.T("Press \"{0}\" to start capture.").Replace("{0}", "$1"));
-            text = text.Replace("Process list clear.", CxLang.T("Process list clear."));
-            text = text.Replace("Start any game / application and press", CxLang.T("Start any game / application and press"));
-            text = text.Replace("to start capture.", CxLang.T("to start capture."));
-            text = text.Replace("selected.", CxLang.T("selected."));
-            text = text.Replace("Multiple processes detected.", CxLang.T("Multiple processes detected."));
-            text = text.Replace("Select one or move unwanted processes to ignore list.", CxLang.T("Select one or move unwanted processes to ignore list."));
+                CxLang.T("CaptureViewModel_Press0ToStartCapture").Replace("{0}", "$1"));
+            text = text.Replace("Process list clear.", CxLang.T("CaptureViewModel_ProcessListClear"));
+            text = text.Replace("Start any game / application and press", CxLang.T("CaptureViewModel_StartAnyGameApplicationAnd"));
+            text = text.Replace("to start capture.", CxLang.T("CaptureViewModel_ToStartCapture"));
+            text = text.Replace("selected.", CxLang.T("CaptureViewModel_Selected"));
+            text = text.Replace("Multiple processes detected.", CxLang.T("CaptureViewModel_MultipleProcessesDetected"));
+            text = text.Replace("Select one or move unwanted processes to ignore list.", CxLang.T("CaptureViewModel_SelectOneOrMoveUnwanted"));
             return text;
         }
 
@@ -1060,7 +1060,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "xAxis",
                 Position = AxisPosition.Bottom,
-                Title = CxLang.T("Samples"),
+                Title = CxLang.T("CaptureViewModel_Samples"),
                 MajorGridlineStyle = LineStyle.Solid,
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
@@ -1073,7 +1073,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "yAxis",
                 Position = AxisPosition.Left,
-                Title = CxLang.T("Frametime [ms]"),
+                Title = CxLang.T("CaptureViewModel_FrametimeMs"),
                 MajorGridlineStyle = LineStyle.Solid,
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),

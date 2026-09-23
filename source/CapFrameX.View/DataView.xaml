@@ -53,7 +53,7 @@
                        Visibility="{Binding IsChecked, Converter={StaticResource TrueToCollapsedConverter}, ElementName=ShowCustomTitleToggleButton}"
 					   Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                 <TextBox HorizontalAlignment="Center" VerticalAlignment="Bottom" Visibility="{Binding IsChecked, Converter={StaticResource TrueToVisibleConverter}, ElementName=ShowCustomTitleToggleButton}"
-                                 Text="{loc:Tr 'Type your title here...'}"  Height="30" MinWidth="50"                                
+                                 Text="{loc:Tr DataView_TypeYourTitleHere}"  Height="30" MinWidth="50"                                
                                  FontWeight="Bold" FontSize="18" PreviewKeyDown="CustomTitle_PreviewKeyDown"
                                  Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
             </Grid>
@@ -84,10 +84,10 @@
 					    DialogContent="{Binding MessageDialogContent}"
 					    CloseOnClickAway="True">
 						<TabControl x:Name="GraphTab" Grid.Row="0" SelectedItem="{Binding SelectedChartItem}" FocusVisualStyle="{x:Null}" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
-							<TabItem Header="{loc:Tr 'Frame Times'}">
+							<TabItem Header="{loc:Tr DataView_FrameTimes}">
                                 <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <Grid Margin="0 0 0 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-                                        <ComboBox Width="Auto" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10 0 0 10" materialDesign:HintAssist.Hint="{loc:Tr 'Y-Axis scale'}"
+                                        <ComboBox Width="Auto" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10 0 0 10" materialDesign:HintAssist.Hint="{loc:Tr DataView_YAxisScale}"
 										          materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:HintAssist.HintOpacity=".8"
 										          ItemsSource="{Binding ChartYAxisSettings}" SelectedItem="{Binding SelecetedChartYAxisSetting}">
                                             <ComboBox.ItemTemplate>
@@ -98,17 +98,17 @@
                                         </ComboBox>
                                     </Grid>
                                     <StackPanel Margin="0 10 60 0" Orientation="Horizontal" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="{Binding ShowGpuActiveChart, Converter={StaticResource TrueToVisibleConverter}}">
-                                        <TextBlock Text="{loc:Tr 'GPU-Busy Deviation: '}" FontSize="16"></TextBlock>
+                                        <TextBlock Text="{loc:Tr DataView_GPUBusyDeviation}" FontSize="16"></TextBlock>
                                         <TextBlock Text="{Binding GpuActiveDeviationPercentage}" FontSize="16"></TextBlock>
                                         <TextBlock Text="%" FontSize="16"></TextBlock>
                                     </StackPanel>
                                     <controls:FrametimeGraphControl DataContext="{Binding FrametimeGraphDataContext}" Background="{DynamicResource MaterialDesign.Brush.Card.Background}"/>
                                 </Grid>
                             </TabItem>
-                            <TabItem Header="{loc:Tr 'FPS'}">
+                            <TabItem Header="{loc:Tr DataView_FPS}">
                                 <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <Grid Margin="-15 0 0 1" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-                                        <ComboBox Width="96" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="{loc:Tr 'Filter Mode'}"
+                                        <ComboBox Width="96" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="{loc:Tr DataView_FilterMode}"
 										      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:HintAssist.HintOpacity=".8"
                                               SelectedItem="{Binding SelectedFilterMode}" SelectedIndex="1" ItemsSource="{Binding FilterModes}">
                                             <ComboBox.ItemTemplate>
@@ -121,10 +121,10 @@
                                     <controls:FpsGraphControl DataContext="{Binding FpsGraphDataContext}" Background="{DynamicResource MaterialDesign.Brush.Card.Background}"/>
                                 </Grid>
                             </TabItem>
-                            <TabItem Header="{loc:Tr 'L-shape'}">
+                            <TabItem Header="{loc:Tr DataView_LShape}">
                                 <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <Grid Margin="-15 0 0 1" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-                                        <ComboBox Width="96" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="{loc:Tr 'Metric'}"
+                                        <ComboBox Width="96" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="{loc:Tr DataView_Metric}"
 										      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:HintAssist.HintOpacity=".8"
                                               SelectedItem="{Binding SelectedLShapeMetric}" ItemsSource="{Binding LShapeMetrics}">
                                             <ComboBox.ItemTemplate>
@@ -138,11 +138,11 @@
 										Tag="{Binding DataContext, ElementName=DataViewUserControl}" DataTooltip="{x:Null}">
                                         <lvc:CartesianChart.ContextMenu>
                                             <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                                <MenuItem Header="{loc:Tr 'Copy quantiles'}" Command="{Binding CopyLShapeQuantilesCommand}"/>
+                                                <MenuItem Header="{loc:Tr DataView_CopyQuantiles}" Command="{Binding CopyLShapeQuantilesCommand}"/>
                                             </ContextMenu>
                                         </lvc:CartesianChart.ContextMenu>
                                         <lvc:CartesianChart.AxisX>
-                                            <lvc:Axis Title="{loc:Tr '&#x0a;Percentiles (%)'}" x:Name="LShapeX" FontSize="14" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
+                                            <lvc:Axis Title="{loc:Tr DataView_Percentiles}" x:Name="LShapeX" FontSize="14" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                                                 <lvc:Axis.Separator>
                                                     <lvc:Separator StrokeThickness="0" Step="1"/>
                                                 </lvc:Axis.Separator>
@@ -158,7 +158,7 @@
                                     </lvc:CartesianChart>
                                 </Grid>
                             </TabItem>
-                            <TabItem Header="{loc:Tr 'Frame Time Distribution'}">
+                            <TabItem Header="{loc:Tr DataView_FrameTimeDistribution}">
                                 <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <Grid Margin="-15 0 0 1" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                                     </Grid>
@@ -178,31 +178,31 @@
                                      Thumb.DragCompleted="RangeSlider_DragCompleted"/>
                         
                         <StackPanel HorizontalAlignment="Left" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 10 0" Height="25">
-                            <TextBlock Text="{loc:Tr 'Real time update'}" Margin="40 5 3 0" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" />
+                            <TextBlock Text="{loc:Tr DataView_RealTimeUpdate}" Margin="40 5 3 0" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" />
                             <CheckBox IsChecked="{Binding AnalysisRangeSliderRealTime, Mode=TwoWay}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                         </StackPanel>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 10 0" Height="25">
-                            <TextBlock Text="{loc:Tr 'Range:'}" Margin="0 5 5 0" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-                            <TextBox Grid.Row="1" materialDesign:HintAssist.Hint="{loc:Tr 'Start (s)'}" HorizontalAlignment="Center" Width="45" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"
-                                      ToolTip="{loc:Tr 'Range Slider start point'}" PreviewKeyDown="FirstSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center" Text="{Binding FirstSeconds, Mode=TwoWay, StringFormat=F2, UpdateSourceTrigger=LostFocus}"
+                            <TextBlock Text="{loc:Tr DataView_Range}" Margin="0 5 5 0" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+                            <TextBox Grid.Row="1" materialDesign:HintAssist.Hint="{loc:Tr DataView_StartS}" HorizontalAlignment="Center" Width="45" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"
+                                      ToolTip="{loc:Tr DataView_RangeSliderStartPoint}" PreviewKeyDown="FirstSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center" Text="{Binding FirstSeconds, Mode=TwoWay, StringFormat=F2, UpdateSourceTrigger=LostFocus}"
                                      Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" materialDesign:HintAssist.HintOpacity=".8"/>
                             <TextBlock Text="-" Margin="3 5 3 0" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-                            <TextBox Grid.Row="1" materialDesign:HintAssist.Hint="{loc:Tr 'End (s)'}" HorizontalAlignment="Center" Width="45" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"
-                                     ToolTip="{loc:Tr 'Range Slider end point'}" PreviewKeyDown="LastSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center" Text="{Binding LastSeconds, Mode=TwoWay, StringFormat=F2, UpdateSourceTrigger=LostFocus}"
+                            <TextBox Grid.Row="1" materialDesign:HintAssist.Hint="{loc:Tr DataView_EndS}" HorizontalAlignment="Center" Width="45" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"
+                                     ToolTip="{loc:Tr DataView_RangeSliderEndPoint}" PreviewKeyDown="LastSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center" Text="{Binding LastSeconds, Mode=TwoWay, StringFormat=F2, UpdateSourceTrigger=LostFocus}"
                                      Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" materialDesign:HintAssist.HintOpacity=".8"/>
                             <TextBlock Grid.Row="1"  Text="{Binding RemainingRecordingTime}" FontSize="14" Margin="10 0 0 3" VerticalAlignment="Center" TextAlignment="Left" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                         </StackPanel>
 
 
                         <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 40 5" Height="20" >
-                            <TextBlock Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" VerticalAlignment="Center" Text="{loc:Tr 'Cut outside'}"/>
+                            <TextBlock Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" VerticalAlignment="Center" Text="{loc:Tr DataView_CutOutside}"/>
                             <Button Margin="10 0 15 0" Height="20" Width="20" Command="{Binding CutRecordCommand}"  Foreground="White" Background="OrangeRed" BorderBrush="OrangeRed"
-                                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  ToolTipService.ShowDuration="25000" ToolTip="{loc:Tr 'Remove data outside of range slider(red) and create a new file with the remaining data(blue)'}">
+                                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  ToolTipService.ShowDuration="25000" ToolTip="{loc:Tr DataView_RemoveDataOutsideOfRange}">
                                 <materialDesign:PackIcon Kind="ContentCut" Height="15" Width="15" />
                             </Button>
-                            <TextBlock Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" VerticalAlignment="Center" Text="{loc:Tr 'Cut inside'}"/>
+                            <TextBlock Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" VerticalAlignment="Center" Text="{loc:Tr DataView_CutInside}"/>
                             <Button Margin="10 0 0 0" Height="20" Width="20" Command="{Binding CutRecordInverseCommand}"  Foreground="White" 
-                                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  ToolTipService.ShowDuration="25000" ToolTip="{loc:Tr 'Remove data inside of range slider(blue) and create a new file with the remaining data(red)'}">
+                                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  ToolTipService.ShowDuration="25000" ToolTip="{loc:Tr DataView_RemoveDataInsideOfRange}">
                                 <materialDesign:PackIcon Kind="ContentCut" Height="15" Width="15" RenderTransformOrigin=".5,.5">
                                     <materialDesign:PackIcon.RenderTransform>
                                         <RotateTransform Angle="180"/>
@@ -232,7 +232,7 @@
 									Tag="{Binding DataContext, ElementName=DataViewUserControl}" DataTooltip="{x:Null}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                             <lvc:CartesianChart.ContextMenu>
                                 <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                    <MenuItem Header="{loc:Tr 'Copy metrics'}" Command="{Binding CopyStatisticalParameterCommand}"/>
+                                    <MenuItem Header="{loc:Tr DataView_CopyMetrics}" Command="{Binding CopyStatisticalParameterCommand}"/>
                                 </ContextMenu>
                             </lvc:CartesianChart.ContextMenu>
                             <lvc:CartesianChart.AxisX>
@@ -252,16 +252,16 @@
                             </lvc:CartesianChart.AxisY>
                         </lvc:CartesianChart>
                         <StackPanel Grid.Row="1" Orientation="Horizontal" Panel.ZIndex="1" VerticalAlignment="Bottom" HorizontalAlignment="Center">
-                            <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr 'FPS'}" />
+                            <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr DataView_FPS2}" />
                             <ToggleButton x:Name="FrametimeStatisticToggleButton" VerticalAlignment="Center" Margin="5 0 5 0"
 									  IsChecked="{Binding UseFrametimeStatisticParameters}"/>
-                            <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr 'ms'}"/>
+                            <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr DataView_Ms}"/>
                         </StackPanel>
                     </Grid>
                     <!--FPS thresholds and stuttering analysis-->
                     <Grid Grid.Column="4" Margin="5 0 0 0" >
                         <TabControl Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" FocusVisualStyle="{x:Null}" x:Name="StatisticsTabControl" >
-                            <TabItem Header="{loc:Tr 'Stuttering'}">
+                            <TabItem Header="{loc:Tr DataView_Stuttering}">
                                 <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <lvc:PieChart HorizontalAlignment="Left" Margin="13 0 0 0" Width="180" Height="180" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
 								        LegendLocation="Left" DataClick="Chart_OnDataClick" DataTooltip="{x:Null}" StartingRotationAngle="0">
@@ -276,7 +276,7 @@
                                             </materialDesign:PopupBox.ToggleContent>
                                             <materialDesign:PopupBox.ToolTip>
                                                 <ToolTip MaxWidth="275" Placement="Top">
-                                                    <TextBlock Text="{loc:Tr 'Options for the stutter and low FPS values of the pie chart'}" 
+                                                    <TextBlock Text="{loc:Tr DataView_OptionsForTheStutterAnd}" 
 										                TextWrapping="Wrap"/>
                                                 </ToolTip>
                                             </materialDesign:PopupBox.ToolTip>
@@ -286,34 +286,34 @@
                                                     <RowDefinition Height="*" />
                                                     <RowDefinition Height="*" />
                                                 </Grid.RowDefinitions>
-                                                <TextBox Grid.Row="0" materialDesign:HintAssist.Hint="{loc:Tr 'Low FPS threshold'}" materialDesign:HintAssist.IsFloating="True" Width="100"
+                                                <TextBox Grid.Row="0" materialDesign:HintAssist.Hint="{loc:Tr DataView_LowFPSThreshold}" materialDesign:HintAssist.IsFloating="True" Width="100"
                                                     HorizontalContentAlignment="Center" Text="{Binding StutteringLowFPSThreshold}" materialDesign:HintAssist.HintOpacity=".8"
                                                     PreviewKeyDown="StutteringThreshold_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" ToolTipService.ShowDuration="25000">
                                                     <TextBox.ToolTip>
                                                         <ToolTip Width="300">
-                                                            <TextBlock Text="{loc:Tr 'FPS threshold for the low FPS time.&#xA;Every frametime that isn’t already counted as stutter and for which the converted FPS are lower than this threshold, is added to the low FPS time.'}"
+                                                            <TextBlock Text="{loc:Tr DataView_FPSThresholdForTheLow}"
 										            TextWrapping="Wrap"/>
                                                         </ToolTip>
                                                     </TextBox.ToolTip>
                                                 </TextBox>
-                                                <TextBox Grid.Row="1" Margin="0 20 0 0" materialDesign:HintAssist.Hint="{loc:Tr 'Stuttering factor'}" materialDesign:HintAssist.IsFloating="True" Width="100"
+                                                <TextBox Grid.Row="1" Margin="0 20 0 0" materialDesign:HintAssist.Hint="{loc:Tr DataView_StutteringFactor}" materialDesign:HintAssist.IsFloating="True" Width="100"
                                                      HorizontalContentAlignment="Center" Text="{Binding StutteringFactor}" materialDesign:HintAssist.HintOpacity=".8" 
                                                      PreviewKeyDown="StutteringFactor_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" ToolTipService.ShowDuration="25000">
                                                     <TextBox.ToolTip>
                                                         <ToolTip Width="300">
-                                                            <TextBlock Text="{loc:Tr 'Factor for the stuttering time.&#xA;Every frametime that is higher than the corresponding moving average frametime x factor is added to the stuttering time.'}"
+                                                            <TextBlock Text="{loc:Tr DataView_FactorForTheStutteringTime}"
 										            TextWrapping="Wrap"/>
                                                         </ToolTip>
                                                     </TextBox.ToolTip>
                                                 </TextBox>
                                                 <StackPanel Grid.Row="2" Margin="0 10 0 0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Vertical">
-                                                    <TextBlock Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr 'Show in charts'}"/></TextBlock>
+                                                    <TextBlock Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr DataView_ShowInCharts}"/></TextBlock>
                                                     <ToggleButton VerticalAlignment="Center" Margin="0 8 0 0" IsChecked="{Binding ShowStutteringThresholds}"
-								                        ToolTip="{loc:Tr 'Show threshold lines for stuttering and low FPS in the frametime and FPS charts'}"/>
+								                        ToolTip="{loc:Tr DataView_ShowThresholdLinesForStuttering}"/>
                                                 </StackPanel>
                                             </Grid>
                                         </materialDesign:PopupBox>
-                                        <TextBlock VerticalAlignment="Center" Text="{loc:Tr 'Options'}" FontSize="14"/>
+                                        <TextBlock VerticalAlignment="Center" Text="{loc:Tr DataView_Options}" FontSize="14"/>
                                     </StackPanel>
                                     <Border Margin="12 0 0 15" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Bottom" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}" BorderThickness="1"
                                         Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource TrueToVisibleConverter}}">
@@ -321,9 +321,9 @@
                                     </Border>
                                 </Grid>
                             </TabItem>
-                            <TabItem Header="{loc:Tr 'Variances'}">
+                            <TabItem Header="{loc:Tr DataView_Variances}">
                                 <Grid Margin="{StaticResource CxTabContentMargin}">
-                                    <TextBlock Margin="10 3 0 0" Text="{loc:Tr 'Time differences between two&#xA;consecutive frametime values'}"></TextBlock>
+                                    <TextBlock Margin="10 3 0 0" Text="{loc:Tr DataView_TimeDifferencesBetweenTwoConsecutive}"></TextBlock>
                                     <lvc:PieChart Margin="10 5 115 5" MaxHeight="250" Hoverable="False" Series="{Binding VarianceStatisticCollection}" 
 								        LegendLocation="Left" DataClick="Chart_OnDataClick" DataTooltip="{x:Null}" StartingRotationAngle="0">
                                         <lvc:PieChart.ChartLegend>
@@ -332,37 +332,37 @@
                                     </lvc:PieChart>
                                 </Grid>
                             </TabItem>
-                            <TabItem x:Name="ThresholdTab" Header="{loc:Tr 'FPS thresholds'}">
+                            <TabItem x:Name="ThresholdTab" Header="{loc:Tr DataView_FPSThresholds}">
                                 <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <RadioButton Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Top"
-                                                 ToolTip="{loc:Tr 'Show time above or below thresholds'}"
+                                                 ToolTip="{loc:Tr DataView_ShowTimeAboveOrBelow}"
                                                  Style="{StaticResource MaterialDesignTabRadioButton}"
                                                  Margin="0 -5 0 0"
                                                  Width="80"
                                                  MinWidth="80"
                                                  Height="25"
                                                  IsChecked="{Binding ShowThresholdTimes}"
-                                                 Content="{loc:Tr 'Times'}"
+                                                 Content="{loc:Tr DataView_Times}"
                                                  Command="{Binding ThresholdTimesCommand}"/>
                                     <RadioButton Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Top"
-                                                 ToolTip="{loc:Tr 'Show number of frames above or below thresholds'}"
+                                                 ToolTip="{loc:Tr DataView_ShowNumberOfFramesAbove}"
                                                  Style="{StaticResource MaterialDesignTabRadioButton}"
                                                  Margin="80 -5 0 0"
                                                  Width="80"
                                                  MinWidth="80"
                                                  Height="25"
                                                  IsChecked="{Binding ShowThresholdTimes, Converter={StaticResource InvertBoolConverter}}"
-                                                 Content="{loc:Tr 'Counts'}"
+                                                 Content="{loc:Tr DataView_Counts}"
                                                  Command="{Binding ThresholdCountsCommand}"/>
                                     <Grid Margin="0 0 40 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
                                         <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}" Foreground="White" 
-												  ToolTip="{loc:Tr 'Toggle between absolute and relative values'}" IsChecked="{Binding ThresholdShowAbsoluteValues}">
+												  ToolTip="{loc:Tr DataView_ToggleBetweenAbsoluteAndRelative}" IsChecked="{Binding ThresholdShowAbsoluteValues}">
                                             <materialDesign:ToggleButtonAssist.OnContent>#</materialDesign:ToggleButtonAssist.OnContent> %
                                         </ToggleButton>
                                     </Grid>
                                     <Grid Margin="0 0 5 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
                                         <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}" Foreground="White" 
-												  ToolTip="{loc:Tr 'Change fps thresholds direction'}" IsChecked="{Binding ThresholdToggleButtonIsChecked}">
+												  ToolTip="{loc:Tr DataView_ChangeFpsThresholdsDirection}" IsChecked="{Binding ThresholdToggleButtonIsChecked}">
                                             <materialDesign:ToggleButtonAssist.OnContent>
                                                 <materialDesign:PackIcon Width="25" Margin="1 0 0 0"
 												Kind="GreaterThan" />
@@ -375,7 +375,7 @@
 								                        Tag="{Binding DataContext, ElementName=DataViewUserControl}" DataTooltip="{x:Null}">
                                         <lvc:CartesianChart.ContextMenu>
                                             <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                                <MenuItem Header="{loc:Tr 'Copy threshold data'}" Command="{Binding CopyFPSThresholdDataCommand}"/>
+                                                <MenuItem Header="{loc:Tr DataView_CopyThresholdData}" Command="{Binding CopyFPSThresholdDataCommand}"/>
                                             </ContextMenu>
                                         </lvc:CartesianChart.ContextMenu>
                                         <lvc:CartesianChart.AxisX>
@@ -396,7 +396,7 @@
                                     </lvc:CartesianChart>
                                 </Grid>
                             </TabItem>
-                            <TabItem x:Name="SensorDataTab" Header="{loc:Tr 'Sensor data'}" IsEnabled="{Binding AdditionalGraphsEnabled}">
+                            <TabItem x:Name="SensorDataTab" Header="{loc:Tr DataView_SensorData}" IsEnabled="{Binding AdditionalGraphsEnabled}">
                                 <DataGrid Margin="{StaticResource CxTabContentMargin}" FontSize="13" ItemsSource="{Binding SensorReportItems}" ColumnHeaderHeight="25" SelectionUnit="FullRow"
 										CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 										materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8 0 0 0" IsSynchronizedWithCurrentItem="False"
@@ -436,28 +436,28 @@
                                     </DataGrid.Style>
                                     <DataGrid.ContextMenu>
                                         <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                            <MenuItem Header="{loc:Tr 'Copy sensor data(min, avg, max)'}" Command="{Binding CopySensorInfoCommand}"/>
-                                            <MenuItem Header="{loc:Tr 'Copy raw sensor data'}" Command="{Binding CopyRawSensorInfoCommand}"/>
+                                            <MenuItem Header="{loc:Tr DataView_CopySensorDataMinAvg}" Command="{Binding CopySensorInfoCommand}"/>
+                                            <MenuItem Header="{loc:Tr DataView_CopyRawSensorData}" Command="{Binding CopyRawSensorInfoCommand}"/>
                                         </ContextMenu>
                                     </DataGrid.ContextMenu>
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Binding="{Binding Name, Mode=OneWay}"                                                           
-                                            Header="{loc:Tr 'Sensor'}"       
+                                            Header="{loc:Tr DataView_Sensor}"       
                                             MinWidth="175"
                                             IsReadOnly="True"
                                             CellStyle="{StaticResource CellStyle}"/>
                                         <DataGridTextColumn Binding="{Binding MinValue, Mode=OneWay}"
-                                            Header="{loc:Tr 'Min'}"
+                                            Header="{loc:Tr DataView_Min}"
                                             Width="72"
                                             IsReadOnly="True"
                                             CellStyle="{StaticResource CellStyle}"/>
                                         <DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
-                                            Header="{loc:Tr 'Avg'}"
+                                            Header="{loc:Tr DataView_Avg}"
                                             Width="72"
                                             IsReadOnly="True"
                                             CellStyle="{StaticResource CellStyle}"/>
                                         <DataGridTextColumn Binding="{Binding MaxValue, Mode=OneWay}"
-                                            Header="{loc:Tr 'Max'}"
+                                            Header="{loc:Tr DataView_Max}"
                                             Width="72"
                                             IsReadOnly="True"
                                             CellStyle="{StaticResource CellStyle}"/>
@@ -469,7 +469,7 @@
 
                     <Grid Grid.Column="2" x:Name="SecondSensorTab" Margin="5 0 0 0" Width="450" Tag="{Binding DataContext, ElementName=DataViewUserControl}">
                         <TabControl Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" FocusVisualStyle="{x:Null}" >
-                            <TabItem Header="{loc:Tr 'Sensor data'}" IsEnabled="{Binding AdditionalGraphsEnabled}">
+                            <TabItem Header="{loc:Tr DataView_SensorData2}" IsEnabled="{Binding AdditionalGraphsEnabled}">
                                 <DataGrid Margin="{StaticResource CxTabContentMargin}" FontSize="13" ItemsSource="{Binding SensorReportItems}" ColumnHeaderHeight="25" SelectionUnit="FullRow"
 										CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 										materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8 0 0 0" IsSynchronizedWithCurrentItem="False"
@@ -510,28 +510,28 @@
                                     </DataGrid.Style>
                                     <DataGrid.ContextMenu>
                                         <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                            <MenuItem Header="{loc:Tr 'Copy sensor data(min, avg, max)'}" Command="{Binding CopySensorInfoCommand}"/>
-                                            <MenuItem Header="{loc:Tr 'Copy raw sensor data'}" Command="{Binding CopyRawSensorInfoCommand}"/>
+                                            <MenuItem Header="{loc:Tr DataView_CopySensorDataMinAvg2}" Command="{Binding CopySensorInfoCommand}"/>
+                                            <MenuItem Header="{loc:Tr DataView_CopyRawSensorData2}" Command="{Binding CopyRawSensorInfoCommand}"/>
                                         </ContextMenu>
                                     </DataGrid.ContextMenu>
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Binding="{Binding Name, Mode=OneWay}"                                                           
-                                            Header="{loc:Tr 'Sensor'}"       
+                                            Header="{loc:Tr DataView_Sensor2}"       
                                             MinWidth="175"
                                             IsReadOnly="True"
                                             CellStyle="{StaticResource CellStyle}"/>
                                         <DataGridTextColumn Binding="{Binding MinValue, Mode=OneWay}"
-                                            Header="{loc:Tr 'Min'}"
+                                            Header="{loc:Tr DataView_Min2}"
                                             Width="72"
                                             IsReadOnly="True"
                                             CellStyle="{StaticResource CellStyle}"/>
                                         <DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
-                                            Header="{loc:Tr 'Average'}"
+                                            Header="{loc:Tr DataView_Average}"
                                             Width="72"
                                             IsReadOnly="True"
                                             CellStyle="{StaticResource CellStyle}"/>
                                         <DataGridTextColumn Binding="{Binding MaxValue, Mode=OneWay}"
-                                            Header="{loc:Tr 'Max'}"
+                                            Header="{loc:Tr DataView_Max2}"
                                             Width="72"
                                             IsReadOnly="True"
                                             CellStyle="{StaticResource CellStyle}"/>
@@ -543,37 +543,37 @@
 
                     <Grid Grid.Column="3" x:Name="SecondThresholdTab" Margin="5 0 0 0" Width="500" >
                         <TabControl Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" FocusVisualStyle="{x:Null}" >
-                            <TabItem Header="{loc:Tr 'FPS thresholds'}">
+                            <TabItem Header="{loc:Tr DataView_FPSThresholds2}">
                                 <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <RadioButton Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Top"
-                                                 ToolTip="{loc:Tr 'Show time above or below thresholds'}"
+                                                 ToolTip="{loc:Tr DataView_ShowTimeAboveOrBelow2}"
                                                  Style="{StaticResource MaterialDesignTabRadioButton}"
                                                  Margin="0 -5 0 0"
                                                  Width="80"
                                                  MinWidth="80"
                                                  Height="25"
                                                  IsChecked="{Binding ShowThresholdTimes}"
-                                                 Content="{loc:Tr 'Times'}"
+                                                 Content="{loc:Tr DataView_Times2}"
                                                  Command="{Binding ThresholdTimesCommand}"/>
                                     <RadioButton Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Top"
-                                                 ToolTip="{loc:Tr 'Show number of frames above or below thresholds'}"
+                                                 ToolTip="{loc:Tr DataView_ShowNumberOfFramesAbove2}"
                                                  Style="{StaticResource MaterialDesignTabRadioButton}"
                                                  Margin="80 -5 0 0"
                                                  Width="80"
                                                  MinWidth="80"
                                                  Height="25"
                                                  IsChecked="{Binding ShowThresholdTimes, Converter={StaticResource InvertBoolConverter}}"
-                                                 Content="{loc:Tr 'Counts'}"
+                                                 Content="{loc:Tr DataView_Counts2}"
                                                  Command="{Binding ThresholdCountsCommand}"/>
                                     <Grid Margin="0 0 40 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
                                         <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}" Foreground="White" 
-												  ToolTip="{loc:Tr 'Toggle between absolute and relative values'}" IsChecked="{Binding ThresholdShowAbsoluteValues}">
+												  ToolTip="{loc:Tr DataView_ToggleBetweenAbsoluteAndRelative2}" IsChecked="{Binding ThresholdShowAbsoluteValues}">
                                             <materialDesign:ToggleButtonAssist.OnContent>#</materialDesign:ToggleButtonAssist.OnContent> %
                                         </ToggleButton>
                                     </Grid>
                                     <Grid Margin="0 0 5 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
                                         <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}" Foreground="White" 
-												  ToolTip="{loc:Tr 'Change fps thresholds direction'}" IsChecked="{Binding ThresholdToggleButtonIsChecked}">
+												  ToolTip="{loc:Tr DataView_ChangeFpsThresholdsDirection2}" IsChecked="{Binding ThresholdToggleButtonIsChecked}">
                                             <materialDesign:ToggleButtonAssist.OnContent>
                                                 <materialDesign:PackIcon Width="25" Margin="1 0 0 0"
 												Kind="GreaterThan" />
@@ -586,7 +586,7 @@
 								                        Tag="{Binding DataContext, ElementName=DataViewUserControl}" DataTooltip="{x:Null}">
                                         <lvc:CartesianChart.ContextMenu>
                                             <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                                <MenuItem Header="{loc:Tr 'Copy threshold data'}" Command="{Binding CopyFPSThresholdDataCommand}"/>
+                                                <MenuItem Header="{loc:Tr DataView_CopyThresholdData2}" Command="{Binding CopyFPSThresholdDataCommand}"/>
                                             </ContextMenu>
                                         </lvc:CartesianChart.ContextMenu>
                                         <lvc:CartesianChart.AxisX>
@@ -623,29 +623,12 @@
                 </Grid.ColumnDefinitions>
                 <!--Statistic parameters for FPS values-->
                 <StackPanel Grid.Column="0" Margin="15 8 0 8" Orientation="Horizontal" Visibility="{Binding UseFrametimeStatisticParameters, Converter={StaticResource TrueToCollapsedConverter}}">
-                    <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr 'Statistic parameter settings:'}"/></TextBlock>
+                    <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr DataView_StatisticParameterSettings}"/></TextBlock>
                     <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000"
                                              Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                         <materialDesign:PopupBox.ToolTip>
                             <ToolTip MaxWidth="275" Placement="Top">
-                                <TextBlock Text="{loc:Tr 'Maximum:
-                                           &#xA;The single highest value &#xA;
-                                           &#xA;Average:
-                                           &#xA;The average of all values &#xA;
-                                           &#xA;Median:
-                                           &#xA;The middle of all values sorted from low to high &#xA;
-                                           &#xA;Minimum:
-                                           &#xA;The single lowest value &#xA;
-                                           &#xA;X% percentile:
-                                           &#xA;X% of all values are lower than this &#xA;
-                                           &#xA;X% low average:
-                                           &#xA;The average of the lowest X% of all values &#xA;
-                                           &#xA;X% low integral:
-                                           &#xA;For X% of total benchmark time, values are lower than this &#xA;
-                                           &#xA;GPU-Busy:
-                                           &#xA;The time the GPU worked on a frame &#xA; 
-                                           &#xA;Adaptive STDEV:
-                                           &#xA;The standard deviation of values compared to the moving average'}" 
+                                <TextBlock Text="{loc:Tr DataView_MaximumTheSingleHighestValue}" 
 										   TextWrapping="Wrap"/>
                             </ToolTip>
                         </materialDesign:PopupBox.ToolTip>
@@ -680,31 +663,31 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="{loc:Tr 'Maximum'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="{loc:Tr DataView_Maximum}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding UseMaxStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="{loc:Tr '99% percentile'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="{loc:Tr DataView_99Percentile}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding UseP99QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="{loc:Tr '95% percentile'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="{loc:Tr DataView_95Percentile}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding UseP95QuantileStatisticParameter}" />
-                                <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="{loc:Tr 'Average'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="{loc:Tr DataView_Average2}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding UseAverageStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="{loc:Tr 'GPU-Busy Average(only ms)'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="{loc:Tr DataView_GPUBusyAverageOnlyMs}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding UseGpuActiveAverageStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="{loc:Tr 'Median'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="{loc:Tr DataView_Median}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding UseMedianStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="{loc:Tr '5% percentile'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="{loc:Tr DataView_5Percentile}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="6" Grid.Column="1" IsChecked="{Binding UseP5QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="{loc:Tr '1% percentile'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="{loc:Tr DataView_1Percentile}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="7" Grid.Column="1" IsChecked="{Binding UseP1QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="{loc:Tr 'GPU-Busy 99% percentile(only ms)'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="{loc:Tr DataView_GPUBusy99PercentileOnly}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="8" Grid.Column="1" IsChecked="{Binding UseGpuActiveP1QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="{loc:Tr '0.2% percentile'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="{loc:Tr DataView_02Percentile}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="9" Grid.Column="1" IsChecked="{Binding UseP0Dot2QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="3" Text="{loc:Tr '0.1% percentile'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="3" Text="{loc:Tr DataView_01Percentile}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="0" Grid.Column="5" IsChecked="{Binding UseP0Dot1QuantileStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="1" Grid.Column="3" Text="1% low average" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="1" Grid.Column="4" IsChecked="{Binding UseP1LowAverageStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="3" Text="{loc:Tr 'GPU-Busy 1% high average(only ms)'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="3" Text="{loc:Tr DataView_GPUBusy1HighAverage}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="2" Grid.Column="4" IsChecked="{Binding UseGpuActiveP1LowAverageStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="0.1% low average" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="3" Grid.Column="4" IsChecked="{Binding UseP0Dot1LowAverageStatisticParameter}"/>
@@ -712,13 +695,13 @@
                                 <ToggleButton Margin="5" Grid.Row="4" Grid.Column="4" IsChecked="{Binding UseP1LowIntegralStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="5" Grid.Column="3" Text="0.1% low integral" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="5" Grid.Column="4" IsChecked="{Binding UseP0Dot1LowIntegralStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="6" Grid.Column="3" Text="{loc:Tr 'Minimum'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="6" Grid.Column="3" Text="{loc:Tr DataView_Minimum}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="6" Grid.Column="4" IsChecked="{Binding UseMinStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="7" Grid.Column="3" Text="{loc:Tr 'Adaptive STDEV'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="7" Grid.Column="3" Text="{loc:Tr DataView_AdaptiveSTDEV}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="7" Grid.Column="4" IsChecked="{Binding UseAdaptiveSTDStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="8" Grid.Column="3" Text="{loc:Tr 'CPU FPS/10W'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="8" Grid.Column="3" Text="{loc:Tr DataView_CPUFPS10W}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="8" Grid.Column="4" IsChecked="{Binding UseCpuFpsPerWattParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="9" Grid.Column="3" Text="{loc:Tr 'GPU FPS/10W'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="9" Grid.Column="3" Text="{loc:Tr DataView_GPUFPS10W}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="9" Grid.Column="4" IsChecked="{Binding UseGpuFpsPerWattParameter}"/>
                             </Grid>
                         </materialDesign:Card>
@@ -726,29 +709,12 @@
                 </StackPanel>
                 <!--Statistic parameters for Frametime values-->
                 <StackPanel Grid.Column="0" Margin="15 8 0 8" Orientation="Horizontal" Visibility="{Binding UseFrametimeStatisticParameters, Converter={StaticResource TrueToVisibleConverter}}">
-                    <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr 'Statistic parameter settings:'}"/></TextBlock>
+                    <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr DataView_StatisticParameterSettings2}"/></TextBlock>
                     <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000"
                                              Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                         <materialDesign:PopupBox.ToolTip>
                             <ToolTip MaxWidth="275" Placement="Top">
-                                <TextBlock Text="{loc:Tr 'Maximum:
-                                           &#xA;The single highest value &#xA;
-                                           &#xA;Average:
-                                           &#xA;The average of all values &#xA;
-                                           &#xA;Median:
-                                           &#xA;The middle of all values sorted from low to high &#xA;
-                                           &#xA;Minimum:
-                                           &#xA;The single lowest value &#xA;
-                                           &#xA;X% percentile:
-                                           &#xA;X% of all values are lower than this &#xA;
-                                           &#xA;X% high average:
-                                           &#xA;The average of the highest X% of all values &#xA;
-                                           &#xA;X% low integral:
-                                           &#xA;For X% of total benchmark time, values are higher than this &#xA;
-                                           &#xA;GPU-Busy:
-                                           &#xA;The time the GPU worked on a frame &#xA;
-                                           &#xA;Adaptive STDEV:
-                                           &#xA;The standard deviation of values compared to the moving average'}" 
+                                <TextBlock Text="{loc:Tr DataView_MaximumTheSingleHighestValue2}" 
 										   TextWrapping="Wrap"/>
                             </ToolTip>
                         </materialDesign:PopupBox.ToolTip>
@@ -785,7 +751,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="{loc:Tr 'Minimum'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="{loc:Tr DataView_Minimum2}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding UseMaxStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="0.1% high integral" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding UseP0Dot1LowIntegralStatisticParameter}"/>
@@ -795,55 +761,55 @@
                                 <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding UseP0Dot1LowAverageStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="1% high average" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding UseP1LowAverageStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="{loc:Tr 'GPU-Busy 1% high avg.(only ms)'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="{loc:Tr DataView_GPUBusy1HighAvg}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding UseGpuActiveP1LowAverageStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="{loc:Tr '99.9% percentile'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="{loc:Tr DataView_999Percentile}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="6" Grid.Column="1" IsChecked="{Binding UseP0Dot1QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="{loc:Tr '99.8% percentile'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="{loc:Tr DataView_998Percentile}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="7" Grid.Column="1" IsChecked="{Binding UseP0Dot2QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="{loc:Tr '99% percentile'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="{loc:Tr DataView_99Percentile2}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="8" Grid.Column="1" IsChecked="{Binding UseP1QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="{loc:Tr 'GPU-Busy 99% percentile(only ms)'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="{loc:Tr DataView_GPUBusy99PercentileOnly2}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="9" Grid.Column="1" IsChecked="{Binding UseGpuActiveP1QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="3" Text="{loc:Tr '95% percentile'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="3" Text="{loc:Tr DataView_95Percentile2}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="0" Grid.Column="5" IsChecked="{Binding UseP5QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="1" Grid.Column="3" Text="{loc:Tr 'Average'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="1" Grid.Column="3" Text="{loc:Tr DataView_Average3}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="1" Grid.Column="4" IsChecked="{Binding UseAverageStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="3" Text="{loc:Tr 'GPU-Busy average(only ms)'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="3" Text="{loc:Tr DataView_GPUBusyAverageOnlyMs2}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="2" Grid.Column="4" IsChecked="{Binding UseGpuActiveAverageStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="{loc:Tr 'Median'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="{loc:Tr DataView_Median2}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="3" Grid.Column="4" IsChecked="{Binding UseMedianStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="3" Text="{loc:Tr '5% percentile'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="3" Text="{loc:Tr DataView_5Percentile2}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="4" Grid.Column="4" IsChecked="{Binding UseP95QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="3" Text="{loc:Tr '1% percentile'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="3" Text="{loc:Tr DataView_1Percentile2}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="5" Grid.Column="4" IsChecked="{Binding UseP99QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="6" Grid.Column="3" Text="{loc:Tr 'Maximum'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="6" Grid.Column="3" Text="{loc:Tr DataView_Maximum2}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="6" Grid.Column="4" IsChecked="{Binding UseMinStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="7" Grid.Column="3" Text="{loc:Tr 'P99 |Animation Error| (only ms)'}" VerticalAlignment="Center"
+                                <TextBlock Margin="5" Grid.Row="7" Grid.Column="3" Text="{loc:Tr DataView_P99AnimationErrorOnlyMs}" VerticalAlignment="Center"
                                            Visibility="{Binding IsAnimationErrorAvailable, Converter={StaticResource TrueToVisibleConverter}}"/>
                                 <ToggleButton Margin="5" Grid.Row="7" Grid.Column="4" IsChecked="{Binding UseAnimationErrorP99StatisticParameter}"
                                               Visibility="{Binding IsAnimationErrorAvailable, Converter={StaticResource TrueToVisibleConverter}}"/>
-                                <TextBlock Margin="5" Grid.Row="8" Grid.Column="3" Text="{loc:Tr 'Average |Animation Error| (only ms)'}" VerticalAlignment="Center"
+                                <TextBlock Margin="5" Grid.Row="8" Grid.Column="3" Text="{loc:Tr DataView_AverageAnimationErrorOnlyMs}" VerticalAlignment="Center"
                                            Visibility="{Binding IsAnimationErrorAvailable, Converter={StaticResource TrueToVisibleConverter}}"/>
                                 <ToggleButton Margin="5" Grid.Row="8" Grid.Column="4" IsChecked="{Binding UseAnimationErrorAverageStatisticParameter}"
                                               Visibility="{Binding IsAnimationErrorAvailable, Converter={StaticResource TrueToVisibleConverter}}"/>
-                                <TextBlock Margin="5" Grid.Row="9" Grid.Column="3" Text="{loc:Tr 'Adaptive STDEV'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="9" Grid.Column="3" Text="{loc:Tr DataView_AdaptiveSTDEV2}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="9" Grid.Column="4" IsChecked="{Binding UseAdaptiveSTDStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="10" Grid.Column="3" Text="{loc:Tr 'CPU FPS/10W'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="10" Grid.Column="3" Text="{loc:Tr DataView_CPUFPS10W2}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="10" Grid.Column="4" IsChecked="{Binding UseCpuFpsPerWattParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="11" Grid.Column="3" Text="{loc:Tr 'GPU FPS/10W'}" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="11" Grid.Column="3" Text="{loc:Tr DataView_GPUFPS10W2}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="11" Grid.Column="4" IsChecked="{Binding UseGpuFpsPerWattParameter}"/>
                             </Grid>
                         </materialDesign:Card>
                     </materialDesign:PopupBox>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Margin="30 8 0 8" Orientation="Horizontal">
-                    <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr 'Additional graphs:'}"/></TextBlock>
+                    <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr DataView_AdditionalGraphs}"/></TextBlock>
                     <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" IsEnabled= "{Binding AdditionalGraphsEnabled}"
                                              Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                         <materialDesign:PopupBox.ToolTip>
                             <ToolTip MaxWidth="275" Placement="Top">
-                                <TextBlock Text="{loc:Tr 'Show additional graphs for CPU and GPU load'}" 
+                                <TextBlock Text="{loc:Tr DataView_ShowAdditionalGraphsForCPU}" 
 										   TextWrapping="Wrap"/>
                             </ToolTip>
                         </materialDesign:PopupBox.ToolTip>
@@ -876,51 +842,51 @@
                                     </Grid.ColumnDefinitions>
 
                                     <!-- Hardware Telemetry Group (Left) -->
-                                    <TextBlock Margin="5 5 5 2" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="{loc:Tr 'Hardware Telemetry'}"
+                                    <TextBlock Margin="5 5 5 2" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="{loc:Tr DataView_HardwareTelemetry}"
                                                FontWeight="Bold" FontSize="13" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 
-                                    <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="{loc:Tr 'Total CPU load'}" VerticalAlignment="Center"
+                                    <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="{loc:Tr DataView_TotalCPULoad}" VerticalAlignment="Center"
                                                Visibility="{Binding IsCpuLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
-                                    <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowCpuLoad}" ToolTip="{loc:Tr 'Show CPU usage graph'}"
+                                    <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowCpuLoad}" ToolTip="{loc:Tr DataView_ShowCPUUsageGraph}"
                                                   Visibility="{Binding IsCpuLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
 
-                                    <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="{loc:Tr 'Max. CPU thread load'}" VerticalAlignment="Center"
+                                    <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="{loc:Tr DataView_MaxCPUThreadLoad}" VerticalAlignment="Center"
                                                Visibility="{Binding IsCpuMaxLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
-                                    <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding ShowCpuMaxThreadLoad}" ToolTip="{loc:Tr 'Show max CPU thread usage graph'}"
+                                    <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding ShowCpuMaxThreadLoad}" ToolTip="{loc:Tr DataView_ShowMaxCPUThreadUsage}"
                                                   Visibility="{Binding IsCpuMaxLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
 
-                                    <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="{loc:Tr 'GPU load'}" VerticalAlignment="Center"
+                                    <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="{loc:Tr DataView_GPULoad}" VerticalAlignment="Center"
                                                Visibility="{Binding IsGpuLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
-                                    <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowGpuLoad}" ToolTip="{loc:Tr 'Show GPU usage graph'}"
+                                    <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowGpuLoad}" ToolTip="{loc:Tr DataView_ShowGPUUsageGraph}"
                                                   Visibility="{Binding IsGpuLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
 
-                                    <TextBlock Visibility="{Binding IsGpuPowerLimitAvailable, Converter={StaticResource FalseToCollapsedConverter}}" Margin="5" Grid.Row="4" Grid.Column="0" Text="{loc:Tr 'GPU power limit'}" VerticalAlignment="Center"/>
+                                    <TextBlock Visibility="{Binding IsGpuPowerLimitAvailable, Converter={StaticResource FalseToCollapsedConverter}}" Margin="5" Grid.Row="4" Grid.Column="0" Text="{loc:Tr DataView_GPUPowerLimit}" VerticalAlignment="Center"/>
                                     <ToggleButton Visibility="{Binding IsGpuPowerLimitAvailable, Converter={StaticResource FalseToCollapsedConverter}}" Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding ShowGpuPowerLimit}"
-                                                  ToolTip="{loc:Tr 'Show GPU power limit'}" />
+                                                  ToolTip="{loc:Tr DataView_ShowGPUPowerLimit}" />
 
                                     <!-- Present Metrics Group (Right) -->
-                                    <TextBlock Margin="5 5 5 2" Grid.Row="0" Grid.Column="3" Grid.ColumnSpan="2" Text="{loc:Tr 'Present Metrics'}"
+                                    <TextBlock Margin="5 5 5 2" Grid.Row="0" Grid.Column="3" Grid.ColumnSpan="2" Text="{loc:Tr DataView_PresentMetrics}"
                                                FontWeight="Bold" FontSize="13" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 
-                                    <TextBlock Margin="5" Grid.Row="1" Grid.Column="3" Text="{loc:Tr 'PC Latency'}" VerticalAlignment="Center"
+                                    <TextBlock Margin="5" Grid.Row="1" Grid.Column="3" Text="{loc:Tr DataView_PCLatency}" VerticalAlignment="Center"
                                                Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
                                     <ToggleButton Margin="5" Grid.Row="1" Grid.Column="4" IsChecked="{Binding ShowPcLatency}" Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource FalseToCollapsedConverter}}"
-                                                  ToolTip="{loc:Tr 'Show PC latency graph'}" />
+                                                  ToolTip="{loc:Tr DataView_ShowPCLatencyGraph}" />
 
-                                    <TextBlock Margin="5" Grid.Row="2" Grid.Column="3" Text="{loc:Tr 'Animation Error'}" VerticalAlignment="Center"
+                                    <TextBlock Margin="5" Grid.Row="2" Grid.Column="3" Text="{loc:Tr DataView_AnimationError}" VerticalAlignment="Center"
                                                Visibility="{Binding IsAnimationErrorAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
                                     <ToggleButton Margin="5" Grid.Row="2" Grid.Column="4" IsChecked="{Binding ShowAnimationError}" Visibility="{Binding IsAnimationErrorAvailable, Converter={StaticResource FalseToCollapsedConverter}}"
-                                                  ToolTip="{loc:Tr 'Show Animation Error graph'}" />
+                                                  ToolTip="{loc:Tr DataView_ShowAnimationErrorGraph}" />
 
-                                    <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="{loc:Tr 'GPU-Busy times'}" VerticalAlignment="Center"
+                                    <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="{loc:Tr DataView_GPUBusyTimes}" VerticalAlignment="Center"
                                                Visibility="{Binding IsGpuActiveChartAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
                                     <ToggleButton Margin="5" Grid.Row="3" Grid.Column="4" IsChecked="{Binding ShowGpuActiveChart}" Visibility="{Binding IsGpuActiveChartAvailable, Converter={StaticResource FalseToCollapsedConverter}}"
-                                                  ToolTip="{loc:Tr 'Show GPU-Busy time in frametime graphs'}" />
+                                                  ToolTip="{loc:Tr DataView_ShowGPUBusyTimeIn}" />
 
-                                    <TextBlock Margin="5" Grid.Row="4" Grid.Column="3" Text="{loc:Tr 'CPU-Busy times'}" VerticalAlignment="Center"
+                                    <TextBlock Margin="5" Grid.Row="4" Grid.Column="3" Text="{loc:Tr DataView_CPUBusyTimes}" VerticalAlignment="Center"
                                                Visibility="{Binding IsCpuActiveChartAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
                                     <ToggleButton Margin="5" Grid.Row="4" Grid.Column="4" IsChecked="{Binding ShowCpuActiveChart}" Visibility="{Binding IsCpuActiveChartAvailable, Converter={StaticResource FalseToCollapsedConverter}}"
-                                                  ToolTip="{loc:Tr 'Show CPU-Busy time in frametime graphs'}" />
+                                                  ToolTip="{loc:Tr DataView_ShowCPUBusyTimeIn}" />
                                 </Grid>
                             </StackPanel>
                         </materialDesign:Card>
@@ -928,21 +894,21 @@
                 </StackPanel>
                 <StackPanel Grid.Column="3" HorizontalAlignment="Right" Orientation="Horizontal">
                     <StackPanel Margin="10 0 0 0" VerticalAlignment="Center"  Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr 'Show aggregation:'}"/></TextBlock>
+                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr DataView_ShowAggregation}"/></TextBlock>
                         <ToggleButton VerticalAlignment="Center" Margin="10 0 0 0" IsChecked="{Binding ShowAggregationSeparators}"
-								  ToolTip="{loc:Tr 'Show separator lines for the different runs within the session'}"/>
+								  ToolTip="{loc:Tr DataView_ShowSeparatorLinesForThe}"/>
                     </StackPanel>
                     <StackPanel Margin="10 0 0 0" VerticalAlignment="Center"  Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr 'Custom title:'}"/></TextBlock>
+                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr DataView_CustomTitle}"/></TextBlock>
                         <ToggleButton x:Name="ShowCustomTitleToggleButton" VerticalAlignment="Center" Margin="10 0 0 0"
-								  ToolTip="{loc:Tr 'Show custom title edit box'}"/>
+								  ToolTip="{loc:Tr DataView_ShowCustomTitleEditBox}"/>
                     </StackPanel>
                     <StackPanel  Margin="10 0 0 0" VerticalAlignment="Center" Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr 'Remove outliers:'}"/></TextBlock>
+                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr DataView_RemoveOutliers}"/></TextBlock>
                         <ToggleButton Margin="10 0 0 0" VerticalAlignment="Center" IsChecked="{Binding RemoveOutliers}"/>
                     </StackPanel>
                     <StackPanel Margin="10 0 5 0" VerticalAlignment="Center" Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr 'Range slider:'}"/></TextBlock>
+                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr DataView_RangeSlider}"/></TextBlock>
                         <ToggleButton x:Name="RangeSliderActiveToggleButton" VerticalAlignment="Center" Margin="10 0 0 0"
 									  IsChecked="{Binding IsRangeSliderActive}"/>
                     </StackPanel>
@@ -950,7 +916,7 @@
             </Grid>
             <!--System info expander-->
             <Expander Margin="0 -6 0 0" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1"
-                      Style="{StaticResource CxRailExpander}" Header="{loc:Tr 'SYSTEM INFO'}"
+                      Style="{StaticResource CxRailExpander}" Header="{loc:Tr DataView_SYSTEMINFO}"
                       Tag="Show or hide the system info of this capture">
                 <ScrollViewer VerticalScrollBarVisibility="Hidden">
                     <ScrollViewer.Resources>
@@ -960,7 +926,7 @@
 										  Tag="{Binding DataContext, ElementName=DataViewUserControl}">
                         <ItemsControl.ContextMenu>
                             <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                <MenuItem Header="{loc:Tr 'Copy system info'}" Command="{Binding CopySystemInfoCommand}"/>
+                                <MenuItem Header="{loc:Tr DataView_CopySystemInfo}" Command="{Binding CopySystemInfoCommand}"/>
                             </ContextMenu>
                         </ItemsControl.ContextMenu>
                         <ItemsControl.ItemTemplate>

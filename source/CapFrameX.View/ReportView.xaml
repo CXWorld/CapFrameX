@@ -28,7 +28,7 @@
             <RowDefinition Height="65"/>
         </Grid.RowDefinitions>
         <Border VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{Binding HasNoReportItems, Converter={StaticResource TrueToVisibleConverter}}"  Grid.ZIndex="1">
-            <TextBlock Text="{loc:Tr 'Drop items here or double click them in the record list.'}" FontSize="18" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+            <TextBlock Text="{loc:Tr ReportView_DropItemsHereOrDouble}" FontSize="18" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
         </Border>
         <StackPanel>
             <FrameworkElement x:Name="ColumnHeaders" Visibility="Collapsed"/>
@@ -61,87 +61,87 @@
                   Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
 			<DataGrid.ContextMenu>
 				<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-					<MenuItem Header="{loc:Tr 'Copy table'}" Command="{Binding CopyTableDataCommand}"/>
+					<MenuItem Header="{loc:Tr ReportView_CopyTable}" Command="{Binding CopyTableDataCommand}"/>
 				</ContextMenu>
 			</DataGrid.ContextMenu>
 			<DataGrid.Columns>
                     <DataGridTextColumn Binding="{Binding Game, Mode=OneWay}"
-                                            Header="{loc:Tr 'Game Name'}"
+                                            Header="{loc:Tr ReportView_GameName}"
                                             Width="Auto"
                                             MinWidth="150"
                                             IsReadOnly="True"/>
                     <DataGridTextColumn Binding="{Binding Date, Mode=OneWay}"
-                                            Header="{loc:Tr 'Creation Date'}"
+                                            Header="{loc:Tr ReportView_CreationDate}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowCreationDate, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding Time, Mode=OneWay}"
-                                            Header="{loc:Tr 'Creation Time'}"
+                                            Header="{loc:Tr ReportView_CreationTime}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowCreationTime, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding NumberOfSamples, Mode=OneWay}"
-                                            Header="{loc:Tr 'Samples'}"
+                                            Header="{loc:Tr ReportView_Samples}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowNumberOfSamples, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding RecordTime, Mode=OneWay}"
-                                            Header="{loc:Tr 'Record Time (s)'}"
+                                            Header="{loc:Tr ReportView_RecordTimeS}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowRecordTime, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding Cpu, Mode=OneWay}"
-                                            Header="{loc:Tr 'CPU'}"
+                                            Header="{loc:Tr ReportView_CPU}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowCpuName, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding GraphicCard, Mode=OneWay}"
-                                            Header="{loc:Tr 'GPU'}"
+                                            Header="{loc:Tr ReportView_GPU}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowGpuName, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding Ram, Mode=OneWay}"
-                                            Header="{loc:Tr 'RAM'}"
+                                            Header="{loc:Tr ReportView_RAM}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowRamName, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding CustomComment, Mode=OneWay}"
-                                            Header="{loc:Tr 'Comment'}"
+                                            Header="{loc:Tr ReportView_Comment}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowComment, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding MaxFps, Mode=OneWay}"
-                                            Header="{loc:Tr 'Max FPS'}"
+                                            Header="{loc:Tr ReportView_MaxFPS}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowMaxFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding NinetyNinePercentQuantileFps, Mode=OneWay}"
-                                            Header="{loc:Tr 'P99 FPS'}"
+                                            Header="{loc:Tr ReportView_P99FPS}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP99FPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding NinetyFivePercentQuantileFps, Mode=OneWay}"
-                                            Header="{loc:Tr 'P95 FPS'}"
+                                            Header="{loc:Tr ReportView_P95FPS}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP95FS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding AverageFps, Mode=OneWay}"
-                                            Header="{loc:Tr 'Average FPS'}"
+                                            Header="{loc:Tr ReportView_AverageFPS}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowAverageFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding MedianFps, Mode=OneWay}"
-                                            Header="{loc:Tr 'Median FPS'}"
+                                            Header="{loc:Tr ReportView_MedianFPS}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowMedianFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding FivePercentQuantileFps, Mode=OneWay}"
-                                            Header="{loc:Tr 'P5 FPS'}"
+                                            Header="{loc:Tr ReportView_P5FPS}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP5FPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding OnePercentQuantileFps, Mode=OneWay}"
-                                            Header="{loc:Tr 'P1 FPS'}"
+                                            Header="{loc:Tr ReportView_P1FPS}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP1FPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
@@ -156,12 +156,12 @@
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP1LowIntegralFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding ZeroDotTwoPercentQuantileFps, Mode=OneWay}"
-                                            Header="{loc:Tr 'P0.2 FPS'}"
+                                            Header="{loc:Tr ReportView_P02FPS}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP0Dot2FPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding ZeroDotOnePercentQuantileFps, Mode=OneWay}"
-                                            Header="{loc:Tr 'P0.1 FPS'}"
+                                            Header="{loc:Tr ReportView_P01FPS}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP0Dot1FPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
@@ -176,92 +176,92 @@
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP0Dot1LowIntegralFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding MinFps, Mode=OneWay}"
-                                            Header="{loc:Tr 'Min FPS'}"
+                                            Header="{loc:Tr ReportView_MinFPS}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowMinFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding AnimationErrorP99, Mode=OneWay}"
-                                            Header="{loc:Tr 'P99 |Animation Error| (ms)'}"
+                                            Header="{loc:Tr ReportView_P99AnimationErrorMs}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowAnimationErrorP99, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding AnimationErrorAverage, Mode=OneWay}"
-                                            Header="{loc:Tr 'Average |Animation Error| (ms)'}"
+                                            Header="{loc:Tr ReportView_AverageAnimationErrorMs}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowAnimationErrorAverage, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding AdaptiveSTDFps, Mode=OneWay}"
-                                            Header="{loc:Tr 'Adaptive STDEV'}"
+                                            Header="{loc:Tr ReportView_AdaptiveSTDEV}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowAdaptiveSTD, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding CpuFpsPerWatt, Mode=OneWay}"
-                                            Header="{loc:Tr 'CPU FPS / 10W'}"
+                                            Header="{loc:Tr ReportView_CPUFPS10W}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowCpuFpsPerWatt, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding GpuFpsPerWatt, Mode=OneWay}"
-                                            Header="{loc:Tr 'GPU FPS / 10W'}"
+                                            Header="{loc:Tr ReportView_GPUFPS10W}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowGpuFpsPerWatt, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding AppLatency, Mode=OneWay}"
-                                            Header="{loc:Tr 'App Latency (ms)'}"
+                                            Header="{loc:Tr ReportView_AppLatencyMs}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowAppLatency, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding GpuActiveTimeAverage, Mode=OneWay}"
-                                            Header="{loc:Tr 'GPU-Busy Avg.(ms)'}"
+                                            Header="{loc:Tr ReportView_GPUBusyAvgMs}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowGpuActiveTimeAverage, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding GpuActiveTimeDeviation, Mode=OneWay}"
-                                            Header="{loc:Tr 'GPU-Busy time dev.(%)'}"
+                                            Header="{loc:Tr ReportView_GPUBusyTimeDev}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowGpuActiveTimeDeviation, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding CpuMaxUsage, Mode=OneWay}"
-                                            Header="{loc:Tr 'CPU max Thread (%)'}"
+                                            Header="{loc:Tr ReportView_CPUMaxThread}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowCpuMaxUsage, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding CpuPower, Mode=OneWay}"
-                                            Header="{loc:Tr 'CPU Power (W)'}"
+                                            Header="{loc:Tr ReportView_CPUPowerW}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowCpuPower, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding CpuMaxClock, Mode=OneWay}"
-                                            Header="{loc:Tr 'CPU Clock (MHz)'}"
+                                            Header="{loc:Tr ReportView_CPUClockMHz}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowCpuMaxClock, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding CpuTemp, Mode=OneWay}"
-                                            Header="{loc:Tr 'CPU Temp (°C)'}"
+                                            Header="{loc:Tr ReportView_CPUTempC}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowCpuTemp, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding GpuUsage, Mode=OneWay}"
-                                            Header="{loc:Tr 'GPU Usage (%)'}"
+                                            Header="{loc:Tr ReportView_GPUUsage}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowGpuUsage, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding GpuPower, Mode=OneWay}"
-                                            Header="{loc:Tr 'GPU Power (W)'}"
+                                            Header="{loc:Tr ReportView_GPUPowerW}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowGpuPower, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding GpuTBPSim, Mode=OneWay}"
-                                            Header="{loc:Tr 'GPU TBP Sim (W)'}"
+                                            Header="{loc:Tr ReportView_GPUTBPSimW}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowGpuTBPSim, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding GpuClock, Mode=OneWay}"
-                                            Header="{loc:Tr 'GPU Clock (MHz)'}"
+                                            Header="{loc:Tr ReportView_GPUClockMHz}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowGpuClock, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding GpuTemp, Mode=OneWay}"
-                                            Header="{loc:Tr 'GPU Temp (°C)'}"
+                                            Header="{loc:Tr ReportView_GPUTempC}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowGpuTemp, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
@@ -278,16 +278,16 @@
                 <ColumnDefinition Width="1*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0" VerticalAlignment="Center" Orientation="Horizontal">
-                <TextBlock Margin="20 0 10 0" VerticalAlignment="Center" Text="{loc:Tr 'Show average row'}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"></TextBlock>
-                <ToggleButton VerticalAlignment="Center" IsChecked="{Binding ReportShowAverageRow}" ToolTip="{loc:Tr 'Shows an additional row containing the averaged FPS metrics of all inserted records.'}"/>
+                <TextBlock Margin="20 0 10 0" VerticalAlignment="Center" Text="{loc:Tr ReportView_ShowAverageRow}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"></TextBlock>
+                <ToggleButton VerticalAlignment="Center" IsChecked="{Binding ReportShowAverageRow}" ToolTip="{loc:Tr ReportView_ShowsAnAdditionalRowContaining}"/>
             </StackPanel>
             <StackPanel Grid.Column="4" VerticalAlignment="Center" Orientation="Horizontal">
-                <TextBlock Margin="20 0 10 0" VerticalAlignment="Center" Text="{loc:Tr 'Use PMD values'}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"></TextBlock>
-                <ToggleButton VerticalAlignment="Center" IsChecked="{Binding ReportUsePMDValues}" ToolTip="{loc:Tr 'If available, use PMD values instead of the sensor readings for CPU/GPU power and efficiency.'}"/>
+                <TextBlock Margin="20 0 10 0" VerticalAlignment="Center" Text="{loc:Tr ReportView_UsePMDValues}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"></TextBlock>
+                <ToggleButton VerticalAlignment="Center" IsChecked="{Binding ReportUsePMDValues}" ToolTip="{loc:Tr ReportView_IfAvailableUsePMDValues}"/>
             </StackPanel>
             <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal">
-                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr 'Metrics settings:'}"/>
-                <materialDesign:PopupBox VerticalAlignment="Center" StaysOpen="True" ToolTip="{loc:Tr 'Select metrics to be shown'}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
+                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr ReportView_MetricsSettings}"/>
+                <materialDesign:PopupBox VerticalAlignment="Center" StaysOpen="True" ToolTip="{loc:Tr ReportView_SelectMetricsToBeShown}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                     <materialDesign:Card Width="Auto" Margin="0 0 0 -10">
                         <Grid Margin="8 8 8 8">
                             <Grid.Resources>
@@ -332,31 +332,31 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="{loc:Tr 'Creation date'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="{loc:Tr ReportView_CreationDate2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding ShowCreationDate}"/>
-                            <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="{loc:Tr 'Creation time'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="{loc:Tr ReportView_CreationTime2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowCreationTime}" />
-                            <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="{loc:Tr 'Samples'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="{loc:Tr ReportView_Samples2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding ShowNumberOfSamples}"/>
-                            <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="{loc:Tr 'Recording time'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="{loc:Tr ReportView_RecordingTime}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowRecordTime}"/>
-                            <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="{loc:Tr 'CPU name'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="{loc:Tr ReportView_CPUName}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding ShowCpuName}"/>
-                            <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="{loc:Tr 'GPU name'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="{loc:Tr ReportView_GPUName}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding ShowGpuName}"/>
-                            <TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="{loc:Tr 'RAM name'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="{loc:Tr ReportView_RAMName}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="6" Grid.Column="1" IsChecked="{Binding ShowRamName}"/>
-                            <TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="{loc:Tr 'Comment'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="{loc:Tr ReportView_Comment2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="7" Grid.Column="1" IsChecked="{Binding ShowComment}"/>
-                            <TextBlock Margin="5" Grid.Row="0" Grid.Column="3" Text="{loc:Tr 'Maximum'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="0" Grid.Column="3" Text="{loc:Tr ReportView_Maximum}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="0" Grid.Column="4" IsChecked="{Binding ShowMaxFPS}"/>
                             <TextBlock Margin="5" Grid.Row="1" Grid.Column="3" Text="99% percentile" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="1" Grid.Column="4" IsChecked="{Binding ShowP99FPS}"/>
                             <TextBlock Margin="5" Grid.Row="2" Grid.Column="3" Text="95% percentile" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="2" Grid.Column="4" IsChecked="{Binding ShowP95FS}" />
-                            <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="{loc:Tr 'Average'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="{loc:Tr ReportView_Average}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="3" Grid.Column="4" IsChecked="{Binding ShowAverageFPS}"/>
-                            <TextBlock Margin="5" Grid.Row="4" Grid.Column="3" Text="{loc:Tr 'Median'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="4" Grid.Column="3" Text="{loc:Tr ReportView_Median}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="4" Grid.Column="4" IsChecked="{Binding ShowMedianFPS}"/>
                             <TextBlock Margin="5" Grid.Row="5" Grid.Column="3" Text="5% percentile" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="5" Grid.Column="4" IsChecked="{Binding ShowP5FPS}"/>
@@ -374,41 +374,41 @@
                             <ToggleButton Margin="5" Grid.Row="1" Grid.Column="7" IsChecked="{Binding ShowP1LowIntegralFPS}"/>
                             <TextBlock Margin="5" Grid.Row="2" Grid.Column="6" Text="0.1% low integral" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="2" Grid.Column="7" IsChecked="{Binding ShowP0Dot1LowIntegralFPS}"/>
-                            <TextBlock Margin="5" Grid.Row="3" Grid.Column="6" Text="{loc:Tr 'Minimum'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="3" Grid.Column="6" Text="{loc:Tr ReportView_Minimum}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="3" Grid.Column="7" IsChecked="{Binding ShowMinFPS}"/>
-                            <TextBlock Margin="5" Grid.Row="4" Grid.Column="6" Text="{loc:Tr 'P99 |Animation Error| (ms)'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="4" Grid.Column="6" Text="{loc:Tr ReportView_P99AnimationErrorMs2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="4" Grid.Column="7" IsChecked="{Binding ShowAnimationErrorP99}"/>
-                            <TextBlock Margin="5" Grid.Row="5" Grid.Column="6" Text="{loc:Tr 'Average |Animation Error| (ms)'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="5" Grid.Column="6" Text="{loc:Tr ReportView_AverageAnimationErrorMs2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="5" Grid.Column="7" IsChecked="{Binding ShowAnimationErrorAverage}"/>
-                            <TextBlock Margin="5" Grid.Row="6" Grid.Column="6" Text="{loc:Tr 'Adaptive STDEV'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="6" Grid.Column="6" Text="{loc:Tr ReportView_AdaptiveSTDEV2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="6" Grid.Column="7" IsChecked="{Binding ShowAdaptiveSTD}"/>
-                            <TextBlock Margin="5" Grid.Row="7" Grid.Column="6" Text="{loc:Tr 'CPU FPS/10W'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="7" Grid.Column="6" Text="{loc:Tr ReportView_CPUFPS10W2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="7" Grid.Column="7" IsChecked="{Binding ShowCpuFpsPerWatt}"/>
-                            <TextBlock Margin="5" Grid.Row="8" Grid.Column="6" Text="{loc:Tr 'GPU FPS/10W'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="8" Grid.Column="6" Text="{loc:Tr ReportView_GPUFPS10W2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="8" Grid.Column="7" IsChecked="{Binding ShowGpuFpsPerWatt}"/>
-                            <!--<TextBlock Margin="5" Grid.Row="7" Grid.Column="6" Text="{loc:Tr 'App latency (ms)'}" VerticalAlignment="Center"/>
+                            <!--<TextBlock Margin="5" Grid.Row="7" Grid.Column="6" Text="{loc:Tr ReportView_AppLatencyMs2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="7" Grid.Column="7" IsChecked="{Binding ShowAppLatency}"/>-->
-                            <TextBlock Margin="5" Grid.Row="9" Grid.Column="6" Text="{loc:Tr 'GPU-Busy Time Avg.(ms)'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="9" Grid.Column="6" Text="{loc:Tr ReportView_GPUBusyTimeAvgMs}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="9" Grid.Column="7" IsChecked="{Binding ShowGpuActiveTimeAverage}"/>
-                            <TextBlock Margin="5" Grid.Row="10" Grid.Column="6" Text="{loc:Tr 'GPU-Busy time dev.(%)'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="10" Grid.Column="6" Text="{loc:Tr ReportView_GPUBusyTimeDev2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="10" Grid.Column="7" IsChecked="{Binding ShowGpuActiveTimeDeviation}"/>
-                            <TextBlock Margin="5" Grid.Row="0" Grid.Column="9" Text="{loc:Tr 'CPU max thread (%)'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="0" Grid.Column="9" Text="{loc:Tr ReportView_CPUMaxThread2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="0" Grid.Column="10" IsChecked="{Binding ShowCpuMaxUsage}"/>
-                            <TextBlock Margin="5" Grid.Row="1" Grid.Column="9" Text="{loc:Tr 'CPU power (W)'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="1" Grid.Column="9" Text="{loc:Tr ReportView_CPUPowerW2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="1" Grid.Column="10" IsChecked="{Binding ShowCpuPower}"/>
-                            <TextBlock Margin="5" Grid.Row="2" Grid.Column="9" Text="{loc:Tr 'CPU clock (MHz)'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="2" Grid.Column="9" Text="{loc:Tr ReportView_CPUClockMHz2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="2" Grid.Column="10" IsChecked="{Binding ShowCpuMaxClock}"/>
-                            <TextBlock Margin="5" Grid.Row="3" Grid.Column="9" Text="{loc:Tr 'CPU temp (°C)'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="3" Grid.Column="9" Text="{loc:Tr ReportView_CPUTempC2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="3" Grid.Column="10" IsChecked="{Binding ShowCpuTemp}"/>
-                            <TextBlock Margin="5" Grid.Row="4" Grid.Column="9" Text="{loc:Tr 'GPU usage (%)'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="4" Grid.Column="9" Text="{loc:Tr ReportView_GPUUsage2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="4" Grid.Column="10" IsChecked="{Binding ShowGpuUsage}"/>
-                            <TextBlock Margin="5" Grid.Row="5" Grid.Column="9" Text="{loc:Tr 'GPU power (W)'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="5" Grid.Column="9" Text="{loc:Tr ReportView_GPUPowerW2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="5" Grid.Column="10" IsChecked="{Binding ShowGpuPower}"/>
-                            <TextBlock Margin="5" Grid.Row="6" Grid.Column="9" Text="{loc:Tr 'GPU TBP Sim (W)'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="6" Grid.Column="9" Text="{loc:Tr ReportView_GPUTBPSimW2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="6" Grid.Column="10" IsChecked="{Binding ShowGpuTBPSim}"/>
-                            <TextBlock Margin="5" Grid.Row="7" Grid.Column="9" Text="{loc:Tr 'GPU clock (MHz)'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="7" Grid.Column="9" Text="{loc:Tr ReportView_GPUClockMHz2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="7" Grid.Column="10" IsChecked="{Binding ShowGpuClock}"/>
-                            <TextBlock Margin="5" Grid.Row="8" Grid.Column="9" Text="{loc:Tr 'GPU temp (°C)'}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="8" Grid.Column="9" Text="{loc:Tr ReportView_GPUTempC2}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="8" Grid.Column="10" IsChecked="{Binding ShowGpuTemp}"/>
                         </Grid>
                     </materialDesign:Card>
@@ -419,7 +419,7 @@
 				HorizontalAlignment="Center"
 				VerticalAlignment="Center"
 				Width="35" Height="35"
-				ToolTip="{loc:Tr 'Remove all report entries'}"
+				ToolTip="{loc:Tr ReportView_RemoveAllReportEntries}"
                 Foreground="White"
                 BorderBrush="Transparent"
 				Command="{Binding RemoveAllReportEntriesCommand}"

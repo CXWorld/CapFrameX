@@ -8,7 +8,7 @@ namespace CapFrameX.PMD.Powenetics
 {
     public class PoweneticsMetricsManager : BindableBase
     {
-        static string ZERO_WATT => "0.0 " + CxLang.T("W");
+        static string ZERO_WATT => "0.0 " + CxLang.T("PoweneticsMetricsManager_W");
 
         private string _allPowerCur = ZERO_WATT;
         private string _allGpuPowerCur = ZERO_WATT;
@@ -266,12 +266,12 @@ namespace CapFrameX.PMD.Powenetics
             lock (_resetHistoryLock)
             {
                 UpdateHistory(pmdMetricSet, _allGpuPowerAvgHistory, historyLength);
-                AllGpuPowerAvg = $"{_allGpuPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
-                AllGpuPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
+                AllGpuPowerAvg = $"{_allGpuPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("PoweneticsMetricsManager_W2")}";
+                AllGpuPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("PoweneticsMetricsManager_W3")}";
                 if (pmdMetricSet.Max > _allGpuPowerMaxValue)
                 {
                     _allGpuPowerMaxValue = pmdMetricSet.Max;
-                    AllGpuPowerMax = $"{_allGpuPowerMaxValue.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
+                    AllGpuPowerMax = $"{_allGpuPowerMaxValue.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("PoweneticsMetricsManager_W4")}";
                 }
             }
 
@@ -280,12 +280,12 @@ namespace CapFrameX.PMD.Powenetics
             lock (_resetHistoryLock)
             {
                 UpdateHistory(pmdMetricSet, _allPciExAvgHistory, historyLength);
-                AllPciExAvg = $"{_allPciExAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
-                AllPciExCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
+                AllPciExAvg = $"{_allPciExAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("PoweneticsMetricsManager_W5")}";
+                AllPciExCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("PoweneticsMetricsManager_W6")}";
                 if (pmdMetricSet.Max > _allPciExMaxValue)
                 {
                     _allPciExMaxValue = pmdMetricSet.Max;
-                    AllPciExMax = $"{_allPciExMaxValue.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
+                    AllPciExMax = $"{_allPciExMaxValue.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("PoweneticsMetricsManager_W7")}";
                 }
             }
 
@@ -294,12 +294,12 @@ namespace CapFrameX.PMD.Powenetics
             lock (_resetHistoryLock)
             {
                 UpdateHistory(pmdMetricSet, _pciExSlotAvgHistory, historyLength);
-                PciExSlotAvg = $"{_pciExSlotAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
-                PciExSlotCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
+                PciExSlotAvg = $"{_pciExSlotAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("PoweneticsMetricsManager_W8")}";
+                PciExSlotCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("PoweneticsMetricsManager_W9")}";
                 if (pmdMetricSet.Max > _pciExSlotMaxValue)
                 {
                     _pciExSlotMaxValue = pmdMetricSet.Max;
-                    PciExSlotMax = $"{_pciExSlotMaxValue.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
+                    PciExSlotMax = $"{_pciExSlotMaxValue.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("PoweneticsMetricsManager_W10")}";
                 }
             }
 
@@ -308,12 +308,12 @@ namespace CapFrameX.PMD.Powenetics
             lock (_resetHistoryLock)
             {
                 UpdateHistory(pmdMetricSet, _allCpuPowerAvgHistory, historyLength);
-                AllCpuPowerAvg = $"{_allCpuPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
-                AllCpuPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
+                AllCpuPowerAvg = $"{_allCpuPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("PoweneticsMetricsManager_W11")}";
+                AllCpuPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("PoweneticsMetricsManager_W12")}";
                 if (pmdMetricSet.Max > _allCpuPowerMaxValue)
                 {
                     _allCpuPowerMaxValue = pmdMetricSet.Max;
-                    AllCpuPowerMax = $"{_allCpuPowerMaxValue.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
+                    AllCpuPowerMax = $"{_allCpuPowerMaxValue.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("PoweneticsMetricsManager_W13")}";
                 }
             }
 
@@ -322,12 +322,12 @@ namespace CapFrameX.PMD.Powenetics
             lock (_resetHistoryLock)
             {
                 UpdateHistory(pmdMetricSet, _allAtxPowerAvgHistory, historyLength);
-                AllAtxPowerAvg = $"{_allAtxPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
-                AllAtxPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
+                AllAtxPowerAvg = $"{_allAtxPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("PoweneticsMetricsManager_W14")}";
+                AllAtxPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("PoweneticsMetricsManager_W15")}";
                 if (pmdMetricSet.Max > _allAtxPowerMaxValue)
                 {
                     _allAtxPowerMaxValue = pmdMetricSet.Max;
-                    AllAtxPowerMax = $"{_allAtxPowerMaxValue.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
+                    AllAtxPowerMax = $"{_allAtxPowerMaxValue.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("PoweneticsMetricsManager_W16")}";
                 }
             }
 
@@ -336,12 +336,12 @@ namespace CapFrameX.PMD.Powenetics
             lock (_resetHistoryLock)
             {
                 UpdateHistory(pmdMetricSet, _allPowerAvgHistory, historyLength);
-                AllPowerAvg = $"{_allPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
-                AllPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
+                AllPowerAvg = $"{_allPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("PoweneticsMetricsManager_W17")}";
+                AllPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("PoweneticsMetricsManager_W18")}";
                 if (pmdMetricSet.Max > _allPowerMaxValue)
                 {
                     _allPowerMaxValue = pmdMetricSet.Max;
-                    AllPowerMax = $"{_allPowerMaxValue.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("W")}";
+                    AllPowerMax = $"{_allPowerMaxValue.ToString("F1", CultureInfo.InvariantCulture)} {CxLang.T("PoweneticsMetricsManager_W19")}";
                 }
             }
         }

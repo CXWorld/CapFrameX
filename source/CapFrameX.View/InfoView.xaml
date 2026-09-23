@@ -118,7 +118,7 @@
                                              VerticalAlignment="Center"
                                              Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"/>
                     <StackPanel Margin="15 0 0 0" VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource CardCaption}" Text="{loc:Tr 'OPERATING SYSTEM'}"/>
+                        <TextBlock Style="{StaticResource CardCaption}" Text="{loc:Tr InfoView_OPERATINGSYSTEM}"/>
                         <TextBlock Style="{StaticResource HardwareName}" FontSize="14" Margin="0 2 0 0" Text="{Binding OsVersion}"/>
                     </StackPanel>
                 </StackPanel>
@@ -153,7 +153,7 @@
                                 </Border>
                             </Grid>
                             <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                                <TextBlock Style="{StaticResource CardCaption}" Text="{loc:Tr 'PROCESSOR'}"/>
+                                <TextBlock Style="{StaticResource CardCaption}" Text="{loc:Tr InfoView_PROCESSOR}"/>
                                 <TextBlock Style="{StaticResource HardwareName}" Margin="0 2 0 0"
                                            Text="{Binding CpuName}" ToolTip="{Binding CpuName}"/>
                                 <TextBlock Style="{StaticResource HardwareDetail}" Margin="0 2 0 0" Text="{Binding CpuDetails}"/>
@@ -162,7 +162,7 @@
 
                         <StackPanel Grid.Row="2">
                             <Grid>
-                                <TextBlock Style="{StaticResource MetricLabel}" FontSize="11" VerticalAlignment="Bottom" Text="{loc:Tr 'Load'}"/>
+                                <TextBlock Style="{StaticResource MetricLabel}" FontSize="11" VerticalAlignment="Bottom" Text="{loc:Tr InfoView_Load}"/>
                                 <TextBlock Style="{StaticResource LoadValue}" HorizontalAlignment="Right" Text="{Binding CpuLoadText}"/>
                             </Grid>
                             <ProgressBar Style="{StaticResource LoadBar}" Value="{Binding CpuLoad, Mode=OneWay}"/>
@@ -173,7 +173,7 @@
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Style="{StaticResource MetricIcon}" Kind="Flash"/>
-                                        <TextBlock Style="{StaticResource MetricLabel}" Text="{loc:Tr 'Power'}"/>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="{loc:Tr InfoView_Power}"/>
                                     </StackPanel>
                                     <TextBlock Style="{StaticResource MetricValue}" Text="{Binding CpuPowerText}"/>
                                 </StackPanel>
@@ -182,7 +182,7 @@
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Style="{StaticResource MetricIcon}" Kind="Thermometer"/>
-                                        <TextBlock Style="{StaticResource MetricLabel}" Text="{loc:Tr 'Temperature'}"/>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="{loc:Tr InfoView_Temperature}"/>
                                     </StackPanel>
                                     <TextBlock Style="{StaticResource MetricValue}" Text="{Binding CpuTempText}"/>
                                 </StackPanel>
@@ -191,7 +191,7 @@
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Style="{StaticResource MetricIcon}" Kind="Speedometer"/>
-                                        <TextBlock Style="{StaticResource MetricLabel}" Text="{loc:Tr 'Clock'}"/>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="{loc:Tr InfoView_Clock}"/>
                                     </StackPanel>
                                     <TextBlock Style="{StaticResource MetricValue}" Text="{Binding CpuClockText}"/>
                                 </StackPanel>
@@ -227,7 +227,7 @@
                                 </Border>
                             </Grid>
                             <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                                <TextBlock Style="{StaticResource CardCaption}" Text="{loc:Tr 'GRAPHICS CARD'}"/>
+                                <TextBlock Style="{StaticResource CardCaption}" Text="{loc:Tr InfoView_GRAPHICSCARD}"/>
                                 <TextBlock Style="{StaticResource HardwareName}" Margin="0 2 0 0"
                                            Text="{Binding GpuName}" ToolTip="{Binding GpuName}"/>
                                 <TextBlock Style="{StaticResource HardwareDetail}" Margin="0 2 0 0" Text="{Binding GpuDetails}"/>
@@ -236,7 +236,7 @@
 
                         <StackPanel Grid.Row="2">
                             <Grid>
-                                <TextBlock Style="{StaticResource MetricLabel}" FontSize="11" VerticalAlignment="Bottom" Text="{loc:Tr 'Load'}"/>
+                                <TextBlock Style="{StaticResource MetricLabel}" FontSize="11" VerticalAlignment="Bottom" Text="{loc:Tr InfoView_Load2}"/>
                                 <TextBlock Style="{StaticResource LoadValue}" HorizontalAlignment="Right" Text="{Binding GpuLoadText}"/>
                             </Grid>
                             <ProgressBar Style="{StaticResource LoadBar}" Value="{Binding GpuLoad, Mode=OneWay}"/>
@@ -247,7 +247,7 @@
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Style="{StaticResource MetricIcon}" Kind="Flash"/>
-                                        <TextBlock Style="{StaticResource MetricLabel}" Text="{loc:Tr 'Power'}"/>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="{loc:Tr InfoView_Power2}"/>
                                     </StackPanel>
                                     <TextBlock Style="{StaticResource MetricValue}" Text="{Binding GpuPowerText}"/>
                                 </StackPanel>
@@ -256,7 +256,7 @@
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Style="{StaticResource MetricIcon}" Kind="Thermometer"/>
-                                        <TextBlock Style="{StaticResource MetricLabel}" Text="{loc:Tr 'Temperature'}"/>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="{loc:Tr InfoView_Temperature2}"/>
                                     </StackPanel>
                                     <TextBlock Style="{StaticResource MetricValue}" Text="{Binding GpuTempText}"/>
                                 </StackPanel>
@@ -265,7 +265,7 @@
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Style="{StaticResource MetricIcon}" Kind="Speedometer"/>
-                                        <TextBlock Style="{StaticResource MetricLabel}" Text="{loc:Tr 'Clock'}"/>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="{loc:Tr InfoView_Clock2}"/>
                                     </StackPanel>
                                     <TextBlock Style="{StaticResource MetricValue}" Text="{Binding GpuClockText}"/>
                                 </StackPanel>
@@ -274,7 +274,7 @@
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Style="{StaticResource MetricIcon}" Kind="Memory"/>
-                                        <TextBlock Style="{StaticResource MetricLabel}" Text="{loc:Tr 'VRAM'}"/>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="{loc:Tr InfoView_VRAM}"/>
                                     </StackPanel>
                                     <TextBlock Style="{StaticResource MetricValue}" Text="{Binding GpuVramText}"/>
                                 </StackPanel>
@@ -308,7 +308,7 @@
                                 </Border>
                             </Grid>
                             <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                                <TextBlock Style="{StaticResource CardCaption}" Text="{loc:Tr 'MAINBOARD'}"/>
+                                <TextBlock Style="{StaticResource CardCaption}" Text="{loc:Tr InfoView_MAINBOARD}"/>
                                 <TextBlock Style="{StaticResource HardwareName}" Margin="0 2 0 0"
                                            Text="{Binding MainboardName}" ToolTip="{Binding MainboardName}"/>
                                 <TextBlock Style="{StaticResource HardwareDetail}" Margin="0 2 0 0" Text="{Binding MainboardDetails}"/>
@@ -320,21 +320,21 @@
                                 <DockPanel>
                                     <Ellipse DockPanel.Dock="Right" Width="10" Height="10" VerticalAlignment="Center"
                                              Fill="{Binding ResizableBarStatusColor}"/>
-                                    <TextBlock Style="{StaticResource MetricLabel}" FontSize="12" Text="{loc:Tr 'Resizable BAR'}"/>
+                                    <TextBlock Style="{StaticResource MetricLabel}" FontSize="12" Text="{loc:Tr InfoView_ResizableBAR}"/>
                                 </DockPanel>
                             </Border>
                             <Border Style="{StaticResource StatusRow}">
                                 <DockPanel>
                                     <Ellipse DockPanel.Dock="Right" Width="10" Height="10" VerticalAlignment="Center"
                                              Fill="{Binding HagsStatusColor}"/>
-                                    <TextBlock Style="{StaticResource MetricLabel}" FontSize="12" Text="{loc:Tr 'Hardware-accelerated GPU scheduling'}"/>
+                                    <TextBlock Style="{StaticResource MetricLabel}" FontSize="12" Text="{loc:Tr InfoView_HardwareAcceleratedGPUScheduling}"/>
                                 </DockPanel>
                             </Border>
                             <Border Style="{StaticResource StatusRow}" Margin="0">
                                 <DockPanel>
                                     <Ellipse DockPanel.Dock="Right" Width="10" Height="10" VerticalAlignment="Center"
                                              Fill="{Binding GameModeStatusColor}"/>
-                                    <TextBlock Style="{StaticResource MetricLabel}" FontSize="12" Text="{loc:Tr 'Windows Game Mode'}"/>
+                                    <TextBlock Style="{StaticResource MetricLabel}" FontSize="12" Text="{loc:Tr InfoView_WindowsGameMode}"/>
                                 </DockPanel>
                             </Border>
                         </StackPanel>
@@ -368,7 +368,7 @@
                                 </Border>
                             </Grid>
                             <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                                <TextBlock Style="{StaticResource CardCaption}" Text="{loc:Tr 'MEMORY'}"/>
+                                <TextBlock Style="{StaticResource CardCaption}" Text="{loc:Tr InfoView_MEMORY}"/>
                                 <TextBlock Style="{StaticResource HardwareName}" Margin="0 2 0 0"
                                            Text="{Binding RamName}" ToolTip="{Binding RamName}"/>
                                 <TextBlock Style="{StaticResource HardwareDetail}" Margin="0 2 0 0" Text="{Binding RamDetails}"/>
@@ -377,7 +377,7 @@
 
                         <StackPanel Grid.Row="2">
                             <Grid>
-                                <TextBlock Style="{StaticResource MetricLabel}" FontSize="11" VerticalAlignment="Bottom" Text="{loc:Tr 'Usage'}"/>
+                                <TextBlock Style="{StaticResource MetricLabel}" FontSize="11" VerticalAlignment="Bottom" Text="{loc:Tr InfoView_Usage}"/>
                                 <TextBlock Style="{StaticResource LoadValue}" HorizontalAlignment="Right" Text="{Binding RamLoadText}"/>
                             </Grid>
                             <ProgressBar Style="{StaticResource LoadBar}" Value="{Binding RamLoad, Mode=OneWay}"/>
@@ -388,7 +388,7 @@
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Style="{StaticResource MetricIcon}" Kind="TrayArrowDown"/>
-                                        <TextBlock Style="{StaticResource MetricLabel}" Text="{loc:Tr 'In use'}"/>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="{loc:Tr InfoView_InUse}"/>
                                     </StackPanel>
                                     <TextBlock Style="{StaticResource MetricValue}" Text="{Binding RamUsedText}"/>
                                 </StackPanel>
@@ -397,7 +397,7 @@
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Style="{StaticResource MetricIcon}" Kind="PackageVariantClosed"/>
-                                        <TextBlock Style="{StaticResource MetricLabel}" Text="{loc:Tr 'Available'}"/>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="{loc:Tr InfoView_Available}"/>
                                     </StackPanel>
                                     <TextBlock Style="{StaticResource MetricValue}" Text="{Binding RamAvailableText}"/>
                                 </StackPanel>

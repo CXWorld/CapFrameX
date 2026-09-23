@@ -1,4 +1,4 @@
-﻿using CapFrameX.Capture.Contracts;
+using CapFrameX.Capture.Contracts;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Localization;
@@ -303,7 +303,7 @@ namespace CapFrameX.ViewModel
         }
 
         public string SearchBarText => string.Format(
-            CxLang.T("Search in \"{0}\" ({1} items)"),
+            CxLang.T("ControlViewModel_SearchIn01Items"),
             new DirectoryInfo(_appConfiguration.ObservedDirectory).Name,
             RecordInfoList.Count);
 
