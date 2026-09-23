@@ -1,0 +1,21 @@
+[Unit]
+Description=CapFrameX Game Detection Daemon
+Documentation=https://github.com/DevTechProfile/CapFrameX
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/capframex-daemon
+Restart=on-failure
+RestartSec=5
+
+# Security hardening
+NoNewPrivileges=false
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true
+ReadWritePaths=%h/.local/share/capframex %h/.config/capframex
+RuntimeDirectory=capframex
+
+[Install]
+WantedBy=default.target

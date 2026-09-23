@@ -1,0 +1,47 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "CapFrameX (Debug)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/app/CapFrameX.App/bin/Debug/net8.0/CapFrameX.App.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/app/CapFrameX.App",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "env": {
+                "DOTNET_ENVIRONMENT": "Development"
+            }
+        },
+        {
+            "name": "CapFrameX (Release)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-release",
+            "program": "${workspaceFolder}/src/app/CapFrameX.App/bin/Release/net8.0/CapFrameX.App.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/app/CapFrameX.App",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": "Attach to Process",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:pickProcess}"
+        },
+        {
+            "name": "FrameReceptionTest (Debug)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-test",
+            "program": "${workspaceFolder}/src/app/FrameReceptionTest/bin/Debug/net8.0/FrameReceptionTest.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/app/FrameReceptionTest",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        }
+    ]
+}
