@@ -36,6 +36,14 @@ npm start
 If you are a reviewer or a youtuber using CapFrameX to get your data, it would be nice to mention us and link to our software.
 If you want to use images of the CapFrameX analysis, you could use the built in screenshot function so that our logo and name gets added to the images.
 
+# Sponsorship
+
+<a href="https://hone.gg">
+  <img src="images/Hone_Logo_Banner.svg" alt="Hone" width="300">
+</a>
+
+CapFrameX is sponsored by [Hone](https://hone.gg). We thank Hone for supporting the project and its continued development.
+
 # Release
 
 Download **[CapFrameX v1.9.0](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.0)**:
