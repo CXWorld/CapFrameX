@@ -138,6 +138,17 @@ toggles `IsOverlayActive`, which hides a visible overlay at any time but cannot 
 gate; the toggled state takes effect once a process is detected. RTSS and the in-game hook are not
 affected.
 
+### Remote API and the overlay hotkey
+
+`/api/osd` and `/ws/osd` serve `IOverlayService.CurrentOverlayEntries`, and they keep working with
+the overlay switched off (ALT+O). `IRemoteOverlayDemand` tracks the API clients: an HTTP read
+holds a 30 s lease, a `/ws/osd` connection holds the demand until it disconnects. While it is
+active, `OverlayService` runs the entry feed in `EntryFeedMode.RemoteOnly`: RTSS is released
+and never fed, and the hook-free bridge and the hook metrics publisher ignore the updates. The
+sensor poller treats it like an active overlay, so the hardware values in the API stay current.
+The renderers follow `IsOverlayActive` alone. "Hide OSD on RTSS" (`HideOverlay`) is unrelated:
+it keeps the overlay *on* and only suppresses the RTSS output.
+
 ### Hook-free stall diagnostics
 
 Chart pauses/hitches in the hook-free overlay have three unrelated possible causes — the render
