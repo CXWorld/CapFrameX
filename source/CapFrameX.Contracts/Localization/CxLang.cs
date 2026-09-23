@@ -23,6 +23,7 @@ namespace CapFrameX.Contracts.Localization
         private string _uiLanguage = "en";
         private string _overlayLanguage = "en";
         private Phrase[] _overlayPhrases = Array.Empty<Phrase>();
+        private IReadOnlyList<LanguageOption> _languages = Array.Empty<LanguageOption>();
 
         public event PropertyChangedEventHandler PropertyChanged;
         public event Action OverlayLanguageChanged;
@@ -35,6 +36,7 @@ namespace CapFrameX.Contracts.Localization
 
         public string UiLanguage => _uiLanguage;
         public string OverlayLanguage => _overlayLanguage;
+        public IReadOnlyList<LanguageOption> Languages => _languages;
 
         public string this[string key] => T(key);
 
@@ -116,11 +118,30 @@ namespace CapFrameX.Contracts.Localization
             _overlayPhrases = catalog.Phrases;
         }
 
-        private static string CapitalizeStart(string text)
+        private string CapitalizeStart(string text)
         {
             if (string.IsNullOrEmpty(text) || !char.IsLower(text[0]))
                 return text;
-            return char.ToUpper(text[0], CultureInfo.GetCultureInfo("ru-RU")) + text.Substring(1);
+            return char.ToUpper(text[0], OverlayCulture) + text.Substring(1);
+        }
+
+        private CultureInfo OverlayCulture
+        {
+            get
+            {
+                if (_catalogs.TryGetValue(_overlayLanguage, out var catalog)
+                    && !string.IsNullOrWhiteSpace(catalog.Culture))
+                {
+                    try
+                    {
+                        return CultureInfo.GetCultureInfo(catalog.Culture);
+                    }
+                    catch (CultureNotFoundException)
+                    {
+                    }
+                }
+                return CultureInfo.InvariantCulture;
+            }
         }
 
         private void Load()
@@ -136,8 +157,13 @@ namespace CapFrameX.Contracts.Localization
                 if (stream == null)
                     continue;
                 using var reader = new StreamReader(stream);
-                _catalogs[language] = Catalog.Parse(reader.ReadToEnd());
+                _catalogs[language] = Catalog.Parse(reader.ReadToEnd(), language);
             }
+            _languages = _catalogs
+                .Select(pair => new LanguageOption(pair.Key, pair.Value.DisplayName))
+                .OrderBy(option => option.Code.Equals("en", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+                .ThenBy(option => option.Name, StringComparer.OrdinalIgnoreCase)
+                .ToList();
         }
 
         private string Normalize(string language)
@@ -162,15 +188,19 @@ namespace CapFrameX.Contracts.Localization
 
         private sealed class Catalog
         {
+            public string DisplayName { get; private set; }
+            public string Culture { get; private set; }
             public Dictionary<string, string> Strings { get; } = new Dictionary<string, string>(StringComparer.Ordinal);
             public Dictionary<string, string> Overlay { get; } = new Dictionary<string, string>(StringComparer.Ordinal);
             public Phrase[] Phrases { get; private set; } = Array.Empty<Phrase>();
 
-            public static Catalog Parse(string json)
+            public static Catalog Parse(string json, string language)
             {
                 var catalog = new Catalog();
                 using var doc = JsonDocument.Parse(json);
                 var root = doc.RootElement;
+                catalog.DisplayName = ReadString(root, "name") ?? language;
+                catalog.Culture = ReadString(root, "culture");
                 ReadMap(root, "strings", catalog.Strings);
                 ReadMap(root, "overlay", catalog.Overlay);
                 if (root.TryGetProperty("phrases", out var phrases) && phrases.ValueKind == JsonValueKind.Array)
@@ -187,6 +217,13 @@ namespace CapFrameX.Contracts.Localization
                     catalog.Phrases = list.ToArray();
                 }
                 return catalog;
+            }
+
+            private static string ReadString(JsonElement root, string name)
+            {
+                if (root.TryGetProperty(name, out var element) && element.ValueKind == JsonValueKind.String)
+                    return element.GetString();
+                return null;
             }
 
             private static void ReadMap(JsonElement root, string name, Dictionary<string, string> target)

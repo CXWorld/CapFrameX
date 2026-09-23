@@ -25,6 +25,12 @@ namespace CapFrameX.Test.Localization
 				.ToList();
 			Assert.IsTrue(catalogs.Any(path => Path.GetFileName(path).Equals("en.json", StringComparison.OrdinalIgnoreCase)),
 				"en.json is missing.");
+			foreach (var path in catalogs)
+			{
+				var catalog = JObject.Parse(File.ReadAllText(path));
+				Assert.IsFalse(string.IsNullOrWhiteSpace((string)catalog["name"]),
+					Path.GetFileName(path) + " is missing the native language name.");
+			}
 
 			var parsed = new Dictionary<string, JObject>(StringComparer.OrdinalIgnoreCase);
 			foreach (var path in catalogs)

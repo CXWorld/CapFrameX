@@ -694,10 +694,10 @@
 															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr ColorbarView_LanguageOfMenusPagesAnd}"/>
 														</StackPanel>
 														<ComboBox Grid.Column="1" Width="150" Margin="16 0 4 0" VerticalAlignment="Center"
-																  SelectedValue="{Binding UiLanguage, Mode=TwoWay}" SelectedValuePath="Tag">
-															<ComboBoxItem Tag="en" Content="English"/>
-															<ComboBoxItem Tag="ru" Content="Русский"/>
-														</ComboBox>
+																  ItemsSource="{Binding Languages}"
+																  DisplayMemberPath="Name"
+																  SelectedValuePath="Code"
+																  SelectedValue="{Binding UiLanguage, Mode=TwoWay}"/>
 													</Grid>
 													<Grid Margin="0 8 0 4">
 														<Grid.ColumnDefinitions>
@@ -709,10 +709,10 @@
 															<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr ColorbarView_LanguageOfOverlayLabelsSuch}"/>
 														</StackPanel>
 														<ComboBox Grid.Column="1" Width="150" Margin="16 0 4 0" VerticalAlignment="Center"
-																  SelectedValue="{Binding OverlayLanguage, Mode=TwoWay}" SelectedValuePath="Tag">
-															<ComboBoxItem Tag="en" Content="English"/>
-															<ComboBoxItem Tag="ru" Content="Русский"/>
-														</ComboBox>
+																  ItemsSource="{Binding Languages}"
+																  DisplayMemberPath="Name"
+																  SelectedValuePath="Code"
+																  SelectedValue="{Binding OverlayLanguage, Mode=TwoWay}"/>
 													</Grid>
 													<TextBlock Style="{StaticResource SettingsDescription}" Text="{loc:Tr ColorbarView_PersonalizeTheInterfaceAndChoose}"/>
 													<Separator Margin="0 12 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>

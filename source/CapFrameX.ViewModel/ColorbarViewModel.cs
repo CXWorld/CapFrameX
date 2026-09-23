@@ -428,6 +428,8 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public IReadOnlyList<LanguageOption> Languages => CxLang.Instance.Languages;
+
         public string UiLanguage
         {
             get => string.IsNullOrWhiteSpace(_appConfiguration.UiLanguage) ? "en" : _appConfiguration.UiLanguage;
@@ -438,6 +440,7 @@ namespace CapFrameX.ViewModel
                 _appConfiguration.UiLanguage = value;
                 CxLang.Instance.SetUiLanguage(value);
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(HelpText));
             }
         }
 
@@ -624,10 +627,9 @@ namespace CapFrameX.ViewModel
         {
             get
             {
-                var russian = CxLang.Instance.UiLanguage == "ru";
-                var path = russian && File.Exists(@"HelpTexts\ChartControls.ru.rtf")
-                    ? @"HelpTexts\ChartControls.ru.rtf"
-                    : @"HelpTexts\ChartControls.rtf";
+                var language = CxLang.Instance.UiLanguage;
+                var localized = Path.Combine("HelpTexts", "ChartControls." + language + ".rtf");
+                var path = File.Exists(localized) ? localized : Path.Combine("HelpTexts", "ChartControls.rtf");
                 return File.ReadAllText(path);
             }
         }
