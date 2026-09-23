@@ -61,7 +61,10 @@ export interface ChartMarker {
     <div #host class="plot"></div>
 
     @if (markerAt(); as at) {
-      <span class="marker" [style.left.px]="at.left" [style.top.px]="at.top">{{ at.label }}</span>
+      <span class="marker-dot" [style.left.px]="at.left" [style.top.px]="at.top"></span>
+      <span class="marker" [class.flip]="at.flip" [style.left.px]="at.left" [style.top.px]="at.top">
+        {{ at.label }}
+      </span>
     }
   `,
   styles: `
@@ -168,9 +171,20 @@ export interface ChartMarker {
       display: none;
     }
 
+    /* A dot on the peak with the label beside it, as the mockup draws it. */
+    .marker-dot {
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      margin: -3.5px 0 0 -3.5px;
+      border-radius: 50%;
+      background: var(--cx-alert);
+      pointer-events: none;
+    }
+
     .marker {
       position: absolute;
-      transform: translate(-50%, -100%);
+      transform: translate(7px, -50%);
       padding: 1px 6px;
       border-radius: var(--cx-radius);
       background: var(--cx-alert-bg);
@@ -178,6 +192,10 @@ export interface ChartMarker {
       font-size: var(--cx-text-11);
       pointer-events: none;
       white-space: nowrap;
+    }
+
+    .marker.flip {
+      transform: translate(calc(-100% - 7px), -50%);
     }
   `,
 })
@@ -195,7 +213,7 @@ export class Chart {
   private readonly theme = inject(Theme);
 
   /** Where to put the marker, once the plot knows where its points are. */
-  protected readonly markerAt = signal<{ left: number; top: number; label: string } | null>(null);
+  protected readonly markerAt = signal<{ left: number; top: number; label: string; flip: boolean } | null>(null);
 
   private plot: uPlot | null = null;
   private observer: ResizeObserver | null = null;
@@ -340,11 +358,35 @@ export class Chart {
     }
 
     const plot = this.plot;
-    const left = plot.valToPos(marker.x, 'x') + plot.bbox.left / devicePixelRatio;
-    const top = plot.valToPos(marker.y, 'y') + plot.bbox.top / devicePixelRatio;
+    const { x, y } = plot.scales;
 
-    this.markerAt.set({ left, top: top - 6, label: marker.label });
+    // After a zoom the point can lie outside the visible range, and a position computed for it
+    // then lands anywhere on the page.
+    if (!within(marker.x, x.min, x.max) || !within(marker.y, y.min, y.max)) {
+      this.markerAt.set(null);
+
+      return;
+    }
+
+    // valToPos answers relative to the plotting area; the overlay sits exactly on it, so its
+    // offset is what places that area inside the component, whatever the device pixel ratio.
+    const offsetX = plot.valToPos(marker.x, 'x');
+    const left = offsetX + plot.over.offsetLeft;
+    const top = plot.valToPos(marker.y, 'y') + plot.over.offsetTop;
+
+    // Beside the peak, like the mockup - flipped to the left where the label would run past the
+    // plot's right edge.
+    const flip = offsetX + MarkerLabelRoom > plot.over.clientWidth;
+
+    this.markerAt.set({ left, top, label: marker.label, flip });
   }
+}
+
+/** Width reserved right of a marker for its label, in CSS pixels; room for "1234 ms spike". */
+const MarkerLabelRoom = 96;
+
+function within(value: number, min: number | undefined, max: number | undefined): boolean {
+  return min !== undefined && max !== undefined && value >= min && value <= max;
 }
 
 function toTyped(values: Float64Array | readonly (number | null)[]): Float64Array | (number | null)[] {

@@ -28,7 +28,9 @@ export function readChartColors(element: Element): ChartColors {
 
   return {
     series,
-    axis: token('--cx-text-faint', '#8e8d87'),
+    // Muted, not faint: axis values are read, not merely noticed, and the faint tier falls below
+    // 4.5:1 on both backgrounds.
+    axis: token('--cx-text-muted', '#5f5e5a'),
     grid: token('--cx-line', 'rgba(0,0,0,0.1)'),
     alert: token('--cx-alert', '#d85a30'),
   };
