@@ -194,6 +194,12 @@ namespace CapFrameX.Contracts.Configuration
 		bool HookOverlayUsePresentMonFrametimes { get; set; }
 
 		/// <summary>
+		/// Explicit opt-in to sending overlay compatibility reports to the update server.
+		/// Local learning is always active and does not depend on this consent.
+		/// </summary>
+		bool ShareOverlayCompatibilityProfiles { get; set; }
+
+		/// <summary>
 		/// Minimum buffer duration in milliseconds for replaying the bursty PresentMon frame
 		/// stream in the hook-free and in-game CapFrameX renderers. Larger values tolerate wider
 		/// delivery gaps at the cost of additional graph latency. Range 500..10000; default 2500.
@@ -269,6 +275,22 @@ namespace CapFrameX.Contracts.Configuration
 		bool AreThresholdValuesAbsolute { get; set; }
 
         bool AnalysisRangeSliderRealTime { get; set; }
+
+        bool AnalysisShowCpuLoad { get; set; }
+
+        bool AnalysisShowCpuMaxThreadLoad { get; set; }
+
+        bool AnalysisShowGpuLoad { get; set; }
+
+        bool AnalysisShowGpuPowerLimit { get; set; }
+
+        bool AnalysisShowPcLatency { get; set; }
+
+        bool AnalysisShowAnimationError { get; set; }
+
+        bool AnalysisShowGpuActiveChart { get; set; }
+
+        bool AnalysisShowCpuActiveChart { get; set; }
 
         bool ComparisonRangeSliderRealTime { get; set; }
 

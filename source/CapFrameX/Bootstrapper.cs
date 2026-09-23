@@ -56,6 +56,9 @@ namespace CapFrameX
         private OSD.Integration.HookMetricsPublisher _hookMetricsPublisher;
         // Streams per-frame PresentMon frametimes/display-times to the hook (PresentMon graph mode).
         private OSD.Integration.HookFrametimePublisher _hookFrametimePublisher;
+        // Learned in-game compatibility profiles (JSON in the configuration folder).
+        private OSD.Integration.HookLearnedProfileStore _hookLearnedProfileStore;
+        private OSD.Integration.HookProfileReportService _hookProfileReports;
 #endif
         private OSD.Integration.HookOverlayStatusService _hookOverlayStatusService;
 
@@ -152,7 +155,9 @@ namespace CapFrameX
                         osdCaptureService.FrameDataStream,
                         PresentMonCaptureService.ProcessID_INDEX,
                         PresentMonCaptureService.PresentRuntime_INDEX,
-                        statusService: _hookOverlayStatusService);
+                        statusService: _hookOverlayStatusService,
+                        learnedStore: _hookLearnedProfileStore,
+                        profileReports: _hookProfileReports);
                 }
 
 #endif
@@ -180,7 +185,8 @@ namespace CapFrameX
                         swapChainColumnIndex:
                             PresentMonCaptureService.SwapChainAddress_INDEX,
                         frameTypeColumnIndex:
-                            PresentMonCaptureService.FrameType_INDEX);
+                            PresentMonCaptureService.FrameType_INDEX,
+                        processCountStream: rtssService.ProcessCountStream);
                 }
 
 #if CFX_INGAME_OVERLAY
@@ -292,6 +298,15 @@ namespace CapFrameX
                     _hookOverlayStatusService = new OSD.Integration.HookOverlayStatusService();
                     Container.RegisterInstance<IHookOverlayStatusService>(
                         _hookOverlayStatusService);
+#if CFX_INGAME_OVERLAY
+                    // Same folder as the other per-user stores; portable mode redirects it.
+                    _hookLearnedProfileStore =
+                        OSD.Integration.HookLearnedProfileStore.Create(pathService.ConfigFolder);
+                    Container.RegisterInstance<IHookLearnedProfileService>(_hookLearnedProfileStore);
+#else
+                    Container.RegisterInstance<IHookLearnedProfileService>(
+                        NullHookLearnedProfileService.Instance);
+#endif
                 }
 
                 using (StartupPerformanceLogger.Measure("Prism and core service registrations"))
@@ -343,6 +358,15 @@ namespace CapFrameX
                 {
                     Container.Register<ISystemInfo, SystemInfo.NetStandard.SystemInfo>(Reuse.Singleton);
                     Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
+#if CFX_INGAME_OVERLAY
+                    var reportVersionProvider = Container.Resolve<IAppVersionProvider>();
+                    _hookProfileReports = new OSD.Integration.HookProfileReportService(
+                        appConfiguration, pathService.ConfigFolder,
+                        ConfigurationManager.AppSettings["UpdateCatalogUri"],
+                        reportVersionProvider.GetAppVersion().ToString(),
+                        reportVersionProvider.GetReleaseChannel().ToString());
+                    Exit += (_, _) => _hookProfileReports.Dispose();
+#endif
 
 					// The update service needs its catalog URI and the staging folder, neither of
 					// which the container can supply, so it is built here like the process list below.

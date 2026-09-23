@@ -127,7 +127,7 @@
 
   <ItemGroup Condition="'$(CfxOsdFromSource)' != 'true'">
     <Reference Include="CapFrameX.OSD.Interop">
-      <HintPath>..\..\external\CapFrameX.OSD-prebuilt\net9.0-windows\CapFrameX.OSD.Interop.dll</HintPath>
+      <HintPath>..\..\external\CapFrameX.OSD-prebuilt\net10.0-windows\CapFrameX.OSD.Interop.dll</HintPath>
     </Reference>
   </ItemGroup>
 
@@ -165,21 +165,37 @@
   </Target>
 
   <!-- Extended.Wpf.Toolkit bundles AvalonDock and its satellite assemblies, but CapFrameX only
-       uses Xceed.Wpf.Toolkit. Keep the unused files out of portable and installer payloads. -->
+       uses Xceed.Wpf.Toolkit. Keep the unused files out of portable and installer payloads.
+       AvalonDock is the only package localized into cs-CZ, hu, ja-JP, pt-BR, ro, sv and zh-Hans, so
+       deleting its satellites leaves those culture folders empty; they are removed as well, or a
+       portable archive that keeps empty directories ships them (issue #442). Folders shared with
+       other satellite assemblies (de, ru, ...) still hold files and stay. -->
   <Target Name="RemoveUnusedAvalonDockBuildArtifacts" AfterTargets="Build" Condition="'$(TargetDir)' != ''">
     <ItemGroup>
       <CfxUnusedAvalonDockArtifact Include="$(TargetDir)Xceed.Wpf.AvalonDock*.dll" />
       <CfxUnusedAvalonDockArtifact Include="$(TargetDir)**\Xceed.Wpf.AvalonDock*.dll" />
+      <CfxAvalonDockArtifactDir Include="@(CfxUnusedAvalonDockArtifact->'%(RootDir)%(Directory)')" />
     </ItemGroup>
     <Delete Files="@(CfxUnusedAvalonDockArtifact)" />
+    <ItemGroup>
+      <CfxEmptyAvalonDockArtifactDir Include="@(CfxAvalonDockArtifactDir)"
+                                     Condition="$([System.IO.Directory]::GetFiles('%(CfxAvalonDockArtifactDir.Identity)').Length) == 0 and $([System.IO.Directory]::GetDirectories('%(CfxAvalonDockArtifactDir.Identity)').Length) == 0" />
+    </ItemGroup>
+    <RemoveDir Directories="@(CfxEmptyAvalonDockArtifactDir)" />
   </Target>
 
   <Target Name="RemoveUnusedAvalonDockPublishArtifacts" AfterTargets="Publish" Condition="'$(PublishDir)' != ''">
     <ItemGroup>
       <CfxUnusedAvalonDockPublishArtifact Include="$(PublishDir)Xceed.Wpf.AvalonDock*.dll" />
       <CfxUnusedAvalonDockPublishArtifact Include="$(PublishDir)**\Xceed.Wpf.AvalonDock*.dll" />
+      <CfxAvalonDockPublishArtifactDir Include="@(CfxUnusedAvalonDockPublishArtifact->'%(RootDir)%(Directory)')" />
     </ItemGroup>
     <Delete Files="@(CfxUnusedAvalonDockPublishArtifact)" />
+    <ItemGroup>
+      <CfxEmptyAvalonDockPublishArtifactDir Include="@(CfxAvalonDockPublishArtifactDir)"
+                                            Condition="$([System.IO.Directory]::GetFiles('%(CfxAvalonDockPublishArtifactDir.Identity)').Length) == 0 and $([System.IO.Directory]::GetDirectories('%(CfxAvalonDockPublishArtifactDir.Identity)').Length) == 0" />
+    </ItemGroup>
+    <RemoveDir Directories="@(CfxEmptyAvalonDockPublishArtifactDir)" />
   </Target>
 
 </Project>

@@ -55,6 +55,22 @@ namespace CapFrameX.Test.Integration
             Assert.IsFalse(reloaded.EnableHookFreeOverlay);
         }
 
+        [TestMethod]
+        public void ProfileSharing_RequiresExplicitConsentAndDoesNotInheritLearningSettings()
+        {
+            var settings = CreateSettings();
+            settings.SetValue("HookOverlayAutoCompatibility", true);
+            var configuration = new CapFrameXConfiguration(
+                NullLogger<CapFrameXConfiguration>.Instance, settings);
+            Assert.IsFalse(configuration.ShareOverlayCompatibilityProfiles);
+            configuration.ShareOverlayCompatibilityProfiles = true;
+            var reloaded = new CapFrameXConfiguration(
+                NullLogger<CapFrameXConfiguration>.Instance, settings);
+            Assert.IsTrue(reloaded.ShareOverlayCompatibilityProfiles);
+            reloaded.ShareOverlayCompatibilityProfiles = false;
+            Assert.IsFalse(configuration.ShareOverlayCompatibilityProfiles);
+        }
+
         private static ISettingsStorage CreateSettings()
         {
             var values = new Dictionary<string, object>();

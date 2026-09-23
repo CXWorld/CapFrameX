@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="PresentMon\PresentMon-2.5.1-x64.exe">
+    <Content Include="PresentMon\PresentMon-2.6.0-x64.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="PresentMon\license.txt">

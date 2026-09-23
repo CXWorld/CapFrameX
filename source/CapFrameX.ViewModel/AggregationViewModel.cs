@@ -466,9 +466,9 @@ namespace CapFrameX.ViewModel
                         {
                             AddAggregationEntry(recordInfo, null);
                         }
-                        else if (dropInfo.Data is IEnumerable<IFileRecordInfo> recordInfos)
+                        else if (dropInfo.Data is System.Collections.IEnumerable droppedItems)
                         {
-                            recordInfos.ForEach(info => AddAggregationEntry(info, null));
+                            droppedItems.OfType<IFileRecordInfo>().ForEach(info => AddAggregationEntry(info, null));
                         }
                     }
                 }

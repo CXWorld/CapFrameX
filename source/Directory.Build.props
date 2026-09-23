@@ -1,8 +1,7 @@
 <Project>
 
-  <!-- Scoped to source/ on purpose: pmcreader-plugin/ and capframex-linux/ are separate,
-       unrelated project trees outside this folder and must not inherit central package
-       management from here. -->
+  <!-- Scoped to source/ on purpose: pmcreader-plugin/ is a separate, unrelated project tree
+       outside this folder and must not inherit central package management from here. -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <!-- In-game rendering and its native payloads are enabled for 1.9.1 development. -->

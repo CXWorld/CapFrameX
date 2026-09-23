@@ -75,6 +75,9 @@ namespace CapFrameX.ViewModel
 					// Needs the user to act (restart the game), so it must not read as a
 					// transient "Waiting" orange, but it is not a malfunction either.
 					case EHookOverlayStatus.Blocked: return "Goldenrod";
+					// Same as Blocked: the next launch applies the next stage, nothing is broken.
+					case EHookOverlayStatus.RestartPending: return "Goldenrod";
+					case EHookOverlayStatus.Probing: return "Orange";
 					case EHookOverlayStatus.Error: return "OrangeRed";
 					case EHookOverlayStatus.Disabled:
 					case EHookOverlayStatus.Hidden: return "Gray";

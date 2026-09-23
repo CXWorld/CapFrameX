@@ -353,6 +353,54 @@ namespace CapFrameX.Configuration
 
 
         // Analysis Settings
+        public bool AnalysisShowCpuLoad
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool AnalysisShowCpuMaxThreadLoad
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool AnalysisShowGpuLoad
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool AnalysisShowGpuPowerLimit
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool AnalysisShowPcLatency
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool AnalysisShowAnimationError
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool AnalysisShowGpuActiveChart
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool AnalysisShowCpuActiveChart
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
         public double StutteringFactor
         {
             get => Get<double>(2.5);
@@ -752,6 +800,12 @@ namespace CapFrameX.Configuration
         }
 
         public bool HookOverlayUsePresentMonFrametimes
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool ShareOverlayCompatibilityProfiles
         {
             get => Get<bool>(false);
             set => Set(value);

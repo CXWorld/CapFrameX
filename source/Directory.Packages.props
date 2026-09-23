@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <PackageVersion Include="AutoMapper" Version="16.2.0" />
-    <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
     <PackageVersion Include="ConsoleAppLauncher" Version="1.0.6354.408" />
     <PackageVersion Include="DryIoc.dll" Version="5.4.3" />
     <PackageVersion Include="DynamicData" Version="6.14.8" />
@@ -28,11 +27,11 @@
     <PackageVersion Include="MathNet.Numerics" Version="5.0.0" />
     <PackageVersion Include="MediatR" Version="8.0.1" />
     <PackageVersion Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.18" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.11" />
     <PackageVersion Include="Microsoft.AspNetCore.Http" Version="2.3.12" />
     <PackageVersion Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.12" />
     <PackageVersion Include="Microsoft.AspNetCore.Http.Features" Version="3.1.2" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.2" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.11" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.5" />
@@ -70,7 +69,7 @@
     <PackageVersion Include="Serilog.Sinks.File" Version="4.1.0" />
     <PackageVersion Include="Squidex.ClientLibrary" Version="4.2.0" />
     <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="10.0.1" />
-    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.17.0" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.19.2" />
     <PackageVersion Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
     <PackageVersion Include="System.IO.Ports" Version="10.0.1" />
     <PackageVersion Include="System.Management" Version="10.0.11" />

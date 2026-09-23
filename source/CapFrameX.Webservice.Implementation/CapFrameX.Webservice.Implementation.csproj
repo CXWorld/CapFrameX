@@ -1,11 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Platforms>AnyCPU;x64;x86</Platforms>
-    <!-- See CapFrameX.Webservice.Host.csproj: packages warn about the unsupported netcoreapp3.1
-         target through codeless buildTransitive notices that NoWarn cannot reach. -->
-    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,10 +12,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Squidex.ClientLibrary" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
-    <PackageReference Include="System.Net.Http" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
-    <PackageReference Include="System.Text.Json" />
-    <PackageReference Include="System.Text.RegularExpressions" />
   </ItemGroup>
 
   <ItemGroup>

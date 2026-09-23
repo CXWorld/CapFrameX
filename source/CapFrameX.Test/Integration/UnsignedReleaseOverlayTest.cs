@@ -73,6 +73,11 @@ namespace CapFrameX.Test.Integration
             var assembly = typeof(OsdOverlayBridge).Assembly;
             Assert.IsNotNull(assembly.GetType("CapFrameX.OSD.Integration.OsdOverlayBridge"));
             Assert.IsNull(assembly.GetType("CapFrameX.OSD.Integration.HookInjector"));
+            Assert.IsNull(assembly.GetType("CapFrameX.OSD.Integration.HookLearnedProfileStore"));
+            Assert.IsNull(assembly.GetType("CapFrameX.OSD.Integration.HookCompatibilityProbeSession"));
+            Assert.IsNull(assembly.GetType("CapFrameX.OSD.Integration.HookCompatibilityStagePlanner"));
+            Assert.IsNull(assembly.GetType("CapFrameX.OSD.Integration.HookTargetEvidenceProbe"));
+            Assert.IsNull(assembly.GetType("CapFrameX.OSD.Integration.HookModuleScanner"));
             Assert.IsNull(assembly.GetType("CapFrameX.OSD.Integration.HookOverlayManager"));
             Assert.IsNull(assembly.GetType("CapFrameX.OSD.Integration.HookMetricsPublisher"));
             Assert.IsFalse(assembly.GetManifestResourceNames().Any(name =>

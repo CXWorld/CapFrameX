@@ -46,7 +46,12 @@ internal sealed class AmdGpu : GenericGpu
     private readonly Sensor _memoryUsed;
     private readonly Sensor _sharedMemory;
 
-    public AmdGpu(uint adapterIndex, ADLX.AdlxDeviceInfo deviceInfo, ISettings settings, ISensorConfig sensorConfig = null)
+    // System-wide AMD SmartShift; only on the adapter chosen by AmdGpuGroup, null elsewhere
+    private readonly Sensor _smartShift;
+    private bool _smartShiftUnsupported;
+
+    public AmdGpu(uint adapterIndex, ADLX.AdlxDeviceInfo deviceInfo, ISettings settings, ISensorConfig sensorConfig = null,
+        bool reportsSystemMetrics = false)
         : base(deviceInfo.GpuName?.Trim() ?? "AMD GPU",
                new Identifier("gpu-amd", adapterIndex.ToString(CultureInfo.InvariantCulture)),
                settings,
@@ -107,6 +112,13 @@ internal sealed class AmdGpu : GenericGpu
         { IsPresentationDefault = true, PresentationSortKey = $"{index}_6_0" };
         _sharedMemory = new Sensor("GPU Memory Shared", 3, SensorType.Data, this, settings)
         { PresentationSortKey = $"{index}_6_1" };
+
+        // SmartShift: -100 (power shifted to the CPU) .. +100 (shifted to the GPU)
+        if (reportsSystemMetrics)
+        {
+            _smartShift = new Sensor("GPU SmartShift", 0, SensorType.Factor, this, settings)
+            { PresentationSortKey = $"{index}_10_0" };
+        }
 
         if (TryResolveWddmDevice(deviceInfo, out string deviceId, out D3DDisplayDevice.D3DDeviceInfo wddmDeviceInfo))
         {
@@ -215,6 +227,9 @@ internal sealed class AmdGpu : GenericGpu
         UpdateProcessMemorySensors();
         TryUpdateWddmMemorySensors(false, out _);
 
+        // System metrics have their own ADLX query and do not depend on this adapter's telemetry.
+        UpdateSmartShift();
+
         // ADLX is initialized lazily so merely detecting an unselected AMD iGPU does not enter
         // its driver telemetry path. A failed support query disables ADLX for this adapter while
         // the vendor-neutral WDDM sensors above remain available.
@@ -257,6 +272,30 @@ internal sealed class AmdGpu : GenericGpu
             // Shared memory from ADLX (in MB, convert to GB)
             _sharedMemory.Value = telemetry.GpuSharedMemorySupported ? (float)(telemetry.GpuSharedMemoryValue / 1024.0) : null;
         }
+    }
+
+    private void UpdateSmartShift()
+    {
+        if (_smartShift == null || _smartShiftUnsupported)
+            return;
+
+        ADLX.AdlxSystemMetrics systemMetrics = new();
+        if (!ADLX.GetSystemMetrics(1000, ref systemMetrics))
+        {
+            _smartShift.Value = null;
+            return;
+        }
+
+        if (!systemMetrics.SmartShiftSupported)
+        {
+            // A platform capability: stop querying systems without SmartShift.
+            _smartShiftUnsupported = true;
+            _smartShift.Value = null;
+            return;
+        }
+
+        _smartShift.Value = systemMetrics.SmartShiftValue;
+        ActivateSensor(_smartShift);
     }
 
     public override void Close()
