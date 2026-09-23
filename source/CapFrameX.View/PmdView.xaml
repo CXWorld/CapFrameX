@@ -644,7 +644,7 @@
 							</controls:PlotViewCustomZoom.DefaultTrackerTemplate>
 						</controls:PlotViewCustomZoom>
 						<Grid Grid.Row="2" Margin="0 2 0 2" Background="Transparent">
-							<ComboBox Margin="10 0 0 5" HorizontalAlignment="Left" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Values"
+							<ComboBox Margin="10 0 0 5" HorizontalAlignment="Left" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="{loc:Tr PmdView_Values}"
 					                    materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="80" Height="40">
 								<ComboBoxItem IsSelected="True" Content="{loc:Tr PmdView_Frametimes}"/>
 								<ComboBoxItem>FPS</ComboBoxItem>

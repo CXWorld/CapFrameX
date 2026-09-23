@@ -82,7 +82,7 @@
                     <Grid Grid.Row="1" Margin="0 5 0 0" >
                         <StackPanel Margin="20 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left">
                             <TextBlock VerticalAlignment="Center" FontSize="14" Text="{loc:Tr SynchronizationView_InputLagOffsetMs}"/>
-                            <TextBox FontSize="14" Height="25" Margin="5 0 0 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" TextAlignment="Center" Text="{Binding InputLagOffset, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Offset" 
+                            <TextBox FontSize="14" Height="25" Margin="5 0 0 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" TextAlignment="Center" Text="{Binding InputLagOffset, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="{loc:Tr SynchronizationView_Offset}" 
 									 PreviewKeyDown="InputLagOffsetTextBox_PreviewKeyDown" ToolTip="{loc:Tr SynchronizationView_OffsetForDisplayAndMouse}"/>
                         </StackPanel>
                     </Grid>
@@ -182,10 +182,10 @@
 						    Text="{Binding SyncRangePercentage}" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"/>
                             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">(Range:</TextBlock>
                             <TextBox Height="25" Margin="5 0 0 0" TextAlignment="Center" Text="{Binding SyncRangeLower, UpdateSourceTrigger=PropertyChanged}" 
-                                     materialDesign:HintAssist.Hint="Lower" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"/>
+                                     materialDesign:HintAssist.Hint="{loc:Tr SynchronizationView_Lower}" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"/>
                             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">-</TextBlock>
                             <TextBox Height="25" Margin="5 0 0 0" TextAlignment="Center" Text="{Binding SyncRangeUpper, UpdateSourceTrigger=PropertyChanged}" 
-                                     materialDesign:HintAssist.Hint="Upper" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"/>
+                                     materialDesign:HintAssist.Hint="{loc:Tr SynchronizationView_Upper}" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"/>
                             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">Hz)</TextBlock>
                         </StackPanel>
                     </Grid>

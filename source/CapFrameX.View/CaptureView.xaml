@@ -298,7 +298,7 @@
 
 					<TextBox Grid.Row="0" Grid.Column="2" Width="110" wpf:HintAssist.Hint="{loc:Tr CaptureView_CaptureDelayS}" Style="{DynamicResource CxFloatingHintTextBox}"
 					 Margin="30 0 0 0" FontSize="14" Text="{Binding CaptureDelayString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
-                     PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="TextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no delay"
+                     PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="TextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="{loc:Tr CaptureView_NoDelay}"
                      PreviewTextInput="NumberValidationTextBox" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" wpf:HintAssist.HintOpacity=".8"/>
 
 					<ComboBox Grid.Row="0" Grid.Column="3" Width="120" Height="40" materialDesign:HintAssist.Hint="{loc:Tr CaptureView_HotkeySound}" Style="{StaticResource CxComboBox}"                          
@@ -391,7 +391,7 @@
 										Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
 										IsUndoEnabled="False" PreviewKeyDown="ResetHistoryHotkeyTextBox_PreviewKeyDown"
 										ContextMenu="{x:Null}" InputMethod.IsInputMethodEnabled="False"
-										ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt). Press Backspace, Delete or Esc to clear." materialDesign:HintAssist.HintOpacity=".8">
+										ToolTip="{loc:Tr CaptureView_HotkeyPressBackspaceDeleteOrEsc}" materialDesign:HintAssist.HintOpacity=".8">
 										<Binding Path="ResetHistoryHotkey"
 										 ElementName="CaptureViewControl"
 										 Mode="OneWay"
@@ -403,7 +403,7 @@
 									</TextBox>
 									<ComboBox Grid.Row="1" Grid.Column="0" materialDesign:HintAssist.Hint="{loc:Tr CaptureView_SecondMetric}"
 										MaxDropDownHeight="330" ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondMetric}"
-										ToolTip="Second metric shown for history entries on the overlay">
+										ToolTip="{loc:Tr CaptureView_SecondMetricShownForHistory}">
 										<ComboBox.ItemTemplate>
 											<DataTemplate>
 												<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
@@ -412,7 +412,7 @@
 									</ComboBox>
 									<ComboBox Grid.Row="1" Grid.Column="2" materialDesign:HintAssist.Hint="{loc:Tr CaptureView_ThirdMetric}"
 										MaxDropDownHeight="360" ItemsSource="{Binding ThirdMetricItems}" SelectedItem="{Binding SelectedThirdMetric}"
-										ToolTip="Third metric shown for history entries on the overlay">
+										ToolTip="{loc:Tr CaptureView_ThirdMetricShownForHistory}">
 										<ComboBox.ItemTemplate>
 											<DataTemplate>
 												<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>

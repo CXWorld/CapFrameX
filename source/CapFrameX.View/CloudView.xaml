@@ -109,7 +109,7 @@
 						</Grid.ColumnDefinitions>
 						<!--State area: description input, share link or upload progress-->
 						<Grid Grid.Column="0" Margin="0 0 12 0" VerticalAlignment="Center">
-							<TextBox x:Name="UploadDescription" Style="{StaticResource CloudHintTextBox}" wpf:HintAssist.Hint="(Optional) Upload description"
+							<TextBox x:Name="UploadDescription" Style="{StaticResource CloudHintTextBox}" wpf:HintAssist.Hint="{loc:Tr CloudView_OptionalUploadDescription}"
 								Text="{Binding UploadDescription, UpdateSourceTrigger=PropertyChanged}"
 								Visibility="{Binding ShowUploadDescriptionTextBox, Converter={StaticResource TrueToVisibleConverter}}"/>
 							<TextBox Style="{StaticResource CloudHintTextBox}" wpf:HintAssist.Hint="{loc:Tr CloudView_DownloadLinkID}" IsReadOnly="True"
@@ -234,7 +234,7 @@
 						<CheckBox.ToolTip>
 							<ToolTip StaysOpen="True" MaxWidth="275">
 								<TextBlock TextWrapping="Wrap"
-									Text="On startup, your own process list will be compared to our online list and anything that's not on your list will be added.&#10;&#10;This will not affect the ignored/unignored status or the custom game name of any process that's already on your list"/>
+									Text="{loc:Tr CloudView_OnStartupYourOwnProcess}"/>
 							</ToolTip>
 						</CheckBox.ToolTip>
 						<TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow" Text="{loc:Tr CloudView_AutoUpdateList}"

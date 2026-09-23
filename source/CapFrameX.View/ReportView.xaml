@@ -146,12 +146,12 @@
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP1FPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding OnePercentLowAverageFps, Mode=OneWay}"
-                                            Header="1% low average FPS"
+                                            Header="{loc:Tr ReportView_OnePercentLowAverageFps}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP1LowAverageFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding OnePercentLowIntegralFps, Mode=OneWay}"
-                                            Header="1% low integral FPS"
+                                            Header="{loc:Tr ReportView_OnePercentLowIntegralFps}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP1LowIntegralFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
@@ -166,12 +166,12 @@
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP0Dot1FPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding ZeroDotOnePercentLowAverageFps, Mode=OneWay}"
-                                            Header="0.1% low average FPS"
+                                            Header="{loc:Tr ReportView_PointOnePercentLowAverageFps}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP0Dot1LowAverageFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding ZeroDotOnePercentLowIntegralFps, Mode=OneWay}"
-                                            Header="0.1% low integral FPS"
+                                            Header="{loc:Tr ReportView_PointOnePercentLowIntegralFps}"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP0Dot1LowIntegralFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
@@ -350,29 +350,29 @@
                             <ToggleButton Margin="5" Grid.Row="7" Grid.Column="1" IsChecked="{Binding ShowComment}"/>
                             <TextBlock Margin="5" Grid.Row="0" Grid.Column="3" Text="{loc:Tr ReportView_Maximum}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="0" Grid.Column="4" IsChecked="{Binding ShowMaxFPS}"/>
-                            <TextBlock Margin="5" Grid.Row="1" Grid.Column="3" Text="99% percentile" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="1" Grid.Column="3" Text="{loc:Tr ReportView_Percentile99}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="1" Grid.Column="4" IsChecked="{Binding ShowP99FPS}"/>
-                            <TextBlock Margin="5" Grid.Row="2" Grid.Column="3" Text="95% percentile" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="2" Grid.Column="3" Text="{loc:Tr ReportView_Percentile95}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="2" Grid.Column="4" IsChecked="{Binding ShowP95FS}" />
                             <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="{loc:Tr ReportView_Average}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="3" Grid.Column="4" IsChecked="{Binding ShowAverageFPS}"/>
                             <TextBlock Margin="5" Grid.Row="4" Grid.Column="3" Text="{loc:Tr ReportView_Median}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="4" Grid.Column="4" IsChecked="{Binding ShowMedianFPS}"/>
-                            <TextBlock Margin="5" Grid.Row="5" Grid.Column="3" Text="5% percentile" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="5" Grid.Column="3" Text="{loc:Tr ReportView_Percentile5}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="5" Grid.Column="4" IsChecked="{Binding ShowP5FPS}"/>
-                            <TextBlock Margin="5" Grid.Row="6" Grid.Column="3" Text="1% percentile" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="6" Grid.Column="3" Text="{loc:Tr ReportView_Percentile1}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="6" Grid.Column="4" IsChecked="{Binding ShowP1FPS}"/>
-                            <TextBlock Margin="5" Grid.Row="7" Grid.Column="3" Text="0.2% percentile" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="7" Grid.Column="3" Text="{loc:Tr ReportView_Percentile02}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="7" Grid.Column="4" IsChecked="{Binding ShowP0Dot2FPS}"/>
-                            <TextBlock Margin="5" Grid.Row="8" Grid.Column="3" Text="0.1% percentile" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="8" Grid.Column="3" Text="{loc:Tr ReportView_Percentile01}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="8" Grid.Column="4" IsChecked="{Binding ShowP0Dot1FPS}"/>
-                            <TextBlock Margin="5" Grid.Row="9" Grid.Column="3" Text="1% low average" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="9" Grid.Column="3" Text="{loc:Tr ReportView_OnePercentLowAverage}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="9" Grid.Column="4" IsChecked="{Binding ShowP1LowAverageFPS}"/>
-                            <TextBlock Margin="5" Grid.Row="0" Grid.Column="6" Text="0.1% low average" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="0" Grid.Column="6" Text="{loc:Tr ReportView_PointOnePercentLowAverage}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="0" Grid.Column="7" IsChecked="{Binding ShowP0Dot1LowAverageFPS}"/>
-                            <TextBlock Margin="5" Grid.Row="1" Grid.Column="6" Text="1% low integral" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="1" Grid.Column="6" Text="{loc:Tr ReportView_OnePercentLowIntegral}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="1" Grid.Column="7" IsChecked="{Binding ShowP1LowIntegralFPS}"/>
-                            <TextBlock Margin="5" Grid.Row="2" Grid.Column="6" Text="0.1% low integral" VerticalAlignment="Center"/>
+                            <TextBlock Margin="5" Grid.Row="2" Grid.Column="6" Text="{loc:Tr ReportView_PointOnePercentLowIntegral}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="2" Grid.Column="7" IsChecked="{Binding ShowP0Dot1LowIntegralFPS}"/>
                             <TextBlock Margin="5" Grid.Row="3" Grid.Column="6" Text="{loc:Tr ReportView_Minimum}" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="3" Grid.Column="7" IsChecked="{Binding ShowMinFPS}"/>

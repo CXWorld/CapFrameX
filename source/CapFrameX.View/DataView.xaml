@@ -685,15 +685,15 @@
                                 <ToggleButton Margin="5" Grid.Row="9" Grid.Column="1" IsChecked="{Binding UseP0Dot2QuantileStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="0" Grid.Column="3" Text="{loc:Tr DataView_01Percentile}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="0" Grid.Column="5" IsChecked="{Binding UseP0Dot1QuantileStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="1" Grid.Column="3" Text="1% low average" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="1" Grid.Column="3" Text="{loc:Tr DataView_OnePercentLowAverage}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="1" Grid.Column="4" IsChecked="{Binding UseP1LowAverageStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="2" Grid.Column="3" Text="{loc:Tr DataView_GPUBusy1HighAverage}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="2" Grid.Column="4" IsChecked="{Binding UseGpuActiveP1LowAverageStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="0.1% low average" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="{loc:Tr DataView_PointOnePercentLowAverage}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="3" Grid.Column="4" IsChecked="{Binding UseP0Dot1LowAverageStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="3" Text="1% low integral" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="3" Text="{loc:Tr DataView_OnePercentLowIntegral}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="4" Grid.Column="4" IsChecked="{Binding UseP1LowIntegralStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="3" Text="0.1% low integral" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="3" Text="{loc:Tr DataView_PointOnePercentLowIntegral}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="5" Grid.Column="4" IsChecked="{Binding UseP0Dot1LowIntegralStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="6" Grid.Column="3" Text="{loc:Tr DataView_Minimum}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="6" Grid.Column="4" IsChecked="{Binding UseMinStatisticParameter}"/>
@@ -753,13 +753,13 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="{loc:Tr DataView_Minimum2}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding UseMaxStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="0.1% high integral" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="{loc:Tr DataView_PointOnePercentHighIntegral}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding UseP0Dot1LowIntegralStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="1% high integral" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="{loc:Tr DataView_OnePercentHighIntegral}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding UseP1LowIntegralStatisticParameter}" />
-                                <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="0.1% high average" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="{loc:Tr DataView_PointOnePercentHighAverage}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding UseP0Dot1LowAverageStatisticParameter}"/>
-                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="1% high average" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="{loc:Tr DataView_OnePercentHighAverage}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding UseP1LowAverageStatisticParameter}"/>
                                 <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="{loc:Tr DataView_GPUBusy1HighAvg}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding UseGpuActiveP1LowAverageStatisticParameter}"/>

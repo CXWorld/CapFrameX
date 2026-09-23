@@ -490,7 +490,7 @@
                     <TextBox Grid.Row="2" Grid.Column="0" wpf:HintAssist.Hint="{loc:Tr ControlView_RAMDescription}"
                              Text="{Binding CustomRamDescription, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
                     <!--Record metadata (right column)-->
-                    <TextBox Grid.Row="0" Grid.Column="2" wpf:HintAssist.Hint="Game"
+                    <TextBox Grid.Row="0" Grid.Column="2" wpf:HintAssist.Hint="{loc:Tr ControlView_Game}"
                              Text="{Binding CustomGameName, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
                     <TextBox Grid.Row="1" Grid.Column="2" wpf:HintAssist.Hint="{loc:Tr ControlView_Resolution}"
                              Text="{Binding CustomResolution, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
