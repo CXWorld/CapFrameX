@@ -5,11 +5,15 @@ using CapFrameX.Contracts.Localization;
 
 namespace CapFrameX.MVVM.Converter
 {
-    /// <summary>Translates an overlay or sensor label without changing the stored English name.</summary>
-    public class OverlayLabelConverter : IValueConverter
+    public class CatalogPrefixConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-            => CxLang.Instance.TranslateOverlayLabel(value as string ?? value?.ToString() ?? string.Empty);
+        {
+            if (value == null)
+                return string.Empty;
+            var prefix = parameter as string ?? string.Empty;
+            return CxLang.T(prefix + value);
+        }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => Binding.DoNothing;

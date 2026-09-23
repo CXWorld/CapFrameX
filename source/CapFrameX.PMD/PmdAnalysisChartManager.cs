@@ -104,16 +104,16 @@ namespace CapFrameX.PMD
                     axis.Title = CxLang.T(title);
             }
 
-            Set("Y_Axis_CPU_W", "CPU Power [W]");
-            Set("Y_Axis_GPU_W", "GPU Power [W]");
-            Set("Y_Axis_Analysis_CPU_W", "Power [W]");
-            Set("Y_Axis_Analysis_GPU_W", "Power [W]");
-            Set("Y_Axis_Performance", "Frametime [ms]");
-            Set("X_Axis_Time_CPU", "Time [s]");
-            Set("X_Axis_Time_GPU", "Time [s]");
-            Set("X_Axis_Time_CPU_Analysis", "Time [s]");
-            Set("X_Axis_Time_GPU_Analysis", "Time [s]");
-            Set("X_Axis_Performance", "Time [s]");
+            Set("Y_Axis_CPU_W", "PmdChart_CpuPowerW");
+            Set("Y_Axis_GPU_W", "PmdChart_GpuPowerW");
+            Set("Y_Axis_Analysis_CPU_W", "PmdChart_PowerW");
+            Set("Y_Axis_Analysis_GPU_W", "PmdChart_PowerW");
+            Set("Y_Axis_Performance", "PmdChart_FrametimeMs");
+            Set("X_Axis_Time_CPU", "PmdChart_TimeS");
+            Set("X_Axis_Time_GPU", "PmdChart_TimeS");
+            Set("X_Axis_Time_CPU_Analysis", "PmdChart_TimeS");
+            Set("X_Axis_Time_GPU_Analysis", "PmdChart_TimeS");
+            Set("X_Axis_Performance", "PmdChart_TimeS");
 
             Eps12VModel?.InvalidatePlot(false);
             PciExpressModel?.InvalidatePlot(false);

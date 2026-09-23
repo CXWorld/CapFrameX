@@ -56,7 +56,7 @@ namespace CapFrameX.ViewModel
         private Subject<object> _configSubject = new Subject<object>();
         private ResetOverlayConfigDialog _resetOverlayConfigContent;
         private bool _resetOverlayConfigContentIsOpen;
-        private string _hookLearnedProfileText = "No learned compatibility profiles yet.";
+        private string _hookLearnedProfileText = CxLang.T("OverlayViewModel_NoLearnedCompatibilityProfiles");
         private string _filterText = string.Empty;
         private EOverlayEntryType? _selectedEntryTypeFilter;
         private ICollectionView _overlayEntriesView;
@@ -616,7 +616,7 @@ namespace CapFrameX.ViewModel
         public bool IsInGameOverlayAvailable => OverlayAvailability.IsInGameAvailable;
 
         public string InGameOverlayDescription => IsInGameOverlayAvailable
-            ? "Injected into the game for in-swapchain graphs."
+            ? CxLang.T("OverlayViewModel_InjectedIntoTheGameFor")
             : OverlayAvailability.InGameUnavailableMessage;
 
         public bool OverlayModeHookFree
@@ -905,6 +905,14 @@ namespace CapFrameX.ViewModel
                 .ObserveOnDispatcher()
                 .Subscribe(_ => RefreshHookLearnedProfileText());
             RefreshHookLearnedProfileText();
+            CxLang.Instance.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CxLang.UiLanguage))
+                {
+                    RaisePropertyChanged(nameof(InGameOverlayDescription));
+                    RefreshHookLearnedProfileText();
+                }
+            };
 
             SetFormatForGroupNameCommand = new DelegateCommand(
                () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry, Checkboxes));
@@ -978,8 +986,8 @@ namespace CapFrameX.ViewModel
                 if (processName == null)
                 {
                     text = total == 0
-                        ? "No learned compatibility profiles yet."
-                        : $"{total} learned compatibility profile(s); no game selected.";
+                        ? CxLang.T("OverlayViewModel_NoLearnedCompatibilityProfiles")
+                        : string.Format(CxLang.T("OverlayViewModel_LearnedProfilesNoGame"), total);
                 }
                 else
                 {
@@ -987,7 +995,7 @@ namespace CapFrameX.ViewModel
                         _hookLearnedProfiles.GetForProcess(processName);
                     if (entries.Count == 0)
                     {
-                        text = $"No learned compatibility profile for {processName} yet ({total} in total).";
+                        text = string.Format(CxLang.T("OverlayViewModel_NoLearnedProfileForProcess"), processName, total);
                     }
                     else
                     {

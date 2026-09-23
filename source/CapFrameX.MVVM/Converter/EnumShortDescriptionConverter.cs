@@ -16,8 +16,7 @@ namespace CapFrameX.MVVM.Converter
                 if (!(value is Enum myEnum))
                     return string.Empty;
 
-                string description = GetEnumShortDescription(myEnum);
-                return CxLang.T(description);
+                return CxLang.TranslateEnum(myEnum, useShortDescription: true);
             }
             catch { return string.Empty; }
         }

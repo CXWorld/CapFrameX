@@ -23,6 +23,7 @@ using Prism.Events;
 using Prism.Mvvm;
 using Prism.Navigation.Regions;
 using System;
+using System.ComponentModel;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -535,6 +536,18 @@ namespace CapFrameX.ViewModel
                     }
                 }
             });
+
+            CxLang.Instance.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CxLang.UiLanguage))
+                {
+                    RaisePropertyChanged(nameof(CaptureTimeScopeLabel));
+                    RaisePropertyChanged(nameof(CaptureTimeScopeToolTip));
+                    RaisePropertyChanged(nameof(CaptureTimeProcessLabel));
+                    RaisePropertyChanged(nameof(GlobalCaptureTimeDescription));
+                    RaisePropertyChanged(nameof(GameCaptureTimeDescription));
+                }
+            };
 
             _logger.LogDebug("{viewName} Ready", this.GetType().Name);
             CaptureStateInfo = "Service ready..." + Environment.NewLine +

@@ -73,6 +73,30 @@ namespace CapFrameX.Contracts.Localization
             return key;
         }
 
+        public string TranslateOverlayLabel(string label)
+        {
+            if (string.Equals(label, "<APP>", StringComparison.Ordinal))
+            {
+                if (_catalogs.TryGetValue(_overlayLanguage, out var catalog)
+                    && catalog.Overlay.TryGetValue("<APP>", out var translated)
+                    && !string.IsNullOrEmpty(translated))
+                    return translated;
+                return label;
+            }
+            return TranslateOverlay(label);
+        }
+
+        public static string TranslateEnum(Enum value, bool useShortDescription = false)
+        {
+            if (value == null)
+                return string.Empty;
+            var key = value.GetType().Name + "_" + value + (useShortDescription ? "_Short" : "");
+            if (Instance.TryGet(Instance._uiLanguage, key, out var translated)
+                || Instance.TryGet("en", key, out translated))
+                return translated;
+            return value.ToString();
+        }
+
         public string TranslateOverlay(string label)
         {
             if (string.IsNullOrEmpty(label) || _overlayLanguage == "en")
