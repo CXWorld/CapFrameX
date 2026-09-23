@@ -18,10 +18,13 @@ namespace CapFrameX.RTSSIntegration
         private static ILogger<RTSSService> _logger;
 
         private readonly BehaviorSubject<int> _processIdStream;
+        private readonly BehaviorSubject<int> _processCountStream;
         private readonly object _launchGate = new object();
         private string _lastLaunchState;
 
         public ISubject<int> ProcessIdStream => _processIdStream;
+
+        public ISubject<int> ProcessCountStream => _processCountStream;
 
         public Func<int, bool> VulkanPresentationProbe { get; set; }
 
@@ -29,6 +32,7 @@ namespace CapFrameX.RTSSIntegration
         {
             _logger = logger;
             _processIdStream = new BehaviorSubject<int>(default);
+            _processCountStream = new BehaviorSubject<int>(default);
             _isRTSSInstalled = !string.IsNullOrEmpty(GetRTSSFullPath());
         }
 

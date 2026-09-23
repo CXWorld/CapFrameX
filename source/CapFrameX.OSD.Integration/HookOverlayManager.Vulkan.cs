@@ -60,8 +60,9 @@ namespace CapFrameX.OSD.Integration
                 if (publish)
                 {
                     _vulkanSession = new HookVulkanProbeSession(snapshot, learned);
-                    _profileReports?.Begin(pid, name, path, null, snapshot.BuildHash, "Vulkan", "Layer",
-                        HookProfileReportService.Profile(_vulkanSession.Stage, snapshot.Signature));
+                    if (_profileReports?.IsEnabled == true)
+                        _profileReports.Begin(pid, name, path, null, snapshot.BuildHash, "Vulkan", "Layer",
+                            HookProfileReportService.Profile(_vulkanSession.Stage, snapshot.Signature));
                     _vulkanFallbackReason = null;
                     Log.Information("HookOverlay: Vulkan plan for pid {pid} ('{process}'), evidence {signature}, " +
                         "layer {build}, generation {generation}: {stage}", pid, name, snapshot.Signature,
@@ -75,9 +76,10 @@ namespace CapFrameX.OSD.Integration
                 publish |= (action & VulkanProbeAction.Publish) != 0;
                 uint revision = _vulkanChannel.Publish(session.Route, session.Context, true, nowMs, publish);
                 if (publish) session.Published(revision, nowMs);
-                _profileReports?.ObserveVulkan(pid, snapshot, action, nowMs,
-                    _appConfiguration.IsOverlayActive, session.Exhausted,
-                    activity.ResolutionX, activity.ResolutionY);
+                if (_profileReports?.IsEnabled == true)
+                    _profileReports.ObserveVulkan(pid, snapshot, action, nowMs,
+                        _appConfiguration.IsOverlayActive, session.Exhausted,
+                        activity.ResolutionX, activity.ResolutionY);
 
                 if ((action & (VulkanProbeAction.Learn | VulkanProbeAction.Invalidate)) != 0)
                 {

@@ -185,7 +185,8 @@ namespace CapFrameX
                         swapChainColumnIndex:
                             PresentMonCaptureService.SwapChainAddress_INDEX,
                         frameTypeColumnIndex:
-                            PresentMonCaptureService.FrameType_INDEX);
+                            PresentMonCaptureService.FrameType_INDEX,
+                        processCountStream: rtssService.ProcessCountStream);
                 }
 
 #if CFX_INGAME_OVERLAY

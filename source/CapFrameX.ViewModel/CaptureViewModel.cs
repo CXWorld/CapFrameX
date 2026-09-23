@@ -847,6 +847,9 @@ namespace CapFrameX.ViewModel
                 _lastPublishedProcessId = processId;
             }
             _rTSSService.ProcessIdStream.OnNext(processId);
+            // The PID stays 0 while several processes wait for a selection; the hook-free overlay
+            // only shows itself while the list has entries, so it needs the count as well.
+            _rTSSService.ProcessCountStream.OnNext(ProcessesToCapture.Count);
 
             _updateCurrentProcess?.Publish(new ViewMessages.CurrentProcessToCapture(currentProcess, processId));
         }

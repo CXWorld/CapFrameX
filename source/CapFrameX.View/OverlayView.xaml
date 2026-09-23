@@ -1219,7 +1219,7 @@
 													  IsEnabled="{Binding IsInGameOverlayAvailable}"
 													  Style="{StaticResource MaterialDesignCheckBox}"/>
 											<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}" TextWrapping="Wrap"
-													   Text="Send future-session profiles, game/runtime versions and hashes, Windows, GPU/driver and overlay/FG diagnostics to CapFrameX for analysis. Reports use a random ID; no paths, account details or raw logs. Off stops uploads and deletes unsent reports; submitted reports remain."/>
+													   Text="Send future-session profiles, game/runtime versions and hashes, Windows, GPU/driver, render progress, game window state and fallback/FG diagnostics to CapFrameX for analysis. Reports use a random ID; no window titles, paths, account details or raw logs. Off stops uploads and deletes unsent reports; submitted reports remain."/>
 										</StackPanel>
 									</StackPanel>
 

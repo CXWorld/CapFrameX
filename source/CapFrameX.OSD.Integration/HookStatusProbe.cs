@@ -131,6 +131,8 @@ namespace CapFrameX.OSD.Integration
         /// <summary>Which compatibility channel version supplied the flags: 0 none, 1, 2.</summary>
         public int CompatChannelVersion;
         public long LastFlagsAppliedTickMs;
+        // Optional coherent side channel; V1/V2 status blocks remain byte compatible.
+        public HookRenderProgress? Progress;
     }
 
     /// <summary>
@@ -291,6 +293,7 @@ namespace CapFrameX.OSD.Integration
                     snapshot.CompatChannelVersion = Marshal.ReadInt32(view, CompatChannelVersionOffset);
                     snapshot.LastFlagsAppliedTickMs = Marshal.ReadInt64(view, LastFlagsAppliedOffset);
                 }
+                snapshot.Progress = HookRenderProgressProbe.Read(processId);
                 return true;
             }
             catch (Exception ex) when (ex is ArgumentException ||

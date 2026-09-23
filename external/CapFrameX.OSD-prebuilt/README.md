@@ -9,14 +9,107 @@ the OSD is built from source instead and these files are ignored.
 
 ## Build provenance
 
-The current five native DLLs were rebuilt on **2026-09-20** with VS 2026/v145 in
-`RelWithDebInfo` from the source state now committed as private OSD revision
-`4e362b1aac895ea8681752ea1ea028f3559a08ac`. This includes the row-alignment changes
-described below, along with the preceding graph-source corrections and OSD log
-directory changes.
+All five native DLLs were rebuilt on **2026-09-22** with VS 2026/v145 in `RelWithDebInfo`,
+every tree with `--clean-first`, from the source state now committed as private OSD revision
+`c8926eb549c66034ac72e62ff678eecd8c64bc20`: the compact value columns with their minimum
+column gap, refresh-interval numerics, value-smoothing clock and antialiased chart lines
+described in the next section, and in both hooks the render-progress changes described after
+it.
 
 These native payloads are **unsigned development builds**. The existing
-`net10.0-windows` managed bridge retains its Certum signature from the rebuild below.
+`net10.0-windows` managed bridge retains its Certum signature from the rebuild below; its
+only source change since then (`d801775`) is a documentation comment.
+
+### Compact columns, refresh-interval numerics, value smoothing, chart lines (2026-09-22)
+
+**Compact value columns.** A value column reserves only what its own values print. The
+integer places follow the value at scene build and grow, never shrink, when a live value
+needs another place; the grown widths survive scene rebuilds. Each column reserves only its
+own widest unit instead of `MT/s` in every column. The label gap is 12 px (was 18 px) at
+100 % zoom. Value columns stay at least three spaces of the value font apart (about 13 px at
+the default 16 px font, formerly a fixed 8 px): where a column's widest unit meets the next
+column's widest number (`5600 MT/s  2800 MHz`) the gap has to read clearly wider than the one
+space between a number and its unit, and it now follows the value font scale. The test
+renders are 17-27 % narrower than before. This replaces the uniform `MT/s` unit reserve and
+the five-digit minimum of the 2026-09-20 section.
+
+**Refresh-interval numerics.** The hook and the Vulkan layer no longer refresh
+Framerate/Frametime at a fixed 10 Hz (Frametime used to be the newest single frame). Both
+rows, and Displaytime in PresentMon mode, are the means over the interval between two
+CapFrameX publishes and change together with every other metric
+(`hook_poc/src/numeric_frame_means.h`). An interval without samples keeps the previous
+means. The present frame ring holds 1024 samples. The hook-free overlay does the same in
+`OsdOverlayBridge`.
+
+**Value-smoothing clock.** Value smoothing advances by the time since the values were last
+drawn instead of the render-loop tick. The hook-free panel is drawn once per refresh and the
+in-game text layer every ~200 ms, so the values lagged their targets before: in-game with a
+~1.4 s time constant, hook-free at 20 Hz and above by 40-90 % of each change per refresh.
+
+**Antialiased chart lines.** Charts plot at most two points per column as wide as the line
+(2 px x zoom): each column's minimum and maximum in the order they occurred. Columns are fixed
+in stream time, so scrolling only moves the line instead of re-sampling several frames per
+pixel, which flickered; spikes are kept. The D3D11 chart pipeline (hook-free window and the
+in-game DXGI hook) draws one mitered triangle strip per chart (two vertices per point instead
+of six per segment) and the pixel shader derives coverage from the distance to the centre
+line, which antialiases the edges without MSAA. The CPU producer (D3D12 hooks, Vulkan layer)
+keeps Direct2D's antialiased segments with the reduced points. `cfx_osd_chart_perf_bench`
+measured, against the previous renderer on the same GPU: geometry CPU time 3.3-27.4 us ->
+3.2-6.6 us per chart, GPU time per chart draw 0.31-2.19 us -> 0.35-0.49 us (only 60 FPS at
+100 % zoom was not faster: 0.31 -> 0.35 us, a single measurement), CPU raster 282-1561 us ->
+~230 us per chart at 60-500 FPS.
+
+All twelve core CTests passed (`row_alignment`: 764 checks; `chart_geometry` rewritten for the
+strip and the column reduction), as did the CPU raster test, 28/28 hook CTests per
+architecture (including the new `numeric_frame_means`) and 2/2 Vulkan CTests per
+architecture. The staged DLLs match their build outputs by SHA-256 and PE architecture; both
+Vulkan manifests are byte-identical to the build output and unchanged. Not yet verified in a
+game. Restart CapFrameX and the game to load them.
+
+Input SHA-256 at build time:
+
+- `src/core/ChartGeometry.h`: `C38C12478C5F60A8FD0DD40235FDC1029A5D2E683B3FBFA49722D94C7CA07D70`
+- `src/core/ChartLayer.cpp`: `75E0E78D7F512C3C1E4DE297803C0D3B92D8FDC9B0FA4F192A1603BBCD1420E5`
+- `src/core/ScrollChart.cpp`: `BA38EAC089C5CACE117B3E4B806C9861D2C4190DE41EF417A74A061380A1EA6A`
+- `src/core/Widget.cpp`: `397E1473967F627B26DFA5CD7E4B8DA4B2049B144B523DCBC0C732966FF87E77`
+- `src/core/Widget.h`: `E5C67EC72FCC2B2629F7C2B711AA11FFD7E50C1ED81F0ACC27C8D16C970042D3`
+- `src/core/OsdInstance.cpp`: `1EB78FE41AE8BB7AC1B3F0639686D51A66C4416014D646E1C4AC4CF7A4C49B41`
+- `src/core/OsdInstance.h`: `FF04282367D48A9FB6FC9BB262E0897A2DBB9BB7D60EF493E5CCDF9DAF67FC09`
+- `hook_poc/src/frame_ring.cpp`: `7E8ABB90A1E990067D8AD54155F65C8F11BA1C1797E5544E7C515D9A9C9E9B07`
+- `hook_poc/src/numeric_frame_means.h`: `6610D1337B43C1195BD4AF44A4BAEF240E6C1CDEBF75CD3F6E04C0C64892319B`
+- `hook_poc/src/overlay_osd.cpp`: `80ED79A99D4C13D754EE622C41D3F86B0E27D18EC31D731DBED9C24B2A9FE96D`
+- `hook_poc/src/hook_status.cpp`: `328FEE23204B7F982E13FFE7F3F7179E816C59DFD88B6A59E4D409DD9CDDD91A`
+- `vk_layer/src/osd_feed.cpp`: `5FA9F049C98026B7EC53B36F3B3D961D9A197D2CF1B158A21E45EE8D60F8E0F3`
+
+| Native DLL | SHA-256 |
+| --- | --- |
+| Core x64 | `55C312C7F283C22CC56B43115DA9C2227871B17A4D0A11A06A4F68EC7FB03305` |
+| Hook x64 | `637742252FF157B2985FE7362EBAF2DC29C66E40B0C4780FC51AF87B5053D1B0` |
+| Hook x86 | `7FFA74EB1746924F0B00FC07743E4E09165FC35753A991516BC5FBA7757C0425` |
+| Vulkan x64 | `C89E597CD37B396E7CE8228FFABC03EE5195C14AF77AEAFF06E31A5537820403` |
+| Vulkan x86 | `A554CFE91CD32E9467A58F8CCE254B612AE1BE2F278C166AE483AE12527289B0` |
+
+### Render-progress diagnostics (2026-09-22)
+
+The hooks publish a separate, coherent 64-byte progress channel with cumulative
+Present/draw counts and the last successful draw's context. The host uses it to
+verify ongoing rendering and to collect compact opt-in diagnostics. Existing
+native status mappings remain byte compatible. See
+[overlay diagnostics and rollout](../../docs/overlay-profile-diagnostics.md).
+
+Both hooks were built with VS 2026/v145 in `RelWithDebInfo` from an isolated copy
+of `4e362b1aac895ea8681752ea1ea028f3559a08ac` plus the changes to
+`hook_poc/src/hook_status.cpp`, `hook_status.h`, `hook_status_test.cpp` and
+`overlay.cpp`. The `hook_status`, `renderer_arbiter` and `swapchain_lifetime` CTests
+passed on both architectures. PE architecture and staged SHA-256 hashes were checked.
+
+| Native DLL | SHA-256 |
+| --- | --- |
+| Hook x64 | `5AA5E4F03D65BF1E14A1201C60CE95D9CD2806DAC834775530596F0A8642F068` |
+| Hook x86 | `429AC7BEB0F505BF7781CF39FD7B56728A55EE1E5D031F48723FFA2B6C2134D7` |
+
+These two hooks are superseded by the combined rebuild above, which contains the same
+render-progress changes.
 
 ### Fixed overlay value columns (2026-09-20)
 

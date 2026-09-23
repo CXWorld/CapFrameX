@@ -119,6 +119,7 @@ namespace CapFrameX.Test.Integration
             };
             HookProbeTimings fresh = Timings(now: 5000, successSince: 5000 - HookCompatibilityVerdictClassifier.ProbeSuccessConfirmMs + 1);
             HookProbeTimings confirmed = Timings(now: 5000, successSince: 5000 - HookCompatibilityVerdictClassifier.ProbeSuccessConfirmMs);
+            confirmed.RenderProgressConfirmed = true;
 
             Assert.AreEqual(HookCompatibilityVerdict.Pending,
                 HookCompatibilityVerdictClassifier.Classify(Vendor, true, active, EHookOverlayStatus.Active, in fresh));

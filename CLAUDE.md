@@ -127,6 +127,17 @@ The hook-free OSD lives in the **private** repo [CXWorld/CapFrameX.OSD](https://
 - `source/CapFrameX.OSD.Integration` (adapter mapping `IOverlayEntry` onto the OSD, references `CapFrameX.Contracts`) intentionally stays in this repo; everything CapFrameX-independent (native core, Interop, WPF editor controls) lives in the OSD repo.
 - After OSD changes: update the DLLs in `external/CapFrameX.OSD-prebuilt/` (see its README) and bump the submodule commit.
 
+### Hook-free visibility
+
+The hook-free overlay is only visible while the capture process list has at least one entry.
+`CaptureViewModel` publishes the list's size through `IProcessService.ProcessCountStream` — the PID
+stream is no substitute, it stays 0 while several processes wait for a selection — and
+`OsdOverlayBridge` folds it into its visibility (`_active && _hasProcesses && exist`). An empty list
+is a soft-hide like any other, so the renderer keeps existing. The overlay hotkey is untouched: it
+toggles `IsOverlayActive`, which hides a visible overlay at any time but cannot show one past the
+gate; the toggled state takes effect once a process is detected. RTSS and the in-game hook are not
+affected.
+
 ### Hook-free stall diagnostics
 
 Chart pauses/hitches in the hook-free overlay have three unrelated possible causes — the render

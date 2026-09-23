@@ -37,6 +37,7 @@ namespace CapFrameX.Test.Sensor
         private class StubProcessService : IProcessService
         {
             public ISubject<int> ProcessIdStream { get; } = new BehaviorSubject<int>(0);
+            public ISubject<int> ProcessCountStream { get; } = new BehaviorSubject<int>(0);
         }
     }
 }

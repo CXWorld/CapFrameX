@@ -22,6 +22,7 @@ namespace CapFrameX.OSD.Integration
 
         internal void ProfileOutcome(int pid, HookLearnedProfileEntry entry)
         {
+            if (!IsEnabled) return;
             var profile = Profile(entry.ToStage(), entry.EvidenceSignature);
             profile.EarlySignature = entry.EarlySignature ?? "";
             profile.Verified = entry.Verified;
@@ -38,7 +39,7 @@ namespace CapFrameX.OSD.Integration
 
         internal void Action(int pid, HookCompatibilityProbeSession session, HookProbeAction action)
         {
-            if (action.Kind == HookProbeActionKind.SetPollInterval) return;
+            if (!IsEnabled || action.Kind == HookProbeActionKind.SetPollInterval) return;
             Record(pid, new ReportEvent
             {
                 Kind = "action", Verdict = action.Verdict.ToString(), State = action.Kind.ToString(),
@@ -47,12 +48,16 @@ namespace CapFrameX.OSD.Integration
         }
 
         internal void Injection(int pid, bool inProgress, bool succeeded, bool failed)
-            => Record(pid, new ReportEvent { Kind = "injection", State = inProgress ? "started" :
+        {
+            if (!IsEnabled) return;
+            Record(pid, new ReportEvent { Kind = "injection", State = inProgress ? "started" :
                 succeeded ? "succeeded" : "stopped", Verdict = failed ? "InjectionFailed" : "" });
+        }
 
         internal void Observe(int pid, bool hasStatus, NativeHookStatusSnapshot s,
             EHookOverlayStatus? state, ulong now, bool visible, bool fallback)
         {
+            if (!IsEnabled) return;
             var native = new ReportNativeStatus
             {
                 Version = s.Version, Flags = (uint)s.Flags,
@@ -66,12 +71,24 @@ namespace CapFrameX.OSD.Integration
                 CoverageMissed = s.CoverageMissed, FgTechnology = s.FgTechnology, FgActivity = s.FgActivity,
                 FgAuthoritative = s.FgAuthoritative, StreamlineDlssgMode = s.StreamlineDlssgMode,
                 QueueState = s.QueueState.ToString(), DeclineReason = s.LastDeclineReason.ToString(),
-                RouteSource = s.RouteSource, CompatChannelVersion = s.CompatChannelVersion
+                RouteSource = s.RouteSource, CompatChannelVersion = s.CompatChannelVersion,
+                Progress = s.Progress is HookRenderProgress p ? new ReportRenderProgress
+                {
+                    Generation = p.Generation, Presents = p.Presents, Draws = p.Draws,
+                    LastDrawAgeMs = p.LastDrawTickMs > 0 ? (long)now - p.LastDrawTickMs : -1,
+                    RouteSource = p.RouteSource, AppliedFlags = p.AppliedFlags,
+                    AppliedSequence = p.AppliedSequence
+                } : null
             };
-            string key = $"{hasStatus}:{state}:{s.Flags}:{s.AppliedFlags}:{s.PendingRestartFlags}:" +
+            bool fresh = hasStatus && native.HeartbeatAgeMs >= 0 &&
+                native.HeartbeatAgeMs <= (long)HookStatusProbe.HeartbeatStaleAfterMs;
+            string key = $"{hasStatus}:{fresh}:{state}:{s.Version}:{s.Flags}:{s.AppliedFlags}:{s.PendingRestartFlags}:" +
                 $"{s.FgTechnology}:{s.FgActivity}:{s.FgAuthoritative}:{s.StreamlineDlssgMode}:" +
                 $"{s.QueueState}:{s.LastDeclineReason}:{s.RouteSource}:{s.MetricsEntryCount}:" +
-                $"{s.ResolutionX}:{s.ResolutionY}:{s.InstallPhase}:{s.LastError}:{visible}:{fallback}";
+                $"{s.ResolutionX}:{s.ResolutionY}:{s.Api}:{s.InstallPhase}:{s.InstallDetail}:{s.LastError}:" +
+                $"{s.AppliedSequence}:{s.LiveReloadCapabilities}:{s.CompatChannelVersion}:{visible}:{fallback}:" +
+                $"{s.Progress?.Generation}:{s.Progress?.RouteSource}:" +
+                $"{(native.Progress != null && native.Progress.LastDrawAgeMs >= 0 && native.Progress.LastDrawAgeMs <= 3000)}";
             Record(pid, new ReportEvent { Kind = "native-sample", State = state?.ToString() ?? "unknown",
                 HasStatus = hasStatus, Native = native, OverlayVisible = visible, Fallback = fallback }, key);
         }
@@ -79,6 +96,7 @@ namespace CapFrameX.OSD.Integration
         internal void ObserveVulkan(int pid, VulkanProbeSnapshot s, VulkanProbeAction action,
             ulong now, bool visible, bool fallback, int width, int height)
         {
+            if (!IsEnabled) return;
             var native = new ReportVulkanStatus
             {
                 RequestedRoute = s.RequestedRoute.ToString(), ActualRoute = s.ActualRoute.ToString(),
@@ -89,8 +107,11 @@ namespace CapFrameX.OSD.Integration
                 QueueFlags = s.QueueFlags, Format = s.Format, ColorSpace = s.ColorSpace,
                 ImageUsage = s.ImageUsage, Width = width, Height = height
             };
-            string key = $"vk:{s.Generation}:{s.RequestedRoute}:{s.ActualRoute}:{s.Result}:" +
-                $"{s.AppliedRevision}:{action}:{visible}:{fallback}:{width}:{height}";
+            bool fresh = native.HeartbeatAgeMs >= 0 && native.HeartbeatAgeMs <= (long)HookVulkanProbeSession.StaleMs;
+            string key = $"vk:{fresh}:{s.Generation}:{s.RequestedRoute}:{s.ActualRoute}:{s.Result}:" +
+                $"{s.AppliedRevision}:{s.Capabilities}:{s.Bitness}:{s.Vendor}:{s.Device}:{s.Driver}:" +
+                $"{s.Family}:{s.QueueFlags}:{s.Format}:{s.ColorSpace}:{s.ImageUsage}:" +
+                $"{action}:{visible}:{fallback}:{width}:{height}";
             Record(pid, new ReportEvent { Kind = "vulkan-sample", Verdict = action.ToString(),
                 HasStatus = true, Vulkan = native, OverlayVisible = visible, Fallback = fallback }, key);
         }
