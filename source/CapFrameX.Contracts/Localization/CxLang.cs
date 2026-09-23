@@ -22,6 +22,7 @@ namespace CapFrameX.Contracts.Localization
 
         private string _uiLanguage = "en";
         private string _overlayLanguage = "en";
+        private static readonly string[] AppPlaceholder = { "<APP>" };
         private Phrase[] _overlayPhrases = Array.Empty<Phrase>();
         private IReadOnlyList<LanguageOption> _languages = Array.Empty<LanguageOption>();
 
@@ -76,6 +77,27 @@ namespace CapFrameX.Contracts.Localization
         {
             if (string.IsNullOrEmpty(label) || _overlayLanguage == "en")
                 return label ?? string.Empty;
+            try
+            {
+                if (label.IndexOf("<APP>", StringComparison.Ordinal) >= 0)
+                {
+                    var parts = label.Split(AppPlaceholder, StringSplitOptions.None);
+                    for (int i = 0; i < parts.Length; i++)
+                        parts[i] = TranslateOverlayCore(parts[i]);
+                    return string.Join("<APP>", parts);
+                }
+                return TranslateOverlayCore(label);
+            }
+            catch
+            {
+                return label;
+            }
+        }
+
+        private string TranslateOverlayCore(string label)
+        {
+            if (string.IsNullOrEmpty(label))
+                return label ?? string.Empty;
             if (label.Any(c => c >= '\u0400' && c <= '\u04FF'))
                 return label;
             if (_overlayCache.TryGetValue(label, out var cached))
@@ -84,7 +106,8 @@ namespace CapFrameX.Contracts.Localization
             var result = label;
             if (_catalogs.TryGetValue(_overlayLanguage, out var catalog)
                 && catalog.Overlay.TryGetValue(label, out var exact)
-                && !string.IsNullOrEmpty(exact))
+                && !string.IsNullOrEmpty(exact)
+                && exact.IndexOf("<APP>", StringComparison.Ordinal) < 0)
             {
                 result = exact;
             }
@@ -182,6 +205,22 @@ namespace CapFrameX.Contracts.Localization
                 Replacement = replacement ?? string.Empty;
             }
 
+            public static bool TryCreate(string pattern, string replacement, out Phrase phrase)
+            {
+                phrase = null;
+                if (string.IsNullOrEmpty(pattern))
+                    return false;
+                try
+                {
+                    phrase = new Phrase(pattern, replacement);
+                    return true;
+                }
+                catch (ArgumentException)
+                {
+                    return false;
+                }
+            }
+
             public Regex Pattern { get; }
             public string Replacement { get; }
         }
@@ -210,8 +249,8 @@ namespace CapFrameX.Contracts.Localization
                     {
                         var pattern = item.GetProperty("pattern").GetString();
                         var replacement = item.GetProperty("replacement").GetString();
-                        if (!string.IsNullOrEmpty(pattern))
-                            list.Add(new Phrase(pattern, replacement));
+                        if (Phrase.TryCreate(pattern, replacement, out var phrase))
+                            list.Add(phrase);
                     }
                     list.Sort((a, b) => b.Pattern.ToString().Length.CompareTo(a.Pattern.ToString().Length));
                     catalog.Phrases = list.ToArray();
