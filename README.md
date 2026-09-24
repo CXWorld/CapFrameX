@@ -4,7 +4,7 @@ Capture, analyze, and compare game performance on Windows. CapFrameX combines In
 
 Version **1.9.0** introduces a refreshed interface, a system information dashboard, a built-in hook-free overlay, expanded GPU telemetry, and lower background polling overhead. The application now runs on **.NET 10**.
 
-This branch develops **1.9.1.1-beta**. It enables the experimental in-game overlay again and includes the DirectX hook and Vulkan layer DLLs for both x64 and x86, plus the bundled BENCHLAB service, in installer and portable builds. Compatible separately installed BENCHLAB services remain supported. The installer registers each Vulkan layer in its matching HKLM registry view.
+This branch develops **1.9.2.0-beta**. It enables the experimental in-game overlay again and includes the DirectX hook and Vulkan layer DLLs for both x64 and x86, plus the bundled BENCHLAB service, in installer and portable builds. Compatible separately installed BENCHLAB services remain supported. The installer registers each Vulkan layer in its matching HKLM registry view.
 
 # Remark in our own interest
 If you are a reviewer or a youtuber using CapFrameX to get your data, it would be nice to mention us and link to our software.
@@ -77,15 +77,15 @@ The Info tab brings together CPU, GPU, memory, and mainboard details with live t
 
 # Overlay
 
-Choose a renderer under **Overlay → OSD options**. The following describes 1.9.1 development builds; the screenshots show the stable 1.9.0 release.
+Choose a renderer under **Overlay → OSD options**. The following describes 1.9.2 development builds; the screenshots show the stable 1.9.0 release.
 
 | Renderer | Behavior |
 | --- | --- |
 | **CapFrameX hook-free** | Built-in overlay without injecting into the game. This is the default for new configurations and offers an output-display picker and chart refresh control. |
-| **CapFrameX in-game (Experimental)** | Enabled in 1.9.1 development builds, with DirectX and Vulkan integration, game compatibility profiles, and hook-free fallback routing. Unavailable in the stable v1.9.0 packages. |
+| **CapFrameX in-game (Experimental)** | Enabled in 1.9.2 development builds, with DirectX and Vulkan integration, game compatibility profiles, and hook-free fallback routing. Unavailable in the stable v1.9.0 packages. |
 | **RTSS** | Uses [RivaTuner Statistics Server](https://www.guru3d.com/content-page/rivatuner.html), which must be installed separately. |
 
-Configure individual entries, colors, groups, and three profiles in **Overlay items**. OSD options include opacity, zoom, placement, a position hotkey, and PresentMon replay buffering. Existing renderer selections are preserved. If v1.9.0 migrated your in-game selection to hook-free, you can select in-game again in 1.9.1.
+Configure individual entries, colors, groups, and three profiles in **Overlay items**. OSD options include opacity, zoom, placement, a position hotkey, and PresentMon replay buffering. Existing renderer selections are preserved. If v1.9.0 migrated your in-game selection to hook-free, you can select in-game again in 1.9.2.
 
 ![CapFrameX 1.9.0 overlay entries](images/1.9.0/overlay.png)
 ![CapFrameX 1.9.0 renderer and OSD options](images/1.9.0/overlay-options.png)
