@@ -44,7 +44,7 @@ namespace CapFrameX.Contracts.Overlay
         void StoreCurrentState(IEnumerable<IOverlayEntry> entries);
 
         /// <summary>
-        /// Gets the stored overlay entries.
+        /// Gets copies of the stored overlay entries, or an empty sequence when nothing is stored.
         /// </summary>
         /// <returns></returns>
         IEnumerable<IOverlayEntry> GetStoredOverlayEntries();

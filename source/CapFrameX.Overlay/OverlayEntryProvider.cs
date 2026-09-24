@@ -455,7 +455,7 @@ namespace CapFrameX.Overlay
                     }).ThenBy(entry => entry.SortKey, new SortKeyComparer())
                     .ToList();
 
-                _overlayEntries = sortedEntries.ToBlockingCollection();
+                _overlayEntries = CreateEntryCollection(sortedEntries);
             }
 
             MarkPendingChanges();
@@ -465,12 +465,18 @@ namespace CapFrameX.Overlay
         {
             lock (_overlayEntriesGate)
             {
-                _overlayEntries = entries.ToList().ToBlockingCollection();
+                _overlayEntries = CreateEntryCollection(entries);
                 UpdateStates(resetEvaluate: false);
             }
 
             MarkPendingChanges();
         }
+
+        // ToBlockingCollection() returns null for an empty sequence. The entry list must never be
+        // null: every overlay refresh, sort and format pass enumerates it.
+        private static BlockingCollection<IOverlayEntry> CreateEntryCollection(IEnumerable<IOverlayEntry> entries)
+            => new BlockingCollection<IOverlayEntry>(
+                new ConcurrentQueue<IOverlayEntry>(entries ?? Enumerable.Empty<IOverlayEntry>()));
 
         private void UpdateStates(bool resetEvaluate)
         {
@@ -835,7 +841,7 @@ namespace CapFrameX.Overlay
 
             HasHardwareChanged = hasChanges;
 
-            return configOverlayEntries.ToBlockingCollection();
+            return CreateEntryCollection(configOverlayEntries);
         }
 
         /// <summary>
@@ -964,7 +970,7 @@ namespace CapFrameX.Overlay
                     return;
                 }
 
-                _overlayEntries = entries.ToBlockingCollection();
+                _overlayEntries = CreateEntryCollection(entries);
                 SynchronizeDisplayEntryState(previousDisplayEntries, entries);
                 HasHardwareChanged = true;
                 MarkPendingChanges();
@@ -1333,7 +1339,7 @@ namespace CapFrameX.Overlay
                 .ToList();
 
             ReconcileDisplayResolutionEntries(defaultEntries, GetDetectedDisplays());
-            var overlayEntries = defaultEntries.ToBlockingCollection();
+            var overlayEntries = CreateEntryCollection(defaultEntries);
 
             //log hardware configs
             _logger.LogInformation("Set overlay defaults");
@@ -1345,7 +1351,7 @@ namespace CapFrameX.Overlay
 
             // Sensor data
             _overlayEntryCore.OverlayEntryDict.Values.ForEach(sensor => overlayEntries.TryAdd(sensor.Clone()));
-            return await Task.FromResult(overlayEntries
+            return await Task.FromResult(CreateEntryCollection(overlayEntries
                 .OrderBy(entry =>
                 {
                     switch (entry.OverlayEntryType)
@@ -1367,8 +1373,7 @@ namespace CapFrameX.Overlay
                         default:
                             return 8;
                     }
-                }).ThenBy(entry => entry.SortKey, new SortKeyComparer())
-                .ToBlockingCollection());
+                }).ThenBy(entry => entry.SortKey, new SortKeyComparer())));
         }
 
         private void UpdateConfigGatedEntryState(string identifier, bool enabled)

@@ -57,6 +57,9 @@ namespace CapFrameX.Overlay
         private ISubject<IOverlayEntry[]> _onDictionaryUpdated = new Subject<IOverlayEntry[]>();
         private readonly ISubject<Unit> _refreshRequested = Subject.Synchronize(new Subject<Unit>());
         private volatile bool _isServiceAlive = true;
+        // Written only by the serialized entry refresh (Concat) when a read fails.
+        private DateTime _lastEntryRefreshFailureLogUtc = DateTime.MinValue;
+        private int _suppressedEntryRefreshFailures;
 
         public bool IsOverlayActive => _appConfiguration.IsOverlayActive;
 
@@ -218,10 +221,18 @@ namespace CapFrameX.Overlay
 
                            // Serialize profile changes and regular ticks on the refresh thread.
                            // FromAsync defers each read until the previous one has completed.
+                           // A failed read skips its tick: the subscription below has no error
+                           // handler, so an error reaching it would be rethrown on the refresh
+                           // thread and terminate CapFrameX.
                            var entryUpdates = _refreshRequested
                                .StartWith(Unit.Default)
                                .ObserveOn(_overlayRefreshScheduler)
-                               .Select(_ => Observable.FromAsync(() => _overlayEntryProvider.GetOverlayEntries()))
+                               .Select(_ => Observable.FromAsync(() => _overlayEntryProvider.GetOverlayEntries())
+                                   .Catch((Exception ex) =>
+                                   {
+                                       LogEntryRefreshFailure(ex);
+                                       return Observable.Empty<IOverlayEntry[]>();
+                                   }))
                                .Concat();
 
                            if (mode == EntryFeedMode.RemoteOnly)
@@ -308,6 +319,22 @@ namespace CapFrameX.Overlay
             PublishRunHistoryAggregation(string.Empty);
             PublishRunHistoryOutlierFlags();
             _rTSSService.SetIsCaptureTimerActive(false);
+        }
+
+        // A persistent failure repeats on every refresh tick; report it at most every 10 s.
+        private void LogEntryRefreshFailure(Exception ex)
+        {
+            var now = DateTime.UtcNow;
+            if (now - _lastEntryRefreshFailureLogUtc < TimeSpan.FromSeconds(10))
+            {
+                _suppressedEntryRefreshFailures++;
+                return;
+            }
+
+            _logger.LogError(ex, "Overlay entry refresh failed; the tick was skipped ({suppressed} further failures since the last report).",
+                _suppressedEntryRefreshFailures);
+            _lastEntryRefreshFailureLogUtc = now;
+            _suppressedEntryRefreshFailures = 0;
         }
 
         /// <summary>

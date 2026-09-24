@@ -100,6 +100,32 @@ namespace CapFrameX.Test.Overlay
         }
 
         [TestMethod]
+        public async Task FailedRead_SkipsTheTickAndKeepsTheFeedAlive()
+        {
+            // An error reaching the subscription is rethrown on the refresh thread, where nothing
+            // handles it: 1.9.0.8 ended with a NullReferenceException from the provider this way.
+            using var fixture = new RefreshFixture();
+            var failedReadStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var entries = CreateEntries("Recovered profile");
+            fixture.Provider.SetupSequence(provider => provider.GetOverlayEntries(true))
+                .Returns(() =>
+                {
+                    failedReadStarted.TrySetResult(true);
+                    return Task.FromException<IOverlayEntry[]>(new NullReferenceException("Simulated read failure"));
+                })
+                .Returns(() => Task.FromResult(entries));
+            var update = fixture.Service.OnDictionaryUpdated.Take(1).ToTask();
+            fixture.Start();
+
+            await failedReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            fixture.Service.RequestRefresh();
+
+            Assert.AreSame(entries, await update.WaitAsync(TimeSpan.FromSeconds(5)),
+                "The refresh after a failed read must still publish its entries.");
+            Assert.AreSame(entries, fixture.Service.CurrentOverlayEntries);
+        }
+
+        [TestMethod]
         public async Task RefreshWhileHidden_KeepsOverlayHiddenAndLoadsNewProfileOnActivation()
         {
             using var fixture = new RefreshFixture();

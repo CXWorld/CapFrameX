@@ -25,15 +25,14 @@
                                    Identifier="ShellDialogHost">
         <Grid>
         <!-- NotifyIcon -->
+        <!-- ToolTipText without a TrayToolTip lets the shell draw a native tooltip. A WPF
+             TrayToolTip is opened from the icon's own window procedure, outside the dispatcher's
+             exception handling, and a failure there ends the application. -->
         <tb:TaskbarIcon x:Name="SystemTray"
                         IconSource="/Icons/cx_icon_BUC.ico"
+                        ToolTipText="CapFrameX"
                         MenuActivation="RightClick"
                         TrayLeftMouseDown="SystemTray_TrayLeftMouseDownClick">
-            <tb:TaskbarIcon.TrayToolTip>
-                <Grid Background="White">
-                    <TextBlock Margin="3" Foreground="#575757" Text="CapFrameX" />
-                </Grid>
-            </tb:TaskbarIcon.TrayToolTip>
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu>
                     <!--<Separator/>-->

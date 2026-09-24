@@ -770,7 +770,7 @@ namespace CapFrameX.ViewModel
 
         public ICommand ApplyOverlayTemplateCommand { get; }
 
-        public ICommand RevertOverlayTemplateCommand { get; }
+        public DelegateCommand RevertOverlayTemplateCommand { get; }
 
         public bool IsRTSSInstalled
             => _rTSSService.IsRTSSInstalled();
@@ -928,7 +928,10 @@ namespace CapFrameX.ViewModel
             ClearFilterCommand = new DelegateCommand(OnClearFilter);
             LaunchOverlayPreviewAppCommand = new DelegateCommand(OnLaunchOverlayPreviewApp);
             ApplyOverlayTemplateCommand = new DelegateCommand(OnApplyOverlayTemplate);
-            RevertOverlayTemplateCommand = new DelegateCommand(OnRevertOverlayTemplate);
+            // Without an applied template there is nothing to revert to; the stored state would be
+            // empty and the revert would clear the whole list.
+            RevertOverlayTemplateCommand = new DelegateCommand(OnRevertOverlayTemplate,
+                () => _overlayTemplateService.HasStoredState);
 
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventOverlayConfigHotkey();
@@ -1180,8 +1183,14 @@ namespace CapFrameX.ViewModel
 
         private void OnApplyOverlayTemplate()
         {
+            // An empty list (entries not loaded yet) would be stored as the revert state and pushed
+            // to the provider, wiping its entries.
+            if (!OverlayEntries.Any())
+                return;
+
             // Store current state before applying template
             _overlayTemplateService.StoreCurrentState(OverlayEntries);
+            RevertOverlayTemplateCommand.RaiseCanExecuteChanged();
             var clonedEntries = OverlayEntries.Select(entry => entry.Clone()).ToList();
 
             // Apply the selected template
@@ -1210,7 +1219,10 @@ namespace CapFrameX.ViewModel
 
         private void OnRevertOverlayTemplate()
         {
-            var storedOverlayEntries = _overlayTemplateService.GetStoredOverlayEntries();
+            if (!_overlayTemplateService.HasStoredState)
+                return;
+
+            var storedOverlayEntries = _overlayTemplateService.GetStoredOverlayEntries().ToList();
 
             OverlayEntries.ForEach(entry => entry.Dispose());
             OverlayEntries.Clear();
