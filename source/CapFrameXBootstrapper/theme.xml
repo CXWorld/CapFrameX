@@ -2,10 +2,12 @@
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
 
 <!-- Based on the WiX v6 RtfLargeTheme.xml. CapFrameX changes: a taller window, the installer
-     banner across the top instead of the 64x64 logo and title, the version on the banner, the
-     CapFrameX colours and the hint about importing a configuration on the Install page.
+     banner across the top instead of the 64x64 logo and title, the version next to the license
+     checkbox, the CapFrameX colours and the hint about importing a configuration on the Install page.
      WiX v4+ themes use a different schema than v3, and the FilesInUse page of the v3 theme is
-     no longer a WixStdBA page, so it is gone. -->
+     no longer a WixStdBA page, so it is gone.
+     The v3 theme drew the version on the banner. That no longer works: v4+ draws the banner as
+     an ImageControl child window, which covers any control placed on top of it. -->
 <Theme xmlns="http://wixtoolset.org/schemas/v4/thmutil">
     <Font Id="0" Height="-12" Weight="500" Foreground="000000" Background="FFFFFF">Segoe UI</Font>
     <Font Id="1" Height="-24" Weight="500" Foreground="0271F9">Segoe UI</Font>
@@ -32,9 +34,9 @@
         <Page Name="Install">
             <Label X="11" Y="90" Width="-11" Height="-140" TabStop="no" FontId="2" HexStyle="800000" DisablePrefix="yes" />
             <Richedit Name="EulaRichedit" X="12" Y="92" Width="-12" Height="-141" TabStop="yes" FontId="0" />
-            <Label Name="InstallVersion" X="300" Y="58" Width="185" Height="17" FontId="6" DisablePrefix="yes" VisibleCondition="WixStdBAShowVersion">#(loc.InstallVersion)</Label>
-            <Checkbox Name="EulaAcceptCheckbox" X="-11" Y="-111" Width="260" Height="17" TabStop="yes" FontId="3" HideWhenDisabled="yes">#(loc.InstallAcceptCheckbox)</Checkbox>
-            <Label X="12" Y="-44" Width="-10" Height="60" FontId="5">Import your configuration: If this is the first installation on this system you can&#x0a;transfer your settings from another system. Just have your "Configuration"&#x0a;folder in the same directory you're running this setup from before you continue.&#x0a;All configs within that folder will be copied  to Documents/CapFrameX.</Label>
+            <Label Name="InstallVersion" X="12" Y="-115" Width="200" Height="17" FontId="3" DisablePrefix="yes" VisibleCondition="WixStdBAShowVersion">#(loc.InstallVersion)</Label>
+            <Checkbox Name="EulaAcceptCheckbox" X="-11" Y="-115" Width="260" Height="17" TabStop="yes" FontId="3" HideWhenDisabled="yes">#(loc.InstallAcceptCheckbox)</Checkbox>
+            <Label X="12" Y="-44" Width="-10" Height="68" FontId="5">Import your configuration: If this is the first installation on this system you can&#x0a;transfer your settings from another system. Just have your "Configuration"&#x0a;folder in the same directory you're running this setup from before you continue.&#x0a;All configs within that folder will be copied  to Documents/CapFrameX.</Label>
             <Button Name="OptionsButton" X="-171" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0" VisibleCondition="NOT WixStdBASuppressOptionsUI">
                 <Text>#(loc.InstallOptionsButton)</Text>
                 <ChangePageAction Page="Options" />
