@@ -53,5 +53,11 @@ namespace CapFrameX.Contracts.Overlay
         /// Checks if there is a stored state available for revert.
         /// </summary>
         bool HasStoredState { get; }
+
+        /// <summary>
+        /// Discards the stored state. The state belongs to the profile it was taken from and must
+        /// not be restored once another profile has been loaded.
+        /// </summary>
+        void ClearStoredState();
     }
 }

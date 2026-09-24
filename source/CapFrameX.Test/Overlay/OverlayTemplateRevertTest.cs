@@ -121,6 +121,18 @@ namespace CapFrameX.Test.Overlay
             }
         }
 
+        [TestMethod]
+        public void TemplateService_ClearedState_HasNothingToRevert()
+        {
+            var service = new OverlayTemplateService(Mock.Of<ISensorService>());
+            service.StoreCurrentState(new IOverlayEntry[] { new OverlayEntryWrapper("Framerate") });
+
+            service.ClearStoredState();
+
+            Assert.IsFalse(service.HasStoredState);
+            Assert.IsFalse(service.GetStoredOverlayEntries().Any());
+        }
+
         private OverlayEntryProvider CreateProvider()
         {
             var overlayEntryCore = new OverlayEntryCore();

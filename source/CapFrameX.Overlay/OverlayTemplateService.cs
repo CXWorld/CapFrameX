@@ -608,6 +608,11 @@ namespace CapFrameX.Overlay
             return _storedOverlayEntries.Select(entry => entry.Clone()).ToArray();
         }
 
+        public void ClearStoredState()
+        {
+            _storedOverlayEntries = null;
+        }
+
         private class CoreGroupInfo
         {
             public string GroupName { get; set; }

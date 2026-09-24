@@ -857,6 +857,14 @@ namespace CapFrameX.ViewModel
                 .ObserveOnDispatcher()
                 .Subscribe(ApplyReloadedOverlayEntries);
 
+            // The template revert state was taken from the profile that was active when the
+            // template was applied. Restored into another profile it would replace that profile's
+            // entries, so a switch discards it as soon as it starts. The hotkey requests the
+            // switch from a worker thread, hence the dispatcher.
+            _configSubject
+                .ObserveOnDispatcher()
+                .Subscribe(_ => DiscardTemplateRevertState());
+
             // The provider gates renderer-dependent items in place. A renderer change must not use
             // the profile-switch path: that reloads JSON and discards unsaved item edits.
             _appConfiguration.OnValueChanged
@@ -1215,6 +1223,12 @@ namespace CapFrameX.ViewModel
             SetSaveButtonIsEnable();
 
             _overlayService.RequestRefresh();
+        }
+
+        private void DiscardTemplateRevertState()
+        {
+            _overlayTemplateService.ClearStoredState();
+            RevertOverlayTemplateCommand.RaiseCanExecuteChanged();
         }
 
         private void OnRevertOverlayTemplate()
