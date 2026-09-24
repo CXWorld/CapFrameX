@@ -85,6 +85,9 @@
     <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
     <PackageVersion Include="TaskScheduler" Version="2.9.1" />
     <PackageVersion Include="Unosquare.Swan.Lite" Version="3.1.0" />
+    <!-- WiX v6 extensions; keep them on the version of the WixToolset.Sdk in the .wixproj files. -->
+    <PackageVersion Include="WixToolset.Bal.wixext" Version="6.0.2" />
+    <PackageVersion Include="WixToolset.Util.wixext" Version="6.0.2" />
   </ItemGroup>
 
 </Project>

@@ -10,7 +10,7 @@ CapFrameX is a Windows desktop application for frametime capture and analysis, b
 
 ### Prerequisites
 - Visual Studio 2026 (toolset v145; the native projects pin it)
-- WiX Toolset v3.14.1 ([wix314.exe](https://github.com/wixtoolset/wix3/releases/tag/wix3141rtm)) — **v3 only**, v4+ uses an incompatible SDK-style project format. It sets the `WIX` environment variable that the installer's `heat.exe` pre-build step needs, and installs the targets under `Program Files (x86)\MSBuild\Microsoft\WiX\v3.x\`. The separate Visual Studio extension only adds IDE integration and is not required for the msbuild command line.
+- WiX Toolset v6.0.2 — nothing to install. `CapFrameXInstaller` and `CapFrameXBootstrapper` are SDK-style projects (`<Project Sdk="WixToolset.Sdk/6.0.2">`); MSBuild restores the SDK and the `WixToolset.*.wixext` extensions from NuGet, so build them with `/restore`. The extension versions live in `source/Directory.Packages.props` and must match the SDK version. Stay on v6: WiX v7 requires accepting the Open Source Maintenance Fee EULA before it builds, which is the owner's decision. The HeatWave Visual Studio extension only adds IDE integration.
 - C++ MFC build tools
 
 ### Build the Main Application
@@ -28,9 +28,14 @@ msbuild source\CapFrameX.ADLX\CapFrameX.ADLX.vcxproj /p:SolutionDir=%CD%\ /p:Con
 
 ### Build Installer
 ```bash
-msbuild source\CapFrameXInstaller\CapFrameXInstaller.wixproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64
-msbuild source\CapFrameXBootstrapper\CapFrameXBootstrapper.wixproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64
+msbuild source\CapFrameXInstaller\CapFrameXInstaller.wixproj /restore /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64
+msbuild source\CapFrameXBootstrapper\CapFrameXBootstrapper.wixproj /restore /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64
 ```
+Build the application (and the native DLLs) first: the MSI's file list is harvested at build time
+from `source\CapFrameX\bin\x64\<Configuration>\net10.0-windows` by the `<Files>` element in
+`Product.wxs`, whose `<Exclude>` entries replace the former `heat.exe` step and `filter.xslt`.
+The bundle stays a 32-bit Burn bundle (`InstallerPlatform=x86`), as WiX v3 bundles were; the chained
+MSI is x64. Its VC++ redistributables are remote payloads verified by their Authenticode signer.
 
 ### Run Tests
 Tests use MSTest framework:

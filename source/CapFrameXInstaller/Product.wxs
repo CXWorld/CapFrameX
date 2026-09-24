@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-	 xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
-	<Product Id="*" Name="CapFrameX Capture and Analysis Tool $(var.CapFrameXVersion)" Language="1033" Version="$(var.CapFrameXInstallerVersion)" Manufacturer="DevTechProfile" UpgradeCode="05dc3ab5-bc82-4feb-8624-61c39d0ac204">
-		<Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" Platform="x64"/>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+	 xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+	<!-- Per-machine, compressed and x64 (the project's InstallerPlatform) are the WiX v4+ defaults
+	     for a Package; the ProductCode is generated on every build. -->
+	<Package Name="CapFrameX Capture and Analysis Tool $(var.CapFrameXVersion)" Language="1033" Version="$(var.CapFrameXInstallerVersion)" Manufacturer="DevTechProfile" UpgradeCode="05dc3ab5-bc82-4feb-8624-61c39d0ac204" Scope="perMachine">
 
 		<!-- Downgrades are intentionally supported. This makes the WIX_UPGRADE_DETECTED
 		     range include newer products as well, so ICE61 is suppressed in the project. -->
 		<MajorUpgrade AllowDowngrades="yes" />
-		<Media Id="1" Cabinet="CapFrameX.cab" EmbedCab="yes" CompressionLevel="high" />		
+		<Media Id="1" Cabinet="CapFrameX.cab" EmbedCab="yes" CompressionLevel="high" />
 		<Icon Id="CapFrameXProductIcon" SourceFile="..\CapFrameX\Icons\cx_icon_BUC.ico" />
 		<Property Id="ARPPRODUCTICON" Value="CapFrameXProductIcon" />
 
@@ -28,83 +29,110 @@
     <Property Id="LAUNCHAPP" Secure="yes" />
     <Property Id="WixShellExecTarget" Value="[INSTALLFOLDER]CapFrameX.exe" />
 
-    <Condition Message="CapFrameX requires the .NET 10 Desktop Runtime (x64). Install it from https://dotnet.microsoft.com/download/dotnet/10.0 and run setup again.">
-      Installed OR DOTNETDESKTOPRUNTIMEX64FOUND
-    </Condition>
+    <Launch Condition="Installed OR DOTNETDESKTOPRUNTIMEX64FOUND"
+            Message="CapFrameX requires the .NET 10 Desktop Runtime (x64). Install it from https://dotnet.microsoft.com/download/dotnet/10.0 and run setup again." />
 
     <InstallUISequence>
-      <Custom Action="DetectDotNetDesktopRuntime" Before="LaunchConditions">
-        NOT Installed AND NOT DOTNETDESKTOPRUNTIMEX64FOUND
-      </Custom>
+      <Custom Action="DetectDotNetDesktopRuntime" Before="LaunchConditions"
+              Condition="NOT Installed AND NOT DOTNETDESKTOPRUNTIMEX64FOUND" />
     </InstallUISequence>
 
     <InstallExecuteSequence>
-		  <Custom Action="DetectDotNetDesktopRuntime" Before="LaunchConditions">
-		    NOT Installed AND NOT DOTNETDESKTOPRUNTIMEX64FOUND
-		  </Custom>
-		  <Custom Action="WixCloseApplications" Before="InstallValidate">
-			  Installed
-		  </Custom>
-      <Custom Action="ResourceManagement" Before="InstallFinalize">
-        NOT Installed
-      </Custom>
-		  <Custom Action="CleanRegistry" Before="InstallFinalize">
-        Installed OR NOT Installed
-      </Custom>
+		  <Custom Action="DetectDotNetDesktopRuntime" Before="LaunchConditions"
+		          Condition="NOT Installed AND NOT DOTNETDESKTOPRUNTIMEX64FOUND" />
+		  <!-- WiX v4+ extensions suffix their custom action ids with the package platform, and
+		       rescheduling one of their actions needs the override modifier. -->
+		  <Custom Action="override Wix4CloseApplications_X64" Before="InstallValidate" Condition="Installed" />
+      <Custom Action="ResourceManagement" Before="InstallFinalize" Condition="NOT Installed" />
+		  <Custom Action="CleanRegistry" Before="InstallFinalize" Condition="Installed OR NOT Installed" />
       <!-- Unconditional on purpose: install, repair, uninstall and both halves of a major upgrade
            must all end with at most one layer registration. The anchor is load-bearing — running
            after WriteRegistryValues would delete the registration this package just wrote. -->
       <Custom Action="PurgeVulkanLayers" Before="WriteRegistryValues" />
       <Custom Action="PurgeVulkanLayersPerUser" Before="InstallInitialize" />
-      <Custom Action="AppdataConfigFiles" Before="InstallFinalize">
-        Installed
-      </Custom>
+      <Custom Action="AppdataConfigFiles" Before="InstallFinalize" Condition="Installed" />
       <!-- Immediate and therefore in the client process: launched from the elevated in-app
            updater, CapFrameX starts elevated without a further prompt, as its manifest demands. -->
-      <Custom Action="LaunchCapFrameX" After="InstallFinalize">
-        NOT Installed AND LAUNCHAPP="1"
-      </Custom>
+      <Custom Action="LaunchCapFrameX" After="InstallFinalize" Condition="NOT Installed AND LAUNCHAPP=&quot;1&quot;" />
 	  </InstallExecuteSequence>
 
 	  <util:CloseApplication Id="CloseCapFrameX" Target="CapFrameX.exe"
-							 CloseMessage="yes" RebootPrompt="no">
-		  Installed
-	  </util:CloseApplication>
-	</Product>
+							 CloseMessage="yes" RebootPrompt="no" Condition="Installed" />
+	</Package>
 
   <Fragment>
-    <CustomAction Id="DetectDotNetDesktopRuntime" BinaryKey="CustomActionsBin" DllEntry="DetectDotNetDesktopRuntime" Execute="immediate" Return="check" />
+    <CustomAction Id="DetectDotNetDesktopRuntime" BinaryRef="CustomActionsBin" DllEntry="DetectDotNetDesktopRuntime" Execute="immediate" Return="check" />
   </Fragment>
 
   <Fragment>
-    <CustomAction Id="AppdataConfigFiles" BinaryKey="CustomActionsBin" DllEntry="RemoveAppdataConfigFiles" Execute="immediate" Return="check"/>
+    <CustomAction Id="AppdataConfigFiles" BinaryRef="CustomActionsBin" DllEntry="RemoveAppdataConfigFiles" Execute="immediate" Return="check"/>
   </Fragment>
 
   <Fragment>
-    <CustomAction Id="CleanRegistry" BinaryKey="CustomActionsBin" DllEntry="RemoveAutoStartKey" Execute="immediate" Return="check"/>
+    <CustomAction Id="CleanRegistry" BinaryRef="CustomActionsBin" DllEntry="RemoveAutoStartKey" Execute="immediate" Return="check"/>
 	</Fragment>
 
   <Fragment>
     <!-- Deferred and non-impersonated: writing HKLM needs the elevated service context, and an
          immediate action would only be elevated by accident of how msiexec was launched. -->
-    <CustomAction Id="PurgeVulkanLayers" BinaryKey="CustomActionsBin" DllEntry="PurgeVulkanLayerRegistrations" Execute="deferred" Impersonate="no" Return="check"/>
+    <CustomAction Id="PurgeVulkanLayers" BinaryRef="CustomActionsBin" DllEntry="PurgeVulkanLayerRegistrations" Execute="deferred" Impersonate="no" Return="check"/>
   </Fragment>
 
   <Fragment>
     <!-- The HKCU twin must stay impersonated, otherwise it addresses the SYSTEM hive. -->
-    <CustomAction Id="PurgeVulkanLayersPerUser" BinaryKey="CustomActionsBin" DllEntry="PurgeVulkanLayerRegistrationsPerUser" Execute="immediate" Return="check"/>
-  </Fragment>
-  
-  <Fragment>
-    <CustomAction Id="ResourceManagement" BinaryKey="CustomActionsBin" DllEntry="CopyConfigResources" Execute="immediate" Return="check"/>
+    <CustomAction Id="PurgeVulkanLayersPerUser" BinaryRef="CustomActionsBin" DllEntry="PurgeVulkanLayerRegistrationsPerUser" Execute="immediate" Return="check"/>
   </Fragment>
 
   <Fragment>
-    <CustomAction Id="LaunchCapFrameX" BinaryKey="WixCA" DllEntry="WixShellExec" Execute="immediate" Impersonate="yes" Return="check"/>
+    <CustomAction Id="ResourceManagement" BinaryRef="CustomActionsBin" DllEntry="CopyConfigResources" Execute="immediate" Return="check"/>
   </Fragment>
-  
+
+  <Fragment>
+    <!-- Wix4UtilCA_X64 is the util extension's custom action DLL (WixCA in WiX v3). -->
+    <CustomAction Id="LaunchCapFrameX" BinaryRef="Wix4UtilCA_X64" DllEntry="WixShellExec" Execute="immediate" Impersonate="yes" Return="check"/>
+  </Fragment>
+
   <Fragment>
     <Binary Id="CustomActionsBin" SourceFile="$(var.CapFrameX.CustomInstallerActions.TargetDir)$(var.CapFrameX.CustomInstallerActions.TargetName).CA.dll" />
+  </Fragment>
+
+  <Fragment>
+    <!-- The application output, harvested at build time. This replaces the heat.exe pre-build
+         step and filter.xslt of the WiX v3 project: build the app first, then the installer.
+         Every file becomes its own 64-bit component with a generated GUID, as heat -ag did. -->
+    <ComponentGroup Id="CapFrameXBinaries" Directory="INSTALLFOLDER">
+      <Files Include="$(var.CapFrameXInstaller.BinaryDir)\**">
+        <!-- Build by-products that are not needed at runtime. -->
+        <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\*.xml" />
+        <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\*.ilk" />
+        <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\*.lib" />
+        <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\*.exp" />
+        <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\*.ini" />
+        <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\*.iobj" />
+        <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\*.ipdb" />
+        <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\*.dll.metagen" />
+        <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\*.vshost.exe" />
+        <!-- Extended.Wpf.Toolkit bundles AvalonDock, but CapFrameX only uses Xceed.Wpf.Toolkit. -->
+        <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\Xceed.Wpf.AvalonDock*" />
+        <!-- The PMC reader is an optional plugin and must not be shipped with the core installer. -->
+        <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\CapFrameX.PmcReader.Plugin.*" />
+        <!-- Satellite assemblies bring their own copy of app.config, which nothing reads. The
+             app's own CapFrameX.dll.config is added back below. -->
+        <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\*.dll.config" />
+        <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\*app.config" />
+        <!-- Overlay entry configurations are not shipped with the installer. -->
+        <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\OverlayEntryConfiguration_0.json" />
+        <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\OverlayEntryConfiguration_1.json" />
+        <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\OverlayEntryConfiguration_2.json" />
+      </Files>
+      <!-- Since the move to SDK-style .NET the app config is named CapFrameX.dll.config instead of
+           CapFrameX.exe.config, and ConfigurationManager reads the update catalog and the
+           webservice endpoints from it, so dropping it disables those features in the installed
+           build. -->
+      <Component>
+        <File Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.dll.config" />
+      </Component>
+    </ComponentGroup>
   </Fragment>
 
   <Fragment>
@@ -113,10 +141,10 @@
            Vulkan loader identifies a layer by the name inside the manifest, so a manifest
            registered in a view whose processes cannot load its DLL does not merely fail —
            it shadows the correct registration and disables the layer for that bitness.
-           Win64="yes" writes the 64-bit view, Win64="no" writes WOW6432Node.
+           Bitness="always64" writes the 64-bit view, Bitness="always32" writes WOW6432Node.
            A future manifest filename/version must get a new component GUID as well. The major
            upgrade then removes this component and its old path-valued registry entry. -->
-      <Component Id="VulkanLayerRegistration" Guid="4B3D5A2F-E00E-4930-A9E1-9F4BE8E91D58" Win64="yes">
+      <Component Id="VulkanLayerRegistration" Guid="4B3D5A2F-E00E-4930-A9E1-9F4BE8E91D58" Bitness="always64">
         <RegistryValue Root="HKLM"
                        Key="SOFTWARE\Khronos\Vulkan\ImplicitLayers"
                        Name="[INSTALLFOLDER]vulkan\cfx_osd_vklayer_v1.json"
@@ -130,16 +158,14 @@
          carries nothing but a registry value, so the bitness-neutral TARGETDIR is the correct
          anchor — [INSTALLFOLDER] in the value name is a property reference and resolves to the
          real install path regardless of where the component lives. -->
-    <DirectoryRef Id="TARGETDIR">
-      <Component Id="VulkanLayerRegistrationX86" Guid="D4B42033-310B-40B4-9CE3-D56FBE4A3F42" Win64="no">
-        <RegistryValue Root="HKLM"
-                       Key="SOFTWARE\Khronos\Vulkan\ImplicitLayers"
-                       Name="[INSTALLFOLDER]vulkan\x86\cfx_osd_vklayer_v1.json"
-                       Type="integer"
-                       Value="0"
-                       KeyPath="yes" />
-      </Component>
-    </DirectoryRef>
+    <Component Id="VulkanLayerRegistrationX86" Guid="D4B42033-310B-40B4-9CE3-D56FBE4A3F42" Directory="TARGETDIR" Bitness="always32">
+      <RegistryValue Root="HKLM"
+                     Key="SOFTWARE\Khronos\Vulkan\ImplicitLayers"
+                     Name="[INSTALLFOLDER]vulkan\x86\cfx_osd_vklayer_v1.json"
+                     Type="integer"
+                     Value="0"
+                     KeyPath="yes" />
+    </Component>
   </Fragment>
 
   <!--https://stackoverflow.com/questions/4658220/create-shortcut-checkbox-->
@@ -153,42 +179,38 @@
       </Dialog>
     </UI>
   </Fragment>-->
-	
-	<Fragment>		
-		<Directory Id="TARGETDIR" Name="SourceDir">
-			<Directory Id="ProgramFiles64Folder">
-				<Directory Id="INSTALLFOLDER" Name="CapFrameX" />
-				<Directory Id="BINFOLDER" Name="Bin"/>
-			</Directory>
-			<Directory Id="ProgramMenuFolder">
-				<Directory Id="ApplicationProgramsFolder" Name="CapFrameX"/>
-			</Directory>
-			<Directory Id="DesktopFolder" Name="Desktop"></Directory>
-		</Directory>
-		
+
+	<Fragment>
+		<StandardDirectory Id="ProgramFiles64Folder">
+			<Directory Id="INSTALLFOLDER" Name="CapFrameX" />
+			<Directory Id="BINFOLDER" Name="Bin"/>
+		</StandardDirectory>
+		<StandardDirectory Id="ProgramMenuFolder">
+			<Directory Id="ApplicationProgramsFolder" Name="CapFrameX"/>
+		</StandardDirectory>
+
 		<DirectoryRef Id="ApplicationProgramsFolder">
-			<Component Id="ApplicationShortcut" Guid="*" Win64="yes">
+			<Component Id="ApplicationShortcut" Bitness="always64">
 				<Shortcut Id="ApplicationStartMenuShortcut"
 						  Name="CapFrameX"
 						  Description="CapFrameX Capture and Analysis Tool"
 						  Target="[INSTALLFOLDER]\CapFrameX.exe"
 						  WorkingDirectory="INSTALLFOLDER">
 					<Icon Id="StartMenuIcon" SourceFile="..\CapFrameX\Icons\cx_icon_BUC.ico"></Icon>
-				</Shortcut>			
+				</Shortcut>
 				<RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
 				<RegistryValue Root="HKMU" Key="Software\CapFrameX" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
 				<RegistryValue Root="HKMU" Key="Software\CapFrameX" Name="InstallDir" Type="string" Value="[INSTALLFOLDER]"/>
 			</Component>
 		</DirectoryRef>
-		<DirectoryRef Id="DesktopFolder">
-			<Component Id="ApplicationShortcutDesktop" Guid="*">
-        <Condition>INSTALLSHORTCUT="1"</Condition>
+		<StandardDirectory Id="DesktopFolder">
+			<Component Id="ApplicationShortcutDesktop" Condition="INSTALLSHORTCUT=&quot;1&quot;">
 				<Shortcut Id="ApplicationDesktopShortcut" Name="CapFrameX" Description="Open Capture and Analytics Tool" Target="[INSTALLFOLDER]\CapFrameX.exe" WorkingDirectory="INSTALLFOLDER">
 					<Icon Id="DesktopIcon" SourceFile="..\CapFrameX\Icons\cx_icon_BUC.ico"></Icon>
 				</Shortcut>
 				<RemoveFolder Id="RemoveDesktopFolder" Directory="DesktopFolder" On="uninstall" />
 				<RegistryValue Root="HKCU" Key="Software\CapFrameX" Name="installed" Type="integer" Value="1" KeyPath="yes" />
 			</Component>
-		</DirectoryRef>
+		</StandardDirectory>
 	</Fragment>
 </Wix>

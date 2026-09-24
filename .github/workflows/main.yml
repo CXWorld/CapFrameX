@@ -175,32 +175,6 @@ jobs:
 
           Write-Host ".NET Framework 4.7.2+ runtime and targeting pack are available."
 
-      - name: Install WiX Toolset v3.14.1
-        shell: pwsh
-        run: |
-          $wixInstaller = Join-Path $env:RUNNER_TEMP "wix314.exe"
-          Invoke-WebRequest `
-            -Uri "https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314.exe" `
-            -OutFile $wixInstaller
-
-          Start-Process `
-            -FilePath $wixInstaller `
-            -ArgumentList "/quiet", "/norestart" `
-            -Wait
-
-          $wixRoot = "${env:ProgramFiles(x86)}\WiX Toolset v3.14"
-          $wixBin = Join-Path $wixRoot "bin"
-          if (-not (Test-Path $wixBin)) {
-            throw "WiX Toolset v3.14.1 installation failed; expected path not found: $wixBin"
-          }
-
-          if (-not (Test-Path (Join-Path $wixBin "heat.exe"))) {
-            throw "WiX heat.exe not found in: $wixBin"
-          }
-
-          "WIX=$wixRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          $wixBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
       - name: Restore
         shell: cmd
         run: |
@@ -252,15 +226,17 @@ jobs:
             }
           }
 
+      # WiX v6 is the WixToolset.Sdk MSBuild SDK; /restore pulls it and its extensions from NuGet,
+      # so the runner needs no WiX installation.
       - name: Build Installer
         shell: cmd
         run: |
-          msbuild source\CapFrameXInstaller\CapFrameXInstaller.wixproj /p:SolutionDir="%GITHUB_WORKSPACE%\\" /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
+          msbuild source\CapFrameXInstaller\CapFrameXInstaller.wixproj /restore /p:SolutionDir="%GITHUB_WORKSPACE%\\" /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
 
       - name: Build Bootstrapper
         shell: cmd
         run: |
-          msbuild source\CapFrameXBootstrapper\CapFrameXBootstrapper.wixproj /p:SolutionDir="%GITHUB_WORKSPACE%\\" /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
+          msbuild source\CapFrameXBootstrapper\CapFrameXBootstrapper.wixproj /restore /p:SolutionDir="%GITHUB_WORKSPACE%\\" /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
 
       - name: Prepare portable config
         shell: cmd
