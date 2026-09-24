@@ -17,8 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Localization\en.json" />
-    <EmbeddedResource Include="Localization\ru.json" />
+    <EmbeddedResource Include="Localization\*.json" />
   </ItemGroup>
 
   <ItemGroup>
